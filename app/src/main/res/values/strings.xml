@@ -1,0 +1,62 @@
+<resources>
+    <string name="app_name">Sleepy 课程表</string>
+    <string name="widget_today_label">今日课程</string>
+
+    <!-- Tabs -->
+    <string name="tab_schedule">课表</string>
+    <string name="tab_today">今日</string>
+    <string name="tab_mine">我的</string>
+
+    <!-- Schedule screen -->
+    <string name="schedule_empty">还没有课表，点击右下角添加</string>
+    <string name="schedule_add_course">添加课程</string>
+    <string name="schedule_prev_week">上一周</string>
+    <string name="schedule_next_week">下一周</string>
+    <string name="schedule_current_week">第 %1$d 周</string>
+    <string name="schedule_no_course_today">今天没有课哦</string>
+
+    <!-- Import -->
+    <string name="import_title">导入课表</string>
+    <string name="import_paste">粘贴课表文本</string>
+    <string name="import_file">从文件导入</string>
+    <string name="import_qr">扫码导入</string>
+    <string name="import_manual">手动添加</string>
+    <string name="import_success">导入成功</string>
+    <string name="import_failed">导入失败：%1$s</string>
+
+    <!-- Course detail -->
+    <string name="course_detail_title">课程详情</string>
+    <string name="course_detail_edit">编辑</string>
+    <string name="course_detail_delete">删除</string>
+    <string name="course_field_name">课程名</string>
+    <string name="course_field_teacher">老师</string>
+    <string name="course_field_room">教室</string>
+    <string name="course_field_note">备注</string>
+    <string name="course_field_week">周次</string>
+    <string name="course_field_node">节次</string>
+    <string name="course_field_color">颜色</string>
+
+    <!-- Mine -->
+    <string name="mine_settings">设置</string>
+    <string name="mine_about">关于</string>
+    <string name="mine_export">导出课表</string>
+    <string name="mine_import">导入课表</string>
+    <string name="mine_table_count">课表数量：%1$d</string>
+    <string name="mine_course_count">课程数量：%1$d</string>
+
+    <!-- Day of week -->
+    <string name="day_mon">周一</string>
+    <string name="day_tue">周二</string>
+    <string name="day_wed">周三</string>
+    <string name="day_thu">周四</string>
+    <string name="day_fri">周五</string>
+    <string name="day_sat">周六</string>
+    <string name="day_sun">周日</string>
+
+    <!-- Common -->
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="save">保存</string>
+    <string name="delete">删除</string>
+    <string name="confirm_delete">确认删除？</string>
+</resources>

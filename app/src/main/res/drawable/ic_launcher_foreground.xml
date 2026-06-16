@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- 简约日历图标 -->
+    <group android:translateX="27" android:translateY="27">
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M45,5H9C6.24,5 4,7.24 4,10v36c0,2.76 2.24,5 5,5h36c2.76,0 5,-2.24 5,-5V10C50,7.24 47.76,5 45,5zM45,46H9V19h36V46z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M13,0h4v8h-4z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M33,0h4v8h-4z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M13,27h8v8h-8z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M25,27h8v8h-8z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M37,27h8v8h-8z"/>
+        <path
+            android:fillColor="#FFFFFF"
+            android:pathData="M13,39h8v8h-8z"/>
+    </group>
+</vector>
