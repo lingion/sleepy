@@ -59,6 +59,11 @@
             </intent-filter>
         </receiver>
 
+        <!-- Daily course notification receiver (alarm target) -->
+        <receiver
+            android:name=".widget.notification.DailyNotifyReceiver"
+            android:exported="false" />
+
     </application>
 
 </manifest>
