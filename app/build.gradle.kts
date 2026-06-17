@@ -66,12 +66,12 @@ android {
         }
     }
 
-    // ABI: 只打包 arm64 (Lingion 的设备是 Android 16 arm64)
+    // ABI: 正式使用 arm64；开发验证同时产出 x86_64，便于当前模拟器做视觉/交互实测
     splits {
         abi {
             isEnable = true
             reset()
-            include("arm64-v8a")
+            include("arm64-v8a", "x86_64")
             isUniversalApk = false
         }
     }

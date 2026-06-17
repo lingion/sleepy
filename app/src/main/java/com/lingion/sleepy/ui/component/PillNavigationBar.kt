@@ -49,13 +49,14 @@ fun PillNavigationBar(
         modifier = modifier
             .fillMaxWidth()
             .background(colors.surfaceContainer)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(top = 6.dp, bottom = 8.dp)
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(82.dp)
-                .windowInsetsPadding(WindowInsets.navigationBars)
-                .padding(top = 8.dp, bottom = 12.dp),
+                .height(76.dp)
+                .padding(horizontal = 6.dp),
             horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {

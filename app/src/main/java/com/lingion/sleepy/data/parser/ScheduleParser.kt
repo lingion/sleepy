@@ -275,8 +275,12 @@ object ScheduleParser {
         val lines = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }
 
         for (line in lines) {
-            // 支持 tab / 空格 / 全角逗号
-            val parts = line.split('\t', '，').map { it.trim() }.filter { it.isNotEmpty() }
+            // 支持 tab / 多空格 / 全角逗号
+            val parts = line
+                .trim()
+                .split(Regex("\\s+|，"))
+                .map { it.trim() }
+                .filter { it.isNotEmpty() }
             if (parts.size < 6) continue
 
             val name = parts[0]

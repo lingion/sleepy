@@ -103,40 +103,40 @@ val LightScheme = WakeUpColorScheme(
 
 val DarkScheme = WakeUpColorScheme(
     primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF381E72),
-    primaryContainer = Color(0xFF4F378B),
-    onPrimaryContainer = Color(0xFFEADDFF),
+    onPrimary = Color(0xFF2D165C),
+    primaryContainer = Color(0xFF564092),
+    onPrimaryContainer = Color(0xFFF2E8FF),
 
-    secondary = Color(0xFFCCC2DC),
-    onSecondary = Color(0xFF332D41),
-    secondaryContainer = Color(0xFF4A4458),
-    onSecondaryContainer = Color(0xFFE8DEF8),
+    secondary = Color(0xFFD8CEE8),
+    onSecondary = Color(0xFF2C2638),
+    secondaryContainer = Color(0xFF524B61),
+    onSecondaryContainer = Color(0xFFF0E7FF),
 
-    tertiary = Color(0xFFEFB8C8),
-    onTertiary = Color(0xFF492532),
-    tertiaryContainer = Color(0xFF633B48),
-    onTertiaryContainer = Color(0xFFFFD8E4),
+    tertiary = Color(0xFFF4C3D2),
+    onTertiary = Color(0xFF472230),
+    tertiaryContainer = Color(0xFF6E4452),
+    onTertiaryContainer = Color(0xFFFFEAF1),
 
     background = Color(0xFF141218),
-    onBackground = Color(0xFFE6E1E5),
-    surface = Color(0xFF141218),
-    onSurface = Color(0xFFE6E1E5),
-    surfaceVariant = Color(0xFF49454F),
-    onSurfaceVariant = Color(0xFFCAC4D0),
-    surfaceContainerLowest = Color(0xFF0F0D13),
-    surfaceContainerLow = Color(0xFF1D1B20),
-    surfaceContainer = Color(0xFF211F26),
-    surfaceContainerHigh = Color(0xFF2B2930),
-    surfaceContainerHighest = Color(0xFF36343B),
+    onBackground = Color(0xFFF4EEF4),
+    surface = Color(0xFF161419),
+    onSurface = Color(0xFFF4EEF4),
+    surfaceVariant = Color(0xFF4F4A55),
+    onSurfaceVariant = Color(0xFFE4DCE8),
+    surfaceContainerLowest = Color(0xFF100E13),
+    surfaceContainerLow = Color(0xFF1D1A22),
+    surfaceContainer = Color(0xFF25212B),
+    surfaceContainerHigh = Color(0xFF302C36),
+    surfaceContainerHighest = Color(0xFF3B3641),
 
-    outline = Color(0xFF938F99),
-    outlineVariant = Color(0xFF49454F),
+    outline = Color(0xFFA9A2AE),
+    outlineVariant = Color(0xFF5C5661),
     scrim = Color(0xFF000000),
 
-    error = Color(0xFFF2B8B5),
-    onError = Color(0xFF601410),
-    errorContainer = Color(0xFF8C1D18),
-    onErrorContainer = Color(0xFFF9DEDC)
+    error = Color(0xFFFFB4AB),
+    onError = Color(0xFF690005),
+    errorContainer = Color(0xFF93000A),
+    onErrorContainer = Color(0xFFFFDAD6)
 )
 
 /**

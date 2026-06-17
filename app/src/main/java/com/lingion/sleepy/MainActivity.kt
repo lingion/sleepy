@@ -115,7 +115,10 @@ private fun AppRoot(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (currentTab) {
-                Tab.Schedule -> ScheduleScreen()
+                Tab.Schedule -> ScheduleScreen(
+                    onGoImport = { currentTab = Tab.Import },
+                    onManualAdd = { showAddCourse = true }
+                )
                 Tab.Today -> TodayScreen()
                 Tab.Import -> ImportScreen(
                     onImported = { currentTab = Tab.Schedule },

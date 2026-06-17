@@ -176,24 +176,6 @@ fun MineScreen(
                 }
             }
 
-            // 品牌信息
-            item {
-                Column(
-                    modifier = Modifier.fillMaxWidth().padding(top = 16.dp, bottom = 32.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(
-                        text = "${stringResource(R.string.app_name)} v${BuildConfig.VERSION_NAME}",
-                        style = MaterialTheme.typography.labelMedium,
-                        color = colors.onSurfaceVariant
-                    )
-                    Text(
-                        text = "无广告 · 无追踪 · 无拍照搜题",
-                        style = MaterialTheme.typography.labelSmall,
-                        color = colors.onSurfaceVariant
-                    )
-                }
-            }
         }
     }
 

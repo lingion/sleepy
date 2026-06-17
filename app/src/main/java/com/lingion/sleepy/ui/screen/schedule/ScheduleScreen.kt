@@ -24,6 +24,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -54,6 +56,8 @@ private enum class ViewMode(val labelRes: Int) {
 
 @Composable
 fun ScheduleScreen(
+    onGoImport: () -> Unit = {},
+    onManualAdd: () -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -68,38 +72,48 @@ fun ScheduleScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            TopBar(
-                currentWeek = state.currentWeek,
-                onPrevWeek = { viewModel.changeWeek(state.currentWeek - 1) },
-                onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) }
-            )
-
-            // Segmented Switcher
-            SegmentedSwitcher(
-                options = ViewMode.entries.map { it to stringResource(it.labelRes) },
-                selected = viewMode,
-                onSelect = { viewMode = it },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
-
-            // 主体视图
-            Box(modifier = Modifier.fillMaxSize()) {
-                when (viewMode) {
-                    ViewMode.Full -> FullWeekView(
-                        courses = state.currentWeekCourses,
-                        onCourseClick = { selectedCourse = it }
-                    )
-                    ViewMode.Cards -> CardsGridView(
-                        courses = state.currentWeekCourses,
-                        timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
-                        onCourseClick = { selectedCourse = it }
+            if (state.courses.isEmpty()) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(horizontal = 16.dp, vertical = 12.dp)
+                ) {
+                    EmptyState(
+                        modifier = Modifier.align(Alignment.TopCenter),
+                        onGoImport = onGoImport,
+                        onManualAdd = onManualAdd
                     )
                 }
+            } else {
+                TopBar(
+                    currentWeek = state.currentWeek,
+                    onPrevWeek = { viewModel.changeWeek(state.currentWeek - 1) },
+                    onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) }
+                )
 
-                if (state.courses.isEmpty()) {
-                    EmptyState(modifier = Modifier.align(Alignment.Center))
+                // Segmented Switcher
+                SegmentedSwitcher(
+                    options = ViewMode.entries.map { it to stringResource(it.labelRes) },
+                    selected = viewMode,
+                    onSelect = { viewMode = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+
+                // 主体视图
+                Box(modifier = Modifier.fillMaxSize()) {
+                    when (viewMode) {
+                        ViewMode.Full -> FullWeekView(
+                            courses = state.currentWeekCourses,
+                            onCourseClick = { selectedCourse = it }
+                        )
+                        ViewMode.Cards -> CardsGridView(
+                            courses = state.currentWeekCourses,
+                            timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
+                            onCourseClick = { selectedCourse = it }
+                        )
+                    }
                 }
             }
         }
@@ -121,49 +135,26 @@ private fun TopBar(
 ) {
     val colors = SleepyTheme.colors
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.surface)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f))
-            .padding(horizontal = 16.dp, vertical = 10.dp)
+            .padding(horizontal = 16.dp, vertical = 10.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.app_name),
-                style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Medium),
-                color = colors.onSurface
-            )
-            Text(
-                text = "第 $currentWeek 周",
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
-                color = colors.primary,
-                modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
-                    .background(colors.primaryContainer)
-                    .padding(horizontal = 12.dp, vertical = 4.dp)
-            )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
-            Text(
-                text = "切换周次",
-                style = MaterialTheme.typography.labelMedium,
-                color = colors.onSurfaceVariant
-            )
-            WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
-        }
+        WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
+        Text(
+            text = "第 $currentWeek 周",
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.primary,
+            modifier = Modifier
+                .clip(RoundedCornerShape(14.dp))
+                .background(colors.primaryContainer)
+                .padding(horizontal = 14.dp, vertical = 6.dp)
+        )
+        WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
     }
 }
 
@@ -191,22 +182,47 @@ private fun WeekNavButton(
 }
 
 @Composable
-private fun EmptyState(modifier: Modifier = Modifier) {
+private fun EmptyState(
+    modifier: Modifier = Modifier,
+    onGoImport: () -> Unit = {},
+    onManualAdd: () -> Unit = {}
+) {
+    val colors = SleepyTheme.colors
     Column(
-        modifier = modifier.padding(32.dp),
+        modifier = modifier
+            .padding(horizontal = 22.dp)
+            .clip(RoundedCornerShape(24.dp))
+            .background(colors.surfaceContainer)
+            .padding(horizontal = 22.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
             text = "还没有课表",
-            style = MaterialTheme.typography.titleMedium,
-            color = SleepyTheme.colors.onSurface
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.onSurface
         )
         Text(
-            text = stringResource(R.string.schedule_empty),
+            text = "前往“导入课表”导入，或手动创建第一门课。真正有课之后，再展示周视图和网格。",
             style = MaterialTheme.typography.bodyMedium,
-            color = SleepyTheme.colors.onSurfaceVariant
+            color = colors.onSurfaceVariant
         )
+        Button(
+            onClick = onGoImport,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+        ) {
+            Text("前往导入课表", color = colors.onPrimary)
+        }
+        Button(
+            onClick = onManualAdd,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+        ) {
+            Text("手动创建第一门课", color = colors.onSecondaryContainer)
+        }
     }
 }
 
