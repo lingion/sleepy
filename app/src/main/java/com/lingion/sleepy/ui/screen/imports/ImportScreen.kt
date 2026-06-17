@@ -224,6 +224,8 @@ fun ImportScreen(
                     FormatRow("WakeUp 分享文本", "【来自WakeUp课程表】开头")
                     FormatRow("WakeUp JSON", "导出文件 .json")
                     FormatRow("ICS 日历", "可从学校教务处导出")
+                    FormatRow("CSV 文件", "含表头的 .csv，逗号分隔")
+                    FormatRow("HTML 表格", "<table> 形式，识别表头后逐行解析")
                     FormatRow("纯文本", "一行一课，制表符分隔")
                 }
             }
