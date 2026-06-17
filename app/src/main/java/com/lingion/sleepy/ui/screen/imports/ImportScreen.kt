@@ -58,6 +58,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun ImportScreen(
     onImported: () -> Unit,
+    onManualAdd: () -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -144,7 +145,7 @@ fun ImportScreen(
                         icon = Icons.Outlined.Edit,
                         label = stringResource(R.string.import_manual),
                         modifier = Modifier.weight(1f),
-                        onClick = { errorMsg = "手动添加开发中" }
+                        onClick = onManualAdd
                     )
                 }
             }
@@ -322,9 +323,12 @@ private suspend fun processImport(
             val repo = com.lingion.sleepy.SleepyApp.get().repository
             val existing = repo.getTable(tableId)
             if (existing != null) {
+                // 保留用户已设置的 startDate；仅在原表 startDate 为空或与 parser 返回一致时才覆盖
+                // 这样 重复导入同一份 CSV 不会把学期开始日期重置成“今天”
+                val keepStart = existing.startDate.isNotBlank()
                 repo.updateTable(existing.copy(
                     name = parseResult.tableName,
-                    startDate = parseResult.startDate
+                    startDate = if (keepStart) existing.startDate else parseResult.startDate
                 ))
             }
             repo.replaceCourses(tableId, parseResult.courses)
