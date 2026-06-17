@@ -40,6 +40,7 @@ import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
 
 @Composable
@@ -69,7 +70,7 @@ fun TodayScreen(
                 SectionHead(title = "今日课程", action = "${todayCourses.size} 节")
             }
             items(todayCourses, key = { it.id }) { course ->
-                TodayCourseCard(course = course)
+                TodayCourseCard(course = course, timeJson = state.currentTable?.timeJson)
             }
         }
     }
@@ -167,11 +168,11 @@ private fun EmptyToday() {
 }
 
 @Composable
-private fun TodayCourseCard(course: CourseEntity) {
+private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val bg = pickCourseColor(course, palette)
-    val time = findCourseTime(course)
+    val time = timeJson?.let { TimeTableUtils.courseTimeString(course.startNode, course.step, it) }
 
     Row(
         modifier = Modifier
@@ -182,9 +183,9 @@ private fun TodayCourseCard(course: CourseEntity) {
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 时间槽
+        // 时间槽 — 固定宽度避免 “10:20-12:45” 被截断
         Column(
-            modifier = Modifier.width(56.dp),
+            modifier = Modifier.width(76.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Text(
@@ -197,7 +198,8 @@ private fun TodayCourseCard(course: CourseEntity) {
                     text = time,
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.onSurface.copy(alpha = 0.72f),
-                    maxLines = 1
+                    maxLines = 1,
+                    softWrap = false
                 )
             }
         }
@@ -229,20 +231,9 @@ private fun TodayCourseCard(course: CourseEntity) {
 }
 
 private fun findCourseTime(course: CourseEntity): String? {
-    val slot = DEFAULT_TIME_SLOTS.find { (start, end, _) ->
-        course.startNode == start ||
-        (course.startNode >= start && course.startNode + course.step - 1 <= end)
-    }
-    return slot?.third
+    // 已被 TimeTableUtils.courseTimeString 取代，保留为空函数避免其他地方误调
+    return null
 }
-
-private val DEFAULT_TIME_SLOTS = listOf(
-    Triple(1, 2, "08:00-09:35"),
-    Triple(3, 5, "10:20-12:45"),
-    Triple(6, 7, "14:00-15:35"),
-    Triple(8, 10, "16:10-18:35"),
-    Triple(11, 13, "19:00-21:25")
-)
 
 private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
     val name = course.courseName
