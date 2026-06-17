@@ -83,6 +83,17 @@ class CourseNotificationScheduler(private val context: Context) {
             nm.createNotificationChannel(channel)
         }
     }
+
+    /** 关闭每日提醒闹钟 */
+    fun cancelDailyReminder() {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        val intent = Intent(context, DailyNotifyReceiver::class.java)
+        val pending = PendingIntent.getBroadcast(
+            context, 0, intent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        alarmManager.cancel(pending)
+    }
 }
 
 class DailyNotifyReceiver : BroadcastReceiver() {
@@ -116,7 +127,10 @@ class BootReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (intent.action == Intent.ACTION_BOOT_COMPLETED
             || intent.action == Intent.ACTION_MY_PACKAGE_REPLACED) {
-            com.lingion.sleepy.SleepyApp.get().notificationScheduler.scheduleDailyReminder()
+            // 仅在用户启用提醒时才重新注册闹钟
+            if (com.lingion.sleepy.util.AppPrefs.isReminderEnabled(context)) {
+                com.lingion.sleepy.SleepyApp.get().notificationScheduler.scheduleDailyReminder()
+            }
         }
     }
 }
