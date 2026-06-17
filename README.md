@@ -2,6 +2,16 @@
 
 Android 本地课程表应用。多格式导入课表，查本周、查今天、手动补课。
 
+## 截图
+
+| 周视图 | 网格视图 | 今日 |
+|--------|----------|------|
+| ![](docs/screenshots/01-schedule-week.png) | ![](docs/screenshots/02-schedule-grid.png) | ![](docs/screenshots/03-today.png) |
+
+| 课表管理 | 我的 |
+|----------|------|
+| ![](docs/screenshots/04-manage.png) | ![](docs/screenshots/05-me.png) |
+
 ## 导入课表
 
 支持以下格式自动识别：
