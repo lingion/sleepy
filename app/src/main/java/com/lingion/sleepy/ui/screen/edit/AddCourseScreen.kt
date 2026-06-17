@@ -65,7 +65,7 @@ enum class MeetingInputMode { ByNode, ByClock }
 
 private data class MeetingBlockDraft(
     val id: Int,
-    val days: MutableSet<Int>,
+    val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
     var mode: MeetingInputMode,
     var startNode: Int,
     var step: Int,
@@ -83,6 +83,7 @@ private data class ValidationIssue(
 fun AddCourseScreen(
     onBack: () -> Unit,
     onSaved: () -> Unit,
+    editingCourse: CourseEntity? = null,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -104,27 +105,17 @@ fun AddCourseScreen(
         unfocusedContainerColor = colors.surfaceContainerLowest
     )
 
-    var courseName by remember { mutableStateOf("") }
-    var teacher by remember { mutableStateOf("") }
-    var room by remember { mutableStateOf("") }
-    var note by remember { mutableStateOf("") }
-    var startWeek by remember { mutableIntStateOf(1) }
-    var endWeek by remember { mutableIntStateOf(16) }
-    var nextBlockId by remember { mutableIntStateOf(2) }
+    var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
+    var teacher by remember(editingCourse?.id) { mutableStateOf(editingCourse?.teacher ?: "") }
+    var room by remember(editingCourse?.id) { mutableStateOf(editingCourse?.room ?: "") }
+    var note by remember(editingCourse?.id) { mutableStateOf(editingCourse?.note ?: "") }
+    var startWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.startWeek ?: 1) }
+    var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
+    var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
 
-    val meetingBlocks = remember {
-        mutableStateListOf(
-            MeetingBlockDraft(
-                id = 1,
-                days = mutableSetOf(1),
-                mode = MeetingInputMode.ByNode,
-                startNode = 1,
-                step = 2,
-                startTime = "08:00",
-                endTime = "09:40"
-            )
-        )
+    val meetingBlocks = remember(editingCourse?.id) {
+        mutableStateListOf(initialMeetingBlock(editingCourse))
     }
 
     val canSave = courseName.isNotBlank() && meetingBlocks.isNotEmpty()
@@ -263,7 +254,7 @@ fun AddCourseScreen(
                                 meetingBlocks.add(
                                     MeetingBlockDraft(
                                         id = nextBlockId,
-                                        days = mutableSetOf(2),
+                                        days = mutableStateListOf(2),
                                         mode = MeetingInputMode.ByNode,
                                         startNode = 3,
                                         step = 2,
@@ -317,7 +308,14 @@ fun AddCourseScreen(
                             }
                         }
                         scope.launch {
-                            SleepyApp.get().repository.insertCourses(drafts)
+                            val repo = SleepyApp.get().repository
+                            if (editingCourse != null) {
+                                repo.updateCourse(
+                                    drafts.first().copy(id = editingCourse.id)
+                                )
+                            } else {
+                                repo.insertCourses(drafts)
+                            }
                             onSaved()
                         }
                     },
@@ -336,6 +334,32 @@ fun AddCourseScreen(
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
     }
+}
+
+
+
+private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
+    if (course == null) {
+        return MeetingBlockDraft(
+            id = 1,
+            days = androidx.compose.runtime.mutableStateListOf(1),
+            mode = MeetingInputMode.ByNode,
+            startNode = 1,
+            step = 2,
+            startTime = "08:00",
+            endTime = "09:40"
+        )
+    }
+    val days = androidx.compose.runtime.mutableStateListOf(course.day)
+    return MeetingBlockDraft(
+        id = 1,
+        days = days,
+        mode = if (course.ownTime) MeetingInputMode.ByClock else MeetingInputMode.ByNode,
+        startNode = course.startNode,
+        step = course.step,
+        startTime = course.startTime.ifBlank { "08:00" },
+        endTime = course.endTime.ifBlank { "09:40" }
+    )
 }
 
 private fun buildCourseEntity(
@@ -573,7 +597,7 @@ private fun MeetingBlockEditor(
         }
 
         ModePicker(mode = block.mode, onChange = { block.mode = it })
-        MultiDayPicker(selectedDays = block.days, onToggleDay = { day ->
+        MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
             if (day in block.days) block.days.remove(day) else block.days.add(day)
         })
 

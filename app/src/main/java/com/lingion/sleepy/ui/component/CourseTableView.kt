@@ -100,7 +100,7 @@ fun CardsGridView(
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
                 // 左上角空白格
-                Box(modifier = Modifier.width(52.dp))
+                Box(modifier = Modifier.width(66.dp))
 
                 for (day in 1..7) {
                     DayHeadCell(
@@ -170,7 +170,7 @@ private fun SlotRow(
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
         // 时段标签 (1-2节 / 08:00-09:35)
-        TimeHeadCell(slot = slot, modifier = Modifier.width(52.dp))
+        TimeHeadCell(slot = slot, modifier = Modifier.width(66.dp))
 
         // 7 列
         for (day in 1..7) {
@@ -200,7 +200,7 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
     Box(
         modifier = modifier
-            .height(112.dp)
+            .height(118.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(colors.surface)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
@@ -219,7 +219,8 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
                 text = slot.timeString,
                 style = SleepyTextStyle.micro,
                 color = colors.onSurfaceVariant,
-                maxLines = 1
+                maxLines = 2,
+                overflow = TextOverflow.Ellipsis
             )
         }
     }
@@ -230,7 +231,7 @@ private fun EmptyCell(modifier: Modifier = Modifier, isToday: Boolean) {
     val colors = SleepyTheme.colors
     Box(
         modifier = modifier
-            .height(112.dp)
+            .height(118.dp)
             .clip(RoundedCornerShape(16.dp))
             .border(
                 width = 1.dp,
@@ -256,7 +257,7 @@ private fun CourseCardCell(
 
     Column(
         modifier = modifier
-            .height(112.dp)
+            .height(118.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(bg)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(16.dp))

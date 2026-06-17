@@ -22,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.PillNavItem
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.screen.imports.ImportScreen
@@ -84,15 +85,21 @@ private fun AppRoot(
     onToggleDark: () -> Unit = {}
 ) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
+    var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
     var showAddCourse by remember { mutableStateOf(false) }
 
-    if (showAddCourse) {
+    if (showAddCourse || editingCourse != null) {
         AddCourseScreen(
-            onBack = { showAddCourse = false },
+            onBack = {
+                showAddCourse = false
+                editingCourse = null
+            },
             onSaved = {
                 showAddCourse = false
+                editingCourse = null
                 currentTab = Tab.Schedule
-            }
+            },
+            editingCourse = editingCourse
         )
         return
     }

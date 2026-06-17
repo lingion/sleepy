@@ -10,11 +10,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Close
-import androidx.compose.material3.Icon
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -45,7 +43,8 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 fun CourseDetailSheet(
     course: CourseEntity?,
     timeString: String? = null,
-    onDismiss: () -> Unit
+    onDismiss: () -> Unit,
+    onEdit: (() -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -59,8 +58,7 @@ fun CourseDetailSheet(
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
                 // Header
                 SheetHeader(
-                    title = course.courseName.ifBlank { "课程详情" },
-                    onClose = onDismiss
+                    title = course.courseName.ifBlank { "课程详情" }
                 )
 
                 // Body
@@ -85,6 +83,17 @@ fun CourseDetailSheet(
                     if (course.note.isNotBlank()) {
                         DetailRow(key = "备注", value = course.note)
                     }
+
+                    if (onEdit != null) {
+                        Button(
+                            onClick = onEdit,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(18.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = SleepyTheme.colors.primary)
+                        ) {
+                            Text("编辑这节课")
+                        }
+                    }
                 }
             }
         }
@@ -92,31 +101,21 @@ fun CourseDetailSheet(
 }
 
 @Composable
-private fun SheetHeader(title: String, onClose: () -> Unit) {
+private fun SheetHeader(title: String) {
     val colors = SleepyTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.surfaceContainer)
-            .padding(start = 20.dp, top = 16.dp, bottom = 12.dp, end = 12.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(start = 20.dp, top = 16.dp, bottom = 12.dp, end = 20.dp),
+        horizontalArrangement = Arrangement.Start,
         verticalAlignment = Alignment.Top
     ) {
         Text(
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(),
             color = colors.onSurface,
-            modifier = Modifier.weight(1f).padding(end = 12.dp)
-        )
-        Icon(
-            imageVector = Icons.Outlined.Close,
-            contentDescription = "关闭",
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier
-                .size(40.dp)
-                .clip(CircleShape)
-                .background(colors.surfaceContainerHigh)
-                .padding(8.dp)
+            modifier = Modifier.weight(1f)
         )
     }
 }
