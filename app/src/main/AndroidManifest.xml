@@ -59,11 +59,6 @@
             </intent-filter>
         </receiver>
 
-        <!-- Daily notification receiver: fires alarm and shows notification -->
-        <receiver
-            android:name=".widget.notification.DailyNotifyReceiver"
-            android:exported="false" />
-
     </application>
 
 </manifest>
