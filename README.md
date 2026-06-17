@@ -1,134 +1,146 @@
 # Sleepy
 
-Sleepy 是一个本地优先的 Android 课程表应用，专注把**导入课表、确认周次语义、查看本周与今天、手动补课**这些高频动作做得干净、稳定、低噪音。
+Android 本地课程表应用。多格式导入课表，查本周、查今天、手动补课。
 
-它不走“教务壳子 + 广告 + 拍照搜题 + 社区堆叠”的路线，而是尽量做成一个真正能每天打开、每天用的课程表。
+## 导入课表
 
-## 特性
+支持以下格式自动识别：
 
-- **本地优先**：课表数据默认保存在设备本地
-- **多格式导入**：支持 WakeUp 分享文本 / WakeUp JSON / ICS / CSV / HTML / 纯文本
-- **导入预览**：导入前先看结果，再决定覆盖、追加还是新建课表
-- **导入语义确认**：导入前确认
-  - 第一周从哪天开始
-  - 每节课的开始 / 结束时间
-- **首页周视图**：查看整周课表
-- **今日页**：只看当天课程
-- **手动创建课程**：支持课程名、老师、地点、备注、周次、时段
-- **课程编辑入口**：从课程详情页进入编辑
-- **深色模式**：支持浅色 / 深色切换
+| 格式 | 来源 |
+|------|------|
+| WakeUp 分享文本 | WakeUp 课表 App 分享 |
+| WakeUp JSON | WakeUp 导出 JSON |
+| ICS (iCalendar) | 教务系统导出 |
+| CSV | 表格类课表 |
+| HTML | 网页课表 |
+| 纯文本 | 固定格式文本 |
 
-## 为什么要做“导入前确认”
+导入前展示预览，确认后写入数据库。导入链强制确认两项语义信息：
 
-课程表 App 最容易错的不是颜色，而是语义：
+- 第一周开始日期
+- 每节课起止时间
 
-- 第一周到底从哪天开始
-- 当前日期到底应该落在第几周
-- 第 3-4 节到底对应几点到几点
+避免"导入成功但周次对不上"的问题。
 
-如果这些信息错了，导入再成功，课表也还是不准。
+## 课表管理
 
-所以 Sleepy 会在导入链里显式要求用户确认：
+支持多张课表并存，在"所有课表"中切换。每张课表可编辑标题、学期开始日期、总周数、节次时间表。
 
-1. **第一周开始日期**
-2. **每节课时间表**
+导入时可选择覆盖当前课表、追加到当前课表、或创建新课表。
 
-这样当前周次和课程时间才能算对。
+## 查看课表
 
-## 适合谁
+三种视图：
 
-- 想把课表稳定放在本地的人
-- 需要从 CSV / HTML / 文本迁移旧课表的人
-- 不喜欢功能臃肿、广告和无关入口的人
+| 视图 | 内容 |
+|------|------|
+| 周视图 | 一周 7 天卡片 + 每日课程详情列表 |
+| 网格视图 | 7×5 时段网格，课程卡片着色 |
+| 今日 | 当天课程列表，含当前时段高亮 |
 
-## 技术栈
+周视图顶部 WeekStrip 展示 7 天摘要小卡片：星期 + 课程数芯片 + 前三门课名。网格视图按时段×星期排列课程卡片，卡片颜色按课程名匹配。
 
-- Kotlin
-- Jetpack Compose
-- Room
-- DataStore
-- Android SDK 35
+## 课程编辑
+
+- 手动添加课程：课程名、老师、地点、笔记、开始周、结束周、时段
+- 从课程详情页进入编辑
+- 支持长按拖动调整时段
+- 课程详情底部弹出面板，展示完整信息
+
+## 导出
+
+支持三种导出格式：
+
+- WakeUp JSON（可导入其他课表 App）
+- WakeUp 分享文本
+- ICS 日历（可导入系统日历）
+
+## 小组件
+
+提供"今日课程"桌面小组件，基于 Glance AppWidget，展示当天课程列表。
+
+## 通知
+
+通过 WorkManager 调度每日课程提醒通知。每周一上午根据当前课表重新排期，每节课前发送提醒。
+
+## 深色模式
+
+支持浅色 / 深色，遵循 Material You 色彩体系。切换即时生效。
+
+## 数据
+
+全部数据存储在设备本地，使用 Room 数据库。不上传、不同步、不需要账号。
+
+## 技术
+
+| 组件 | 选型 |
+|------|------|
+| 语言 | Kotlin |
+| UI | Jetpack Compose + Material 3 |
+| 数据库 | Room |
+| 偏好存储 | DataStore |
+| 小组件 | Glance |
+| 通知 | WorkManager |
+| 导航 | Navigation Compose |
+| JSON | kotlinx.serialization |
+| 图片 | Coil |
+| 最低 API | 24 (Android 7.0) |
+| 目标 API | 35 (Android 15) |
 
 ## 项目结构
 
-```text
-app/
-  src/main/java/com/lingion/sleepy/
-    data/        数据库、实体、DAO、仓库
-    ui/          页面、组件、主题
-    util/        日期、时间表等工具
 ```
-
-主要模块：
-
-- `ui/screen/schedule/`：首页课表
-- `ui/screen/today/`：今日页
-- `ui/screen/imports/`：导入页
-- `ui/screen/edit/`：手动创建 / 编辑课程
-- `data/parser/`：多格式课表解析
+app/src/main/java/com/lingion/sleepy/
+  data/
+    entity/        CourseEntity, TimeTableEntity
+    dao/           CourseDao, TimeTableDao
+    repository/    ScheduleRepository
+    parser/        ScheduleParser (import), ScheduleExporter (export)
+  ui/
+    screen/
+      schedule/    课表首页 (ScheduleScreen + ViewModel)
+      today/       今日页 (TodayScreen)
+      imports/     导入页 (ImportScreen)
+      edit/        手动添加课程 (AddCourseScreen)
+      mine/        我的 (MineScreen, EditTableScreen, AllTablesScreen)
+      manage/      课表管理 (ManagementPage)
+    component/     WeekStrip, CourseTableView, CourseDetailSheet 等
+    theme/         Material You 主题 & 课程调色板
+  widget/
+    TodayWidget.kt            桌面小组件
+    CourseNotificationScheduler.kt  通知调度
+  util/             工具类 (DateUtils, TimeTableUtils)
+```
 
 ## 构建
 
-### 调试构建
+需要 JDK 17+ 和 Android SDK 35。
 
 ```bash
 ./gradlew assembleDebug
 ```
 
-调试 APK 输出目录：
+产出两个 ABI 的 APK：
 
-```text
-app/build/outputs/apk/debug/
-```
-
-当前默认会同时产出：
-
-- `app-x86_64-debug.apk`
-- `app-arm64-v8a-debug.apk`
+- `app-arm64-v8a-debug.apk` — 手机
+- `app-x86_64-debug.apk` — 模拟器
 
 ## 安装
 
 ```bash
+# 模拟器
 adb install -r app/build/outputs/apk/debug/app-x86_64-debug.apk
+
+# 手机
+adb install -r app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 ```
 
-如果是 ARM 真机，请安装对应的 `arm64-v8a` APK。
+## 版本
 
-## 当前交互流程
+最新发布：`v1.0.4` — [GitHub Releases](https://github.com/lingion/sleepy/releases)
 
-### 导入流程
-1. 选择文件或粘贴文本
-2. 解析并生成预览
-3. 选择导入策略
-   - 覆盖当前课表
-   - 导入为新课表
-   - 仅追加无冲突课程
-4. 确认
-   - 第一周开始日期
-   - 每节课时间表
-5. 再真正写入课表
+每个 Release 附带 APK 直接下载安装。
 
-### 手动创建 / 编辑
-- 填写课程名、老师、地点、备注
-- 设置起止周
-- 设置时段
-- 从课程详情进入编辑
+## License
 
-## 发布说明
-
-GitHub Releases 中当前发布的是调试包，便于快速安装验证。
-
-如果后续需要真正面向普通用户分发，可以再补：
-
-- release 签名
-- 更完整的版本说明
-- 截图 / 功能演示
-- LICENSE
-
-## 状态
-
-Sleepy 目前已经是一个可继续迭代的可用课程表应用，但仍在持续打磨：
-
-- 导入确认页还可以继续做得更像成品向导
-- 首页和表单页的视觉层级还能继续收
-- 更完整的产品说明和截图还可以继续补齐
+GPL-3.0
