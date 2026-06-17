@@ -27,9 +27,11 @@ import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.screen.imports.ImportScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
+import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
+import com.lingion.sleepy.util.AppPrefs
 
 class MainActivity : ComponentActivity() {
 
@@ -54,8 +56,16 @@ class MainActivity : ComponentActivity() {
         }
 
         setContent {
-            SleepyThemeProvider {
-                AppRoot()
+            val dark = remember { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity)) }
+            SleepyThemeProvider(darkTheme = dark.value) {
+                AppRoot(
+                    darkMode = dark.value,
+                    onToggleDark = {
+                        val v = !dark.value
+                        AppPrefs.setDarkMode(this@MainActivity, v)
+                        dark.value = v
+                    }
+                )
             }
         }
     }
@@ -69,8 +79,23 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 @Composable
-private fun AppRoot() {
+private fun AppRoot(
+    darkMode: Boolean = false,
+    onToggleDark: () -> Unit = {}
+) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
+    var showAddCourse by remember { mutableStateOf(false) }
+
+    if (showAddCourse) {
+        AddCourseScreen(
+            onBack = { showAddCourse = false },
+            onSaved = {
+                showAddCourse = false
+                currentTab = Tab.Schedule
+            }
+        )
+        return
+    }
 
     androidx.compose.material3.Scaffold(
         modifier = Modifier.fillMaxSize(),
@@ -92,8 +117,14 @@ private fun AppRoot() {
             when (currentTab) {
                 Tab.Schedule -> ScheduleScreen()
                 Tab.Today -> TodayScreen()
-                Tab.Import -> ImportScreen(onImported = { currentTab = Tab.Schedule })
-                Tab.Mine -> MineScreen()
+                Tab.Import -> ImportScreen(
+                    onImported = { currentTab = Tab.Schedule },
+                    onManualAdd = { showAddCourse = true }
+                )
+                Tab.Mine -> MineScreen(
+                    darkMode = darkMode,
+                    onToggleDark = onToggleDark
+                )
             }
         }
     }
