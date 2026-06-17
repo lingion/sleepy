@@ -63,15 +63,17 @@ import java.time.LocalTime
 
 enum class MeetingInputMode { ByNode, ByClock }
 
-private data class MeetingBlockDraft(
+private class MeetingBlockDraft(
     val id: Int,
     val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
-    var mode: MeetingInputMode,
+    initialMode: MeetingInputMode,
     var startNode: Int,
     var step: Int,
     var startTime: String,
     var endTime: String
-)
+) {
+    var mode by mutableStateOf(initialMode)
+}
 
 private data class ValidationIssue(
     val blockId: Int?,
@@ -131,7 +133,9 @@ fun AddCourseScreen(
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = colors.background,
-                    titleContentColor = colors.onBackground
+                    titleContentColor = colors.onBackground,
+                    navigationIconContentColor = colors.onBackground,
+                    actionIconContentColor = colors.onBackground
                 )
             )
         },
@@ -255,7 +259,7 @@ fun AddCourseScreen(
                                     MeetingBlockDraft(
                                         id = nextBlockId,
                                         days = mutableStateListOf(2),
-                                        mode = MeetingInputMode.ByNode,
+                                        initialMode = MeetingInputMode.ByNode,
                                         startNode = 3,
                                         step = 2,
                                         startTime = "10:00",
@@ -343,7 +347,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         return MeetingBlockDraft(
             id = 1,
             days = androidx.compose.runtime.mutableStateListOf(1),
-            mode = MeetingInputMode.ByNode,
+            initialMode = MeetingInputMode.ByNode,
             startNode = 1,
             step = 2,
             startTime = "08:00",
@@ -354,7 +358,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     return MeetingBlockDraft(
         id = 1,
         days = days,
-        mode = if (course.ownTime) MeetingInputMode.ByClock else MeetingInputMode.ByNode,
+        initialMode = if (course.ownTime) MeetingInputMode.ByClock else MeetingInputMode.ByNode,
         startNode = course.startNode,
         step = course.step,
         startTime = course.startTime.ifBlank { "08:00" },

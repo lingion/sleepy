@@ -25,13 +25,20 @@ import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.QrCode2
+import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.RemoveCircleOutline
+import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -67,7 +74,9 @@ import kotlinx.coroutines.launch
 @Composable
 fun ImportScreen(
     onImported: () -> Unit,
+    onBack: () -> Unit = {},
     onManualAdd: () -> Unit = {},
+    onOpenEditTable: (Long) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -110,6 +119,21 @@ fun ImportScreen(
     }
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(stringResource(R.string.import_title)) },
+                navigationIcon = {
+                    IconButton(onClick = onBack) {
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                    }
+                },
+                colors = TopAppBarDefaults.topAppBarColors(
+                    containerColor = colors.background,
+                    titleContentColor = colors.onBackground,
+                    navigationIconContentColor = colors.onBackground
+                )
+            )
+        },
         snackbarHost = { SnackbarHost(snackbar) },
         containerColor = colors.background
     ) { padding ->
@@ -275,7 +299,7 @@ fun ImportScreen(
                 scope.launch {
                     isLoading = true
                     try {
-                        applyImportPreview(
+                        val resultTableId = applyImportPreview(
                             preview = currentPreview,
                             mode = mode,
                             confirmedStartDate = confirmedStartDate,
@@ -284,6 +308,9 @@ fun ImportScreen(
                         ) { msg -> errorMsg = msg }
                         preview = null
                         pendingMode = null
+                        if (resultTableId != null) {
+                            onOpenEditTable(resultTableId)
+                        }
                     } finally {
                         isLoading = false
                     }
@@ -487,23 +514,42 @@ private fun ImportPreviewDialog(
             }
         },
         confirmButton = {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { onApply(ImportApplyMode.AppendNonConflict) }) {
-                    Text("仅追加无冲突")
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onApply(ImportApplyMode.AppendNonConflict) },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    ) {
+                        Text("仅追加无冲突", maxLines = 1)
+                    }
+                    Button(
+                        onClick = { onApply(ImportApplyMode.ImportAsNew) },
+                        modifier = Modifier.weight(1f),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    ) {
+                        Text("导入为新课表", maxLines = 1)
+                    }
                 }
-                TextButton(onClick = { onApply(ImportApplyMode.ImportAsNew) }) {
-                    Text("导入为新课表")
+                OutlinedButton(
+                    onClick = { onApply(ImportApplyMode.ReplaceCurrent) },
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(14.dp),
+                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.error)
+                ) {
+                    Text("⚠ 覆盖当前（谨慎）")
                 }
-                TextButton(onClick = { onApply(ImportApplyMode.ReplaceCurrent) }) {
-                    Text("覆盖当前")
+                TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                    Text("取消", color = colors.onSurfaceVariant)
                 }
             }
         },
-        dismissButton = {
-            TextButton(onClick = onDismiss) {
-                Text("取消")
-            }
-        }
+        dismissButton = {}
     )
 }
 
@@ -547,6 +593,7 @@ private fun ImportConfirmDialog(
 ) {
     val colors = SleepyTheme.colors
     var rows by remember(timeJson) { mutableStateOf(parseTimeConfirmRows(timeJson)) }
+    var errorMsg by remember { mutableStateOf<String?>(null) }
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = colors.surface,
@@ -564,8 +611,16 @@ private fun ImportConfirmDialog(
                     modifier = Modifier.fillMaxWidth(),
                     label = { Text("第一周从哪天开始（YYYY-MM-DD）") },
                     singleLine = true,
-                    shape = RoundedCornerShape(14.dp)
+                    shape = RoundedCornerShape(14.dp),
+                    isError = errorMsg != null
                 )
+                if (errorMsg != null) {
+                    Text(
+                        text = errorMsg!!,
+                        color = colors.error,
+                        style = MaterialTheme.typography.bodySmall
+                    )
+                }
                 LazyColumn(
                     modifier = Modifier.fillMaxWidth().height(260.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -608,6 +663,43 @@ private fun ImportConfirmDialog(
                                 singleLine = true,
                                 shape = RoundedCornerShape(12.dp)
                             )
+                            if (rows.size > 1) {
+                                IconButton(
+                                    onClick = {
+                                        rows = rows.filter { it.node != row.node }
+                                            .mapIndexed { idx, r -> r.copy(node = idx + 1) }
+                                        onTimeJsonChange(buildTimeJsonFromRows(rows))
+                                    },
+                                    modifier = Modifier.size(32.dp)
+                                ) {
+                                    Icon(
+                                        Icons.Outlined.RemoveCircleOutline,
+                                        contentDescription = "删除此行",
+                                        tint = colors.error,
+                                        modifier = Modifier.size(20.dp)
+                                    )
+                                }
+                            } else {
+                                Spacer(Modifier.width(32.dp))
+                            }
+                        }
+                    }
+                    item {
+                        TextButton(
+                            onClick = {
+                                val nextNode = (rows.maxOfOrNull { it.node } ?: 0) + 1
+                                rows = rows + TimeConfirmRow(nextNode, "", "")
+                                onTimeJsonChange(buildTimeJsonFromRows(rows))
+                            },
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                Icons.Outlined.Add,
+                                contentDescription = null,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(Modifier.width(4.dp))
+                            Text("添加一节")
                         }
                     }
                 }
@@ -615,6 +707,31 @@ private fun ImportConfirmDialog(
         },
         confirmButton = {
             TextButton(onClick = {
+                // Validate
+                if (startDate.isBlank()) {
+                    errorMsg = "请填写学期开始日期"
+                    return@TextButton
+                }
+                val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
+                if (!dateRegex.matches(startDate)) {
+                    errorMsg = "日期格式应为 YYYY-MM-DD"
+                    return@TextButton
+                }
+                val emptyRows = rows.filter { it.start.isBlank() || it.end.isBlank() }
+                if (emptyRows.isNotEmpty()) {
+                    errorMsg = "第${emptyRows.first().node}节时间不能为空"
+                    return@TextButton
+                }
+                val timeRegex = Regex("""^\d{2}:\d{2}$""")
+                val invalidRows = rows.filter {
+                    !timeRegex.matches(it.start) || !timeRegex.matches(it.end) ||
+                    it.start >= it.end
+                }
+                if (invalidRows.isNotEmpty()) {
+                    errorMsg = "第${invalidRows.first().node}节时间无效（开始须早于结束）"
+                    return@TextButton
+                }
+                errorMsg = null
                 onTimeJsonChange(buildTimeJsonFromRows(rows))
                 onConfirm()
             }) {
@@ -637,12 +754,30 @@ private fun parseTimeConfirmRows(timeJson: String): List<TimeConfirmRow> = try {
         val o = arr.getJSONObject(i)
         TimeConfirmRow(
             node = o.optInt("node", i + 1),
-            start = o.optString("start", "08:00"),
-            end = o.optString("end", "08:45")
+            start = o.optString("start", smartStartDefault(i + 1)),
+            end = o.optString("end", smartEndDefault(i + 1))
         )
     }
 } catch (_: Exception) {
-    (1..12).map { node -> TimeConfirmRow(node, "08:00", "08:45") }
+    (1..12).map { node -> TimeConfirmRow(node, smartStartDefault(node), smartEndDefault(node)) }
+}
+
+private fun smartStartDefault(node: Int): String = when {
+    node <= 2 -> "08:00"
+    node <= 4 -> "10:00"
+    node <= 6 -> "14:00"
+    node <= 8 -> "16:00"
+    node <= 10 -> "19:00"
+    else -> "20:50"
+}
+
+private fun smartEndDefault(node: Int): String = when {
+    node <= 2 -> "09:40"
+    node <= 4 -> "11:40"
+    node <= 6 -> "15:40"
+    node <= 8 -> "17:40"
+    node <= 10 -> "20:40"
+    else -> "22:30"
 }
 
 private fun buildTimeJsonFromRows(rows: List<TimeConfirmRow>): String {
@@ -704,7 +839,7 @@ private suspend fun applyImportPreview(
     confirmedTimeJson: String,
     onImported: () -> Unit,
     onError: (String) -> Unit
-) {
+): Long? {
     val repo = SleepyApp.get().repository
     when (mode) {
         ImportApplyMode.ReplaceCurrent -> {
@@ -720,6 +855,7 @@ private suspend fun applyImportPreview(
             }
             repo.replaceCourses(preview.targetTableId, preview.parseResult.courses)
             onImported()
+            return preview.targetTableId
         }
 
         ImportApplyMode.ImportAsNew -> {
@@ -736,7 +872,9 @@ private suspend fun applyImportPreview(
                 )
             )
             repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
+            repo.setDefault(newTableId)  // 自动切换到新导入的课表
             onImported()
+            return newTableId
         }
 
         ImportApplyMode.AppendNonConflict -> {
@@ -745,10 +883,11 @@ private suspend fun applyImportPreview(
             }
             if (cleanCourses.isEmpty()) {
                 onError("没有可追加课程，全部与现有课表冲突")
-                return
+                return null
             }
             repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
             onImported()
+            return preview.targetTableId
         }
     }
 }
@@ -764,8 +903,9 @@ private fun coursesConflict(a: CourseEntity, b: CourseEntity): Boolean {
 }
 
 private fun uniqueImportedTableName(base: String, existingNames: List<String>): String {
-    if (base !in existingNames) return base
+    val effective = base.ifBlank { "默认" }
+    if (effective !in existingNames) return effective.ifBlank { "默认1" }
     var index = 2
-    while ("$base ($index)" in existingNames) index++
-    return "$base ($index)"
+    while ("${effective}$index" in existingNames || "${effective}($index)" in existingNames) index++
+    return "${effective}$index"
 }

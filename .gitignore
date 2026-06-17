@@ -17,3 +17,4 @@ captures/
 
 # Output
 *.log
+.verify/token

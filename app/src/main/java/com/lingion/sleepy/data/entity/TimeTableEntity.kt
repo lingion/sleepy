@@ -34,7 +34,7 @@ data class TimeTableEntity(
     @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis()
 ) {
     companion object {
-        /** 默认节次时间表 (8 节制) */
+        /** 默认节次时间表 (12 节，每节 45/50 分钟) */
         const val DEFAULT_TIME_JSON = """[
             {"node":1,"start":"08:00","end":"08:45"},
             {"node":2,"start":"08:55","end":"09:40"},

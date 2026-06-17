@@ -15,8 +15,24 @@
     <string name="schedule_current_week">第 %1$d 周</string>
     <string name="schedule_no_course_today">今天没有课哦</string>
 
-    <!-- Import -->
+    <!-- Import / Manage -->
     <string name="import_title">导入课表</string>
+    <string name="tab_manage">课表管理</string>
+    <string name="manage_current_table">当前课表</string>
+    <string name="manage_import">导入课表</string>
+    <string name="manage_new_table">新建课表</string>
+    <string name="manage_edit_current">编辑当前课表</string>
+    <string name="all_tables">所有课表</string>
+    <string name="all_tables_new">新建课表</string>
+    <string name="all_tables_switch">切换为当前</string>
+    <string name="edit_table_title">编辑课表</string>
+    <string name="edit_table_name">课表名称</string>
+    <string name="edit_table_start_date">学期开始日期</string>
+    <string name="edit_table_max_week">总周数</string>
+    <string name="edit_table_time_slots">节次时间表</string>
+    <string name="edit_table_delete">删除课表</string>
+    <string name="edit_table_save">保存课表设置</string>
+    <string name="default_table_name">默认</string>
     <string name="import_paste">粘贴课表文本</string>
     <string name="import_file">从文件导入</string>
     <string name="import_qr">扫码导入</string>

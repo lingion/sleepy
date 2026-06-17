@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
@@ -310,28 +311,22 @@ fun FullWeekView(
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
     val byDay = courses.groupBy { it.day }
-    val maxCount = (1..7).maxOf { byDay[it]?.size ?: 0 }
-    val busiestDay = (1..7).maxByOrNull { byDay[it]?.size ?: 0 }
+    val maxCount = byDay.values.maxOfOrNull { it.size } ?: 0
+    val busiestDays = if (maxCount > 0) byDay.filter { it.value.size == maxCount }.keys else emptySet()
 
     Column(
         modifier = modifier
             .fillMaxSize()
             .verticalScroll(rememberScrollState()),
-        verticalArrangement = Arrangement.spacedBy(14.dp)
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        // 顶部：本周摘要
-        Column {
-            WeekStrip(
-                byDay = byDay,
-                today = today,
-                busiestDay = busiestDay,
-                modifier = Modifier.fillMaxWidth()
-            )
-        }
-
-        // 完整明细面板
+        WeekStrip(
+            byDay = byDay,
+            today = today,
+            busiestDays = busiestDays,
+            modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
+        )
         DetailPanel(
             byDay = byDay,
             today = today,
@@ -344,7 +339,7 @@ fun FullWeekView(
 private fun WeekStrip(
     byDay: Map<Int, List<CourseEntity>>,
     today: Int,
-    busiestDay: Int?,
+    busiestDays: Set<Int>,
     modifier: Modifier = Modifier
 ) {
     Row(
@@ -354,7 +349,7 @@ private fun WeekStrip(
         for (day in 1..7) {
             val dayCourses = byDay[day].orEmpty()
             val isToday = day == today
-            val isBusiest = day == busiestDay && busiestDay != null && dayCourses.size > 0
+            val isBusiest = day in busiestDays && dayCourses.isNotEmpty()
             DaySummaryCell(
                 day = day,
                 courses = dayCourses,
@@ -377,7 +372,6 @@ private fun DaySummaryCell(
     val colors = SleepyTheme.colors
     val bg = if (isToday) colors.primaryContainer else colors.surfaceContainer
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
-    val subFg = if (isToday) colors.onPrimaryContainer.copy(alpha = 0.78f) else colors.onSurfaceVariant
 
     Column(
         modifier = modifier
@@ -386,44 +380,45 @@ private fun DaySummaryCell(
             .background(bg)
             .padding(horizontal = 6.dp, vertical = 8.dp)
     ) {
-        // 顶部：日期 + 计数
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text(
-                text = DateUtils.chineseDay(day),
-                style = SleepyTextStyle.dayLabel,
-                color = fg
-            )
-            Text(
-                text = if (courses.isEmpty()) "无课程" else "${courses.size} 节安排",
-                style = SleepyTextStyle.micro,
-                color = subFg
-            )
-        }
+        // 日期
+        Text(
+            text = DateUtils.chineseDay(day),
+            style = SleepyTextStyle.dayLabel,
+            color = fg,
+            modifier = Modifier.align(Alignment.CenterHorizontally)
+        )
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(6.dp))
 
-        // Chip: 状态标签
-        val (chipText, chipBg) = when {
-            courses.isEmpty() -> "空白" to Color.White.copy(alpha = 0.6f)
-            isBusiest -> "最满" to Color.White.copy(alpha = 0.6f)
-            courses.size >= 3 -> "${courses.size} 门" to Color.White.copy(alpha = 0.6f)
-            else -> "${courses.size} 门" to Color.White.copy(alpha = 0.6f)
-        }
-        Box(
-            modifier = Modifier
-                .clip(RoundedCornerShape(50))
-                .background(chipBg)
-                .padding(horizontal = 7.dp, vertical = 2.dp)
-                .align(Alignment.CenterHorizontally)
-        ) {
-            Text(
-                text = chipText,
-                style = SleepyTextStyle.micro,
-                color = if (isToday) colors.onPrimaryContainer else colors.onSurface
-            )
+        // Chip: 课程数
+        if (courses.isEmpty()) {
+            Spacer(modifier = Modifier.height(14.dp))
+        } else {
+            // Busiest chip: warm gray with a tiny red tint
+            val chipBg = if (isBusiest) {
+                Color(
+                    red = (colors.surfaceVariant.red + 0.12f).coerceAtMost(1f),
+                    green = colors.surfaceVariant.green,
+                    blue = colors.surfaceVariant.blue,
+                    alpha = 0.70f
+                )
+            } else {
+                colors.surfaceVariant.copy(alpha = 0.70f)
+            }
+            val chipFg = colors.onSurfaceVariant
+            Box(
+                modifier = Modifier
+                    .clip(RoundedCornerShape(50))
+                    .background(chipBg)
+                    .padding(horizontal = 7.dp, vertical = 2.dp)
+                    .align(Alignment.CenterHorizontally)
+            ) {
+                Text(
+                    text = "${courses.size} 门",
+                    style = SleepyTextStyle.smallMeta.copy(fontWeight = FontWeight.SemiBold),
+                    color = chipFg
+                )
+            }
         }
 
         Spacer(modifier = Modifier.height(4.dp))
@@ -462,8 +457,6 @@ private fun DetailPanel(
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        SectionHead(title = "完整明细", action = "7 天")
-
         for (day in 1..7) {
             val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
             DetailDayCard(

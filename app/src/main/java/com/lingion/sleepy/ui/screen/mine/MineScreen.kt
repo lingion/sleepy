@@ -17,6 +17,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.DarkMode
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
@@ -59,7 +60,8 @@ import kotlinx.coroutines.launch
 fun MineScreen(
     viewModel: ScheduleViewModel = viewModel(),
     darkMode: Boolean = false,
-    onToggleDark: () -> Unit = {}
+    onToggleDark: () -> Unit = {},
+    onOpenAllTables: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
@@ -115,6 +117,12 @@ fun MineScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .background(colors.surfaceContainer)
                 ) {
+                    SettingsItem(
+                        icon = Icons.Outlined.Edit,
+                        label = stringResource(R.string.all_tables),
+                        onClick = onOpenAllTables
+                    )
+                    Divider()
                     SettingsItem(
                         icon = Icons.Outlined.Share,
                         label = stringResource(R.string.mine_export),

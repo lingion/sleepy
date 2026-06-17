@@ -65,56 +65,50 @@ fun ScheduleScreen(
     var viewMode by remember { mutableStateOf(ViewMode.Full) }
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
-    Scaffold(
-        containerColor = SleepyTheme.colors.background
-    ) { padding ->
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-        ) {
-            if (state.courses.isEmpty()) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 16.dp, vertical = 12.dp)
-                ) {
-                    EmptyState(
-                        modifier = Modifier.align(Alignment.TopCenter),
-                        onGoImport = onGoImport,
-                        onManualAdd = onManualAdd
+    Column(
+        modifier = Modifier.fillMaxSize()
+    ) {
+        if (state.courses.isEmpty()) {
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                EmptyState(
+                    modifier = Modifier.align(Alignment.TopCenter),
+                    onGoImport = onGoImport,
+                    onManualAdd = onManualAdd
+                )
+            }
+        } else {
+            TopBar(
+                currentWeek = state.currentWeek,
+                onPrevWeek = { viewModel.changeWeek(state.currentWeek - 1) },
+                onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) }
+            )
+
+            // Segmented Switcher
+            SegmentedSwitcher(
+                options = ViewMode.entries.map { it to stringResource(it.labelRes) },
+                selected = viewMode,
+                onSelect = { viewMode = it },
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 16.dp, vertical = 8.dp)
+            )
+
+            // 主体视图
+            Box(modifier = Modifier.fillMaxSize()) {
+                when (viewMode) {
+                    ViewMode.Full -> FullWeekView(
+                        courses = state.currentWeekCourses,
+                        onCourseClick = { selectedCourse = it }
                     )
-                }
-            } else {
-                TopBar(
-                    currentWeek = state.currentWeek,
-                    onPrevWeek = { viewModel.changeWeek(state.currentWeek - 1) },
-                    onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) }
-                )
-
-                // Segmented Switcher
-                SegmentedSwitcher(
-                    options = ViewMode.entries.map { it to stringResource(it.labelRes) },
-                    selected = viewMode,
-                    onSelect = { viewMode = it },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 8.dp)
-                )
-
-                // 主体视图
-                Box(modifier = Modifier.fillMaxSize()) {
-                    when (viewMode) {
-                        ViewMode.Full -> FullWeekView(
-                            courses = state.currentWeekCourses,
-                            onCourseClick = { selectedCourse = it }
-                        )
-                        ViewMode.Cards -> CardsGridView(
-                            courses = state.currentWeekCourses,
-                            timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
-                            onCourseClick = { selectedCourse = it }
-                        )
-                    }
+                    ViewMode.Cards -> CardsGridView(
+                        courses = state.currentWeekCourses,
+                        timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
+                        onCourseClick = { selectedCourse = it }
+                    )
                 }
             }
         }
@@ -145,19 +139,19 @@ private fun TopBar(
             .fillMaxWidth()
             .background(colors.surface)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f))
-            .padding(horizontal = 16.dp, vertical = 10.dp),
+            .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
         Text(
             text = "第 $currentWeek 周",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colors.primary,
             modifier = Modifier
                 .clip(RoundedCornerShape(14.dp))
                 .background(colors.primaryContainer)
-                .padding(horizontal = 14.dp, vertical = 6.dp)
+                .padding(horizontal = 14.dp, vertical = 4.dp)
         )
         WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
     }
@@ -171,10 +165,10 @@ private fun WeekNavButton(
     val colors = SleepyTheme.colors
     Box(
         modifier = Modifier
-            .size(40.dp)
+            .size(32.dp)
             .clip(CircleShape)
             .background(colors.surfaceContainerHigh)
-            .padding(8.dp)
+            .padding(6.dp)
             .clickable(onClick = onClick),
         contentAlignment = Alignment.Center
     ) {
@@ -208,7 +202,7 @@ private fun EmptyState(
             color = colors.onSurface
         )
         Text(
-            text = "前往“导入课表”导入，或手动创建第一门课。真正有课之后，再展示周视图和网格。",
+            text = "前往“课表管理”导入，或手动创建第一门课。真正有课之后，再展示周视图和网格。",
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )
@@ -218,7 +212,7 @@ private fun EmptyState(
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text("前往导入课表", color = colors.onPrimary)
+            Text("前往课表管理", color = colors.onPrimary)
         }
         Button(
             onClick = onManualAdd,

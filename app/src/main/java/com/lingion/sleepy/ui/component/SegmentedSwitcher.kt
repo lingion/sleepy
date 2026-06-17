@@ -47,10 +47,10 @@ fun <T> SegmentedSwitcher(
     Row(
         modifier = modifier
             .fillMaxWidth()
-            .height(48.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(42.dp)
+            .clip(RoundedCornerShape(14.dp))
             .background(colors.surfaceContainer)
-            .padding(6.dp),
+            .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         options.forEach { (value, label) ->

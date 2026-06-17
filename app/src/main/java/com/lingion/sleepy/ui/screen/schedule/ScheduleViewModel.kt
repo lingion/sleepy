@@ -23,7 +23,6 @@ data class ScheduleState(
     val nodesPerDay: Int = 12,
     val selectedCourseId: Long? = null,
     val showCourseDialog: Boolean = false,
-    /** 当前选中的课表（供 TimeTableUtils 读 timeJson） */
     val error: String? = null
 ) {
     val currentWeekCourses: List<CourseEntity>
@@ -39,6 +38,9 @@ class ScheduleViewModel : ViewModel() {
     private val _state = MutableStateFlow(ScheduleState())
     val state: StateFlow<ScheduleState> = _state.asStateFlow()
 
+    /** Whether the user has explicitly selected a table (vs auto-picking default on load) */
+    private var manualSelectDone = false
+
     init {
         loadTables()
     }
@@ -51,13 +53,10 @@ class ScheduleViewModel : ViewModel() {
             ) { tables, _ -> tables }
                 .collect { tables ->
                     if (tables.isEmpty()) {
-                        // 创建默认课表：取【上周的周一】作为起始。这样 7 天后系统时间跳一周刚好用上.
-                        // 学期开始日期用户可以后续在 设置 中修改。
-                        // 若今天是学期中：当前周 = (今天 - startDate) / 7 + 1。
                         val now = LocalDate.now()
                         val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
                         val default = TimeTableEntity(
-                            name = "我的课表",
+                            name = "默认1",
                             startDate = lastWeekMonday.toString(),
                             isDefault = true
                         )
@@ -65,9 +64,14 @@ class ScheduleViewModel : ViewModel() {
                         _state.update { it.copy(tables = listOf(default.copy(id = id)), selectedTableId = id) }
                         loadCourses(id)
                     } else {
-                        val defaultId = tables.find { it.isDefault }?.id ?: tables.first().id
-                        _state.update { it.copy(tables = tables, selectedTableId = defaultId) }
-                        loadCourses(defaultId)
+                        val selectedId = _state.value.selectedTableId
+                        val targetId: Long = if (manualSelectDone && selectedId != null && tables.any { t -> t.id == selectedId }) {
+                            selectedId
+                        } else {
+                            tables.find { it.isDefault }?.id ?: tables.first().id
+                        }
+                        _state.update { it.copy(tables = tables, selectedTableId = targetId) }
+                        loadCourses(targetId)
                     }
                 }
         }
@@ -86,8 +90,35 @@ class ScheduleViewModel : ViewModel() {
     }
 
     fun selectTable(id: Long) {
+        manualSelectDone = true
         _state.update { it.copy(selectedTableId = id) }
         loadCourses(id)
+    }
+
+    /** Create a new empty table with auto-generated name */
+    suspend fun createEmptyTable(): Long {
+        val existingNames = _state.value.tables.map { it.name }
+        var index = _state.value.tables.size + 1
+        var name = "默认$index"
+        while (name in existingNames) { index++; name = "默认$index" }
+        val now = LocalDate.now()
+        val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
+        val table = TimeTableEntity(name = name, startDate = lastWeekMonday.toString(), isDefault = false)
+        val id = repo.insertTable(table)
+        manualSelectDone = true
+        _state.update { it.copy(selectedTableId = id) }
+        return id
+    }
+
+    fun updateTable(table: TimeTableEntity) {
+        viewModelScope.launch { repo.updateTable(table) }
+    }
+
+    fun deleteTable(id: Long) {
+        viewModelScope.launch {
+            repo.deleteTable(id)
+            manualSelectDone = false
+        }
     }
 
     fun changeWeek(week: Int) {
@@ -124,9 +155,7 @@ class ScheduleViewModel : ViewModel() {
     }
 
     fun updateCourse(course: CourseEntity) {
-        viewModelScope.launch {
-            repo.updateCourse(course)
-        }
+        viewModelScope.launch { repo.updateCourse(course) }
     }
 
     fun deleteCourse(id: Long) {

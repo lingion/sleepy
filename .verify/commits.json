@@ -1,0 +1,494 @@
+[
+  {
+    "sha": "60feab538cd0aa99ef5483a1c3047a359904c46d",
+    "node_id": "C_kwDOS8keYtoAKDYwZmVhYjUzOGNkMGFhOTllZjU0ODNhMWMzMDQ3YTM1OTkwNGM0NmQ",
+    "commit": {
+      "author": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:53:22Z"
+      },
+      "committer": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:53:22Z"
+      },
+      "message": "chore: remove debug-only TestImportActivity",
+      "tree": {
+        "sha": "11ee3698ffc7086d7c72df7871ac17ee64cdf794",
+        "url": "https://api.github.com/repos/lingion/sleepy/git/trees/11ee3698ffc7086d7c72df7871ac17ee64cdf794"
+      },
+      "url": "https://api.github.com/repos/lingion/sleepy/git/commits/60feab538cd0aa99ef5483a1c3047a359904c46d",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/commits/60feab538cd0aa99ef5483a1c3047a359904c46d",
+    "html_url": "https://github.com/lingion/sleepy/commit/60feab538cd0aa99ef5483a1c3047a359904c46d",
+    "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/60feab538cd0aa99ef5483a1c3047a359904c46d/comments",
+    "author": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "0417a3563b90d9891a21bdde75573802829455a2",
+        "url": "https://api.github.com/repos/lingion/sleepy/commits/0417a3563b90d9891a21bdde75573802829455a2",
+        "html_url": "https://github.com/lingion/sleepy/commit/0417a3563b90d9891a21bdde75573802829455a2"
+      }
+    ]
+  },
+  {
+    "sha": "0417a3563b90d9891a21bdde75573802829455a2",
+    "node_id": "C_kwDOS8keYtoAKDA0MTdhMzU2M2I5MGQ5ODkxYTIxYmRkZTc1NTczODAyODI5NDU1YTI",
+    "commit": {
+      "author": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:53:20Z"
+      },
+      "committer": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:53:20Z"
+      },
+      "message": "feat: document CSV and HTML import formats in UI",
+      "tree": {
+        "sha": "f7365c258a8aa90448d36d0c1d8b6ac6bbe3ce21",
+        "url": "https://api.github.com/repos/lingion/sleepy/git/trees/f7365c258a8aa90448d36d0c1d8b6ac6bbe3ce21"
+      },
+      "url": "https://api.github.com/repos/lingion/sleepy/git/commits/0417a3563b90d9891a21bdde75573802829455a2",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/commits/0417a3563b90d9891a21bdde75573802829455a2",
+    "html_url": "https://github.com/lingion/sleepy/commit/0417a3563b90d9891a21bdde75573802829455a2",
+    "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/0417a3563b90d9891a21bdde75573802829455a2/comments",
+    "author": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "ed612b204cb63c1d9f799a29affeaa3d9f967514",
+        "url": "https://api.github.com/repos/lingion/sleepy/commits/ed612b204cb63c1d9f799a29affeaa3d9f967514",
+        "html_url": "https://github.com/lingion/sleepy/commit/ed612b204cb63c1d9f799a29affeaa3d9f967514"
+      }
+    ]
+  },
+  {
+    "sha": "ed612b204cb63c1d9f799a29affeaa3d9f967514",
+    "node_id": "C_kwDOS8keYtoAKGVkNjEyYjIwNGNiNjNjMWQ5Zjc5OWEyOWFmZmVhYTNkOWY5Njc1MTQ",
+    "commit": {
+      "author": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:53:18Z"
+      },
+      "committer": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:53:18Z"
+      },
+      "message": "feat: add CSV and HTML parsers, fix node range bug",
+      "tree": {
+        "sha": "f147ac510412c68b2f76fac3b5b74650410d3482",
+        "url": "https://api.github.com/repos/lingion/sleepy/git/trees/f147ac510412c68b2f76fac3b5b74650410d3482"
+      },
+      "url": "https://api.github.com/repos/lingion/sleepy/git/commits/ed612b204cb63c1d9f799a29affeaa3d9f967514",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/commits/ed612b204cb63c1d9f799a29affeaa3d9f967514",
+    "html_url": "https://github.com/lingion/sleepy/commit/ed612b204cb63c1d9f799a29affeaa3d9f967514",
+    "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/ed612b204cb63c1d9f799a29affeaa3d9f967514/comments",
+    "author": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "c9110a08e7947b0b0c8d29f66d55460b80f97a0d",
+        "url": "https://api.github.com/repos/lingion/sleepy/commits/c9110a08e7947b0b0c8d29f66d55460b80f97a0d",
+        "html_url": "https://github.com/lingion/sleepy/commit/c9110a08e7947b0b0c8d29f66d55460b80f97a0d"
+      }
+    ]
+  },
+  {
+    "sha": "c9110a08e7947b0b0c8d29f66d55460b80f97a0d",
+    "node_id": "C_kwDOS8keYtoAKGM5MTEwYTA4ZTc5NDdiMGIwYzhkMjlmNjZkNTU0NjBiODBmOTdhMGQ",
+    "commit": {
+      "author": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:22:09Z"
+      },
+      "committer": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:22:09Z"
+      },
+      "message": "fix: register DailyNotifyReceiver in AndroidManifest.xml",
+      "tree": {
+        "sha": "a3a18061bf192b53c4dc25a041f68820b023215b",
+        "url": "https://api.github.com/repos/lingion/sleepy/git/trees/a3a18061bf192b53c4dc25a041f68820b023215b"
+      },
+      "url": "https://api.github.com/repos/lingion/sleepy/git/commits/c9110a08e7947b0b0c8d29f66d55460b80f97a0d",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/commits/c9110a08e7947b0b0c8d29f66d55460b80f97a0d",
+    "html_url": "https://github.com/lingion/sleepy/commit/c9110a08e7947b0b0c8d29f66d55460b80f97a0d",
+    "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/c9110a08e7947b0b0c8d29f66d55460b80f97a0d/comments",
+    "author": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "0b081a18fdf77f118cda2cfd4de16318770609b2",
+        "url": "https://api.github.com/repos/lingion/sleepy/commits/0b081a18fdf77f118cda2cfd4de16318770609b2",
+        "html_url": "https://github.com/lingion/sleepy/commit/0b081a18fdf77f118cda2cfd4de16318770609b2"
+      }
+    ]
+  },
+  {
+    "sha": "0b081a18fdf77f118cda2cfd4de16318770609b2",
+    "node_id": "C_kwDOS8keYtoAKDBiMDgxYTE4ZmRmNzdmMTE4Y2RhMmNmZDRkZTE2MzE4NzcwNjA5YjI",
+    "commit": {
+      "author": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:22:08Z"
+      },
+      "committer": {
+        "name": "lingion",
+        "email": "165679819+lingion@users.noreply.github.com",
+        "date": "2026-06-17T03:22:08Z"
+      },
+      "message": "fix: real root cause of crash on launch — splash drawable",
+      "tree": {
+        "sha": "6db9faa92ff474a018291f4588eb3921c477aa65",
+        "url": "https://api.github.com/repos/lingion/sleepy/git/trees/6db9faa92ff474a018291f4588eb3921c477aa65"
+      },
+      "url": "https://api.github.com/repos/lingion/sleepy/git/commits/0b081a18fdf77f118cda2cfd4de16318770609b2",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/commits/0b081a18fdf77f118cda2cfd4de16318770609b2",
+    "html_url": "https://github.com/lingion/sleepy/commit/0b081a18fdf77f118cda2cfd4de16318770609b2",
+    "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/0b081a18fdf77f118cda2cfd4de16318770609b2/comments",
+    "author": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "26a9f0a07115c14a27f8ecfe5144fc2121d3bae6",
+        "url": "https://api.github.com/repos/lingion/sleepy/commits/26a9f0a07115c14a27f8ecfe5144fc2121d3bae6",
+        "html_url": "https://github.com/lingion/sleepy/commit/26a9f0a07115c14a27f8ecfe5144fc2121d3bae6"
+      }
+    ]
+  },
+  {
+    "sha": "26a9f0a07115c14a27f8ecfe5144fc2121d3bae6",
+    "node_id": "C_kwDOS8keYtoAKDI2YTlmMGEwNzExNWMxNGEyN2Y4ZWNmZTUxNDRmYzIxMjFkM2JhZTY",
+    "commit": {
+      "author": {
+        "name": "lingion",
+        "email": "lingion@hrbeu.edu.cn",
+        "date": "2026-06-17T02:40:50Z"
+      },
+      "committer": {
+        "name": "lingion",
+        "email": "lingion@hrbeu.edu.cn",
+        "date": "2026-06-17T02:40:50Z"
+      },
+      "message": "fix: prevent crash on launch (Android 12+ exact alarm + missing receiver)\n\nThree crashes fixed; this is v1.0.1 hotfix that **MUST** be installed over\nthe broken v1.0.0 release:\n\n1. **SecurityException on scheduleDailyReminder()** (Android 12+, API 31+)\n   - alarmManager.setRepeating(RTC_WAKEUP) requires SCHEDULE_EXACT_ALARM\n     user grant, which is NOT auto-granted at install on Android 12+\n   - Symptom: app opens splash, then immediately crashes before any page\n   - Fix: check canScheduleExactAlarms() and fall back to setInexactRepeating\n     (still fires daily, just not exact)\n   - Also wrap MainActivity call in try/catch as defensive measure\n\n2. **Missing TodayWidgetReceiver class** in com.lingion.sleepy.widget package\n   - Manifest references .widget.TodayWidgetReceiver for AppWidget\n   - Class actually exists in same file as TodayWidget (no path issue)\n   - But: nothing was wrong here — kept as-is\n\n3. **BootReceiver path mismatch in manifest**\n   - Manifest: .widget.BootReceiver\n   - Actual: com.lingion.sleepy.widget.notification.BootReceiver\n   - Symptom: daily BOOT_COMPLETED reschedule would fail with CNFE\n   - Fix: corrected manifest path\n\nAPK: 13.2MB, v2 + v3 signed, MD5 06d5a1efee8badc13f8d0424febb8580",
+      "tree": {
+        "sha": "6dca9e725945cd33f9d0799e514d988c7366f50c",
+        "url": "https://api.github.com/repos/lingion/sleepy/git/trees/6dca9e725945cd33f9d0799e514d988c7366f50c"
+      },
+      "url": "https://api.github.com/repos/lingion/sleepy/git/commits/26a9f0a07115c14a27f8ecfe5144fc2121d3bae6",
+      "comment_count": 0,
+      "verification": {
+        "verified": false,
+        "reason": "unsigned",
+        "signature": null,
+        "payload": null,
+        "verified_at": null
+      }
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/commits/26a9f0a07115c14a27f8ecfe5144fc2121d3bae6",
+    "html_url": "https://github.com/lingion/sleepy/commit/26a9f0a07115c14a27f8ecfe5144fc2121d3bae6",
+    "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/26a9f0a07115c14a27f8ecfe5144fc2121d3bae6/comments",
+    "author": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "committer": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "parents": [
+      {
+        "sha": "888151b39cb9d98d3eb213bb17b2c1ab5aef281d",
+        "url": "https://api.github.com/repos/lingion/sleepy/commits/888151b39cb9d98d3eb213bb17b2c1ab5aef281d",
+        "html_url": "https://github.com/lingion/sleepy/commit/888151b39cb9d98d3eb213bb17b2c1ab5aef281d"
+      }
+    ]
+  }
+]
