@@ -45,10 +45,11 @@ import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.TimeTableUtils
 
-private enum class ViewMode(val label: String) {
-    Full("7days full"),
-    Cards("cards")
+private enum class ViewMode(val labelRes: Int) {
+    Full(R.string.view_full),
+    Cards(R.string.view_cards)
 }
 
 @Composable
@@ -75,7 +76,7 @@ fun ScheduleScreen(
 
             // Segmented Switcher
             SegmentedSwitcher(
-                options = ViewMode.entries.map { it to it.label },
+                options = ViewMode.entries.map { it to stringResource(it.labelRes) },
                 selected = viewMode,
                 onSelect = { viewMode = it },
                 modifier = Modifier
@@ -92,6 +93,7 @@ fun ScheduleScreen(
                     )
                     ViewMode.Cards -> CardsGridView(
                         courses = state.currentWeekCourses,
+                        timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
                         onCourseClick = { selectedCourse = it }
                     )
                 }
@@ -105,9 +107,7 @@ fun ScheduleScreen(
         // 详情 Bottom Sheet
         CourseDetailSheet(
             course = selectedCourse,
-            timeString = selectedCourse?.let {
-                "${it.shortNodeString}节"
-            },
+            timeString = selectedCourse?.let { it.nodeString },
             onDismiss = { selectedCourse = null }
         )
     }
