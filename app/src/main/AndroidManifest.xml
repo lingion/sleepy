@@ -51,7 +51,7 @@
 
         <!-- Daily boot receiver: reschedule notifications -->
         <receiver
-            android:name=".widget.BootReceiver"
+            android:name=".widget.notification.BootReceiver"
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />

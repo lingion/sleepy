@@ -45,7 +45,13 @@ class MainActivity : ComponentActivity() {
             }
         }
 
-        (application as SleepyApp).notificationScheduler.scheduleDailyReminder()
+        // Wrap in try/catch as defensive measure: any failure in notification scheduling
+        // must not crash the app before setContent runs.
+        try {
+            (application as SleepyApp).notificationScheduler.scheduleDailyReminder()
+        } catch (e: Throwable) {
+            android.util.Log.e("Sleepy", "scheduleDailyReminder failed", e)
+        }
 
         setContent {
             SleepyThemeProvider {

@@ -50,12 +50,25 @@ class CourseNotificationScheduler(private val context: Context) {
         if (now.isAfter(target)) next = next.plusDays(1)
         val nextEpoch = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-        alarmManager.setRepeating(
-            AlarmManager.RTC_WAKEUP,
-            nextEpoch,
-            AlarmManager.INTERVAL_DAY,
-            pending
-        )
+        // Android 12+ (API 31+) requires SCHEDULE_EXACT_ALARM grant for exact alarms.
+        // If not granted, fall back to inexact repeating to avoid SecurityException crash.
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S
+            && !alarmManager.canScheduleExactAlarms()) {
+            // Use inexact repeating — still fires daily, just not guaranteed exact time
+            alarmManager.setInexactRepeating(
+                AlarmManager.RTC_WAKEUP,
+                nextEpoch,
+                AlarmManager.INTERVAL_DAY,
+                pending
+            )
+        } else {
+            alarmManager.setRepeating(
+                AlarmManager.RTC_WAKEUP,
+                nextEpoch,
+                AlarmManager.INTERVAL_DAY,
+                pending
+            )
+        }
     }
 
     private fun createNotificationChannel() {
