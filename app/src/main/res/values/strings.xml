@@ -38,11 +38,24 @@
 
     <!-- Mine -->
     <string name="mine_settings">设置</string>
+    <string name="mine_reminder">每日提醒</string>
+    <string name="mine_dark_mode">深色模式</string>
+    <string name="mine_theme_color">主题颜色</string>
+    <string name="mine_about_title">关于 Sleepy 课程表</string>
+    <string name="mine_about_body">Sleepy 课程表 v%1$s\n\n一个极简、干净、本地优先的课表工具。\n所有数据均存储在你的设备上，不上传任何服务器。\n\n· 无广告\n· 无追踪\n· 无拍照搜题\n· 支持 WakeUp / ICS / CSV / HTML / 纯文本 导入</string>
+    <string name="action_close">关闭</string>
+    <string name="action_export_share">分享课表</string>
+    <string name="action_export_ics">导出为 ICS</string>
+    <string name="action_export_coming_soon">该功能开发中</string>
     <string name="mine_about">关于</string>
     <string name="mine_export">导出课表</string>
     <string name="mine_import">导入课表</string>
     <string name="mine_table_count">课表数量：%1$d</string>
     <string name="mine_course_count">课程数量：%1$d</string>
+
+    <!-- Schedule view modes -->
+    <string name="view_full">周视图</string>
+    <string name="view_cards">网格</string>
 
     <!-- Day of week -->
     <string name="day_mon">周一</string>
