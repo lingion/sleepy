@@ -21,7 +21,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
@@ -331,7 +333,45 @@ fun AddCourseScreen(
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("创建课程")
+                    Text(if (editingCourse != null) "保存课程" else "创建课程")
+                }
+            }
+
+            if (editingCourse != null) {
+                item {
+                    var showDeleteConfirm by remember { mutableStateOf(false) }
+
+                    Button(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
+                    ) {
+                        Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text("删除课程", color = colors.onErrorContainer)
+                    }
+
+                    if (showDeleteConfirm) {
+                        AlertDialog(
+                            onDismissRequest = { showDeleteConfirm = false },
+                            containerColor = colors.surface,
+                            title = { Text("确认删除", color = colors.onSurface) },
+                            text = { Text("确定要删除课程「${editingCourse.courseName}」吗？此操作不可撤销。", color = colors.onSurfaceVariant) },
+                            confirmButton = {
+                                TextButton(onClick = {
+                                    showDeleteConfirm = false
+                                    scope.launch {
+                                        SleepyApp.get().repository.deleteCourse(editingCourse.id)
+                                        onSaved()
+                                    }
+                                }) { Text("删除", color = colors.error) }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") }
+                            }
+                        )
+                    }
                 }
             }
 
@@ -766,9 +806,15 @@ private fun NumberField(
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (Int) -> Unit
 ) {
+    var text by remember(value) { mutableStateOf(if (value == 0 && min > 0) "" else value.toString()) }
+
     OutlinedTextField(
-        value = value.toString(),
-        onValueChange = { txt -> txt.toIntOrNull()?.let { onChange(it.coerceIn(min, max)) } },
+        value = text,
+        onValueChange = { txt ->
+            text = txt
+            val v = txt.toIntOrNull()
+            if (v != null) onChange(v.coerceIn(min, max))
+        },
         label = { Text(label) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -788,9 +834,15 @@ private fun TimeField(
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (String) -> Unit
 ) {
+    var text by remember(value) { mutableStateOf(value) }
+
     OutlinedTextField(
-        value = value,
-        onValueChange = { onChange(it.take(5)) },
+        value = text,
+        onValueChange = { txt ->
+            val filtered = txt.take(5)
+            text = filtered
+            onChange(filtered)
+        },
         label = { Text(label) },
         singleLine = true,
         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),

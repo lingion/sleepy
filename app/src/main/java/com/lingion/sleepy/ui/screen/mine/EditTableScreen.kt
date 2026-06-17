@@ -36,6 +36,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.key
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -58,11 +59,7 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import org.json.JSONObject
 
-data class TimeSlotDraft(
-    val node: Int,
-    val start: String,
-    val end: String
-)
+// Time slot editing uses mutableStateListOf for reactive TextField binding
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -99,9 +96,18 @@ fun EditTableScreen(
     var error by remember { mutableStateOf<String?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
-    val slots = remember(table.id) {
-        mutableStateListOf<TimeSlotDraft>().apply {
-            addAll(parseTimeSlots(table.timeJson))
+    val timeJson = table.timeJson
+    val slotNodes = remember(table.id) {
+        parseTimeSlotNodes(timeJson)
+    }
+    val startValues = remember(table.id) {
+        mutableStateListOf<String>().apply {
+            addAll(slotNodes.indices.map { i -> parseSlotTime(timeJson, i, "start") })
+        }
+    }
+    val endValues = remember(table.id) {
+        mutableStateListOf<String>().apply {
+            addAll(slotNodes.indices.map { i -> parseSlotTime(timeJson, i, "end") })
         }
     }
 
@@ -201,7 +207,7 @@ fun EditTableScreen(
                                 color = colors.onSurface
                             )
                             Text(
-                                text = "${slots.toList().size} 节课 · ${if (timeSlotsExpanded) "点击收起" else "点击展开"}",
+                                text = "${slotNodes.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else "点击展开"}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant
                             )
@@ -213,13 +219,14 @@ fun EditTableScreen(
                         )
                     }
 
-                    AnimatedVisibility(visible = timeSlotsExpanded) {
+                    if (timeSlotsExpanded) {
                         Column(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            repeat(slots.size) { index ->
-                                val slot = slots[index]
+                            repeat(slotNodes.size) { index ->
+                                key(slotNodes[index]) {
+                                val node = slotNodes[index]
                                 Row(
                                     modifier = Modifier
                                         .fillMaxWidth()
@@ -229,14 +236,14 @@ fun EditTableScreen(
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Text(
-                                        text = "第${slot.node}节",
+                                        text = "第${node}节",
                                         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                                         color = colors.onSurface,
                                         modifier = Modifier.width(48.dp)
                                     )
                                     OutlinedTextField(
-                                        value = slot.start,
-                                        onValueChange = { v -> slots[index] = slots[index].copy(start = v) },
+                                        value = startValues[index],
+                                        onValueChange = { v -> startValues[index] = v },
                                         label = { Text("开始") },
                                         singleLine = true,
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
@@ -245,8 +252,8 @@ fun EditTableScreen(
                                         colors = fieldColors
                                     )
                                     OutlinedTextField(
-                                        value = slot.end,
-                                        onValueChange = { v -> slots[index] = slots[index].copy(end = v) },
+                                        value = endValues[index],
+                                        onValueChange = { v -> endValues[index] = v },
                                         label = { Text("结束") },
                                         singleLine = true,
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
@@ -255,6 +262,7 @@ fun EditTableScreen(
                                         colors = fieldColors
                                     )
                                 }
+                                } // end key
                             }
                         }
                     }
@@ -272,9 +280,9 @@ fun EditTableScreen(
                 Button(
                     onClick = {
                         val maxWeek = maxWeekText.toIntOrNull() ?: 20
-                        val valid = startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) && (slots as List<TimeSlotDraft>).all {
-                            it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}"))
-                        }
+                        val valid = startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) && 
+                            startValues.all { it.matches(Regex("\\d{2}:\\d{2}")) } &&
+                            endValues.all { it.matches(Regex("\\d{2}:\\d{2}")) }
                         if (!valid) {
                             error = "日期需为 yyyy-MM-dd，时间需为 HH:mm"
                             return@Button
@@ -284,7 +292,7 @@ fun EditTableScreen(
                             name = name.ifBlank { table.name },
                             startDate = startDate,
                             maxWeek = maxWeek,
-                            timeJson = buildTimeJson(slots)
+                            timeJson = buildTimeJson(slotNodes, startValues, endValues)
                         )
                         scope.launch {
                             viewModel.updateTable(updated)
@@ -358,22 +366,35 @@ private fun CardSection(title: String, subtitle: String, content: @Composable ()
     }
 }
 
-private fun parseTimeSlots(timeJson: String): List<TimeSlotDraft> = try {
+private fun parseTimeSlotNodes(timeJson: String): List<Int> = try {
     val arr = JSONArray(timeJson)
     buildList {
         for (i in 0 until arr.length()) {
             val o = arr.getJSONObject(i)
-            add(TimeSlotDraft(node = o.optInt("node", i + 1), start = o.optString("start", "08:00"), end = o.optString("end", "08:45")))
+            add(o.optInt("node", i + 1))
         }
     }
 } catch (_: Exception) {
-    parseTimeSlots(TimeTableEntity.DEFAULT_TIME_JSON)
+    parseTimeSlotNodes(TimeTableEntity.DEFAULT_TIME_JSON)
 }
 
-private fun buildTimeJson(slots: List<TimeSlotDraft>): String {
+private fun parseSlotTime(timeJson: String, index: Int, key: String): String = try {
+    val arr = JSONArray(timeJson)
+    if (index < arr.length()) {
+        arr.getJSONObject(index).optString(key, if (key == "start") "08:00" else "08:45")
+    } else if (key == "start") "08:00" else "08:45"
+} catch (_: Exception) {
+    if (key == "start") "08:00" else "08:45"
+}
+
+private fun buildTimeJson(nodes: List<Int>, startValues: List<String>, endValues: List<String>): String {
     val arr = JSONArray()
-    slots.forEach { slot ->
-        arr.put(JSONObject().apply { put("node", slot.node); put("start", slot.start); put("end", slot.end) })
+    nodes.forEachIndexed { i, node ->
+        arr.put(JSONObject().apply { 
+            put("node", node)
+            put("start", startValues.getOrElse(i) { "08:00" })
+            put("end", endValues.getOrElse(i) { "08:45" })
+        })
     }
     return arr.toString()
 }

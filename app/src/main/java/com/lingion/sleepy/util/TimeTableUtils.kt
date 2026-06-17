@@ -69,7 +69,10 @@ object TimeTableUtils {
      *  直接用节点的 start/end 拼接,不依赖外层 TimeSlot。
      *  找不到节点则返回 null。
      */
-    fun courseTimeString(courseStartNode: Int, courseStep: Int, timeJson: String): String? {
+    fun courseTimeString(courseStartNode: Int, courseStep: Int, timeJson: String, ownTime: Boolean = false, startTime: String = "", endTime: String = ""): String? {
+        if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
+            return "$startTime-$endTime"
+        }
         val nodes = parseNodes(timeJson)
         if (nodes.isEmpty()) return null
         val endNode = courseStartNode + courseStep - 1

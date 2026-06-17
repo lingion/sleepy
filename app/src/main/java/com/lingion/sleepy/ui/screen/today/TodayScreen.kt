@@ -50,8 +50,9 @@ fun TodayScreen(
     val state by viewModel.state.collectAsState()
     val today = LocalDate.now()
     val dayOfWeek = DateUtils.todayDayOfWeek(today)
+    val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
     val todayCourses = state.courses.filter {
-        it.day == dayOfWeek && it.inWeek(state.currentWeek)
+        it.day == dayOfWeek && it.inWeek(actualWeek)
     }.sortedBy { it.startNode }
 
     LazyColumn(
@@ -61,7 +62,7 @@ fun TodayScreen(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { TodayHeader(date = today, week = state.currentWeek, count = todayCourses.size) }
+        item { TodayHeader(date = today, week = actualWeek, count = todayCourses.size) }
 
         if (todayCourses.isEmpty()) {
             item { EmptyToday() }
@@ -172,7 +173,11 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val bg = pickCourseColor(course, palette)
-    val time = timeJson?.let { TimeTableUtils.courseTimeString(course.startNode, course.step, it) }
+    val time = if (course.ownTime && course.startTime.isNotBlank() && course.endTime.isNotBlank()) {
+        "${course.startTime}-${course.endTime}"
+    } else {
+        timeJson?.let { TimeTableUtils.courseTimeString(course.startNode, course.step, it) }
+    }
 
     Row(
         modifier = Modifier
