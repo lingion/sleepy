@@ -23,10 +23,13 @@ data class ScheduleState(
     val nodesPerDay: Int = 12,
     val selectedCourseId: Long? = null,
     val showCourseDialog: Boolean = false,
+    /** 当前选中的课表（供 TimeTableUtils 读 timeJson） */
     val error: String? = null
 ) {
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(currentWeek) }
+    val currentTable: TimeTableEntity?
+        get() = tables.find { it.id == selectedTableId }
 }
 
 class ScheduleViewModel : ViewModel() {
@@ -48,10 +51,14 @@ class ScheduleViewModel : ViewModel() {
             ) { tables, _ -> tables }
                 .collect { tables ->
                     if (tables.isEmpty()) {
-                        // 创建默认课表
+                        // 创建默认课表：取【上周的周一】作为起始。这样 7 天后系统时间跳一周刚好用上.
+                        // 学期开始日期用户可以后续在 设置 中修改。
+                        // 若今天是学期中：当前周 = (今天 - startDate) / 7 + 1。
+                        val now = LocalDate.now()
+                        val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
                         val default = TimeTableEntity(
                             name = "我的课表",
-                            startDate = LocalDate.now().toString(),
+                            startDate = lastWeekMonday.toString(),
                             isDefault = true
                         )
                         val id = repo.insertTable(default)
