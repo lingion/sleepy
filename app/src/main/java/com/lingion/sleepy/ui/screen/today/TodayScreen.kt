@@ -160,7 +160,7 @@ private fun EmptyToday() {
             color = colors.onSurface
         )
         Text(
-            text = "享受空余时间，或复习已学内容",
+            text = "今日无课程",
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )

@@ -60,8 +60,8 @@ import org.json.JSONObject
 
 data class TimeSlotDraft(
     val node: Int,
-    var start: String,
-    var end: String
+    val start: String,
+    val end: String
 )
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
@@ -218,7 +218,7 @@ fun EditTableScreen(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
                             verticalArrangement = Arrangement.spacedBy(10.dp)
                         ) {
-                            for (index in 0 until slots.toList().size) {
+                            repeat(slots.size) { index ->
                                 val slot = slots[index]
                                 Row(
                                     modifier = Modifier
@@ -239,6 +239,7 @@ fun EditTableScreen(
                                         onValueChange = { v -> slots[index] = slots[index].copy(start = v) },
                                         label = { Text("开始") },
                                         singleLine = true,
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
                                         colors = fieldColors
@@ -248,6 +249,7 @@ fun EditTableScreen(
                                         onValueChange = { v -> slots[index] = slots[index].copy(end = v) },
                                         label = { Text("结束") },
                                         singleLine = true,
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
                                         modifier = Modifier.weight(1f),
                                         shape = RoundedCornerShape(14.dp),
                                         colors = fieldColors

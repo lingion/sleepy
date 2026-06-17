@@ -510,7 +510,7 @@ private fun DetailDayCard(
 
         if (courses.isEmpty()) {
             Text(
-                text = "本周第 ${/*currentWeek*/ 1 } 周${DateUtils.chineseDay(day)}没有排课，可用于复习、休息或补作业。",
+                text = "${DateUtils.chineseDay(day)} · 无课程",
                 style = SleepyTextStyle.smallMeta.copy(fontSize = 12.sp, lineHeight = 16.sp),
                 color = colors.onSurfaceVariant
             )
