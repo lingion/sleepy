@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import android.net.Uri
+import org.json.JSONArray
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -17,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Description
@@ -73,6 +75,9 @@ fun ImportScreen(
     var isLoading by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var preview by remember { mutableStateOf<ImportPreview?>(null) }
+    var pendingMode by remember { mutableStateOf<ImportApplyMode?>(null) }
+    var confirmedStartDate by remember { mutableStateOf("") }
+    var confirmedTimeJson by remember { mutableStateOf("") }
     val snackbar = remember { SnackbarHostState() }
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
@@ -247,11 +252,38 @@ fun ImportScreen(
             preview = currentPreview,
             onDismiss = { preview = null },
             onApply = { mode ->
+                val existingTable = state.currentTable
+                confirmedStartDate = currentPreview.parseResult.startDate.ifBlank {
+                    existingTable?.startDate ?: java.time.LocalDate.now().toString()
+                }
+                confirmedTimeJson = existingTable?.timeJson ?: TimeTableEntity.DEFAULT_TIME_JSON
+                pendingMode = mode
+            }
+        )
+    }
+
+    if (preview != null && pendingMode != null) {
+        ImportConfirmDialog(
+            startDate = confirmedStartDate,
+            timeJson = confirmedTimeJson,
+            onStartDateChange = { confirmedStartDate = it },
+            onTimeJsonChange = { confirmedTimeJson = it },
+            onDismiss = { pendingMode = null },
+            onConfirm = {
+                val mode = pendingMode ?: return@ImportConfirmDialog
+                val currentPreview = preview ?: return@ImportConfirmDialog
                 scope.launch {
                     isLoading = true
                     try {
-                        applyImportPreview(currentPreview, mode, onImported) { msg -> errorMsg = msg }
+                        applyImportPreview(
+                            preview = currentPreview,
+                            mode = mode,
+                            confirmedStartDate = confirmedStartDate,
+                            confirmedTimeJson = confirmedTimeJson,
+                            onImported = onImported
+                        ) { msg -> errorMsg = msg }
                         preview = null
+                        pendingMode = null
                     } finally {
                         isLoading = false
                     }
@@ -504,6 +536,127 @@ private fun PreviewInfoRow(label: String, value: String) {
     }
 }
 
+@Composable
+private fun ImportConfirmDialog(
+    startDate: String,
+    timeJson: String,
+    onStartDateChange: (String) -> Unit,
+    onTimeJsonChange: (String) -> Unit,
+    onDismiss: () -> Unit,
+    onConfirm: () -> Unit
+) {
+    val colors = SleepyTheme.colors
+    var rows by remember(timeJson) { mutableStateOf(parseTimeConfirmRows(timeJson)) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = colors.surface,
+        title = { Text("导入前确认", color = colors.onSurface) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                Text(
+                    text = "先确认学期开始日期和每节时间，不然当前周次会一直不准。",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = startDate,
+                    onValueChange = onStartDateChange,
+                    modifier = Modifier.fillMaxWidth(),
+                    label = { Text("第一周从哪天开始（YYYY-MM-DD）") },
+                    singleLine = true,
+                    shape = RoundedCornerShape(14.dp)
+                )
+                LazyColumn(
+                    modifier = Modifier.fillMaxWidth().height(260.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    items(rows) { row ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(
+                                text = "第${row.node}节",
+                                modifier = Modifier.width(44.dp),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colors.onSurface
+                            )
+                            OutlinedTextField(
+                                value = row.start,
+                                onValueChange = { newStart ->
+                                    rows = rows.map {
+                                        if (it.node == row.node) row.copy(start = newStart) else it
+                                    }
+                                    onTimeJsonChange(buildTimeJsonFromRows(rows))
+                                },
+                                modifier = Modifier.weight(1f),
+                                label = { Text("开始") },
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                            OutlinedTextField(
+                                value = row.end,
+                                onValueChange = { newEnd ->
+                                    rows = rows.map {
+                                        if (it.node == row.node) row.copy(end = newEnd) else it
+                                    }
+                                    onTimeJsonChange(buildTimeJsonFromRows(rows))
+                                },
+                                modifier = Modifier.weight(1f),
+                                label = { Text("结束") },
+                                singleLine = true,
+                                shape = RoundedCornerShape(12.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = {
+                onTimeJsonChange(buildTimeJsonFromRows(rows))
+                onConfirm()
+            }) {
+                Text("确认导入")
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text("返回")
+            }
+        }
+    )
+}
+
+data class TimeConfirmRow(val node: Int, val start: String, val end: String)
+
+private fun parseTimeConfirmRows(timeJson: String): List<TimeConfirmRow> = try {
+    val arr = JSONArray(timeJson)
+    (0 until arr.length()).map { i ->
+        val o = arr.getJSONObject(i)
+        TimeConfirmRow(
+            node = o.optInt("node", i + 1),
+            start = o.optString("start", "08:00"),
+            end = o.optString("end", "08:45")
+        )
+    }
+} catch (_: Exception) {
+    (1..12).map { node -> TimeConfirmRow(node, "08:00", "08:45") }
+}
+
+private fun buildTimeJsonFromRows(rows: List<TimeConfirmRow>): String {
+    val arr = JSONArray()
+    rows.forEach { row ->
+        val obj = org.json.JSONObject()
+        obj.put("node", row.node)
+        obj.put("start", row.start)
+        obj.put("end", row.end)
+        arr.put(obj)
+    }
+    return arr.toString()
+}
+
 private suspend fun buildImportPreview(
     text: String,
     state: ScheduleState,
@@ -547,6 +700,8 @@ private suspend fun buildImportPreview(
 private suspend fun applyImportPreview(
     preview: ImportPreview,
     mode: ImportApplyMode,
+    confirmedStartDate: String,
+    confirmedTimeJson: String,
     onImported: () -> Unit,
     onError: (String) -> Unit
 ) {
@@ -555,11 +710,11 @@ private suspend fun applyImportPreview(
         ImportApplyMode.ReplaceCurrent -> {
             val existing = repo.getTable(preview.targetTableId)
             if (existing != null) {
-                val keepStart = existing.startDate.isNotBlank()
                 repo.updateTable(
                     existing.copy(
                         name = preview.parseResult.tableName,
-                        startDate = if (keepStart) existing.startDate else preview.parseResult.startDate
+                        startDate = confirmedStartDate,
+                        timeJson = confirmedTimeJson
                     )
                 )
             }
@@ -572,10 +727,10 @@ private suspend fun applyImportPreview(
             val newTableId = repo.insertTable(
                 TimeTableEntity(
                     name = uniqueImportedTableName(preview.parseResult.tableName, repo.getAllTables().map { it.name }),
-                    startDate = preview.parseResult.startDate,
+                    startDate = confirmedStartDate,
                     maxWeek = base?.maxWeek ?: 20,
                     nodesPerDay = base?.nodesPerDay ?: 12,
-                    timeJson = base?.timeJson ?: TimeTableEntity.DEFAULT_TIME_JSON,
+                    timeJson = confirmedTimeJson,
                     color = base?.color ?: "#FF6750A4",
                     isDefault = false
                 )

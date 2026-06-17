@@ -123,7 +123,7 @@ fun AddCourseScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("手动创建课程") },
+                title = { Text(if (editingCourse != null) "编辑课程" else "手动创建课程") },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")

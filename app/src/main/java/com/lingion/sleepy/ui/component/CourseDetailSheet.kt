@@ -44,7 +44,7 @@ fun CourseDetailSheet(
     course: CourseEntity?,
     timeString: String? = null,
     onDismiss: () -> Unit,
-    onEdit: (() -> Unit)? = null
+    onEdit: ((CourseEntity) -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -86,7 +86,7 @@ fun CourseDetailSheet(
 
                     if (onEdit != null) {
                         Button(
-                            onClick = onEdit,
+                            onClick = { onEdit(course) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(18.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = SleepyTheme.colors.primary)

@@ -58,6 +58,7 @@ private enum class ViewMode(val labelRes: Int) {
 fun ScheduleScreen(
     onGoImport: () -> Unit = {},
     onManualAdd: () -> Unit = {},
+    onEditCourse: (CourseEntity) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -122,7 +123,11 @@ fun ScheduleScreen(
         CourseDetailSheet(
             course = selectedCourse,
             timeString = selectedCourse?.let { it.nodeString },
-            onDismiss = { selectedCourse = null }
+            onDismiss = { selectedCourse = null },
+            onEdit = { course ->
+                selectedCourse = null
+                onEditCourse(course)
+            }
         )
     }
 }

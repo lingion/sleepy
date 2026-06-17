@@ -124,7 +124,8 @@ private fun AppRoot(
             when (currentTab) {
                 Tab.Schedule -> ScheduleScreen(
                     onGoImport = { currentTab = Tab.Import },
-                    onManualAdd = { showAddCourse = true }
+                    onManualAdd = { showAddCourse = true },
+                    onEditCourse = { course -> editingCourse = course }
                 )
                 Tab.Today -> TodayScreen()
                 Tab.Import -> ImportScreen(
