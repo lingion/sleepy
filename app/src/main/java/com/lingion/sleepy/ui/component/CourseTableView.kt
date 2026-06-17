@@ -380,10 +380,10 @@ private fun DaySummaryCell(
 
     Column(
         modifier = modifier
-            .height(96.dp)
+            .height(132.dp)
             .clip(RoundedCornerShape(14.dp))
             .background(bg)
-            .padding(8.dp)
+            .padding(horizontal = 6.dp, vertical = 8.dp)
     ) {
         // 顶部：日期 + 计数
         Column(
