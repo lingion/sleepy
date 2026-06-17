@@ -316,6 +316,11 @@ object ScheduleParser {
 
     private fun parseRange(s: String): Pair<Int, Int>? {
         val parts = s.split('-', '~', '至')
+        if (parts.size == 1) {
+            // 单个数字: e.g. "5" → (5, 5)
+            val n = parts[0].trim().toIntOrNull() ?: return null
+            return n to n
+        }
         if (parts.size != 2) return null
         val start = parts[0].toIntOrNull() ?: return null
         val end = parts[1].toIntOrNull() ?: return null
@@ -325,13 +330,18 @@ object ScheduleParser {
     /**
      * 解析 CSV 格式课表。
      * 自动识别表头，常见列名（中文/英文）都可以：
-     *   课程名 / 名称 / course / name
+     *   课程名 / 课程 / 名称 / course / name
      *   教师 / 老师 / teacher
      *   教室 / 位置 / 地点 / room / position
      *   星期 / 周几 / day
-     *   节次 / 节点 / node
-     *   周次 / weeks / week
+     *   节次（单列 1-2 格式） / 节点 / node / 节 / class
+     *   开始节数 + 结束节数（两列）  — 教务处常见导出
+     *   周次 / 周数 / weeks / week — 支持多区间 "2-5,7-9,11-14" / 离散周 "11,13,15" / 单周 "5"
      *   类型 / type
+     *   备注 / note
+     *
+     * 多区间的周数会被展开成多条 CourseEntity（同一课程名在不同周上可以是不同教师/教室，
+     * 实际是分多行表示的，展开后保持原始行数）
      *
      * 支持带引号的字段（"" 转义 "）
      */
@@ -356,12 +366,20 @@ object ScheduleParser {
         val roomIdx = findCol("教室", "位置", "地点", "room", "position")
         val dayIdx = findCol("星期", "周几", "day")
             ?: throw IllegalArgumentException("找不到星期列")
-        val nodeIdx = findCol("节次", "节点", "node", "节", "class")
-            ?: throw IllegalArgumentException("找不到节次列")
-        val weekIdx = findCol("周次", "weeks", "week")
+        // 节次列三种兼容模式
+        val nodeStartIdx = findCol("开始节数", "开始节次", "起节", "节次起", "start node")
+        val nodeEndIdx = findCol("结束节数", "结束节次", "止节", "节次止", "end node")
+        val nodeIdx = if (nodeStartIdx == null && nodeEndIdx == null) {
+            findCol("节次", "节点", "上课节次", "node", "节", "class")
+        } else null
+        val weekIdx = findCol("周次", "周数", "weeks", "week")
             ?: throw IllegalArgumentException("找不到周次列")
         val typeIdx = findCol("类型", "type", "周类型")
         val noteIdx = findCol("备注", "note", "remark")
+
+        if (nodeStartIdx == null && nodeEndIdx == null && nodeIdx == null) {
+            throw IllegalArgumentException("找不到节次列（需要 '节次' 或 '开始节数'+'结束节数'）")
+        }
 
         val courses = mutableListOf<CourseEntity>()
         for (i in 1 until rows.size) {
@@ -375,27 +393,45 @@ object ScheduleParser {
 
             val dayRaw = cell(dayIdx)
             val day = parseDay(dayRaw) ?: continue
-            // 节次列是 start-end 格式 (e.g. "1-2"), 转为 (startNode, step=end-start+1)
-            val (nodeStart, nodeEnd) = parseRange(cell(nodeIdx)) ?: continue
+
+            // 解析节次 (start, end)
+            val (nodeStart, nodeEnd) = if (nodeStartIdx != null && nodeEndIdx != null) {
+                val s = cell(nodeStartIdx).toIntOrNull()
+                val e = cell(nodeEndIdx).toIntOrNull()
+                if (s == null || e == null) continue
+                Pair(s, e)
+            } else {
+                parseRange(cell(nodeIdx)) ?: continue
+            }
             val step = (nodeEnd - nodeStart + 1).coerceAtLeast(1)
-            val (startWeek, endWeek) = parseRange(cell(weekIdx)) ?: continue
+
+            // 解析周次——支持多区间 "2-5,7-9,11-14" / 离散 "11,13,15" / 单周 "5" / 区间 "2-16"
+            val weekRanges = parseWeekRanges(cell(weekIdx))
+            if (weekRanges.isEmpty()) continue
+
+            val teacher = cell(teacherIdx)
+            val room = cell(roomIdx)
+            val note = cell(noteIdx)
             val type = cell(typeIdx).let { parseType(it) }
 
-            courses += CourseEntity(
-                id = 0,
-                tableId = defaultTableId,
-                courseName = name,
-                teacher = cell(teacherIdx),
-                room = cell(roomIdx),
-                note = cell(noteIdx),
-                day = day,
-                startNode = nodeStart,
-                step = step,
-                startWeek = startWeek,
-                endWeek = endWeek,
-                type = type,
-                color = defaultColor
-            )
+            // 每个区间展开为一条 CourseEntity
+            for ((startWeek, endWeek) in weekRanges) {
+                courses += CourseEntity(
+                    id = 0,
+                    tableId = defaultTableId,
+                    courseName = name,
+                    teacher = teacher,
+                    room = room,
+                    note = note,
+                    day = day,
+                    startNode = nodeStart,
+                    step = step,
+                    startWeek = startWeek,
+                    endWeek = endWeek,
+                    type = type,
+                    color = defaultColor
+                )
+            }
         }
 
         if (courses.isEmpty()) throw IllegalArgumentException("未能解析任何课程")
@@ -405,6 +441,26 @@ object ScheduleParser {
             startDate = java.time.LocalDate.now().toString(),
             courses = courses
         )
+    }
+
+    /**
+     * 解析周数字段，支持:
+     *   "5"              → [(5, 5)]
+     *   "2-16"           → [(2, 16)]
+     *   "2-5,7-9,11-14"  → [(2, 5), (7, 9), (11, 14)]
+     *   "11,13,15,17"    → [(11, 11), (13, 13), (15, 15), (17, 17)]
+     *   "2-5,11"         → [(2, 5), (11, 11)]
+     */
+    private fun parseWeekRanges(s: String): List<Pair<Int, Int>> {
+        if (s.isBlank()) return emptyList()
+        val result = mutableListOf<Pair<Int, Int>>()
+        s.split(',', '，', ';', '；').forEach { part ->
+            val t = part.trim()
+            if (t.isEmpty()) return@forEach
+            val pair = parseRange(t) ?: return@forEach
+            result += pair
+        }
+        return result
     }
 
     /** 解析 CSV 文本为二维字符串数组，支持引号转义 */
@@ -569,10 +625,21 @@ object ScheduleParser {
         val teacherIdx = findCol("教师", "老师", "teacher")
         val roomIdx = findCol("教室", "位置", "room", "position", "地点")
         val dayIdx = findCol("星期", "周几", "day")
-        val nodeIdx = findCol("节次", "节点", "node")
-        val weekIdx = findCol("周次", "weeks", "week")
+        val nodeStartIdx = findCol("开始节数", "开始节次", "起节", "节次起", "start node")
+        val nodeEndIdx = findCol("结束节数", "结束节次", "止节", "节次止", "end node")
+        val nodeIdx = if (nodeStartIdx == null && nodeEndIdx == null) {
+            findCol("节次", "节点", "node", "上课节次")
+        } else null
+        val weekIdx = findCol("周次", "周数", "weeks", "week")
         val typeIdx = findCol("类型", "type")
         val noteIdx = findCol("备注", "note")
+
+        if (nodeStartIdx == null && nodeEndIdx == null && nodeIdx == null) {
+            return emptyList()
+        }
+        if (weekIdx == null) {
+            return emptyList()
+        }
 
         val courses = mutableListOf<CourseEntity>()
         for (i in (headerIdx + 1) until rows.size) {
@@ -585,27 +652,40 @@ object ScheduleParser {
 
             val day = parseDay(cell(dayIdx))
             if (day == null) continue
-            // 节次列是 start-end 格式 (e.g. "1-2"), 转为 (startNode, step=end-start+1)
-            val (nodeStart, nodeEnd) = parseRange(cell(nodeIdx)) ?: continue
+            // 节点：开始/结束两列 或 单列 range
+            val (nodeStart, nodeEnd) = if (nodeStartIdx != null && nodeEndIdx != null) {
+                val s = cell(nodeStartIdx).toIntOrNull()
+                val e = cell(nodeEndIdx).toIntOrNull()
+                if (s == null || e == null) continue
+                Pair(s, e)
+            } else {
+                parseRange(cell(nodeIdx)) ?: continue
+            }
             val step = (nodeEnd - nodeStart + 1).coerceAtLeast(1)
-            val (startWeek, endWeek) = parseRange(cell(weekIdx)) ?: continue
+            val weekRanges = parseWeekRanges(cell(weekIdx))
+            if (weekRanges.isEmpty()) continue
             val type = parseType(cell(typeIdx))
 
-            courses += CourseEntity(
-                id = 0,
-                tableId = defaultTableId,
-                courseName = name,
-                teacher = cell(teacherIdx),
-                room = cell(roomIdx),
-                note = cell(noteIdx),
-                day = day,
-                startNode = nodeStart,
-                step = step,
-                startWeek = startWeek,
-                endWeek = endWeek,
-                type = type,
-                color = defaultColor
-            )
+            val teacher = cell(teacherIdx)
+            val room = cell(roomIdx)
+            val note = cell(noteIdx)
+            for ((startWeek, endWeek) in weekRanges) {
+                courses += CourseEntity(
+                    id = 0,
+                    tableId = defaultTableId,
+                    courseName = name,
+                    teacher = teacher,
+                    room = room,
+                    note = note,
+                    day = day,
+                    startNode = nodeStart,
+                    step = step,
+                    startWeek = startWeek,
+                    endWeek = endWeek,
+                    type = type,
+                    color = defaultColor
+                )
+            }
         }
         return courses
     }
