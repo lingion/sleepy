@@ -121,52 +121,57 @@ fun CardsGridView(
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
-        // ---- Layer 1: 底层空表格 ----
+        val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
+        val totalHeight = 64.dp + CELL_H * maxNode + CELL_GAP * (maxNode - 1)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(rememberScrollState())
         ) {
-            // 表头：周一~周日
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
-                horizontalArrangement = Arrangement.spacedBy(5.dp)
+            // 整个可滚动区域是一个 Box，格子+卡片同层
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(totalHeight)
             ) {
-                Box(modifier = Modifier.width(66.dp))
-                for (day in 1..7) {
-                    DayHeadCell(
-                        day = day,
-                        isToday = day == today,
-                        courseCount = courses.count { it.day == day },
-                        modifier = Modifier.weight(1f)
+                // ---- Layer 1: 底层空表格 ----
+                Column(modifier = Modifier.matchParentSize()) {
+                    // 表头
+                    Row(
+                        modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                        horizontalArrangement = Arrangement.spacedBy(5.dp)
+                    ) {
+                        Box(modifier = Modifier.width(66.dp))
+                        for (day in 1..7) {
+                            DayHeadCell(
+                                day = day,
+                                isToday = day == today,
+                                courseCount = courses.count { it.day == day },
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                    for (slot in timeSlots) {
+                        SlotGridRow(
+                            slot = slot,
+                            today = today,
+                            modifier = Modifier.fillMaxWidth().padding(bottom = CELL_GAP)
+                        )
+                    }
+                }
+
+                // ---- Layer 2: 课程卡片，同 Box 内重叠 ----
+                for (course in courses) {
+                    CourseOverlayCard(
+                        course = course,
+                        dayIdx = course.day - 1,
+                        nodeIdx = course.startNode - 1,
+                        steps = course.step.coerceAtLeast(1),
+                        maxNode = maxNode,
+                        onClick = { onCourseClick(course) }
                     )
                 }
             }
-            // 每节独立一行，只画空壳
-            for (slot in timeSlots) {
-                SlotGridRow(
-                    slot = slot,
-                    today = today,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = CELL_GAP)
-                )
-            }
-        }
-
-        // ---- Layer 2: 课程卡片覆盖层 ----
-        val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
-        for (course in courses) {
-            val dayIdx = course.day - 1  // 0-based
-            val nodeIdx = course.startNode - 1  // 0-based
-            val steps = course.step.coerceAtLeast(1)
-
-            CourseOverlayCard(
-                course = course,
-                dayIdx = dayIdx,
-                nodeIdx = nodeIdx,
-                steps = steps,
-                maxNode = maxNode,
-                onClick = { onCourseClick(course) }
-            )
         }
     }
 }
