@@ -120,6 +120,8 @@ dependencies {
     // Glance (App Widgets)
     implementation("androidx.glance:glance-appwidget:1.1.0")
     implementation("androidx.glance:glance-material3:1.1.0")
+    // jsoup (HTML parsing for 教务直连 import)
+    implementation("org.jsoup:jsoup:1.18.1")
 
     // WorkManager (Daily notifications)
     implementation("androidx.work:work-runtime-ktx:2.9.1")
