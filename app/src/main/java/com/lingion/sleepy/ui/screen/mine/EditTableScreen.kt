@@ -322,15 +322,4 @@ private fun CardSection(title: String, subtitle: String, content: @Composable ()
     }
 }
 
-private fun parseTimeSlotNodes(timeJson: String): List<Int> = try {
-    val arr = JSONArray(timeJson)
-    buildList {
-        for (i in 0 until arr.length()) {
-            val o = arr.getJSONObject(i)
-            add(o.optInt("node", i + 1))
-        }
-    }
-} catch (_: Exception) {
-    parseTimeSlotNodes(TimeTableUtils.DEFAULT_TIME_JSON)
-}
 
