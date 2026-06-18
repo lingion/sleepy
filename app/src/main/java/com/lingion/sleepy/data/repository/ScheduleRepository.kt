@@ -51,6 +51,9 @@ class ScheduleRepository(private val db: AppDatabase) {
     fun observeCoursesByDay(tableId: Long, day: Int): Flow<List<CourseEntity>> =
         courseDao.observeByTableAndDay(tableId, day)
 
+    suspend fun getCoursesByDayOnce(tableId: Long, day: Int): List<CourseEntity> =
+        courseDao.getByTableAndDayOnce(tableId, day)
+
     suspend fun getCourses(tableId: Long): List<CourseEntity> = courseDao.getByTable(tableId)
 
     suspend fun getCourse(id: Long): CourseEntity? = courseDao.getById(id)

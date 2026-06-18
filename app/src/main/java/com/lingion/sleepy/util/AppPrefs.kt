@@ -2,6 +2,7 @@ package com.lingion.sleepy.util
 
 import android.content.Context
 import android.content.SharedPreferences
+import android.content.res.Configuration
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
@@ -13,12 +14,14 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  */
 object AppPrefs {
     private const val FILE = "sleepy_prefs"
-    private const val KEY_DARK = "dark_mode"
-    private const val KEY_REMINDER = "daily_reminder"
-    private const val KEY_THEME = "theme_key"
+    const val KEY_DARK = "dark_mode"
+    const val KEY_REMINDER = "daily_reminder"
+    const val KEY_THEME = "theme_key"
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
+
+    // ===== 深色模式：Boolean 单选开关（最简单，主题色和深色是两轴独立）=====
 
     fun isDarkMode(ctx: Context): Boolean =
         sp(ctx).getBoolean(KEY_DARK, false)
@@ -27,12 +30,7 @@ object AppPrefs {
         sp(ctx).edit().putBoolean(KEY_DARK, v).apply()
     }
 
-    fun isReminderEnabled(ctx: Context): Boolean =
-        sp(ctx).getBoolean(KEY_REMINDER, true)
-
-    fun setReminderEnabled(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_REMINDER, v).apply()
-    }
+    // ===== 主题色 =====
 
     fun getThemeKey(ctx: Context): String =
         sp(ctx).getString(KEY_THEME, com.lingion.sleepy.ui.theme.ThemePresets.KEY_DEFAULT)
@@ -42,10 +40,6 @@ object AppPrefs {
         sp(ctx).edit().putString(KEY_THEME, key).apply()
     }
 
-    /**
-     * 监听 theme_key 变化 — 用于主题切换 0 闪重组。
-     * SharedPreferences 没有 StateFlow，自己用 callbackFlow 包 OnSharedPreferenceChangeListener。
-     */
     fun themeKeyFlow(ctx: Context): Flow<String> = callbackFlow {
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
             if (k == KEY_THEME) {
@@ -56,8 +50,16 @@ object AppPrefs {
         }
         val sp = sp(ctx)
         sp.registerOnSharedPreferenceChangeListener(listener)
-        // 立即 emit 当前值
         trySend(getThemeKey(ctx))
         awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
     }.distinctUntilChanged()
+
+    // ===== 提醒 =====
+
+    fun isReminderEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_REMINDER, true)
+
+    fun setReminderEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_REMINDER, v).apply()
+    }
 }

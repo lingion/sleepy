@@ -1,81 +1,71 @@
 package com.lingion.sleepy.widget
 
 import android.content.Context
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
+import android.content.Intent
 import androidx.glance.GlanceId
-import androidx.glance.GlanceModifier
-import androidx.glance.action.actionStartActivity
-import androidx.glance.action.clickable
+import androidx.glance.action.Action
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
-import androidx.glance.appwidget.cornerRadius
+import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.provideContent
-import androidx.glance.background
-import androidx.glance.layout.Alignment
-import androidx.glance.layout.Column
-import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.height
-import androidx.glance.layout.padding
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
 import com.lingion.sleepy.MainActivity
+import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.TimeTableUtils
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 class TodayWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
+        // DB 读必须在 IO 线程
+        val data = withContext(Dispatchers.IO) { loadWidgetData(context) }
+        val openAppIntent = Intent(context, MainActivity::class.java).apply {
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+        }
         provideContent {
-            WidgetContent()
+            WidgetContent(
+                data = data,
+                openAppAction = actionStartActivity(openAppIntent),
+                openCourseAction = { courseId ->
+                    actionStartActivity(MainActivity.intentForCourse(context, courseId))
+                }
+            )
         }
     }
 
-    @Composable
-    private fun WidgetContent() {
+    /**
+     * 拉数据组装 [WidgetData]：
+     * 1. 找默认课表
+     * 2. 算当前周次
+     * 3. 拉今天 day-of-week 的所有课程
+     * 4. 过滤掉不在当前周次的
+     * 5. 按节次排序
+     * 6. 读 app 的深色模式 → 喂给小组件配色
+     *
+     * 任何一步失败 / 无数据都返回安全的空状态。
+     */
+    private suspend fun loadWidgetData(context: Context): WidgetData {
         val today = LocalDate.now()
-        val dayName = DateUtils.chineseDay(today.dayOfWeek.value)
+        val dayOfWeek = DateUtils.todayDayOfWeek(today)
+        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context)
+        val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
+        return try {
+            val app = SleepyApp.get()
+            val repo = app.repository
 
-        Column(
-            modifier = GlanceModifier
-                .fillMaxSize()
-                .background(ColorProvider(Color(0xFFF5F0FF)))
-                .cornerRadius(16.dp)
-                .padding(16.dp)
-                .clickable(actionStartActivity<MainActivity>()),
-            verticalAlignment = Alignment.Top,
-            horizontalAlignment = Alignment.Start
-        ) {
-            Text(
-                text = "今日课程",
-                style = TextStyle(
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorProvider(Color(0xFF6750A4))
-                )
-            )
-            Spacer(modifier = GlanceModifier.height(8.dp))
-            Text(
-                text = "${today.monthValue}月${today.dayOfMonth}日 $dayName",
-                style = TextStyle(
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorProvider(Color(0xFF1C1B1F))
-                )
-            )
-            Spacer(modifier = GlanceModifier.height(12.dp))
-            Text(
-                text = "暂无课程",
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    color = ColorProvider(Color(0xFF79747E))
-                )
-            )
+            val table = repo.getDefaultTable()
+            if (table == null) {
+                WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
+            } else {
+                val week = DateUtils.currentWeek(table.startDate, today)
+                val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                WidgetData(date = today, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey)
+            }
+        } catch (_: Throwable) {
+            WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
         }
     }
 }

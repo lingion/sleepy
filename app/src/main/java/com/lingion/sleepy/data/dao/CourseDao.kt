@@ -36,6 +36,9 @@ interface CourseDao {
     @Query("SELECT * FROM courses WHERE tableId = :tableId AND day = :day ORDER BY startNode")
     fun observeByTableAndDay(tableId: Long, day: Int): Flow<List<CourseEntity>>
 
+    @Query("SELECT * FROM courses WHERE tableId = :tableId AND day = :day ORDER BY startNode")
+    suspend fun getByTableAndDayOnce(tableId: Long, day: Int): List<CourseEntity>
+
     @Query("SELECT * FROM courses WHERE tableId = :tableId ORDER BY day, startNode, startWeek")
     suspend fun getByTable(tableId: Long): List<CourseEntity>
 
