@@ -53,6 +53,9 @@ data class TimeSlot(
     val timeString: String get() = "$displayStart-$displayEnd"
 }
 
+private val CELL_H = 40.dp
+private val CELL_GAP = 3.dp
+
 /**
  * 每节独立行 — 不再是分组
  */
@@ -149,7 +152,7 @@ fun CardsGridView(
                     allCourses = courses,
                     today = today,
                     onCourseClick = onCourseClick,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = CELL_GAP)
                 )
             }
         }
@@ -240,11 +243,11 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
     Box(
         modifier = modifier
-            .height(52.dp)
+            .height(CELL_H)
             .clip(RoundedCornerShape(12.dp))
             .background(colors.surface)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
-            .padding(4.dp),
+            .padding(2.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -271,7 +274,7 @@ private fun EmptyCell(modifier: Modifier = Modifier, isToday: Boolean) {
     val colors = SleepyTheme.colors
     Box(
         modifier = modifier
-            .height(52.dp)
+            .height(CELL_H)
             .clip(RoundedCornerShape(12.dp))
             .border(
                 width = 1.dp,
@@ -294,8 +297,9 @@ private fun CourseCardCell(
     val bg = pickCourseColor(course, palette)
     val fg = colors.onSurface
 
-    // 卡片高度 = 每节 52dp × 节数 (至少 1 节)
-    val cellHeight = (52.dp * course.step.coerceAtLeast(1) + 4.dp * (course.step.coerceAtLeast(1) - 1))
+    // 卡片高度 = 每节 CELL_H × 节数 + 节间 CELL_GAP
+    val steps = course.step.coerceAtLeast(1)
+    val cellHeight = CELL_H * steps + CELL_GAP * (steps - 1)
 
     Box(
         modifier = modifier
