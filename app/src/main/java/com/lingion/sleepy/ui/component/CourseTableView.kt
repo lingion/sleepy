@@ -176,9 +176,12 @@ fun CardsGridView(
                 if (courses.isNotEmpty()) {
                     val timeWPx = with(density) { timeW.roundToPx() }
                     val gapWPx = with(density) { gapW.roundToPx() }
-                    val headHPx = with(density) { headH.roundToPx() }
+                    val headHPx = with(density) { (CELL_H).roundToPx() + 6.dp.roundToPx() }  // per-modifier rounding
                     val slotHPx = with(density) { slotH.roundToPx() }
                     val gapHPx = with(density) { gapH.roundToPx() }
+                    // Per-slot spacing = layout's height(52dp).roundToPx() + padding(4dp).roundToPx()
+                    // NOT (52+4).dp.roundToPx() — roundToPx happens per-modifier in Compose
+                    val slotRowPx = slotHPx + gapHPx
 
                     androidx.compose.ui.layout.Layout(
                         content = {
@@ -203,9 +206,9 @@ fun CardsGridView(
                             val steps = course.step.coerceAtLeast(1)
 
                             val x = timeWPx + gapWPx + dayIdx * (colW + gapWPx)
-                            val y = headHPx + nodeIdx * (slotHPx + gapHPx)
+                            val y = headHPx + nodeIdx * slotRowPx
                             val cardW = colW
-                            val cardH = steps * slotHPx + (steps - 1) * gapHPx
+                            val cardH = steps * slotRowPx - gapHPx  // N rows minus trailing gap
 
                             val placeable = measurable.measure(
                                 androidx.compose.ui.unit.Constraints.fixed(cardW, cardH)
