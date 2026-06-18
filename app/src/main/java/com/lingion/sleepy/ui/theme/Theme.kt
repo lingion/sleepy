@@ -1,16 +1,20 @@
 package com.lingion.sleepy.ui.theme
 
+import android.os.Build
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -310,10 +314,42 @@ object SleepyTheme {
 @Composable
 fun SleepyThemeProvider(
     darkTheme: Boolean = false,
+    themeKey: String = ThemePresets.KEY_DEFAULT,
     content: @Composable () -> Unit
 ) {
-    val wakeColors = if (darkTheme) DarkScheme else LightScheme
-    val palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
+    val context = LocalContext.current
+
+    // "跟随系统" 走 Material You 动态取色（API 31+）；低版本降级到默认。
+    // 其他 5 套用预设的 light/dark scheme。
+    val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+    val preset = if (themeKey == ThemePresets.KEY_SYSTEM && dynamicAvailable) {
+        null  // 标记走 dynamic 分支
+    } else {
+        ThemePresets.byKey(themeKey)
+    }
+
+    val wakeColors: WakeUpColorScheme
+    val palette: CoursePalette
+
+    if (preset == null) {
+        // dynamic 取色
+        val m3Dynamic = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        // 课程色退回到 Light/Dark 默认
+        wakeColors = if (darkTheme) DarkScheme else LightScheme
+        palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
+        CompositionLocalProvider(
+            LocalWakeUpColors provides wakeColors,
+            LocalCoursePalette provides palette
+        ) {
+            MaterialTheme(colorScheme = m3Dynamic) {
+                content()
+            }
+        }
+        return
+    }
+
+    wakeColors = if (darkTheme) preset.dark else preset.light
+    palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
 
     val m3Scheme = if (darkTheme) {
         darkColorScheme(

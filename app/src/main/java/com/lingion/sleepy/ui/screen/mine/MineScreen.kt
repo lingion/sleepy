@@ -61,7 +61,8 @@ fun MineScreen(
     viewModel: ScheduleViewModel = viewModel(),
     darkMode: Boolean = false,
     onToggleDark: () -> Unit = {},
-    onOpenAllTables: () -> Unit = {}
+    onOpenAllTables: () -> Unit = {},
+    onOpenThemeColor: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
@@ -172,7 +173,7 @@ fun MineScreen(
                     SettingsItem(
                         icon = Icons.Outlined.Palette,
                         label = stringResource(R.string.mine_theme_color),
-                        onClick = { showSnack("主题颜色 — 该功能开发中,目前仅支持默认淡紫主题") }
+                        onClick = onOpenThemeColor
                     )
                     Divider()
                     SettingsItem(

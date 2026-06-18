@@ -14,6 +14,7 @@ import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material.icons.outlined.Today
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -31,6 +32,7 @@ import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
+import com.lingion.sleepy.ui.screen.mine.ThemeColorScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -59,7 +61,9 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val dark = remember { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity)) }
-            SleepyThemeProvider(darkTheme = dark.value) {
+            val themeKey by AppPrefs.themeKeyFlow(this@MainActivity)
+                .collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
+            SleepyThemeProvider(darkTheme = dark.value, themeKey = themeKey) {
                 AppRoot(
                     darkMode = dark.value,
                     onToggleDark = {
@@ -84,7 +88,8 @@ private enum class OverlayScreen {
     AddCourse,
     Import,
     AllTables,
-    EditTable
+    EditTable,
+    ThemeColor
 }
 
 @Composable
@@ -168,6 +173,14 @@ private fun AppRoot(
         return
     }
 
+    // ----- ThemeColor -----
+    if (overlayScreen == OverlayScreen.ThemeColor) {
+        ThemeColorScreen(
+            onBack = { overlayScreen = null }
+        )
+        return
+    }
+
     androidx.compose.material3.Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = SleepyTheme.colors.background,
@@ -206,7 +219,8 @@ private fun AppRoot(
                 Tab.Mine -> MineScreen(
                     darkMode = darkMode,
                     onToggleDark = onToggleDark,
-                    onOpenAllTables = { overlayScreen = OverlayScreen.AllTables }
+                    onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
+                    onOpenThemeColor = { overlayScreen = OverlayScreen.ThemeColor }
                 )
             }
         }
