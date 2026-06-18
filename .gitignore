@@ -18,3 +18,8 @@ captures/
 # Output
 *.log
 .verify/token
+
+# Temp query/result files (e.g. ad-hoc web search dumps)
+q*.json
+*.tmp
+*.bak
