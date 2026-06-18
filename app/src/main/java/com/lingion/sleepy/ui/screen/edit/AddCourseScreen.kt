@@ -809,14 +809,19 @@ private fun NumberField(
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (Int) -> Unit
 ) {
-    var text by remember(value) { mutableStateOf(if (value == 0 && min > 0) "" else value.toString()) }
+    var text by remember(value) { mutableStateOf(value.toString()) }
 
     OutlinedTextField(
         value = text,
         onValueChange = { txt ->
-            text = txt
             val v = txt.toIntOrNull()
-            if (v != null) onChange(v.coerceIn(min, max))
+            if (v != null) {
+                text = v.toString()
+                onChange(v.coerceIn(min, max))
+            } else if (txt.isEmpty()) {
+                text = ""
+                onChange(min)
+            }
         },
         label = { Text(label) },
         singleLine = true,
