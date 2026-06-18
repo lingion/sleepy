@@ -3,6 +3,7 @@ package com.lingion.sleepy.data.entity
 import androidx.room.ColumnInfo
 import androidx.room.Entity
 import androidx.room.PrimaryKey
+import com.lingion.sleepy.util.TimeTableUtils
 
 /**
  * 课表实体 (TimeTable) — 一个课表包含多个课程
@@ -22,8 +23,11 @@ data class TimeTableEntity(
     /** 一天的节次数 */
     @ColumnInfo(name = "nodesPerDay") val nodesPerDay: Int = 12,
 
-    /** 第几节课的上课时间表 JSON: [{"node":1,"start":"08:00","end":"08:45"}, ...] */
-    @ColumnInfo(name = "timeJson") val timeJson: String = DEFAULT_TIME_JSON,
+    /**
+     * 第几节课的上课时间表 JSON。
+     * 默认值委托给 [TimeTableUtils.DEFAULT_TIME_JSON]，保持与 UI 渲染 / 解析器**单一来源**。
+     */
+    @ColumnInfo(name = "timeJson") val timeJson: String = TimeTableUtils.DEFAULT_TIME_JSON,
 
     /** 颜色主题 */
     @ColumnInfo(name = "color") val color: String = "#FF6750A4",
@@ -32,22 +36,4 @@ data class TimeTableEntity(
     @ColumnInfo(name = "isDefault") val isDefault: Boolean = false,
 
     @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis()
-) {
-    companion object {
-        /** 默认节次时间表 (12 节，每节 45/50 分钟) */
-        const val DEFAULT_TIME_JSON = """[
-            {"node":1,"start":"08:00","end":"08:45"},
-            {"node":2,"start":"08:55","end":"09:40"},
-            {"node":3,"start":"10:00","end":"10:45"},
-            {"node":4,"start":"10:55","end":"11:40"},
-            {"node":5,"start":"14:00","end":"14:45"},
-            {"node":6,"start":"14:55","end":"15:40"},
-            {"node":7,"start":"16:00","end":"16:45"},
-            {"node":8,"start":"16:55","end":"17:40"},
-            {"node":9,"start":"19:00","end":"19:45"},
-            {"node":10,"start":"19:55","end":"20:40"},
-            {"node":11,"start":"20:50","end":"21:35"},
-            {"node":12,"start":"21:45","end":"22:30"}
-        ]"""
-    }
-}
+)

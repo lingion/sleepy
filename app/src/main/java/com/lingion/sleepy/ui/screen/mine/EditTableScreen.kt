@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -368,7 +369,7 @@ private fun parseTimeSlotNodes(timeJson: String): List<Int> = try {
         }
     }
 } catch (_: Exception) {
-    parseTimeSlotNodes(TimeTableEntity.DEFAULT_TIME_JSON)
+    parseTimeSlotNodes(TimeTableUtils.DEFAULT_TIME_JSON)
 }
 
 private fun parseSlotTime(timeJson: String, index: Int, key: String): String = try {

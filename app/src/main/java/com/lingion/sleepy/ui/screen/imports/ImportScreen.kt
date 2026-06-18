@@ -66,6 +66,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimePickerField
@@ -295,7 +296,7 @@ fun ImportScreen(
                 confirmedStartDate = currentPreview.parseResult.startDate.ifBlank {
                     existingTable?.startDate ?: java.time.LocalDate.now().toString()
                 }
-                confirmedTimeJson = existingTable?.timeJson ?: TimeTableEntity.DEFAULT_TIME_JSON
+                confirmedTimeJson = existingTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
                 pendingMode = mode
             }
         )

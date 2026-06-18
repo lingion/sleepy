@@ -272,12 +272,16 @@ val SleepyShapes = Shapes(
 
 /**
  * 扩展字号 — switchable.html 的额外尺寸 (9px/10px/13px/15px)
+ *
+ * 改成函数返回 TextStyle 是为了让调用方 .copy() 时不污染共享 val：
+ * 直接 `SleepyTextStyle.micro` 是 `val`，copy 出来的还是引用同一个对象；
+ * 函数返回则每次新建，copy 永远是独立的实例。
  */
 object SleepyTextStyle {
-    val micro = TextStyle(fontSize = 9.sp, lineHeight = 11.sp)
-    val smallMeta = TextStyle(fontSize = 10.sp, lineHeight = 14.sp)
-    val dayLabel = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold)
-    val sectionHead = TextStyle(fontSize = 15.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium)
+    fun micro() = TextStyle(fontSize = 9.sp, lineHeight = 11.sp)
+    fun smallMeta() = TextStyle(fontSize = 10.sp, lineHeight = 14.sp)
+    fun dayLabel() = TextStyle(fontSize = 13.sp, lineHeight = 18.sp, fontWeight = FontWeight.SemiBold)
+    fun sectionHead() = TextStyle(fontSize = 15.sp, lineHeight = 22.sp, fontWeight = FontWeight.Medium)
 }
 
 /** 全局访问入口 */

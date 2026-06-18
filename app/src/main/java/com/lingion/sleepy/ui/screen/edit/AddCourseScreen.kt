@@ -60,6 +60,7 @@ import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.LocalTime
@@ -499,7 +500,7 @@ private fun blockRangeMinutes(block: MeetingBlockDraft, table: TimeTableEntity?)
             start.hour * 60 + start.minute to end.hour * 60 + end.minute
         }
         MeetingInputMode.ByNode -> {
-            val timeJson = table?.timeJson ?: TimeTableEntity.DEFAULT_TIME_JSON
+            val timeJson = table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
             val nodes = parseNodeMinuteMap(timeJson)
             val start = nodes[block.startNode]?.first ?: return null
             val end = nodes[block.startNode + block.step - 1]?.second ?: return null
