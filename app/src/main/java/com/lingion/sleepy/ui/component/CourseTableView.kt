@@ -12,7 +12,6 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -115,14 +114,15 @@ fun CardsGridView(
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
     val scrollState = rememberScrollState()
+    val density = androidx.compose.ui.platform.LocalDensity.current
 
-    // Layout constants (must match the measured Column below)
+    // Layout constants
     val headH = 58.dp  // 52dp header + 6dp bottom padding
     val timeW = 68.dp
     val slotH = 52.dp
-    val gapH = 4.dp  // between slot rows
-    val gapW = 5.dp  // between day columns
-    val totalH = headH + slotH * maxNode + gapH * maxNode  // slot + gap for every row
+    val gapH = 4.dp
+    val gapW = 5.dp
+    val totalH = headH + slotH * maxNode + gapH * maxNode
 
     Box(
         modifier = modifier
@@ -136,18 +136,13 @@ fun CardsGridView(
                 .fillMaxSize()
                 .verticalScroll(scrollState)
         ) {
-            // Inner Box: dp-based layout via BoxWithConstraints, no pixel math
-            androidx.compose.foundation.layout.BoxWithConstraints(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(totalH)
             ) {
-                val boxW = maxWidth
-                val dayW = (boxW - timeW - gapW * 7f) / 7f  // 7 gaps for 8 columns
-
-                // Layer 1: day headers + time labels
+                // Layer 1: day headers + time labels (Compose flow)
                 Column(modifier = Modifier.matchParentSize()) {
-                    // --- Day header row ---
                     Row(
                         modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                         horizontalArrangement = Arrangement.spacedBy(gapW)
@@ -163,7 +158,6 @@ fun CardsGridView(
                         }
                     }
 
-                    // --- Time slot rows (time labels only) ---
                     for (slot in timeSlots) {
                         Row(
                             modifier = Modifier
@@ -178,23 +172,52 @@ fun CardsGridView(
                     }
                 }
 
-                // Layer 2: course cards on top
-                val slotUnit = slotH + gapH  // one slot row = cell + gap
-                for (course in courses) {
-                    val dayIdx = course.day - 1
-                    val nodeIdx = course.startNode - 1
-                    val steps = course.step.coerceAtLeast(1)
+                // Layer 2: cards — Layout for pixel-perfect positioning
+                if (courses.isNotEmpty()) {
+                    val timeWPx = with(density) { timeW.roundToPx() }
+                    val gapWPx = with(density) { gapW.roundToPx() }
+                    val headHPx = with(density) { headH.roundToPx() }
+                    val slotHPx = with(density) { slotH.roundToPx() }
+                    val gapHPx = with(density) { gapH.roundToPx() }
 
-                    val x = timeW + gapW + (dayW + gapW) * dayIdx
-                    val y = headH + slotUnit * nodeIdx
-                    val cardH = slotH * steps + gapH * (steps - 1)  // no gap after last slot
+                    androidx.compose.ui.layout.Layout(
+                        content = {
+                            courses.forEach { course ->
+                                CourseCardCell(
+                                    course = course,
+                                    steps = course.step.coerceAtLeast(1),
+                                    onClick = { onCourseClick(course) }
+                                )
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    ) { measurables, constraints ->
+                        val w = constraints.maxWidth
+                        val h = constraints.maxHeight
+                        val colW = (w - timeWPx - gapWPx * 7) / 7
 
-                    Box(
-                        modifier = Modifier
-                            .offset(x, y)
-                            .size(width = dayW, height = cardH)
-                    ) {
-                        CourseCardCell(course = course, steps = steps, onClick = { onCourseClick(course) })
+                        val placeables = measurables.mapIndexed { idx, measurable ->
+                            val course = courses[idx]
+                            val dayIdx = course.day - 1
+                            val nodeIdx = course.startNode - 1
+                            val steps = course.step.coerceAtLeast(1)
+
+                            val x = timeWPx + gapWPx + dayIdx * (colW + gapWPx)
+                            val y = headHPx + nodeIdx * (slotHPx + gapHPx)
+                            val cardW = colW
+                            val cardH = steps * slotHPx + (steps - 1) * gapHPx
+
+                            val placeable = measurable.measure(
+                                androidx.compose.ui.unit.Constraints.fixed(cardW, cardH)
+                            )
+                            Triple(x, y, placeable)
+                        }
+
+                        layout(w, h) {
+                            placeables.forEach { (x, y, placeable) ->
+                                placeable.placeRelative(x, y)
+                            }
+                        }
                     }
                 }
             }
