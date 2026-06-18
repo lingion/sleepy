@@ -35,6 +35,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.TopAppBar
@@ -91,6 +92,17 @@ fun ImportScreen(
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
     val colors = SleepyTheme.colors
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = colors.onSurface,
+        unfocusedTextColor = colors.onSurface,
+        focusedLabelColor = colors.primary,
+        unfocusedLabelColor = colors.onSurfaceVariant,
+        focusedBorderColor = colors.primary,
+        unfocusedBorderColor = colors.outlineVariant,
+        cursorColor = colors.primary,
+        focusedContainerColor = colors.surfaceContainerLowest,
+        unfocusedContainerColor = colors.surfaceContainerLowest
+    )
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -217,7 +229,8 @@ fun ImportScreen(
                             .height(160.dp),
                         placeholder = { Text("粘贴课表文本…", color = colors.onSurfaceVariant) },
                         enabled = !isLoading,
-                        shape = RoundedCornerShape(12.dp)
+                        shape = RoundedCornerShape(12.dp),
+                        colors = fieldColors
                     )
                     Button(
                         onClick = {
@@ -592,6 +605,17 @@ private fun ImportConfirmDialog(
     onConfirm: () -> Unit
 ) {
     val colors = SleepyTheme.colors
+    val fieldColors = OutlinedTextFieldDefaults.colors(
+        focusedTextColor = colors.onSurface,
+        unfocusedTextColor = colors.onSurface,
+        focusedLabelColor = colors.primary,
+        unfocusedLabelColor = colors.onSurfaceVariant,
+        focusedBorderColor = colors.primary,
+        unfocusedBorderColor = colors.outlineVariant,
+        cursorColor = colors.primary,
+        focusedContainerColor = colors.surfaceContainerLowest,
+        unfocusedContainerColor = colors.surfaceContainerLowest
+    )
     var rows by remember(timeJson) { mutableStateOf(parseTimeConfirmRows(timeJson)) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     AlertDialog(
@@ -612,7 +636,8 @@ private fun ImportConfirmDialog(
                     label = { Text("第一周从哪天开始（YYYY-MM-DD）") },
                     singleLine = true,
                     shape = RoundedCornerShape(14.dp),
-                    isError = errorMsg != null
+                    isError = errorMsg != null,
+                    colors = fieldColors
                 )
                 if (errorMsg != null) {
                     Text(
@@ -648,7 +673,8 @@ private fun ImportConfirmDialog(
                                 modifier = Modifier.weight(1f),
                                 label = { Text("开始") },
                                 singleLine = true,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(12.dp),
+                                colors = fieldColors
                             )
                             OutlinedTextField(
                                 value = row.end,
@@ -661,7 +687,8 @@ private fun ImportConfirmDialog(
                                 modifier = Modifier.weight(1f),
                                 label = { Text("结束") },
                                 singleLine = true,
-                                shape = RoundedCornerShape(12.dp)
+                                shape = RoundedCornerShape(12.dp),
+                                colors = fieldColors
                             )
                             if (rows.size > 1) {
                                 IconButton(
