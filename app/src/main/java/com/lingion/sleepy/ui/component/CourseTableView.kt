@@ -187,7 +187,7 @@ fun CardsGridView(
 
                     val x = timeW + gapW + (dayW + gapW) * dayIdx
                     val y = headH + slotUnit * nodeIdx
-                    val cardH = slotUnit * steps
+                    val cardH = slotH * steps + gapH * (steps - 1)  // no gap after last slot
 
                     Box(
                         modifier = Modifier
