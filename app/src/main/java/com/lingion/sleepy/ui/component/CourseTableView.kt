@@ -113,7 +113,6 @@ fun CardsGridView(
     modifier: Modifier = Modifier
 ) {
     val colors = SleepyTheme.colors
-    val shape16 = RoundedCornerShape(16.dp)
 
     Box(
         modifier = modifier
@@ -122,6 +121,7 @@ fun CardsGridView(
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
+        // ---- Layer 1: 底层空表格 ----
         Column(
             modifier = Modifier
                 .fillMaxSize()
@@ -132,9 +132,7 @@ fun CardsGridView(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
                 horizontalArrangement = Arrangement.spacedBy(5.dp)
             ) {
-                // 左上角空白格
                 Box(modifier = Modifier.width(66.dp))
-
                 for (day in 1..7) {
                     DayHeadCell(
                         day = day,
@@ -144,17 +142,31 @@ fun CardsGridView(
                     )
                 }
             }
-
-            // 每行一个时段
+            // 每节独立一行，只画空壳
             for (slot in timeSlots) {
-                SlotRow(
+                SlotGridRow(
                     slot = slot,
-                    allCourses = courses,
                     today = today,
-                    onCourseClick = onCourseClick,
                     modifier = Modifier.fillMaxWidth().padding(bottom = CELL_GAP)
                 )
             }
+        }
+
+        // ---- Layer 2: 课程卡片覆盖层 ----
+        val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
+        for (course in courses) {
+            val dayIdx = course.day - 1  // 0-based
+            val nodeIdx = course.startNode - 1  // 0-based
+            val steps = course.step.coerceAtLeast(1)
+
+            CourseOverlayCard(
+                course = course,
+                dayIdx = dayIdx,
+                nodeIdx = nodeIdx,
+                steps = steps,
+                maxNode = maxNode,
+                onClick = { onCourseClick(course) }
+            )
         }
     }
 }
@@ -191,38 +203,21 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, modifier: 
 }
 
 @Composable
-private fun SlotRow(
+private fun SlotGridRow(
     slot: TimeSlot,
-    allCourses: List<CourseEntity>,
     today: Int,
-    onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        // 时段标签
         TimeHeadCell(slot = slot, modifier = Modifier.width(66.dp))
-
-        // 7 列
         for (day in 1..7) {
-            val node = slot.nodeStart
-            val myCourses = allCourses.filter { it.day == day && it.startNode == node }
-            if (myCourses.isEmpty()) {
-                EmptyCell(
-                    modifier = Modifier.weight(1f),
-                    isToday = day == today
-                )
-            } else {
-                myCourses.forEach { c ->
-                    CourseCardCell(
-                        course = c,
-                        onClick = { onCourseClick(c) },
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+            EmptyCell(
+                modifier = Modifier.weight(1f),
+                isToday = day == today
+            )
         }
     }
 }
@@ -274,47 +269,75 @@ private fun EmptyCell(modifier: Modifier = Modifier, isToday: Boolean) {
 }
 
 @Composable
-private fun CourseCardCell(
+private fun CourseOverlayCard(
     course: CourseEntity,
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    dayIdx: Int,
+    nodeIdx: Int,
+    steps: Int,
+    maxNode: Int,
+    onClick: () -> Unit
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
-
-    // 根据课程名 hash 选择调色板中的某个变体
     val bg = pickCourseColor(course, palette)
     val fg = colors.onSurface
+    val shape = RoundedCornerShape(12.dp)
+    val density = androidx.compose.ui.platform.LocalDensity.current
 
-    Box(
-        modifier = modifier
-            .height(CELL_H)
-            .clip(RoundedCornerShape(12.dp))
-            .background(bg)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
-            .clickable(onClick = onClick)
-            .padding(6.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = course.courseName,
-                style = MaterialTheme.typography.labelSmall.copy(
-                    fontWeight = FontWeight.SemiBold,
-                    fontSize = 10.sp,
-                    lineHeight = 13.sp
-                ),
-                color = fg,
-                maxLines = 5,
-                overflow = TextOverflow.Ellipsis
-            )
-            if (course.step > 1) {
-                Text(
-                    text = "${course.startNode}-${course.startNode + course.step - 1}节",
-                    style = SleepyTextStyle.micro,
-                    color = fg.copy(alpha = 0.65f)
-                )
+    // Use Layout for absolute positioning over the grid
+    androidx.compose.ui.layout.Layout(
+        content = {
+            Box(
+                modifier = Modifier
+                    .clip(shape)
+                    .background(bg)
+                    .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
+                    .clickable(onClick = onClick)
+                    .padding(4.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                    Text(
+                        text = course.courseName,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 10.sp,
+                            lineHeight = 13.sp
+                        ),
+                        color = fg,
+                        maxLines = 6,
+                        overflow = TextOverflow.Ellipsis
+                    )
+                    if (steps > 1) {
+                        Text(
+                            text = "${course.startNode}-${course.startNode + steps - 1}节",
+                            style = SleepyTextStyle.micro,
+                            color = fg.copy(alpha = 0.65f)
+                        )
+                    }
+                }
             }
+        },
+        modifier = Modifier.fillMaxSize()
+    ) { measurables, constraints ->
+        val w = constraints.maxWidth
+        val h = constraints.maxHeight
+        val timeW = with(density) { 66.dp.roundToPx() }
+        val gap = with(density) { 5.dp.roundToPx() }
+        val headerH = with(density) { 64.dp.roundToPx() }
+        val colW = (w - timeW - 8 * gap) / 7  // 7 cols + 8 gaps (pre+between+post)
+        val rowH = (h - headerH) / maxNode
+
+        val x = timeW + gap + dayIdx * (colW + gap)
+        val y = headerH + nodeIdx * rowH
+        val cardW = colW
+        val cardH = steps * rowH
+
+        val placeable = measurables.first().measure(
+            androidx.compose.ui.unit.Constraints.fixed(cardW, cardH)
+        )
+        layout(w, h) {
+            placeable.placeRelative(x, y)
         }
     }
 }
