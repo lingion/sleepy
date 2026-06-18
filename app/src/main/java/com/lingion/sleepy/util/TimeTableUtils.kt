@@ -34,36 +34,26 @@ object TimeTableUtils {
         emptyList()
     }
 
-    /**
-     * 把节点时间表压缩为 5 个 TimeSlot (与 HTML WakeUp 默认布局一致)。
-     * 段切分: [1,2] [3,4,5] [6,7] [8,9,10] [11,12,13+]
-     * 若某段节点不存在,跳过该段。
-     */
-    fun timeSlotsFor(timeJson: String): List<TimeSlot> {
-        val nodes = parseNodes(timeJson)
-        if (nodes.isEmpty()) return emptyList()
+/**
+ * 把节点时间表转为每节独立的 TimeSlot（不再是分组）。
+ * 每个节点变成一行：第1节, 第2节, ...
+ */
+fun timeSlotsFor(timeJson: String): List<TimeSlot> {
+    val nodes = parseNodes(timeJson)
+    if (nodes.isEmpty()) return emptyList()
 
-        val groups = listOf(
-            1..2, 3..5, 6..7, 8..10, 11..Int.MAX_VALUE
+    return nodes.map { n ->
+        TimeSlot(
+            label = "${n.node}",
+            start = n.start,
+            end = n.end,
+            displayStart = formatTime(n.start),
+            displayEnd = formatTime(n.end),
+            nodeStart = n.node,
+            nodeEnd = n.node
         )
-
-        return groups.mapNotNull { range ->
-            val inRange = nodes.filter { it.node in range }
-            if (inRange.isEmpty()) return@mapNotNull null
-            val first = inRange.first()
-            val last = inRange.last()
-            val label = "${first.node}-${last.node}"
-            TimeSlot(
-                label = label,
-                start = first.start,
-                end = last.end,
-                displayStart = formatTime(first.start),
-                displayEnd = formatTime(last.end),
-                nodeStart = first.node,
-                nodeEnd = last.node
-            )
-        }
     }
+}
 
     /** 课程的开始节-结束节对应的"开始时间-结束时间"。
      *  直接用节点的 start/end 拼接,不依赖外层 TimeSlot。

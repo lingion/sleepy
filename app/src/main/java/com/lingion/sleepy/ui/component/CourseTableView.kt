@@ -53,13 +53,42 @@ data class TimeSlot(
     val timeString: String get() = "$displayStart-$displayEnd"
 }
 
-val DEFAULT_TIME_SLOTS = listOf(
-    TimeSlot("1-2",  LocalTime.of(8, 0),   LocalTime.of(9, 35),   "08:00", "09:35", 1, 2),
-    TimeSlot("3-5",  LocalTime.of(10, 20), LocalTime.of(12, 45),  "10:20", "12:45", 3, 5),
-    TimeSlot("6-7",  LocalTime.of(14, 0),  LocalTime.of(15, 35),  "14:00", "15:35", 6, 7),
-    TimeSlot("8-10", LocalTime.of(16, 10), LocalTime.of(18, 35),  "16:10", "18:35", 8, 10),
-    TimeSlot("11-13",LocalTime.of(19, 0),  LocalTime.of(21, 25),  "19:00", "21:25", 11, 13)
-)
+/**
+ * 每节独立行 — 不再是分组
+ */
+val DEFAULT_TIME_SLOTS = (1..12).map { node ->
+    TimeSlot(
+        label = "$node",
+        start = when {
+            node <= 2 -> LocalTime.of(8, 0)
+            node <= 4 -> LocalTime.of(10, 20)
+            node <= 6 -> LocalTime.of(14, 0)
+            node <= 8 -> LocalTime.of(16, 10)
+            node <= 10 -> LocalTime.of(19, 0)
+            else -> LocalTime.of(20, 50)
+        },
+        end = when {
+            node <= 2 -> LocalTime.of(9, 35)
+            node <= 4 -> LocalTime.of(11, 55)
+            node <= 6 -> LocalTime.of(15, 35)
+            node <= 8 -> LocalTime.of(17, 55)
+            node <= 10 -> LocalTime.of(20, 40)
+            else -> LocalTime.of(22, 25)
+        },
+        displayStart = when {
+            node <= 2 -> "08:00"; node <= 4 -> "10:20"
+            node <= 6 -> "14:00"; node <= 8 -> "16:10"
+            node <= 10 -> "19:00"; else -> "20:50"
+        },
+        displayEnd = when {
+            node <= 2 -> "09:35"; node <= 4 -> "11:55"
+            node <= 6 -> "15:35"; node <= 8 -> "17:55"
+            node <= 10 -> "20:40"; else -> "22:25"
+        },
+        nodeStart = node,
+        nodeEnd = node
+    )
+}
 
 /**
  * Cards 网格视图 — 7 列 × 5 时段 (对应 switchable.html #cardsView)
@@ -117,10 +146,10 @@ fun CardsGridView(
             for (slot in timeSlots) {
                 SlotRow(
                     slot = slot,
-                    courses = courses.filter { it.startNode in slot.nodeStart..slot.nodeEnd },
+                    courses = courses.filter { it.startNode == slot.nodeStart },
                     today = today,
                     onCourseClick = onCourseClick,
-                    modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
+                    modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
                 )
             }
         }
@@ -201,26 +230,26 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
     Box(
         modifier = modifier
-            .height(118.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
             .background(colors.surface)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
-            .padding(8.dp),
+            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
+            .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "${slot.label}节",
+                text = "第${slot.label}节",
                 style = SleepyTextStyle.smallMeta.copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
                 maxLines = 1
             )
-            Spacer(modifier = Modifier.height(2.dp))
+            Spacer(modifier = Modifier.height(1.dp))
             Text(
                 text = slot.timeString,
                 style = SleepyTextStyle.micro,
                 color = colors.onSurfaceVariant,
-                maxLines = 2,
+                maxLines = 1,
                 overflow = TextOverflow.Ellipsis
             )
         }
@@ -232,12 +261,12 @@ private fun EmptyCell(modifier: Modifier = Modifier, isToday: Boolean) {
     val colors = SleepyTheme.colors
     Box(
         modifier = modifier
-            .height(118.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(52.dp)
+            .clip(RoundedCornerShape(12.dp))
             .border(
                 width = 1.dp,
                 color = colors.outlineVariant.copy(alpha = 0.50f),
-                shape = RoundedCornerShape(16.dp)
+                shape = RoundedCornerShape(12.dp)
             )
     )
 }
@@ -256,24 +285,28 @@ private fun CourseCardCell(
     val bg = pickCourseColor(course, palette)
     val fg = colors.onSurface
 
-    Column(
+    // 卡片高度 = 每节 52dp × 节数 (至少 1 节)
+    val cellHeight = (52.dp * course.step.coerceAtLeast(1) + 4.dp * (course.step.coerceAtLeast(1) - 1))
+
+    Box(
         modifier = modifier
-            .height(118.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .height(cellHeight)
+            .clip(RoundedCornerShape(12.dp))
             .background(bg)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
+            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(8.dp)
+            .padding(4.dp),
+        contentAlignment = Alignment.Center
     ) {
         Text(
             text = course.courseName,
             style = MaterialTheme.typography.labelSmall.copy(
                 fontWeight = FontWeight.SemiBold,
-                fontSize = 9.sp,
-                lineHeight = 12.sp
+                fontSize = 10.sp,
+                lineHeight = 13.sp
             ),
             color = fg,
-            maxLines = 5,
+            maxLines = 6,
             overflow = TextOverflow.Ellipsis
         )
     }
