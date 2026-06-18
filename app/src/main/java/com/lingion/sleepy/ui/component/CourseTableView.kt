@@ -53,8 +53,8 @@ data class TimeSlot(
     val timeString: String get() = "$displayStart-$displayEnd"
 }
 
-private val CELL_H = 40.dp
-private val CELL_GAP = 3.dp
+private val CELL_H = 52.dp
+private val CELL_GAP = 4.dp
 
 /**
  * 每节独立行 — 不再是分组
@@ -208,30 +208,19 @@ private fun SlotRow(
         // 7 列
         for (day in 1..7) {
             val node = slot.nodeStart
-            // 找到 day 这天覆盖此节的所有课程
-            val covering = allCourses.filter { c ->
-                c.day == day && c.startNode <= node && c.startNode + c.step - 1 >= node
-            }
-            when {
-                // 没有课程覆盖此节 → 空单元格
-                covering.isEmpty() -> {
-                    EmptyCell(
-                        modifier = Modifier.weight(1f),
-                        isToday = day == today
-                    )
-                }
-                // 有课程覆盖，取第一个。如果是起始节 → 渲染卡片；否则跳过
-                covering.first().startNode == node -> {
-                    val course = covering.first()
+            val myCourses = allCourses.filter { it.day == day && it.startNode == node }
+            if (myCourses.isEmpty()) {
+                EmptyCell(
+                    modifier = Modifier.weight(1f),
+                    isToday = day == today
+                )
+            } else {
+                myCourses.forEach { c ->
                     CourseCardCell(
-                        course = course,
-                        onClick = { onCourseClick(course) },
+                        course = c,
+                        onClick = { onCourseClick(c) },
                         modifier = Modifier.weight(1f)
                     )
-                }
-                // 被覆盖但不是起始节 → 透明占位，保持列对齐
-                else -> {
-                    Box(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -247,7 +236,7 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
             .clip(RoundedCornerShape(12.dp))
             .background(colors.surface)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
-            .padding(2.dp),
+            .padding(4.dp),
         contentAlignment = Alignment.Center
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
@@ -297,31 +286,36 @@ private fun CourseCardCell(
     val bg = pickCourseColor(course, palette)
     val fg = colors.onSurface
 
-    // 卡片高度 = 每节 CELL_H × 节数 + 节间 CELL_GAP
-    val steps = course.step.coerceAtLeast(1)
-    val cellHeight = CELL_H * steps + CELL_GAP * (steps - 1)
-
     Box(
         modifier = modifier
-            .height(cellHeight)
+            .height(CELL_H)
             .clip(RoundedCornerShape(12.dp))
             .background(bg)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
             .clickable(onClick = onClick)
-            .padding(4.dp),
+            .padding(6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Text(
-            text = course.courseName,
-            style = MaterialTheme.typography.labelSmall.copy(
-                fontWeight = FontWeight.SemiBold,
-                fontSize = 10.sp,
-                lineHeight = 13.sp
-            ),
-            color = fg,
-            maxLines = 6,
-            overflow = TextOverflow.Ellipsis
-        )
+        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Text(
+                text = course.courseName,
+                style = MaterialTheme.typography.labelSmall.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = 10.sp,
+                    lineHeight = 13.sp
+                ),
+                color = fg,
+                maxLines = 5,
+                overflow = TextOverflow.Ellipsis
+            )
+            if (course.step > 1) {
+                Text(
+                    text = "${course.startNode}-${course.startNode + course.step - 1}节",
+                    style = SleepyTextStyle.micro,
+                    color = fg.copy(alpha = 0.65f)
+                )
+            }
+        }
     }
 }
 
