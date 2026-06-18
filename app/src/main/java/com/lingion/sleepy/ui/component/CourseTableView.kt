@@ -146,7 +146,7 @@ fun CardsGridView(
             for (slot in timeSlots) {
                 SlotRow(
                     slot = slot,
-                    courses = courses.filter { it.startNode == slot.nodeStart },
+                    allCourses = courses,
                     today = today,
                     onCourseClick = onCourseClick,
                     modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp)
@@ -190,7 +190,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, modifier: 
 @Composable
 private fun SlotRow(
     slot: TimeSlot,
-    courses: List<CourseEntity>,
+    allCourses: List<CourseEntity>,
     today: Int,
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
@@ -199,26 +199,36 @@ private fun SlotRow(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(5.dp)
     ) {
-        // 时段标签 (1-2节 / 08:00-09:35)
+        // 时段标签
         TimeHeadCell(slot = slot, modifier = Modifier.width(66.dp))
 
         // 7 列
         for (day in 1..7) {
-            val cellCourses = courses.filter { it.day == day }
-            if (cellCourses.isEmpty()) {
-                EmptyCell(
-                    modifier = Modifier.weight(1f),
-                    isToday = day == today
-                )
-            } else {
-                // 同一时段同一天通常只有一节，直接渲染第一张卡片
-                cellCourses.forEach { c ->
+            val node = slot.nodeStart
+            // 找到 day 这天覆盖此节的所有课程
+            val covering = allCourses.filter { c ->
+                c.day == day && c.startNode <= node && c.startNode + c.step - 1 >= node
+            }
+            when {
+                // 没有课程覆盖此节 → 空单元格
+                covering.isEmpty() -> {
+                    EmptyCell(
+                        modifier = Modifier.weight(1f),
+                        isToday = day == today
+                    )
+                }
+                // 有课程覆盖，取第一个。如果是起始节 → 渲染卡片；否则跳过
+                covering.first().startNode == node -> {
+                    val course = covering.first()
                     CourseCardCell(
-                        course = c,
-                        slot = slot,
-                        onClick = { onCourseClick(c) },
+                        course = course,
+                        onClick = { onCourseClick(course) },
                         modifier = Modifier.weight(1f)
                     )
+                }
+                // 被覆盖但不是起始节 → 透明占位，保持列对齐
+                else -> {
+                    Box(modifier = Modifier.weight(1f))
                 }
             }
         }
@@ -274,7 +284,6 @@ private fun EmptyCell(modifier: Modifier = Modifier, isToday: Boolean) {
 @Composable
 private fun CourseCardCell(
     course: CourseEntity,
-    slot: TimeSlot,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
