@@ -1,8 +1,11 @@
 package com.lingion.sleepy.ui.theme
 
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Shapes
 import androidx.compose.material3.Typography
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -305,13 +308,83 @@ fun SleepyThemeProvider(
     darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colors = if (darkTheme) DarkScheme else LightScheme
+    val wakeColors = if (darkTheme) DarkScheme else LightScheme
     val palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
 
+    val m3Scheme = if (darkTheme) {
+        darkColorScheme(
+            primary = wakeColors.primary,
+            onPrimary = wakeColors.onPrimary,
+            primaryContainer = wakeColors.primaryContainer,
+            onPrimaryContainer = wakeColors.onPrimaryContainer,
+            secondary = wakeColors.secondary,
+            onSecondary = wakeColors.onSecondary,
+            secondaryContainer = wakeColors.secondaryContainer,
+            onSecondaryContainer = wakeColors.onSecondaryContainer,
+            tertiary = wakeColors.tertiary,
+            onTertiary = wakeColors.onTertiary,
+            tertiaryContainer = wakeColors.tertiaryContainer,
+            onTertiaryContainer = wakeColors.onTertiaryContainer,
+            background = wakeColors.background,
+            onBackground = wakeColors.onBackground,
+            surface = wakeColors.surface,
+            onSurface = wakeColors.onSurface,
+            surfaceVariant = wakeColors.surfaceVariant,
+            onSurfaceVariant = wakeColors.onSurfaceVariant,
+            surfaceContainerLowest = wakeColors.surfaceContainerLowest,
+            surfaceContainerLow = wakeColors.surfaceContainerLow,
+            surfaceContainer = wakeColors.surfaceContainer,
+            surfaceContainerHigh = wakeColors.surfaceContainerHigh,
+            surfaceContainerHighest = wakeColors.surfaceContainerHighest,
+            outline = wakeColors.outline,
+            outlineVariant = wakeColors.outlineVariant,
+            scrim = wakeColors.scrim,
+            error = wakeColors.error,
+            onError = wakeColors.onError,
+            errorContainer = wakeColors.errorContainer,
+            onErrorContainer = wakeColors.onErrorContainer
+        )
+    } else {
+        lightColorScheme(
+            primary = wakeColors.primary,
+            onPrimary = wakeColors.onPrimary,
+            primaryContainer = wakeColors.primaryContainer,
+            onPrimaryContainer = wakeColors.onPrimaryContainer,
+            secondary = wakeColors.secondary,
+            onSecondary = wakeColors.onSecondary,
+            secondaryContainer = wakeColors.secondaryContainer,
+            onSecondaryContainer = wakeColors.onSecondaryContainer,
+            tertiary = wakeColors.tertiary,
+            onTertiary = wakeColors.onTertiary,
+            tertiaryContainer = wakeColors.tertiaryContainer,
+            onTertiaryContainer = wakeColors.onTertiaryContainer,
+            background = wakeColors.background,
+            onBackground = wakeColors.onBackground,
+            surface = wakeColors.surface,
+            onSurface = wakeColors.onSurface,
+            surfaceVariant = wakeColors.surfaceVariant,
+            onSurfaceVariant = wakeColors.onSurfaceVariant,
+            surfaceContainerLowest = wakeColors.surfaceContainerLowest,
+            surfaceContainerLow = wakeColors.surfaceContainerLow,
+            surfaceContainer = wakeColors.surfaceContainer,
+            surfaceContainerHigh = wakeColors.surfaceContainerHigh,
+            surfaceContainerHighest = wakeColors.surfaceContainerHighest,
+            outline = wakeColors.outline,
+            outlineVariant = wakeColors.outlineVariant,
+            scrim = wakeColors.scrim,
+            error = wakeColors.error,
+            onError = wakeColors.onError,
+            errorContainer = wakeColors.errorContainer,
+            onErrorContainer = wakeColors.onErrorContainer
+        )
+    }
+
     CompositionLocalProvider(
-        LocalWakeUpColors provides colors,
+        LocalWakeUpColors provides wakeColors,
         LocalCoursePalette provides palette
     ) {
-        content()
+        MaterialTheme(colorScheme = m3Scheme) {
+            content()
+        }
     }
 }
