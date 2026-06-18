@@ -67,6 +67,8 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.parser.ScheduleParser
+import com.lingion.sleepy.ui.component.DatePickerField
+import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.screen.schedule.ScheduleState
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -629,15 +631,12 @@ private fun ImportConfirmDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant
                 )
-                OutlinedTextField(
+                DatePickerField(
                     value = startDate,
                     onValueChange = onStartDateChange,
+                    label = "第一周从哪天开始",
                     modifier = Modifier.fillMaxWidth(),
-                    label = { Text("第一周从哪天开始（YYYY-MM-DD）") },
-                    singleLine = true,
-                    shape = RoundedCornerShape(14.dp),
-                    isError = errorMsg != null,
-                    colors = fieldColors
+                    isError = errorMsg != null
                 )
                 if (errorMsg != null) {
                     Text(
@@ -662,7 +661,7 @@ private fun ImportConfirmDialog(
                                 style = MaterialTheme.typography.bodyMedium,
                                 color = colors.onSurface
                             )
-                            OutlinedTextField(
+                            TimePickerField(
                                 value = row.start,
                                 onValueChange = { newStart ->
                                     rows = rows.map {
@@ -670,13 +669,10 @@ private fun ImportConfirmDialog(
                                     }
                                     onTimeJsonChange(buildTimeJsonFromRows(rows))
                                 },
-                                modifier = Modifier.weight(1f),
-                                label = { Text("开始") },
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = fieldColors
+                                label = "开始",
+                                modifier = Modifier.weight(1f)
                             )
-                            OutlinedTextField(
+                            TimePickerField(
                                 value = row.end,
                                 onValueChange = { newEnd ->
                                     rows = rows.map {
@@ -684,11 +680,8 @@ private fun ImportConfirmDialog(
                                     }
                                     onTimeJsonChange(buildTimeJsonFromRows(rows))
                                 },
-                                modifier = Modifier.weight(1f),
-                                label = { Text("结束") },
-                                singleLine = true,
-                                shape = RoundedCornerShape(12.dp),
-                                colors = fieldColors
+                                label = "结束",
+                                modifier = Modifier.weight(1f)
                             )
                             if (rows.size > 1) {
                                 IconButton(

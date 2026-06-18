@@ -57,6 +57,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
+import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.launch
@@ -672,16 +673,18 @@ private fun MeetingBlockEditor(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    TimeField(
+                    TimePickerField(
                         label = "开始时间",
                         value = block.startTime,
+                        onValueChange = { block.startTime = it },
                         modifier = Modifier.weight(1f)
-                    , shape = fieldShape, colors = fieldColors) { block.startTime = it }
-                    TimeField(
+                    )
+                    TimePickerField(
                         label = "结束时间",
                         value = block.endTime,
+                        onValueChange = { block.endTime = it },
                         modifier = Modifier.weight(1f)
-                    , shape = fieldShape, colors = fieldColors) { block.endTime = it }
+                    )
                 }
             }
         }

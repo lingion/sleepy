@@ -53,6 +53,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
@@ -241,25 +242,17 @@ fun EditTableScreen(
                                         color = colors.onSurface,
                                         modifier = Modifier.width(48.dp)
                                     )
-                                    OutlinedTextField(
+                                    TimePickerField(
                                         value = startValues[index],
                                         onValueChange = { v -> startValues[index] = v },
-                                        label = { Text("开始") },
-                                        singleLine = true,
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp),
-                                        colors = fieldColors
+                                        label = "开始",
+                                        modifier = Modifier.weight(1f)
                                     )
-                                    OutlinedTextField(
+                                    TimePickerField(
                                         value = endValues[index],
                                         onValueChange = { v -> endValues[index] = v },
-                                        label = { Text("结束") },
-                                        singleLine = true,
-                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Ascii),
-                                        modifier = Modifier.weight(1f),
-                                        shape = RoundedCornerShape(14.dp),
-                                        colors = fieldColors
+                                        label = "结束",
+                                        modifier = Modifier.weight(1f)
                                     )
                                 }
                                 } // end key
