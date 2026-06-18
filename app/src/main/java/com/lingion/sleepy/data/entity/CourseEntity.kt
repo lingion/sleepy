@@ -92,9 +92,13 @@ data class CourseEntity(
         }
     }
 
-    /** "第 3-4 节" */
+    /** "第 3-4 节" 或 "18:30-20:55" */
     val nodeString: String
-        get() = "第 $startNode - ${startNode + step - 1} 节"
+        get() = if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
+            "$startTime-$endTime"
+        } else {
+            "第 $startNode - ${startNode + step - 1} 节"
+        }
 
     /** "3-4节" 或 "18:30-20:55" */
     val shortNodeString: String
