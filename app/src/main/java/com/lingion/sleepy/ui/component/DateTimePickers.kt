@@ -1,14 +1,14 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.Schedule
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
@@ -116,7 +116,7 @@ fun DatePickerField(
 }
 
 /**
- * 时间输入字段 — 手动输入 + 点击图标弹出原生时间选择器
+ * 时间输入字段 — 点击输入框直接弹时间选择器，无 clock 图标。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -147,30 +147,19 @@ fun TimePickerField(
         unfocusedContainerColor = colors.surfaceContainerLowest
     )
 
-    Row(
-        modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    // Box + clickable 包装：OutlinedTextField 内部设 enabled=false
+    // 让 click 事件穿透到外层 Box 的 clickable
+    Box(modifier = modifier.clickable { showPicker = true }) {
         OutlinedTextField(
             value = value,
-            onValueChange = onValueChange,
+            onValueChange = {},
             label = { Text(label) },
+            enabled = false,
             singleLine = true,
-            modifier = Modifier.weight(1f),
+            modifier = Modifier.fillMaxWidth(),
             shape = shape,
             colors = fieldColors
         )
-        IconButton(
-            onClick = { showPicker = true },
-            modifier = Modifier.padding(start = 4.dp)
-        ) {
-            Icon(
-                Icons.Outlined.Schedule,
-                contentDescription = "选择时间",
-                tint = colors.primary,
-                modifier = Modifier.size(24.dp)
-            )
-        }
     }
 
     if (showPicker) {

@@ -98,4 +98,76 @@ object TimeTableUtils {
     /** 便捷: 拿 TimeTableEntity 直接出 slots */
     fun timeSlotsFor(table: TimeTableEntity?): List<TimeSlot> =
         if (table == null) emptyList() else timeSlotsFor(table.timeJson)
+
+    // ------------------------------------------------------------------
+    // 编辑用的 row 数据模型 + JSON 互转
+    // 共享给 EditTableScreen + ImportScreen.ImportConfirmDialog
+    // ------------------------------------------------------------------
+
+    /**
+     * 节次编辑用的行模型：node=节次编号, start/end="HH:mm"。
+     * 节点编号在删除时会重新 1..N 连续编号。
+     */
+    data class TimeSlotRow(val node: Int, val start: String, val end: String)
+
+    /** timeJson -> 编辑 rows (按数组顺序) */
+    fun parseTimeSlotRows(timeJson: String): List<TimeSlotRow> = try {
+        val arr = JSONArray(timeJson)
+        (0 until arr.length()).map { i ->
+            val o = arr.getJSONObject(i)
+            TimeSlotRow(
+                node = o.optInt("node", i + 1),
+                start = o.optString("start", smartStartDefault(i + 1)),
+                end = o.optString("end", smartEndDefault(i + 1))
+            )
+        }
+    } catch (_: Exception) {
+        (1..12).map { node -> TimeSlotRow(node, smartStartDefault(node), smartEndDefault(node)) }
+    }
+
+    /** rows -> timeJson */
+    fun buildTimeJsonFromRows(rows: List<TimeSlotRow>): String {
+        val arr = JSONArray()
+        rows.forEach { row ->
+            val obj = JSONObject()
+            obj.put("node", row.node)
+            obj.put("start", row.start)
+            obj.put("end", row.end)
+            arr.put(obj)
+        }
+        return arr.toString()
+    }
+
+    /**
+     * 删除某 node 后**重新编号**为 1..N (用户友好)，返回新 list。
+     */
+    fun removeAndRenumber(rows: List<TimeSlotRow>, node: Int): List<TimeSlotRow> =
+        rows.filter { it.node != node }
+            .mapIndexed { idx, r -> r.copy(node = idx + 1) }
+
+    /**
+     * 追加一节 (node = maxOfOrNull + 1)，时间留空让用户填。
+     */
+    fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {
+        val nextNode = (rows.maxOfOrNull { it.node } ?: 0) + 1
+        return rows + TimeSlotRow(nextNode, "", "")
+    }
+
+    private fun smartStartDefault(node: Int): String = when {
+        node <= 2 -> "08:00"
+        node <= 4 -> "10:00"
+        node <= 6 -> "14:00"
+        node <= 8 -> "16:00"
+        node <= 10 -> "19:00"
+        else -> "20:50"
+    }
+
+    private fun smartEndDefault(node: Int): String = when {
+        node <= 2 -> "09:40"
+        node <= 4 -> "11:40"
+        node <= 6 -> "15:40"
+        node <= 8 -> "17:40"
+        node <= 10 -> "20:40"
+        else -> "22:30"
+    }
 }
