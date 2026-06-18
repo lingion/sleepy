@@ -99,10 +99,12 @@ fun CardsGridView(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
+                .padding(horizontal = 0.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
             // Day header row
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(gapW)
             ) {
                 Box(modifier = Modifier.width(timeW))
