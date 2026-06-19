@@ -2,6 +2,7 @@ package com.lingion.sleepy.widget
 
 import android.content.Context
 import android.content.Intent
+import android.util.Log
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
 import androidx.glance.appwidget.GlanceAppWidgetReceiver
@@ -21,6 +22,9 @@ class WeekGridWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = withContext(Dispatchers.IO) { loadWeekData(context) }
+        Log.d("WeekGridWidget", "provideGlance: hasTable=${data.hasTable}, days=${data.days.size}, " +
+            "courses=${data.days.sumOf { it.courses.size }}, maxNode=" +
+            (if (data.days.isEmpty()) 0 else data.days.maxOf { d -> d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0 }))
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
@@ -41,6 +45,7 @@ class WeekGridWidget : GlanceAppWidget() {
             val repo = app.repository
             val table = repo.getDefaultTable()
             if (table == null) {
+                Log.w("WeekGridWidget", "loadWeekData: no default table")
                 WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
             } else {
                 val week = DateUtils.currentWeek(table.startDate, today)
@@ -50,9 +55,11 @@ class WeekGridWidget : GlanceAppWidget() {
                     val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
                     DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
                 }
+                Log.d("WeekGridWidget", "loadWeekData: table=${table.id}, week=$week, totalCourses=${days.sumOf { it.courses.size }}")
                 WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey)
             }
-        } catch (_: Throwable) {
+        } catch (e: Throwable) {
+            Log.e("WeekGridWidget", "loadWeekData failed", e)
             WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
         }
     }
