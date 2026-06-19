@@ -111,8 +111,44 @@ private data class WidgetScheme(
     val surface: Color = Color(0xFFFFFBFE),
     val primary: Color = Color(0xFF6750A4),
     val onSurface: Color = Color(0xFF1C1B1F),
-    val onSurfaceVariant: Color = Color(0xFF79747E)
+    val onSurfaceVariant: Color = Color(0xFF79747E),
+    val isDark: Boolean = false
 )
+
+// ── 课程调色板（跟首页 CoursePalette 一致）──
+private data class WidgetCoursePalette(
+    val primary: Color, val secondary: Color, val tertiary: Color,
+    val english: Color, val military: Color, val physics: Color,
+    val history: Color, val psychology: Color, val practice: Color
+)
+private val LightWPalette = WidgetCoursePalette(
+    primary = Color(0xFFEADDFF), secondary = Color(0xFFE8DEF8), tertiary = Color(0xFFFFD8E4),
+    english = Color(0xFFD8F2FF), military = Color(0xFFE7F3DC), physics = Color(0xFFFFE7C7),
+    history = Color(0xFFF7D9D9), psychology = Color(0xFFE6DDFB), practice = Color(0xFFD7F0E8)
+)
+private val DarkWPalette = WidgetCoursePalette(
+    primary = Color(0xFF4F378B), secondary = Color(0xFF4A4458), tertiary = Color(0xFF633B48),
+    english = Color(0xFF1E3A4D), military = Color(0xFF2E3F26), physics = Color(0xFF4D3A1E),
+    history = Color(0xFF4D2828), psychology = Color(0xFF352B4D), practice = Color(0xFF1E3D32)
+)
+private val courseRules = listOf<Pair<(String)->Boolean, WidgetCoursePalette.()->Color>>(
+    ({ s: String -> "英语" in s }) to ({ english }),
+    ({ s: String -> "军事" in s || "国防" in s }) to ({ military }),
+    ({ s: String -> "物理" in s }) to ({ physics }),
+    ({ s: String -> "历史" in s || "史纲" in s || "近代史" in s }) to ({ history }),
+    ({ s: String -> "心理" in s }) to ({ psychology }),
+    ({ s: String -> "实践" in s || "实习" in s || "实验" in s }) to ({ practice }),
+    ({ s: String -> "高数" in s || "数学" in s || "电路" in s }) to ({ primary }),
+    ({ s: String -> "思政" in s || "马原" in s || "毛概" in s || "形势" in s }) to ({ tertiary })
+)
+private val hashPalette = listOf<WidgetCoursePalette.()->Color>(
+    { primary }, { secondary }, { tertiary }, { english }, { physics }, { psychology }
+)
+private fun courseColor(name: String, isDark: Boolean): Color {
+    val p = if (isDark) DarkWPalette else LightWPalette
+    courseRules.firstOrNull { (m, _) -> m(name) }?.let { (_, s) -> return p.s() }
+    return hashPalette[(name.hashCode() and 0x7FFFFFFF) % hashPalette.size].invoke(p)
+}
 
 /**
  * 按 themeKey + isDark 派生小组件配色。
@@ -126,7 +162,8 @@ private fun resolveScheme(themeKey: String, isDark: Boolean): WidgetScheme {
         surface = s.surface,
         primary = s.primary,
         onSurface = s.onSurface,
-        onSurfaceVariant = s.onSurfaceVariant
+        onSurfaceVariant = s.onSurfaceVariant,
+        isDark = isDark
     )
 }
 
@@ -221,13 +258,13 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
         endTime = course.endTime
     ) ?: "第 ${course.startNode} 节"
 
-    val courseColor = parseColor(course.color)
+    val bgColor = courseColor(course.courseName, scheme.isDark)
 
     // 课程色胶囊 — 复刻首页 LessonRow 样式
     Row(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .background(ColorProvider(courseColor))
+            .background(ColorProvider(bgColor))
             .cornerRadius(10.dp)
             .clickable(onClick)
             .padding(8.dp),
@@ -239,7 +276,7 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
                 style = TextStyle(
                     fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorProvider(Color.White)
+                    color = ColorProvider(scheme.onSurface)
                 ),
                 maxLines = 1
             )
@@ -248,7 +285,7 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
                 text = timeStr + (if (course.room.isNotBlank()) "  ·  ${course.room}" else ""),
                 style = TextStyle(
                     fontSize = 10.sp,
-                    color = ColorProvider(Color(0xCCFFFFFF))
+                    color = ColorProvider(scheme.onSurface.copy(alpha = 0.72f))
                 ),
                 maxLines = 1
             )
@@ -492,11 +529,11 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
             Spacer(modifier = GlanceModifier.height(4.dp))
             day.courses.take(3).forEachIndexed { idx, c ->
                 // 课程色胶囊
-                val courseColor = parseColor(c.color)
+                val bgColor = courseColor(c.courseName, scheme.isDark)
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
-                        .background(ColorProvider(courseColor))
+                        .background(ColorProvider(bgColor))
                         .cornerRadius(8.dp)
                         .padding(5.dp),
                     verticalAlignment = Alignment.CenterVertically
@@ -507,7 +544,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
                             style = TextStyle(
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = ColorProvider(Color.White)
+                                color = ColorProvider(scheme.onSurface)
                             ),
                             maxLines = 1
                         )
@@ -519,7 +556,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
                             text = meta,
                             style = TextStyle(
                                 fontSize = 9.sp,
-                                color = ColorProvider(Color(0xCCFFFFFF))
+                                color = ColorProvider(scheme.onSurface.copy(alpha = 0.72f))
                             ),
                             maxLines = 1
                         )
@@ -647,13 +684,13 @@ private fun GridRow(
 
             if (isStart && course != null) {
                 // 课程起始格 — 显示课程名
-                val courseColor = parseColor(course.color)
+                val bgColor = courseColor(course.courseName, scheme.isDark)
                 Box(
                     modifier = GlanceModifier
                         .defaultWeight()
                         .height(cellH)
                         .padding(horizontal = cellPad, vertical = cellPad)
-                        .background(ColorProvider(courseColor))
+                        .background(ColorProvider(bgColor))
                         .cornerRadius(if (isLastRow) 4.dp else 0.dp)
                         .padding(horizontal = 3.dp, vertical = 2.dp),
                     contentAlignment = Alignment.TopStart
@@ -664,7 +701,7 @@ private fun GridRow(
                             style = TextStyle(
                                 fontSize = 8.sp,
                                 fontWeight = FontWeight.Medium,
-                                color = ColorProvider(Color.White)
+                                color = ColorProvider(scheme.onSurface)
                             ),
                             maxLines = 1
                         )
@@ -673,7 +710,7 @@ private fun GridRow(
                                 text = course.room,
                                 style = TextStyle(
                                     fontSize = 7.sp,
-                                    color = ColorProvider(Color(0xCCFFFFFF))
+                                    color = ColorProvider(scheme.onSurface.copy(alpha = 0.72f))
                                 ),
                                 maxLines = 1
                             )
@@ -682,13 +719,13 @@ private fun GridRow(
                 }
             } else if (course != null) {
                 // 课程跨节续行 — 同色背景延续（无 padding，纯色块）
-                val courseColor = parseColor(course.color)
+                val bgColor = courseColor(course.courseName, scheme.isDark)
                 Box(
                     modifier = GlanceModifier
                         .defaultWeight()
                         .height(cellH)
                         .padding(horizontal = cellPad, vertical = cellPad)
-                        .background(ColorProvider(courseColor))
+                        .background(ColorProvider(bgColor))
                         .cornerRadius(if (isLastRow) 4.dp else 0.dp)
                 ) {}
             } else {
