@@ -36,6 +36,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -810,18 +811,29 @@ private fun NumberField(
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (Int) -> Unit
 ) {
-    var text by remember(value) { mutableStateOf(value.toString()) }
+    // 用 Stable key 避免外部 value 变化时重置用户正在编辑的文本
+    var text by remember { mutableStateOf(value.toString()) }
+
+    // 仅在 value 从外部变化（非用户输入）时同步文本
+    LaunchedEffect(value) {
+        if (text.toIntOrNull() != value) {
+            text = value.toString()
+        }
+    }
 
     OutlinedTextField(
         value = text,
         onValueChange = { txt ->
-            val v = txt.toIntOrNull()
-            if (v != null) {
-                text = v.toString()
-                onChange(v.coerceIn(min, max))
-            } else if (txt.isEmpty()) {
+            if (txt.isEmpty()) {
                 text = ""
-                onChange(min)
+                // 清空时不立即回调，让用户自由输入新值
+            } else {
+                val v = txt.toIntOrNull()
+                if (v != null) {
+                    text = v.toString()
+                    onChange(v.coerceIn(min, max))
+                }
+                // 非数字字符直接忽略，不更新 text
             }
         },
         label = { Text(label) },

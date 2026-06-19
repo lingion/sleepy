@@ -602,13 +602,13 @@ private fun GridRow(
             if (isStart && course != null) {
                 // 课程起始格 — 显示课程名
                 val courseColor = parseColor(course.color)
-                val alpha = if (day.dayOfWeek == todayDow) 1f else 0.92f
+                val isLastRow = node == course.startNode + course.step - 1
                 Column(
                     modifier = GlanceModifier
                         .defaultWeight()
                         .padding(horizontal = 1.dp, vertical = 1.dp)
                         .background(ColorProvider(courseColor))
-                        .cornerRadius(4.dp)
+                        .cornerRadius(if (isLastRow) 4.dp else 0.dp)
                         .padding(3.dp),
                     horizontalAlignment = Alignment.Start
                 ) {
@@ -633,8 +633,17 @@ private fun GridRow(
                     }
                 }
             } else if (course != null) {
-                // 课程跨节但非起始格 — 空占位（被起始格覆盖）
-                Spacer(modifier = GlanceModifier.fillMaxWidth())
+                // 课程跨节续行 — 同色背景延续
+                val courseColor = parseColor(course.color)
+                val isLastRow = node == course.startNode + course.step - 1
+                Box(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .fillMaxWidth()
+                        .padding(horizontal = 1.dp, vertical = 1.dp)
+                        .background(ColorProvider(courseColor))
+                        .cornerRadius(if (isLastRow) 4.dp else 0.dp)
+                ) {}
             } else {
                 // 无课格子
                 Box(
