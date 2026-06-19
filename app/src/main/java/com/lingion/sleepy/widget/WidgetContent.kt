@@ -348,39 +348,74 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
 private fun WeekDayRow(day: DayData, scheme: WidgetScheme) {
     val hasCourses = day.courses.isNotEmpty()
     Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(vertical = 3.dp),
+        modifier = GlanceModifier.fillMaxWidth().padding(vertical = 2.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // 星期标签
-        Text(
-            text = day.dayName,
-            style = TextStyle(
-                fontSize = 11.sp,
-                fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal,
-                color = ColorProvider(if (day.isToday) scheme.primary else scheme.onSurfaceVariant)
-            ),
-            modifier = GlanceModifier.width(36.dp)
-        )
+        // 星期标签 — 今天高亮圆点 + 文字
+        Box(
+            modifier = GlanceModifier.width(36.dp),
+            contentAlignment = Alignment.CenterEnd
+        ) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (day.isToday) {
+                    Box(
+                        modifier = GlanceModifier
+                            .size(6.dp)
+                            .background(ColorProvider(scheme.primary))
+                            .cornerRadius(3.dp)
+                    ) {}
+                    Spacer(modifier = GlanceModifier.width(3.dp))
+                }
+                Text(
+                    text = day.dayName,
+                    style = TextStyle(
+                        fontSize = 11.sp,
+                        fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal,
+                        color = ColorProvider(if (day.isToday) scheme.primary else scheme.onSurfaceVariant)
+                    )
+                )
+            }
+        }
         Spacer(modifier = GlanceModifier.width(4.dp))
 
         if (hasCourses) {
             Column(modifier = GlanceModifier.defaultWeight()) {
                 day.courses.take(3).forEachIndexed { idx, c ->
-                    Text(
-                        text = c.courseName + (if (c.room.isNotBlank()) " ${c.room}" else ""),
-                        style = TextStyle(
-                            fontSize = 11.sp,
-                            color = ColorProvider(scheme.onSurface)
-                        ),
-                        maxLines = 1
-                    )
+                    // 胶囊卡片
+                    Box(
+                        modifier = GlanceModifier
+                            .fillMaxWidth()
+                            .background(ColorProvider(scheme.onSurface.copy(alpha = 0.08f)))
+                            .cornerRadius(8.dp)
+                            .padding(horizontal = 6.dp, vertical = 3.dp)
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            // 左侧色条
+                            Box(
+                                modifier = GlanceModifier
+                                    .size(width = 3.dp, height = 12.dp)
+                                    .background(ColorProvider(parseColor(c.color)))
+                                    .cornerRadius(1.5.dp)
+                            ) {}
+                            Spacer(modifier = GlanceModifier.width(4.dp))
+                            Text(
+                                text = c.courseName + (if (c.room.isNotBlank()) " · ${c.room}" else ""),
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    color = ColorProvider(scheme.onSurface)
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
                     if (idx < minOf(day.courses.size, 3) - 1) {
-                        Spacer(modifier = GlanceModifier.height(1.dp))
+                        Spacer(modifier = GlanceModifier.height(2.dp))
                     }
                 }
                 if (day.courses.size > 3) {
+                    Spacer(modifier = GlanceModifier.height(1.dp))
                     Text(
-                        text = "+${day.courses.size - 3}",
+                        text = "+${day.courses.size - 3} 更多",
                         style = TextStyle(
                             fontSize = 10.sp,
                             color = ColorProvider(scheme.onSurfaceVariant)
@@ -478,7 +513,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
             Spacer(modifier = GlanceModifier.height(3.dp))
             day.courses.take(3).forEachIndexed { idx, c ->
                 Text(
-                    text = "${TimeTableUtils.courseTimeString(c.startNode, c.step, day.timeJson, c.ownTime, c.startTime, c.endTime) ?: "第${c.startNode}节"}  ${c.courseName}",
+                    text = "${TimeTableUtils.courseTimeString(c.startNode, c.step, day.timeJson, c.ownTime, c.startTime, c.endTime) ?: "第 ${c.startNode} 节"}  ${c.courseName}",
                     style = TextStyle(
                         fontSize = 11.sp,
                         color = ColorProvider(scheme.onSurface)
@@ -580,8 +615,12 @@ private fun GridRow(
     scheme: WidgetScheme,
     todayDow: Int
 ) {
+    // 所有格子（课程/空/续行）统一高度，保证行对齐
+    val cellH = 24.dp
+    val cellPad = 1.dp
+
     Row(
-        modifier = GlanceModifier.fillMaxWidth(),
+        modifier = GlanceModifier.fillMaxWidth().height(cellH),
         verticalAlignment = Alignment.Top
     ) {
         // 节次标签
@@ -591,74 +630,77 @@ private fun GridRow(
                 fontSize = 9.sp,
                 color = ColorProvider(scheme.onSurfaceVariant)
             ),
-            modifier = GlanceModifier.width(18.dp)
+            modifier = GlanceModifier.width(18.dp).padding(top = 3.dp)
         )
         // 7 天格子
         days.forEach { day ->
             val course = day.courses.find { node >= it.startNode && node < it.startNode + it.step }
             val isStart = course != null && course.startNode == node
+            val isLastRow = course != null && node == course.startNode + course.step - 1
             val isTodayCol = day.dayOfWeek == todayDow
 
             if (isStart && course != null) {
                 // 课程起始格 — 显示课程名
                 val courseColor = parseColor(course.color)
-                val isLastRow = node == course.startNode + course.step - 1
-                Column(
-                    modifier = GlanceModifier
-                        .defaultWeight()
-                        .padding(horizontal = 1.dp, vertical = 1.dp)
-                        .background(ColorProvider(courseColor))
-                        .cornerRadius(if (isLastRow) 4.dp else 0.dp)
-                        .padding(3.dp),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    Text(
-                        text = course.courseName,
-                        style = TextStyle(
-                            fontSize = 9.sp,
-                            fontWeight = FontWeight.Medium,
-                            color = ColorProvider(Color.White)
-                        ),
-                        maxLines = 2
-                    )
-                    if (course.room.isNotBlank()) {
-                        Text(
-                            text = course.room,
-                            style = TextStyle(
-                                fontSize = 8.sp,
-                                color = ColorProvider(Color(0xCCFFFFFF))
-                            ),
-                            maxLines = 1
-                        )
-                    }
-                }
-            } else if (course != null) {
-                // 课程跨节续行 — 同色背景延续
-                val courseColor = parseColor(course.color)
-                val isLastRow = node == course.startNode + course.step - 1
                 Box(
                     modifier = GlanceModifier
                         .defaultWeight()
-                        .fillMaxWidth()
-                        .padding(horizontal = 1.dp, vertical = 1.dp)
+                        .height(cellH)
+                        .padding(horizontal = cellPad, vertical = cellPad)
+                        .background(ColorProvider(courseColor))
+                        .cornerRadius(if (isLastRow) 4.dp else 0.dp)
+                        .padding(horizontal = 3.dp, vertical = 2.dp),
+                    contentAlignment = Alignment.TopStart
+                ) {
+                    Column {
+                        Text(
+                            text = course.courseName,
+                            style = TextStyle(
+                                fontSize = 8.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = ColorProvider(Color.White)
+                            ),
+                            maxLines = 1
+                        )
+                        if (course.room.isNotBlank() && course.step >= 2) {
+                            Text(
+                                text = course.room,
+                                style = TextStyle(
+                                    fontSize = 7.sp,
+                                    color = ColorProvider(Color(0xCCFFFFFF))
+                                ),
+                                maxLines = 1
+                            )
+                        }
+                    }
+                }
+            } else if (course != null) {
+                // 课程跨节续行 — 同色背景延续（无 padding，纯色块）
+                val courseColor = parseColor(course.color)
+                Box(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .height(cellH)
+                        .padding(horizontal = cellPad, vertical = cellPad)
                         .background(ColorProvider(courseColor))
                         .cornerRadius(if (isLastRow) 4.dp else 0.dp)
                 ) {}
             } else {
-                // 无课格子
+                // 无课格子 — 与课程格子同样的高度和 padding
                 Box(
                     modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 1.dp, vertical = 2.dp)
-                        .height(22.dp)
+                        .defaultWeight()
+                        .height(cellH)
+                        .padding(horizontal = cellPad, vertical = cellPad)
                         .background(ColorProvider(
                             if (isTodayCol) scheme.primary.copy(alpha = 0.06f)
                             else Color.Transparent
                         ))
-                        .cornerRadius(4.dp)
+                        .cornerRadius(3.dp)
                 ) {}
             }
         }
     }
+    // 行间 0.5dp 间隔（比 1dp 更紧凑）
     Spacer(modifier = GlanceModifier.height(1.dp))
 }
