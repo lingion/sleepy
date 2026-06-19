@@ -634,12 +634,12 @@ private fun GridRow(
                 }
             } else if (course != null) {
                 // 课程跨节但非起始格 — 空占位（被起始格覆盖）
-                Spacer(modifier = GlanceModifier.defaultWidth())
+                Spacer(modifier = GlanceModifier.fillMaxWidth())
             } else {
                 // 无课格子
                 Box(
                     modifier = GlanceModifier
-                        .defaultWidth()
+                        .fillMaxWidth()
                         .padding(horizontal = 1.dp, vertical = 2.dp)
                         .height(22.dp)
                         .background(ColorProvider(
