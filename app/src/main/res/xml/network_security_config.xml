@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!--
+        教务直连导入 (v1.0.8) 临时方案：允许所有域名明文 HTTP
+        原因：国内高校教务系统大量仍为 http://，且 v1.0.8 阶段尚未对接
+             统一 CA 体系。先放开，后续版本按学校收紧。
+        风险范围：仅 WebView 加载教务登录页 + 强智/正方/青果协议抓课
+                 不会用于其他网络请求。
+    -->
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+</network-security-config>

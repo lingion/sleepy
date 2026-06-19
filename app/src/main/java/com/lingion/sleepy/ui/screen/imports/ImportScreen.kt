@@ -82,6 +82,7 @@ fun ImportScreen(
     onBack: () -> Unit = {},
     onManualAdd: () -> Unit = {},
     onOpenEditTable: (Long) -> Unit = {},
+    onJwImportRequested: () -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -189,9 +190,9 @@ fun ImportScreen(
                     )
                     ImportMethodChip(
                         icon = Icons.Outlined.QrCode2,
-                        label = stringResource(R.string.import_qr),
+                        label = stringResource(R.string.import_jw),
                         modifier = Modifier.weight(1f),
-                        onClick = { errorMsg = "扫码导入稍后再做，当前先把文件/文本导入做到极致" }
+                        onClick = onJwImportRequested
                     )
                     ImportMethodChip(
                         icon = Icons.Outlined.Edit,

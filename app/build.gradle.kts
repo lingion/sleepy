@@ -66,6 +66,13 @@ android {
         }
     }
 
+    testOptions {
+        unitTests {
+            isIncludeAndroidResources = true
+            isReturnDefaultValues = true
+        }
+    }
+
     // ABI: 正式使用 arm64；开发验证同时产出 x86_64，便于当前模拟器做视觉/交互实测
     splits {
         abi {
@@ -117,6 +124,9 @@ dependencies {
     // Kotlinx Serialization (JSON parsing for WakeUp JSON)
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
 
+    // jsoup (HTML parsing for 教务直连 import)
+    implementation("org.jsoup:jsoup:1.18.1")
+
     // Glance (App Widgets)
     implementation("androidx.glance:glance-appwidget:1.1.0")
     implementation("androidx.glance:glance-material3:1.1.0")
@@ -134,6 +144,8 @@ dependencies {
 
     // Test
     testImplementation("junit:junit:4.13.2")
+    // 给 JVM 单测加 org.json 真实现（Android 自带的是 stub）
+    testImplementation("org.json:json:20231013")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

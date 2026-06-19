@@ -39,6 +39,7 @@
     <string name="import_paste">粘贴课表文本</string>
     <string name="import_file">从文件导入</string>
     <string name="import_qr">扫码导入</string>
+    <string name="import_jw">教务直连</string>
     <string name="import_manual">手动添加</string>
     <string name="import_success">导入成功</string>
     <string name="import_failed">导入失败：%1$s</string>

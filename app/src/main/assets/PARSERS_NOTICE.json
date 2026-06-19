@@ -1,0 +1,17 @@
+[
+  {
+    "name": "本数据基于 dIT8Zv/WakeupSchedule_BUPT 修改",
+    "license": "Apache License 2.0",
+    "source": "https://github.com/dIT8Zv/WakeupSchedule_BUPT",
+    "modified_files": [
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwProtocol.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwSchoolInfo.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwCourse.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwParser.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwQzParser.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwQzCrazyParser.kt",
+      "app/src/main/assets/schools.json"
+    ],
+    "notes": "原仓库为 Apache-2.0 协议。本项目仅复用协议解析算法与学校 URL 表，UI 层、登录流程、数据库 schema 均为 sleepy 独立实现。"
+  }
+]

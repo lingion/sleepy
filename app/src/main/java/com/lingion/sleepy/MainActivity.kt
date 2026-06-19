@@ -197,6 +197,7 @@ private fun AppRoot(
 
     // ----- Import -----
     if (overlayScreen == OverlayScreen.Import) {
+        val context = androidx.compose.ui.platform.LocalContext.current
         ImportScreen(
             onImported = {
                 overlayScreen = null
@@ -207,6 +208,10 @@ private fun AppRoot(
             onOpenEditTable = { tableId ->
                 editTableId = tableId
                 overlayScreen = OverlayScreen.EditTable
+            },
+            onJwImportRequested = {
+                val intent = android.content.Intent(context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
+                context.startActivity(intent)
             }
         )
         return
