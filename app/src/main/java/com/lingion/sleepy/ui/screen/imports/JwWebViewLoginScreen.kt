@@ -1,10 +1,13 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import android.annotation.SuppressLint
+import android.util.Log
 import android.view.ViewGroup
 import android.webkit.JavascriptInterface
+import android.webkit.ValueCallback
 import android.webkit.WebSettings
 import android.webkit.WebView
+import android.webkit.WebViewClient
 import androidx.activity.compose.BackHandler
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -77,7 +80,6 @@ fun JwWebViewLoginScreen(
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
-    var loading by remember { mutableStateOf(true) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
 
     BackHandler {
@@ -118,35 +120,63 @@ fun JwWebViewLoginScreen(
         },
         bottomBar = {
             CaptureBar(
-                enabled = !loading,
+                enabled = webViewRef != null,
                 onCapture = {
                     val wv = webViewRef
                     if (wv == null) {
+                        Log.w("JwWebView", "capture tapped but webViewRef is null")
                         scope.launch { snackbar.showSnackbar("WebView 未就绪") }
                         return@CaptureBar
                     }
-                    // wakeup 风格：loadUrl javascript: 把 JS 注入到当前页面，JS 通过 local_obj 回调 HTML
+                    val url = wv.url ?: ""
+                    Log.d("JwWebView", "capture tapped, current url=$url")
+                    scope.launch { snackbar.showSnackbar("正在抓取课表…") }
+                    // 用 evaluateJavascript（API 19+）同步回调拿 HTML，不依赖 JS 桥跨域问题
                     val js = """
-                        javascript:(function() {
-                            var ifrs = document.getElementsByTagName('iframe');
-                            var iframeContent = '';
-                            for (var i = 0; i < ifrs.length; i++) {
-                                try {
-                                    iframeContent = iframeContent + ifrs[i].contentDocument.body.parentElement.outerHTML;
-                                } catch (e) {}
+                        (function() {
+                            try {
+                                var ifrs = document.getElementsByTagName('iframe');
+                                var iframeContent = '';
+                                for (var i = 0; i < ifrs.length; i++) {
+                                    try { iframeContent += ifrs[i].contentDocument.documentElement.outerHTML; } catch(e) {}
+                                }
+                                var frs = document.getElementsByTagName('frame');
+                                var frameContent = '';
+                                for (var i = 0; i < frs.length; i++) {
+                                    try { frameContent += frs[i].contentDocument.documentElement.outerHTML; } catch(e) {}
+                                }
+                                var html = (document.documentElement && document.documentElement.outerHTML) || '';
+                                JSON.stringify({ok:true, url:location.href, len:html.length+iframeContent.length+frameContent.length, html:html+iframeContent+frameContent});
+                            } catch(err) {
+                                JSON.stringify({ok:false, err:String(err)});
                             }
-                            var frs = document.getElementsByTagName('frame');
-                            var frameContent = '';
-                            for (var i = 0; i < frs.length; i++) {
-                                try {
-                                    frameContent = frameContent + frs[i].contentDocument.body.parentElement.outerHTML;
-                                } catch (e) {}
-                            }
-                            var html = document.getElementsByTagName('html')[0].outerHTML + iframeContent + frameContent;
-                            window.local_obj.showSource(html);
                         })();
                     """.trimIndent()
-                    wv.loadUrl(js)
+                    wv.evaluateJavascript(js, ValueCallback<String> { raw ->
+                        Log.d("JwWebView", "evaluateJavascript returned len=${raw?.length ?: 0}")
+                        if (raw.isNullOrEmpty() || raw == "null") {
+                            scope.launch { snackbar.showSnackbar("抓取失败：网页无响应（可能还在加载）") }
+                            return@ValueCallback
+                        }
+                        // raw 是 JSON 字符串（含转义），先解一层
+                        val unwrapped = try {
+                            org.json.JSONObject(raw).optString("html", "")
+                        } catch (e: Exception) {
+                            Log.e("JwWebView", "parse capture JSON failed", e)
+                            scope.launch { snackbar.showSnackbar("抓取返回格式异常") }
+                            return@ValueCallback
+                        }
+                        val ok = try {
+                            org.json.JSONObject(raw).optBoolean("ok", false)
+                        } catch (e: Exception) { false }
+                        if (!ok || unwrapped.isBlank()) {
+                            val err = try { org.json.JSONObject(raw).optString("err", "") } catch (e: Exception) { "" }
+                            scope.launch { snackbar.showSnackbar("抓取失败：${err.ifBlank { "页面尚未完全加载" }}") }
+                            return@ValueCallback
+                        }
+                        Log.d("JwWebView", "captured html len=${unwrapped.length}")
+                        onHtmlCaptured(unwrapped, school)
+                    })
                 }
             )
         },
@@ -159,15 +189,12 @@ fun JwWebViewLoginScreen(
         ) {
             JwWebView(
                 url = school.url.ifBlank { "https://www.baidu.com" },
-                onProgressChange = { p ->
-                    progress = p
-                    loading = p < 100
-                },
+                onProgressChange = { p -> progress = p },
                 onWebViewCreated = { wv -> webViewRef = wv },
                 onHtmlCaptured = { html -> onHtmlCaptured(html, school) }
             )
 
-            if (loading) {
+            if (progress in 1..99) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -222,6 +249,10 @@ private fun JwWebView(
                     override fun onProgressChanged(view: WebView?, newProgress: Int) {
                         onProgressChange(newProgress)
                     }
+                    override fun onConsoleMessage(msg: android.webkit.ConsoleMessage?): Boolean {
+                        Log.d("JwWebView", "console[${msg?.messageLevel()}]: ${msg?.message()}")
+                        return true
+                    }
                 }
                 webViewClient = object : android.webkit.WebViewClient() {
                     override fun onReceivedSslError(
@@ -231,17 +262,10 @@ private fun JwWebView(
                     ) {
                         handler.proceed()
                     }
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        Log.d("JwWebView", "onPageFinished url=$url")
+                    }
                 }
-                // 关键：addJavascriptInterface 暴露给 JS（wakeup 6 年方案）
-                addJavascriptInterface(
-                    object {
-                        @JavascriptInterface
-                        fun showSource(html: String) {
-                            onHtmlCaptured(html)
-                        }
-                    },
-                    "local_obj"
-                )
                 loadUrl(url)
                 onWebViewCreated(this)
             }
