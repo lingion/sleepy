@@ -14,6 +14,7 @@ import androidx.glance.layout.Box
 import androidx.glance.layout.Column
 import androidx.glance.layout.Row
 import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
@@ -220,30 +221,25 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
         endTime = course.endTime
     ) ?: "第 ${course.startNode} 节"
 
-    // 解析 CourseEntity.color（格式 "#AARRGGBB" 或 "#RRGGBB"）
     val courseColor = parseColor(course.color)
 
+    // 课程色胶囊 — 复刻首页 LessonRow 样式
     Row(
         modifier = GlanceModifier
             .fillMaxWidth()
-            .clickable(onClick),
+            .background(ColorProvider(courseColor))
+            .cornerRadius(10.dp)
+            .clickable(onClick)
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = GlanceModifier
-                .size(width = 4.dp, height = 36.dp)
-                .background(ColorProvider(courseColor))
-                .cornerRadius(2.dp)
-        ) {}
-        Spacer(modifier = GlanceModifier.width(8.dp))
-
         Column(modifier = GlanceModifier.defaultWeight()) {
             Text(
                 text = course.courseName,
                 style = TextStyle(
-                    fontSize = 14.sp,
+                    fontSize = 13.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ColorProvider(scheme.onSurface)
+                    color = ColorProvider(Color.White)
                 ),
                 maxLines = 1
             )
@@ -251,8 +247,8 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
             Text(
                 text = timeStr + (if (course.room.isNotBlank()) "  ·  ${course.room}" else ""),
                 style = TextStyle(
-                    fontSize = 11.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
+                    fontSize = 10.sp,
+                    color = ColorProvider(Color(0xCCFFFFFF))
                 ),
                 maxLines = 1
             )
@@ -322,7 +318,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             .fillMaxSize()
             .background(ColorProvider(scheme.bg))
             .cornerRadius(20.dp)
-            .padding(8.dp)
+            .padding(6.dp)
             .clickable(openAppAction),
         verticalAlignment = Alignment.Top
     ) {
@@ -330,99 +326,87 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // 7 列竖向并排 — 每列一天，defaultWeight 均分宽度
+                // 7 列竖向并排 — 每列整列卡片铺满高度
                 Row(
-                    modifier = GlanceModifier.fillMaxWidth(),
+                    modifier = GlanceModifier
+                        .fillMaxWidth()
+                        .defaultWeight(),
                     verticalAlignment = Alignment.Top
                 ) {
                     data.days.forEach { day ->
                         val isToday = day.dayOfWeek == todayDow
+                        val cardBg = if (isToday) scheme.primary else scheme.onSurface.copy(alpha = 0.06f)
+                        val titleColor = if (isToday) Color.White else scheme.onSurface
+                        val nameColor = if (isToday) Color.White else scheme.onSurface
+                        val pillBg = if (isToday) Color.White.copy(alpha = 0.22f) else scheme.onSurface.copy(alpha = 0.10f)
+                        val pillTextColor = if (isToday) Color.White else scheme.onSurfaceVariant
 
-                        // ── 单日竖列（内联，因为 defaultWeight 需要 RowScope）──
+                        // ── 单日整列卡片（内联，因为 defaultWeight 需要 RowScope）──
                         Column(
                             modifier = GlanceModifier
                                 .defaultWeight()
-                                .padding(horizontal = 1.dp),
+                                .fillMaxHeight()
+                                .padding(horizontal = 2.dp)
+                                .background(ColorProvider(cardBg))
+                                .cornerRadius(10.dp)
+                                .padding(vertical = 6.dp, horizontal = 3.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
-                            // 列头：星期
-                            Box(
-                                modifier = GlanceModifier
-                                    .fillMaxWidth()
-                                    .height(20.dp)
-                                    .background(ColorProvider(
-                                        if (isToday) scheme.primary else scheme.surface
-                                    ))
-                                    .cornerRadius(6.dp),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = dayLabels[day.dayOfWeek],
-                                    style = TextStyle(
-                                        fontSize = 10.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = ColorProvider(
-                                            if (isToday) Color.White else scheme.onSurfaceVariant
-                                        )
-                                    )
+                            // 星期标题
+                            Text(
+                                text = dayLabels[day.dayOfWeek],
+                                style = TextStyle(
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = ColorProvider(titleColor)
                                 )
-                            }
+                            )
+                            Spacer(modifier = GlanceModifier.height(6.dp))
 
-                            Spacer(modifier = GlanceModifier.height(3.dp))
-
-                            // 列身：课程胶囊竖向堆叠
-                            if (day.courses.isEmpty()) {
+                            if (day.courses.isNotEmpty()) {
+                                // 药丸「X门」
                                 Box(
                                     modifier = GlanceModifier
-                                        .fillMaxWidth()
-                                        .height(16.dp)
-                                        .background(ColorProvider(scheme.onSurface.copy(alpha = 0.04f)))
-                                        .cornerRadius(4.dp)
-                                ) {}
-                            } else {
-                                day.courses.take(6).forEachIndexed { idx, c ->
-                                    val courseColor = parseColor(c.color)
-                                    Column(
-                                        modifier = GlanceModifier
-                                            .fillMaxWidth()
-                                            .background(ColorProvider(courseColor))
-                                            .cornerRadius(5.dp)
-                                            .padding(3.dp)
-                                    ) {
-                                        Text(
-                                            text = c.courseName,
-                                            style = TextStyle(
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Medium,
-                                                color = ColorProvider(Color.White)
-                                            ),
-                                            maxLines = 2
+                                        .background(ColorProvider(pillBg))
+                                        .cornerRadius(6.dp)
+                                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = "${day.courses.size}门",
+                                        style = TextStyle(
+                                            fontSize = 9.sp,
+                                            color = ColorProvider(pillTextColor)
                                         )
-                                        if (c.room.isNotBlank()) {
-                                            Text(
-                                                text = c.room,
-                                                style = TextStyle(
-                                                    fontSize = 7.sp,
-                                                    color = ColorProvider(Color(0xCCFFFFFF))
-                                                ),
-                                                maxLines = 1
-                                            )
-                                        }
-                                    }
-                                    if (idx < minOf(day.courses.size, 6) - 1) {
-                                        Spacer(modifier = GlanceModifier.height(2.dp))
+                                    )
+                                }
+                                Spacer(modifier = GlanceModifier.height(5.dp))
+
+                                // 课程名列表（纯文字，无色块）
+                                day.courses.take(5).forEachIndexed { idx, c ->
+                                    Text(
+                                        text = c.courseName,
+                                        style = TextStyle(
+                                            fontSize = 9.sp,
+                                            color = ColorProvider(nameColor)
+                                        ),
+                                        maxLines = 1
+                                    )
+                                    if (idx < minOf(day.courses.size, 5) - 1) {
+                                        Spacer(modifier = GlanceModifier.height(3.dp))
                                     }
                                 }
-                                if (day.courses.size > 6) {
+                                if (day.courses.size > 5) {
                                     Text(
-                                        text = "+${day.courses.size - 6}",
+                                        text = "+${day.courses.size - 5}",
                                         style = TextStyle(
                                             fontSize = 8.sp,
-                                            color = ColorProvider(scheme.onSurfaceVariant)
+                                            color = ColorProvider(pillTextColor)
                                         )
                                     )
                                 }
                             }
+                            // 无课列：只留星期标题，下方空白
                         }
                     }
                 }
@@ -481,7 +465,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
                 text = if (day.isToday) "今天" else if (day.isTomorrow) "明天" else day.dayName,
                 style = TextStyle(
                     fontSize = 12.sp,
-                    fontWeight = FontWeight.Medium,
+                    fontWeight = FontWeight.Bold,
                     color = ColorProvider(scheme.primary)
                 )
             )
@@ -489,7 +473,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
             Text(
                 text = day.dayLabel,
                 style = TextStyle(
-                    fontSize = 11.sp,
+                    fontSize = 10.sp,
                     color = ColorProvider(scheme.onSurfaceVariant)
                 )
             )
@@ -505,23 +489,50 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
                 )
             )
         } else {
-            Spacer(modifier = GlanceModifier.height(3.dp))
+            Spacer(modifier = GlanceModifier.height(4.dp))
             day.courses.take(3).forEachIndexed { idx, c ->
-                Text(
-                    text = "${TimeTableUtils.courseTimeString(c.startNode, c.step, day.timeJson, c.ownTime, c.startTime, c.endTime) ?: "第 ${c.startNode} 节"}  ${c.courseName}",
-                    style = TextStyle(
-                        fontSize = 11.sp,
-                        color = ColorProvider(scheme.onSurface)
-                    ),
-                    maxLines = 1
-                )
+                // 课程色胶囊
+                val courseColor = parseColor(c.color)
+                Row(
+                    modifier = GlanceModifier
+                        .fillMaxWidth()
+                        .background(ColorProvider(courseColor))
+                        .cornerRadius(8.dp)
+                        .padding(5.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = GlanceModifier.defaultWeight()) {
+                        Text(
+                            text = c.courseName,
+                            style = TextStyle(
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Medium,
+                                color = ColorProvider(Color.White)
+                            ),
+                            maxLines = 1
+                        )
+                        val meta = buildString {
+                            append(TimeTableUtils.courseTimeString(c.startNode, c.step, day.timeJson, c.ownTime, c.startTime, c.endTime) ?: "第 ${c.startNode} 节")
+                            if (c.room.isNotBlank()) append("  ·  ${c.room}")
+                        }
+                        Text(
+                            text = meta,
+                            style = TextStyle(
+                                fontSize = 9.sp,
+                                color = ColorProvider(Color(0xCCFFFFFF))
+                            ),
+                            maxLines = 1
+                        )
+                    }
+                }
                 if (idx < minOf(day.courses.size, 3) - 1) {
-                    Spacer(modifier = GlanceModifier.height(1.dp))
+                    Spacer(modifier = GlanceModifier.height(3.dp))
                 }
             }
             if (day.courses.size > 3) {
+                Spacer(modifier = GlanceModifier.height(2.dp))
                 Text(
-                    text = "…还有${day.courses.size - 3}节",
+                    text = "…还有 ${day.courses.size - 3} 节",
                     style = TextStyle(
                         fontSize = 10.sp,
                         color = ColorProvider(scheme.onSurfaceVariant)
