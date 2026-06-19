@@ -1,7 +1,8 @@
 <resources>
     <string name="app_name">Sleepy 课程表</string>
     <string name="widget_today_label">今日课程</string>
-    <string name="widget_week_label">本周课表</string>
+    <string name="widget_week_list_label">本周课表（列表）</string>
+    <string name="widget_week_grid_label">本周课表（网格）</string>
     <string name="widget_twoday_label">最近两天</string>
 
     <!-- Tabs -->

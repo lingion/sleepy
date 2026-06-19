@@ -10,15 +10,14 @@ import androidx.glance.appwidget.provideContent
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
-import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 /**
- * 周视图小组件 — 显示本周 7 天课程概要
+ * 周视图小组件（网格样式）— 7 列网格，课程按节次定位
  */
-class WeekWidget : GlanceAppWidget() {
+class WeekGridWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = withContext(Dispatchers.IO) { loadWeekData(context) }
@@ -26,14 +25,14 @@ class WeekWidget : GlanceAppWidget() {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
         provideContent {
-            WeekContent(
+            WeekGridContent(
                 data = data,
                 openAppAction = actionStartActivity(openAppIntent)
             )
         }
     }
 
-    private suspend fun loadWeekData(context: Context): WeekData {
+    internal suspend fun loadWeekData(context: Context): WeekData {
         val today = LocalDate.now()
         val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context)
         val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
@@ -59,6 +58,6 @@ class WeekWidget : GlanceAppWidget() {
     }
 }
 
-class WeekWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = WeekWidget()
+class WeekGridWidgetReceiver : GlanceAppWidgetReceiver() {
+    override val glanceAppWidget: GlanceAppWidget = WeekGridWidget()
 }

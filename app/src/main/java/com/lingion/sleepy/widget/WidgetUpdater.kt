@@ -49,9 +49,13 @@ object WidgetUpdater {
                 manager.getGlanceIds(TodayWidget::class.java).forEach { id ->
                     TodayWidget().update(context, id)
                 }
-                // WeekWidget
-                manager.getGlanceIds(WeekWidget::class.java).forEach { id ->
-                    WeekWidget().update(context, id)
+                // WeekListWidget
+                manager.getGlanceIds(WeekListWidget::class.java).forEach { id ->
+                    WeekListWidget().update(context, id)
+                }
+                // WeekGridWidget
+                manager.getGlanceIds(WeekGridWidget::class.java).forEach { id ->
+                    WeekGridWidget().update(context, id)
                 }
                 // TwoDayWidget
                 manager.getGlanceIds(TwoDayWidget::class.java).forEach { id ->

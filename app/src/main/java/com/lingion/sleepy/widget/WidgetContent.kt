@@ -310,7 +310,7 @@ data class TwoDayData(
 )
 
 @Composable
-fun WeekContent(data: WeekData, openAppAction: Action) {
+fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
 
     Column(
@@ -500,4 +500,156 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
             }
         }
     }
+}
+
+// ═══════════════════════════════════════════════════════
+// Week Grid — 7列网格样式
+// ═══════════════════════════════════════════════════════
+
+@Composable
+fun WeekGridContent(data: WeekData, openAppAction: Action) {
+    val scheme = resolveScheme(data.themeKey, data.isDark)
+    val todayDow = LocalDate.now().dayOfWeek.value
+    val dayLabels = listOf("一", "二", "三", "四", "五", "六", "日")
+    // 找最大节次（用于决定网格行数）
+    val maxNode = if (data.days.isEmpty()) 0 else data.days.maxOf { d ->
+        d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
+    }
+    val rows = minOf(maxOf(maxNode, 4), 12) // 至少4行，最多12行
+
+    Column(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ColorProvider(scheme.bg))
+            .cornerRadius(20.dp)
+            .padding(10.dp)
+            .clickable(openAppAction),
+        verticalAlignment = Alignment.Top
+    ) {
+        // 标题行
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "节",
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                ),
+                modifier = GlanceModifier.width(18.dp)
+            )
+            // 7 天表头
+            dayLabels.forEachIndexed { idx, label ->
+                val isToday = (idx + 1) == todayDow
+                Text(
+                    text = label,
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        fontWeight = if (isToday) FontWeight.Bold else FontWeight.Normal,
+                        color = ColorProvider(if (isToday) scheme.primary else scheme.onSurfaceVariant)
+                    ),
+                    modifier = GlanceModifier.defaultWeight()
+                )
+            }
+        }
+        Spacer(modifier = GlanceModifier.height(4.dp))
+
+        when {
+            !data.hasTable -> EmptyTableState(scheme)
+            data.days.isEmpty() -> EmptyTableState(scheme)
+            else -> {
+                // 网格主体：每行一节
+                (1..rows).forEach { node ->
+                    GridRow(
+                        node = node,
+                        days = data.days,
+                        scheme = scheme,
+                        todayDow = todayDow
+                    )
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun GridRow(
+    node: Int,
+    days: List<DayData>,
+    scheme: WidgetScheme,
+    todayDow: Int
+) {
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.Top
+    ) {
+        // 节次标签
+        Text(
+            text = node.toString(),
+            style = TextStyle(
+                fontSize = 9.sp,
+                color = ColorProvider(scheme.onSurfaceVariant)
+            ),
+            modifier = GlanceModifier.width(18.dp)
+        )
+        // 7 天格子
+        days.forEach { day ->
+            val course = day.courses.find { node >= it.startNode && node < it.startNode + it.step }
+            val isStart = course != null && course.startNode == node
+            val isTodayCol = day.dayOfWeek == todayDow
+
+            if (isStart && course != null) {
+                // 课程起始格 — 显示课程名
+                val courseColor = parseColor(course.color)
+                val alpha = if (day.dayOfWeek == todayDow) 1f else 0.92f
+                Column(
+                    modifier = GlanceModifier
+                        .defaultWeight()
+                        .padding(horizontal = 1.dp, vertical = 1.dp)
+                        .background(ColorProvider(courseColor))
+                        .cornerRadius(4.dp)
+                        .padding(3.dp),
+                    horizontalAlignment = Alignment.Start
+                ) {
+                    Text(
+                        text = course.courseName,
+                        style = TextStyle(
+                            fontSize = 9.sp,
+                            fontWeight = FontWeight.Medium,
+                            color = ColorProvider(Color.White)
+                        ),
+                        maxLines = 2
+                    )
+                    if (course.room.isNotBlank()) {
+                        Text(
+                            text = course.room,
+                            style = TextStyle(
+                                fontSize = 8.sp,
+                                color = ColorProvider(Color(0xCCFFFFFF))
+                            ),
+                            maxLines = 1
+                        )
+                    }
+                }
+            } else if (course != null) {
+                // 课程跨节但非起始格 — 空占位（被起始格覆盖）
+                Spacer(modifier = GlanceModifier.defaultWidth())
+            } else {
+                // 无课格子
+                Box(
+                    modifier = GlanceModifier
+                        .defaultWidth()
+                        .padding(horizontal = 1.dp, vertical = 2.dp)
+                        .height(22.dp)
+                        .background(ColorProvider(
+                            if (isTodayCol) scheme.primary.copy(alpha = 0.06f)
+                            else Color.Transparent
+                        ))
+                        .cornerRadius(4.dp)
+                ) {}
+            }
+        }
+    }
+    Spacer(modifier = GlanceModifier.height(1.dp))
 }
