@@ -107,6 +107,7 @@ fun WidgetContent(data: WidgetData, openAppAction: Action, openCourseAction: (Lo
  */
 private data class WidgetScheme(
     val bg: Color = Color(0xFFFDFCFF),
+    val surface: Color = Color(0xFFFFFBFE),
     val primary: Color = Color(0xFF6750A4),
     val onSurface: Color = Color(0xFF1C1B1F),
     val onSurfaceVariant: Color = Color(0xFF79747E)
@@ -121,6 +122,7 @@ private fun resolveScheme(themeKey: String, isDark: Boolean): WidgetScheme {
     val s = if (isDark) preset.dark else preset.light
     return WidgetScheme(
         bg = s.surface,
+        surface = s.surface,
         primary = s.primary,
         onSurface = s.onSurface,
         onSurfaceVariant = s.onSurfaceVariant
@@ -318,120 +320,138 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             .fillMaxSize()
             .background(ColorProvider(scheme.bg))
             .cornerRadius(20.dp)
-            .padding(12.dp)
+            .padding(10.dp)
             .clickable(openAppAction),
         verticalAlignment = Alignment.Top
     ) {
-        Text(
-            text = "本周课表",
-            style = TextStyle(
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = ColorProvider(scheme.primary)
-            )
-        )
-        Spacer(modifier = GlanceModifier.height(6.dp))
-
         when {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
+                // 7 天竖向列表 — 每天一个卡片（复刻首页 DetailPanel）
                 data.days.forEach { day ->
-                    WeekDayRow(day = day, scheme = scheme)
+                    WidgetDetailDayCard(day = day, scheme = scheme)
+                    Spacer(modifier = GlanceModifier.height(4.dp))
                 }
             }
         }
     }
 }
 
+/**
+ * 单日卡片 — 复刻首页 DetailDayCard 样式：
+ * 圆角卡片背景 + 星期标题 + 每节课一个横向胶囊（课程色背景）
+ */
 @Composable
-private fun WeekDayRow(day: DayData, scheme: WidgetScheme) {
+private fun WidgetDetailDayCard(day: DayData, scheme: WidgetScheme) {
     val hasCourses = day.courses.isNotEmpty()
-    Row(
-        modifier = GlanceModifier.fillMaxWidth().padding(vertical = 2.dp),
-        verticalAlignment = Alignment.CenterVertically
+
+    Column(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .background(ColorProvider(
+                if (hasCourses) scheme.surface else scheme.bg
+            ))
+            .cornerRadius(12.dp)
+            .padding(8.dp)
     ) {
-        // 星期标签 — 今天高亮圆点 + 文字
-        Box(
-            modifier = GlanceModifier.width(36.dp),
-            contentAlignment = Alignment.CenterEnd
-        ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (day.isToday) {
-                    Box(
-                        modifier = GlanceModifier
-                            .size(6.dp)
-                            .background(ColorProvider(scheme.primary))
-                            .cornerRadius(3.dp)
-                    ) {}
-                    Spacer(modifier = GlanceModifier.width(3.dp))
-                }
+        // 头部：星期 + 今天标记
+        Text(
+            text = day.dayName + if (day.isToday) " · 今天" else "",
+            style = TextStyle(
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Bold,
+                color = ColorProvider(scheme.onSurface)
+            )
+        )
+
+        if (hasCourses) {
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            // 每节课一个横向胶囊
+            day.courses.take(4).forEach { c ->
+                WidgetLessonCapsule(course = c, scheme = scheme)
+                Spacer(modifier = GlanceModifier.height(3.dp))
+            }
+            if (day.courses.size > 4) {
                 Text(
-                    text = day.dayName,
+                    text = "…还有 ${day.courses.size - 4} 节",
                     style = TextStyle(
-                        fontSize = 11.sp,
-                        fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal,
-                        color = ColorProvider(if (day.isToday) scheme.primary else scheme.onSurfaceVariant)
+                        fontSize = 10.sp,
+                        color = ColorProvider(scheme.onSurfaceVariant)
                     )
                 )
             }
+        } else {
+            Spacer(modifier = GlanceModifier.height(2.dp))
+            Text(
+                text = "无课程",
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                )
+            )
         }
+    }
+}
+
+/**
+ * 课程胶囊 — 复刻首页 LessonRow 样式：
+ * 横向圆角条（课程色背景）+ 左侧节次 + 右侧课名 + 老师·教室
+ */
+@Composable
+private fun WidgetLessonCapsule(course: CourseEntity, scheme: WidgetScheme) {
+    val courseColor = parseColor(course.color)
+
+    Row(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .background(ColorProvider(courseColor))
+            .cornerRadius(8.dp)
+            .padding(6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 左侧：节次标签
+        val nodeStr = "第${course.startNode}" + (if (course.step > 1) "-${course.startNode + course.step - 1}" else "") + "节"
+        Text(
+            text = nodeStr,
+            style = TextStyle(
+                fontSize = 9.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorProvider(Color.White)
+            ),
+            modifier = GlanceModifier.width(32.dp)
+        )
         Spacer(modifier = GlanceModifier.width(4.dp))
 
-        if (hasCourses) {
-            Column(modifier = GlanceModifier.defaultWeight()) {
-                day.courses.take(3).forEachIndexed { idx, c ->
-                    // 胶囊卡片
-                    Box(
-                        modifier = GlanceModifier
-                            .fillMaxWidth()
-                            .background(ColorProvider(scheme.onSurface.copy(alpha = 0.08f)))
-                            .cornerRadius(8.dp)
-                            .padding(horizontal = 6.dp, vertical = 3.dp)
-                    ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            // 左侧色条
-                            Box(
-                                modifier = GlanceModifier
-                                    .size(width = 3.dp, height = 12.dp)
-                                    .background(ColorProvider(parseColor(c.color)))
-                                    .cornerRadius(1.5.dp)
-                            ) {}
-                            Spacer(modifier = GlanceModifier.width(4.dp))
-                            Text(
-                                text = c.courseName + (if (c.room.isNotBlank()) " · ${c.room}" else ""),
-                                style = TextStyle(
-                                    fontSize = 11.sp,
-                                    color = ColorProvider(scheme.onSurface)
-                                ),
-                                maxLines = 1
-                            )
-                        }
-                    }
-                    if (idx < minOf(day.courses.size, 3) - 1) {
-                        Spacer(modifier = GlanceModifier.height(2.dp))
-                    }
-                }
-                if (day.courses.size > 3) {
-                    Spacer(modifier = GlanceModifier.height(1.dp))
-                    Text(
-                        text = "+${day.courses.size - 3} 更多",
-                        style = TextStyle(
-                            fontSize = 10.sp,
-                            color = ColorProvider(scheme.onSurfaceVariant)
-                        )
-                    )
+        // 右侧：课名 + meta
+        Column(modifier = GlanceModifier.defaultWeight()) {
+            Text(
+                text = course.courseName,
+                style = TextStyle(
+                    fontSize = 10.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = ColorProvider(Color.White)
+                ),
+                maxLines = 1
+            )
+            // meta: 老师 · 教室
+            val meta = buildString {
+                if (course.teacher.isNotBlank()) append(course.teacher)
+                if (course.room.isNotBlank()) {
+                    if (isNotEmpty()) append(" · ")
+                    append(course.room)
                 }
             }
-        } else {
-            Text(
-                text = "无课",
-                style = TextStyle(
-                    fontSize = 11.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
-                ),
-                modifier = GlanceModifier.defaultWeight()
-            )
+            if (meta.isNotEmpty()) {
+                Text(
+                    text = meta,
+                    style = TextStyle(
+                        fontSize = 9.sp,
+                        color = ColorProvider(Color(0xCCFFFFFF))
+                    ),
+                    maxLines = 1
+                )
+            }
         }
     }
 }
