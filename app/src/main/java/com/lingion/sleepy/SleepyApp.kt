@@ -3,6 +3,7 @@ package com.lingion.sleepy
 import android.app.Application
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.repository.ScheduleRepository
+import com.lingion.sleepy.widget.WidgetUpdater
 import com.lingion.sleepy.widget.notification.CourseNotificationScheduler
 
 /**
@@ -12,6 +13,7 @@ import com.lingion.sleepy.widget.notification.CourseNotificationScheduler
  * - Room 数据库
  * - 课表仓库
  * - 每日课程通知调度
+ * - 小组件定期刷新
  */
 class SleepyApp : Application() {
 
@@ -24,6 +26,7 @@ class SleepyApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        WidgetUpdater.schedule(this)
     }
 
     companion object {

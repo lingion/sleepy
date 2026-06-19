@@ -38,6 +38,12 @@ object DateUtils {
         return start.plusWeeks((week - 1).toLong()).plusDays((dayOfWeek - 1).toLong())
     }
 
+    /** 同一周内指定星期几的日期（以 ref 为参照，1=周一 7=周日） */
+    fun dateOfWeekDay(ref: LocalDate, dayOfWeek: Int): LocalDate {
+        val offset = dayOfWeek - ref.dayOfWeek.value
+        return ref.plusDays(offset.toLong())
+    }
+
     /** ISO 周编号 */
     fun isoWeekNumber(date: LocalDate): Int = date.get(isoWeekFields.weekOfWeekBasedYear())
 

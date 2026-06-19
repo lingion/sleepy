@@ -36,7 +36,7 @@
             </intent-filter>
         </activity>
 
-        <!-- App Widget Receiver -->
+        <!-- App Widget Receivers -->
         <receiver
             android:name=".widget.TodayWidgetReceiver"
             android:exported="true"
@@ -47,6 +47,30 @@
             <meta-data
                 android:name="android.appwidget.provider"
                 android:resource="@xml/today_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.WeekWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_week_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/week_widget_info" />
+        </receiver>
+
+        <receiver
+            android:name=".widget.TwoDayWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_twoday_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/twoday_widget_info" />
         </receiver>
 
         <!-- Daily boot receiver: reschedule notifications -->

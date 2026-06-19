@@ -274,3 +274,230 @@ private fun parseColor(hex: String): Color {
         Color(0xFF6750A4)
     }
 }
+
+// ═══════════════════════════════════════════════════════
+// Multi-day widget data & composables
+// ═══════════════════════════════════════════════════════
+
+/** 单天数据 */
+data class DayData(
+    val date: LocalDate,
+    val dayOfWeek: Int,
+    val courses: List<CourseEntity>,
+    val timeJson: String
+) {
+    val dayLabel: String get() = DateUtils.shortDate(date)
+    val dayName: String get() = DateUtils.chineseDay(dayOfWeek)
+    val subtitle: String get() = if (date == LocalDate.now()) "今天" else dayName
+    val isToday: Boolean get() = date == LocalDate.now()
+    val isTomorrow: Boolean get() = date == LocalDate.now().plusDays(1)
+}
+
+/** 周视图数据 */
+data class WeekData(
+    val days: List<DayData>,
+    val hasTable: Boolean,
+    val isDark: Boolean = false,
+    val themeKey: String = ThemePresets.KEY_DEFAULT
+)
+
+/** 两天视图数据 */
+data class TwoDayData(
+    val days: List<DayData>,
+    val hasTable: Boolean,
+    val isDark: Boolean = false,
+    val themeKey: String = ThemePresets.KEY_DEFAULT
+)
+
+@Composable
+fun WeekContent(data: WeekData, openAppAction: Action) {
+    val scheme = resolveScheme(data.themeKey, data.isDark)
+
+    Column(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ColorProvider(scheme.bg))
+            .cornerRadius(20.dp)
+            .padding(12.dp)
+            .clickable(openAppAction),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = "本周课表",
+            style = TextStyle(
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorProvider(scheme.primary)
+            )
+        )
+        Spacer(modifier = GlanceModifier.height(6.dp))
+
+        when {
+            !data.hasTable -> EmptyTableState(scheme)
+            data.days.isEmpty() -> EmptyTableState(scheme)
+            else -> {
+                data.days.forEach { day ->
+                    WeekDayRow(day = day, scheme = scheme)
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun WeekDayRow(day: DayData, scheme: WidgetScheme) {
+    val hasCourses = day.courses.isNotEmpty()
+    Row(
+        modifier = GlanceModifier.fillMaxWidth().padding(vertical = 3.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 星期标签
+        Text(
+            text = day.dayName,
+            style = TextStyle(
+                fontSize = 11.sp,
+                fontWeight = if (day.isToday) FontWeight.Bold else FontWeight.Normal,
+                color = ColorProvider(if (day.isToday) scheme.primary else scheme.onSurfaceVariant)
+            ),
+            modifier = GlanceModifier.width(36.dp)
+        )
+        Spacer(modifier = GlanceModifier.width(4.dp))
+
+        if (hasCourses) {
+            Column(modifier = GlanceModifier.defaultWeight()) {
+                day.courses.take(3).forEachIndexed { idx, c ->
+                    Text(
+                        text = c.courseName + (if (c.room.isNotBlank()) " ${c.room}" else ""),
+                        style = TextStyle(
+                            fontSize = 11.sp,
+                            color = ColorProvider(scheme.onSurface)
+                        ),
+                        maxLines = 1
+                    )
+                    if (idx < minOf(day.courses.size, 3) - 1) {
+                        Spacer(modifier = GlanceModifier.height(1.dp))
+                    }
+                }
+                if (day.courses.size > 3) {
+                    Text(
+                        text = "+${day.courses.size - 3}",
+                        style = TextStyle(
+                            fontSize = 10.sp,
+                            color = ColorProvider(scheme.onSurfaceVariant)
+                        )
+                    )
+                }
+            }
+        } else {
+            Text(
+                text = "无课",
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                ),
+                modifier = GlanceModifier.defaultWeight()
+            )
+        }
+    }
+}
+
+@Composable
+fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
+    val scheme = resolveScheme(data.themeKey, data.isDark)
+
+    Column(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ColorProvider(scheme.bg))
+            .cornerRadius(20.dp)
+            .padding(12.dp)
+            .clickable(openAppAction),
+        verticalAlignment = Alignment.Top
+    ) {
+        Text(
+            text = "最近两天",
+            style = TextStyle(
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorProvider(scheme.primary)
+            )
+        )
+        Spacer(modifier = GlanceModifier.height(8.dp))
+
+        when {
+            !data.hasTable -> EmptyTableState(scheme)
+            data.days.isEmpty() -> EmptyTableState(scheme)
+            else -> {
+                data.days.forEach { day ->
+                    TwoDaySection(day = day, scheme = scheme)
+                    if (day != data.days.last()) {
+                        Spacer(modifier = GlanceModifier.height(6.dp))
+                    }
+                }
+            }
+        }
+    }
+}
+
+@Composable
+private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
+    Column(modifier = GlanceModifier.fillMaxWidth()) {
+        // 天标题
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = if (day.isToday) "今天" else if (day.isTomorrow) "明天" else day.dayName,
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = ColorProvider(scheme.primary)
+                )
+            )
+            Spacer(modifier = GlanceModifier.width(6.dp))
+            Text(
+                text = day.dayLabel,
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                )
+            )
+        }
+
+        if (day.courses.isEmpty()) {
+            Spacer(modifier = GlanceModifier.height(2.dp))
+            Text(
+                text = "无课",
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                )
+            )
+        } else {
+            Spacer(modifier = GlanceModifier.height(3.dp))
+            day.courses.take(3).forEachIndexed { idx, c ->
+                Text(
+                    text = "${TimeTableUtils.courseTimeString(c.startNode, c.step, day.timeJson, c.ownTime, c.startTime, c.endTime) ?: "第${c.startNode}节"}  ${c.courseName}",
+                    style = TextStyle(
+                        fontSize = 11.sp,
+                        color = ColorProvider(scheme.onSurface)
+                    ),
+                    maxLines = 1
+                )
+                if (idx < minOf(day.courses.size, 3) - 1) {
+                    Spacer(modifier = GlanceModifier.height(1.dp))
+                }
+            }
+            if (day.courses.size > 3) {
+                Text(
+                    text = "…还有${day.courses.size - 3}节",
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        color = ColorProvider(scheme.onSurfaceVariant)
+                    )
+                )
+            }
+        }
+    }
+}

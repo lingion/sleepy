@@ -3,6 +3,8 @@ package com.lingion.sleepy.data.repository
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.widget.WidgetUpdater
 import kotlinx.coroutines.flow.Flow
 
 /**
@@ -58,13 +60,27 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     suspend fun getCourse(id: Long): CourseEntity? = courseDao.getById(id)
 
-    suspend fun insertCourse(course: CourseEntity): Long = courseDao.insert(course)
+    suspend fun insertCourse(course: CourseEntity): Long {
+        val id = courseDao.insert(course)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        return id
+    }
 
-    suspend fun insertCourses(courses: List<CourseEntity>): List<Long> = courseDao.insertAll(courses)
+    suspend fun insertCourses(courses: List<CourseEntity>): List<Long> {
+        val ids = courseDao.insertAll(courses)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        return ids
+    }
 
-    suspend fun updateCourse(course: CourseEntity) = courseDao.update(course)
+    suspend fun updateCourse(course: CourseEntity) {
+        courseDao.update(course)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+    }
 
-    suspend fun deleteCourse(id: Long) = courseDao.deleteById(id)
+    suspend fun deleteCourse(id: Long) {
+        courseDao.deleteById(id)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+    }
 
     suspend fun countCourses(tableId: Long): Int = courseDao.countByTable(tableId)
 
@@ -73,5 +89,6 @@ class ScheduleRepository(private val db: AppDatabase) {
     /** 覆盖式导入（先删后插） */
     suspend fun replaceCourses(tableId: Long, courses: List<CourseEntity>) {
         courseDao.replaceAll(tableId, courses)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
     }
 }
