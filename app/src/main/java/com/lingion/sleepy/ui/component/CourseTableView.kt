@@ -23,7 +23,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,43 +57,6 @@ data class TimeSlot(
 private val CELL_H = 52.dp
 
 /**
- * 每节独立行 — 不再是分组
- */
-val DEFAULT_TIME_SLOTS = (1..12).map { node ->
-    TimeSlot(
-        label = "$node",
-        start = when {
-            node <= 2 -> LocalTime.of(8, 0)
-            node <= 4 -> LocalTime.of(10, 20)
-            node <= 6 -> LocalTime.of(14, 0)
-            node <= 8 -> LocalTime.of(16, 10)
-            node <= 10 -> LocalTime.of(19, 0)
-            else -> LocalTime.of(20, 50)
-        },
-        end = when {
-            node <= 2 -> LocalTime.of(9, 35)
-            node <= 4 -> LocalTime.of(11, 55)
-            node <= 6 -> LocalTime.of(15, 35)
-            node <= 8 -> LocalTime.of(17, 55)
-            node <= 10 -> LocalTime.of(20, 40)
-            else -> LocalTime.of(22, 25)
-        },
-        displayStart = when {
-            node <= 2 -> "08:00"; node <= 4 -> "10:20"
-            node <= 6 -> "14:00"; node <= 8 -> "16:10"
-            node <= 10 -> "19:00"; else -> "20:50"
-        },
-        displayEnd = when {
-            node <= 2 -> "09:35"; node <= 4 -> "11:55"
-            node <= 6 -> "15:35"; node <= 8 -> "17:55"
-            node <= 10 -> "20:40"; else -> "22:25"
-        },
-        nodeStart = node,
-        nodeEnd = node
-    )
-}
-
-/**
  * Cards 网格视图 — 7 列 × 5 时段 (对应 switchable.html #cardsView)
  *
  * ┌────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
@@ -108,22 +70,23 @@ val DEFAULT_TIME_SLOTS = (1..12).map { node ->
 @Composable
 fun CardsGridView(
     courses: List<CourseEntity>,
-    timeSlots: List<TimeSlot> = DEFAULT_TIME_SLOTS,
+    timeSlots: List<TimeSlot>,
     today: Int = DateUtils.todayDayOfWeek(),
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
 ) {
     val colors = SleepyTheme.colors
+    val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
     val scrollState = rememberScrollState()
+
+    // Layout constants (Compose intrinsic — no per-modifier roundToPx needed)
+    val headH = 58.dp                  // 52dp header + 6dp bottom padding
     val timeW = 68.dp
     val slotH = 52.dp
     val gapH = 4.dp
     val gapW = 5.dp
-
-    // Pre-group courses by (day, startNode) for O(1) lookup
-    val courseIndex = remember(courses) {
-        courses.groupBy { it.day to it.startNode }
-    }
+    val rowH = slotH + gapH            // = 56dp per slot row
+    val totalH = headH + rowH * maxNode
 
     Box(
         modifier = modifier
@@ -136,10 +99,12 @@ fun CardsGridView(
             modifier = Modifier
                 .fillMaxSize()
                 .verticalScroll(scrollState)
+                .padding(horizontal = 0.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
-            // --- Header row ---
+            // Day header row
             Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(gapW)
             ) {
                 Box(modifier = Modifier.width(timeW))
@@ -153,39 +118,52 @@ fun CardsGridView(
                 }
             }
 
-            // --- Time slot rows — cards INLINE, no overlay ---
-            for (slot in timeSlots) {
+            // Slot rows — each Row's height = max step in this row.
+            // Each cell uses its own step-height (so step=2 ≠ step=3 visually).
+            // TimeHeadCell stretches to safeStep and shows all startNode..+safeStep-1 labels.
+            var slotIdx = 0
+            while (slotIdx < timeSlots.size) {
+                val currentNode = timeSlots[slotIdx].nodeStart
+                val cardsHere = courses.filter { it.startNode == currentNode }
+                val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) } ?: 1
+                // Clamp step to remaining slots — a card spanning past timeSlots.size must not skip rendering.
+                val safeStep = maxStep.coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
+                val rowHeight = (slotH + gapH) * safeStep - gapH
+
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(slotH)
-                        .padding(bottom = gapH),
+                        .height(rowHeight),
+                    verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(gapW)
                 ) {
-                    TimeHeadCell(slot = slot, modifier = Modifier.width(timeW))
-
+                    SpannedTimeHeadCell(
+                        timeSlots = timeSlots,
+                        startIdx = slotIdx,
+                        span = safeStep,
+                        slotH = slotH,
+                        gapH = gapH,
+                        modifier = Modifier.width(timeW)
+                    )
                     for (day in 1..7) {
-                        val key = day to slot.nodeStart
-                        val cellCourses = courseIndex[key]
-
-                        Box(modifier = Modifier.weight(1f).fillMaxHeight()) {
-                            if (cellCourses != null) {
-                                // Card that starts at this slot — overflow naturally into next rows
-                                val course = cellCourses.first()
-                                val steps = course.step.coerceAtLeast(1)
-                                CourseCardCell(
-                                    course = course,
-                                    steps = steps,
-                                    onClick = { onCourseClick(course) },
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .wrapContentHeight(unbounded = true, align = Alignment.Top)
-                                        .height((slotH * steps) + (gapH * (steps - 1)))
-                                )
-                            }
+                        val card = cardsHere.firstOrNull { it.day == day }
+                        if (card != null) {
+                            val step = card.step.coerceAtLeast(1).coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
+                            CourseCardCell(
+                                course = card,
+                                steps = step,
+                                onClick = { onCourseClick(card) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height((slotH + gapH) * step - gapH)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f).height(rowHeight))
                         }
                     }
                 }
+
+                slotIdx += safeStep
             }
         }
     }
@@ -229,7 +207,7 @@ private fun CourseCardCell(
             if (steps > 1) {
                 Text(
                     text = "${course.startNode}-${course.startNode + steps - 1}节",
-                    style = SleepyTextStyle.micro,
+                    style = SleepyTextStyle.micro(),
                     color = fg.copy(alpha = 0.65f)
                 )
             }
@@ -261,7 +239,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, modifier: 
             )
             Text(
                 text = if (courseCount == 0) "无课" else "$courseCount 门",
-                style = SleepyTextStyle.micro,
+                style = SleepyTextStyle.micro(),
                 color = subFg
             )
         }
@@ -284,14 +262,14 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
                 text = "第${slot.label}节",
-                style = SleepyTextStyle.smallMeta.copy(fontWeight = FontWeight.SemiBold),
+                style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
                 maxLines = 1
             )
             Spacer(modifier = Modifier.height(1.dp))
             Text(
                 text = slot.timeString,
-                style = SleepyTextStyle.micro,
+                style = SleepyTextStyle.micro(),
                 color = colors.onSurfaceVariant,
                 maxLines = 1,
                 overflow = TextOverflow.Ellipsis
@@ -300,25 +278,103 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     }
 }
 
+/**
+ * 跨界行的节次栏 — 当某行被 step=N 卡片撑开时，左侧要画 N 个节次标签
+ * （比如 "1-2节 08:00-09:35"、"3-4节 10:00-10:45"），不能只画起始节。
+ *
+ * 复用 TimeHeadCell 的样式，按行均匀分布显示 startIdx..startIdx+span-1 节。
+ * 若 span==1 则退化为单节 TimeHeadCell 的等价行为。
+ */
+@Composable
+private fun SpannedTimeHeadCell(
+    timeSlots: List<TimeSlot>,
+    startIdx: Int,
+    span: Int,
+    slotH: androidx.compose.ui.unit.Dp,
+    gapH: androidx.compose.ui.unit.Dp,
+    modifier: Modifier = Modifier
+) {
+    val colors = SleepyTheme.colors
+    val rowH = slotH + gapH
+    // Clamp span to what's actually available — courses may reference nodes beyond timeSlots.
+    val safeSpan = span.coerceAtMost(timeSlots.size - startIdx).coerceAtLeast(1)
+    val shape = RoundedCornerShape(12.dp)
+    Column(modifier = modifier) {
+        for (i in 0 until safeSpan) {
+            val slot = timeSlots[startIdx + i]
+            // 每个节次单元格：与 TimeHeadCell 一致（surface 背景 + outline 边框 + 圆角 + 4dp 内边距）
+            // 高度：i 是最后一节时 slotH（不留 gap），否则 rowH（slotH + gapH，底部留 gapH 间距给下一个 box）
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(if (i == safeSpan - 1) slotH else rowH)
+                    .padding(bottom = if (i == safeSpan - 1) 0.dp else gapH),
+                contentAlignment = Alignment.Center
+            ) {
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .fillMaxHeight()
+                        .clip(shape)
+                        .background(colors.surface)
+                        .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
+                        .padding(4.dp),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                        Text(
+                            text = "第${slot.label}节",
+                            style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface,
+                            maxLines = 1
+                        )
+                        Spacer(modifier = Modifier.height(1.dp))
+                        Text(
+                            text = slot.timeString,
+                            style = SleepyTextStyle.micro(),
+                            color = colors.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+/**
+ * 课程名 → 调色板查表（规则顺序敏感：先精确名 → 后哈希）。
+ *
+ * 改用查表替代 if-when 链：把"name.contains(关键词)"和"hash.mod(N) → color"两类规则
+ * 合并为统一的 `List<Pair<Predicate, PaletteSelector>>`，新规则加一行即可。
+ *
+ * `and 0x7FFFFFFF` 把 Kotlin hashCode 的负数转成正数，避免 `(-1).mod(7) == -1` 导致永远走 else。
+ */
+private val courseColorRules: List<Pair<(String) -> Boolean, com.lingion.sleepy.ui.theme.CoursePalette.() -> Color>> =
+    listOf(
+        { s: String -> s.contains("英语") } to { english },
+        { s: String -> s.contains("军事") || s.contains("国防") } to { military },
+        { s: String -> s.contains("物理") } to { physics },
+        { s: String -> s.contains("历史") || s.contains("史纲") || s.contains("近代史") } to { history },
+        { s: String -> s.contains("心理") } to { psychology },
+        { s: String -> s.contains("实践") || s.contains("实习") || s.contains("实验") } to { practice },
+        { s: String -> s.contains("高数") || s.contains("数学") || s.contains("电路") } to { primary },
+        { s: String -> s.contains("思政") || s.contains("马原") || s.contains("毛概") || s.contains("形势") } to { tertiary }
+    )
+
+private val courseColorHashPalette: List<com.lingion.sleepy.ui.theme.CoursePalette.() -> Color> = listOf(
+    { primary }, { secondary }, { tertiary },
+    { english }, { physics }, { psychology }
+)
+
 private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
     val name = course.courseName
-    return when {
-        name.contains("英语") -> palette.english
-        name.contains("军事") || name.contains("国防") -> palette.military
-        name.contains("物理") -> palette.physics
-        name.contains("历史") || name.contains("史纲") || name.contains("近代史") -> palette.history
-        name.contains("心理") -> palette.psychology
-        name.contains("实践") || name.contains("实习") || name.contains("实验") -> palette.practice
-        name.contains("高数") || name.contains("数学") || name.contains("电路") -> palette.primary
-        name.contains("体育") -> palette.surface
-        name.hashCode().mod(7) == 0 -> palette.primary
-        name.hashCode().mod(7) == 1 -> palette.secondary
-        name.hashCode().mod(7) == 2 -> palette.tertiary
-        name.hashCode().mod(7) == 3 -> palette.english
-        name.hashCode().mod(7) == 4 -> palette.physics
-        name.hashCode().mod(7) == 5 -> palette.psychology
-        else -> palette.surface
+    courseColorRules.firstOrNull { (match, _) -> match(name) }?.let { (_, selector) ->
+        return palette.selector()
     }
+    val hash = name.hashCode() and 0x7FFFFFFF
+    return courseColorHashPalette[hash % courseColorHashPalette.size].invoke(palette)
 }
 
 // =====================================================================================
@@ -400,7 +456,7 @@ private fun DaySummaryCell(
         // 日期
         Text(
             text = DateUtils.chineseDay(day),
-            style = SleepyTextStyle.dayLabel,
+            style = SleepyTextStyle.dayLabel(),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
@@ -420,7 +476,7 @@ private fun DaySummaryCell(
             ) {
                 Text(
                     text = "${courses.size} 门",
-                    style = SleepyTextStyle.smallMeta.copy(fontWeight = FontWeight.SemiBold),
+                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                     color = chipFg
                 )
             }
@@ -436,7 +492,7 @@ private fun DaySummaryCell(
             courses.take(3).forEach { c ->
                 Text(
                     text = c.courseName,
-                    style = SleepyTextStyle.micro,
+                    style = SleepyTextStyle.micro(),
                     color = if (isToday) colors.onPrimaryContainer.copy(alpha = 0.82f) else colors.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -511,7 +567,7 @@ private fun DetailDayCard(
         if (courses.isEmpty()) {
             Text(
                 text = "${DateUtils.chineseDay(day)} · 无课程",
-                style = SleepyTextStyle.smallMeta.copy(fontSize = 12.sp, lineHeight = 16.sp),
+                style = SleepyTextStyle.smallMeta().copy(fontSize = 12.sp, lineHeight = 16.sp),
                 color = colors.onSurfaceVariant
             )
         } else {
@@ -541,7 +597,7 @@ private fun LessonRow(course: CourseEntity, onClick: () -> Unit) {
     ) {
         Text(
             text = course.shortNodeString,
-            style = SleepyTextStyle.smallMeta.copy(fontWeight = FontWeight.SemiBold),
+            style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
             color = colors.onSurface,
             modifier = Modifier.width(42.dp)
         )
@@ -563,7 +619,7 @@ private fun LessonRow(course: CourseEntity, onClick: () -> Unit) {
             if (meta.isNotEmpty()) {
                 Text(
                     text = meta,
-                    style = SleepyTextStyle.smallMeta,
+                    style = SleepyTextStyle.smallMeta(),
                     color = colors.onSurface.copy(alpha = 0.72f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -587,13 +643,13 @@ fun SectionHead(title: String, action: String? = null) {
     ) {
         Text(
             text = title,
-            style = SleepyTextStyle.sectionHead,
+            style = SleepyTextStyle.sectionHead(),
             color = colors.onSurface
         )
         if (action != null) {
             Text(
                 text = action,
-                style = SleepyTextStyle.smallMeta.copy(
+                style = SleepyTextStyle.smallMeta().copy(
                     fontWeight = FontWeight.Medium,
                     color = colors.primary
                 )
@@ -604,4 +660,3 @@ fun SectionHead(title: String, action: String? = null) {
 
 
 // sp 已被上面 textStyle 直接用 inline
-val sp = 0.sp

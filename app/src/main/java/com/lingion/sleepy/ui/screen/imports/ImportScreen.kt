@@ -66,9 +66,11 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimePickerField
+import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleState
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -295,7 +297,7 @@ fun ImportScreen(
                 confirmedStartDate = currentPreview.parseResult.startDate.ifBlank {
                     existingTable?.startDate ?: java.time.LocalDate.now().toString()
                 }
-                confirmedTimeJson = existingTable?.timeJson ?: TimeTableEntity.DEFAULT_TIME_JSON
+                confirmedTimeJson = existingTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
                 pendingMode = mode
             }
         )
@@ -618,7 +620,9 @@ private fun ImportConfirmDialog(
         focusedContainerColor = colors.surfaceContainerLowest,
         unfocusedContainerColor = colors.surfaceContainerLowest
     )
-    var rows by remember(timeJson) { mutableStateOf(parseTimeConfirmRows(timeJson)) }
+    var rows by remember(timeJson) {
+        mutableStateOf(TimeTableUtils.parseTimeSlotRows(timeJson))
+    }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -645,83 +649,17 @@ private fun ImportConfirmDialog(
                         style = MaterialTheme.typography.bodySmall
                     )
                 }
-                LazyColumn(
+                Column(
                     modifier = Modifier.fillMaxWidth().height(260.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    items(rows) { row ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = "第${row.node}节",
-                                modifier = Modifier.width(44.dp),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colors.onSurface
-                            )
-                            TimePickerField(
-                                value = row.start,
-                                onValueChange = { newStart ->
-                                    rows = rows.map {
-                                        if (it.node == row.node) row.copy(start = newStart) else it
-                                    }
-                                    onTimeJsonChange(buildTimeJsonFromRows(rows))
-                                },
-                                label = "开始",
-                                modifier = Modifier.weight(1f)
-                            )
-                            TimePickerField(
-                                value = row.end,
-                                onValueChange = { newEnd ->
-                                    rows = rows.map {
-                                        if (it.node == row.node) row.copy(end = newEnd) else it
-                                    }
-                                    onTimeJsonChange(buildTimeJsonFromRows(rows))
-                                },
-                                label = "结束",
-                                modifier = Modifier.weight(1f)
-                            )
-                            if (rows.size > 1) {
-                                IconButton(
-                                    onClick = {
-                                        rows = rows.filter { it.node != row.node }
-                                            .mapIndexed { idx, r -> r.copy(node = idx + 1) }
-                                        onTimeJsonChange(buildTimeJsonFromRows(rows))
-                                    },
-                                    modifier = Modifier.size(32.dp)
-                                ) {
-                                    Icon(
-                                        Icons.Outlined.RemoveCircleOutline,
-                                        contentDescription = "删除此行",
-                                        tint = colors.error,
-                                        modifier = Modifier.size(20.dp)
-                                    )
-                                }
-                            } else {
-                                Spacer(Modifier.width(32.dp))
-                            }
+                    TimeSlotEditor(
+                        rows = rows,
+                        onRowsChange = { newRows ->
+                            rows = newRows
+                            onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(newRows))
                         }
-                    }
-                    item {
-                        TextButton(
-                            onClick = {
-                                val nextNode = (rows.maxOfOrNull { it.node } ?: 0) + 1
-                                rows = rows + TimeConfirmRow(nextNode, "", "")
-                                onTimeJsonChange(buildTimeJsonFromRows(rows))
-                            },
-                            modifier = Modifier.fillMaxWidth()
-                        ) {
-                            Icon(
-                                Icons.Outlined.Add,
-                                contentDescription = null,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Spacer(Modifier.width(4.dp))
-                            Text("添加一节")
-                        }
-                    }
+                    )
                 }
             }
         },
@@ -752,7 +690,7 @@ private fun ImportConfirmDialog(
                     return@TextButton
                 }
                 errorMsg = null
-                onTimeJsonChange(buildTimeJsonFromRows(rows))
+                onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(rows))
                 onConfirm()
             }) {
                 Text("确认导入")
@@ -766,51 +704,7 @@ private fun ImportConfirmDialog(
     )
 }
 
-data class TimeConfirmRow(val node: Int, val start: String, val end: String)
-
-private fun parseTimeConfirmRows(timeJson: String): List<TimeConfirmRow> = try {
-    val arr = JSONArray(timeJson)
-    (0 until arr.length()).map { i ->
-        val o = arr.getJSONObject(i)
-        TimeConfirmRow(
-            node = o.optInt("node", i + 1),
-            start = o.optString("start", smartStartDefault(i + 1)),
-            end = o.optString("end", smartEndDefault(i + 1))
-        )
-    }
-} catch (_: Exception) {
-    (1..12).map { node -> TimeConfirmRow(node, smartStartDefault(node), smartEndDefault(node)) }
-}
-
-private fun smartStartDefault(node: Int): String = when {
-    node <= 2 -> "08:00"
-    node <= 4 -> "10:00"
-    node <= 6 -> "14:00"
-    node <= 8 -> "16:00"
-    node <= 10 -> "19:00"
-    else -> "20:50"
-}
-
-private fun smartEndDefault(node: Int): String = when {
-    node <= 2 -> "09:40"
-    node <= 4 -> "11:40"
-    node <= 6 -> "15:40"
-    node <= 8 -> "17:40"
-    node <= 10 -> "20:40"
-    else -> "22:30"
-}
-
-private fun buildTimeJsonFromRows(rows: List<TimeConfirmRow>): String {
-    val arr = JSONArray()
-    rows.forEach { row ->
-        val obj = org.json.JSONObject()
-        obj.put("node", row.node)
-        obj.put("start", row.start)
-        obj.put("end", row.end)
-        arr.put(obj)
-    }
-    return arr.toString()
-}
+// TimeConfirmRow 已被迁移到 TimeTableUtils.TimeSlotRow
 
 private suspend fun buildImportPreview(
     text: String,

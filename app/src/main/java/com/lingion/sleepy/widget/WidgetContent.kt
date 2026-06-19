@@ -1,0 +1,276 @@
+package com.lingion.sleepy.widget
+
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.glance.GlanceModifier
+import androidx.glance.action.Action
+import androidx.glance.action.clickable
+import androidx.glance.appwidget.cornerRadius
+import androidx.glance.background
+import androidx.glance.layout.Alignment
+import androidx.glance.layout.Box
+import androidx.glance.layout.Column
+import androidx.glance.layout.Row
+import androidx.glance.layout.Spacer
+import androidx.glance.layout.fillMaxSize
+import androidx.glance.layout.fillMaxWidth
+import androidx.glance.layout.height
+import androidx.glance.layout.padding
+import androidx.glance.layout.size
+import androidx.glance.layout.width
+import androidx.glance.text.FontWeight
+import androidx.glance.text.Text
+import androidx.glance.text.TextStyle
+import androidx.glance.unit.ColorProvider
+import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.ui.theme.ThemePresets
+import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.TimeTableUtils
+import java.time.LocalDate
+
+/**
+ * 小组件渲染数据 — 让 Composable 单纯渲染，不读 DB。
+ * TodayWidget.provideGlance 在 IO 线程上拉数据，组装成这个 model 喂给 Composable。
+ */
+data class WidgetData(
+    /** 今日日期 */
+    val date: LocalDate,
+    /** 今日课程（已按当前周次过滤 + 排序，最多 MAX_COURSES 节） */
+    val courses: List<CourseEntity>,
+    /** timeJson（用于查开始/结束时间） */
+    val timeJson: String,
+    /** 是否有课表 */
+    val hasTable: Boolean,
+    /** 跟 app 主题保持一致：true=深色小组件 */
+    val isDark: Boolean = false,
+    /** 跟 app 主题色（ThemePresets key） */
+    val themeKey: String = ThemePresets.KEY_DEFAULT
+) {
+    val dayName: String get() = DateUtils.chineseDay(date.dayOfWeek.value)
+    val dateLabel: String get() = "${date.monthValue}月${date.dayOfMonth}日"
+
+    companion object {
+        const val MAX_COURSES = 3
+    }
+}
+
+@Composable
+fun WidgetContent(data: WidgetData, openAppAction: Action, openCourseAction: (Long) -> Action) {
+    val scheme = resolveScheme(data.themeKey, data.isDark)
+
+    Column(
+        modifier = GlanceModifier
+            .fillMaxSize()
+            .background(ColorProvider(scheme.bg))
+            .cornerRadius(20.dp)
+            .padding(14.dp)
+            .clickable(openAppAction),
+        verticalAlignment = Alignment.Top,
+        horizontalAlignment = Alignment.Start
+    ) {
+        Row(
+            modifier = GlanceModifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = "今日 · ${data.dayName}",
+                style = TextStyle(
+                    fontSize = 13.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = ColorProvider(scheme.primary)
+                ),
+                modifier = GlanceModifier.defaultWeight()
+            )
+            Text(
+                text = data.dateLabel,
+                style = TextStyle(
+                    fontSize = 12.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                )
+            )
+        }
+        Spacer(modifier = GlanceModifier.height(8.dp))
+
+        when {
+            !data.hasTable -> EmptyTableState(scheme)
+            data.courses.isEmpty() -> NoCourseState(scheme)
+            else -> CourseList(data, openCourseAction, scheme)
+        }
+    }
+}
+
+/**
+ * 4 元组：背景 / 主题强调色 / 正文色 / 次要色
+ * 跟 app M3 scheme 派生方式相同：surface / primary / onSurface / onSurfaceVariant
+ */
+private data class WidgetScheme(
+    val bg: Color = Color(0xFFFDFCFF),
+    val primary: Color = Color(0xFF6750A4),
+    val onSurface: Color = Color(0xFF1C1B1F),
+    val onSurfaceVariant: Color = Color(0xFF79747E)
+)
+
+/**
+ * 按 themeKey + isDark 派生小组件配色。
+ * "system" / 未知 key / 拿不到 dynamic 上下文 → 退到默认预设的 light/dark。
+ */
+private fun resolveScheme(themeKey: String, isDark: Boolean): WidgetScheme {
+    val preset = ThemePresets.byKey(themeKey)
+    val s = if (isDark) preset.dark else preset.light
+    return WidgetScheme(
+        bg = s.surface,
+        primary = s.primary,
+        onSurface = s.onSurface,
+        onSurfaceVariant = s.onSurfaceVariant
+    )
+}
+
+@Composable
+private fun EmptyTableState(scheme: WidgetScheme) {
+    Column(
+        modifier = GlanceModifier.fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "请先创建课表",
+            style = TextStyle(
+                fontSize = 15.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorProvider(scheme.onSurface)
+            )
+        )
+        Spacer(modifier = GlanceModifier.height(4.dp))
+        Text(
+            text = "打开 Sleepy 开始添加",
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = ColorProvider(scheme.onSurfaceVariant)
+            )
+        )
+    }
+}
+
+@Composable
+private fun NoCourseState(scheme: WidgetScheme) {
+    Column(
+        modifier = GlanceModifier.fillMaxSize(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Text(
+            text = "今天没有课",
+            style = TextStyle(
+                fontSize = 16.sp,
+                fontWeight = FontWeight.Medium,
+                color = ColorProvider(scheme.onSurface)
+            )
+        )
+        Spacer(modifier = GlanceModifier.height(4.dp))
+        Text(
+            text = "休息 / 自习 都可以",
+            style = TextStyle(
+                fontSize = 12.sp,
+                color = ColorProvider(scheme.onSurfaceVariant)
+            )
+        )
+    }
+}
+
+@Composable
+private fun CourseList(data: WidgetData, openCourseAction: (Long) -> Action, scheme: WidgetScheme) {
+    val visible = data.courses.take(WidgetData.MAX_COURSES)
+    val hidden = data.courses.size - visible.size
+
+    Column(modifier = GlanceModifier.fillMaxSize()) {
+        visible.forEachIndexed { idx, course ->
+            if (idx > 0) Spacer(modifier = GlanceModifier.height(6.dp))
+            CourseRow(
+                course = course,
+                timeJson = data.timeJson,
+                scheme = scheme,
+                onClick = openCourseAction(course.id)
+            )
+        }
+        if (hidden > 0) {
+            Spacer(modifier = GlanceModifier.height(4.dp))
+            Text(
+                text = "还有 $hidden 节…",
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                )
+            )
+        }
+    }
+}
+
+@Composable
+private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetScheme, onClick: Action) {
+    val timeStr = TimeTableUtils.courseTimeString(
+        courseStartNode = course.startNode,
+        courseStep = course.step,
+        timeJson = timeJson,
+        ownTime = course.ownTime,
+        startTime = course.startTime,
+        endTime = course.endTime
+    ) ?: "第 ${course.startNode} 节"
+
+    // 解析 CourseEntity.color（格式 "#AARRGGBB" 或 "#RRGGBB"）
+    val courseColor = parseColor(course.color)
+
+    Row(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .clickable(onClick),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = GlanceModifier
+                .size(width = 4.dp, height = 36.dp)
+                .background(ColorProvider(courseColor))
+                .cornerRadius(2.dp)
+        ) {}
+        Spacer(modifier = GlanceModifier.width(8.dp))
+
+        Column(modifier = GlanceModifier.defaultWeight()) {
+            Text(
+                text = course.courseName,
+                style = TextStyle(
+                    fontSize = 14.sp,
+                    fontWeight = FontWeight.Medium,
+                    color = ColorProvider(scheme.onSurface)
+                ),
+                maxLines = 1
+            )
+            Spacer(modifier = GlanceModifier.height(2.dp))
+            Text(
+                text = timeStr + (if (course.room.isNotBlank()) "  ·  ${course.room}" else ""),
+                style = TextStyle(
+                    fontSize = 11.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                ),
+                maxLines = 1
+            )
+        }
+    }
+}
+
+/**
+ * 解析 #AARRGGBB / #RRGGBB / 8 位 hex 字符串为 Color。
+ * 失败时回退默认淡紫。
+ */
+private fun parseColor(hex: String): Color {
+    val cleaned = hex.removePrefix("#").removePrefix("0x")
+    return try {
+        when (cleaned.length) {
+            8 -> Color(cleaned.toLong(16) or 0xFF000000L)
+            6 -> Color(0xFF000000L or cleaned.toLong(16))
+            else -> Color(0xFF6750A4)
+        }
+    } catch (_: Exception) {
+        Color(0xFF6750A4)
+    }
+}

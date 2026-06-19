@@ -36,7 +36,6 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.key
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -51,14 +50,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
-import com.lingion.sleepy.ui.component.TimePickerField
+import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
-import org.json.JSONArray
-import org.json.JSONObject
 
 // Time slot editing uses mutableStateListOf for reactive TextField binding
 
@@ -98,17 +95,9 @@ fun EditTableScreen(
     var showDeleteConfirm by remember { mutableStateOf(false) }
 
     val timeJson = table.timeJson
-    val slotNodes = remember(table.id) {
-        parseTimeSlotNodes(timeJson)
-    }
-    val startValues = remember(table.id) {
-        mutableStateListOf<String>().apply {
-            addAll(slotNodes.indices.map { i -> parseSlotTime(timeJson, i, "start") })
-        }
-    }
-    val endValues = remember(table.id) {
-        mutableStateListOf<String>().apply {
-            addAll(slotNodes.indices.map { i -> parseSlotTime(timeJson, i, "end") })
+    val slotRows = remember(table.id) {
+        mutableStateListOf<TimeTableUtils.TimeSlotRow>().apply {
+            addAll(TimeTableUtils.parseTimeSlotRows(timeJson))
         }
     }
 
@@ -208,7 +197,7 @@ fun EditTableScreen(
                                 color = colors.onSurface
                             )
                             Text(
-                                text = "${slotNodes.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else "点击展开"}",
+text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else "点击展开"}",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant
                             )
@@ -222,41 +211,15 @@ fun EditTableScreen(
 
                     if (timeSlotsExpanded) {
                         Column(
-                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp),
-                            verticalArrangement = Arrangement.spacedBy(10.dp)
+                            modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         ) {
-                            repeat(slotNodes.size) { index ->
-                                key(slotNodes[index]) {
-                                val node = slotNodes[index]
-                                Row(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .background(colors.surfaceContainerLow, RoundedCornerShape(16.dp))
-                                        .padding(10.dp),
-                                    horizontalArrangement = Arrangement.spacedBy(10.dp),
-                                    verticalAlignment = Alignment.CenterVertically
-                                ) {
-                                    Text(
-                                        text = "第${node}节",
-                                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                                        color = colors.onSurface,
-                                        modifier = Modifier.width(48.dp)
-                                    )
-                                    TimePickerField(
-                                        value = startValues[index],
-                                        onValueChange = { v -> startValues[index] = v },
-                                        label = "开始",
-                                        modifier = Modifier.weight(1f)
-                                    )
-                                    TimePickerField(
-                                        value = endValues[index],
-                                        onValueChange = { v -> endValues[index] = v },
-                                        label = "结束",
-                                        modifier = Modifier.weight(1f)
-                                    )
+                            TimeSlotEditor(
+                                rows = slotRows.toList(),
+                                onRowsChange = { newRows ->
+                                    slotRows.clear()
+                                    slotRows.addAll(newRows)
                                 }
-                                } // end key
-                            }
+                            )
                         }
                     }
                 }
@@ -273,11 +236,11 @@ fun EditTableScreen(
                 Button(
                     onClick = {
                         val maxWeek = maxWeekText.toIntOrNull() ?: 20
-                        val valid = startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) && 
-                            startValues.all { it.matches(Regex("\\d{2}:\\d{2}")) } &&
-                            endValues.all { it.matches(Regex("\\d{2}:\\d{2}")) }
+                        val valid = startDate.matches(Regex("\\d{4}-\\d{2}-\\d{2}")) &&
+                            slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
+                            slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = "日期需为 yyyy-MM-dd，时间需为 HH:mm"
+                            error = "日期需为 yyyy-MM-dd，时间需为 HH:mm 且开始早于结束"
                             return@Button
                         }
                         error = null
@@ -285,7 +248,7 @@ fun EditTableScreen(
                             name = name.ifBlank { table.name },
                             startDate = startDate,
                             maxWeek = maxWeek,
-                            timeJson = buildTimeJson(slotNodes, startValues, endValues)
+                            timeJson = TimeTableUtils.buildTimeJsonFromRows(slotRows.toList())
                         )
                         scope.launch {
                             viewModel.updateTable(updated)
@@ -359,35 +322,4 @@ private fun CardSection(title: String, subtitle: String, content: @Composable ()
     }
 }
 
-private fun parseTimeSlotNodes(timeJson: String): List<Int> = try {
-    val arr = JSONArray(timeJson)
-    buildList {
-        for (i in 0 until arr.length()) {
-            val o = arr.getJSONObject(i)
-            add(o.optInt("node", i + 1))
-        }
-    }
-} catch (_: Exception) {
-    parseTimeSlotNodes(TimeTableEntity.DEFAULT_TIME_JSON)
-}
 
-private fun parseSlotTime(timeJson: String, index: Int, key: String): String = try {
-    val arr = JSONArray(timeJson)
-    if (index < arr.length()) {
-        arr.getJSONObject(index).optString(key, if (key == "start") "08:00" else "08:45")
-    } else if (key == "start") "08:00" else "08:45"
-} catch (_: Exception) {
-    if (key == "start") "08:00" else "08:45"
-}
-
-private fun buildTimeJson(nodes: List<Int>, startValues: List<String>, endValues: List<String>): String {
-    val arr = JSONArray()
-    nodes.forEachIndexed { i, node ->
-        arr.put(JSONObject().apply { 
-            put("node", node)
-            put("start", startValues.getOrElse(i) { "08:00" })
-            put("end", endValues.getOrElse(i) { "08:45" })
-        })
-    }
-    return arr.toString()
-}
