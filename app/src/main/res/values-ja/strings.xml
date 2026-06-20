@@ -1,0 +1,185 @@
+<resources>
+    <string name="app_name">Sleepy 時間割</string>
+    <string name="widget_today_label">今日の授業</string>
+    <string name="widget_week_list_label">今週の時間割（リスト）</string>
+    <string name="widget_week_grid_label">今週の時間割（グリッド）</string>
+    <string name="widget_twoday_label">直近2日</string>
+
+    <string name="tab_schedule">時間割</string>
+    <string name="tab_today">今日</string>
+    <string name="tab_mine">マイ</string>
+    <string name="tab_manage">管理</string>
+
+    <string name="schedule_empty">時間割がまだありません</string>
+    <string name="schedule_empty_hint">「管理」からインポートするか、最初の授業を手動で作成してください。</string>
+    <string name="schedule_go_manage">管理へ移動</string>
+    <string name="schedule_manual_first">最初の授業を作成</string>
+    <string name="schedule_add_course">授業を追加</string>
+    <string name="schedule_current_week">第 %1$d 週</string>
+    <string name="schedule_no_course_today">今日は授業がありません</string>
+
+    <string name="import_title">時間割をインポート</string>
+    <string name="manage_current_table">現在の時間割</string>
+    <string name="manage_import">インポート</string>
+    <string name="manage_import_sub">ファイル / テキスト / CSV からインポート</string>
+    <string name="manage_new_table">新規作成</string>
+    <string name="manage_new_table_sub">空の時間割を作成し、手動で授業を追加</string>
+    <string name="manage_edit_current">編集</string>
+    <string name="manage_edit_current_sub">名前・日付・時限時間を編集</string>
+    <string name="manage_manual_add">授業を追加</string>
+    <string name="manage_manual_add_sub">現在の時間割に授業を追加</string>
+    <string name="all_tables">すべての時間割</string>
+    <string name="all_tables_new">新規作成</string>
+    <string name="all_tables_switch">現在の時間割に設定</string>
+    <string name="edit_table_title">時間割を編集</string>
+    <string name="edit_table_basic_info">基本情報</string>
+    <string name="edit_table_name">時間割名</string>
+    <string name="edit_table_start_date">学期開始日</string>
+    <string name="edit_table_start_date_hint">例: 2026-02-24</string>
+    <string name="edit_table_max_week">総週数</string>
+    <string name="edit_table_time_slots">時限時間</string>
+    <string name="edit_table_delete">時間割を削除</string>
+    <string name="edit_table_save">設定を保存</string>
+    <string name="edit_table_not_found">時間割が見つかりません</string>
+    <string name="edit_table_validation_error">日付は yyyy-MM-dd、時刻は HH:mm で開始が終了より前である必要があります</string>
+    <string name="edit_table_delete_confirm">削除の確認</string>
+    <string name="edit_table_delete_msg">時間割「%1$s」を削除しますか？この操作は取り消せません。</string>
+    <string name="default_table_name">デフォルト</string>
+    <string name="import_paste">テキストを貼り付け</string>
+    <string name="import_paste_hint">時間割テキストを貼り付け…</string>
+    <string name="import_file">ファイルから</string>
+    <string name="import_qr">QRスキャン</string>
+    <string name="import_jw">学校システムへ接続</string>
+    <string name="import_manual">手動追加</string>
+    <string name="import_success">インポート成功</string>
+    <string name="import_failed">インポート失敗：%1$s</string>
+    <string name="import_preview">プレビュー</string>
+    <string name="import_parsing">解析中…</string>
+    <string name="import_supported_formats">対応形式</string>
+    <string name="import_preview_title">インポートプレビュー</string>
+    <string name="import_target_table">対象：%1$s</string>
+    <string name="import_courses">授業数</string>
+    <string name="import_conflicts">競合</string>
+    <string name="import_appendable">追加可能</string>
+    <string name="import_table_name">時間割名</string>
+    <string name="import_start_date">学期開始日</string>
+    <string name="import_suggestion">提案</string>
+    <string name="import_no_conflict">競合なし — 追加または上書き可能</string>
+    <string name="import_conflict_count">%1$d 件の競合があります。新規時間割としてインポートするか、競合しない授業のみ追加することを推奨します。</string>
+    <string name="import_conflict_more">他 %1$d 件の競合…</string>
+    <string name="import_append_only">競合なしのみ追加</string>
+    <string name="import_as_new">新規時間割として追加</string>
+    <string name="import_overwrite">⚠ 現在のものを上書き（注意）</string>
+    <string name="import_confirm_title">インポート前の確認</string>
+    <string name="import_confirm_body">学期開始日と時限時間を確認してください。現在の週が不正確になります。</string>
+    <string name="import_week_start">第1週の開始日</string>
+    <string name="import_confirm">インポート</string>
+    <string name="import_all_conflict">すべて競合しています — 追加できる授業がありません</string>
+    <string name="import_content_empty">内容が空です</string>
+    <string name="import_select_table">時間割を先に選択してください</string>
+
+    <string name="course_detail_title">授業詳細</string>
+    <string name="course_detail_edit">編集</string>
+    <string name="course_detail_delete">削除</string>
+    <string name="course_detail_edit_course">この授業を編集</string>
+    <string name="course_field_name">授業</string>
+    <string name="course_field_teacher">教員</string>
+    <string name="course_field_room">教室</string>
+    <string name="course_field_note">メモ</string>
+    <string name="course_field_week">時間</string>
+    <string name="course_field_color">色</string>
+
+    <string name="edit_course">授業を編集</string>
+    <string name="create_course">授業を作成</string>
+    <string name="course_basic_info">基本情報</string>
+    <string name="course_basic_info_sub">教員・教室は共通。1つの授業に複数の時限を設定できます</string>
+    <string name="course_name_required">授業名 *</string>
+    <string name="course_teacher">教員</string>
+    <string name="course_room">教室</string>
+    <string name="course_note">メモ（任意）</string>
+    <string name="week_range">週次範囲</string>
+    <string name="week_range_sub">週次は授業全体に適用。競合は自動チェックされます</string>
+    <string name="start_week">開始週</string>
+    <string name="end_week">終了週</string>
+    <string name="meeting_slots">時限</string>
+    <string name="meeting_slots_sub">任意の数の時限を追加できます。各時限で複数の曜日を選択可能</string>
+    <string name="slot_n">時限 %1$d</string>
+    <string name="add_slot">時限を追加</string>
+    <string name="save_course">保存</string>
+    <string name="delete_course">授業を削除</string>
+    <string name="delete_course_confirm">授業「%1$s」を削除しますか？この操作は取り消せません。</string>
+    <string name="select_at_least_one_day">少なくとも1日選択してください</string>
+    <string name="delete_slot">時限を削除</string>
+    <string name="start_node">開始時限</string>
+    <string name="step_count">時限数</string>
+    <string name="start_time">開始時刻</string>
+    <string name="end_time">終了時刻</string>
+    <string name="mode_by_node">時限で</string>
+    <string name="mode_by_time">時刻で</string>
+
+    <string name="mine_title">マイ</string>
+    <string name="mine_subtitle">時間割と設定を管理</string>
+    <string name="mine_reminder">毎日リマインダー</string>
+    <string name="mine_reminder_on">毎日7:00の授業リマインダーを有効にしました</string>
+    <string name="mine_reminder_off">毎日のリマインダーを無効にしました</string>
+    <string name="mine_dark_mode">ダークモード</string>
+    <string name="mine_theme_color">テーマカラー</string>
+    <string name="mine_more_settings">その他の設定</string>
+    <string name="mine_export">エクスポート</string>
+    <string name="mine_export_coming">エクスポート — 今後のアップデートで ICS をサポート予定</string>
+    <string name="mine_stat_tables">時間割数</string>
+    <string name="mine_stat_courses">授業数</string>
+    <string name="mine_stat_week">現在の週</string>
+
+    <string name="settings_title">その他の設定</string>
+    <string name="settings_language">言語 / Language</string>
+    <string name="settings_display_mode">時間表示</string>
+    <string name="settings_display_node">時限で統一</string>
+    <string name="settings_display_node_sub">すべての授業を「第N時限」と表示</string>
+    <string name="settings_display_time">時刻で統一</string>
+    <string name="settings_display_time_sub">すべての授業を「HH:mm–HH:mm」と表示</string>
+    <string name="settings_grid_view">グリッドビュー</string>
+    <string name="settings_show_date">日付を表示</string>
+    <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
+    <string name="settings_visible_days">表示曜日</string>
+    <string name="settings_visible_days_sub">チェックを外した曜日はすべてのビューで非表示になります</string>
+
+    <string name="theme_title">テーマカラー</string>
+    <string name="theme_presets">プリセット</string>
+    <string name="theme_system">システムに従う</string>
+    <string name="theme_system_desc">Material You ダイナミックカラー (Android 12+)</string>
+    <string name="theme_system_needs_12">システムに従うには Android 12 以上が必要です。</string>
+    <string name="theme_switched_system">システムに従うに切り替えました</string>
+    <string name="theme_switched_preset">%1$s に切り替えました</string>
+
+    <string name="view_full">週表示</string>
+    <string name="view_cards">グリッド</string>
+
+    <string name="today_today">今日</string>
+    <string name="today_no_course">今日は授業がありません</string>
+    <string name="today_rest">休み / 自習 でもOK</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">キャンセル</string>
+    <string name="save">保存</string>
+    <string name="delete">削除</string>
+    <string name="back">戻る</string>
+    <string name="confirm_delete">削除の確認</string>
+    <string name="no_course">空き</string>
+    <string name="n_courses">%1$d</string>
+    <string name="action_close">閉じる</string>
+
+    <string name="mine_about_title">Sleepy について</string>
+    <string name="mine_about">情報</string>
+    <string name="mine_about_body">Sleepy 時間割 v%1$s\n\nミニマルでクリーン、ローカルファーストの時間割アプリ。\nすべてのデータはデバイス内に保存され、サーバーにアップロードされません。\n\n· 広告なし\n· 追跡なし\n· WakeUp / ICS / CSV / HTML / プレーンテキスト インポート対応</string>
+
+    <string-array name="day_names">
+        <item>月</item>
+        <item>火</item>
+        <item>水</item>
+        <item>木</item>
+        <item>金</item>
+        <item>土</item>
+        <item>日</item>
+    </string-array>
+</resources>

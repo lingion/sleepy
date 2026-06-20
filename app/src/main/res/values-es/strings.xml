@@ -1,0 +1,185 @@
+<resources>
+    <string name="app_name">Sleepy Horario</string>
+    <string name="widget_today_label">Clases de hoy</string>
+    <string name="widget_week_list_label">Esta semana (lista)</string>
+    <string name="widget_week_grid_label">Esta semana (cuadrícula)</string>
+    <string name="widget_twoday_label">Próximos dos días</string>
+
+    <string name="tab_schedule">Horario</string>
+    <string name="tab_today">Hoy</string>
+    <string name="tab_mine">Ajustes</string>
+    <string name="tab_manage">Gestionar</string>
+
+    <string name="schedule_empty">No hay horario todavía</string>
+    <string name="schedule_empty_hint">Ve a Gestionar para importar, o crea tu primer curso manualmente.</string>
+    <string name="schedule_go_manage">Ir a Gestionar</string>
+    <string name="schedule_manual_first">Crear primer curso</string>
+    <string name="schedule_add_course">Añadir curso</string>
+    <string name="schedule_current_week">Semana %1$d</string>
+    <string name="schedule_no_course_today">No hay clases hoy</string>
+
+    <string name="import_title">Importar horario</string>
+    <string name="manage_current_table">Horario actual</string>
+    <string name="manage_import">Importar</string>
+    <string name="manage_import_sub">Importar desde archivo / texto / CSV</string>
+    <string name="manage_new_table">Nuevo horario</string>
+    <string name="manage_new_table_sub">Crear un horario vacío, añadir cursos manualmente</string>
+    <string name="manage_edit_current">Editar actual</string>
+    <string name="manage_edit_current_sub">Editar nombre, fechas y horarios</string>
+    <string name="manage_manual_add">Añadir curso</string>
+    <string name="manage_manual_add_sub">Añadir un curso al horario actual</string>
+    <string name="all_tables">Todos los horarios</string>
+    <string name="all_tables_new">Nuevo horario</string>
+    <string name="all_tables_switch">Establecer como actual</string>
+    <string name="edit_table_title">Editar horario</string>
+    <string name="edit_table_basic_info">Información básica</string>
+    <string name="edit_table_name">Nombre del horario</string>
+    <string name="edit_table_start_date">Fecha de inicio</string>
+    <string name="edit_table_start_date_hint">Ej. 2026-02-24</string>
+    <string name="edit_table_max_week">Semanas totales</string>
+    <string name="edit_table_time_slots">Horarios de clase</string>
+    <string name="edit_table_delete">Eliminar horario</string>
+    <string name="edit_table_save">Guardar ajustes</string>
+    <string name="edit_table_not_found">Horario no encontrado</string>
+    <string name="edit_table_validation_error">La fecha debe ser yyyy-MM-dd, la hora HH:mm con inicio antes del fin</string>
+    <string name="edit_table_delete_confirm">Confirmar eliminación</string>
+    <string name="edit_table_delete_msg">¿Eliminar horario \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="default_table_name">Predeterminado</string>
+    <string name="import_paste">Pegar texto</string>
+    <string name="import_paste_hint">Pega el texto del horario…</string>
+    <string name="import_file">Importar archivo</string>
+    <string name="import_qr">Escanear QR</string>
+    <string name="import_jw">Conectar escuela</string>
+    <string name="import_manual">Añadir manualmente</string>
+    <string name="import_success">Importación exitosa</string>
+    <string name="import_failed">Importación fallida: %1$s</string>
+    <string name="import_preview">Vista previa</string>
+    <string name="import_parsing">Analizando…</string>
+    <string name="import_supported_formats">Formatos compatibles</string>
+    <string name="import_preview_title">Vista previa de importación</string>
+    <string name="import_target_table">Destino: %1$s</string>
+    <string name="import_courses">Cursos</string>
+    <string name="import_conflicts">Conflictos</string>
+    <string name="import_appendable">Añadibles</string>
+    <string name="import_table_name">Nombre del horario</string>
+    <string name="import_start_date">Fecha de inicio</string>
+    <string name="import_suggestion">Sugerencia</string>
+    <string name="import_no_conflict">Sin conflictos — seguro añadir o sobrescribir</string>
+    <string name="import_conflict_count">Se encontraron %1$d conflicto(s). Considera importar como nuevo horario o añadir solo cursos sin conflicto.</string>
+    <string name="import_conflict_more">%1$d conflicto(s) más…</string>
+    <string name="import_append_only">Añadir sin conflictos</string>
+    <string name="import_as_new">Importar como nuevo horario</string>
+    <string name="import_overwrite">⚠ Sobrescribir actual (precaución)</string>
+    <string name="import_confirm_title">Confirmar antes de importar</string>
+    <string name="import_confirm_body">Verifica la fecha de inicio y los horarios — de lo contrario la semana actual será incorrecta.</string>
+    <string name="import_week_start">La primera semana empieza el</string>
+    <string name="import_confirm">Confirmar importación</string>
+    <string name="import_all_conflict">Todos los cursos tienen conflictos — nada que añadir</string>
+    <string name="import_content_empty">El contenido está vacío</string>
+    <string name="import_select_table">Selecciona un horario primero</string>
+
+    <string name="course_detail_title">Detalles del curso</string>
+    <string name="course_detail_edit">Editar</string>
+    <string name="course_detail_delete">Eliminar</string>
+    <string name="course_detail_edit_course">Editar esta clase</string>
+    <string name="course_field_name">Curso</string>
+    <string name="course_field_teacher">Profesor</string>
+    <string name="course_field_room">Aula</string>
+    <string name="course_field_note">Nota</string>
+    <string name="course_field_week">Hora</string>
+    <string name="course_field_color">Color</string>
+
+    <string name="edit_course">Editar curso</string>
+    <string name="create_course">Crear curso</string>
+    <string name="course_basic_info">Información básica</string>
+    <string name="course_basic_info_sub">Profesor y aula son compartidos; un curso puede tener múltiples horarios</string>
+    <string name="course_name_required">Nombre del curso *</string>
+    <string name="course_teacher">Profesor</string>
+    <string name="course_room">Aula</string>
+    <string name="course_note">Nota (opcional)</string>
+    <string name="week_range">Rango de semanas</string>
+    <string name="week_range_sub">Las semanas aplican a todo el curso; los conflictos se verifican automáticamente</string>
+    <string name="start_week">Semana inicial</string>
+    <string name="end_week">Semana final</string>
+    <string name="meeting_slots">Horarios</string>
+    <string name="meeting_slots_sub">Un curso puede tener cualquier número de horarios; cada uno puede seleccionar varios días</string>
+    <string name="slot_n">Horario %1$d</string>
+    <string name="add_slot">Añadir horario</string>
+    <string name="save_course">Guardar curso</string>
+    <string name="delete_course">Eliminar curso</string>
+    <string name="delete_course_confirm">¿Eliminar curso \"%1$s\"? Esta acción no se puede deshacer.</string>
+    <string name="select_at_least_one_day">Selecciona al menos un día</string>
+    <string name="delete_slot">Eliminar horario</string>
+    <string name="start_node">Período inicial</string>
+    <string name="step_count">Períodos</string>
+    <string name="start_time">Hora de inicio</string>
+    <string name="end_time">Hora de fin</string>
+    <string name="mode_by_node">Por período</string>
+    <string name="mode_by_time">Por hora</string>
+
+    <string name="mine_title">Ajustes</string>
+    <string name="mine_subtitle">Gestiona horarios y configuración</string>
+    <string name="mine_reminder">Recordatorio diario</string>
+    <string name="mine_reminder_on">Recordatorio diario a las 7:00 activado</string>
+    <string name="mine_reminder_off">Recordatorio diario desactivado</string>
+    <string name="mine_dark_mode">Modo oscuro</string>
+    <string name="mine_theme_color">Color del tema</string>
+    <string name="mine_more_settings">Más ajustes</string>
+    <string name="mine_export">Exportar</string>
+    <string name="mine_export_coming">Exportar — disponible en futuras actualizaciones (soporte ICS)</string>
+    <string name="mine_stat_tables">Horarios</string>
+    <string name="mine_stat_courses">Cursos</string>
+    <string name="mine_stat_week">Semana</string>
+
+    <string name="settings_title">Más ajustes</string>
+    <string name="settings_language">Idioma / Language</string>
+    <string name="settings_display_mode">Visualización de hora</string>
+    <string name="settings_display_node">Mostrar como períodos</string>
+    <string name="settings_display_node_sub">Todos los cursos muestran \"Período N\"</string>
+    <string name="settings_display_time">Mostrar como horas</string>
+    <string name="settings_display_time_sub">Todos los cursos muestran \"HH:mm–HH:mm\"</string>
+    <string name="settings_grid_view">Vista de cuadrícula</string>
+    <string name="settings_show_date">Mostrar fechas</string>
+    <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
+    <string name="settings_visible_days">Días visibles</string>
+    <string name="settings_visible_days_sub">Los días desmarcados se ocultan en todas las vistas</string>
+
+    <string name="theme_title">Color del tema</string>
+    <string name="theme_presets">Temas predefinidos</string>
+    <string name="theme_system">Seguir sistema</string>
+    <string name="theme_system_desc">Material You color dinámico (Android 12+)</string>
+    <string name="theme_system_needs_12">Seguir sistema requiere Android 12 o superior.</string>
+    <string name="theme_switched_system">Cambiado a Seguir sistema</string>
+    <string name="theme_switched_preset">Cambiado a %1$s</string>
+
+    <string name="view_full">Semana</string>
+    <string name="view_cards">Cuadrícula</string>
+
+    <string name="today_today">Hoy</string>
+    <string name="today_no_course">No hay clases hoy</string>
+    <string name="today_rest">Día libre</string>
+
+    <string name="ok">Aceptar</string>
+    <string name="cancel">Cancelar</string>
+    <string name="save">Guardar</string>
+    <string name="delete">Eliminar</string>
+    <string name="back">Atrás</string>
+    <string name="confirm_delete">Confirmar eliminación</string>
+    <string name="no_course">Libre</string>
+    <string name="n_courses">%1$d</string>
+    <string name="action_close">Cerrar</string>
+
+    <string name="mine_about_title">Acerca de Sleepy</string>
+    <string name="mine_about">Acerca de</string>
+    <string name="mine_about_body">Sleepy Horario v%1$s\n\nUna aplicación de horario minimalista, limpia y local.\nTodos los datos se guardan en tu dispositivo — nada se sube a servidores.\n\n· Sin anuncios\n· Sin rastreo\n· Compatible con WakeUp / ICS / CSV / HTML / texto plano</string>
+
+    <string-array name="day_names">
+        <item>Lun</item>
+        <item>Mar</item>
+        <item>Mié</item>
+        <item>Jue</item>
+        <item>Vie</item>
+        <item>Sáb</item>
+        <item>Dom</item>
+    </string-array>
+</resources>

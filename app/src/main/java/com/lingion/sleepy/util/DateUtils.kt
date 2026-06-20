@@ -65,4 +65,14 @@ object DateUtils {
         7 -> "周日"
         else -> ""
     }
+
+    /** Locale-aware 星期 — 读取 string array */
+    fun localizedDay(dayOfWeek: Int, dayNames: Array<String>): String {
+        val idx = dayOfWeek - 1
+        return if (idx in dayNames.indices) dayNames[idx] else ""
+    }
+
+    /** 短日期格式 M/d（无前导零） */
+    fun shortDateSlash(date: LocalDate): String =
+        "${date.monthValue}/${date.dayOfMonth}"
 }

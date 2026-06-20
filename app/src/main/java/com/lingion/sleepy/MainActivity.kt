@@ -51,6 +51,10 @@ import kotlinx.coroutines.launch
 
 class MainActivity : ComponentActivity() {
 
+    override fun attachBaseContext(newBase: android.content.Context) {
+        super.attachBaseContext(com.lingion.sleepy.util.LocaleHelper.wrapDefault(newBase))
+    }
+
     companion object {
         const val EXTRA_COURSE_ID = "extra_course_id"
 

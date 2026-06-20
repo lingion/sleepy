@@ -104,6 +104,8 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
                                 .clickable {
                                     language = code
                                     AppPrefs.setLanguage(context, code)
+                                    // Recreate activity to apply locale
+                                    (context as? android.app.Activity)?.recreate()
                                 }
                                 .padding(vertical = 10.dp, horizontal = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,

@@ -1,0 +1,185 @@
+<resources>
+    <string name="app_name">Sleepy Schedule</string>
+    <string name="widget_today_label">Today\'s Classes</string>
+    <string name="widget_week_list_label">This Week (List)</string>
+    <string name="widget_week_grid_label">This Week (Grid)</string>
+    <string name="widget_twoday_label">Next Two Days</string>
+
+    <string name="tab_schedule">Schedule</string>
+    <string name="tab_today">Today</string>
+    <string name="tab_mine">Me</string>
+    <string name="tab_manage">Manage</string>
+
+    <string name="schedule_empty">No schedule yet</string>
+    <string name="schedule_empty_hint">Go to Manage to import, or manually create your first course.</string>
+    <string name="schedule_go_manage">Go to Manage</string>
+    <string name="schedule_manual_first">Create first course</string>
+    <string name="schedule_add_course">Add Course</string>
+    <string name="schedule_current_week">Week %1$d</string>
+    <string name="schedule_no_course_today">No classes today</string>
+
+    <string name="import_title">Import Schedule</string>
+    <string name="manage_current_table">Current Schedule</string>
+    <string name="manage_import">Import</string>
+    <string name="manage_import_sub">Import from file / text / CSV</string>
+    <string name="manage_new_table">New Schedule</string>
+    <string name="manage_new_table_sub">Create a blank schedule, add courses manually</string>
+    <string name="manage_edit_current">Edit Current</string>
+    <string name="manage_edit_current_sub">Edit name, dates, and time slots</string>
+    <string name="manage_manual_add">Add Course</string>
+    <string name="manage_manual_add_sub">Add a course directly to current schedule</string>
+    <string name="all_tables">All Schedules</string>
+    <string name="all_tables_new">New Schedule</string>
+    <string name="all_tables_switch">Set as current</string>
+    <string name="edit_table_title">Edit Schedule</string>
+    <string name="edit_table_basic_info">Basic Info</string>
+    <string name="edit_table_name">Schedule Name</string>
+    <string name="edit_table_start_date">Semester Start Date</string>
+    <string name="edit_table_start_date_hint">e.g. 2026-02-24</string>
+    <string name="edit_table_max_week">Total Weeks</string>
+    <string name="edit_table_time_slots">Class Times</string>
+    <string name="edit_table_delete">Delete Schedule</string>
+    <string name="edit_table_save">Save Settings</string>
+    <string name="edit_table_not_found">Schedule not found</string>
+    <string name="edit_table_validation_error">Date must be yyyy-MM-dd, time must be HH:mm with start before end</string>
+    <string name="edit_table_delete_confirm">Confirm Delete</string>
+    <string name="edit_table_delete_msg">Delete schedule \"%1$s\"? This cannot be undone.</string>
+    <string name="default_table_name">Default</string>
+    <string name="import_paste">Paste Text</string>
+    <string name="import_paste_hint">Paste schedule text…</string>
+    <string name="import_file">Import from File</string>
+    <string name="import_qr">Scan QR</string>
+    <string name="import_jw">Connect to School</string>
+    <string name="import_manual">Manual Add</string>
+    <string name="import_success">Import successful</string>
+    <string name="import_failed">Import failed: %1$s</string>
+    <string name="import_preview">Preview Import</string>
+    <string name="import_parsing">Parsing…</string>
+    <string name="import_supported_formats">Supported Formats</string>
+    <string name="import_preview_title">Import Preview</string>
+    <string name="import_target_table">Target: %1$s</string>
+    <string name="import_courses">Courses</string>
+    <string name="import_conflicts">Conflicts</string>
+    <string name="import_appendable">Appendable</string>
+    <string name="import_table_name">Schedule Name</string>
+    <string name="import_start_date">Start Date</string>
+    <string name="import_suggestion">Suggestion</string>
+    <string name="import_no_conflict">No conflicts — safe to append or overwrite</string>
+    <string name="import_conflict_count">Found %1$d conflict(s). Consider importing as new schedule or appending non-conflicting courses only.</string>
+    <string name="import_conflict_more">%1$d more conflict(s)…</string>
+    <string name="import_append_only">Append non-conflicting</string>
+    <string name="import_as_new">Import as new schedule</string>
+    <string name="import_overwrite">⚠ Overwrite current (caution)</string>
+    <string name="import_confirm_title">Confirm Before Import</string>
+    <string name="import_confirm_body">Verify the semester start date and class times — otherwise the current week will be inaccurate.</string>
+    <string name="import_week_start">First week starts on</string>
+    <string name="import_confirm">Confirm Import</string>
+    <string name="import_all_conflict">All courses conflict — nothing to append</string>
+    <string name="import_content_empty">Content is empty</string>
+    <string name="import_select_table">Please select a schedule first</string>
+
+    <string name="course_detail_title">Course Details</string>
+    <string name="course_detail_edit">Edit</string>
+    <string name="course_detail_delete">Delete</string>
+    <string name="course_detail_edit_course">Edit this class</string>
+    <string name="course_field_name">Course</string>
+    <string name="course_field_teacher">Teacher</string>
+    <string name="course_field_room">Room</string>
+    <string name="course_field_note">Note</string>
+    <string name="course_field_week">Time</string>
+    <string name="course_field_color">Color</string>
+
+    <string name="edit_course">Edit Course</string>
+    <string name="create_course">Create Course</string>
+    <string name="course_basic_info">Basic Info</string>
+    <string name="course_basic_info_sub">Teacher and room are shared; one course can have multiple time slots</string>
+    <string name="course_name_required">Course Name *</string>
+    <string name="course_teacher">Teacher</string>
+    <string name="course_room">Room</string>
+    <string name="course_note">Note (optional)</string>
+    <string name="week_range">Week Range</string>
+    <string name="week_range_sub">Weeks apply to the entire course; conflicts are checked automatically</string>
+    <string name="start_week">Start Week</string>
+    <string name="end_week">End Week</string>
+    <string name="meeting_slots">Time Slots</string>
+    <string name="meeting_slots_sub">A course can have any number of time slots; each can select multiple days</string>
+    <string name="slot_n">Slot %1$d</string>
+    <string name="add_slot">Add time slot</string>
+    <string name="save_course">Save Course</string>
+    <string name="delete_course">Delete Course</string>
+    <string name="delete_course_confirm">Delete course \"%1$s\"? This cannot be undone.</string>
+    <string name="select_at_least_one_day">Select at least one day</string>
+    <string name="delete_slot">Remove slot</string>
+    <string name="start_node">Start Period</string>
+    <string name="step_count">Periods</string>
+    <string name="start_time">Start Time</string>
+    <string name="end_time">End Time</string>
+    <string name="mode_by_node">By Period</string>
+    <string name="mode_by_time">By Time</string>
+
+    <string name="mine_title">Me</string>
+    <string name="mine_subtitle">Manage schedules and settings</string>
+    <string name="mine_reminder">Daily Reminder</string>
+    <string name="mine_reminder_on">Daily 7:00 AM reminder enabled</string>
+    <string name="mine_reminder_off">Daily reminder disabled</string>
+    <string name="mine_dark_mode">Dark Mode</string>
+    <string name="mine_theme_color">Theme Color</string>
+    <string name="mine_more_settings">More Settings</string>
+    <string name="mine_export">Export</string>
+    <string name="mine_export_coming">Export — coming in a future update (ICS support)</string>
+    <string name="mine_stat_tables">Schedules</string>
+    <string name="mine_stat_courses">Courses</string>
+    <string name="mine_stat_week">Week</string>
+
+    <string name="settings_title">More Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_display_mode">Time Display</string>
+    <string name="settings_display_node">Show as periods</string>
+    <string name="settings_display_node_sub">All courses show as \"Period N\"</string>
+    <string name="settings_display_time">Show as times</string>
+    <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
+    <string name="settings_grid_view">Grid View</string>
+    <string name="settings_show_date">Show dates</string>
+    <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
+    <string name="settings_visible_days">Visible Days</string>
+    <string name="settings_visible_days_sub">Unchecked days are hidden in all views</string>
+
+    <string name="theme_title">Theme Color</string>
+    <string name="theme_presets">Preset Themes</string>
+    <string name="theme_system">Follow System</string>
+    <string name="theme_system_desc">Material You dynamic color (Android 12+)</string>
+    <string name="theme_system_needs_12">Follow System requires Android 12 or above.</string>
+    <string name="theme_switched_system">Switched to Follow System</string>
+    <string name="theme_switched_preset">Switched to %1$s</string>
+
+    <string name="view_full">Week</string>
+    <string name="view_cards">Grid</string>
+
+    <string name="today_today">Today</string>
+    <string name="today_no_course">No classes today</string>
+    <string name="today_rest">Free day</string>
+
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+    <string name="save">Save</string>
+    <string name="delete">Delete</string>
+    <string name="back">Back</string>
+    <string name="confirm_delete">Confirm Delete</string>
+    <string name="no_course">Free</string>
+    <string name="n_courses">%1$d</string>
+    <string name="action_close">Close</string>
+
+    <string name="mine_about_title">About Sleepy</string>
+    <string name="mine_about">About</string>
+    <string name="mine_about_body">Sleepy Schedule v%1$s\n\nA minimal, clean, local-first schedule app.\nAll data stays on your device — nothing is uploaded.\n\n· No ads\n· No tracking\n· Supports WakeUp / ICS / CSV / HTML / plain text import</string>
+
+    <string-array name="day_names">
+        <item>Mon</item>
+        <item>Tue</item>
+        <item>Wed</item>
+        <item>Thu</item>
+        <item>Fri</item>
+        <item>Sat</item>
+        <item>Sun</item>
+    </string-array>
+</resources>

@@ -241,7 +241,7 @@ private fun CourseCardCell(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, modifier: Modifier = Modifier) {
+private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.chineseDay(day), modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
@@ -249,30 +249,36 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
 
     Box(
         modifier = modifier
-            .height(52.dp)
+            .height(if (dateStr != null) 56.dp else 52.dp)
             .clip(RoundedCornerShape(16.dp))
             .background(bg)
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
             .padding(vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(1.dp)
+        ) {
             Text(
-                text = DateUtils.chineseDay(day),
+                text = dayLabel,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = fg
+                color = fg,
+                maxLines = 1
             )
             if (dateStr != null) {
                 Text(
                     text = dateStr,
-                    style = SleepyTextStyle.micro(),
-                    color = subFg
+                    style = SleepyTextStyle.micro().copy(fontSize = 10.sp),
+                    color = subFg,
+                    maxLines = 1
                 )
             } else {
                 Text(
                     text = if (courseCount == 0) "无课" else "$courseCount 门",
                     style = SleepyTextStyle.micro(),
-                    color = subFg
+                    color = subFg,
+                    maxLines = 1
                 )
             }
         }

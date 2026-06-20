@@ -1,0 +1,185 @@
+<resources>
+    <string name="app_name">Sleepy 課表</string>
+    <string name="widget_today_label">今日課程</string>
+    <string name="widget_week_list_label">本週課表（列表）</string>
+    <string name="widget_week_grid_label">本週課表（網格）</string>
+    <string name="widget_twoday_label">最近兩天</string>
+
+    <string name="tab_schedule">課表</string>
+    <string name="tab_today">今日</string>
+    <string name="tab_mine">我的</string>
+    <string name="tab_manage">課表管理</string>
+
+    <string name="schedule_empty">還沒有課表</string>
+    <string name="schedule_empty_hint">前往「課表管理」匯入，或手動建立第一門課。</string>
+    <string name="schedule_go_manage">前往課表管理</string>
+    <string name="schedule_manual_first">手動建立第一門課</string>
+    <string name="schedule_add_course">新增課程</string>
+    <string name="schedule_current_week">第 %1$d 週</string>
+    <string name="schedule_no_course_today">今天沒有課</string>
+
+    <string name="import_title">匯入課表</string>
+    <string name="manage_current_table">目前課表</string>
+    <string name="manage_import">匯入課表</string>
+    <string name="manage_import_sub">從檔案 / 文字 / CSV 匯入課表</string>
+    <string name="manage_new_table">建立課表</string>
+    <string name="manage_new_table_sub">建立一張空白課表，手動新增課程</string>
+    <string name="manage_edit_current">編輯目前課表</string>
+    <string name="manage_edit_current_sub">編輯課表名稱、日期、節次時間</string>
+    <string name="manage_manual_add">手動新增課程</string>
+    <string name="manage_manual_add_sub">直接新增一門課程到目前課表</string>
+    <string name="all_tables">所有課表</string>
+    <string name="all_tables_new">建立課表</string>
+    <string name="all_tables_switch">切換為目前</string>
+    <string name="edit_table_title">編輯課表</string>
+    <string name="edit_table_basic_info">基本資訊</string>
+    <string name="edit_table_name">課表名稱</string>
+    <string name="edit_table_start_date">學期開始日期</string>
+    <string name="edit_table_start_date_hint">例如 2026-02-24</string>
+    <string name="edit_table_max_week">總週數</string>
+    <string name="edit_table_time_slots">節次時間表</string>
+    <string name="edit_table_delete">刪除課表</string>
+    <string name="edit_table_save">儲存課表設定</string>
+    <string name="edit_table_not_found">課表資料未找到</string>
+    <string name="edit_table_validation_error">日期需為 yyyy-MM-dd，時間需為 HH:mm 且開始早於結束</string>
+    <string name="edit_table_delete_confirm">確認刪除</string>
+    <string name="edit_table_delete_msg">確定要刪除課表「%1$s」嗎？此操作不可撤銷。</string>
+    <string name="default_table_name">預設</string>
+    <string name="import_paste">貼上課表文字</string>
+    <string name="import_paste_hint">貼上課表文字…</string>
+    <string name="import_file">從檔案匯入</string>
+    <string name="import_qr">掃碼匯入</string>
+    <string name="import_jw">教務直連</string>
+    <string name="import_manual">手動新增</string>
+    <string name="import_success">匯入成功</string>
+    <string name="import_failed">匯入失敗：%1$s</string>
+    <string name="import_preview">預覽匯入</string>
+    <string name="import_parsing">解析中…</string>
+    <string name="import_supported_formats">支援格式</string>
+    <string name="import_preview_title">匯入預覽</string>
+    <string name="import_target_table">目標課表：%1$s</string>
+    <string name="import_courses">匯入課程</string>
+    <string name="import_conflicts">衝突課程</string>
+    <string name="import_appendable">可附加</string>
+    <string name="import_table_name">匯入後課表名</string>
+    <string name="import_start_date">學期開始日期</string>
+    <string name="import_suggestion">建議</string>
+    <string name="import_no_conflict">沒有衝突，可直接附加或覆蓋</string>
+    <string name="import_conflict_count">發現 %1$d 門衝突課程。建議匯入為新課表，或僅附加無衝突部分。</string>
+    <string name="import_conflict_more">還有 %1$d 條衝突未展開</string>
+    <string name="import_append_only">僅附加無衝突</string>
+    <string name="import_as_new">匯入為新課表</string>
+    <string name="import_overwrite">⚠ 覆蓋目前（謹慎）</string>
+    <string name="import_confirm_title">匯入前確認</string>
+    <string name="import_confirm_body">先確認學期開始日期和每節時間，不然目前週次會一直不準。</string>
+    <string name="import_week_start">第一週從哪天開始</string>
+    <string name="import_confirm">確認匯入</string>
+    <string name="import_all_conflict">沒有可附加課程，全部與現有課表衝突</string>
+    <string name="import_content_empty">內容為空</string>
+    <string name="import_select_table">請先選擇課表</string>
+
+    <string name="course_detail_title">課程詳情</string>
+    <string name="course_detail_edit">編輯</string>
+    <string name="course_detail_delete">刪除</string>
+    <string name="course_detail_edit_course">編輯這節課</string>
+    <string name="course_field_name">課程</string>
+    <string name="course_field_teacher">老師</string>
+    <string name="course_field_room">地點</string>
+    <string name="course_field_note">備註</string>
+    <string name="course_field_week">時間</string>
+    <string name="course_field_color">顏色</string>
+
+    <string name="edit_course">編輯課程</string>
+    <string name="create_course">手動建立課程</string>
+    <string name="course_basic_info">課程基本資訊</string>
+    <string name="course_basic_info_sub">老師、地點統一填寫；一門課可以掛多個時段</string>
+    <string name="course_name_required">課程名 *</string>
+    <string name="course_teacher">老師</string>
+    <string name="course_room">地點 / 教室</string>
+    <string name="course_note">備註（可選）</string>
+    <string name="week_range">週次範圍</string>
+    <string name="week_range_sub">整門課統一週次；同一課程內部時段會自動做衝突檢查</string>
+    <string name="start_week">起始週</string>
+    <string name="end_week">結束週</string>
+    <string name="meeting_slots">上課時段</string>
+    <string name="meeting_slots_sub">一個課程可有任意多個時段；每個時段都可多選星期，並可按節次或按時間錄入</string>
+    <string name="slot_n">時段 %1$d</string>
+    <string name="add_slot">新增一個上課時段</string>
+    <string name="save_course">儲存課程</string>
+    <string name="delete_course">刪除課程</string>
+    <string name="delete_course_confirm">確定要刪除課程「%1$s」嗎？此操作不可撤銷。</string>
+    <string name="select_at_least_one_day">至少選一天</string>
+    <string name="delete_slot">刪除時段</string>
+    <string name="start_node">開始第幾節</string>
+    <string name="step_count">連上幾節</string>
+    <string name="start_time">開始時間</string>
+    <string name="end_time">結束時間</string>
+    <string name="mode_by_node">按節次</string>
+    <string name="mode_by_time">按時間</string>
+
+    <string name="mine_title">我的</string>
+    <string name="mine_subtitle">管理你的課表與設定</string>
+    <string name="mine_reminder">每日提醒</string>
+    <string name="mine_reminder_on">已開啟每日 7:00 課程提醒</string>
+    <string name="mine_reminder_off">已關閉每日提醒</string>
+    <string name="mine_dark_mode">深色模式</string>
+    <string name="mine_theme_color">主題顏色</string>
+    <string name="mine_more_settings">更多設定</string>
+    <string name="mine_export">匯出課表</string>
+    <string name="mine_export_coming">匯出課表 — 此功能開發中，後續版本支援 ICS 匯出</string>
+    <string name="mine_stat_tables">課表數</string>
+    <string name="mine_stat_courses">課程數</string>
+    <string name="mine_stat_week">目前週</string>
+
+    <string name="settings_title">更多設定</string>
+    <string name="settings_language">語言 / Language</string>
+    <string name="settings_display_mode">課程時間顯示</string>
+    <string name="settings_display_node">統一顯示節次</string>
+    <string name="settings_display_node_sub">所有課程顯示為「第N節」</string>
+    <string name="settings_display_time">統一顯示時間</string>
+    <string name="settings_display_time_sub">所有課程顯示為「HH:mm–HH:mm」</string>
+    <string name="settings_grid_view">網格檢視</string>
+    <string name="settings_show_date">顯示日期</string>
+    <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>
+    <string name="settings_visible_days">顯示星期</string>
+    <string name="settings_visible_days_sub">取消勾選的星期將在所有檢視中隱藏</string>
+
+    <string name="theme_title">主題顏色</string>
+    <string name="theme_presets">預設主題</string>
+    <string name="theme_system">跟隨系統</string>
+    <string name="theme_system_desc">Material You 動態取色（Android 12+）</string>
+    <string name="theme_system_needs_12">跟隨系統需要 Android 12 及以上。</string>
+    <string name="theme_switched_system">已切換為跟隨系統</string>
+    <string name="theme_switched_preset">已切換為 %1$s</string>
+
+    <string name="view_full">週檢視</string>
+    <string name="view_cards">網格</string>
+
+    <string name="today_today">今天</string>
+    <string name="today_no_course">今日無課程</string>
+    <string name="today_rest">休息 / 自習 都可以</string>
+
+    <string name="ok">確定</string>
+    <string name="cancel">取消</string>
+    <string name="save">儲存</string>
+    <string name="delete">刪除</string>
+    <string name="back">返回</string>
+    <string name="confirm_delete">確認刪除</string>
+    <string name="no_course">無課</string>
+    <string name="n_courses">%1$d 門</string>
+    <string name="action_close">關閉</string>
+
+    <string name="mine_about_title">關於 Sleepy 課表</string>
+    <string name="mine_about">關於</string>
+    <string name="mine_about_body">Sleepy 課表 v%1$s\n\n一個極簡、乾淨、本地優先的課表工具。\n所有資料均儲存在你的裝置上，不上傳任何伺服器。\n\n· 無廣告\n· 無追蹤\n· 支援 WakeUp / ICS / CSV / HTML / 純文字 匯入</string>
+
+    <string-array name="day_names">
+        <item>週一</item>
+        <item>週二</item>
+        <item>週三</item>
+        <item>週四</item>
+        <item>週五</item>
+        <item>週六</item>
+        <item>週日</item>
+    </string-array>
+</resources>
