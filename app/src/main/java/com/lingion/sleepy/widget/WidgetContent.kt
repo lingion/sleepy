@@ -442,29 +442,16 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 课程名列表
-                                day.courses.take(5).forEachIndexed { idx, c ->
-                                    Text(
-                                        text = c.courseName,
-                                        style = TextStyle(
-                                            fontSize = 9.sp,
-                                            color = ColorProvider(nameColor)
-                                        ),
-                                        maxLines = 2
-                                    )
-                                    if (idx < minOf(day.courses.size, 5) - 1) {
-                                        Spacer(modifier = GlanceModifier.height(2.dp))
-                                    }
-                                }
-                                if (day.courses.size > 5) {
-                                    Text(
-                                        text = "+${day.courses.size - 5}",
-                                        style = TextStyle(
-                                            fontSize = 8.sp,
-                                            color = ColorProvider(chipFg)
-                                        )
-                                    )
-                                }
+                                // 单个Text拼接全部课程名——Glance LinearLayout会裁剪多个独立Text
+                                // 课程名之间用空行制造间距，maxLines不限制
+                                Text(
+                                    text = day.courses.joinToString("\n\n") { it.courseName },
+                                    style = TextStyle(
+                                        fontSize = 9.sp,
+                                        color = ColorProvider(nameColor)
+                                    ),
+                                    maxLines = 200
+                                )
                             }
                             }  // end inner Column
                         }  // end Box
