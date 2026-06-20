@@ -447,17 +447,31 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     }
                                     item { Spacer(modifier = GlanceModifier.height(4.dp)) }
 
-                                    // 全部课程——LazyColumn可滚动，不截断不限量
-                                    items(day.courses) { c ->
-                                        Text(
-                                            text = c.courseName,
-                                            style = TextStyle(
-                                                fontSize = 9.sp,
-                                                color = ColorProvider(nameColor)
-                                            ),
-                                            maxLines = 2
-                                        )
-                                        Spacer(modifier = GlanceModifier.height(2.dp))
+                                    // 每门课单独一个item，分隔线单独一个item，ListView不会混淆
+                                    day.courses.forEachIndexed { idx, c ->
+                                        item {
+                                            Text(
+                                                text = c.courseName,
+                                                style = TextStyle(
+                                                    fontSize = 9.sp,
+                                                    color = ColorProvider(nameColor)
+                                                ),
+                                                maxLines = 2
+                                            )
+                                        }
+                                        // 课程之间加分隔线，最后一门不加
+                                        if (idx < day.courses.size - 1) {
+                                            item {
+                                                Spacer(modifier = GlanceModifier.height(1.dp))
+                                                Box(
+                                                    modifier = GlanceModifier
+                                                        .fillMaxWidth()
+                                                        .height(1.dp)
+                                                        .background(ColorProvider(nameColor.copy(alpha = 0.15f)))
+                                                ) {}
+                                                Spacer(modifier = GlanceModifier.height(1.dp))
+                                            }
+                                        }
                                     }
                                 }
                             }
