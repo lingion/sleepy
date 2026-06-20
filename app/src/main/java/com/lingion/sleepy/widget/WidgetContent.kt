@@ -397,13 +397,13 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .background(ColorProvider(cardBg))
-                                .cornerRadius(14.dp)
                                 .padding(horizontal = 2.dp)
                         ) {
                             Column(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
+                                    .background(ColorProvider(cardBg))
+                                    .cornerRadius(14.dp)
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -434,22 +434,17 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                         )
                                     )
                                 }
-                                Spacer(modifier = GlanceModifier.height(3.dp))
+                                Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // maxLines=1 省一半高度，确保全部课程都能渲染出来
-                                day.courses.forEachIndexed { idx, c ->
-                                    Text(
-                                        text = c.courseName,
-                                        style = TextStyle(
-                                            fontSize = 9.sp,
-                                            color = ColorProvider(nameColor)
-                                        ),
-                                        maxLines = 1
-                                    )
-                                    if (idx < day.courses.size - 1) {
-                                        Spacer(modifier = GlanceModifier.height(2.dp))
-                                    }
-                                }
+                                // 用单个Text拼接所有课程名——RemoteViews里只有一个TextView，绝不被裁剪
+                                Text(
+                                    text = day.courses.joinToString("\n") { it.courseName },
+                                    style = TextStyle(
+                                        fontSize = 9.sp,
+                                        color = ColorProvider(nameColor)
+                                    ),
+                                    maxLines = 10
+                                )
                             }
                             }  // end inner Column
                         }  // end Box
