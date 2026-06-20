@@ -5,6 +5,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.glance.GlanceModifier
+import androidx.glance.LocalSize
 import androidx.glance.action.Action
 import androidx.glance.action.clickable
 import androidx.glance.appwidget.cornerRadius
@@ -363,6 +364,9 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
+    // 按比例算间距：列间距 = 总宽度 × 1.5%，随 widget 大小自适应
+    val totalWidth = LocalSize.current.width
+    val colGap = (totalWidth.value * 0.015f).dp
 
     Column(
         modifier = GlanceModifier
@@ -397,7 +401,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .padding(horizontal = 3.dp)  // 3+3=6dp 间距，跟首页 spacedBy(6.dp) 一致
+                                .padding(horizontal = colGap)  // 比例间距，随 widget 大小自适应
                                 .background(ColorProvider(cardBg))
                                 .cornerRadius(14.dp)
                                 .padding(vertical = 6.dp, horizontal = 4.dp),
@@ -607,6 +611,9 @@ fun WeekGridContent(data: WeekData, openAppAction: Action) {
         d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
     }
     val rows = minOf(maxOf(maxNode, 4), 12)
+    // 按比例算间距
+    val totalWidth = LocalSize.current.width
+    val gridGap = (totalWidth.value * 0.01f).dp
 
     Column(
         modifier = GlanceModifier
@@ -649,7 +656,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action) {
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
                 (1..rows).forEach { node ->
-                    GridRow(node, data.days, scheme, todayDow)
+                    GridRow(node, data.days, scheme, todayDow, gridGap)
                 }
             }
         }
@@ -661,10 +668,10 @@ private fun GridRow(
     node: Int,
     days: List<DayData>,
     scheme: WidgetScheme,
-    todayDow: Int
+    todayDow: Int,
+    gap: androidx.compose.ui.unit.Dp
 ) {
     val cellH = 26.dp
-    val gap = 2.dp
 
     Row(
         modifier = GlanceModifier.fillMaxWidth().height(cellH),
@@ -690,7 +697,7 @@ private fun GridRow(
                 modifier = GlanceModifier
                     .defaultWeight()
                     .height(cellH)
-                    .padding(gap / 2)
+                    .padding(horizontal = gap, vertical = gap * 0.5f)
             ) {
                 if (isStart && course != null) {
                     val bgColor = courseColor(course.courseName, scheme)
