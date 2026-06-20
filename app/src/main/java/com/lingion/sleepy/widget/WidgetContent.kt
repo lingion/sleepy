@@ -111,8 +111,12 @@ private data class WidgetScheme(
     val bg: Color = Color(0xFFFDFCFF),
     val surface: Color = Color(0xFFFFFBFE),
     val primary: Color = Color(0xFF6750A4),
+    val primaryContainer: Color = Color(0xFFEADDFF),
+    val onPrimaryContainer: Color = Color(0xFF1C1B1F),
     val onSurface: Color = Color(0xFF1C1B1F),
     val onSurfaceVariant: Color = Color(0xFF79747E),
+    val surfaceContainer: Color = Color(0xFFF3EDF7),
+    val surfaceVariant: Color = Color(0xFFE7E0EC),
     val isDark: Boolean = false,
     // 课程色 — 从主题 container 色派生
     val coursePrimary: Color = Color(0xFFEADDFF),
@@ -157,8 +161,12 @@ private fun resolveScheme(themeKey: String, isDark: Boolean): WidgetScheme {
         bg = s.surface,
         surface = s.surface,
         primary = s.primary,
+        primaryContainer = s.primaryContainer,
+        onPrimaryContainer = s.onPrimaryContainer,
         onSurface = s.onSurface,
         onSurfaceVariant = s.onSurfaceVariant,
+        surfaceContainer = s.surfaceContainer,
+        surfaceVariant = s.surfaceVariant,
         isDark = isDark,
         // 课程色从主题 container 色派生
         coursePrimary = s.primaryContainer,
@@ -369,7 +377,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // 7 列竖向并排 — 每列整列卡片铺满高度
+                // 7 列竖向并排 — 复刻首页 WeekStrip
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
@@ -378,28 +386,28 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                 ) {
                     data.days.forEach { day ->
                         val isToday = day.dayOfWeek == todayDow
-                        val cardBg = if (isToday) scheme.primary else scheme.onSurface.copy(alpha = 0.06f)
-                        val titleColor = if (isToday) Color.White else scheme.onSurface
-                        val nameColor = if (isToday) Color.White else scheme.onSurface
-                        val pillBg = if (isToday) Color.White.copy(alpha = 0.22f) else scheme.onSurface.copy(alpha = 0.10f)
-                        val pillTextColor = if (isToday) Color.White else scheme.onSurfaceVariant
+                        // 跟首页 DaySummaryCell 完全一致
+                        val cardBg = if (isToday) scheme.primaryContainer else scheme.surfaceContainer
+                        val titleColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurface
+                        val nameColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurfaceVariant
+                        val chipBg = scheme.surfaceVariant
+                        val chipFg = scheme.onSurfaceVariant
 
-                        // ── 单日整列卡片 — defaultWeight 需要 RowScope，内联 ──
                         Column(
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .padding(horizontal = 3.dp)
+                                .padding(horizontal = 3.dp)  // 3+3=6dp 间距，跟首页 spacedBy(6.dp) 一致
                                 .background(ColorProvider(cardBg))
-                                .cornerRadius(10.dp)
-                                .padding(vertical = 6.dp, horizontal = 2.dp),
+                                .cornerRadius(14.dp)
+                                .padding(vertical = 6.dp, horizontal = 4.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             // 星期标题
                             Text(
                                 text = dayLabels[day.dayOfWeek],
                                 style = TextStyle(
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = ColorProvider(titleColor)
                                 )
@@ -407,25 +415,26 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             Spacer(modifier = GlanceModifier.height(6.dp))
 
                             if (day.courses.isNotEmpty()) {
-                                // 药丸「X门」
+                                // Chip「X门」— surfaceVariant 背景
                                 Box(
                                     modifier = GlanceModifier
-                                        .background(ColorProvider(pillBg))
-                                        .cornerRadius(6.dp)
-                                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                                        .background(ColorProvider(chipBg))
+                                        .cornerRadius(50.dp)
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${day.courses.size}门",
                                         style = TextStyle(
                                             fontSize = 9.sp,
-                                            color = ColorProvider(pillTextColor)
+                                            fontWeight = FontWeight.Bold,
+                                            color = ColorProvider(chipFg)
                                         )
                                     )
                                 }
-                                Spacer(modifier = GlanceModifier.height(5.dp))
+                                Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 课程名列表（纯文字，无色块）
+                                // 课程名列表
                                 day.courses.take(5).forEachIndexed { idx, c ->
                                     Text(
                                         text = c.courseName,
@@ -433,10 +442,10 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                             fontSize = 9.sp,
                                             color = ColorProvider(nameColor)
                                         ),
-                                        maxLines = 1
+                                        maxLines = 2
                                     )
                                     if (idx < minOf(day.courses.size, 5) - 1) {
-                                        Spacer(modifier = GlanceModifier.height(3.dp))
+                                        Spacer(modifier = GlanceModifier.height(2.dp))
                                     }
                                 }
                                 if (day.courses.size > 5) {
@@ -444,12 +453,11 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                         text = "+${day.courses.size - 5}",
                                         style = TextStyle(
                                             fontSize = 8.sp,
-                                            color = ColorProvider(pillTextColor)
+                                            color = ColorProvider(chipFg)
                                         )
                                     )
                                 }
                             }
-                            // 无课列：只留星期标题，下方空白
                         }
                     }
                 }
