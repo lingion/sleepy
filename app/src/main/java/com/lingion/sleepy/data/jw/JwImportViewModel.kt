@@ -101,6 +101,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             val step = (jw.endNode - jw.startNode + 1).coerceAtLeast(1)
             CourseEntity(
                 id = 0,
+                groupId = "",
                 tableId = tableId,
                 courseName = jw.name.ifBlank { "未命名" },
                 teacher = jw.teacher,

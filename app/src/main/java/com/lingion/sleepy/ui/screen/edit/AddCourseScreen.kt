@@ -305,6 +305,7 @@ fun AddCourseScreen(
                             block.days.sorted().map { day ->
                                 buildCourseEntity(
                                     tableId = tableId,
+                                    groupId = "", // 临时占位，下面统一替换
                                     courseName = courseName.trim(),
                                     teacher = teacher.trim(),
                                     room = room.trim(),
@@ -319,11 +320,18 @@ fun AddCourseScreen(
                         scope.launch {
                             val repo = SleepyApp.get().repository
                             if (editingCourse != null) {
-                                repo.updateCourse(
-                                    drafts.first().copy(id = editingCourse.id)
+                                // 编辑：删同 groupId 全部记录，插入所有新草稿
+                                val gid = editingCourse.groupId
+                                val toInsert = drafts.map { it.copy(groupId = gid) }
+                                repo.updateCourseGroup(
+                                    tableId = state.selectedTableId!!,
+                                    groupId = gid,
+                                    newCourses = toInsert
                                 )
                             } else {
-                                repo.insertCourses(drafts)
+                                // 新建：所有草稿共享同一个 groupId
+                                val gid = java.util.UUID.randomUUID().toString()
+                                repo.insertCourses(drafts.map { it.copy(groupId = gid) })
                             }
                             onSaved()
                         }
@@ -365,7 +373,8 @@ fun AddCourseScreen(
                                 TextButton(onClick = {
                                     showDeleteConfirm = false
                                     scope.launch {
-                                        SleepyApp.get().repository.deleteCourse(editingCourse.id)
+                                        val repo = SleepyApp.get().repository
+                                        repo.deleteCourseGroup(state.selectedTableId!!, editingCourse.groupId)
                                         onSaved()
                                     }
                                 }) { Text("删除", color = colors.error) }
@@ -411,6 +420,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
 
 private fun buildCourseEntity(
     tableId: Long,
+    groupId: String,
     courseName: String,
     teacher: String,
     room: String,
@@ -422,6 +432,7 @@ private fun buildCourseEntity(
 ): CourseEntity {
     val ownTime = block.mode == MeetingInputMode.ByClock
     return CourseEntity(
+        groupId = groupId,
         tableId = tableId,
         courseName = courseName,
         teacher = teacher,
@@ -811,12 +822,12 @@ private fun NumberField(
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (Int) -> Unit
 ) {
-    // 用 Stable key 避免外部 value 变化时重置用户正在编辑的文本
     var text by remember { mutableStateOf(value.toString()) }
 
-    // 仅在 value 从外部变化（非用户输入）时同步文本
+    // 仅在外部 value 变化且用户当前文本为空/不匹配时同步
     LaunchedEffect(value) {
-        if (text.toIntOrNull() != value) {
+        val parsed = text.toIntOrNull()
+        if (parsed != value && text.isNotEmpty()) {
             text = value.toString()
         }
     }
@@ -824,16 +835,16 @@ private fun NumberField(
     OutlinedTextField(
         value = text,
         onValueChange = { txt ->
+            text = txt
             if (txt.isEmpty()) {
-                text = ""
-                // 清空时不立即回调，让用户自由输入新值
+                // 清空时回调最小值，保证 model 有合法值
+                onChange(min)
             } else {
                 val v = txt.toIntOrNull()
                 if (v != null) {
-                    text = v.toString()
                     onChange(v.coerceIn(min, max))
                 }
-                // 非数字字符直接忽略，不更新 text
+                // 非数字字符不回调，但保留 text 让用户继续编辑
             }
         },
         label = { Text(label) },

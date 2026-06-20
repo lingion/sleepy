@@ -11,7 +11,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class],
-    version = 1,
+    version = 2,
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

@@ -122,6 +122,7 @@ object ScheduleParser {
             val obj = el.jsonObject
             CourseEntity(
                 id = 0,
+                groupId = "",
                 tableId = defaultTableId,
                 courseName = obj["name"]?.jsonPrimitive?.content
                     ?: obj["courseName"]?.jsonPrimitive?.content
@@ -154,6 +155,7 @@ object ScheduleParser {
             val obj = el.jsonObject
             CourseEntity(
                 id = 0,
+                groupId = "",
                 tableId = tableId,
                 courseName = obj["name"]?.jsonPrimitive?.content
                     ?: obj["courseName"]?.jsonPrimitive?.content
@@ -194,6 +196,7 @@ object ScheduleParser {
             val teacher = if (description.isNotBlank()) description else ""
             courses += CourseEntity(
                 id = 0,
+                groupId = "",
                 tableId = defaultTableId,
                 courseName = summary,
                 teacher = teacher,
@@ -295,6 +298,7 @@ object ScheduleParser {
 
             courses += CourseEntity(
                 id = 0,
+                groupId = "",
                 tableId = defaultTableId,
                 courseName = name,
                 teacher = teacher,
@@ -422,6 +426,7 @@ object ScheduleParser {
             for ((startWeek, endWeek) in weekRanges) {
                 courses += CourseEntity(
                     id = 0,
+                    groupId = "",
                     tableId = defaultTableId,
                     courseName = name,
                     teacher = teacher,
@@ -676,6 +681,7 @@ object ScheduleParser {
             for ((startWeek, endWeek) in weekRanges) {
                 courses += CourseEntity(
                     id = 0,
+                    groupId = "",
                     tableId = defaultTableId,
                     courseName = name,
                     teacher = teacher,

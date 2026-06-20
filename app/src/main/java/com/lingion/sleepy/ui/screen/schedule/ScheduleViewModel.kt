@@ -138,6 +138,7 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch {
             val tableId = _state.value.selectedTableId ?: return@launch
             val empty = CourseEntity(
+                groupId = java.util.UUID.randomUUID().toString(),
                 tableId = tableId,
                 courseName = "新课程",
                 teacher = "",

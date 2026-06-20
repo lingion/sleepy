@@ -42,6 +42,12 @@ interface CourseDao {
     @Query("SELECT * FROM courses WHERE tableId = :tableId ORDER BY day, startNode, startWeek")
     suspend fun getByTable(tableId: Long): List<CourseEntity>
 
+    @Query("SELECT * FROM courses WHERE tableId = :tableId AND groupId = :groupId")
+    suspend fun getByGroupId(tableId: Long, groupId: String): List<CourseEntity>
+
+    @Query("DELETE FROM courses WHERE tableId = :tableId AND groupId = :groupId")
+    suspend fun deleteByGroupId(tableId: Long, groupId: String)
+
     @Query("SELECT COUNT(*) FROM courses WHERE tableId = :tableId")
     suspend fun countByTable(tableId: Long): Int
 

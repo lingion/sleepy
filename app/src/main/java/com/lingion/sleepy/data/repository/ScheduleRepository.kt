@@ -67,7 +67,9 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun insertCourses(courses: List<CourseEntity>): List<Long> {
-        val ids = courseDao.insertAll(courses)
+        // 自动给每门课分配 groupId：同名+同tableId 的课程共享一个 groupId
+        val withGroupIds = assignGroupIds(courses)
+        val ids = courseDao.insertAll(withGroupIds)
         WidgetUpdater.notifyDataChanged(SleepyApp.get())
         return ids
     }
@@ -77,8 +79,21 @@ class ScheduleRepository(private val db: AppDatabase) {
         WidgetUpdater.notifyDataChanged(SleepyApp.get())
     }
 
+    /** 编辑课程组：删除同 groupId 全部记录，插入新草稿 */
+    suspend fun updateCourseGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
+        courseDao.deleteByGroupId(tableId, groupId)
+        courseDao.insertAll(newCourses)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+    }
+
     suspend fun deleteCourse(id: Long) {
         courseDao.deleteById(id)
+        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+    }
+
+    /** 删除同 groupId 全部记录 */
+    suspend fun deleteCourseGroup(tableId: Long, groupId: String) {
+        courseDao.deleteByGroupId(tableId, groupId)
         WidgetUpdater.notifyDataChanged(SleepyApp.get())
     }
 
@@ -88,7 +103,25 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     /** 覆盖式导入（先删后插） */
     suspend fun replaceCourses(tableId: Long, courses: List<CourseEntity>) {
-        courseDao.replaceAll(tableId, courses)
+        val withGroupIds = assignGroupIds(courses)
+        courseDao.replaceAll(tableId, withGroupIds)
         WidgetUpdater.notifyDataChanged(SleepyApp.get())
+    }
+
+    /**
+     * 给列表中的课程分配 groupId：
+     * - groupId 为空的按 courseName 分组，每组生成一个 UUID
+     * - groupId 非空的保持不变（手动编辑时已有 groupId）
+     */
+    private fun assignGroupIds(courses: List<CourseEntity>): List<CourseEntity> {
+        val nameToGroupId = mutableMapOf<String, String>()
+        return courses.map { c ->
+            if (c.groupId.isNotBlank()) {
+                c
+            } else {
+                val gid = nameToGroupId.getOrPut(c.courseName) { java.util.UUID.randomUUID().toString() }
+                c.copy(groupId = gid)
+            }
+        }
     }
 }

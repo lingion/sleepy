@@ -21,6 +21,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
@@ -115,6 +116,8 @@ private fun SheetHeader(title: String) {
             text = title,
             style = MaterialTheme.typography.titleLarge.copy(),
             color = colors.onSurface,
+            maxLines = 3,
+            overflow = TextOverflow.Ellipsis,
             modifier = Modifier.weight(1f)
         )
     }

@@ -25,6 +25,9 @@ import androidx.room.PrimaryKey
 data class CourseEntity(
     @PrimaryKey(autoGenerate = true) val id: Long = 0,
 
+    /** 课程组 ID — 同一门课的所有节次共享，编辑/删除时按此操作 */
+    @ColumnInfo(name = "groupId") val groupId: String,
+
     /** 所属课表 ID */
     @ColumnInfo(name = "tableId") val tableId: Long,
 
