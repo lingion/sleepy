@@ -378,15 +378,15 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                         val pillBg = if (isToday) Color.White.copy(alpha = 0.22f) else scheme.onSurface.copy(alpha = 0.10f)
                         val pillTextColor = if (isToday) Color.White else scheme.onSurfaceVariant
 
-                        // ── 单日整列卡片（内联，因为 defaultWeight 需要 RowScope）──
+                        // ── 单日整列卡片 — defaultWeight 需要 RowScope，内联 ──
                         Column(
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .padding(horizontal = 2.dp)
+                                .padding(horizontal = 3.dp)
                                 .background(ColorProvider(cardBg))
                                 .cornerRadius(10.dp)
-                                .padding(vertical = 6.dp, horizontal = 3.dp),
+                                .padding(vertical = 6.dp, horizontal = 2.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             // 星期标题
