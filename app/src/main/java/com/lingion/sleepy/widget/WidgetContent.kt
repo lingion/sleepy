@@ -19,6 +19,8 @@ import androidx.glance.layout.fillMaxHeight
 import androidx.glance.layout.fillMaxSize
 import androidx.glance.layout.fillMaxWidth
 import androidx.glance.layout.height
+import androidx.glance.appwidget.lazy.LazyColumn
+import androidx.glance.appwidget.lazy.items
 import androidx.glance.layout.padding
 import androidx.glance.layout.size
 import androidx.glance.layout.width
@@ -401,7 +403,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 .fillMaxHeight()
                                 .padding(horizontal = 2.dp)
                         ) {
-                            Column(
+                            LazyColumn(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
                                     .fillMaxHeight()
@@ -410,52 +412,55 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                            // 星期标题
-                            Text(
-                                text = dayLabels[day.dayOfWeek],
-                                style = TextStyle(
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = ColorProvider(titleColor)
-                                )
-                            )
-                            Spacer(modifier = GlanceModifier.height(6.dp))
-
-                            if (day.courses.isNotEmpty()) {
-                                // Chip「X门」— surfaceVariant 背景
-                                Box(
-                                    modifier = GlanceModifier
-                                        .background(ColorProvider(chipBg))
-                                        .cornerRadius(50.dp)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
+                                // 星期标题
+                                item {
                                     Text(
-                                        text = "${day.courses.size}门",
+                                        text = dayLabels[day.dayOfWeek],
                                         style = TextStyle(
-                                            fontSize = 9.sp,
+                                            fontSize = 12.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = ColorProvider(chipFg)
+                                            color = ColorProvider(titleColor)
                                         )
                                     )
                                 }
-                                Spacer(modifier = GlanceModifier.height(4.dp))
+                                item { Spacer(modifier = GlanceModifier.height(6.dp)) }
 
-                                // 全部显示，单个Text避免Glance裁剪
-                                // 课名截断到8字（窄列2行），\n换行不加空行
-                                Text(
-                                    text = day.courses.joinToString("\n") { c ->
-                                        val n = c.courseName
-                                        if (n.length > 8) n.take(8) + "…" else n
-                                    },
-                                    style = TextStyle(
-                                        fontSize = 9.sp,
-                                        color = ColorProvider(nameColor)
-                                    ),
-                                    maxLines = 100
-                                )
+                                if (day.courses.isNotEmpty()) {
+                                    // Chip「X门」
+                                    item {
+                                        Box(
+                                            modifier = GlanceModifier
+                                                .background(ColorProvider(chipBg))
+                                                .cornerRadius(50.dp)
+                                                .padding(horizontal = 6.dp, vertical = 2.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "${day.courses.size}门",
+                                                style = TextStyle(
+                                                    fontSize = 9.sp,
+                                                    fontWeight = FontWeight.Bold,
+                                                    color = ColorProvider(chipFg)
+                                                )
+                                            )
+                                        }
+                                    }
+                                    item { Spacer(modifier = GlanceModifier.height(4.dp)) }
+
+                                    // 全部课程——LazyColumn可滚动，不截断不限量
+                                    items(day.courses) { c ->
+                                        Text(
+                                            text = c.courseName,
+                                            style = TextStyle(
+                                                fontSize = 9.sp,
+                                                color = ColorProvider(nameColor)
+                                            ),
+                                            maxLines = 2
+                                        )
+                                        Spacer(modifier = GlanceModifier.height(2.dp))
+                                    }
+                                }
                             }
-                            }  // end inner Column
                         }  // end Box
                     }
                 }
