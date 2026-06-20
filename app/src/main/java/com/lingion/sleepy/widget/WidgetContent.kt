@@ -376,9 +376,9 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val overflowSp = (th * 0.035f).toInt().coerceIn(6, 12)
 
     // 间距：占画面高度的百分比
-    val titleGap = (th * 0.02f).dp       // 标题→chip 间距 ~2%
-    val chipGap = (th * 0.015f).dp       // chip→课程列表间距 ~1.5%
-    val courseGap = (th * 0.02f).dp      // 课程间间距 ~2%
+    val titleGap = (th * 0.03f).dp       // 标题→chip 间距 ~3%
+    val chipGap = (th * 0.02f).dp        // chip→课程列表间距 ~2%
+    val courseGap = (th * 0.025f).dp     // 课程间间距 ~2.5%
     val overflowGap = (th * 0.01f).dp    // 溢出行间距 ~1%
 
     // 外层 padding 也按比例
@@ -388,7 +388,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val colGap = (tw * 0.008f).toInt().coerceAtLeast(1).dp
 
     // 课程数动态计算（用比例值，自洽）
-    val courseLineH = courseSp * 2.6f     // 2行文字 × 1.3行高系数
+    val courseLineH = courseSp * 3.0f     // 2行 × 1.5行高系数（含折行余量）
     val perCourse = courseLineH + courseGap.value
     val titleH = titleSp * 1.3f
     val chipH = chipSp * 1.3f + 4f        // 文字 + chip padding
@@ -441,17 +441,32 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     .padding(vertical = cardPadV, horizontal = cardPadH),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                            Text(
-                                text = dayLabels[day.dayOfWeek],
-                                style = TextStyle(
-                                    fontSize = titleSp.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = ColorProvider(titleColor)
+                            if (day.courses.isEmpty()) {
+                                // 空天：垂直居中顯示星期標題
+                                Box(
+                                    modifier = GlanceModifier.fillMaxSize(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = dayLabels[day.dayOfWeek],
+                                        style = TextStyle(
+                                            fontSize = titleSp.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ColorProvider(titleColor)
+                                        )
+                                    )
+                                }
+                            } else {
+                                Text(
+                                    text = dayLabels[day.dayOfWeek],
+                                    style = TextStyle(
+                                        fontSize = titleSp.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = ColorProvider(titleColor)
+                                    )
                                 )
-                            )
-                            Spacer(modifier = GlanceModifier.height(titleGap))
+                                Spacer(modifier = GlanceModifier.height(titleGap))
 
-                            if (day.courses.isNotEmpty()) {
                                 Box(
                                     modifier = GlanceModifier
                                         .background(ColorProvider(chipBg))
@@ -489,7 +504,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                         text = "+${day.courses.size - visibleCount}",
                                         style = TextStyle(
                                             fontSize = overflowSp.sp,
-                                            color = ColorProvider(chipFg)
+                                            color = ColorProvider(chipFg.copy(alpha = 0.85f))
                                         )
                                     )
                                 }
