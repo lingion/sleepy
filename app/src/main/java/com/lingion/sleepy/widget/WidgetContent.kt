@@ -364,27 +364,45 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
-    // 固定間距，不依賴 LocalSize（可能返回不準確的值）
-    val colGap = 4.dp
 
-    // 根據 widget 高度動態計算每列最多能放幾門課
-    val totalHeight = LocalSize.current.height
-    // 固定開銷：外層 padding(6dp×2) + 卡片 padding(6dp×2) + 標題(~16dp) + gap(6dp) + chip(~17dp) + gap(4dp)
-    val fixedOverhead = 67.dp
-    // 每門課約佔：9sp文字（最多2行≈24dp）+ 2dp 間距 = 26dp
-    val perCourse = 26.dp
-    // "+N" 溢出文字約佔 12dp
-    val overflowLine = 12.dp
+    // ── 全部尺寸按 widget 高度比例計算，不硬編碼 ──
+    val th = LocalSize.current.height.value  // dp
+    val tw = LocalSize.current.width.value
 
-    val availableH = (totalHeight.value - fixedOverhead.value).coerceAtLeast(0f)
-    val maxCourses = ((availableH - overflowLine.value) / perCourse.value).toInt().coerceAtLeast(1)
+    // 字号：占画面高度的百分比
+    val titleSp = (th * 0.035f).toInt().coerceIn(8, 16)
+    val chipSp = (th * 0.028f).toInt().coerceIn(7, 12)
+    val courseSp = (th * 0.045f).toInt().coerceIn(7, 14)
+    val overflowSp = (th * 0.035f).toInt().coerceIn(6, 12)
+
+    // 间距：占画面高度的百分比
+    val titleGap = (th * 0.02f).dp       // 标题→chip 间距 ~2%
+    val chipGap = (th * 0.015f).dp       // chip→课程列表间距 ~1.5%
+    val courseGap = (th * 0.02f).dp      // 课程间间距 ~2%
+    val overflowGap = (th * 0.01f).dp    // 溢出行间距 ~1%
+
+    // 外层 padding 也按比例
+    val outerPad = (th * 0.04f).toInt().coerceAtLeast(4).dp
+    val cardPadV = (th * 0.04f).toInt().coerceAtLeast(4).dp
+    val cardPadH = (tw * 0.015f).toInt().coerceAtLeast(2).dp
+    val colGap = (tw * 0.008f).toInt().coerceAtLeast(1).dp
+
+    // 课程数动态计算（用比例值，自洽）
+    val courseLineH = courseSp * 2.6f     // 2行文字 × 1.3行高系数
+    val perCourse = courseLineH + courseGap.value
+    val titleH = titleSp * 1.3f
+    val chipH = chipSp * 1.3f + 4f        // 文字 + chip padding
+    val fixedOverhead = outerPad.value * 2 + cardPadV.value * 2 + titleH + titleGap.value + chipH + chipGap.value
+    val overflowLine = overflowSp * 1.3f + overflowGap.value
+    val availableH = (th - fixedOverhead).coerceAtLeast(0f)
+    val maxCourses = ((availableH - overflowLine) / perCourse).toInt().coerceAtLeast(1)
 
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(ColorProvider(scheme.bg))
             .cornerRadius(20.dp)
-            .padding(6.dp)
+            .padding(outerPad)
             .clickable(openAppAction),
         verticalAlignment = Alignment.Top
     ) {
@@ -392,8 +410,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // 7 列竖向并排 — 不用 Spacer（LinearLayout weight+固定宽度混用 bug）
-                // 间距方案：外层 Box(defaultWeight) padding 透明 → 内层 Column 有背景
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
@@ -408,14 +424,13 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                         val chipBg = scheme.surfaceVariant
                         val chipFg = scheme.onSurfaceVariant
 
-                        // 動態計算：這一天顯示幾門課
                         val visibleCount = minOf(day.courses.size, maxCourses)
 
                         Box(
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .padding(horizontal = 2.dp)
+                                .padding(horizontal = colGap)
                         ) {
                             Column(
                                 modifier = GlanceModifier
@@ -423,22 +438,20 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     .fillMaxHeight()
                                     .background(ColorProvider(cardBg))
                                     .cornerRadius(14.dp)
-                                    .padding(vertical = 6.dp, horizontal = 4.dp),
+                                    .padding(vertical = cardPadV, horizontal = cardPadH),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                            // 星期标题
                             Text(
                                 text = dayLabels[day.dayOfWeek],
                                 style = TextStyle(
-                                    fontSize = 12.sp,
+                                    fontSize = titleSp.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = ColorProvider(titleColor)
                                 )
                             )
-                            Spacer(modifier = GlanceModifier.height(6.dp))
+                            Spacer(modifier = GlanceModifier.height(titleGap))
 
                             if (day.courses.isNotEmpty()) {
-                                // Chip「X门」— surfaceVariant 背景
                                 Box(
                                     modifier = GlanceModifier
                                         .background(ColorProvider(chipBg))
@@ -449,34 +462,33 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     Text(
                                         text = "${day.courses.size}门",
                                         style = TextStyle(
-                                            fontSize = 9.sp,
+                                            fontSize = chipSp.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = ColorProvider(chipFg)
                                         )
                                     )
                                 }
-                                Spacer(modifier = GlanceModifier.height(4.dp))
+                                Spacer(modifier = GlanceModifier.height(chipGap))
 
-                                // 课程名列表 — 動態數量，由高度決定
                                 day.courses.take(visibleCount).forEachIndexed { idx, c ->
                                     Text(
                                         text = c.courseName,
                                         style = TextStyle(
-                                            fontSize = 9.sp,
+                                            fontSize = courseSp.sp,
                                             color = ColorProvider(nameColor)
                                         ),
                                         maxLines = 2
                                     )
                                     if (idx < visibleCount - 1) {
-                                        Spacer(modifier = GlanceModifier.height(2.dp))
+                                        Spacer(modifier = GlanceModifier.height(courseGap))
                                     }
                                 }
-                                // 溢出提示：+剩餘數量
                                 if (day.courses.size > visibleCount) {
+                                    Spacer(modifier = GlanceModifier.height(overflowGap))
                                     Text(
                                         text = "+${day.courses.size - visibleCount}",
                                         style = TextStyle(
-                                            fontSize = 8.sp,
+                                            fontSize = overflowSp.sp,
                                             color = ColorProvider(chipFg)
                                         )
                                     )
