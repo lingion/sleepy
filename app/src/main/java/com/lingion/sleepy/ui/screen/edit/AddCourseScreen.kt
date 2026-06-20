@@ -73,12 +73,16 @@ private class MeetingBlockDraft(
     val id: Int,
     val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
     initialMode: MeetingInputMode,
-    var startNode: Int,
-    var step: Int,
-    var startTime: String,
-    var endTime: String
+    startNode: Int,
+    step: Int,
+    startTime: String,
+    endTime: String
 ) {
     var mode by mutableStateOf(initialMode)
+    var startNode by mutableStateOf(startNode)
+    var step by mutableStateOf(step)
+    var startTime by mutableStateOf(startTime)
+    var endTime by mutableStateOf(endTime)
 }
 
 private data class ValidationIssue(
