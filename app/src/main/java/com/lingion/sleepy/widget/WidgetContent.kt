@@ -411,41 +411,41 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             Text(
                                 text = dayLabels[day.dayOfWeek],
                                 style = TextStyle(
-                                    fontSize = 12.sp,
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = ColorProvider(titleColor)
                                 )
                             )
-                            Spacer(modifier = GlanceModifier.height(6.dp))
+                            Spacer(modifier = GlanceModifier.height(3.dp))
 
                             if (day.courses.isNotEmpty()) {
                                 Box(
                                     modifier = GlanceModifier
                                         .background(ColorProvider(chipBg))
                                         .cornerRadius(50.dp)
-                                        .padding(horizontal = 6.dp, vertical = 2.dp),
+                                        .padding(horizontal = 5.dp, vertical = 1.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "${day.courses.size}门·全部",
+                                        text = "${day.courses.size}门",
                                         style = TextStyle(
-                                            fontSize = 9.sp,
+                                            fontSize = 8.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = ColorProvider(chipFg)
                                         )
                                     )
                                 }
-                                Spacer(modifier = GlanceModifier.height(4.dp))
+                                Spacer(modifier = GlanceModifier.height(3.dp))
 
-                                // 全部显示——带序号，便于确认渲染了几门
+                                // maxLines=1 省一半高度，确保全部课程都能渲染出来
                                 day.courses.forEachIndexed { idx, c ->
                                     Text(
-                                        text = "${idx + 1}.${c.courseName}",
+                                        text = c.courseName,
                                         style = TextStyle(
                                             fontSize = 9.sp,
                                             color = ColorProvider(nameColor)
                                         ),
-                                        maxLines = 2
+                                        maxLines = 1
                                     )
                                     if (idx < day.courses.size - 1) {
                                         Spacer(modifier = GlanceModifier.height(2.dp))
