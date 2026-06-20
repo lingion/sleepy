@@ -467,7 +467,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                                     modifier = GlanceModifier
                                                         .fillMaxWidth()
                                                         .height(1.dp)
-                                                        .background(ColorProvider(nameColor.copy(alpha = 0.15f)))
+                                                        .background(ColorProvider(nameColor.copy(alpha = 0.35f)))
                                                 ) {}
                                                 Spacer(modifier = GlanceModifier.height(1.dp))
                                             }
