@@ -125,17 +125,33 @@ fun AddCourseScreen(
         mutableStateListOf(initialMeetingBlock(editingCourse))
     }
 
-    // 编辑模式：查同 groupId 回填所有天
+    // 编辑模式：查同 groupId 全部课程，按时段分组回填多个 block
     LaunchedEffect(editingCourse?.groupId) {
         val eg = editingCourse
         if (eg != null && eg.groupId.isNotBlank()) {
             val tid = state.selectedTableId ?: return@LaunchedEffect
-            val allDays = viewModel.let { vm ->
-                SleepyApp.get().repository.getGroupDays(tid, eg.groupId)
-            }
-            if (allDays.isNotEmpty() && meetingBlocks.isNotEmpty()) {
-                meetingBlocks[0].days.clear()
-                meetingBlocks[0].days.addAll(allDays)
+            val groupCourses = SleepyApp.get().repository.getGroupCourses(tid, eg.groupId)
+            if (groupCourses.isNotEmpty()) {
+                // 按 (startNode, step, startTime, endTime) 分组
+                val slots = groupCourses.groupBy { c ->
+                    Triple(c.ownTime, c.startNode, c.step)
+                }
+                meetingBlocks.clear()
+                var bid = 1
+                for ((_, courses) in slots) {
+                    val first = courses.first()
+                    meetingBlocks.add(MeetingBlockDraft(
+                        id = bid++,
+                        days = androidx.compose.runtime.mutableStateListOf<Int>().apply {
+                            addAll(courses.map { it.day }.distinct().sorted())
+                        },
+                        initialMode = if (first.ownTime) MeetingInputMode.ByClock else MeetingInputMode.ByNode,
+                        startNode = first.startNode,
+                        step = first.step,
+                        startTime = first.startTime.ifBlank { "08:00" },
+                        endTime = first.endTime.ifBlank { "09:40" }
+                    ))
+                }
             }
         }
     }

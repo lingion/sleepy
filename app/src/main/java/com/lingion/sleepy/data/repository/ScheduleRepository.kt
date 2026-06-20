@@ -79,9 +79,9 @@ class ScheduleRepository(private val db: AppDatabase) {
         WidgetUpdater.notifyDataChanged(SleepyApp.get())
     }
 
-    /** 查同 groupId 下所有课程的 day 列表（用于编辑回填） */
-    suspend fun getGroupDays(tableId: Long, groupId: String): List<Int> =
-        courseDao.getByGroupId(tableId, groupId).map { it.day }.distinct().sorted()
+    /** 查同 groupId 下所有课程（用于编辑回填，按时段分 block） */
+    suspend fun getGroupCourses(tableId: Long, groupId: String): List<CourseEntity> =
+        courseDao.getByGroupId(tableId, groupId)
 
     /** 编辑课程组：删除同 groupId 全部记录，插入新草稿 */
     suspend fun updateCourseGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
