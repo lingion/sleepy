@@ -436,15 +436,14 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 单个Text拼接所有课程名——背景在Box撑满高度，Text不被裁剪
-                                // maxLines=8：4门课×2行，每门课最多占2行
+                                // 单个Text拼接——每门课之间空一行制造间距
                                 Text(
-                                    text = day.courses.joinToString("\n") { it.courseName },
+                                    text = day.courses.joinToString("\n\n") { it.courseName },
                                     style = TextStyle(
                                         fontSize = 9.sp,
                                         color = ColorProvider(nameColor)
                                     ),
-                                    maxLines = 8
+                                    maxLines = 12
                                 )
                             }
                             }  // end inner Column
