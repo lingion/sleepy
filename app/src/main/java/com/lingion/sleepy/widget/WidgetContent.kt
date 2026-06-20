@@ -448,25 +448,30 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     item { Spacer(modifier = GlanceModifier.height(4.dp)) }
 
                                     // 全部课程——LazyColumn可滚动，不截断不限量
-                                    // 课程之间用1dp淡色横线分隔，几乎不占空间
+                                    // 每门课+前面的分隔线包进Column，作为一个item不被拆散
                                     items(day.courses.size) { idx ->
                                         val c = day.courses[idx]
-                                        if (idx > 0) {
-                                            Box(
-                                                modifier = GlanceModifier
-                                                    .fillMaxWidth()
-                                                    .height(1.dp)
-                                                    .background(ColorProvider(nameColor.copy(alpha = 0.2f)))
-                                            ) {}
+                                        Column(
+                                            modifier = GlanceModifier.fillMaxWidth(),
+                                            horizontalAlignment = Alignment.CenterHorizontally
+                                        ) {
+                                            if (idx > 0) {
+                                                Box(
+                                                    modifier = GlanceModifier
+                                                        .fillMaxWidth()
+                                                        .height(1.dp)
+                                                        .background(ColorProvider(nameColor.copy(alpha = 0.2f)))
+                                                ) {}
+                                            }
+                                            Text(
+                                                text = c.courseName,
+                                                style = TextStyle(
+                                                    fontSize = 9.sp,
+                                                    color = ColorProvider(nameColor)
+                                                ),
+                                                maxLines = 2
+                                            )
                                         }
-                                        Text(
-                                            text = c.courseName,
-                                            style = TextStyle(
-                                                fontSize = 9.sp,
-                                                color = ColorProvider(nameColor)
-                                            ),
-                                            maxLines = 2
-                                        )
                                     }
                                 }
                             }
