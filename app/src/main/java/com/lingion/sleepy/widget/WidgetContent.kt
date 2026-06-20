@@ -448,29 +448,25 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     item { Spacer(modifier = GlanceModifier.height(4.dp)) }
 
                                     // 全部课程——LazyColumn可滚动，不截断不限量
-                                    // 每门课+前面的分隔线包进Column，作为一个item不被拆散
+                                    // 分隔线作为独立item，跟课程平级，Glance不会混淆
                                     items(day.courses.size) { idx ->
                                         val c = day.courses[idx]
-                                        Column(
-                                            modifier = GlanceModifier.fillMaxWidth(),
-                                            horizontalAlignment = Alignment.CenterHorizontally
-                                        ) {
-                                            if (idx > 0) {
-                                                Box(
-                                                    modifier = GlanceModifier
-                                                        .fillMaxWidth()
-                                                        .height(1.dp)
-                                                        .background(ColorProvider(nameColor.copy(alpha = 0.2f)))
-                                                ) {}
-                                            }
-                                            Text(
-                                                text = c.courseName,
-                                                style = TextStyle(
-                                                    fontSize = 9.sp,
-                                                    color = ColorProvider(nameColor)
-                                                ),
-                                                maxLines = 2
-                                            )
+                                        Text(
+                                            text = c.courseName,
+                                            style = TextStyle(
+                                                fontSize = 9.sp,
+                                                color = ColorProvider(nameColor)
+                                            ),
+                                            maxLines = 2
+                                        )
+                                        // 最后一个不加分隔线
+                                        if (idx < day.courses.size - 1) {
+                                            Box(
+                                                modifier = GlanceModifier
+                                                    .fillMaxWidth()
+                                                    .height(1.dp)
+                                                    .background(ColorProvider(nameColor.copy(alpha = 0.2f)))
+                                            ) {}
                                         }
                                     }
                                 }
