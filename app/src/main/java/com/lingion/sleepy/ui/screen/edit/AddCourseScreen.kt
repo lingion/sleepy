@@ -125,6 +125,21 @@ fun AddCourseScreen(
         mutableStateListOf(initialMeetingBlock(editingCourse))
     }
 
+    // 编辑模式：查同 groupId 回填所有天
+    LaunchedEffect(editingCourse?.groupId) {
+        val eg = editingCourse
+        if (eg != null && eg.groupId.isNotBlank()) {
+            val tid = state.selectedTableId ?: return@LaunchedEffect
+            val allDays = viewModel.let { vm ->
+                SleepyApp.get().repository.getGroupDays(tid, eg.groupId)
+            }
+            if (allDays.isNotEmpty() && meetingBlocks.isNotEmpty()) {
+                meetingBlocks[0].days.clear()
+                meetingBlocks[0].days.addAll(allDays)
+            }
+        }
+    }
+
     val canSave = courseName.isNotBlank() && meetingBlocks.isNotEmpty()
 
     Scaffold(
