@@ -365,15 +365,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
     val colGap = 4.dp
-    // 用 LocalSize 算每列最多放几门课
-    // LocalSize.height = widget 实际高度(dp)
-    val widgetH = LocalSize.current.height.value
-    // 固定开销实测：外padding(6*2=12) + 列padding(6*2=12) + 标题(~15) + 标题间距(6) + chip(~13) + chip间距(4) = 62dp
-    val headerH = 62f
-    // 每门课：9sp单行约12dp，部分课名折行2行约24dp，取中间值16dp
-    val perCourse = 16f
-    // "+N" 也要占1行约12dp，预留
-    val maxPerDay = (((widgetH - headerH) / perCourse).toInt() - 1).coerceAtLeast(1)
 
     Column(
         modifier = GlanceModifier
@@ -440,7 +431,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "${day.courses.size}门·max${maxPerDay}·H${widgetH.toInt()}",
+                                        text = "${day.courses.size}门",
                                         style = TextStyle(
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
@@ -450,22 +441,18 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 按 maxPerDay 截断，超出显示+N
-                                // 单个Text拼接避免Glance LinearLayout裁剪
-                                val visible = day.courses.take(maxPerDay)
-                                val hidden = day.courses.size - visible.size
-                                val parts = visible.map { c ->
-                                    val n = c.courseName
-                                    if (n.length > 8) n.take(8) + "…" else n
-                                }.toMutableList()
-                                if (hidden > 0) parts.add("+$hidden")
+                                // 全部显示，单个Text避免Glance裁剪
+                                // 课名截断到8字（窄列2行），\n换行不加空行
                                 Text(
-                                    text = parts.joinToString("\n"),
+                                    text = day.courses.joinToString("\n") { c ->
+                                        val n = c.courseName
+                                        if (n.length > 8) n.take(8) + "…" else n
+                                    },
                                     style = TextStyle(
                                         fontSize = 9.sp,
                                         color = ColorProvider(nameColor)
                                     ),
-                                    maxLines = parts.size + 2
+                                    maxLines = 100
                                 )
                             }
                             }  // end inner Column
