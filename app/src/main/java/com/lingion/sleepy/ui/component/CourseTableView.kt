@@ -35,6 +35,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalTime
 
 /**
@@ -71,6 +72,12 @@ private val CELL_H = 52.dp
 fun CardsGridView(
     courses: List<CourseEntity>,
     timeSlots: List<TimeSlot>,
+    visibleDays: Set<Int> = (1..7).toSet(),
+    showDate: Boolean = false,
+    startDate: String = "",
+    currentWeek: Int = 1,
+    displayMode: String = "node",
+    timeJson: String = "",
     today: Int = DateUtils.todayDayOfWeek(),
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
@@ -108,11 +115,19 @@ fun CardsGridView(
                 horizontalArrangement = Arrangement.spacedBy(gapW)
             ) {
                 Box(modifier = Modifier.width(timeW))
-                for (day in 1..7) {
+                val sortedDays = visibleDays.sorted()
+                for (day in sortedDays) {
+                    val dateStr = if (showDate && startDate.isNotBlank()) {
+                        try {
+                            val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
+                            DateUtils.shortDate(d)
+                        } catch (_: Exception) { null }
+                    } else null
                     DayHeadCell(
                         day = day,
                         isToday = day == today,
                         courseCount = courses.count { it.day == day },
+                        dateStr = dateStr,
                         modifier = Modifier.weight(1f)
                     )
                 }
@@ -145,13 +160,15 @@ fun CardsGridView(
                         gapH = gapH,
                         modifier = Modifier.width(timeW)
                     )
-                    for (day in 1..7) {
+                    for (day in visibleDays.sorted()) {
                         val card = cardsHere.firstOrNull { it.day == day }
                         if (card != null) {
                             val step = card.step.coerceAtLeast(1).coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
                             CourseCardCell(
                                 course = card,
                                 steps = step,
+                                displayMode = displayMode,
+                                timeJson = timeJson,
                                 onClick = { onCourseClick(card) },
                                 modifier = Modifier
                                     .weight(1f)
@@ -173,6 +190,8 @@ fun CardsGridView(
 private fun CourseCardCell(
     course: CourseEntity,
     steps: Int,
+    displayMode: String = "node",
+    timeJson: String = "",
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -205,8 +224,14 @@ private fun CourseCardCell(
                 overflow = TextOverflow.Ellipsis
             )
             if (steps > 1) {
+                val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
+                    TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
+                        ?: "${course.startNode}-${course.startNode + steps - 1}节"
+                } else {
+                    "${course.startNode}-${course.startNode + steps - 1}节"
+                }
                 Text(
-                    text = "${course.startNode}-${course.startNode + steps - 1}节",
+                    text = timeLabel,
                     style = SleepyTextStyle.micro(),
                     color = fg.copy(alpha = 0.65f)
                 )
@@ -216,7 +241,7 @@ private fun CourseCardCell(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, modifier: Modifier = Modifier) {
+private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
@@ -237,11 +262,19 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, modifier: 
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = fg
             )
-            Text(
-                text = if (courseCount == 0) "无课" else "$courseCount 门",
-                style = SleepyTextStyle.micro(),
-                color = subFg
-            )
+            if (dateStr != null) {
+                Text(
+                    text = dateStr,
+                    style = SleepyTextStyle.micro(),
+                    color = subFg
+                )
+            } else {
+                Text(
+                    text = if (courseCount == 0) "无课" else "$courseCount 门",
+                    style = SleepyTextStyle.micro(),
+                    color = subFg
+                )
+            }
         }
     }
 }
@@ -384,6 +417,9 @@ private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui
 @Composable
 fun FullWeekView(
     courses: List<CourseEntity>,
+    visibleDays: Set<Int> = (1..7).toSet(),
+    displayMode: String = "node",
+    timeJson: String = "",
     today: Int = DateUtils.todayDayOfWeek(),
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
@@ -398,11 +434,15 @@ fun FullWeekView(
     ) {
         WeekStrip(
             byDay = byDay,
+            visibleDays = visibleDays,
             today = today,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
         )
         DetailPanel(
             byDay = byDay,
+            visibleDays = visibleDays,
+            displayMode = displayMode,
+            timeJson = timeJson,
             today = today,
             onCourseClick = onCourseClick
         )
@@ -413,13 +453,14 @@ fun FullWeekView(
 private fun WeekStrip(
     byDay: Map<Int, List<CourseEntity>>,
     today: Int,
+    visibleDays: Set<Int>,
     modifier: Modifier = Modifier
 ) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(6.dp)
     ) {
-        for (day in 1..7) {
+        for (day in visibleDays.sorted()) {
             val dayCourses = byDay[day].orEmpty()
             val isToday = day == today
             DaySummaryCell(
@@ -506,6 +547,9 @@ private fun DaySummaryCell(
 private fun DetailPanel(
     byDay: Map<Int, List<CourseEntity>>,
     today: Int,
+    visibleDays: Set<Int>,
+    displayMode: String,
+    timeJson: String,
     onCourseClick: (CourseEntity) -> Unit
 ) {
     val colors = SleepyTheme.colors
@@ -518,12 +562,14 @@ private fun DetailPanel(
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        for (day in 1..7) {
+        for (day in visibleDays.sorted()) {
             val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
             DetailDayCard(
                 day = day,
                 courses = dayCourses,
                 isToday = day == today,
+                displayMode = displayMode,
+                timeJson = timeJson,
                 onCourseClick = onCourseClick
             )
         }
@@ -535,6 +581,8 @@ private fun DetailDayCard(
     day: Int,
     courses: List<CourseEntity>,
     isToday: Boolean,
+    displayMode: String = "node",
+    timeJson: String = "",
     onCourseClick: (CourseEntity) -> Unit
 ) {
     val colors = SleepyTheme.colors
@@ -573,7 +621,7 @@ private fun DetailDayCard(
         } else {
             Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
                 courses.forEach { c ->
-                    LessonRow(course = c, onClick = { onCourseClick(c) })
+                    LessonRow(course = c, displayMode = displayMode, timeJson = timeJson, onClick = { onCourseClick(c) })
                 }
             }
         }
@@ -581,10 +629,17 @@ private fun DetailDayCard(
 }
 
 @Composable
-private fun LessonRow(course: CourseEntity, onClick: () -> Unit) {
+private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val bg = pickCourseColor(course, palette)
+
+    val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
+        TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
+            ?: course.shortNodeString
+    } else {
+        course.shortNodeString
+    }
 
     Row(
         modifier = Modifier
@@ -596,7 +651,7 @@ private fun LessonRow(course: CourseEntity, onClick: () -> Unit) {
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         Text(
-            text = course.shortNodeString,
+            text = timeLabel,
             style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
             color = colors.onSurface,
             modifier = Modifier.width(42.dp)

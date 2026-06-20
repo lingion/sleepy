@@ -47,6 +47,7 @@ import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.TimeTableUtils
 
 private enum class ViewMode(val labelRes: Int) {
@@ -64,6 +65,10 @@ fun ScheduleScreen(
     val state by viewModel.state.collectAsState()
     var viewMode by remember { mutableStateOf(ViewMode.Full) }
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val displayMode = remember { AppPrefs.getDisplayMode(context) }
+    val showDate = remember { AppPrefs.isShowDate(context) }
+    val visibleDays = remember { AppPrefs.getVisibleDays(context) }
 
     Column(
         modifier = Modifier.fillMaxSize()
@@ -102,11 +107,20 @@ fun ScheduleScreen(
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
                         courses = state.currentWeekCourses,
+                        visibleDays = visibleDays,
+                        displayMode = displayMode,
+                        timeJson = state.currentTable?.timeJson ?: "",
                         onCourseClick = { selectedCourse = it }
                     )
                     ViewMode.Cards -> CardsGridView(
                         courses = state.currentWeekCourses,
                         timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
+                        visibleDays = visibleDays,
+                        showDate = showDate,
+                        startDate = state.currentTable?.startDate ?: "",
+                        currentWeek = state.currentWeek,
+                        displayMode = displayMode,
+                        timeJson = state.currentTable?.timeJson ?: "",
                         onCourseClick = { selectedCourse = it }
                     )
                 }

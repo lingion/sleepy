@@ -17,6 +17,10 @@ object AppPrefs {
     const val KEY_DARK = "dark_mode"
     const val KEY_REMINDER = "daily_reminder"
     const val KEY_THEME = "theme_key"
+    const val KEY_LANG = "language"
+    const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
+    const val KEY_SHOW_DATE = "show_date"       // boolean
+    const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -61,5 +65,43 @@ object AppPrefs {
 
     fun setReminderEnabled(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_REMINDER, v).apply()
+    }
+
+    // ===== 语言 =====
+
+    fun getLanguage(ctx: Context): String =
+        sp(ctx).getString(KEY_LANG, "zh-CN") ?: "zh-CN"
+
+    fun setLanguage(ctx: Context, lang: String) {
+        sp(ctx).edit().putString(KEY_LANG, lang).apply()
+    }
+
+    // ===== 显示模式：节次 / 时间 =====
+
+    fun getDisplayMode(ctx: Context): String =
+        sp(ctx).getString(KEY_DISPLAY_MODE, "node") ?: "node"
+
+    fun setDisplayMode(ctx: Context, mode: String) {
+        sp(ctx).edit().putString(KEY_DISPLAY_MODE, mode).apply()
+    }
+
+    // ===== 网格显示日期 =====
+
+    fun isShowDate(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_SHOW_DATE, false)
+
+    fun setShowDate(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_SHOW_DATE, v).apply()
+    }
+
+    // ===== 可见天 =====
+
+    fun getVisibleDays(ctx: Context): Set<Int> {
+        val raw = sp(ctx).getString(KEY_VISIBLE_DAYS, "1,2,3,4,5,6,7") ?: "1,2,3,4,5,6,7"
+        return raw.split(",").mapNotNull { it.trim().toIntOrNull() }.toSet()
+    }
+
+    fun setVisibleDays(ctx: Context, days: Set<Int>) {
+        sp(ctx).edit().putString(KEY_VISIBLE_DAYS, days.sorted().joinToString(",")).apply()
     }
 }

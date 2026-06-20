@@ -36,6 +36,7 @@ import com.lingion.sleepy.ui.screen.imports.ImportScreen
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
+import com.lingion.sleepy.ui.screen.mine.MoreSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.ThemeColorScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
@@ -149,7 +150,8 @@ private enum class OverlayScreen {
     Import,
     AllTables,
     EditTable,
-    ThemeColor
+    ThemeColor,
+    MoreSettings
 }
 
 @Composable
@@ -256,6 +258,14 @@ private fun AppRoot(
         return
     }
 
+    // ----- MoreSettings -----
+    if (overlayScreen == OverlayScreen.MoreSettings) {
+        MoreSettingsScreen(
+            onBack = { overlayScreen = null }
+        )
+        return
+    }
+
     androidx.compose.material3.Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = SleepyTheme.colors.background,
@@ -295,7 +305,8 @@ private fun AppRoot(
                     darkMode = darkMode,
                     onToggleDark = onToggleDark,
                     onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
-                    onOpenThemeColor = { overlayScreen = OverlayScreen.ThemeColor }
+                    onOpenThemeColor = { overlayScreen = OverlayScreen.ThemeColor },
+                    onOpenMoreSettings = { overlayScreen = OverlayScreen.MoreSettings }
                 )
             }
         }

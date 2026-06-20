@@ -22,6 +22,7 @@ import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -62,7 +63,8 @@ fun MineScreen(
     darkMode: Boolean = false,
     onToggleDark: () -> Unit = {},
     onOpenAllTables: () -> Unit = {},
-    onOpenThemeColor: () -> Unit = {}
+    onOpenThemeColor: () -> Unit = {},
+    onOpenMoreSettings: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
@@ -177,10 +179,10 @@ fun MineScreen(
                     )
                     Divider()
                     SettingsItem(
-                        icon = Icons.Outlined.Info,
-                        label = stringResource(R.string.mine_about),
+                        icon = Icons.Outlined.Tune,
+                        label = "更多设置",
                         isLast = true,
-                        onClick = { showAbout = true }
+                        onClick = onOpenMoreSettings
                     )
                 }
             }
