@@ -364,20 +364,15 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
-    // 固定寬度方案：不用 defaultWeight，直接算每列寬度
-    // Glance 底層是 LinearLayout+weight，混合固定寬度和 weight 會出 bug
-    val totalWidth = LocalSize.current.width
-    val outerPad = 6.dp
-    val innerWidth = (totalWidth.value - outerPad.value * 2).dp
-    val colGap = 3.dp  // 固定間距
-    val colWidth = ((innerWidth.value - colGap.value * 6) / 7f).dp
+    // 固定間距，不依賴 LocalSize（可能返回不準確的值）
+    val colGap = 4.dp
 
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(ColorProvider(scheme.bg))
             .cornerRadius(20.dp)
-            .padding(outerPad)
+            .padding(6.dp)
             .clickable(openAppAction),
         verticalAlignment = Alignment.Top
     ) {
@@ -385,7 +380,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // 7 列竖向并排 — 复刻首页 WeekStrip
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
@@ -405,7 +399,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
 
                         Column(
                             modifier = GlanceModifier
-                                .width(colWidth)
+                                .defaultWeight()
                                 .fillMaxHeight()
                                 .background(ColorProvider(cardBg))
                                 .cornerRadius(14.dp)
