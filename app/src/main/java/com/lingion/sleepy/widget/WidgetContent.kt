@@ -105,6 +105,7 @@ fun WidgetContent(data: WidgetData, openAppAction: Action, openCourseAction: (Lo
 /**
  * 4 元组：背景 / 主题强调色 / 正文色 / 次要色
  * 跟 app M3 scheme 派生方式相同：surface / primary / onSurface / onSurfaceVariant
+ * 额外携带课程调色板（从主题 container 色派生，跟随主题切换）
  */
 private data class WidgetScheme(
     val bg: Color = Color(0xFFFDFCFF),
@@ -112,42 +113,37 @@ private data class WidgetScheme(
     val primary: Color = Color(0xFF6750A4),
     val onSurface: Color = Color(0xFF1C1B1F),
     val onSurfaceVariant: Color = Color(0xFF79747E),
-    val isDark: Boolean = false
+    val isDark: Boolean = false,
+    // 课程色 — 从主题 container 色派生
+    val coursePrimary: Color = Color(0xFFEADDFF),
+    val courseSecondary: Color = Color(0xFFE8DEF8),
+    val courseTertiary: Color = Color(0xFFFFD8E4),
+    val courseEnglish: Color = Color(0xFFD8F2FF),
+    val courseMilitary: Color = Color(0xFFE7F3DC),
+    val coursePhysics: Color = Color(0xFFFFE7C7),
+    val courseHistory: Color = Color(0xFFF7D9D9),
+    val coursePsychology: Color = Color(0xFFE6DDFB),
+    val coursePractice: Color = Color(0xFFD7F0E8)
 )
 
-// ── 课程调色板 — 跟首页 CoursePalette 完全一致 ──
-private data class WidgetCoursePalette(
-    val primary: Color, val secondary: Color, val tertiary: Color,
-    val english: Color, val military: Color, val physics: Color,
-    val history: Color, val psychology: Color, val practice: Color
+// ── 课程色规则 — 跟首页 courseColorRules 一致 ──
+private val courseRules = listOf<Pair<(String)->Boolean, WidgetScheme.()->Color>>(
+    ({ s: String -> "英语" in s }) to ({ courseEnglish }),
+    ({ s: String -> "军事" in s || "国防" in s }) to ({ courseMilitary }),
+    ({ s: String -> "物理" in s }) to ({ coursePhysics }),
+    ({ s: String -> "历史" in s || "史纲" in s || "近代史" in s }) to ({ courseHistory }),
+    ({ s: String -> "心理" in s }) to ({ coursePsychology }),
+    ({ s: String -> "实践" in s || "实习" in s || "实验" in s }) to ({ coursePractice }),
+    ({ s: String -> "高数" in s || "数学" in s || "电路" in s }) to ({ coursePrimary }),
+    ({ s: String -> "思政" in s || "马原" in s || "毛概" in s || "形势" in s }) to ({ courseTertiary })
 )
-private val LightWPalette = WidgetCoursePalette(
-    primary = Color(0xFFEADDFF), secondary = Color(0xFFE8DEF8), tertiary = Color(0xFFFFD8E4),
-    english = Color(0xFFD8F2FF), military = Color(0xFFE7F3DC), physics = Color(0xFFFFE7C7),
-    history = Color(0xFFF7D9D9), psychology = Color(0xFFE6DDFB), practice = Color(0xFFD7F0E8)
+private val hashPalette = listOf<WidgetScheme.()->Color>(
+    { coursePrimary }, { courseSecondary }, { courseTertiary },
+    { courseEnglish }, { coursePhysics }, { coursePsychology }
 )
-private val DarkWPalette = WidgetCoursePalette(
-    primary = Color(0xFF4F378B), secondary = Color(0xFF4A4458), tertiary = Color(0xFF633B48),
-    english = Color(0xFF1E3A4D), military = Color(0xFF2E3F26), physics = Color(0xFF4D3A1E),
-    history = Color(0xFF4D2828), psychology = Color(0xFF352B4D), practice = Color(0xFF1E3D32)
-)
-private val courseRules = listOf<Pair<(String)->Boolean, WidgetCoursePalette.()->Color>>(
-    ({ s: String -> "英语" in s }) to ({ english }),
-    ({ s: String -> "军事" in s || "国防" in s }) to ({ military }),
-    ({ s: String -> "物理" in s }) to ({ physics }),
-    ({ s: String -> "历史" in s || "史纲" in s || "近代史" in s }) to ({ history }),
-    ({ s: String -> "心理" in s }) to ({ psychology }),
-    ({ s: String -> "实践" in s || "实习" in s || "实验" in s }) to ({ practice }),
-    ({ s: String -> "高数" in s || "数学" in s || "电路" in s }) to ({ primary }),
-    ({ s: String -> "思政" in s || "马原" in s || "毛概" in s || "形势" in s }) to ({ tertiary })
-)
-private val hashPalette = listOf<WidgetCoursePalette.()->Color>(
-    { primary }, { secondary }, { tertiary }, { english }, { physics }, { psychology }
-)
-private fun courseColor(name: String, isDark: Boolean): Color {
-    val p = if (isDark) DarkWPalette else LightWPalette
-    courseRules.firstOrNull { (m, _) -> m(name) }?.let { (_, s) -> return p.s() }
-    return hashPalette[(name.hashCode() and 0x7FFFFFFF) % hashPalette.size].invoke(p)
+private fun courseColor(name: String, scheme: WidgetScheme): Color {
+    courseRules.firstOrNull { (m, _) -> m(name) }?.let { (_, s) -> return scheme.s() }
+    return hashPalette[(name.hashCode() and 0x7FFFFFFF) % hashPalette.size].invoke(scheme)
 }
 
 /**
@@ -163,7 +159,17 @@ private fun resolveScheme(themeKey: String, isDark: Boolean): WidgetScheme {
         primary = s.primary,
         onSurface = s.onSurface,
         onSurfaceVariant = s.onSurfaceVariant,
-        isDark = isDark
+        isDark = isDark,
+        // 课程色从主题 container 色派生
+        coursePrimary = s.primaryContainer,
+        courseSecondary = s.secondaryContainer,
+        courseTertiary = s.tertiaryContainer,
+        courseEnglish = s.primaryContainer,
+        courseMilitary = s.secondaryContainer,
+        coursePhysics = s.tertiaryContainer,
+        courseHistory = s.primaryContainer,
+        coursePsychology = s.secondaryContainer,
+        coursePractice = s.tertiaryContainer
     )
 }
 
@@ -258,7 +264,7 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
         endTime = course.endTime
     ) ?: "第 ${course.startNode} 节"
 
-    val bgColor = courseColor(course.courseName, scheme.isDark)
+    val bgColor = courseColor(course.courseName, scheme)
 
     // 课程色胶囊 — 复刻首页 LessonRow 样式
     Row(
@@ -529,7 +535,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
             Spacer(modifier = GlanceModifier.height(4.dp))
             day.courses.take(3).forEachIndexed { idx, c ->
                 // 课程色胶囊
-                val bgColor = courseColor(c.courseName, scheme.isDark)
+                val bgColor = courseColor(c.courseName, scheme)
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
@@ -679,7 +685,7 @@ private fun GridRow(
                     .padding(gap / 2)
             ) {
                 if (isStart && course != null) {
-                    val bgColor = courseColor(course.courseName, scheme.isDark)
+                    val bgColor = courseColor(course.courseName, scheme)
                     Box(
                         modifier = GlanceModifier
                             .fillMaxSize()
@@ -698,7 +704,7 @@ private fun GridRow(
                         )
                     }
                 } else if (course != null) {
-                    val bgColor = courseColor(course.courseName, scheme.isDark)
+                    val bgColor = courseColor(course.courseName, scheme)
                     Box(
                         modifier = GlanceModifier
                             .fillMaxSize()
