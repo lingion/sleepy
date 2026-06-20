@@ -397,13 +397,13 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
+                                .background(ColorProvider(cardBg))
+                                .cornerRadius(14.dp)
                                 .padding(horizontal = 2.dp)
                         ) {
                             Column(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .background(ColorProvider(cardBg))
-                                    .cornerRadius(14.dp)
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
@@ -436,14 +436,26 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 用单个Text拼接所有课程名——RemoteViews里只有一个TextView，绝不被裁剪
+                                // 每门课单独Text，maxLines=2。Column是wrap content不会裁剪。
+                                day.courses.forEach { c ->
+                                    Text(
+                                        text = c.courseName,
+                                        style = TextStyle(
+                                            fontSize = 9.sp,
+                                            color = ColorProvider(nameColor)
+                                        ),
+                                        maxLines = 2
+                                    )
+                                    Spacer(modifier = GlanceModifier.height(2.dp))
+                                }
+                            } else {
+                                // 空天——居中提示
                                 Text(
-                                    text = day.courses.joinToString("\n") { it.courseName },
+                                    text = "无课",
                                     style = TextStyle(
                                         fontSize = 9.sp,
-                                        color = ColorProvider(nameColor)
-                                    ),
-                                    maxLines = 10
+                                        color = ColorProvider(scheme.onSurfaceVariant)
+                                    )
                                 )
                             }
                             }  // end inner Column
