@@ -380,17 +380,15 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // 7 列竖向并排 — defaultWeight + Spacer 间距
+                // 7 列竖向并排 — 不用 Spacer（LinearLayout weight+固定宽度混用 bug）
+                // 间距方案：外层 Box(defaultWeight) padding 透明 → 内层 Column 有背景
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .defaultWeight(),
                     verticalAlignment = Alignment.Top
                 ) {
-                    data.days.forEachIndexed { dayIdx, day ->
-                        if (dayIdx > 0) {
-                            Spacer(modifier = GlanceModifier.width(colGap))
-                        }
+                    data.days.forEach { day ->
                         val isToday = day.dayOfWeek == todayDow
                         val cardBg = if (isToday) scheme.primaryContainer else scheme.surfaceContainer
                         val titleColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurface
@@ -398,15 +396,21 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                         val chipBg = scheme.surfaceVariant
                         val chipFg = scheme.onSurfaceVariant
 
-                        Column(
+                        Box(
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .background(ColorProvider(cardBg))
-                                .cornerRadius(14.dp)
-                                .padding(vertical = 6.dp, horizontal = 4.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
+                                .padding(horizontal = 2.dp)
                         ) {
+                            Column(
+                                modifier = GlanceModifier
+                                    .fillMaxWidth()
+                                    .fillMaxHeight()
+                                    .background(ColorProvider(cardBg))
+                                    .cornerRadius(14.dp)
+                                    .padding(vertical = 6.dp, horizontal = 4.dp),
+                                horizontalAlignment = Alignment.CenterHorizontally
+                            ) {
                             // 星期标题
                             Text(
                                 text = dayLabels[day.dayOfWeek],
@@ -462,7 +466,8 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     )
                                 }
                             }
-                        }
+                            }  // end inner Column
+                        }  // end Box
                     }
                 }
             }
