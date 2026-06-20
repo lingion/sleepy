@@ -364,16 +364,20 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
-    // 按比例算间距：列间距 = 总宽度 × 0.8%，随 widget 大小自适应
+    // 固定寬度方案：不用 defaultWeight，直接算每列寬度
+    // Glance 底層是 LinearLayout+weight，混合固定寬度和 weight 會出 bug
     val totalWidth = LocalSize.current.width
-    val colGap = (totalWidth.value * 0.008f).dp
+    val outerPad = 6.dp
+    val innerWidth = (totalWidth.value - outerPad.value * 2).dp
+    val colGap = 3.dp  // 固定間距
+    val colWidth = ((innerWidth.value - colGap.value * 6) / 7f).dp
 
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
             .background(ColorProvider(scheme.bg))
             .cornerRadius(20.dp)
-            .padding(6.dp)
+            .padding(outerPad)
             .clickable(openAppAction),
         verticalAlignment = Alignment.Top
     ) {
@@ -389,12 +393,10 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                     verticalAlignment = Alignment.Top
                 ) {
                     data.days.forEachIndexed { dayIdx, day ->
-                        // 列间距：在每列之间插入透明 Spacer（不是 padding）
                         if (dayIdx > 0) {
                             Spacer(modifier = GlanceModifier.width(colGap))
                         }
                         val isToday = day.dayOfWeek == todayDow
-                        // 跟首页 DaySummaryCell 完全一致
                         val cardBg = if (isToday) scheme.primaryContainer else scheme.surfaceContainer
                         val titleColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurface
                         val nameColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurfaceVariant
@@ -403,7 +405,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
 
                         Column(
                             modifier = GlanceModifier
-                                .defaultWeight()
+                                .width(colWidth)
                                 .fillMaxHeight()
                                 .background(ColorProvider(cardBg))
                                 .cornerRadius(14.dp)
