@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -270,49 +271,63 @@ fun AddCourseScreen(
                 }
             }
 
+            // 上课时段 — 标题（blocks 懒加载以支持大量时段）
             item {
-                CardSection(
-                    title = "上课时段",
-                    subtitle = "一个课程可有任意多个时段；每个时段都可多选星期，并可按节次或按时间录入"
+                Column(
+                    modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
-                    Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
-                        meetingBlocks.forEachIndexed { index, block ->
-                            val blockIssues = validationIssues.filter { it.blockId == block.id }.map { it.message }
-                            MeetingBlockEditor(
-                                title = "时段 ${index + 1}",
-                                block = block,
-                                canRemove = meetingBlocks.size > 1,
-                                issues = blockIssues,
-                                fieldShape = fieldShape,
-                                fieldColors = fieldColors,
-                                onRemove = { meetingBlocks.remove(block) }
-                            )
-                        }
+                    Text(
+                        text = "上课时段",
+                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.onSurface
+                    )
+                    Text(
+                        text = "一个课程可有任意多个时段；每个时段都可多选星期，并可按节次或按时间录入",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+            }
 
-                        Button(
-                            onClick = {
-                                meetingBlocks.add(
-                                    MeetingBlockDraft(
-                                        id = nextBlockId,
-                                        days = mutableStateListOf(2),
-                                        initialMode = MeetingInputMode.ByNode,
-                                        startNode = 3,
-                                        step = 2,
-                                        startTime = "10:00",
-                                        endTime = "11:40"
-                                    )
-                                )
-                                nextBlockId += 1
-                            },
-                            modifier = Modifier.fillMaxWidth().height(46.dp),
-                            shape = RoundedCornerShape(16.dp),
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
-                        ) {
-                            Icon(Icons.Outlined.Add, contentDescription = null, tint = colors.onSecondaryContainer)
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Text("新增一个上课时段", color = colors.onSecondaryContainer)
-                        }
-                    }
+            // 每个 block 独立懒加载，不再一次性全渲染
+            itemsIndexed(meetingBlocks) { index, block ->
+                val blockIssues = validationIssues.filter { it.blockId == block.id }.map { it.message }
+                MeetingBlockEditor(
+                    title = "时段 ${index + 1}",
+                    block = block,
+                    canRemove = meetingBlocks.size > 1,
+                    issues = blockIssues,
+                    fieldShape = fieldShape,
+                    fieldColors = fieldColors,
+                    onRemove = { meetingBlocks.remove(block) }
+                )
+            }
+
+            // 新增时段按钮
+            item {
+                Button(
+                    onClick = {
+                        meetingBlocks.add(
+                            MeetingBlockDraft(
+                                id = nextBlockId,
+                                days = mutableStateListOf(2),
+                                initialMode = MeetingInputMode.ByNode,
+                                startNode = 3,
+                                step = 2,
+                                startTime = "10:00",
+                                endTime = "11:40"
+                            )
+                        )
+                        nextBlockId += 1
+                    },
+                    modifier = Modifier.fillMaxWidth().height(46.dp),
+                    shape = RoundedCornerShape(16.dp),
+                    colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+                ) {
+                    Icon(Icons.Outlined.Add, contentDescription = null, tint = colors.onSecondaryContainer)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("新增一个上课时段", color = colors.onSecondaryContainer)
                 }
             }
 
