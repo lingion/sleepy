@@ -364,6 +364,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
+    // 固定間距，不依賴 LocalSize（可能返回不準確的值）
     val colGap = 4.dp
 
     Column(
@@ -379,6 +380,8 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
+                // 7 列竖向并排 — 不用 Spacer（LinearLayout weight+固定宽度混用 bug）
+                // 间距方案：外层 Box(defaultWeight) padding 透明 → 内层 Column 有背景
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
@@ -397,38 +400,41 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .background(ColorProvider(cardBg))
-                                .cornerRadius(14.dp)
-                                .padding(horizontal = 3.dp)
+                                .padding(horizontal = 2.dp)
                         ) {
                             Column(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
+                                    .fillMaxHeight()
+                                    .background(ColorProvider(cardBg))
+                                    .cornerRadius(14.dp)
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
+                            // 星期标题
                             Text(
                                 text = dayLabels[day.dayOfWeek],
                                 style = TextStyle(
-                                    fontSize = 11.sp,
+                                    fontSize = 12.sp,
                                     fontWeight = FontWeight.Bold,
                                     color = ColorProvider(titleColor)
                                 )
                             )
-                            Spacer(modifier = GlanceModifier.height(3.dp))
+                            Spacer(modifier = GlanceModifier.height(6.dp))
 
                             if (day.courses.isNotEmpty()) {
+                                // Chip「X门」— surfaceVariant 背景
                                 Box(
                                     modifier = GlanceModifier
                                         .background(ColorProvider(chipBg))
                                         .cornerRadius(50.dp)
-                                        .padding(horizontal = 5.dp, vertical = 1.dp),
+                                        .padding(horizontal = 6.dp, vertical = 2.dp),
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
                                         text = "${day.courses.size}门",
                                         style = TextStyle(
-                                            fontSize = 8.sp,
+                                            fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
                                             color = ColorProvider(chipFg)
                                         )
@@ -436,15 +442,29 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 单个Text拼接——每门课之间空一行制造间距
-                                Text(
-                                    text = day.courses.joinToString("\n\n") { it.courseName },
-                                    style = TextStyle(
-                                        fontSize = 9.sp,
-                                        color = ColorProvider(nameColor)
-                                    ),
-                                    maxLines = 12
-                                )
+                                // 课程名列表
+                                day.courses.take(5).forEachIndexed { idx, c ->
+                                    Text(
+                                        text = c.courseName,
+                                        style = TextStyle(
+                                            fontSize = 9.sp,
+                                            color = ColorProvider(nameColor)
+                                        ),
+                                        maxLines = 2
+                                    )
+                                    if (idx < minOf(day.courses.size, 5) - 1) {
+                                        Spacer(modifier = GlanceModifier.height(2.dp))
+                                    }
+                                }
+                                if (day.courses.size > 5) {
+                                    Text(
+                                        text = "+${day.courses.size - 5}",
+                                        style = TextStyle(
+                                            fontSize = 8.sp,
+                                            color = ColorProvider(chipFg)
+                                        )
+                                    )
+                                }
                             }
                             }  // end inner Column
                         }  // end Box
