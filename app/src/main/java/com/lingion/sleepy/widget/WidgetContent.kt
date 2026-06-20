@@ -448,18 +448,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     item { Spacer(modifier = GlanceModifier.height(4.dp)) }
 
                                     // 全部课程——LazyColumn可滚动，不截断不限量
-                                    // 课程之间加淡色分隔符---替代Spacer，不占额外空间
-                                    items(day.courses.size) { idx ->
-                                        val c = day.courses[idx]
-                                        if (idx > 0) {
-                                            Text(
-                                                text = "---",
-                                                style = TextStyle(
-                                                    fontSize = 7.sp,
-                                                    color = ColorProvider(nameColor.copy(alpha = 0.3f))
-                                                )
-                                            )
-                                        }
+                                    items(day.courses) { c ->
                                         Text(
                                             text = c.courseName,
                                             style = TextStyle(
@@ -468,6 +457,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                             ),
                                             maxLines = 2
                                         )
+                                        Spacer(modifier = GlanceModifier.height(2.dp))
                                     }
                                 }
                             }
