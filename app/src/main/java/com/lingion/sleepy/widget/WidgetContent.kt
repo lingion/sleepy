@@ -399,7 +399,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 .fillMaxHeight()
                                 .background(ColorProvider(cardBg))
                                 .cornerRadius(14.dp)
-                                .padding(horizontal = 2.dp)
+                                .padding(horizontal = 3.dp)
                         ) {
                             Column(
                                 modifier = GlanceModifier
