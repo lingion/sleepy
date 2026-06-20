@@ -484,12 +484,12 @@ private fun DaySummaryCell(
 
         Spacer(modifier = Modifier.height(4.dp))
 
-        // Mini-list: 前 3 门课名
+        // Mini-list: 前 5 门课名（改掉 take(3)，空间够就全显示）
         Column(
             modifier = Modifier.fillMaxWidth(),
             verticalArrangement = Arrangement.spacedBy(2.dp)
         ) {
-            courses.take(3).forEach { c ->
+            courses.take(5).forEach { c ->
                 Text(
                     text = c.courseName,
                     style = SleepyTextStyle.micro(),
