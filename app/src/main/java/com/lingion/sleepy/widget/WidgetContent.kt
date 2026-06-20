@@ -367,6 +367,18 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     // 固定間距，不依賴 LocalSize（可能返回不準確的值）
     val colGap = 4.dp
 
+    // 根據 widget 高度動態計算每列最多能放幾門課
+    val totalHeight = LocalSize.current.height
+    // 固定開銷：外層 padding(6dp×2) + 卡片 padding(6dp×2) + 標題(~16dp) + gap(6dp) + chip(~17dp) + gap(4dp)
+    val fixedOverhead = 67.dp
+    // 每門課約佔：9sp文字（最多2行≈24dp）+ 2dp 間距 = 26dp
+    val perCourse = 26.dp
+    // "+N" 溢出文字約佔 12dp
+    val overflowLine = 12.dp
+
+    val availableH = (totalHeight.value - fixedOverhead.value).coerceAtLeast(0f)
+    val maxCourses = ((availableH - overflowLine.value) / perCourse.value).toInt().coerceAtLeast(1)
+
     Column(
         modifier = GlanceModifier
             .fillMaxSize()
@@ -395,6 +407,9 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                         val nameColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurfaceVariant
                         val chipBg = scheme.surfaceVariant
                         val chipFg = scheme.onSurfaceVariant
+
+                        // 動態計算：這一天顯示幾門課
+                        val visibleCount = minOf(day.courses.size, maxCourses)
 
                         Box(
                             modifier = GlanceModifier
@@ -442,8 +457,8 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 课程名列表
-                                day.courses.take(5).forEachIndexed { idx, c ->
+                                // 课程名列表 — 動態數量，由高度決定
+                                day.courses.take(visibleCount).forEachIndexed { idx, c ->
                                     Text(
                                         text = c.courseName,
                                         style = TextStyle(
@@ -452,13 +467,14 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                         ),
                                         maxLines = 2
                                     )
-                                    if (idx < minOf(day.courses.size, 5) - 1) {
+                                    if (idx < visibleCount - 1) {
                                         Spacer(modifier = GlanceModifier.height(2.dp))
                                     }
                                 }
-                                if (day.courses.size > 5) {
+                                // 溢出提示：+剩餘數量
+                                if (day.courses.size > visibleCount) {
                                     Text(
-                                        text = "+${day.courses.size - 5}",
+                                        text = "+${day.courses.size - visibleCount}",
                                         style = TextStyle(
                                             fontSize = 8.sp,
                                             color = ColorProvider(chipFg)
