@@ -364,19 +364,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
-    // 固定間距，不依賴 LocalSize（可能返回不準確的值）
     val colGap = 4.dp
-
-    // 根據 widget 高度動態計算每列最多能放幾門課
-    // 用實際渲染值而非保守估算
-    val totalHeight = LocalSize.current.height
-    // 固定開銷：外層 padding + 卡片 padding + 標題 + chip + 間距
-    val fixedOverhead = 50.dp
-    // 每門課實際約佔 14dp（9sp單行 + 2dp間距），不是26dp
-    val perCourse = 14.dp
-
-    val availableH = (totalHeight.value - fixedOverhead.value).coerceAtLeast(0f)
-    val maxCourses = (availableH / perCourse.value).toInt().coerceAtLeast(1)
 
     Column(
         modifier = GlanceModifier
@@ -391,8 +379,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // 7 列竖向并排 — 不用 Spacer（LinearLayout weight+固定宽度混用 bug）
-                // 间距方案：外层 Box(defaultWeight) padding 透明 → 内层 Column 有背景
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
@@ -406,9 +392,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                         val nameColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurfaceVariant
                         val chipBg = scheme.surfaceVariant
                         val chipFg = scheme.onSurfaceVariant
-
-                        // 動態計算：這一天顯示幾門課
-                        val visibleCount = minOf(day.courses.size, maxCourses)
 
                         Box(
                             modifier = GlanceModifier
@@ -425,7 +408,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
-                            // 星期标题
                             Text(
                                 text = dayLabels[day.dayOfWeek],
                                 style = TextStyle(
@@ -437,7 +419,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             Spacer(modifier = GlanceModifier.height(6.dp))
 
                             if (day.courses.isNotEmpty()) {
-                                // Chip「X门」— surfaceVariant 背景
                                 Box(
                                     modifier = GlanceModifier
                                         .background(ColorProvider(chipBg))
@@ -456,8 +437,8 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 课程名列表 — 動態數量，由高度決定
-                                day.courses.take(visibleCount).forEachIndexed { idx, c ->
+                                // 全部显示，Glance Column 自然处理
+                                day.courses.forEachIndexed { idx, c ->
                                     Text(
                                         text = c.courseName,
                                         style = TextStyle(
@@ -466,19 +447,9 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                         ),
                                         maxLines = 2
                                     )
-                                    if (idx < visibleCount - 1) {
+                                    if (idx < day.courses.size - 1) {
                                         Spacer(modifier = GlanceModifier.height(2.dp))
                                     }
-                                }
-                                // 溢出提示：+剩餘數量
-                                if (day.courses.size > visibleCount) {
-                                    Text(
-                                        text = "+${day.courses.size - visibleCount}",
-                                        style = TextStyle(
-                                            fontSize = 8.sp,
-                                            color = ColorProvider(chipFg)
-                                        )
-                                    )
                                 }
                             }
                             }  // end inner Column
