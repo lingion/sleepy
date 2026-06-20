@@ -397,14 +397,13 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
+                                .background(ColorProvider(cardBg))
+                                .cornerRadius(14.dp)
                                 .padding(horizontal = 2.dp)
                         ) {
                             Column(
                                 modifier = GlanceModifier
                                     .fillMaxWidth()
-                                    .fillMaxHeight()
-                                    .background(ColorProvider(cardBg))
-                                    .cornerRadius(14.dp)
                                     .padding(vertical = 6.dp, horizontal = 4.dp),
                                 horizontalAlignment = Alignment.CenterHorizontally
                             ) {
