@@ -380,16 +380,23 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
+                // 调试：显示天数
+                Text(
+                    text = "共${data.days.size}天",
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        color = ColorProvider(scheme.onSurfaceVariant)
+                    )
+                )
+                Spacer(modifier = GlanceModifier.height(2.dp))
+                // 7 列竖向并排 — 纯 defaultWeight，无 Spacer（排除 Spacer 干扰）
                 Row(
                     modifier = GlanceModifier
                         .fillMaxWidth()
                         .defaultWeight(),
                     verticalAlignment = Alignment.Top
                 ) {
-                    data.days.forEachIndexed { dayIdx, day ->
-                        if (dayIdx > 0) {
-                            Spacer(modifier = GlanceModifier.width(colGap))
-                        }
+                    data.days.forEach { day ->
                         val isToday = day.dayOfWeek == todayDow
                         val cardBg = if (isToday) scheme.primaryContainer else scheme.surfaceContainer
                         val titleColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurface
