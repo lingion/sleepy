@@ -436,26 +436,15 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 每门课单独Text，maxLines=2。Column是wrap content不会裁剪。
-                                day.courses.forEach { c ->
-                                    Text(
-                                        text = c.courseName,
-                                        style = TextStyle(
-                                            fontSize = 9.sp,
-                                            color = ColorProvider(nameColor)
-                                        ),
-                                        maxLines = 2
-                                    )
-                                    Spacer(modifier = GlanceModifier.height(2.dp))
-                                }
-                            } else {
-                                // 空天——居中提示
+                                // 单个Text拼接所有课程名——背景在Box撑满高度，Text不被裁剪
+                                // maxLines=8：4门课×2行，每门课最多占2行
                                 Text(
-                                    text = "无课",
+                                    text = day.courses.joinToString("\n") { it.courseName },
                                     style = TextStyle(
                                         fontSize = 9.sp,
-                                        color = ColorProvider(scheme.onSurfaceVariant)
-                                    )
+                                        color = ColorProvider(nameColor)
+                                    ),
+                                    maxLines = 8
                                 )
                             }
                             }  // end inner Column
