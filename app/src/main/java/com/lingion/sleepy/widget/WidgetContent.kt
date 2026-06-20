@@ -365,11 +365,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
     val colGap = 4.dp
-    // 根据widget高度算每列最多放几门课
-    // 固定开销：外padding(12)+列padding(12)+标题(16)+chip(16)+间距(10)≈66dp
-    // 每门课：2行9sp文字≈20dp + \n\n空行≈10dp = 30dp（截断后多数1-2行）
-    val widgetH = LocalSize.current.height.value
-    val maxPerDay = ((widgetH - 66f) / 22f).toInt().coerceIn(3, 100)
 
     Column(
         modifier = GlanceModifier
@@ -446,22 +441,18 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 每门课名截断到8字（窄列2行），拼入单个Text避免Glance裁剪
-                                // 超出maxPerDay的显示+N
-                                val visible = day.courses.take(maxPerDay)
-                                val hidden = day.courses.size - visible.size
-                                val parts = visible.map { c ->
-                                    val n = c.courseName
-                                    if (n.length > 8) n.take(8) + "…" else n
-                                }.toMutableList()
-                                if (hidden > 0) parts.add("+$hidden")
+                                // 全部显示，单个Text避免Glance裁剪
+                                // 课名截断到8字（窄列2行），\n换行不加空行
                                 Text(
-                                    text = parts.joinToString("\n\n"),
+                                    text = day.courses.joinToString("\n") { c ->
+                                        val n = c.courseName
+                                        if (n.length > 8) n.take(8) + "…" else n
+                                    },
                                     style = TextStyle(
                                         fontSize = 9.sp,
                                         color = ColorProvider(nameColor)
                                     ),
-                                    maxLines = maxPerDay * 3 + 1
+                                    maxLines = 100
                                 )
                             }
                             }  // end inner Column
