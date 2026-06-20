@@ -27,6 +27,10 @@ data class ScheduleState(
 ) {
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(currentWeek) }
+            .let { list ->
+                val tj = currentTable?.timeJson
+                if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
+            }
     val currentTable: TimeTableEntity?
         get() = tables.find { it.id == selectedTableId }
 }

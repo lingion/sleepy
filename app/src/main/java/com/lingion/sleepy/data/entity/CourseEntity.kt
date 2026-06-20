@@ -110,4 +110,15 @@ data class CourseEntity(
         } else {
             "$startNode-${startNode + step - 1}节"
         }
+
+    /**
+     * 渲染前归一化：ownTime=true 的课根据时间表反算等效 startNode/step，
+     * 使其在网格中正确定位。ownTime=false 的课原样返回。
+     */
+    fun normalizeNode(timeJson: String): CourseEntity {
+        if (!ownTime || startTime.isBlank() || endTime.isBlank()) return this
+        val mapped = com.lingion.sleepy.util.TimeTableUtils.timeToNode(startTime, endTime, timeJson)
+            ?: return this
+        return copy(startNode = mapped.first, step = mapped.second)
+    }
 }

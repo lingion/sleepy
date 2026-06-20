@@ -95,6 +95,32 @@ object TimeTableUtils {
     private fun formatTime(t: LocalTime): String =
         String.format("%02d:%02d", t.hour, t.minute)
 
+    /**
+     * 根据课程的 startTime/endTime 反算等效的 (startNode, step)。
+     * 用于把 ownTime=true 的课映射到节次网格上。
+     *
+     * 规则：
+     * - startNode = 时间表中 start ≤ courseStart 的最大节点（向下取）
+     * - endNode   = 时间表中 end   ≥ courseEnd   的最小节点（向上取）
+     * - step      = endNode - startNode + 1
+     * - 若 StartTime 早于第一节，用第1节；endTime 晚于最后一节，用最后一节
+     * 返回 null 表示无法映射（时间格式错误或时间表为空）。
+     */
+    fun timeToNode(startTime: String, endTime: String, timeJson: String): Pair<Int, Int>? {
+        val nodes = parseNodes(timeJson)
+        if (nodes.isEmpty()) return null
+        val st = runCatching { LocalTime.parse(startTime) }.getOrNull() ?: return null
+        val et = runCatching { LocalTime.parse(endTime) }.getOrNull() ?: return null
+
+        val startNode = nodes.filter { it.start <= st }.maxByOrNull { it.node }?.node
+            ?: nodes.first().node
+        val endNode = nodes.filter { it.end >= et }.minByOrNull { it.node }?.node
+            ?: nodes.last().node
+
+        if (endNode < startNode) return null
+        return Pair(startNode, endNode - startNode + 1)
+    }
+
     /** 便捷: 拿 TimeTableEntity 直接出 slots */
     fun timeSlotsFor(table: TimeTableEntity?): List<TimeSlot> =
         if (table == null) emptyList() else timeSlotsFor(table.timeJson)
