@@ -427,7 +427,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                     contentAlignment = Alignment.Center
                                 ) {
                                     Text(
-                                        text = "${day.courses.size}门",
+                                        text = "${day.courses.size}门·全部",
                                         style = TextStyle(
                                             fontSize = 9.sp,
                                             fontWeight = FontWeight.Bold,
@@ -437,10 +437,10 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                                 }
                                 Spacer(modifier = GlanceModifier.height(4.dp))
 
-                                // 全部显示，Glance Column 自然处理
+                                // 全部显示——带序号，便于确认渲染了几门
                                 day.courses.forEachIndexed { idx, c ->
                                     Text(
-                                        text = c.courseName,
+                                        text = "${idx + 1}.${c.courseName}",
                                         style = TextStyle(
                                             fontSize = 9.sp,
                                             color = ColorProvider(nameColor)
