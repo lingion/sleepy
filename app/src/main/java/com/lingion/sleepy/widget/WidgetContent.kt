@@ -368,16 +368,15 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val colGap = 4.dp
 
     // 根據 widget 高度動態計算每列最多能放幾門課
+    // 用實際渲染值而非保守估算
     val totalHeight = LocalSize.current.height
-    // 固定開銷：外層 padding(6dp×2) + 卡片 padding(6dp×2) + 標題(~16dp) + gap(6dp) + chip(~17dp) + gap(4dp)
-    val fixedOverhead = 67.dp
-    // 每門課約佔：9sp文字（最多2行≈24dp）+ 2dp 間距 = 26dp
-    val perCourse = 26.dp
-    // "+N" 溢出文字約佔 12dp
-    val overflowLine = 12.dp
+    // 固定開銷：外層 padding + 卡片 padding + 標題 + chip + 間距
+    val fixedOverhead = 50.dp
+    // 每門課實際約佔 14dp（9sp單行 + 2dp間距），不是26dp
+    val perCourse = 14.dp
 
     val availableH = (totalHeight.value - fixedOverhead.value).coerceAtLeast(0f)
-    val maxCourses = ((availableH - overflowLine.value) / perCourse.value).toInt().coerceAtLeast(1)
+    val maxCourses = (availableH / perCourse.value).toInt().coerceAtLeast(1)
 
     Column(
         modifier = GlanceModifier
