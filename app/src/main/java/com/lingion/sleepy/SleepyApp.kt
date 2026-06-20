@@ -5,6 +5,10 @@ import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.widget.WidgetUpdater
 import com.lingion.sleepy.widget.notification.CourseNotificationScheduler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 
 /**
  * Application 类 — 初始化全局依赖。
@@ -27,6 +31,10 @@ class SleepyApp : Application() {
         super.onCreate()
         instance = this
         WidgetUpdater.schedule(this)
+        // 每次 app 启动都强制刷新所有 widget — 解决 Glance 缓存不刷新的问题
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            WidgetUpdater.notifyDataChanged(this@SleepyApp)
+        }
     }
 
     companion object {

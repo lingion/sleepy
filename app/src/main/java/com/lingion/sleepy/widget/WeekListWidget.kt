@@ -21,6 +21,8 @@ class WeekListWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = withContext(Dispatchers.IO) { loadWeekData(context) }
+        android.util.Log.d("WeekListWidget", "provideGlance: hasTable=${data.hasTable}, days=${data.days.size}, " +
+            "courses=${data.days.sumOf { it.courses.size }}, perDay=${data.days.map { "${it.dayOfWeek}:${it.courses.size}" }}")
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
