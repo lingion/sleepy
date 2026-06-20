@@ -364,9 +364,9 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
     val scheme = resolveScheme(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", "一", "二", "三", "四", "五", "六", "日")
-    // 按比例算间距：列间距 = 总宽度 × 1.5%，随 widget 大小自适应
+    // 按比例算间距：列间距 = 总宽度 × 0.8%，随 widget 大小自适应
     val totalWidth = LocalSize.current.width
-    val colGap = (totalWidth.value * 0.015f).dp
+    val colGap = (totalWidth.value * 0.008f).dp
 
     Column(
         modifier = GlanceModifier
