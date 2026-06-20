@@ -388,7 +388,11 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                         .defaultWeight(),
                     verticalAlignment = Alignment.Top
                 ) {
-                    data.days.forEach { day ->
+                    data.days.forEachIndexed { dayIdx, day ->
+                        // 列间距：在每列之间插入透明 Spacer（不是 padding）
+                        if (dayIdx > 0) {
+                            Spacer(modifier = GlanceModifier.width(colGap))
+                        }
                         val isToday = day.dayOfWeek == todayDow
                         // 跟首页 DaySummaryCell 完全一致
                         val cardBg = if (isToday) scheme.primaryContainer else scheme.surfaceContainer
@@ -401,7 +405,6 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
                             modifier = GlanceModifier
                                 .defaultWeight()
                                 .fillMaxHeight()
-                                .padding(horizontal = colGap)  // 比例间距，随 widget 大小自适应
                                 .background(ColorProvider(cardBg))
                                 .cornerRadius(14.dp)
                                 .padding(vertical = 6.dp, horizontal = 4.dp),
