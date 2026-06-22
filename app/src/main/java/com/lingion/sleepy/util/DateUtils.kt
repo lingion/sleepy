@@ -72,6 +72,12 @@ object DateUtils {
         return if (idx in dayNames.indices) dayNames[idx] else ""
     }
 
+    /** Locale-aware 星期 — 直接接受 Context，从 R.array.day_names 取本地化字符串数组 */
+    fun localizedDay(dayOfWeek: Int, context: android.content.Context): String {
+        val names = context.resources.getStringArray(com.lingion.sleepy.R.array.day_names)
+        return localizedDay(dayOfWeek, names)
+    }
+
     /** 短日期格式 M/d（无前导零） */
     fun shortDateSlash(date: LocalDate): String =
         "${date.monthValue}/${date.dayOfMonth}"

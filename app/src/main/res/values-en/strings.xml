@@ -28,6 +28,9 @@
     <string name="manage_edit_current_sub">Edit name, dates, and time slots</string>
     <string name="manage_manual_add">Add Course</string>
     <string name="manage_manual_add_sub">Add a course directly to current schedule</string>
+    <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d courses</string>
+    <string name="current_table_week">Current · Week %1$d</string>
+    <string name="table_start_date">Start: %1$s</string>
     <string name="all_tables">All Schedules</string>
     <string name="all_tables_new">New Schedule</string>
     <string name="all_tables_switch">Set as current</string>
@@ -77,6 +80,28 @@
     <string name="import_all_conflict">All courses conflict — nothing to append</string>
     <string name="import_content_empty">Content is empty</string>
     <string name="import_select_table">Please select a schedule first</string>
+    <string name="read_failed">Read failed: %1$s</string>
+    <string name="cannot_read_file">Cannot read file</string>
+    <string name="import_preview_sub">Preview first, then import -- do not overwrite your schedule</string>
+    <string name="format_wakeup_share">WakeUp share text</string>
+    <string name="format_wakeup_desc">Starts with 【来自WakeUp课程表】</string>
+    <string name="format_wakeup_json">WakeUp JSON</string>
+    <string name="format_json_desc">Export .json file</string>
+    <string name="format_ics">ICS calendar</string>
+    <string name="format_ics_desc">Exportable from school registry</string>
+    <string name="format_csv">CSV file</string>
+    <string name="format_csv_desc">.csv with headers, comma separated</string>
+    <string name="format_html">HTML table</string>
+    <string name="format_html_desc">&lt;table&gt; format, parse by row after detecting headers</string>
+    <string name="format_plain">Plain text</string>
+    <string name="format_plain_desc">One course per line, tab separated</string>
+    <string name="import_start_date_required">Please enter semester start date</string>
+    <string name="start_date_format">Date format must be YYYY-MM-DD</string>
+    <string name="slot_time_required">Period %1$d time is required</string>
+    <string name="slot_time_invalid">Period %1$d time invalid (start must be before end)</string>
+    <string name="expand">Tap to expand</string>
+    <string name="collapse">Tap to collapse</string>
+    <string name="n_periods">%1$d periods</string>
 
     <string name="course_detail_title">Course Details</string>
     <string name="course_detail_edit">Edit</string>
@@ -116,6 +141,19 @@
     <string name="end_time">End Time</string>
     <string name="mode_by_node">By Period</string>
     <string name="mode_by_time">By Time</string>
+    <string name="course_name_empty">Course name is required</string>
+    <string name="week_must_be_positive">Week must be greater than 0</string>
+    <string name="slot_at_least_one_day">Slot %1$d must have at least one day</string>
+    <string name="slot_start_node_positive">Slot %1$d start period must be greater than 0</string>
+    <string name="slot_step_positive">Slot %1$d consecutive periods must be greater than 0</string>
+    <string name="slot_time_format">Slot %1$d start/end time should be HH:mm format</string>
+    <string name="slot_time_order">Slot %1$d start time must be before end time</string>
+    <string name="slot_time_overlap">Slot %1$d and slot %2$d overlap on %3$s</string>
+    <string name="fix_issues_first">Please fix these issues first</string>
+    <string name="more_unexpanded">%1$d more unexpanded</string>
+    <string name="create_course_btn">Create</string>
+    <string name="selected_days">Selected: %1$s</string>
+    <string name="time_format_hint">Format HH:mm</string>
 
     <string name="mine_title">Me</string>
     <string name="mine_subtitle">Manage schedules and settings</string>
@@ -164,10 +202,56 @@
     <string name="save">Save</string>
     <string name="delete">Delete</string>
     <string name="back">Back</string>
+    <string name="selected">Selected</string>
+    <string name="action_settings">Settings</string>
     <string name="confirm_delete">Confirm Delete</string>
     <string name="no_course">Free</string>
     <string name="n_courses">%1$d</string>
     <string name="action_close">Close</string>
+
+    <!-- Widget / Common UI -->
+    <string name="widget_create_schedule">Please create a schedule first</string>
+    <string name="widget_open_sleepy">Open Sleepy to add</string>
+    <string name="more_sections">%1$d more...</string>
+    <string name="tomorrow">Tomorrow</string>
+    <string name="n_course_periods">%1$d course periods</string>
+    <string name="course_node_format">Period %1$s</string>
+    <string name="course_period_range">%1$d-%2$d</string>
+
+    <!-- JW Import -->
+    <string name="jw_no_url">No registry URL configured for this school</string>
+    <string name="jw_parse_empty">Parse result is empty. Please make sure you are on the "My Schedule" page (not home/login page)</string>
+    <string name="jw_import_success">Successfully imported %1$d courses</string>
+    <string name="jw_parse_failed">Parse failed: %1$s</string>
+    <string name="jw_parse_failed_hint">\n\nTip: For HEU, log in via browser then navigate to "My Schedule" page before clicking import</string>
+    <string name="jw_webview_not_ready">WebView not ready</string>
+    <string name="jw_fetching">Fetching schedule…</string>
+    <string name="jw_fetch_failed_no_response">Fetch failed: No response from page (may still be loading)</string>
+    <string name="jw_fetch_format_error">Fetch returned invalid format</string>
+    <string name="jw_fetch_failed">Fetch failed: %1$s</string>
+    <string name="jw_page_not_loaded">Page not fully loaded</string>
+    <string name="jw_after_login">After logging in</string>
+    <string name="jw_nav_hint">Navigate to "My Schedule" page, then tap the button on the right</string>
+    <string name="jw_import_page">Import This Page</string>
+
+    <!-- School Select -->
+    <string name="select_school">Select School</string>
+    <string name="search_school">Search schools…</string>
+    <string name="loading">Loading…</string>
+    <string name="no_school_found">No matching schools</string>
+
+    <!-- Course Detail -->
+    <string name="course_week_range">%1$s (Week %2$d-%3$d)</string>
+
+    <!-- Date/Time Pickers -->
+    <string name="select_date">Select date</string>
+    <string name="select_time">Select time</string>
+
+    <!-- Time Slot Editor -->
+    <string name="add_period">Add period</string>
+    <string name="start_label">Start</string>
+    <string name="end_label">End</string>
+    <string name="delete_period">Delete this period</string>
 
     <string name="mine_about_title">About Sleepy</string>
     <string name="mine_about">About</string>
@@ -182,4 +266,31 @@
         <item>Sat</item>
         <item>Sun</item>
     </string-array>
+
+    <!-- Localized date / theme display -->
+    <string name="date_long_format">%1$d/%2$d</string>
+    <string name="notif_channel_name">Daily Class Reminder</string>
+    <string name="notif_channel_desc">Push today\'s classes every morning</string>
+    <string name="notif_title">Today\'s Classes — %1$s %2$s</string>
+    <string name="notif_text">Tap to view today\'s schedule</string>
+    <string name="theme_name_default">Lilac</string>
+    <string name="theme_name_spring">Spring</string>
+    <string name="theme_name_ocean">Ocean</string>
+    <string name="theme_name_peach">Peach</string>
+    <string name="theme_name_slate">Slate</string>
+<string name="default_table_with_num">Default %1$d</string>
+    <string name="new_course">New Course</string>
+    <string name="jw_import_title">Import - %1$s</string>
+    <string name="month_day_format">%1$d/%2$d</string>
+    <string name="today_text">Today</string>
+    <string name="section_short">%1$d</string>
+    <string name="day_short_1">M</string>
+    <string name="day_short_2">T</string>
+    <string name="day_short_3">W</string>
+    <string name="day_short_4">T</string>
+    <string name="day_short_5">F</string>
+    <string name="day_short_6">S</string>
+    <string name="day_short_7">S</string>
+    <string name="section_node_format">Period %1$d–%2$d</string>
+    <string name="section_single">Period %1$d</string>
 </resources>

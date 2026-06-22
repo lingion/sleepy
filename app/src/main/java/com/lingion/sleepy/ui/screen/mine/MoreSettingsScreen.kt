@@ -44,8 +44,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
@@ -74,10 +76,10 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
         containerColor = colors.background,
         topBar = {
             TopAppBar(
-                title = { Text("更多设置") },
+                title = { Text(stringResource(R.string.settings_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -95,7 +97,7 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
         ) {
             // 语言设置
             item {
-                SettingsCard(title = "语言 / Language") {
+                SettingsCard(title = stringResource(R.string.settings_language)) {
                     languages.forEach { (code, label) ->
                         val selected = language == code
                         Row(
@@ -134,10 +136,10 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
 
             // 显示模式：节次 / 时间
             item {
-                SettingsCard(title = "课程时间显示") {
+                SettingsCard(title = stringResource(R.string.settings_display_mode)) {
                     DisplayModeOption(
-                        label = "统一显示节次",
-                        subtitle = "所有课程显示为「第N节」",
+                        label = stringResource(R.string.settings_display_node),
+                        subtitle = stringResource(R.string.settings_display_node_sub),
                         selected = displayMode == "node",
                         onClick = {
                             displayMode = "node"
@@ -146,8 +148,8 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
                     )
                     Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
                     DisplayModeOption(
-                        label = "统一显示时间",
-                        subtitle = "所有课程显示为「HH:mm–HH:mm」",
+                        label = stringResource(R.string.settings_display_time),
+                        subtitle = stringResource(R.string.settings_display_time_sub),
                         selected = displayMode == "time",
                         onClick = {
                             displayMode = "time"
@@ -159,10 +161,10 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
 
             // 网格显示日期
             item {
-                SettingsCard(title = "网格视图") {
+                SettingsCard(title = stringResource(R.string.settings_grid_view)) {
                     SettingToggleRow(
-                        label = "显示日期",
-                        subtitle = "在每列表头显示具体日期（月/日）",
+                        label = stringResource(R.string.settings_show_date),
+                        subtitle = stringResource(R.string.settings_show_date_sub),
                         checked = showDate,
                         onCheckedChange = {
                             showDate = it
@@ -174,9 +176,9 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
 
             // 显示天数
             item {
-                SettingsCard(title = "显示星期") {
+                SettingsCard(title = stringResource(R.string.settings_visible_days)) {
                     Text(
-                        text = "取消勾选的星期将在所有视图中隐藏",
+                        text = stringResource(R.string.settings_visible_days_sub),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(bottom = 8.dp)
@@ -202,7 +204,7 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(
-                                text = DateUtils.chineseDay(day),
+                                text = DateUtils.localizedDay(day, context),
                                 style = MaterialTheme.typography.bodyLarge,
                                 color = colors.onSurface
                             )

@@ -23,7 +23,9 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
@@ -55,7 +57,7 @@ fun TimeSlotEditor(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = "${rows.size} 节课",
+                text = stringResource(R.string.n_periods, rows.size),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant
             )
@@ -68,7 +70,7 @@ fun TimeSlotEditor(
                     modifier = Modifier.size(18.dp)
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("添加一节")
+                Text(stringResource(R.string.add_period))
             }
         }
 
@@ -114,7 +116,7 @@ private fun TimeSlotRowItem(
         verticalAlignment = Alignment.CenterVertically
     ) {
         Text(
-            text = "第${row.node}节",
+            text = stringResource(R.string.course_node_format, row.node),
             modifier = Modifier.width(44.dp),
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurface
@@ -122,13 +124,13 @@ private fun TimeSlotRowItem(
         TimePickerField(
             value = row.start,
             onValueChange = onStartChange,
-            label = "开始",
+            label = stringResource(R.string.start_label),
             modifier = Modifier.weight(1f)
         )
         TimePickerField(
             value = row.end,
             onValueChange = onEndChange,
-            label = "结束",
+            label = stringResource(R.string.end_label),
             modifier = Modifier.weight(1f)
         )
         if (canDelete) {
@@ -138,7 +140,7 @@ private fun TimeSlotRowItem(
             ) {
                 Icon(
                     Icons.Outlined.RemoveCircleOutline,
-                    contentDescription = "删除此节",
+                    contentDescription = stringResource(R.string.delete_period),
                     tint = colors.error,
                     modifier = Modifier.size(20.dp)
                 )

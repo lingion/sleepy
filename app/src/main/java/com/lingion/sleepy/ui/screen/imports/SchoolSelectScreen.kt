@@ -39,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -81,10 +82,10 @@ fun SchoolSelectScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("选择学校") },
+                title = { Text(stringResource(R.string.select_school)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -107,7 +108,7 @@ fun SchoolSelectScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(16.dp),
-                placeholder = { Text("搜索学校…", color = colors.onSurfaceVariant) },
+                placeholder = { Text(stringResource(R.string.search_school), color = colors.onSurfaceVariant) },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = fieldColors
@@ -184,7 +185,7 @@ private fun EmptyState(isLoading: Boolean) {
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = if (isLoading) "加载中…" else "未找到匹配的学校",
+            text = if (isLoading) stringResource(R.string.loading) else stringResource(R.string.no_school_found),
             color = colors.onSurfaceVariant
         )
     }

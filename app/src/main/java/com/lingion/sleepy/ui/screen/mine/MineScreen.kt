@@ -96,7 +96,7 @@ fun MineScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "管理你的课表与设置",
+                        text = stringResource(R.string.mine_subtitle),
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onSurfaceVariant
                     )
@@ -129,7 +129,7 @@ fun MineScreen(
                     SettingsItem(
                         icon = Icons.Outlined.Share,
                         label = stringResource(R.string.mine_export),
-                        onClick = { showSnack("导出课表 — 该功能开发中,后续版本支持 ICS 导出") }
+                        onClick = { showSnack(context.getString(R.string.mine_export_coming)) }
                     )
                     Divider()
                     SettingsItem(
@@ -143,10 +143,10 @@ fun MineScreen(
                                     AppPrefs.setReminderEnabled(context, on)
                                     if (on) {
                                         SleepyApp.get().notificationScheduler.scheduleDailyReminder()
-                                        showSnack("已开启每日 7:00 课程提醒")
+                                        showSnack(context.getString(R.string.mine_reminder_on))
                                     } else {
                                         SleepyApp.get().notificationScheduler.cancelDailyReminder()
-                                        showSnack("已关闭每日提醒")
+                                        showSnack(context.getString(R.string.mine_reminder_off))
                                     }
                                 },
                                 colors = SwitchDefaults.colors(
@@ -180,7 +180,7 @@ fun MineScreen(
                     Divider()
                     SettingsItem(
                         icon = Icons.Outlined.Tune,
-                        label = "更多设置",
+                        label = stringResource(R.string.mine_more_settings),
                         isLast = true,
                         onClick = onOpenMoreSettings
                     )
@@ -224,11 +224,11 @@ private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StatItem(value = tableCount.toString(), label = "课表数")
+        StatItem(value = tableCount.toString(), label = stringResource(R.string.mine_stat_tables))
         Divider(vertical = true)
-        StatItem(value = courseCount.toString(), label = "课程数")
+        StatItem(value = courseCount.toString(), label = stringResource(R.string.mine_stat_courses))
         Divider(vertical = true)
-        StatItem(value = week.toString(), label = "当前周")
+        StatItem(value = week.toString(), label = stringResource(R.string.mine_stat_week))
     }
 }
 

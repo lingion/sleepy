@@ -28,6 +28,9 @@
     <string name="manage_edit_current_sub">名前・日付・時限時間を編集</string>
     <string name="manage_manual_add">授業を追加</string>
     <string name="manage_manual_add_sub">現在の時間割に授業を追加</string>
+    <string name="table_info">開始日: %1$s  |  第%2$d週  |  %3$dコマ</string>
+    <string name="current_table_week">現在 · 第%1$d週</string>
+    <string name="table_start_date">開始日: %1$s</string>
     <string name="all_tables">すべての時間割</string>
     <string name="all_tables_new">新規作成</string>
     <string name="all_tables_switch">現在の時間割に設定</string>
@@ -77,6 +80,28 @@
     <string name="import_all_conflict">すべて競合しています — 追加できる授業がありません</string>
     <string name="import_content_empty">内容が空です</string>
     <string name="import_select_table">時間割を先に選択してください</string>
+    <string name="read_failed">読み取り失敗: %1$s</string>
+    <string name="cannot_read_file">ファイルを読み取れません</string>
+    <string name="import_preview_sub">最初にプレビュー、それからインポート</string>
+    <string name="format_wakeup_share">WakeUp 共有テキスト</string>
+    <string name="format_wakeup_desc">【来自WakeUp课程表】で始まる</string>
+    <string name="format_wakeup_json">WakeUp JSON</string>
+    <string name="format_json_desc">.jsonファイルをエクスポート</string>
+    <string name="format_ics">ICSカレンダー</string>
+    <string name="format_ics_desc">学校の教務課からエクスポート可能</string>
+    <string name="format_csv">CSVファイル</string>
+    <string name="format_csv_desc">ヘッダー付き.csv、カンマ区切り</string>
+    <string name="format_html">HTMLテーブル</string>
+    <string name="format_html_desc">&lt;table&gt;形式、ヘッダー検出後に行ごとに解析</string>
+    <string name="format_plain">プレーンテキスト</string>
+    <string name="format_plain_desc">1行1コース、タブ区切り</string>
+    <string name="import_start_date_required">学期開始日を入力してください</string>
+    <string name="start_date_format">日付形式はYYYY-MM-DDで入力してください</string>
+    <string name="slot_time_required">第%1$d時限の時間が必要です</string>
+    <string name="slot_time_invalid">第%1$d時限の時間が無効です（開始は終了より前である必要があります）</string>
+    <string name="expand">タップして展開</string>
+    <string name="collapse">タップして閉じる</string>
+    <string name="n_periods">%1$d時限</string>
 
     <string name="course_detail_title">授業詳細</string>
     <string name="course_detail_edit">編集</string>
@@ -116,6 +141,19 @@
     <string name="end_time">終了時刻</string>
     <string name="mode_by_node">時限で</string>
     <string name="mode_by_time">時刻で</string>
+    <string name="course_name_empty">コース名が必要です</string>
+    <string name="week_must_be_positive">週は0より大きくなければなりません</string>
+    <string name="slot_at_least_one_day">スロット %1$d は最低1日必要です</string>
+    <string name="slot_start_node_positive">スロット %1$d の開始時限は0より大きくなければなりません</string>
+    <string name="slot_step_positive">スロット %1$d の連続時限数は0より大きくなければなりません</string>
+    <string name="slot_time_format">スロット %1$d の開始/終了時間はHH:mm形式である必要があります</string>
+    <string name="slot_time_order">スロット %1$d の開始時間は終了時間より前である必要があります</string>
+    <string name="slot_time_overlap">スロット %1$d とスロット %2$d が %3$s で重複しています</string>
+    <string name="fix_issues_first">最初にこれらの問題を修正してください</string>
+    <string name="more_unexpanded">他に %1$d 件あります</string>
+    <string name="create_course_btn">作成</string>
+    <string name="selected_days">選択中：%1$s</string>
+    <string name="time_format_hint">形式 HH:mm</string>
 
     <string name="mine_title">マイ</string>
     <string name="mine_subtitle">時間割と設定を管理</string>
@@ -164,10 +202,56 @@
     <string name="save">保存</string>
     <string name="delete">削除</string>
     <string name="back">戻る</string>
+    <string name="action_settings">設定</string>
+    <string name="selected">選択済み</string>
     <string name="confirm_delete">削除の確認</string>
     <string name="no_course">空き</string>
     <string name="n_courses">%1$d</string>
     <string name="action_close">閉じる</string>
+
+    <!-- Widget / Common UI -->
+    <string name="widget_create_schedule">最初に時間割を作成してください</string>
+    <string name="widget_open_sleepy">Sleepyを開いて追加</string>
+    <string name="more_sections">他に %1$d コマ…</string>
+    <string name="tomorrow">明日</string>
+    <string name="n_course_periods">%1$dコマ</string>
+    <string name="course_node_format">第%1$s時限</string>
+    <string name="course_period_range">%1$d-%2$d時限</string>
+
+    <!-- JW Import -->
+    <string name="jw_no_url">教務URLが設定されていません</string>
+    <string name="jw_parse_empty">解析結果が空です。「個人時間割」ページに移動しているかご確認ください（トップ/ログインページではない）</string>
+    <string name="jw_import_success">%1$d 件の授業をインポートしました</string>
+    <string name="jw_parse_failed">解析失敗：%1$s</string>
+    <string name="jw_parse_failed_hint">\n\nヒント：HEUの場合、ブラウザでログイン後「個人時間割」ページに移動してからインポートしてください</string>
+    <string name="jw_webview_not_ready">WebViewの準備ができていません</string>
+    <string name="jw_fetching">時間割を取得中…</string>
+    <string name="jw_fetch_failed_no_response">取得失敗：ページが応答しません（読み込み中かも）</string>
+    <string name="jw_fetch_format_error">取得データの形式が異常です</string>
+    <string name="jw_fetch_failed">取得失敗：%1$s</string>
+    <string name="jw_page_not_loaded">ページが完全に読み込まれていません</string>
+    <string name="jw_after_login">ログイン後</string>
+    <string name="jw_nav_hint">「個人時間割」ページに移動し、右のボタンをタップ</string>
+    <string name="jw_import_page">このページをインポート</string>
+
+    <!-- School Select -->
+    <string name="select_school">学校を選択</string>
+    <string name="search_school">学校を検索…</string>
+    <string name="loading">読み込み中…</string>
+    <string name="no_school_found">一致する学校がありません</string>
+
+    <!-- Course Detail -->
+    <string name="course_week_range">%1$s (%2$d-%3$d週)</string>
+
+    <!-- Date/Time Pickers -->
+    <string name="select_date">日付を選択</string>
+    <string name="select_time">時間を選択</string>
+
+    <!-- Time Slot Editor -->
+    <string name="add_period">時限を追加</string>
+    <string name="start_label">開始</string>
+    <string name="end_label">終了</string>
+    <string name="delete_period">この時限を削除</string>
 
     <string name="mine_about_title">Sleepy について</string>
     <string name="mine_about">情報</string>
@@ -182,4 +266,31 @@
         <item>土</item>
         <item>日</item>
     </string-array>
+
+    <!-- Localized date / theme display -->
+    <string name="date_long_format">%1$d月%2$d日</string>
+    <string name="notif_channel_name">毎日の授業リマインダー</string>
+    <string name="notif_channel_desc">毎朝、今日の授業をお知らせします</string>
+    <string name="notif_title">今日の授業 — %1$s %2$s</string>
+    <string name="notif_text">タップして今日の時間割を表示</string>
+    <string name="theme_name_default">ライラック</string>
+    <string name="theme_name_spring">スプリング</string>
+    <string name="theme_name_ocean">オーシャン</string>
+    <string name="theme_name_peach">ピーチ</string>
+    <string name="theme_name_slate">スレート</string>
+<string name="default_table_with_num">デフォルト%1$d</string>
+    <string name="new_course">新規授業</string>
+    <string name="jw_import_title">インポート - %1$s</string>
+    <string name="month_day_format">%1$d/%2$d</string>
+    <string name="today_text">今日</string>
+    <string name="section_short">%1$d</string>
+    <string name="day_short_1">月</string>
+    <string name="day_short_2">火</string>
+    <string name="day_short_3">水</string>
+    <string name="day_short_4">木</string>
+    <string name="day_short_5">金</string>
+    <string name="day_short_6">土</string>
+    <string name="day_short_7">日</string>
+    <string name="section_node_format">第%1$d–%2$d限</string>
+    <string name="section_single">第%1$d限</string>
 </resources>

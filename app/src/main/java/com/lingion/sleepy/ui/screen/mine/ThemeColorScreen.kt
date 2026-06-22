@@ -42,8 +42,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.ThemePresets
 import com.lingion.sleepy.ui.theme.ThemePreset
@@ -68,10 +70,10 @@ fun ThemeColorScreen(
         containerColor = colors.background,
         topBar = {
             TopAppBar(
-                title = { Text("主题颜色", color = colors.onBackground) },
+                title = { Text(stringResource(R.string.theme_title), color = colors.onBackground) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回", tint = colors.onBackground)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back), tint = colors.onBackground)
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -89,7 +91,7 @@ fun ThemeColorScreen(
         ) {
             item {
                 Text(
-                    text = "跟随系统需要 Android 12 及以上。",
+                    text = stringResource(R.string.theme_system_needs_12),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
@@ -101,14 +103,14 @@ fun ThemeColorScreen(
                     selected = currentKey == ThemePresets.KEY_SYSTEM,
                     onClick = {
                         AppPrefs.setThemeKey(context, ThemePresets.KEY_SYSTEM)
-                        scope.launch { snackbar.showSnackbar("已切换为跟随系统") }
+                        scope.launch { snackbar.showSnackbar(context.getString(R.string.theme_switched_system)) }
                     }
                 )
             }
 
             item {
                 Text(
-                    text = "预设主题",
+                    text = stringResource(R.string.theme_presets),
                     style = MaterialTheme.typography.titleSmall,
                     color = colors.onBackground,
                     modifier = Modifier.padding(top = 8.dp, start = 4.dp)
@@ -129,7 +131,7 @@ fun ThemeColorScreen(
                                         selected = currentKey == preset.key,
                                         onClick = {
                                             AppPrefs.setThemeKey(context, preset.key)
-                                            scope.launch { snackbar.showSnackbar("已切换为 ${preset.displayName}") }
+                                            scope.launch { snackbar.showSnackbar(context.getString(R.string.theme_switched_preset, preset.displayName)) }
                                         }
                                     )
                                 }
@@ -184,13 +186,13 @@ private fun SystemThemeCard(
             Spacer(modifier = Modifier.width(16.dp))
             Column(modifier = Modifier.weight(1f)) {
                 Text(
-                    text = "跟随系统",
+                    text = stringResource(R.string.theme_system),
                     style = MaterialTheme.typography.titleMedium,
                     color = colors.onSurface
                 )
                 Spacer(modifier = Modifier.height(2.dp))
                 Text(
-                    text = "Material You 动态取色（Android 12+）",
+                    text = stringResource(R.string.theme_system_desc),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
@@ -198,7 +200,7 @@ private fun SystemThemeCard(
             if (selected) {
                 Icon(
                     imageVector = Icons.Outlined.Check,
-                    contentDescription = "已选中",
+                    contentDescription = stringResource(R.string.selected),
                     tint = colors.primary,
                     modifier = Modifier.size(24.dp)
                 )
@@ -244,7 +246,7 @@ private fun PresetThemeCard(
                 if (selected) {
                     Icon(
                         imageVector = Icons.Outlined.Check,
-                        contentDescription = "已选中",
+                        contentDescription = stringResource(R.string.selected),
                         tint = colors.primary,
                         modifier = Modifier.size(20.dp)
                     )

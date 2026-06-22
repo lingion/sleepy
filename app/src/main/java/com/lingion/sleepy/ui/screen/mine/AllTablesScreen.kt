@@ -64,7 +64,7 @@ fun AllTablesScreen(
                 title = { Text(stringResource(R.string.all_tables)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -121,7 +121,7 @@ fun AllTablesScreen(
                             color = colors.onSurface
                         )
                         Text(
-                            text = if (isCurrent) "当前课表 · 第${state.currentWeek}周" else "开始日期: ${table.startDate}",
+                            text = if (isCurrent) stringResource(R.string.current_table_week, state.currentWeek) else stringResource(R.string.table_start_date, table.startDate),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant
                         )
@@ -129,7 +129,7 @@ fun AllTablesScreen(
                     IconButton(onClick = { onOpenEditTable(table.id) }) {
                         Icon(
                             Icons.Outlined.Settings,
-                            contentDescription = "设置",
+                            contentDescription = stringResource(R.string.action_settings),
                             tint = colors.onSurfaceVariant,
                             modifier = Modifier.size(20.dp)
                         )

@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.schedule
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
@@ -60,7 +61,7 @@ class ScheduleViewModel : ViewModel() {
                         val now = LocalDate.now()
                         val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
                         val default = TimeTableEntity(
-                            name = "默认1",
+                            name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, 1),
                             startDate = lastWeekMonday.toString(),
                             isDefault = true
                         )
@@ -103,8 +104,8 @@ class ScheduleViewModel : ViewModel() {
     suspend fun createEmptyTable(): Long {
         val existingNames = _state.value.tables.map { it.name }
         var index = _state.value.tables.size + 1
-        var name = "默认$index"
-        while (name in existingNames) { index++; name = "默认$index" }
+        var name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index)
+        while (name in existingNames) { index++; name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index) }
         val now = LocalDate.now()
         val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
         val table = TimeTableEntity(name = name, startDate = lastWeekMonday.toString(), isDefault = false)
@@ -144,7 +145,7 @@ class ScheduleViewModel : ViewModel() {
             val empty = CourseEntity(
                 groupId = java.util.UUID.randomUUID().toString(),
                 tableId = tableId,
-                courseName = "新课程",
+                courseName = com.lingion.sleepy.SleepyApp.get().getString(com.lingion.sleepy.R.string.new_course),
                 teacher = "",
                 room = "",
                 day = DateUtils.todayDayOfWeek(),

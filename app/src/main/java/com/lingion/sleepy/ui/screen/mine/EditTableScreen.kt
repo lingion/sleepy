@@ -48,8 +48,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.TimeSlotEditor
@@ -71,6 +74,7 @@ fun EditTableScreen(
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
     val scope = rememberCoroutineScope()
+    val context = LocalContext.current
 
     // tableId == null means edit current table
     val table = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
@@ -81,7 +85,7 @@ fun EditTableScreen(
                 modifier = Modifier.fillMaxSize().padding(padding).padding(24.dp),
                 verticalArrangement = Arrangement.Center
             ) {
-                Text("课表数据未找到", color = colors.onBackground)
+                Text(stringResource(R.string.edit_table_not_found), color = colors.onBackground)
             }
         }
         return
@@ -116,10 +120,10 @@ fun EditTableScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("编辑课表") },
+                title = { Text(stringResource(R.string.edit_table_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -139,12 +143,12 @@ fun EditTableScreen(
 
             // 基础信息
             item {
-                CardSection("基础信息", "") {
+                CardSection(stringResource(R.string.edit_table_basic_info), "") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(
                             value = name,
                             onValueChange = { name = it },
-                            label = { Text("课表名称") },
+                            label = { Text(stringResource(R.string.edit_table_name)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(18.dp),
@@ -153,8 +157,8 @@ fun EditTableScreen(
                         OutlinedTextField(
                             value = startDate,
                             onValueChange = { startDate = it },
-                            label = { Text("学期开始日期") },
-                            placeholder = { Text("例如 2026-02-24") },
+                            label = { Text(stringResource(R.string.edit_table_start_date)) },
+                            placeholder = { Text(stringResource(R.string.edit_table_start_date_hint)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(18.dp),
@@ -163,7 +167,7 @@ fun EditTableScreen(
                         OutlinedTextField(
                             value = maxWeekText,
                             onValueChange = { maxWeekText = it.filter { ch -> ch.isDigit() } },
-                            label = { Text("总周数") },
+                            label = { Text(stringResource(R.string.edit_table_max_week)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
@@ -192,12 +196,12 @@ fun EditTableScreen(
                     ) {
                         Column {
                             Text(
-                                text = "节次时间表",
+                                text = stringResource(R.string.edit_table_time_slots),
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                                 color = colors.onSurface
                             )
                             Text(
-text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else "点击展开"}",
+                            text = stringResource(R.string.n_periods, slotRows.size) + " · " + if (timeSlotsExpanded) stringResource(R.string.collapse) else stringResource(R.string.expand),
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant
                             )
@@ -240,7 +244,7 @@ text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else 
                             slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
                             slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = "日期需为 yyyy-MM-dd，时间需为 HH:mm 且开始早于结束"
+                            error = context.getString(R.string.edit_table_validation_error)
                             return@Button
                         }
                         error = null
@@ -260,7 +264,7 @@ text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else 
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("保存课表设置")
+                    Text(stringResource(R.string.edit_table_save))
                 }
             }
 
@@ -274,7 +278,7 @@ text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else 
                 ) {
                     Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("删除课表", color = colors.onErrorContainer)
+                    Text(stringResource(R.string.edit_table_delete), color = colors.onErrorContainer)
                 }
             }
 
@@ -286,8 +290,8 @@ text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else 
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             containerColor = colors.surface,
-            title = { Text("确认删除", color = colors.onSurface) },
-            text = { Text("确定要删除课表「${table.name}」吗？此操作不可撤销。", color = colors.onSurfaceVariant) },
+            title = { Text(stringResource(R.string.edit_table_delete_confirm), color = colors.onSurface) },
+            text = { Text(stringResource(R.string.edit_table_delete_msg, table.name), color = colors.onSurfaceVariant) },
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteConfirm = false
@@ -295,10 +299,10 @@ text = "${slotRows.size} 节课 · ${if (timeSlotsExpanded) "点击收起" else 
                         viewModel.deleteTable(table.id)
                         onDeleted()
                     }
-                }) { Text("删除", color = colors.error) }
+                }) { Text(stringResource(R.string.delete), color = colors.error) }
             },
             dismissButton = {
-                TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") }
+                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }

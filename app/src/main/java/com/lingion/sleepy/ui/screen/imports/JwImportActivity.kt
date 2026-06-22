@@ -34,6 +34,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import androidx.compose.runtime.rememberCoroutineScope
+import com.lingion.sleepy.R
 
 /**
  * 教务直连导入主屏
@@ -70,7 +71,7 @@ class JwImportActivity : ComponentActivity() {
                         SchoolSelectScreen(
                             onSchoolSelected = { school ->
                                 if (school.url.isBlank()) {
-                                    errorMsg = "该学校暂未配置教务 URL"
+                                    errorMsg = getString(R.string.jw_no_url)
                                     return@SchoolSelectScreen
                                 }
                                 selectedSchool = school
@@ -89,28 +90,28 @@ class JwImportActivity : ComponentActivity() {
                                 school = school,
                                 onHtmlCaptured = { html, sch ->
                                     Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} type=${sch.type}")
-                                    statusMsg = "解析中…"
+                                    statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
                                             val courses = jwViewModel.parseHtml(html, sch.type ?: "")
                                             Log.d("JwImport", "parseHtml returned ${courses.size} courses")
                                             if (courses.isEmpty()) {
-                                                errorMsg = "解析结果为空，请确认已到达「个人课表」页（而非首页/登录页）"
+                                                errorMsg = getString(R.string.jw_parse_empty)
                                                 statusMsg = null
                                                 return@launch
                                             }
                                             // 落库：直接进新课表
                                             val tableId = jwViewModel.importAsNewTable(
                                                 courses = courses,
-                                                tableName = "教务导入 - ${sch.name}",
+                                                tableName = getString(R.string.jw_import_title, sch.name),
                                                 startDate = null
                                             )
                                             Log.d("JwImport", "importAsNewTable tableId=$tableId courses=${courses.size}")
-                                            statusMsg = "成功导入 ${courses.size} 门课程"
+                                            statusMsg = getString(R.string.jw_import_success, courses.size)
                                             importFinished = true
                                         } catch (e: Exception) {
                                             Log.e("JwImport", "parseHtml failed", e)
-                                            errorMsg = "解析失败: ${e.message}\n\n提示：HEU 需在浏览器中登录后导航到『个人课表』页面再点导入"
+                                            errorMsg = getString(R.string.jw_parse_failed, e.message ?: "") + getString(R.string.jw_parse_failed_hint)
                                             statusMsg = null
                                         }
                                     }

@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -22,7 +23,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -59,7 +62,7 @@ fun CourseDetailSheet(
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
                 // Header
                 SheetHeader(
-                    title = course.courseName.ifBlank { "课程详情" }
+                    title = course.courseName.ifBlank { stringResource(R.string.course_detail_title) }
                 )
 
                 // Body
@@ -73,16 +76,16 @@ fun CourseDetailSheet(
                         TimeChip(text = timeString)
                     }
 
-                    DetailRow(key = "课程", value = course.courseName.ifBlank { "—" })
+                    DetailRow(key = stringResource(R.string.course_field_name), value = course.courseName.ifBlank { "—" })
                     if (course.teacher.isNotBlank()) {
-                        DetailRow(key = "老师", value = course.teacher)
+                        DetailRow(key = stringResource(R.string.course_field_teacher), value = course.teacher)
                     }
                     if (course.room.isNotBlank()) {
-                        DetailRow(key = "地点", value = course.room)
+                        DetailRow(key = stringResource(R.string.course_field_room), value = course.room)
                     }
-                    DetailRow(key = "时间", value = "${course.shortNodeString} (${course.startWeek}-${course.endWeek}周)")
+                    DetailRow(key = stringResource(R.string.course_field_week), value = stringResource(R.string.course_week_range, course.shortNodeString(LocalContext.current), course.startWeek, course.endWeek))
                     if (course.note.isNotBlank()) {
-                        DetailRow(key = "备注", value = course.note)
+                        DetailRow(key = stringResource(R.string.course_field_note), value = course.note)
                     }
 
                     if (onEdit != null) {
@@ -92,7 +95,7 @@ fun CourseDetailSheet(
                             shape = RoundedCornerShape(18.dp),
                             colors = ButtonDefaults.buttonColors(containerColor = SleepyTheme.colors.primary)
                         ) {
-                            Text("编辑这节课")
+                            Text(stringResource(R.string.course_detail_edit_course))
                         }
                     }
                 }

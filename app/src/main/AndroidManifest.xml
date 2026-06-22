@@ -109,6 +109,13 @@
             android:label="教务直连导入"
             android:theme="@style/Theme.Sleepy" />
 
+        <!-- WeekGridWidget 预览 Activity (debug only, 用于在 emulator 截图验证) -->
+        <activity
+            android:name=".widget.WeekGridPreviewActivity"
+            android:exported="true"
+            android:label="Widget 预览"
+            android:theme="@style/Theme.Sleepy" />
+
     </application>
 
 </manifest>

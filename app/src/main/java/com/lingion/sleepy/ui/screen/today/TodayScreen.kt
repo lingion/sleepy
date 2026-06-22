@@ -30,6 +30,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -68,7 +69,7 @@ fun TodayScreen(
             item { EmptyToday() }
         } else {
             item {
-                SectionHead(title = "今日课程", action = "${todayCourses.size} 节")
+                SectionHead(title = stringResource(R.string.widget_today_label), action = stringResource(R.string.n_periods, todayCourses.size))
             }
             items(todayCourses, key = { it.id }) { course ->
                 TodayCourseCard(course = course, timeJson = state.currentTable?.timeJson)
@@ -80,6 +81,7 @@ fun TodayScreen(
 @Composable
 private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
     val colors = SleepyTheme.colors
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -88,7 +90,7 @@ private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
             .padding(16.dp)
     ) {
         Text(
-            text = "今天",
+            text = stringResource(R.string.today_today),
             style = MaterialTheme.typography.labelMedium,
             color = colors.onSurfaceVariant
         )
@@ -98,12 +100,12 @@ private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Text(
-                text = "${date.monthValue}月${date.dayOfMonth}日",
+                text = stringResource(R.string.date_long_format, date.monthValue, date.dayOfMonth),
                 style = MaterialTheme.typography.headlineMedium,
                 color = colors.onSurface
             )
             Text(
-                text = DateUtils.chineseDay(date.dayOfWeek.value),
+                text = DateUtils.localizedDay(date.dayOfWeek.value, context),
                 style = MaterialTheme.typography.titleMedium,
                 color = colors.onSurfaceVariant,
                 modifier = Modifier.padding(bottom = 4.dp)
@@ -114,9 +116,9 @@ private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Stat(label = "第 $week 周", bg = colors.primaryContainer, fg = colors.onPrimaryContainer)
+            Stat(label = stringResource(R.string.schedule_current_week, week), bg = colors.primaryContainer, fg = colors.onPrimaryContainer)
             Stat(
-                label = if (count == 0) "无课程" else "$count 节课程",
+                label = if (count == 0) stringResource(R.string.no_course) else stringResource(R.string.n_course_periods, count),
                 bg = colors.tertiaryContainer,
                 fg = colors.onTertiaryContainer
             )
@@ -161,7 +163,7 @@ private fun EmptyToday() {
             color = colors.onSurface
         )
         Text(
-            text = "今日无课程",
+            text = stringResource(R.string.today_no_course),
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )
@@ -172,6 +174,7 @@ private fun EmptyToday() {
 private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
+    val context = LocalContext.current
     val bg = pickCourseColor(course, palette)
     val time = if (course.ownTime && course.startTime.isNotBlank() && course.endTime.isNotBlank()) {
         "${course.startTime}-${course.endTime}"
@@ -188,13 +191,13 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // 时间槽 — 固定宽度避免 “10:20-12:45” 被截断
+        // 时间槽 — 固定宽度避免 "10:20-12:45" 被截断
         Column(
             modifier = Modifier.width(76.dp),
             horizontalAlignment = Alignment.Start
         ) {
             Text(
-                text = course.shortNodeString,
+                text = course.shortNodeString(context),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
                 color = colors.onSurface
             )

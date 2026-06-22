@@ -28,6 +28,9 @@
     <string name="manage_edit_current_sub">編輯課表名稱、日期、節次時間</string>
     <string name="manage_manual_add">手動新增課程</string>
     <string name="manage_manual_add_sub">直接新增一門課程到目前課表</string>
+    <string name="table_info">開始日期: %1$s  |  第%2$d週  |  %3$d門課</string>
+    <string name="current_table_week">當前課表 · 第%1$d週</string>
+    <string name="table_start_date">開始日期: %1$s</string>
     <string name="all_tables">所有課表</string>
     <string name="all_tables_new">建立課表</string>
     <string name="all_tables_switch">切換為目前</string>
@@ -77,6 +80,28 @@
     <string name="import_all_conflict">沒有可附加課程，全部與現有課表衝突</string>
     <string name="import_content_empty">內容為空</string>
     <string name="import_select_table">請先選擇課表</string>
+    <string name="read_failed">讀取失敗: %1$s</string>
+    <string name="cannot_read_file">無法讀取檔案</string>
+    <string name="import_preview_sub">先預覽，再導入，不讓課表被一把覆蓋</string>
+    <string name="format_wakeup_share">WakeUp 分享文本</string>
+    <string name="format_wakeup_desc">【來自WakeUp課程表】開頭</string>
+    <string name="format_wakeup_json">WakeUp JSON</string>
+    <string name="format_json_desc">導出文件 .json</string>
+    <string name="format_ics">ICS 日曆</string>
+    <string name="format_ics_desc">可從學校教務處導出</string>
+    <string name="format_csv">CSV 文件</string>
+    <string name="format_csv_desc">含表頭的 .csv，逗號分隔</string>
+    <string name="format_html">HTML 表格</string>
+    <string name="format_html_desc">&lt;table&gt; 形式，識別表頭後逐行解析</string>
+    <string name="format_plain">純文本</string>
+    <string name="format_plain_desc">一行一課，製表符分隔</string>
+    <string name="import_start_date_required">請填寫學期開始日期</string>
+    <string name="start_date_format">日期格式應為YYYY-MM-DD</string>
+    <string name="slot_time_required">第 %1$d 節時間不能為空</string>
+    <string name="slot_time_invalid">第 %1$d 節時間無效（開始須早於結束）</string>
+    <string name="expand">點擊展開</string>
+    <string name="collapse">點擊收起</string>
+    <string name="n_periods">%1$d 節課</string>
 
     <string name="course_detail_title">課程詳情</string>
     <string name="course_detail_edit">編輯</string>
@@ -116,6 +141,19 @@
     <string name="end_time">結束時間</string>
     <string name="mode_by_node">按節次</string>
     <string name="mode_by_time">按時間</string>
+    <string name="course_name_empty">課程名不能為空</string>
+    <string name="week_must_be_positive">週次必須大於 0</string>
+    <string name="slot_at_least_one_day">時段 %1$d 至少選擇一天</string>
+    <string name="slot_start_node_positive">時段 %1$d 的開始節必須大於 0</string>
+    <string name="slot_step_positive">時段 %1$d 的連上節數必須大於 0</string>
+    <string name="slot_time_format">時段 %1$d 的開始/結束時間格式應為 HH:mm</string>
+    <string name="slot_time_order">時段 %1$d 的開始時間必須早於結束時間</string>
+    <string name="slot_time_overlap">時段 %1$d 與時段 %2$d 在 %3$s 存在時間重疊</string>
+    <string name="fix_issues_first">請先修正這些問題</string>
+    <string name="more_unexpanded">還有 %1$d 條未展開</string>
+    <string name="create_course_btn">建立課程</string>
+    <string name="selected_days">已選：%1$s</string>
+    <string name="time_format_hint">格式 HH:mm</string>
 
     <string name="mine_title">我的</string>
     <string name="mine_subtitle">管理你的課表與設定</string>
@@ -164,10 +202,56 @@
     <string name="save">儲存</string>
     <string name="delete">刪除</string>
     <string name="back">返回</string>
+    <string name="action_settings">設定</string>
+    <string name="selected">已選中</string>
     <string name="confirm_delete">確認刪除</string>
     <string name="no_course">無課</string>
     <string name="n_courses">%1$d 門</string>
     <string name="action_close">關閉</string>
+
+    <!-- Widget / Common UI -->
+    <string name="widget_create_schedule">請先創建課表</string>
+    <string name="widget_open_sleepy">打開 Sleepy 開始添加</string>
+    <string name="more_sections">還有 %1$d 節…</string>
+    <string name="tomorrow">明天</string>
+    <string name="n_course_periods">%1$d 節課程</string>
+    <string name="course_node_format">第%1$s節</string>
+    <string name="course_period_range">%1$d-%2$d節</string>
+
+    <!-- JW Import -->
+    <string name="jw_no_url">該學校暫未配置教務 URL</string>
+    <string name="jw_parse_empty">解析結果為空，請確認已到達「個人課表」頁（而非首頁/登入頁）</string>
+    <string name="jw_import_success">成功匯入 %1$d 門課程</string>
+    <string name="jw_parse_failed">解析失敗：%1$s</string>
+    <string name="jw_parse_failed_hint">\n\n提示：HEU 需在瀏覽器中登入後導航到『個人課表』頁面再點匯入</string>
+    <string name="jw_webview_not_ready">WebView 未就緒</string>
+    <string name="jw_fetching">正在抓取課表…</string>
+    <string name="jw_fetch_failed_no_response">抓取失敗：網頁無回應（可能還在載入）</string>
+    <string name="jw_fetch_format_error">抓取返回格式異常</string>
+    <string name="jw_fetch_failed">抓取失敗：%1$s</string>
+    <string name="jw_page_not_loaded">頁面尚未完全載入</string>
+    <string name="jw_after_login">完成登入後</string>
+    <string name="jw_nav_hint">導航到「個人課表」頁，再點右側按鈕</string>
+    <string name="jw_import_page">匯入此頁</string>
+
+    <!-- School Select -->
+    <string name="select_school">選擇學校</string>
+    <string name="search_school">搜尋學校…</string>
+    <string name="loading">載入中…</string>
+    <string name="no_school_found">未找到匹配的學校</string>
+
+    <!-- Course Detail -->
+    <string name="course_week_range">%1$s (%2$d-%3$d週)</string>
+
+    <!-- Date/Time Pickers -->
+    <string name="select_date">選擇日期</string>
+    <string name="select_time">選擇時間</string>
+
+    <!-- Time Slot Editor -->
+    <string name="add_period">添加一節</string>
+    <string name="start_label">開始</string>
+    <string name="end_label">結束</string>
+    <string name="delete_period">刪除此節</string>
 
     <string name="mine_about_title">關於 Sleepy 課表</string>
     <string name="mine_about">關於</string>
@@ -182,4 +266,31 @@
         <item>週六</item>
         <item>週日</item>
     </string-array>
+
+    <!-- Localized date / theme display -->
+    <string name="date_long_format">%1$d月%2$d日</string>
+    <string name="notif_channel_name">每日課程提醒</string>
+    <string name="notif_channel_desc">每天早上推送今日課程安排</string>
+    <string name="notif_title">今日課程 — %1$s %2$s</string>
+    <string name="notif_text">點擊查看今日課程安排</string>
+    <string name="theme_name_default">預設淡紫</string>
+    <string name="theme_name_spring">春綠</string>
+    <string name="theme_name_ocean">海藍</string>
+    <string name="theme_name_peach">蜜桃粉</string>
+    <string name="theme_name_slate">石板灰</string>
+<string name="default_table_with_num">預設%1$d</string>
+    <string name="new_course">新課程</string>
+    <string name="jw_import_title">教務匯入 - %1$s</string>
+    <string name="month_day_format">%1$d月%2$d日</string>
+    <string name="today_text">今天</string>
+    <string name="section_short">%1$d</string>
+    <string name="day_short_1">一</string>
+    <string name="day_short_2">二</string>
+    <string name="day_short_3">三</string>
+    <string name="day_short_4">四</string>
+    <string name="day_short_5">五</string>
+    <string name="day_short_6">六</string>
+    <string name="day_short_7">日</string>
+    <string name="section_node_format">第%1$d–%2$d節</string>
+    <string name="section_single">第%1$d 節</string>
 </resources>

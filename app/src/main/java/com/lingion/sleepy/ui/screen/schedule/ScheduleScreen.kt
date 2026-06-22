@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -130,7 +131,7 @@ fun ScheduleScreen(
         // 详情 Bottom Sheet
         CourseDetailSheet(
             course = selectedCourse,
-            timeString = selectedCourse?.let { it.nodeString },
+            timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
             onDismiss = { selectedCourse = null },
             onEdit = { course ->
                 selectedCourse = null
@@ -159,7 +160,7 @@ private fun TopBar(
     ) {
         WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
         Text(
-            text = "第 $currentWeek 周",
+            text = stringResource(R.string.schedule_current_week, currentWeek),
             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colors.primary,
             modifier = Modifier
@@ -211,12 +212,12 @@ private fun EmptyState(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "还没有课表",
+            text = stringResource(R.string.schedule_empty),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colors.onSurface
         )
         Text(
-            text = "前往“课表管理”导入，或手动创建第一门课。真正有课之后，再展示周视图和网格。",
+            text = stringResource(R.string.schedule_empty_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )
@@ -226,7 +227,7 @@ private fun EmptyState(
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text("前往课表管理", color = colors.onPrimary)
+            Text(stringResource(R.string.schedule_go_manage), color = colors.onPrimary)
         }
         Button(
             onClick = onManualAdd,
@@ -234,7 +235,7 @@ private fun EmptyState(
             shape = RoundedCornerShape(18.dp),
             colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
-            Text("手动创建第一门课", color = colors.onSecondaryContainer)
+            Text(stringResource(R.string.schedule_manual_first), color = colors.onSecondaryContainer)
         }
     }
 }

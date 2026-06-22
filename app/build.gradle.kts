@@ -13,10 +13,14 @@ android {
         applicationId = "com.lingion.sleepy"
         minSdk = 24
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.0.8"
+        versionCode = 9
+        versionName = "1.0.9"
         vectorDrawables { useSupportLibrary = true }
-        resourceConfigurations += setOf("zh", "en")
+        // Explicit locales bundled into the APK. Default resources in values/
+        // (zh-CN content) are always kept. We list zh-rCN explicitly so that
+        // runtime locale resolution for "zh-CN" finds a direct match in
+        // values-zh-rCN/ rather than relying on a fallback to the default.
+        resourceConfigurations += setOf("zh-rCN", "zh-rTW", "en", "ja", "es")
     }
 
     buildTypes {

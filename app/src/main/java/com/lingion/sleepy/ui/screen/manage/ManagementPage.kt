@@ -89,7 +89,7 @@ fun ManagementPage(
                             color = colors.onSurface
                         )
                         Text(
-                            text = "开始日期: ${table.startDate}  |  第${state.currentWeek}周  |  ${state.courses.size}门课",
+                            text = stringResource(R.string.table_info, table.startDate, state.currentWeek, state.courses.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant
                         )
@@ -103,13 +103,13 @@ fun ManagementPage(
                     ManageCard(
                         icon = Icons.Outlined.FileUpload,
                         title = stringResource(R.string.manage_import),
-                        subtitle = "从文件 / 文本 / CSV 导入课表",
+                        subtitle = stringResource(R.string.manage_import_sub),
                         onClick = onOpenImport
                     )
                     ManageCard(
                         icon = Icons.Outlined.Add,
                         title = stringResource(R.string.manage_new_table),
-                        subtitle = "创建一张空白课表，手动添加课程",
+                        subtitle = stringResource(R.string.manage_new_table_sub),
                         onClick = {
                             scope.launch { viewModel.createEmptyTable() }
                             onCreateNewTable()
@@ -118,7 +118,7 @@ fun ManagementPage(
                     ManageCard(
                         icon = Icons.Outlined.Edit,
                         title = stringResource(R.string.manage_edit_current),
-                        subtitle = "编辑当前课表名称、日期、节次时间",
+                        subtitle = stringResource(R.string.manage_edit_current_sub),
                         onClick = onEditCurrentTable
                     )
                 }
@@ -128,8 +128,8 @@ fun ManagementPage(
             item {
                 ManageCard(
                     icon = Icons.Outlined.Add,
-                    title = stringResource(R.string.import_manual),
-                    subtitle = "直接添加一门课程到当前课表",
+                    title = stringResource(R.string.manage_manual_add),
+                    subtitle = stringResource(R.string.manage_manual_add_sub),
                     onClick = onManualAdd
                 )
             }

@@ -61,6 +61,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import com.lingion.sleepy.util.DateUtils
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -120,10 +121,10 @@ fun ImportScreen(
                 isLoading = true
                 try {
                     val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.readText()
-                        ?: throw Exception("无法读取文件")
-                    preview = buildImportPreview(text, state) { msg -> errorMsg = msg }
+                        ?: throw Exception(context.getString(R.string.cannot_read_file))
+                    preview = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
                 } catch (e: Exception) {
-                    errorMsg = "读取失败: ${e.message}"
+                    errorMsg = context.getString(R.string.read_failed, e.message)
                 } finally {
                     isLoading = false
                 }
@@ -144,7 +145,7 @@ fun ImportScreen(
                 title = { Text(stringResource(R.string.import_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -173,7 +174,7 @@ fun ImportScreen(
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "先预览，再导入，不让课表被一把覆盖",
+                        text = stringResource(R.string.import_preview_sub),
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onSurfaceVariant
                     )
@@ -235,7 +236,7 @@ fun ImportScreen(
                         modifier = Modifier
                             .fillMaxWidth()
                             .height(160.dp),
-                        placeholder = { Text("粘贴课表文本…", color = colors.onSurfaceVariant) },
+                        placeholder = { Text(stringResource(R.string.import_paste_hint), color = colors.onSurfaceVariant) },
                         enabled = !isLoading,
                         shape = RoundedCornerShape(12.dp),
                         colors = fieldColors
@@ -245,7 +246,7 @@ fun ImportScreen(
                             scope.launch {
                                 isLoading = true
                                 try {
-                                    preview = buildImportPreview(inputText, state) { msg -> errorMsg = msg }
+                                    preview = buildImportPreview(inputText, state, context) { msg -> errorMsg = msg }
                                 } finally {
                                     isLoading = false
                                 }
@@ -259,7 +260,7 @@ fun ImportScreen(
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(
-                            text = if (isLoading) "解析中…" else "预览导入",
+                            text = if (isLoading) stringResource(R.string.import_parsing) else stringResource(R.string.import_preview),
                             color = colors.onPrimary,
                             style = MaterialTheme.typography.labelLarge
                         )
@@ -276,17 +277,17 @@ fun ImportScreen(
                         .padding(16.dp)
                 ) {
                     Text(
-                        text = "支持格式",
+                        text = stringResource(R.string.import_supported_formats),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = colors.onSurface
                     )
                     Spacer(modifier = Modifier.height(12.dp))
-                    FormatRow("WakeUp 分享文本", "【来自WakeUp课程表】开头")
-                    FormatRow("WakeUp JSON", "导出文件 .json")
-                    FormatRow("ICS 日历", "可从学校教务处导出")
-                    FormatRow("CSV 文件", "含表头的 .csv，逗号分隔")
-                    FormatRow("HTML 表格", "<table> 形式，识别表头后逐行解析")
-                    FormatRow("纯文本", "一行一课，制表符分隔")
+                    FormatRow(stringResource(R.string.format_wakeup_share), stringResource(R.string.format_wakeup_desc))
+                    FormatRow(stringResource(R.string.format_wakeup_json), stringResource(R.string.format_json_desc))
+                    FormatRow(stringResource(R.string.format_ics), stringResource(R.string.format_ics_desc))
+                    FormatRow(stringResource(R.string.format_csv), stringResource(R.string.format_csv_desc))
+                    FormatRow(stringResource(R.string.format_html), stringResource(R.string.format_html_desc))
+                    FormatRow(stringResource(R.string.format_plain), stringResource(R.string.format_plain_desc))
                 }
             }
         }
@@ -325,6 +326,7 @@ fun ImportScreen(
                             mode = mode,
                             confirmedStartDate = confirmedStartDate,
                             confirmedTimeJson = confirmedTimeJson,
+                            context = context,
                             onImported = onImported
                         ) { msg -> errorMsg = msg }
                         preview = null
@@ -446,9 +448,9 @@ private fun ImportPreviewDialog(
         textContentColor = colors.onSurfaceVariant,
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Text("导入预览", style = MaterialTheme.typography.titleLarge)
+                Text(stringResource(R.string.import_preview_title), style = MaterialTheme.typography.titleLarge)
                 Text(
-                    text = "目标课表：${preview.targetTableName}",
+                    text = stringResource(R.string.import_target_table, preview.targetTableName),
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
@@ -461,21 +463,21 @@ private fun ImportPreviewDialog(
                     horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
                     PreviewMetricCard(
-                        label = "导入课程",
+                        label = stringResource(R.string.import_courses),
                         value = preview.incomingCount.toString(),
                         bg = colors.primaryContainer,
                         fg = colors.onPrimaryContainer,
                         modifier = Modifier.weight(1f)
                     )
                     PreviewMetricCard(
-                        label = "冲突课程",
+                        label = stringResource(R.string.import_conflicts),
                         value = preview.conflictCount.toString(),
                         bg = if (preview.conflictCount > 0) Color(0xFFFFE1DE) else colors.secondaryContainer,
                         fg = if (preview.conflictCount > 0) Color(0xFF8C1D18) else colors.onSecondaryContainer,
                         modifier = Modifier.weight(1f)
                     )
                     PreviewMetricCard(
-                        label = "可追加",
+                        label = stringResource(R.string.import_appendable),
                         value = preview.cleanCount.toString(),
                         bg = colors.tertiaryContainer,
                         fg = colors.onTertiaryContainer,
@@ -491,13 +493,13 @@ private fun ImportPreviewDialog(
                         .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    PreviewInfoRow("导入后课表名", preview.parseResult.tableName)
-                    PreviewInfoRow("学期开始日期", preview.parseResult.startDate)
+                    PreviewInfoRow(stringResource(R.string.import_table_name), preview.parseResult.tableName)
+                    PreviewInfoRow(stringResource(R.string.import_start_date), preview.parseResult.startDate)
                     PreviewInfoRow(
-                        "建议",
+                        stringResource(R.string.import_suggestion),
                         when {
-                            preview.conflictCount == 0 -> "没有冲突，可直接追加或覆盖"
-                            else -> "发现 ${preview.conflictCount} 门冲突课程。建议导入为新课表，或仅追加无冲突部分。"
+                            preview.conflictCount == 0 -> stringResource(R.string.import_no_conflict)
+                            else -> stringResource(R.string.import_conflict_count, preview.conflictCount)
                         }
                     )
                 }
@@ -512,20 +514,20 @@ private fun ImportPreviewDialog(
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Text(
-                            text = "冲突预览",
+                            text = stringResource(R.string.import_conflicts),
                             style = MaterialTheme.typography.titleSmall,
                             color = colors.onSurface
                         )
                         preview.conflicts.take(3).forEach { conflict ->
                             Text(
-                                text = "• ${conflict.incoming.courseName} ↔ ${conflict.existing.courseName}（周${conflict.incoming.day} ${conflict.incoming.shortNodeString}）",
+                                text = "• ${conflict.incoming.courseName} ↔ ${conflict.existing.courseName}（${DateUtils.localizedDay(conflict.incoming.day, LocalContext.current)} ${conflict.incoming.shortNodeString(LocalContext.current)}）",
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant
                             )
                         }
                         if (preview.conflicts.size > 3) {
                             Text(
-                                text = "还有 ${preview.conflicts.size - 3} 条冲突未展开",
+                                text = stringResource(R.string.import_conflict_more, preview.conflicts.size - 3),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = colors.onSurfaceVariant
                             )
@@ -546,7 +548,7 @@ private fun ImportPreviewDialog(
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
-                        Text("仅追加无冲突", maxLines = 1)
+                        Text(stringResource(R.string.import_append_only), maxLines = 1)
                     }
                     Button(
                         onClick = { onApply(ImportApplyMode.ImportAsNew) },
@@ -554,7 +556,7 @@ private fun ImportPreviewDialog(
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
-                        Text("导入为新课表", maxLines = 1)
+                        Text(stringResource(R.string.import_as_new), maxLines = 1)
                     }
                 }
                 OutlinedButton(
@@ -563,10 +565,10 @@ private fun ImportPreviewDialog(
                     shape = RoundedCornerShape(14.dp),
                     colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.error)
                 ) {
-                    Text("⚠ 覆盖当前（谨慎）")
+                    Text(stringResource(R.string.import_overwrite))
                 }
                 TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
-                    Text("取消", color = colors.onSurfaceVariant)
+                    Text(stringResource(R.string.cancel), color = colors.onSurfaceVariant)
                 }
             }
         },
@@ -613,6 +615,7 @@ private fun ImportConfirmDialog(
     onConfirm: () -> Unit
 ) {
     val colors = SleepyTheme.colors
+    val context = LocalContext.current
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = colors.onSurface,
         unfocusedTextColor = colors.onSurface,
@@ -631,18 +634,18 @@ private fun ImportConfirmDialog(
     AlertDialog(
         onDismissRequest = onDismiss,
         containerColor = colors.surface,
-        title = { Text("导入前确认", color = colors.onSurface) },
+        title = { Text(stringResource(R.string.import_confirm_title), color = colors.onSurface) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 Text(
-                    text = "先确认学期开始日期和每节时间，不然当前周次会一直不准。",
+                    text = stringResource(R.string.import_confirm_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant
                 )
                 DatePickerField(
                     value = startDate,
                     onValueChange = onStartDateChange,
-                    label = "第一周从哪天开始",
+                    label = stringResource(R.string.import_week_start),
                     modifier = Modifier.fillMaxWidth(),
                     isError = errorMsg != null
                 )
@@ -674,17 +677,17 @@ private fun ImportConfirmDialog(
             TextButton(onClick = {
                 // Validate
                 if (startDate.isBlank()) {
-                    errorMsg = "请填写学期开始日期"
+                    errorMsg = context.getString(R.string.import_start_date_required)
                     return@TextButton
                 }
                 val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
                 if (!dateRegex.matches(startDate)) {
-                    errorMsg = "日期格式应为 YYYY-MM-DD"
+                    errorMsg = context.getString(R.string.start_date_format)
                     return@TextButton
                 }
                 val emptyRows = rows.filter { it.start.isBlank() || it.end.isBlank() }
                 if (emptyRows.isNotEmpty()) {
-                    errorMsg = "第${emptyRows.first().node}节时间不能为空"
+                    errorMsg = context.getString(R.string.slot_time_required, emptyRows.first().node)
                     return@TextButton
                 }
                 val timeRegex = Regex("""^\d{2}:\d{2}$""")
@@ -693,19 +696,19 @@ private fun ImportConfirmDialog(
                     it.start >= it.end
                 }
                 if (invalidRows.isNotEmpty()) {
-                    errorMsg = "第${invalidRows.first().node}节时间无效（开始须早于结束）"
+                    errorMsg = context.getString(R.string.slot_time_invalid, invalidRows.first().node)
                     return@TextButton
                 }
                 errorMsg = null
                 onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(rows))
                 onConfirm()
             }) {
-                Text("确认导入")
+                Text(stringResource(R.string.import_confirm))
             }
         },
         dismissButton = {
             TextButton(onClick = onDismiss) {
-                Text("返回")
+                Text(stringResource(R.string.back))
             }
         }
     )
@@ -716,15 +719,16 @@ private fun ImportConfirmDialog(
 private suspend fun buildImportPreview(
     text: String,
     state: ScheduleState,
+    context: android.content.Context,
     onError: (String) -> Unit
 ): ImportPreview? {
     if (text.isBlank()) {
-        onError("内容为空")
+        onError(context.getString(R.string.import_content_empty))
         return null
     }
     val tableId = state.selectedTableId
     if (tableId == null) {
-        onError("请先选择课表")
+        onError(context.getString(R.string.import_select_table))
         return null
     }
 
@@ -740,14 +744,14 @@ private suspend fun buildImportPreview(
             }
             ImportPreview(
                 targetTableId = tableId,
-                targetTableName = existingTable?.name ?: "当前课表",
+                targetTableName = existingTable?.name ?: context.getString(R.string.manage_current_table),
                 parseResult = parseResult,
                 existingCourses = existingCourses,
                 conflicts = conflicts
             )
         },
         onFailure = { e ->
-            onError("解析失败: ${e.message}")
+            onError(context.getString(R.string.import_failed, e.message))
             null
         }
     )
@@ -758,6 +762,7 @@ private suspend fun applyImportPreview(
     mode: ImportApplyMode,
     confirmedStartDate: String,
     confirmedTimeJson: String,
+    context: android.content.Context,
     onImported: () -> Unit,
     onError: (String) -> Unit
 ): Long? {
@@ -783,7 +788,7 @@ private suspend fun applyImportPreview(
             val base = repo.getTable(preview.targetTableId)
             val newTableId = repo.insertTable(
                 TimeTableEntity(
-                    name = uniqueImportedTableName(preview.parseResult.tableName, repo.getAllTables().map { it.name }),
+                    name = uniqueImportedTableName(preview.parseResult.tableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
                     maxWeek = base?.maxWeek ?: 20,
                     nodesPerDay = base?.nodesPerDay ?: 12,
@@ -803,7 +808,7 @@ private suspend fun applyImportPreview(
                 preview.existingCourses.any { existing -> coursesConflict(incoming, existing) }
             }
             if (cleanCourses.isEmpty()) {
-                onError("没有可追加课程，全部与现有课表冲突")
+                onError(context.getString(R.string.import_all_conflict))
                 return null
             }
             repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
@@ -823,9 +828,10 @@ private fun coursesConflict(a: CourseEntity, b: CourseEntity): Boolean {
     return aStart <= bEnd && bStart <= aEnd
 }
 
-private fun uniqueImportedTableName(base: String, existingNames: List<String>): String {
-    val effective = base.ifBlank { "默认" }
-    if (effective !in existingNames) return effective.ifBlank { "默认1" }
+private fun uniqueImportedTableName(base: String, existingNames: List<String>, context: android.content.Context): String {
+    val default = context.getString(R.string.default_table_name)
+    val effective = base.ifBlank { default }
+    if (effective !in existingNames) return effective.ifBlank { "${default}1" }
     var index = 2
     while ("${effective}$index" in existingNames || "${effective}($index)" in existingNames) index++
     return "${effective}$index"

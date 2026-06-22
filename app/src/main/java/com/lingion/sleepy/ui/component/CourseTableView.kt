@@ -27,10 +27,13 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -51,7 +54,9 @@ data class TimeSlot(
     val nodeStart: Int,
     val nodeEnd: Int
 ) {
-    val nodeString: String get() = "第$nodeStart-${nodeEnd}节"
+    val nodeString: String get() = "第$nodeStart-${nodeEnd}节"  // unused; see nodeString(context) for localized version
+    fun nodeString(context: android.content.Context): String =
+        context.getString(com.lingion.sleepy.R.string.course_node_format, "$nodeStart-$nodeEnd")
     val timeString: String get() = "$displayStart-$displayEnd"
 }
 
@@ -226,9 +231,9 @@ private fun CourseCardCell(
             if (steps > 1) {
                 val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
                     TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-                        ?: "${course.startNode}-${course.startNode + steps - 1}节"
+                        ?: stringResource(R.string.course_period_range, course.startNode, course.startNode + steps - 1)
                 } else {
-                    "${course.startNode}-${course.startNode + steps - 1}节"
+                    stringResource(R.string.course_period_range, course.startNode, course.startNode + steps - 1)
                 }
                 Text(
                     text = timeLabel,
@@ -241,8 +246,10 @@ private fun CourseCardCell(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.chineseDay(day), modifier: Modifier = Modifier) {
+private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String? = null, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
+    val context = LocalContext.current
+    val resolvedLabel = dayLabel ?: DateUtils.localizedDay(day, context)
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
     val subFg = if (isToday) colors.onPrimaryContainer.copy(alpha = 0.78f) else colors.onSurfaceVariant
@@ -261,7 +268,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             Text(
-                text = dayLabel,
+                text = resolvedLabel,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = fg,
                 maxLines = 1
@@ -275,7 +282,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
                 )
             } else {
                 Text(
-                    text = if (courseCount == 0) "无课" else "$courseCount 门",
+                    text = if (courseCount == 0) stringResource(R.string.no_course) else stringResource(R.string.n_courses, courseCount),
                     style = SleepyTextStyle.micro(),
                     color = subFg,
                     maxLines = 1
@@ -300,7 +307,7 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "第${slot.label}节",
+                text = stringResource(R.string.course_node_format, slot.label),
                 style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
                 maxLines = 1
@@ -362,7 +369,7 @@ private fun SpannedTimeHeadCell(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = "第${slot.label}节",
+                            text = stringResource(R.string.course_node_format, slot.label),
                             style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                             color = colors.onSurface,
                             maxLines = 1
@@ -502,7 +509,7 @@ private fun DaySummaryCell(
     ) {
         // 日期
         Text(
-            text = DateUtils.chineseDay(day),
+            text = DateUtils.localizedDay(day, LocalContext.current),
             style = SleepyTextStyle.dayLabel(),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -522,7 +529,7 @@ private fun DaySummaryCell(
                     .align(Alignment.CenterHorizontally)
             ) {
                 Text(
-                    text = "${courses.size} 门",
+                    text = stringResource(R.string.n_courses, courses.size),
                     style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                     color = chipFg
                 )
@@ -612,7 +619,7 @@ private fun DetailDayCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = DateUtils.chineseDay(day) + if (isToday) " · 今天" else "",
+                text = DateUtils.localizedDay(day, LocalContext.current) + if (isToday) " · " + stringResource(R.string.today_today) else "",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface
             )
@@ -620,7 +627,7 @@ private fun DetailDayCard(
 
         if (courses.isEmpty()) {
             Text(
-                text = "${DateUtils.chineseDay(day)} · 无课程",
+                text = "${DateUtils.localizedDay(day, LocalContext.current)} · " + stringResource(R.string.no_course),
                 style = SleepyTextStyle.smallMeta().copy(fontSize = 12.sp, lineHeight = 16.sp),
                 color = colors.onSurfaceVariant
             )
@@ -638,13 +645,14 @@ private fun DetailDayCard(
 private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
+    val context = LocalContext.current
     val bg = pickCourseColor(course, palette)
 
     val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
         TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-            ?: course.shortNodeString
+            ?: course.shortNodeString(context)
     } else {
-        course.shortNodeString
+        course.shortNodeString(context)
     }
 
     Row(

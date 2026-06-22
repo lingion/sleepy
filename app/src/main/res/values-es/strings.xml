@@ -28,6 +28,9 @@
     <string name="manage_edit_current_sub">Editar nombre, fechas y horarios</string>
     <string name="manage_manual_add">Añadir curso</string>
     <string name="manage_manual_add_sub">Añadir un curso al horario actual</string>
+    <string name="table_info">Inicio: %1$s  |  Semana %2$d  |  %3$d cursos</string>
+    <string name="current_table_week">Actual · Semana %1$d</string>
+    <string name="table_start_date">Inicio: %1$s</string>
     <string name="all_tables">Todos los horarios</string>
     <string name="all_tables_new">Nuevo horario</string>
     <string name="all_tables_switch">Establecer como actual</string>
@@ -77,6 +80,28 @@
     <string name="import_all_conflict">Todos los cursos tienen conflictos — nada que añadir</string>
     <string name="import_content_empty">El contenido está vacío</string>
     <string name="import_select_table">Selecciona un horario primero</string>
+    <string name="read_failed">Error de lectura: %1$s</string>
+    <string name="cannot_read_file">No se puede leer el archivo</string>
+    <string name="import_preview_sub">Vista previa primero, luego importar</string>
+    <string name="format_wakeup_share">Texto compartido de WakeUp</string>
+    <string name="format_wakeup_desc">Comienza con 【来自WakeUp课程表】</string>
+    <string name="format_wakeup_json">WakeUp JSON</string>
+    <string name="format_json_desc">Archivo .json de exportación</string>
+    <string name="format_ics">Calendario ICS</string>
+    <string name="format_ics_desc">Exportable desde el registro escolar</string>
+    <string name="format_csv">Archivo CSV</string>
+    <string name="format_csv_desc">.csv con encabezados, separado por comas</string>
+    <string name="format_html">Tabla HTML</string>
+    <string name="format_html_desc">&lt;table&gt; formato, analizar por fila después de detectar encabezados</string>
+    <string name="format_plain">Texto plano</string>
+    <string name="format_plain_desc">Un curso por línea, separado por tabulaciones</string>
+    <string name="import_start_date_required">Por favor ingrese la fecha de inicio del semestre</string>
+    <string name="start_date_format">El formato de fecha debe ser YYYY-MM-DD</string>
+    <string name="slot_time_required">El tiempo del período %1$d es requerido</string>
+    <string name="slot_time_invalid">Período %1$d tiempo inválido (el inicio debe ser anterior al final)</string>
+    <string name="expand">Tocar para expandir</string>
+    <string name="collapse">Tocar para colapsar</string>
+    <string name="n_periods">%1$d períodos</string>
 
     <string name="course_detail_title">Detalles del curso</string>
     <string name="course_detail_edit">Editar</string>
@@ -116,6 +141,19 @@
     <string name="end_time">Hora de fin</string>
     <string name="mode_by_node">Por período</string>
     <string name="mode_by_time">Por hora</string>
+    <string name="course_name_empty">Nombre del curso requerido</string>
+    <string name="week_must_be_positive">La semana debe ser mayor que 0</string>
+    <string name="slot_at_least_one_day">El horario %1$d debe tener al menos un día</string>
+    <string name="slot_start_node_positive">El período de inicio del horario %1$d debe ser mayor que 0</string>
+    <string name="slot_step_positive">Los períodos consecutivos del horario %1$d deben ser mayores que 0</string>
+    <string name="slot_time_format">El formato de hora inicio/fin del horario %1$d debe ser HH:mm</string>
+    <string name="slot_time_order">La hora de inicio del horario %1$d debe ser anterior a la hora de fin</string>
+    <string name="slot_time_overlap">El horario %1$d y el horario %2$d se superponen en %3$s</string>
+    <string name="fix_issues_first">Por favor corrija estos problemas primero</string>
+    <string name="more_unexpanded">%1$d más sin expandir</string>
+    <string name="create_course_btn">Crear curso</string>
+    <string name="selected_days">Seleccionado: %1$s</string>
+    <string name="time_format_hint">Formato HH:mm</string>
 
     <string name="mine_title">Ajustes</string>
     <string name="mine_subtitle">Gestiona horarios y configuración</string>
@@ -164,10 +202,56 @@
     <string name="save">Guardar</string>
     <string name="delete">Eliminar</string>
     <string name="back">Atrás</string>
+    <string name="action_settings">Ajustes</string>
+    <string name="selected">Seleccionado</string>
     <string name="confirm_delete">Confirmar eliminación</string>
     <string name="no_course">Libre</string>
     <string name="n_courses">%1$d</string>
     <string name="action_close">Cerrar</string>
+
+    <!-- Widget / Common UI -->
+    <string name="widget_create_schedule">Por favor cree un horario primero</string>
+    <string name="widget_open_sleepy">Abre Sleepy para agregar</string>
+    <string name="more_sections">%1$d más...</string>
+    <string name="tomorrow">Mañana</string>
+    <string name="n_course_periods">%1$d períodos de curso</string>
+    <string name="course_node_format">Período %1$s</string>
+    <string name="course_period_range">%1$d-%2$d</string>
+
+    <!-- JW Import -->
+    <string name="jw_no_url">URL de registro no configurada para esta escuela</string>
+    <string name="jw_parse_empty">Resultado de análisis vacío. Asegúrate de estar en la página "Mi horario" (no inicio de sesión)</string>
+    <string name="jw_import_success">%1$d cursos importados exitosamente</string>
+    <string name="jw_parse_failed">Error de análisis: %1$s</string>
+    <string name="jw_parse_failed_hint">\n\nSugerencia: Para HEU, inicia sesión en el navegador y navega a "Mi horario" antes de importar</string>
+    <string name="jw_webview_not_ready">WebView no está listo</string>
+    <string name="jw_fetching">Obteniendo horario…</string>
+    <string name="jw_fetch_failed_no_response">Error: la página no responde (puede estar cargando)</string>
+    <string name="jw_fetch_format_error">Formato de datos recibido inválido</string>
+    <string name="jw_fetch_failed">Error de obtención: %1$s</string>
+    <string name="jw_page_not_loaded">Página no completamente cargada</string>
+    <string name="jw_after_login">Después de iniciar sesión</string>
+    <string name="jw_nav_hint">Navega a "Mi horario", luego toca el botón derecho</string>
+    <string name="jw_import_page">Importar esta página</string>
+
+    <!-- School Select -->
+    <string name="select_school">Seleccionar escuela</string>
+    <string name="search_school">Buscar escuelas…</string>
+    <string name="loading">Cargando…</string>
+    <string name="no_school_found">No se encontraron escuelas</string>
+
+    <!-- Course Detail -->
+    <string name="course_week_range">%1$s (Semana %2$d-%3$d)</string>
+
+    <!-- Date/Time Pickers -->
+    <string name="select_date">Seleccionar fecha</string>
+    <string name="select_time">Seleccionar hora</string>
+
+    <!-- Time Slot Editor -->
+    <string name="add_period">Agregar período</string>
+    <string name="start_label">Inicio</string>
+    <string name="end_label">Fin</string>
+    <string name="delete_period">Eliminar este período</string>
 
     <string name="mine_about_title">Acerca de Sleepy</string>
     <string name="mine_about">Acerca de</string>
@@ -182,4 +266,31 @@
         <item>Sáb</item>
         <item>Dom</item>
     </string-array>
+
+    <!-- Localized date / theme display -->
+    <string name="date_long_format">%1$d/%2$d</string>
+    <string name="notif_channel_name">Recordatorio diario de clases</string>
+    <string name="notif_channel_desc">Notificación diaria con las clases del día</string>
+    <string name="notif_title">Clases de hoy — %1$s %2$s</string>
+    <string name="notif_text">Toca para ver el horario de hoy</string>
+    <string name="theme_name_default">Lila</string>
+    <string name="theme_name_spring">Primavera</string>
+    <string name="theme_name_ocean">Océano</string>
+    <string name="theme_name_peach">Melocotón</string>
+    <string name="theme_name_slate">Pizarra</string>
+<string name="default_table_with_num">Predeterminado %1$d</string>
+    <string name="new_course">Nueva materia</string>
+    <string name="jw_import_title">Importar - %1$s</string>
+    <string name="month_day_format">%1$d/%2$d</string>
+    <string name="today_text">Hoy</string>
+    <string name="section_short">%1$d</string>
+    <string name="day_short_1">L</string>
+    <string name="day_short_2">M</string>
+    <string name="day_short_3">X</string>
+    <string name="day_short_4">J</string>
+    <string name="day_short_5">V</string>
+    <string name="day_short_6">S</string>
+    <string name="day_short_7">D</string>
+    <string name="section_node_format">Hora %1$d–%2$d</string>
+    <string name="section_single">Hora %1$d</string>
 </resources>

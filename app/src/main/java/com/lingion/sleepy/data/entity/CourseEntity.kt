@@ -95,20 +95,27 @@ data class CourseEntity(
         }
     }
 
-    /** "第 3-4 节" 或 "18:30-20:55" */
-    val nodeString: String
-        get() = if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
+    /** "第 3-4 节" 或 "18:30-20:55" — 本地化版本（推荐 UI 使用） */
+    fun nodeString(context: android.content.Context): String =
+        if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
             "$startTime-$endTime"
         } else {
-            "第 $startNode - ${startNode + step - 1} 节"
+            context.getString(
+                com.lingion.sleepy.R.string.course_node_format,
+                "$startNode-${startNode + step - 1}"
+            )
         }
 
-    /** "3-4节" 或 "18:30-20:55" */
-    val shortNodeString: String
-        get() = if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
+    /** "3-4节" 或 "18:30-20:55" — 本地化版本（推荐 UI 使用） */
+    fun shortNodeString(context: android.content.Context): String =
+        if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
             "$startTime-$endTime"
         } else {
-            "$startNode-${startNode + step - 1}节"
+            context.getString(
+                com.lingion.sleepy.R.string.course_period_range,
+                startNode,
+                startNode + step - 1
+            )
         }
 
     /**

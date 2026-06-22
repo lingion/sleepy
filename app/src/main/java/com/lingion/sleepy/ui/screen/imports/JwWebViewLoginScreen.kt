@@ -47,10 +47,12 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
@@ -81,6 +83,12 @@ fun JwWebViewLoginScreen(
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
+    val fetchingMsg = stringResource(R.string.jw_fetching)
+    val fetchFailedNoResponseMsg = stringResource(R.string.jw_fetch_failed_no_response)
+    val fetchFormatErrorMsg = stringResource(R.string.jw_fetch_format_error)
+    val fetchFailedFmt = stringResource(R.string.jw_fetch_failed)
+    val pageNotLoadedMsg = stringResource(R.string.jw_page_not_loaded)
 
     BackHandler {
         webViewRef?.let { wv ->
@@ -103,7 +111,7 @@ fun JwWebViewLoginScreen(
                 },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -125,12 +133,12 @@ fun JwWebViewLoginScreen(
                     val wv = webViewRef
                     if (wv == null) {
                         Log.w("JwWebView", "capture tapped but webViewRef is null")
-                        scope.launch { snackbar.showSnackbar("WebView 未就绪") }
+                        scope.launch { snackbar.showSnackbar(webviewNotReadyMsg) }
                         return@CaptureBar
                     }
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
-                    scope.launch { snackbar.showSnackbar("正在抓取课表…") }
+                    scope.launch { snackbar.showSnackbar(fetchingMsg) }
                     // 用 evaluateJavascript（API 19+）同步回调拿 HTML，不依赖 JS 桥跨域问题
                     val js = """
                         (function() {
@@ -155,7 +163,7 @@ fun JwWebViewLoginScreen(
                     wv.evaluateJavascript(js, ValueCallback<String> { raw ->
                         Log.d("JwWebView", "evaluateJavascript returned len=${raw?.length ?: 0}")
                         if (raw.isNullOrEmpty() || raw == "null") {
-                            scope.launch { snackbar.showSnackbar("抓取失败：网页无响应（可能还在加载）") }
+                            scope.launch { snackbar.showSnackbar(fetchFailedNoResponseMsg) }
                             return@ValueCallback
                         }
                         // raw 是 JSON 字符串（含转义），先解一层
@@ -163,7 +171,7 @@ fun JwWebViewLoginScreen(
                             org.json.JSONObject(raw).optString("html", "")
                         } catch (e: Exception) {
                             Log.e("JwWebView", "parse capture JSON failed", e)
-                            scope.launch { snackbar.showSnackbar("抓取返回格式异常") }
+                            scope.launch { snackbar.showSnackbar(fetchFormatErrorMsg) }
                             return@ValueCallback
                         }
                         val ok = try {
@@ -171,7 +179,7 @@ fun JwWebViewLoginScreen(
                         } catch (e: Exception) { false }
                         if (!ok || unwrapped.isBlank()) {
                             val err = try { org.json.JSONObject(raw).optString("err", "") } catch (e: Exception) { "" }
-                            scope.launch { snackbar.showSnackbar("抓取失败：${err.ifBlank { "页面尚未完全加载" }}") }
+                            scope.launch { snackbar.showSnackbar(fetchFailedFmt.format(err.ifBlank { pageNotLoadedMsg })) }
                             return@ValueCallback
                         }
                         Log.d("JwWebView", "captured html len=${unwrapped.length}")
@@ -286,12 +294,12 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "完成登录后",
+                text = stringResource(R.string.jw_after_login),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant
             )
             Text(
-                text = "导航到「个人课表」页，再点右侧按钮",
+                text = stringResource(R.string.jw_nav_hint),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                 color = colors.onSurface
             )
@@ -307,7 +315,7 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
                 contentDescription = null,
                 modifier = Modifier.padding(end = 6.dp)
             )
-            Text("导入此页", color = colors.onPrimary)
+            Text(stringResource(R.string.jw_import_page), color = colors.onPrimary)
         }
     }
 }

@@ -29,7 +29,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import java.time.Instant
 import java.time.LocalTime
@@ -85,7 +87,7 @@ fun DatePickerField(
         ) {
             Icon(
                 Icons.Outlined.CalendarMonth,
-                contentDescription = "选择日期",
+                contentDescription = stringResource(R.string.select_date),
                 tint = colors.primary,
                 modifier = Modifier.size(24.dp)
             )
@@ -104,10 +106,10 @@ fun DatePickerField(
                         onValueChange(date.format(DateTimeFormatter.ISO_LOCAL_DATE))
                     }
                     showPicker = false
-                }) { Text("确定") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text("取消") }
+                TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.cancel)) }
             }
         ) {
             DatePicker(state = datePickerState)
@@ -165,7 +167,7 @@ fun TimePickerField(
     if (showPicker) {
         AlertDialog(
             onDismissRequest = { showPicker = false },
-            title = { Text("选择时间", color = colors.onSurface) },
+            title = { Text(stringResource(R.string.select_time), color = colors.onSurface) },
             text = {
                 TimePicker(state = timePickerState)
             },
@@ -175,10 +177,10 @@ fun TimePickerField(
                     val m = timePickerState.minute.toString().padStart(2, '0')
                     onValueChange("$h:$m")
                     showPicker = false
-                }) { Text("确定") }
+                }) { Text(stringResource(R.string.ok)) }
             },
             dismissButton = {
-                TextButton(onClick = { showPicker = false }) { Text("取消") }
+                TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.cancel)) }
             },
             containerColor = colors.surface
         )

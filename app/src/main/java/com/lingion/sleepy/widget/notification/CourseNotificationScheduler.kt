@@ -27,7 +27,6 @@ class CourseNotificationScheduler(private val context: Context) {
 
     companion object {
         const val CHANNEL_ID = "wakeup_pure_daily"
-        const val CHANNEL_NAME = "每日课程提醒"
         const val NOTIFY_ID = 1001
         const val ALARM_HOUR = 7
         const val ALARM_MINUTE = 0
@@ -74,10 +73,10 @@ class CourseNotificationScheduler(private val context: Context) {
     private fun createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
-                CHANNEL_ID, CHANNEL_NAME,
+                CHANNEL_ID, context.getString(R.string.notif_channel_name),
                 NotificationManager.IMPORTANCE_DEFAULT
             ).apply {
-                description = "每天早上推送今日课程安排"
+                description = context.getString(R.string.notif_channel_desc)
             }
             val nm = context.getSystemService(NotificationManager::class.java)
             nm.createNotificationChannel(channel)
@@ -109,11 +108,12 @@ class DailyNotifyReceiver : BroadcastReceiver() {
         )
 
         val today = LocalDate.now()
-        val dayName = com.lingion.sleepy.util.DateUtils.chineseDay(today.dayOfWeek.value)
+        val dayName = com.lingion.sleepy.util.DateUtils.localizedDay(today.dayOfWeek.value, context)
+        val dateStr = "${today.monthValue}/${today.dayOfMonth}"
         val notification = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
-            .setContentTitle("今日课程 — ${today.monthValue}月${today.dayOfMonth}日 $dayName")
-            .setContentText("点击查看今日课程安排")
+            .setContentTitle(context.getString(R.string.notif_title, dateStr, dayName))
+            .setContentText(context.getString(R.string.notif_text))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
             .setContentIntent(pending)
             .setAutoCancel(true)

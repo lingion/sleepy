@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.edit
 
+import com.lingion.sleepy.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -52,6 +53,8 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -100,6 +103,7 @@ fun AddCourseScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
+    val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val currentTable = state.currentTable
     val fieldShape = RoundedCornerShape(18.dp)
@@ -166,10 +170,10 @@ fun AddCourseScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text(if (editingCourse != null) "编辑课程" else "手动创建课程") },
+                title = { Text(stringResource(if (editingCourse != null) R.string.edit_course else R.string.create_course)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = "返回")
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -199,14 +203,14 @@ fun AddCourseScreen(
 
             item {
                 CardSection(
-                    title = "课程基础信息",
-                    subtitle = "老师、地点统一填写；一门课可以挂多个时段块"
+                    title = stringResource(R.string.course_basic_info),
+                    subtitle = stringResource(R.string.course_basic_info_sub)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                         OutlinedTextField(
                             value = courseName,
                             onValueChange = { courseName = it },
-                            label = { Text("课程名 *") },
+                            label = { Text(stringResource(R.string.course_name_required)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             shape = fieldShape,
@@ -215,7 +219,7 @@ fun AddCourseScreen(
                         OutlinedTextField(
                             value = teacher,
                             onValueChange = { teacher = it },
-                            label = { Text("老师") },
+                            label = { Text(stringResource(R.string.course_teacher)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             shape = fieldShape,
@@ -224,7 +228,7 @@ fun AddCourseScreen(
                         OutlinedTextField(
                             value = room,
                             onValueChange = { room = it },
-                            label = { Text("地点 / 教室") },
+                            label = { Text(stringResource(R.string.course_room)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             shape = fieldShape,
@@ -233,7 +237,7 @@ fun AddCourseScreen(
                         OutlinedTextField(
                             value = note,
                             onValueChange = { note = it },
-                            label = { Text("备注（可选）") },
+                            label = { Text(stringResource(R.string.course_note)) },
                             modifier = Modifier.fillMaxWidth(),
                             minLines = 2,
                             maxLines = 4,
@@ -246,15 +250,15 @@ fun AddCourseScreen(
 
             item {
                 CardSection(
-                    title = "周次范围",
-                    subtitle = "整门课统一周次；同一课程内部时段会自动做冲突检查"
+                    title = stringResource(R.string.week_range),
+                    subtitle = stringResource(R.string.week_range_sub)
                 ) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
                         NumberField(
-                            label = "起始周",
+                            label = stringResource(R.string.start_week),
                             value = startWeek,
                             min = 1,
                             max = 30,
@@ -263,7 +267,7 @@ fun AddCourseScreen(
                             colors = fieldColors
                         ) { startWeek = it }
                         NumberField(
-                            label = "结束周",
+                            label = stringResource(R.string.end_week),
                             value = endWeek,
                             min = 1,
                             max = 30,
@@ -282,12 +286,12 @@ fun AddCourseScreen(
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     Text(
-                        text = "上课时段",
+                        text = stringResource(R.string.meeting_slots),
                         style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                         color = colors.onSurface
                     )
                     Text(
-                        text = "一个课程可有任意多个时段；每个时段都可多选星期，并可按节次或按时间录入",
+                        text = stringResource(R.string.meeting_slots_sub),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant
                     )
@@ -298,7 +302,7 @@ fun AddCourseScreen(
             itemsIndexed(meetingBlocks) { index, block ->
                 val blockIssues = validationIssues.filter { it.blockId == block.id }.map { it.message }
                 MeetingBlockEditor(
-                    title = "时段 ${index + 1}",
+                    title = stringResource(R.string.slot_n, index + 1),
                     block = block,
                     canRemove = meetingBlocks.size > 1,
                     issues = blockIssues,
@@ -331,7 +335,7 @@ fun AddCourseScreen(
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null, tint = colors.onSecondaryContainer)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text("新增一个上课时段", color = colors.onSecondaryContainer)
+                    Text(stringResource(R.string.add_slot), color = colors.onSecondaryContainer)
                 }
             }
 
@@ -343,7 +347,8 @@ fun AddCourseScreen(
                             blocks = meetingBlocks,
                             startWeek = startWeek,
                             endWeek = endWeek,
-                            table = currentTable
+                            table = currentTable,
+                            context = context
                         )
                         validationIssues = issues
                         if (issues.isNotEmpty()) return@Button
@@ -394,7 +399,7 @@ fun AddCourseScreen(
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(if (editingCourse != null) "保存课程" else "创建课程")
+                    Text(stringResource(if (editingCourse != null) R.string.save_course else R.string.create_course_btn))
                 }
             }
 
@@ -410,15 +415,15 @@ fun AddCourseScreen(
                     ) {
                         Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("删除课程", color = colors.onErrorContainer)
+                        Text(stringResource(R.string.delete_course), color = colors.onErrorContainer)
                     }
 
                     if (showDeleteConfirm) {
                         AlertDialog(
                             onDismissRequest = { showDeleteConfirm = false },
                             containerColor = colors.surface,
-                            title = { Text("确认删除", color = colors.onSurface) },
-                            text = { Text("确定要删除课程「${editingCourse.courseName}」吗？此操作不可撤销。", color = colors.onSurfaceVariant) },
+                            title = { Text(stringResource(R.string.confirm_delete), color = colors.onSurface) },
+                            text = { Text(stringResource(R.string.delete_course_confirm, editingCourse.courseName), color = colors.onSurfaceVariant) },
                             confirmButton = {
                                 TextButton(onClick = {
                                     showDeleteConfirm = false
@@ -427,10 +432,10 @@ fun AddCourseScreen(
                                         repo.deleteCourseGroup(state.selectedTableId!!, editingCourse.groupId)
                                         onSaved()
                                     }
-                                }) { Text("删除", color = colors.error) }
+                                }) { Text(stringResource(R.string.delete), color = colors.error) }
                             },
                             dismissButton = {
-                                TextButton(onClick = { showDeleteConfirm = false }) { Text("取消") }
+                                TextButton(onClick = { showDeleteConfirm = false }) { Text(stringResource(R.string.cancel)) }
                             }
                         )
                     }
@@ -506,28 +511,29 @@ private fun validateCourseDraft(
     blocks: List<MeetingBlockDraft>,
     startWeek: Int,
     endWeek: Int,
-    table: TimeTableEntity?
+    table: TimeTableEntity?,
+    context: android.content.Context
 ): List<ValidationIssue> {
     val issues = mutableListOf<ValidationIssue>()
-    if (courseName.isBlank()) issues += ValidationIssue(null, "课程名不能为空")
-    if (startWeek <= 0 || endWeek <= 0) issues += ValidationIssue(null, "周次必须大于 0")
+    if (courseName.isBlank()) issues += ValidationIssue(null, context.getString(R.string.course_name_empty))
+    if (startWeek <= 0 || endWeek <= 0) issues += ValidationIssue(null, context.getString(R.string.week_must_be_positive))
 
     blocks.forEachIndexed { index, block ->
         if (block.days.isEmpty()) {
-            issues += ValidationIssue(block.id, "时段 ${index + 1} 至少选择一天")
+            issues += ValidationIssue(block.id, context.getString(R.string.slot_at_least_one_day, index + 1))
         }
         when (block.mode) {
             MeetingInputMode.ByNode -> {
-                if (block.startNode <= 0) issues += ValidationIssue(block.id, "时段 ${index + 1} 的开始节必须大于 0")
-                if (block.step <= 0) issues += ValidationIssue(block.id, "时段 ${index + 1} 的连上节数必须大于 0")
+                if (block.startNode <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_start_node_positive, index + 1))
+                if (block.step <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_step_positive, index + 1))
             }
             MeetingInputMode.ByClock -> {
                 val start = parseHm(block.startTime)
                 val end = parseHm(block.endTime)
                 if (start == null || end == null) {
-                    issues += ValidationIssue(block.id, "时段 ${index + 1} 的开始/结束时间格式应为 HH:mm")
+                    issues += ValidationIssue(block.id, context.getString(R.string.slot_time_format, index + 1))
                 } else if (!start.isBefore(end)) {
-                    issues += ValidationIssue(block.id, "时段 ${index + 1} 的开始时间必须早于结束时间")
+                    issues += ValidationIssue(block.id, context.getString(R.string.slot_time_order, index + 1))
                 }
             }
         }
@@ -543,10 +549,10 @@ private fun validateCourseDraft(
             val secondRange = blockRangeMinutes(second, table)
             if (firstRange == null || secondRange == null) continue
             if (firstRange.first < secondRange.second && secondRange.first < firstRange.second) {
-                val dayText = overlapDays.sorted().joinToString(" / ") { DateUtils.chineseDay(it) }
+                val dayText = overlapDays.sorted().joinToString(" / ") { DateUtils.localizedDay(it, context) }
                 issues += ValidationIssue(
                     second.id,
-                    "时段 ${i + 1} 与时段 ${j + 1} 在 $dayText 存在时间重叠"
+                    context.getString(R.string.slot_time_overlap, i + 1, j + 1, dayText)
                 )
             }
         }
@@ -604,7 +610,7 @@ private fun ValidationCard(issues: List<ValidationIssue>) {
         verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         Text(
-            text = "请先修正这些问题",
+            text = stringResource(R.string.fix_issues_first),
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
             color = colors.onErrorContainer
         )
@@ -617,7 +623,7 @@ private fun ValidationCard(issues: List<ValidationIssue>) {
         }
         if (issues.size > 4) {
             Text(
-                text = "还有 ${issues.size - 4} 条未展开",
+                text = stringResource(R.string.more_unexpanded, issues.size - 4),
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.onErrorContainer
             )
@@ -667,6 +673,7 @@ private fun MeetingBlockEditor(
     onRemove: () -> Unit
 ) {
     val colors = SleepyTheme.colors
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -692,14 +699,14 @@ private fun MeetingBlockEditor(
                     color = colors.onSurface
                 )
                 Text(
-                    text = if (block.days.isEmpty()) "至少选一天" else "已选：${block.days.sorted().joinToString(" / ") { DateUtils.chineseDay(it) }}",
+                    text = if (block.days.isEmpty()) stringResource(R.string.select_at_least_one_day) else stringResource(R.string.selected_days, block.days.sorted().joinToString(" / ") { DateUtils.localizedDay(it, context) }),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.onSurfaceVariant
                 )
             }
             if (canRemove) {
                 IconButton(onClick = onRemove) {
-                    Icon(Icons.Outlined.Close, contentDescription = "删除时段", tint = colors.onSurfaceVariant)
+                    Icon(Icons.Outlined.Close, contentDescription = stringResource(R.string.delete_slot), tint = colors.onSurfaceVariant)
                 }
             }
         }
@@ -716,14 +723,14 @@ private fun MeetingBlockEditor(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     NumberField(
-                        label = "开始第几节",
+                        label = stringResource(R.string.start_node),
                         value = block.startNode,
                         min = 1,
                         max = 12,
                         modifier = Modifier.weight(1f)
                     , shape = fieldShape, colors = fieldColors) { block.startNode = it }
                     NumberField(
-                        label = "连上几节",
+                        label = stringResource(R.string.step_count),
                         value = block.step,
                         min = 1,
                         max = 8,
@@ -737,13 +744,13 @@ private fun MeetingBlockEditor(
                     horizontalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     TimePickerField(
-                        label = "开始时间",
+                        label = stringResource(R.string.start_time),
                         value = block.startTime,
                         onValueChange = { block.startTime = it },
                         modifier = Modifier.weight(1f)
                     )
                     TimePickerField(
-                        label = "结束时间",
+                        label = stringResource(R.string.end_time),
                         value = block.endTime,
                         onValueChange = { block.endTime = it },
                         modifier = Modifier.weight(1f)
@@ -781,13 +788,13 @@ private fun ModePicker(
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         ModeChip(
-            label = "按节次",
+            label = stringResource(R.string.mode_by_node),
             selected = mode == MeetingInputMode.ByNode,
             modifier = Modifier.weight(1f),
             onClick = { onChange(MeetingInputMode.ByNode) }
         )
         ModeChip(
-            label = "按时间",
+            label = stringResource(R.string.mode_by_time),
             selected = mode == MeetingInputMode.ByClock,
             modifier = Modifier.weight(1f),
             onClick = { onChange(MeetingInputMode.ByClock) }
@@ -848,7 +855,7 @@ private fun MultiDayPicker(
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
-                            text = DateUtils.chineseDay(day).removePrefix("周"),
+                            text = DateUtils.localizedDay(day, LocalContext.current),
                             style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
                             color = if (selected) colors.onPrimary else colors.onSurface
                         )
@@ -931,6 +938,6 @@ private fun TimeField(
         modifier = modifier,
         shape = shape,
         colors = colors,
-        supportingText = { Text("格式 HH:mm") }
+        supportingText = { Text(stringResource(R.string.time_format_hint)) }
     )
 }
