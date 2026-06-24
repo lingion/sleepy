@@ -22,7 +22,7 @@ class PinWidgetActivity : ComponentActivity() {
         window.setDimAmount(0f)
 
         val awm = AppWidgetManager.getInstance(this)
-        val cn = ComponentName(this, WeekGridWidgetProvider::class.java)
+        val cn = ComponentName(this, WeekGridWidgetReceiver::class.java)
         val supported = awm.isRequestPinAppWidgetSupported
         Log.d("PinWidget", "supported=$supported, provider=$cn")
 

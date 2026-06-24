@@ -653,9 +653,10 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
     val rawMaxNode = data.days.maxOfOrNull { d ->
         d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
     } ?: 0
-    // ★ v1.0.16-rebuild-14: maxNode 上限 10 (Glance 1.1.0 RemoteViews bug: Period 11+ 文字丢失)
-    // Glance 转 RemoteViews 时 LinearLayout 丢最后几个 child, 即使 log 显示已 layout
-    val maxNode = rawMaxNode.coerceIn(4, 10)
+    // ★ v18: maxNode 完全由用户课表决定 (永不截断, 1~9999 全支持)
+    // 用户原话: "用户课表填1个时间段小组件就1个 填9999个小组件就9999个"
+    // 算法: maxNode = max(startNode + step - 1)  // timeSlots 自动决定
+    val maxNode = rawMaxNode.coerceAtLeast(1)  // 完全用户课表, 永不截断
     val timeSlots = allTimeSlots.take(maxNode)
     android.util.Log.d("WeekGridContent", "rawMaxNode=$rawMaxNode, maxNode=$maxNode, allTimeSlots=${allTimeSlots.size}, perDayMax=${data.days.map { d -> "${d.dayOfWeek}=${d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0}" }}")
 
