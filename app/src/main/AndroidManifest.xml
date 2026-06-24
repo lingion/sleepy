@@ -116,6 +116,21 @@
             android:label="Widget 预览"
             android:theme="@style/Theme.Sleepy" />
 
+        <!-- Pin widget to home (adb automation) -->
+        <activity
+            android:name=".widget.PinWidgetActivity"
+            android:exported="true"
+            android:label="Pin Widget"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar"
+            android:excludeFromRecents="true" />
+
+        <!-- 真实 Glance widget 渲染验证 -->
+        <activity
+            android:name=".widget.WidgetRenderActivity"
+            android:exported="true"
+            android:label="Widget Render"
+            android:theme="@style/Theme.Sleepy" />
+
     </application>
 
 </manifest>
