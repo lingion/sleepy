@@ -48,15 +48,13 @@ class WeekGridWidget : GlanceAppWidget() {
         val widgetHeightDp = if (maxHeightPx > 0) (maxHeightPx / density).toInt() else 280
         val widgetWidthDp = if (maxWidthPx > 0) (maxWidthPx / density).toInt() else 320
 
+        // ★ FIX: maxNode 替代 maxSumStep — 20 节课只显示 9 节的真 bug
         val maxNode = data.days.maxOfOrNull { d ->
             d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
-        } ?: 0
-        val maxSumStep = data.days.maxOfOrNull { d ->
-            d.courses.sumOf { it.step }
-        } ?: 1
-        val perNodeHeight = computePerNodeHeight(widgetHeightDp, maxSumStep)
+        }?.coerceIn(4, 10) ?: 4
+        val perNodeHeight = computePerNodeHeight(widgetHeightDp, maxNode)
 
-        Log.d("WeekGridWidget", "widgetSize=${widgetWidthDp}x${widgetHeightDp}dp, maxSumStep=$maxSumStep, " +
+        Log.d("WeekGridWidget", "widgetSize=${widgetWidthDp}x${widgetHeightDp}dp, maxNode=$maxNode, " +
             "perNodeHeight=${perNodeHeight.value.toInt()}dp, hasTable=${data.hasTable}")
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
@@ -109,19 +107,19 @@ class WeekGridWidget : GlanceAppWidget() {
 
 /**
  * 按 widget 实际高度算每节高度。
- * 减表头 30dp / padding 12dp / 时段间 gap (每节 2dp) / maxSumStep。
- * 含义：maxSumStep 个 step 总高 = widget 可用高，每 step 高度 = perNodeHeight。
- * 下限 6dp（防过小看不清），无上限 — 让 13 节撑满 widget 高度。
+ * 减表头 30dp / padding 12dp / maxNode。
+ * 含义：maxNode 个 step 总高 = widget 可用高，每 step 高度 = perNodeHeight。
+ * ★ 10dp 网格对齐：snap to 10dp 整数倍。
  */
-internal fun computePerNodeHeight(widgetHeightDp: Int, maxSumStep: Int): Dp {
+internal fun computePerNodeHeight(widgetHeightDp: Int, maxNode: Int): Dp {
     val headerH = 30
     val padding = 12
-    val gapPer = 2
-    val stepCount = maxSumStep.coerceAtLeast(1)
-    val totalGaps = (stepCount - 1).coerceAtLeast(0) * gapPer
-    val available = (widgetHeightDp - headerH - padding - totalGaps).coerceAtLeast(40)
+    val stepCount = maxNode.coerceAtLeast(1)
+    val available = (widgetHeightDp - headerH - padding).coerceAtLeast(40)
     val perNode = available / stepCount
-    return perNode.coerceAtLeast(6).dp
+    // ★ Snap 到 10dp 整数倍 — 10×10 网格对齐
+    val snapped = (perNode / 10 * 10).coerceAtLeast(10)
+    return snapped.dp
 }
 
 class WeekGridWidgetReceiver : GlanceAppWidgetReceiver() {

@@ -649,14 +649,13 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
     val allTimeSlots = TimeTableUtils.timeSlotsFor(timeJson)
     val sortedDays = data.visibleDays.sorted()
 
-    val maxNode = data.days.maxOfOrNull { d ->
+    // ★ FIX 1: maxNode = max(startNode + step - 1) — 之前 maxSumStep 是 bug
+    // 之前用 sumOf(step) 算 maxSumStep=9 → body Row 只 9 行 → 20 节课只显示 9
+    val rawMaxNode = data.days.maxOfOrNull { d ->
         d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
     } ?: 0
-    val timeSlots = allTimeSlots.take(maxOf(maxNode, 4).coerceAtMost(12))
-    // 每列课程总 step 最大值 — 控制列高对齐
-    val maxSumStep = data.days.maxOfOrNull { d ->
-        d.courses.sumOf { it.step }
-    } ?: 1
+    val maxNode = rawMaxNode.coerceIn(4, 10)  // Cap 10（Glance Column 子元素上限 10）
+    val timeSlots = allTimeSlots.take(maxNode)
 
     val containerBg = scheme.surfaceContainer
     val cellBg = scheme.surface
@@ -664,6 +663,14 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
     val onSurface = scheme.onSurface
     val onSurfaceVar = scheme.onSurfaceVariant
     val onPrimaryCont = scheme.onPrimaryContainer
+
+    // ★ FIX 2: 10dp 网格 — 所有尺寸按 10dp 整数倍对齐
+    val rawColW = (widgetWidthDp - 12) / 8
+    val colW = (rawColW / 10 * 10).dp.coerceAtLeast(30.dp)
+    val timeColW = colW
+    val perDayWidth = colW
+    val headerH = 30.dp
+    val rowH = perNodeHeight
 
     Column(
         modifier = GlanceModifier.fillMaxSize()
@@ -673,41 +680,30 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
             .clickable(openAppAction),
         verticalAlignment = Alignment.Top
     ) {
-        when {
-            !data.hasTable || data.days.isEmpty() -> EmptyTableState(scheme)
-            else -> {
-                // v14 关键：8 等分 — Time 列 + 7 day 列 = widget body 8 等分（表头也 8 等分）
-                // 之前 Time 列 hardcode 28dp、day 列用 LocalSize.width 算（不可靠）
-                //   → 列宽总和 > widget body → Row 协商时部分 Column 被裁
-                val rowGapValue = 2f
-                val colW = ((widgetWidthDp - 12) / 8).dp.coerceAtLeast(20.dp)
-                val timeColW = colW
-                val perDayWidth = colW
+        if (!data.hasTable || data.days.isEmpty()) {
+            EmptyTableState(scheme)
+        } else {
+            // ====== Header — 8 cells 显式宽度（不用 defaultWeight） ======
+            Row(
+                modifier = GlanceModifier.fillMaxWidth().height(headerH),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Box(modifier = GlanceModifier.width(timeColW).fillMaxHeight()) {}
+                for (day in 1..7) {
+                    val isVisible = day in sortedDays
+                    val isToday = day == todayDow
+                    val dayData = data.days.firstOrNull { it.dayOfWeek == day }
+                    val count = dayData?.courses?.size ?: 0
+                    val dateStr = if (data.showDate && dayData != null) DateUtils.shortDate(dayData.date) else null
 
-                // ====== 表头行 — 8 等分：1 Time 占位 + 7 日期 ======
-                Row(
-                    modifier = GlanceModifier.fillMaxWidth().padding(bottom = 3.dp),
-                    verticalAlignment = Alignment.Bottom
-                ) {
-                    // 时间列占位 — 显式 width = timeColW（跟主体 Time 列等宽）
-                    Box(modifier = GlanceModifier.width(timeColW)) {}
-                    // 每天一个表头 cell — defaultWeight 等分 7 day 宽度
-                    for (day in sortedDays) {
-                        val isToday = day == todayDow
-                        val dayData = data.days.firstOrNull { it.dayOfWeek == day }
-                        val count = dayData?.courses?.size ?: 0
-                        val dateStr = if (data.showDate && dayData != null) {
-                            DateUtils.shortDate(dayData.date)
-                        } else null
-
-                        Box(
-                            modifier = GlanceModifier.defaultWeight()
-                                .padding(start = 3.dp, end = 3.dp)
-                                .background(ColorProvider(if (isToday) todayHeadBg else cellBg))
-                                .cornerRadius(8.dp)
-                                .padding(top = 3.dp, bottom = 3.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
+                    Box(
+                        modifier = GlanceModifier.width(perDayWidth).fillMaxHeight()
+                            .padding(horizontal = 1.dp)
+                            .background(if (isVisible) ColorProvider(if (isToday) todayHeadBg else cellBg) else ColorProvider(Color.Transparent))
+                            .cornerRadius(6.dp),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        if (isVisible) {
                             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                                 Text(
                                     text = DateUtils.localizedDay(day, LocalContext.current),
@@ -720,17 +716,52 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
                                 if (dateStr != null) {
                                     Text(
                                         text = dateStr,
-                                        style = TextStyle(
-                                            fontSize = 7.sp,
-                                            color = ColorProvider(if (isToday) onPrimaryCont else onSurfaceVar)
-                                        )
+                                        style = TextStyle(fontSize = 7.sp, color = ColorProvider(onSurfaceVar))
                                     )
                                 } else {
                                     Text(
                                         text = if (count > 0) "${count}" else "—",
+                                        style = TextStyle(fontSize = 7.sp, color = ColorProvider(onSurfaceVar))
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            // ====== Body — 8 cells 显式宽度（跟 header 同宽！） ======
+            val totalBodyHeight = (rowH.value * maxNode).dp
+            Row(
+                modifier = GlanceModifier.fillMaxSize(),
+                verticalAlignment = Alignment.Top
+            ) {
+                // 时间列 — maxNode 个 Box（每个 rowH 高度）
+                Column(
+                    modifier = GlanceModifier.width(timeColW).height(totalBodyHeight).padding(end = 4.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    for (i in 1..maxNode) {
+                        val slot = timeSlots.getOrNull(i - 1)
+                        Box(
+                            modifier = GlanceModifier.fillMaxWidth().height(rowH),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (slot != null) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "${i}",
                                         style = TextStyle(
-                                            fontSize = 7.sp,
-                                            color = ColorProvider(if (isToday) onPrimaryCont else onSurfaceVar)
+                                            fontSize = 9.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = ColorProvider(onSurface)
+                                        )
+                                    )
+                                    Text(
+                                        text = slot.displayStart,
+                                        style = TextStyle(
+                                            fontSize = 6.sp,
+                                            color = ColorProvider(onSurfaceVar)
                                         )
                                     )
                                 }
@@ -739,126 +770,52 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
                     }
                 }
 
-                // ====== 主体 — 每列独立堆叠，列底对齐 ======
-                // 用 LocalSize.current 拿 widget 实际尺寸，每列 explicit width（避免 defaultWeight 抢全宽 bug）
-                // 高度按实际渲染高度算 perNodeHeight，让 maxSumStep 节撑满 widget body
-                // v13 关键修复：Glance Column 子元素上限 10（RemoteViews 限制）
-                // 之前 Time Column = 7 时段 Box + 6 gap Box = 13 个 → 报 "Truncated Column from 12 to 10"
-                //   → 时间列只渲染前 ~5 个 Box（节 6、7 被裁）
-                // 修法：把 gap 累加到下一个 Box 的 height，Column 只剩 maxSumStep 个子元素
-                // colW / timeColW / perDayWidth 在表头之前已定义（8 等分）
-                val totalTimeColHeight = (perNodeHeight.value * maxSumStep + rowGapValue * (maxSumStep - 1)).dp
+                // 7 天列 — 固定 7 列位置，visibleDays 之外的列透明空 Box
+                for (day in 1..7) {
+                    val isVisible = day in sortedDays
+                    val dayData = data.days.firstOrNull { it.dayOfWeek == day }
+                    val dayCourses = dayData?.courses ?: emptyList()
 
-                Row(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    // 时间列 — 只有 maxSumStep 个 Box（每个含 gap 高度），不再有独立 gap Box
-                    Column(
-                        modifier = GlanceModifier.width(timeColW).height(totalTimeColHeight).padding(end = 4.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        for (i in 0 until maxSumStep) {
-                            val slot = timeSlots.getOrNull(i) ?: timeSlots.lastOrNull()
-                            if (slot != null) {
-                                // 最后一段不加 gap；其他段都把 rowGap 算进 height
-                                val boxH = if (i < maxSumStep - 1)
-                                    (perNodeHeight.value + rowGapValue).dp
-                                else
-                                    perNodeHeight
-                                Box(
-                                    modifier = GlanceModifier.fillMaxWidth()
-                                        .height(boxH)
-                                        .background(ColorProvider(cellBg))
-                                        .cornerRadius(4.dp)
-                                        .padding(top = 1.dp, bottom = 1.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                        Text(
-                                            text = slot.label,
-                                            style = TextStyle(
-                                                fontSize = 8.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = ColorProvider(onSurface)
-                                            )
-                                        )
-                                        Text(
-                                            text = slot.displayStart,
-                                            style = TextStyle(
-                                                fontSize = 6.sp,
-                                                color = ColorProvider(onSurfaceVar)
-                                            )
-                                        )
-                                    }
-                                }
-                            }
-                        }
-                    }
-
-                    // 每天一列 — 同样把 skipNodes gap 累加到 Box 高度
-                    for (day in sortedDays) {
-                        val dayData = data.days.firstOrNull { it.dayOfWeek == day }
-                        val dayCourses = dayData?.courses ?: emptyList()
-
+                    if (isVisible) {
                         Column(
-                            modifier = GlanceModifier.width(perDayWidth).height(totalTimeColHeight)
+                            modifier = GlanceModifier.width(perDayWidth).height(totalBodyHeight)
                                 .padding(horizontal = 1.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
                             var prevEndNode = 0
-                            dayCourses.forEach { course ->
-                                val skipNodes = (course.startNode - 1 - prevEndNode).coerceAtLeast(0)
-                                val gapBefore = if (prevEndNode > 0)
-                                    (skipNodes * perNodeHeight.value + skipNodes * rowGapValue + rowGapValue).dp
-                                else
-                                    (skipNodes * perNodeHeight.value + skipNodes * rowGapValue).dp
-                                if (skipNodes > 0 || prevEndNode > 0) {
-                                    Box(modifier = GlanceModifier.fillMaxWidth().height(gapBefore)) {}
-                                }
-                                val cardH = perNodeHeight * course.step + rowGapValue.dp * (course.step - 1)
-                                Box(
-                                    modifier = GlanceModifier.fillMaxWidth()
-                                        .height(cardH)
-                                        .background(ColorProvider(courseColor(course.courseName, scheme)))
-                                        .cornerRadius(4.dp)
-                                        .padding(top = 2.dp, bottom = 2.dp),
-                                    contentAlignment = Alignment.Center
-                                ) {
-                                    Column(
-                                        modifier = GlanceModifier.fillMaxSize(),
-                                        horizontalAlignment = Alignment.CenterHorizontally,
-                                        verticalAlignment = Alignment.CenterVertically
+                            for (i in 1..maxNode) {
+                                if (i <= prevEndNode) continue
+                                val course = dayCourses.firstOrNull { it.startNode == i }
+                                if (course != null) {
+                                    // ★ FIX 3: 跨节 Box height = perNodeHeight * step（真 rowspan）
+                                    val cardH = (rowH.value * course.step).dp
+                                    Box(
+                                        modifier = GlanceModifier.fillMaxWidth()
+                                            .height(cardH)
+                                            .background(ColorProvider(courseColor(course.courseName, scheme)))
+                                            .cornerRadius(4.dp)
+                                            .padding(2.dp),
+                                        contentAlignment = Alignment.Center
                                     ) {
+                                        // ★ FIX 4: 不再显示 "1-2" 标签 — 用户核心诉求
                                         Text(
                                             text = course.courseName,
                                             style = TextStyle(
-                                                fontSize = autoFitCourseFontSize(course.courseName, course.step, perNodeHeight).sp,
+                                                fontSize = 9.sp,
                                                 fontWeight = FontWeight.Bold,
                                                 color = ColorProvider(onSurface)
                                             ),
-                                            maxLines = 6
+                                            maxLines = (course.step * 2).coerceAtLeast(1)
                                         )
-                                        if (course.step > 1) {
-                                            Text(
-                                                text = "${course.startNode}-${course.startNode + course.step - 1}",
-                                                style = TextStyle(
-                                                    fontSize = 5.sp,
-                                                    color = ColorProvider(onSurfaceVar)
-                                                )
-                                            )
-                                        }
                                     }
+                                    prevEndNode = course.startNode + course.step - 1
+                                } else {
+                                    Box(modifier = GlanceModifier.fillMaxWidth().height(rowH)) {}
                                 }
-                                prevEndNode = course.startNode + course.step - 1
-                            }
-                            // 末尾空白填到节 maxSumStep
-                            val tailSkip = (maxSumStep - prevEndNode).coerceAtLeast(0)
-                            if (tailSkip > 0) {
-                                val tailH = (tailSkip * perNodeHeight.value + tailSkip * rowGapValue).dp
-                                Box(modifier = GlanceModifier.fillMaxWidth().height(tailH)) {}
                             }
                         }
+                    } else {
+                        Box(modifier = GlanceModifier.width(perDayWidth).height(totalBodyHeight)) {}
                     }
                 }
             }
