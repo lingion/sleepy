@@ -128,6 +128,11 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             var x = outerPad.toFloat()
             var y = outerPad.toFloat()
 
+            // ★ v19b: 字号完全根据 widget 宽高自适应 (用户原话: "能不能自动根据这个宽度, 高度调整")
+            // 1dp 永远 = 1dp, 但用 widget 尺寸作为 scale 单位
+            // dayW = (bodyW-timeW) / 7, cardH = slotH * step
+            // 单节 course 卡片: cardH = slotH (小卡), 多节: cardH = slotH*N (大卡)
+
             // time column 角落
             p.color = bgSurface
             c.drawRoundRect(RectF(x, y, x + timeW, y + headH),
@@ -145,17 +150,17 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 c.drawRoundRect(RectF(cellX, y, cellX + dayW, y + headH),
                     dp(14f).toFloat(), dp(14f).toFloat(), p)
 
-                // day name
+                // day name 字号 = headH * 0.30 (大 widget 字体大, 小 widget 字体小)
                 val dayName = DateUtils.localizedDay(dow, SleepyApp.get())
                 p.color = if (isToday) fgPrimary else fgOnSurface
-                p.textSize = dp(11f).toFloat()
+                p.textSize = (headH * 0.30f).coerceAtMost(dp(15f).toFloat()).coerceAtLeast(dp(10f).toFloat())
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 p.textAlign = Paint.Align.CENTER
                 val cx = cellX + dayW / 2f
                 c.drawText(dayName, cx, y + headH * 0.4f, p)
 
-                // date or count
-                p.textSize = dp(8f).toFloat()
+                // date or count 字号 = headH * 0.20
+                p.textSize = (headH * 0.20f).coerceAtMost(dp(11f).toFloat()).coerceAtLeast(dp(7f).toFloat())
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                 p.color = fgOnSurfaceVar
                 val sub = dateStr ?: if (count > 0) "$count" else "—"
@@ -172,19 +177,23 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 val rowY = bodyTop + gapH + (i - 1) * (slotH + gapH)
                 val slot = slots.getOrNull(i - 1)
 
-                // period number
+                // period number 字号 = slotH * 0.45 (跟 slot 高度成比例)
                 p.color = fgOnSurface
-                p.textSize = (slotH * 0.4f).coerceAtMost(dp(11f).toFloat()).coerceAtLeast(dp(6f).toFloat())
+                p.textSize = (slotH * 0.45f)
+                    .coerceAtMost(dp(16f).toFloat())
+                    .coerceAtLeast(dp(8f).toFloat())
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 val cy = rowY + slotH / 2f + p.textSize * 0.35f
                 c.drawText("$i", x + timeW / 2f, cy, p)
 
-                // time label (如果 slot 高度够)
-                if (slot != null && slotH > dp(16f)) {
+                // time label 字号 = slotH * 0.22 (时间字符串)
+                if (slot != null && slotH > dp(18f)) {
                     p.color = fgOnSurfaceVar
-                    p.textSize = dp(6f).toFloat()
+                    p.textSize = (slotH * 0.22f)
+                        .coerceAtMost(dp(8f).toFloat())
+                        .coerceAtLeast(dp(5f).toFloat())
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                    c.drawText(slot, x + timeW / 2f, cy + p.textSize * 1.5f, p)
+                    c.drawText(slot, x + timeW / 2f, cy + p.textSize * 1.6f, p)
                 }
             }
 
@@ -235,21 +244,26 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.textAlign = Paint.Align.CENTER
                     val cx2 = colX + dayW / 2f
 
-                    // 字号: 卡片高度 * 0.16, 但限制在 7-12dp 之间
-                    val nameSize = (cardH * 0.16f)
-                        .coerceAtLeast(dp(7f).toFloat())
-                        .coerceAtMost(dp(12f).toFloat())
+                    // ★ 字号 = cardH * 0.22 (用户原话: "自动根据这个宽度, 高度调整")
+                    // 单节卡: cardH=62px → nameSize=13.6px ≈ 5dp 真机
+                    // 5节卡: cardH=310px → nameSize=68.2px → coerce 到 dp(16)=44px ≈ 16dp
+                    // 24节卡: cardH=1488px → coerce 到 dp(16)=44px
+                    val nameSize = (cardH * 0.22f)
+                        .coerceAtMost(dp(16f).toFloat())
+                        .coerceAtLeast(dp(9f).toFloat())
                     p.textSize = nameSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                    val nameMaxW = dayW - dp(4f)
+                    val nameMaxW = dayW - dp(6f)
                     val nameText = ellipsize(course.courseName, p, nameMaxW)
-                    // 垂直居中: (cardTop + cardH/2) + textSize*0.35 (baseline correction)
                     val nameY = cardTop + cardH / 2f + nameSize * 0.35f
                     c.drawText(nameText, cx2, nameY, p)
 
                     // 时间/地点 (如果卡片够高)
                     if (cardH > slotH * 2f) {
-                        val subSize = (nameSize * 0.75f).coerceAtLeast(dp(5f).toFloat())
+                        // sub 字号 = nameSize * 0.75, 限制 6-12dp
+                        val subSize = (nameSize * 0.75f)
+                            .coerceAtLeast(dp(6f).toFloat())
+                            .coerceAtMost(dp(12f).toFloat())
                         p.textSize = subSize
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                         p.alpha = 180
