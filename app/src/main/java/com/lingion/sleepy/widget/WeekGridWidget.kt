@@ -109,17 +109,15 @@ class WeekGridWidget : GlanceAppWidget() {
  * 按 widget 实际高度算每节高度。
  * 减表头 30dp / padding 12dp / maxNode。
  * 含义：maxNode 个 step 总高 = widget 可用高，每 step 高度 = perNodeHeight。
- * ★ 10dp 网格对齐：snap to 10dp 整数倍。
+ * ★ 自动缩放：真分数除法，不 snap — 让 grid 真撑满 widget
  */
 internal fun computePerNodeHeight(widgetHeightDp: Int, maxNode: Int): Dp {
     val headerH = 30
     val padding = 12
     val stepCount = maxNode.coerceAtLeast(1)
     val available = (widgetHeightDp - headerH - padding).coerceAtLeast(40)
-    val perNode = available / stepCount
-    // ★ Snap 到 10dp 整数倍 — 10×10 网格对齐
-    val snapped = (perNode / 10 * 10).coerceAtLeast(10)
-    return snapped.dp
+    val perNode = available.toFloat() / stepCount
+    return perNode.dp
 }
 
 class WeekGridWidgetReceiver : GlanceAppWidgetReceiver() {

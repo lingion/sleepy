@@ -664,9 +664,10 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
     val onSurfaceVar = scheme.onSurfaceVariant
     val onPrimaryCont = scheme.onPrimaryContainer
 
-    // ★ FIX 2: 10dp 网格 — 所有尺寸按 10dp 整数倍对齐
-    val rawColW = (widgetWidthDp - 12) / 8
-    val colW = (rawColW / 10 * 10).dp.coerceAtLeast(30.dp)
+    // ★ FIX 2 (v1.0.16-rebuild-2): 取消 10dp snap — 自动按 widget 实际尺寸缩放
+    // 之前 colW = (rawColW/10*10).dp 把 64.75 砍到 60，8×60=480 < 530 widget 宽 → 右侧空 50dp
+    // 现在用真分数 (widgetWidthDp.toFloat() / 8f) → 530/8=66.25dp，8×66.25=530 真撑满
+    val colW = (widgetWidthDp.toFloat() / 8f).dp
     val timeColW = colW
     val perDayWidth = colW
     val headerH = 30.dp
