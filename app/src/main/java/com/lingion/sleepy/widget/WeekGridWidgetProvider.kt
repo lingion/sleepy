@@ -293,88 +293,54 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.style = Paint.Style.FILL
                     p.alpha = 255
 
-                    // ★ v19f: 台湾从右往左竖排 (用户原话: "全部改成台湾从右往左竖排文字")
-                    // 字直立不旋转, 单字一格, 第一列在最右, 字数超出 cardH 自动开第二列 (往左)
+                    // ★ v19g: 课程名独占第一列(最右), 教室独占第二列(往左一列) (用户原话)
+// "工科数学分析先贴右最侧一行" - 第一列(最右)从上到下排课程名
+// "课程完了之后往左边一列, 再是教室" - 第二列(往左)从上到下排教室
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
 
-                    // 字块准备: 课程名字符 + (教室) + (教室字符)
                     val nameChars = course.courseName.filter { it != '\n' && it != ' ' }.toList()
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
-                    val totalChars = nameChars.size +
-                        (if (roomChars.isNotEmpty()) 1 + roomChars.size else 0) // 1 = name/room 间距
 
-                    // 可用区域 (留 padding)
                     val pad = dp(3f).toFloat()
                     val availW = (cardRect.width() - pad * 2).coerceAtLeast(dp(8f).toFloat())
                     val availH = (cardRect.height() - pad * 2).coerceAtLeast(dp(8f).toFloat())
 
-                    // 每字正方形 (汉字方块), charSize = 单字边长 (px)
-                    // 字号下限 7dp, 上限 = 卡片短边 (跨节卡也不会过大)
-                    val maxCharSize = (availW * 0.7f).coerceAtMost(availH * 0.5f) // 单列时字不能太宽
-                    var charSize = (availH / totalChars).coerceAtMost(maxCharSize)
-                        .coerceAtLeast(dp(7f).toFloat())
-                    // 算需要几列
-                    var charsPerCol = (availH / charSize).toInt().coerceAtLeast(1)
-                    var cols = ((totalChars + charsPerCol - 1) / charsPerCol).coerceAtLeast(1)
-                    // 字宽 = 单列宽 (留 column gap)
-                    val colGap = dp(1f).toFloat()
-                    var colW = (availW - colGap * (cols - 1)) / cols
-                    // 重新算 charSize 让字填满列宽 (方块字)
-                    charSize = charSize.coerceAtMost(colW).coerceAtLeast(dp(7f).toFloat())
-                    charsPerCol = (availH / charSize).toInt().coerceAtLeast(1)
-                    cols = ((totalChars + charsPerCol - 1) / charsPerCol).coerceAtLeast(1)
-                    colW = (availW - colGap * (cols - 1)) / cols
-                    charSize = charSize.coerceAtMost(colW).coerceAtLeast(dp(7f).toFloat())
+                    val colGap = dp(1.5f).toFloat()
+                    val totalCols = if (roomChars.isNotEmpty()) 2 else 1
+                    val colW = (availW - colGap * (totalCols - 1)) / totalCols
 
-                    val totalH = charSize * charsPerCol
-                    val blockTop = cardRect.top + (cardRect.height() - totalH) / 2f
-                    // 右对齐起点 (第一列 = 最右)
+                    // 行数 = 两列中较长的字符数 (决定字号, 让两列对齐)
+                    val rowsCount = maxOf(nameChars.size, roomChars.size).coerceAtLeast(1)
+                    var charSize = (availH / rowsCount).coerceAtMost(colW * 0.95f)
+                        .coerceAtLeast(dp(7f).toFloat())
+
+                    val totalBlockH = charSize * rowsCount
+                    val blockTop = cardRect.top + (cardRect.height() - totalBlockH) / 2f
                     val blockRight = cardRect.right - pad
 
+                    // 第一列(最右) = 课程名, BOLD
                     p.textSize = charSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-
-                    // 把所有字符连成单序列: nameChars + (分隔空槽) + roomChars
-                    val allChars = if (roomChars.isNotEmpty())
-                        nameChars + listOf('\u0000') + roomChars // 0 = 空槽
-                    else nameChars
-
-                    for ((idx, ch) in allChars.withIndex()) {
-                        val col = idx / charsPerCol // 0 = 最右
-                        val row = idx % charsPerCol
-                        val cx = blockRight - col * (colW + colGap) - colW / 2f
-                        val cy = blockTop + charSize * (row + 0.82f) // 0.82 = baseline 偏下
-                        if (ch == '\u0000') continue // 空槽
-                        c.drawText(ch.toString(), cx, cy, p)
+                    p.alpha = 255
+                    val nameColCenterX = blockRight - colW / 2f // col 0 = 最右
+                    for ((i, ch) in nameChars.withIndex()) {
+                        val cy = blockTop + charSize * (i + 0.82f)
+                        c.drawText(ch.toString(), nameColCenterX, cy, p)
                     }
 
-                    // 副标签用 NORMAL + 略小 + 半透明
-                    if (roomChars.isNotEmpty() && charSize > dp(8f).toFloat()) {
-                        // roomChars 已经画过, 此处无额外操作 (上面循环已包含 room 部分)
-                        // 但用 NORMAL 字重 + 半透明 — 需要第二次 pass 覆盖 room 部分
-                        // 简化: 在 cardH > slotH * 2 时降字号重画 room
-                        if (cardH > slotH * 2f) {
-                            val subSize = (charSize * 0.85f).coerceAtLeast(dp(6f).toFloat())
-                            p.textSize = subSize
-                            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                            p.alpha = 200
-                            // roomChars 起始 idx = nameChars.size + 1
-                            val roomStart = nameChars.size + 1
-                            for ((offset, ch) in roomChars.withIndex()) {
-                                val idx = roomStart + offset
-                                val col = idx / charsPerCol
-                                val row = idx % charsPerCol
-                                val cx = blockRight - col * (colW + colGap) - colW / 2f
-                                // 用 subSize 重算 baseline (原 charSize, 现在 subSize)
-                                val cy = blockTop + subSize * (row + 0.82f)
-                                if (ch == '\u0000') continue
-                                c.drawText(ch.toString(), cx, cy, p)
-                            }
-                            p.alpha = 255
+                    // 第二列(往左一列) = 教室, NORMAL + 半透明 (同字号, 两列对齐)
+                    if (roomChars.isNotEmpty()) {
+                        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                        p.alpha = 200
+                        val roomColCenterX = blockRight - 1 * (colW + colGap) - colW / 2f
+                        for ((i, ch) in roomChars.withIndex()) {
+                            val cy = blockTop + charSize * (i + 0.82f)
+                            c.drawText(ch.toString(), roomColCenterX, cy, p)
                         }
+                        p.alpha = 255
                     }
                 }
             }
