@@ -253,6 +253,38 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
             }
 
+            // ★ v19i: 统一字号按最小跨节卡算 (用户原话: "不是按单结算, 是按现有结束跨节的最小的那个算")
+            // 之前 v19h 按 slotH (单节) 算, 用户不要 — 要按所有现存课程中 step 最小的跨节卡算
+            // 例子: 用户课程有 P1-3节(step=3), P7-5节(step=5), P12-12节(step=12)
+            //   → 最小 step=3 → 按 P1-3节 卡的 cardH = slotH*3 + gapH*2 算字号
+            val unifiedPad = dp(3f).toFloat()
+            val unifiedColGap = dp(1.5f).toFloat()
+            val unifiedDayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
+            val unifiedColW2 = (unifiedDayAvailW - unifiedColGap) / 2 // 双列 (name + room)
+
+            // 找所有课程的最小 step (≥1), 但如果存在跨节课程 (step>=2), 至少按 step=2 算 (排除单节)
+            // 例: 用户课程有 P1-1节(step=1), P2-2节(step=2), P7-5节(step=5) → minStep=2
+            // 例: 全单节 → minStep=1 (回退到 slotH)
+            val rawMinStep = data.days.flatMap { it.courses }
+                .minOfOrNull { it.step.coerceAtLeast(1) } ?: 1
+            val hasMultiStep = data.days.flatMap { it.courses }
+                .any { it.step >= 2 }
+            val minStepAll = if (hasMultiStep) maxOf(2, rawMinStep) else 1
+            // 按这个最小跨节卡的 cardH 算字号
+            val minCardH = slotH * minStepAll + gapH * (minStepAll - 1)
+            val unifiedSlotAvailH = (minCardH - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
+
+            val maxNameCharsAll = data.days.flatMap { it.courses }
+                .maxOfOrNull { c -> c.courseName.filter { it != '\n' && it != ' ' }.length } ?: 6
+            val maxRoomCharsAll = data.days.flatMap { it.courses }
+                .maxOfOrNull { c -> c.room.takeIf { it.isNotBlank() }
+                    ?.filter { it != '\n' && it != ' ' }?.length ?: 0 } ?: 0
+            val unifiedMaxRows = maxOf(maxNameCharsAll, maxRoomCharsAll).coerceAtLeast(1)
+            val unifiedCharSize = (unifiedSlotAvailH / unifiedMaxRows)
+                .coerceAtMost(unifiedColW2 * 0.95f)
+                .coerceAtLeast(dp(7f).toFloat())
+            Log.d(TAG, "v19i unifiedCharSize=${unifiedCharSize}px minStep=$minStepAll minCardH=${minCardH}px maxRows=$unifiedMaxRows slotH=${slotH}px dayW=${dayW}px")
+
             // day columns
             for ((idx, dow) in sortedDays.withIndex()) {
                 val colX = x + timeW + gapW + idx * (dayW + gapW)
@@ -294,8 +326,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.alpha = 255
 
                     // ★ v19g: 课程名独占第一列(最右), 教室独占第二列(往左一列) (用户原话)
-// "工科数学分析先贴右最侧一行" - 第一列(最右)从上到下排课程名
-// "课程完了之后往左边一列, 再是教室" - 第二列(往左)从上到下排教室
+                    // ★ v19h: 字号全周统一按 slotH 算 (用户原话: "能不能所有字号统一啊?")
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
@@ -304,22 +335,16 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
-                    val pad = dp(3f).toFloat()
-                    val availW = (cardRect.width() - pad * 2).coerceAtLeast(dp(8f).toFloat())
-                    val availH = (cardRect.height() - pad * 2).coerceAtLeast(dp(8f).toFloat())
-
-                    val colGap = dp(1.5f).toFloat()
+                    val availW = (cardRect.width() - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
                     val totalCols = if (roomChars.isNotEmpty()) 2 else 1
-                    val colW = (availW - colGap * (totalCols - 1)) / totalCols
+                    val colW = (availW - unifiedColGap * (totalCols - 1)) / totalCols
 
-                    // 行数 = 两列中较长的字符数 (决定字号, 让两列对齐)
                     val rowsCount = maxOf(nameChars.size, roomChars.size).coerceAtLeast(1)
-                    var charSize = (availH / rowsCount).coerceAtMost(colW * 0.95f)
-                        .coerceAtLeast(dp(7f).toFloat())
+                    val charSize = unifiedCharSize // ★ v19h: 全周统一字号
 
                     val totalBlockH = charSize * rowsCount
                     val blockTop = cardRect.top + (cardRect.height() - totalBlockH) / 2f
-                    val blockRight = cardRect.right - pad
+                    val blockRight = cardRect.right - unifiedPad
 
                     // 第一列(最右) = 课程名, BOLD
                     p.textSize = charSize
@@ -335,7 +360,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     if (roomChars.isNotEmpty()) {
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                         p.alpha = 200
-                        val roomColCenterX = blockRight - 1 * (colW + colGap) - colW / 2f
+                        val roomColCenterX = blockRight - 1 * (colW + unifiedColGap) - colW / 2f
                         for ((i, ch) in roomChars.withIndex()) {
                             val cy = blockTop + charSize * (i + 0.82f)
                             c.drawText(ch.toString(), roomColCenterX, cy, p)
