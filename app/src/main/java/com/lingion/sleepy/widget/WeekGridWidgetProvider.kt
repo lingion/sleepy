@@ -91,6 +91,53 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val fgOnSurfaceVar  = if (isDark) 0xFFCAC4D0.toInt() else 0xFF49454F.toInt()
             val gridLine        = if (isDark) 0xFF49454F.toInt() else 0xFFE7E0EC.toInt()
 
+            // ★ v19e: 课程颜色对齐 CourseTableView.pickCourseColor
+            // 优先按课程名关键词匹配 (英语/物理/心理/高数等), 否则 hash 到 palette
+            // 用户原话: "你这个课程的颜色也没有跟软件内的对齐"
+            // 颜色定义来自 LightCoursePalette / DarkCoursePalette
+            val palette = if (isDark) mapOf(
+                "primary" to 0xFF4F378B.toInt(),     // 高数/数学/主课
+                "secondary" to 0xFF4A4458.toInt(),   // 通用
+                "tertiary" to 0xFF633B48.toInt(),    // 思政/史纲
+                "english" to 0xFF1E3A4D.toInt(),     // 英语
+                "military" to 0xFF2E3F26.toInt(),    // 军事/国防
+                "physics" to 0xFF4D3A1E.toInt(),     // 物理
+                "history" to 0xFF4D2828.toInt(),      // 历史
+                "psychology" to 0xFF352B4D.toInt(),   // 心理
+                "practice" to 0xFF1E3D32.toInt()     // 实践/实验
+            ) else mapOf(
+                "primary" to 0xFFEADDFF.toInt(),
+                "secondary" to 0xFFE8DEF8.toInt(),
+                "tertiary" to 0xFFFFD8E4.toInt(),
+                "english" to 0xFFD8F2FF.toInt(),
+                "military" to 0xFFE7F3DC.toInt(),
+                "physics" to 0xFFFFE7C7.toInt(),
+                "history" to 0xFFF7D9D9.toInt(),
+                "psychology" to 0xFFE6DDFB.toInt(),
+                "practice" to 0xFFD7F0E8.toInt()
+            )
+            val hashPaletteKeys = listOf("primary", "secondary", "tertiary", "english", "physics", "psychology")
+            fun pickCourseColor(name: String): Int {
+                // 1. 关键词规则 (跟 CourseTableView courseColorRules 一致)
+                val rules = listOf(
+                    "英语" to "english",
+                    "军事" to "military", "国防" to "military",
+                    "物理" to "physics",
+                    "历史" to "history", "史纲" to "history", "近代史" to "history",
+                    "心理" to "psychology",
+                    "实践" to "practice", "实习" to "practice", "实验" to "practice",
+                    "高数" to "primary", "数学" to "primary", "电路" to "primary",
+                    "思政" to "tertiary", "马原" to "tertiary", "毛概" to "tertiary", "形势" to "tertiary"
+                )
+                rules.firstOrNull { (kw, _) -> name.contains(kw) }?.let { (_, key) ->
+                    return palette[key]!!
+                }
+                // 2. hash fallback
+                val h = (name.hashCode() and 0x7FFFFFFF)
+                val key = hashPaletteKeys[h % hashPaletteKeys.size]
+                return palette[key]!!
+            }
+
             // ── 数据 ──
             val timeJson = data.days.firstOrNull()?.timeJson ?: ""
             val allSlots = parseTimeSlots(timeJson)
@@ -230,9 +277,8 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val cardH = slotH * step + gapH * (step - 1)
                     val cardRect = RectF(colX, cardTop, colX + dayW, cardTop + cardH)
 
-                    // 卡片背景色
-                    val baseColor = runCatching { Color.parseColor(course.color) }
-                        .getOrDefault(if (isDark) 0xFF6750A4.toInt() else 0xFF6750A4.toInt())
+                    // 卡片背景色 (v19e: 对齐 CourseTableView palette)
+                    val baseColor = pickCourseColor(course.courseName)
                     p.color = baseColor
                     p.alpha = 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)
@@ -251,32 +297,36 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
-                    val cx2 = colX + dayW / 2f
 
                     // ★ 字号 = cardH * 0.20 (用户原话: "自动根据这个宽度, 高度调整")
-                    // 降比例从 0.22 → 0.20, cap 从 dp(16) → dp(14)
-                    val nameSize = (cardH * 0.20f)
-                        .coerceAtMost(dp(14f).toFloat())
-                        .coerceAtLeast(dp(9f).toFloat())
+                    // v19e: 先按 cardH*0.20 算, 若文字宽度 > dayW-padding 就降字号 (不 ellipsize)
+                    var nameSize = (cardH * 0.20f).coerceAtMost(dp(14f).toFloat()).coerceAtLeast(dp(9f).toFloat())
                     p.textSize = nameSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                    val nameMaxW = dayW - dp(6f)
-                    val nameText = ellipsize(course.courseName, p, nameMaxW)
+                    val cx2 = colX + dayW / 2f
+                    val nameMaxW = dayW - dp(8f)
+                    // ★ 自动降字号到能装下完整课程名为止 (不 ellipsize)
+                    var nameText = course.courseName
+                    while (p.measureText(nameText) > nameMaxW && nameSize > dp(7f)) {
+                        nameSize -= 1f
+                        p.textSize = nameSize
+                    }
                     val nameY = cardTop + cardH / 2f + nameSize * 0.35f
                     c.drawText(nameText, cx2, nameY, p)
 
-                    // 时间/地点 (如果卡片够高)
+                    // 时间/地点 (如果卡片够高, 字号自动降不 ellipsize)
                     if (cardH > slotH * 2f) {
-                        // sub 字号 = nameSize * 0.75, 限制 6-12dp
-                        val subSize = (nameSize * 0.75f)
-                            .coerceAtLeast(dp(6f).toFloat())
-                            .coerceAtMost(dp(12f).toFloat())
+                        var subSize = (nameSize * 0.75f).coerceAtLeast(dp(6f).toFloat()).coerceAtMost(dp(11f).toFloat())
                         p.textSize = subSize
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                         p.alpha = 180
                         val sub = course.room.takeIf { it.isNotBlank() } ?: ""
                         if (sub.isNotBlank()) {
-                            val subText = ellipsize(sub, p, nameMaxW)
+                            var subText = sub
+                            while (p.measureText(subText) > nameMaxW && subSize > dp(5f)) {
+                                subSize -= 1f
+                                p.textSize = subSize
+                            }
                             c.drawText(subText, cx2, nameY + nameSize * 0.9f, p)
                         }
                         p.alpha = 255
