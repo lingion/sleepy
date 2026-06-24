@@ -52,10 +52,8 @@ class WeekGridWidget : GlanceAppWidget() {
         val maxNode = data.days.maxOfOrNull { d ->
             d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
         }?.coerceIn(4, 10) ?: 4
-        val perNodeHeight = computePerNodeHeight(widgetHeightDp, maxNode)
 
-        Log.d("WeekGridWidget", "widgetSize=${widgetWidthDp}x${widgetHeightDp}dp, maxNode=$maxNode, " +
-            "perNodeHeight=${perNodeHeight.value.toInt()}dp, hasTable=${data.hasTable}")
+        Log.d("WeekGridWidget", "widgetSize=${widgetWidthDp}x${widgetHeightDp}dp, maxNode=$maxNode, hasTable=${data.hasTable}")
 
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -64,8 +62,8 @@ class WeekGridWidget : GlanceAppWidget() {
             WeekGridContent(
                 data = data,
                 openAppAction = actionStartActivity(openAppIntent),
-                perNodeHeight = perNodeHeight,
-                widgetWidthDp = widgetWidthDp
+                widgetWidthDp = widgetWidthDp,
+                widgetHeightDp = widgetHeightDp
             )
         }
     }

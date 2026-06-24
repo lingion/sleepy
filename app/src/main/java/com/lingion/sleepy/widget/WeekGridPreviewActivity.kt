@@ -65,23 +65,18 @@ class WeekGridPreviewActivity : ComponentActivity() {
             androidx.compose.material3.Text("加载中...")
             return
         }
-        androidx.compose.foundation.layout.Column(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
-            // TopBar 周次切换
-            TopBarSimple(currentWeek = d.currentWeek)
-            // 直接调 CardsGridView 渲染课程表
-            androidx.compose.foundation.layout.Box(modifier = androidx.compose.ui.Modifier.weight(1f)) {
-                CardsGridView(
-                    courses = d.courses,
-                    timeSlots = d.timeSlots,
-                    visibleDays = d.visibleDays,
-                    showDate = true,
-                    startDate = d.startDate,
-                    currentWeek = d.currentWeek,
-                    displayMode = "node",
-                    timeJson = d.timeJson,
-                    onCourseClick = { Log.d("Preview", "clicked: ${it.courseName}") }
-                )
-            }
+        androidx.compose.foundation.layout.Box(modifier = androidx.compose.ui.Modifier.fillMaxSize()) {
+            CardsGridView(
+                courses = d.courses,
+                timeSlots = d.timeSlots,
+                visibleDays = d.visibleDays,
+                showDate = true,
+                startDate = d.startDate,
+                currentWeek = d.currentWeek,
+                displayMode = "node",
+                timeJson = d.timeJson,
+                onCourseClick = { Log.d("Preview", "clicked: ${it.courseName}") }
+            )
         }
     }
 

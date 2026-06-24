@@ -641,7 +641,7 @@ private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
 // ═══════════════════════════════════════════════════════
 
 @Composable
-fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 50.dp, widgetWidthDp: Int = 320) {
+fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 320, widgetHeightDp: Int = 280) {
     val scheme = resolveSchemePublic(data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
 
@@ -650,11 +650,10 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
     val sortedDays = data.visibleDays.sorted()
 
     // ★ FIX 1: maxNode = max(startNode + step - 1) — 之前 maxSumStep 是 bug
-    // 之前用 sumOf(step) 算 maxSumStep=9 → body Row 只 9 行 → 20 节课只显示 9
     val rawMaxNode = data.days.maxOfOrNull { d ->
         d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
     } ?: 0
-    val maxNode = rawMaxNode.coerceIn(4, 10)  // Cap 10（Glance Column 子元素上限 10）
+    val maxNode = rawMaxNode.coerceIn(4, 10)
     val timeSlots = allTimeSlots.take(maxNode)
 
     val containerBg = scheme.surfaceContainer
@@ -664,14 +663,17 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
     val onSurfaceVar = scheme.onSurfaceVariant
     val onPrimaryCont = scheme.onPrimaryContainer
 
-    // ★ FIX 2 (v1.0.16-rebuild-2): 取消 10dp snap — 自动按 widget 实际尺寸缩放
-    // 之前 colW = (rawColW/10*10).dp 把 64.75 砍到 60，8×60=480 < 530 widget 宽 → 右侧空 50dp
-    // 现在用真分数 (widgetWidthDp.toFloat() / 8f) → 530/8=66.25dp，8×66.25=530 真撑满
-    val colW = (widgetWidthDp.toFloat() / 8f).dp
-    val timeColW = colW
-    val perDayWidth = colW
-    val headerH = 30.dp
-    val rowH = perNodeHeight
+    // ★ v1.0.16-rebuild-5: 所有尺寸从 widget 真实宽高算，减 outerPadding
+    // 之前 colW = widgetWidthDp/8f → 8×colW = widgetWidthDp，但外层 padding(6dp) → 溢出 12dp
+    val outerPad = 12f  // 6dp × 2（上下或左右）
+    val headerHdp = 30f
+    val bodyW = (widgetWidthDp - outerPad).coerceAtLeast(100f)  // 内宽 = widget 宽 - 左右 pad
+    val bodyH = (widgetHeightDp - outerPad - headerHdp).coerceAtLeast(100f)  // body 高 = widget 高 - 上下 pad - header
+    val colW = (bodyW / 8f).dp   // 8 列平分内宽
+    val slotH = (bodyH / maxNode).dp  // maxNode 行平分 body 高
+    val totalBodyH = (slotH.value * maxNode).dp
+    val rowH = slotH  // 单节高度 = slotH
+    val headerH = 30.dp  // Glance 需要 Dp 类型
 
     Column(
         modifier = GlanceModifier.fillMaxSize()
@@ -689,7 +691,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
                 modifier = GlanceModifier.fillMaxWidth().height(headerH),
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Box(modifier = GlanceModifier.width(timeColW).fillMaxHeight()) {}
+                Box(modifier = GlanceModifier.width(colW).fillMaxHeight()) {}
                 for (day in 1..7) {
                     val isVisible = day in sortedDays
                     val isToday = day == todayDow
@@ -698,7 +700,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
                     val dateStr = if (data.showDate && dayData != null) DateUtils.shortDate(dayData.date) else null
 
                     Box(
-                        modifier = GlanceModifier.width(perDayWidth).fillMaxHeight()
+                        modifier = GlanceModifier.width(colW).fillMaxHeight()
                             .padding(horizontal = 1.dp)
                             .background(if (isVisible) ColorProvider(if (isToday) todayHeadBg else cellBg) else ColorProvider(Color.Transparent))
                             .cornerRadius(6.dp),
@@ -739,7 +741,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
             ) {
                 // 时间列 — maxNode 个 Box（每个 rowH 高度）
                 Column(
-                    modifier = GlanceModifier.width(timeColW).height(totalBodyHeight).padding(end = 4.dp),
+                    modifier = GlanceModifier.width(colW).height(totalBodyHeight).padding(end = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     for (i in 1..maxNode) {
@@ -779,7 +781,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
 
                     if (isVisible) {
                         Column(
-                            modifier = GlanceModifier.width(perDayWidth).height(totalBodyHeight)
+                            modifier = GlanceModifier.width(colW).height(totalBodyHeight)
                                 .padding(horizontal = 1.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -816,7 +818,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, perNodeHeight: Dp = 5
                             }
                         }
                     } else {
-                        Box(modifier = GlanceModifier.width(perDayWidth).height(totalBodyHeight)) {}
+                        Box(modifier = GlanceModifier.width(colW).height(totalBodyHeight)) {}
                     }
                 }
             }
