@@ -151,14 +151,44 @@ class WidgetRenderActivity : ComponentActivity() {
             name = "测试课表",
             startDate = "2026-02-23",
             maxWeek = 20,
-            nodesPerDay = 12,
-            timeJson = TimeTableUtils.DEFAULT_TIME_JSON,
+            nodesPerDay = 24,
+            timeJson = TIME_JSON_24,
             isDefault = true
         )
         val tableId = repo.insertTable(table)
-        Log.d("WidgetRender", "inserted table id=$tableId")
+        Log.d("WidgetRender", "inserted table id=$tableId (24 节课表)")
         seedCourses(repo, tableId)
     }
+
+    /** 24 节课表 timeJson (用户原话: "我让你是24个节次是测试的") */
+    private val TIME_JSON_24: String = """
+        [
+            {"node":1,"start":"08:00","end":"08:45"},
+            {"node":2,"start":"08:55","end":"09:40"},
+            {"node":3,"start":"10:00","end":"10:45"},
+            {"node":4,"start":"10:55","end":"11:40"},
+            {"node":5,"start":"14:00","end":"14:45"},
+            {"node":6,"start":"14:55","end":"15:40"},
+            {"node":7,"start":"16:00","end":"16:45"},
+            {"node":8,"start":"16:55","end":"17:40"},
+            {"node":9,"start":"19:00","end":"19:45"},
+            {"node":10,"start":"19:55","end":"20:40"},
+            {"node":11,"start":"20:50","end":"21:35"},
+            {"node":12,"start":"21:45","end":"22:30"},
+            {"node":13,"start":"08:00","end":"08:45"},
+            {"node":14,"start":"08:55","end":"09:40"},
+            {"node":15,"start":"10:00","end":"10:45"},
+            {"node":16,"start":"10:55","end":"11:40"},
+            {"node":17,"start":"14:00","end":"14:45"},
+            {"node":18,"start":"14:55","end":"15:40"},
+            {"node":19,"start":"16:00","end":"16:45"},
+            {"node":20,"start":"16:55","end":"17:40"},
+            {"node":21,"start":"19:00","end":"19:45"},
+            {"node":22,"start":"19:55","end":"20:40"},
+            {"node":23,"start":"20:50","end":"21:35"},
+            {"node":24,"start":"21:45","end":"22:30"}
+        ]
+    """.trimIndent()
 
     private suspend fun seedCourses(repo: com.lingion.sleepy.data.repository.ScheduleRepository, tableId: Long) {
         fun course(name: String, day: Int, startNode: Int, step: Int, color: String) =
@@ -170,45 +200,37 @@ class WidgetRenderActivity : ComponentActivity() {
                 startWeek = 1, endWeek = 18, type = 0, color = color
             )
 
-        // ★ v1.0.16-rebuild-10 暴力测试 — 25 节课跨所有长度
-        // step 范围: 1(短) / 2 / 3 / 5 / 10(超长，整上午)
+        // ★ v18 暴力测试 — 24 节课, 24 个时间段 (用户原话: "我让你是24个节次是测试的")
+        // 要求: 1节/2节/3节/5节/10节/12节/24节 各种长度混合, 全部撑满 Period 1-24
         val mockCourses = listOf(
-            // 周一 (5 节课: 1节/2节/3节/5节/10节)
-            course("短课-单节", 1, 1, 1, "#FF6750A4"),
-            course("大学英语(二)", 1, 2, 2, "#FF6750A4"),
-            course("工科数学-3节", 1, 4, 3, "#FFB4A8"),
-            course("长课-5节", 1, 7, 5, "#FFE91E63"),
+            // ========== Period 1-6: 短课 + 起始节 ==========
+            course("P1-1节", 1, 1, 1, "#FF6750A4"),
+            course("P2-2节", 1, 2, 2, "#FF7D5260"),
+            course("P4-1节", 2, 4, 1, "#FF4A6741"),
+            course("P1-3节", 3, 1, 3, "#FFFBE4C6"),
+            course("P5-2节", 4, 5, 2, "#FFB4A8"),
+            course("P3-1节", 5, 3, 1, "#FF59CD6E"),
 
-            // 周二 (4 节课)
-            course("概率论-2节", 2, 1, 2, "#FF6750A4"),
-            course("数学分析-10节-全上午", 2, 3, 10, "#FFB4A8"),
-            course("军事理论-2节", 2, 8, 2, "#FF59CD6E"),
+            // ========== Period 7-12: 中等长度 ==========
+            course("P7-5节", 1, 7, 5, "#FFB69DF8"),
+            course("P8-3节", 2, 8, 3, "#FFB4A8"),
+            course("P10-1节", 3, 10, 1, "#FF006A6A"),
+            course("P9-2节", 4, 9, 2, "#FF59CD6E"),
+            course("P11-1节", 5, 11, 1, "#FFFBE4C6"),
+            course("P12-12节", 6, 1, 12, "#FF8B5CF6"),  // 整上午跨 P1-P12
 
-            // 周三 (4 节课)
-            course("体育-2节", 3, 1, 2, "#FF59CD6E"),
-            course("概率论-2节", 3, 3, 2, "#FF6750A4"),
-            course("短课-单节2", 3, 5, 1, "#FF6750A4"),
-            course("体育-5节", 3, 6, 5, "#FF59CD6E"),
+            // ========== Period 13-18: 较长 ==========
+            course("P13-5节", 1, 13, 5, "#FF59CD6E"),
+            course("P14-1节", 2, 14, 1, "#FF7D5260"),
+            course("P15-2节", 3, 15, 2, "#FFB69DF8"),
+            course("P16-3节", 5, 16, 3, "#FF4A6741"),
+            course("P18-7节", 7, 12, 7, "#FF0061A4"),  // 跨 P12-P18 (7节)
 
-            // 周四 (4 节课)
-            course("短课-1节", 4, 1, 1, "#FF6750A4"),
-            course("思政-2节", 4, 2, 2, "#FFFBE4C6"),
-            course("形势政策-3节", 4, 5, 3, "#FFFBE4C6"),
-            course("军事理论-2节", 4, 9, 2, "#FF59CD6E"),
-
-            // 周五 (4 节课)
-            course("大学英语-2节", 5, 1, 2, "#FF6750A4"),
-            course("工科数学-2节", 5, 3, 2, "#FFB4A8"),
-            course("体育-2节", 5, 5, 2, "#FF59CD6E"),
-            course("短课-1节", 5, 9, 1, "#FF6750A4"),
-
-            // 周六 (2 节课)
-            course("短课-单节", 6, 1, 1, "#FF6750A4"),
-            course("长课-5节", 6, 4, 5, "#FFE91E63"),
-
-            // 周日 (2 节课)
-            course("短课-单节", 7, 1, 1, "#FF6750A4"),
-            course("长课-5节", 7, 6, 5, "#FFE91E63"),
+            // ========== Period 19-24: 超长 ==========
+            course("P19-1节", 1, 19, 1, "#FFFBE4C6"),
+            course("P20-2节", 2, 20, 2, "#FF0061A4"),
+            course("P22-1节", 3, 22, 1, "#FF6750A4"),
+            course("P24-24节", 4, 1, 24, "#FFE91E63")  // ★ 整 widget 撑满 1门课跨 P1-P24
         )
 
         val ids = repo.insertCourses(mockCourses)
