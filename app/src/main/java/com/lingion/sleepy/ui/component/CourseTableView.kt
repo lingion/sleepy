@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -89,28 +90,31 @@ fun CardsGridView(
 ) {
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
-    val scrollState = rememberScrollState()
 
-    // Layout constants (Compose intrinsic — no per-modifier roundToPx needed)
+    // Layout constants — slotH/rowH 之前硬编码 52/56dp → 12 节 = 682dp > 屏幕 ~500dp → 永远 scroll + 底部被切
+    // ★ v1.0.16-rebuild-3: BoxWithConstraints 拿可用高度，slotH 按 maxNode 平分，删 verticalScroll
     val headH = 58.dp                  // 52dp header + 6dp bottom padding
     val timeW = 68.dp
-    val slotH = 52.dp
     val gapH = 4.dp
     val gapW = 5.dp
-    val rowH = slotH + gapH            // = 56dp per slot row
-    val totalH = headH + rowH * maxNode
 
-    Box(
+    BoxWithConstraints(
         modifier = modifier
             .fillMaxSize()
             .background(colors.surfaceContainerHigh, RoundedCornerShape(18.dp))
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
+        // ★ 按 maxNode 平分可用高度 — 让 grid 真撑满 widget
+        val availableH = maxHeight - headH
+        val adaptiveSlotH = (availableH / maxNode).coerceAtLeast(24.dp)
+        val slotH = adaptiveSlotH
+        val rowH = slotH + gapH
+        val totalH = headH + rowH * maxNode
+
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
                 .padding(horizontal = 0.dp),
             verticalArrangement = Arrangement.spacedBy(4.dp)
         ) {
@@ -138,22 +142,19 @@ fun CardsGridView(
                 }
             }
 
-            // Slot rows — each Row's height = max step in this row.
-            // Each cell uses its own step-height (so step=2 ≠ step=3 visually).
-            // TimeHeadCell stretches to safeStep and shows all startNode..+safeStep-1 labels.
+            // Slot rows — 每个 Row weight(1f) 平分剩余空间
             var slotIdx = 0
             while (slotIdx < timeSlots.size) {
                 val currentNode = timeSlots[slotIdx].nodeStart
                 val cardsHere = courses.filter { it.startNode == currentNode }
                 val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) } ?: 1
-                // Clamp step to remaining slots — a card spanning past timeSlots.size must not skip rendering.
                 val safeStep = maxStep.coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
                 val rowHeight = (slotH + gapH) * safeStep - gapH
 
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(rowHeight),
+                        .weight(1f),
                     verticalAlignment = Alignment.Top,
                     horizontalArrangement = Arrangement.spacedBy(gapW)
                 ) {
