@@ -5,7 +5,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -14,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,15 +27,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.IntOffset
-import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -58,9 +51,7 @@ data class TimeSlot(
     val nodeStart: Int,
     val nodeEnd: Int
 ) {
-    val nodeString: String get() = "第$nodeStart-${nodeEnd}节"  // unused; see nodeString(context) for localized version
-    fun nodeString(context: android.content.Context): String =
-        context.getString(com.lingion.sleepy.R.string.course_node_format, "$nodeStart-$nodeEnd")
+    val nodeString: String get() = "第$nodeStart-${nodeEnd}节"
     val timeString: String get() = "$displayStart-$displayEnd"
 }
 
@@ -93,37 +84,38 @@ fun CardsGridView(
 ) {
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
+    val scrollState = rememberScrollState()
 
-    // ★ v1.0.16-rebuild-4: Box + offset 绝对定位架构
-    // 之前 v1.0.16-rebuild-3 Row.weight(1f) + slotIdx += safeStep 跳过中间 row
-    // → Period 4/5/8/9 label 缺失 + 跨节 cell 视觉只占 1 行（被 row 容器裁剪）
-    // 现在 Box + offset 绝对定位 — Period 完整 + 跨节真跨 N 行 + 撑满 widget
-    val headH = 56.dp
+    // Layout constants (Compose intrinsic — no per-modifier roundToPx needed)
+    val headH = 58.dp                  // 52dp header + 6dp bottom padding
     val timeW = 68.dp
-    val gapH = 2.dp
-    val gapW = 4.dp
+    val slotH = 52.dp
+    val gapH = 4.dp
+    val gapW = 5.dp
+    val rowH = slotH + gapH            // = 56dp per slot row
+    val totalH = headH + rowH * maxNode
 
-    BoxWithConstraints(
+    Box(
         modifier = modifier
             .fillMaxSize()
             .background(colors.surfaceContainerHigh, RoundedCornerShape(18.dp))
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
-        val density = LocalDensity.current
-        val availableW = maxWidth
-        val availableH = maxHeight - headH
-        val sortedDays = visibleDays.sorted()
-        val totalGapW = gapW * (sortedDays.size + 1)
-        val dayW = ((availableW - timeW - totalGapW) / sortedDays.size).coerceAtLeast(40.dp)
-        val totalGapH = gapH * (maxNode + 1)
-        val slotH = ((availableH - totalGapH) / maxNode).coerceAtLeast(20.dp)
-        val rowH = slotH  // 单节 row 高度
-
-        Column(Modifier.fillMaxSize()) {
-            // Day header row — fixed height headH
-            Row(Modifier.fillMaxWidth().height(headH), horizontalArrangement = Arrangement.spacedBy(gapW)) {
-                Box(Modifier.width(timeW))
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .verticalScroll(scrollState)
+                .padding(horizontal = 0.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+        ) {
+            // Day header row
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
+                horizontalArrangement = Arrangement.spacedBy(gapW)
+            ) {
+                Box(modifier = Modifier.width(timeW))
+                val sortedDays = visibleDays.sorted()
                 for (day in sortedDays) {
                     val dateStr = if (showDate && startDate.isNotBlank()) {
                         try {
@@ -136,81 +128,59 @@ fun CardsGridView(
                         isToday = day == today,
                         courseCount = courses.count { it.day == day },
                         dateStr = dateStr,
-                        modifier = Modifier.width(dayW)
+                        modifier = Modifier.weight(1f)
                     )
                 }
             }
 
-            // Body — Box 容器用绝对定位
-            Box(Modifier.fillMaxSize().weight(1f)) {
-                // Time column — 12 个 Period label 全部显示（不跳过！）
-                Column(Modifier.width(timeW).fillMaxHeight()) {
-                    for (i in 1..maxNode) {
-                        val slot = timeSlots.getOrNull(i - 1)
-                        Box(
-                            Modifier.fillMaxWidth().height(rowH),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (slot != null) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "${i}",
-                                        style = MaterialTheme.typography.labelSmall.copy(
-                                            fontWeight = FontWeight.Bold,
-                                            fontSize = 11.sp
-                                        )
-                                    )
-                                    Text(
-                                        text = slot.displayStart,
-                                        style = SleepyTextStyle.micro().copy(fontSize = 7.sp)
-                                    )
-                                }
-                            }
+            // Slot rows — each Row's height = max step in this row.
+            // Each cell uses its own step-height (so step=2 ≠ step=3 visually).
+            // TimeHeadCell stretches to safeStep and shows all startNode..+safeStep-1 labels.
+            var slotIdx = 0
+            while (slotIdx < timeSlots.size) {
+                val currentNode = timeSlots[slotIdx].nodeStart
+                val cardsHere = courses.filter { it.startNode == currentNode }
+                val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) } ?: 1
+                // Clamp step to remaining slots — a card spanning past timeSlots.size must not skip rendering.
+                val safeStep = maxStep.coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
+                val rowHeight = (slotH + gapH) * safeStep - gapH
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(rowHeight),
+                    verticalAlignment = Alignment.Top,
+                    horizontalArrangement = Arrangement.spacedBy(gapW)
+                ) {
+                    SpannedTimeHeadCell(
+                        timeSlots = timeSlots,
+                        startIdx = slotIdx,
+                        span = safeStep,
+                        slotH = slotH,
+                        gapH = gapH,
+                        modifier = Modifier.width(timeW)
+                    )
+                    for (day in visibleDays.sorted()) {
+                        val card = cardsHere.firstOrNull { it.day == day }
+                        if (card != null) {
+                            val step = card.step.coerceAtLeast(1).coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
+                            CourseCardCell(
+                                course = card,
+                                steps = step,
+                                displayMode = displayMode,
+                                timeJson = timeJson,
+                                onClick = { onCourseClick(card) },
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .height((slotH + gapH) * step - gapH)
+                            )
+                        } else {
+                            Spacer(modifier = Modifier.weight(1f).height(rowHeight))
                         }
                     }
                 }
 
-                // Day columns — absolute x positioning
-                for ((dayIdx, day) in sortedDays.withIndex()) {
-                    val dayX = timeW + (dayW + gapW) * dayIdx
-                    val dayXpx = with(density) { dayX.roundToPx() }
-                    val dayCourses = courses.filter { it.day == day }
-                    Box(
-                        Modifier
-                            .width(dayW)
-                            .fillMaxHeight()
-                            .offset { IntOffset(x = dayXpx, y = 0) }
-                    ) {
-                        // Empty placeholder rows — 12 个 Spacer 占位（跨节 cell 覆盖其上）
-                        for (i in 1..maxNode) {
-                            val yOff = with(density) { ((slotH + gapH) * (i - 1) + gapH).roundToPx() }
-                            Spacer(
-                                Modifier
-                                    .fillMaxWidth()
-                                    .height(slotH)
-                                    .offset { IntOffset(x = 0, y = yOff) }
-                            )
-                        }
-                        // Course cells — absolute y positioning（跨节 cell 跨 N 行）
-                        for (course in dayCourses) {
-                            val startIdx = (course.startNode - 1).coerceAtLeast(0)
-                            val step = course.step.coerceAtLeast(1).coerceAtMost(maxNode - startIdx)
-                            val cellH = slotH * step + gapH * (step - 1)
-                            val cellY = with(density) { ((slotH + gapH) * startIdx + gapH).roundToPx() }
-                            CourseCardCell(
-                                course = course,
-                                steps = step,
-                                displayMode = displayMode,
-                                timeJson = timeJson,
-                                onClick = { onCourseClick(course) },
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .height(cellH)
-                                    .offset { IntOffset(x = 0, y = cellY) }
-                            )
-                        }
-                    }
-                }
+                slotIdx += safeStep
             }
         }
     }
@@ -256,9 +226,9 @@ private fun CourseCardCell(
             if (steps > 1) {
                 val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
                     TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-                        ?: stringResource(R.string.course_period_range, course.startNode, course.startNode + steps - 1)
+                        ?: "${course.startNode}-${course.startNode + steps - 1}节"
                 } else {
-                    stringResource(R.string.course_period_range, course.startNode, course.startNode + steps - 1)
+                    "${course.startNode}-${course.startNode + steps - 1}节"
                 }
                 Text(
                     text = timeLabel,
@@ -271,10 +241,8 @@ private fun CourseCardCell(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String? = null, modifier: Modifier = Modifier) {
+private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.chineseDay(day), modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
-    val context = LocalContext.current
-    val resolvedLabel = dayLabel ?: DateUtils.localizedDay(day, context)
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
     val subFg = if (isToday) colors.onPrimaryContainer.copy(alpha = 0.78f) else colors.onSurfaceVariant
@@ -293,7 +261,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
             verticalArrangement = Arrangement.spacedBy(1.dp)
         ) {
             Text(
-                text = resolvedLabel,
+                text = dayLabel,
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = fg,
                 maxLines = 1
@@ -307,7 +275,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
                 )
             } else {
                 Text(
-                    text = if (courseCount == 0) stringResource(R.string.no_course) else stringResource(R.string.n_courses, courseCount),
+                    text = if (courseCount == 0) "无课" else "$courseCount 门",
                     style = SleepyTextStyle.micro(),
                     color = subFg,
                     maxLines = 1
@@ -332,7 +300,7 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = stringResource(R.string.course_node_format, slot.label),
+                text = "第${slot.label}节",
                 style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
                 maxLines = 1
@@ -394,7 +362,7 @@ private fun SpannedTimeHeadCell(
                 ) {
                     Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = stringResource(R.string.course_node_format, slot.label),
+                            text = "第${slot.label}节",
                             style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                             color = colors.onSurface,
                             maxLines = 1
@@ -534,7 +502,7 @@ private fun DaySummaryCell(
     ) {
         // 日期
         Text(
-            text = DateUtils.localizedDay(day, LocalContext.current),
+            text = DateUtils.chineseDay(day),
             style = SleepyTextStyle.dayLabel(),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -554,7 +522,7 @@ private fun DaySummaryCell(
                     .align(Alignment.CenterHorizontally)
             ) {
                 Text(
-                    text = stringResource(R.string.n_courses, courses.size),
+                    text = "${courses.size} 门",
                     style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                     color = chipFg
                 )
@@ -644,7 +612,7 @@ private fun DetailDayCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = DateUtils.localizedDay(day, LocalContext.current) + if (isToday) " · " + stringResource(R.string.today_today) else "",
+                text = DateUtils.chineseDay(day) + if (isToday) " · 今天" else "",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface
             )
@@ -652,7 +620,7 @@ private fun DetailDayCard(
 
         if (courses.isEmpty()) {
             Text(
-                text = "${DateUtils.localizedDay(day, LocalContext.current)} · " + stringResource(R.string.no_course),
+                text = "${DateUtils.chineseDay(day)} · 无课程",
                 style = SleepyTextStyle.smallMeta().copy(fontSize = 12.sp, lineHeight = 16.sp),
                 color = colors.onSurfaceVariant
             )
@@ -670,14 +638,13 @@ private fun DetailDayCard(
 private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
-    val context = LocalContext.current
     val bg = pickCourseColor(course, palette)
 
     val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
         TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-            ?: course.shortNodeString(context)
+            ?: course.shortNodeString
     } else {
-        course.shortNodeString(context)
+        course.shortNodeString
     }
 
     Row(
