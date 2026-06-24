@@ -1,5 +1,6 @@
 package com.lingion.sleepy.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import androidx.glance.appwidget.GlanceAppWidgetManager
 import androidx.glance.appwidget.state.updateAppWidgetState
@@ -53,9 +54,16 @@ object WidgetUpdater {
                 manager.getGlanceIds(WeekListWidget::class.java).forEach { id ->
                     WeekListWidget().update(context, id)
                 }
-                // WeekGridWidget
-                manager.getGlanceIds(WeekGridWidget::class.java).forEach { id ->
-                    WeekGridWidget().update(context, id)
+                // WeekGridWidget (v17 RemoteViews-based AppWidgetProvider)
+                val awm = AppWidgetManager.getInstance(context)
+                val cn = android.content.ComponentName(context, WeekGridWidgetProvider::class.java)
+                val widgetIds = awm.getAppWidgetIds(cn)
+                if (widgetIds.isNotEmpty()) {
+                    val updateIntent = android.content.Intent(context, WeekGridWidgetProvider::class.java).apply {
+                        action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, widgetIds)
+                    }
+                    context.sendBroadcast(updateIntent)
                 }
                 // TwoDayWidget
                 manager.getGlanceIds(TwoDayWidget::class.java).forEach { id ->
