@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -29,11 +30,13 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.IntOffset
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
@@ -91,12 +94,14 @@ fun CardsGridView(
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
 
-    // Layout constants — slotH/rowH 之前硬编码 52/56dp → 12 节 = 682dp > 屏幕 ~500dp → 永远 scroll + 底部被切
-    // ★ v1.0.16-rebuild-3: BoxWithConstraints 拿可用高度，slotH 按 maxNode 平分，删 verticalScroll
-    val headH = 58.dp                  // 52dp header + 6dp bottom padding
+    // ★ v1.0.16-rebuild-4: Box + offset 绝对定位架构
+    // 之前 v1.0.16-rebuild-3 Row.weight(1f) + slotIdx += safeStep 跳过中间 row
+    // → Period 4/5/8/9 label 缺失 + 跨节 cell 视觉只占 1 行（被 row 容器裁剪）
+    // 现在 Box + offset 绝对定位 — Period 完整 + 跨节真跨 N 行 + 撑满 widget
+    val headH = 56.dp
     val timeW = 68.dp
-    val gapH = 4.dp
-    val gapW = 5.dp
+    val gapH = 2.dp
+    val gapW = 4.dp
 
     BoxWithConstraints(
         modifier = modifier
@@ -105,26 +110,20 @@ fun CardsGridView(
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
-        // ★ 按 maxNode 平分可用高度 — 让 grid 真撑满 widget
+        val density = LocalDensity.current
+        val availableW = maxWidth
         val availableH = maxHeight - headH
-        val adaptiveSlotH = (availableH / maxNode).coerceAtLeast(24.dp)
-        val slotH = adaptiveSlotH
-        val rowH = slotH + gapH
-        val totalH = headH + rowH * maxNode
+        val sortedDays = visibleDays.sorted()
+        val totalGapW = gapW * (sortedDays.size + 1)
+        val dayW = ((availableW - timeW - totalGapW) / sortedDays.size).coerceAtLeast(40.dp)
+        val totalGapH = gapH * (maxNode + 1)
+        val slotH = ((availableH - totalGapH) / maxNode).coerceAtLeast(20.dp)
+        val rowH = slotH  // 单节 row 高度
 
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 0.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
-        ) {
-            // Day header row
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(gapW)
-            ) {
-                Box(modifier = Modifier.width(timeW))
-                val sortedDays = visibleDays.sorted()
+        Column(Modifier.fillMaxSize()) {
+            // Day header row — fixed height headH
+            Row(Modifier.fillMaxWidth().height(headH), horizontalArrangement = Arrangement.spacedBy(gapW)) {
+                Box(Modifier.width(timeW))
                 for (day in sortedDays) {
                     val dateStr = if (showDate && startDate.isNotBlank()) {
                         try {
@@ -137,56 +136,81 @@ fun CardsGridView(
                         isToday = day == today,
                         courseCount = courses.count { it.day == day },
                         dateStr = dateStr,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.width(dayW)
                     )
                 }
             }
 
-            // Slot rows — 每个 Row weight(1f) 平分剩余空间
-            var slotIdx = 0
-            while (slotIdx < timeSlots.size) {
-                val currentNode = timeSlots[slotIdx].nodeStart
-                val cardsHere = courses.filter { it.startNode == currentNode }
-                val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) } ?: 1
-                val safeStep = maxStep.coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
-                val rowHeight = (slotH + gapH) * safeStep - gapH
-
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .weight(1f),
-                    verticalAlignment = Alignment.Top,
-                    horizontalArrangement = Arrangement.spacedBy(gapW)
-                ) {
-                    SpannedTimeHeadCell(
-                        timeSlots = timeSlots,
-                        startIdx = slotIdx,
-                        span = safeStep,
-                        slotH = slotH,
-                        gapH = gapH,
-                        modifier = Modifier.width(timeW)
-                    )
-                    for (day in visibleDays.sorted()) {
-                        val card = cardsHere.firstOrNull { it.day == day }
-                        if (card != null) {
-                            val step = card.step.coerceAtLeast(1).coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
-                            CourseCardCell(
-                                course = card,
-                                steps = step,
-                                displayMode = displayMode,
-                                timeJson = timeJson,
-                                onClick = { onCourseClick(card) },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height((slotH + gapH) * step - gapH)
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f).height(rowHeight))
+            // Body — Box 容器用绝对定位
+            Box(Modifier.fillMaxSize().weight(1f)) {
+                // Time column — 12 个 Period label 全部显示（不跳过！）
+                Column(Modifier.width(timeW).fillMaxHeight()) {
+                    for (i in 1..maxNode) {
+                        val slot = timeSlots.getOrNull(i - 1)
+                        Box(
+                            Modifier.fillMaxWidth().height(rowH),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            if (slot != null) {
+                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                    Text(
+                                        text = "${i}",
+                                        style = MaterialTheme.typography.labelSmall.copy(
+                                            fontWeight = FontWeight.Bold,
+                                            fontSize = 11.sp
+                                        )
+                                    )
+                                    Text(
+                                        text = slot.displayStart,
+                                        style = SleepyTextStyle.micro().copy(fontSize = 7.sp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
 
-                slotIdx += safeStep
+                // Day columns — absolute x positioning
+                for ((dayIdx, day) in sortedDays.withIndex()) {
+                    val dayX = timeW + (dayW + gapW) * dayIdx
+                    val dayXpx = with(density) { dayX.roundToPx() }
+                    val dayCourses = courses.filter { it.day == day }
+                    Box(
+                        Modifier
+                            .width(dayW)
+                            .fillMaxHeight()
+                            .offset { IntOffset(x = dayXpx, y = 0) }
+                    ) {
+                        // Empty placeholder rows — 12 个 Spacer 占位（跨节 cell 覆盖其上）
+                        for (i in 1..maxNode) {
+                            val yOff = with(density) { ((slotH + gapH) * (i - 1) + gapH).roundToPx() }
+                            Spacer(
+                                Modifier
+                                    .fillMaxWidth()
+                                    .height(slotH)
+                                    .offset { IntOffset(x = 0, y = yOff) }
+                            )
+                        }
+                        // Course cells — absolute y positioning（跨节 cell 跨 N 行）
+                        for (course in dayCourses) {
+                            val startIdx = (course.startNode - 1).coerceAtLeast(0)
+                            val step = course.step.coerceAtLeast(1).coerceAtMost(maxNode - startIdx)
+                            val cellH = slotH * step + gapH * (step - 1)
+                            val cellY = with(density) { ((slotH + gapH) * startIdx + gapH).roundToPx() }
+                            CourseCardCell(
+                                course = course,
+                                steps = step,
+                                displayMode = displayMode,
+                                timeJson = timeJson,
+                                onClick = { onCourseClick(course) },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(cellH)
+                                    .offset { IntOffset(x = 0, y = cellY) }
+                            )
+                        }
+                    }
+                }
             }
         }
     }
