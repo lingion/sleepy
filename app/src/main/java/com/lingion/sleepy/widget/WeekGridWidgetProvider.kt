@@ -52,10 +52,14 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         val data = loadWeekData(context)
         val opts = awm.getAppWidgetOptions(widgetId)
         val density = context.resources.displayMetrics.density
-        val w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
+        // ★ v19c: 用 MIN 而非 MAX 算 Bitmap 尺寸
+        // MAX 是 widget resize 后的最大尺寸, MIN 是 widget 真实初始尺寸
+        // 之前用 MAX → Bitmap 比 widget 容器大 → fitCenter 缩放后 Period 10+ 被裁
+        val w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
             .takeIf { it > 0 } ?: (320 * density).toInt()
-        val h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
-            .takeIf { it > 0 } ?: (640 * density).toInt()
+        val h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+            .takeIf { it > 0 } ?: (480 * density).toInt()
+        Log.d(TAG, "renderWidget: MIN w=${w}px h=${h}px density=$density")
 
         val bmp = renderBitmap(context, data, w, h)
         val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
@@ -98,11 +102,14 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
 
             // ── 布局 (dp → px, 跟 CourseTableView 同参数) ──
             val dp = { v: Float -> (v * density).roundToInt() }
-            val outerPad = dp(8f)
-            val headH = dp(48f)
-            val timeW = dp(42f)
+            // ★ v19c 字号参数 (用户原话: "你这个字号明显是不合格的")
+            // 之前 headH*0.30 cap dp(15f) 太大, day header 文字溢出 cell 边界全挤在一起
+            // 改成: cap 降到 dp(13f), min 升到 dp(10f), 文字宽度永远 < dayW - padding
+            val outerPad = dp(6f)
+            val headH = dp(56f)
+            val timeW = dp(40f)
             val gapH = dp(1.5f)
-            val gapW = dp(2f)
+            val gapW = dp(2.5f)
 
             val bodyW = wPx - outerPad * 2
             val bodyH = hPx - outerPad * 2 - headH
@@ -150,17 +157,17 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 c.drawRoundRect(RectF(cellX, y, cellX + dayW, y + headH),
                     dp(14f).toFloat(), dp(14f).toFloat(), p)
 
-                // day name 字号 = headH * 0.30 (大 widget 字体大, 小 widget 字体小)
+                // day name 字号 = headH * 0.24 (降比例, 防溢出 cell)
                 val dayName = DateUtils.localizedDay(dow, SleepyApp.get())
                 p.color = if (isToday) fgPrimary else fgOnSurface
-                p.textSize = (headH * 0.30f).coerceAtMost(dp(15f).toFloat()).coerceAtLeast(dp(10f).toFloat())
+                p.textSize = (headH * 0.24f).coerceAtMost(dp(13f).toFloat()).coerceAtLeast(dp(9f).toFloat())
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 p.textAlign = Paint.Align.CENTER
                 val cx = cellX + dayW / 2f
                 c.drawText(dayName, cx, y + headH * 0.4f, p)
 
-                // date or count 字号 = headH * 0.20
-                p.textSize = (headH * 0.20f).coerceAtMost(dp(11f).toFloat()).coerceAtLeast(dp(7f).toFloat())
+                // date or count 字号 = headH * 0.18 (降比例)
+                p.textSize = (headH * 0.18f).coerceAtMost(dp(10f).toFloat()).coerceAtLeast(dp(7f).toFloat())
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                 p.color = fgOnSurfaceVar
                 val sub = dateStr ?: if (count > 0) "$count" else "—"
@@ -177,21 +184,21 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 val rowY = bodyTop + gapH + (i - 1) * (slotH + gapH)
                 val slot = slots.getOrNull(i - 1)
 
-                // period number 字号 = slotH * 0.45 (跟 slot 高度成比例)
+                // period number 字号 = slotH * 0.40 (降比例)
                 p.color = fgOnSurface
-                p.textSize = (slotH * 0.45f)
-                    .coerceAtMost(dp(16f).toFloat())
+                p.textSize = (slotH * 0.40f)
+                    .coerceAtMost(dp(13f).toFloat())
                     .coerceAtLeast(dp(8f).toFloat())
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                 val cy = rowY + slotH / 2f + p.textSize * 0.35f
                 c.drawText("$i", x + timeW / 2f, cy, p)
 
-                // time label 字号 = slotH * 0.22 (时间字符串)
+                // time label 字号 = slotH * 0.20 (降比例)
                 if (slot != null && slotH > dp(18f)) {
                     p.color = fgOnSurfaceVar
-                    p.textSize = (slotH * 0.22f)
-                        .coerceAtMost(dp(8f).toFloat())
-                        .coerceAtLeast(dp(5f).toFloat())
+                    p.textSize = (slotH * 0.20f)
+                        .coerceAtMost(dp(7f).toFloat())
+                        .coerceAtLeast(dp(4f).toFloat())
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                     c.drawText(slot, x + timeW / 2f, cy + p.textSize * 1.6f, p)
                 }
@@ -244,12 +251,10 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.textAlign = Paint.Align.CENTER
                     val cx2 = colX + dayW / 2f
 
-                    // ★ 字号 = cardH * 0.22 (用户原话: "自动根据这个宽度, 高度调整")
-                    // 单节卡: cardH=62px → nameSize=13.6px ≈ 5dp 真机
-                    // 5节卡: cardH=310px → nameSize=68.2px → coerce 到 dp(16)=44px ≈ 16dp
-                    // 24节卡: cardH=1488px → coerce 到 dp(16)=44px
-                    val nameSize = (cardH * 0.22f)
-                        .coerceAtMost(dp(16f).toFloat())
+                    // ★ 字号 = cardH * 0.20 (用户原话: "自动根据这个宽度, 高度调整")
+                    // 降比例从 0.22 → 0.20, cap 从 dp(16) → dp(14)
+                    val nameSize = (cardH * 0.20f)
+                        .coerceAtMost(dp(14f).toFloat())
                         .coerceAtLeast(dp(9f).toFloat())
                     p.textSize = nameSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
