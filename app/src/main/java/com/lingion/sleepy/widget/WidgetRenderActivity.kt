@@ -170,34 +170,49 @@ class WidgetRenderActivity : ComponentActivity() {
                 startWeek = 1, endWeek = 18, type = 0, color = color
             )
 
+        // ★ v1.0.16-rebuild-10 暴力测试 — 25 节课跨所有长度
+        // step 范围: 1(短) / 2 / 3 / 5 / 10(超长，整上午)
         val mockCourses = listOf(
-            course("大学英语(二)", 1, 1, 2, "#FF6750A4"),
-            course("概率论与数理统计", 1, 3, 2, "#FF6750A4"),
-            course("工科数学分析(二)", 1, 5, 2, "#FFB4A8"),
+            // 周一 (5 节课: 1节/2节/3节/5节/10节)
+            course("短课-单节", 1, 1, 1, "#FF6750A4"),
+            course("大学英语(二)", 1, 2, 2, "#FF6750A4"),
+            course("工科数学-3节", 1, 4, 3, "#FFB4A8"),
+            course("长课-5节", 1, 7, 5, "#FFE91E63"),
 
-            course("概率论与数理统计", 2, 1, 2, "#FF6750A4"),
-            course("工科数学分析(二)", 2, 3, 3, "#FFB4A8"),
-            course("军事理论", 2, 6, 2, "#FF59CD6E"),
-            course("概率论与数理统计", 2, 8, 2, "#FF6750A4"),
+            // 周二 (4 节课)
+            course("概率论-2节", 2, 1, 2, "#FF6750A4"),
+            course("数学分析-10节-全上午", 2, 3, 10, "#FFB4A8"),
+            course("军事理论-2节", 2, 8, 2, "#FF59CD6E"),
 
-            course("体育(二)", 3, 1, 2, "#FF59CD6E"),
-            course("概率论与数理统计", 3, 3, 2, "#FF6750A4"),
-            course("体育(二)", 3, 5, 2, "#FF59CD6E"),
-            course("概率论与数理统计", 3, 6, 2, "#FF6750A4"),
+            // 周三 (4 节课)
+            course("体育-2节", 3, 1, 2, "#FF59CD6E"),
+            course("概率论-2节", 3, 3, 2, "#FF6750A4"),
+            course("短课-单节2", 3, 5, 1, "#FF6750A4"),
+            course("体育-5节", 3, 6, 5, "#FF59CD6E"),
 
-            course("概率论与数理统计", 4, 1, 2, "#FF6750A4"),
-            course("思政", 4, 3, 2, "#FFFBE4C6"),
-            course("形势与政策", 4, 5, 3, "#FFFBE4C6"),
-            course("军事理论", 4, 8, 2, "#FF59CD6E"),
+            // 周四 (4 节课)
+            course("短课-1节", 4, 1, 1, "#FF6750A4"),
+            course("思政-2节", 4, 2, 2, "#FFFBE4C6"),
+            course("形势政策-3节", 4, 5, 3, "#FFFBE4C6"),
+            course("军事理论-2节", 4, 9, 2, "#FF59CD6E"),
 
-            course("大学英语(二)", 5, 1, 2, "#FF6750A4"),
-            course("工科数学分析(二)", 5, 3, 2, "#FFB4A8"),
-            course("体育(二)", 5, 5, 2, "#FF59CD6E"),
-            course("概率论与数理统计", 5, 8, 2, "#FF6750A4"),
+            // 周五 (4 节课)
+            course("大学英语-2节", 5, 1, 2, "#FF6750A4"),
+            course("工科数学-2节", 5, 3, 2, "#FFB4A8"),
+            course("体育-2节", 5, 5, 2, "#FF59CD6E"),
+            course("短课-1节", 5, 9, 1, "#FF6750A4"),
+
+            // 周六 (2 节课)
+            course("短课-单节", 6, 1, 1, "#FF6750A4"),
+            course("长课-5节", 6, 4, 5, "#FFE91E63"),
+
+            // 周日 (2 节课)
+            course("短课-单节", 7, 1, 1, "#FF6750A4"),
+            course("长课-5节", 7, 6, 5, "#FFE91E63"),
         )
 
         val ids = repo.insertCourses(mockCourses)
-        Log.d("WidgetRender", "inserted ${ids.size} courses, tableId=$tableId")
+        Log.d("WidgetRender", "inserted ${ids.size} violent test courses, tableId=$tableId")
     }
 
     private fun redScreen() {

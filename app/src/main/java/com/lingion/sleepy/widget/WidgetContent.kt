@@ -653,7 +653,8 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
     val rawMaxNode = data.days.maxOfOrNull { d ->
         d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
     } ?: 0
-    val maxNode = rawMaxNode.coerceIn(4, 10)
+    // ★ v1.0.16-rebuild-10: 取消 coerceIn(4,10) 上限 — 让 12 节/13 节都能显示
+    val maxNode = rawMaxNode.coerceIn(4, 30)
     val timeSlots = allTimeSlots.take(maxNode)
 
     val containerBg = scheme.surfaceContainer
@@ -663,20 +664,27 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
     val onSurfaceVar = scheme.onSurfaceVariant
     val onPrimaryCont = scheme.onPrimaryContainer
 
-    // ★ v1.0.16-rebuild-5: 所有尺寸从 widget 真实宽高算，减 outerPadding
-    // 之前 colW = widgetWidthDp/8f → 8×colW = widgetWidthDp，但外层 padding(6dp) → 溢出 12dp
+    // ★ v1.0.16-rebuild-10: 直接用 LocalSize.current（Glance 内部真实 RemoteViews 容器尺寸）
+    // AppWidgetManager.getAppWidgetOptions 读到的 MAX 是 launcher 分配的 max resize，
+    // 但 Glance RemoteViews container 实际是 widget 渲染时的 inner safe area（通常更小）
+    // 测试显示 LocalSize 329dp 而非 643dp → 必须用 LocalSize 不能 fallback
+    val localSize = LocalSize.current
+    val realWidgetW = localSize.width.value.coerceAtLeast(100f)
+    val realWidgetH = localSize.height.value.coerceAtLeast(100f)
+
     val outerPad = 12f  // 6dp × 2（上下或左右）
     val headerHdp = 30f
-    val bodyW = (widgetWidthDp - outerPad).coerceAtLeast(100f)  // 内宽 = widget 宽 - 左右 pad
-    val bodyH = (widgetHeightDp - outerPad - headerHdp).coerceAtLeast(100f)  // body 高 = widget 高 - 上下 pad - header
-    val colW = (bodyW / 8f).dp   // 8 列平分内宽
-    val slotH = (bodyH / maxNode).dp  // maxNode 行平分 body 高
+    val bodyW = (realWidgetW - outerPad).coerceAtLeast(100f)
+    val bodyH = (realWidgetH - outerPad - headerHdp).coerceAtLeast(100f)
+    val colW = (bodyW / 8f).dp
+    val slotH = (bodyH / maxNode).dp
     val totalBodyH = (slotH.value * maxNode).dp
     val rowH = slotH  // 单节高度 = slotH
     val headerH = 30.dp  // Glance 需要 Dp 类型
 
     Column(
-        modifier = GlanceModifier.fillMaxSize()
+        modifier = GlanceModifier
+            .size(Dp(realWidgetW), Dp(realWidgetH))  // ★ 强制撑满 widget 尺寸（不靠 fillMaxSize）
             .background(ColorProvider(containerBg))
             .cornerRadius(18.dp)
             .padding(6.dp)
@@ -734,14 +742,16 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
             }
 
             // ====== Body — 8 cells 显式宽度（跟 header 同宽！） ======
-            val totalBodyHeight = (rowH.value * maxNode).dp
+            // ★ 用 size 强制撑满 body = widget 减去 padding/header
+            val bodySizeW = realWidgetW - outerPad
+            val bodySizeH = realWidgetH - outerPad - headerHdp
             Row(
-                modifier = GlanceModifier.fillMaxSize(),
+                modifier = GlanceModifier.size(Dp(bodySizeW), Dp(bodySizeH)),
                 verticalAlignment = Alignment.Top
             ) {
                 // 时间列 — maxNode 个 Box（每个 rowH 高度）
                 Column(
-                    modifier = GlanceModifier.width(colW).height(totalBodyHeight).padding(end = 4.dp),
+                    modifier = GlanceModifier.width(colW).fillMaxHeight().padding(end = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     for (i in 1..maxNode) {
@@ -781,7 +791,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
 
                     if (isVisible) {
                         Column(
-                            modifier = GlanceModifier.width(colW).height(totalBodyHeight)
+                            modifier = GlanceModifier.width(colW).fillMaxHeight()
                                 .padding(horizontal = 1.dp),
                             horizontalAlignment = Alignment.CenterHorizontally
                         ) {
@@ -818,7 +828,7 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
                             }
                         }
                     } else {
-                        Box(modifier = GlanceModifier.width(colW).height(totalBodyHeight)) {}
+                        Box(modifier = GlanceModifier.width(colW).fillMaxHeight()) {}
                     }
                 }
             }
