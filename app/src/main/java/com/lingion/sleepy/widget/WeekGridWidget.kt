@@ -35,6 +35,11 @@ class WeekGridWidget : GlanceAppWidget() {
         var overrideSizeDp: Pair<Int, Int>? = null  // (width, height)
     }
 
+    // ★ v1.0.16-rebuild-12: SizeMode.Exact 让 Glance 按 launcher OPTION_APPWIDGET_MAX_WIDTH/HEIGHT 撑满
+    // 默认 SizeMode.Single = fixed size 不响应 resize. Exact 模式下 Glance 按 launcher 给的尺寸生成 RemoteViews
+    override val sizeMode: androidx.glance.appwidget.SizeMode
+        get() = androidx.glance.appwidget.SizeMode.Exact
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = withContext(Dispatchers.IO) { loadWeekData(context) }
 
@@ -63,9 +68,10 @@ class WeekGridWidget : GlanceAppWidget() {
         }
 
         // ★ FIX: maxNode 替代 maxSumStep — 20 节课只显示 9 节的真 bug
+        // v1.0.16-rebuild-11: 上限 10 → 30 — 让 12 节/13 节都能显示
         val maxNode = data.days.maxOfOrNull { d ->
             d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
-        }?.coerceIn(4, 10) ?: 4
+        }?.coerceIn(4, 30) ?: 4
 
         Log.d("WeekGridWidget", "widgetSize=${widgetWidthDp}x${widgetHeightDp}dp, maxNode=$maxNode, hasTable=${data.hasTable}")
 

@@ -653,9 +653,11 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
     val rawMaxNode = data.days.maxOfOrNull { d ->
         d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
     } ?: 0
-    // ★ v1.0.16-rebuild-10: 取消 coerceIn(4,10) 上限 — 让 12 节/13 节都能显示
-    val maxNode = rawMaxNode.coerceIn(4, 30)
+    // ★ v1.0.16-rebuild-14: maxNode 上限 10 (Glance 1.1.0 RemoteViews bug: Period 11+ 文字丢失)
+    // Glance 转 RemoteViews 时 LinearLayout 丢最后几个 child, 即使 log 显示已 layout
+    val maxNode = rawMaxNode.coerceIn(4, 10)
     val timeSlots = allTimeSlots.take(maxNode)
+    android.util.Log.d("WeekGridContent", "rawMaxNode=$rawMaxNode, maxNode=$maxNode, allTimeSlots=${allTimeSlots.size}, perDayMax=${data.days.map { d -> "${d.dayOfWeek}=${d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0}" }}")
 
     val containerBg = scheme.surfaceContainer
     val cellBg = scheme.surface
@@ -663,14 +665,10 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
     val onSurface = scheme.onSurface
     val onSurfaceVar = scheme.onSurfaceVariant
     val onPrimaryCont = scheme.onPrimaryContainer
-
-    // ★ v1.0.16-rebuild-10: 直接用 LocalSize.current（Glance 内部真实 RemoteViews 容器尺寸）
-    // AppWidgetManager.getAppWidgetOptions 读到的 MAX 是 launcher 分配的 max resize，
-    // 但 Glance RemoteViews container 实际是 widget 渲染时的 inner safe area（通常更小）
-    // 测试显示 LocalSize 329dp 而非 643dp → 必须用 LocalSize 不能 fallback
-    val localSize = LocalSize.current
-    val realWidgetW = localSize.width.value.coerceAtLeast(100f)
-    val realWidgetH = localSize.height.value.coerceAtLeast(100f)
+    // ★ v1.0.16-rebuild-14: widget size = widgetHeightDp - 8 (Glance internal 8dp padding)
+    // 让 Period 1-10 撑满 widget 真分配尺寸，Period 11+ 因 Glance RemoteViews bug 不显示
+    val realWidgetW = widgetWidthDp.toFloat()
+    val realWidgetH = (widgetHeightDp - 8).toFloat()
 
     val outerPad = 12f  // 6dp × 2（上下或左右）
     val headerHdp = 30f
@@ -754,8 +752,10 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
                     modifier = GlanceModifier.width(colW).fillMaxHeight().padding(end = 4.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
+                    android.util.Log.d("WeekGridContent", "=== RENDER PERIOD LOOP === for (i in 1..$maxNode), timeSlots.size=${timeSlots.size}, rowH=$rowH, realW=$realWidgetW, realH=$realWidgetH, bodyW=$bodyW, bodyH=$bodyH")
                     for (i in 1..maxNode) {
                         val slot = timeSlots.getOrNull(i - 1)
+                        if (i >= 10) android.util.Log.d("WeekGridContent", "rendering Period $i, slot=${slot?.displayStart}, height=${rowH.value}")
                         Box(
                             modifier = GlanceModifier.fillMaxWidth().height(rowH),
                             contentAlignment = Alignment.Center
