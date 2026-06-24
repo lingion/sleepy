@@ -30,23 +30,37 @@ import java.time.LocalDate
  */
 class WeekGridWidget : GlanceAppWidget() {
 
+    /** ★ 外部直接注入尺寸（WidgetRenderActivity 用，绕过 AppWidgetManager 默认 options） */
+    companion object {
+        var overrideSizeDp: Pair<Int, Int>? = null  // (width, height)
+    }
+
     override suspend fun provideGlance(context: Context, id: GlanceId) {
         val data = withContext(Dispatchers.IO) { loadWeekData(context) }
 
-        // 读 widget 实际尺寸（resize 后会用 maxHeight）
-        val awm = AppWidgetManager.getInstance(context)
-        val glanceMgr = GlanceAppWidgetManager(context)
-        val widgetId = glanceMgr.getAppWidgetId(id)
-        val options = awm.getAppWidgetOptions(widgetId)
-        val density = context.resources.displayMetrics.density
-        val maxHeightPx = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
-            .takeIf { it > 0 }
-            ?: options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
-        val maxWidthPx = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
-            .takeIf { it > 0 }
-            ?: options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
-        val widgetHeightDp = if (maxHeightPx > 0) (maxHeightPx / density).toInt() else 280
-        val widgetWidthDp = if (maxWidthPx > 0) (maxWidthPx / density).toInt() else 320
+        // 读 widget 实际尺寸
+        var widgetWidthDp: Int
+        var widgetHeightDp: Int
+
+        if (overrideSizeDp != null) {
+            widgetWidthDp = overrideSizeDp!!.first
+            widgetHeightDp = overrideSizeDp!!.second
+            Log.d("WeekGridWidget", "using overrideSize ${widgetWidthDp}x${widgetHeightDp}")
+        } else {
+            val awm = AppWidgetManager.getInstance(context)
+            val glanceMgr = GlanceAppWidgetManager(context)
+            val widgetId = glanceMgr.getAppWidgetId(id)
+            val options = awm.getAppWidgetOptions(widgetId)
+            val density = context.resources.displayMetrics.density
+            val maxHeightPx = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+                .takeIf { it > 0 }
+                ?: options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+            val maxWidthPx = options.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
+                .takeIf { it > 0 }
+                ?: options.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+            widgetHeightDp = if (maxHeightPx > 0) (maxHeightPx / density).toInt() else 280
+            widgetWidthDp = if (maxWidthPx > 0) (maxWidthPx / density).toInt() else 320
+        }
 
         // ★ FIX: maxNode 替代 maxSumStep — 20 节课只显示 9 节的真 bug
         val maxNode = data.days.maxOfOrNull { d ->

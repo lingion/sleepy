@@ -6,17 +6,25 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProviderInfo
 import android.content.ComponentName
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
 import android.util.Log
 import android.widget.FrameLayout
 import androidx.activity.ComponentActivity
+import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.TimeTableUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 /**
- * 真实 Glance Widget 渲染验证。
- * 用公开 API AppWidgetHost 分配真实 widgetId + bind → 系统 RemoteViews 自动渲染。
- * ★ 跟 home screen 上的 widget 完全一致。
+ * 真实 Glance Widget 渲染验证（带 mock 数据 + 正确尺寸）。
+ * 流程：seed → allocate → bind(onUpdate→Glance用默认options) → updateOptions → re-trigger update → createView
  */
 class WidgetRenderActivity : ComponentActivity() {
 
@@ -26,96 +34,182 @@ class WidgetRenderActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        try {
-            val awm = AppWidgetManager.getInstance(this)
-            val cn = ComponentName(this, WeekGridWidgetReceiver::class.java)
-            val providerInfo = awm.installedProviders.find { it.provider == cn }
+        CoroutineScope(Dispatchers.Main).launch {
+            try {
+                seedMockData()
 
-            if (providerInfo == null) {
-                Log.e("WidgetRender", "WeekGridWidgetReceiver not found")
-                redScreen(); return
-            }
-
-            host = AppWidgetHost(this, 1976)
-            host?.startListening()
-
-            allocatedId = host?.allocateAppWidgetId() ?: -1
-            Log.d("WidgetRender", "allocatedId=$allocatedId")
-            if (allocatedId == -1) {
-                Log.e("WidgetRender", "allocateAppWidgetId failed")
-                redScreen(); return
-            }
-
-            // bind → 触发 provider.onUpdate → Glance 渲染
-            val bound = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
-                awm.bindAppWidgetIdIfAllowed(allocatedId, cn)
-            } else false
-            Log.d("WidgetRender", "bindAppWidgetIdIfAllowed=$bound")
-
-            // 4×5 widget 尺寸
-            val wm = getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager
-            val metrics = DisplayMetrics()
-            @Suppress("DEPRECATION")
-            wm.defaultDisplay.getMetrics(metrics)
-            val density = metrics.density
-            // ★ 用用户手机实际 widget 尺寸（Android 16, 4×5 widget）
-            val widgetW_dp = 418f   // OPTION_APPWIDGET_MAX_WIDTH
-            val widgetH_dp = 643f   // OPTION_APPWIDGET_MAX_HEIGHT
-            val widgetW_px = (widgetW_dp * density).toInt()
-            val widgetH_px = (widgetH_dp * density).toInt()
-            Log.d("WidgetRender", "density=$density, ${widgetW_dp}x${widgetH_dp}dp = ${widgetW_px}x${widgetH_px}px")
-
-            val hostView = host?.createView(this, allocatedId, providerInfo) ?: run {
-                Log.e("WidgetRender", "createView failed"); redScreen(); return
-            }
-
-            val opts = Bundle().apply {
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, widgetW_dp.toInt())
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, widgetH_dp.toInt())
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, widgetW_dp.toInt())
-                putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, widgetH_dp.toInt())
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                    putInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY,
-                        AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN)
+                val awm = AppWidgetManager.getInstance(this@WidgetRenderActivity)
+                val cn = ComponentName(this@WidgetRenderActivity, WeekGridWidgetReceiver::class.java)
+                val providerInfo = awm.installedProviders.find { it.provider == cn }
+                if (providerInfo == null) {
+                    Log.e("WidgetRender", "provider not found"); redScreen(); return@launch
                 }
+
+                host = AppWidgetHost(this@WidgetRenderActivity, 1976)
+                host?.startListening()
+                allocatedId = host?.allocateAppWidgetId() ?: -1
+                Log.d("WidgetRender", "allocatedId=$allocatedId")
+                if (allocatedId == -1) { redScreen(); return@launch }
+
+                // ★ 注入尺寸到 WeekGridWidget（绕过 AppWidgetManager 默认 options）
+                val widgetW_dp = 418
+                val widgetH_dp = 643
+                WeekGridWidget.overrideSizeDp = Pair(widgetW_dp, widgetH_dp)
+
+                // 1. bind → 触发 onUpdate（此时 overrideSizeDp 已设好）
+                val bound = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1) {
+                    awm.bindAppWidgetIdIfAllowed(allocatedId, cn)
+                } else false
+                Log.d("WidgetRender", "bound=$bound")
+
+                // 2. updateAppWidgetOptions
+                val opts = Bundle().apply {
+                    putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH, widgetW_dp)
+                    putInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT, widgetH_dp)
+                    putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH, widgetW_dp)
+                    putInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT, widgetH_dp)
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        putInt(AppWidgetManager.OPTION_APPWIDGET_HOST_CATEGORY,
+                            AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN)
+                    }
+                }
+                try {
+                    awm.updateAppWidgetOptions(allocatedId, opts)
+                    Log.d("WidgetRender", "updateAppWidgetOptions SUCCESS: ${widgetW_dp}x${widgetH_dp}")
+                } catch (e: Exception) {
+                    Log.e("WidgetRender", "updateAppWidgetOptions failed", e)
+                }
+
+                // 3. 重触发 widget update → provideGlance 重新读 options
+                val ids = intArrayOf(allocatedId)
+                val widget = WeekGridWidget()
+                val updateIntent = Intent(this@WidgetRenderActivity, WeekGridWidgetReceiver::class.java).apply {
+                    action = AppWidgetManager.ACTION_APPWIDGET_UPDATE
+                    putExtra(AppWidgetManager.EXTRA_APPWIDGET_IDS, ids)
+                }
+                sendBroadcast(updateIntent)
+                Log.d("WidgetRender", "sent ACTION_APPWIDGET_UPDATE for id=$allocatedId")
+
+                // 等待 Glance 异步渲染
+                delay(3000)
+
+                // 4. createView
+                val wm = getSystemService(Context.WINDOW_SERVICE) as android.view.WindowManager
+                val metrics = DisplayMetrics()
+                @Suppress("DEPRECATION")
+                wm.defaultDisplay.getMetrics(metrics)
+                val density = metrics.density
+                val widgetW_px = (widgetW_dp.toFloat() * density).toInt()
+                val widgetH_px = (widgetH_dp.toFloat() * density).toInt()
+                Log.d("WidgetRender", "density=$density, px=${widgetW_px}x${widgetH_px}")
+
+                val hostView = host?.createView(this@WidgetRenderActivity, allocatedId, providerInfo)
+                    ?: run { Log.e("WidgetRender", "createView failed"); redScreen(); return@launch }
+
+                hostView.updateAppWidgetOptions(opts)
+
+                val container = FrameLayout(this@WidgetRenderActivity).apply {
+                    setBackgroundColor(0xFF1A1A2E.toInt())
+                    addView(hostView, FrameLayout.LayoutParams(widgetW_px, widgetH_px).apply {
+                        gravity = android.view.Gravity.CENTER
+                    })
+                }
+                setContentView(container)
+                Log.d("WidgetRender", "hostView ready")
+
+                hostView.postDelayed({
+                    hostView.invalidate()
+                    Log.d("WidgetRender", "refresh done")
+                }, 2000)
+
+            } catch (e: Exception) {
+                Log.e("WidgetRender", "FAILED", e)
+                redScreen()
             }
-            hostView.updateAppWidgetOptions(opts)
-
-            val container = FrameLayout(this).apply {
-                setBackgroundColor(0xFF1A1A2E.toInt())
-                addView(hostView, FrameLayout.LayoutParams(widgetW_px, widgetH_px).apply {
-                    gravity = android.view.Gravity.CENTER
-                })
-            }
-            setContentView(container)
-            Log.d("WidgetRender", "hostView ready")
-
-            // Glance 异步 → 2 秒后刷新
-            hostView.postDelayed({
-                hostView.invalidate()
-                Log.d("WidgetRender", "postDelayed refresh done")
-            }, 2000)
-
-        } catch (e: Exception) {
-            Log.e("WidgetRender", "FAILED", e)
-            redScreen()
         }
     }
 
+    private suspend fun seedMockData() {
+        val app = SleepyApp.get()
+        val repo = app.repository
+
+        val existing = repo.getDefaultTable()
+        if (existing != null) {
+            Log.d("WidgetRender", "DB already has default table id=${existing.id}")
+            val allCourses = (1..7).flatMap { dow ->
+                repo.getCoursesByDayOnce(existing.id, dow)
+            }
+            if (allCourses.isNotEmpty()) {
+                Log.d("WidgetRender", "DB has ${allCourses.size} courses")
+                return
+            }
+            seedCourses(repo, existing.id)
+            return
+        }
+
+        val table = TimeTableEntity(
+            name = "测试课表",
+            startDate = "2026-02-23",
+            maxWeek = 20,
+            nodesPerDay = 12,
+            timeJson = TimeTableUtils.DEFAULT_TIME_JSON,
+            isDefault = true
+        )
+        val tableId = repo.insertTable(table)
+        Log.d("WidgetRender", "inserted table id=$tableId")
+        seedCourses(repo, tableId)
+    }
+
+    private suspend fun seedCourses(repo: com.lingion.sleepy.data.repository.ScheduleRepository, tableId: Long) {
+        fun course(name: String, day: Int, startNode: Int, step: Int, color: String) =
+            CourseEntity(
+                id = 0, groupId = "mock-$day-$startNode", tableId = tableId,
+                courseName = name, teacher = "张老师",
+                room = "A${100 + day * 10 + startNode}",
+                day = day, startNode = startNode, step = step,
+                startWeek = 1, endWeek = 18, type = 0, color = color
+            )
+
+        val mockCourses = listOf(
+            course("大学英语(二)", 1, 1, 2, "#FF6750A4"),
+            course("概率论与数理统计", 1, 3, 2, "#FF6750A4"),
+            course("工科数学分析(二)", 1, 5, 2, "#FFB4A8"),
+
+            course("概率论与数理统计", 2, 1, 2, "#FF6750A4"),
+            course("工科数学分析(二)", 2, 3, 3, "#FFB4A8"),
+            course("军事理论", 2, 6, 2, "#FF59CD6E"),
+            course("概率论与数理统计", 2, 8, 2, "#FF6750A4"),
+
+            course("体育(二)", 3, 1, 2, "#FF59CD6E"),
+            course("概率论与数理统计", 3, 3, 2, "#FF6750A4"),
+            course("体育(二)", 3, 5, 2, "#FF59CD6E"),
+            course("概率论与数理统计", 3, 6, 2, "#FF6750A4"),
+
+            course("概率论与数理统计", 4, 1, 2, "#FF6750A4"),
+            course("思政", 4, 3, 2, "#FFFBE4C6"),
+            course("形势与政策", 4, 5, 3, "#FFFBE4C6"),
+            course("军事理论", 4, 8, 2, "#FF59CD6E"),
+
+            course("大学英语(二)", 5, 1, 2, "#FF6750A4"),
+            course("工科数学分析(二)", 5, 3, 2, "#FFB4A8"),
+            course("体育(二)", 5, 5, 2, "#FF59CD6E"),
+            course("概率论与数理统计", 5, 8, 2, "#FF6750A4"),
+        )
+
+        val ids = repo.insertCourses(mockCourses)
+        Log.d("WidgetRender", "inserted ${ids.size} courses, tableId=$tableId")
+    }
+
     private fun redScreen() {
-        setContentView(FrameLayout(this).apply { setBackgroundColor(0xFFFF0000.toInt()) })
+        runOnUiThread {
+            setContentView(FrameLayout(this@WidgetRenderActivity).apply {
+                setBackgroundColor(0xFFFF0000.toInt())
+            })
+        }
     }
 
-    override fun onStart() {
-        super.onStart()
-        host?.startListening()
-    }
-
-    override fun onStop() {
-        super.onStop()
-        host?.stopListening()
-    }
-
+    override fun onStart() { super.onStart(); host?.startListening() }
+    override fun onStop() { super.onStop(); host?.stopListening() }
     override fun onDestroy() {
         super.onDestroy()
         host?.stopListening()
