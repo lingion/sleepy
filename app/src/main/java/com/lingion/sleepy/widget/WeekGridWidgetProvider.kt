@@ -52,14 +52,16 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         val data = loadWeekData(context)
         val opts = awm.getAppWidgetOptions(widgetId)
         val density = context.resources.displayMetrics.density
-        // ★ v19c: 用 MIN 而非 MAX 算 Bitmap 尺寸
-        // MAX 是 widget resize 后的最大尺寸, MIN 是 widget 真实初始尺寸
-        // 之前用 MAX → Bitmap 比 widget 容器大 → fitCenter 缩放后 Period 10+ 被裁
-        val w = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
-            .takeIf { it > 0 } ?: (320 * density).toInt()
-        val h = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
-            .takeIf { it > 0 } ?: (480 * density).toInt()
-        Log.d(TAG, "renderWidget: MIN w=${w}px h=${h}px density=$density")
+        // ★ v19d: Bitmap 用固定 dp 尺寸 (用户原话: "字体依然巨大, 九节课")
+        // 根因: 不同 launcher 返回的 OPTION_APPWIDGET_MIN_WIDTH/HEIGHT 单位不一致
+        //   第三方 launcher (Android 16) 返回 dp (e.g. 320, 400) 而非 pixels
+        //   → Bitmap 实际只有 320×400px → headH=168px 后 bodyH=116px → 只装 9 节
+        //   → fontSize 35px 占 Bitmap 12% → 真机显示"巨大"
+        // 修法: Bitmap 固定 360×600 dp (= 真实 4×5 widget 容器大小)
+        //   layout scaleType=fitCenter 自动缩放匹配任何 widget 容器
+        val w = (360 * density).toInt()
+        val h = (600 * density).toInt()
+        Log.d(TAG, "renderWidget: FIXED dp bitmap=${w}x${h}px (density=$density, opts MIN=${opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)}x${opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)})")
 
         val bmp = renderBitmap(context, data, w, h)
         val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)

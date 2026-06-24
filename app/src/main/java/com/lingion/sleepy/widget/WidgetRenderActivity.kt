@@ -32,10 +32,10 @@ class WidgetRenderActivity : Activity() {
                 Log.d("WidgetRender", "loaded data: hasTable=${data.hasTable}, " +
                     "days=${data.days.size}, maxNode=${data.days.flatMap { it.courses }.maxOfOrNull { it.startNode + it.step - 1 } ?: 0}")
 
-                // render bitmap (418x643dp = 1149x1768px @ density=2.75)
+                // render bitmap (360x600dp fixed size = real widget size)
                 val density = resources.displayMetrics.density
-                val w = (418 * density).toInt()
-                val h = (643 * density).toInt()
+                val w = (360 * density).toInt()
+                val h = (600 * density).toInt()
                 Log.d("WidgetRender", "density=$density, px=${w}x${h}")
                 val bmp = WeekGridWidgetProvider.renderBitmap(this@WidgetRenderActivity, data, w, h)
 

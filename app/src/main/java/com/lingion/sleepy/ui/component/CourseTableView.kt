@@ -638,13 +638,14 @@ private fun DetailDayCard(
 private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
+    val context = androidx.compose.ui.platform.LocalContext.current
     val bg = pickCourseColor(course, palette)
 
     val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
         TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-            ?: course.shortNodeString
+            ?: course.shortNodeString(context)
     } else {
-        course.shortNodeString
+        course.shortNodeString(context)
     }
 
     Row(
