@@ -85,6 +85,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             JwProtocol.TYPE_QZ_OLD -> JwQzParser(html)
             JwProtocol.TYPE_URP -> JwUrpParser(html)
             JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
+            JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
             JwProtocol.TYPE_ZF -> JwQzParser(html)  // ZF 先 fallback，后续补 JwNewZFParser
             JwProtocol.TYPE_ZF_NEW -> JwQzParser(html)
             JwProtocol.TYPE_ZF_1 -> JwQzParser(html)

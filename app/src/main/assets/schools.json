@@ -1,5 +1,5 @@
 [
-  { "sortKey": "H", "name": "哈尔滨工程大学", "url": "https://jwgl.hrbeu.edu.cn/", "type": "urp_new" },
+  { "sortKey": "H", "name": "哈尔滨工程大学", "url": "https://jwgl.hrbeu.edu.cn/", "type": "wisedu" },
   { "sortKey": "A", "name": "安徽信息工程学院", "url": "http://teach.aiit.edu.cn/xtgl/login_slogin.html", "type": "zf_new" },
   { "sortKey": "A", "name": "安徽工业大学", "url": "http://jwxt.ahut.edu.cn/jsxsd/", "type": "qz" },
   { "sortKey": "B", "name": "北京邮电大学新教务", "url": "http://jwgl.bupt.edu.cn/jsxsd", "type": "qz_with_node" },

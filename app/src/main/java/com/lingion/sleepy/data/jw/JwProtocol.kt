@@ -33,6 +33,9 @@ object JwProtocol {
     const val TYPE_LOGIN = "login"
     const val TYPE_MAINTAIN = "maintain"
 
+    /** 金智 Wisedu jwapp 微应用平台（JSON API 直连，非 HTML 解析）。如：哈尔滨工程大学 jwgl.hrbeu.edu.cn */
+    const val TYPE_WISEDU = "wisedu"
+
     /**
      * 协议显示名（用于 UI 提示）
      */
@@ -43,6 +46,7 @@ object JwProtocol {
         TYPE_CF -> "青果教务"
         TYPE_PKU -> "北京大学"
         TYPE_BNUZ -> "北师珠"
+        TYPE_WISEDU -> "金智教务（直连）"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -56,6 +60,7 @@ object JwProtocol {
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE -> "qz"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
+        TYPE_WISEDU -> "wisedu"
         else -> "other"
     }
 }

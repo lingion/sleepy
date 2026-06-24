@@ -90,6 +90,29 @@ fun JwWebViewLoginScreen(
     val fetchFailedFmt = stringResource(R.string.jw_fetch_failed)
     val pageNotLoadedMsg = stringResource(R.string.jw_page_not_loaded)
 
+    // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
+    // 桥回调已切到主线程；result 形如 {ok:true,data:"<xskcb.do JSON>"} 或 {ok:false,err:"..."}
+    val handleWiseduResult: (String) -> Unit = { json ->
+        try {
+            val obj = org.json.JSONObject(json)
+            if (obj.optBoolean("ok", false)) {
+                val data = obj.optString("data", "")
+                if (data.isBlank()) {
+                    scope.launch { snackbar.showSnackbar(fetchFailedNoResponseMsg) }
+                } else {
+                    Log.d("JwWebView", "wisedu fetched JSON len=${data.length}")
+                    onHtmlCaptured(data, school)
+                }
+            } else {
+                val err = obj.optString("err", "")
+                scope.launch { snackbar.showSnackbar(fetchFailedFmt.format(err.ifBlank { pageNotLoadedMsg })) }
+            }
+        } catch (e: Exception) {
+            Log.e("JwWebView", "parse wisedu result failed", e)
+            scope.launch { snackbar.showSnackbar(fetchFormatErrorMsg) }
+        }
+    }
+
     BackHandler {
         webViewRef?.let { wv ->
             if (wv.canGoBack()) wv.goBack() else onBack()
@@ -139,6 +162,11 @@ fun JwWebViewLoginScreen(
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
+                    // wisedu (金智 jwapp)：课表数据在 JSON API 不在页面 HTML，改用 fetch 拿 JSON（结果走 JS 桥回调）
+                    if (school.type == JwProtocol.TYPE_WISEDU) {
+                        wv.evaluateJavascript(WISEDU_FETCH_JS, null)
+                        return@CaptureBar
+                    }
                     // 用 evaluateJavascript（API 19+）同步回调拿 HTML，不依赖 JS 桥跨域问题
                     val js = """
                         (function() {
@@ -199,7 +227,8 @@ fun JwWebViewLoginScreen(
                 url = school.url.ifBlank { "https://www.baidu.com" },
                 onProgressChange = { p -> progress = p },
                 onWebViewCreated = { wv -> webViewRef = wv },
-                onHtmlCaptured = { html -> onHtmlCaptured(html, school) }
+                onHtmlCaptured = { html -> onHtmlCaptured(html, school) },
+                onWiseduResult = handleWiseduResult
             )
 
             if (progress in 1..99) {
@@ -229,7 +258,8 @@ private fun JwWebView(
     url: String,
     onProgressChange: (Int) -> Unit,
     onWebViewCreated: (WebView) -> Unit,
-    onHtmlCaptured: (String) -> Unit
+    onHtmlCaptured: (String) -> Unit,
+    onWiseduResult: (String) -> Unit = {}
 ) {
     AndroidView(
         modifier = Modifier.fillMaxSize(),
@@ -239,6 +269,8 @@ private fun JwWebView(
                     ViewGroup.LayoutParams.MATCH_PARENT,
                     ViewGroup.LayoutParams.MATCH_PARENT
                 )
+                // wisedu (金智) 协议：注册 JS 桥，async fetch 课表 JSON 完成后回调
+                addJavascriptInterface(WiseduBridge(onWiseduResult), "__sleepyBridge")
                 settings.apply {
                     javaScriptEnabled = true
                     javaScriptCanOpenWindowsAutomatically = true
@@ -317,6 +349,67 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
             )
             Text(stringResource(R.string.jw_import_page), color = colors.onPrimary)
         }
+    }
+}
+
+/**
+ * wisedu (金智 jwapp) 协议：在 WebView 内 fetch 课表 JSON 的 JS。
+ *
+ * 流程：先 POST dqxnxq.do 拿当前学年学期 DM → 再 POST xskcb.do 拿课表 → 通过
+ * `window.__sleepyBridge.onWiseduResult({ok, data, err})` 回调给 Kotlin。
+ * 必须在 jwgl.hrbeu.edu.cn 域执行（同域 fetch 自动带 _WEU cookie）。
+ */
+private const val WISEDU_FETCH_JS = """
+(function(){
+  try {
+    if (location.hostname.indexOf('jwgl.hrbeu.edu.cn') < 0) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入教务系统(jwgl.hrbeu.edu.cn)再点导入'}));
+      return;
+    }
+    // 0. 先 GET 我的课表(wdkb)微应用入口，初始化 app 会话；否则 module API 返回 403
+    fetch('/jwapp/sys/wdkb/*default/index.do', {credentials:'include'})
+    .then(function(){
+      return fetch('/jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do', {
+        method:'POST',
+        headers:{'X-Requested-With':'XMLHttpRequest'},
+        credentials:'include'
+      });
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      var xnxq = '';
+      try { xnxq = d.datas.dqxnxq.rows[0].DM; } catch(e) {}
+      if (!xnxq) throw new Error('无法获取当前学期');
+      return fetch('/jwapp/sys/wdkb/modules/xskcb/xskcb.do', {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
+        body:'XNXQDM='+encodeURIComponent(xnxq),
+        credentials:'include'
+      });
+    })
+    .then(function(r){ return r.text(); })
+    .then(function(txt){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt}));
+    })
+    .catch(function(e){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+    });
+  } catch(err) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * wisedu fetch 结果 JS 桥。@JavascriptInterface 回调跑在 WebView JS 线程，
+ * post 到主线程后再回调 Compose，避免线程问题。
+ */
+private class WiseduBridge(private val onResult: (String) -> Unit) {
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+
+    @android.webkit.JavascriptInterface
+    fun onWiseduResult(json: String) {
+        main.post { onResult(json) }
     }
 }
 
