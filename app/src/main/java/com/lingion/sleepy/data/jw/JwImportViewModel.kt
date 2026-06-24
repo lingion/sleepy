@@ -121,11 +121,19 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
     /**
      * 创建新课表并落库。
      * 返回新 tableId。
+     *
+     * @param courses       解析得到的课程列表
+     * @param tableName     用户输入的表名（允许空，自动用默认）
+     * @param startDate     用户确认的学期开始日期（ISO yyyy-MM-dd，空则自动按月份推算）
+     * @param timeJson      用户配置的节次时间表 JSON（空则用 TimeTableUtils.DEFAULT_TIME_JSON）
+     * @param maxWeek       总周数（默认 20）
      */
     suspend fun importAsNewTable(
         courses: List<JwCourse>,
         tableName: String,
-        startDate: String? = null
+        startDate: String? = null,
+        timeJson: String? = null,
+        maxWeek: Int = 20
     ): Long = withContext(Dispatchers.IO) {
         if (courses.isEmpty()) throw IllegalArgumentException("课程列表为空，请确认已到达课表页面")
 
@@ -137,10 +145,14 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         val newId = (tableDao.getAll().maxOfOrNull { it.id } ?: 0) + 1
         val resolvedStartDate = startDate?.takeIf { it.isNotBlank() }
             ?: computeCurrentSemesterStart()
+        val resolvedTimeJson = timeJson?.takeIf { it.isNotBlank() }
+            ?: com.lingion.sleepy.util.TimeTableUtils.DEFAULT_TIME_JSON
         val newTable = TimeTableEntity(
             id = newId,
             name = tableName.ifBlank { "导入的课表" },
             startDate = resolvedStartDate,
+            timeJson = resolvedTimeJson,
+            maxWeek = maxWeek.coerceAtLeast(1),
             isDefault = false
         )
         tableDao.insert(newTable)
@@ -152,6 +164,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
         newId
     }
+
+    /**
+     * 计算本学期第一周周一的 ISO 日期 (yyyy-MM-dd)。
+     * 与 ViewModel 私有版逻辑一致；公开以便 UI 预填。
+     */
+    fun suggestCurrentSemesterStart(): String = computeCurrentSemesterStart()
 
     /**
      * 默认学期开始日期：本学期第一周周一的 ISO 日期。

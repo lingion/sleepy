@@ -239,6 +239,9 @@
     <string name="jw_fetching">正在抓取课表…</string>
     <string name="jw_fetch_failed_no_response">抓取失败：网页无响应（可能还在加载）</string>
     <string name="jw_fetch_format_error">抓取返回格式异常</string>
+    <string name="jw_config_title">确认导入设置</string>
+    <string name="jw_config_confirm">确认导入</string>
+    <string name="jw_config_summary">已解析 %1$d 门课程，%2$d 节时间段</string>
     <string name="jw_fetch_failed">抓取失败：%1$s</string>
     <string name="jw_page_not_loaded">页面尚未完全加载</string>
     <string name="jw_after_login">完成登录后</string>

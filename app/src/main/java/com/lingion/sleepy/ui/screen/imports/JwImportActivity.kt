@@ -61,6 +61,8 @@ class JwImportActivity : ComponentActivity() {
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
                 var importFinished by remember { mutableStateOf(false) }
+                // 解析成功后暂存，等用户在配置页确认节次时间/开始日期后再落库
+                var parsedCourses by remember { mutableStateOf<List<com.lingion.sleepy.data.jw.JwCourse>?>(null) }
 
                 when {
                     importFinished -> {
@@ -100,15 +102,10 @@ class JwImportActivity : ComponentActivity() {
                                                 statusMsg = null
                                                 return@launch
                                             }
-                                            // 落库：直接进新课表
-                                            val tableId = jwViewModel.importAsNewTable(
-                                                courses = courses,
-                                                tableName = getString(R.string.jw_import_title, sch.name),
-                                                startDate = null
-                                            )
-                                            Log.d("JwImport", "importAsNewTable tableId=$tableId courses=${courses.size}")
-                                            statusMsg = getString(R.string.jw_import_success, courses.size)
-                                            importFinished = true
+                                            // 解析成功 → 进入配置页（节次时间 / 开始日期 / 表名）
+                                            parsedCourses = courses
+                                            statusMsg = null
+                                            stage = Stage.ConfigureImport
                                         } catch (e: Exception) {
                                             Log.e("JwImport", "parseHtml failed", e)
                                             errorMsg = getString(R.string.jw_parse_failed, e.message ?: "") + getString(R.string.jw_parse_failed_hint)
@@ -117,6 +114,49 @@ class JwImportActivity : ComponentActivity() {
                                     }
                                 },
                                 onBack = { stage = Stage.SelectSchool }
+                            )
+                        }
+                    }
+
+                    stage is Stage.ConfigureImport -> {
+                        val school = selectedSchool
+                        val courses = parsedCourses
+                        if (school == null || courses == null) {
+                            // 状态异常，回到选校
+                            parsedCourses = null
+                            stage = Stage.SelectSchool
+                        } else {
+                            JwImportConfigScreen(
+                                schoolName = school.name,
+                                courseCount = courses.size,
+                                defaultStartDate = jwViewModel.suggestCurrentSemesterStart(),
+                                defaultTableName = getString(R.string.jw_import_title, school.name),
+                                onBack = {
+                                    // 返回 WebView 让用户重新选择/重抓
+                                    parsedCourses = null
+                                    stage = Stage.WebViewLogin
+                                },
+                                onConfirm = { tableName, startDate, timeJson ->
+                                    statusMsg = getString(R.string.import_parsing)
+                                    scope.launch {
+                                        try {
+                                            val tableId = jwViewModel.importAsNewTable(
+                                                courses = courses,
+                                                tableName = tableName,
+                                                startDate = startDate,
+                                                timeJson = timeJson
+                                            )
+                                            Log.d("JwImport", "importAsNewTable tableId=$tableId courses=${courses.size}")
+                                            statusMsg = getString(R.string.jw_import_success, courses.size)
+                                            parsedCourses = null
+                                            importFinished = true
+                                        } catch (e: Exception) {
+                                            Log.e("JwImport", "importAsNewTable failed", e)
+                                            errorMsg = getString(R.string.import_failed, e.message ?: "")
+                                            statusMsg = null
+                                        }
+                                    }
+                                }
                             )
                         }
                     }
@@ -164,5 +204,7 @@ class JwImportActivity : ComponentActivity() {
     private sealed class Stage {
         object SelectSchool : Stage()
         object WebViewLogin : Stage()
+        // 解析成功后 → 用户配置节次时间/开始日期/表名 → 确认后才落库
+        object ConfigureImport : Stage()
     }
 }
