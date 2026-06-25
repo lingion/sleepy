@@ -153,7 +153,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
         // 2. 落库课程
         val defaultColor = "#FF6750A4"
-        val entities = toCourseEntities(courses, newId, defaultColor)
+        // 按课程名分 groupId（同名课程视为一组，便于编辑）
+        val nameToGroup = mutableMapOf<String, String>()
+        val entities = toCourseEntities(courses, newId, defaultColor).map { c ->
+            val gid = nameToGroup.getOrPut(c.courseName) { java.util.UUID.randomUUID().toString() }
+            c.copy(groupId = gid)
+        }
         courseDao.insertAll(entities)
 
         newId
