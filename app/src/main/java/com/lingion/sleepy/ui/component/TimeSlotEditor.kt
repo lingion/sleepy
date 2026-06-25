@@ -24,6 +24,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -60,6 +61,14 @@ fun TimeSlotEditor(
     modifier: Modifier = Modifier
 ) {
     var mode by remember { mutableStateOf(Mode.Manual) }
+
+    // Bug 2 fix: 自动模式下，smartConfig 一旦变化就立刻 derive 出 rows 同步给上层，
+    // 否则保存时 timeJson 用的还是旧的手动 rows，导致"保存的不是自动模式数据"。
+    LaunchedEffect(mode, smartConfig) {
+        if (mode == Mode.Auto) {
+            onRowsChange(smartConfig.derive())
+        }
+    }
 
     Column(modifier = modifier) {
         // ===== Tab 切换 =====

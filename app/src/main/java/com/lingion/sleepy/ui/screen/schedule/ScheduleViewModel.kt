@@ -8,6 +8,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.DateUtils
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -46,6 +47,13 @@ class ScheduleViewModel : ViewModel() {
     /** Whether the user has explicitly selected a table (vs auto-picking default on load) */
     private var manualSelectDone = false
 
+    /**
+     * 当前在 observe 课程的协程。切换表时必须先 cancel 上一个，
+     * 否则多个协程同时往 state.courses 写，后启动的会被后 emit 的旧协程覆盖，
+     * 导致"显示成另一张表"的 bug。
+     */
+    private var coursesJob: Job? = null
+
     init {
         loadTables()
     }
@@ -76,7 +84,9 @@ class ScheduleViewModel : ViewModel() {
     }
 
     private fun loadCourses(tableId: Long) {
-        viewModelScope.launch {
+        // 取消旧协程，避免多个 observeCourses 同时写 state.courses 互相覆盖
+        coursesJob?.cancel()
+        coursesJob = viewModelScope.launch {
             repo.observeCourses(tableId).collect { courses ->
                 _state.update { st ->
                     val table = st.tables.find { it.id == tableId }
@@ -115,6 +125,7 @@ class ScheduleViewModel : ViewModel() {
         }
         manualSelectDone = true
         _state.update { it.copy(selectedTableId = id) }
+        loadCourses(id)
         return id
     }
 

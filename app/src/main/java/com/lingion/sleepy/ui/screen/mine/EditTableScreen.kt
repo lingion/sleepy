@@ -60,6 +60,8 @@ import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
 // Time slot editing uses mutableStateListOf for reactive TextField binding
 
@@ -108,10 +110,22 @@ fun EditTableScreen(
     // v1.0.16 自动模式配置（编辑当前课表时使用）
     val smartConfig = remember(table.id) {
         mutableStateOf(
-            SmartPeriodConfig(
-                totalPeriods = slotRows.size.coerceAtLeast(1),
-                startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-            )
+            // 如果表里已存 smartConfigJson，反序列化恢复；否则从现有 slotRows 推断初始值
+            if (table.smartConfigJson.isNotBlank()) {
+                try {
+                    Json.decodeFromString<SmartPeriodConfig>(table.smartConfigJson)
+                } catch (e: Exception) {
+                    SmartPeriodConfig(
+                        totalPeriods = slotRows.size.coerceAtLeast(1),
+                        startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                    )
+                }
+            } else {
+                SmartPeriodConfig(
+                    totalPeriods = slotRows.size.coerceAtLeast(1),
+                    startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                )
+            }
         )
     }
 
@@ -260,11 +274,17 @@ fun EditTableScreen(
                             return@Button
                         }
                         error = null
+                        val smartConfigJson = try {
+                            Json.encodeToString(smartConfig.value)
+                        } catch (e: Exception) {
+                            ""
+                        }
                         val updated = table.copy(
                             name = name.ifBlank { table.name },
                             startDate = startDate,
                             maxWeek = maxWeek,
-                            timeJson = TimeTableUtils.buildTimeJsonFromRows(slotRows.toList())
+                            timeJson = TimeTableUtils.buildTimeJsonFromRows(slotRows.toList()),
+                            smartConfigJson = smartConfigJson
                         )
                         scope.launch {
                             viewModel.updateTable(updated)

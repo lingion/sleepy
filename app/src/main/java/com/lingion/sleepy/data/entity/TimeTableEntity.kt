@@ -35,5 +35,10 @@ data class TimeTableEntity(
     /** 是否为默认课表 */
     @ColumnInfo(name = "isDefault") val isDefault: Boolean = false,
 
+    /**
+     * v1.0.16 自动模式（智慧节次）配置 JSON。空串表示该表走手动模式（timeJson）。
+     */
+    @ColumnInfo(name = "smartConfigJson") val smartConfigJson: String = "",
+
     @ColumnInfo(name = "createdAt") val createdAt: Long = System.currentTimeMillis()
 )

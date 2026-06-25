@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.entity
 
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
+import kotlinx.serialization.Serializable
 
 /**
  * v1.0.16 智慧节次配置（自动模式）
@@ -18,6 +19,7 @@ import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
  *  第 i 节开始时间 = startTime + i × periodMinutes + Σbreaks_before_i
  *  transition i 表示第 i 节与第 i+1 节之间的课间
  */
+@Serializable
 data class SmartPeriodConfig(
     val startTime: String = "08:00",
     val periodMinutes: Int = 45,
@@ -86,6 +88,7 @@ data class SmartPeriodConfig(
  * @param isLong true=大课间, false=小课间（仅用于颜色/标签展示）
  * @param label 用户自定义名称（可选），默认"小课间 X"/"大课间 X"
  */
+@Serializable
 data class BreakOption(
     val minutes: Int,
     val isLong: Boolean = false,
