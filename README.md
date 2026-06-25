@@ -1,17 +1,27 @@
+# Sleepy · 轻课表
+
+> Android 课程表 App · 纯 Kotlin + Compose · GPL-3.0
+
+[→ 中文](README.md) · [→ English](README.en.md)
+
+---
+
+## 截图一览
+
 <p align="center">
-  <strong>Sleepy</strong><br>
-  <em>轻课表 · 掌中览</em>
+  <img src="docs/screenshots/01-schedule-week.png" width="30%">
+  <img src="docs/screenshots/02-schedule-grid.png" width="30%">
+  <img src="docs/screenshots/03-today.png" width="30%">
+</p>
+<p align="center">
+  <img src="docs/screenshots/widget-weekgrid.png" width="22%">
+  <img src="docs/screenshots/widget-weeklist.png" width="22%">
+  <img src="docs/screenshots/widget-today.png" width="22%">
+  <img src="docs/screenshots/widget-twoday.png" width="22%">
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/01-schedule-week.png" width="22%">
-  <img src="docs/screenshots/02-schedule-grid.png" width="22%">
-  <img src="docs/screenshots/03-today.png" width="22%">
-  <img src="docs/screenshots/widget-week-grid.png" width="22%">
-</p>
-
-<p align="center">
-  <code>v1.0.16</code> · Android 7.0+ · GPL-3.0
+  <code>v1.0.16</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -26,75 +36,67 @@
 | 架构 | arm64-v8a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
-Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。纯 Kotlin + Compose 构建，零壳依赖。支持教务直连导入、多格式解析、四类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。
-
----
-
-## 📚 多课表管理
-
-| 能力 | 说明 |
-|---|---|
-| 多表并行 | 创建/切换/删除多张独立课表 |
-| 表属性 | 名称、开学日期、最大周数、每节节数、节次时间表 |
-| 快切 | 导航栏一键跳转，Mine 页面管理全部课表 |
-
-<p align="center">
-  <img src="docs/screenshots/04-mine.png" width="40%">
-  <img src="docs/screenshots/05-all-tables.png" width="40%">
-</p>
-
----
-
-## ⏰ 节次配置 (SmartPeriodConfig)
-
-v1.0.16 引入智能节次编辑，手动/自动双模式：
-
-- **自动模式**：输入每节时长、总节数、首节时间、课间模板 → 自动推算全表时间
-- **课间模板**：定义大/小课间分钟数，按 transition 分配
-- **手动模式**：逐节设置起止时间
-- 二者互转，数据持久化于 TimeTableEntity
-
-<p align="center">
-  <img src="docs/screenshots/06-edit-table-manual.png" width="40%">
-  <img src="docs/screenshots/07-edit-table-auto.png" width="40%">
-</p>
+Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖，支持教务直连导入、多格式解析、四类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。
 
 ---
 
 ## 🖥 三视图
 
-| 视图 | 说明 |
-|---|---|
-| **周视图** | 7 日横排 × N 节纵列，按当前周过滤，左右滑周 |
-| **网格视图** | 经典时间网格，课程色块铺排，一目了然 |
-| **今日视图** | 仅示当日课程，时间轴纵向排列 |
+课表主页内置三种视图，顶部一键切换。
 
-<p align="center">
-  <img src="docs/screenshots/01-schedule-week.png" width="28%">
-  <img src="docs/screenshots/02-schedule-grid.png" width="28%">
-  <img src="docs/screenshots/03-today.png" width="28%">
-</p>
+| 视图 | 截图 |
+|---|---|
+| **周视图**（7 日横排 × N 节） | <p align="left"><img src="docs/screenshots/01-schedule-week.png" width="280"></p> |
+| **网格视图**（时间网格 · 课程色块） | <p align="left"><img src="docs/screenshots/02-schedule-grid.png" width="280"></p> |
+| **今日视图**（底部"今日"Tab · 当日课程） | <p align="left"><img src="docs/screenshots/03-today.png" width="280"></p> |
+
+特性：
+- 左/右滑周切换器，实时算周次
+- 课程按"起止周+单双周+起止节"自动过滤当前周
+- 点击课程卡片弹出详情底部弹窗
 
 ---
 
-## ✏️ 课程编辑
+## 📚 多课表管理
 
-- `AddCourseScreen`：手动添加/编辑单条课程
-- 字段：课名、教师、教室、备注、星期、起止节、起止周、单双周类型、课程色
-- `CourseDetailSheet`：点击课程卡片弹出详情底部弹窗
+可同时管理多张独立课表，每张表拥有自己的节次时间表、开学日期、最大周数。
 
-<p align="center">
-  <img src="docs/screenshots/18-add-course.png" width="40%">
-  <img src="docs/screenshots/08-course-detail.png" width="40%">
+<p align="left">
+  <img src="docs/screenshots/05-all-tables.png" width="280">
+  <img src="docs/screenshots/04-mine.png" width="280">
 </p>
+
+> 左：所有课表列表（齿轮进入编辑）
+> 右：我的页面（统计 + 入口）
+
+新建/编辑课表必填项：名称、开始日期、最大周数、节次时间表（手动或自动模式）。
+
+---
+
+## ⏰ 节次配置（手动 / 自动双模式）
+
+v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式输入每节时长 + 总节数 + 首节时间 + 课间模板，自动推算全部时间。
+
+<p align="left">
+  <img src="docs/screenshots/06-edit-table-manual.png" width="280">
+  <img src="docs/screenshots/07-edit-table-auto.png" width="280">
+</p>
+
+> 左：手动模式（展开的 12 节 HEU 真实节次）
+> 右：自动模式（每节时长 / 总节数 / 首节 / 大小课间模板 / 预览切换）
+
+自动模式特性：
+- 跨组互斥（同一 transition 不能同时属大/小课间）
+- 默认 0 分钟连续，无间隔亦合法
+- 卡片网格多选，点击直观反馈
 
 ---
 
 ## 🎓 教务系统导入
 
-WebView 登录 → 自动抓取课表。支持协议：
+WebView 登录 → 自动抓取课表。
 
-| 协议类型 | 说明 |
+| 协议 | 说明 |
 |---|---|
 | `wisedu` | 金智教务（JSON API 直连，如哈尔滨工程大学） |
 | `qz` / `qz_old` / `qz_crazy` / `qz_br` / `qz_with_node` | 强智教务（5 变体） |
@@ -104,75 +106,84 @@ WebView 登录 → 自动抓取课表。支持协议：
 | `pku` | 北京大学 |
 | `bnuz` | 北师珠 |
 
-流程：选学校 → WebView 登录 → 解析 HTML → 自动填充。
-
-<p align="center">
-  <img src="docs/screenshots/12-import-options.png" width="28%">
-  <img src="docs/screenshots/14-school-picker.png" width="28%">
-  <img src="docs/screenshots/15-jw-login.png" width="28%">
+<p align="left">
+  <img src="docs/screenshots/12-import-options.png" width="280">
 </p>
+
+导入流程：选来源 → 教务 WebView 登录 → 自动解析 HTML → 写入课表。
 
 ---
 
-## 📂 多格式导入
+## ✏️ 课程编辑
 
-`ScheduleParser` 自动识别格式，一行文本即可导入：
-
-| 格式 | 识别方式 |
-|---|---|
-| WakeUp JSON | `{` + `"courseDetailJson"` / `"courses"` |
-| ICS 日历 | `BEGIN:VCALENDAR` / `BEGIN:VEVENT` |
-| CSV | 含表头行（课程名+教师+星期+节次+周次） |
-| HTML 表格 | `<table>` 标签，自动抽取行列 |
-| 纯文本 | Tab/空格分隔，一行一课 |
-
-CSV 支持多区间周次（`2-5,7-9,11-14`）、离散周（`11,13,15`）、中英文列名混排。
-
-<p align="center">
-  <img src="docs/screenshots/16-file-import.png" width="40%">
-  <img src="docs/screenshots/17-text-import-active.png" width="40%">
+<p align="left">
+  <img src="docs/screenshots/18-add-course.png" width="280">
+  <img src="docs/screenshots/08-course-detail.png" width="280">
 </p>
+
+> 左：手动添加/编辑单条课程
+> 右：点击周视图课程卡片弹出详情底部弹窗
+
+字段：课名 · 教师 · 教室 · 备注 · 星期 · 起止节 · 起止周 · 单双周类型 · 课程色。
 
 ---
 
-## 📤 导出
+## 📥 导入入口
 
-| 格式 | 用途 |
-|---|---|
-| WakeUp JSON | 兼容 WakeUp 课程表 app 导入 |
-| 分享文本 | `courseDetailJson` URL 编码格式，可复制分享 |
-| ICS 日历 | 导入系统日历 / Google Calendar / Apple Calendar |
-
-<p align="center">
-  <img src="docs/screenshots/19-export.png" width="40%">
+<p align="left">
+  <img src="docs/screenshots/10-import.png" width="280">
+  <img src="docs/screenshots/12-import-options.png" width="280">
 </p>
+
+> 左：导入页（粘贴文本 + 4 种格式自动识别）
+> 右：教务直连 → 选学校 → WebView 登录 → 抓取
 
 ---
 
-## 🧩 桌面 Widget (Glance)
+## 📤 导出课表
 
-四类 Widget，WorkManager 定时刷新：
+v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存到设备 `Download/Sleepy/` 并触发系统分享面板。
 
-| Widget | 说明 |
-|---|---|
-| **Today** | 今日课程列表 |
-| **WeekList** | 本周课程周列表 |
-| **TwoDay** | 今明两日课程 |
-| **WeekGrid** | 本周课程网格视图 |
-
-WeekGrid 截图（Canvas 直绘，24 节全显示）：
-
-<p align="center">
-  <img src="docs/screenshots/widget-week-grid.png" width="40%">
+<p align="left">
+  <img src="docs/screenshots/19-export.png" width="280">
 </p>
 
-其他三 Widget 用 Glance Composable 渲染，样式与 Today / Schedule 视图一致。
+> 截图：导出页（在"我的 → 导出课表"）
+
+三种导出格式：
+
+| 格式 | 用途 | 实现 |
+|---|---|---|
+| **WakeUp 兼容 JSON** | 完整课表结构，可被 WakeUp 课表等同类 App 直接导入 | `ScheduleExporter.exportWakeUpJson` |
+| **分享文本** | 短文本格式（URL 编码 JSON），可粘贴到任何聊天工具 | `ScheduleExporter.exportWakeUpShareText` |
+| **ICS 日历** | 标准 iCalendar 格式，可导入系统日历 / Google / Apple Calendar | `ScheduleExporter.exportIcs` |
+
+文件路径：`Download/Sleepy/sleepy_<表名>_<时间戳>.{json|ics}`。
+
+---
+
+## 🧩 桌面 Widget（4 类）
+
+四类 Widget，WorkManager 定时刷新。布局尺寸与各 launcher 自适应。
+
+| Widget | 默认尺寸 | 用途 | 截图 |
+|---|---|---|---|
+| **Today** | 3×2 cell（180×110dp） | 今日课程，最多 3 节 | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
+| **TwoDay** | 4×2 cell（240×140dp） | 今天 + 明天 | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
+| **WeekList** | 4×2 cell（280×160dp） | 7 日课程统计 + 名称 | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
+| **WeekGrid** | 4×5 cell（250×640dp） | 完整时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+
+实现要点：
+- Today / TwoDay / WeekList：Glance + Canvas 渲染
+- WeekGrid：纯 Canvas + Bitmap（不受 Glance 11+ child 数量限制）
+- 配色与 app 主题实时同步（深色模式 + 5 主题预设）
+- 课程色按课程名关键词匹配（英语 / 物理 / 高数 / 思政 / 历史 / 心理 / 军事 / 实践）
 
 ---
 
 ## 🔔 课程通知
 
-`CourseNotificationScheduler` · 每日 07:00 推送今日课程提醒：
+`CourseNotificationScheduler` · 每日 07:00 推送今日课程提醒。
 
 - AlarmManager 精确/非精确双路降级（Android 12+ 兼容）
 - BootReceiver 重注册（开机/更新后自动恢复）
@@ -182,7 +193,11 @@ WeekGrid 截图（Canvas 直绘，24 节全显示）：
 
 ## 🌙 深色模式 & 主题
 
-5 套预设 + 跟随系统：
+5 套预设 + 跟随系统，每套含 Light/Dark 完整配色方案，`ThemeColorScreen` 一键切换。
+
+<p align="left">
+  <img src="docs/screenshots/11-theme.png" width="280">
+</p>
 
 | 主题 | 风格 |
 |---|---|
@@ -193,18 +208,12 @@ WeekGrid 截图（Canvas 直绘，24 节全显示）：
 | 石板灰 | 中性冷淡 |
 | 跟随系统 | 自动适配 |
 
-每套含 Light/Dark 完整配色方案，`ThemeColorScreen` 一键切换。
-
-<p align="center">
-  <img src="docs/screenshots/11-theme.png" width="40%">
-</p>
-
 ---
 
 ## 📋 课表管理总览
 
-<p align="center">
-  <img src="docs/screenshots/09-manage.png" width="60%">
+<p align="left">
+  <img src="docs/screenshots/09-manage.png" width="280">
 </p>
 
 ---
@@ -219,7 +228,7 @@ storage         = Room 2.6.1 (KSP)
 prefs           = DataStore Preferences 1.1.1
 serialization   = kotlinx-serialization-json 1.6.3
 html_parser     = jsoup 1.18.1
-widgets         = Glance AppWidget 1.1.0
+widgets         = Glance AppWidget 1.1.0 + RemoteViews Canvas
 background      = WorkManager 2.9.1
 image           = Coil Compose 2.7.0
 splash          = Core Splash Screen 1.0.1
@@ -239,79 +248,37 @@ sleepy/
 │   │   ├── SleepyApp.kt                # Application（DI、通知调度器）
 │   │   ├── data/
 │   │   │   ├── AppDatabase.kt          # Room 数据库
-│   │   │   ├── dao/
-│   │   │   │   ├── CourseDao.kt        # 课程 CRUD
-│   │   │   │   └── TimeTableDao.kt     # 课表 CRUD
-│   │   │   ├── entity/
-│   │   │   │   ├── CourseEntity.kt     # 课程数据实体
-│   │   │   │   ├── SmartPeriodConfig.kt # 智能节次配置
-│   │   │   │   └── TimeTableEntity.kt   # 课表数据实体
-│   │   │   ├── jw/                     # 教务系统导入
-│   │   │   │   ├── JwSchoolInfo.kt      # 学校元数据
-│   │   │   │   ├── JwProtocol.kt        # 协议类型枚举
-│   │   │   │   ├── JwParser.kt          # 解析入口
-│   │   │   │   ├── JwWiseduParser.kt    # 金智 Wisedu 解析
-│   │   │   │   ├── JwQzParser.kt        # 强智解析
-│   │   │   │   ├── JwQzCrazyParser.kt   # 强智 Crazy 变体
-│   │   │   │   ├── JwUrpParser.kt       # URP 解析
-│   │   │   │   ├── JwNewUrpParser.kt    # URP 新版
-│   │   │   │   └── JwImportViewModel.kt # 导入状态管理
-│   │   │   ├── parser/
-│   │   │   │   ├── ScheduleParser.kt    # 多格式导入解析
-│   │   │   │   └── ScheduleExporter.kt  # 导出（JSON/ICS/文本）
-│   │   │   └── repository/
-│   │   │       └── ScheduleRepository.kt # 数据聚合层
+│   │   │   ├── dao/                    # 课程 / 课表 DAO
+│   │   │   ├── entity/                 # Course / TimeTable / SmartPeriodConfig
+│   │   │   ├── jw/                     # 教务系统导入（wisedu/qz/zf/urp/cf/pku/bnuz）
+│   │   │   ├── parser/                 # ScheduleParser + ScheduleExporter
+│   │   │   └── repository/             # ScheduleRepository
 │   │   ├── ui/
-│   │   │   ├── component/               # 通用 UI 组件
-│   │   │   │   ├── CourseTableView.kt   # 课程表格视图
-│   │   │   │   ├── CourseDetailSheet.kt # 课程详情弹窗
-│   │   │   │   ├── SmartPeriodEditor.kt # 智能节次编辑器
-│   │   │   │   ├── TimeSlotEditor.kt    # 节次时间编辑
-│   │   │   │   ├── PillNavigationBar.kt # 底部导航栏
-│   │   │   │   ├── SegmentedSwitcher.kt # 分段切换器
-│   │   │   │   └── DateTimePickers.kt    # 日期时间选择器
+│   │   │   ├── component/              # CourseTableView / CourseDetailSheet /
+│   │   │   │                           # SmartPeriodEditor / TimeSlotEditor /
+│   │   │   │                           # PillNavigationBar / SegmentedSwitcher
 │   │   │   ├── screen/
-│   │   │   │   ├── schedule/            # 周视图 + 网格视图
-│   │   │   │   ├── today/               # 今日视图
-│   │   │   │   ├── edit/                # 课程编辑
-│   │   │   │   ├── imports/             # 教务导入 + 文本导入 + 学校选择
-│   │   │   │   ├── manage/              # 课程管理
-│   │   │   │   └── mine/                # 我的（课表管理/主题/设置）
-│   │   │   └── theme/
-│   │   │       ├── Theme.kt             # 主题切换逻辑
-│   │   │       └── ThemePresets.kt      # 5 套配色方案
-│   │   ├── util/
-│   │   │   ├── AppPrefs.kt             # DataStore 偏好
-│   │   │   ├── DateUtils.kt            # 日期工具
-│   │   │   ├── LocaleHelper.kt         # 多语言
-│   │   │   └── TimeTableUtils.kt       # 课表工具
-│   │   └── widget/
-│   │       ├── TodayWidget.kt           # 今日 Widget
-│   │       ├── WeekListWidget.kt        # 周列表 Widget
-│   │       ├── TwoDayWidget.kt         # 今明 Widget
-│   │       ├── WeekGridWidget.kt       # 网格 Widget (Canvas bitmap)
-│   │       ├── WeekGridWidgetProvider.kt # 网格 Widget 渲染
-│   │       ├── WidgetContent.kt        # Widget 内容渲染 (Glance)
-│   │       ├── WidgetRenderActivity.kt # Widget 渲染预览
-│   │       ├── WidgetTableResolver.kt  # Widget 课表解析
-│   │       ├── WidgetUpdateWorker.kt   # WorkManager 刷新
-│   │       ├── WidgetUpdater.kt        # 更新调度
-│   │       └── notification/
-│   │           └── CourseNotificationScheduler.kt # 每日通知
+│   │   │   │   ├── schedule/           # 周视图 + 网格视图
+│   │   │   │   ├── today/              # 今日视图
+│   │   │   │   ├── edit/               # 课程编辑
+│   │   │   │   ├── imports/            # 教务导入 + 文本导入 + 学校选择
+│   │   │   │   ├── manage/             # 课程管理
+│   │   │   │   └── mine/               # 我的 / 所有课表 / 编辑课表 / 主题 / 导出
+│   │   │   └── theme/                  # Theme + ThemePresets（5 套配色）
+│   │   ├── util/                       # AppPrefs / DateUtils / LocaleHelper / TimeTableUtils
+│   │   └── widget/                     # 4 类 widget + WidgetRenderActivity
 │   └── res/
-│       ├── values/                      # 默认资源 (zh-CN)
-│       ├── values-zh-rCN/
-│       ├── values-zh-rTW/
-│       ├── values-en/
-│       ├── values-ja/
-│       ├── values-es/
-│       └── xml/                        # Widget 配置
-├── app/src/test/                        # JVM 单测
-├── docs/
-│   └── screenshots/                     # 应用截图
-├── build.gradle.kts                     # 根构建配置
-├── app/build.gradle.kts                 # App 模块配置
-├── settings.gradle.kts                  # 仓库镜像（阿里云）
+│       ├── values/                     # 默认资源 (zh-CN)
+│       ├── values-zh-rCN/              # 中文
+│       ├── values-zh-rTW/              # 繁體
+│       ├── values-en/                  # English
+│       ├── values-ja/                  # 日本語
+│       ├── values-es/                  # Español
+│       └── xml/                        # 4 个 widget 配置 + 网络/备份规则
+├── docs/screenshots/                   # README 截图
+├── build.gradle.kts                     # 根构建
+├── app/build.gradle.kts                 # App 模块
+├── settings.gradle.kts
 ├── gradle.properties
 └── LICENSE                              # GPL-3.0
 ```
@@ -323,10 +290,8 @@ sleepy/
 ### 前置
 
 ```bash
-# JDK 17+
-java -version
+java -version           # JDK 17+
 
-# Android SDK compileSdk=35
 sdkmanager "platforms;android-35" "build-tools;35.0.0"
 ```
 
@@ -336,19 +301,16 @@ sdkmanager "platforms;android-35" "build-tools;35.0.0"
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
 
-# Debug（x86_64 模拟器 / arm64 真机）
+# Debug（x86_64 模拟器 / arm64 真机），产物约 20MB
 ./gradlew assembleDebug
-
-# Release
-./gradlew assembleRelease
 ```
-
-产物位于 `app/build/outputs/apk/debug/` 或 `release/`。
 
 ### 安装
 
 ```bash
-adb install app/build/outputs/apk/debug/*.apk
+adb install app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
+# 或 x86_64 模拟器
+adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 ```
 
 > ABI 分包：arm64-v8a（真机）、x86_64（模拟器）。自动匹配设备架构。

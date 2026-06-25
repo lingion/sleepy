@@ -17,8 +17,18 @@ object WidgetTableResolver {
     suspend fun resolveCurrentTable(): TimeTableEntity? {
         val repo = SleepyApp.get().repository
         val all = repo.getAllTables()
-        // 用户数据表优先（用户导入/手动创建的都是 isDefault=false）
-        val userTable = all.filter { !it.isDefault }.maxByOrNull { it.id }
-        return userTable ?: repo.getDefaultTable()
+        // 优先：用户非默认表且有课的（排除刚创建的空表）
+        val userTableWithCourses = all.filter { !it.isDefault }
+            .maxByOrNull { runCatching { repo.getCourses(it.id).size }.getOrDefault(0) }
+            ?.takeIf { runCatching { repo.getCourses(it.id).isNotEmpty() }.getOrDefault(false) }
+        if (userTableWithCourses != null) return userTableWithCourses
+        // 次选：默认表
+        val def = repo.getDefaultTable()
+        if (def != null && runCatching { repo.getCourses(def.id).isNotEmpty() }.getOrDefault(false)) {
+            return def
+        }
+        // 最后：任意有课的表
+        return all.maxByOrNull { runCatching { repo.getCourses(it.id).size }.getOrDefault(0) }
+            ?.takeIf { runCatching { repo.getCourses(it.id).isNotEmpty() }.getOrDefault(false) }
     }
 }

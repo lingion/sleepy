@@ -4,165 +4,169 @@ import android.app.Activity
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
+import android.view.Gravity
+import android.widget.FrameLayout
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
-import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
-import com.lingion.sleepy.data.repository.ScheduleRepository
+import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 
+/**
+ * 调试用 Activity：渲染 4 个桌面 Widget 样式到屏幕，并保存为 PNG 用于 README 截图。
+ *
+ * 通过 Intent extra 指定要渲染哪个 widget：
+ *  - `widget=today` (180x110 dp)
+ *  - `widget=twoday` (240x140 dp)
+ *  - `widget=weeklist` (280x160 dp)
+ *  - `widget=weekgrid` (250x640 dp)
+ *  - 缺省 = weekgrid
+ *
+ * 真实数据来源：当前课表（表 1 = 2026 春学期，HEU 13 节真实课表）。
+ */
 class WidgetRenderActivity : Activity() {
 
     private val scope = MainScope()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_widget_render)
+
+        val which = intent.getStringExtra("widget") ?: "weekgrid"
+        val (wDp, hDp) = when (which) {
+            "today" -> 180f to 110f
+            "twoday" -> 240f to 140f
+            "weeklist" -> 280f to 160f
+            else -> 250f to 640f
+        }
+        Log.d(TAG, "rendering widget=$which, size=${wDp}x${hDp}dp")
+
+        // FrameLayout: 居中 ImageView 展示 widget bitmap
+        val root = FrameLayout(this).apply {
+            setBackgroundColor(0xFF1A1A2E.toInt())
+        }
+        val img = ImageView(this).apply {
+            scaleType = ImageView.ScaleType.FIT_CENTER
+            contentDescription = "Widget Preview"
+        }
+        val params = FrameLayout.LayoutParams(
+            FrameLayout.LayoutParams.MATCH_PARENT,
+            FrameLayout.LayoutParams.MATCH_PARENT
+        ).apply {
+            setMargins(0, 0, 0, 0)
+        }
+        root.addView(img, params)
+        setContentView(root)
 
         scope.launch {
             try {
-                // seed mock data (24 节)
-                seedMockData()
+                val bmp = renderWidgetBitmap(which, wDp, hDp)
+                img.setImageBitmap(bmp)
+            } catch (e: Throwable) {
+                Log.e(TAG, "render failed", e)
+                img.setBackgroundColor(Color.RED)
+            }
+        }
+    }
 
-                // load data
-                val data = WeekGridWidgetProvider.loadWeekData(this@WidgetRenderActivity)
-                Log.d("WidgetRender", "loaded data: hasTable=${data.hasTable}, " +
-                    "days=${data.days.size}, maxNode=${data.days.flatMap { it.courses }.maxOfOrNull { it.startNode + it.step - 1 } ?: 0}")
-
-                // render bitmap (360x600dp fixed size = real widget size)
+    private suspend fun renderWidgetBitmap(which: String, wDp: Float, hDp: Float) =
+        when (which) {
+            "today" -> {
+                val today = java.time.LocalDate.now()
+                val dayOfWeek = com.lingion.sleepy.util.DateUtils.todayDayOfWeek(today)
+                val table = WidgetTableResolver.resolveCurrentTable()
+                val courses = if (table != null) {
+                    val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
+                    val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dayOfWeek)
+                    all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                } else emptyList()
+                WidgetBitmapRenderers.renderToday(
+                    this,
+                    WidgetData(
+                        date = today,
+                        courses = courses,
+                        timeJson = table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
+                        hasTable = table != null,
+                        isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this),
+                        themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+                    ),
+                    wDp, hDp
+                )
+            }
+            "twoday" -> {
+                val today = java.time.LocalDate.now()
+                val tomorrow = today.plusDays(1)
+                val table = WidgetTableResolver.resolveCurrentTable()
+                val days = if (table != null) {
+                    val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
+                    listOf(today, tomorrow).map { date ->
+                        val dow = date.dayOfWeek.value
+                        val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
+                        val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        DayData(date = date, dayOfWeek = dow, courses = visible, timeJson = table.timeJson)
+                    }
+                } else emptyList()
+                WidgetBitmapRenderers.renderTwoDay(
+                    this,
+                    TwoDayData(
+                        days = days,
+                        hasTable = table != null,
+                        isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this),
+                        themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+                    ),
+                    wDp, hDp
+                )
+            }
+            "weeklist" -> {
+                val today = java.time.LocalDate.now()
+                val table = WidgetTableResolver.resolveCurrentTable()
+                val days = if (table != null) {
+                    val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
+                    (1..7).map { dow ->
+                        val date = com.lingion.sleepy.util.DateUtils.dateOfWeekDay(today, dow)
+                        val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
+                        val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        DayData(date = date, dayOfWeek = dow, courses = visible, timeJson = table.timeJson)
+                    }
+                } else emptyList()
+                WidgetBitmapRenderers.renderWeekList(
+                    this,
+                    WeekData(
+                        days = days,
+                        hasTable = table != null,
+                        isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this),
+                        themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+                    ),
+                    wDp, hDp
+                )
+            }
+            else -> {
+                val data = WeekGridWidgetProvider.loadWeekData(this)
                 val density = resources.displayMetrics.density
-                val w = (360 * density).toInt()
-                val h = (600 * density).toInt()
-                Log.d("WidgetRender", "density=$density, px=${w}x${h}")
-                val bmp = WeekGridWidgetProvider.renderBitmap(this@WidgetRenderActivity, data, w, h)
-
-                // show
-                findViewById<ImageView>(R.id.widget_bitmap).setImageBitmap(bmp)
-                Log.d("WidgetRender", "render complete")
-            } catch (e: Exception) {
-                Log.e("WidgetRender", "FAILED", e)
-                findViewById<ImageView>(R.id.widget_bitmap).setBackgroundColor(Color.RED)
+                val w = (wDp * density).toInt()
+                val h = (hDp * density).toInt()
+                WeekGridWidgetProvider.renderBitmap(this, data, w, h)
             }
         }
-    }
-
-    private suspend fun seedMockData() {
-        val app = SleepyApp.get()
-        val repo = app.repository
-
-        // 策略：
-        // 1. 若存在非默认表（用户导入/手动创建的）→ 取最新一个
-        // 2. 否则用 default 表
-        // 3. 否则 seed mock 测试数据
-        val all = repo.getAllTables()
-        val userTable = all.filter { !it.isDefault }.maxByOrNull { it.id }
-        var existing = userTable ?: repo.getDefaultTable()
-        if (existing != null) {
-            Log.d("WidgetRender", "DB already has default table id=${existing.id}, nodesPerDay=${existing.nodesPerDay}")
-            val allCourses = (1..7).flatMap { dow ->
-                repo.getCoursesByDayOnce(existing.id, dow)
-            }
-            if (allCourses.isNotEmpty()) {
-                Log.d("WidgetRender", "DB has ${allCourses.size} courses, maxNode=${existing.nodesPerDay}")
-                return
-            }
-            seedCourses(repo, existing.id)
-            return
-        }
-
-        val table = TimeTableEntity(
-            name = "测试课表",
-            startDate = "2026-02-23",
-            maxWeek = 20,
-            nodesPerDay = 24,
-            timeJson = TIME_JSON_24,
-            isDefault = true
-        )
-        val tableId = repo.insertTable(table)
-        Log.d("WidgetRender", "inserted table id=$tableId (24 节课表)")
-        seedCourses(repo, tableId)
-    }
-
-    /** 24 节课表 timeJson (用户原话: "我让你是24个节次是测试的") */
-    private val TIME_JSON_24: String = """
-        [
-            {"node":1,"start":"08:00","end":"08:45"},
-            {"node":2,"start":"08:55","end":"09:40"},
-            {"node":3,"start":"10:00","end":"10:45"},
-            {"node":4,"start":"10:55","end":"11:40"},
-            {"node":5,"start":"14:00","end":"14:45"},
-            {"node":6,"start":"14:55","end":"15:40"},
-            {"node":7,"start":"16:00","end":"16:45"},
-            {"node":8,"start":"16:55","end":"17:40"},
-            {"node":9,"start":"19:00","end":"19:45"},
-            {"node":10,"start":"19:55","end":"20:40"},
-            {"node":11,"start":"20:50","end":"21:35"},
-            {"node":12,"start":"21:45","end":"22:30"},
-            {"node":13,"start":"08:00","end":"08:45"},
-            {"node":14,"start":"08:55","end":"09:40"},
-            {"node":15,"start":"10:00","end":"10:45"},
-            {"node":16,"start":"10:55","end":"11:40"},
-            {"node":17,"start":"14:00","end":"14:45"},
-            {"node":18,"start":"14:55","end":"15:40"},
-            {"node":19,"start":"16:00","end":"16:45"},
-            {"node":20,"start":"16:55","end":"17:40"},
-            {"node":21,"start":"19:00","end":"19:45"},
-            {"node":22,"start":"19:55","end":"20:40"},
-            {"node":23,"start":"20:50","end":"21:35"},
-            {"node":24,"start":"21:45","end":"22:30"}
-        ]
-    """.trimIndent()
-
-    private suspend fun seedCourses(repo: com.lingion.sleepy.data.repository.ScheduleRepository, tableId: Long) {
-        fun course(courseName: String, day: Int, startNode: Int, step: Int, color: String) =
-            CourseEntity(
-                id = 0, groupId = "mock-$day-$startNode", tableId = tableId,
-                courseName = courseName, room = "教室$day", day = day,
-                startWeek = 1, endWeek = 18, startNode = startNode, step = step,
-                type = 0, color = color
-            )
-
-        // ★ v19 暴力测试 — 24 节课, 24 个时间段
-        val mockCourses = listOf(
-            // ========== Period 1-6: 短课 ==========
-            course("P1-1节", 1, 1, 1, "#FF6750A4"),
-            course("P2-2节", 1, 2, 2, "#FF7D5260"),
-            course("P4-1节", 2, 4, 1, "#FF4A6741"),
-            course("P1-3节", 3, 1, 3, "#FFFBE4C6"),
-            course("P5-2节", 4, 5, 2, "#FFB4A8"),
-            course("P3-1节", 5, 3, 1, "#FF59CD6E"),
-
-            // ========== Period 7-12: 中等长度 ==========
-            course("P7-5节", 1, 7, 5, "#FFB69DF8"),
-            course("P8-3节", 2, 8, 3, "#FFB4A8"),
-            course("P10-1节", 3, 10, 1, "#FF006A6A"),
-            course("P9-2节", 4, 9, 2, "#FF59CD6E"),
-            course("P11-1节", 5, 11, 1, "#FFFBE4C6"),
-            course("P12-12节", 6, 1, 12, "#FF8B5CF6"),
-
-            // ========== Period 13-18: 较长 ==========
-            course("P13-5节", 1, 13, 5, "#FF59CD6E"),
-            course("P14-1节", 2, 14, 1, "#FF7D5260"),
-            course("P15-2节", 3, 15, 2, "#FFB69DF8"),
-            course("P16-3节", 5, 16, 3, "#FF4A6741"),
-            course("P18-7节", 7, 12, 7, "#FF0061A4"),
-
-            // ========== Period 19-24: 超长 ==========
-            course("P19-1节", 1, 19, 1, "#FFFBE4C6"),
-            course("P20-2节", 2, 20, 2, "#FF0061A4"),
-            course("P22-1节", 3, 22, 1, "#FF6750A4"),
-            course("P24-24节", 4, 1, 24, "#FFE91E63")
-        )
-
-        val ids = repo.insertCourses(mockCourses)
-        Log.d("WidgetRender", "inserted ${ids.size} mock courses")
-    }
 
     override fun onDestroy() {
         scope.cancel()
         super.onDestroy()
+    }
+
+    companion object {
+        private const val TAG = "WidgetRender"
+
+        /** 启动入口：渲染指定 widget */
+        fun start(activity: android.app.Activity, which: String) {
+            activity.startActivity(
+                android.content.Intent(activity, WidgetRenderActivity::class.java)
+                    .putExtra("widget", which)
+            )
+        }
     }
 }

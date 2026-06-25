@@ -173,6 +173,21 @@
     <string name="mine_more_settings">更多设置</string>
     <string name="mine_export">导出课表</string>
     <string name="mine_export_coming">导出课表 — 该功能开发中，后续版本支持 ICS 导出</string>
+    <!-- Export -->
+    <string name="export_title">导出课表</string>
+    <string name="export_no_table">暂无可导出的课表</string>
+    <string name="export_course_count">%1$d 门课程</string>
+    <string name="export_start_date">开学 %1$s</string>
+    <string name="export_json_title">WakeUp 兼容 JSON</string>
+    <string name="export_json_subtitle">完整课表结构，可被 WakeUp 课表等同类 App 直接导入</string>
+    <string name="export_share_title">分享文本</string>
+    <string name="export_share_subtitle">短文本格式，可粘贴到任何聊天工具</string>
+    <string name="export_ics_title">ICS 日历</string>
+    <string name="export_ics_subtitle">标准 iCalendar 格式，可导入系统日历 / Google / Apple Calendar</string>
+    <string name="export_share_chooser">分享课表</string>
+    <string name="export_saved_to">已保存到 Download/Sleepy/%1$s</string>
+    <string name="export_copied_hint">已调起分享面板</string>
+    <string name="export_failed">导出失败，请重试</string>
     <string name="mine_stat_tables">课表数</string>
     <string name="mine_stat_courses">课程数</string>
     <string name="mine_stat_week">当前周</string>

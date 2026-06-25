@@ -64,7 +64,8 @@ fun MineScreen(
     onToggleDark: () -> Unit = {},
     onOpenAllTables: () -> Unit = {},
     onOpenThemeColor: () -> Unit = {},
-    onOpenMoreSettings: () -> Unit = {}
+    onOpenMoreSettings: () -> Unit = {},
+    onOpenExport: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
@@ -129,7 +130,7 @@ fun MineScreen(
                     SettingsItem(
                         icon = Icons.Outlined.Share,
                         label = stringResource(R.string.mine_export),
-                        onClick = { showSnack(context.getString(R.string.mine_export_coming)) }
+                        onClick = onOpenExport
                     )
                     Divider()
                     SettingsItem(
