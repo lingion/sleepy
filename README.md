@@ -7,7 +7,7 @@
   <img src="docs/screenshots/01-schedule-week.png" width="22%">
   <img src="docs/screenshots/02-schedule-grid.png" width="22%">
   <img src="docs/screenshots/03-today.png" width="22%">
-  <img src="docs/screenshots/04-mine.png" width="22%">
+  <img src="docs/screenshots/widget-week-grid.png" width="22%">
 </p>
 
 <p align="center">
@@ -20,7 +20,7 @@
 
 | 项 | 值 |
 |---|---|
-|| 包名 | `com.lingion.sleepy.debug` |
+| 包名 | `com.lingion.sleepy.debug` |
 | 最低 SDK | 24 (Android 7.0) |
 | 目标 SDK | 35 |
 | 架构 | arm64-v8a / x86_64 |
@@ -30,16 +30,23 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。纯 Kotlin +
 
 ---
 
-## 功能总览
+## 📚 多课表管理
 
-### 📚 多课表管理
 | 能力 | 说明 |
 |---|---|
 | 多表并行 | 创建/切换/删除多张独立课表 |
 | 表属性 | 名称、开学日期、最大周数、每节节数、节次时间表 |
 | 快切 | 导航栏一键跳转，Mine 页面管理全部课表 |
 
-### ⏰ 节次配置 (SmartPeriodConfig)
+<p align="center">
+  <img src="docs/screenshots/04-mine.png" width="40%">
+  <img src="docs/screenshots/05-all-tables.png" width="40%">
+</p>
+
+---
+
+## ⏰ 节次配置 (SmartPeriodConfig)
+
 v1.0.16 引入智能节次编辑，手动/自动双模式：
 
 - **自动模式**：输入每节时长、总节数、首节时间、课间模板 → 自动推算全表时间
@@ -47,7 +54,43 @@ v1.0.16 引入智能节次编辑，手动/自动双模式：
 - **手动模式**：逐节设置起止时间
 - 二者互转，数据持久化于 TimeTableEntity
 
-### 🎓 教务系统导入
+<p align="center">
+  <img src="docs/screenshots/06-edit-table-manual.png" width="40%">
+  <img src="docs/screenshots/07-edit-table-auto.png" width="40%">
+</p>
+
+---
+
+## 🖥 三视图
+
+| 视图 | 说明 |
+|---|---|
+| **周视图** | 7 日横排 × N 节纵列，按当前周过滤，左右滑周 |
+| **网格视图** | 经典时间网格，课程色块铺排，一目了然 |
+| **今日视图** | 仅示当日课程，时间轴纵向排列 |
+
+<p align="center">
+  <img src="docs/screenshots/01-schedule-week.png" width="28%">
+  <img src="docs/screenshots/02-schedule-grid.png" width="28%">
+  <img src="docs/screenshots/03-today.png" width="28%">
+</p>
+
+---
+
+## ✏️ 课程编辑
+
+- `AddCourseScreen`：手动添加/编辑单条课程
+- 字段：课名、教师、教室、备注、星期、起止节、起止周、单双周类型、课程色
+- `CourseDetailSheet`：点击课程卡片弹出详情底部弹窗
+
+<p align="center">
+  <img src="docs/screenshots/18-add-course.png" width="40%">
+  <img src="docs/screenshots/08-course-detail.png" width="40%">
+</p>
+
+---
+
+## 🎓 教务系统导入
 
 WebView 登录 → 自动抓取课表。支持协议：
 
@@ -63,7 +106,15 @@ WebView 登录 → 自动抓取课表。支持协议：
 
 流程：选学校 → WebView 登录 → 解析 HTML → 自动填充。
 
-### 📂 多格式导入
+<p align="center">
+  <img src="docs/screenshots/12-import-options.png" width="28%">
+  <img src="docs/screenshots/14-school-picker.png" width="28%">
+  <img src="docs/screenshots/15-jw-login.png" width="28%">
+</p>
+
+---
+
+## 📂 多格式导入
 
 `ScheduleParser` 自动识别格式，一行文本即可导入：
 
@@ -77,21 +128,14 @@ WebView 登录 → 自动抓取课表。支持协议：
 
 CSV 支持多区间周次（`2-5,7-9,11-14`）、离散周（`11,13,15`）、中英文列名混排。
 
-### 🖥 三视图
+<p align="center">
+  <img src="docs/screenshots/16-file-import.png" width="40%">
+  <img src="docs/screenshots/17-text-import-active.png" width="40%">
+</p>
 
-| 视图 | 说明 |
-|---|---|
-| **周视图** | 7 日横排 × N 节纵列，按当前周过滤，左右滑周 |
-| **网格视图** | 经典时间网格，课程色块铺排，一目了然 |
-| **今日视图** | 仅示当日课程，时间轴纵向排列 |
+---
 
-### ✏️ 课程编辑
-
-- `AddCourseScreen`：手动添加/编辑单条课程
-- 字段：课名、教师、教室、备注、星期、起止节、起止周、单双周类型、课程色
-- `CourseDetailSheet`：点击课程卡片弹出详情底部弹窗
-
-### 📤 导出
+## 📤 导出
 
 | 格式 | 用途 |
 |---|---|
@@ -99,7 +143,13 @@ CSV 支持多区间周次（`2-5,7-9,11-14`）、离散周（`11,13,15`）、中
 | 分享文本 | `courseDetailJson` URL 编码格式，可复制分享 |
 | ICS 日历 | 导入系统日历 / Google Calendar / Apple Calendar |
 
-### 🧩 桌面 Widget (Glance)
+<p align="center">
+  <img src="docs/screenshots/19-export.png" width="40%">
+</p>
+
+---
+
+## 🧩 桌面 Widget (Glance)
 
 四类 Widget，WorkManager 定时刷新：
 
@@ -110,7 +160,17 @@ CSV 支持多区间周次（`2-5,7-9,11-14`）、离散周（`11,13,15`）、中
 | **TwoDay** | 今明两日课程 |
 | **WeekGrid** | 本周课程网格视图 |
 
-### 🔔 课程通知
+WeekGrid 截图（Canvas 直绘，24 节全显示）：
+
+<p align="center">
+  <img src="docs/screenshots/widget-week-grid.png" width="40%">
+</p>
+
+其他三 Widget 用 Glance Composable 渲染，样式与 Today / Schedule 视图一致。
+
+---
+
+## 🔔 课程通知
 
 `CourseNotificationScheduler` · 每日 07:00 推送今日课程提醒：
 
@@ -118,7 +178,9 @@ CSV 支持多区间周次（`2-5,7-9,11-14`）、离散周（`11,13,15`）、中
 - BootReceiver 重注册（开机/更新后自动恢复）
 - DataStore 持久化开关状态
 
-### 🌙 深色模式 & 主题
+---
+
+## 🌙 深色模式 & 主题
 
 5 套预设 + 跟随系统：
 
@@ -132,6 +194,18 @@ CSV 支持多区间周次（`2-5,7-9,11-14`）、离散周（`11,13,15`）、中
 | 跟随系统 | 自动适配 |
 
 每套含 Light/Dark 完整配色方案，`ThemeColorScreen` 一键切换。
+
+<p align="center">
+  <img src="docs/screenshots/11-theme.png" width="40%">
+</p>
+
+---
+
+## 📋 课表管理总览
+
+<p align="center">
+  <img src="docs/screenshots/09-manage.png" width="60%">
+</p>
 
 ---
 
@@ -215,8 +289,10 @@ sleepy/
 │   │       ├── TodayWidget.kt           # 今日 Widget
 │   │       ├── WeekListWidget.kt        # 周列表 Widget
 │   │       ├── TwoDayWidget.kt         # 今明 Widget
-│   │       ├── WeekGridWidget.kt       # 网格 Widget
-│   │       ├── WidgetContent.kt        # Widget 内容渲染
+│   │       ├── WeekGridWidget.kt       # 网格 Widget (Canvas bitmap)
+│   │       ├── WeekGridWidgetProvider.kt # 网格 Widget 渲染
+│   │       ├── WidgetContent.kt        # Widget 内容渲染 (Glance)
+│   │       ├── WidgetRenderActivity.kt # Widget 渲染预览
 │   │       ├── WidgetTableResolver.kt  # Widget 课表解析
 │   │       ├── WidgetUpdateWorker.kt   # WorkManager 刷新
 │   │       ├── WidgetUpdater.kt        # 更新调度
