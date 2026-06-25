@@ -58,26 +58,19 @@ class ScheduleViewModel : ViewModel() {
             ) { tables, _ -> tables }
                 .collect { tables ->
                     if (tables.isEmpty()) {
-                        val now = LocalDate.now()
-                        val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
-                        val default = TimeTableEntity(
-                            name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, 1),
-                            startDate = lastWeekMonday.toString(),
-                            isDefault = true
-                        )
-                        val id = repo.insertTable(default)
-                        _state.update { it.copy(tables = listOf(default.copy(id = id)), selectedTableId = id) }
-                        loadCourses(id)
-                    } else {
-                        val selectedId = _state.value.selectedTableId
-                        val targetId: Long = if (manualSelectDone && selectedId != null && tables.any { t -> t.id == selectedId }) {
-                            selectedId
-                        } else {
-                            tables.find { it.isDefault }?.id ?: tables.first().id
-                        }
-                        _state.update { it.copy(tables = tables, selectedTableId = targetId) }
-                        loadCourses(targetId)
+                        // 没有课表就老实空着，不强行造占位表。
+                        // selectedTableId = null，UI 走空态。
+                        _state.update { it.copy(tables = emptyList(), selectedTableId = null) }
+                        return@collect
                     }
+                    val selectedId = _state.value.selectedTableId
+                    val targetId: Long = if (manualSelectDone && selectedId != null && tables.any { t -> t.id == selectedId }) {
+                        selectedId
+                    } else {
+                        tables.find { it.isDefault }?.id ?: tables.first().id
+                    }
+                    _state.update { it.copy(tables = tables, selectedTableId = targetId) }
+                    loadCourses(targetId)
                 }
         }
     }
@@ -108,8 +101,18 @@ class ScheduleViewModel : ViewModel() {
         while (name in existingNames) { index++; name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index) }
         val now = LocalDate.now()
         val lastWeekMonday = now.with(java.time.DayOfWeek.MONDAY).minusWeeks(1)
-        val table = TimeTableEntity(name = name, startDate = lastWeekMonday.toString(), isDefault = false)
+        // 没有任何表时，新表自动 isDefault = true，避免出现"无默认表"
+        val isFirstTable = _state.value.tables.isEmpty()
+        val table = TimeTableEntity(
+            name = name,
+            startDate = lastWeekMonday.toString(),
+            isDefault = isFirstTable
+        )
         val id = repo.insertTable(table)
+        if (isFirstTable) {
+            // 数据库侧 isDefault 唯一性保证（其他表如有 isDefault 会自动清掉）
+            repo.setDefault(id)
+        }
         manualSelectDone = true
         _state.update { it.copy(selectedTableId = id) }
         return id
@@ -141,7 +144,8 @@ class ScheduleViewModel : ViewModel() {
 
     fun addEmptyCourse() {
         viewModelScope.launch {
-            val tableId = _state.value.selectedTableId ?: return@launch
+            val tableId = _state.value.selectedTableId
+                ?: createEmptyTable()  // 没课表就先生成一张，再加课
             val empty = CourseEntity(
                 groupId = java.util.UUID.randomUUID().toString(),
                 tableId = tableId,

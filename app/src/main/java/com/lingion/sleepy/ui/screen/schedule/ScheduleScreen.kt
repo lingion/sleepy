@@ -71,10 +71,14 @@ fun ScheduleScreen(
     val showDate = remember { AppPrefs.isShowDate(context) }
     val visibleDays = remember { AppPrefs.getVisibleDays(context) }
 
+    val hasTable = state.tables.isNotEmpty()
+    val hasCourses = state.courses.isNotEmpty()
+
     Column(
         modifier = Modifier.fillMaxSize()
     ) {
-        if (state.courses.isEmpty()) {
+        if (!hasTable) {
+            // 真的没表：去创建
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -84,6 +88,19 @@ fun ScheduleScreen(
                     modifier = Modifier.align(Alignment.TopCenter),
                     onGoImport = onGoImport,
                     onManualAdd = onManualAdd
+                )
+            }
+        } else if (!hasCourses) {
+            // 有表无课：直接打开加课弹窗（addEmptyCourse 内部若 selectedTableId 为空会自动建表）
+            Box(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 16.dp, vertical = 12.dp)
+            ) {
+                NoCourseState(
+                    tableName = state.currentTable?.name ?: "",
+                    onAddCourse = onManualAdd,
+                    onImport = onGoImport
                 )
             }
         } else {
@@ -192,6 +209,51 @@ private fun WeekNavButton(
             contentDescription = null,
             tint = colors.onSurfaceVariant
         )
+    }
+}
+
+@Composable
+private fun NoCourseState(
+    tableName: String,
+    onAddCourse: () -> Unit,
+    onImport: () -> Unit
+) {
+    val colors = SleepyTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(24.dp))
+            .background(colors.surfaceContainer)
+            .padding(horizontal = 22.dp, vertical = 24.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Text(
+            text = "「$tableName」还是空的",
+            style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.onSurface
+        )
+        Text(
+            text = "往这张课表里加课，或导入新的课表",
+            style = MaterialTheme.typography.bodyMedium,
+            color = colors.onSurfaceVariant
+        )
+        Button(
+            onClick = onAddCourse,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+        ) {
+            Text(stringResource(R.string.schedule_manual_first), color = colors.onPrimary)
+        }
+        Button(
+            onClick = onImport,
+            modifier = Modifier.fillMaxWidth().height(50.dp),
+            shape = RoundedCornerShape(18.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+        ) {
+            Text(stringResource(R.string.schedule_go_manage), color = colors.onSecondaryContainer)
+        }
     }
 }
 

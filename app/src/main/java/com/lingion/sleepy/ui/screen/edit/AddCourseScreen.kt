@@ -353,13 +353,13 @@ fun AddCourseScreen(
                         validationIssues = issues
                         if (issues.isNotEmpty()) return@Button
 
-                        val tableId = state.selectedTableId ?: return@Button
                         val normalizedStartWeek = minOf(startWeek, endWeek)
                         val normalizedEndWeek = maxOf(startWeek, endWeek)
+                        val draftTableId = state.selectedTableId  // 进入 scope 前取，drafts 需要
                         val drafts = meetingBlocks.flatMap { block ->
                             block.days.sorted().map { day ->
                                 buildCourseEntity(
-                                    tableId = tableId,
+                                    tableId = draftTableId ?: 0L,  // 进入 scope 后会用真值替换
                                     groupId = "", // 临时占位，下面统一替换
                                     courseName = courseName.trim(),
                                     teacher = teacher.trim(),
@@ -374,19 +374,24 @@ fun AddCourseScreen(
                         }
                         scope.launch {
                             val repo = SleepyApp.get().repository
+                            // 没表就自动建一张，保证 selectedTableId 非空
+                            val tableId = state.selectedTableId
+                                ?: viewModel.createEmptyTable()
+                            // 用真实 tableId 修正 drafts
+                            val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
                             if (editingCourse != null) {
                                 // 编辑：删同 groupId 全部记录，插入所有新草稿
                                 val gid = editingCourse.groupId
-                                val toInsert = drafts.map { it.copy(groupId = gid) }
+                                val toInsert = fixedDrafts.map { it.copy(groupId = gid) }
                                 repo.updateCourseGroup(
-                                    tableId = state.selectedTableId!!,
+                                    tableId = tableId,
                                     groupId = gid,
                                     newCourses = toInsert
                                 )
                             } else {
                                 // 新建：所有草稿共享同一个 groupId
                                 val gid = java.util.UUID.randomUUID().toString()
-                                repo.insertCourses(drafts.map { it.copy(groupId = gid) })
+                                repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
                             }
                             onSaved()
                         }
