@@ -1,5 +1,5 @@
 [
-  { "sortKey": "H", "name": "哈尔滨工程大学", "url": "https://jwgl.hrbeu.edu.cn/", "type": "wisedu" },
+  { "sortKey": "H", "name": "哈尔滨工程大学", "url": "https://jwgl.hrbeu.edu.cn/", "type": "wisedu", "timeJson": "[{\"node\":1,\"start\":\"08:00\",\"end\":\"08:45\"},{\"node\":2,\"start\":\"08:50\",\"end\":\"09:35\"},{\"node\":3,\"start\":\"09:55\",\"end\":\"10:40\"},{\"node\":4,\"start\":\"10:45\",\"end\":\"11:30\"},{\"node\":5,\"start\":\"11:35\",\"end\":\"12:20\"},{\"node\":6,\"start\":\"13:30\",\"end\":\"14:15\"},{\"node\":7,\"start\":\"14:20\",\"end\":\"15:05\"},{\"node\":8,\"start\":\"15:25\",\"end\":\"16:10\"},{\"node\":9,\"start\":\"16:15\",\"end\":\"17:00\"},{\"node\":10,\"start\":\"17:05\",\"end\":\"17:50\"},{\"node\":11,\"start\":\"18:30\",\"end\":\"19:15\"},{\"node\":12,\"start\":\"19:20\",\"end\":\"20:05\"},{\"node\":13,\"start\":\"20:10\",\"end\":\"20:55\"}]" },
   { "sortKey": "A", "name": "安徽信息工程学院", "url": "http://teach.aiit.edu.cn/xtgl/login_slogin.html", "type": "zf_new" },
   { "sortKey": "A", "name": "安徽工业大学", "url": "http://jwxt.ahut.edu.cn/jsxsd/", "type": "qz" },
   { "sortKey": "B", "name": "北京邮电大学新教务", "url": "http://jwgl.bupt.edu.cn/jsxsd", "type": "qz_with_node" },

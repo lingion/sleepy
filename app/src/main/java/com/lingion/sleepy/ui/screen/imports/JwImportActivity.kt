@@ -131,6 +131,7 @@ class JwImportActivity : ComponentActivity() {
                                 courseCount = courses.size,
                                 defaultStartDate = jwViewModel.suggestCurrentSemesterStart(),
                                 defaultTableName = getString(R.string.jw_import_title, school.name),
+                                initialTimeJson = school.timeJson,
                                 onBack = {
                                     // 返回 WebView 让用户重新选择/重抓
                                     parsedCourses = null

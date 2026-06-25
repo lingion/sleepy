@@ -70,6 +70,7 @@ fun JwImportConfigScreen(
     courseCount: Int,
     defaultStartDate: String,
     defaultTableName: String,
+    initialTimeJson: String? = null,
     onBack: () -> Unit,
     onConfirm: (tableName: String, startDate: String, timeJson: String) -> Unit,
 ) {
@@ -83,7 +84,7 @@ fun JwImportConfigScreen(
 
     val slotRows = remember {
         mutableStateListOf<TimeTableUtils.TimeSlotRow>().apply {
-            addAll(TimeTableUtils.parseTimeSlotRows(TimeTableUtils.DEFAULT_TIME_JSON))
+            addAll(TimeTableUtils.parseTimeSlotRows(initialTimeJson ?: TimeTableUtils.DEFAULT_TIME_JSON))
         }
     }
 

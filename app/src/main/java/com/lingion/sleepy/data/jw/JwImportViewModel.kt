@@ -67,7 +67,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 sortKey = obj.optString("sortKey", ""),
                 name = obj.optString("name", ""),
                 url = obj.optString("url", ""),
-                type = obj.optString("type", "").ifBlank { null }
+                type = obj.optString("type", "").ifBlank { null },
+                timeJson = obj.optString("timeJson", "").ifBlank { null }
             )
         }
         return list
