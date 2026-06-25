@@ -31,11 +31,17 @@ object ScheduleParser {
         val trimmed = text.trim()
         if (trimmed.isEmpty()) return Result.failure(IllegalArgumentException("空内容"))
 
+        // 兼容性：导出端常在 JSON 前加 "【来自Sleepy】\n课程分享：\n\n" 前缀。
+        // 如果 trimmed 不以 { 开头但包含 {，剥掉前缀再判别。
+        val body = if (!trimmed.startsWith("{") && trimmed.contains("{")) {
+            trimmed.substring(trimmed.indexOf("{"))
+        } else trimmed
+
         return runCatching {
             when {
-                trimmed.startsWith("{") && trimmed.contains("\"courseDetailJson\"") -> parseWakeUpShareText(trimmed, defaultTableId)
-                trimmed.startsWith("{") && (trimmed.contains("\"courses\"") || trimmed.contains("\"tableInfo\"")) -> parseWakeUpJson(trimmed, defaultTableId, defaultColor)
-                trimmed.startsWith("BEGIN:VCALENDAR") || trimmed.startsWith("BEGIN:VEVENT") -> parseIcs(trimmed, defaultTableId, defaultColor)
+                body.contains("\"courseDetailJson\"") -> parseWakeUpShareText(body, defaultTableId)
+                body.startsWith("{") && (body.contains("\"courses\"") || body.contains("\"tableInfo\"")) -> parseWakeUpJson(body, defaultTableId, defaultColor)
+                body.startsWith("BEGIN:VCALENDAR") || body.startsWith("BEGIN:VEVENT") -> parseIcs(body, defaultTableId, defaultColor)
                 // HTML: 必须以 <!DOCTYPE / <html / <table / <body / <div 开头（先 trim 掉 BOM）
                 startsWithAnyTag(trimmed, "html", "body", "table", "div", "section", "article") -> parseHtml(trimmed, defaultTableId, defaultColor)
                 // CSV: 含有 CSV 表头 (课程名/名称/course/name + 教师/teacher 等)，并且至少 1 个换行
@@ -247,8 +253,25 @@ object ScheduleParser {
     private fun parseIcsTimeOfDay(s: String): java.time.LocalTime =
         java.time.LocalTime.of(s.substring(0, 2).toInt(), s.substring(2, 4).toInt())
 
-    /** 从 BYDAY 提取星期几 */
+    /** 从 DTSTART 或 BYDAY 提取星期几。优先从 DTSTART 推算（最可靠） */
     private fun extractIcsDayOfWeek(block: String): Int? {
+        // 1) 优先从 DTSTART 的日期推算星期几
+        val dtstart = extractIcsField(block, "DTSTART")
+        if (dtstart != null) {
+            val dateStr = dtstart.substringBefore("T").take(8)  // yyyyMMdd
+            if (dateStr.length == 8) {
+                try {
+                    val date = java.time.LocalDate.of(
+                        dateStr.substring(0, 4).toInt(),
+                        dateStr.substring(4, 6).toInt(),
+                        dateStr.substring(6, 8).toInt()
+                    )
+                    val dow = date.dayOfWeek.value  // 1=Mon..7=Sun
+                    if (dow in 1..7) return dow
+                } catch (_: Exception) {}
+            }
+        }
+        // 2) 退而求其次：找 RRULE.BYDAY
         val rrule = extractIcsField(block, "RRULE") ?: return null
         val match = Regex("BYDAY=([A-Z]{2})").find(rrule) ?: return null
         return when (match.groupValues[1]) {

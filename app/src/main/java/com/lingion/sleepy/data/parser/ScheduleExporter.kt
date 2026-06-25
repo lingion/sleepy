@@ -114,12 +114,21 @@ object ScheduleExporter {
             val dtStart = "${startDate.toString().replace("-", "")}T$startTime"
             val dtEnd = "${startDate.toString().replace("-", "")}T$endTime"
 
+            val byDay = when (c.day) {
+                1 -> "MO"; 2 -> "TU"; 3 -> "WE"; 4 -> "TH"
+                5 -> "FR"; 6 -> "SA"; 7 -> "SU"; else -> null
+            }
+
             sb.appendLine("BEGIN:VEVENT")
             sb.appendLine("UID:${c.id}-${c.courseName.hashCode()}@wakeup-pure")
             sb.appendLine("DTSTAMP:${java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC).toString().replace(Regex("[^0-9TZ]"), "").take(15)}Z")
             sb.appendLine("DTSTART:$dtStart")
             sb.appendLine("DTEND:$dtEnd")
-            sb.appendLine("RRULE:FREQ=WEEKLY;UNTIL=${endDate.toString().replace("-", "")}T235959Z")
+            if (byDay != null) {
+                sb.appendLine("RRULE:FREQ=WEEKLY;BYDAY=$byDay;UNTIL=${endDate.toString().replace("-", "")}T235959Z")
+            } else {
+                sb.appendLine("RRULE:FREQ=WEEKLY;UNTIL=${endDate.toString().replace("-", "")}T235959Z")
+            }
             sb.appendLine("SUMMARY:${escapeIcs(c.courseName)}")
             if (c.room.isNotBlank()) sb.appendLine("LOCATION:${escapeIcs(c.room)}")
             if (c.teacher.isNotBlank()) sb.appendLine("DESCRIPTION:老师：${escapeIcs(c.teacher)}")

@@ -14,8 +14,8 @@ android {
         applicationId = "com.lingion.sleepy.debug"
         minSdk = 24
         targetSdk = 35
-        versionCode = 17
-        versionName = "1.0.17"
+        versionCode = 18
+        versionName = "1.0.18"
         vectorDrawables { useSupportLibrary = true }
         // Explicit locales bundled into the APK. Default resources in values/
         // (zh-CN content) are always kept. We list zh-rCN explicitly so that

@@ -171,6 +171,8 @@
     <string name="mine_dark_mode">深色模式</string>
     <string name="mine_theme_color">主题颜色</string>
     <string name="mine_more_settings">更多设置</string>
+    <string name="mine_refresh_widgets">刷新所有小组件</string>
+    <string name="mine_refresh_widgets_done">已刷新全部小组件</string>
     <string name="mine_export">导出课表</string>
     <string name="mine_export_coming">导出课表 — 该功能开发中，后续版本支持 ICS 导出</string>
     <!-- Export -->

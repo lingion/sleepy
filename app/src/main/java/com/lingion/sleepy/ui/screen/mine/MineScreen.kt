@@ -21,6 +21,7 @@ import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Palette
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.AlertDialog
@@ -177,6 +178,17 @@ fun MineScreen(
                         icon = Icons.Outlined.Palette,
                         label = stringResource(R.string.mine_theme_color),
                         onClick = onOpenThemeColor
+                    )
+                    Divider()
+                    SettingsItem(
+                        icon = Icons.Outlined.Refresh,
+                        label = stringResource(R.string.mine_refresh_widgets),
+                        onClick = {
+                            scope.launch {
+                                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context)
+                                showSnack(context.getString(R.string.mine_refresh_widgets_done))
+                            }
+                        }
                     )
                     Divider()
                     SettingsItem(

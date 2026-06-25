@@ -93,6 +93,12 @@ class ScheduleViewModel : ViewModel() {
                     val week = table?.let { DateUtils.currentWeek(it.startDate) } ?: 1
                     st.copy(courses = courses, currentWeek = week, nodesPerDay = table?.nodesPerDay ?: 12)
                 }
+                // 课程数据变更后刷新所有 widget
+                try {
+                    com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
+                        com.lingion.sleepy.SleepyApp.get()
+                    )
+                } catch (_: Exception) {}
             }
         }
     }
@@ -101,6 +107,12 @@ class ScheduleViewModel : ViewModel() {
         manualSelectDone = true
         _state.update { it.copy(selectedTableId = id) }
         loadCourses(id)
+        // 切表后立即广播刷新所有 widget，否则 Glance widget 会停留在旧表数据
+        viewModelScope.launch {
+            try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
+                com.lingion.sleepy.SleepyApp.get()
+            ) } catch (_: Exception) {}
+        }
     }
 
     /** Create a new empty table with auto-generated name */
