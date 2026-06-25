@@ -48,7 +48,7 @@ import java.time.LocalDate
 data class WidgetData(
     /** 今日日期 */
     val date: LocalDate,
-    /** 今日课程（已按当前周次过滤 + 排序，最多 MAX_COURSES 节） */
+    /** 今日课程（已按当前周次过滤 + 排序） */
     val courses: List<CourseEntity>,
     /** timeJson（用于查开始/结束时间） */
     val timeJson: String,
@@ -61,10 +61,6 @@ data class WidgetData(
 ) {
     val dayName: String get() = DateUtils.localizedDay(date.dayOfWeek.value, com.lingion.sleepy.SleepyApp.get())
     val dateLabel: String get() = "${date.monthValue}/${date.dayOfMonth}"
-
-    companion object {
-        const val MAX_COURSES = 3
-    }
 }
 
 @Composable
@@ -249,28 +245,29 @@ private fun NoCourseState(scheme: WidgetScheme) {
 @Composable
 private fun CourseList(data: WidgetData, openCourseAction: (Long) -> Action, scheme: WidgetScheme) {
     val context = LocalContext.current
-    val visible = data.courses.take(WidgetData.MAX_COURSES)
-    val hidden = data.courses.size - visible.size
-
-    Column(modifier = GlanceModifier.fillMaxSize()) {
-        visible.forEachIndexed { idx, course ->
-            if (idx > 0) Spacer(modifier = GlanceModifier.height(6.dp))
+    // ★ v1.0.18: 全部课程可滚动 — 不再截断到 MAX_COURSES
+    LazyColumn(
+        modifier = GlanceModifier.fillMaxSize()
+    ) {
+        items(data.courses, itemId = { it.id }) { course ->
             CourseRow(
                 course = course,
                 timeJson = data.timeJson,
                 scheme = scheme,
                 onClick = openCourseAction(course.id)
             )
+            Spacer(modifier = GlanceModifier.height(6.dp))
         }
-        if (hidden > 0) {
-            Spacer(modifier = GlanceModifier.height(4.dp))
-            Text(
-                text = context.getString(R.string.more_sections, hidden),
-                style = TextStyle(
-                    fontSize = 11.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
+        if (data.courses.size > 1) {
+            item {
+                Text(
+                    text = context.getString(R.string.widget_scroll_hint),
+                    style = TextStyle(
+                        fontSize = 10.sp,
+                        color = ColorProvider(scheme.onSurfaceVariant)
+                    )
                 )
-            )
+            }
         }
     }
 }
@@ -534,10 +531,52 @@ fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                data.days.forEach { day ->
-                    TwoDaySection(day = day, scheme = scheme)
-                    if (day != data.days.last()) {
-                        Spacer(modifier = GlanceModifier.height(6.dp))
+                // ★ v1.0.18: 全部课程可滚动 — 不再截断
+                LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
+                    data.days.forEachIndexed { dayIdx, day ->
+                        item {
+                            TwoDayDayHeader(day = day, scheme = scheme)
+                        }
+                        if (day.courses.isEmpty()) {
+                            item {
+                                Spacer(modifier = GlanceModifier.height(2.dp))
+                                Text(
+                                    text = context.getString(R.string.no_course),
+                                    style = TextStyle(
+                                        fontSize = 11.sp,
+                                        color = ColorProvider(scheme.onSurfaceVariant)
+                                    )
+                                )
+                            }
+                        } else {
+                            items(day.courses, itemId = { it.id }) { course ->
+                                Spacer(modifier = GlanceModifier.height(3.dp))
+                                TwoDayCourseRow(course = course, day = day, scheme = scheme)
+                            }
+                        }
+                        if (dayIdx < data.days.size - 1) {
+                            item {
+                                Spacer(modifier = GlanceModifier.height(6.dp))
+                                Box(
+                                    modifier = GlanceModifier
+                                        .fillMaxWidth()
+                                        .height(1.dp)
+                                        .background(ColorProvider(Color(0x3379747E)))
+                                ) {}
+                            }
+                        }
+                    }
+                    if (data.days.sumOf { it.courses.size } > 1) {
+                        item {
+                            Spacer(modifier = GlanceModifier.height(4.dp))
+                            Text(
+                                text = context.getString(R.string.widget_scroll_hint),
+                                style = TextStyle(
+                                    fontSize = 10.sp,
+                                    color = ColorProvider(scheme.onSurfaceVariant)
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -546,92 +585,65 @@ fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
 }
 
 @Composable
-private fun TwoDaySection(day: DayData, scheme: WidgetScheme) {
+private fun TwoDayDayHeader(day: DayData, scheme: WidgetScheme) {
     val context = LocalContext.current
-    Column(modifier = GlanceModifier.fillMaxWidth()) {
-        // 天标题
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = if (day.isToday) context.getString(R.string.today_today) else if (day.isTomorrow) context.getString(R.string.tomorrow) else day.dayName,
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ColorProvider(scheme.primary)
-                )
+    Row(
+        modifier = GlanceModifier.fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = if (day.isToday) context.getString(R.string.today_today) else if (day.isTomorrow) context.getString(R.string.tomorrow) else day.dayName,
+            style = TextStyle(
+                fontSize = 12.sp,
+                fontWeight = FontWeight.Bold,
+                color = ColorProvider(scheme.primary)
             )
-            Spacer(modifier = GlanceModifier.width(6.dp))
-            Text(
-                text = day.dayLabel,
-                style = TextStyle(
-                    fontSize = 10.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
-                )
+        )
+        Spacer(modifier = GlanceModifier.width(6.dp))
+        Text(
+            text = day.dayLabel,
+            style = TextStyle(
+                fontSize = 10.sp,
+                color = ColorProvider(scheme.onSurfaceVariant)
             )
-        }
+        )
+    }
+}
 
-        if (day.courses.isEmpty()) {
-            Spacer(modifier = GlanceModifier.height(2.dp))
+@Composable
+private fun TwoDayCourseRow(course: CourseEntity, day: DayData, scheme: WidgetScheme) {
+    val context = LocalContext.current
+    val bgColor = courseColor(course.courseName, scheme)
+    val meta = buildString {
+        append(TimeTableUtils.courseTimeString(course.startNode, course.step, day.timeJson, course.ownTime, course.startTime, course.endTime) ?: context.getString(R.string.section_single, course.startNode))
+        if (course.room.isNotBlank()) append("  ·  ${course.room}")
+    }
+    Row(
+        modifier = GlanceModifier
+            .fillMaxWidth()
+            .background(ColorProvider(bgColor))
+            .cornerRadius(8.dp)
+            .padding(5.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = GlanceModifier.defaultWeight()) {
             Text(
-                text = context.getString(R.string.no_course),
+                text = course.courseName,
                 style = TextStyle(
                     fontSize = 11.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
-                )
+                    fontWeight = FontWeight.Medium,
+                    color = ColorProvider(scheme.onSurface)
+                ),
+                maxLines = 1
             )
-        } else {
-            Spacer(modifier = GlanceModifier.height(4.dp))
-            day.courses.take(3).forEachIndexed { idx, c ->
-                // 课程色胶囊
-                val bgColor = courseColor(c.courseName, scheme)
-                Row(
-                    modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .background(ColorProvider(bgColor))
-                        .cornerRadius(8.dp)
-                        .padding(5.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = GlanceModifier.defaultWeight()) {
-                        Text(
-                            text = c.courseName,
-                            style = TextStyle(
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Medium,
-                                color = ColorProvider(scheme.onSurface)
-                            ),
-                            maxLines = 1
-                        )
-                        val meta = buildString {
-                            append(TimeTableUtils.courseTimeString(c.startNode, c.step, day.timeJson, c.ownTime, c.startTime, c.endTime) ?: context.getString(R.string.section_single, c.startNode))
-                            if (c.room.isNotBlank()) append("  ·  ${c.room}")
-                        }
-                        Text(
-                            text = meta,
-                            style = TextStyle(
-                                fontSize = 9.sp,
-                                color = ColorProvider(scheme.onSurfaceVariant)  // lighter secondary
-                            ),
-                            maxLines = 1
-                        )
-                    }
-                }
-                if (idx < minOf(day.courses.size, 3) - 1) {
-                    Spacer(modifier = GlanceModifier.height(3.dp))
-                }
-            }
-            if (day.courses.size > 3) {
-                Spacer(modifier = GlanceModifier.height(2.dp))
-                Text(
-                    text = context.getString(R.string.more_sections, day.courses.size - 3),
-                    style = TextStyle(
-                        fontSize = 10.sp,
-                        color = ColorProvider(scheme.onSurfaceVariant)
-                    )
-                )
-            }
+            Text(
+                text = meta,
+                style = TextStyle(
+                    fontSize = 9.sp,
+                    color = ColorProvider(scheme.onSurfaceVariant)
+                ),
+                maxLines = 1
+            )
         }
     }
 }

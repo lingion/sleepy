@@ -210,24 +210,15 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        // 课程列表
-        val visible = data.courses.take(WidgetData.MAX_COURSES)
-        val hidden = data.courses.size - visible.size
+        // 课程列表（全部渲染，不再截断）
         val rowH = 38f * density
         val rowGap = 6f * density
         val rowW = w - pad * 2
 
-        visible.forEachIndexed { idx, course ->
+        data.courses.forEachIndexed { idx, course ->
             drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density, fontSizeSp = 12f)
             y += rowH
-            if (idx < visible.size - 1) y += rowGap
-        }
-
-        if (hidden > 0) {
-            y += 4f * density
-            p.color = s.onSurfaceVariant
-            p.textSize = 11f * density
-            canvas.drawText(ctx.getString(R.string.more_sections, hidden), pad, y + 11f * density, p)
+            if (idx < data.courses.size - 1) y += rowGap
         }
 
         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
@@ -396,16 +387,9 @@ object WidgetBitmapRenderers {
             } else {
                 val rowH = 32f * density
                 val rowW = w - pad * 2
-                day.courses.take(3).forEachIndexed { idx, course ->
+                day.courses.forEachIndexed { idx, course ->
                     drawCourse(canvas, p, course, day.timeJson, pad, y, rowW, rowH, s, density, fontSizeSp = 11f)
                     y += rowH + 3f * density
-                }
-                if (day.courses.size > 3) {
-                    p.color = s.onSurfaceVariant
-                    p.textSize = 10f * density
-                    canvas.drawText(ctx.getString(R.string.more_sections, day.courses.size - 3),
-                        pad, y + 10f * density, p)
-                    y += 14f * density
                 }
             }
 
