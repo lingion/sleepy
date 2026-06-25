@@ -53,13 +53,13 @@ class WidgetRenderActivity : Activity() {
         val app = SleepyApp.get()
         val repo = app.repository
 
-        // 优先 default 表；找不到用最新非 default 表；都没有再 seed 测试数据
-        var existing = repo.getDefaultTable()
-        if (existing == null) {
-            // 任意非 default 表（按 id 倒序拿最新）
-            val all = repo.getAllTables()
-            existing = all.filter { !it.isDefault }.maxByOrNull { it.id }
-        }
+        // 策略：
+        // 1. 若存在非默认表（用户导入/手动创建的）→ 取最新一个
+        // 2. 否则用 default 表
+        // 3. 否则 seed mock 测试数据
+        val all = repo.getAllTables()
+        val userTable = all.filter { !it.isDefault }.maxByOrNull { it.id }
+        var existing = userTable ?: repo.getDefaultTable()
         if (existing != null) {
             Log.d("WidgetRender", "DB already has default table id=${existing.id}, nodesPerDay=${existing.nodesPerDay}")
             val allCourses = (1..7).flatMap { dow ->

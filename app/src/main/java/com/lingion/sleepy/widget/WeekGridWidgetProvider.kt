@@ -410,7 +410,13 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 val (table, daysPerCourse) = kotlinx.coroutines.runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
-                    val t = repo.getDefaultTable()
+                    // 策略：
+                    // 1. 若存在非默认表（用户导入/手动创建的）→ 取最新一个（按 id 倒序）
+                    // 2. 否则用 default 表
+                    // 3. 否则 seed mock（fallback）
+                    val all = repo.getAllTables()
+                    val userTable = all.filter { !it.isDefault }.maxByOrNull { it.id }
+                    val t = userTable ?: repo.getDefaultTable()
                     val map = if (t != null) {
                         val week = DateUtils.currentWeek(t.startDate, today)
                         (1..7).map { dow ->

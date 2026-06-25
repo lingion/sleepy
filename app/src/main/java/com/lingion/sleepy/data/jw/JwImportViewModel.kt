@@ -147,9 +147,11 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             startDate = resolvedStartDate,
             timeJson = timeJson.ifBlank { TimeTableUtils.DEFAULT_TIME_JSON },
             nodesPerDay = maxNode,
-            isDefault = false
+            isDefault = true  // 导入的课表设为默认，widget 直接展示
         )
         tableDao.insert(newTable)
+        // 把其他表设为非 default，确保只有当前表是 default
+        tableDao.setDefault(newId)
 
         // 2. 落库课程
         val defaultColor = "#FF6750A4"
