@@ -1,11 +1,14 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -21,28 +24,117 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
 
 /**
- * 共享节次编辑器 —— 用于"编辑当前课表"和"导入前确认"两处。
+ * 节次编辑器 v1.0.16+
  *
- * 行为：
- * - 每行 [第N节] [开始] [结束] [❌删除]
- * - 行数 > 1 时才显示 ❌ (至少留 1 节)
- * - 删除时**重新编号**为 1..N (友好)
- * - 底部 [➕ 添加一节] (node = max + 1, 时间留空)
+ * 支持两种模式，顶部 Tab 切换：
+ *  - [Mode.Manual] 手动模式：原 TimeSlotEditor，逐节编辑 start/end
+ *  - [Mode.Auto]   自动模式：智慧节次，三个字段 + break 分组卡片
  *
- * rows 完全由调用方持有 (state hoisting)，本 composable 无内部状态。
+ * 调用方持有 rows（手动模式），config（自动模式），切换模式时通过
+ * [onRowsChange]/[onConfigChange] 通知。应用自动模式后通过 [onApplyAuto]
+ * 把生成的 rows 回填给手动模式。
  */
 @Composable
 fun TimeSlotEditor(
+    rows: List<TimeSlotRow>,
+    onRowsChange: (List<TimeSlotRow>) -> Unit,
+    smartConfig: SmartPeriodConfig = SmartPeriodConfig(),
+    onSmartConfigChange: (SmartPeriodConfig) -> Unit = {},
+    modifier: Modifier = Modifier
+) {
+    var mode by remember { mutableStateOf(Mode.Manual) }
+
+    Column(modifier = modifier) {
+        // ===== Tab 切换 =====
+        ModeTabSwitch(
+            current = mode,
+            onChange = { mode = it }
+        )
+        Spacer(Modifier.height(8.dp))
+
+        when (mode) {
+            Mode.Manual -> ManualTimeSlotEditor(
+                rows = rows,
+                onRowsChange = onRowsChange
+            )
+            Mode.Auto -> SmartPeriodEditor(
+                config = smartConfig,
+                onConfigChange = onSmartConfigChange
+            )
+        }
+    }
+}
+
+/**
+ * 给"导入前确认"等场景用的简化包装：
+ * 只用手动模式（无 Tab 切换），保持向后兼容。
+ */
+@Composable
+fun TimeSlotEditorManualOnly(
+    rows: List<TimeSlotRow>,
+    onRowsChange: (List<TimeSlotRow>) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    ManualTimeSlotEditor(rows = rows, onRowsChange = onRowsChange, modifier = modifier)
+}
+
+enum class Mode { Manual, Auto }
+
+@Composable
+private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit) {
+    val colors = SleepyTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(colors.surfaceContainerLow, RoundedCornerShape(12.dp))
+            .padding(4.dp),
+        horizontalArrangement = Arrangement.spacedBy(0.dp)
+    ) {
+        Mode.values().forEach { m ->
+            val selected = m == current
+            val bg = if (selected) colors.primary else Color.Transparent
+            val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
+            Box(
+                modifier = Modifier
+                    .weight(1f)
+                    .background(bg, RoundedCornerShape(10.dp))
+                    .clickable { onChange(m) }
+                    .padding(vertical = 10.dp),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    when (m) {
+                        Mode.Manual -> "手动模式"
+                        Mode.Auto -> "自动模式"
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
+                    color = fg
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun ManualTimeSlotEditor(
     rows: List<TimeSlotRow>,
     onRowsChange: (List<TimeSlotRow>) -> Unit,
     modifier: Modifier = Modifier

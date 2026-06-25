@@ -53,6 +53,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
+import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.TimeSlotEditor
@@ -103,6 +104,15 @@ fun EditTableScreen(
         mutableStateListOf<TimeTableUtils.TimeSlotRow>().apply {
             addAll(TimeTableUtils.parseTimeSlotRows(timeJson))
         }
+    }
+    // v1.0.16 自动模式配置（编辑当前课表时使用）
+    val smartConfig = remember(table.id) {
+        mutableStateOf(
+            SmartPeriodConfig(
+                totalPeriods = slotRows.size.coerceAtLeast(1),
+                startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+            )
+        )
     }
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
@@ -222,7 +232,9 @@ fun EditTableScreen(
                                 onRowsChange = { newRows ->
                                     slotRows.clear()
                                     slotRows.addAll(newRows)
-                                }
+                                },
+                                smartConfig = smartConfig.value,
+                                onSmartConfigChange = { smartConfig.value = it }
                             )
                         }
                     }
