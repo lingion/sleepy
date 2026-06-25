@@ -14,11 +14,9 @@ import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Close
@@ -70,10 +68,11 @@ fun SmartPeriodEditor(
     val n = (config.totalPeriods - 1).coerceAtLeast(0)
     val assigns = config.effectiveAssignments()
 
+    // 注意：不能在 Column.verticalScroll() 嵌套 LazyColumn 中，
+    // 否则会被检测为"无限垂直约束"导致 IllegalStateException。
+    // 外层 EditTableScreen 是 LazyColumn，这里只填内容、不滚。
     Column(
-        modifier = modifier
-            .fillMaxWidth()
-            .verticalScroll(rememberScrollState())
+        modifier = modifier.fillMaxWidth()
     ) {
         // ===== 输入区 =====
         Text(
