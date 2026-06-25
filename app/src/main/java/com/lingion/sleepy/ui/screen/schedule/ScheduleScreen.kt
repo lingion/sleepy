@@ -6,6 +6,8 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.ui.platform.LocalContext
@@ -15,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -41,6 +44,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -218,26 +222,50 @@ private fun TopBar(
                     .padding(horizontal = 14.dp, vertical = 4.dp)
             )
 
-            // Material3 DropdownMenu — 显示第 1 周到 maxWeek
+            // Material3 DropdownMenu — FlowRow 标签式选周
+            @OptIn(ExperimentalLayoutApi::class)
             DropdownMenu(
                 expanded = menuOpen,
-                onDismissRequest = { menuOpen = false }
+                onDismissRequest = { menuOpen = false },
+                modifier = Modifier.width(280.dp)
             ) {
-                (1..maxWeek).forEach { w ->
-                    val isCurrent = w == currentWeek
-                    DropdownMenuItem(
-                        text = {
-                            Text(
-                                text = stringResource(R.string.schedule_current_week, w),
-                                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
-                                color = if (isCurrent) colors.primary else colors.onSurface
-                            )
-                        },
-                        onClick = {
-                            onSelectWeek(w)
-                            menuOpen = false
-                        }
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Text(
+                        text = "跳转到周次",
+                        fontSize = 12.sp,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                     )
+                    FlowRow(
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        (1..maxWeek).forEach { w ->
+                            val isCurrent = w == currentWeek
+                            Box(
+                                modifier = Modifier
+                                    .size(40.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        if (isCurrent) colors.primary
+                                        else colors.surfaceContainerHigh
+                                    )
+                                    .clickable {
+                                        onSelectWeek(w)
+                                        menuOpen = false
+                                    },
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Text(
+                                    text = w.toString(),
+                                    fontSize = 14.sp,
+                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                    color = if (isCurrent) colors.onPrimary else colors.onSurface
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
