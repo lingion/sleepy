@@ -10,7 +10,7 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.lingion.sleepy"
+        applicationId = "com.lingion.sleepy.debug"
         minSdk = 24
         targetSdk = 35
         versionCode = 16
@@ -26,7 +26,6 @@ android {
     buildTypes {
         debug {
             isMinifyEnabled = false
-            applicationIdSuffix = ".debug"
             versionNameSuffix = "-debug"
         }
         release {
