@@ -135,9 +135,18 @@ class ScheduleViewModel : ViewModel() {
             // 数据库侧 isDefault 唯一性保证（其他表如有 isDefault 会自动清掉）
             repo.setDefault(id)
         }
+        // 创建后立刻把 state 切到新表，并加载新课程。
+        // 否则 loadTables 协程 observeAllTables emit 会因为 manualSelectDone=true + selectedTableId!=null
+        // 继续保留旧表选择，导致 UI 显示"默认课表"而非用户新建的课表。
         manualSelectDone = true
         _state.update { it.copy(selectedTableId = id) }
         loadCourses(id)
+        // 通知 widget
+        try {
+            com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
+                com.lingion.sleepy.SleepyApp.get()
+            )
+        } catch (_: Exception) {}
         return id
     }
 
