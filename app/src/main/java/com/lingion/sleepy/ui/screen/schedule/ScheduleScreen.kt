@@ -20,6 +20,8 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -49,6 +51,7 @@ import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 
 private enum class ViewMode(val labelRes: Int) {
@@ -106,8 +109,15 @@ fun ScheduleScreen(
         } else {
             TopBar(
                 currentWeek = state.currentWeek,
+                maxWeek = state.currentTable?.maxWeek ?: 20,
+                startDate = state.currentTable?.startDate ?: "",
                 onPrevWeek = { viewModel.changeWeek(state.currentWeek - 1) },
-                onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) }
+                onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) },
+                onJumpToActual = {
+                    val start = state.currentTable?.startDate ?: return@TopBar
+                    viewModel.changeWeek(DateUtils.currentWeek(start))
+                },
+                onSelectWeek = { week -> viewModel.changeWeek(week) }
             )
 
             // Segmented Switcher
@@ -161,10 +171,20 @@ fun ScheduleScreen(
 @Composable
 private fun TopBar(
     currentWeek: Int,
+    maxWeek: Int,
+    startDate: String,
     onPrevWeek: () -> Unit,
-    onNextWeek: () -> Unit
+    onNextWeek: () -> Unit,
+    onJumpToActual: () -> Unit,
+    onSelectWeek: (Int) -> Unit
 ) {
     val colors = SleepyTheme.colors
+    // 实时计算当前实际周（不依赖 state.currentWeek — 用户可能切到了别的周）
+    val actualWeek = remember(startDate) {
+        if (startDate.isBlank()) 1 else DateUtils.currentWeek(startDate)
+    }
+    var menuOpen by remember { mutableStateOf(false) }
+    val isOnActual = currentWeek == actualWeek
 
     Row(
         modifier = Modifier
@@ -176,15 +196,52 @@ private fun TopBar(
         verticalAlignment = Alignment.CenterVertically
     ) {
         WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
-        Text(
-            text = stringResource(R.string.schedule_current_week, currentWeek),
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-            color = colors.primary,
-            modifier = Modifier
-                .clip(RoundedCornerShape(14.dp))
-                .background(colors.primaryContainer)
-                .padding(horizontal = 14.dp, vertical = 4.dp)
-        )
+
+        // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
+        Box {
+            Text(
+                text = stringResource(R.string.schedule_current_week, currentWeek),
+                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
+                modifier = Modifier
+                    .clip(RoundedCornerShape(14.dp))
+                    .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = 0.6f))
+                    .clickable {
+                        if (isOnActual) {
+                            // 在当前实际周 → 弹下拉菜单
+                            menuOpen = true
+                        } else {
+                            // 不在当前实际周 → 一键跳回
+                            onJumpToActual()
+                        }
+                    }
+                    .padding(horizontal = 14.dp, vertical = 4.dp)
+            )
+
+            // Material3 DropdownMenu — 显示第 1 周到 maxWeek
+            DropdownMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false }
+            ) {
+                (1..maxWeek).forEach { w ->
+                    val isCurrent = w == currentWeek
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = stringResource(R.string.schedule_current_week, w),
+                                fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                color = if (isCurrent) colors.primary else colors.onSurface
+                            )
+                        },
+                        onClick = {
+                            onSelectWeek(w)
+                            menuOpen = false
+                        }
+                    )
+                }
+            }
+        }
+
         WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
     }
 }
