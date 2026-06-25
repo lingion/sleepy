@@ -223,8 +223,8 @@ class JwImportActivity : ComponentActivity() {
                         } else {
                             JwWebViewLoginScreen(
                                 school = school,
-                                onHtmlCaptured = { html, sch ->
-                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} type=${sch.type}")
+                                onHtmlCaptured = { html, sch, periods ->
+                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} type=${sch.type} periods=${periods.size}")
                                     statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
@@ -238,10 +238,17 @@ class JwImportActivity : ComponentActivity() {
                                             // 不直接落库，进配置确认页
                                             parsedCourses = courses
                                             parsedSchool = sch
-                                            // 根据课程实际节次数生成空行
+                                            // 根据课程实际节次数生成行；
+                                            // 如果 WebView 抓到 periods 则预填，否则空行让用户填
                                             val maxNode = courses.maxOf { maxOf(it.startNode, it.endNode) }
+                                            val periodMap = periods.associate { it.first to (it.second to it.third) }
                                             configRows = (1..maxNode).map { node ->
-                                                TimeTableUtils.TimeSlotRow(node, "", "")
+                                                val filled = periodMap[node]
+                                                TimeTableUtils.TimeSlotRow(
+                                                    node = node,
+                                                    start = filled?.first ?: "",
+                                                    end = filled?.second ?: ""
+                                                )
                                             }
                                             configStartDate = ""
                                             configTimeJson = ""

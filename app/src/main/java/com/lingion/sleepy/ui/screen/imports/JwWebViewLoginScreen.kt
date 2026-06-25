@@ -74,7 +74,7 @@ import kotlinx.coroutines.launch
 @Composable
 fun JwWebViewLoginScreen(
     school: JwSchoolInfo,
-    onHtmlCaptured: (html: String, school: JwSchoolInfo) -> Unit,
+    onHtmlCaptured: (html: String, school: JwSchoolInfo, periods: List<Triple<Int, String, String>>) -> Unit,
     onBack: () -> Unit,
     viewModel: JwImportViewModel = viewModel()
 ) {
@@ -100,8 +100,21 @@ fun JwWebViewLoginScreen(
                 if (data.isBlank()) {
                     scope.launch { snackbar.showSnackbar(fetchFailedNoResponseMsg) }
                 } else {
-                    Log.d("JwWebView", "wisedu fetched JSON len=${data.length}")
-                    onHtmlCaptured(data, school)
+                    // 解析 periods 数组（节次时间）
+                    val periods = mutableListOf<Triple<Int, String, String>>()
+                    val periodsArr = obj.optJSONArray("periods")
+                    if (periodsArr != null) {
+                        for (i in 0 until periodsArr.length()) {
+                            val p = periodsArr.getJSONObject(i)
+                            periods += Triple(
+                                p.optInt("node", i + 1),
+                                p.optString("start", ""),
+                                p.optString("end", "")
+                            )
+                        }
+                    }
+                    Log.d("JwWebView", "wisedu fetched JSON len=${data.length} periods=${periods.size}")
+                    onHtmlCaptured(data, school, periods)
                 }
             } else {
                 val err = obj.optString("err", "")
@@ -211,7 +224,7 @@ fun JwWebViewLoginScreen(
                             return@ValueCallback
                         }
                         Log.d("JwWebView", "captured html len=${unwrapped.length}")
-                        onHtmlCaptured(unwrapped, school)
+                        onHtmlCaptured(unwrapped, school, emptyList())
                     })
                 }
             )
@@ -227,7 +240,7 @@ fun JwWebViewLoginScreen(
                 url = school.url.ifBlank { "https://www.baidu.com" },
                 onProgressChange = { p -> progress = p },
                 onWebViewCreated = { wv -> webViewRef = wv },
-                onHtmlCaptured = { html -> onHtmlCaptured(html, school) },
+                onHtmlCaptured = { html -> onHtmlCaptured(html, school, emptyList()) },
                 onWiseduResult = handleWiseduResult
             )
 
@@ -353,10 +366,15 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
 }
 
 /**
- * wisedu (金智 jwapp) 协议：在 WebView 内 fetch 课表 JSON 的 JS。
+ * wisedu (金智 jwapp) 协议：在 WebView 内 fetch 课表 JSON + 抓节次时间。
  *
- * 流程：先 POST dqxnxq.do 拿当前学年学期 DM → 再 POST xskcb.do 拿课表 → 通过
- * `window.__sleepyBridge.onWiseduResult({ok, data, err})` 回调给 Kotlin。
+ * 流程：
+ *  1) GET 我的课表(wdkb)微应用入口，初始化 app 会话
+ *  2) POST dqxnxq.do 拿当前学年学期 DM
+ *  3) POST xskcb.do 拿课表（XNXQDM=当前学期）
+ *  4) 抓页面 DOM 中节次时间（"08:00~08:45" 格式），前提是"是否显示节次时间"已勾选
+ *  5) 通过 __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
+ *
  * 必须在 jwgl.hrbeu.edu.cn 域执行（同域 fetch 自动带 _WEU cookie）。
  */
 private const val WISEDU_FETCH_JS = """
@@ -385,11 +403,49 @@ private const val WISEDU_FETCH_JS = """
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
         body:'XNXQDM='+encodeURIComponent(xnxq),
         credentials:'include'
-      });
+      }).then(function(r){ return r.text().then(function(txt){
+        return {xnxq:xnxq, txt:txt};
+      });});
     })
-    .then(function(r){ return r.text(); })
-    .then(function(txt){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt}));
+    .then(function(o){
+      // 抓节次时间：从页面 DOM 找"是否显示节次时间"开启后的节次文本
+      // 格式：节次列每个 cell 含 "1:08:00~08:45" 或 "1\\n08:00~08:45"
+      var periods = [];
+      try {
+        var nodes = document.querySelectorAll('[class*="jc"],[class*="jcdm"],[class*="jcbz"],[id*="node"],[id*="jc"]');
+        var seen = {};
+        for (var i = 0; i < nodes.length; i++) {
+          var txt = (nodes[i].innerText || nodes[i].textContent || '').trim();
+          // 匹配 "1:08:00~08:45" 或 "1 08:00~08:45"
+          var m = txt.match(/^([0-9]{1,2})[:\\s]+([0-2]?[0-9]:[0-5][0-9])[~～-]([0-2]?[0-9]:[0-5][0-9])$/);
+          if (m && !seen[m[1]]) {
+            seen[m[1]] = true;
+            periods.push({node:parseInt(m[1],10), start:m[2], end:m[3]});
+          }
+        }
+        // 如果没抓到（DOM 选择器不对），从整个 body innerText 用 regex 全局抓
+        if (periods.length === 0) {
+          var allText = document.body.innerText || '';
+          // 跨多行匹配节次文本 "1\n08:00~08:45"
+          var re = /([0-9]{1,2})[:\s]\s*([0-2]?[0-9]:[0-5][0-9])[~～-]([0-2]?[0-9]:[0-5][0-9])/g;
+          var mm;
+          while ((mm = re.exec(allText)) !== null) {
+            var n = parseInt(mm[1], 10);
+            if (n >= 1 && n <= 20 && !seen[n]) {
+              seen[n] = true;
+              periods.push({node:n, start:mm[2], end:mm[3]});
+            }
+          }
+        }
+        // 按 node 排序
+        periods.sort(function(a,b){ return a.node - b.node; });
+      } catch(e) { periods = []; }
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({
+        ok:true,
+        data:o.txt,
+        xnxq:o.xnxq,
+        periods:periods
+      }));
     })
     .catch(function(e){
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
