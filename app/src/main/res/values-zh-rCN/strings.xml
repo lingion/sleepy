@@ -102,6 +102,8 @@
     <string name="start_date_format">日期格式应为YYYY-MM-DD</string>
     <string name="slot_time_required">第 %1$d 节时间不能为空</string>
     <string name="slot_time_invalid">第 %1$d 节时间无效（开始须早于结束）</string>
+    <string name="jw_config_title">确认课表节次</string>
+    <string name="jw_config_confirm">确认导入</string>
     <string name="expand">点击展开</string>
     <string name="collapse">点击收起</string>
     <string name="n_periods">%1$d 节课</string>

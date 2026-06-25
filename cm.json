@@ -1,0 +1,112 @@
+{
+  "sha": "214ff5125ccca45a105019d053e06937181a2546",
+  "node_id": "C_kwDOS8keYtoAKDIxNGZmNTEyNWNjY2E0NWExMDUwMTlkMDUzZTA2OTM3MTgxYTI1NDY",
+  "commit": {
+    "author": {
+      "name": "Kerry1020",
+      "email": "likerry22@gmail.com",
+      "date": "2026-06-25T05:01:02Z"
+    },
+    "committer": {
+      "name": "Kerry1020",
+      "email": "likerry22@gmail.com",
+      "date": "2026-06-25T05:01:02Z"
+    },
+    "message": "v1.0.15 干净重开版 - 哈工程金智Wisedu协议\n\n- 升 versionName 1.0.9→1.0.15, versionCode 9→15\n- 移植 e629217 JwWiseduParser + WISEDU_FETCH_JS (完整 fetch 链)\n  - GET wdkb/*default/index.do 初始化 app 会话\n  - POST dqxnxq.do 拿当前学期\n  - POST xskcb.do XNXQDM=... 拿 34 行课表\n- 实测验证: CAS 登录 + fetch 链 + xskcb 34行 OK\n- 单元测试 30/30 通过 (JwWiseduParserTest 5/5)\n- APK 20.4MB md5 b0b46d9f1bbe6e1d33008277a24cf7e7\n- arm64 only\n- 节次时间用 TimeSlotEditor (user 第一次填, 不硬编码)",
+    "tree": {
+      "sha": "0fee93a535800fef6d3c7ee70f59fcc9be8d2758",
+      "url": "https://api.github.com/repos/lingion/sleepy/git/trees/0fee93a535800fef6d3c7ee70f59fcc9be8d2758"
+    },
+    "url": "https://api.github.com/repos/lingion/sleepy/git/commits/214ff5125ccca45a105019d053e06937181a2546",
+    "comment_count": 0,
+    "verification": {
+      "verified": false,
+      "reason": "unsigned",
+      "signature": null,
+      "payload": null,
+      "verified_at": null
+    }
+  },
+  "url": "https://api.github.com/repos/lingion/sleepy/commits/214ff5125ccca45a105019d053e06937181a2546",
+  "html_url": "https://github.com/lingion/sleepy/commit/214ff5125ccca45a105019d053e06937181a2546",
+  "comments_url": "https://api.github.com/repos/lingion/sleepy/commits/214ff5125ccca45a105019d053e06937181a2546/comments",
+  "author": {
+    "login": "Kerry1020",
+    "id": 264747586,
+    "node_id": "U_kgDOD8e6Qg",
+    "avatar_url": "https://avatars.githubusercontent.com/u/264747586?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/Kerry1020",
+    "html_url": "https://github.com/Kerry1020",
+    "followers_url": "https://api.github.com/users/Kerry1020/followers",
+    "following_url": "https://api.github.com/users/Kerry1020/following{/other_user}",
+    "gists_url": "https://api.github.com/users/Kerry1020/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/Kerry1020/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/Kerry1020/subscriptions",
+    "organizations_url": "https://api.github.com/users/Kerry1020/orgs",
+    "repos_url": "https://api.github.com/users/Kerry1020/repos",
+    "events_url": "https://api.github.com/users/Kerry1020/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/Kerry1020/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "committer": {
+    "login": "Kerry1020",
+    "id": 264747586,
+    "node_id": "U_kgDOD8e6Qg",
+    "avatar_url": "https://avatars.githubusercontent.com/u/264747586?v=4",
+    "gravatar_id": "",
+    "url": "https://api.github.com/users/Kerry1020",
+    "html_url": "https://github.com/Kerry1020",
+    "followers_url": "https://api.github.com/users/Kerry1020/followers",
+    "following_url": "https://api.github.com/users/Kerry1020/following{/other_user}",
+    "gists_url": "https://api.github.com/users/Kerry1020/gists{/gist_id}",
+    "starred_url": "https://api.github.com/users/Kerry1020/starred{/owner}{/repo}",
+    "subscriptions_url": "https://api.github.com/users/Kerry1020/subscriptions",
+    "organizations_url": "https://api.github.com/users/Kerry1020/orgs",
+    "repos_url": "https://api.github.com/users/Kerry1020/repos",
+    "events_url": "https://api.github.com/users/Kerry1020/events{/privacy}",
+    "received_events_url": "https://api.github.com/users/Kerry1020/received_events",
+    "type": "User",
+    "user_view_type": "public",
+    "site_admin": false
+  },
+  "parents": [
+    {
+      "sha": "e629217e12366036416b4553e1c0d0002e6da3e8",
+      "url": "https://api.github.com/repos/lingion/sleepy/commits/e629217e12366036416b4553e1c0d0002e6da3e8",
+      "html_url": "https://github.com/lingion/sleepy/commit/e629217e12366036416b4553e1c0d0002e6da3e8"
+    }
+  ],
+  "stats": {
+    "total": 4,
+    "additions": 2,
+    "deletions": 2
+  },
+  "files": [
+    {
+      "sha": "e27c167cdd06a084510507a71a38ec79a8993b79",
+      "filename": "app/build.gradle.kts",
+      "status": "modified",
+      "additions": 2,
+      "deletions": 2,
+      "changes": 4,
+      "blob_url": "https://github.com/lingion/sleepy/blob/214ff5125ccca45a105019d053e06937181a2546/app%2Fbuild.gradle.kts",
+      "raw_url": "https://github.com/lingion/sleepy/raw/214ff5125ccca45a105019d053e06937181a2546/app%2Fbuild.gradle.kts",
+      "contents_url": "https://api.github.com/repos/lingion/sleepy/contents/app%2Fbuild.gradle.kts?ref=214ff5125ccca45a105019d053e06937181a2546",
+      "patch": "@@ -13,8 +13,8 @@ android {\n         applicationId = \"com.lingion.sleepy\"\n         minSdk = 24\n         targetSdk = 35\n-        versionCode = 9\n-        versionName = \"1.0.9\"\n+        versionCode = 15\n+        versionName = \"1.0.15\"\n         vectorDrawables { useSupportLibrary = true }\n         // Explicit locales bundled into the APK. Default resources in values/\n         // (zh-CN content) are always kept. We list zh-rCN explicitly so that"
+    },
+    {
+      "sha": "a3ab0b9508e239dc1f1929a3c9c2ecf0dc2f459f",
+      "filename": "release-build/sleepy-v1.0.15-arm64-v8a.apk",
+      "status": "added",
+      "additions": 0,
+      "deletions": 0,
+      "changes": 0,
+      "blob_url": "https://github.com/lingion/sleepy/blob/214ff5125ccca45a105019d053e06937181a2546/release-build%2Fsleepy-v1.0.15-arm64-v8a.apk",
+      "raw_url": "https://github.com/lingion/sleepy/raw/214ff5125ccca45a105019d053e06937181a2546/release-build%2Fsleepy-v1.0.15-arm64-v8a.apk",
+      "contents_url": "https://api.github.com/repos/lingion/sleepy/contents/release-build%2Fsleepy-v1.0.15-arm64-v8a.apk?ref=214ff5125ccca45a105019d053e06937181a2546"
+    }
+  ]
+}

@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
 import java.time.DayOfWeek
 import java.time.temporal.TemporalAdjusters
@@ -125,7 +126,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
     suspend fun importAsNewTable(
         courses: List<JwCourse>,
         tableName: String,
-        startDate: String? = null
+        startDate: String? = null,
+        timeJson: String = "",
+        nodesPerDay: Int = 0
     ): Long = withContext(Dispatchers.IO) {
         if (courses.isEmpty()) throw IllegalArgumentException("课程列表为空，请确认已到达课表页面")
 
@@ -137,10 +140,13 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         val newId = (tableDao.getAll().maxOfOrNull { it.id } ?: 0) + 1
         val resolvedStartDate = startDate?.takeIf { it.isNotBlank() }
             ?: computeCurrentSemesterStart()
+        val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }
         val newTable = TimeTableEntity(
             id = newId,
             name = tableName.ifBlank { "导入的课表" },
             startDate = resolvedStartDate,
+            timeJson = timeJson.ifBlank { TimeTableUtils.DEFAULT_TIME_JSON },
+            nodesPerDay = maxNode,
             isDefault = false
         )
         tableDao.insert(newTable)
