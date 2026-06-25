@@ -55,7 +55,7 @@ class TodayWidget : GlanceAppWidget() {
             val app = SleepyApp.get()
             val repo = app.repository
 
-            val table = repo.getDefaultTable()
+            val table = WidgetTableResolver.resolveCurrentTable()
             if (table == null) {
                 WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
             } else {

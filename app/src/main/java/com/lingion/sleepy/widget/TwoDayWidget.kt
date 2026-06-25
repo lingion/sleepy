@@ -41,7 +41,7 @@ class TwoDayWidget : GlanceAppWidget() {
         return try {
             val app = SleepyApp.get()
             val repo = app.repository
-            val table = repo.getDefaultTable()
+            val table = WidgetTableResolver.resolveCurrentTable()
             if (table == null) {
                 TwoDayData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
             } else {

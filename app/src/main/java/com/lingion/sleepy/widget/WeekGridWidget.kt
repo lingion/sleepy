@@ -98,7 +98,7 @@ class WeekGridWidget : GlanceAppWidget() {
         return try {
             val app = SleepyApp.get()
             val repo = app.repository
-            val table = repo.getDefaultTable()
+            val table = WidgetTableResolver.resolveCurrentTable()
             if (table == null) {
                 Log.w("WeekGridWidget", "loadWeekData: no default table")
                 WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey,

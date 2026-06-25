@@ -123,7 +123,7 @@ private suspend fun loadScreenData(): ScreenData {
     return try {
         val app = SleepyApp.get()
         val repo = app.repository
-        val table = repo.getDefaultTable()
+        val table = WidgetTableResolver.resolveCurrentTable()
         if (table != null) {
             val week = DateUtils.currentWeek(table.startDate, today)
             val courses = (1..7).flatMap { dow ->
