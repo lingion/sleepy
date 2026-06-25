@@ -251,6 +251,21 @@
 
     <!-- JW Import -->
     <string name="jw_no_url">该学校暂未配置教务 URL</string>
+    <string name="jw_pending_title">该学校暂未实现教务导入</string>
+    <string name="jw_pending_msg">%1$s 的教务系统未在 Sleepy 适配列表中。\n\n你可以：\n1. 点击「申请适配」提交给开发者\n2. 点击「手动输入 URL」在 WebView 打开并登录\n3. 暂用 HTML / CSV 文件导入，或手动添加课程</string>
+    <string name="jw_pending_supported">已支持</string>
+    <string name="jw_pending_pending">待适配</string>
+    <string name="jw_pending_grad">研究生</string>
+    <string name="jw_pending_legacy">旧版</string>
+    <string name="jw_pending_apply">申请适配</string>
+    <string name="jw_pending_input_url">手动输入 URL</string>
+    <string name="jw_pending_use_html">用 HTML 文件导入</string>
+    <string name="jw_pending_use_csv">用 CSV 文件导入</string>
+    <string name="jw_pending_manual">手动添加课程</string>
+    <string name="jw_pending_close">关闭</string>
+    <string name="school_count_supported">已支持 %1$d</string>
+    <string name="school_count_total">共 %1$d 所</string>
+    <string name="school_pinyin_hint">支持搜索拼音首字母（如 hrbeu）</string>
     <string name="jw_parse_empty">解析结果为空，请确认已到达「个人课表」页（而非首页/登录页）</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>

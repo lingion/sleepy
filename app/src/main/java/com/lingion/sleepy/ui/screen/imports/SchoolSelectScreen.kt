@@ -48,11 +48,12 @@ import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.PinyinMatcher
 
 /**
  * 学校选择页 — 教务直连第一步
  *
- * 数据来自 assets/schools.json（Apache-2.0 自 dIT8Zv/WakeupSchedule_BUPT）
+ * 数据来自 assets/schools.json（183 所带真 URL+type — Sleepy 30 + WakeupSchedule_BUPT 184 去重）
  */
 @Composable
 fun SchoolSelectScreen(
@@ -76,7 +77,7 @@ fun SchoolSelectScreen(
 
     val filtered = remember(schools, query) {
         if (query.isBlank()) schools
-        else schools.filter { it.name.contains(query, ignoreCase = true) }
+        else schools.filter { PinyinMatcher.match(it.name, it.sortKey, query) }
     }
 
     Scaffold(
@@ -107,19 +108,46 @@ fun SchoolSelectScreen(
                 onValueChange = { query = it },
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(16.dp),
+                    .padding(horizontal = 16.dp, vertical = 8.dp),
                 placeholder = { Text(stringResource(R.string.search_school), color = colors.onSurfaceVariant) },
+                supportingText = {
+                    Text(
+                        stringResource(R.string.school_pinyin_hint),
+                        color = colors.onSurfaceVariant
+                    )
+                },
                 singleLine = true,
                 shape = RoundedCornerShape(12.dp),
                 colors = fieldColors
             )
+
+            // 计数行
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(horizontal = 20.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.school_count_total, schools.size),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+                if (query.isNotBlank()) {
+                    Text(
+                        text = "匹配 ${filtered.size}",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.primary
+                    )
+                }
+            }
 
             if (filtered.isEmpty()) {
                 EmptyState(schools.isEmpty())
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(2.dp)
                 ) {
                     items(filtered, key = { "${it.sortKey}_${it.name}" }) { school ->
@@ -166,11 +194,12 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
                 style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
                 color = colors.onSurface
             )
-            if (!school.url.isNullOrBlank()) {
+            if (!school.url.isBlank()) {
                 Text(
-                    text = JwProtocol.displayName(school.type),
+                    text = JwProtocol.displayName(school.type) + " · " + school.url.replace("https://", "").replace("http://", "").trimEnd('/'),
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1
                 )
             }
         }
