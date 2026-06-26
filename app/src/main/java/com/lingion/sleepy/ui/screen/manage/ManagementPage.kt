@@ -16,6 +16,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +62,7 @@ fun ManagementPage(
 
     var showImportSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
+    val scope = rememberCoroutineScope()
 
     Scaffold(containerColor = colors.background) { padding ->
         LazyColumn(
@@ -105,7 +107,7 @@ fun ManagementPage(
                 }
             }
 
-            // 管理按钮（3 个：导入 / 手动添加 / 编辑）
+            // 管理按钮（4 个：导入 / 新建 / 手动添加 / 编辑）
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ManageCard(
@@ -113,6 +115,17 @@ fun ManagementPage(
                         title = stringResource(R.string.manage_import),
                         subtitle = stringResource(R.string.manage_import_sub),
                         onClick = { showImportSheet = true }
+                    )
+                    ManageCard(
+                        icon = Icons.Outlined.AutoAwesome,
+                        title = stringResource(R.string.manage_new_table),
+                        subtitle = stringResource(R.string.manage_new_table_sub),
+                        onClick = {
+                            scope.launch {
+                                val id = viewModel.createEmptyTable()
+                                onOpenEditTable(id)
+                            }
+                        }
                     )
                     ManageCard(
                         icon = Icons.Outlined.Add,
