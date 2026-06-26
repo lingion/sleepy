@@ -116,22 +116,18 @@ fun ManagementPage(
                         }
                     )
                     ManageCard(
+                        icon = Icons.Outlined.Add,
+                        title = stringResource(R.string.manage_manual_add),
+                        subtitle = stringResource(R.string.manage_manual_add_sub),
+                        onClick = onManualAdd
+                    )
+                    ManageCard(
                         icon = Icons.Outlined.Edit,
                         title = stringResource(R.string.manage_edit_current),
                         subtitle = stringResource(R.string.manage_edit_current_sub),
                         onClick = onEditCurrentTable
                     )
                 }
-            }
-
-            // 快速手动添加
-            item {
-                ManageCard(
-                    icon = Icons.Outlined.Add,
-                    title = stringResource(R.string.manage_manual_add),
-                    subtitle = stringResource(R.string.manage_manual_add_sub),
-                    onClick = onManualAdd
-                )
             }
         }
     }
