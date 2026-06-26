@@ -12,22 +12,25 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,22 +40,27 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.screen.imports.ImportSheet
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.util.DateUtils
+import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagementPage(
-    onOpenImport: () -> Unit,
+    onJwImportRequested: () -> Unit,
     onManualAdd: () -> Unit,
     onEditCurrentTable: () -> Unit,
-    onCreateNewTable: () -> Unit,
+    onImported: () -> Unit,
+    onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
-    val scope = rememberCoroutineScope()
     val table = state.currentTable
+
+    var showImportSheet by remember { mutableStateOf(false) }
+    val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(containerColor = colors.background) { padding ->
         LazyColumn(
@@ -97,23 +105,14 @@ fun ManagementPage(
                 }
             }
 
-            // 管理按钮
+            // 管理按钮（3 个：导入 / 手动添加 / 编辑）
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ManageCard(
                         icon = Icons.Outlined.FileUpload,
                         title = stringResource(R.string.manage_import),
                         subtitle = stringResource(R.string.manage_import_sub),
-                        onClick = onOpenImport
-                    )
-                    ManageCard(
-                        icon = Icons.Outlined.Add,
-                        title = stringResource(R.string.manage_new_table),
-                        subtitle = stringResource(R.string.manage_new_table_sub),
-                        onClick = {
-                            scope.launch { viewModel.createEmptyTable() }
-                            onCreateNewTable()
-                        }
+                        onClick = { showImportSheet = true }
                     )
                     ManageCard(
                         icon = Icons.Outlined.Add,
@@ -130,6 +129,20 @@ fun ManagementPage(
                 }
             }
         }
+    }
+
+    if (showImportSheet) {
+        ImportSheet(
+            sheetState = sheetState,
+            onDismiss = { showImportSheet = false },
+            onJwImportRequested = {
+                showImportSheet = false
+                onJwImportRequested()
+            },
+            onImported = onImported,
+            onOpenEditTable = onOpenEditTable,
+            viewModel = viewModel
+        )
     }
 }
 

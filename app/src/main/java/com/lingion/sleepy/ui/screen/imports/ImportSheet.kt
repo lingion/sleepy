@@ -4,6 +4,9 @@ import android.net.Uri
 import org.json.JSONArray
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -11,40 +14,33 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Description
-import androidx.compose.material.icons.outlined.Edit
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material.icons.outlined.QrCode2
-import androidx.compose.material.icons.outlined.Add
-import androidx.compose.material.icons.outlined.RemoveCircleOutline
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.OutlinedTextFieldDefaults
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.SnackbarHost
-import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -58,10 +54,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
-import com.lingion.sleepy.util.DateUtils
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -70,26 +66,41 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
-import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
-import com.lingion.sleepy.ui.screen.schedule.ScheduleState
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
 
+/**
+ * 导入课表弹窗 — 取代原 ImportScreen 整页
+ *
+ * 结构（自上而下）：
+ *  - 标题栏 "导入课表"
+ *  - 教务直连（一行可点）
+ *  - 从文本导入（默认折叠，展开后是输入框 + 预览按钮）
+ *  - 从文件导入（一行可点，触发系统选择器）
+ *  - 支持的导入类型（说明列表）
+ */
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ImportScreen(
+fun ImportSheet(
+    sheetState: SheetState,
+    onDismiss: () -> Unit,
+    onJwImportRequested: () -> Unit,
     onImported: () -> Unit,
-    onBack: () -> Unit = {},
-    onManualAdd: () -> Unit = {},
-    onOpenEditTable: (Long) -> Unit = {},
-    onJwImportRequested: () -> Unit = {},
+    onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
+    val colors = SleepyTheme.colors
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+
+    var textExpanded by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
     var isLoading by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
@@ -97,10 +108,8 @@ fun ImportScreen(
     var pendingMode by remember { mutableStateOf<ImportApplyMode?>(null) }
     var confirmedStartDate by remember { mutableStateOf("") }
     var confirmedTimeJson by remember { mutableStateOf("") }
-    val snackbar = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
-    val context = LocalContext.current
-    val colors = SleepyTheme.colors
+    val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
+
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = colors.onSurface,
         unfocusedTextColor = colors.onSurface,
@@ -123,6 +132,7 @@ fun ImportScreen(
                     val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.readText()
                         ?: throw Exception(context.getString(R.string.cannot_read_file))
                     preview = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
+                    if (preview != null) onDismiss()
                 } catch (e: Exception) {
                     errorMsg = context.getString(R.string.read_failed, e.message)
                 } finally {
@@ -139,97 +149,59 @@ fun ImportScreen(
         }
     }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(
-                title = { Text(stringResource(R.string.import_title)) },
-                navigationIcon = {
-                    IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
-                    }
-                },
-                colors = TopAppBarDefaults.topAppBarColors(
-                    containerColor = colors.background,
-                    titleContentColor = colors.onBackground,
-                    navigationIconContentColor = colors.onBackground
-                )
-            )
-        },
-        snackbarHost = { SnackbarHost(snackbar) },
-        containerColor = colors.background
-    ) { padding ->
-        LazyColumn(
+    ModalBottomSheet(
+        onDismissRequest = onDismiss,
+        sheetState = sheetState,
+        containerColor = colors.surface
+    ) {
+        Column(
             modifier = Modifier
-                .fillMaxSize()
-                .padding(padding)
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(16.dp)
+                .fillMaxWidth()
+                .padding(horizontal = 20.dp, vertical = 8.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            item {
-                Column {
-                    Text(
-                        text = stringResource(R.string.import_title),
-                        style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Medium),
-                        color = colors.onBackground
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = stringResource(R.string.import_preview_sub),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.onSurfaceVariant
-                    )
-                }
-            }
+            // 标题
+            Text(
+                text = stringResource(R.string.import_title),
+                style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = colors.onSurface,
+                modifier = Modifier.padding(bottom = 4.dp)
+            )
+            Text(
+                text = stringResource(R.string.import_preview_sub),
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.padding(bottom = 16.dp)
+            )
 
-            item {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    ImportMethodChip(
-                        icon = Icons.Outlined.FileUpload,
-                        label = stringResource(R.string.import_file),
-                        modifier = Modifier.weight(1f),
-                        onClick = { filePicker.launch("*/*") }
-                    )
-                    ImportMethodChip(
-                        icon = Icons.Outlined.QrCode2,
-                        label = stringResource(R.string.import_jw),
-                        modifier = Modifier.weight(1f),
-                        onClick = onJwImportRequested
-                    )
-                    ImportMethodChip(
-                        icon = Icons.Outlined.Edit,
-                        label = stringResource(R.string.import_manual),
-                        modifier = Modifier.weight(1f),
-                        onClick = onManualAdd
-                    )
+            // 行 1：教务直连
+            ImportMethodRow(
+                icon = Icons.Outlined.QrCode2,
+                label = stringResource(R.string.import_jw),
+                onClick = {
+                    onDismiss()
+                    onJwImportRequested()
                 }
-            }
+            )
 
-            item {
+            // 行 2：从文本导入（可折叠）
+            ImportMethodRow(
+                icon = Icons.Outlined.Description,
+                label = stringResource(R.string.import_paste),
+                trailing = if (textExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                onClick = { textExpanded = !textExpanded }
+            )
+            AnimatedVisibility(
+                visible = textExpanded,
+                enter = expandVertically(),
+                exit = shrinkVertically()
+            ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(colors.surfaceContainer)
-                        .padding(16.dp),
-                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                        .padding(start = 56.dp, top = 4.dp, bottom = 8.dp, end = 4.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(
-                            imageVector = Icons.Outlined.Description,
-                            contentDescription = null,
-                            tint = colors.primary,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Text(
-                            text = stringResource(R.string.import_paste),
-                            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface,
-                            modifier = Modifier.padding(start = 8.dp)
-                        )
-                    }
                     OutlinedTextField(
                         value = inputText,
                         onValueChange = { inputText = it },
@@ -246,17 +218,19 @@ fun ImportScreen(
                             scope.launch {
                                 isLoading = true
                                 try {
-                                    preview = buildImportPreview(inputText, state, context) { msg -> errorMsg = msg }
+                                    val p = buildImportPreview(inputText, state, context) { msg -> errorMsg = msg }
+                                    if (p != null) {
+                                        preview = p
+                                        onDismiss()
+                                    }
                                 } finally {
                                     isLoading = false
                                 }
                             }
                         },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(48.dp),
+                        modifier = Modifier.fillMaxWidth().height(44.dp),
                         enabled = !isLoading && inputText.isNotBlank(),
-                        shape = RoundedCornerShape(24.dp),
+                        shape = RoundedCornerShape(22.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(
@@ -268,31 +242,44 @@ fun ImportScreen(
                 }
             }
 
-            item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(colors.surfaceContainer)
-                        .padding(16.dp)
-                ) {
-                    Text(
-                        text = stringResource(R.string.import_supported_formats),
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                        color = colors.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(12.dp))
-                    FormatRow(stringResource(R.string.format_wakeup_share), stringResource(R.string.format_wakeup_desc))
-                    FormatRow(stringResource(R.string.format_wakeup_json), stringResource(R.string.format_json_desc))
-                    FormatRow(stringResource(R.string.format_ics), stringResource(R.string.format_ics_desc))
-                    FormatRow(stringResource(R.string.format_csv), stringResource(R.string.format_csv_desc))
-                    FormatRow(stringResource(R.string.format_html), stringResource(R.string.format_html_desc))
-                    FormatRow(stringResource(R.string.format_plain), stringResource(R.string.format_plain_desc))
+            // 行 3：从文件导入
+            ImportMethodRow(
+                icon = Icons.Outlined.FileUpload,
+                label = stringResource(R.string.import_file),
+                onClick = {
+                    filePicker.launch("*/*")
                 }
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // 支持的导入类型
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clip(RoundedCornerShape(16.dp))
+                    .background(colors.surfaceContainer)
+                    .padding(14.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.import_supported_formats),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface,
+                    modifier = Modifier.padding(bottom = 8.dp)
+                )
+                FormatRow(stringResource(R.string.format_wakeup_share), stringResource(R.string.format_wakeup_desc))
+                FormatRow(stringResource(R.string.format_wakeup_json), stringResource(R.string.format_json_desc))
+                FormatRow(stringResource(R.string.format_ics), stringResource(R.string.format_ics_desc))
+                FormatRow(stringResource(R.string.format_csv), stringResource(R.string.format_csv_desc))
+                FormatRow(stringResource(R.string.format_html), stringResource(R.string.format_html_desc))
+                FormatRow(stringResource(R.string.format_plain), stringResource(R.string.format_plain_desc))
             }
+
+            Spacer(modifier = Modifier.height(24.dp))
         }
     }
 
+    // 预览对话框
     preview?.let { currentPreview ->
         ImportPreviewDialog(
             preview = currentPreview,
@@ -344,21 +331,20 @@ fun ImportScreen(
 }
 
 @Composable
-private fun ImportMethodChip(
+private fun ImportMethodRow(
     icon: ImageVector,
     label: String,
-    modifier: Modifier = Modifier,
+    trailing: ImageVector? = null,
     onClick: () -> Unit
 ) {
     val colors = SleepyTheme.colors
-    Column(
-        modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
-            .background(colors.surfaceContainer)
-            .padding(vertical = 16.dp)
-            .clickable(onClick = onClick),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(14.dp))
+            .clickable(onClick = onClick)
+            .padding(vertical = 14.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
@@ -376,9 +362,19 @@ private fun ImportMethodChip(
         }
         Text(
             text = label,
-            style = MaterialTheme.typography.labelMedium,
-            color = colors.onSurface
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+            color = colors.onSurface,
+            modifier = Modifier
+                .weight(1f)
+                .padding(start = 14.dp)
         )
+        if (trailing != null) {
+            Icon(
+                imageVector = trailing,
+                contentDescription = null,
+                tint = colors.onSurfaceVariant
+            )
+        }
     }
 }
 
@@ -388,20 +384,20 @@ private fun FormatRow(name: String, desc: String) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(vertical = 4.dp),
-        verticalAlignment = Alignment.CenterVertically
+            .padding(vertical = 3.dp),
+        verticalAlignment = Alignment.Top
     ) {
         Text(
             text = "•",
-            style = MaterialTheme.typography.bodyMedium,
+            style = MaterialTheme.typography.bodySmall,
             color = colors.primary,
-            modifier = Modifier.padding(end = 8.dp)
+            modifier = Modifier.padding(end = 8.dp, top = 2.dp)
         )
         Text(
             text = name,
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+            style = MaterialTheme.typography.bodySmall.copy(fontWeight = FontWeight.Medium),
             color = colors.onSurface,
-            modifier = Modifier.width(120.dp)
+            modifier = Modifier.width(110.dp)
         )
         Text(
             text = desc,
@@ -410,6 +406,8 @@ private fun FormatRow(name: String, desc: String) {
         )
     }
 }
+
+// --- shared types / dialogs (copied from ImportScreen to keep sheet self-contained) ---
 
 private enum class ImportApplyMode {
     ReplaceCurrent,
@@ -484,7 +482,6 @@ private fun ImportPreviewDialog(
                         modifier = Modifier.weight(1f)
                     )
                 }
-
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -503,7 +500,6 @@ private fun ImportPreviewDialog(
                         }
                     )
                 }
-
                 if (preview.conflicts.isNotEmpty()) {
                     Column(
                         modifier = Modifier
@@ -675,7 +671,6 @@ private fun ImportConfirmDialog(
         },
         confirmButton = {
             TextButton(onClick = {
-                // Validate
                 if (startDate.isBlank()) {
                     errorMsg = context.getString(R.string.import_start_date_required)
                     return@TextButton
@@ -714,11 +709,9 @@ private fun ImportConfirmDialog(
     )
 }
 
-// TimeConfirmRow 已被迁移到 TimeTableUtils.TimeSlotRow
-
 private suspend fun buildImportPreview(
     text: String,
-    state: ScheduleState,
+    state: com.lingion.sleepy.ui.screen.schedule.ScheduleState,
     context: android.content.Context,
     onError: (String) -> Unit
 ): ImportPreview? {
@@ -731,7 +724,6 @@ private suspend fun buildImportPreview(
         onError(context.getString(R.string.import_select_table))
         return null
     }
-
     val result = ScheduleParser.parse(text, tableId)
     return result.fold(
         onSuccess = { parseResult ->
@@ -783,7 +775,6 @@ private suspend fun applyImportPreview(
             onImported()
             return preview.targetTableId
         }
-
         ImportApplyMode.ImportAsNew -> {
             val base = repo.getTable(preview.targetTableId)
             val newTableId = repo.insertTable(
@@ -798,11 +789,10 @@ private suspend fun applyImportPreview(
                 )
             )
             repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
-            repo.setDefault(newTableId)  // 自动切换到新导入的课表
+            repo.setDefault(newTableId)
             onImported()
             return newTableId
         }
-
         ImportApplyMode.AppendNonConflict -> {
             val cleanCourses = preview.parseResult.courses.filterNot { incoming ->
                 preview.existingCourses.any { existing -> coursesConflict(incoming, existing) }

@@ -32,7 +32,6 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.PillNavItem
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
-import com.lingion.sleepy.ui.screen.imports.ImportScreen
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
@@ -152,7 +151,6 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 
 private enum class OverlayScreen {
     AddCourse,
-    Import,
     AllTables,
     EditTable,
     ThemeColor,
@@ -199,28 +197,6 @@ private fun AppRoot(
                 currentTab = Tab.Schedule
             },
             editingCourse = editingCourse
-        )
-        return
-    }
-
-    // ----- Import -----
-    if (overlayScreen == OverlayScreen.Import) {
-        val context = androidx.compose.ui.platform.LocalContext.current
-        ImportScreen(
-            onImported = {
-                overlayScreen = null
-                currentTab = Tab.Manage
-            },
-            onBack = { overlayScreen = null },
-            onManualAdd = { overlayScreen = OverlayScreen.AddCourse },
-            onOpenEditTable = { tableId ->
-                editTableId = tableId
-                overlayScreen = OverlayScreen.EditTable
-            },
-            onJwImportRequested = {
-                val intent = android.content.Intent(context, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
-                context.startActivity(intent)
-            }
         )
         return
     }
@@ -304,17 +280,27 @@ private fun AppRoot(
                     onEditCourse = { course -> editingCourse = course }
                 )
                 Tab.Today -> TodayScreen()
-                Tab.Manage -> ManagementPage(
-                    onOpenImport = { overlayScreen = OverlayScreen.Import },
-                    onManualAdd = { overlayScreen = OverlayScreen.AddCourse },
-                    onEditCurrentTable = {
-                        editTableId = null
-                        overlayScreen = OverlayScreen.EditTable
-                    },
-                    onCreateNewTable = {
-                        overlayScreen = OverlayScreen.EditTable
-                    }
-                )
+                Tab.Manage -> {
+                    val ctx = androidx.compose.ui.platform.LocalContext.current
+                    ManagementPage(
+                        onJwImportRequested = {
+                            val intent = android.content.Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
+                            ctx.startActivity(intent)
+                        },
+                        onManualAdd = { overlayScreen = OverlayScreen.AddCourse },
+                        onEditCurrentTable = {
+                            editTableId = null
+                            overlayScreen = OverlayScreen.EditTable
+                        },
+                        onImported = {
+                            // refresh handled by ViewModel; just close any open overlays
+                        },
+                        onOpenEditTable = { tableId ->
+                            editTableId = tableId
+                            overlayScreen = OverlayScreen.EditTable
+                        }
+                    )
+                }
                 Tab.Mine -> MineScreen(
                     darkMode = darkMode,
                     onToggleDark = onToggleDark,
