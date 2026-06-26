@@ -69,7 +69,9 @@ import kotlinx.serialization.json.Json
 @Composable
 fun EditTableScreen(
     tableId: Long? = null,
+    pendingNewTableId: Long? = null,
     onBack: () -> Unit,
+    onDiscardPending: () -> Unit = onBack,
     onSaved: () -> Unit,
     onDeleted: () -> Unit,
     viewModel: ScheduleViewModel = viewModel()
@@ -141,12 +143,16 @@ fun EditTableScreen(
         unfocusedContainerColor = colors.surfaceContainerLowest
     )
 
+    val handleBack = {
+        if (pendingNewTableId != null) onDiscardPending() else onBack()
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.edit_table_title)) },
                 navigationIcon = {
-                    IconButton(onClick = onBack) {
+                    IconButton(onClick = handleBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
@@ -300,17 +306,19 @@ fun EditTableScreen(
                 }
             }
 
-            // 删除
-            item {
-                Button(
-                    onClick = { showDeleteConfirm = true },
-                    modifier = Modifier.fillMaxWidth().height(48.dp),
-                    shape = RoundedCornerShape(18.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
-                ) {
-                    Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.edit_table_delete), color = colors.onErrorContainer)
+            // 删除（新建未保存的表不显示此按钮——退出即丢弃）
+            if (pendingNewTableId == null) {
+                item {
+                    Button(
+                        onClick = { showDeleteConfirm = true },
+                        modifier = Modifier.fillMaxWidth().height(48.dp),
+                        shape = RoundedCornerShape(18.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
+                    ) {
+                        Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(R.string.edit_table_delete), color = colors.onErrorContainer)
+                    }
                 }
             }
 

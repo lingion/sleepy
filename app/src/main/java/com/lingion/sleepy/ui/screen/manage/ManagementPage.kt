@@ -30,7 +30,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -44,12 +43,12 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.screen.imports.ImportSheet
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ManagementPage(
     onJwImportRequested: () -> Unit,
+    onCreateNewTableRequested: () -> Unit,
     onManualAdd: () -> Unit,
     onEditCurrentTable: () -> Unit,
     onImported: () -> Unit,
@@ -62,7 +61,6 @@ fun ManagementPage(
 
     var showImportSheet by remember { mutableStateOf(false) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    val scope = rememberCoroutineScope()
 
     Scaffold(containerColor = colors.background) { padding ->
         LazyColumn(
@@ -120,12 +118,7 @@ fun ManagementPage(
                         icon = Icons.Outlined.AutoAwesome,
                         title = stringResource(R.string.manage_new_table),
                         subtitle = stringResource(R.string.manage_new_table_sub),
-                        onClick = {
-                            scope.launch {
-                                val id = viewModel.createEmptyTable()
-                                onOpenEditTable(id)
-                            }
-                        }
+                        onClick = onCreateNewTableRequested
                     )
                     ManageCard(
                         icon = Icons.Outlined.Add,

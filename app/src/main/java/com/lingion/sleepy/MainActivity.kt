@@ -22,11 +22,14 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.PillNavItem
@@ -169,6 +172,12 @@ private fun AppRoot(
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
     var overlayScreen by remember { mutableStateOf<OverlayScreen?>(null) }
     var editTableId by remember { mutableStateOf<Long?>(null) }
+    // 新建未保存课表的临时 id：进入 EditTable 时若为非空，按返回会丢弃这张表（删除 + 回滚选中状态）
+    var pendingNewTableId by remember { mutableStateOf<Long?>(null) }
+    // 记录新建课表前的默认表 id，作为 discard 时的回退目标
+    var previousDefaultTableId by remember { mutableStateOf<Long?>(null) }
+    val mainScope = rememberCoroutineScope()
+    val mainVm: ScheduleViewModel = viewModel()
 
     // 小组件 deep link 触发：拉到了课程 → 切到编辑模式
     androidx.compose.runtime.LaunchedEffect(deepLinkCourse?.id) {
@@ -179,9 +188,20 @@ private fun AppRoot(
     }
 
     BackHandler(enabled = overlayScreen != null || editingCourse != null) {
-        overlayScreen = null
-        editingCourse = null
-        editTableId = null
+        // pendingNewTableId 不为空时，Back 也走 discard 路径
+        if (pendingNewTableId != null) {
+            val discardId = pendingNewTableId!!
+            val fallback = previousDefaultTableId
+            pendingNewTableId = null
+            previousDefaultTableId = null
+            mainVm.discardNewTable(discardId, fallback)
+            overlayScreen = null
+            editTableId = null
+        } else {
+            overlayScreen = null
+            editingCourse = null
+            editTableId = null
+        }
     }
 
     // ----- AddCourse -----
@@ -207,6 +227,7 @@ private fun AppRoot(
             onBack = { overlayScreen = null },
             onOpenEditTable = { tableId ->
                 editTableId = tableId
+                pendingNewTableId = null  // 从 AllTables 进入的都不是新建
                 overlayScreen = OverlayScreen.EditTable
             }
         )
@@ -217,13 +238,36 @@ private fun AppRoot(
     if (overlayScreen == OverlayScreen.EditTable) {
         EditTableScreen(
             tableId = editTableId,
-            onBack = { overlayScreen = null; editTableId = null },
+            pendingNewTableId = pendingNewTableId,
+            onBack = {
+                overlayScreen = null
+                editTableId = null
+                pendingNewTableId = null
+                previousDefaultTableId = null
+            },
+            onDiscardPending = {
+                // 丢弃新建未保存的表：删除并回滚到之前选中的表
+                val discardId = pendingNewTableId
+                val fallback = previousDefaultTableId
+                pendingNewTableId = null
+                previousDefaultTableId = null
+                if (discardId != null) {
+                    mainVm.discardNewTable(discardId, fallback)
+                }
+                overlayScreen = null
+                editTableId = null
+            },
             onSaved = {
+                // 保存成功，清掉 pending 标记（表已生效）
+                pendingNewTableId = null
+                previousDefaultTableId = null
                 overlayScreen = null
                 editTableId = null
                 currentTab = Tab.Schedule
             },
             onDeleted = {
+                pendingNewTableId = null
+                previousDefaultTableId = null
                 overlayScreen = null
                 editTableId = null
                 currentTab = Tab.Mine
@@ -287,9 +331,20 @@ private fun AppRoot(
                             val intent = android.content.Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
                             ctx.startActivity(intent)
                         },
+                        onCreateNewTableRequested = {
+                            mainScope.launch {
+                                val previousId = mainVm.state.value.currentTable?.id
+                                val newId = mainVm.createEmptyTable()
+                                previousDefaultTableId = previousId
+                                pendingNewTableId = newId
+                                editTableId = newId
+                                overlayScreen = OverlayScreen.EditTable
+                            }
+                        },
                         onManualAdd = { overlayScreen = OverlayScreen.AddCourse },
                         onEditCurrentTable = {
                             editTableId = null
+                            pendingNewTableId = null  // 编辑已有表
                             overlayScreen = OverlayScreen.EditTable
                         },
                         onImported = {

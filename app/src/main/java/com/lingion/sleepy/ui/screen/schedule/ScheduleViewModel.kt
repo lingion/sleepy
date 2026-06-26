@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -158,6 +159,24 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch {
             repo.deleteTable(id)
             manualSelectDone = false
+        }
+    }
+
+    /** Discard a newly-created table that was never saved by the user.
+     *  Deletes the table and reverts selection to the previous default table. */
+    fun discardNewTable(newId: Long, fallbackId: Long?) {
+        viewModelScope.launch {
+            repo.deleteTable(newId)
+            // The observeAllTables flow will re-emit; ensure selectedTableId falls back
+            // to the previous default table (or first remaining table).
+            manualSelectDone = false
+            val remaining = repo.observeAllTables().first().filter { it.id != newId }
+            val targetId = fallbackId?.takeIf { id -> remaining.any { it.id == id } }
+                ?: remaining.find { it.isDefault }?.id
+                ?: remaining.firstOrNull()?.id
+            if (targetId != null) {
+                selectTable(targetId)
+            }
         }
     }
 
