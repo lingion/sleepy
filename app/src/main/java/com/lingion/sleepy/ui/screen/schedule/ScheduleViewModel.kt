@@ -116,8 +116,12 @@ class ScheduleViewModel : ViewModel() {
         }
     }
 
-    /** Create a new empty table with auto-generated name */
-    suspend fun createEmptyTable(): Long {
+    /** Create a new empty table with auto-generated name.
+     *  @param commitSelection if true (default), immediately switches the selected table
+     *         to the new one. If false, the table is inserted but selection is not changed —
+     *         useful when the caller plans to either roll back the new table or commit the
+     *         selection later. */
+    suspend fun createEmptyTable(commitSelection: Boolean = true): Long {
         val existingNames = _state.value.tables.map { it.name }
         var index = _state.value.tables.size + 1
         var name = com.lingion.sleepy.SleepyApp.get().getString(R.string.default_table_with_num, index)
@@ -136,12 +140,16 @@ class ScheduleViewModel : ViewModel() {
             // 数据库侧 isDefault 唯一性保证（其他表如有 isDefault 会自动清掉）
             repo.setDefault(id)
         }
-        // 创建后立刻把 state 切到新表，并加载新课程。
-        // 否则 loadTables 协程 observeAllTables emit 会因为 manualSelectDone=true + selectedTableId!=null
-        // 继续保留旧表选择，导致 UI 显示"默认课表"而非用户新建的课表。
-        manualSelectDone = true
-        _state.update { it.copy(selectedTableId = id) }
-        loadCourses(id)
+        if (commitSelection) {
+            // 创建后立刻把 state 切到新表，并加载新课程。
+            // 否则 loadTables 协程 observeAllTables emit 会因为 manualSelectDone=true + selectedTableId!=null
+            // 继续保留旧表选择，导致 UI 显示"默认课表"而非用户新建的课表。
+            manualSelectDone = true
+            _state.update { it.copy(selectedTableId = id) }
+            loadCourses(id)
+        } else {
+            // 不切选中：仅通知 widget 刷新（observeAllTables 会带回新表，但不切 selectedTableId）
+        }
         // 通知 widget
         try {
             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(

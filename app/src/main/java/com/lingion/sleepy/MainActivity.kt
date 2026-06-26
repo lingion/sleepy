@@ -258,9 +258,13 @@ private fun AppRoot(
                 editTableId = null
             },
             onSaved = {
-                // 保存成功，清掉 pending 标记（表已生效）
+                // 保存成功：把当前选中切到新表，再清 pending 标记
+                val newId = pendingNewTableId
                 pendingNewTableId = null
                 previousDefaultTableId = null
+                if (newId != null) {
+                    mainVm.selectTable(newId)
+                }
                 overlayScreen = null
                 editTableId = null
                 currentTab = Tab.Schedule
@@ -334,7 +338,9 @@ private fun AppRoot(
                         onCreateNewTableRequested = {
                             mainScope.launch {
                                 val previousId = mainVm.state.value.currentTable?.id
-                                val newId = mainVm.createEmptyTable()
+                                // commitSelection=false: 创建临时表但不切换选中状态，
+                                // 避免管理页"当前课表"卡片在编辑页打开前瞬间跳到"默认X"。
+                                val newId = mainVm.createEmptyTable(commitSelection = false)
                                 previousDefaultTableId = previousId
                                 pendingNewTableId = newId
                                 editTableId = newId
