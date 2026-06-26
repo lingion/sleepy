@@ -64,11 +64,16 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         val list = ArrayList<JwSchoolInfo>(arr.length())
         for (i in 0 until arr.length()) {
             val obj = arr.getJSONObject(i)
+            val aliasesArr = obj.optJSONArray("aliases")
+            val aliases = if (aliasesArr != null) {
+                (0 until aliasesArr.length()).map { aliasesArr.getString(it) }
+            } else emptyList()
             list += JwSchoolInfo(
                 sortKey = obj.optString("sortKey", ""),
                 name = obj.optString("name", ""),
                 url = obj.optString("url", ""),
-                type = obj.optString("type", "").ifBlank { null }
+                type = obj.optString("type", "").ifBlank { null },
+                aliases = aliases
             )
         }
         return list

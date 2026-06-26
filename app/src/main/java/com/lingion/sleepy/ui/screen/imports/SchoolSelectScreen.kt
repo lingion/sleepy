@@ -77,7 +77,12 @@ fun SchoolSelectScreen(
 
     val filtered = remember(schools, query) {
         if (query.isBlank()) schools
-        else schools.filter { PinyinMatcher.match(it.name, it.sortKey, query) }
+        else {
+            val q = query.trim().lowercase()
+            val matched = schools.filter { PinyinMatcher.match(it.name, it.sortKey, query, it.aliases) }
+            // Alias-exact match floats to top
+            matched.sortedByDescending { it.aliases.any { a -> a.lowercase() == q } }
+        }
     }
 
     Scaffold(

@@ -265,7 +265,7 @@
     <string name="jw_pending_close">关闭</string>
     <string name="school_count_supported">已支持 %1$d</string>
     <string name="school_count_total">共 %1$d 所</string>
-    <string name="school_pinyin_hint">支持搜索拼音首字母（如 hrbeu）</string>
+    <string name="school_pinyin_hint">支持拼音首字母 / 学校英文简称 (如 hrbeu)</string>
     <string name="jw_parse_empty">解析结果为空，请确认已到达「个人课表」页（而非首页/登录页）</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>

@@ -42,10 +42,11 @@ object PinyinMatcher {
         return sb.toString()
     }
 
-    fun match(name: String, sortKey: String, query: String): Boolean {
+    fun match(name: String, sortKey: String, query: String, aliases: List<String> = emptyList()): Boolean {
         if (query.isBlank()) return true
         val q = query.trim().lowercase(Locale.getDefault())
         if (name.lowercase(Locale.getDefault()).contains(q)) return true
+        if (aliases.any { it.lowercase(Locale.getDefault()).contains(q) }) return true
         val py = namePinyinShort(name, sortKey)
         return py.contains(q)
     }
@@ -59,7 +60,18 @@ object PinyinMatcher {
         '边' to "B", '便' to "B", '变' to "B", '遍' to "B", '标' to "B", '表' to "B",
         '别' to "B", '宾' to "B", '冰' to "B", '并' to "B", '病' to "B", '波' to "B",
         '伯' to "B", '博' to "B", '不' to "B", '布' to "B", '步' to "B", '保' to "B",
-        '蚌' to "B", '滨' to "B", '渤' to "B",
+        '蚌' to "B", '滨' to "B", '渤' to "B", '北' to "B", '本' to "B",
+        '搬' to "B", '板' to "B", '版' to "B", '办' to "B", '半' to "B", '邦' to "B",
+        '榜' to "B", '膀' to "B", '傍' to "B", '棒' to "B", '包' to "B", '宝' to "B",
+        '饱' to "B", '抱' to "B", '豹' to "B", '卑' to "B", '悲' to "B", '碑' to "B",
+        '贝' to "B", '倍' to "B", '狈' to "B", '备' to "B", '背' to "B", '辈' to "B",
+        '奔' to "B", '笨' to "B", '比' to "B", '笔' to "B", '币' to "B", '必' to "B",
+        '毕' to "B", '闭' to "B", '辟' to "B", '碧' to "B", '蔽' to "B", '壁' to "B",
+        '避' to "B", '编' to "B", '鞭' to "B", '贬' to "B", '扁' to "B", '卞' to "B",
+        '辨' to "B", '辩' to "B", '标' to "B", '彪' to "B", '表' to "B", '憋' to "B",
+        '别' to "B", '彬' to "B", '斌' to "B", '兵' to "B", '丙' to "B", '柄' to "B",
+        '秉' to "B", '饼' to "B", '并' to "B", '玻' to "B", '菠' to "B", '播' to "B",
+        '驳' to "B", '帛' to "B", '勃' to "B", '博' to "B", '搏' to "B", '薄' to "B",
         '才' to "C", '材' to "C", '采' to "C", '彩' to "C", '菜' to "C", '参' to "C",
         '操' to "C", '草' to "C", '测' to "C", '层' to "C", '查' to "C", '产' to "C",
         '长' to "C", '常' to "C", '场' to "C", '厂' to "C", '唱' to "C", '超' to "C",
@@ -68,13 +80,22 @@ object PinyinMatcher {
         '春' to "C", '词' to "C", '此' to "C", '从' to "C", '存' to "C", '错' to "C",
         '创' to "C", '沧' to "C", '潮' to "C", '承' to "C", '池' to "C", '重' to "C", '崇' to "C",
         '楚' to "C", '纯' to "C", '慈' to "C", '磁' to "C", '崔' to "C", '巢' to "C",
+        '才' to "C", '财' to "C", '裁' to "C", '猜' to "C", '惨' to "C", '灿' to "C",
+        '仓' to "C", '苍' to "C", '舱' to "C", '曹' to "C", '册' to "C", '策' to "C",
+        '侧' to "C", '叉' to "C", '茶' to "C", '拆' to "C", '柴' to "C", '缠' to "C",
+        '阐' to "C", '颤' to "C", '昌' to "C", '倡' to "C", '抄' to "C", '吵' to "C",
+        '彻' to "C", '撤' to "C", '臣' to "C", '沉' to "C", '陈' to "C", '闯' to "C",
+        '诚' to "C", '惩' to "C", '澄' to "C", '迟' to "C", '驰' to "C", '耻' to "C",
+        '充' to "C", '冲' to "C", '虫' to "C", '宠' to "C", '筹' to "C", '丑' to "C",
+        '橱' to "C", '储' to "C", '触' to "C", '川' to "C", '传' to "C", '创' to "C",
         '大' to "D", '打' to "D", '带' to "D", '代' to "D", '单' to "D", '但' to "D",
         '当' to "D", '到' to "D", '道' to "D", '得' to "D", '的' to "D", '灯' to "D",
         '等' to "D", '低' to "D", '地' to "D", '第' to "D", '点' to "D", '电' to "D",
         '调' to "D", '定' to "D", '东' to "D", '冬' to "D", '懂' to "D", '动' to "D",
         '都' to "D", '读' to "D", '短' to "D", '段' to "D", '对' to "D", '多' to "D",
         '达' to "D", '丹' to "D", '德' to "D", '迪' to "D", '丁' to "D", '端' to "D",
-        '饿' to "E", '儿' to "E", '而' to "E", '二' to "E", '额' to "E",
+        '饿' to "E", '儿' to "E", '而' to "E", '二' to "E", '额' to "E", '尔' to "E",
+        '耳' to "E", '恩' to "E", '鹅' to "E", '俄' to "E", '峨' to "E", '娥' to "E",
         '发' to "F", '法' to "F", '翻' to "F", '反' to "F", '饭' to "F", '方' to "F",
         '房' to "F", '防' to "F", '放' to "F", '飞' to "F", '非' to "F", '分' to "F",
         '风' to "F", '封' to "F", '佛' to "F", '服' to "F", '复' to "F", '副' to "F",
@@ -96,6 +117,10 @@ object PinyinMatcher {
         '虹' to "H", '虎' to "H", '滑' to "H", '淮' to "H", '桓' to "H",
         '湟' to "H", '惠' to "H", '珲' to "H", '辉' to "H", '汇' to "H", '卉' to "H", '晖' to "H",
         '邯' to "H", '菏' to "H", '鹤' to "H", '宏' to "H", '洪' to "H", '侯' to "H", '呼' to "H",
+        '浩' to "H", '豪' to "H", '翰' to "H", '寒' to "H", '函' to "H", '航' to "H",
+        '赫' to "H", '弘' to "H", '泓' to "H", '槐' to "H", '卉' to "H", '徽' to "H",
+        '翰' to "H", '悍' to "H", '慌' to "H", '惶' to "H", '唤' to "H", '煌' to "H",
+        '琥' to "H", '沪' to "H", '卉' to "H", '骅' to "H", '桦' to "H", '潞' to "H",
         '加' to "J", '家' to "J", '价' to "J", '驾' to "J", '架' to "J", '假' to "J",
         '尖' to "J", '坚' to "J", '间' to "J", '检' to "J", '简' to "J", '建' to "J",
         '件' to "J", '健' to "J", '将' to "J", '江' to "J", '奖' to "J", '讲' to "J",

@@ -15,7 +15,8 @@ data class JwSchoolInfo(
     val name: String,
     val url: String = "",
     val type: String? = null,
-    val status: String = STATUS_SUPPORTED
+    val status: String = STATUS_SUPPORTED,
+    val aliases: List<String> = emptyList()
 ) {
     val isSupported: Boolean get() = status == STATUS_SUPPORTED || status == STATUS_GRAD_SUPPORTED
     val isGrad: Boolean get() = status == STATUS_GRAD_SUPPORTED || status == STATUS_GRAD_PENDING
