@@ -447,11 +447,19 @@ private fun ImportPreviewDialog(
         title = {
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Text(stringResource(R.string.import_preview_title), style = MaterialTheme.typography.titleLarge)
-                Text(
-                    text = stringResource(R.string.import_target_table, preview.targetTableName),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
+                if (preview.targetTableId == 0L) {
+                    Text(
+                        text = stringResource(R.string.import_new_table_hint),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.primary
+                    )
+                } else {
+                    Text(
+                        text = stringResource(R.string.import_target_table, preview.targetTableName),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
             }
         },
         text = {
@@ -467,20 +475,22 @@ private fun ImportPreviewDialog(
                         fg = colors.onPrimaryContainer,
                         modifier = Modifier.weight(1f)
                     )
-                    PreviewMetricCard(
-                        label = stringResource(R.string.import_conflicts),
-                        value = preview.conflictCount.toString(),
-                        bg = if (preview.conflictCount > 0) Color(0xFFFFE1DE) else colors.secondaryContainer,
-                        fg = if (preview.conflictCount > 0) Color(0xFF8C1D18) else colors.onSecondaryContainer,
-                        modifier = Modifier.weight(1f)
-                    )
-                    PreviewMetricCard(
-                        label = stringResource(R.string.import_appendable),
-                        value = preview.cleanCount.toString(),
-                        bg = colors.tertiaryContainer,
-                        fg = colors.onTertiaryContainer,
-                        modifier = Modifier.weight(1f)
-                    )
+                    if (preview.targetTableId != 0L) {
+                        PreviewMetricCard(
+                            label = stringResource(R.string.import_conflicts),
+                            value = preview.conflictCount.toString(),
+                            bg = if (preview.conflictCount > 0) Color(0xFFFFE1DE) else colors.secondaryContainer,
+                            fg = if (preview.conflictCount > 0) Color(0xFF8C1D18) else colors.onSecondaryContainer,
+                            modifier = Modifier.weight(1f)
+                        )
+                        PreviewMetricCard(
+                            label = stringResource(R.string.import_appendable),
+                            value = preview.cleanCount.toString(),
+                            bg = colors.tertiaryContainer,
+                            fg = colors.onTertiaryContainer,
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
                 Column(
                     modifier = Modifier
@@ -492,13 +502,15 @@ private fun ImportPreviewDialog(
                 ) {
                     PreviewInfoRow(stringResource(R.string.import_table_name), preview.parseResult.tableName)
                     PreviewInfoRow(stringResource(R.string.import_start_date), preview.parseResult.startDate)
-                    PreviewInfoRow(
-                        stringResource(R.string.import_suggestion),
-                        when {
-                            preview.conflictCount == 0 -> stringResource(R.string.import_no_conflict)
-                            else -> stringResource(R.string.import_conflict_count, preview.conflictCount)
-                        }
-                    )
+                    if (preview.targetTableId != 0L) {
+                        PreviewInfoRow(
+                            stringResource(R.string.import_suggestion),
+                            when {
+                                preview.conflictCount == 0 -> stringResource(R.string.import_no_conflict)
+                                else -> stringResource(R.string.import_conflict_count, preview.conflictCount)
+                            }
+                        )
+                    }
                 }
                 if (preview.conflicts.isNotEmpty()) {
                     Column(
@@ -534,34 +546,46 @@ private fun ImportPreviewDialog(
         },
         confirmButton = {
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = { onApply(ImportApplyMode.AppendNonConflict) },
-                        modifier = Modifier.weight(1f),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
-                    ) {
-                        Text(stringResource(R.string.import_append_only), maxLines = 1)
-                    }
+                if (preview.targetTableId == 0L) {
+                    // 没有任何课表时只允许 "作为新课表导入"
                     Button(
                         onClick = { onApply(ImportApplyMode.ImportAsNew) },
-                        modifier = Modifier.weight(1f),
+                        modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(14.dp),
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(stringResource(R.string.import_as_new), maxLines = 1)
                     }
-                }
-                OutlinedButton(
-                    onClick = { onApply(ImportApplyMode.ReplaceCurrent) },
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = RoundedCornerShape(14.dp),
-                    colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.error)
-                ) {
-                    Text(stringResource(R.string.import_overwrite))
+                } else {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        Button(
+                            onClick = { onApply(ImportApplyMode.AppendNonConflict) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                        ) {
+                            Text(stringResource(R.string.import_append_only), maxLines = 1)
+                        }
+                        Button(
+                            onClick = { onApply(ImportApplyMode.ImportAsNew) },
+                            modifier = Modifier.weight(1f),
+                            shape = RoundedCornerShape(14.dp),
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                        ) {
+                            Text(stringResource(R.string.import_as_new), maxLines = 1)
+                        }
+                    }
+                    OutlinedButton(
+                        onClick = { onApply(ImportApplyMode.ReplaceCurrent) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(14.dp),
+                        colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.error)
+                    ) {
+                        Text(stringResource(R.string.import_overwrite))
+                    }
                 }
                 TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.cancel), color = colors.onSurfaceVariant)
@@ -719,18 +743,15 @@ private suspend fun buildImportPreview(
         onError(context.getString(R.string.import_content_empty))
         return null
     }
-    val tableId = state.selectedTableId
-    if (tableId == null) {
-        onError(context.getString(R.string.import_select_table))
-        return null
-    }
+    // selectedTableId 缺失时也能导入 — 没有 tableId 就用 0L，apply 时按 ImportAsNew 自动建表。
+    val tableId = state.selectedTableId ?: 0L
     val result = ScheduleParser.parse(text, tableId)
     return result.fold(
         onSuccess = { parseResult ->
             val repo = SleepyApp.get().repository
-            val existingTable = repo.getTable(tableId)
-            val existingCourses = repo.getCourses(tableId)
-            val conflicts = parseResult.courses.mapNotNull { incoming ->
+            val existingTable = if (tableId == 0L) null else repo.getTable(tableId)
+            val existingCourses = if (tableId == 0L) emptyList() else repo.getCourses(tableId)
+            val conflicts = if (tableId == 0L) emptyList() else parseResult.courses.mapNotNull { incoming ->
                 existingCourses.firstOrNull { existing -> coursesConflict(incoming, existing) }
                     ?.let { CourseConflict(incoming = incoming, existing = it) }
             }

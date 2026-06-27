@@ -141,6 +141,14 @@
             android:label="Widget Render"
             android:theme="@style/Theme.Sleepy" />
 
+        <!-- Debug: 注入课表 (走 ScheduleParser.parse + repo.insertTable 真实链路)
+             adb shell am start -n com.lingion.sleepy.debug/com.lingion.sleepy.debug.DebugImportReceiver -e path /sdcard/.../xxx.json -->
+        <activity
+            android:name=".debug.DebugImportReceiver"
+            android:exported="true"
+            android:label="Debug Import"
+            android:theme="@android:style/Theme.NoDisplay" />
+
     </application>
 
 </manifest>

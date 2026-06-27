@@ -136,12 +136,27 @@ fun CardsGridView(
             // Slot rows — each Row's height = max step in this row.
             // Each cell uses its own step-height (so step=2 ≠ step=3 visually).
             // TimeHeadCell stretches to safeStep and shows all startNode..+safeStep-1 labels.
+            //
+            // 推进规则（修复前 bug）：
+            //   旧逻辑 slotIdx += safeStep：当某行有 step=10 大课（工程实践），整个 [1..10]
+            //   区间内的其他 startNode（如 startNode=3 周五信号与系统A、startNode=3 周六软件设计）
+            //   永远不会被绘制 — slotIdx 直接跳到 10，中间没有 row 处理这些 startNode。
+            //   新逻辑：每次 slotIdx += 1。如果本 slot 没有起始卡片，row 高度按
+            //   跨到本行的最大剩余 step（让前面大课卡片高度自然填到本行末），
+            //   时间标签只显示 1 个；本 slot 不画卡片。
+            //   如果本 slot 有起始卡片，row 高度 = 该卡片 step，画卡片。
             var slotIdx = 0
             while (slotIdx < timeSlots.size) {
                 val currentNode = timeSlots[slotIdx].nodeStart
+                // cardsHere A: 从本节开始的卡片（这些会绘制）
                 val cardsHere = courses.filter { it.startNode == currentNode }
-                val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) } ?: 1
-                // Clamp step to remaining slots — a card spanning past timeSlots.size must not skip rendering.
+                // cardsHere B: 跨到本行的卡片（从前几节开始，本行是它的覆盖范围）。仅用于算 row 高度。
+                val spanningCards = courses.filter {
+                    it.startNode < currentNode && it.startNode + it.step > currentNode
+                }
+                val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) }
+                    ?: spanningCards.maxOfOrNull { (it.startNode + it.step) - currentNode }
+                    ?: 1
                 val safeStep = maxStep.coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
                 val rowHeight = (slotH + gapH) * safeStep - gapH
 
@@ -158,6 +173,7 @@ fun CardsGridView(
                         span = safeStep,
                         slotH = slotH,
                         gapH = gapH,
+                        onlyFirst = cardsHere.isEmpty(),  // 跨节行只画 1 个标签避免重复
                         modifier = Modifier.width(timeW)
                     )
                     for (day in visibleDays.sorted()) {
@@ -180,7 +196,7 @@ fun CardsGridView(
                     }
                 }
 
-                slotIdx += safeStep
+                slotIdx += 1
             }
         }
     }
@@ -331,23 +347,26 @@ private fun SpannedTimeHeadCell(
     span: Int,
     slotH: androidx.compose.ui.unit.Dp,
     gapH: androidx.compose.ui.unit.Dp,
+    onlyFirst: Boolean = false,
     modifier: Modifier = Modifier
 ) {
     val colors = SleepyTheme.colors
     val rowH = slotH + gapH
     // Clamp span to what's actually available — courses may reference nodes beyond timeSlots.
     val safeSpan = span.coerceAtMost(timeSlots.size - startIdx).coerceAtLeast(1)
+    // 当 onlyFirst=true 时只画第一个标签（用于跨节中间 slot 的 row，避免重复）
+    val renderSpan = if (onlyFirst) 1 else safeSpan
     val shape = RoundedCornerShape(12.dp)
     Column(modifier = modifier) {
-        for (i in 0 until safeSpan) {
+        for (i in 0 until renderSpan) {
             val slot = timeSlots[startIdx + i]
             // 每个节次单元格：与 TimeHeadCell 一致（surface 背景 + outline 边框 + 圆角 + 4dp 内边距）
             // 高度：i 是最后一节时 slotH（不留 gap），否则 rowH（slotH + gapH，底部留 gapH 间距给下一个 box）
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(if (i == safeSpan - 1) slotH else rowH)
-                    .padding(bottom = if (i == safeSpan - 1) 0.dp else gapH),
+                    .height(if (i == renderSpan - 1) slotH else rowH)
+                    .padding(bottom = if (i == renderSpan - 1) 0.dp else gapH),
                 contentAlignment = Alignment.Center
             ) {
                 Box(

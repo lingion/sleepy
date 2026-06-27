@@ -64,6 +64,7 @@
     <string name="import_supported_formats">支持格式</string>
     <string name="import_preview_title">导入预览</string>
     <string name="import_target_table">目标课表：%1$s</string>
+    <string name="import_new_table_hint">（将作为新课表创建）</string>
     <string name="import_courses">导入课程</string>
     <string name="import_conflicts">冲突课程</string>
     <string name="import_appendable">可追加</string>
