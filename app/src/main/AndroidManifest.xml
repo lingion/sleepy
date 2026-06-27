@@ -102,6 +102,16 @@
             android:name=".widget.notification.DailyNotifyReceiver"
             android:exported="false" />
 
+        <!-- Before-class midnight scheduler -->
+        <receiver
+            android:name=".widget.notification.BeforeClassScheduleReceiver"
+            android:exported="false" />
+
+        <!-- Individual before-class notification -->
+        <receiver
+            android:name=".widget.notification.BeforeClassNotifyReceiver"
+            android:exported="false" />
+
         <!-- 教务直连导入 Activity (v1.0.8 新增) -->
         <activity
             android:name=".ui.screen.imports.JwImportActivity"

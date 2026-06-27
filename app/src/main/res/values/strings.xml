@@ -321,6 +321,47 @@
     <string name="notif_channel_desc">每天早上推送今日课程安排</string>
     <string name="notif_title">今日课程 — %1$s %2$s</string>
     <string name="notif_text">点击查看今日课程安排</string>
+
+    <!-- v1.0.20 提醒功能 -->
+    <string name="reminder_title">提醒</string>
+    <string name="reminder_master_title">开启提醒</string>
+    <string name="reminder_master_sub">允许 Sleepy 发送课程通知</string>
+    <string name="reminder_daily_title">每日提醒</string>
+    <string name="reminder_daily_sub">每天在指定时间推送今日课程摘要</string>
+    <string name="reminder_daily_time_label">提醒时间</string>
+    <string name="reminder_daily_preview">示例：今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课</string>
+    <string name="reminder_before_class_title">每节课前提醒</string>
+    <string name="reminder_before_class_sub">在每节课开始前提醒下节课信息</string>
+    <string name="reminder_before_minutes_label">提前</string>
+    <string name="reminder_before_minutes_unit">分钟</string>
+    <string name="reminder_before_class_preview">示例：下节课 高等数学 于 08:00 在 教学楼A101 上课</string>
+    <string name="reminder_pick_time">选择提醒时间</string>
+    <string name="action_confirm">确定</string>
+    <string name="action_cancel">取消</string>
+    <!-- Notification channels -->
+    <string name="notif_channel_daily">每日课程提醒</string>
+    <string name="notif_channel_daily_desc">每天在指定时间推送今日课程摘要</string>
+    <string name="notif_channel_before_class">课前提醒</string>
+    <string name="notif_channel_before_class_desc">每节课开始前推送下节课信息</string>
+    <!-- Notification content -->
+    <string name="notif_daily_title">今日 %1$d 号，您有 %2$d 节课</string>
+    <string name="notif_daily_text_first">第一节课 %1$s 于 %2$s 在 %3$s 上课</string>
+    <string name="notif_daily_title_no_course">今日 %1$d 号，今天没有课程</string>
+    <string name="notif_daily_text_no_course">好好休息，享受一天！</string>
+    <string name="notif_before_class_title">课前提醒</string>
+    <string name="notif_before_class_text">下节课 %1$s 于 %2$s 在 %3$s 上课</string>
+    <string name="notif_room_unknown">未知教室</string>
+
+    <!-- 关于页面 -->
+    <string name="about_title">关于</string>
+    <string name="about_version">版本信息</string>
+    <string name="about_version_detail">版本 %1$s（构建 %2$d）</string>
+    <string name="about_author">作者</string>
+    <string name="about_author_name">Lingion</string>
+    <string name="about_source">开源地址</string>
+    <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_license_title">开源声明</string>
+    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
     <string name="theme_name_default">默认淡紫</string>
     <string name="theme_name_spring">春绿</string>
     <string name="theme_name_ocean">海蓝</string>

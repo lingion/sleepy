@@ -42,6 +42,8 @@ import com.lingion.sleepy.ui.screen.mine.MoreSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.ThemeColorScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
+import com.lingion.sleepy.ui.screen.mine.ReminderScreen
+import com.lingion.sleepy.ui.screen.mine.AboutScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -84,19 +86,6 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            val perm = android.Manifest.permission.POST_NOTIFICATIONS
-            if (checkSelfPermission(perm) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
-                requestPermissions(arrayOf(perm), 1001)
-            }
-        }
-
-        try {
-            (application as SleepyApp).notificationScheduler.scheduleDailyReminder()
-        } catch (e: Throwable) {
-            android.util.Log.e("Sleepy", "scheduleDailyReminder failed", e)
-        }
 
         handleDeepLinkIntent(intent)
 
@@ -158,7 +147,9 @@ private enum class OverlayScreen {
     EditTable,
     ThemeColor,
     MoreSettings,
-    Export
+    Export,
+    Reminder,
+    About
 }
 
 @Composable
@@ -304,6 +295,22 @@ private fun AppRoot(
         return
     }
 
+    // ----- Reminder -----
+    if (overlayScreen == OverlayScreen.Reminder) {
+        ReminderScreen(
+            onBack = { overlayScreen = null }
+        )
+        return
+    }
+
+    // ----- About -----
+    if (overlayScreen == OverlayScreen.About) {
+        AboutScreen(
+            onBack = { overlayScreen = null }
+        )
+        return
+    }
+
     androidx.compose.material3.Scaffold(
         modifier = Modifier.fillMaxSize(),
         containerColor = SleepyTheme.colors.background,
@@ -368,7 +375,9 @@ private fun AppRoot(
                     onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
                     onOpenThemeColor = { overlayScreen = OverlayScreen.ThemeColor },
                     onOpenMoreSettings = { overlayScreen = OverlayScreen.MoreSettings },
-                    onOpenExport = { overlayScreen = OverlayScreen.Export }
+                    onOpenExport = { overlayScreen = OverlayScreen.Export },
+                    onOpenReminder = { overlayScreen = OverlayScreen.Reminder },
+                    onOpenAbout = { overlayScreen = OverlayScreen.About }
                 )
             }
         }

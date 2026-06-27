@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.19</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
+  <code>v1.0.20</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -53,6 +53,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖
 特性：
 - 左/右滑周切换器，实时算周次
 - **v1.0.19：手指左右滑动切换周次**（HorizontalPager），周视图与网格视图均支持
+- **v1.0.20：提醒功能重做** — 独立提醒页面，master toggle 权限流（拒绝可重试），每日提醒（自定义时间 + 动态内容），每节课前提醒（自由输入分钟数，胶囊型输入框），新增「关于」页面（版本/作者/开源声明）
 - 课程按"起止周+单双周+起止节"自动过滤当前周
 - 点击课程卡片弹出详情底部弹窗
 

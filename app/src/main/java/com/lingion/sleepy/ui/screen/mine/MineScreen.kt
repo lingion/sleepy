@@ -24,7 +24,6 @@ import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,7 +32,6 @@ import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -50,7 +48,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
@@ -66,15 +63,15 @@ fun MineScreen(
     onOpenAllTables: () -> Unit = {},
     onOpenThemeColor: () -> Unit = {},
     onOpenMoreSettings: () -> Unit = {},
-    onOpenExport: () -> Unit = {}
+    onOpenExport: () -> Unit = {},
+    onOpenReminder: () -> Unit = {},
+    onOpenAbout: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
-    var showAbout by remember { mutableStateOf(false) }
-    var reminderOn by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
 
     val showSnack: (String) -> Unit = { msg -> scope.launch { snackbar.showSnackbar(msg) } }
 
@@ -136,27 +133,8 @@ fun MineScreen(
                     Divider()
                     SettingsItem(
                         icon = Icons.Outlined.Notifications,
-                        label = stringResource(R.string.mine_reminder),
-                        trailing = {
-                            Switch(
-                                checked = reminderOn,
-                                onCheckedChange = { on ->
-                                    reminderOn = on
-                                    AppPrefs.setReminderEnabled(context, on)
-                                    if (on) {
-                                        SleepyApp.get().notificationScheduler.scheduleDailyReminder()
-                                        showSnack(context.getString(R.string.mine_reminder_on))
-                                    } else {
-                                        SleepyApp.get().notificationScheduler.cancelDailyReminder()
-                                        showSnack(context.getString(R.string.mine_reminder_off))
-                                    }
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = colors.onPrimary,
-                                    checkedTrackColor = colors.primary
-                                )
-                            )
-                        }
+                        label = stringResource(R.string.reminder_title),
+                        onClick = onOpenReminder
                     )
                     Divider()
                     SettingsItem(
@@ -194,34 +172,19 @@ fun MineScreen(
                     SettingsItem(
                         icon = Icons.Outlined.Tune,
                         label = stringResource(R.string.mine_more_settings),
-                        isLast = true,
                         onClick = onOpenMoreSettings
+                    )
+                    Divider()
+                    SettingsItem(
+                        icon = Icons.Outlined.Info,
+                        label = stringResource(R.string.about_title),
+                        isLast = true,
+                        onClick = onOpenAbout
                     )
                 }
             }
 
         }
-    }
-
-    if (showAbout) {
-        AlertDialog(
-            onDismissRequest = { showAbout = false },
-            title = { Text(stringResource(R.string.mine_about_title)) },
-            text = {
-                Text(
-                    text = stringResource(R.string.mine_about_body, BuildConfig.VERSION_NAME),
-                    style = MaterialTheme.typography.bodyMedium
-                )
-            },
-            confirmButton = {
-                TextButton(onClick = { showAbout = false }) {
-                    Text(stringResource(R.string.action_close))
-                }
-            },
-            containerColor = colors.surface,
-            titleContentColor = colors.onSurface,
-            textContentColor = colors.onSurfaceVariant
-        )
     }
 }
 

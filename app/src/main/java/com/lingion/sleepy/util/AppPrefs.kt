@@ -15,7 +15,11 @@ import kotlinx.coroutines.flow.distinctUntilChanged
 object AppPrefs {
     private const val FILE = "sleepy_prefs"
     const val KEY_DARK = "dark_mode"
-    const val KEY_REMINDER = "daily_reminder"
+    const val KEY_REMINDER = "reminder_master"      // master toggle (default false)
+    const val KEY_DAILY_ENABLED = "daily_reminder"   // daily sub-toggle (default true)
+    const val KEY_DAILY_TIME = "daily_reminder_time" // "HH:mm" default "07:00"
+    const val KEY_BEFORE_CLASS_ENABLED = "before_class_enabled"       // bool default false
+    const val KEY_BEFORE_CLASS_MINUTES = "before_class_minutes"       // int default 10
     const val KEY_THEME = "theme_key"
     const val KEY_LANG = "language"
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
@@ -60,11 +64,44 @@ object AppPrefs {
 
     // ===== 提醒 =====
 
+    /** Master toggle — default false */
     fun isReminderEnabled(ctx: Context): Boolean =
-        sp(ctx).getBoolean(KEY_REMINDER, true)
+        sp(ctx).getBoolean(KEY_REMINDER, false)
 
     fun setReminderEnabled(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_REMINDER, v).apply()
+    }
+
+    /** Daily reminder sub-toggle — default true (only active when master on) */
+    fun isDailyReminderEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_DAILY_ENABLED, true)
+
+    fun setDailyReminderEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_DAILY_ENABLED, v).apply()
+    }
+
+    /** Daily reminder time "HH:mm" — default "07:00" */
+    fun getDailyReminderTime(ctx: Context): String =
+        sp(ctx).getString(KEY_DAILY_TIME, "07:00") ?: "07:00"
+
+    fun setDailyReminderTime(ctx: Context, time: String) {
+        sp(ctx).edit().putString(KEY_DAILY_TIME, time).apply()
+    }
+
+    /** Before-class reminder sub-toggle — default false */
+    fun isBeforeClassEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_BEFORE_CLASS_ENABLED, false)
+
+    fun setBeforeClassEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_ENABLED, v).apply()
+    }
+
+    /** Minutes before class to notify — default 10 */
+    fun getBeforeClassMinutes(ctx: Context): Int =
+        sp(ctx).getInt(KEY_BEFORE_CLASS_MINUTES, 10)
+
+    fun setBeforeClassMinutes(ctx: Context, minutes: Int) {
+        sp(ctx).edit().putInt(KEY_BEFORE_CLASS_MINUTES, minutes).apply()
     }
 
     // ===== 语言 =====
