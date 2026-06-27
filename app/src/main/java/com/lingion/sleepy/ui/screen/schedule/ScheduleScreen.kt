@@ -18,6 +18,8 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -33,10 +35,12 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -134,23 +138,52 @@ fun ScheduleScreen(
                     .padding(horizontal = 16.dp, vertical = 8.dp)
             )
 
-            // 主体视图
-            Box(modifier = Modifier.fillMaxSize()) {
+            // 主体视图 — 左右滑动切换周次
+            val pagerMaxWeek = state.currentTable?.maxWeek ?: 20
+            val pagerState = rememberPagerState(
+                initialPage = (state.currentWeek - 1).coerceIn(0, (pagerMaxWeek - 1).coerceAtLeast(0)),
+                pageCount = { pagerMaxWeek.coerceAtLeast(1) }
+            )
+            val coroutineScope = rememberCoroutineScope()
+
+            // Pager 滑动 → 更新 ViewModel（驱动 TopBar 箭头同步）
+            LaunchedEffect(pagerState.currentPage) {
+                viewModel.changeWeek(pagerState.currentPage + 1)
+            }
+
+            // ViewModel 变化 → 同步 Pager（TopBar 箭头/下拉菜单点击时）
+            LaunchedEffect(state.currentWeek) {
+                val targetPage = (state.currentWeek - 1).coerceIn(0, pagerMaxWeek - 1)
+                if (pagerState.currentPage != targetPage) {
+                    pagerState.animateScrollToPage(targetPage)
+                }
+            }
+
+            HorizontalPager(
+                state = pagerState,
+                modifier = Modifier.fillMaxSize()
+            ) { page ->
+                // page 是 0-based 周索引，独立于 state.currentWeek 过滤课程
+                val weekCourses = state.courses.filter { it.inWeek(page + 1) }
+                    .let { list ->
+                        val tj = state.currentTable?.timeJson
+                        if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
+                    }
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
-                        courses = state.currentWeekCourses,
+                        courses = weekCourses,
                         visibleDays = visibleDays,
                         displayMode = displayMode,
                         timeJson = state.currentTable?.timeJson ?: "",
                         onCourseClick = { selectedCourse = it }
                     )
                     ViewMode.Cards -> CardsGridView(
-                        courses = state.currentWeekCourses,
+                        courses = weekCourses,
                         timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
                         visibleDays = visibleDays,
                         showDate = showDate,
                         startDate = state.currentTable?.startDate ?: "",
-                        currentWeek = state.currentWeek,
+                        currentWeek = page + 1,
                         displayMode = displayMode,
                         timeJson = state.currentTable?.timeJson ?: "",
                         onCourseClick = { selectedCourse = it }
