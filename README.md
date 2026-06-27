@@ -19,6 +19,11 @@
   <img src="docs/screenshots/widget-today.png" width="22%">
   <img src="docs/screenshots/widget-twoday.png" width="22%">
 </p>
+<p align="center">
+  <img src="docs/screenshots/22-reminder.png" width="30%">
+  <img src="docs/screenshots/20-import-bottomsheet.png" width="30%">
+  <img src="docs/screenshots/21-about.png" width="30%">
+</p>
 
 <p align="center">
   <code>v1.0.20</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
@@ -33,7 +38,7 @@
 | 包名 | `com.lingion.sleepy.debug` |
 | 最低 SDK | 24 (Android 7.0) |
 | 目标 SDK | 35 |
-| 架构 | arm64-v8a / x86_64 |
+| 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
 Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖，支持教务直连导入、多格式解析、四类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。
@@ -96,7 +101,19 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 ## 🎓 教务系统导入
 
-WebView 登录 → 自动抓取课表。
+入口在底栏「课表管理」→「导入课表」弹窗，三种入口**先预览再导入**，绝不覆盖现有课表。
+
+<p align="left">
+  <img src="docs/screenshots/20-import-bottomsheet.png" width="320">
+</p>
+
+| 入口 | 流程 |
+|---|---|
+| **教务直连** | 选择学校 → WebView 登录 → 自动抓取课表 → 预览 → 导入 |
+| **粘贴课表文本** | 粘贴任意格式文本 → 自动识别格式 → 预览 → 导入 |
+| **从文件导入** | 选择 `.json` / `.ics` / `.csv` / `.html` 文件 → 预览 → 导入 |
+
+### 支持的教务协议
 
 | 协议 | 说明 |
 |---|---|
@@ -108,13 +125,19 @@ WebView 登录 → 自动抓取课表。
 | `pku` | 北京大学 |
 | `bnuz` | 北师珠 |
 
-<p align="left">
-  <img src="docs/screenshots/12-import-options.png" width="280">
-</p>
+### 支持的文本格式
 
-导入流程：选来源 → 教务 WebView 登录 → 自动解析 HTML → 写入课表。
+| 格式 | 识别特征 |
+|---|---|
+| **WakeUp 分享文本** | 以 `【来自WakeUp课程表】` 开头 |
+| **WakeUp JSON** | Sleepy / WakeUp 导出的 `.json` |
+| **ICS 日历** | 标准 iCalendar，可从学校教务处导出 |
+| **CSV 文件** | 含表头的 `.csv`，逗号分隔 |
+| **HTML 表格** | `<table>` 形式，识别表头后逐行解析 |
+| **纯文本** | 一行一课，制表符分隔 |
 
-> v1.0.18：导入课表改为 ModalBottomSheet 弹窗，操作更流畅。
+> v1.0.18：导入课表改为 ModalBottomSheet 弹窗，三入口统一视觉。
+> v1.0.20：导入流程统一加"先预览再导入"，避免误操作覆盖原课表。
 
 ---
 
@@ -129,18 +152,6 @@ WebView 登录 → 自动抓取课表。
 > 右：点击周视图课程卡片弹出详情底部弹窗
 
 字段：课名 · 教师 · 教室 · 备注 · 星期 · 起止节 · 起止周 · 单双周类型 · 课程色。
-
----
-
-## 📥 导入入口
-
-<p align="left">
-  <img src="docs/screenshots/10-import.png" width="280">
-  <img src="docs/screenshots/12-import-options.png" width="280">
-</p>
-
-> 左：导入页（粘贴文本 + 4 种格式自动识别）
-> 右：教务直连 → 选学校 → WebView 登录 → 抓取
 
 ---
 
@@ -185,13 +196,42 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 ---
 
-## 🔔 课程通知
+## ⏰ 课程通知 & 提醒
 
-`CourseNotificationScheduler` · 每日 07:00 推送今日课程提醒。
+入口在「我的」→「提醒」跳独立页面。master toggle 默认关闭，点击开启时请求通知权限——拒绝则回弹关闭，再点再问（非一次性）。
 
-- AlarmManager 精确/非精确双路降级（Android 12+ 兼容）
-- BootReceiver 重注册（开机/更新后自动恢复）
-- DataStore 持久化开关状态
+<p align="left">
+  <img src="docs/screenshots/22-reminder.png" width="320">
+</p>
+
+| 子功能 | 触发时机 | 内容（动态生成） |
+|---|---|---|
+| **每日提醒** | 每天指定时间 | `今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课` |
+| **每节课前提醒** | 每节课前 N 分钟 | `下节课 高等数学 于 08:00 在 教学楼A101 上课` |
+
+- 课前分钟数**自由输入**（1–999，胶囊型输入框，非硬编码选项）
+- 提醒内容**动态查询当天课表**，无课则推送「今日 X 号，今天没有课程」
+- 通知通过 `AlarmManager` 精确/非精确双路降级，Android 12+ 兼容
+- `BootReceiver` 重注册（开机/更新后自动恢复）
+- `DataStore` 持久化开关状态
+- v1.0.20 起 master 关闭时**不再弹权限**（避免首次启动骚扰），所有权限请求都从 ReminderScreen 发起
+
+---
+
+## ℹ️ 关于
+
+入口在「我的」→「关于」跳独立页面，集中展示版本、作者、开源信息。
+
+<p align="left">
+  <img src="docs/screenshots/21-about.png" width="320">
+</p>
+
+| 区块 | 内容 |
+|---|---|
+| **版本信息** | 版本号 + 构建号（`BuildConfig.VERSION_NAME` / `BuildConfig.VERSION_CODE`） |
+| **作者** | Lingion，点击跳 GitHub 主页 |
+| **开源地址** | github.com/lingion/sleepy，点击可跳转 |
+| **开源声明** | GPL-3.0 协议说明，欢迎贡献 |
 
 ---
 
@@ -318,7 +358,7 @@ adb install app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 ```
 
-> ABI 分包：arm64-v8a（真机）、x86_64（模拟器）。自动匹配设备架构。
+> ABI 分包：arm64-v8a（真机主流）、armeabi-v7a（32 位备机）、x86_64（模拟器）。自动匹配设备架构。
 
 ---
 
