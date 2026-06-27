@@ -40,7 +40,6 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -144,18 +143,22 @@ fun ScheduleScreen(
                 initialPage = (state.currentWeek - 1).coerceIn(0, (pagerMaxWeek - 1).coerceAtLeast(0)),
                 pageCount = { pagerMaxWeek.coerceAtLeast(1) }
             )
-            val coroutineScope = rememberCoroutineScope()
 
-            // Pager 滑动 → 更新 ViewModel（驱动 TopBar 箭头同步）
+            // 标记：是否正在由 ViewModel 驱动 Pager 滚动（防止双向同步打架）
+            var syncingFromState by remember { mutableStateOf(false) }
+
+            // Pager 滑动（用户手势）→ 更新 ViewModel
             LaunchedEffect(pagerState.currentPage) {
-                viewModel.changeWeek(pagerState.currentPage + 1)
+                if (!syncingFromState) {
+                    viewModel.changeWeek(pagerState.currentPage + 1)
+                }
             }
 
-            // ViewModel 变化 → 同步 Pager（TopBar 箭头/下拉菜单点击时）
+            // ViewModel 变化（TopBar 箭头/下拉菜单点击）→ 同步 Pager
             LaunchedEffect(state.currentWeek) {
                 val targetPage = (state.currentWeek - 1).coerceIn(0, pagerMaxWeek - 1)
                 if (pagerState.currentPage != targetPage) {
-                    pagerState.animateScrollToPage(targetPage)
+                    pagerState.scrollToPage(targetPage)
                 }
             }
 
