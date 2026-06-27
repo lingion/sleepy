@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.16</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
+  <code>v1.0.19</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -52,6 +52,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖
 
 特性：
 - 左/右滑周切换器，实时算周次
+- **v1.0.19：手指左右滑动切换周次**（HorizontalPager），周视图与网格视图均支持
 - 课程按"起止周+单双周+起止节"自动过滤当前周
 - 点击课程卡片弹出详情底部弹窗
 
@@ -111,6 +112,8 @@ WebView 登录 → 自动抓取课表。
 </p>
 
 导入流程：选来源 → 教务 WebView 登录 → 自动解析 HTML → 写入课表。
+
+> v1.0.18：导入课表改为 ModalBottomSheet 弹窗，操作更流畅。
 
 ---
 
@@ -233,7 +236,7 @@ background      = WorkManager 2.9.1
 image           = Coil Compose 2.7.0
 splash          = Core Splash Screen 1.0.1
 build           = AGP 8.5.2 + Gradle Kotlin DSL
-java_compat     = 17
+java_compat     = 21
 ```
 
 ---
@@ -276,6 +279,7 @@ sleepy/
 │       ├── values-es/                  # Español
 │       └── xml/                        # 4 个 widget 配置 + 网络/备份规则
 ├── docs/screenshots/                   # README 截图
+├── assets/                             # logo 原图存档
 ├── build.gradle.kts                     # 根构建
 ├── app/build.gradle.kts                 # App 模块
 ├── settings.gradle.kts
@@ -290,7 +294,7 @@ sleepy/
 ### 前置
 
 ```bash
-java -version           # JDK 17+
+java -version           # JDK 21+
 
 sdkmanager "platforms;android-35" "build-tools;35.0.0"
 ```
