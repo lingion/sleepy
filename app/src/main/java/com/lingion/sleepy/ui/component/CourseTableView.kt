@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -13,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -27,6 +29,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
@@ -58,22 +61,18 @@ data class TimeSlot(
 private val CELL_H = 52.dp
 
 /**
- * Cards 网格视图 — 7 列 × N 节 (每节独立一行) + 绝对定位的跨节卡片
+ * Cards 网格视图
  *
- * 设计：两层架构，参考历史 commit 8a990ea 的 two-layer grid。
+ * 架构：
+ *   BoxWithConstraints(fillMaxSize) → 算出 colW (dp)
+ *     Column(fillMaxWidth, verticalScroll)
+ *       Row(表头)            — Compose 自然排版
+ *       Box(固定高度 = maxNode * rowH) — 时间栏 + 课程卡片全用 Modifier.offset 绝对定位
  *
- *   Layer 1 (底层)：每节 (TimeSlot) 独立 1 行 — Row 内有时间栏 Box + 7 个空 Cell。
- *                  Row 高度固定 = slotH，绝不因为某门跨节大课撑高。
- *                  保证左侧时间栏每个「第X节」标签只出现 1 次，不会重复。
- *
- *   Layer 2 (覆盖层)：跨节卡片用 androidx.compose.ui.layout.Layout 绝对定位，
- *                  按 dayIdx/nodeIdx/steps 计算 (x, y, w, h)，覆盖在底层多行之上。
- *                  不影响底层时间栏布局，step=10 的大课可以正确跨 10 行而不会撑高底层。
- *
- * 与原 8a990ea 版本的区别：
- * - 不再硬编码 timeSlots 参数 (使用 timeSlotsFor 12 节默认值)，支持外部传入
- * - 支持 visibleDays 子集 / showDate / displayMode / timeJson 等 ScheduleScreen 参数
- * - 保留现有 pickCourseColor 调色板 (8a990ea 用旧的 if-when 链)
+ * 关键点：
+ * - Column 用 fillMaxWidth（不是 fillMaxSize），内容高度 = 表头 + 固定 gridH，超出视口 → 可滚动
+ * - 时间栏 / 卡片都在同一个 Box 内，Modifier.offset 定位 → 滚动完全同步
+ * - 全用 dp 算 offset，不碰 px，不碰 Layout measure/place
  */
 @Composable
 fun CardsGridView(
@@ -94,14 +93,13 @@ fun CardsGridView(
     val sortedDays = visibleDays.sorted()
     val dayCount = sortedDays.size
 
-    // Layout constants
-    val headH = 58.dp
+    // 布局常量（全 dp）
+    val headH = 52.dp
     val timeW = 68.dp
     val slotH = 52.dp
     val gapH = 4.dp
     val gapW = 5.dp
-    val rowH = slotH + gapH   // 56dp per row
-    val totalH = headH + rowH * maxNode
+    val rowH = slotH + gapH   // 56dp
 
     Box(
         modifier = modifier
@@ -110,109 +108,90 @@ fun CardsGridView(
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
-        // Layer 1 — 底层：表头 + 每节独立一行 + 空 cell
-        Column(
-            modifier = Modifier
-                .fillMaxSize()
-                .verticalScroll(rememberScrollState())
-        ) {
-            // 表头：周一~周日
-            Row(
-                modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
-                horizontalArrangement = Arrangement.spacedBy(gapW)
-            ) {
-                Box(modifier = Modifier.width(timeW))
-                for (day in sortedDays) {
-                    val dateStr = if (showDate && startDate.isNotBlank()) {
-                        try {
-                            val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
-                            DateUtils.shortDate(d)
-                        } catch (_: Exception) { null }
-                    } else null
-                    DayHeadCell(
-                        day = day,
-                        isToday = day == today,
-                        courseCount = courses.count { it.day == day },
-                        dateStr = dateStr,
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            // 算出每列宽度 (dp)
+            val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
+            val gridH = rowH * maxNode   // grid 内容区固定高度
 
-            // 每节独立一行（不撑高）。这样 Row 高度 = slotH，时间栏「第X节」只出现 1 次。
-            for ((slotIdx, slot) in timeSlots.withIndex()) {
+            val scrollState = rememberScrollState()
+
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .verticalScroll(scrollState)
+            ) {
+                // ---- 表头：自然 Compose Row ----
                 Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .height(slotH),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(gapW)
+                    modifier = Modifier.fillMaxWidth().height(headH),
+                    horizontalArrangement = Arrangement.spacedBy(gapW),
+                    verticalAlignment = Alignment.CenterVertically
                 ) {
-                    SingleTimeHeadCell(
-                        slot = slot,
-                        modifier = Modifier.width(timeW).fillMaxHeight()
-                    )
+                    Spacer(modifier = Modifier.width(timeW))
                     for (day in sortedDays) {
-                        EmptyGridCell(
-                            modifier = Modifier.weight(1f).fillMaxHeight(),
-                            isToday = day == today
+                        val dateStr = if (showDate && startDate.isNotBlank()) {
+                            try {
+                                val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
+                                DateUtils.shortDate(d)
+                            } catch (_: Exception) { null }
+                        } else null
+                        DayHeadCell(
+                            day = day,
+                            isToday = day == today,
+                            courseCount = courses.count { it.day == day },
+                            dateStr = dateStr,
+                            modifier = Modifier.width(colW).fillMaxHeight()
                         )
                     }
                 }
-                if (slotIdx < timeSlots.size - 1) Spacer(modifier = Modifier.height(gapH))
-            }
-        }
 
-        // Layer 2 — 覆盖层：跨节卡片绝对定位
-        // 先筛出要绘制的课程列表 (overlayCourses)，外层 Layout 包它们，
-        // measurables 与 overlayCourses 一一对应。
-        val overlayCourses = courses.filter {
-            it.day in visibleDays && it.startNode in 1..maxNode
-        }
-        androidx.compose.ui.layout.Layout(
-            content = {
-                for (course in overlayCourses) {
-                    val steps = course.step.coerceAtLeast(1)
-                        .coerceAtMost(maxNode - course.startNode + 1)
-                    CourseOverlayCard(
-                        course = course,
-                        steps = steps,
-                        displayMode = displayMode,
-                        timeJson = timeJson,
-                        onClick = { onCourseClick(course) }
-                    )
-                }
-            },
-            modifier = Modifier.fillMaxSize()
-        ) { measurables, constraints ->
-            val w = constraints.maxWidth
-            val h = constraints.maxHeight
-            val timeWPx = timeW.toPx().toInt()
-            val gapWPx = gapW.toPx().toInt()
-            val gapHPx = gapH.toPx().toInt()
-            val headHPx = headH.toPx().toInt()
-            val slotHPx = slotH.toPx().toInt()
-            val rowHPx = slotHPx + gapHPx
-            val colW = (w - timeWPx - gapWPx * (dayCount + 1)) / dayCount
+                Spacer(modifier = Modifier.height(gapH))
 
-            val placeables = measurables.mapIndexed { i, measurable ->
-                val course = overlayCourses[i]
-                val dayIdx = sortedDays.indexOf(course.day)
-                val steps = course.step.coerceAtLeast(1)
-                    .coerceAtMost(maxNode - course.startNode + 1)
-                val cardW = colW
-                val cardH = steps * rowHPx - gapHPx
-                val placeable = measurable.measure(
-                    androidx.compose.ui.unit.Constraints.fixed(cardW, cardH)
-                )
-                val x = timeWPx + gapWPx + dayIdx * (colW + gapWPx)
-                val y = headHPx + (course.startNode - 1) * rowHPx
-                Triple(placeable, x, y)
-            }
+                // ---- Grid 主体：固定高度 Box，内部全用 Modifier.offset 绝对定位 ----
+                Box(modifier = Modifier.fillMaxWidth().height(gridH)) {
+                    // 时间栏：每个节次一个 Row，用 offset 定位到正确 y
+                    for ((i, slot) in timeSlots.withIndex()) {
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(slotH)
+                                .offset(y = rowH * i),
+                            horizontalArrangement = Arrangement.spacedBy(gapW),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            SingleTimeHeadCell(
+                                slot = slot,
+                                modifier = Modifier.width(timeW).fillMaxHeight()
+                            )
+                            // 透明占位：保证行宽和表头一致
+                            for (day in sortedDays) {
+                                Spacer(modifier = Modifier.width(colW).fillMaxHeight())
+                            }
+                        }
+                    }
 
-            layout(w, h) {
-                placeables.forEach { (placeable, x, y) ->
-                    placeable.placeRelative(x, y)
+                    // 课程卡片：用 offset 绝对定位
+                    for (course in courses) {
+                        if (course.day !in visibleDays) continue
+                        if (course.startNode !in 1..maxNode) continue
+                        val dayIdx = sortedDays.indexOf(course.day)
+                        val steps = course.step.coerceAtLeast(1)
+                            .coerceAtMost(maxNode - course.startNode + 1)
+                        val cardX = timeW + gapW + (colW + gapW) * dayIdx
+                        val cardY = rowH * (course.startNode - 1)
+                        val cardH = rowH * steps - gapH
+
+                        CourseOverlayCard(
+                            course = course,
+                            steps = steps,
+                            displayMode = displayMode,
+                            timeJson = timeJson,
+                            onClick = { onCourseClick(course) },
+                            modifier = Modifier
+                                .offset(x = cardX, y = cardY)
+                                .width(colW)
+                                .height(cardH)
+                        )
+                    }
                 }
             }
         }
@@ -278,7 +257,8 @@ private fun CourseOverlayCard(
     steps: Int,
     displayMode: String,
     timeJson: String,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
@@ -287,7 +267,7 @@ private fun CourseOverlayCard(
     val shape = RoundedCornerShape(12.dp)
 
     Box(
-        modifier = Modifier
+        modifier = modifier
             .padding(2.dp)
             .clip(shape)
             .background(bg)
