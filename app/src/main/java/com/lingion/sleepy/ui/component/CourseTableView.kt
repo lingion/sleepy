@@ -58,15 +58,22 @@ data class TimeSlot(
 private val CELL_H = 52.dp
 
 /**
- * Cards 网格视图 — 7 列 × 5 时段 (对应 switchable.html #cardsView)
+ * Cards 网格视图 — 7 列 × N 节 (每节独立一行) + 绝对定位的跨节卡片
  *
- * ┌────┬─────┬─────┬─────┬─────┬─────┬─────┬─────┐
- * │    │ 周一│ 周二│ ... │ 周日│
- * ├────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
- * │1-2 │     │ 高数│     │ ... │     │
- * │08:00-09:35│ │     │     │     │     │     │
- * ├────┼─────┼─────┼─────┼─────┼─────┼─────┼─────┤
- * │3-5 │ ... │
+ * 设计：两层架构，参考历史 commit 8a990ea 的 two-layer grid。
+ *
+ *   Layer 1 (底层)：每节 (TimeSlot) 独立 1 行 — Row 内有时间栏 Box + 7 个空 Cell。
+ *                  Row 高度固定 = slotH，绝不因为某门跨节大课撑高。
+ *                  保证左侧时间栏每个「第X节」标签只出现 1 次，不会重复。
+ *
+ *   Layer 2 (覆盖层)：跨节卡片用 androidx.compose.ui.layout.Layout 绝对定位，
+ *                  按 dayIdx/nodeIdx/steps 计算 (x, y, w, h)，覆盖在底层多行之上。
+ *                  不影响底层时间栏布局，step=10 的大课可以正确跨 10 行而不会撑高底层。
+ *
+ * 与原 8a990ea 版本的区别：
+ * - 不再硬编码 timeSlots 参数 (使用 timeSlotsFor 12 节默认值)，支持外部传入
+ * - 支持 visibleDays 子集 / showDate / displayMode / timeJson 等 ScheduleScreen 参数
+ * - 保留现有 pickCourseColor 调色板 (8a990ea 用旧的 if-when 链)
  */
 @Composable
 fun CardsGridView(
@@ -84,15 +91,16 @@ fun CardsGridView(
 ) {
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
-    val scrollState = rememberScrollState()
+    val sortedDays = visibleDays.sorted()
+    val dayCount = sortedDays.size
 
-    // Layout constants (Compose intrinsic — no per-modifier roundToPx needed)
-    val headH = 58.dp                  // 52dp header + 6dp bottom padding
+    // Layout constants
+    val headH = 58.dp
     val timeW = 68.dp
     val slotH = 52.dp
     val gapH = 4.dp
     val gapW = 5.dp
-    val rowH = slotH + gapH            // = 56dp per slot row
+    val rowH = slotH + gapH   // 56dp per row
     val totalH = headH + rowH * maxNode
 
     Box(
@@ -102,20 +110,18 @@ fun CardsGridView(
             .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
             .padding(8.dp)
     ) {
+        // Layer 1 — 底层：表头 + 每节独立一行 + 空 cell
         Column(
             modifier = Modifier
                 .fillMaxSize()
-                .verticalScroll(scrollState)
-                .padding(horizontal = 0.dp),
-            verticalArrangement = Arrangement.spacedBy(4.dp)
+                .verticalScroll(rememberScrollState())
         ) {
-            // Day header row
+            // 表头：周一~周日
             Row(
                 modifier = Modifier.fillMaxWidth().padding(bottom = 4.dp),
                 horizontalArrangement = Arrangement.spacedBy(gapW)
             ) {
                 Box(modifier = Modifier.width(timeW))
-                val sortedDays = visibleDays.sorted()
                 for (day in sortedDays) {
                     val dateStr = if (showDate && startDate.isNotBlank()) {
                         try {
@@ -133,83 +139,146 @@ fun CardsGridView(
                 }
             }
 
-            // Slot rows — each Row's height = max step in this row.
-            // Each cell uses its own step-height (so step=2 ≠ step=3 visually).
-            // TimeHeadCell stretches to safeStep and shows all startNode..+safeStep-1 labels.
-            //
-            // 推进规则（修复前 bug）：
-            //   旧逻辑 slotIdx += safeStep：当某行有 step=10 大课（工程实践），整个 [1..10]
-            //   区间内的其他 startNode（如 startNode=3 周五信号与系统A、startNode=3 周六软件设计）
-            //   永远不会被绘制 — slotIdx 直接跳到 10，中间没有 row 处理这些 startNode。
-            //   新逻辑：每次 slotIdx += 1。如果本 slot 没有起始卡片，row 高度按
-            //   跨到本行的最大剩余 step（让前面大课卡片高度自然填到本行末），
-            //   时间标签只显示 1 个；本 slot 不画卡片。
-            //   如果本 slot 有起始卡片，row 高度 = 该卡片 step，画卡片。
-            var slotIdx = 0
-            while (slotIdx < timeSlots.size) {
-                val currentNode = timeSlots[slotIdx].nodeStart
-                // cardsHere A: 从本节开始的卡片（这些会绘制）
-                val cardsHere = courses.filter { it.startNode == currentNode }
-                // cardsHere B: 跨到本行的卡片（从前几节开始，本行是它的覆盖范围）。仅用于算 row 高度。
-                val spanningCards = courses.filter {
-                    it.startNode < currentNode && it.startNode + it.step > currentNode
-                }
-                val maxStep = cardsHere.maxOfOrNull { it.step.coerceAtLeast(1) }
-                    ?: spanningCards.maxOfOrNull { (it.startNode + it.step) - currentNode }
-                    ?: 1
-                val safeStep = maxStep.coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
-                val rowHeight = (slotH + gapH) * safeStep - gapH
-
+            // 每节独立一行（不撑高）。这样 Row 高度 = slotH，时间栏「第X节」只出现 1 次。
+            for ((slotIdx, slot) in timeSlots.withIndex()) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(rowHeight),
-                    verticalAlignment = Alignment.Top,
+                        .height(slotH),
+                    verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(gapW)
                 ) {
-                    SpannedTimeHeadCell(
-                        timeSlots = timeSlots,
-                        startIdx = slotIdx,
-                        span = safeStep,
-                        slotH = slotH,
-                        gapH = gapH,
-                        onlyFirst = cardsHere.isEmpty(),  // 跨节行只画 1 个标签避免重复
-                        modifier = Modifier.width(timeW)
+                    SingleTimeHeadCell(
+                        slot = slot,
+                        modifier = Modifier.width(timeW).fillMaxHeight()
                     )
-                    for (day in visibleDays.sorted()) {
-                        val card = cardsHere.firstOrNull { it.day == day }
-                        if (card != null) {
-                            val step = card.step.coerceAtLeast(1).coerceAtMost(timeSlots.size - slotIdx).coerceAtLeast(1)
-                            CourseCardCell(
-                                course = card,
-                                steps = step,
-                                displayMode = displayMode,
-                                timeJson = timeJson,
-                                onClick = { onCourseClick(card) },
-                                modifier = Modifier
-                                    .weight(1f)
-                                    .height((slotH + gapH) * step - gapH)
-                            )
-                        } else {
-                            Spacer(modifier = Modifier.weight(1f).height(rowHeight))
-                        }
+                    for (day in sortedDays) {
+                        EmptyGridCell(
+                            modifier = Modifier.weight(1f).fillMaxHeight(),
+                            isToday = day == today
+                        )
                     }
                 }
+                if (slotIdx < timeSlots.size - 1) Spacer(modifier = Modifier.height(gapH))
+            }
+        }
 
-                slotIdx += 1
+        // Layer 2 — 覆盖层：跨节卡片绝对定位
+        // 先筛出要绘制的课程列表 (overlayCourses)，外层 Layout 包它们，
+        // measurables 与 overlayCourses 一一对应。
+        val overlayCourses = courses.filter {
+            it.day in visibleDays && it.startNode in 1..maxNode
+        }
+        androidx.compose.ui.layout.Layout(
+            content = {
+                for (course in overlayCourses) {
+                    val steps = course.step.coerceAtLeast(1)
+                        .coerceAtMost(maxNode - course.startNode + 1)
+                    CourseOverlayCard(
+                        course = course,
+                        steps = steps,
+                        displayMode = displayMode,
+                        timeJson = timeJson,
+                        onClick = { onCourseClick(course) }
+                    )
+                }
+            },
+            modifier = Modifier.fillMaxSize()
+        ) { measurables, constraints ->
+            val w = constraints.maxWidth
+            val h = constraints.maxHeight
+            val timeWPx = timeW.toPx().toInt()
+            val gapWPx = gapW.toPx().toInt()
+            val gapHPx = gapH.toPx().toInt()
+            val headHPx = headH.toPx().toInt()
+            val slotHPx = slotH.toPx().toInt()
+            val rowHPx = slotHPx + gapHPx
+            val colW = (w - timeWPx - gapWPx * (dayCount + 1)) / dayCount
+
+            val placeables = measurables.mapIndexed { i, measurable ->
+                val course = overlayCourses[i]
+                val dayIdx = sortedDays.indexOf(course.day)
+                val steps = course.step.coerceAtLeast(1)
+                    .coerceAtMost(maxNode - course.startNode + 1)
+                val cardW = colW
+                val cardH = steps * rowHPx - gapHPx
+                val placeable = measurable.measure(
+                    androidx.compose.ui.unit.Constraints.fixed(cardW, cardH)
+                )
+                val x = timeWPx + gapWPx + dayIdx * (colW + gapWPx)
+                val y = headHPx + (course.startNode - 1) * rowHPx
+                Triple(placeable, x, y)
+            }
+
+            layout(w, h) {
+                placeables.forEach { (placeable, x, y) ->
+                    placeable.placeRelative(x, y)
+                }
             }
         }
     }
 }
 
 @Composable
-private fun CourseCardCell(
+private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
+    val colors = SleepyTheme.colors
+    val shape = RoundedCornerShape(12.dp)
+    Box(
+        modifier = modifier.padding(2.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .clip(shape)
+                .background(colors.surface)
+                .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "第${slot.label}节",
+                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(1.dp))
+                Text(
+                    text = slot.timeString,
+                    style = SleepyTextStyle.micro(),
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun EmptyGridCell(modifier: Modifier = Modifier, isToday: Boolean) {
+    val colors = SleepyTheme.colors
+    Box(
+        modifier = modifier
+            .padding(2.dp)
+            .clip(RoundedCornerShape(12.dp))
+            .border(
+                width = 0.5.dp,
+                color = colors.outlineVariant.copy(alpha = 0.50f),
+                shape = RoundedCornerShape(12.dp)
+            )
+    )
+}
+
+@Composable
+private fun CourseOverlayCard(
     course: CourseEntity,
     steps: Int,
-    displayMode: String = "node",
-    timeJson: String = "",
-    onClick: () -> Unit,
-    modifier: Modifier = Modifier
+    displayMode: String,
+    timeJson: String,
+    onClick: () -> Unit
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
@@ -218,7 +287,7 @@ private fun CourseCardCell(
     val shape = RoundedCornerShape(12.dp)
 
     Box(
-        modifier = modifier
+        modifier = Modifier
             .padding(2.dp)
             .clip(shape)
             .background(bg)
@@ -334,11 +403,11 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
 }
 
 /**
- * 跨界行的节次栏 — 当某行被 step=N 卡片撑开时，左侧要画 N 个节次标签
- * （比如 "1-2节 08:00-09:35"、"3-4节 10:00-10:45"），不能只画起始节。
+ * 跨界行的节次栏 — 单节时空 box；跨节时被 Row 高度撑开，渲染 N 个「第X节」标签
+ * 按行均匀分布。这是最简版本：和 8a990ea two-layer 方案配套使用，跨节卡片
+ * 用 Layout 绝对定位，时间栏只负责每个 node 显示一个「第X节」标签。
  *
- * 复用 TimeHeadCell 的样式，按行均匀分布显示 startIdx..startIdx+span-1 节。
- * 若 span==1 则退化为单节 TimeHeadCell 的等价行为。
+ * 当 span>1 时本组件不渲染任何额外视觉框——Box 高度 = slotH，撑开由 Row.height 完成。
  */
 @Composable
 private fun SpannedTimeHeadCell(
@@ -350,52 +419,41 @@ private fun SpannedTimeHeadCell(
     onlyFirst: Boolean = false,
     modifier: Modifier = Modifier
 ) {
+    // 实际已不再使用此组件——改走 TwoLayerGrid 的 TimeHeadCell 单节渲染。
+    // 保留此签名以兼容旧引用。
     val colors = SleepyTheme.colors
-    val rowH = slotH + gapH
-    // Clamp span to what's actually available — courses may reference nodes beyond timeSlots.
-    val safeSpan = span.coerceAtMost(timeSlots.size - startIdx).coerceAtLeast(1)
-    // 当 onlyFirst=true 时只画第一个标签（用于跨节中间 slot 的 row，避免重复）
-    val renderSpan = if (onlyFirst) 1 else safeSpan
+    val slot = timeSlots.getOrNull(startIdx) ?: return
     val shape = RoundedCornerShape(12.dp)
-    Column(modifier = modifier) {
-        for (i in 0 until renderSpan) {
-            val slot = timeSlots[startIdx + i]
-            // 每个节次单元格：与 TimeHeadCell 一致（surface 背景 + outline 边框 + 圆角 + 4dp 内边距）
-            // 高度：i 是最后一节时 slotH（不留 gap），否则 rowH（slotH + gapH，底部留 gapH 间距给下一个 box）
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(if (i == renderSpan - 1) slotH else rowH)
-                    .padding(bottom = if (i == renderSpan - 1) 0.dp else gapH),
-                contentAlignment = Alignment.Center
-            ) {
-                Box(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .fillMaxHeight()
-                        .clip(shape)
-                        .background(colors.surface)
-                        .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
-                        .padding(4.dp),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Text(
-                            text = "第${slot.label}节",
-                            style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface,
-                            maxLines = 1
-                        )
-                        Spacer(modifier = Modifier.height(1.dp))
-                        Text(
-                            text = slot.timeString,
-                            style = SleepyTextStyle.micro(),
-                            color = colors.onSurfaceVariant,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
-                    }
-                }
+    Box(
+        modifier = modifier.fillMaxHeight(),
+        contentAlignment = Alignment.Center
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+                .padding(2.dp)
+                .clip(shape)
+                .background(colors.surface)
+                .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
+                .padding(4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Text(
+                    text = "第${slot.label}节",
+                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface,
+                    maxLines = 1
+                )
+                Spacer(modifier = Modifier.height(1.dp))
+                Text(
+                    text = slot.timeString,
+                    style = SleepyTextStyle.micro(),
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             }
         }
     }
