@@ -1,8 +1,32 @@
-# Sleepy · 轻课表
+<p align="center">
+  <img src="docs/logo.png" width="120">
+</p>
 
-> Android 课程表 App · 纯 Kotlin + Compose · GPL-3.0
+<h1 align="center">Sleepy · 轻课表</h1>
 
-[→ 中文](README.md) · [→ English](README.en.md)
+<p align="center">
+  A clean, Material You Android schedule/timetable app built with Kotlin + Jetpack Compose.<br>
+  Material You 设计的纯净 Android 课程表 App — 多视图 · 教务导入 · 桌面小组件 · HSV 自定义配色
+</p>
+
+<p align="center">
+  <a href="https://github.com/lingion/sleepy/releases"><img src="https://img.shields.io/github/v/release/lingion/sleepy?style=flat-square&label=version" alt="Latest Release"></a>
+  <img src="https://img.shields.io/github/stars/lingion/sleepy?style=flat-square&logo=github" alt="Stars">
+  <img src="https://img.shields.io/github/downloads/lingion/sleepy/total?style=flat-square" alt="Downloads">
+  <img src="https://img.shields.io/badge/platform-Android-3DDC84?style=flat-square&logo=android&logoColor=white" alt="Android">
+  <img src="https://img.shields.io/badge/lang-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin">
+  <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat-square" alt="Compose">
+  <img src="https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square" alt="License">
+  <img src="https://img.shields.io/badge/minSDK-24_(Android_7.0)-green?style=flat-square" alt="Min SDK">
+</p>
+
+<p align="center">
+  <a href="README.md">中文</a> · <a href="README.en.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">⬇ Download APK</a>
+</p>
+
+---
+
+> **Keywords (SEO):** Android schedule app, 课程表, 课表, timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表
 
 ---
 
@@ -26,7 +50,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.20</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
+  <code>v1.0.21</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -58,7 +82,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖
 特性：
 - 左/右滑周切换器，实时算周次
 - **v1.0.19：手指左右滑动切换周次**（HorizontalPager），周视图与网格视图均支持
-- **v1.0.20：提醒功能重做** — 独立提醒页面，master toggle 权限流（拒绝可重试），每日提醒（自定义时间 + 动态内容），每节课前提醒（自由输入分钟数，胶囊型输入框），新增「关于」页面（版本/作者/开源声明）
+- **v1.0.21：提醒功能重做** — 独立提醒页面，master toggle 权限流（拒绝可重试），每日提醒（自定义时间 + 动态内容），每节课前提醒（自由输入分钟数，胶囊型输入框），新增「关于」页面（版本/作者/开源声明）
 - 课程按"起止周+单双周+起止节"自动过滤当前周
 - 点击课程卡片弹出详情底部弹窗
 
@@ -137,7 +161,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | **纯文本** | 一行一课，制表符分隔 |
 
 > v1.0.18：导入课表改为 ModalBottomSheet 弹窗，三入口统一视觉。
-> v1.0.20：导入流程统一加"先预览再导入"，避免误操作覆盖原课表。
+> v1.0.21：导入流程统一加"先预览再导入"，避免误操作覆盖原课表。
 
 ---
 
@@ -214,7 +238,7 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 - 通知通过 `AlarmManager` 精确/非精确双路降级，Android 12+ 兼容
 - `BootReceiver` 重注册（开机/更新后自动恢复）
 - `DataStore` 持久化开关状态
-- v1.0.20 起 master 关闭时**不再弹权限**（避免首次启动骚扰），所有权限请求都从 ReminderScreen 发起
+- v1.0.21 起 master 关闭时**不再弹权限**（避免首次启动骚扰），所有权限请求都从 ReminderScreen 发起
 
 ---
 
