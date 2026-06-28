@@ -440,37 +440,47 @@ private fun SpannedTimeHeadCell(
 }
 
 /**
- * 课程名 → 调色板查表（规则顺序敏感：先精确名 → 后哈希）。
+ * 课程颜色 — 基于 course.id 的确定性 HSL 分配。
  *
- * 改用查表替代 if-when 链：把"name.contains(关键词)"和"hash.mod(N) → color"两类规则
- * 合并为统一的 `List<Pair<Predicate, PaletteSelector>>`，新规则加一行即可。
- *
- * `and 0x7FFFFFFF` 把 Kotlin hashCode 的负数转成正数，避免 `(-1).mod(7) == -1` 导致永远走 else。
+ * - 黄金角 137.508° 撒 hue → 相邻 id 色差最大化（13 门课最少差 ~27°）
+ * - 亮色模式：S=0.48, L=0.88（柔和粉彩，不刺眼）
+ * - 暗色模式：S=0.35, L=0.26（沉稳低饱和，可读性好）
+ * - 同一 id 永远同色（确定性），换课表不漂移
  */
-private val courseColorRules: List<Pair<(String) -> Boolean, com.lingion.sleepy.ui.theme.CoursePalette.() -> Color>> =
-    listOf(
-        { s: String -> s.contains("英语") } to { english },
-        { s: String -> s.contains("军事") || s.contains("国防") } to { military },
-        { s: String -> s.contains("物理") } to { physics },
-        { s: String -> s.contains("历史") || s.contains("史纲") || s.contains("近代史") } to { history },
-        { s: String -> s.contains("心理") } to { psychology },
-        { s: String -> s.contains("实践") || s.contains("实习") || s.contains("实验") } to { practice },
-        { s: String -> s.contains("高数") || s.contains("数学") || s.contains("电路") } to { primary },
-        { s: String -> s.contains("思政") || s.contains("马原") || s.contains("毛概") || s.contains("形势") } to { tertiary }
-    )
-
-private val courseColorHashPalette: List<com.lingion.sleepy.ui.theme.CoursePalette.() -> Color> = listOf(
-    { primary }, { secondary }, { tertiary },
-    { english }, { physics }, { psychology }
-)
-
 private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
-    val name = course.courseName
-    courseColorRules.firstOrNull { (match, _) -> match(name) }?.let { (_, selector) ->
-        return palette.selector()
+    // 用户自定义颜色优先
+    val userColor = course.color
+    if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
+        runCatching { return Color(android.graphics.Color.parseColor(userColor)) }
     }
-    val hash = name.hashCode() and 0x7FFFFFFF
-    return courseColorHashPalette[hash % courseColorHashPalette.size].invoke(palette)
+    // 无自定义 → 按 id 黄金角 HSL 分配
+    val isDark = isPaletteDark(palette)
+    val id = (course.id % 360).toInt()
+    val hue = ((id * 137.508f) % 360f + 360f) % 360f
+    val s = if (isDark) 0.40f else 0.55f
+    val l = if (isDark) 0.28f else 0.82f
+    return hslToColor(hue, s, l)
+}
+
+private fun isPaletteDark(p: com.lingion.sleepy.ui.theme.CoursePalette): Boolean {
+    val c = p.primary
+    val lum = 0.299f * c.red + 0.587f * c.green + 0.114f * c.blue
+    return lum < 0.5f
+}
+
+private fun hslToColor(h: Float, s: Float, l: Float): Color {
+    val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
+    val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
+    val m = l - c / 2f
+    val (r, g, b) = when {
+        h < 60f   -> Triple(c, x, 0f)
+        h < 120f  -> Triple(x, c, 0f)
+        h < 180f  -> Triple(0f, c, x)
+        h < 240f  -> Triple(0f, x, c)
+        h < 300f  -> Triple(x, 0f, c)
+        else      -> Triple(c, 0f, x)
+    }
+    return Color(r + m, g + m, b + m)
 }
 
 // =====================================================================================

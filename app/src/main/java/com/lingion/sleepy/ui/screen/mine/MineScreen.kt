@@ -106,7 +106,7 @@ fun MineScreen(
             item {
                 StatsCard(
                     tableCount = state.tables.size,
-                    courseCount = state.courses.size,
+                    courseCount = state.courses.distinctBy { it.courseName }.size,
                     week = state.currentWeek
                 )
             }

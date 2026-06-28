@@ -129,6 +129,7 @@
     <string name="course_teacher">老师</string>
     <string name="course_room">地点 / 教室</string>
     <string name="course_note">备注（可选）</string>
+    <string name="course_color">颜色</string>
     <string name="week_range">周次范围</string>
     <string name="week_range_sub">整门课统一周次；同一课程内部时段会自动做冲突检查</string>
     <string name="start_week">起始周</string>

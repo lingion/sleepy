@@ -115,11 +115,11 @@ fun ScheduleScreen(
             }
         } else {
             TopBar(
-                currentWeek = state.currentWeek,
+                currentWeek = state.selectedWeek,
                 maxWeek = state.currentTable?.maxWeek ?: 20,
                 startDate = state.currentTable?.startDate ?: "",
-                onPrevWeek = { viewModel.changeWeek(state.currentWeek - 1) },
-                onNextWeek = { viewModel.changeWeek(state.currentWeek + 1) },
+                onPrevWeek = { viewModel.changeWeek(state.selectedWeek - 1) },
+                onNextWeek = { viewModel.changeWeek(state.selectedWeek + 1) },
                 onJumpToActual = {
                     val start = state.currentTable?.startDate ?: return@TopBar
                     viewModel.changeWeek(DateUtils.currentWeek(start))
@@ -140,7 +140,7 @@ fun ScheduleScreen(
             // 主体视图 — 左右滑动切换周次
             val pagerMaxWeek = state.currentTable?.maxWeek ?: 20
             val pagerState = rememberPagerState(
-                initialPage = (state.currentWeek - 1).coerceIn(0, (pagerMaxWeek - 1).coerceAtLeast(0)),
+                initialPage = (state.selectedWeek - 1).coerceIn(0, (pagerMaxWeek - 1).coerceAtLeast(0)),
                 pageCount = { pagerMaxWeek.coerceAtLeast(1) }
             )
 
@@ -155,8 +155,8 @@ fun ScheduleScreen(
             }
 
             // ViewModel 变化（TopBar 箭头/下拉菜单点击）→ 同步 Pager
-            LaunchedEffect(state.currentWeek) {
-                val targetPage = (state.currentWeek - 1).coerceIn(0, pagerMaxWeek - 1)
+            LaunchedEffect(state.selectedWeek) {
+                val targetPage = (state.selectedWeek - 1).coerceIn(0, pagerMaxWeek - 1)
                 if (pagerState.currentPage != targetPage) {
                     pagerState.scrollToPage(targetPage)
                 }

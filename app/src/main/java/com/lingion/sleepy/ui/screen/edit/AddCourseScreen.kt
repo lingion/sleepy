@@ -4,6 +4,8 @@ import com.lingion.sleepy.R
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.detectDragGestures
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -12,9 +14,11 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -54,9 +58,11 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -125,10 +131,15 @@ fun AddCourseScreen(
     var teacher by remember(editingCourse?.id) { mutableStateOf(editingCourse?.teacher ?: "") }
     var room by remember(editingCourse?.id) { mutableStateOf(editingCourse?.room ?: "") }
     var note by remember(editingCourse?.id) { mutableStateOf(editingCourse?.note ?: "") }
+    var courseColor by remember(editingCourse?.id) {
+        val c = editingCourse?.color ?: ""
+        mutableStateOf(if (c.isBlank() || c == "#FF6750A4") "" else c)
+    }
     var startWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.startWeek ?: 1) }
     var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
+    var showColorPicker by remember { mutableStateOf(false) }
 
     val meetingBlocks = remember(editingCourse?.id) {
         mutableStateListOf(initialMeetingBlock(editingCourse))
@@ -244,6 +255,35 @@ fun AddCourseScreen(
                             shape = fieldShape,
                             colors = fieldColors
                         )
+                        // 颜色选择器
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(10.dp)
+                        ) {
+                            Text(
+                                text = stringResource(R.string.course_color),
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colors.onSurfaceVariant
+                            )
+                            // 自动色
+                            AutoColorDot(
+                                selected = courseColor.isBlank(),
+                                onClick = { courseColor = "" }
+                            )
+                            // 自定义色圆点 — 点击弹出调色盘
+                            CustomColorDot(
+                                hex = courseColor.takeIf { it.isNotBlank() },
+                                onClick = { showColorPicker = true }
+                            )
+                            if (courseColor.isNotBlank()) {
+                                Text(
+                                    text = courseColor,
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
                 }
             }
@@ -359,8 +399,8 @@ fun AddCourseScreen(
                         val drafts = meetingBlocks.flatMap { block ->
                             block.days.sorted().map { day ->
                                 buildCourseEntity(
-                                    tableId = draftTableId ?: 0L,  // 进入 scope 后会用真值替换
-                                    groupId = "", // 临时占位，下面统一替换
+                                    tableId = draftTableId ?: 0L,
+                                    groupId = "",
                                     courseName = courseName.trim(),
                                     teacher = teacher.trim(),
                                     room = room.trim(),
@@ -368,7 +408,8 @@ fun AddCourseScreen(
                                     day = day,
                                     block = block,
                                     startWeek = normalizedStartWeek,
-                                    endWeek = normalizedEndWeek
+                                    endWeek = normalizedEndWeek,
+                                    courseColor = courseColor.ifBlank { "#FF6750A4" }
                                 )
                             }
                         }
@@ -449,6 +490,17 @@ fun AddCourseScreen(
 
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
+
+        if (showColorPicker) {
+            ColorPickerDialog(
+                initialHex = courseColor,
+                onConfirm = { hex ->
+                    courseColor = hex
+                    showColorPicker = false
+                },
+                onDismiss = { showColorPicker = false }
+            )
+        }
     }
 }
 
@@ -488,7 +540,8 @@ private fun buildCourseEntity(
     day: Int,
     block: MeetingBlockDraft,
     startWeek: Int,
-    endWeek: Int
+    endWeek: Int,
+    courseColor: String = "#FF6750A4"
 ): CourseEntity {
     val ownTime = block.mode == MeetingInputMode.ByClock
     return CourseEntity(
@@ -504,7 +557,7 @@ private fun buildCourseEntity(
         startWeek = startWeek,
         endWeek = endWeek,
         type = 0,
-        color = "#FF6750A4",
+        color = courseColor.ifBlank { "#FF6750A4" },
         ownTime = ownTime,
         startTime = if (ownTime) block.startTime else "",
         endTime = if (ownTime) block.endTime else ""
@@ -945,4 +998,258 @@ private fun TimeField(
         colors = colors,
         supportingText = { Text(stringResource(R.string.time_format_hint)) }
     )
+}
+
+// ── 课程颜色选择器 ──
+
+@Composable
+private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(androidx.compose.foundation.shape.CircleShape)
+            .background(SleepyTheme.colors.surfaceVariant)
+            .then(
+                if (selected) Modifier.border(2.5.dp, SleepyTheme.colors.primary, androidx.compose.foundation.shape.CircleShape)
+                else Modifier.border(0.5.dp, SleepyTheme.colors.outlineVariant, androidx.compose.foundation.shape.CircleShape)
+            )
+            .clickable(onClick = onClick)
+    ) {
+        Text(
+            text = "自",
+            fontSize = 11.sp,
+            color = SleepyTheme.colors.onSurfaceVariant,
+            modifier = Modifier.align(Alignment.Center)
+        )
+    }
+}
+
+@Composable
+private fun CustomColorDot(hex: String?, onClick: () -> Unit) {
+    val c = if (hex != null) {
+        runCatching { Color(android.graphics.Color.parseColor(hex)) }
+            .getOrDefault(SleepyTheme.colors.surfaceVariant)
+    } else {
+        SleepyTheme.colors.surfaceVariant
+    }
+    Box(
+        modifier = Modifier
+            .size(32.dp)
+            .clip(androidx.compose.foundation.shape.CircleShape)
+            .background(c)
+            .border(0.5.dp, SleepyTheme.colors.outlineVariant, androidx.compose.foundation.shape.CircleShape)
+            .clickable(onClick = onClick)
+    ) {
+        if (hex == null) {
+            Text(
+                text = "＋",
+                fontSize = 16.sp,
+                color = SleepyTheme.colors.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.Center)
+            )
+        }
+    }
+}
+
+@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
+@Composable
+private fun ColorPickerDialog(
+    initialHex: String,
+    onConfirm: (String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val colors = SleepyTheme.colors
+
+    // 解析初始 HSV
+    val initialHSV = remember {
+        val hsv = FloatArray(3)
+        val rgb = runCatching { android.graphics.Color.parseColor(initialHex) }
+            .getOrDefault(0xFF6750A4.toInt())
+        android.graphics.Color.colorToHSV(rgb, hsv)
+        hsv
+    }
+
+    var hue by remember { mutableStateOf(initialHSV[0]) }
+    var saturation by remember { mutableStateOf(initialHSV[1]) }
+    var value by remember { mutableStateOf(initialHSV[2]) }
+
+    val currentColor = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, saturation, value)))
+    val currentHex = String.format("#%08X", android.graphics.Color.HSVToColor(floatArrayOf(hue, saturation, value)))
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        containerColor = colors.surface,
+        title = {
+            Text(stringResource(R.string.course_color), color = colors.onSurface)
+        },
+        text = {
+            Column(
+                modifier = Modifier.fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // SV 面板 — 大方块，横向拖=饱和度，纵向拖=明度
+                SVPanel(
+                    hue = hue,
+                    saturation = saturation,
+                    value = value,
+                    onSVChange = { s, v ->
+                        saturation = s
+                        value = v
+                    },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(200.dp)
+                        .clip(RoundedCornerShape(16.dp))
+                )
+
+                // 色相滑条
+                HueSlider(
+                    hue = hue,
+                    onHueChange = { hue = it },
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(36.dp)
+                        .clip(RoundedCornerShape(18.dp))
+                )
+
+                // 预览 + Hex
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .size(40.dp)
+                            .clip(androidx.compose.foundation.shape.CircleShape)
+                            .background(currentColor)
+                            .border(1.dp, colors.outlineVariant, androidx.compose.foundation.shape.CircleShape)
+                    )
+                    Text(
+                        text = currentHex,
+                        style = MaterialTheme.typography.labelLarge,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = { onConfirm(currentHex) }) {
+                Text(stringResource(R.string.ok), color = colors.primary)
+            }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.cancel))
+            }
+        }
+    )
+}
+
+/** 饱和度-明度面板：横=饱和度(0→1)，纵=明度(1→0)，背景色=当前色相 */
+@Composable
+private fun SVPanel(
+    hue: Float,
+    saturation: Float,
+    value: Float,
+    onSVChange: (Float, Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val pureHue = Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f)))
+
+    Box(
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, _ ->
+                        change.consume()
+                        val x = (change.position.x / size.width).coerceIn(0f, 1f)
+                        val y = (change.position.y / size.height).coerceIn(0f, 1f)
+                        onSVChange(x, 1f - y)
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val x = (offset.x / size.width).coerceIn(0f, 1f)
+                        val y = (offset.y / size.height).coerceIn(0f, 1f)
+                        onSVChange(x, 1f - y)
+                    }
+                )
+            }
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            // 底层：纯色相
+            drawRect(pureHue)
+            // 白色横向渐变（左→右 = 白→透明）
+            drawRect(
+                brush = androidx.compose.ui.graphics.Brush.horizontalGradient(
+                    colors = listOf(Color.White, Color.Transparent)
+                )
+            )
+            // 黑色纵向渐变（上→下 = 透明→黑）
+            drawRect(
+                brush = androidx.compose.ui.graphics.Brush.verticalGradient(
+                    colors = listOf(Color.Transparent, Color.Black)
+                )
+            )
+            // 指示器
+            val cx = saturation * size.width
+            val cy = (1f - value) * size.height
+            drawCircle(Color.White, radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy))
+            drawCircle(Color.Black.copy(alpha = 0.3f), radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+        }
+    }
+}
+
+/** 色相滑条：360°彩虹水平条 */
+@Composable
+private fun HueSlider(
+    hue: Float,
+    onHueChange: (Float) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    Box(
+        modifier = modifier
+            .pointerInput(Unit) {
+                detectDragGestures(
+                    onDrag = { change, _ ->
+                        change.consume()
+                        val x = (change.position.x / size.width).coerceIn(0f, 1f)
+                        onHueChange(x * 360f)
+                    }
+                )
+            }
+            .pointerInput(Unit) {
+                detectTapGestures(
+                    onTap = { offset ->
+                        val x = (offset.x / size.width).coerceIn(0f, 1f)
+                        onHueChange(x * 360f)
+                    }
+                )
+            }
+    ) {
+        Canvas(modifier = Modifier.fillMaxSize()) {
+            val hueColors = listOf(
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(0f, 1f, 1f))),
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(60f, 1f, 1f))),
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(120f, 1f, 1f))),
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(180f, 1f, 1f))),
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(240f, 1f, 1f))),
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(300f, 1f, 1f))),
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(360f, 1f, 1f)))
+            )
+            drawRect(brush = androidx.compose.ui.graphics.Brush.horizontalGradient(colors = hueColors))
+            // 指示器
+            val cx = (hue / 360f) * size.width
+            val cy = size.height / 2f
+            drawCircle(Color.White, radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy))
+            drawCircle(
+                Color(android.graphics.Color.HSVToColor(floatArrayOf(hue, 1f, 1f))),
+                radius = 8f,
+                center = androidx.compose.ui.geometry.Offset(cx, cy)
+            )
+        }
+    }
 }

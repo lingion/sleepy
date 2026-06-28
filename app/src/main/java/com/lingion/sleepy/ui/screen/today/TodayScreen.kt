@@ -244,16 +244,35 @@ private fun findCourseTime(course: CourseEntity): String? {
 }
 
 private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
-    val name = course.courseName
-    return when {
-        name.contains("英语") -> palette.english
-        name.contains("军事") || name.contains("国防") -> palette.military
-        name.contains("物理") -> palette.physics
-        name.contains("历史") || name.contains("史纲") || name.contains("近代史") -> palette.history
-        name.contains("心理") -> palette.psychology
-        name.contains("实践") || name.contains("实习") || name.contains("实验") -> palette.practice
-        name.contains("高数") || name.contains("数学") || name.contains("电路") -> palette.primary
-        name.contains("体育") -> palette.surface
-        else -> palette.surface
+    val userColor = course.color
+    if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
+        runCatching { return Color(android.graphics.Color.parseColor(userColor)) }
     }
+    val isDark = isPaletteDark(palette)
+    val id = (course.id % 360).toInt()
+    val hue = ((id * 137.508f) % 360f + 360f) % 360f
+    val s = if (isDark) 0.40f else 0.55f
+    val l = if (isDark) 0.28f else 0.82f
+    return hslToColor(hue, s, l)
+}
+
+private fun isPaletteDark(p: com.lingion.sleepy.ui.theme.CoursePalette): Boolean {
+    val c = p.primary
+    val lum = 0.299f * c.red + 0.587f * c.green + 0.114f * c.blue
+    return lum < 0.5f
+}
+
+private fun hslToColor(h: Float, s: Float, l: Float): Color {
+    val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
+    val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
+    val m = l - c / 2f
+    val (r, g, b) = when {
+        h < 60f   -> Triple(c, x, 0f)
+        h < 120f  -> Triple(x, c, 0f)
+        h < 180f  -> Triple(0f, c, x)
+        h < 240f  -> Triple(0f, x, c)
+        h < 300f  -> Triple(x, 0f, c)
+        else      -> Triple(c, 0f, x)
+    }
+    return Color(r + m, g + m, b + m)
 }

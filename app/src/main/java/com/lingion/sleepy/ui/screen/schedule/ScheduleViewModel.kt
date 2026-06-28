@@ -23,13 +23,14 @@ data class ScheduleState(
     val selectedTableId: Long? = null,
     val courses: List<CourseEntity> = emptyList(),
     val currentWeek: Int = 1,
+    val selectedWeek: Int = 1,
     val nodesPerDay: Int = 12,
     val selectedCourseId: Long? = null,
     val showCourseDialog: Boolean = false,
     val error: String? = null
 ) {
     val currentWeekCourses: List<CourseEntity>
-        get() = courses.filter { it.inWeek(currentWeek) }
+        get() = courses.filter { it.inWeek(selectedWeek) }
             .let { list ->
                 val tj = currentTable?.timeJson
                 if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
@@ -92,7 +93,7 @@ class ScheduleViewModel : ViewModel() {
                 _state.update { st ->
                     val table = st.tables.find { it.id == tableId }
                     val week = table?.let { DateUtils.currentWeek(it.startDate) } ?: 1
-                    st.copy(courses = courses, currentWeek = week, nodesPerDay = table?.nodesPerDay ?: 12)
+                    st.copy(courses = courses, currentWeek = week, selectedWeek = week, nodesPerDay = table?.nodesPerDay ?: 12)
                 }
                 // 课程数据变更后刷新所有 widget
                 try {
@@ -190,7 +191,7 @@ class ScheduleViewModel : ViewModel() {
 
     fun changeWeek(week: Int) {
         if (week < 1) return
-        _state.update { it.copy(currentWeek = week) }
+        _state.update { it.copy(selectedWeek = week) }
     }
 
     fun openCourse(id: Long) {
