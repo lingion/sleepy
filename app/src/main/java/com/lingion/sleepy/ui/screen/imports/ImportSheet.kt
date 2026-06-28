@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import android.content.Context
 import android.net.Uri
+import com.lingion.sleepy.BuildConfig
 import org.json.JSONArray
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -110,6 +112,47 @@ fun ImportSheet(
     var confirmedTimeJson by remember { mutableStateOf("") }
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
 
+    // 外部 app (文件管理器 / 其他课表 app) 通过 Intent 打开 json 时,
+    // MainActivity 已把课表文本挂到 companion.pendingImportText;
+    // 这里读到则自动触发 paste 路径 buildImportPreview, 弹预览对话框。
+    // 一次性消费: 读完即清空 companion 字段。
+    // 用 pendingImportText 引用做 key, 这样 ImportReceiverActivity 后续塞 text 进来会重新触发
+    androidx.compose.runtime.LaunchedEffect(com.lingion.sleepy.MainActivity.pendingImportText) {
+        val text = com.lingion.sleepy.MainActivity.pendingImportText
+        if (!text.isNullOrBlank()) {
+            com.lingion.sleepy.MainActivity.pendingImportText = null
+            isLoading = true
+            try {
+                val p = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
+                if (p != null) preview = p
+            } catch (e: Throwable) {
+                android.util.Log.e("Sleepy", "pending import preview failed", e)
+            } finally {
+                isLoading = false
+            }
+        }
+    }
+
+    // 仅 debug: 监听 SharedPreferences 里 "debug_import_text" key, 若非空则自动触发 paste 路径 buildImportPreview
+    // 用于 adb 自动化验证 (不需要 UI 点击): run-as com.lingion.sleepy.debug sh -c 'cat > shared_prefs/debug_import.xml <<EOF ... EOF'
+    if (BuildConfig.DEBUG) {
+        LaunchedEffect(Unit) {
+            val ctx = context.applicationContext
+            val prefs = ctx.getSharedPreferences("debug_import", Context.MODE_PRIVATE)
+            val text = prefs.getString("pending_text", null)
+            if (!text.isNullOrBlank()) {
+                prefs.edit().remove("pending_text").apply()
+                isLoading = true
+                try {
+                    val p = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
+                    if (p != null) preview = p
+                } finally {
+                    isLoading = false
+                }
+            }
+        }
+    }
+
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = colors.onSurface,
         unfocusedTextColor = colors.onSurface,
@@ -123,16 +166,17 @@ fun ImportSheet(
     )
 
     val filePicker = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        contract = ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         uri?.let {
             scope.launch {
                 isLoading = true
                 try {
-                    val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.readText()
+                    val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
                         ?: throw Exception(context.getString(R.string.cannot_read_file))
                     preview = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
-                    if (preview != null) onDismiss()
+                    // 注意: 不要在这里 onDismiss() —— sheet 关掉后 preview state 会随之销毁, dialog 永远不弹。
+                    // preview != null 时 ImportPreviewDialog 会在 sheet 之上显示; 用户点确认/取消后再清 state。
                 } catch (e: Exception) {
                     errorMsg = context.getString(R.string.read_failed, e.message)
                 } finally {
@@ -221,7 +265,7 @@ fun ImportSheet(
                                     val p = buildImportPreview(inputText, state, context) { msg -> errorMsg = msg }
                                     if (p != null) {
                                         preview = p
-                                        onDismiss()
+                                        // 不要 onDismiss() —— dialog 叠在 sheet 上显示; 用户在 dialog 操作完后再关 sheet。
                                     }
                                 } finally {
                                     isLoading = false
@@ -247,7 +291,8 @@ fun ImportSheet(
                 icon = Icons.Outlined.FileUpload,
                 label = stringResource(R.string.import_file),
                 onClick = {
-                    filePicker.launch("*/*")
+                    // OpenDocument() 接受 MIME 数组, 让 picker 只显示 json / 文本文件
+                    filePicker.launch(arrayOf("application/json", "text/plain", "text/csv", "text/html", "*/*"))
                 }
             )
 

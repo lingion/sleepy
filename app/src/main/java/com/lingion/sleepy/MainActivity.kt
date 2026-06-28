@@ -73,6 +73,24 @@ class MainActivity : ComponentActivity() {
                 putExtra(EXTRA_COURSE_ID, courseId)
             }
         }
+
+        /**
+         * 外部 app 启动时塞入的课表文本, ImportSheet 读取后自动弹预览。
+         * 使用全局对象持有 MutableState, 这样跨 Activity 实例 / 跨 snapshot 也能正确传播。
+         */
+        val pendingImportTextState: androidx.compose.runtime.MutableState<String?> =
+            androidx.compose.runtime.mutableStateOf(null)
+
+        /**
+         * 由 ImportReceiverActivity 在 onCreate 中调用 (主线程, lifecycleScope.launch 前)
+         * 写完后 LaunchedEffect 在下次 composition 时重新触发。
+         */
+        @Volatile
+        var incomingImportText: String? = null
+
+        var pendingImportText: String?
+            get() = pendingImportTextState.value
+            set(v) { pendingImportTextState.value = v }
     }
 
     /**
@@ -103,7 +121,9 @@ class MainActivity : ComponentActivity() {
                         dark.value = v
                     },
                     deepLinkCourse = deepLinkCourse,
-                    onDeepLinkConsumed = { editingCourseFromIntent.value = null }
+                    onDeepLinkConsumed = { editingCourseFromIntent.value = null },
+                    pendingImportText = pendingImportText,
+                    consumePendingImportText = { MainActivity.pendingImportText = null }
                 )
             }
         }
@@ -117,8 +137,25 @@ class MainActivity : ComponentActivity() {
 
     /**
      * 解析启动 / 新 Intent 里的 EXTRA_COURSE_ID，IO 线程查 DB 后 setValue。
+     * 同时处理 ImportReceiverActivity 透传的 EXTRA_IMPORT_TEXT —— 直接挂到 companion 静态字段,
+     * AppRoot 会读到并自动弹导入预览。
      */
     private fun handleDeepLinkIntent(intent: Intent?) {
+        // 1) 外部 VIEW json intent 透传过来的课表文本 (ImportReceiverActivity -> MainActivity)
+        //    ImportReceiverActivity 启动 MainActivity 前会先写 companion.pendingImportText;
+        //    MainActivity.onCreate 跑 handleDeepLinkIntent 时再补一下, 保证 onNewIntent 也响应
+        val importText = intent?.getStringExtra(
+            com.lingion.sleepy.ui.screen.imports.ImportReceiverActivity.EXTRA_IMPORT_TEXT
+        ) ?: com.lingion.sleepy.MainActivity.incomingImportText
+        if (!importText.isNullOrBlank()) {
+            com.lingion.sleepy.MainActivity.pendingImportText = importText
+            com.lingion.sleepy.MainActivity.incomingImportText = null
+            intent?.removeExtra(
+                com.lingion.sleepy.ui.screen.imports.ImportReceiverActivity.EXTRA_IMPORT_TEXT
+            )
+        }
+
+        // 2) 小组件 deep link: 编辑某门课
         val courseId = intent?.getLongExtra(EXTRA_COURSE_ID, -1L) ?: -1L
         if (courseId <= 0) return
         // 避免重复触发：仅当目标 courseId 不同时才查
@@ -157,7 +194,9 @@ private fun AppRoot(
     darkMode: Boolean = false,
     onToggleDark: () -> Unit = {},
     deepLinkCourse: CourseEntity? = null,
-    onDeepLinkConsumed: () -> Unit = {}
+    onDeepLinkConsumed: () -> Unit = {},
+    pendingImportText: String? = null,
+    consumePendingImportText: () -> Unit = {}
 ) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
@@ -167,6 +206,8 @@ private fun AppRoot(
     var pendingNewTableId by remember { mutableStateOf<Long?>(null) }
     // 记录新建课表前的默认表 id，作为 discard 时的回退目标
     var previousDefaultTableId by remember { mutableStateOf<Long?>(null) }
+    // 是否自动弹出导入 sheet (由外部 VIEW intent 触发)
+    var autoImportTriggered by remember { mutableStateOf(false) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
 
@@ -175,6 +216,14 @@ private fun AppRoot(
         if (deepLinkCourse != null) {
             editingCourse = deepLinkCourse
             onDeepLinkConsumed()
+        }
+    }
+
+    // 外部 app (文件管理器等) 打开 json 课表时: 切到 Manage tab + 触发 ImportSheet 自动预览
+    androidx.compose.runtime.LaunchedEffect(pendingImportText) {
+        if (!autoImportTriggered && pendingImportText != null) {
+            autoImportTriggered = true
+            currentTab = Tab.Manage
         }
     }
 
@@ -338,6 +387,7 @@ private fun AppRoot(
                 Tab.Manage -> {
                     val ctx = androidx.compose.ui.platform.LocalContext.current
                     ManagementPage(
+                        autoShowImportSheet = pendingImportText != null,
                         onJwImportRequested = {
                             val intent = android.content.Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
                             ctx.startActivity(intent)

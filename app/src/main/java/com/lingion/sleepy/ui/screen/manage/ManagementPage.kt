@@ -53,13 +53,14 @@ fun ManagementPage(
     onEditCurrentTable: () -> Unit,
     onImported: () -> Unit,
     onOpenEditTable: (Long) -> Unit,
-    viewModel: ScheduleViewModel = viewModel()
+    viewModel: ScheduleViewModel = viewModel(),
+    autoShowImportSheet: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
     val table = state.currentTable
 
-    var showImportSheet by remember { mutableStateOf(false) }
+    var showImportSheet by remember { mutableStateOf(autoShowImportSheet) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     Scaffold(containerColor = colors.background) { padding ->

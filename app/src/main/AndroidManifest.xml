@@ -38,6 +38,33 @@
             </intent-filter>
         </activity>
 
+        <!-- 外部 app (文件管理器、邮件附件、其他课表 app) 通过 ACTION_VIEW application/json 时:
+             1. OpenJsonAlias (alias of ImportReceiverActivity) 接收 intent
+             2. ImportReceiverActivity 读取文件内容并透传到 MainActivity
+             3. MainActivity 解析后挂到 companion.pendingImportText, ImportSheet 自动弹预览
+             单独拆分避免 MainActivity 既有 LAUNCHER 又有 VIEW 时的 launchMode/singleTask 边界问题 -->
+        <activity
+            android:name=".ui.screen.imports.ImportReceiverActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Sleepy.Splash" />
+
+        <activity-alias
+            android:name=".OpenJsonAlias"
+            android:targetActivity=".ui.screen.imports.ImportReceiverActivity"
+            android:exported="true"
+            android:label="@string/app_name">
+            <intent-filter android:label="@string/app_name">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
+                <data android:scheme="file" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="text/plain" />
+            </intent-filter>
+        </activity-alias>
+
         <!-- App Widget Receivers -->
         <receiver
             android:name=".widget.TodayWidgetReceiver"
