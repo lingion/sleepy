@@ -11,11 +11,11 @@ android {
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.lingion.sleepy.debug"
+        applicationId = "com.lingion.sleepy"
         minSdk = 24
         targetSdk = 35
-        versionCode = 20
-        versionName = "1.0.20"
+        versionCode = 21
+        versionName = "1.0.21"
         vectorDrawables { useSupportLibrary = true }
         // Explicit locales bundled into the APK. Default resources in values/
         // (zh-CN content) are always kept. We list zh-rCN explicitly so that
@@ -28,6 +28,7 @@ android {
         debug {
             isMinifyEnabled = false
             versionNameSuffix = "-debug"
+            applicationIdSuffix = ".debug"
         }
         release {
             isMinifyEnabled = false
@@ -35,6 +36,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            // 用 debug keystore 签 release，让用户真机可装可升级覆盖
+            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
