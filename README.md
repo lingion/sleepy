@@ -386,6 +386,13 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 ---
 
+## Documentation
+
+- **[Operation Guide](https://blog.qdp.qzz.io/docs/sleepy/overview)** — step-by-step user manual covering installation, import, widgets, themes, and troubleshooting
+- **[Technical Write-up](https://blog.qdp.qzz.io/sleepy-material-you-schedule)** — architecture deep-dive: schedule parser engine, gold-angle HSL, Wisedu reverse-engineering, widget rendering pipeline
+
+---
+
 ## License
 
 [GPL-3.0](LICENSE)
