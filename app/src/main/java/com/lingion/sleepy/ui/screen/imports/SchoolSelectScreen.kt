@@ -79,13 +79,35 @@ private data class SchoolSection(
     val schools: List<JwSchoolInfo>
 )
 
-/** 把扁平学校列表按 sortKey 首字母分组 */
+/**
+ * 生成学校的完整拼音排序键。
+ * 使用 schools.json 中的 sortKeyFull 字段（完整拼音，如 "haerbingongchengdaxue"），
+ * 保证同首字母内严格按拼音字典序排列（ha < hai < hang < he ... < hua < huanan）。
+ */
+private fun schoolSortKey(s: JwSchoolInfo): String {
+    val firstLetter = if (s.sortKey.isNotEmpty() && s.sortKey[0].isLetter()) {
+        s.sortKey[0].uppercase()
+    } else {
+        "★"
+    }
+    // sortKeyFull 由 pypinyin 预生成，如 "haerbingongchengdaxue"
+    // 缺失时 fallback 到 name（自定义 URL 场景）
+    return "$firstLetter|${s.sortKeyFull.ifBlank { s.name }}"
+}
+
+/** 把扁平学校列表按完整拼音排序后，按首字母分组 */
 private fun groupByLetter(schools: List<JwSchoolInfo>): List<SchoolSection> {
     if (schools.isEmpty()) return emptyList()
+    // 1. 按完整拼音排序
+    val sorted = schools.sortedWith(compareBy { schoolSortKey(it) })
+    // 2. 按首字母分组
     val groups = linkedMapOf<String, MutableList<JwSchoolInfo>>()
-    for (s in schools) {
-        val sk = s.sortKey
-        val letter = if (sk.isNotEmpty() && sk[0].isLetter()) sk[0].uppercase() else "★"
+    for (s in sorted) {
+        val letter = if (s.sortKey.isNotEmpty() && s.sortKey[0].isLetter()) {
+            s.sortKey[0].uppercase()
+        } else {
+            "★"
+        }
         groups.getOrPut(letter) { mutableListOf() }.add(s)
     }
     return groups.map { (k, v) -> SchoolSection(k, v) }

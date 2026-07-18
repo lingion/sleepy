@@ -73,7 +73,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 name = obj.optString("name", ""),
                 url = obj.optString("url", ""),
                 type = obj.optString("type", "").ifBlank { null },
-                aliases = aliases
+                aliases = aliases,
+                sortKeyFull = obj.optString("sortKeyFull", "")
             )
         }
         return list
