@@ -237,8 +237,12 @@
     <!-- School Select -->
     <string name="select_school">学校を選択</string>
     <string name="search_school">学校を検索…</string>
+    <string name="search_school_url">学校を検索または URL を入力…</string>
     <string name="loading">読み込み中…</string>
     <string name="no_school_found">一致する学校がありません</string>
+    <string name="url_direct_login">この URL でログイン</string>
+    <string name="url_detected">検出：</string>
+    <string name="url_auto_detect">プロトコルを自動検出</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (%2$d-%3$d週)</string>
