@@ -237,8 +237,12 @@
     <!-- School Select -->
     <string name="select_school">選擇學校</string>
     <string name="search_school">搜尋學校…</string>
+    <string name="search_school_url">搜尋學校或輸入教務系統 URL…</string>
     <string name="loading">載入中…</string>
     <string name="no_school_found">未找到匹配的學校</string>
+    <string name="url_direct_login">直接用此 URL 登入</string>
+    <string name="url_detected">偵測到：</string>
+    <string name="url_auto_detect">自動偵測協議類型</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (%2$d-%3$d週)</string>

@@ -83,21 +83,60 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      * 解析 HTML 源码，返回课程列表（不入库）
      */
     suspend fun parseHtml(html: String, protocolType: String): List<JwCourse> = withContext(Dispatchers.IO) {
+        if (protocolType.isBlank()) {
+            // 未知协议（URL 直接登录）：尝试所有 parser，取课程数最多的结果
+            return@withContext tryAllParsers(html)
+        }
         val parser: JwParser = when (protocolType) {
             JwProtocol.TYPE_QZ -> JwQzParser(html)
             JwProtocol.TYPE_QZ_CRAZY -> JwQzCrazyParser(html)
-            JwProtocol.TYPE_QZ_BR -> JwQzParser(html)  // 简化：先 fallback 到 QzParser
+            JwProtocol.TYPE_QZ_BR -> JwQzParser(html)
             JwProtocol.TYPE_QZ_WITH_NODE -> JwQzParser(html)
             JwProtocol.TYPE_QZ_OLD -> JwQzParser(html)
             JwProtocol.TYPE_URP -> JwUrpParser(html)
             JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
             JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
-            JwProtocol.TYPE_ZF -> JwQzParser(html)  // ZF 先 fallback，后续补 JwNewZFParser
-            JwProtocol.TYPE_ZF_NEW -> JwQzParser(html)
-            JwProtocol.TYPE_ZF_1 -> JwQzParser(html)
+            JwProtocol.TYPE_ZF -> JwNewZfParser(html)
+            JwProtocol.TYPE_ZF_NEW -> JwNewZfParser(html)
+            JwProtocol.TYPE_ZF_1 -> JwNewZfParser(html)
             else -> throw IllegalArgumentException("协议 $protocolType 暂不支持")
         }
         parser.generateCourseList()
+    }
+
+    /** 未知协议时，尝试所有 parser，取课程数最多的结果 */
+    private fun tryAllParsers(html: String): List<JwCourse> {
+        val candidates = listOf(
+            JwWiseduParser(html),
+            JwNewUrpParser(html),
+            JwNewZfParser(html),
+            JwQzParser(html),
+            JwQzCrazyParser(html),
+            JwUrpParser(html)
+        )
+        var best = emptyList<JwCourse>()
+        for (p in candidates) {
+            try {
+                val result = p.generateCourseList()
+                if (result.size > best.size) best = result
+            } catch (e: Exception) { continue }
+        }
+        return best
+    }
+
+    /**
+     * 从 URL 自动检测教务协议类型
+     */
+    fun detectProtocolFromUrl(url: String): String? {
+        val u = url.lowercase()
+        return when {
+            u.contains("jwapp/sys/") || u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
+            u.contains("jwglxt") || u.contains("/xtgl/") -> JwProtocol.TYPE_ZF_NEW
+            u.contains("/jwtottxuxsysb/") -> JwProtocol.TYPE_ZF_NEW
+            u.contains("qz") || u.contains("strongdesk") -> JwProtocol.TYPE_QZ
+            u.contains("urp") -> JwProtocol.TYPE_URP_NEW
+            else -> null
+        }
     }
 
     /**

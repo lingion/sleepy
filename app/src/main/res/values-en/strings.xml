@@ -238,8 +238,12 @@
     <!-- School Select -->
     <string name="select_school">Select School</string>
     <string name="search_school">Search schools…</string>
+    <string name="search_school_url">Search schools or enter URL…</string>
     <string name="loading">Loading…</string>
     <string name="no_school_found">No matching schools</string>
+    <string name="url_direct_login">Login with this URL</string>
+    <string name="url_detected">Detected:</string>
+    <string name="url_auto_detect">Auto-detect protocol</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (Week %2$d-%3$d)</string>

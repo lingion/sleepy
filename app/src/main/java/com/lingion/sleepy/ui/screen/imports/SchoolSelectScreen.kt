@@ -19,6 +19,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.School
+import androidx.compose.material.icons.outlined.Link
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -49,6 +50,21 @@ import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.PinyinMatcher
+
+private fun looksLikeUrl(s: String): Boolean {
+    val t = s.trim()
+    if (t.startsWith("http://") || t.startsWith("https://")) return true
+    // 域名+路径 或 域名:端口
+    if (t.matches(Regex("""[a-zA-Z0-9][-a-zA-Z0-9]{0,62}\.[a-zA-Z]{2,}([/:].*)?"""))) return true
+    // IP:端口
+    if (t.matches(Regex("""\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?(/.*)?"""))) return true
+    return false
+}
+
+private fun normalizeUrl(s: String): String {
+    val t = s.trim()
+    return if (t.startsWith("http://") || t.startsWith("https://")) t else "https://$t"
+}
 
 /**
  * 学校选择页 — 教务直连第一步
@@ -85,6 +101,11 @@ fun SchoolSelectScreen(
         }
     }
 
+    val isUrl = remember(query) { looksLikeUrl(query) }
+    val urlProtocol = remember(query, isUrl) {
+        if (isUrl) viewModel.detectProtocolFromUrl(query) else null
+    }
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -114,7 +135,7 @@ fun SchoolSelectScreen(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp),
-                placeholder = { Text(stringResource(R.string.search_school), color = colors.onSurfaceVariant) },
+                placeholder = { Text(stringResource(R.string.search_school_url), color = colors.onSurfaceVariant) },
                 supportingText = {
                     Text(
                         stringResource(R.string.school_pinyin_hint),
@@ -147,8 +168,27 @@ fun SchoolSelectScreen(
                 }
             }
 
-            if (filtered.isEmpty()) {
+            if (isUrl) {
+                UrlDirectRow(
+                    url = query.trim(),
+                    protocolType = urlProtocol,
+                    onClick = {
+                        val school = JwSchoolInfo(
+                            sortKey = "",
+                            name = "自定义教务",
+                            url = normalizeUrl(query.trim()),
+                            type = urlProtocol,
+                            status = JwSchoolInfo.STATUS_SUPPORTED
+                        )
+                        onSchoolSelected(school)
+                    }
+                )
+            }
+
+            if (filtered.isEmpty() && !isUrl) {
                 EmptyState(schools.isEmpty())
+            } else if (isUrl && filtered.isEmpty()) {
+                // URL detected but no school match — only show URL row (already shown above)
             } else {
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
@@ -205,6 +245,61 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant,
                     maxLines = 1
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun UrlDirectRow(url: String, protocolType: String?, onClick: () -> Unit) {
+    val colors = SleepyTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(vertical = 14.dp, horizontal = 4.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Box(
+            modifier = Modifier
+                .size(36.dp)
+                .clip(RoundedCornerShape(10.dp))
+                .background(colors.primary),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.Link,
+                contentDescription = null,
+                tint = colors.onPrimary,
+                modifier = Modifier.size(20.dp)
+            )
+        }
+        Spacer(modifier = Modifier.size(12.dp))
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = stringResource(R.string.url_direct_login),
+                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                color = colors.primary
+            )
+            Text(
+                text = url,
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+                maxLines = 1
+            )
+            val protoName = JwProtocol.displayName(if (protocolType.isNullOrBlank()) "" else protocolType)
+            if (protocolType != null) {
+                Text(
+                    text = "${stringResource(R.string.url_detected)} $protoName",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.primary
+                )
+            } else {
+                Text(
+                    text = stringResource(R.string.url_auto_detect),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant
                 )
             }
         }

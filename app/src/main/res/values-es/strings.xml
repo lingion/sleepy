@@ -237,8 +237,12 @@
     <!-- School Select -->
     <string name="select_school">Seleccionar escuela</string>
     <string name="search_school">Buscar escuelas…</string>
+    <string name="search_school_url">Buscar escuelas o introducir URL…</string>
     <string name="loading">Cargando…</string>
     <string name="no_school_found">No se encontraron escuelas</string>
+    <string name="url_direct_login">Iniciar sesión con esta URL</string>
+    <string name="url_detected">Detectado:</string>
+    <string name="url_auto_detect">Autodetectar protocolo</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (Semana %2$d-%3$d)</string>
