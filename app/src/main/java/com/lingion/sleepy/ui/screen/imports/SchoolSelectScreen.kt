@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -32,14 +34,20 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.LayoutCoordinates
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -50,13 +58,12 @@ import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.PinyinMatcher
+import kotlinx.coroutines.launch
 
 private fun looksLikeUrl(s: String): Boolean {
     val t = s.trim()
     if (t.startsWith("http://") || t.startsWith("https://")) return true
-    // 域名+路径 或 域名:端口
     if (t.matches(Regex("""[a-zA-Z0-9][-a-zA-Z0-9]{0,62}\.[a-zA-Z]{2,}([/:].*)?"""))) return true
-    // IP:端口
     if (t.matches(Regex("""\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}(:\d+)?(/.*)?"""))) return true
     return false
 }
@@ -66,10 +73,29 @@ private fun normalizeUrl(s: String): String {
     return if (t.startsWith("http://") || t.startsWith("https://")) t else "https://$t"
 }
 
+/** 学校首字母分组 */
+private data class SchoolSection(
+    val letter: String,
+    val schools: List<JwSchoolInfo>
+)
+
+/** 把扁平学校列表按 sortKey 首字母分组 */
+private fun groupByLetter(schools: List<JwSchoolInfo>): List<SchoolSection> {
+    if (schools.isEmpty()) return emptyList()
+    val groups = linkedMapOf<String, MutableList<JwSchoolInfo>>()
+    for (s in schools) {
+        val sk = s.sortKey
+        val letter = if (sk.isNotEmpty() && sk[0].isLetter()) sk[0].uppercase() else "★"
+        groups.getOrPut(letter) { mutableListOf() }.add(s)
+    }
+    return groups.map { (k, v) -> SchoolSection(k, v) }
+}
+
 /**
  * 学校选择页 — 教务直连第一步
  *
- * 数据来自 assets/schools.json（183 所带真 URL+type — Sleepy 30 + WakeupSchedule_BUPT 184 去重）
+ * 数据来自 assets/schools.json（145 所带真 URL+type）
+ * 右侧字母索引栏可点击/滑动跳转到对应分组
  */
 @Composable
 fun SchoolSelectScreen(
@@ -80,6 +106,7 @@ fun SchoolSelectScreen(
     val schools by viewModel.schools.collectAsState()
     var query by remember { mutableStateOf("") }
     val colors = SleepyTheme.colors
+    val scope = rememberCoroutineScope()
 
     val fieldColors = OutlinedTextFieldDefaults.colors(
         focusedTextColor = colors.onSurface,
@@ -96,7 +123,6 @@ fun SchoolSelectScreen(
         else {
             val q = query.trim().lowercase()
             val matched = schools.filter { PinyinMatcher.match(it.name, it.sortKey, query, it.aliases) }
-            // Alias-exact match floats to top
             matched.sortedByDescending { it.aliases.any { a -> a.lowercase() == q } }
         }
     }
@@ -104,6 +130,40 @@ fun SchoolSelectScreen(
     val isUrl = remember(query) { looksLikeUrl(query) }
     val urlProtocol = remember(query, isUrl) {
         if (isUrl) viewModel.detectProtocolFromUrl(query) else null
+    }
+
+    // 按字母分组（仅无搜索时显示分组+索引栏）
+    val sections = remember(filtered) { groupByLetter(filtered) }
+    val showIndexBar = query.isBlank() && sections.size > 1
+
+    val listState = rememberLazyListState()
+
+    // section letter → list index 映射（LazyColumn item index: section header 占偶数位, school 占奇数位）
+    val letterToIndex = remember(sections) {
+        val map = mutableMapOf<String, Int>()
+        var idx = 0
+        for (sec in sections) {
+            map[sec.letter] = idx
+            idx++ // header
+            idx += sec.schools.size // schools
+        }
+        map
+    }
+
+    // 当前激活字母（用于高亮）
+    val activeLetter by remember {
+        derivedStateOf {
+            val firstVisible = listState.firstVisibleItemIndex
+            // 找当前第一个 section header
+            var runningIdx = 0
+            for (sec in sections) {
+                val headerIdx = runningIdx
+                val lastSchoolIdx = runningIdx + sec.schools.size
+                if (firstVisible in headerIdx..lastSchoolIdx) return@derivedStateOf sec.letter
+                runningIdx = lastSchoolIdx + 1
+            }
+            null
+        }
     }
 
     Scaffold(
@@ -188,21 +248,139 @@ fun SchoolSelectScreen(
             if (filtered.isEmpty() && !isUrl) {
                 EmptyState(schools.isEmpty())
             } else if (isUrl && filtered.isEmpty()) {
-                // URL detected but no school match — only show URL row (already shown above)
+                // URL only, no school list
             } else {
-                LazyColumn(
+                Row(
                     modifier = Modifier.fillMaxSize(),
-                    contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
-                    verticalArrangement = Arrangement.spacedBy(2.dp)
+                    verticalAlignment = Alignment.Top
                 ) {
-                    items(filtered, key = { "${it.sortKey}_${it.name}" }) { school ->
-                        SchoolRow(
-                            school = school,
-                            onClick = { onSchoolSelected(school) }
+                    // 学校列表
+                    LazyColumn(
+                        state = listState,
+                        modifier = Modifier.weight(1f),
+                        contentPadding = PaddingValues(horizontal = 16.dp, vertical = 4.dp),
+                        verticalArrangement = Arrangement.spacedBy(2.dp)
+                    ) {
+                        sections.forEach { section ->
+                            // Section header
+                            item(key = "header_${section.letter}") {
+                                SectionHeader(letter = section.letter)
+                            }
+                            // Schools
+                            items(
+                                items = section.schools,
+                                key = { "${it.sortKey}_${it.name}" }
+                            ) { school ->
+                                SchoolRow(
+                                    school = school,
+                                    onClick = { onSchoolSelected(school) }
+                                )
+                                HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                            }
+                        }
+                    }
+
+                    // 字母索引栏
+                    if (showIndexBar) {
+                        AlphabetIndexBar(
+                            letters = sections.map { it.letter },
+                            activeLetter = activeLetter,
+                            onLetterTap = { letter ->
+                                val targetIdx = letterToIndex[letter]
+                                if (targetIdx != null) {
+                                    scope.launch {
+                                        listState.animateScrollToItem(targetIdx)
+                                    }
+                                }
+                            },
+                            modifier = Modifier
+                                .width(32.dp)
+                                .fillMaxSize()
                         )
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
                     }
                 }
+            }
+        }
+    }
+}
+
+/** Section header — 显示首字母 */
+@Composable
+private fun SectionHeader(letter: String) {
+    val colors = SleepyTheme.colors
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp, horizontal = 4.dp),
+    ) {
+        Text(
+            text = letter,
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
+            color = colors.primary,
+            modifier = Modifier
+                .clip(RoundedCornerShape(6.dp))
+                .background(colors.primaryContainer.copy(alpha = 0.5f))
+                .padding(horizontal = 10.dp, vertical = 2.dp)
+        )
+    }
+}
+
+/** 右侧字母索引栏 — 支持点击+滑动 */
+@Composable
+private fun AlphabetIndexBar(
+    letters: List<String>,
+    activeLetter: String?,
+    onLetterTap: (String) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val colors = SleepyTheme.colors
+    var barCoords: LayoutCoordinates? by remember { mutableStateOf(null) }
+
+    Row(
+        modifier = modifier
+            .onGloballyPositioned { barCoords = it }
+            .pointerInput(letters) {
+                awaitPointerEventScope {
+                    while (true) {
+                        val event = awaitPointerEvent()
+                        if (event.type == PointerEventType.Press || event.type == PointerEventType.Move) {
+                            val change = event.changes.firstOrNull() ?: continue
+                            if (!change.pressed) continue
+                            val coords = barCoords ?: continue
+                            val y = change.position.y
+                            val barHeight = coords.size.height.toFloat()
+                            if (barHeight <= 0f) continue
+                            val ratio = (y / barHeight).coerceIn(0f, 0.999f)
+                            val idx = (ratio * letters.size).toInt()
+                            if (idx in letters.indices) {
+                                onLetterTap(letters[idx])
+                            }
+                        }
+                    }
+                }
+            }
+            .padding(end = 4.dp),
+        horizontalArrangement = Arrangement.End,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(1.dp)
+        ) {
+            for (letter in letters) {
+                val isActive = letter == activeLetter
+                Text(
+                    text = letter,
+                    style = if (isActive) MaterialTheme.typography.labelSmall.copy(fontWeight = FontWeight.Bold)
+                    else MaterialTheme.typography.labelSmall,
+                    color = if (isActive) colors.primary else colors.onSurfaceVariant,
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(4.dp))
+                        .background(
+                            if (isActive) colors.primaryContainer.copy(alpha = 0.7f) else Color.Transparent
+                        )
+                        .padding(horizontal = 4.dp, vertical = 1.dp)
+                )
             }
         }
     }
