@@ -358,7 +358,7 @@ private fun AlphabetIndexBar(
     val colors = SleepyTheme.colors
     var barCoords: LayoutCoordinates? by remember { mutableStateOf(null) }
 
-    Row(
+    Box(
         modifier = modifier
             .onGloballyPositioned { barCoords = it }
             .pointerInput(letters) {
@@ -382,12 +382,13 @@ private fun AlphabetIndexBar(
                 }
             }
             .padding(end = 4.dp),
-        horizontalArrangement = Arrangement.End,
-        verticalAlignment = Alignment.CenterVertically
+        contentAlignment = Alignment.Center
     ) {
+        // 用 Layout 均匀撑满高度，每个字母占 1/N，触摸 Y→index 精准对应
         Column(
+            modifier = Modifier.fillMaxSize(),
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            verticalArrangement = Arrangement.SpaceEvenly
         ) {
             for (letter in letters) {
                 val isActive = letter == activeLetter
