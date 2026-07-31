@@ -2,6 +2,7 @@ package com.lingion.sleepy.widget.notification
 
 import android.Manifest
 import android.app.AlarmManager
+import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -40,6 +41,7 @@ class CourseNotificationScheduler(private val context: Context) {
     companion object {
         const val CHANNEL_DAILY = "sleepy_daily"
         const val CHANNEL_BEFORE_CLASS = "sleepy_before_class"
+        const val CHANNEL_FLUID = "sleepy_fluid_v2"
 
         // Request codes for PendingIntent discrimination
         private const val RC_DAILY = 1
@@ -131,16 +133,19 @@ class CourseNotificationScheduler(private val context: Context) {
      */
     suspend fun scheduleTodayBeforeClassAlarms() {
         val app = context.applicationContext
+        android.util.Log.d("CourseScheduler", "scheduleToday start enabled=${AppPrefs.isBeforeClassEnabled(app)} minutes=${AppPrefs.getBeforeClassMinutes(app)}")
         if (!AppPrefs.isBeforeClassEnabled(app)) return
-
         val minutes = AppPrefs.getBeforeClassMinutes(app)
         val today = LocalDate.now()
         val dow = DateUtils.todayDayOfWeek(today)
 
-        val table = resolveCurrentTable() ?: return
+        val table = resolveCurrentTable()
+        android.util.Log.d("CourseScheduler", "table=${table?.id}:${table?.name} start=${table?.startDate} today=$today dow=$dow")
+        if (table == null) return
         val week = DateUtils.currentWeek(table.startDate, today)
-        val courses = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
-            .filter { it.inWeek(week) }
+        val allCourses = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
+        val courses = allCourses.filter { it.inWeek(week) }
+        android.util.Log.d("CourseScheduler", "week=$week coursesAll=${allCourses.size} coursesInWeek=${courses.size}")
 
         // Parse time nodes
         val nodes = TimeTableUtils.parseNodes(table.timeJson)
@@ -150,11 +155,15 @@ class CourseNotificationScheduler(private val context: Context) {
 
         courses.forEachIndexed { index, course ->
             // Get course start time
+            android.util.Log.d("CourseScheduler", "course index=$index id=${course.id} name=${course.courseName} ownTime=${course.ownTime} start=${course.startTime} node=${course.startNode}")
             val startTimeStr = if (course.ownTime && course.startTime.isNotBlank()) {
                 course.startTime
             } else {
                 nodes.find { it.node == course.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
-            } ?: return@forEachIndexed
+            } ?: run {
+                android.util.Log.w("CourseScheduler", "skip no start time course=${course.id}")
+                return@forEachIndexed
+            }
 
             val parts = startTimeStr.split(":")
             val h = parts.getOrNull(0)?.toIntOrNull() ?: return@forEachIndexed
@@ -164,13 +173,19 @@ class CourseNotificationScheduler(private val context: Context) {
             val notifyTime = classStart.minusMinutes(minutes.toLong())
             val epoch = notifyTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
-            // Only schedule future alarms
-            if (epoch <= now) return@forEachIndexed
+            android.util.Log.d("CourseScheduler", "course=${course.id} start=$classStart notify=$notifyTime epoch=$epoch now=$now")
+            if (epoch <= now) {
+                android.util.Log.d("CourseScheduler", "skip past alarm course=${course.id}")
+                return@forEachIndexed
+            }
 
             val intent = Intent(context, BeforeClassNotifyReceiver::class.java).apply {
                 putExtra("courseName", course.courseName)
                 putExtra("room", course.room)
+                putExtra("teacher", course.teacher)
                 putExtra("startTime", String.format("%02d:%02d", h, m))
+                putExtra("notifyEpoch", epoch)
+                putExtra("classEpoch", classStart.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
             }
             val pending = PendingIntent.getBroadcast(
                 context, RC_BEFORE_CLASS_BASE + index,
@@ -202,6 +217,11 @@ class CourseNotificationScheduler(private val context: Context) {
             context.getString(R.string.notif_channel_before_class),
             NotificationManager.IMPORTANCE_HIGH
         ).apply { description = context.getString(R.string.notif_channel_before_class_desc) })
+        nm.createNotificationChannel(NotificationChannel(
+            CHANNEL_FLUID,
+            context.getString(R.string.notif_channel_fluid),
+            NotificationManager.IMPORTANCE_HIGH
+        ).apply { description = context.getString(R.string.notif_channel_fluid_desc) })
     }
 
     private fun buildPendingIntInfo(rc: Int, cls: Class<*>): PendingIntent =
@@ -282,7 +302,7 @@ class DailyNotifyReceiver : BroadcastReceiver() {
         }
 
         val notif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_DAILY)
-            .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
+            .setSmallIcon(R.drawable.ic_notification_time)
             .setContentTitle(title)
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(text))
@@ -314,22 +334,119 @@ class BeforeClassScheduleReceiver : BroadcastReceiver() {
  */
 class BeforeClassNotifyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
-        if (!hasNotifPermission(context)) return
-        if (!AppPrefs.isReminderEnabled(context) || !AppPrefs.isBeforeClassEnabled(context)) return
+        android.util.Log.d("BeforeClassNotify", "entered extras=${intent.extras?.keySet()}")
+        if (!hasNotifPermission(context)) {
+            android.util.Log.w("BeforeClassNotify", "POST_NOTIFICATIONS denied")
+            return
+        }
+        if (!AppPrefs.isReminderEnabled(context) || !AppPrefs.isBeforeClassEnabled(context)) {
+            android.util.Log.w("BeforeClassNotify", "reminder toggles disabled")
+            return
+        }
 
         val courseName = intent.getStringExtra("courseName") ?: return
         val room = intent.getStringExtra("room") ?: ""
         val startTime = intent.getStringExtra("startTime") ?: ""
         val roomStr = room.ifBlank { context.getString(R.string.notif_room_unknown) }
+        val teacher = intent.getStringExtra("teacher") ?: ""
+        val fluid = intent.getBooleanExtra("debug_force_fluid", false) || AppPrefs.isBeforeClassFluidEnabled(context)
+        val banner = AppPrefs.isBeforeClassBannerEnabled(context)
+        if (!banner && !fluid) return
+        val fields = AppPrefs.getBeforeClassFluidFields(context)
+        val fluidText = buildList {
+            if ("name" in fields) add(courseName)
+            if ("time" in fields) add(startTime)
+            if ("room" in fields && room.isNotBlank()) add(roomStr)
+            if ("teacher" in fields && teacher.isNotBlank()) add(teacher)
+        }.ifEmpty { listOf(courseName) }.joinToString("  ·  ")
+        val primary = AppPrefs.getBeforeClassFluidPrimary(context)
+        val primaryText = when (primary) {
+            "name" -> courseName
+            "time" -> startTime
+            else -> roomStr
+        }
+        val roomTeacherText = buildList {
+            if (room.isNotBlank()) add(roomStr)
+            if (teacher.isNotBlank()) add(teacher)
+        }.ifEmpty { listOf(roomStr) }.joinToString("  ·  ")
+        val timeTeacherText = buildList {
+            if (startTime.isNotBlank()) add(startTime)
+            if (teacher.isNotBlank()) add(teacher)
+        }.ifEmpty { listOf(startTime.ifBlank { context.getString(R.string.notif_before_class_title) }) }.joinToString("  ·  ")
 
-        val text = context.getString(R.string.notif_before_class_text, courseName, startTime, roomStr)
+        val text = if (teacher.isBlank()) {
+            context.getString(R.string.notif_before_class_text, courseName, startTime, roomStr)
+        } else {
+            context.getString(R.string.notif_before_class_text_with_teacher, courseName, startTime, roomStr, teacher)
+        }
 
-        val notif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_BEFORE_CLASS)
-            .setSmallIcon(android.R.drawable.ic_menu_my_calendar)
-            .setContentTitle(context.getString(R.string.notif_before_class_title))
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
+        // The service owns the same notification ID and updates only its time progress.
+        if (fluid && Build.VERSION.SDK_INT >= 26) {
+            val serviceIntent = Intent(context, FluidCloudService::class.java).apply {
+                putExtra("courseName", courseName)
+                putExtra("room", roomStr)
+                putExtra("teacher", teacher)
+                putExtra("startTime", startTime)
+                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
+                putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
+            }
+            ContextCompat.startForegroundService(context, serviceIntent)
+            return
+        }
+
+        // == Live Update (Android 16+ / ColorOS 16 fluid cloud capsule) ==
+        if (fluid && Build.VERSION.SDK_INT >= 36) {
+            val nowEpoch = System.currentTimeMillis()
+            val notifyEpoch = intent.getLongExtra("notifyEpoch", nowEpoch)
+            val classEpoch = intent.getLongExtra("classEpoch", nowEpoch)
+            val totalWindow = (classEpoch - notifyEpoch).coerceAtLeast(1L)
+            val elapsed = (nowEpoch - notifyEpoch).coerceIn(0L, totalWindow)
+            val classProgress = ((elapsed * 100L) / totalWindow).toInt().coerceIn(0, 100)
+            android.util.Log.d("BeforeClassNotify", "class progress=$classProgress now=$nowEpoch notify=$notifyEpoch class=$classEpoch")
+
+            val progressStyle = NotificationCompat.ProgressStyle()
+                .setStyledByProgress(true)
+                .setProgress(classProgress)
+                .setProgressSegments(
+                    listOf(
+                        NotificationCompat.ProgressStyle.Segment(70),
+                        NotificationCompat.ProgressStyle.Segment(30)
+                    )
+                )
+            val liveNotif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_FLUID)
+                .setSmallIcon(R.drawable.ic_notification_time)
+                .setColor(0xFF6750A4.toInt())
+                .setContentTitle(courseName)
+                .setContentText("$startTime  ·  $roomStr${if (teacher.isNotBlank()) "  ·  $teacher" else ""}")
+                .setStyle(progressStyle)
+                .setSubText(roomStr)
+                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
+                .setProgress(100, classProgress, false)
+                .setOngoing(true)
+                .setSilent(true)
+                .setOnlyAlertOnce(true)
+                .setRequestPromotedOngoing(true)
+                .setContentIntent(openAppIntent(context))
+                .setShortCriticalText(primaryText.take(7))
+                .build()
+            android.util.Log.d("BeforeClassNotify", "posting fluid channel=${CourseNotificationScheduler.CHANNEL_FLUID} id=${CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE} sdk=${Build.VERSION.SDK_INT}")
+            NotificationManagerCompat.from(context)
+                .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, liveNotif)
+            android.util.Log.d("BeforeClassNotify", "posted static fluid")
+            return
+        }
+
+        // == Fallback: standard notification ==
+        val notif = NotificationCompat.Builder(context, if (fluid) CourseNotificationScheduler.CHANNEL_FLUID else CourseNotificationScheduler.CHANNEL_BEFORE_CLASS)
+            .setSmallIcon(R.drawable.ic_notification_time)
+            .setContentTitle(if (fluid) courseName else context.getString(R.string.notif_before_class_title))
+            .setContentText(if (fluid) fluidText else text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(if (fluid) fluidText else text))
+            .setTicker(if (fluid) fluidText else text)
+            .setSubText(if (fluid) fluidText else null)
+            .setOngoing(fluid)
+            .setOnlyAlertOnce(false)
+            .setPriority(if (fluid) NotificationCompat.PRIORITY_LOW else NotificationCompat.PRIORITY_HIGH)
             .setContentIntent(openAppIntent(context))
             .setAutoCancel(true)
             .build()

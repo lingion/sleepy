@@ -17,7 +17,7 @@
   <img src="https://img.shields.io/badge/lang-Kotlin-7F52FF?style=flat-square&logo=kotlin&logoColor=white" alt="Kotlin">
   <img src="https://img.shields.io/badge/UI-Jetpack%20Compose-4285F4?style=flat-square" alt="Compose">
   <img src="https://img.shields.io/badge/license-GPL--3.0-blue?style=flat-square" alt="License">
-  <img src="https://img.shields.io/badge/minSDK-24_(Android_7.0)-green?style=flat-square" alt="Min SDK">
+  <img src="https://img.shields.io/badge/minSDK-26_(Android_8.0)-green?style=flat-square" alt="Min SDK">
 </p>
 
 <p align="center">
@@ -50,7 +50,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.21</code> · Android 7.0+ · 包名 <code>com.lingion.sleepy.debug</code>
+  <code>v1.0.24</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -60,8 +60,8 @@
 | 项 | 值 |
 |---|---|
 | 包名 | `com.lingion.sleepy.debug` |
-| 最低 SDK | 24 (Android 7.0) |
-| 目标 SDK | 35 |
+| 最低 SDK | `26` (Android 8.0；OPPO SeedlingSupportSDK 3.0.7 要求) |
+| 目标 SDK | `37` |
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 

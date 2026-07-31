@@ -2,36 +2,79 @@ package com.lingion.sleepy.debug
 
 import android.app.Activity
 import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import android.widget.Toast
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.parser.ScheduleParser
-import kotlinx.coroutines.Dispatchers
+import com.lingion.sleepy.widget.notification.FluidCloudService
+import androidx.core.content.ContextCompat
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.io.File
 
-/**
- * Debug-only 测试 Activity — 启动时从 Intent extra `path` 读 JSON 文件、走
- * ScheduleParser.parse + repo.insertTable/insertCourses 真实链路插入数据库。
- *
- *   adb shell am start -n com.lingion.sleepy.debug/com.lingion.sleepy.debug.DebugImportReceiver \
- *     -e path /sdcard/Download/test_sleepy.json
- *
- * 用 Activity 而不是 BroadcastReceiver 是因为 Android 8+ 禁止 manifest receiver
- * 在后台执行，而 Activity 启动时一定在前台 process。
- *
- * 不可见 — finish() 后不留 UI。
- */
+class DebugScheduleReceiver : android.content.BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        Log.d("CourseScheduler", "debug receiver entered action=${intent.action}")
+        if (intent.action != "com.lingion.sleepy.debug.SCHEDULE_NOW") return
+        try {
+            runBlocking {
+                SleepyApp.get().notificationScheduler.scheduleTodayBeforeClassAlarms()
+            }
+            Log.d("CourseScheduler", "debug broadcast schedule completed")
+        } catch (t: Throwable) {
+            Log.e("CourseScheduler", "debug broadcast schedule failed", t)
+        }
+    }
+}
+
 class DebugImportReceiver : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Theme.NoDisplay 要求 finish() 在 onCreate 内返回前调用 — 异步执行工作。
-        // Sources (priority order):
-        //   1) extra "b64": base64-encoded JSON
-        //   2) extra "path": file path, "clipboard", or file name in MediaStore
+        setContentView(android.view.View(this).apply { setBackgroundColor(0x00000000) })
+
+        if (intent.getBooleanExtra("clear_fluid_notification", false)) {
+            val now = System.currentTimeMillis()
+            val expired = Intent(this, FluidCloudService::class.java).apply {
+                putExtra("courseName", "")
+                putExtra("room", "")
+                putExtra("startTime", "")
+                putExtra("notifyEpoch", now - 2_000L)
+                putExtra("classEpoch", now - 1_000L)
+            }
+            ContextCompat.startForegroundService(this, expired)
+            Log.d("CourseScheduler", "requested expired fluid service cleanup")
+            finish()
+            return
+        }
+
+        if (intent.getBooleanExtra("test_before_class", false)) {
+            val name = intent.getStringExtra("courseName") ?: "高等数学"
+            val startTime = intent.getStringExtra("startTime") ?: "14:00"
+            val room = intent.getStringExtra("room") ?: "A101"
+            val teacher = intent.getStringExtra("teacher") ?: "张老师"
+            val mode = intent.getStringExtra("mode") ?: FluidCloudService.MODE_B
+            val svc = Intent(this, FluidCloudService::class.java).apply {
+                putExtra("courseName", name)
+                putExtra("startTime", startTime)
+                putExtra("room", room)
+                putExtra("teacher", teacher)
+                putExtra("mode", mode)
+            }
+            ContextCompat.startForegroundService(this, svc)
+            Thread.sleep(60000)
+            return
+        }
+
+        if (intent.getBooleanExtra("schedule_before_class_now", false)) {
+            runBlocking {
+                SleepyApp.get().notificationScheduler.scheduleTodayBeforeClassAlarms()
+            }
+            Thread.sleep(500)
+            finish()
+            return
+        }
+
         val b64 = intent.getStringExtra("b64")
         val path = intent.getStringExtra("path")
         Log.d(TAG, "importing b64=${b64?.length ?: 0} chars, path=$path")
@@ -67,20 +110,16 @@ class DebugImportReceiver : Activity() {
                 Log.e(TAG, "import failed", e)
             }
         }.start()
-        // 立即 finish — import 在后台线程跑，不阻塞。
         finish()
     }
 
     private fun readSourceText(b64: String?, path: String?): String {
-        // 1) inline base64 (preferred for adb-shell driven import)
         if (!b64.isNullOrBlank()) {
             return String(android.util.Base64.decode(b64, android.util.Base64.DEFAULT), Charsets.UTF_8)
         }
-        // 2) file path
         if (!path.isNullOrBlank() && path != "clipboard") {
             val f = File(path)
             if (f.exists() && f.canRead()) return f.readText(Charsets.UTF_8)
-            // Try MediaStore
             val uri = android.provider.MediaStore.Files.getContentUri("external")
             val projection = arrayOf(android.provider.MediaStore.Files.FileColumns._ID)
             val sel = "${android.provider.MediaStore.Files.FileColumns.DISPLAY_NAME}=?"
@@ -95,7 +134,6 @@ class DebugImportReceiver : Activity() {
             }
             throw java.io.FileNotFoundException("cannot read $path")
         }
-        // 3) clipboard
         val cm = getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
         val clip = cm.primaryClip ?: throw java.io.FileNotFoundException("clipboard empty")
         if (clip.itemCount == 0) throw java.io.FileNotFoundException("clipboard no items")

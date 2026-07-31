@@ -8,6 +8,9 @@
         android:maxSdkVersion="32" />
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.POST_PROMOTED_NOTIFICATIONS" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
     <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
@@ -137,7 +140,7 @@
         <!-- Individual before-class notification -->
         <receiver
             android:name=".widget.notification.BeforeClassNotifyReceiver"
-            android:exported="false" />
+            android:exported="true" />
 
         <!-- 教务直连导入 Activity (v1.0.8 新增) -->
         <activity
@@ -175,6 +178,20 @@
             android:exported="true"
             android:label="Debug Import"
             android:theme="@android:style/Theme.NoDisplay" />
+
+        <receiver
+            android:name="com.lingion.sleepy.debug.DebugScheduleReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.lingion.sleepy.debug.SCHEDULE_NOW" />
+            </intent-filter>
+        </receiver>
+
+        <!-- Fluid cloud foreground service carrier -->
+        <service
+            android:name=".widget.notification.FluidCloudService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse" />
 
     </application>
 

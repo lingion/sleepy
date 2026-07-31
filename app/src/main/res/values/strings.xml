@@ -341,6 +341,17 @@
     <string name="reminder_before_minutes_label">提前</string>
     <string name="reminder_before_minutes_unit">分钟</string>
     <string name="reminder_before_class_preview">示例：下节课 高等数学 于 08:00 在 教学楼A101 上课</string>
+    <string name="reminder_banner_title">横幅提醒</string>
+    <string name="reminder_banner_sub">在系统通知栏显示课前横幅</string>
+    <string name="reminder_fluid_title">流体云 / 超级岛</string>
+    <string name="reminder_fluid_sub">在支持的小米、OPPO 手机上显示实时课程卡片</string>
+    <string name="reminder_fluid_fields">胶囊主显示内容</string>
+    <string name="reminder_fluid_fields_hint">选择一个主显示内容</string>
+    <string name="reminder_fluid_field_name">课程名称</string>
+    <string name="reminder_fluid_field_time">上课时间</string>
+    <string name="reminder_fluid_field_room">上课地点</string>
+    <string name="reminder_fluid_field_teacher">任课老师</string>
+    <string name="reminder_fluid_note">点击通知后可展开课程详情。具体是否显示为流体云/超级岛由手机系统、通知权限和厂商服务资格决定。</string>
     <string name="reminder_pick_time">选择提醒时间</string>
     <string name="action_confirm">确定</string>
     <string name="action_cancel">取消</string>
@@ -349,6 +360,8 @@
     <string name="notif_channel_daily_desc">每天在指定时间推送今日课程摘要</string>
     <string name="notif_channel_before_class">课前提醒</string>
     <string name="notif_channel_before_class_desc">每节课开始前推送下节课信息</string>
+    <string name="notif_channel_fluid">流体云 / 超级岛</string>
+    <string name="notif_channel_fluid_desc">课前显示可展开的课程实时卡片</string>
     <!-- Notification content -->
     <string name="notif_daily_title">今日 %1$d 号，您有 %2$d 节课</string>
     <string name="notif_daily_text_first">第一节课 %1$s 于 %2$s 在 %3$s 上课</string>
@@ -356,6 +369,7 @@
     <string name="notif_daily_text_no_course">好好休息，享受一天！</string>
     <string name="notif_before_class_title">课前提醒</string>
     <string name="notif_before_class_text">下节课 %1$s 于 %2$s 在 %3$s 上课</string>
+    <string name="notif_before_class_text_with_teacher">下节课 %1$s 于 %2$s 在 %3$s 上课，老师：%4$s</string>
     <string name="notif_room_unknown">未知教室</string>
 
     <!-- 关于页面 -->

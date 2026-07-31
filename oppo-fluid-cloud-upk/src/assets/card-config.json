@@ -1,0 +1,18 @@
+{
+  "host": {
+    "packageName": "com.lingion.sleepy.debug",
+    "componentName": "com.lingion.sleepy.integration.oppo.SleepyFluidCloudProvider",
+    "minHostVersion": 23
+  },
+  "card": {
+    "support": "notification_sm|notification_md|notification_lg"
+  },
+  "click": [
+    {
+      "type": "activity",
+      "packageName": "com.lingion.sleepy.debug",
+      "action": "android.intent.action.MAIN",
+      "category": "android.intent.category.LAUNCHER"
+    }
+  ]
+}

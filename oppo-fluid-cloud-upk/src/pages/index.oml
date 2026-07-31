@@ -1,0 +1,24 @@
+<card-template>
+  <compact>
+    <div class="capsule-leading">
+      <text>{{ courseName }}</text>
+    </div>
+    <div class="capsule-trailing">
+      <text>{{ startTime }}</text>
+    </div>
+  </compact>
+
+  <expanded>
+    <div class="expanded-leading">
+      <text>{{ courseName }}</text>
+    </div>
+    <div class="expanded-center">
+      <text>{{ startTime }}</text>
+      <text>{{ room }}</text>
+      <text>{{ teacher }}</text>
+    </div>
+    <div class="expanded-trailing">
+      <text>{{ stateText }}</text>
+    </div>
+  </expanded>
+</card-template>

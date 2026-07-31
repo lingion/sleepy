@@ -20,6 +20,10 @@ object AppPrefs {
     const val KEY_DAILY_TIME = "daily_reminder_time" // "HH:mm" default "07:00"
     const val KEY_BEFORE_CLASS_ENABLED = "before_class_enabled"       // bool default false
     const val KEY_BEFORE_CLASS_MINUTES = "before_class_minutes"       // int default 10
+    const val KEY_BEFORE_CLASS_BANNER = "before_class_banner"         // bool default true
+    const val KEY_BEFORE_CLASS_FLUID = "before_class_fluid"            // bool default false
+    const val KEY_BEFORE_CLASS_FLUID_FIELDS = "before_class_fluid_fields" // legacy multi-select
+    const val KEY_BEFORE_CLASS_FLUID_PRIMARY = "before_class_fluid_primary" // name/time/room
     const val KEY_THEME = "theme_key"
     const val KEY_LANG = "language"
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
@@ -104,7 +108,39 @@ object AppPrefs {
         sp(ctx).edit().putInt(KEY_BEFORE_CLASS_MINUTES, minutes).apply()
     }
 
-    // ===== 语言 =====
+    fun isBeforeClassBannerEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_BEFORE_CLASS_BANNER, true)
+
+    fun setBeforeClassBannerEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_BANNER, v).apply()
+    }
+
+    fun isBeforeClassFluidEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_BEFORE_CLASS_FLUID, false)
+
+    fun setBeforeClassFluidEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_FLUID, v).apply()
+    }
+
+    fun getBeforeClassFluidFields(ctx: Context): Set<String> =
+        (sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_FIELDS, "name,time,room,teacher")
+            ?: "name,time,room,teacher").split(",").filter { it.isNotBlank() }.toSet()
+
+    fun setBeforeClassFluidFields(ctx: Context, fields: Set<String>) {
+        sp(ctx).edit().putString(KEY_BEFORE_CLASS_FLUID_FIELDS, fields.joinToString(",")).apply()
+    }
+
+    fun getBeforeClassFluidPrimary(ctx: Context): String =
+        sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_PRIMARY, "room") ?: "room"
+
+    fun setBeforeClassFluidPrimary(ctx: Context, value: String) {
+        require(value == "name" || value == "time" || value == "room")
+        sp(ctx).edit()
+            .putString(KEY_BEFORE_CLASS_FLUID_PRIMARY, value)
+            .putString(KEY_BEFORE_CLASS_FLUID_FIELDS, value)
+            .apply()
+    }
+
 
     fun getLanguage(ctx: Context): String =
         sp(ctx).getString(KEY_LANG, "zh-CN") ?: "zh-CN"

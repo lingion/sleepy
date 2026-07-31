@@ -42,6 +42,9 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.RadioButton
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -76,6 +79,10 @@ fun ReminderScreen(onBack: () -> Unit) {
     var beforeClassMinutes by remember { mutableStateOf(AppPrefs.getBeforeClassMinutes(context)) }
     var showTimePicker by remember { mutableStateOf(false) }
     var minutesInput by remember { mutableStateOf(beforeClassMinutes.toString()) }
+    var fluidEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassFluidEnabled(context)) }
+    var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
+    var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
+    var fieldsMenuExpanded by remember { mutableStateOf(false) }
 
     // Permission launcher — NOT one-shot, can be re-triggered by clicking toggle again
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -365,6 +372,92 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 color = colors.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 52.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
                             )
+                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_banner_title),
+                                subtitle = stringResource(R.string.reminder_banner_sub),
+                                checked = bannerEnabled,
+                                onCheckedChange = {
+                                    bannerEnabled = it
+                                    AppPrefs.setBeforeClassBannerEnabled(context, it)
+                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                }
+                            )
+                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_fluid_title),
+                                subtitle = stringResource(R.string.reminder_fluid_sub),
+                                checked = fluidEnabled,
+                                onCheckedChange = {
+                                    fluidEnabled = it
+                                    AppPrefs.setBeforeClassFluidEnabled(context, it)
+                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                }
+                            )
+                            if (fluidEnabled) {
+                                SubDivider()
+                                Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 4.dp, vertical = 8.dp)) {
+                                    Text(
+                                        text = stringResource(R.string.reminder_fluid_fields),
+                                        style = MaterialTheme.typography.bodyMedium,
+                                        color = colors.onSurface
+                                    )
+                                    Spacer(modifier = Modifier.height(6.dp))
+                                    androidx.compose.foundation.layout.Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .clickable { fieldsMenuExpanded = true }
+                                    ) {
+                                        OutlinedTextField(
+                                            value = fluidPrimaryLabel(context, fluidPrimary),
+                                            onValueChange = {},
+                                            readOnly = true,
+                                            enabled = false,
+                                            modifier = Modifier.fillMaxWidth(),
+                                            label = { Text(stringResource(R.string.reminder_fluid_fields_hint)) },
+                                            trailingIcon = { Text("▾", color = colors.primary) },
+                                            colors = OutlinedTextFieldDefaults.colors(
+                                                focusedBorderColor = colors.primary,
+                                                unfocusedBorderColor = colors.outlineVariant,
+                                                focusedContainerColor = colors.surface,
+                                                unfocusedContainerColor = colors.surface
+                                            )
+                                        )
+                                        DropdownMenu(
+                                            expanded = fieldsMenuExpanded,
+                                            onDismissRequest = { fieldsMenuExpanded = false }
+                                        ) {
+                                            listOf(
+                                                "name" to R.string.reminder_fluid_field_name,
+                                                "time" to R.string.reminder_fluid_field_time,
+                                                "room" to R.string.reminder_fluid_field_room
+                                            ).forEach { (key, labelRes) ->
+                                                DropdownMenuItem(
+                                                    text = { Text(stringResource(labelRes)) },
+                                                    onClick = {
+                                                        fluidPrimary = key
+                                                        AppPrefs.setBeforeClassFluidPrimary(context, key)
+                                                        SleepyApp.get().notificationScheduler.scheduleAll()
+                                                        fieldsMenuExpanded = false
+                                                    },
+                                                    leadingIcon = {
+                                                        RadioButton(
+                                                            selected = key == fluidPrimary,
+                                                            onClick = null
+                                                        )
+                                                    }
+                                                )
+                                            }
+                                        }
+                                    }
+                                    Text(
+                                        text = stringResource(R.string.reminder_fluid_note),
+                                        style = MaterialTheme.typography.bodySmall,
+                                        color = colors.onSurfaceVariant,
+                                        modifier = Modifier.padding(top = 6.dp)
+                                    )
+                                }
+                            }
                         }
                     }
                 }
@@ -417,6 +510,31 @@ fun ReminderScreen(onBack: () -> Unit) {
         )
     }
 }
+
+@Composable
+private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+    val colors = SleepyTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+            Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
+private fun fluidPrimaryLabel(context: android.content.Context, primary: String): String =
+    context.getString(
+        when (primary) {
+            "name" -> R.string.reminder_fluid_field_name
+            "time" -> R.string.reminder_fluid_field_time
+            else -> R.string.reminder_fluid_field_room
+        }
+    )
 
 @Composable
 private fun ReminderCard(content: @Composable () -> Unit) {

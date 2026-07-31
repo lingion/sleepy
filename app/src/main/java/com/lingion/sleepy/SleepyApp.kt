@@ -30,6 +30,8 @@ class SleepyApp : Application() {
     override fun onCreate() {
         super.onCreate()
         instance = this
+        androidx.core.app.NotificationManagerCompat.from(this)
+            .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
         WidgetUpdater.schedule(this)
         // 每次 app 启动都强制刷新所有 widget — 解决 Glance 缓存不刷新的问题
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

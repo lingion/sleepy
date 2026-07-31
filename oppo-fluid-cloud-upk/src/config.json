@@ -1,0 +1,23 @@
+{
+  "identifier": {
+    "url": "com.lingion.sleepy.fluidcloud",
+    "id": "REPLACE_WITH_OPPO_SERVICE_ID",
+    "type": "seedling",
+    "name": "Sleepy",
+    "description": "课程进行中实时提醒",
+    "version": "0.1.0",
+    "versionCode": 100000
+  },
+  "intent": {
+    "action": ["REPLACE_WITH_OPPO_INTENT_ACTION"],
+    "domain": "REPLACE_WITH_OPPO_INTENT_DOMAIN"
+  },
+  "runtime": {
+    "interactive": {
+      "seedling-type": "immediate"
+    },
+    "entry": ["notification", "statusbar"],
+    "platform-version": 2000000
+  },
+  "meta-data": {}
+}
