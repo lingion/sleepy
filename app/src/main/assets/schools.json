@@ -728,6 +728,14 @@
     "sortKeyFull": "qingdaokejidaxue"
   },
   {
+    "sortKey": "Q",
+    "name": "青岛理工大学",
+    "url": "https://jxgl.qut.edu.cn/jwglxt",
+    "type": "zf_new",
+    "aliases": ["qut"],
+    "sortKeyFull": "qingdaoligongdaxue"
+  },
+  {
     "sortKey": "S",
     "name": "三江学院",
     "url": "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html",

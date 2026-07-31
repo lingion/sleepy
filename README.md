@@ -50,7 +50,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.24</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy.debug</code>
+  <code>v1.0.25</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
