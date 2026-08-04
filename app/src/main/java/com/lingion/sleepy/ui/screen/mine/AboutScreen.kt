@@ -20,10 +20,12 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.Code
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -32,6 +34,11 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,12 +50,17 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.UpdateManager
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(onBack: () -> Unit) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    var updateState by remember { mutableStateOf<String?>(null) }
+    var updating by remember { mutableStateOf(false) }
 
     Scaffold(
         topBar = {
@@ -117,6 +129,62 @@ fun AboutScreen(onBack: () -> Unit) {
                             style = MaterialTheme.typography.bodyMedium,
                             color = colors.onSurfaceVariant
                         )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // One-click update: the manager routes GitHub -> mirror in the background.
+            InfoCard {
+                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(
+                            imageVector = Icons.Outlined.Download,
+                            contentDescription = null,
+                            tint = colors.primary,
+                            modifier = Modifier.size(24.dp)
+                        )
+                        Spacer(modifier = Modifier.width(12.dp))
+                        Column {
+                            Text(
+                                text = stringResource(R.string.about_update),
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = colors.onSurface
+                            )
+                            Text(
+                                text = stringResource(R.string.about_update_detail),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant
+                            )
+                        }
+                    }
+                    Button(
+                        onClick = {
+                            if (updating) return@Button
+                            updating = true
+                            updateState = context.getString(R.string.about_update_checking)
+                            scope.launch {
+                                runCatching {
+                                    UpdateManager.downloadLatest(context)
+                                }.onSuccess { result ->
+                                    updateState = context.getString(R.string.about_update_ready, result.version)
+                                    UpdateManager.install(context, result.file)
+                                }.onFailure { error ->
+                                    updateState = context.getString(R.string.about_update_failed, error.message ?: "未知错误")
+                                }
+                                updating = false
+                            }
+                        },
+                        enabled = !updating,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Icon(Icons.Outlined.Download, contentDescription = null)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(stringResource(if (updating) R.string.about_update_downloading else R.string.about_update))
+                    }
+                    if (updateState != null) {
+                        Text(updateState!!, color = colors.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
                     }
                 }
             }
@@ -219,6 +287,7 @@ fun AboutScreen(onBack: () -> Unit) {
         }
     }
 }
+
 
 @Composable
 private fun InfoCard(content: @Composable () -> Unit) {

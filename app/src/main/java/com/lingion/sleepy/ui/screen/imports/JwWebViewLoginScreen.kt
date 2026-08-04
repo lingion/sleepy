@@ -395,9 +395,56 @@ private const val WISEDU_FETCH_JS = """
     })
     .then(function(r){ return r.json(); })
     .then(function(d){
+      var rows = [];
+      try { rows = d.datas.dqxnxq.rows || []; } catch(e) {}
+
+      // 教务页面允许用户切换学期，但 dqxnxq 的 rows[0] 不一定是页面当前选项。
+      // 先从当前页面的 select/option 读取用户实际选中的 XNXQDM，避免静默回退到旧学期。
       var xnxq = '';
-      try { xnxq = d.datas.dqxnxq.rows[0].DM; } catch(e) {}
-      if (!xnxq) throw new Error('无法获取当前学期');
+      var selects = document.querySelectorAll('select');
+      for (var i = 0; i < selects.length && !xnxq; i++) {
+        var selected = selects[i].options && selects[i].options[selects[i].selectedIndex];
+        var candidates = selected ? [selected.value, selected.textContent || ''] : [];
+        for (var j = 0; j < candidates.length; j++) {
+          var match = candidates[j].match(/20[0-9]{2}-20[0-9]{2}-[12]/);
+          if (match && rows.some(function(row) { return String(row.DM || '') === match[0]; })) {
+            xnxq = match[0];
+            break;
+          }
+        }
+      }
+      // 某些 Wisedu 页面不是原生 select，而是自定义控件；这时匹配已选/激活节点文本。
+      if (!xnxq) {
+        var active = document.querySelectorAll('.selected,.active,[aria-selected="true"]');
+        for (var k = 0; k < active.length && !xnxq; k++) {
+          var activeText = active[k].value || active[k].textContent || '';
+          var activeMatch = activeText.match(/20[0-9]{2}-20[0-9]{2}-[12]/);
+          if (activeMatch && rows.some(function(row) { return String(row.DM || '') === activeMatch[0]; })) {
+            xnxq = activeMatch[0];
+          }
+        }
+      }
+      // HEU 当前课表页使用 data-elem="XNXQMC" 展示当前学期，不是 select 或 active 节点。
+      // 例如："2026-2027学年1学期"；将展示文本映射到接口中的 DM："2026-2027-1"。
+      if (!xnxq) {
+        var termNode = document.querySelector('[data-elem="XNXQMC"]');
+        var termText = termNode ? (termNode.textContent || '') : '';
+        var termMatch = termText.match(/(20[0-9]{2})-(20[0-9]{2})\s*学年\s*([12])\s*学期/);
+        if (termMatch) {
+          var termDm = termMatch[1] + '-' + termMatch[2] + '-' + termMatch[3];
+          // HEU 的 dqxnxq 接口可能只返回旧的当前学期，而页面已切到下一学期。
+          // 页面显示的学期才是用户选择，不能再要求它必须出现在这份旧列表中。
+          xnxq = termDm;
+        }
+      }
+      // 若页面没有学期控件，才使用接口标记的当前学期；禁止无条件取 rows[0]。
+      if (!xnxq) {
+        var current = rows.find(function(row) {
+          return row.DM && (row.SFDQ === '1' || row.SFDQ === 1 || row.CURRENT === '1' || row.current === true);
+        });
+        xnxq = current ? String(current.DM) : '';
+      }
+      if (!xnxq) throw new Error('无法识别当前选中的学期，请先在教务页面选择学期后再点导入');
       return fetch('/jwapp/sys/wdkb/modules/xskcb/xskcb.do', {
         method:'POST',
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
@@ -468,4 +515,3 @@ private class WiseduBridge(private val onResult: (String) -> Unit) {
         main.post { onResult(json) }
     }
 }
-

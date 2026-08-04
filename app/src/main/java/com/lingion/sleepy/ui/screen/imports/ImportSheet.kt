@@ -108,6 +108,7 @@ fun ImportSheet(
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var preview by remember { mutableStateOf<ImportPreview?>(null) }
     var pendingMode by remember { mutableStateOf<ImportApplyMode?>(null) }
+    var confirmedTableName by remember { mutableStateOf("") }
     var confirmedStartDate by remember { mutableStateOf("") }
     var confirmedTimeJson by remember { mutableStateOf("") }
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
@@ -334,6 +335,9 @@ fun ImportSheet(
                 confirmedStartDate = currentPreview.parseResult.startDate.ifBlank {
                     existingTable?.startDate ?: java.time.LocalDate.now().toString()
                 }
+                confirmedTableName = currentPreview.parseResult.tableName.ifBlank {
+                    existingTable?.name ?: context.getString(R.string.default_table_name)
+                }
                 confirmedTimeJson = existingTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
                 pendingMode = mode
             }
@@ -343,7 +347,9 @@ fun ImportSheet(
     if (preview != null && pendingMode != null) {
         ImportConfirmDialog(
             startDate = confirmedStartDate,
+            tableName = confirmedTableName,
             timeJson = confirmedTimeJson,
+            onTableNameChange = { confirmedTableName = it },
             onStartDateChange = { confirmedStartDate = it },
             onTimeJsonChange = { confirmedTimeJson = it },
             onDismiss = { pendingMode = null },
@@ -357,6 +363,7 @@ fun ImportSheet(
                             preview = currentPreview,
                             mode = mode,
                             confirmedStartDate = confirmedStartDate,
+                            confirmedTableName = confirmedTableName,
                             confirmedTimeJson = confirmedTimeJson,
                             context = context,
                             onImported = onImported
@@ -673,7 +680,9 @@ private fun PreviewInfoRow(label: String, value: String) {
 @Composable
 private fun ImportConfirmDialog(
     startDate: String,
+    tableName: String,
     timeJson: String,
+    onTableNameChange: (String) -> Unit,
     onStartDateChange: (String) -> Unit,
     onTimeJsonChange: (String) -> Unit,
     onDismiss: () -> Unit,
@@ -706,6 +715,13 @@ private fun ImportConfirmDialog(
                     text = stringResource(R.string.import_confirm_body),
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant
+                )
+                OutlinedTextField(
+                    value = tableName,
+                    onValueChange = onTableNameChange,
+                    label = { Text(stringResource(R.string.import_table_name)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
                 )
                 DatePickerField(
                     value = startDate,
@@ -819,6 +835,7 @@ private suspend fun applyImportPreview(
     preview: ImportPreview,
     mode: ImportApplyMode,
     confirmedStartDate: String,
+    confirmedTableName: String,
     confirmedTimeJson: String,
     context: android.content.Context,
     onImported: () -> Unit,
@@ -831,7 +848,7 @@ private suspend fun applyImportPreview(
             if (existing != null) {
                 repo.updateTable(
                     existing.copy(
-                        name = preview.parseResult.tableName,
+                        name = confirmedTableName.trim().ifBlank { preview.parseResult.tableName },
                         startDate = confirmedStartDate,
                         timeJson = confirmedTimeJson
                     )
@@ -845,7 +862,7 @@ private suspend fun applyImportPreview(
             val base = repo.getTable(preview.targetTableId)
             val newTableId = repo.insertTable(
                 TimeTableEntity(
-                    name = uniqueImportedTableName(preview.parseResult.tableName, repo.getAllTables().map { it.name }, context),
+                    name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
                     maxWeek = base?.maxWeek ?: 20,
                     nodesPerDay = base?.nodesPerDay ?: 12,

@@ -376,6 +376,14 @@
     <string name="about_title">关于</string>
     <string name="about_version">版本信息</string>
     <string name="about_version_detail">版本 %1$s（构建 %2$d）</string>
+    <string name="about_update">获取更新</string>
+    <string name="about_update_detail">GitHub 主站不可用时，可改用镜像下载</string>
+    <string name="about_update_github">从 GitHub 获取</string>
+    <string name="about_update_mirror">从镜像 gh.qdp.qzz.io 获取</string>
+    <string name="about_update_checking">正在检查更新…</string>
+    <string name="about_update_downloading">正在后台下载…</string>
+    <string name="about_update_ready">已下载 v%1$s，正在打开系统安装器</string>
+    <string name="about_update_failed">更新失败：%1$s</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
     <string name="about_source">开源地址</string>

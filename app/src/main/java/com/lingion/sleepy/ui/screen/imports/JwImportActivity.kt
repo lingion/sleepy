@@ -61,7 +61,7 @@ import com.lingion.sleepy.R
  *
  * 流程：学校选择 → WebView 登录抓 HTML → 解析 → 复用 ImportScreen 现有预览 → 落库
  *
- * HEU 走 QZ_CRAZY 协议；其他学校后续按 url 协议类型自动选 parser。
+ * HEU 走 WISEDU 金智教务协议；其他学校按学校配置的协议类型选择 parser。
  */
 class JwImportActivity : ComponentActivity() {
 
