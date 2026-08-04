@@ -14,7 +14,7 @@ android {
         minSdk = 26
         targetSdk = 37
         versionCode = 28
-        versionName = "1.0.28"
+        versionName = "1.0.27"
         vectorDrawables { useSupportLibrary = true }
         androidResources {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")

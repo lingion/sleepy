@@ -31,9 +31,11 @@ object UpdateManager {
 
         var version: String? = null
         var downloadUrl: String? = null
+        var forceUpdate = false
         runCatching {
             val release = JSONObject(readText(GITHUB_API))
             version = release.optString("tag_name").removePrefix("v")
+            forceUpdate = release.optString("body").contains("SLEEPY_FORCE_UPDATE=true")
             downloadUrl = release.optJSONArray("assets")?.let { assets ->
                 (0 until assets.length()).map { assets.getJSONObject(it) }
                     .firstOrNull { it.optString("name") == assetName }
@@ -54,7 +56,8 @@ object UpdateManager {
         }
 
         val remoteVersion = version ?: throw IllegalStateException("远端版本号为空")
-        if (VersionUtils.compare(remoteVersion, BuildConfig.VERSION_NAME) <= 0) {
+        if (VersionUtils.compare(remoteVersion, BuildConfig.VERSION_NAME) < 0 ||
+            (VersionUtils.compare(remoteVersion, BuildConfig.VERSION_NAME) == 0 && !forceUpdate)) {
             throw NoUpdateAvailableException(remoteVersion)
         }
 
