@@ -381,7 +381,7 @@
     <string name="about_update_github">从 GitHub 获取</string>
     <string name="about_update_mirror">从镜像 gh.qdp.qzz.io 获取</string>
     <string name="about_update_checking">正在检查更新…</string>
-    <string name="about_update_downloading">正在后台下载…</string>
+    <string name="about_update_downloading">正在获取更新…</string>
     <string name="about_update_ready">已下载 v%1$s，正在打开系统安装器</string>
     <string name="about_update_failed">更新失败：%1$s</string>
     <string name="semester_out_of_range">当前不在学期范围内</string>
