@@ -53,10 +53,18 @@ object UpdateManager {
             downloadUrl = "$MIRROR_PREFIX$tag/$assetName"
         }
 
+        val remoteVersion = version ?: throw IllegalStateException("远端版本号为空")
+        if (VersionUtils.compare(remoteVersion, BuildConfig.VERSION_NAME) <= 0) {
+            throw NoUpdateAvailableException(remoteVersion)
+        }
+
         val target = File(context.cacheDir, "sleepy-update-$assetName")
         download(downloadUrl!!, target)
-        UpdateResult(version ?: BuildConfig.VERSION_NAME, target)
+        if (!target.isFile || target.length() == 0L) throw IllegalStateException("下载文件为空")
+        UpdateResult(remoteVersion, target)
     }
+
+    class NoUpdateAvailableException(val version: String) : Exception("当前已是最新版本 v$version")
 
     fun install(context: Context, file: File) {
         val uri: Uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file)
@@ -67,7 +75,11 @@ object UpdateManager {
         context.startActivity(intent)
     }
 
-    private fun readText(url: String): String = request(url).inputStream.bufferedReader().use { it.readText() }
+    private fun readText(url: String): String {
+        val connection = request(url)
+        return try { connection.inputStream.bufferedReader().use { it.readText() } }
+        finally { connection.disconnect() }
+    }
 
     private fun download(url: String, target: File) {
         val connection = request(url)

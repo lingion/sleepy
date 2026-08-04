@@ -440,7 +440,7 @@ private fun SpannedTimeHeadCell(
 }
 
 /**
- * 课程颜色 — 基于 course.id 的确定性 HSL 分配。
+ * 课程颜色 — 基于 groupId 的确定性 HSL 分配，同一门课的所有时间块同色。
  *
  * - 黄金角 137.508° 撒 hue → 相邻 id 色差最大化（13 门课最少差 ~27°）
  * - 亮色模式：S=0.48, L=0.88（柔和粉彩，不刺眼）
@@ -455,8 +455,8 @@ private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui
     }
     // 无自定义 → 按 id 黄金角 HSL 分配
     val isDark = isPaletteDark(palette)
-    val id = (course.id % 360).toInt()
-    val hue = ((id * 137.508f) % 360f + 360f) % 360f
+    val stableId = course.groupId.hashCode().toLong()
+    val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
     val s = if (isDark) 0.40f else 0.55f
     val l = if (isDark) 0.28f else 0.82f
     return hslToColor(hue, s, l)

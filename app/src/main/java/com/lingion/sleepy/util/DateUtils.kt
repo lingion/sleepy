@@ -15,12 +15,25 @@ object DateUtils {
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
     private val isoWeekFields = WeekFields.of(DayOfWeek.MONDAY, 1)
 
-    /** 计算当前是学期第几周（1-based），若开学前返回负值 */
+    enum class SemesterStatus { BEFORE_START, IN_RANGE, AFTER_END }
+
+    fun semesterStatus(startDate: String, maxWeek: Int, today: LocalDate = LocalDate.now()): SemesterStatus {
+        return try {
+            val start = LocalDate.parse(startDate, dateFormat)
+            when {
+                today.isBefore(start) -> SemesterStatus.BEFORE_START
+                ChronoUnit.DAYS.between(start, today) / 7 + 1 > maxWeek -> SemesterStatus.AFTER_END
+                else -> SemesterStatus.IN_RANGE
+            }
+        } catch (_: Exception) { SemesterStatus.IN_RANGE }
+    }
+
+    /** 计算当前是学期第几周（1-based）；学期外统一钳制到可浏览范围。 */
     fun currentWeek(startDate: String, today: LocalDate = LocalDate.now()): Int {
         return try {
             val start = LocalDate.parse(startDate, dateFormat)
             val days = ChronoUnit.DAYS.between(start, today)
-            (days / 7).toInt() + 1
+            maxOf(1, (days / 7).toInt() + 1)
         } catch (e: Exception) {
             1
         }

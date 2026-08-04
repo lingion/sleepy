@@ -67,7 +67,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun insertCourses(courses: List<CourseEntity>): List<Long> {
-        // 自动给每门课分配 groupId：同名+同tableId 的课程共享一个 groupId
+        // 导入时以规范化课程名为身份；时间、教师、教室只属于课程的一个时段。
         val withGroupIds = assignGroupIds(courses)
         val ids = courseDao.insertAll(withGroupIds)
         WidgetUpdater.notifyDataChanged(SleepyApp.get())
@@ -120,12 +120,9 @@ class ScheduleRepository(private val db: AppDatabase) {
     private fun assignGroupIds(courses: List<CourseEntity>): List<CourseEntity> {
         val nameToGroupId = mutableMapOf<String, String>()
         return courses.map { c ->
-            if (c.groupId.isNotBlank()) {
-                c
-            } else {
-                val gid = nameToGroupId.getOrPut(c.courseName) { java.util.UUID.randomUUID().toString() }
-                c.copy(groupId = gid)
-            }
+            val key = c.courseName.trim().replace(Regex("\\s+"), " ").lowercase()
+            val gid = nameToGroupId.getOrPut(key) { c.groupId.takeIf { it.isNotBlank() } ?: java.util.UUID.randomUUID().toString() }
+            c.copy(groupId = gid)
         }
     }
 }

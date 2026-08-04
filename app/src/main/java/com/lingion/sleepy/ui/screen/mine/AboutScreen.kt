@@ -171,7 +171,7 @@ fun AboutScreen(onBack: () -> Unit) {
                                     updateState = context.getString(R.string.about_update_ready, result.version)
                                     UpdateManager.install(context, result.file)
                                 }.onFailure { error ->
-                                    updateState = context.getString(R.string.about_update_failed, error.message ?: "未知错误")
+                                    updateState = error.message ?: context.getString(R.string.about_update_failed, "未知错误")
                                 }
                                 updating = false
                             }

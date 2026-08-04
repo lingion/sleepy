@@ -225,6 +225,7 @@ private fun TopBar(
     }
     var menuOpen by remember { mutableStateOf(false) }
     val isOnActual = currentWeek == actualWeek
+    val semesterStatus = DateUtils.semesterStatus(startDate, maxWeek)
 
     Row(
         modifier = Modifier
@@ -240,7 +241,9 @@ private fun TopBar(
         // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
         Box {
             Text(
-                text = stringResource(R.string.schedule_current_week, currentWeek),
+                text = if (semesterStatus == DateUtils.SemesterStatus.IN_RANGE)
+                    stringResource(R.string.schedule_current_week, currentWeek)
+                else stringResource(R.string.semester_out_of_range),
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                 modifier = Modifier
@@ -422,4 +425,3 @@ private fun EmptyState(
         }
     }
 }
-
