@@ -406,8 +406,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val nameAvailH = (availCardH - roomReserveH).coerceAtLeast(charSize)  // 至少放1字
 
                     // ★ 课名垂直截断: 字数 × charSize 超过 nameAvailH → 砍到能放下字数, 末字换省略号
+                    // ★ v19l-fix: maxNameRows≥2 时才截断(至少保留1字+省略号), =1 时不截断(宁溢不空)
                     val maxNameRows = (nameAvailH / charSize).toInt().coerceIn(1, nameChars.size)
-                    val nameVisible = if (nameChars.size > maxNameRows) {
+                    val nameVisible = if (nameChars.size > maxNameRows && maxNameRows >= 2) {
                         nameChars.take(maxNameRows - 1) + '…'
                     } else nameChars
 
