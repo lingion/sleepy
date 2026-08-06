@@ -319,8 +319,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             // 之前 v19h 按 slotH (单节) 算, 用户不要 — 要按所有现存课程中 step 最小的跨节卡算
             // 例子: 用户课程有 P1-3节(step=3), P7-5节(step=5), P12-12节(step=12)
             //   → 最小 step=3 → 按 P1-3节 卡的 cardH = slotH*3 + gapH*2 算字号
-            val unifiedPad = dp(3f).toFloat()
-            val unifiedColGap = dp(1.5f).toFloat()
+            // ★ v19j: 透气内边距 + 双列清晰分离 (用户: "没有一个很好的margin")
+            val unifiedPad = dp(4.5f).toFloat()      // was 3dp → 4.5dp: 呼吸感
+            val unifiedColGap = dp(3f).toFloat()     // was 1.5dp → 3dp: 课名/教室分列清晰
             val unifiedDayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
             val unifiedColW2 = (unifiedDayAvailW - unifiedColGap) / 2 // 双列 (name + room)
 
@@ -387,8 +388,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.style = Paint.Style.FILL
                     p.alpha = 255
 
-                    // ★ v19g: 课程名独占第一列(最右), 教室独占第二列(往左一列) (用户原话)
-                    // ★ v19h: 字号全周统一按 slotH 算 (用户原话: "能不能所有字号统一啊?")
+                    // ★ v19j: 整块真正居中 + 课名/教室层级分明 (用户: "没有居中, 也没有很好的margin")
+                    // 旧实现从 blockRight=right-pad 往左算列 → 整块偏右。正解: 用 centerX 定整块。
+                    // ★ v19h: 字号全周统一 (用户: "能不能所有字号统一啊?")
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
@@ -400,31 +402,39 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val availW = (cardRect.width() - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
                     val totalCols = if (roomChars.isNotEmpty()) 2 else 1
                     val colW = (availW - unifiedColGap * (totalCols - 1)) / totalCols
+                    // 整块(所有列+列间距)总宽, 用卡片 centerX 居中整块
+                    val totalBlockW = colW * totalCols + unifiedColGap * (totalCols - 1)
+                    val blockLeft = cardRect.centerX() - totalBlockW / 2f
 
                     val rowsCount = maxOf(nameChars.size, roomChars.size).coerceAtLeast(1)
-                    val charSize = unifiedCharSize // ★ v19h: 全周统一字号
+                    val charSize = unifiedCharSize // ★ 全周统一字号 (最小跨节卡算出)
+                    val roomCharSize = charSize * 0.78f // ★ 教室次级层级: 字号缩小
 
+                    // 整块高度按主列(课名)算, 垂直居中
                     val totalBlockH = charSize * rowsCount
                     val blockTop = cardRect.top + (cardRect.height() - totalBlockH) / 2f
-                    val blockRight = cardRect.right - unifiedPad
 
-                    // 第一列(最右) = 课程名, BOLD
+                    // 课名列: 主, BOLD, 全字号, 中心在 blockLeft + colW/2 (左起第一列, 与"右挤"相反)
+                    // ★ 单列时(无教室) blockLeft + colW/2 = centerX, 天然完美居中
                     p.textSize = charSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     p.alpha = 255
-                    val nameColCenterX = blockRight - colW / 2f // col 0 = 最右
+                    val nameColCenterX = blockLeft + colW / 2f
                     for ((i, ch) in nameChars.withIndex()) {
                         val cy = blockTop + charSize * (i + 0.82f)
                         c.drawText(ch.toString(), nameColCenterX, cy, p)
                     }
 
-                    // 第二列(往左一列) = 教室, NORMAL + 半透明 (同字号, 两列对齐)
+                    // 教室列: 次, NORMAL, 缩小字号 + 半透明, 右起第二列
                     if (roomChars.isNotEmpty()) {
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                        p.alpha = 200
-                        val roomColCenterX = blockRight - 1 * (colW + unifiedColGap) - colW / 2f
+                        p.textSize = roomCharSize
+                        p.alpha = 185
+                        val roomColCenterX = blockLeft + colW + unifiedColGap + colW / 2f
+                        // 教室字号小, 垂直仍按主列基线网格对齐 (用 charSize 步进, 室内自身居中偏移)
+                        val roomBlockTop = blockTop + (charSize - roomCharSize) / 2f
                         for ((i, ch) in roomChars.withIndex()) {
-                            val cy = blockTop + charSize * (i + 0.82f)
+                            val cy = roomBlockTop + roomCharSize * (i + 0.5f) + charSize * i * 0.5f
                             c.drawText(ch.toString(), roomColCenterX, cy, p)
                         }
                         p.alpha = 255
