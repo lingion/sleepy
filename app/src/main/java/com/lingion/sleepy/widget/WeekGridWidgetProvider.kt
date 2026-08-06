@@ -440,6 +440,13 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
                         c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
+                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px " +
+                            "name='${course.courseName}'(${nameChars.size}→${nameVisible.size}chars maxRows=$maxNameRows) " +
+                            "room='${roomStr}'(${roomStr.length}→${roomVisible.length}chars max=$maxRoomChars)")
+                    } else {
+                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px " +
+                            "name='${course.courseName}'(${nameChars.size}→${nameVisible.size}chars maxRows=$maxNameRows) " +
+                            "room=none")
                     }
                 }
             }
