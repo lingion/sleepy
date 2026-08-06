@@ -95,7 +95,7 @@ class DebugImportReceiver : Activity() {
                             nodesPerDay = 13,
                             timeJson = com.lingion.sleepy.util.TimeTableUtils.DEFAULT_TIME_JSON,
                             color = "#FF6750A4",
-                            isDefault = true
+                            isDefault = false  // debug 注入表设非默认 → widget 的 loadWeekData 按 id 倒序选最新非默认表 → 必选注入表
                         )
                     )
                 }

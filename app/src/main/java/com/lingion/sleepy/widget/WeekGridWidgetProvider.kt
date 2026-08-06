@@ -140,46 +140,37 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val fgOnSurfaceVar  = if (isDark) 0xFFCAC4D0.toInt() else 0xFF49454F.toInt()
             val gridLine        = if (isDark) 0xFF49454F.toInt() else 0xFFE7E0EC.toInt()
 
-            // ★ v19e: 课程颜色对齐 CourseTableView.pickCourseColor
-            // 优先按课程名关键词匹配 (英语/物理/心理/高数等), 否则 hash 到 palette
-            // 用户原话: "你这个课程的颜色也没有跟软件内的对齐"
-            // 颜色定义来自 LightCoursePalette / DarkCoursePalette
-            val palette = if (isDark) mapOf(
-                "primary" to 0xFF4F378B.toInt(),     // 高数/数学/主课
-                "secondary" to 0xFF4A4458.toInt(),   // 通用
-                "tertiary" to 0xFF633B48.toInt(),    // 思政/史纲
-                "english" to 0xFF1E3A4D.toInt(),     // 英语
-                "military" to 0xFF2E3F26.toInt(),    // 军事/国防
-                "physics" to 0xFF4D3A1E.toInt(),     // 物理
-                "history" to 0xFF4D2828.toInt(),      // 历史
-                "psychology" to 0xFF352B4D.toInt(),   // 心理
-                "practice" to 0xFF1E3D32.toInt()     // 实践/实验
-            ) else mapOf(
-                "primary" to 0xFFEADDFF.toInt(),
-                "secondary" to 0xFFE8DEF8.toInt(),
-                "tertiary" to 0xFFFFD8E4.toInt(),
-                "english" to 0xFFD8F2FF.toInt(),
-                "military" to 0xFFE7F3DC.toInt(),
-                "physics" to 0xFFFFE7C7.toInt(),
-                "history" to 0xFFF7D9D9.toInt(),
-                "psychology" to 0xFFE6DDFB.toInt(),
-                "practice" to 0xFFD7F0E8.toInt()
-            )
-            val hashPaletteKeys = listOf("primary", "secondary", "tertiary", "english", "physics", "psychology")
-            fun pickCourseColor(name: String): Int {
-                // 复用 CourseColorRules 的统一关键词/ hash 逻辑 (单一事实来源)
-                val key = when (resolveCourseColorKey(name)) {
-                    CourseColorKey.ENGLISH -> "english"
-                    CourseColorKey.MILITARY -> "military"
-                    CourseColorKey.PHYSICS -> "physics"
-                    CourseColorKey.HISTORY -> "history"
-                    CourseColorKey.PSYCHOLOGY -> "psychology"
-                    CourseColorKey.PRACTICE -> "practice"
-                    CourseColorKey.PRIMARY -> "primary"
-                    CourseColorKey.TERTIARY -> "tertiary"
-                    CourseColorKey.SECONDARY -> "secondary"
+            // ★ v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
+            // hue = groupId.hashCode() * 137.508° → 相邻课色差最大化, 同门课永远同色
+            // 亮色 S=0.55 L=0.82 (粉彩), 暗色 S=0.40 L=0.28 (沉稳)
+            // 用户自定义 color 优先 (#FF6750A4 视为未设置)
+            fun hslToColorInt(h: Float, s: Float, l: Float): Int {
+                val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
+                val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
+                val m = l - c / 2f
+                val (r, g, b) = when {
+                    h < 60f  -> Triple(c, x, 0f)
+                    h < 120f -> Triple(x, c, 0f)
+                    h < 180f -> Triple(0f, c, x)
+                    h < 240f -> Triple(0f, x, c)
+                    h < 300f -> Triple(x, 0f, c)
+                    else     -> Triple(c, 0f, x)
                 }
-                return palette[key]!!
+                return (0xFF shl 24) or
+                    ((r + m).coerceIn(0f, 1f).times(255f).toInt() shl 16) or
+                    ((g + m).coerceIn(0f, 1f).times(255f).toInt() shl 8) or
+                    (b + m).coerceIn(0f, 1f).times(255f).toInt()
+            }
+            fun pickCourseColor(course: CourseEntity): Int {
+                val userColor = course.color
+                if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
+                    runCatching { return android.graphics.Color.parseColor(userColor) }
+                }
+                val stableId = course.groupId.hashCode().toLong()
+                val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
+                val s = if (isDark) 0.40f else 0.55f
+                val l = if (isDark) 0.28f else 0.82f
+                return hslToColorInt(hue, s, l)
             }
 
             // ── 数据 ──
@@ -315,38 +306,42 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            // ★ v19i: 统一字号按最小跨节卡算 (用户原话: "不是按单结算, 是按现有结束跨节的最小的那个算")
-            // 之前 v19h 按 slotH (单节) 算, 用户不要 — 要按所有现存课程中 step 最小的跨节卡算
-            // 例子: 用户课程有 P1-3节(step=3), P7-5节(step=5), P12-12节(step=12)
-            //   → 最小 step=3 → 按 P1-3节 卡的 cardH = slotH*3 + gapH*2 算字号
-            // ★ v19k: 卡片窄(~40dp) → 单列居中更透气, 教室做小字角标
+            // ★ v21: 竖排(直书) — token 化 + 拉丁组旋转 + 标点优化
+            val useVertForms = AppPrefs.isVertPunctReplace(context)  // 方案B开关(默认false=方案A'旋转)
+
+            // ★ v20b: 字号统一到「全表最小理想值」— 自适应算法 + 统一字号
+            // 每卡按 cardH/unitHeight 算理想字号(v21: 用 token 单位高度替代旧字数)
+            // → 全表取最小 → 所有卡用同一个字号(整齐)
+            // 下限 11dp 保可读; 上限按卡宽限定(竖排单字不超卡宽)
             val unifiedPad = dp(4f).toFloat()
-            val unifiedColGap = dp(2f).toFloat()  // 仅在极少数极宽 widget 时双列才用
-            val unifiedDayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
-            val unifiedColW2 = (unifiedDayAvailW - unifiedColGap) / 2 // 双列 (name + room)
+            val nameMinDp = dp(11f).toFloat()   // 可读下限
+            val nameMaxDp = dp(28f).toFloat()   // 美观上限
+            val dayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
+            val nameMaxPxByW = dayAvailW * 0.92f
+            val nameCeil = minOf(nameMaxDp, nameMaxPxByW)
+            val measurePaint = Paint(Paint.ANTI_ALIAS_FLAG)
 
-            // 找所有课程的最小 step (≥1), 但如果存在跨节课程 (step>=2), 至少按 step=2 算 (排除单节)
-            // 例: 用户课程有 P1-1节(step=1), P2-2节(step=2), P7-5节(step=5) → minStep=2
-            // 例: 全单节 → minStep=1 (回退到 slotH)
-            val rawMinStep = data.days.flatMap { it.courses }
-                .minOfOrNull { it.step.coerceAtLeast(1) } ?: 1
-            val hasMultiStep = data.days.flatMap { it.courses }
-                .any { it.step >= 2 }
-            val minStepAll = if (hasMultiStep) maxOf(2, rawMinStep) else 1
-            // 按这个最小跨节卡的 cardH 算字号
-            val minCardH = slotH * minStepAll + gapH * (minStepAll - 1)
-            val unifiedSlotAvailH = (minCardH - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
-
-            val maxNameCharsAll = data.days.flatMap { it.courses }
-                .maxOfOrNull { c -> c.courseName.filter { it != '\n' && it != ' ' }.length } ?: 6
-            val maxRoomCharsAll = data.days.flatMap { it.courses }
-                .maxOfOrNull { c -> c.room.takeIf { it.isNotBlank() }
-                    ?.filter { it != '\n' && it != ' ' }?.length ?: 0 } ?: 0
-            val unifiedMaxRows = maxOf(maxNameCharsAll, maxRoomCharsAll).coerceAtLeast(1)
-            val unifiedCharSize = (unifiedSlotAvailH / unifiedMaxRows)
-                .coerceAtMost(unifiedColW2 * 0.95f)
-                .coerceAtLeast(dp(7f).toFloat())
-            Log.d(TAG, "v19i unifiedCharSize=${unifiedCharSize}px minStep=$minStepAll minCardH=${minCardH}px maxRows=$unifiedMaxRows slotH=${slotH}px dayW=${dayW}px")
+            // 遍历所有课程算每卡理想字号, 取全表最小 → unifiedCharSize
+            var minIdeal = nameCeil  // 初始=上限, 任何卡都会更小
+            for (dow in sortedDays) {
+                val dd = data.days.firstOrNull { it.dayOfWeek == dow } ?: continue
+                for (course in dd.courses) {
+                    val step = course.step.coerceIn(1, maxNode)
+                    val cardH = slotH * step + gapH * (step - 1)
+                    val hasRoom = course.room.isNotBlank()
+                    // v22: 真实可用高度(不夹下限 → 矮卡算真实空间) + 自适应 room 预留
+                    val availCardHPre = (cardH - unifiedPad * 2).coerceAtLeast(0f)
+                    val roomReservePre = if (hasRoom) (nameMinDp * 0.7f).coerceAtMost(availCardHPre * 0.35f) else 0f
+                    val nameAvailH = (availCardHPre - roomReservePre).coerceAtLeast(0f)
+                    // v21: token 单位高度(拉丁组旋转省空间 → unit<字数 → 统一号可能更大)
+                    val tokens = tokenizeName(course.courseName, useVertForms)
+                    val unitH = measureUnitHeight(tokens, measurePaint).coerceAtLeast(1f)
+                    val ideal = (nameAvailH / unitH).coerceIn(nameMinDp, nameCeil)
+                    if (ideal < minIdeal) minIdeal = ideal
+                }
+            }
+            val unifiedCharSize = minIdeal
+            Log.d(TAG, "v21 unifiedCharSize=${unifiedCharSize.toInt()}px vertForms=$useVertForms (全表最小理想字号, token化) nameMin=${nameMinDp.toInt()}px nameMax=${nameCeil.toInt()}px slotH=${slotH}px dayW=${dayW}px")
 
             // day columns
             for ((idx, dow) in sortedDays.withIndex()) {
@@ -373,7 +368,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val cardRect = RectF(colX, cardTop, colX + dayW, cardTop + cardH)
 
                     // 卡片背景色 (v19e: 对齐 CourseTableView palette)
-                    val baseColor = pickCourseColor(course.courseName)
+                    val baseColor = pickCourseColor(course)
                     p.color = baseColor
                     p.alpha = 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)
@@ -398,30 +393,116 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
-                    // ★ v19l: 边界压力修复 — 课名竖排自适应截断, 教室横排省略截断
-                    val charSize = unifiedCharSize
-                    // 卡片可用高度: 顶部pad + 课名区 + (可选)教室区 + 底部pad
+                    // ★ v20b: 用全表统一字号(unifiedCharSize), 截断逻辑保留
                     val availCardH = cardRect.height() - unifiedPad * 2
-                    val roomReserveH = if (roomChars.isNotEmpty()) charSize * 0.5f else 0f  // 教室占半行高
-                    val nameAvailH = (availCardH - roomReserveH).coerceAtLeast(charSize)  // 至少放1字
+                    val hasRoom = roomChars.isNotEmpty()
+                    val roomReserveH = if (hasRoom) (nameMinDp * 0.7f).coerceAtMost(availCardH * 0.35f) else 0f
+                    val nameAvailH = (availCardH - roomReserveH).coerceAtLeast(0f)
+                    val charSize = unifiedCharSize
 
-                    // ★ 课名垂直截断: 字数 × charSize 超过 nameAvailH → 砍到能放下字数, 末字换省略号
-                    // ★ v19l-fix: maxNameRows≥2 时才截断(至少保留1字+省略号), =1 时不截断(宁溢不空)
-                    val maxNameRows = (nameAvailH / charSize).toInt().coerceIn(1, nameChars.size)
-                    val nameVisible = if (nameChars.size > maxNameRows && maxNameRows >= 2) {
-                        nameChars.take(maxNameRows - 1) + '…'
-                    } else nameChars
-
-                    // ★ 课名: 竖排居中, BOLD
+                    // ★ v21: token 化课名 → 截断 → 按类型绘制
+                    val nameCenterX = cardRect.centerX()
                     p.textSize = charSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     p.alpha = 255
-                    val nameCenterX = cardRect.centerX()
-                    val nameBlockH = charSize * nameVisible.size
+                    p.textAlign = Paint.Align.CENTER
+
+                    val tokens = tokenizeName(course.courseName, useVertForms)
+
+                    // ★ v22: 字符级贪心截断 — 任何 token 都可拆到字符级, 彻底杜绝溢出
+                    //   CJK/PUNCT: 逐字累加, 放不下就截断
+                    //   LATIN(旋转组≥2): 不可拆 → 整组放不下则截断
+                    p.textSize = charSize
+                    data class DrawnToken(val type: TT, val text: String, val h: Float, val size: Float)
+                    val drawn = ArrayList<DrawnToken>()
+                    var cumH = 0f
+                    var truncated = false
+                    val ellipsisChar = if (useVertForms) '︙' else '…'
+                    val ellipsisH = charSize  // 省略号占~1字高
+                    for (tok in tokens) {
+                        if (truncated) break
+                        when (tok.type) {
+                            TT.CJK -> {
+                                for (ch in tok.text) {
+                                    if (cumH + charSize > nameAvailH) { truncated = true; break }
+                                    drawn.add(DrawnToken(TT.CJK, ch.toString(), charSize, charSize))
+                                    cumH += charSize
+                                }
+                            }
+                            TT.LATIN -> {
+                                // 旋转组不可拆: 整组放不下即截断
+                                val tokH = p.measureText(tok.text)
+                                if (cumH + tokH > nameAvailH) { truncated = true; break }
+                                drawn.add(DrawnToken(TT.LATIN, tok.text, tokH, charSize))
+                                cumH += tokH
+                            }
+                            TT.PUNCT -> {
+                                for (ch in tok.text) {
+                                    val chW = p.measureText(ch.toString())
+                                    if (cumH + chW > nameAvailH) { truncated = true; break }
+                                    drawn.add(DrawnToken(TT.PUNCT, ch.toString(), chW, charSize))
+                                    cumH += chW
+                                }
+                            }
+                        }
+                    }
+                    // 截断后腾省略号高度: 从尾部逐字移除直到 … 放得下
+                    var showEllipsis = truncated
+                    if (truncated) {
+                        while (drawn.isNotEmpty() && cumH + ellipsisH > nameAvailH) {
+                            cumH -= drawn.removeAt(drawn.size - 1).h
+                        }
+                        if (drawn.isEmpty()) showEllipsis = false  // 一个字都放不下 → 不画…
+                    }
+                    // v22: 极端矮卡(nameAvailH < charSize, 连一个最小字号字都放不下)
+                    //   缩放首字字号至刚好填满 nameAvailH → 彻底零溢出, 且仍保留内容
+                    if (drawn.isEmpty() && tokens.isNotEmpty()) {
+                        val tinySize = nameAvailH.coerceIn(1f, charSize)
+                        p.textSize = tinySize
+                        val tinyH = p.measureText(tokens[0].text.first().toString())  // CJK ≈ tinySize
+                        drawn.add(DrawnToken(TT.CJK, tokens[0].text.first().toString(), tinyH, tinySize))
+                        cumH = tinyH
+                        showEllipsis = false
+                    }
+                    val nameBlockH = cumH + (if (showEllipsis) ellipsisH else 0f)
                     val nameBlockTop = cardRect.top + unifiedPad + (availCardH - roomReserveH - nameBlockH) / 2f
-                    for ((i, ch) in nameVisible.withIndex()) {
-                        val cy = nameBlockTop + charSize * (i + 0.82f)
-                        c.drawText(ch.toString(), nameCenterX, cy, p)
+
+                    // 逐 token 绘制 (每个 token 自带 size, 支持极端矮卡缩放)
+                    var cy = nameBlockTop
+                    for (tok in drawn) {
+                        p.textSize = tok.size
+                        when (tok.type) {
+                            TT.CJK -> {
+                                c.drawText(tok.text, nameCenterX, cy + tok.size * 0.82f, p)
+                                cy += tok.h
+                            }
+                            TT.LATIN -> {
+                                // 整组顺时针旋转90°
+                                val centerX = nameCenterX
+                                val centerY = cy + tok.h / 2f
+                                c.save()
+                                c.translate(centerX, centerY)
+                                c.rotate(90f)
+                                c.drawText(tok.text, 0f, tok.size * 0.35f, p)
+                                c.restore()
+                                cy += tok.h
+                            }
+                            TT.PUNCT -> {
+                                // 单字旋转90°
+                                val centerX = nameCenterX
+                                val centerY = cy + tok.h / 2f
+                                c.save()
+                                c.translate(centerX, centerY)
+                                c.rotate(90f)
+                                c.drawText(tok.text, 0f, tok.size * 0.35f, p)
+                                c.restore()
+                                cy += tok.h
+                            }
+                        }
+                    }
+                    if (showEllipsis) {
+                        p.textSize = charSize
+                        c.drawText(ellipsisChar.toString(), nameCenterX, cy + charSize * 0.82f, p)
                     }
 
                     // ★ 教室: 底部横排小字角标, 0.62× 字号, 半透明, 按卡片宽截断省略
@@ -440,12 +521,12 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
                         c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
-                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px " +
-                            "name='${course.courseName}'(${nameChars.size}→${nameVisible.size}chars maxRows=$maxNameRows) " +
+                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px charSize=${charSize.toInt()}px availH=${nameAvailH.toInt()}px " +
+                            "name='${course.courseName}'(drawn=${drawn.size}${if(showEllipsis)"+…"else ""} h=${cumH.toInt()}px) " +
                             "room='${roomStr}'(${roomStr.length}→${roomVisible.length}chars max=$maxRoomChars)")
                     } else {
-                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px " +
-                            "name='${course.courseName}'(${nameChars.size}→${nameVisible.size}chars maxRows=$maxNameRows) " +
+                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px charSize=${charSize.toInt()}px availH=${nameAvailH.toInt()}px " +
+                            "name='${course.courseName}'(drawn=${drawn.size}${if(showEllipsis)"+…"else ""} h=${cumH.toInt()}px) " +
                             "room=none")
                     }
                 }
@@ -466,6 +547,121 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 listOf("08:00","08:55","10:00","10:55","14:00","14:55",
                     "16:00","16:55","19:00","19:55","20:50","21:45")
             }
+        }
+
+        // ===== v21 竖排(直书) token 化 =====
+        // 把课名切成有序 token: CJK run(直立) / Latin run≥2(整组旋转90°) / Latin=1(直立) / 标点
+        // 标点处理由 useVertForms 决定: true→替换为 Vertical Forms 直立; false→逐个旋转90°
+
+        /** token 类型 */
+        private enum class TT { CJK, LATIN, PUNCT }
+
+        /** 一个 token: 类型 + 文本(已按方案处理过标点替换) */
+        private data class NameToken(val type: TT, val text: String)
+
+        /** 标点字符集 — 横排符号, 需特殊处理(旋转或替换) */
+        private val PUNCT_CHARS = setOf(
+            '(', ')', '（', '）', '〔', '〕', '【', '】', '《', '》', '〈', '〉',
+            '「', '」', '『', '』', '[', ']', '{', '}', '〈', '〉',
+            '—', '–', '～', '~', '…', '·', '・', '、', '，', '。', '：', '；',
+            '！', '？', '”', '“', '’', '‘', '"', '\'', '/', '／', '｜', '|'
+        )
+
+        /** 方案B: 横排符号 → Unicode Vertical Forms (U+FE19–FE44) */
+        private val VERT_FORM_MAP = mapOf(
+            '(' to '︵', '（' to '︵',   // U+FE35
+            ')' to '︶', '）' to '︶',   // U+FE36
+            '〔' to '︹',                  // U+FE39
+            '〕' to '︺',                  // U+FE3A
+            '【' to '︻',                  // U+FE3B
+            '】' to '︼',                  // U+FE3C
+            '《' to '︽',                  // U+FE3D
+            '》' to '︾',                  // U+FE3E
+            '〈' to '︿',                  // U+FE3F
+            '〉' to '﹀',                  // U+FE40
+            '「' to '﹁',                  // U+FE41
+            '」' to '﹂',                  // U+FE42
+            '『' to '﹃',                  // U+FE43
+            '』' to '﹄',                  // U+FE44
+            '[' to '︻',                  // 复用
+            ']' to '︼',                  // 复用
+            '{' to '︷',                  // U+FE37
+            '}' to '︸',                  // U+FE38
+            '—' to '︱',                  // U+FE31
+            '…' to '︙'                   // U+FE19
+        )
+
+        private fun isLatin(ch: Char): Boolean =
+            (ch in 'A'..'Z' || ch in 'a'..'z' || ch in '0'..'9')
+
+        private fun isCJK(ch: Char): Boolean =
+            (ch in '一'..'鿿' || ch in '㐀'..'䶿' || ch in '豈'..'﫿')
+
+        /**
+         * 课名 → token 列表。先去空白, 再扫描连续 run。
+         * useVertForms=true(方案B): 标点替换为 Vertical Forms(变 CJK 直立)
+         * useVertForms=false(方案A'): 标点保持原样(绘制时逐个旋转)
+         */
+        private fun tokenizeName(name: String, useVertForms: Boolean): List<NameToken> {
+            val s = name.filter { it != '\n' && it != ' ' }
+            if (s.isEmpty()) return emptyList()
+            val tokens = ArrayList<NameToken>()
+            val sb = StringBuilder()
+            var runType: TT? = null
+
+            fun flush() {
+                if (sb.isNotEmpty() && runType != null) {
+                    tokens.add(NameToken(runType!!, sb.toString()))
+                    sb.clear()
+                }
+                runType = null
+            }
+
+            for (ch in s) {
+                // 方案B: 标点先替换为 Vertical Forms → 归为 CJK 直立
+                val c = if (useVertForms && ch in VERT_FORM_MAP) VERT_FORM_MAP[ch]!! else ch
+                val t = when {
+                    isLatin(c) && isLatin(c) -> TT.LATIN
+                    isCJK(c) -> TT.CJK
+                    c in PUNCT_CHARS -> TT.PUNCT
+                    isLatin(c) -> TT.LATIN
+                    else -> TT.CJK  // 其他字符(含替换后的竖排符号)按 CJK 直立
+                }
+                if (t != runType) { flush(); runType = t }
+                sb.append(c)
+            }
+            flush()
+
+            // 后处理: LATIN run 长度=1 → 按 spec 保持直立(改判为 CJK 处理即直立)
+            return tokens.map { tok ->
+                if (tok.type == TT.LATIN && tok.text.length == 1) NameToken(TT.CJK, tok.text) else tok
+            }
+        }
+
+        /**
+         * token 单位高度(与 charSize 无关的比值):
+         *   CJK/单字Latin: 每字 1.0
+         *   LATIN run≥2(旋转): measureText/textSize (旋转后占高=组宽)
+         *   PUNCT(旋转 方案A'): measureText(每字)/textSize
+         *   PUNCT 已替换为 VertForms → 走 CJK 路径(每字≈1.0)
+         * 用临时 paint 在任意 textSize(如1.0)下测, 比值与绝对字号无关。
+         */
+        private fun measureUnitHeight(tokens: List<NameToken>, paint: Paint): Float {
+            var h = 0f
+            for (tok in tokens) {
+                when (tok.type) {
+                    TT.CJK -> h += tok.text.length * 1f
+                    TT.LATIN -> {
+                        paint.textSize = 1f
+                        h += paint.measureText(tok.text)  // 旋转组占高=组宽
+                    }
+                    TT.PUNCT -> {
+                        paint.textSize = 1f
+                        for (ch in tok.text) h += paint.measureText(ch.toString())
+                    }
+                }
+            }
+            return h
         }
 
         private fun isDarkOn(color: Int): Boolean {

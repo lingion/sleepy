@@ -29,6 +29,7 @@ object AppPrefs {
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
+    const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -176,5 +177,14 @@ object AppPrefs {
 
     fun setVisibleDays(ctx: Context, days: Set<Int>) {
         sp(ctx).edit().putString(KEY_VISIBLE_DAYS, days.sorted().joinToString(",")).apply()
+    }
+
+    // ===== 竖排标点优化(方案B: 标点替换为 Unicode Vertical Forms) — 默认 false =====
+
+    fun isVertPunctReplace(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_VERT_PUNCT_REPLACE, false)
+
+    fun setVertPunctReplace(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_VERT_PUNCT_REPLACE, v).apply()
     }
 }

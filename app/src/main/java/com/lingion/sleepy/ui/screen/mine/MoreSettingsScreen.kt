@@ -62,6 +62,7 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
+    var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
 
     val languages = listOf(
         "zh-CN" to "简体中文",
@@ -169,6 +170,16 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
                         onCheckedChange = {
                             showDate = it
                             AppPrefs.setShowDate(context, it)
+                        }
+                    )
+                    // 竖排标点优化(方案B开关, 默认关)
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_vert_punct),
+                        subtitle = stringResource(R.string.settings_vert_punct_sub),
+                        checked = vertPunct,
+                        onCheckedChange = {
+                            vertPunct = it
+                            AppPrefs.setVertPunctReplace(context, it)
                         }
                     )
                 }

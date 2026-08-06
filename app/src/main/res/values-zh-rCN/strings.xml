@@ -191,6 +191,8 @@
     <string name="settings_show_date_sub">在每列表头显示具体日期（月/日）</string>
     <string name="settings_visible_days">显示星期</string>
     <string name="settings_visible_days_sub">取消勾选的星期将在所有视图中隐藏</string>
+    <string name="settings_vert_punct">竖排标点优化</string>
+    <string name="settings_vert_punct_sub">课名竖排时将（）《》等横排符号替换为专用竖排符号（实验功能）</string>
 
     <!-- Theme -->
     <string name="theme_title">主题颜色</string>
