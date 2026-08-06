@@ -319,9 +319,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             // 之前 v19h 按 slotH (单节) 算, 用户不要 — 要按所有现存课程中 step 最小的跨节卡算
             // 例子: 用户课程有 P1-3节(step=3), P7-5节(step=5), P12-12节(step=12)
             //   → 最小 step=3 → 按 P1-3节 卡的 cardH = slotH*3 + gapH*2 算字号
-            // ★ v19j: 透气内边距 + 双列清晰分离 (用户: "没有一个很好的margin")
-            val unifiedPad = dp(4.5f).toFloat()      // was 3dp → 4.5dp: 呼吸感
-            val unifiedColGap = dp(3f).toFloat()     // was 1.5dp → 3dp: 课名/教室分列清晰
+            // ★ v19k: 卡片窄(~40dp) → 单列居中更透气, 教室做小字角标
+            val unifiedPad = dp(4f).toFloat()
+            val unifiedColGap = dp(2f).toFloat()  // 仅在极少数极宽 widget 时双列才用
             val unifiedDayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
             val unifiedColW2 = (unifiedDayAvailW - unifiedColGap) / 2 // 双列 (name + room)
 
@@ -388,9 +388,8 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.style = Paint.Style.FILL
                     p.alpha = 255
 
-                    // ★ v19j: 整块真正居中 + 课名/教室层级分明 (用户: "没有居中, 也没有很好的margin")
-                    // 旧实现从 blockRight=right-pad 往左算列 → 整块偏右。正解: 用 centerX 定整块。
-                    // ★ v19h: 字号全周统一 (用户: "能不能所有字号统一啊?")
+                    // ★ v19k: 课名居中独占主体, 教室做底部小字角标
+                    // 卡片窄(~40dp), 双列并排挤死 → 改成: 课名竖排居中 + 教室缩到 0.6× 字号横排在底部
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
@@ -399,44 +398,34 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
-                    val availW = (cardRect.width() - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
-                    val totalCols = if (roomChars.isNotEmpty()) 2 else 1
-                    val colW = (availW - unifiedColGap * (totalCols - 1)) / totalCols
-                    // 整块(所有列+列间距)总宽, 用卡片 centerX 居中整块
-                    val totalBlockW = colW * totalCols + unifiedColGap * (totalCols - 1)
-                    val blockLeft = cardRect.centerX() - totalBlockW / 2f
+                    val charSize = unifiedCharSize
 
-                    val rowsCount = maxOf(nameChars.size, roomChars.size).coerceAtLeast(1)
-                    val charSize = unifiedCharSize // ★ 全周统一字号 (最小跨节卡算出)
-                    val roomCharSize = charSize * 0.78f // ★ 教室次级层级: 字号缩小
-
-                    // 整块高度按主列(课名)算, 垂直居中
-                    val totalBlockH = charSize * rowsCount
-                    val blockTop = cardRect.top + (cardRect.height() - totalBlockH) / 2f
-
-                    // 课名列: 主, BOLD, 全字号, 中心在 blockLeft + colW/2 (左起第一列, 与"右挤"相反)
-                    // ★ 单列时(无教室) blockLeft + colW/2 = centerX, 天然完美居中
+                    // ★ 课名: 竖排居中, BOLD
                     p.textSize = charSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     p.alpha = 255
-                    val nameColCenterX = blockLeft + colW / 2f
+                    val nameCenterX = cardRect.centerX()
+                    val nameBlockH = charSize * nameChars.size
+                    // 有教室: 课名块往上留教室空间; 无教室: 整卡居中
+                    val nameBlockTop = if (roomChars.isNotEmpty()) {
+                        cardRect.top + unifiedPad + (cardRect.height() - unifiedPad * 2 - nameBlockH - charSize * 0.5f) / 2f
+                    } else {
+                        cardRect.top + (cardRect.height() - nameBlockH) / 2f
+                    }
                     for ((i, ch) in nameChars.withIndex()) {
-                        val cy = blockTop + charSize * (i + 0.82f)
-                        c.drawText(ch.toString(), nameColCenterX, cy, p)
+                        val cy = nameBlockTop + charSize * (i + 0.82f)
+                        c.drawText(ch.toString(), nameCenterX, cy, p)
                     }
 
-                    // 教室列: 次, NORMAL, 缩小字号 + 半透明, 右起第二列
+                    // ★ 教室: 底部横排小字角标, 0.62× 字号, 半透明
                     if (roomChars.isNotEmpty()) {
+                        val roomStr = course.room.filter { it != '\n' }
+                        val roomSize = (charSize * 0.62f).coerceAtMost(dp(8f).toFloat()).coerceAtLeast(dp(5f).toFloat())
+                        p.textSize = roomSize
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                        p.textSize = roomCharSize
-                        p.alpha = 185
-                        val roomColCenterX = blockLeft + colW + unifiedColGap + colW / 2f
-                        // 教室字号小, 垂直仍按主列基线网格对齐 (用 charSize 步进, 室内自身居中偏移)
-                        val roomBlockTop = blockTop + (charSize - roomCharSize) / 2f
-                        for ((i, ch) in roomChars.withIndex()) {
-                            val cy = roomBlockTop + roomCharSize * (i + 0.5f) + charSize * i * 0.5f
-                            c.drawText(ch.toString(), roomColCenterX, cy, p)
-                        }
+                        p.alpha = 160
+                        val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
+                        c.drawText(roomStr, nameCenterX, roomCy, p)
                         p.alpha = 255
                     }
                 }
