@@ -13,6 +13,8 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Shader
 import android.graphics.Typeface
+import android.os.Handler
+import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
@@ -22,6 +24,11 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -35,33 +42,72 @@ import kotlin.math.roundToInt
  */
 class WeekGridWidgetProvider : AppWidgetProvider() {
 
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /**
+     * ★ ANR 修复: onUpdate/onAppWidgetOptionsChanged 在主线程回调,
+     * 原实现 renderWidget 内含 runBlocking(DB) + Canvas 重活 → 主线程阻塞 → ANR。
+     * 改用 goAsync() 获取 PendingResult, 在后台线程做完 DB 加载 + Bitmap 渲染后 finish。
+     * 系统广播 ANR 阈值(前台~10s/后台~60s)由 goAsync 续命, 实际工作在 Dispatchers.Default。
+     */
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
-        for (id in ids) {
-            try { renderWidget(context, awm, id) }
-            catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+        val pending = goAsync()
+        ioScope.launch {
+            try {
+                for (id in ids) {
+                    try { renderWidget(context, awm, id) }
+                    catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                }
+            } finally {
+                pending.finish()
+            }
         }
     }
 
     override fun onAppWidgetOptionsChanged(
         context: Context, awm: AppWidgetManager, id: Int, newOptions: android.os.Bundle
     ) {
-        renderWidget(context, awm, id)
+        val pending = goAsync()
+        ioScope.launch {
+            try { renderWidget(context, awm, id) }
+            catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            finally { pending.finish() }
+        }
     }
 
     private fun renderWidget(context: Context, awm: AppWidgetManager, widgetId: Int) {
         val data = loadWeekData(context)
         val opts = awm.getAppWidgetOptions(widgetId)
         val density = context.resources.displayMetrics.density
-        // ★ v19d: Bitmap 用固定 dp 尺寸 (用户原话: "字体依然巨大, 九节课")
-        // 根因: 不同 launcher 返回的 OPTION_APPWIDGET_MIN_WIDTH/HEIGHT 单位不一致
-        //   第三方 launcher (Android 16) 返回 dp (e.g. 320, 400) 而非 pixels
-        //   → Bitmap 实际只有 320×400px → headH=168px 后 bodyH=116px → 只装 9 节
-        //   → fontSize 35px 占 Bitmap 12% → 真机显示"巨大"
-        // 修法: Bitmap 固定 360×600 dp (= 真实 4×5 widget 容器大小)
-        //   layout scaleType=fitCenter 自动缩放匹配任何 widget 容器
-        val w = (360 * density).toInt()
-        val h = (600 * density).toInt()
-        Log.d(TAG, "renderWidget: FIXED dp bitmap=${w}x${h}px (density=$density, opts MIN=${opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)}x${opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)})")
+
+        // ★★ FIX(字扁+巨大+黑边): 必须用「实际当前尺寸」而不是 MAX resize 边界。
+        // 之前读 OPTION_APPWIDGET_MAX_WIDTH/HEIGHT = 616×634dp (这是 widget 能拖到的最大尺寸, 不是当前尺寸!)
+        //   实际 widget 在桌面只占 ~376×651dp (窄高, ratio 0.58)。
+        //   用 616×634 (ratio 0.97) 画 bitmap → fitCenter 等比缩小塞进 0.58 容器 → 上下大片留白;
+        //   用 fitXY 则强行拉伸 → 字扁。根因 = bitmap 宽高比 ≠ 容器宽高比。
+        // 正解 (API31+): OPTION_APPWIDGET_SIZES 返回当前真实 SizeF(dp 列表), 取最大那个 = 容器真实尺寸,
+        //   bitmap 宽高比 == 容器宽高比 → 无拉伸无黑边。
+        // 兼容 (API<31 回退): MIN_W × MAX_H 近似默认窄高尺寸。
+        val optMaxW = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH)
+        val optMaxH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+        val optMinW = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+        val optMinH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
+        var wDp = 0
+        var hDp = 0
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            val sizes = opts.getParcelableArrayList(
+                AppWidgetManager.OPTION_APPWIDGET_SIZES, android.util.SizeF::class.java)
+            sizes?.maxByOrNull { it.width * it.height }?.let { s -> wDp = s.width.toInt(); hDp = s.height.toInt() }
+        }
+        if (wDp <= 0 || hDp <= 0) {
+            // 回退: MIN_W (最窄) × MAX_H (最高) ≈ 默认放置后的窄高容器
+            wDp = optMinW.takeIf { it > 0 } ?: 360
+            hDp = optMaxH.takeIf { it > 0 } ?: 600
+        }
+        val w = (wDp * density).toInt().coerceAtLeast((180 * density).toInt())
+        val h = (hDp * density).toInt().coerceAtLeast((250 * density).toInt())
+        Log.d(TAG, "renderWidget: opts MAX=${optMaxW}x${optMaxH}dp MIN=${optMinW}x${optMinH}dp " +
+            "SIZES_wDp=${wDp}x${hDp}dp → bitmap=${w}x${h}px ratio=%.2f (density=$density)".format(w.toFloat()/h))
 
         val bmp = renderBitmap(context, data, w, h)
         val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
@@ -72,6 +118,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
         awm.updateAppWidget(widgetId, views)
+        // ★ Bitmap 回收: RemoteViews.setImageViewBitmap 会拷贝 bitmap 到 binder 事务,
+        // 本进程持有的原 bitmap 不再需要, 立即回收避免 ~7.8MB 大图累积占内存。
+        bmp.recycle()
     }
 
     companion object {
@@ -118,23 +167,18 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             )
             val hashPaletteKeys = listOf("primary", "secondary", "tertiary", "english", "physics", "psychology")
             fun pickCourseColor(name: String): Int {
-                // 1. 关键词规则 (跟 CourseTableView courseColorRules 一致)
-                val rules = listOf(
-                    "英语" to "english",
-                    "军事" to "military", "国防" to "military",
-                    "物理" to "physics",
-                    "历史" to "history", "史纲" to "history", "近代史" to "history",
-                    "心理" to "psychology",
-                    "实践" to "practice", "实习" to "practice", "实验" to "practice",
-                    "高数" to "primary", "数学" to "primary", "电路" to "primary",
-                    "思政" to "tertiary", "马原" to "tertiary", "毛概" to "tertiary", "形势" to "tertiary"
-                )
-                rules.firstOrNull { (kw, _) -> name.contains(kw) }?.let { (_, key) ->
-                    return palette[key]!!
+                // 复用 CourseColorRules 的统一关键词/ hash 逻辑 (单一事实来源)
+                val key = when (resolveCourseColorKey(name)) {
+                    CourseColorKey.ENGLISH -> "english"
+                    CourseColorKey.MILITARY -> "military"
+                    CourseColorKey.PHYSICS -> "physics"
+                    CourseColorKey.HISTORY -> "history"
+                    CourseColorKey.PSYCHOLOGY -> "psychology"
+                    CourseColorKey.PRACTICE -> "practice"
+                    CourseColorKey.PRIMARY -> "primary"
+                    CourseColorKey.TERTIARY -> "tertiary"
+                    CourseColorKey.SECONDARY -> "secondary"
                 }
-                // 2. hash fallback
-                val h = (name.hashCode() and 0x7FFFFFFF)
-                val key = hashPaletteKeys[h % hashPaletteKeys.size]
                 return palette[key]!!
             }
 
@@ -161,9 +205,10 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val gapW = dp(2.5f)
 
             val bodyW = wPx - outerPad * 2
-            val bodyH = hPx - outerPad * 2 - headH
+            val bodyH = (hPx - outerPad * 2 - headH).coerceAtLeast(dp(20f))
             val totalGapW = gapW * (dayCount + 1)
-            val dayW = ((bodyW - timeW - totalGapW) / dayCount).toFloat()
+            val dayW = ((bodyW - timeW - totalGapW) / dayCount)
+                .toFloat().coerceAtLeast(dp(20f).toFloat())  // 下限: 防 launcher 返极小宽度致负数
             val totalGapH = gapH * (maxNode + 1)
             val slotH = ((bodyH - totalGapH) / maxNode).toFloat().coerceAtLeast(dp(3f).toFloat())
 
@@ -179,6 +224,23 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             p.color = bgContainer
             val containerRect = RectF(0f, 0f, wPx.toFloat(), hPx.toFloat())
             c.drawRoundRect(containerRect, dp(18f).toFloat(), dp(18f).toFloat(), p)
+
+            // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格(与 Glance 版 EmptyTableState 一致)
+            if (!data.hasTable || data.days.isEmpty() || data.days.all { it.courses.isEmpty() }) {
+                val ctx = SleepyApp.get()
+                p.color = fgOnSurface
+                p.textSize = dp(15f).toFloat()
+                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                p.textAlign = Paint.Align.CENTER
+                c.drawText(ctx.getString(R.string.widget_create_schedule),
+                    wPx / 2f, hPx / 2f - dp(8f), p)
+                p.textSize = dp(11f).toFloat()
+                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                p.color = fgOnSurfaceVar
+                c.drawText(ctx.getString(R.string.widget_open_sleepy),
+                    wPx / 2f, hPx / 2f + dp(12f), p)
+                return bmp
+            }
 
             // ── Header (Day labels) ──
             var x = outerPad.toFloat()
@@ -390,13 +452,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         private fun isDarkOn(color: Int): Boolean {
             val r = Color.red(color); val g = Color.green(color); val b = Color.blue(color)
             return (0.299 * r + 0.587 * g + 0.114 * b) / 255.0 < 0.55
-        }
-
-        private fun ellipsize(text: String, paint: Paint, maxW: Float): String {
-            if (paint.measureText(text) <= maxW) return text
-            var s = text
-            while (s.isNotEmpty() && paint.measureText("$s…") > maxW) s = s.dropLast(1)
-            return if (s.isEmpty()) "" else "$s…"
         }
 
         fun loadWeekData(context: Context): WeekData {

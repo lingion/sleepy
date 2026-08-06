@@ -137,25 +137,20 @@ data class WidgetScheme(
     val coursePractice: Color = Color(0xFFD7F0E8)
 )
 
-// ── 课程色规则 — 跟首页 courseColorRules 一致 ──
-internal val courseRules = listOf<Pair<(String)->Boolean, WidgetScheme.()->Color>>(
-    ({ s: String -> "英语" in s }) to ({ courseEnglish }),
-    ({ s: String -> "军事" in s || "国防" in s }) to ({ courseMilitary }),
-    ({ s: String -> "物理" in s }) to ({ coursePhysics }),
-    ({ s: String -> "历史" in s || "史纲" in s || "近代史" in s }) to ({ courseHistory }),
-    ({ s: String -> "心理" in s }) to ({ coursePsychology }),
-    ({ s: String -> "实践" in s || "实习" in s || "实验" in s }) to ({ coursePractice }),
-    ({ s: String -> "高数" in s || "数学" in s || "电路" in s }) to ({ coursePrimary }),
-    ({ s: String -> "思政" in s || "马原" in s || "毛概" in s || "形势" in s }) to ({ courseTertiary })
-)
-internal val hashPalette = listOf<WidgetScheme.()->Color>(
-    { coursePrimary }, { courseSecondary }, { courseTertiary },
-    { courseEnglish }, { coursePhysics }, { coursePsychology }
-)
-internal fun courseColor(name: String, scheme: WidgetScheme): Color {
-    courseRules.firstOrNull { (m, _) -> m(name) }?.let { (_, s) -> return scheme.s() }
-    return hashPalette[(name.hashCode() and 0x7FFFFFFF) % hashPalette.size].invoke(scheme)
+// ── 课程色规则 — 关键词/ hash 逻辑见 CourseColorRules.kt (单一事实来源) ──
+private fun WidgetScheme.colorByKey(key: CourseColorKey): Color = when (key) {
+    CourseColorKey.ENGLISH    -> courseEnglish
+    CourseColorKey.MILITARY   -> courseMilitary
+    CourseColorKey.PHYSICS    -> coursePhysics
+    CourseColorKey.HISTORY    -> courseHistory
+    CourseColorKey.PSYCHOLOGY -> coursePsychology
+    CourseColorKey.PRACTICE   -> coursePractice
+    CourseColorKey.PRIMARY    -> coursePrimary
+    CourseColorKey.TERTIARY   -> courseTertiary
+    CourseColorKey.SECONDARY  -> courseSecondary
 }
+internal fun courseColor(name: String, scheme: WidgetScheme): Color =
+    scheme.colorByKey(resolveCourseColorKey(name))
 
 /**
  * 按 themeKey + isDark 派生小组件配色。
@@ -316,23 +311,6 @@ private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetSche
                 maxLines = 1
             )
         }
-    }
-}
-
-/**
- * 解析 #AARRGGBB / #RRGGBB / 8 位 hex 字符串为 Color。
- * 失败时回退默认淡紫。
- */
-private fun parseColor(hex: String): Color {
-    val cleaned = hex.removePrefix("#").removePrefix("0x")
-    return try {
-        when (cleaned.length) {
-            8 -> Color(cleaned.toLong(16) or 0xFF000000L)
-            6 -> Color(0xFF000000L or cleaned.toLong(16))
-            else -> Color(0xFF6750A4)
-        }
-    } catch (_: Exception) {
-        Color(0xFF6750A4)
     }
 }
 
@@ -847,38 +825,4 @@ fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 
             }
         }
     }
-}
-
-/**
- * 课程名自适应字号 — 长名字自动缩小，**绝不截断**。
- * 算法：把字符折算成"等宽字符"（CJK=1.0em, ASCII=0.55em），按总等效宽度反推字号档位；
- * 节数越多卡片越高，字号额外 +1~2sp；下限 6sp 保可读。
- * 额外限制：字号 ≤ dayUnitH × 0.7（保证 1 行文字能放进单节卡片）。
- */
-private fun autoFitCourseFontSize(name: String, step: Int, dayUnitH: Dp = 50.dp): Int {
-    val len = name.length
-    if (len == 0) return 7
-    val asciiCount = name.count { it.code < 128 }
-    val isAllAscii = asciiCount == len
-    val isAllCjk = (len - asciiCount) == len
-
-    val charEm = when {
-        isAllCjk -> len.toFloat()
-        isAllAscii -> len * 0.55f
-        else -> asciiCount * 0.55f + (len - asciiCount) * 1.0f
-    }
-
-    val baseSp = when {
-        charEm <= 2.5f -> 11
-        charEm <= 3.5f -> 10
-        charEm <= 5.0f -> 9
-        charEm <= 7.0f -> 8
-        charEm <= 10.0f -> 7
-        charEm <= 14.0f -> 6
-        else -> 5
-    }
-
-    val boost = (step - 1).coerceIn(0, 2)
-    val unitCap = (dayUnitH.value * 0.7f).toInt().coerceAtLeast(6)
-    return (baseSp + boost).coerceIn(6, unitCap.coerceAtMost(12))
 }

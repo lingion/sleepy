@@ -380,21 +380,8 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
             context.getString(R.string.notif_before_class_text_with_teacher, courseName, startTime, roomStr, teacher)
         }
 
-        // The service owns the same notification ID and updates only its time progress.
-        if (fluid && Build.VERSION.SDK_INT >= 26) {
-            val serviceIntent = Intent(context, FluidCloudService::class.java).apply {
-                putExtra("courseName", courseName)
-                putExtra("room", roomStr)
-                putExtra("teacher", teacher)
-                putExtra("startTime", startTime)
-                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
-                putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
-            }
-            ContextCompat.startForegroundService(context, serviceIntent)
-            return
-        }
-
         // == Live Update (Android 16+ / ColorOS 16 fluid cloud capsule) ==
+        // ★ 必须在 SDK>=26 前台服务分支之前判断: 36>=26 恒真, 否则下方 return 导致此分支永不执行
         if (fluid && Build.VERSION.SDK_INT >= 36) {
             val nowEpoch = System.currentTimeMillis()
             val notifyEpoch = intent.getLongExtra("notifyEpoch", nowEpoch)
@@ -433,6 +420,21 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
             NotificationManagerCompat.from(context)
                 .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, liveNotif)
             android.util.Log.d("BeforeClassNotify", "posted static fluid")
+            return
+        }
+
+        // The service owns the same notification ID and updates only its time progress.
+        // Android 8~15: 用前台服务驱动 fluid cloud 更新(Android 16+ 由上方 Live Update 分支接管)
+        if (fluid && Build.VERSION.SDK_INT >= 26) {
+            val serviceIntent = Intent(context, FluidCloudService::class.java).apply {
+                putExtra("courseName", courseName)
+                putExtra("room", roomStr)
+                putExtra("teacher", teacher)
+                putExtra("startTime", startTime)
+                putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
+                putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
+            }
+            ContextCompat.startForegroundService(context, serviceIntent)
             return
         }
 

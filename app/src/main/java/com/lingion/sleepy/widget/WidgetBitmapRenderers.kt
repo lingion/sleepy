@@ -94,20 +94,18 @@ object WidgetBitmapRenderers {
         )
     }
 
-    private fun courseColor(name: String, s: Scheme): Int {
-        when {
-            "英语" in name -> return s.cEnglish
-            "军事" in name || "国防" in name -> return s.cMilitary
-            "物理" in name -> return s.cPhysics
-            "历史" in name || "史纲" in name || "近代史" in name -> return s.cHistory
-            "心理" in name -> return s.cPsychology
-            "实践" in name || "实习" in name || "实验" in name -> return s.cPractice
-            "高数" in name || "数学" in name || "电路" in name -> return s.cPrimary
-            "思政" in name || "马原" in name || "毛概" in name || "形势" in name -> return s.cTertiary
+    private fun courseColor(name: String, s: Scheme): Int =
+        when (resolveCourseColorKey(name)) {
+            CourseColorKey.ENGLISH -> s.cEnglish
+            CourseColorKey.MILITARY -> s.cMilitary
+            CourseColorKey.PHYSICS -> s.cPhysics
+            CourseColorKey.HISTORY -> s.cHistory
+            CourseColorKey.PSYCHOLOGY -> s.cPsychology
+            CourseColorKey.PRACTICE -> s.cPractice
+            CourseColorKey.PRIMARY -> s.cPrimary
+            CourseColorKey.TERTIARY -> s.cTertiary
+            CourseColorKey.SECONDARY -> s.cSecondary
         }
-        val palette = listOf(s.cPrimary, s.cSecondary, s.cTertiary, s.cEnglish, s.cPhysics, s.cPsychology)
-        return palette[(name.hashCode() and 0x7FFFFFFF) % palette.size]
-    }
 
     private val dayLabels = arrayOf("", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 

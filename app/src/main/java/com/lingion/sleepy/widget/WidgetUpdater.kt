@@ -75,16 +75,25 @@ object WidgetUpdater {
                     val manager = GlanceAppWidgetManager(context)
                     var totalUpdated = 0
 
-                    manager.getGlanceIds(TodayWidget::class.java).forEach { id ->
+                    val todayIds = manager.getGlanceIds(TodayWidget::class.java)
+                    Log.d(TAG, "Glance TodayWidget ids=${todayIds.toList()}")
+                    todayIds.forEach { id ->
                         TodayWidget().update(context, id); totalUpdated++
                     }
-                    manager.getGlanceIds(WeekListWidget::class.java).forEach { id ->
+                    val weekListIds = manager.getGlanceIds(WeekListWidget::class.java)
+                    Log.d(TAG, "Glance WeekListWidget ids=${weekListIds.toList()}")
+                    weekListIds.forEach { id ->
+                        Log.d(TAG, "Glance updating WeekListWidget id=$id")
                         WeekListWidget().update(context, id); totalUpdated++
                     }
-                    manager.getGlanceIds(WeekGridWidget::class.java).forEach { id ->
+                    val weekGridIds = manager.getGlanceIds(WeekGridWidget::class.java)
+                    Log.d(TAG, "Glance WeekGridWidget ids=${weekGridIds.toList()}")
+                    weekGridIds.forEach { id ->
                         WeekGridWidget().update(context, id); totalUpdated++
                     }
-                    manager.getGlanceIds(TwoDayWidget::class.java).forEach { id ->
+                    val twoDayIds = manager.getGlanceIds(TwoDayWidget::class.java)
+                    Log.d(TAG, "Glance TwoDayWidget ids=${twoDayIds.toList()}")
+                    twoDayIds.forEach { id ->
                         TwoDayWidget().update(context, id); totalUpdated++
                     }
 

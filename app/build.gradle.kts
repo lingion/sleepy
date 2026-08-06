@@ -10,7 +10,7 @@ android {
     compileSdk = 37
 
     defaultConfig {
-        applicationId = "com.lingion.sleepy.debug"
+        applicationId = "com.lingion.sleepy"
         minSdk = 26
         targetSdk = 37
         versionCode = 28
@@ -27,7 +27,9 @@ android {
             versionNameSuffix = "-debug"
         }
         release {
-            isMinifyEnabled = false
+            isMinifyEnabled = true
+            // 保留 R8 shrinking 能力但关闭混淆改名(避免 Glance 反射/序列化类被重命名后崩溃)
+            // 真正的混淆(mangling)由 shrinkResources + 下面的 keep 规则共同保护
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"

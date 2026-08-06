@@ -4,6 +4,13 @@
 
     <!-- Permissions: 仅课程表所需 -->
     <uses-permission android:name="android.permission.INTERNET" />
+
+    <!-- 自定义 signature 级权限: 保护 debug/预览组件, 仅同签名 app(即本机同 keystore)可调用。
+         signature 级 = 系统在安装时校验调用方签名与声明方一致, 外部 app 无法伪造。 -->
+    <permission
+        android:name="com.lingion.sleepy.permission.DEBUG_TOOL"
+        android:protectionLevel="signature" />
+    <uses-permission android:name="com.lingion.sleepy.permission.DEBUG_TOOL" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
