@@ -398,34 +398,46 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
+                    // ★ v19l: 边界压力修复 — 课名竖排自适应截断, 教室横排省略截断
                     val charSize = unifiedCharSize
+                    // 卡片可用高度: 顶部pad + 课名区 + (可选)教室区 + 底部pad
+                    val availCardH = cardRect.height() - unifiedPad * 2
+                    val roomReserveH = if (roomChars.isNotEmpty()) charSize * 0.5f else 0f  // 教室占半行高
+                    val nameAvailH = (availCardH - roomReserveH).coerceAtLeast(charSize)  // 至少放1字
+
+                    // ★ 课名垂直截断: 字数 × charSize 超过 nameAvailH → 砍到能放下字数, 末字换省略号
+                    val maxNameRows = (nameAvailH / charSize).toInt().coerceIn(1, nameChars.size)
+                    val nameVisible = if (nameChars.size > maxNameRows) {
+                        nameChars.take(maxNameRows - 1) + '…'
+                    } else nameChars
 
                     // ★ 课名: 竖排居中, BOLD
                     p.textSize = charSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     p.alpha = 255
                     val nameCenterX = cardRect.centerX()
-                    val nameBlockH = charSize * nameChars.size
-                    // 有教室: 课名块往上留教室空间; 无教室: 整卡居中
-                    val nameBlockTop = if (roomChars.isNotEmpty()) {
-                        cardRect.top + unifiedPad + (cardRect.height() - unifiedPad * 2 - nameBlockH - charSize * 0.5f) / 2f
-                    } else {
-                        cardRect.top + (cardRect.height() - nameBlockH) / 2f
-                    }
-                    for ((i, ch) in nameChars.withIndex()) {
+                    val nameBlockH = charSize * nameVisible.size
+                    val nameBlockTop = cardRect.top + unifiedPad + (availCardH - roomReserveH - nameBlockH) / 2f
+                    for ((i, ch) in nameVisible.withIndex()) {
                         val cy = nameBlockTop + charSize * (i + 0.82f)
                         c.drawText(ch.toString(), nameCenterX, cy, p)
                     }
 
-                    // ★ 教室: 底部横排小字角标, 0.62× 字号, 半透明
+                    // ★ 教室: 底部横排小字角标, 0.62× 字号, 半透明, 按卡片宽截断省略
                     if (roomChars.isNotEmpty()) {
-                        val roomStr = course.room.filter { it != '\n' }
+                        val roomStr = course.room.filter { it != '\n' && it != ' ' }
                         val roomSize = (charSize * 0.62f).coerceAtMost(dp(8f).toFloat()).coerceAtLeast(dp(5f).toFloat())
                         p.textSize = roomSize
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                         p.alpha = 160
+                        // 按卡片可用宽算能放几个字符, 超了截断 + …
+                        val availRoomW = (cardRect.width() - unifiedPad * 2)
+                        val maxRoomChars = ((availRoomW / (roomSize * 0.55f)).toInt()).coerceAtLeast(2)  // 中文≈0.55em宽
+                        val roomVisible = if (roomStr.length > maxRoomChars) {
+                            roomStr.take(maxRoomChars - 1) + "…"
+                        } else roomStr
                         val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
-                        c.drawText(roomStr, nameCenterX, roomCy, p)
+                        c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
                     }
                 }
