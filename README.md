@@ -207,16 +207,17 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 | Widget | 默认尺寸 | 用途 | 截图 |
 |---|---|---|---|
-| **Today** | 3×2 cell（180×110dp） | 今日课程，最多 3 节 | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
-| **TwoDay** | 4×2 cell（240×140dp） | 今天 + 明天 | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
-| **WeekList** | 4×2 cell（280×160dp） | 7 日课程统计 + 名称 | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekGrid** | 4×5 cell（250×640dp） | 完整时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+| **Today** | 4×3 cell（250×180dp） | 今日课程列表 | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
+| **TwoDay** | 5×3 cell（320×220dp） | 今天 + 明天（左右双栏） | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
+| **WeekList** | 5×4 cell（320×200dp） | 7 日课程统计 + 名称 | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
+| **WeekGrid** | 4×5 cell（250×360dp） | 完整时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
 
 实现要点：
 - Today / TwoDay / WeekList：Glance + Canvas 渲染
 - WeekGrid：纯 Canvas + Bitmap（不受 Glance 11+ child 数量限制）
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
-- 课程色按**黄金角 (137.508°) HSL 分布**：以课程所属分组哈希映射色相,均匀铺开且每门课稳定唯一
+- **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，均匀铺开且每门课稳定唯一
+- 刷新机制：对全部 4 个 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ Glance `.update()` 兜底 + WorkManager 每 15 分钟定时刷新
 
 ---
 
