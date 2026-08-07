@@ -251,7 +251,7 @@ private fun CourseList(data: WidgetData, openCourseAction: (Long) -> Action, sch
                 scheme = scheme,
                 onClick = openCourseAction(course.id)
             )
-            Spacer(modifier = GlanceModifier.height(6.dp))
+            Spacer(modifier = GlanceModifier.height(10.dp))
         }
         if (data.courses.size > 1) {
             item {
@@ -509,15 +509,28 @@ fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
             !data.hasTable -> EmptyTableState(scheme)
             data.days.isEmpty() -> EmptyTableState(scheme)
             else -> {
-                // ★ v1.0.18: 全部课程可滚动 — 不再截断
-                LazyColumn(modifier = GlanceModifier.fillMaxSize()) {
+                // ★ v1.0.28: 左右两栏 — 今天/明天 并排(用户反馈: 不要把第二天堆在底下)
+                Row(
+                    modifier = GlanceModifier.fillMaxSize(),
+                    horizontalAlignment = Alignment.Start
+                ) {
                     data.days.forEachIndexed { dayIdx, day ->
-                        item {
-                            TwoDayDayHeader(day = day, scheme = scheme)
+                        if (dayIdx > 0) {
+                            Spacer(modifier = GlanceModifier.width(5.dp))
+                            Box(
+                                modifier = GlanceModifier
+                                    .width(1.dp)
+                                    .fillMaxHeight()
+                                    .background(ColorProvider(Color(0x2079747E)))
+                            ) {}
+                            Spacer(modifier = GlanceModifier.width(5.dp))
                         }
-                        if (day.courses.isEmpty()) {
-                            item {
-                                Spacer(modifier = GlanceModifier.height(2.dp))
+                        Column(
+                            modifier = GlanceModifier.defaultWeight().fillMaxHeight()
+                        ) {
+                            TwoDayDayHeader(day = day, scheme = scheme)
+                            if (day.courses.isEmpty()) {
+                                Spacer(modifier = GlanceModifier.height(4.dp))
                                 Text(
                                     text = context.getString(R.string.no_course),
                                     style = TextStyle(
@@ -525,35 +538,16 @@ fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
                                         color = ColorProvider(scheme.onSurfaceVariant)
                                     )
                                 )
+                            } else {
+                                LazyColumn(
+                                    modifier = GlanceModifier.fillMaxSize()
+                                ) {
+                                    items(day.courses, itemId = { it.id }) { course ->
+                                        Spacer(modifier = GlanceModifier.height(8.dp))
+                                        TwoDayCourseRow(course = course, day = day, scheme = scheme)
+                                    }
+                                }
                             }
-                        } else {
-                            items(day.courses, itemId = { it.id }) { course ->
-                                Spacer(modifier = GlanceModifier.height(3.dp))
-                                TwoDayCourseRow(course = course, day = day, scheme = scheme)
-                            }
-                        }
-                        if (dayIdx < data.days.size - 1) {
-                            item {
-                                Spacer(modifier = GlanceModifier.height(6.dp))
-                                Box(
-                                    modifier = GlanceModifier
-                                        .fillMaxWidth()
-                                        .height(1.dp)
-                                        .background(ColorProvider(Color(0x3379747E)))
-                                ) {}
-                            }
-                        }
-                    }
-                    if (data.days.sumOf { it.courses.size } > 1) {
-                        item {
-                            Spacer(modifier = GlanceModifier.height(4.dp))
-                            Text(
-                                text = context.getString(R.string.widget_scroll_hint),
-                                style = TextStyle(
-                                    fontSize = 10.sp,
-                                    color = ColorProvider(scheme.onSurfaceVariant)
-                                )
-                            )
                         }
                     }
                 }

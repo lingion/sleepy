@@ -21,10 +21,10 @@ import kotlinx.coroutines.launch
  * 调试用 Activity：渲染 4 个桌面 Widget 样式到屏幕，并保存为 PNG 用于 README 截图。
  *
  * 通过 Intent extra 指定要渲染哪个 widget：
- *  - `widget=today` (180x110 dp)
- *  - `widget=twoday` (240x140 dp)
- *  - `widget=weeklist` (280x160 dp)
- *  - `widget=weekgrid` (250x640 dp)
+ *  - `widget=today` (250x180 dp)
+ *  - `widget=twoday` (320x220 dp)
+ *  - `widget=weeklist` (320x200 dp)
+ *  - `widget=weekgrid` (250x300 dp)
  *  - 缺省 = weekgrid
  *
  * 真实数据来源：当前课表（表 1 = 2026 春学期，HEU 13 节真实课表）。
@@ -38,10 +38,10 @@ class WidgetRenderActivity : Activity() {
 
         val which = intent.getStringExtra("widget") ?: "weekgrid"
         val (wDp, hDp) = when (which) {
-            "today" -> 180f to 110f
-            "twoday" -> 240f to 140f
-            "weeklist" -> 280f to 160f
-            else -> 250f to 640f
+            "today" -> 250f to 180f
+            "twoday" -> 320f to 220f
+            "weeklist" -> 320f to 200f
+            else -> 250f to 360f
         }
         Log.d(TAG, "rendering widget=$which, size=${wDp}x${hDp}dp")
 

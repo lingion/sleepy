@@ -94,18 +94,44 @@ object WidgetBitmapRenderers {
         )
     }
 
-    private fun courseColor(name: String, s: Scheme): Int =
-        when (resolveCourseColorKey(name)) {
-            CourseColorKey.ENGLISH -> s.cEnglish
-            CourseColorKey.MILITARY -> s.cMilitary
-            CourseColorKey.PHYSICS -> s.cPhysics
-            CourseColorKey.HISTORY -> s.cHistory
-            CourseColorKey.PSYCHOLOGY -> s.cPsychology
-            CourseColorKey.PRACTICE -> s.cPractice
-            CourseColorKey.PRIMARY -> s.cPrimary
-            CourseColorKey.TERTIARY -> s.cTertiary
-            CourseColorKey.SECONDARY -> s.cSecondary
+    /**
+     * HSL → ARGB Int (复刻 WeekGridWidgetProvider.hslToColorInt / CourseTableView.hslToColor)
+     */
+    private fun hslToColorInt(h: Float, s: Float, l: Float): Int {
+        val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
+        val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
+        val m = l - c / 2f
+        val (r, g, b) = when {
+            h < 60f  -> Triple(c, x, 0f)
+            h < 120f -> Triple(x, c, 0f)
+            h < 180f -> Triple(0f, c, x)
+            h < 240f -> Triple(0f, x, c)
+            h < 300f -> Triple(x, 0f, c)
+            else     -> Triple(c, 0f, x)
         }
+        return (0xFF shl 24) or
+            ((r + m).coerceIn(0f, 1f).times(255f).toInt() shl 16) or
+            ((g + m).coerceIn(0f, 1f).times(255f).toInt() shl 8) or
+            (b + m).coerceIn(0f, 1f).times(255f).toInt()
+    }
+
+    /**
+     * 课程颜色 — 对齐 CourseTableView / WeekGridWidgetProvider 的 groupId 黄金角 HSL。
+     * 用户自定义 color 优先 → 否则 groupId.hashCode() 撒 hue。
+     * 同一门课的所有节次永远同色(确定性基于 groupId), 与数据库一致。
+     * 之前用 resolveCourseColorKey 关键词分类 → 与首页/WeekGrid 色系不一致, 已废弃。
+     */
+    private fun pickCourseColor(course: CourseEntity, isDark: Boolean): Int {
+        val userColor = course.color
+        if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
+            runCatching { return Color.parseColor(userColor) }
+        }
+        val stableId = course.groupId.hashCode().toLong()
+        val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
+        val s = if (isDark) 0.40f else 0.55f
+        val l = if (isDark) 0.28f else 0.82f
+        return hslToColorInt(hue, s, l)
+    }
 
     private val dayLabels = arrayOf("", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
@@ -113,30 +139,12 @@ object WidgetBitmapRenderers {
         c: Canvas, p: Paint, course: CourseEntity, timeJson: String, x: Float, y: Float, w: Float, h: Float,
         scheme: Scheme, density: Float, fontSizeSp: Float = 11f
     ) {
-        val bgColor = courseColor(course.courseName, scheme)
+        val bgColor = pickCourseColor(course, scheme.isDark)
         val pad = (3f * density).coerceAtLeast(1f)
         p.color = bgColor
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
 
-        // 课程名
-        p.color = scheme.onSurface
-        p.textSize = fontSizeSp * density * 1f
-        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        p.isAntiAlias = true
-        val name = course.courseName
-        val maxWidth = w - pad * 2
-        // 简单截断
-        val displayName = if (p.measureText(name) > maxWidth) {
-            var n = name
-            while (n.isNotEmpty() && p.measureText("$n…") > maxWidth) n = n.dropLast(1)
-            "$n…"
-        } else name
-        c.drawText(displayName, x + pad, y + pad + fontSizeSp * density, p)
-
-        // 时间 + 地点
-        p.textSize = (fontSizeSp - 2f) * density
-        p.typeface = Typeface.DEFAULT
-        p.color = scheme.onSurfaceVariant
+        // 时间 + 地点 — 先算 meta 文本 (需要知道是否有第二行才能居中)
         val timeStr = TimeTableUtils.courseTimeString(
             courseStartNode = course.startNode,
             courseStep = course.step,
@@ -146,7 +154,51 @@ object WidgetBitmapRenderers {
             endTime = course.endTime
         ) ?: ""
         val meta = if (course.room.isNotBlank()) "$timeStr · ${course.room}" else timeStr
-        c.drawText(meta, x + pad, y + pad + fontSizeSp * density * 2.2f, p)
+        val hasMeta = meta.isNotBlank()
+
+        // 字号
+        val nameSize = fontSizeSp * density
+        val metaSize = (fontSizeSp - 2f) * density
+        val lineGap = 2f * density
+
+        // ★ 用 FontMetrics 算真实行高 → 垂直居中两行文字块
+        p.textSize = nameSize
+        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        p.isAntiAlias = true
+        val fmName = p.fontMetrics
+        val nameH = fmName.descent - fmName.ascent
+
+        var metaH = 0f
+        var fmMeta: Paint.FontMetrics? = null
+        if (hasMeta) {
+            p.textSize = metaSize
+            fmMeta = p.fontMetrics
+            metaH = fmMeta!!.descent - fmMeta.ascent
+        }
+
+        val totalH = nameH + (if (hasMeta) lineGap + metaH else 0f)
+        val blockTop = y + (h - totalH) / 2f
+
+        // 课程名 — 黑色(onSurface) 居中
+        p.textSize = nameSize
+        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        p.color = scheme.onSurface
+        val name = course.courseName
+        val maxWidth = w - pad * 2
+        val displayName = if (p.measureText(name) > maxWidth) {
+            var n = name
+            while (n.isNotEmpty() && p.measureText("$n…") > maxWidth) n = n.dropLast(1)
+            "$n…"
+        } else name
+        c.drawText(displayName, x + pad, blockTop - fmName.ascent, p)
+
+        // 时间 + 地点 — ★ 黑色(onSurface) 非 onSurfaceVariant(灰)
+        if (hasMeta) {
+            p.textSize = metaSize
+            p.typeface = Typeface.DEFAULT
+            p.color = scheme.onSurface
+            c.drawText(meta, x + pad, blockTop + nameH + lineGap - fmMeta!!.ascent, p)
+        }
     }
 
     /**
@@ -210,7 +262,7 @@ object WidgetBitmapRenderers {
 
         // 课程列表（全部渲染，不再截断）
         val rowH = 38f * density
-        val rowGap = 6f * density
+        val rowGap = 10f * density  // 课程胶囊间距放大(用户反馈太紧凑)
         val rowW = w - pad * 2
 
         data.courses.forEachIndexed { idx, course ->
@@ -291,29 +343,39 @@ object WidgetBitmapRenderers {
                 p.color = s.onSurfaceVariant
                 p.textSize = 9f * density
                 val ctw = p.measureText(chipText)
-                canvas.drawText(chipText, x + (colW - ctw) / 2, cy + chipH - 4f * density, p)
+                val chipFm = p.fontMetrics
+                val chipBaseline = cy + (chipH - (chipFm.descent - chipFm.ascent)) / 2f - chipFm.ascent
+                canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
                 cy += chipH + 6f * density
 
-                // 课程列表
-                p.color = if (isToday) s.onPrimaryContainer else s.onSurfaceVariant
+                // 课程列表 — 每门课带颜色胶囊背景
                 p.textSize = 9f * density
                 p.typeface = Typeface.DEFAULT
+                val coursePad = 3f * density
+                val courseRowH = 16f * density
+                val courseGap = 3f * density
                 day.courses.forEachIndexed { idx, course ->
                     val name = course.courseName
-                    val maxTextWidth = colW - 8f * density
+                    // ★ 课程颜色背景 (对齐 WeekGrid 风格)
+                    val bgColor = pickCourseColor(course, s.isDark)
+                    p.color = bgColor
+                    canvas.drawRoundRect(
+                        RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
+                        4f * density, 4f * density, p)
+                    // 课程名 — ★ FontMetrics 垂直居中
+                    p.color = s.onSurface
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    val maxTextWidth = colW - coursePad * 2 - 4f * density
                     val displayName = if (p.measureText(name) > maxTextWidth) {
                         var n = name
                         while (n.isNotEmpty() && p.measureText("$n…") > maxTextWidth) n = n.dropLast(1)
                         "$n…"
                     } else name
-                    canvas.drawText(displayName, x + 4f * density, cy + 9f * density, p)
-                    cy += 14f * density
-                    if (idx < day.courses.size - 1) {
-                        // 分隔线
-                        p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x40000000
-                        canvas.drawRect(x + 4f * density, cy - 2f * density, x + colW - 4f * density, cy - 1f * density, p)
-                        cy += 1f * density
-                    }
+                    val fm = p.fontMetrics
+                    val textBaseline = cy + (courseRowH - (fm.descent - fm.ascent)) / 2f - fm.ascent
+                    canvas.drawText(displayName, x + coursePad + 2f * density, textBaseline, p)
+                    p.typeface = Typeface.DEFAULT
+                    cy += courseRowH + courseGap
                 }
             }
         }
@@ -322,7 +384,8 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * TwoDay widget 渲染 — 今天 + 明天
+     * TwoDay widget 渲染 — 今天 + 明天 (左右两栏竖排)
+     * 用户反馈: 不要把第二天堆在底下 → 改成左列今天 / 右列明天 并排
      */
     fun renderTwoDay(context: Context, data: TwoDayData, wDp: Float, hDp: Float): Bitmap {
         val density = context.resources.displayMetrics.density
@@ -358,8 +421,17 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        data.days.forEach { day ->
-            // 天标题
+        // ★ 左右两栏: 每天一列, 中间竖直分隔
+        val colGap = 10f * density
+        val colW = (w - pad * 2 - colGap * (data.days.size - 1)) / data.days.size
+        val listTop = y
+        val listBottom = h - pad
+        val listH = (listBottom - listTop).coerceAtLeast(40f * density)
+
+        data.days.forEachIndexed { colIdx, day ->
+            val colX = pad + colIdx * (colW + colGap)
+
+            // 列标题
             p.color = s.primary
             p.textSize = 12f * density
             p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
@@ -368,30 +440,36 @@ object WidgetBitmapRenderers {
                 day.isTomorrow -> ctx.getString(R.string.tomorrow)
                 else -> day.dayName
             }
-            canvas.drawText(title, pad, y + 12f * density, p)
+            canvas.drawText(title, colX, listTop + 12f * density, p)
             val titleW = p.measureText(title)
 
             p.color = s.onSurfaceVariant
             p.textSize = 10f * density
             p.typeface = Typeface.DEFAULT
-            canvas.drawText(day.dayLabel, pad + titleW + 6f * density, y + 12f * density, p)
-            y += 16f * density
+            canvas.drawText(day.dayLabel, colX + titleW + 6f * density, listTop + 12f * density, p)
+
+            var cy = listTop + 20f * density
 
             if (day.courses.isEmpty()) {
                 p.color = s.onSurfaceVariant
                 p.textSize = 11f * density
-                canvas.drawText(ctx.getString(R.string.no_course), pad, y + 11f * density, p)
-                y += 16f * density
+                canvas.drawText(ctx.getString(R.string.no_course), colX, cy + 11f * density, p)
             } else {
-                val rowH = 32f * density
-                val rowW = w - pad * 2
-                day.courses.forEachIndexed { idx, course ->
-                    drawCourse(canvas, p, course, day.timeJson, pad, y, rowW, rowH, s, density, fontSizeSp = 11f)
-                    y += rowH + 3f * density
+                // ★ 胶囊固定最大高度 44dp, 不再撑满整个列
+                val rowGap = 8f * density
+                val maxRowH = 44f * density
+                day.courses.forEach { course ->
+                    drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density, fontSizeSp = 10f)
+                    cy += maxRowH + rowGap
                 }
             }
 
-            if (day != data.days.last()) y += 6f * density
+            // 列间竖直分隔线
+            if (colIdx < data.days.size - 1) {
+                val sepX = colX + colW + colGap / 2f
+                p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x20000000
+                canvas.drawRect(sepX - 0.5f * density, listTop, sepX + 0.5f * density, listBottom, p)
+            }
         }
 
         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }

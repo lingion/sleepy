@@ -50,7 +50,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.26</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy.debug</code>
+  <code>v1.0.29</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy</code>
 </p>
 
 ---
@@ -59,7 +59,7 @@
 
 | 项 | 值 |
 |---|---|
-| 包名 | `com.lingion.sleepy.debug` |
+| 包名 | `com.lingion.sleepy` |
 | 最低 SDK | `26` (Android 8.0；OPPO SeedlingSupportSDK 3.0.7 要求) |
 | 目标 SDK | `37` |
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
@@ -216,7 +216,7 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 - Today / TwoDay / WeekList：Glance + Canvas 渲染
 - WeekGrid：纯 Canvas + Bitmap（不受 Glance 11+ child 数量限制）
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
-- 课程色按课程名关键词匹配（英语 / 物理 / 高数 / 思政 / 历史 / 心理 / 军事 / 实践）
+- 课程色按**黄金角 (137.508°) HSL 分布**：以课程所属分组哈希映射色相,均匀铺开且每门课稳定唯一
 
 ---
 
@@ -289,10 +289,10 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 ## 技术栈
 
 ```
-language        = Kotlin 2.0.0
+language        = Kotlin 2.1.10
 ui              = Jetpack Compose (BOM 2024.10.00) + Material 3
 navigation      = Navigation Compose 2.8.3
-storage         = Room 2.6.1 (KSP)
+storage         = Room 2.7.0 (KSP)
 prefs           = DataStore Preferences 1.1.1
 serialization   = kotlinx-serialization-json 1.6.3
 html_parser     = jsoup 1.18.1
@@ -300,8 +300,9 @@ widgets         = Glance AppWidget 1.1.0 + RemoteViews Canvas
 background      = WorkManager 2.9.1
 image           = Coil Compose 2.7.0
 splash          = Core Splash Screen 1.0.1
-build           = AGP 8.5.2 + Gradle Kotlin DSL
-java_compat     = 21
+core_ktx        = AndroidX Core 1.17.0
+build           = AGP 9.1.0 + Gradle 9.3.1 (Kotlin DSL)
+java_compat     = 17
 ```
 
 ---
@@ -359,9 +360,9 @@ sleepy/
 ### 前置
 
 ```bash
-java -version           # JDK 21+
+java -version           # JDK 17+
 
-sdkmanager "platforms;android-35" "build-tools;35.0.0"
+sdkmanager "platforms;android-37" "build-tools;37.0.0"
 ```
 
 ### 编译

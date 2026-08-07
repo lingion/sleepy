@@ -312,10 +312,11 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             // ★ v20b: 字号统一到「全表最小理想值」— 自适应算法 + 统一字号
             // 每卡按 cardH/unitHeight 算理想字号(v21: 用 token 单位高度替代旧字数)
             // → 全表取最小 → 所有卡用同一个字号(整齐)
-            // 下限 11dp 保可读; 上限按卡宽限定(竖排单字不超卡宽)
+            // 下限 11dp 保可读; 上限对齐表头"周一/周二"字号(用户原话: 课名字号最大不能超过周一周二)
+            //   表头 day-name 字号 = headH * 0.24 capped dp(13) → 这里 nameMaxDp 用同一 cap
             val unifiedPad = dp(4f).toFloat()
             val nameMinDp = dp(11f).toFloat()   // 可读下限
-            val nameMaxDp = dp(28f).toFloat()   // 美观上限
+            val nameMaxDp = (headH * 0.24f).coerceAtMost(dp(13f).toFloat())  // 不超过表头"周一"字号
             val dayAvailW = (dayW - unifiedPad * 2).coerceAtLeast(dp(8f).toFloat())
             val nameMaxPxByW = dayAvailW * 0.92f
             val nameCeil = minOf(nameMaxDp, nameMaxPxByW)
