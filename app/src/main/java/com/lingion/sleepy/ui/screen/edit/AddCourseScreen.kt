@@ -475,7 +475,10 @@ fun AddCourseScreen(
                                     showDeleteConfirm = false
                                     scope.launch {
                                         val repo = SleepyApp.get().repository
-                                        repo.deleteCourseGroup(state.selectedTableId!!, editingCourse.groupId)
+                                        val tid = state.selectedTableId
+                                        if (tid != null) {
+                                            repo.deleteCourseGroup(tid, editingCourse.groupId)
+                                        }
                                         onSaved()
                                     }
                                 }) { Text(stringResource(R.string.delete), color = colors.error) }

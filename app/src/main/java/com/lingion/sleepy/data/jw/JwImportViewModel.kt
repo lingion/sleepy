@@ -7,6 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.AppDatabase
+import androidx.room.withTransaction
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -178,36 +179,38 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         if (courses.isEmpty()) throw IllegalArgumentException("课程列表为空，请确认已到达课表页面")
 
         val db = AppDatabase.get(getApplication())
-        val tableDao = db.timeTableDao()
-        val courseDao = db.courseDao()
+        // ★ 整个建表 + 落库包在单一事务里：中途失败回滚，避免留下空课表。
+        val newId = db.withTransaction {
+            val tableDao = db.timeTableDao()
+            val courseDao = db.courseDao()
 
-        // 1. 创建新 table
-        val newId = (tableDao.getAll().maxOfOrNull { it.id } ?: 0) + 1
-        val resolvedStartDate = startDate?.takeIf { it.isNotBlank() }
-            ?: computeCurrentSemesterStart()
-        val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }
-        val newTable = TimeTableEntity(
-            id = newId,
-            name = tableName.ifBlank { "导入的课表" },
-            startDate = resolvedStartDate,
-            timeJson = timeJson.ifBlank { TimeTableUtils.DEFAULT_TIME_JSON },
-            nodesPerDay = maxNode,
-            isDefault = true  // 导入的课表设为默认，widget 直接展示
-        )
-        tableDao.insert(newTable)
-        // 把其他表设为非 default，确保只有当前表是 default
-        tableDao.setDefault(newId)
+            // ★ 用 autoGenerate (id=0) 让 Room 分配真实主键，避免手动 max(id)+1 撞旧 ID 覆盖既有课表。
+            val resolvedStartDate = startDate?.takeIf { it.isNotBlank() }
+                ?: computeCurrentSemesterStart()
+            val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }
+            val newTable = TimeTableEntity(
+                id = 0,
+                name = tableName.ifBlank { "导入的课表" },
+                startDate = resolvedStartDate,
+                timeJson = timeJson.ifBlank { TimeTableUtils.DEFAULT_TIME_JSON },
+                nodesPerDay = maxNode,
+                isDefault = true  // 导入的课表设为默认，widget 直接展示
+            )
+            val generatedId = tableDao.insert(newTable)
+            // 把其他表设为非 default，确保只有当前表是 default
+            tableDao.setDefault(generatedId)
 
-        // 2. 落库课程
-        val defaultColor = "#FF6750A4"
-        // 按课程名分 groupId（同名课程视为一组，便于编辑）
-        val nameToGroup = mutableMapOf<String, String>()
-        val entities = toCourseEntities(courses, newId, defaultColor).map { c ->
-            val gid = nameToGroup.getOrPut(c.courseName) { java.util.UUID.randomUUID().toString() }
-            c.copy(groupId = gid)
+            // 落库课程
+            val defaultColor = "#FF6750A4"
+            // 按课程名分 groupId（同名课程视为一组，便于编辑）
+            val nameToGroup = mutableMapOf<String, String>()
+            val entities = toCourseEntities(courses, generatedId, defaultColor).map { c ->
+                val gid = nameToGroup.getOrPut(c.courseName) { java.util.UUID.randomUUID().toString() }
+                c.copy(groupId = gid)
+            }
+            courseDao.insertAll(entities)
+            generatedId
         }
-        courseDao.insertAll(entities)
-
         newId
     }
 

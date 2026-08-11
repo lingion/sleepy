@@ -16,6 +16,8 @@ class WidgetUpdateWorker(
 
     override suspend fun doWork(): Result {
         WidgetUpdater.notifyDataChanged(applicationContext)
+        // ★ 周期兜底：app 可能长时间不在前台，这里每 15min 检测是否在某节课窗口内，补起流体云
+        try { com.lingion.sleepy.SleepyApp.get().notificationScheduler.ensureActiveFluidCloud() } catch (_: Throwable) {}
         return Result.success()
     }
 }

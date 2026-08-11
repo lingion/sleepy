@@ -5,12 +5,6 @@
     <!-- Permissions: 仅课程表所需 -->
     <uses-permission android:name="android.permission.INTERNET" />
 
-    <!-- 自定义 signature 级权限: 保护 debug/预览组件, 仅同签名 app(即本机同 keystore)可调用。
-         signature 级 = 系统在安装时校验调用方签名与声明方一致, 外部 app 无法伪造。 -->
-    <permission
-        android:name="com.lingion.sleepy.permission.DEBUG_TOOL"
-        android:protectionLevel="signature" />
-    <uses-permission android:name="com.lingion.sleepy.permission.DEBUG_TOOL" />
     <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="32" />
@@ -189,21 +183,8 @@
             android:label="Widget Render"
             android:theme="@style/Theme.Sleepy" />
 
-        <!-- Debug: 注入课表 (走 ScheduleParser.parse + repo.insertTable 真实链路)
-             adb shell am start -n com.lingion.sleepy.debug/com.lingion.sleepy.debug.DebugImportReceiver -e path /sdcard/.../xxx.json -->
-        <activity
-            android:name=".debug.DebugImportReceiver"
-            android:exported="true"
-            android:label="Debug Import"
-            android:theme="@android:style/Theme.NoDisplay" />
-
-        <receiver
-            android:name="com.lingion.sleepy.debug.DebugScheduleReceiver"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="com.lingion.sleepy.debug.SCHEDULE_NOW" />
-            </intent-filter>
-        </receiver>
+        <!-- debug 组件（DebugImportReceiver / DebugScheduleReceiver）已移至 src/debug 源集，
+             仅 debug 构建包含，release APK 完全不含这些测试入口。 -->
 
         <!-- Fluid cloud foreground service carrier -->
         <service

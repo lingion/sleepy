@@ -233,7 +233,7 @@ object ScheduleParser {
             ?.trim()
     }
 
-    /** 从 DTSTART 提取节次（默认按 45min/节估算） */
+    /** 从 DTSTART/DTEND 提取节次（按 ~55min/节粗略估算；ICS 不含节次表，仅近似） */
     private fun extractIcsTime(block: String): Pair<Int, Int>? {
         val dtstart = extractIcsField(block, "DTSTART") ?: return null
         val dtend = extractIcsField(block, "DTEND") ?: return null
@@ -244,7 +244,8 @@ object ScheduleParser {
             val startMin = start.hour * 60 + start.minute
             val endMin = end.hour * 60 + end.minute
             val duration = endMin - startMin
-            val startNode = ((startMin - 480) / 55).toInt() + 1  // 8:00 = 第 1 节
+            // 8:00 = 第 1 节，每节约 55 分钟（含课间）近似映射
+            val startNode = ((startMin - 480) / 55).toInt() + 1
             val step = (duration / 55).coerceAtLeast(1)
             Pair(startNode.coerceAtLeast(1), step)
         } catch (e: Exception) { null }

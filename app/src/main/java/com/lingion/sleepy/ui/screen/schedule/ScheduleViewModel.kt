@@ -109,11 +109,14 @@ class ScheduleViewModel : ViewModel() {
         manualSelectDone = true
         _state.update { it.copy(selectedTableId = id) }
         loadCourses(id)
-        // 切表后立即广播刷新所有 widget，否则 Glance widget 会停留在旧表数据
+        // 切表后同步数据库 isDefault，使小组件严格跟随 App 当前选中表（widget 按默认表解析）
         viewModelScope.launch {
-            try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
-                com.lingion.sleepy.SleepyApp.get()
-            ) } catch (_: Exception) {}
+            try {
+                repo.setDefault(id)
+                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(
+                    com.lingion.sleepy.SleepyApp.get()
+                )
+            } catch (_: Exception) {}
         }
     }
 

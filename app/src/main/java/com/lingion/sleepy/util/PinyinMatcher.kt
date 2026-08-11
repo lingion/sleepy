@@ -29,14 +29,14 @@ object PinyinMatcher {
     fun namePinyinShort(name: String, sortKey: String): String {
         val sb = StringBuilder()
         if (sortKey.length == 1 && sortKey[0].isLetter()) {
-            sb.append(sortKey.lowercase(Locale.getDefault()))
+            sb.append(sortKey.lowercase(Locale.ROOT))
         }
         for (ch in name) {
             if (ch in 'a'..'z' || ch in 'A'..'Z' || ch in '0'..'9') {
-                sb.append(ch.toString().lowercase(Locale.getDefault()))
+                sb.append(ch.toString().lowercase(Locale.ROOT))
             } else {
                 val fl = firstLetterOf(ch)
-                if (fl != null) sb.append(fl.lowercase(Locale.getDefault()))
+                if (fl != null) sb.append(fl.lowercase(Locale.ROOT))
             }
         }
         return sb.toString()
@@ -44,9 +44,9 @@ object PinyinMatcher {
 
     fun match(name: String, sortKey: String, query: String, aliases: List<String> = emptyList()): Boolean {
         if (query.isBlank()) return true
-        val q = query.trim().lowercase(Locale.getDefault())
-        if (name.lowercase(Locale.getDefault()).contains(q)) return true
-        if (aliases.any { it.lowercase(Locale.getDefault()).contains(q) }) return true
+        val q = query.trim().lowercase(Locale.ROOT)
+        if (name.lowercase(Locale.ROOT).contains(q)) return true
+        if (aliases.any { it.lowercase(Locale.ROOT).contains(q) }) return true
         val py = namePinyinShort(name, sortKey)
         return py.contains(q)
     }

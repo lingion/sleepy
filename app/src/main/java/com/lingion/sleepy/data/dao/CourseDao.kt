@@ -27,6 +27,9 @@ interface CourseDao {
     @Query("DELETE FROM courses WHERE tableId = :tableId")
     suspend fun deleteByTableId(tableId: Long)
 
+    @Query("DELETE FROM courses WHERE tableId = :tableId AND groupId = :groupId")
+    suspend fun deleteByGroupId(tableId: Long, groupId: String)
+
     @Query("SELECT * FROM courses WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): CourseEntity?
 
@@ -45,19 +48,23 @@ interface CourseDao {
     @Query("SELECT * FROM courses WHERE tableId = :tableId AND groupId = :groupId")
     suspend fun getByGroupId(tableId: Long, groupId: String): List<CourseEntity>
 
-    @Query("DELETE FROM courses WHERE tableId = :tableId AND groupId = :groupId")
-    suspend fun deleteByGroupId(tableId: Long, groupId: String)
-
     @Query("SELECT COUNT(*) FROM courses WHERE tableId = :tableId")
     suspend fun countByTable(tableId: Long): Int
 
     @Query("SELECT COUNT(*) FROM courses")
     suspend fun totalCount(): Int
 
-    /** 整表导入（覆盖式） */
+    /** 整表导入（覆盖式，原子事务） */
     @Transaction
     suspend fun replaceAll(tableId: Long, courses: List<CourseEntity>) {
         deleteByTableId(tableId)
         insertAll(courses)
+    }
+
+    /** 编辑课程组：删除同 groupId 全部记录，再插入新记录（原子事务） */
+    @Transaction
+    suspend fun replaceGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
+        deleteByGroupId(tableId, groupId)
+        insertAll(newCourses)
     }
 }

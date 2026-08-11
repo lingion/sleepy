@@ -65,6 +65,8 @@ class CourseNotificationScheduler(private val context: Context) {
         }
         if (AppPrefs.isBeforeClassEnabled(prefs)) {
             scheduleBeforeClassDaily()
+            // ★ 状态兜底：排 alarm 的同时立即检测是否已在某节课窗口内（补起流体云）
+            CoroutineScope(SupervisorJob() + Dispatchers.IO).launch { ensureActiveFluidCloud() }
         }
     }
 
@@ -77,13 +79,18 @@ class CourseNotificationScheduler(private val context: Context) {
         // Cancel before-class scheduler
         alarmManager.cancel(buildPendingIntent(RC_BEFORE_CLASS_SCHEDULER, BeforeClassScheduleReceiver::class.java))
 
-        // Cancel all individual before-class alarms — we don't know exact courseIds,
-        // but cancelAll of a range is not supported. Instead, BeforeClassScheduleReceiver
-        // reschedules fresh each day, and cancelAll cancels the daily scheduler.
-        // For safety, cancel a reasonable range of before-class pending intents.
-        for (i in 0 until 50) {
+        // 课前提醒的 request code 用 RC_BEFORE_CLASS_BASE + course.id（稳定唯一）。
+        // 取消时遍历数据库里所有课程 id，逐个 cancel，不再依赖写死的 50 上限。
+        val courseIds = runCatching {
+            kotlinx.coroutines.runBlocking {
+                SleepyApp.get().repository.let { repo ->
+                    repo.getAllTables().flatMap { repo.getCourses(it.id) }
+                }.map { it.id.toInt() }
+            }
+        }.getOrDefault(emptyList())
+        for (cid in courseIds) {
             try {
-                alarmManager.cancel(buildPendingIntent(RC_BEFORE_CLASS_BASE + i, BeforeClassNotifyReceiver::class.java))
+                alarmManager.cancel(buildPendingIntent(RC_BEFORE_CLASS_BASE + cid, BeforeClassNotifyReceiver::class.java))
             } catch (_: Exception) {}
         }
     }
@@ -93,8 +100,9 @@ class CourseNotificationScheduler(private val context: Context) {
     private fun scheduleDaily() {
         val timeStr = AppPrefs.getDailyReminderTime(context)
         val parts = timeStr.split(":")
-        val hour = parts.getOrNull(0)?.toIntOrNull() ?: 7
-        val minute = parts.getOrNull(1)?.toIntOrNull() ?: 0
+        // 钳制到合法范围，避免破损 pref（"07:60"、负数、空值）触发 DateTimeException 崩溃
+        val hour = (parts.getOrNull(0)?.toIntOrNull() ?: 7).coerceIn(0, 23)
+        val minute = (parts.getOrNull(1)?.toIntOrNull() ?: 0).coerceIn(0, 59)
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         val pending = buildPendingIntent(RC_DAILY, DailyNotifyReceiver::class.java)
@@ -164,10 +172,14 @@ class CourseNotificationScheduler(private val context: Context) {
                 android.util.Log.w("CourseScheduler", "skip no start time course=${course.id}")
                 return@forEachIndexed
             }
-
             val parts = startTimeStr.split(":")
-            val h = parts.getOrNull(0)?.toIntOrNull() ?: return@forEachIndexed
-            val m = parts.getOrNull(1)?.toIntOrNull() ?: return@forEachIndexed
+            val h = parts.getOrNull(0)?.toIntOrNull()
+            val m = parts.getOrNull(1)?.toIntOrNull()
+            // 钳制：ownTime/startTime 可能是破损值（h≥24/m≥60），非法则跳过本节
+            if (h == null || m == null || h !in 0..23 || m !in 0..59) {
+                android.util.Log.w("CourseScheduler", "skip invalid time course=${course.id} time=$startTimeStr")
+                return@forEachIndexed
+            }
 
             val classStart = today.atTime(h, m)
             val notifyTime = classStart.minusMinutes(minutes.toLong())
@@ -188,7 +200,7 @@ class CourseNotificationScheduler(private val context: Context) {
                 putExtra("classEpoch", classStart.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
             }
             val pending = PendingIntent.getBroadcast(
-                context, RC_BEFORE_CLASS_BASE + index,
+                context, RC_BEFORE_CLASS_BASE + course.id.toInt(),
                 intent,
                 PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
             )
@@ -202,6 +214,60 @@ class CourseNotificationScheduler(private val context: Context) {
         }
     }
 
+    /**
+     * ★ 状态驱动的流体云兜底：只要"现在"落在任一节课的 [classStart-minutes, classStart] 窗口内，
+     * 就确保 FluidCloudService 在跑、流体云在显示。不依赖"正好提前N分钟那一秒"的 alarm。
+     *
+     * 调用时机：app 回前台、app 启动、课程数据变更、WorkManager 周期兜底。
+     * 解决"alarm 错过那一秒 / 用户在窗口内才打开 app → 流体云永远不起"的问题。
+     */
+    suspend fun ensureActiveFluidCloud() {
+        val app = context.applicationContext
+        if (!AppPrefs.isReminderEnabled(app) || !AppPrefs.isBeforeClassEnabled(app)) return
+        if (!AppPrefs.isBeforeClassFluidEnabled(app)) return
+        val minutes = AppPrefs.getBeforeClassMinutes(app)
+        val today = LocalDate.now()
+        val dow = DateUtils.todayDayOfWeek(today)
+        val table = resolveCurrentTable() ?: return
+        val week = DateUtils.currentWeek(table.startDate, today)
+        val nodes = TimeTableUtils.parseNodes(table.timeJson)
+        val now = System.currentTimeMillis()
+
+        // 找出现在处于课前窗口内的第一节课
+        val hit = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
+            .filter { it.inWeek(week) }
+            .firstOrNull { c ->
+                val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
+                    else nodes.find { it.node == c.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
+                val p = st?.split(":")
+                val h = p?.getOrNull(0)?.toIntOrNull(); val m = p?.getOrNull(1)?.toIntOrNull()
+                if (h == null || m == null || h !in 0..23 || m !in 0..59) return@firstOrNull false
+                val classStart = today.atTime(h, m).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                val notifyEpoch = classStart - minutes * 60_000L
+                now in notifyEpoch..classStart  // 现在在窗口内
+            } ?: return
+
+        // 计算这节课的精确窗口，启动 FluidCloudService
+        val st = if (hit.ownTime && hit.startTime.isNotBlank()) hit.startTime
+            else nodes.find { it.node == hit.startNode }!!.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
+        val p = st.split(":")
+        val classStart = today.atTime(p[0].toInt(), p[1].toInt()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+        val notifyEpoch = classStart - minutes * 60_000L
+        val svc = Intent(app, FluidCloudService::class.java).apply {
+            putExtra("courseName", hit.courseName)
+            putExtra("room", hit.room.ifBlank { "上课地点" })
+            putExtra("teacher", hit.teacher)
+            putExtra("startTime", st)
+            putExtra("notifyEpoch", notifyEpoch)
+            putExtra("classEpoch", classStart)
+        }
+        try {
+            androidx.core.content.ContextCompat.startForegroundService(app, svc)
+            android.util.Log.d("CourseScheduler", "ensureActiveFluidCloud: started for ${hit.courseName} notify=$notifyEpoch class=$classStart now=$now")
+        } catch (t: Throwable) {
+            android.util.Log.w("CourseScheduler", "ensureActiveFluidCloud start failed", t)
+        }
+    }
     // ==================== Helpers ====================
 
     private fun createChannels() {
@@ -380,51 +446,13 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
             context.getString(R.string.notif_before_class_text_with_teacher, courseName, startTime, roomStr, teacher)
         }
 
-        // == Live Update (Android 16+ / ColorOS 16 fluid cloud capsule) ==
-        // ★ 必须在 SDK>=26 前台服务分支之前判断: 36>=26 恒真, 否则下方 return 导致此分支永不执行
-        if (fluid && Build.VERSION.SDK_INT >= 36) {
-            val nowEpoch = System.currentTimeMillis()
-            val notifyEpoch = intent.getLongExtra("notifyEpoch", nowEpoch)
-            val classEpoch = intent.getLongExtra("classEpoch", nowEpoch)
-            val totalWindow = (classEpoch - notifyEpoch).coerceAtLeast(1L)
-            val elapsed = (nowEpoch - notifyEpoch).coerceIn(0L, totalWindow)
-            val classProgress = ((elapsed * 100L) / totalWindow).toInt().coerceIn(0, 100)
-            android.util.Log.d("BeforeClassNotify", "class progress=$classProgress now=$nowEpoch notify=$notifyEpoch class=$classEpoch")
+        // == 流体云 / Live Update ==
+        // ★ 所有 SDK>=26 统一走 FluidCloudService：service 的 Handler 每 15s 循环
+        //   re-post ProgressStyle 通知推进 progress，进度条才会持续动。
+        //   旧代码在 SDK>=36 单独静态 post 一次就 return，导致进度条停在 0 不更新。
 
-            val progressStyle = NotificationCompat.ProgressStyle()
-                .setStyledByProgress(true)
-                .setProgress(classProgress)
-                .setProgressSegments(
-                    listOf(
-                        NotificationCompat.ProgressStyle.Segment(70),
-                        NotificationCompat.ProgressStyle.Segment(30)
-                    )
-                )
-            val liveNotif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_FLUID)
-                .setSmallIcon(R.drawable.ic_notification_time)
-                .setColor(0xFF6750A4.toInt())
-                .setContentTitle(courseName)
-                .setContentText("$startTime  ·  $roomStr${if (teacher.isNotBlank()) "  ·  $teacher" else ""}")
-                .setStyle(progressStyle)
-                .setSubText(roomStr)
-                .setCategory(NotificationCompat.CATEGORY_PROGRESS)
-                .setProgress(100, classProgress, false)
-                .setOngoing(true)
-                .setSilent(true)
-                .setOnlyAlertOnce(true)
-                .setRequestPromotedOngoing(true)
-                .setContentIntent(openAppIntent(context))
-                .setShortCriticalText(primaryText.take(7))
-                .build()
-            android.util.Log.d("BeforeClassNotify", "posting fluid channel=${CourseNotificationScheduler.CHANNEL_FLUID} id=${CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE} sdk=${Build.VERSION.SDK_INT}")
-            NotificationManagerCompat.from(context)
-                .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, liveNotif)
-            android.util.Log.d("BeforeClassNotify", "posted static fluid")
-            return
-        }
-
-        // The service owns the same notification ID and updates only its time progress.
-        // Android 8~15: 用前台服务驱动 fluid cloud 更新(Android 16+ 由上方 Live Update 分支接管)
+        // FluidCloudService 接管流体云：前台服务每 15s 循环 re-post ProgressStyle 通知推进进度条。
+        // SDK>=26（含 Android 16）统一走此路径。
         if (fluid && Build.VERSION.SDK_INT >= 26) {
             val serviceIntent = Intent(context, FluidCloudService::class.java).apply {
                 putExtra("courseName", courseName)

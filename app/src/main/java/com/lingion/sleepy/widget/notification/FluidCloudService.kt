@@ -51,6 +51,19 @@ class FluidCloudService : Service() {
         }
 
         if (classEpoch <= System.currentTimeMillis()) {
+            // ★ 修复 P0: startForegroundService 启动后，即使决定立即停止也必须先
+            // startForeground()，否则 Android 12+ 抛 ForegroundServiceDidNotStartInTimeException。
+            // 用最小占位通知履行契约，随后移除。
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                try {
+                    val placeholder = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
+                        .setSmallIcon(R.drawable.ic_notification_time)
+                        .setContentTitle(courseName)
+                        .setPriority(NotificationCompat.PRIORITY_LOW)
+                        .build()
+                    startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, placeholder)
+                } catch (_: Throwable) {}
+            }
             androidx.core.app.NotificationManagerCompat.from(this)
                 .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -86,12 +99,8 @@ class FluidCloudService : Service() {
         val style = NotificationCompat.ProgressStyle()
             .setStyledByProgress(true)
             .setProgress(progress)
-            .setProgressSegments(
-                listOf(
-                    NotificationCompat.ProgressStyle.Segment(70),
-                    NotificationCompat.ProgressStyle.Segment(30)
-                )
-            )
+        // 不分 segments：课前提醒是一个连续倒计时进度，旧代码的 70/30 分段没有实际语义，
+        // 反而在 70% 处把进度条断开造成视觉割裂。
 
         val notification = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
             .setSmallIcon(R.drawable.ic_notification_time)

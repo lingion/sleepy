@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Debug-only 组件：仅 debug 构建包含，release 完全不含这些注入/调度入口。
+         生产用户拿到的 release APK 里不存在 DebugImportReceiver / DebugScheduleReceiver。 -->
+
+    <permission
+        android:name="com.lingion.sleepy.permission.DEBUG_TOOL"
+        android:protectionLevel="signature" />
+
+    <uses-permission android:name="com.lingion.sleepy.permission.DEBUG_TOOL" />
+
+    <application>
+        <!-- Debug: 注入课表 / 触发流体云 / 清理测试数据（走 ScheduleParser + repository 真实链路） -->
+        <activity
+            android:name=".debug.DebugImportReceiver"
+            android:exported="true"
+            android:label="Debug Import"
+            android:theme="@android:style/Theme.NoDisplay" />
+
+        <receiver
+            android:name="com.lingion.sleepy.debug.DebugScheduleReceiver"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="com.lingion.sleepy.debug.SCHEDULE_NOW" />
+            </intent-filter>
+        </receiver>
+    </application>
+
+</manifest>

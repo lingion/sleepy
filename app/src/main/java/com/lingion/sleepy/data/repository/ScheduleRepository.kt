@@ -62,7 +62,7 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     suspend fun insertCourse(course: CourseEntity): Long {
         val id = courseDao.insert(course)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        onDataChanged()
         return id
     }
 
@@ -70,35 +70,34 @@ class ScheduleRepository(private val db: AppDatabase) {
         // 导入时以规范化课程名为身份；时间、教师、教室只属于课程的一个时段。
         val withGroupIds = assignGroupIds(courses)
         val ids = courseDao.insertAll(withGroupIds)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        onDataChanged()
         return ids
     }
 
     suspend fun updateCourse(course: CourseEntity) {
         courseDao.update(course)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        onDataChanged()
     }
 
     /** 查同 groupId 下所有课程（用于编辑回填，按时段分 block） */
     suspend fun getGroupCourses(tableId: Long, groupId: String): List<CourseEntity> =
         courseDao.getByGroupId(tableId, groupId)
 
-    /** 编辑课程组：删除同 groupId 全部记录，插入新草稿 */
+    /** 编辑课程组：原子地删除同 groupId 全部记录并插入新草稿（DAO 层 @Transaction） */
     suspend fun updateCourseGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
-        courseDao.deleteByGroupId(tableId, groupId)
-        courseDao.insertAll(newCourses)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        courseDao.replaceGroup(tableId, groupId, newCourses)
+        onDataChanged()
     }
 
     suspend fun deleteCourse(id: Long) {
         courseDao.deleteById(id)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        onDataChanged()
     }
 
     /** 删除同 groupId 全部记录 */
     suspend fun deleteCourseGroup(tableId: Long, groupId: String) {
         courseDao.deleteByGroupId(tableId, groupId)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        onDataChanged()
     }
 
     suspend fun countCourses(tableId: Long): Int = courseDao.countByTable(tableId)
@@ -109,14 +108,23 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun replaceCourses(tableId: Long, courses: List<CourseEntity>) {
         val withGroupIds = assignGroupIds(courses)
         courseDao.replaceAll(tableId, withGroupIds)
-        WidgetUpdater.notifyDataChanged(SleepyApp.get())
+        onDataChanged()
     }
 
     /**
-     * 给列表中的课程分配 groupId：
-     * - groupId 为空的按 courseName 分组，每组生成一个 UUID
-     * - groupId 非空的保持不变（手动编辑时已有 groupId）
+     * 数据变更后：刷新所有 widget，并在提醒开启时重排通知（含流体云）。
+     * ★ 修复：之前只刷 widget 不重排通知，导致编辑课表后课前提醒/流体云仍按旧时间。
      */
+    private suspend fun onDataChanged() {
+        val app = SleepyApp.get()
+        WidgetUpdater.notifyDataChanged(app)
+        try {
+            app.notificationScheduler.scheduleAll()
+        } catch (_: Throwable) {
+            // 提醒未开启或调度失败不应影响写操作本身
+        }
+    }
+
     private fun assignGroupIds(courses: List<CourseEntity>): List<CourseEntity> {
         val nameToGroupId = mutableMapOf<String, String>()
         return courses.map { c ->

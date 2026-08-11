@@ -128,7 +128,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     ?: firstInt(o, "ksjc") ?: continue
                 val endNode = firstInt(o, "jsjcsd", "jsjc", "jsjssd", "continuingSession")
                     ?.let { if (it < startNode) startNode else it }
-                    ?: (startNode + 1)
+                    ?: startNode  // 缺结束节次时按单节处理，不假设连上 2 节
 
                 // 周次
                 val zcStr = firstStr(o, "zcd", "kkzc", "zc", "classWeek", "skzc")
@@ -172,7 +172,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
 
     /** 周次字符串 → (start, end, type) 范围列表 */
     private fun parseWeekStr(s: String): List<Triple<Int, Int, Int>> {
-        if (s.isBlank()) return listOf(Triple(1, 20, 0))
+        if (s.isBlank()) return listOf(Triple(1, 16, 0))
         val result = mutableListOf<Triple<Int, Int, Int>>()
 
         // bitmap 模式：11111111111100000（每位 = 第 N 周）
@@ -199,7 +199,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                 result += Triple(v, v, type)
             }
         }
-        return if (result.isEmpty()) listOf(Triple(1, 20, 0)) else result
+        return if (result.isEmpty()) listOf(Triple(1, 16, 0)) else result
     }
 
     private fun bitsToRanges(weeks: List<Int>): List<Triple<Int, Int, Int>> {
@@ -256,6 +256,11 @@ class JwNewZfParser(source: String) : JwParser(source) {
         for (tr in trs) {
             val tds = tr.getElementsByTag("td")
             if (tds.isEmpty()) continue
+            // 跳过节次表头行（第一格是"第N节"/"第N-M节"这类纯标签，无 kbcontent 课程单元）
+            val firstCellText = tds.firstOrNull()?.text()?.trim().orEmpty()
+            val isSectionHeader = firstCellText.contains("节") &&
+                tds.none { it.getElementsByClass("kbcontent").isNotEmpty() }
+            if (isSectionHeader) continue
             nodeCount++
 
             var day = 0
@@ -270,7 +275,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
                     // 同格多门课用 "-----" 分隔（与 QZ 一致）
                     val parts = html.split("-----")
                     for (part in parts) {
-                        parseCell(part.trim(), day, nodeCount)?.let { result += it }
+                        result += parseCell(part.trim(), day, nodeCount)
                     }
                 }
             }
@@ -279,14 +284,14 @@ class JwNewZfParser(source: String) : JwParser(source) {
         return if (result.isEmpty()) parseHtmlTableFromQz() else result
     }
 
-    private fun parseCell(html: String, day: Int, nodeCount: Int): JwCourse? {
+    private fun parseCell(html: String, day: Int, nodeCount: Int): List<JwCourse> {
         val cellDoc = Jsoup.parse(html)
         val name = try {
             Jsoup.parse(html.substringBefore("<font").trim()).text()
         } catch (e: Exception) {
             html.substringBefore("<font").trim()
         }
-        if (name.isBlank()) return null
+        if (name.isBlank()) return emptyList()
 
         val teacher = cellDoc.getElementsByAttributeValue("title", "老师").text().trim()
         val room = cellDoc.getElementsByAttributeValue("title", "教室").text().trim()
@@ -296,17 +301,20 @@ class JwNewZfParser(source: String) : JwParser(source) {
         val ranges = parseWeekStr(weekStr)
         val node = nodeCount * 2 - 1
 
-        return JwCourse(
-            name = name,
-            room = room,
-            teacher = teacher,
-            day = day,
-            startNode = node,
-            endNode = node + 1,
-            startWeek = ranges.first().first,
-            endWeek = ranges.first().second,
-            type = ranges.first().third
-        )
+        // ★ 展开全部周次段（之前只取 ranges.first()，会丢失 "1-11周(单),13-16周" 的后半段）
+        return ranges.map { r ->
+            JwCourse(
+                name = name,
+                room = room,
+                teacher = teacher,
+                day = day,
+                startNode = node,
+                endNode = node + 1,
+                startWeek = r.first,
+                endWeek = r.second,
+                type = r.third
+            )
+        }
     }
 
     /** 完全 fallback 到 QZ 解析逻辑 */

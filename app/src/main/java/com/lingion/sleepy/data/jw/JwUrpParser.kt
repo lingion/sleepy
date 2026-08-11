@@ -52,7 +52,8 @@ class JwUrpParser(source: String) : JwParser(source) {
                     "教室" -> roomIdx = i
                 }
             }
-            if (dayIdx == -1) continue
+            // ★ 周/节数列索引缺失时无法安全对齐列，跳过此表（避免 IndexOutOfBounds 崩溃）
+            if (weekIdx == -1 || nodeIdx == -1 || nameIdx == -1) continue
 
             val tbody = table.getElementsByTag("tbody").firstOrNull() ?: continue
             var courseName = ""

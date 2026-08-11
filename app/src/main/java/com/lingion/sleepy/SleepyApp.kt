@@ -32,8 +32,16 @@ class SleepyApp : Application() {
         instance = this
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
-        WidgetUpdater.schedule(this)
-        // 每次 app 启动都强制刷新所有 widget — 解决 Glance 缓存不刷新的问题
+        // ★ app 回前台时检测：若当前在某节课的课前窗口内，补起流体云（状态兜底）
+        androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(
+            object : androidx.lifecycle.DefaultLifecycleObserver {
+                override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
+                    CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+                        try { notificationScheduler.ensureActiveFluidCloud() } catch (_: Throwable) {}
+                    }
+                }
+            }
+        )
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             WidgetUpdater.notifyDataChanged(this@SleepyApp)
         }
