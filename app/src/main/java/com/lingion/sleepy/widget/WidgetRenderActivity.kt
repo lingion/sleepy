@@ -73,8 +73,11 @@ class WidgetRenderActivity : Activity() {
         }
     }
 
-    private suspend fun renderWidgetBitmap(which: String, wDp: Float, hDp: Float) =
-        when (which) {
+    private suspend fun renderWidgetBitmap(which: String, wDp: Float, hDp: Float): android.graphics.Bitmap {
+        val isSystemDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this, isSystemDark)
+        val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+        return when (which) {
             "today" -> {
                 val today = java.time.LocalDate.now()
                 val dayOfWeek = com.lingion.sleepy.util.DateUtils.todayDayOfWeek(today)
@@ -91,8 +94,7 @@ class WidgetRenderActivity : Activity() {
                         courses = courses,
                         timeJson = table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
                         hasTable = table != null,
-                        isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this),
-                        themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+                        isDark = isDark, themeKey = themeKey
                     ),
                     wDp, hDp
                 )
@@ -113,10 +115,8 @@ class WidgetRenderActivity : Activity() {
                 WidgetBitmapRenderers.renderTwoDay(
                     this,
                     TwoDayData(
-                        days = days,
-                        hasTable = table != null,
-                        isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this),
-                        themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+                        days = days, hasTable = table != null,
+                        isDark = isDark, themeKey = themeKey
                     ),
                     wDp, hDp
                 )
@@ -136,10 +136,8 @@ class WidgetRenderActivity : Activity() {
                 WidgetBitmapRenderers.renderWeekList(
                     this,
                     WeekData(
-                        days = days,
-                        hasTable = table != null,
-                        isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this),
-                        themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
+                        days = days, hasTable = table != null,
+                        isDark = isDark, themeKey = themeKey
                     ),
                     wDp, hDp
                 )
@@ -152,6 +150,7 @@ class WidgetRenderActivity : Activity() {
                 WeekGridWidgetProvider.renderBitmap(this, data, w, h)
             }
         }
+    }
 
     override fun onDestroy() {
         scope.cancel()

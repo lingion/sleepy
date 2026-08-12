@@ -90,7 +90,8 @@ class WeekGridWidget : GlanceAppWidget() {
 
     internal suspend fun loadWeekData(context: Context): WeekData {
         val today = LocalDate.now()
-        val isDark = AppPrefs.isDarkMode(context)
+        val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val isDark = AppPrefs.isDarkMode(context, isSystemDark)
         val themeKey = AppPrefs.getThemeKey(context)
         val displayMode = AppPrefs.getDisplayMode(context)
         val showDate = AppPrefs.isShowDate(context)

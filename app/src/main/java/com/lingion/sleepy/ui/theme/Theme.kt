@@ -328,95 +328,74 @@ fun SleepyThemeProvider(
         ThemePresets.byKey(themeKey)
     }
 
-    val wakeColors: WakeUpColorScheme
-    val palette: CoursePalette
-
-    if (preset == null) {
-        // dynamic 取色
+    // ★ 合并两个分支（preset vs dynamic）到同一个 content() 调用位置，
+    //   防止 Compose 因 if/else 树结构变化而丢失 AppRoot 的 remember 状态。
+    //   之前 preset==null 走 early return → content() 在不同树位置 → 切换时状态丢失。
+    val (wakeColors, palette, m3Scheme) = if (preset == null) {
+        // dynamic 取色 — API 31+ Material You
         val m3Dynamic = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        // 课程色退回到 Light/Dark 默认
-        wakeColors = if (darkTheme) DarkScheme else LightScheme
-        palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
-        CompositionLocalProvider(
-            LocalWakeUpColors provides wakeColors,
-            LocalCoursePalette provides palette
-        ) {
-            MaterialTheme(colorScheme = m3Dynamic) {
-                content()
-            }
-        }
-        return
-    }
-
-    wakeColors = if (darkTheme) preset.dark else preset.light
-    palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
-
-    val m3Scheme = if (darkTheme) {
-        darkColorScheme(
-            primary = wakeColors.primary,
-            onPrimary = wakeColors.onPrimary,
-            primaryContainer = wakeColors.primaryContainer,
-            onPrimaryContainer = wakeColors.onPrimaryContainer,
-            secondary = wakeColors.secondary,
-            onSecondary = wakeColors.onSecondary,
-            secondaryContainer = wakeColors.secondaryContainer,
-            onSecondaryContainer = wakeColors.onSecondaryContainer,
-            tertiary = wakeColors.tertiary,
-            onTertiary = wakeColors.onTertiary,
-            tertiaryContainer = wakeColors.tertiaryContainer,
-            onTertiaryContainer = wakeColors.onTertiaryContainer,
-            background = wakeColors.background,
-            onBackground = wakeColors.onBackground,
-            surface = wakeColors.surface,
-            onSurface = wakeColors.onSurface,
-            surfaceVariant = wakeColors.surfaceVariant,
-            onSurfaceVariant = wakeColors.onSurfaceVariant,
-            surfaceContainerLowest = wakeColors.surfaceContainerLowest,
-            surfaceContainerLow = wakeColors.surfaceContainerLow,
-            surfaceContainer = wakeColors.surfaceContainer,
-            surfaceContainerHigh = wakeColors.surfaceContainerHigh,
-            surfaceContainerHighest = wakeColors.surfaceContainerHighest,
-            outline = wakeColors.outline,
-            outlineVariant = wakeColors.outlineVariant,
-            scrim = wakeColors.scrim,
-            error = wakeColors.error,
-            onError = wakeColors.onError,
-            errorContainer = wakeColors.errorContainer,
-            onErrorContainer = wakeColors.onErrorContainer
+        // 用 dynamic scheme 的值构造 WakeUpColorScheme（课程色退回默认）
+        val wc = WakeUpColorScheme(
+            primary = m3Dynamic.primary,
+            onPrimary = m3Dynamic.onPrimary,
+            primaryContainer = m3Dynamic.primaryContainer,
+            onPrimaryContainer = m3Dynamic.onPrimaryContainer,
+            secondary = m3Dynamic.secondary,
+            onSecondary = m3Dynamic.onSecondary,
+            secondaryContainer = m3Dynamic.secondaryContainer,
+            onSecondaryContainer = m3Dynamic.onSecondaryContainer,
+            tertiary = m3Dynamic.tertiary,
+            onTertiary = m3Dynamic.onTertiary,
+            tertiaryContainer = m3Dynamic.tertiaryContainer,
+            onTertiaryContainer = m3Dynamic.onTertiaryContainer,
+            background = m3Dynamic.background,
+            onBackground = m3Dynamic.onBackground,
+            surface = m3Dynamic.surface,
+            onSurface = m3Dynamic.onSurface,
+            surfaceVariant = m3Dynamic.surfaceVariant,
+            onSurfaceVariant = m3Dynamic.onSurfaceVariant,
+            surfaceContainerLowest = m3Dynamic.surfaceContainerLowest,
+            surfaceContainerLow = m3Dynamic.surfaceContainerLow,
+            surfaceContainer = m3Dynamic.surfaceContainer,
+            surfaceContainerHigh = m3Dynamic.surfaceContainerHigh,
+            surfaceContainerHighest = m3Dynamic.surfaceContainerHighest,
+            outline = m3Dynamic.outline,
+            outlineVariant = m3Dynamic.outlineVariant,
+            scrim = m3Dynamic.scrim,
+            error = m3Dynamic.error,
+            onError = m3Dynamic.onError,
+            errorContainer = m3Dynamic.errorContainer,
+            onErrorContainer = m3Dynamic.onErrorContainer
         )
+        Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3Dynamic)
     } else {
-        lightColorScheme(
-            primary = wakeColors.primary,
-            onPrimary = wakeColors.onPrimary,
-            primaryContainer = wakeColors.primaryContainer,
-            onPrimaryContainer = wakeColors.onPrimaryContainer,
-            secondary = wakeColors.secondary,
-            onSecondary = wakeColors.onSecondary,
-            secondaryContainer = wakeColors.secondaryContainer,
-            onSecondaryContainer = wakeColors.onSecondaryContainer,
-            tertiary = wakeColors.tertiary,
-            onTertiary = wakeColors.onTertiary,
-            tertiaryContainer = wakeColors.tertiaryContainer,
-            onTertiaryContainer = wakeColors.onTertiaryContainer,
-            background = wakeColors.background,
-            onBackground = wakeColors.onBackground,
-            surface = wakeColors.surface,
-            onSurface = wakeColors.onSurface,
-            surfaceVariant = wakeColors.surfaceVariant,
-            onSurfaceVariant = wakeColors.onSurfaceVariant,
-            surfaceContainerLowest = wakeColors.surfaceContainerLowest,
-            surfaceContainerLow = wakeColors.surfaceContainerLow,
-            surfaceContainer = wakeColors.surfaceContainer,
-            surfaceContainerHigh = wakeColors.surfaceContainerHigh,
-            surfaceContainerHighest = wakeColors.surfaceContainerHighest,
-            outline = wakeColors.outline,
-            outlineVariant = wakeColors.outlineVariant,
-            scrim = wakeColors.scrim,
-            error = wakeColors.error,
-            onError = wakeColors.onError,
-            errorContainer = wakeColors.errorContainer,
-            onErrorContainer = wakeColors.onErrorContainer
-        )
+        val wc = if (darkTheme) preset.dark else preset.light
+        val m3 = if (darkTheme) {
+            darkColorScheme(
+                primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
+                secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
+                tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
+                background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
+                surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
+                surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
+                surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
+                outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
+                error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
+            )
+        } else {
+            lightColorScheme(
+                primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
+                secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
+                tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
+                background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
+                surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
+                surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
+                surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
+                outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
+                error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
+            )
+        }
+        Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3)
     }
 
     CompositionLocalProvider(

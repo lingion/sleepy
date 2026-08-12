@@ -130,15 +130,20 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val density = context.resources.displayMetrics.density
             val isDark = data.isDark
 
-            // ── 颜色 (复刻 SleepyTheme) ──
-            val bgSurface       = if (isDark) 0xFF2B2930.toInt() else 0xFFF7F2FA.toInt()
-            val bgContainer     = if (isDark) 0xFF1C1B1F.toInt() else 0xFFF3F0F4.toInt()
-            val bgCell          = if (isDark) 0xFF36343B.toInt() else 0xFFFFFFFF.toInt()
-            val bgToday         = if (isDark) 0xFF4A3B6B.toInt() else 0xFFE8DEF8.toInt()
-            val fgPrimary       = if (isDark) 0xFFD0BCFF.toInt() else 0xFF6750A4.toInt()
-            val fgOnSurface     = if (isDark) 0xFFE6E1E5.toInt() else 0xFF1D1B20.toInt()
-            val fgOnSurfaceVar  = if (isDark) 0xFFCAC4D0.toInt() else 0xFF49454F.toInt()
-            val gridLine        = if (isDark) 0xFF49454F.toInt() else 0xFFE7E0EC.toInt()
+            // ── 颜色 (跟随主题: resolveSchemePublic 支持 system=动态取色) ──
+            // 之前硬编码紫色十六进制 → 小组件永远紫色, 不跟随 app / 系统壁纸取色
+            val scheme = resolveSchemePublic(context, data.themeKey, isDark)
+            fun androidx.compose.ui.graphics.Color.toIntArgb(): Int =
+                (0xFF shl 24) or ((this.red * 255).toInt() shl 16) or
+                    ((this.green * 255).toInt() shl 8) or (this.blue * 255).toInt()
+            val bgSurface       = scheme.surface.toIntArgb()
+            val bgContainer     = scheme.surfaceContainer.toIntArgb()
+            val bgCell          = scheme.surface.toIntArgb()
+            val bgToday         = scheme.primaryContainer.toIntArgb()
+            val fgPrimary       = scheme.primary.toIntArgb()
+            val fgOnSurface     = scheme.onSurface.toIntArgb()
+            val fgOnSurfaceVar  = scheme.onSurfaceVariant.toIntArgb()
+            val gridLine        = scheme.surfaceVariant.toIntArgb()
 
             // ★ v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
             // hue = groupId.hashCode() * 137.508° → 相邻课色差最大化, 同门课永远同色
@@ -672,8 +677,11 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
 
         fun loadWeekData(context: Context): WeekData {
             val today = LocalDate.now()
-            val isDark = AppPrefs.isDarkMode(context)
+            val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            val isDark = AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = AppPrefs.getThemeKey(context)
+            val themeMode = AppPrefs.getThemeMode(context)
+            Log.d(TAG, "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
             val displayMode = AppPrefs.getDisplayMode(context)
             val showDate = AppPrefs.isShowDate(context)
             val visibleDays = AppPrefs.getVisibleDays(context)

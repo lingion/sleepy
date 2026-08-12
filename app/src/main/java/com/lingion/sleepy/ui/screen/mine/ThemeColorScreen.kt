@@ -103,6 +103,7 @@ fun ThemeColorScreen(
                     selected = currentKey == ThemePresets.KEY_SYSTEM,
                     onClick = {
                         AppPrefs.setThemeKey(context, ThemePresets.KEY_SYSTEM)
+                        scope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
                         scope.launch { snackbar.showSnackbar(context.getString(R.string.theme_switched_system)) }
                     }
                 )
@@ -131,6 +132,7 @@ fun ThemeColorScreen(
                                         selected = currentKey == preset.key,
                                         onClick = {
                                             AppPrefs.setThemeKey(context, preset.key)
+                                            scope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
                                             scope.launch { snackbar.showSnackbar(context.getString(R.string.theme_switched_preset, preset.displayName)) }
                                         }
                                     )

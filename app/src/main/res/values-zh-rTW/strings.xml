@@ -31,7 +31,7 @@
     <string name="table_info">開始日期: %1$s  |  第%2$d週  |  %3$d門課</string>
     <string name="current_table_week">當前課表 · 第%1$d週</string>
     <string name="table_start_date">開始日期: %1$s</string>
-    <string name="all_tables">所有課表</string>
+    <string name="all_tables">課表管理</string>
     <string name="all_tables_new">建立課表</string>
     <string name="all_tables_switch">切換為目前</string>
     <string name="edit_table_title">編輯課表</string>
@@ -297,4 +297,9 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d–%2$d節</string>
     <string name="section_single">第%1$d 節</string>
+    <string name="mine_theme">主题</string>
+    <string name="theme_appearance">外观</string>
+    <string name="theme_mode_system">跟随系统</string>
+    <string name="theme_mode_light">浅色</string>
+    <string name="theme_mode_dark">深色</string>
 </resources>

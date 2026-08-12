@@ -30,18 +30,40 @@ object AppPrefs {
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
+    const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
+    const val THEME_MODE_LIGHT = "light"
+    const val THEME_MODE_DARK = "dark"
+    const val THEME_MODE_SYSTEM = "system"
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
-    // ===== 深色模式：Boolean 单选开关（最简单，主题色和深色是两轴独立）=====
-
-    fun isDarkMode(ctx: Context): Boolean =
-        sp(ctx).getBoolean(KEY_DARK, false)
-
-    fun setDarkMode(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_DARK, v).apply()
+    /** 实际是否深色：dark→true, light→false, system→isSystemDark。isSystemDark 由调用方传入。 */
+    fun isDarkMode(ctx: Context, isSystemDark: Boolean = false): Boolean {
+        // 向后兼容：旧 boolean KEY_DARK 在无新三态时生效
+        if (!sp(ctx).contains(KEY_THEME_MODE)) {
+            val legacy = sp(ctx).all[KEY_DARK] as? Boolean
+            if (legacy != null) return legacy
+        }
+        return when (getThemeMode(ctx)) {
+            THEME_MODE_DARK -> true
+            THEME_MODE_LIGHT -> false
+            else -> isSystemDark
+        }
     }
+
+    // isSystemDark 由 UI 层用 isSystemInDarkTheme() 传入，避免在 object 里取系统配置。
+
+
+    /** 主题模式：light / dark / system。默认 system。 */
+    fun getThemeMode(ctx: Context): String =
+        sp(ctx).getString(KEY_THEME_MODE, THEME_MODE_SYSTEM) ?: THEME_MODE_SYSTEM
+
+    fun setThemeMode(ctx: Context, mode: String) {
+        require(mode == THEME_MODE_LIGHT || mode == THEME_MODE_DARK || mode == THEME_MODE_SYSTEM)
+        sp(ctx).edit().putString(KEY_THEME_MODE, mode).apply()
+    }
+
 
     // ===== 主题色 =====
 

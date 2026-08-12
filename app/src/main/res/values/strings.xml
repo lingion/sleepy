@@ -34,7 +34,7 @@
     <string name="table_info">开始日期: %1$s  |  第%2$d周  |  %3$d门课</string>
     <string name="current_table_week">当前课表 · 第%1$d周</string>
     <string name="table_start_date">开始日期: %1$s</string>
-    <string name="all_tables">所有课表</string>
+    <string name="all_tables">课表管理</string>
     <string name="all_tables_new">新建课表</string>
     <string name="all_tables_switch">切换为当前</string>
     <string name="edit_table_title">编辑课表</string>
@@ -414,4 +414,9 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d-%2$d节</string>
     <string name="section_single">第%1$d 节</string>
+    <string name="mine_theme">主题</string>
+    <string name="theme_appearance">外观</string>
+    <string name="theme_mode_system">跟随系统</string>
+    <string name="theme_mode_light">浅色</string>
+    <string name="theme_mode_dark">深色</string>
 </resources>

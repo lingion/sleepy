@@ -1,5 +1,6 @@
 package com.lingion.sleepy.widget
 
+import android.content.Context
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.glance.LocalContext
@@ -37,6 +38,7 @@ import com.lingion.sleepy.ui.component.TimeSlot
 import com.lingion.sleepy.ui.theme.ThemePresets
 import com.lingion.sleepy.ui.theme.LightCoursePalette
 import com.lingion.sleepy.ui.theme.DarkCoursePalette
+import com.lingion.sleepy.ui.theme.WakeUpColorScheme
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
@@ -66,7 +68,7 @@ data class WidgetData(
 @Composable
 fun WidgetContent(data: WidgetData, openAppAction: Action, openCourseAction: (Long) -> Action) {
     val context = LocalContext.current
-    val scheme = resolveSchemePublic(data.themeKey, data.isDark)
+    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
 
     Column(
         modifier = GlanceModifier
@@ -154,12 +156,39 @@ internal fun courseColor(name: String, scheme: WidgetScheme): Color =
 
 /**
  * 按 themeKey + isDark 派生小组件配色。
+ *
+ * ★ themeKey == "system" 时走 Material You 动态取色(dynamicLightColorScheme / dynamicDarkColorScheme),
+ *   与 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 的处理对齐 — 之前 widget 把 "system"
+ *   当未知 key → ThemePresets.byKey 返回 Default(紫色) → 小组件永远紫色, 不跟随系统壁纸取色。
+ *
  * 课程色使用 app 的 LightCoursePalette / DarkCoursePalette（全局统一，不随主题变）。
  */
-internal fun resolveSchemePublic(themeKey: String, isDark: Boolean): WidgetScheme {
-    val preset = ThemePresets.byKey(themeKey)
-    val s = if (isDark) preset.dark else preset.light
+internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boolean): WidgetScheme {
     val palette = if (isDark) DarkCoursePalette else LightCoursePalette
+    // "跟随系统" 主题 → Material You 动态取色 (API 31+), 低版本降级 Default
+    val s = if (themeKey == ThemePresets.KEY_SYSTEM && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        val dyn = if (isDark) androidx.compose.material3.dynamicDarkColorScheme(context)
+                  else androidx.compose.material3.dynamicLightColorScheme(context)
+        WakeUpColorScheme(
+            primary = dyn.primary, onPrimary = dyn.onPrimary,
+            primaryContainer = dyn.primaryContainer, onPrimaryContainer = dyn.onPrimaryContainer,
+            secondary = dyn.secondary, onSecondary = dyn.onSecondary,
+            secondaryContainer = dyn.secondaryContainer, onSecondaryContainer = dyn.onSecondaryContainer,
+            tertiary = dyn.tertiary, onTertiary = dyn.onTertiary,
+            tertiaryContainer = dyn.tertiaryContainer, onTertiaryContainer = dyn.onTertiaryContainer,
+            background = dyn.background, onBackground = dyn.onBackground,
+            surface = dyn.surface, onSurface = dyn.onSurface,
+            surfaceVariant = dyn.surfaceVariant, onSurfaceVariant = dyn.onSurfaceVariant,
+            surfaceContainerLowest = dyn.surfaceContainerLowest, surfaceContainerLow = dyn.surfaceContainerLow,
+            surfaceContainer = dyn.surfaceContainer, surfaceContainerHigh = dyn.surfaceContainerHigh,
+            surfaceContainerHighest = dyn.surfaceContainerHighest,
+            outline = dyn.outline, outlineVariant = dyn.outlineVariant, scrim = dyn.scrim,
+            error = dyn.error, onError = dyn.onError, errorContainer = dyn.errorContainer, onErrorContainer = dyn.onErrorContainer
+        )
+    } else {
+        val preset = ThemePresets.byKey(themeKey)
+        if (isDark) preset.dark else preset.light
+    }
     return WidgetScheme(
         bg = s.surface,
         surface = s.surface,
@@ -354,7 +383,7 @@ data class TwoDayData(
 @Composable
 fun WeekListContent(data: WeekData, openAppAction: Action) {
     val context = LocalContext.current
-    val scheme = resolveSchemePublic(data.themeKey, data.isDark)
+    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
     val dayLabels = listOf("", 
         context.getString(R.string.day_short_1),
@@ -484,7 +513,7 @@ fun WeekListContent(data: WeekData, openAppAction: Action) {
 @Composable
 fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
     val context = LocalContext.current
-    val scheme = resolveSchemePublic(data.themeKey, data.isDark)
+    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
 
     Column(
         modifier = GlanceModifier
@@ -626,7 +655,8 @@ private fun TwoDayCourseRow(course: CourseEntity, day: DayData, scheme: WidgetSc
 
 @Composable
 fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 320, widgetHeightDp: Int = 280) {
-    val scheme = resolveSchemePublic(data.themeKey, data.isDark)
+    val context = LocalContext.current
+    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
     val todayDow = LocalDate.now().dayOfWeek.value
 
     val timeJson = data.days.firstOrNull()?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON

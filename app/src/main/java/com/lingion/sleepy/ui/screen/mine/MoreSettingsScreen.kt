@@ -1,10 +1,8 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -13,16 +11,13 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.ExpandLess
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
-import androidx.compose.material.icons.outlined.Language
-import androidx.compose.material.icons.outlined.Schedule
-import androidx.compose.material.icons.outlined.CalendarMonth
-import androidx.compose.material.icons.outlined.ViewWeek
 import androidx.compose.material3.Divider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -42,7 +37,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -57,6 +51,12 @@ import com.lingion.sleepy.util.DateUtils
 fun MoreSettingsScreen(onBack: () -> Unit) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
+
+    // 默认折叠：首次进来展开第一个、其余收起
+    var expandedSections by remember { mutableStateOf(emptySet<Int>()) }
+    fun toggleSection(idx: Int) {
+        expandedSections = if (idx in expandedSections) expandedSections - idx else expandedSections + idx
+    }
 
     var language by remember { mutableStateOf(AppPrefs.getLanguage(context)) }
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
@@ -96,147 +96,60 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // 语言设置
             item {
-                SettingsCard(title = stringResource(R.string.settings_language)) {
+                SettingsCard(title = stringResource(R.string.settings_language), expanded = 0 in expandedSections, onToggle = { toggleSection(0) }) {
                     languages.forEach { (code, label) ->
                         val selected = language == code
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    language = code
-                                    AppPrefs.setLanguage(context, code)
-                                    // Recreate activity to apply locale
-                                    (context as? android.app.Activity)?.recreate()
-                                }
-                                .padding(vertical = 10.dp, horizontal = 4.dp),
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                language = code; AppPrefs.setLanguage(context, code); (context as? android.app.Activity)?.recreate()
+                            }.padding(vertical = 10.dp, horizontal = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = label,
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = if (selected) colors.primary else colors.onSurface
-                            )
-                            if (selected) {
-                                Icon(
-                                    Icons.Outlined.Check,
-                                    contentDescription = null,
-                                    tint = colors.primary,
-                                    modifier = Modifier.size(20.dp)
-                                )
-                            }
+                            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
+                            if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
                         }
-                        if (code != languages.last().first) {
-                            Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
-                        }
+                        if (code != languages.last().first) Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
                     }
                 }
             }
 
-            // 显示模式：节次 / 时间
             item {
-                SettingsCard(title = stringResource(R.string.settings_display_mode)) {
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_display_node),
-                        subtitle = stringResource(R.string.settings_display_node_sub),
-                        selected = displayMode == "node",
-                        onClick = {
-                            displayMode = "node"
-                            AppPrefs.setDisplayMode(context, "node")
-                        }
-                    )
+                SettingsCard(title = stringResource(R.string.settings_display_mode), expanded = 1 in expandedSections, onToggle = { toggleSection(1) }) {
+                    DisplayModeOption(label = stringResource(R.string.settings_display_node), subtitle = stringResource(R.string.settings_display_node_sub), selected = displayMode == "node", onClick = { displayMode = "node"; AppPrefs.setDisplayMode(context, "node") })
                     Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_display_time),
-                        subtitle = stringResource(R.string.settings_display_time_sub),
-                        selected = displayMode == "time",
-                        onClick = {
-                            displayMode = "time"
-                            AppPrefs.setDisplayMode(context, "time")
-                        }
-                    )
+                    DisplayModeOption(label = stringResource(R.string.settings_display_time), subtitle = stringResource(R.string.settings_display_time_sub), selected = displayMode == "time", onClick = { displayMode = "time"; AppPrefs.setDisplayMode(context, "time") })
                 }
             }
 
-            // 网格显示日期
             item {
-                SettingsCard(title = stringResource(R.string.settings_grid_view)) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_show_date),
-                        subtitle = stringResource(R.string.settings_show_date_sub),
-                        checked = showDate,
-                        onCheckedChange = {
-                            showDate = it
-                            AppPrefs.setShowDate(context, it)
-                        }
-                    )
-                    // 竖排标点优化(方案B开关, 默认关)
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_vert_punct),
-                        subtitle = stringResource(R.string.settings_vert_punct_sub),
-                        checked = vertPunct,
-                        onCheckedChange = {
-                            vertPunct = it
-                            AppPrefs.setVertPunctReplace(context, it)
-                        }
-                    )
+                SettingsCard(title = stringResource(R.string.settings_grid_view), expanded = 2 in expandedSections, onToggle = { toggleSection(2) }) {
+                    SettingToggleRow(label = stringResource(R.string.settings_show_date), subtitle = stringResource(R.string.settings_show_date_sub), checked = showDate, onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it) })
+                    SettingToggleRow(label = stringResource(R.string.settings_vert_punct), subtitle = stringResource(R.string.settings_vert_punct_sub), checked = vertPunct, onCheckedChange = { vertPunct = it; AppPrefs.setVertPunctReplace(context, it) })
                 }
             }
 
-            // 显示天数
             item {
-                SettingsCard(title = stringResource(R.string.settings_visible_days)) {
-                    Text(
-                        text = stringResource(R.string.settings_visible_days_sub),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
+                SettingsCard(title = stringResource(R.string.settings_visible_days), expanded = 3 in expandedSections, onToggle = { toggleSection(3) }) {
+                    Text(text = stringResource(R.string.settings_visible_days_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
                     (1..7).forEach { day ->
                         val checked = day in visibleDays
                         Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable {
-                                    val newDays = if (checked) {
-                                        visibleDays - day
-                                    } else {
-                                        visibleDays + day
-                                    }
-                                    if (newDays.isNotEmpty()) {
-                                        visibleDays = newDays
-                                        AppPrefs.setVisibleDays(context, newDays)
-                                    }
-                                }
-                                .padding(vertical = 8.dp, horizontal = 4.dp),
+                            modifier = Modifier.fillMaxWidth().clickable {
+                                val n = if (checked) visibleDays - day else visibleDays + day
+                                if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n) }
+                            }.padding(vertical = 8.dp, horizontal = 4.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = DateUtils.localizedDay(day, context),
-                                style = MaterialTheme.typography.bodyLarge,
-                                color = colors.onSurface
-                            )
-                            Switch(
-                                checked = checked,
-                                onCheckedChange = { on ->
-                                    val newDays = if (on) visibleDays + day else visibleDays - day
-                                    if (newDays.isNotEmpty()) {
-                                        visibleDays = newDays
-                                        AppPrefs.setVisibleDays(context, newDays)
-                                    }
-                                },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = colors.onPrimary,
-                                    checkedTrackColor = colors.primary
-                                )
-                            )
+                            Text(text = DateUtils.localizedDay(day, context), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                            Switch(checked = checked, onCheckedChange = { on ->
+                                val n = if (on) visibleDays + day else visibleDays - day
+                                if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n) }
+                            }, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
                         }
-                        if (day != 7) {
-                            Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
-                        }
+                        if (day != 7) Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
                     }
                 }
             }
@@ -245,100 +158,40 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun SettingsCard(
-    title: String,
-    content: @Composable () -> Unit
-) {
+private fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
     val colors = SleepyTheme.colors
     Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(colors.surfaceContainer)
-            .padding(16.dp),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surfaceContainer).clickable(onClick = onToggle).padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(
-            text = title,
-            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-            color = colors.onSurface
-        )
-        Spacer(modifier = Modifier.height(4.dp))
-        content()
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
+            Text(text = title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface, modifier = Modifier.weight(1f))
+            Icon(imageVector = if (expanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore, null, tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
+        }
+        if (expanded) { Spacer(modifier = Modifier.height(4.dp)); content() }
     }
 }
 
 @Composable
-private fun DisplayModeOption(
-    label: String,
-    subtitle: String,
-    selected: Boolean,
-    onClick: () -> Unit
-) {
+private fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp, horizontal = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = if (selected) colors.primary else colors.onSurface
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant
-            )
+            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
-        if (selected) {
-            Icon(
-                Icons.Outlined.Check,
-                contentDescription = null,
-                tint = colors.primary,
-                modifier = Modifier.size(20.dp)
-            )
-        }
+        if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
     }
 }
 
 @Composable
-private fun SettingToggleRow(
-    label: String,
-    subtitle: String,
-    checked: Boolean,
-    onCheckedChange: (Boolean) -> Unit
-) {
+private fun SettingToggleRow(label: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
     val colors = SleepyTheme.colors
-    Row(
-        modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-    ) {
+    Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = label,
-                style = MaterialTheme.typography.bodyLarge,
-                color = colors.onSurface
-            )
-            Text(
-                text = subtitle,
-                style = MaterialTheme.typography.bodySmall,
-                color = colors.onSurfaceVariant
-            )
+            Text(text = label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
-        Switch(
-            checked = checked,
-            onCheckedChange = onCheckedChange,
-            colors = SwitchDefaults.colors(
-                checkedThumbColor = colors.onPrimary,
-                checkedTrackColor = colors.primary
-            )
-        )
+        Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
     }
 }

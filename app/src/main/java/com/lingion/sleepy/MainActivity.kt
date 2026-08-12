@@ -9,7 +9,6 @@ import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.lifecycle.lifecycleScope
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -41,6 +40,7 @@ import com.lingion.sleepy.ui.screen.mine.MineScreen
 import com.lingion.sleepy.ui.screen.mine.MoreSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.ThemeColorScreen
+import com.lingion.sleepy.ui.screen.mine.ThemeSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
@@ -62,41 +62,20 @@ class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_COURSE_ID = "extra_course_id"
-
-        /**
-         * 构造一个带 courseId 路由的 Intent，Glance 小组件用。
-         * 启动后 MainActivity.onNewIntent 会拉课程并切到 AddCourseScreen 编辑模式。
-         */
         fun intentForCourse(context: Context, courseId: Long): Intent {
             return Intent(context, MainActivity::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                 putExtra(EXTRA_COURSE_ID, courseId)
             }
         }
-
-        /**
-         * 外部 app 启动时塞入的课表文本, ImportSheet 读取后自动弹预览。
-         * 使用全局对象持有 MutableState, 这样跨 Activity 实例 / 跨 snapshot 也能正确传播。
-         */
         val pendingImportTextState: androidx.compose.runtime.MutableState<String?> =
             androidx.compose.runtime.mutableStateOf(null)
-
-        /**
-         * 由 ImportReceiverActivity 在 onCreate 中调用 (主线程, lifecycleScope.launch 前)
-         * 写完后 LaunchedEffect 在下次 composition 时重新触发。
-         */
-        @Volatile
-        var incomingImportText: String? = null
-
+        @Volatile var incomingImportText: String? = null
         var pendingImportText: String?
             get() = pendingImportTextState.value
             set(v) { pendingImportTextState.value = v }
     }
 
-    /**
-     * Activity 级别的编辑目标——小组件 deep link 用。
-     * onNewIntent 读 EXTRA_COURSE_ID → 查 DB → setValue → 触发 Compose 重组 → 进 AddCourseScreen。
-     */
     private val editingCourseFromIntent = MutableStateFlow<CourseEntity?>(null)
     val editingCourseFlow: StateFlow<CourseEntity?> = editingCourseFromIntent.asStateFlow()
 
@@ -104,21 +83,25 @@ class MainActivity : ComponentActivity() {
         installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-
         handleDeepLinkIntent(intent)
-
         setContent {
-            val dark = remember { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity)) }
-            val themeKey by AppPrefs.themeKeyFlow(this@MainActivity)
-                .collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
+            val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+            var themeMode by remember { mutableStateOf(AppPrefs.getThemeMode(this@MainActivity)) }
+            var dark by remember { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity, systemDark)) }
+            fun applyTheme() { dark = AppPrefs.isDarkMode(this@MainActivity, systemDark) }
             val deepLinkCourse by editingCourseFlow.collectAsState()
-            SleepyThemeProvider(darkTheme = dark.value, themeKey = themeKey) {
+            val themeKey by AppPrefs.themeKeyFlow(this@MainActivity).collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
+            SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 AppRoot(
-                    darkMode = dark.value,
-                    onToggleDark = {
-                        val v = !dark.value
-                        AppPrefs.setDarkMode(this@MainActivity, v)
-                        dark.value = v
+                    themeMode = themeMode,
+                    onThemeModeChange = { mode ->
+                        AppPrefs.setThemeMode(this@MainActivity, mode)
+                        themeMode = mode
+                        applyTheme()
+                        // ★ 手动切主题时联动刷新 widget(双路:广播+Glance直更)
+                        lifecycleScope.launch {
+                            com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(this@MainActivity)
+                        }
                     },
                     deepLinkCourse = deepLinkCourse,
                     onDeepLinkConsumed = { editingCourseFromIntent.value = null },
@@ -135,30 +118,17 @@ class MainActivity : ComponentActivity() {
         handleDeepLinkIntent(intent)
     }
 
-    /**
-     * 解析启动 / 新 Intent 里的 EXTRA_COURSE_ID，IO 线程查 DB 后 setValue。
-     * 同时处理 ImportReceiverActivity 透传的 EXTRA_IMPORT_TEXT —— 直接挂到 companion 静态字段,
-     * AppRoot 会读到并自动弹导入预览。
-     */
     private fun handleDeepLinkIntent(intent: Intent?) {
-        // 1) 外部 VIEW json intent 透传过来的课表文本 (ImportReceiverActivity -> MainActivity)
-        //    ImportReceiverActivity 启动 MainActivity 前会先写 companion.pendingImportText;
-        //    MainActivity.onCreate 跑 handleDeepLinkIntent 时再补一下, 保证 onNewIntent 也响应
         val importText = intent?.getStringExtra(
             com.lingion.sleepy.ui.screen.imports.ImportReceiverActivity.EXTRA_IMPORT_TEXT
         ) ?: com.lingion.sleepy.MainActivity.incomingImportText
         if (!importText.isNullOrBlank()) {
             com.lingion.sleepy.MainActivity.pendingImportText = importText
             com.lingion.sleepy.MainActivity.incomingImportText = null
-            intent?.removeExtra(
-                com.lingion.sleepy.ui.screen.imports.ImportReceiverActivity.EXTRA_IMPORT_TEXT
-            )
+            intent?.removeExtra(com.lingion.sleepy.ui.screen.imports.ImportReceiverActivity.EXTRA_IMPORT_TEXT)
         }
-
-        // 2) 小组件 deep link: 编辑某门课
         val courseId = intent?.getLongExtra(EXTRA_COURSE_ID, -1L) ?: -1L
         if (courseId <= 0) return
-        // 避免重复触发：仅当目标 courseId 不同时才查
         if (editingCourseFromIntent.value?.id == courseId) return
         lifecycleScope.launch {
             try {
@@ -179,20 +149,13 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 private enum class OverlayScreen {
-    AddCourse,
-    AllTables,
-    EditTable,
-    ThemeColor,
-    MoreSettings,
-    Export,
-    Reminder,
-    About
+    AddCourse, AllTables, EditTable, Theme, ThemeColor, MoreSettings, Export, Reminder, About
 }
 
 @Composable
 private fun AppRoot(
-    darkMode: Boolean = false,
-    onToggleDark: () -> Unit = {},
+    themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
+    onThemeModeChange: (String) -> Unit = {},
     deepLinkCourse: CourseEntity? = null,
     onDeepLinkConsumed: () -> Unit = {},
     pendingImportText: String? = null,
@@ -202,161 +165,66 @@ private fun AppRoot(
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
     var overlayScreen by remember { mutableStateOf<OverlayScreen?>(null) }
     var editTableId by remember { mutableStateOf<Long?>(null) }
-    // 新建未保存课表的临时 id：进入 EditTable 时若为非空，按返回会丢弃这张表（删除 + 回滚选中状态）
     var pendingNewTableId by remember { mutableStateOf<Long?>(null) }
-    // 记录新建课表前的默认表 id，作为 discard 时的回退目标
     var previousDefaultTableId by remember { mutableStateOf<Long?>(null) }
-    // 是否自动弹出导入 sheet (由外部 VIEW intent 触发)
     var autoImportTriggered by remember { mutableStateOf(false) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
 
-    // 小组件 deep link 触发：拉到了课程 → 切到编辑模式
     androidx.compose.runtime.LaunchedEffect(deepLinkCourse?.id) {
-        if (deepLinkCourse != null) {
-            editingCourse = deepLinkCourse
-            onDeepLinkConsumed()
-        }
+        if (deepLinkCourse != null) { editingCourse = deepLinkCourse; onDeepLinkConsumed() }
     }
-
-    // 外部 app (文件管理器等) 打开 json 课表时: 切到 Manage tab + 触发 ImportSheet 自动预览
     androidx.compose.runtime.LaunchedEffect(pendingImportText) {
-        if (!autoImportTriggered && pendingImportText != null) {
-            autoImportTriggered = true
-            currentTab = Tab.Manage
-        }
+        if (!autoImportTriggered && pendingImportText != null) { autoImportTriggered = true; currentTab = Tab.Manage }
     }
 
     BackHandler(enabled = overlayScreen != null || editingCourse != null) {
-        // pendingNewTableId 不为空时，Back 也走 discard 路径
         if (pendingNewTableId != null) {
-            val discardId = pendingNewTableId!!
-            val fallback = previousDefaultTableId
-            pendingNewTableId = null
-            previousDefaultTableId = null
+            val discardId = pendingNewTableId!!; val fallback = previousDefaultTableId
+            pendingNewTableId = null; previousDefaultTableId = null
             mainVm.discardNewTable(discardId, fallback)
-            overlayScreen = null
-            editTableId = null
-        } else {
-            overlayScreen = null
-            editingCourse = null
-            editTableId = null
-        }
+            overlayScreen = null; editTableId = null
+        } else { overlayScreen = null; editingCourse = null; editTableId = null }
     }
 
-    // ----- AddCourse -----
     if (overlayScreen == OverlayScreen.AddCourse || editingCourse != null) {
-        AddCourseScreen(
-            onBack = {
-                overlayScreen = null
-                editingCourse = null
-            },
-            onSaved = {
-                overlayScreen = null
-                editingCourse = null
-                currentTab = Tab.Schedule
-            },
-            editingCourse = editingCourse
-        )
+        AddCourseScreen(onBack = { overlayScreen = null; editingCourse = null }, onSaved = { overlayScreen = null; editingCourse = null; currentTab = Tab.Schedule }, editingCourse = editingCourse)
         return
     }
-
-    // ----- AllTables -----
     if (overlayScreen == OverlayScreen.AllTables) {
-        AllTablesScreen(
-            onBack = { overlayScreen = null },
-            onOpenEditTable = { tableId ->
-                editTableId = tableId
-                pendingNewTableId = null  // 从 AllTables 进入的都不是新建
-                overlayScreen = OverlayScreen.EditTable
-            }
-        )
+        AllTablesScreen(onBack = { overlayScreen = null }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable })
         return
     }
-
-    // ----- EditTable (unified) -----
     if (overlayScreen == OverlayScreen.EditTable) {
-        EditTableScreen(
-            tableId = editTableId,
-            pendingNewTableId = pendingNewTableId,
-            onBack = {
-                overlayScreen = null
-                editTableId = null
-                pendingNewTableId = null
-                previousDefaultTableId = null
-            },
-            onDiscardPending = {
-                // 丢弃新建未保存的表：删除并回滚到之前选中的表
-                val discardId = pendingNewTableId
-                val fallback = previousDefaultTableId
-                pendingNewTableId = null
-                previousDefaultTableId = null
-                if (discardId != null) {
-                    mainVm.discardNewTable(discardId, fallback)
-                }
-                overlayScreen = null
-                editTableId = null
-            },
-            onSaved = {
-                // 保存成功：把当前选中切到新表，再清 pending 标记
-                val newId = pendingNewTableId
-                pendingNewTableId = null
-                previousDefaultTableId = null
-                if (newId != null) {
-                    mainVm.selectTable(newId)
-                }
-                overlayScreen = null
-                editTableId = null
-                currentTab = Tab.Schedule
-            },
-            onDeleted = {
-                pendingNewTableId = null
-                previousDefaultTableId = null
-                overlayScreen = null
-                editTableId = null
-                currentTab = Tab.Mine
-            }
-        )
+        EditTableScreen(tableId = editTableId, pendingNewTableId = pendingNewTableId, onBack = { overlayScreen = null; editTableId = null; pendingNewTableId = null; previousDefaultTableId = null }, onDiscardPending = {
+            val discardId = pendingNewTableId; val fallback = previousDefaultTableId; pendingNewTableId = null; previousDefaultTableId = null
+            if (discardId != null) mainVm.discardNewTable(discardId, fallback)
+            overlayScreen = null; editTableId = null
+        }, onSaved = { overlayScreen = null; editTableId = null; pendingNewTableId = null; previousDefaultTableId = null }, onDeleted = { overlayScreen = null; editTableId = null; currentTab = Tab.Schedule })
         return
     }
-
-    // ----- ThemeColor -----
+    if (overlayScreen == OverlayScreen.Theme) {
+        ThemeSettingsScreen(onBack = { overlayScreen = null }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
+        return
+    }
     if (overlayScreen == OverlayScreen.ThemeColor) {
-        ThemeColorScreen(
-            onBack = { overlayScreen = null }
-        )
+        ThemeColorScreen(onBack = { overlayScreen = null })
         return
     }
-
-    // ----- MoreSettings -----
     if (overlayScreen == OverlayScreen.MoreSettings) {
-        MoreSettingsScreen(
-            onBack = { overlayScreen = null }
-        )
+        MoreSettingsScreen(onBack = { overlayScreen = null })
         return
     }
-
-    // ----- Export -----
     if (overlayScreen == OverlayScreen.Export) {
-        ExportScreen(
-            onBack = { overlayScreen = null }
-        )
+        ExportScreen(onBack = { overlayScreen = null })
         return
     }
-
-    // ----- Reminder -----
     if (overlayScreen == OverlayScreen.Reminder) {
-        ReminderScreen(
-            onBack = { overlayScreen = null }
-        )
+        ReminderScreen(onBack = { overlayScreen = null })
         return
     }
-
-    // ----- About -----
     if (overlayScreen == OverlayScreen.About) {
-        AboutScreen(
-            onBack = { overlayScreen = null }
-        )
+        AboutScreen(onBack = { overlayScreen = null })
         return
     }
 
@@ -366,69 +234,29 @@ private fun AppRoot(
         bottomBar = {
             PillNavigationBar {
                 Tab.entries.forEach { tab ->
-                    PillNavItem(
-                        icon = tab.icon,
-                        label = stringResource(tab.labelRes),
-                        selected = currentTab == tab,
-                        onClick = { currentTab = tab }
-                    )
+                    PillNavItem(icon = tab.icon, label = stringResource(tab.labelRes), selected = currentTab == tab, onClick = { currentTab = tab })
                 }
             }
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (currentTab) {
-                Tab.Schedule -> ScheduleScreen(
-                    onGoImport = { currentTab = Tab.Manage },
-                    onManualAdd = { overlayScreen = OverlayScreen.AddCourse },
-                    onEditCourse = { course -> editingCourse = course }
-                )
+                Tab.Schedule -> ScheduleScreen(onGoImport = { currentTab = Tab.Manage }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCourse = { course -> editingCourse = course })
                 Tab.Today -> TodayScreen()
                 Tab.Manage -> {
-                    val ctx = androidx.compose.ui.platform.LocalContext.current
-                    ManagementPage(
-                        autoShowImportSheet = pendingImportText != null,
-                        onJwImportRequested = {
-                            val intent = android.content.Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)
-                            ctx.startActivity(intent)
-                        },
-                        onCreateNewTableRequested = {
-                            mainScope.launch {
-                                val previousId = mainVm.state.value.currentTable?.id
-                                // commitSelection=false: 创建临时表但不切换选中状态，
-                                // 避免管理页"当前课表"卡片在编辑页打开前瞬间跳到"默认X"。
-                                val newId = mainVm.createEmptyTable(commitSelection = false)
-                                previousDefaultTableId = previousId
-                                pendingNewTableId = newId
-                                editTableId = newId
-                                overlayScreen = OverlayScreen.EditTable
-                            }
-                        },
-                        onManualAdd = { overlayScreen = OverlayScreen.AddCourse },
-                        onEditCurrentTable = {
-                            editTableId = null
-                            pendingNewTableId = null  // 编辑已有表
-                            overlayScreen = OverlayScreen.EditTable
-                        },
-                        onImported = {
-                            // refresh handled by ViewModel; just close any open overlays
-                        },
-                        onOpenEditTable = { tableId ->
-                            editTableId = tableId
-                            overlayScreen = OverlayScreen.EditTable
+                    val ctx = LocalContext.current
+                    ManagementPage(autoShowImportSheet = pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = {
+                        mainScope.launch {
+                            val previousId = mainVm.state.value.currentTable?.id
+                            val newId = mainVm.createEmptyTable(commitSelection = false)
+                            previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; overlayScreen = OverlayScreen.EditTable
                         }
-                    )
+                    }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable }, onImported = {}, onOpenEditTable = { tableId -> editTableId = tableId; overlayScreen = OverlayScreen.EditTable })
                 }
                 Tab.Mine -> MineScreen(
-                    darkMode = darkMode,
-                    onToggleDark = onToggleDark,
-                    onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
-                    onOpenThemeColor = { overlayScreen = OverlayScreen.ThemeColor },
-                    onOpenMoreSettings = { overlayScreen = OverlayScreen.MoreSettings },
-                    onOpenExport = { overlayScreen = OverlayScreen.Export },
-                    onOpenReminder = { overlayScreen = OverlayScreen.Reminder },
-                    onOpenAbout = { overlayScreen = OverlayScreen.About }
-                )
+                    themeMode = themeMode, onThemeModeChange = onThemeModeChange, onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
+                    onOpenTheme = { overlayScreen = OverlayScreen.Theme }, onOpenMoreSettings = { overlayScreen = OverlayScreen.MoreSettings },
+                    onOpenExport = { overlayScreen = OverlayScreen.Export }, onOpenReminder = { overlayScreen = OverlayScreen.Reminder }, onOpenAbout = { overlayScreen = OverlayScreen.About })
             }
         }
     }

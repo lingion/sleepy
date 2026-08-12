@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.component
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -20,6 +21,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -28,17 +30,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.SleepyTheme
 
-/**
- * Pill Navigation Bar — 仿 switchable.html .bottom-nav
- *
- *  ┌──────────────────────────────────────────┐
- *  │  [📅]   [📝]   [🔔]   [👤]              │  ← 圆角 pill indicator
- *  │  课表   任务   提醒   我的                │
- *  └──────────────────────────────────────────┘
- *
- * 容器: surface-container, 顶部 1dp outline-variant border
- * 选中: secondary-container pill, on-secondary-container 文字
- */
 @Composable
 fun PillNavigationBar(
     modifier: Modifier = Modifier,
@@ -82,7 +73,11 @@ fun PillNavItem(
 
     Column(
         modifier = modifier
-            .clickable(onClick = onClick)
+            .clickable(
+                onClick = onClick,
+                indication = null,
+                interactionSource = remember { MutableInteractionSource() }
+            )
             .padding(vertical = 4.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(4.dp)

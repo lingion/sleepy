@@ -16,7 +16,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.DarkMode
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.Notifications
@@ -26,19 +25,14 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,10 +52,10 @@ import kotlinx.coroutines.launch
 @Composable
 fun MineScreen(
     viewModel: ScheduleViewModel = viewModel(),
-    darkMode: Boolean = false,
-    onToggleDark: () -> Unit = {},
+    themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
+    onThemeModeChange: (String) -> Unit = {},
     onOpenAllTables: () -> Unit = {},
-    onOpenThemeColor: () -> Unit = {},
+    onOpenTheme: () -> Unit = {},
     onOpenMoreSettings: () -> Unit = {},
     onOpenExport: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
@@ -75,17 +69,15 @@ fun MineScreen(
 
     val showSnack: (String) -> Unit = { msg -> scope.launch { snackbar.showSnackbar(msg) } }
 
-    Scaffold(
-        modifier = Modifier.fillMaxSize().background(colors.background),
-        containerColor = colors.background,
-        snackbarHost = { SnackbarHost(snackbar) }
-    ) { padding ->
+    Box(
+        modifier = Modifier.fillMaxSize().background(colors.background)
+    ) {
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding),
+            modifier = Modifier.fillMaxSize(),
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // Header
+            // Header: "我的" + 副标题
             item {
                 Column {
                     Text(
@@ -119,72 +111,28 @@ fun MineScreen(
                         .clip(RoundedCornerShape(20.dp))
                         .background(colors.surfaceContainer)
                 ) {
-                    SettingsItem(
-                        icon = Icons.Outlined.Edit,
-                        label = stringResource(R.string.all_tables),
-                        onClick = onOpenAllTables
-                    )
+                    SettingsItem(icon = Icons.Outlined.Edit, label = stringResource(R.string.all_tables), onClick = onOpenAllTables)
                     Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Share,
-                        label = stringResource(R.string.mine_export),
-                        onClick = onOpenExport
-                    )
+                    SettingsItem(icon = Icons.Outlined.Share, label = stringResource(R.string.mine_export), onClick = onOpenExport)
                     Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Notifications,
-                        label = stringResource(R.string.reminder_title),
-                        onClick = onOpenReminder
-                    )
+                    SettingsItem(icon = Icons.Outlined.Notifications, label = stringResource(R.string.reminder_title), onClick = onOpenReminder)
                     Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.DarkMode,
-                        label = stringResource(R.string.mine_dark_mode),
-                        trailing = {
-                            Switch(
-                                checked = darkMode,
-                                onCheckedChange = { onToggleDark() },
-                                colors = SwitchDefaults.colors(
-                                    checkedThumbColor = colors.onPrimary,
-                                    checkedTrackColor = colors.primary
-                                )
-                            )
+                    SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_theme), onClick = onOpenTheme)
+                    Divider()
+                    SettingsItem(icon = Icons.Outlined.Refresh, label = stringResource(R.string.mine_refresh_widgets), onClick = {
+                        scope.launch {
+                            com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context)
+                            showSnack(context.getString(R.string.mine_refresh_widgets_done))
                         }
-                    )
+                    })
                     Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Palette,
-                        label = stringResource(R.string.mine_theme_color),
-                        onClick = onOpenThemeColor
-                    )
+                    SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_more_settings), onClick = onOpenMoreSettings)
                     Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Refresh,
-                        label = stringResource(R.string.mine_refresh_widgets),
-                        onClick = {
-                            scope.launch {
-                                com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context)
-                                showSnack(context.getString(R.string.mine_refresh_widgets_done))
-                            }
-                        }
-                    )
-                    Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Tune,
-                        label = stringResource(R.string.mine_more_settings),
-                        onClick = onOpenMoreSettings
-                    )
-                    Divider()
-                    SettingsItem(
-                        icon = Icons.Outlined.Info,
-                        label = stringResource(R.string.about_title),
-                        isLast = true,
-                        onClick = onOpenAbout
-                    )
+                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), isLast = true, onClick = onOpenAbout)
                 }
             }
-
         }
+        SnackbarHost(snackbar, modifier = Modifier.align(Alignment.BottomCenter))
     }
 }
 
@@ -192,11 +140,7 @@ fun MineScreen(
 private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
     val colors = SleepyTheme.colors
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(colors.surfaceContainer)
-            .padding(vertical = 18.dp, horizontal = 8.dp),
+        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -212,77 +156,29 @@ private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
 private fun StatItem(value: String, label: String) {
     val colors = SleepyTheme.colors
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(
-            text = value,
-            style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold),
-            color = colors.primary
-        )
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelSmall,
-            color = colors.onSurfaceVariant
-        )
+        Text(text = value, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = colors.primary)
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
     }
 }
 
 @Composable
-private fun SettingsItem(
-    icon: ImageVector,
-    label: String,
-    onClick: () -> Unit = {},
-    isLast: Boolean = false,
-    trailing: @Composable (() -> Unit)? = null
-) {
+private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}, isLast: Boolean = false, trailing: @Composable (() -> Unit)? = null) {
     val colors = SleepyTheme.colors
     Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clickable(onClick = onClick)
-            .padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(
-            modifier = Modifier
-                .size(40.dp)
-                .clip(RoundedCornerShape(12.dp))
-                .background(colors.primaryContainer),
-            contentAlignment = Alignment.Center
-        ) {
-            Icon(
-                imageVector = icon,
-                contentDescription = null,
-                tint = colors.onPrimaryContainer,
-                modifier = Modifier.size(20.dp)
-            )
+        Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
+            Icon(icon, null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
         }
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyLarge,
-            color = colors.onSurface,
-            modifier = Modifier
-                .weight(1f)
-                .padding(start = 16.dp)
-        )
-        if (trailing != null) {
-            trailing()
-        }
+        Text(label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.weight(1f).padding(start = 16.dp))
+        if (trailing != null) trailing()
     }
 }
 
 @Composable
 private fun Divider(vertical: Boolean = false) {
     val colors = SleepyTheme.colors
-    if (vertical) {
-        androidx.compose.material3.VerticalDivider(
-            modifier = Modifier
-                .height(36.dp)
-                .width(1.dp),
-            color = colors.outline.copy(alpha = 0.18f)
-        )
-    } else {
-        androidx.compose.material3.HorizontalDivider(
-            modifier = Modifier.padding(start = 72.dp),
-            color = colors.outline.copy(alpha = 0.18f)
-        )
-    }
+    if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = 0.18f))
+    else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = 0.18f))
 }

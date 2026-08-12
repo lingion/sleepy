@@ -1,5 +1,6 @@
 package com.lingion.sleepy.widget
 
+import android.appwidget.AppWidgetManager
 import android.content.Context
 import android.content.Intent
 import androidx.glance.GlanceId
@@ -11,7 +12,10 @@ import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
@@ -36,7 +40,8 @@ class TwoDayWidget : GlanceAppWidget() {
     private suspend fun loadTwoDayData(context: Context): TwoDayData {
         val today = LocalDate.now()
         val tomorrow = today.plusDays(1)
-        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context)
+        val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
         val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
         return try {
             val app = SleepyApp.get()
@@ -70,4 +75,18 @@ class TwoDayWidget : GlanceAppWidget() {
 
 class TwoDayWidgetReceiver : GlanceAppWidgetReceiver() {
     override val glanceAppWidget: GlanceAppWidget = TwoDayWidget()
+
+    /** ★ OPPO 救援 — 见 TodayWidgetReceiver.onUpdate 注释 */
+    private val rescueScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+        val pending = goAsync()
+        rescueScope.launch {
+            try {
+                WidgetUpdater.updateGlanceWidgetDirect(context, appWidgetIds, glanceAppWidget)
+            } finally {
+                pending.finish()
+            }
+        }
+    }
 }

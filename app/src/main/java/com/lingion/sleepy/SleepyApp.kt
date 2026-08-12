@@ -1,6 +1,7 @@
 package com.lingion.sleepy
 
 import android.app.Application
+import android.content.res.Configuration
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.widget.WidgetUpdater
@@ -44,6 +45,34 @@ class SleepyApp : Application() {
         )
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             WidgetUpdater.notifyDataChanged(this@SleepyApp)
+        }
+    }
+
+    /**
+     * ★ 系统【运行时】切换深/浅色模式时联动刷新小组件。
+     *
+     * Android 原生行为:configuration change 会让系统重发 APPWIDGET_UPDATE 给所有 widget。
+     * 但在 OPPO ColorOS 上,GlanceAppWidgetReceiver.onUpdate() 内部调
+     * GlanceAppWidgetManager.getGlanceIdBy(appWidgetId) 返回 null → 静默跳过 →
+     * 3 个 Glance widget(Today/WeekList/TwoDay)不重渲染 → 不跟随系统主题。
+     * WeekGrid(RemoteViews)不受影响,系统 update 正常触发其 onUpdate。
+     *
+     * 这里主动调 notifyDataChanged() 走双路刷新(广播 + Glance 直更),
+     * 绕过 GlanceAppWidgetManager 的 OPPO bug,强制 3 个 Glance widget 重渲染。
+     */
+    private var lastNightMode: Int = -1
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        // 仅夜间模式变化(深/浅色切换)才触发刷新,避免屏幕旋转等无谓刷新
+        val curNight = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+        if (curNight != lastNightMode) {
+            lastNightMode = curNight
+            CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+                try {
+                    WidgetUpdater.notifyDataChanged(this@SleepyApp)
+                } catch (_: Throwable) {}
+            }
         }
     }
 
