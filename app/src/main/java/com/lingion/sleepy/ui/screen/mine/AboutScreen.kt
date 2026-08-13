@@ -115,10 +115,11 @@ fun AboutScreen(onBack: () -> Unit) {
     }
 
     LaunchedEffect(uiState) {
-        if (uiState is UpdateUiState.NoUpdate) {
+        val current = uiState
+        if (current is UpdateUiState.NoUpdate) {
             scope.launch {
                 snackbarHostState.showSnackbar(
-                    context.getString(R.string.about_update_latest, (uiState as UpdateUiState.NoUpdate).version)
+                    context.getString(R.string.about_update_latest, current.version)
                 )
             }
             uiState = UpdateUiState.Idle
