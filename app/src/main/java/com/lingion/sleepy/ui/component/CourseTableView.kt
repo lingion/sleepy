@@ -35,7 +35,9 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
@@ -585,28 +587,36 @@ private fun DaySummaryCell(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Chip: 课程数 — 胶囊只允许一行高，文字撑不下时退化为纯数字
+        // Chip: 课程数 — 完整文字在列宽内换行就退化为纯数字，胶囊自动缩到数字宽度
         if (courses.isEmpty()) {
             Spacer(modifier = Modifier.height(14.dp))
         } else {
             val fullText = stringResource(R.string.course_count_format, courses.size)
-            var compact by remember { mutableStateOf(false) }
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(chipBg)
-                    .padding(horizontal = 7.dp, vertical = 2.dp)
-                    .align(Alignment.CenterHorizontally)
-            ) {
-                Text(
-                    text = if (compact) courses.size.toString() else fullText,
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                    color = chipFg,
-                    maxLines = 1,
-                    onTextLayout = { r ->
-                        if (!compact && r.lineCount > 1) compact = true
-                    }
+            val numberText = courses.size.toString()
+            val chipStyle = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold)
+            val textMeasurer = rememberTextMeasurer()
+            BoxWithConstraints(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                val chipPaddingPx = with(LocalDensity.current) { 14.dp.toPx() }.toInt()
+                val availablePx = with(LocalDensity.current) { maxWidth.toPx() }.toInt()
+                val layoutResult = textMeasurer.measure(
+                    text = fullText,
+                    style = chipStyle,
+                    constraints = Constraints(maxWidth = (availablePx - chipPaddingPx).coerceAtLeast(0))
                 )
+                val showNumberOnly = layoutResult.lineCount > 1
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(chipBg)
+                        .padding(horizontal = 7.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (showNumberOnly) numberText else fullText,
+                        style = chipStyle,
+                        color = chipFg,
+                        maxLines = 1
+                    )
+                }
             }
         }
 
