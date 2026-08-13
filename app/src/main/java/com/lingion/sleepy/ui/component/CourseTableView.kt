@@ -36,6 +36,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -733,12 +734,11 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     val context = androidx.compose.ui.platform.LocalContext.current
     val bg = pickCourseColor(course, palette)
 
-    val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
-        TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-            ?: course.shortNodeString(context)
-    } else {
-        course.shortNodeString(context)
-    }
+    // time 模式：「08:00-\n08:45」——时间段在连字符后折行，行距收紧读成一个整体
+    val timeParts = if (displayMode == "time" && timeJson.isNotBlank()) {
+        TimeTableUtils.courseTimeParts(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
+    } else null
+    val nodeLabel = course.shortNodeString(context)
 
     Row(
         modifier = Modifier
@@ -749,16 +749,39 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
             .padding(9.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = timeLabel,
-            style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-            color = colors.onSurface,
-            modifier = Modifier.width(42.dp)
+        // 时间/节次标签统一用 12sp/16sp —— 与右侧课程名(labelMedium)字号完全一致,
+        // 字体 ascent/descent 相同 → 首行顶部天然对齐,无需靠 LineHeightStyle 修补。
+        val sideStyle = SleepyTextStyle.smallMeta().copy(
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            fontWeight = FontWeight.SemiBold
         )
+        if (timeParts != null) {
+            Text(
+                text = "${timeParts.first}-\n${timeParts.second}",
+                style = sideStyle,
+                color = colors.onSurface,
+                modifier = Modifier.width(42.dp)
+            )
+        } else {
+            Text(
+                text = nodeLabel,
+                style = sideStyle,
+                color = colors.onSurface,
+                modifier = Modifier.width(42.dp),
+                maxLines = 1
+            )
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = course.courseName,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeightStyle = LineHeightStyle(
+                        alignment = LineHeightStyle.Alignment.Top,
+                        trim = LineHeightStyle.Trim.FirstLineTop
+                    )
+                ),
                 color = colors.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
