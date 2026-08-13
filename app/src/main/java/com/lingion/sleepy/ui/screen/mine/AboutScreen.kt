@@ -110,9 +110,8 @@ fun AboutScreen(onBack: () -> Unit) {
         }
     }
 
-    fun cancelDownload(version: String, changelog: String, url: String) {
+    fun cancelDownload() {
         downloadJob?.cancel()
-        uiState = UpdateUiState.UpdateAvailable(version, changelog, url)
     }
 
     LaunchedEffect(uiState) {
@@ -341,7 +340,7 @@ fun AboutScreen(onBack: () -> Unit) {
         state = uiState,
         onDismiss = { uiState = UpdateUiState.Idle },
         onDownload = { version, changelog, url -> startDownload(version, changelog, url) },
-        onCancelDownload = { version, changelog, url -> cancelDownload(version, changelog, url) },
+        onCancelDownload = { cancelDownload() },
         onRetry = { version, changelog, url -> startDownload(version, changelog, url) }
     )
 }

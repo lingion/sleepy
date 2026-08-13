@@ -35,7 +35,7 @@ fun UpdateChangelogDialog(
     state: UpdateUiState,
     onDismiss: () -> Unit,
     onDownload: (String, String, String) -> Unit,
-    onCancelDownload: (String, String, String) -> Unit,
+    onCancelDownload: () -> Unit,
     onRetry: (String, String, String) -> Unit
 ) {
     val colors = SleepyTheme.colors
@@ -124,7 +124,7 @@ fun UpdateChangelogDialog(
                             }
                         }
                         is UpdateUiState.Downloading -> {
-                            Button(onClick = { onCancelDownload(version, changelog, url) }) {
+                            Button(onClick = { onCancelDownload() }) {
                                 Text(stringResource(R.string.update_cancel))
                             }
                         }
