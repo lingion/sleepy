@@ -82,6 +82,7 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        com.lingion.sleepy.util.UpdateManager.cleanOldApk(this)
         enableEdgeToEdge()
         handleDeepLinkIntent(intent)
         setContent {
