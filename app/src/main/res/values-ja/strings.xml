@@ -4,6 +4,7 @@
     <string name="widget_week_list_label">今週の時間割（リスト）</string>
     <string name="widget_week_grid_label">今週の時間割（グリッド）</string>
     <string name="widget_twoday_label">直近2日</string>
+    <string name="widget_week_view_label">今週の時間割（ビュー）</string>
 
     <string name="tab_schedule">時間割</string>
     <string name="tab_today">今日</string>

@@ -63,6 +63,7 @@ object WidgetUpdater {
                 WeekGridWidgetProvider::class.java,
                 TodayWidgetReceiver::class.java,
                 WeekListWidgetReceiver::class.java,
+                WeekViewWidgetReceiver::class.java,
                 TwoDayWidgetReceiver::class.java
             )
             for (receiver in remoteViewsReceivers) {

@@ -4,6 +4,7 @@
     <string name="widget_week_list_label">Esta semana (lista)</string>
     <string name="widget_week_grid_label">Esta semana (cuadrícula)</string>
     <string name="widget_twoday_label">Próximos dos días</string>
+    <string name="widget_week_view_label">Esta semana (vista)</string>
 
     <string name="tab_schedule">Horario</string>
     <string name="tab_today">Hoy</string>

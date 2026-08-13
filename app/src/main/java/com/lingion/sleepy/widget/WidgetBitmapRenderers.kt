@@ -372,6 +372,117 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * WeekView widget 渲染 — 7 列日列 (无课程颜色版)
+     * 与 renderWeekList 布局完全一致, 唯一区别:
+     * 课程胶囊背景用 surfaceVariant (无 pickCourseColor), 文字用 onSurfaceVariant。
+     */
+    fun renderWeekView(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val w = (wDp * density).toInt()
+        val h = (hDp * density).toInt()
+        val s = scheme(context, data.themeKey, data.isDark)
+
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(c)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        // 背景
+        p.color = s.bg
+        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
+            20f * density, 20f * density, p)
+
+        val outerPad = 6f * density
+        val innerW = w - outerPad * 2
+        val innerH = h - outerPad * 2
+
+        if (!data.hasTable || data.days.isEmpty()) {
+            p.color = s.onSurface
+            p.textSize = 15f * density
+            canvas.drawText(SleepyApp.get().getString(R.string.widget_create_schedule),
+                outerPad, outerPad + 15f * density, p)
+            return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+        }
+
+        val todayDow = LocalDate.now().dayOfWeek.value
+        val colGap = 4f * density
+        val colW = (innerW - colGap * 6) / 7
+
+        // 7 列
+        for (i in data.days.indices) {
+            val day = data.days[i]
+            val x = outerPad + i * (colW + colGap)
+            val isToday = day.dayOfWeek == todayDow
+            val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
+
+            // 列背景
+            p.color = cardBg
+            canvas.drawRoundRect(RectF(x, outerPad, x + colW, outerPad + innerH),
+                14f * density, 14f * density, p)
+
+            var cy = outerPad + 12f * density
+
+            // 星期标题
+            p.color = if (isToday) s.onPrimaryContainer else s.onSurface
+            p.textSize = 12f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val title = dayLabels[day.dayOfWeek]
+            val tw = p.measureText(title)
+            canvas.drawText(title, x + (colW - tw) / 2, cy, p)
+            cy += 14f * density
+
+            // 课程数量 chip
+            if (day.courses.isNotEmpty()) {
+                val chipText = "${day.courses.size} 门"
+                p.color = s.surfaceVariant
+                val chipW = (chipText.length * 6f + 12f) * density
+                val chipH = 14f * density
+                canvas.drawRoundRect(RectF(x + (colW - chipW) / 2, cy, x + (colW - chipW) / 2 + chipW, cy + chipH),
+                    50f, 50f, p)
+                p.color = s.onSurfaceVariant
+                p.textSize = 9f * density
+                val ctw = p.measureText(chipText)
+                val chipFm = p.fontMetrics
+                val chipBaseline = cy + (chipH - (chipFm.descent - chipFm.ascent)) / 2f - chipFm.ascent
+                canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
+                cy += chipH + 6f * density
+
+                // 课程列表 — 每门课带 surfaceVariant 胶囊背景 (无课程颜色)
+                p.textSize = 9f * density
+                p.typeface = Typeface.DEFAULT
+                val coursePad = 3f * density
+                val courseRowH = 16f * density
+                val courseGap = 3f * density
+                day.courses.forEachIndexed { idx, course ->
+                    val name = course.courseName
+                    // ★ 无色胶囊背景 (surfaceVariant, 不用 pickCourseColor)
+                    val bgColor = s.surfaceVariant
+                    p.color = bgColor
+                    canvas.drawRoundRect(
+                        RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
+                        4f * density, 4f * density, p)
+                    // 课程名 — ★ onSurfaceVariant (搭配 surfaceVariant 背景)
+                    p.color = s.onSurfaceVariant
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    val maxTextWidth = colW - coursePad * 2 - 4f * density
+                    val displayName = if (p.measureText(name) > maxTextWidth) {
+                        var n = name
+                        while (n.isNotEmpty() && p.measureText("$n…") > maxTextWidth) n = n.dropLast(1)
+                        "$n…"
+                    } else name
+                    val fm = p.fontMetrics
+                    val textBaseline = cy + (courseRowH - (fm.descent - fm.ascent)) / 2f - fm.ascent
+                    canvas.drawText(displayName, x + coursePad + 2f * density, textBaseline, p)
+                    p.typeface = Typeface.DEFAULT
+                    cy += courseRowH + courseGap
+                }
+            }
+        }
+
+        return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+    }
+
+    /**
      * TwoDay widget 渲染 — 今天 + 明天 (左右两栏竖排)
      * 用户反馈: 不要把第二天堆在底下 → 改成左列今天 / 右列明天 并排
      */
