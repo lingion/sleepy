@@ -368,7 +368,7 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "第${slot.label}节",
+                text = stringResource(R.string.period_format_node, slot.label),
                 style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
                 maxLines = 1
