@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -581,10 +585,12 @@ private fun DaySummaryCell(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Chip: 课程数
+        // Chip: 课程数 — 胶囊只允许一行高，文字撑不下时退化为纯数字
         if (courses.isEmpty()) {
             Spacer(modifier = Modifier.height(14.dp))
         } else {
+            val fullText = stringResource(R.string.course_count_format, courses.size)
+            var compact by remember { mutableStateOf(false) }
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(50))
@@ -593,9 +599,13 @@ private fun DaySummaryCell(
                     .align(Alignment.CenterHorizontally)
             ) {
                 Text(
-                    text = stringResource(R.string.course_count_format, courses.size),
+                    text = if (compact) courses.size.toString() else fullText,
                     style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                    color = chipFg
+                    color = chipFg,
+                    maxLines = 1,
+                    onTextLayout = { r ->
+                        if (!compact && r.lineCount > 1) compact = true
+                    }
                 )
             }
         }

@@ -297,7 +297,7 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d–%2$d節</string>
     <string name="section_single">第%1$d 節</string>
-    <string name="mine_theme">主题</string>
+    <string name="mine_theme">主題</string>
     <string name="theme_appearance">外观</string>
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>

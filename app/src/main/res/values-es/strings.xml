@@ -297,7 +297,7 @@
     <string name="day_short_7">D</string>
     <string name="section_node_format">Hora %1$d–%2$d</string>
     <string name="section_single">Hora %1$d</string>
-    <string name="mine_theme">主题</string>
+    <string name="mine_theme">Tema</string>
     <string name="theme_appearance">外观</string>
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
