@@ -255,7 +255,7 @@ class CourseNotificationScheduler(private val context: Context) {
         val notifyEpoch = classStart - minutes * 60_000L
         val svc = Intent(app, FluidCloudService::class.java).apply {
             putExtra("courseName", hit.courseName)
-            putExtra("room", hit.room.ifBlank { "上课地点" })
+            putExtra("room", hit.room.ifBlank { app.getString(R.string.default_room) })
             putExtra("teacher", hit.teacher)
             putExtra("startTime", st)
             putExtra("notifyEpoch", notifyEpoch)

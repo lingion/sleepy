@@ -81,15 +81,22 @@ object TimeTableUtils {
      *  找不到节点则返回 null。
      */
     fun courseTimeString(courseStartNode: Int, courseStep: Int, timeJson: String, ownTime: Boolean = false, startTime: String = "", endTime: String = ""): String? {
+        val parts = courseTimeParts(courseStartNode, courseStep, timeJson, ownTime, startTime, endTime)
+        return parts?.let { "${it.first}-${it.second}" }
+    }
+
+    /** 课程的 (开始时间, 结束时间)，用于需要分行渲染的场景。
+     *  逻辑同 [courseTimeString]，但返回拆分后的两部分，避免外层再 split。 */
+    fun courseTimeParts(courseStartNode: Int, courseStep: Int, timeJson: String, ownTime: Boolean = false, startTime: String = "", endTime: String = ""): Pair<String, String>? {
         if (ownTime && startTime.isNotBlank() && endTime.isNotBlank()) {
-            return "$startTime-$endTime"
+            return Pair(startTime, endTime)
         }
         val nodes = parseNodes(timeJson)
         if (nodes.isEmpty()) return null
         val endNode = courseStartNode + courseStep - 1
         val first = nodes.find { it.node == courseStartNode } ?: return null
         val last = nodes.find { it.node == endNode } ?: return null
-        return "${formatTime(first.start)}-${formatTime(last.end)}"
+        return Pair(formatTime(first.start), formatTime(last.end))
     }
 
     private fun formatTime(t: LocalTime): String =

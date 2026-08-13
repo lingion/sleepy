@@ -130,8 +130,8 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit) {
             ) {
                 Text(
                     when (m) {
-                        Mode.Manual -> "手动模式"
-                        Mode.Auto -> "自动模式"
+                        Mode.Manual -> stringResource(R.string.mode_manual)
+                        Mode.Auto -> stringResource(R.string.mode_auto)
                     },
                     style = MaterialTheme.typography.bodyMedium,
                     fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,

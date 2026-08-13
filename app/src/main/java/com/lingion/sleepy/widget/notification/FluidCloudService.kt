@@ -17,8 +17,8 @@ import com.lingion.sleepy.util.AppPrefs
  */
 class FluidCloudService : Service() {
     private val handler = Handler(Looper.getMainLooper())
-    private var courseName = "课程"
-    private var room = "上课地点"
+    private var courseName = ""
+    private var room = ""
     private var teacher = ""
     private var startTime = ""
     private var notifyEpoch = 0L
@@ -37,8 +37,8 @@ class FluidCloudService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        courseName = intent?.getStringExtra("courseName") ?: "课程"
-        room = intent?.getStringExtra("room").orEmpty().ifBlank { "上课地点" }
+        courseName = intent?.getStringExtra("courseName") ?: getString(R.string.default_course_name)
+        room = intent?.getStringExtra("room").orEmpty().ifBlank { getString(R.string.default_room) }
         teacher = intent?.getStringExtra("teacher").orEmpty()
         startTime = intent?.getStringExtra("startTime").orEmpty()
         notifyEpoch = intent?.getLongExtra("notifyEpoch", 0L) ?: 0L

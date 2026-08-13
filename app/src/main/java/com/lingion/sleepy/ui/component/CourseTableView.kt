@@ -20,6 +20,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
@@ -31,9 +35,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
+import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.res.stringResource
+import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -54,7 +63,7 @@ data class TimeSlot(
     val nodeStart: Int,
     val nodeEnd: Int
 ) {
-    val nodeString: String get() = "第$nodeStart-${nodeEnd}节"
+    val nodeString: String get() = "$nodeStart-$nodeEnd"
     val timeString: String get() = "$displayStart-$displayEnd"
 }
 
@@ -218,7 +227,7 @@ private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "第${slot.label}节",
+                    text = stringResource(R.string.period_format_node, slot.label),
                     style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                     color = colors.onSurface,
                     maxLines = 1
@@ -289,11 +298,12 @@ private fun CourseOverlayCard(
                 overflow = TextOverflow.Ellipsis
             )
             if (steps > 1) {
+                val nodeFallback = "${course.startNode}-${course.startNode + steps - 1}"
                 val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
                     TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-                        ?: "${course.startNode}-${course.startNode + steps - 1}节"
+                        ?: nodeFallback
                 } else {
-                    "${course.startNode}-${course.startNode + steps - 1}节"
+                    nodeFallback
                 }
                 Text(
                     text = timeLabel,
@@ -306,7 +316,7 @@ private fun CourseOverlayCard(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.chineseDay(day), modifier: Modifier = Modifier) {
+private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.localizedDay(day, androidx.compose.ui.platform.LocalContext.current), modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
@@ -340,7 +350,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
                 )
             } else {
                 Text(
-                    text = if (courseCount == 0) "无课" else "$courseCount 门",
+                    text = if (courseCount == 0) stringResource(R.string.no_course) else stringResource(R.string.course_count_format, courseCount),
                     style = SleepyTextStyle.micro(),
                     color = subFg,
                     maxLines = 1
@@ -365,7 +375,7 @@ private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     ) {
         Column(horizontalAlignment = Alignment.CenterHorizontally) {
             Text(
-                text = "第${slot.label}节",
+                text = stringResource(R.string.period_format_node, slot.label),
                 style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
                 maxLines = 1
@@ -421,7 +431,7 @@ private fun SpannedTimeHeadCell(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
-                    text = "第${slot.label}节",
+                    text = stringResource(R.string.period_format_node, slot.label),
                     style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
                     color = colors.onSurface,
                     maxLines = 1
@@ -554,6 +564,7 @@ private fun DaySummaryCell(
     modifier: Modifier = Modifier
 ) {
     val colors = SleepyTheme.colors
+    val context = androidx.compose.ui.platform.LocalContext.current
     val bg = if (isToday) colors.primaryContainer else colors.surfaceContainer
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
     // Chip: solid surfaceVariant with full alpha for dark mode readability
@@ -569,7 +580,7 @@ private fun DaySummaryCell(
     ) {
         // 日期
         Text(
-            text = DateUtils.chineseDay(day),
+            text = DateUtils.localizedDay(day, context),
             style = SleepyTextStyle.dayLabel(),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -577,22 +588,36 @@ private fun DaySummaryCell(
 
         Spacer(modifier = Modifier.height(6.dp))
 
-        // Chip: 课程数
+        // Chip: 课程数 — 完整文字在列宽内换行就退化为纯数字，胶囊自动缩到数字宽度
         if (courses.isEmpty()) {
             Spacer(modifier = Modifier.height(14.dp))
         } else {
-            Box(
-                modifier = Modifier
-                    .clip(RoundedCornerShape(50))
-                    .background(chipBg)
-                    .padding(horizontal = 7.dp, vertical = 2.dp)
-                    .align(Alignment.CenterHorizontally)
-            ) {
-                Text(
-                    text = "${courses.size} 门",
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                    color = chipFg
+            val fullText = stringResource(R.string.course_count_format, courses.size)
+            val numberText = courses.size.toString()
+            val chipStyle = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold)
+            val textMeasurer = rememberTextMeasurer()
+            BoxWithConstraints(modifier = Modifier.align(Alignment.CenterHorizontally)) {
+                val chipPaddingPx = with(LocalDensity.current) { 14.dp.toPx() }.toInt()
+                val availablePx = with(LocalDensity.current) { maxWidth.toPx() }.toInt()
+                val layoutResult = textMeasurer.measure(
+                    text = fullText,
+                    style = chipStyle,
+                    constraints = Constraints(maxWidth = (availablePx - chipPaddingPx).coerceAtLeast(0))
                 )
+                val showNumberOnly = layoutResult.lineCount > 1
+                Box(
+                    modifier = Modifier
+                        .clip(RoundedCornerShape(50))
+                        .background(chipBg)
+                        .padding(horizontal = 7.dp, vertical = 2.dp)
+                ) {
+                    Text(
+                        text = if (showNumberOnly) numberText else fullText,
+                        style = chipStyle,
+                        color = chipFg,
+                        maxLines = 1
+                    )
+                }
             }
         }
 
@@ -659,6 +684,7 @@ private fun DetailDayCard(
     onCourseClick: (CourseEntity) -> Unit
 ) {
     val colors = SleepyTheme.colors
+    val context = androidx.compose.ui.platform.LocalContext.current
 
     Column(
         modifier = Modifier
@@ -679,7 +705,7 @@ private fun DetailDayCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = DateUtils.chineseDay(day) + if (isToday) " · 今天" else "",
+                text = DateUtils.localizedDay(day, context) + if (isToday) stringResource(R.string.today_suffix) else "",
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface
             )
@@ -687,7 +713,7 @@ private fun DetailDayCard(
 
         if (courses.isEmpty()) {
             Text(
-                text = "${DateUtils.chineseDay(day)} · 无课程",
+                text = DateUtils.localizedDay(day, context) + stringResource(R.string.no_course_today),
                 style = SleepyTextStyle.smallMeta().copy(fontSize = 12.sp, lineHeight = 16.sp),
                 color = colors.onSurfaceVariant
             )
@@ -708,12 +734,11 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     val context = androidx.compose.ui.platform.LocalContext.current
     val bg = pickCourseColor(course, palette)
 
-    val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
-        TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-            ?: course.shortNodeString(context)
-    } else {
-        course.shortNodeString(context)
-    }
+    // time 模式：「08:00-\n08:45」——时间段在连字符后折行，行距收紧读成一个整体
+    val timeParts = if (displayMode == "time" && timeJson.isNotBlank()) {
+        TimeTableUtils.courseTimeParts(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
+    } else null
+    val nodeLabel = course.shortNodeString(context)
 
     Row(
         modifier = Modifier
@@ -724,16 +749,39 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
             .padding(9.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(
-            text = timeLabel,
-            style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-            color = colors.onSurface,
-            modifier = Modifier.width(42.dp)
+        // 时间/节次标签统一用 12sp/16sp —— 与右侧课程名(labelMedium)字号完全一致,
+        // 字体 ascent/descent 相同 → 首行顶部天然对齐,无需靠 LineHeightStyle 修补。
+        val sideStyle = SleepyTextStyle.smallMeta().copy(
+            fontSize = 12.sp,
+            lineHeight = 16.sp,
+            fontWeight = FontWeight.SemiBold
         )
+        if (timeParts != null) {
+            Text(
+                text = "${timeParts.first}-\n${timeParts.second}",
+                style = sideStyle,
+                color = colors.onSurface,
+                modifier = Modifier.width(42.dp)
+            )
+        } else {
+            Text(
+                text = nodeLabel,
+                style = sideStyle,
+                color = colors.onSurface,
+                modifier = Modifier.width(42.dp),
+                maxLines = 1
+            )
+        }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = course.courseName,
-                style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.labelMedium.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    lineHeightStyle = LineHeightStyle(
+                        alignment = LineHeightStyle.Alignment.Top,
+                        trim = LineHeightStyle.Trim.FirstLineTop
+                    )
+                ),
                 color = colors.onSurface,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis

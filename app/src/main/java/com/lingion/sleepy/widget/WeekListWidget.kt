@@ -1,11 +1,13 @@
 package com.lingion.sleepy.widget
 
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.util.Log
 import androidx.glance.GlanceId
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.provideContent
 import com.lingion.sleepy.MainActivity
@@ -15,16 +17,18 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 /**
- * 周视图小组件（胶囊列表样式）— 每天一行，课程名竖排
+ * Glance 版 WeekListWidget — 仅供 WidgetRenderActivity (调试预览) 使用。
+ * 桌面实际渲染走 [WeekListWidgetReceiver] (同步 RemoteViews)。
  */
 class WeekListWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val data = withContext(Dispatchers.IO) { loadWeekData(context) }
+        val data = withContext(Dispatchers.IO) { loadDataSync(context) }
         android.util.Log.d("WeekListWidget", "provideGlance: hasTable=${data.hasTable}, days=${data.days.size}, " +
             "courses=${data.days.sumOf { it.courses.size }}, perDay=${data.days.map { "${it.dayOfWeek}:${it.courses.size}" }}")
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
@@ -38,47 +42,83 @@ class WeekListWidget : GlanceAppWidget() {
         }
     }
 
-    internal suspend fun loadWeekData(context: Context): WeekData {
-        val today = LocalDate.now()
-        val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
-        val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
-        return try {
-            val app = SleepyApp.get()
-            val repo = app.repository
-            val table = WidgetTableResolver.resolveCurrentTable()
-            if (table == null) {
-                WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
-            } else {
-                val week = DateUtils.currentWeek(table.startDate, today)
-                val days = (1..7).map { dayOfWeek ->
-                    val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
-                    val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
-                    val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                    DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
+    companion object {
+        /**
+         * 同步版数据加载 — 7 列日列课程。与 WeekGridWidgetProvider.loadWeekData 结构一致。
+         */
+        fun loadDataSync(context: Context): WeekData {
+            val today = LocalDate.now()
+            val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
+            val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
+            return try {
+                runBlocking {
+                    val app = SleepyApp.get()
+                    val repo = app.repository
+                    val table = WidgetTableResolver.resolveCurrentTable()
+                    if (table == null) {
+                        WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
+                    } else {
+                        val week = DateUtils.currentWeek(table.startDate, today)
+                        val days = (1..7).map { dayOfWeek ->
+                            val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
+                            val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                            val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                            DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
+                        }
+                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey)
+                    }
                 }
-                WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey)
+            } catch (_: Throwable) {
+                WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
             }
-        } catch (_: Throwable) {
-            WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
         }
     }
 }
 
-class WeekListWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = WeekListWidget()
+/**
+ * ★ 桌面 WeekList 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+ * 原因见 [TodayWidgetReceiver] 注释。失去 LazyColumn 滚动 → 静态 bitmap。
+ */
+class WeekListWidgetReceiver : AppWidgetProvider() {
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    /** ★ OPPO 救援 — 见 TodayWidgetReceiver.onUpdate 注释 */
-    private val rescueScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+    override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
         val pending = goAsync()
-        rescueScope.launch {
+        ioScope.launch {
             try {
-                WidgetUpdater.updateGlanceWidgetDirect(context, appWidgetIds, glanceAppWidget)
-            } finally {
-                pending.finish()
-            }
+                for (id in ids) {
+                    try {
+                        RemoteViewsWidgetHelper.renderAndPush(
+                            context, awm, id, TAG,
+                            loadData = { WeekListWidget.loadDataSync(context) },
+                            renderBitmap = { data, wDp, hDp ->
+                                WidgetBitmapRenderers.renderWeekList(context, data, wDp, hDp)
+                            }
+                        )
+                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                }
+            } finally { pending.finish() }
         }
     }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context, awm: AppWidgetManager, id: Int, newOptions: Bundle
+    ) {
+        val pending = goAsync()
+        ioScope.launch {
+            try {
+                RemoteViewsWidgetHelper.renderAndPush(
+                    context, awm, id, TAG,
+                    loadData = { WeekListWidget.loadDataSync(context) },
+                    renderBitmap = { data, wDp, hDp ->
+                        WidgetBitmapRenderers.renderWeekList(context, data, wDp, hDp)
+                    }
+                )
+            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            finally { pending.finish() }
+        }
+    }
+
+    companion object { private const val TAG = "WeekListRV" }
 }

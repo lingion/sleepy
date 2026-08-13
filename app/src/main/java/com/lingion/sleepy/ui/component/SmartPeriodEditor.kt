@@ -37,6 +37,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
@@ -45,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.data.entity.BreakOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
+import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
 
@@ -76,7 +78,7 @@ fun SmartPeriodEditor(
     ) {
         // ===== 输入区 =====
         Text(
-            "输入",
+            stringResource(R.string.edit_period_input),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             color = colors.onSurface,
@@ -89,15 +91,15 @@ fun SmartPeriodEditor(
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp)
         ) {
             NumberField(
-                label = "每节时长",
-                unit = "分钟",
+                label = stringResource(R.string.edit_period_duration_label),
+                unit = stringResource(R.string.unit_minutes),
                 value = config.periodMinutes,
                 onValueChange = { onConfigChange(config.copy(periodMinutes = it.coerceAtLeast(1))) },
                 modifier = Modifier.weight(1f)
             )
             NumberField(
-                label = "总节数",
-                unit = "节",
+                label = stringResource(R.string.edit_period_total_label),
+                unit = stringResource(R.string.unit_periods),
                 value = config.totalPeriods,
                 onValueChange = { newN ->
                     onConfigChange(config.copy(totalPeriods = newN.coerceAtLeast(1)))
@@ -110,7 +112,7 @@ fun SmartPeriodEditor(
         TimePickerField(
             value = config.startTime,
             onValueChange = { onConfigChange(config.copy(startTime = it)) },
-            label = "第一节开始",
+            label = stringResource(R.string.edit_period_first_start),
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
 
@@ -120,13 +122,13 @@ fun SmartPeriodEditor(
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             AddBreakChip(
-                label = "小课间",
+                label = stringResource(R.string.short_break),
                 color = colors.tertiary,
                 onAdd = { onConfigChange(config.copy(breaks = config.breaks + BreakOption(10, false))) },
                 modifier = Modifier.weight(1f)
             )
             AddBreakChip(
-                label = "大课间",
+                label = stringResource(R.string.long_break),
                 color = colors.primary,
                 onAdd = { onConfigChange(config.copy(breaks = config.breaks + BreakOption(30, true))) },
                 modifier = Modifier.weight(1f)
@@ -136,7 +138,7 @@ fun SmartPeriodEditor(
         // ===== Break 分组区 =====
         if (config.breaks.isNotEmpty()) {
             Text(
-                "课间分配（点击切换）",
+                stringResource(R.string.break_assign_hint),
                 style = MaterialTheme.typography.titleSmall,
                 fontWeight = FontWeight.Medium,
                 color = colors.onSurface,
@@ -178,7 +180,7 @@ fun SmartPeriodEditor(
         // ===== 预览 =====
         Spacer(Modifier.height(16.dp))
         Text(
-            "预览",
+            stringResource(R.string.preview),
             style = MaterialTheme.typography.titleSmall,
             fontWeight = FontWeight.Medium,
             color = colors.onSurface,
@@ -230,7 +232,7 @@ private fun BreakGroupSection(
             )
             NumberField(
                 label = "",
-                unit = "分钟",
+                unit = stringResource(R.string.unit_minutes),
                 value = breakOption.minutes,
                 onValueChange = onMinuteChange,
                 modifier = Modifier.width(110.dp)
@@ -238,7 +240,7 @@ private fun BreakGroupSection(
             IconButton(onClick = onDelete, modifier = Modifier.size(28.dp)) {
                 Icon(
                     Icons.Outlined.Close,
-                    contentDescription = "删除",
+                    contentDescription = stringResource(R.string.delete),
                     tint = colors.onSurfaceVariant,
                     modifier = Modifier.size(18.dp)
                 )
@@ -274,7 +276,7 @@ private fun BreakGroupSection(
             }
         } else {
             Text(
-                "总节数至少 2 节才能分配课间",
+                stringResource(R.string.break_min_two_periods),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 4.dp)
@@ -319,8 +321,11 @@ private fun PreviewList(
     val colors = SleepyTheme.colors
     val rows = config.derive()
     val transMins = config.effectiveTransitionMinutes()
+    val shortBreakLabel = stringResource(R.string.short_break)
+    val longBreakLabel = stringResource(R.string.long_break)
+    val breakContinuous0 = stringResource(R.string.break_continuous_0)
     if (rows.isEmpty()) {
-        Text("(空)", color = colors.onSurfaceVariant)
+        Text(stringResource(R.string.empty_placeholder), color = colors.onSurfaceVariant)
         return
     }
     Column(
@@ -332,15 +337,15 @@ private fun PreviewList(
     ) {
         rows.forEachIndexed { i, slot ->
             Text(
-                "第${slot.node}节  ${slot.start} ~ ${slot.end}",
+                stringResource(R.string.period_time_range, slot.node, slot.start, slot.end),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurface
             )
             if (i < transMins.size) {
                 val mins = transMins[i]
                 val (text, color) = when {
-                    mins == 0 -> "  ↓ 0 分钟连续" to colors.onSurfaceVariant
-                    else -> "  ↓ ${mins} 分钟${if (assigns[i] != null && assigns[i]!! in config.breaks.indices && config.breaks[assigns[i]!!].isLong) "大课间" else "小课间"}" to colors.onSurfaceVariant
+                    mins == 0 -> breakContinuous0 to colors.onSurfaceVariant
+                    else -> stringResource(R.string.break_continuous_n, mins, if (assigns[i] != null && assigns[i]!! in config.breaks.indices && config.breaks[assigns[i]!!].isLong) longBreakLabel else shortBreakLabel) to colors.onSurfaceVariant
                 }
                 Text(
                     text,
@@ -429,7 +434,7 @@ private fun AddBreakChip(
                     tint = color
                 )
                 Spacer(Modifier.width(4.dp))
-                Text("添加$label")
+                Text(stringResource(R.string.add_label, label))
             }
         },
         colors = FilterChipDefaults.filterChipColors(

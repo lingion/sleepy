@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.util.Log
-import androidx.core.graphics.toColorInt
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -50,47 +49,36 @@ object WidgetBitmapRenderers {
         val cPractice: Int
     )
 
-    private fun scheme(isDark: Boolean): Scheme {
-        return if (isDark) Scheme(
-            bg = "#1C1B1F".toColorInt(),
-            surface = "#1C1B1F".toColorInt(),
-            primary = "#D0BCFF".toColorInt(),
-            primaryContainer = "#4F378B".toColorInt(),
-            onPrimaryContainer = "#EADDFF".toColorInt(),
-            onSurface = "#E6E1E5".toColorInt(),
-            onSurfaceVariant = "#CAC4D0".toColorInt(),
-            surfaceContainer = "#211F26".toColorInt(),
-            surfaceVariant = "#49454F".toColorInt(),
-            isDark = true,
-            cPrimary = 0xFF4F378B.toInt(),
-            cSecondary = 0xFF4A4458.toInt(),
-            cTertiary = 0xFF633B48.toInt(),
-            cEnglish = 0xFF1E3A4D.toInt(),
-            cMilitary = 0xFF2E3F26.toInt(),
-            cPhysics = 0xFF4D3A1E.toInt(),
-            cHistory = 0xFF4D2828.toInt(),
-            cPsychology = 0xFF352B4D.toInt(),
-            cPractice = 0xFF1E3D32.toInt()
-        ) else Scheme(
-            bg = "#FDFCFF".toColorInt(),
-            surface = "#FDFCFF".toColorInt(),
-            primary = "#6750A4".toColorInt(),
-            primaryContainer = "#EADDFF".toColorInt(),
-            onPrimaryContainer = "#21005D".toColorInt(),
-            onSurface = "#1D1B20".toColorInt(),
-            onSurfaceVariant = "#79747E".toColorInt(),
-            surfaceContainer = "#F3EDF7".toColorInt(),
-            surfaceVariant = "#E7E0EC".toColorInt(),
-            isDark = false,
-            cPrimary = 0xFFEADDFF.toInt(),
-            cSecondary = 0xFFE8DEF8.toInt(),
-            cTertiary = 0xFFFFD8E4.toInt(),
-            cEnglish = 0xFFD8F2FF.toInt(),
-            cMilitary = 0xFFE7F3DC.toInt(),
-            cPhysics = 0xFFFFE7C7.toInt(),
-            cHistory = 0xFFF7D9D9.toInt(),
-            cPsychology = 0xFFE6DDFB.toInt(),
-            cPractice = 0xFFD7F0E8.toInt()
+    /**
+     * ★ 主题色 — 走 resolveSchemePublic (与 4 个 widget 的 Glance composables 同一函数)
+     * 之前硬编码 Default 紫色 → 不跟随 app 主题/system 动态取色 → 移植到 RemoteViews 后仍是错的。
+     * 现在接收 themeKey, 完全对齐 WeekGridWidgetProvider.renderBitmap 的取色方式。
+     */
+    private fun scheme(context: Context, themeKey: String, isDark: Boolean): Scheme {
+        val s = resolveSchemePublic(context, themeKey, isDark)
+        fun androidx.compose.ui.graphics.Color.toIntArgb(): Int =
+            (0xFF shl 24) or ((this.red * 255).toInt() shl 16) or
+                ((this.green * 255).toInt() shl 8) or (this.blue * 255).toInt()
+        return Scheme(
+            bg = s.bg.toIntArgb(),
+            surface = s.surface.toIntArgb(),
+            primary = s.primary.toIntArgb(),
+            primaryContainer = s.primaryContainer.toIntArgb(),
+            onPrimaryContainer = s.onPrimaryContainer.toIntArgb(),
+            onSurface = s.onSurface.toIntArgb(),
+            onSurfaceVariant = s.onSurfaceVariant.toIntArgb(),
+            surfaceContainer = s.surfaceContainer.toIntArgb(),
+            surfaceVariant = s.surfaceVariant.toIntArgb(),
+            isDark = isDark,
+            cPrimary = s.coursePrimary.toIntArgb(),
+            cSecondary = s.courseSecondary.toIntArgb(),
+            cTertiary = s.courseTertiary.toIntArgb(),
+            cEnglish = s.courseEnglish.toIntArgb(),
+            cMilitary = s.courseMilitary.toIntArgb(),
+            cPhysics = s.coursePhysics.toIntArgb(),
+            cHistory = s.courseHistory.toIntArgb(),
+            cPsychology = s.coursePsychology.toIntArgb(),
+            cPractice = s.coursePractice.toIntArgb()
         )
     }
 
@@ -208,7 +196,7 @@ object WidgetBitmapRenderers {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
-        val s = scheme(data.isDark)
+        val s = scheme(context, data.themeKey, data.isDark)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -281,7 +269,7 @@ object WidgetBitmapRenderers {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
-        val s = scheme(data.isDark)
+        val s = scheme(context, data.themeKey, data.isDark)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -384,6 +372,126 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * WeekView widget 渲染 — 7 列日列, 复刻 DaySummaryCell (CourseTableView.kt L559-L642)
+     * 列卡片: primaryContainer(今天) / surfaceContainer(其他), 14dp 圆角
+     * 课程列表: 纯文本无胶囊背景, take(5), onSurfaceVariant 色, 2dp 间距
+     */
+    fun renderWeekView(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val w = (wDp * density).toInt()
+        val h = (hDp * density).toInt()
+        val s = scheme(context, data.themeKey, data.isDark)
+
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(c)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        // 背景
+        p.color = s.bg
+        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
+            20f * density, 20f * density, p)
+
+        val outerPad = 6f * density
+        val innerW = w - outerPad * 2
+        val innerH = h - outerPad * 2
+
+        if (!data.hasTable || data.days.isEmpty()) {
+            p.color = s.onSurface
+            p.textSize = 15f * density
+            canvas.drawText(SleepyApp.get().getString(R.string.widget_create_schedule),
+                outerPad, outerPad + 15f * density, p)
+            return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+        }
+
+        val todayDow = LocalDate.now().dayOfWeek.value
+        val colGap = 4f * density
+        val colW = (innerW - colGap * 6) / 7
+
+        // 7 列
+        for (i in data.days.indices) {
+            val day = data.days[i]
+            val x = outerPad + i * (colW + colGap)
+            val isToday = day.dayOfWeek == todayDow
+            val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
+
+            // 列背景
+            p.color = cardBg
+            canvas.drawRoundRect(RectF(x, outerPad, x + colW, outerPad + innerH),
+                14f * density, 14f * density, p)
+
+            var cy = outerPad + 12f * density
+
+            // 星期标题
+            p.color = if (isToday) s.onPrimaryContainer else s.onSurface
+            p.textSize = 12f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val title = dayLabels[day.dayOfWeek]
+            val tw = p.measureText(title)
+            canvas.drawText(title, x + (colW - tw) / 2, cy, p)
+            cy += 14f * density
+
+            // 课程数量 chip
+            if (day.courses.isNotEmpty()) {
+                val chipText = "${day.courses.size} 门"
+                p.color = s.surfaceVariant
+                val chipW = (chipText.length * 6f + 12f) * density
+                val chipH = 14f * density
+                canvas.drawRoundRect(RectF(x + (colW - chipW) / 2, cy, x + (colW - chipW) / 2 + chipW, cy + chipH),
+                    50f, 50f, p)
+                p.color = s.onSurfaceVariant
+                p.textSize = 9f * density
+                val ctw = p.measureText(chipText)
+                val chipFm = p.fontMetrics
+                val chipBaseline = cy + (chipH - (chipFm.descent - chipFm.ascent)) / 2f - chipFm.ascent
+                canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
+                cy += chipH + 4f * density  // 4dp gap (DaySummaryCell L624)
+
+                // 课程 mini-list — 最多2行换行 + 课程间分隔线
+                p.textSize = 9f * density
+                p.typeface = Typeface.DEFAULT
+                p.style = Paint.Style.FILL
+                val textPad = 4f * density
+                val maxTextWidth = colW - textPad * 2
+                val courseGap = 2f * density  // spacedBy(2.dp)
+                val fm = p.fontMetrics
+                val lineH = fm.descent - fm.ascent
+                val courses = day.courses.take(5)
+                courses.forEachIndexed { idx, course ->
+                    val name = course.courseName
+                    // today → onPrimaryContainer@0.82alpha, 其他 → onSurfaceVariant
+                    p.color = if (isToday)
+                        (0xD1 shl 24) or (s.onPrimaryContainer and 0x00FFFFFF)
+                    else
+                        s.onSurfaceVariant
+
+                    val lines = wrapMax2Lines(name, p, maxTextWidth)
+                    lines.forEach { line ->
+                        canvas.drawText(line, x + textPad, cy - fm.ascent, p)
+                        cy += lineH
+                    }
+
+                    // 课程间分隔线 (首门前/末门后不画)
+                    if (idx < courses.size - 1) {
+                        cy += courseGap / 2f
+                        p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x20000000
+                        p.style = Paint.Style.STROKE
+                        p.strokeWidth = 0.5f * density
+                        canvas.drawLine(x + textPad, cy, x + colW - textPad, cy, p)
+                        p.style = Paint.Style.FILL
+                        p.strokeWidth = 0f
+                        cy += courseGap / 2f
+                    } else {
+                        cy += courseGap
+                    }
+                }
+            }
+        }
+
+        return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+    }
+
+    /**
      * TwoDay widget 渲染 — 今天 + 明天 (左右两栏竖排)
      * 用户反馈: 不要把第二天堆在底下 → 改成左列今天 / 右列明天 并排
      */
@@ -391,7 +499,7 @@ object WidgetBitmapRenderers {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
-        val s = scheme(data.isDark)
+        val s = scheme(context, data.themeKey, data.isDark)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -473,5 +581,49 @@ object WidgetBitmapRenderers {
         }
 
         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+    }
+
+    /**
+     * Canvas 手动换行: 最多2行, 超出截断 "…".
+     * CJK 按字符断行; Latin 在空格处断行.
+     */
+    private fun wrapMax2Lines(
+        text: String,
+        paint: Paint,
+        maxWidth: Float
+    ): List<String> {
+        val charsFit = paint.breakText(text, true, maxWidth, null)
+        if (charsFit <= 0) return listOf("…")  // 列极窄: 连一个字都放不下
+        if (charsFit >= text.length) return listOf(text)
+
+        // 找行1断点: 优先空格, 否则字符边界
+        val lastSpace = text.lastIndexOf(' ', charsFit)
+        val line1End: Int
+        val remainderStart: Int
+        if (lastSpace > 0 && lastSpace > charsFit * 4 / 5) {
+            line1End = lastSpace
+            remainderStart = lastSpace + 1
+        } else {
+            line1End = charsFit
+            remainderStart = charsFit
+        }
+
+        val line1 = text.substring(0, line1End)
+        val remainder = text.substring(remainderStart)
+        if (remainder.isEmpty()) return listOf(line1)
+
+        val charsFit2 = paint.breakText(remainder, true, maxWidth, null)
+        if (charsFit2 >= remainder.length) return listOf(line1, remainder)
+
+        // 行2超宽 → 截断 "…"
+        var lo = 0
+        var hi = remainder.length
+        while (lo < hi) {
+            val mid = (lo + hi + 1) / 2
+            if (paint.measureText(remainder.substring(0, mid) + "…") <= maxWidth) lo = mid
+            else hi = mid - 1
+        }
+        val line2 = if (lo == 0) "…" else remainder.substring(0, lo) + "…"
+        return listOf(line1, line2)
     }
 }
