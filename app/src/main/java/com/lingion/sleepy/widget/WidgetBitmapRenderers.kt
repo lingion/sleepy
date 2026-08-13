@@ -8,7 +8,6 @@ import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
 import android.util.Log
-import androidx.core.graphics.toColorInt
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -50,47 +49,36 @@ object WidgetBitmapRenderers {
         val cPractice: Int
     )
 
-    private fun scheme(isDark: Boolean): Scheme {
-        return if (isDark) Scheme(
-            bg = "#1C1B1F".toColorInt(),
-            surface = "#1C1B1F".toColorInt(),
-            primary = "#D0BCFF".toColorInt(),
-            primaryContainer = "#4F378B".toColorInt(),
-            onPrimaryContainer = "#EADDFF".toColorInt(),
-            onSurface = "#E6E1E5".toColorInt(),
-            onSurfaceVariant = "#CAC4D0".toColorInt(),
-            surfaceContainer = "#211F26".toColorInt(),
-            surfaceVariant = "#49454F".toColorInt(),
-            isDark = true,
-            cPrimary = 0xFF4F378B.toInt(),
-            cSecondary = 0xFF4A4458.toInt(),
-            cTertiary = 0xFF633B48.toInt(),
-            cEnglish = 0xFF1E3A4D.toInt(),
-            cMilitary = 0xFF2E3F26.toInt(),
-            cPhysics = 0xFF4D3A1E.toInt(),
-            cHistory = 0xFF4D2828.toInt(),
-            cPsychology = 0xFF352B4D.toInt(),
-            cPractice = 0xFF1E3D32.toInt()
-        ) else Scheme(
-            bg = "#FDFCFF".toColorInt(),
-            surface = "#FDFCFF".toColorInt(),
-            primary = "#6750A4".toColorInt(),
-            primaryContainer = "#EADDFF".toColorInt(),
-            onPrimaryContainer = "#21005D".toColorInt(),
-            onSurface = "#1D1B20".toColorInt(),
-            onSurfaceVariant = "#79747E".toColorInt(),
-            surfaceContainer = "#F3EDF7".toColorInt(),
-            surfaceVariant = "#E7E0EC".toColorInt(),
-            isDark = false,
-            cPrimary = 0xFFEADDFF.toInt(),
-            cSecondary = 0xFFE8DEF8.toInt(),
-            cTertiary = 0xFFFFD8E4.toInt(),
-            cEnglish = 0xFFD8F2FF.toInt(),
-            cMilitary = 0xFFE7F3DC.toInt(),
-            cPhysics = 0xFFFFE7C7.toInt(),
-            cHistory = 0xFFF7D9D9.toInt(),
-            cPsychology = 0xFFE6DDFB.toInt(),
-            cPractice = 0xFFD7F0E8.toInt()
+    /**
+     * ★ 主题色 — 走 resolveSchemePublic (与 4 个 widget 的 Glance composables 同一函数)
+     * 之前硬编码 Default 紫色 → 不跟随 app 主题/system 动态取色 → 移植到 RemoteViews 后仍是错的。
+     * 现在接收 themeKey, 完全对齐 WeekGridWidgetProvider.renderBitmap 的取色方式。
+     */
+    private fun scheme(context: Context, themeKey: String, isDark: Boolean): Scheme {
+        val s = resolveSchemePublic(context, themeKey, isDark)
+        fun androidx.compose.ui.graphics.Color.toIntArgb(): Int =
+            (0xFF shl 24) or ((this.red * 255).toInt() shl 16) or
+                ((this.green * 255).toInt() shl 8) or (this.blue * 255).toInt()
+        return Scheme(
+            bg = s.bg.toIntArgb(),
+            surface = s.surface.toIntArgb(),
+            primary = s.primary.toIntArgb(),
+            primaryContainer = s.primaryContainer.toIntArgb(),
+            onPrimaryContainer = s.onPrimaryContainer.toIntArgb(),
+            onSurface = s.onSurface.toIntArgb(),
+            onSurfaceVariant = s.onSurfaceVariant.toIntArgb(),
+            surfaceContainer = s.surfaceContainer.toIntArgb(),
+            surfaceVariant = s.surfaceVariant.toIntArgb(),
+            isDark = isDark,
+            cPrimary = s.coursePrimary.toIntArgb(),
+            cSecondary = s.courseSecondary.toIntArgb(),
+            cTertiary = s.courseTertiary.toIntArgb(),
+            cEnglish = s.courseEnglish.toIntArgb(),
+            cMilitary = s.courseMilitary.toIntArgb(),
+            cPhysics = s.coursePhysics.toIntArgb(),
+            cHistory = s.courseHistory.toIntArgb(),
+            cPsychology = s.coursePsychology.toIntArgb(),
+            cPractice = s.coursePractice.toIntArgb()
         )
     }
 
@@ -208,7 +196,7 @@ object WidgetBitmapRenderers {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
-        val s = scheme(data.isDark)
+        val s = scheme(context, data.themeKey, data.isDark)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -281,7 +269,7 @@ object WidgetBitmapRenderers {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
-        val s = scheme(data.isDark)
+        val s = scheme(context, data.themeKey, data.isDark)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -391,7 +379,7 @@ object WidgetBitmapRenderers {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
-        val s = scheme(data.isDark)
+        val s = scheme(context, data.themeKey, data.isDark)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)

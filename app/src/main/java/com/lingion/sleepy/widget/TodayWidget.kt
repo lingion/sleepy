@@ -1,12 +1,13 @@
 package com.lingion.sleepy.widget
 
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Bundle
+import android.util.Log
 import androidx.glance.GlanceId
-import androidx.glance.action.Action
 import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.GlanceAppWidgetReceiver
 import androidx.glance.appwidget.action.actionStartActivity
 import androidx.glance.appwidget.provideContent
 import com.lingion.sleepy.MainActivity
@@ -17,13 +18,17 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
+/**
+ * Glance 版 TodayWidget — 仅供 WidgetRenderActivity (调试预览) 使用。
+ * 桌面实际渲染走 [TodayWidgetReceiver] (同步 RemoteViews)。
+ */
 class TodayWidget : GlanceAppWidget() {
 
     override suspend fun provideGlance(context: Context, id: GlanceId) {
-        // DB 读必须在 IO 线程
         val data = withContext(Dispatchers.IO) { loadWidgetData(context) }
         val openAppIntent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
@@ -39,69 +44,92 @@ class TodayWidget : GlanceAppWidget() {
         }
     }
 
-    /**
-     * 拉数据组装 [WidgetData]：
-     * 1. 找默认课表
-     * 2. 算当前周次
-     * 3. 拉今天 day-of-week 的所有课程
-     * 4. 过滤掉不在当前周次的
-     * 5. 按节次排序
-     * 6. 读 app 的深色模式 → 喂给小组件配色
-     *
-     * 任何一步失败 / 无数据都返回安全的空状态。
-     */
     private suspend fun loadWidgetData(context: Context): WidgetData {
-        val today = LocalDate.now()
-        val dayOfWeek = DateUtils.todayDayOfWeek(today)
-        val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
-        val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
-        val themeMode = com.lingion.sleepy.util.AppPrefs.getThemeMode(context)
-        android.util.Log.d("TodayWidget", "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
-        return try {
-            val app = SleepyApp.get()
-            val repo = app.repository
+        return loadDataSync(context)
+    }
 
-            val table = WidgetTableResolver.resolveCurrentTable()
-            if (table == null) {
+    companion object {
+        /**
+         * 同步版数据加载 (runBlocking DB 读) — 供 Glance provideGlance 和 RemoteViews Receiver 共用。
+         */
+        fun loadDataSync(context: Context): WidgetData {
+            val today = LocalDate.now()
+            val dayOfWeek = DateUtils.todayDayOfWeek(today)
+            val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+            val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
+            val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
+            val themeMode = com.lingion.sleepy.util.AppPrefs.getThemeMode(context)
+            Log.d("TodayWidget", "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
+            return try {
+                runBlocking {
+                    val app = SleepyApp.get()
+                    val repo = app.repository
+                    val table = WidgetTableResolver.resolveCurrentTable()
+                    if (table == null) {
+                        WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
+                    } else {
+                        val week = DateUtils.currentWeek(table.startDate, today)
+                        val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                        val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        WidgetData(date = today, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey)
+                    }
+                }
+            } catch (_: Throwable) {
                 WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
-            } else {
-                val week = DateUtils.currentWeek(table.startDate, today)
-                val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
-                val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                WidgetData(date = today, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey)
             }
-        } catch (_: Throwable) {
-            WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
         }
     }
 }
 
-class TodayWidgetReceiver : GlanceAppWidgetReceiver() {
-    override val glanceAppWidget: GlanceAppWidget = TodayWidget()
+/**
+ * ★ 桌面 Today 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+ *
+ * 之前是 GlanceAppWidgetReceiver → provideGlance 异步 SessionWorker → OPPO OplusHansManager
+ * 冻结进程 → RemoteViews 从不生成 → 卡在 widget_loading 紫色布局 → 不跟随主题。
+ * 现在克隆 WeekGridWidgetProvider 模式: goAsync → 加载 → 画 bitmap → awm.updateAppWidget,
+ * 全程在冻结窗口前完成 → 秒刷 + 主题正确。
+ *
+ * 失去 Glance 交互(单课点击跳转/滚动) → 整个 widget 单击打开 app (与 WeekGrid 同取舍)。
+ */
+class TodayWidgetReceiver : AppWidgetProvider() {
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    /**
-     * ★ OPPO 救援: 父类 onUpdate 走 GlanceAppWidgetManager 查 glanceId → OPPO 上返回空
-     * → 静默跳过 → Glance widget 不重渲染 → 用户点刷新没反应 / 主题不跟随。
-     *
-     * 这里完全接管 onUpdate: goAsync() 续命 + 后台直接 widget.update(gid) 绕过该 bug。
-     * ★ 不调 super.onUpdate(): 父类内部会再走一遍有 OPPO bug 的管线(且抢同一 session 锁
-     *   与 rescue 串行排队 → 多等一轮 provideGlance)。rescue 已覆盖父类唯一职责(触发更新),
-     *   跳过它消除重复路径 → 刷新更快。
-     *
-     * 仅系统直发的 APPWIDGET_UPDATE(主题切换/系统周期刷新)走这里;
-     * App 内"刷新小组件"按钮走 WidgetUpdater.notifyDataChanged 的 Path B 直更,不经本方法。
-     */
-    private val rescueScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
-
-    override fun onUpdate(context: Context, appWidgetManager: AppWidgetManager, appWidgetIds: IntArray) {
+    override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
         val pending = goAsync()
-        rescueScope.launch {
+        ioScope.launch {
             try {
-                WidgetUpdater.updateGlanceWidgetDirect(context, appWidgetIds, glanceAppWidget)
-            } finally {
-                pending.finish()
-            }
+                for (id in ids) {
+                    try {
+                        RemoteViewsWidgetHelper.renderAndPush(
+                            context, awm, id, TAG,
+                            loadData = { TodayWidget.loadDataSync(context) },
+                            renderBitmap = { data, wDp, hDp ->
+                                WidgetBitmapRenderers.renderToday(context, data, wDp, hDp)
+                            }
+                        )
+                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                }
+            } finally { pending.finish() }
         }
     }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context, awm: AppWidgetManager, id: Int, newOptions: Bundle
+    ) {
+        val pending = goAsync()
+        ioScope.launch {
+            try {
+                RemoteViewsWidgetHelper.renderAndPush(
+                    context, awm, id, TAG,
+                    loadData = { TodayWidget.loadDataSync(context) },
+                    renderBitmap = { data, wDp, hDp ->
+                        WidgetBitmapRenderers.renderToday(context, data, wDp, hDp)
+                    }
+                )
+            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            finally { pending.finish() }
+        }
+    }
+
+    companion object { private const val TAG = "TodayWidgetRV" }
 }
