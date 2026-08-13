@@ -83,7 +83,7 @@ fun AboutScreen(onBack: () -> Unit) {
                         uiState = UpdateUiState.NoUpdate(info.version)
                     }
                 }
-                .onFailure { uiState = UpdateUiState.Failed(it.message ?: "未知错误") }
+                .onFailure { uiState = UpdateUiState.Failed(it.message ?: "未知错误", isCheckFailure = true) }
         }
     }
 
@@ -341,7 +341,11 @@ fun AboutScreen(onBack: () -> Unit) {
         onDismiss = { uiState = UpdateUiState.Idle },
         onDownload = { version, changelog, url -> startDownload(version, changelog, url) },
         onCancelDownload = { cancelDownload() },
-        onRetry = { version, changelog, url -> startDownload(version, changelog, url) }
+        onRetry = { version, changelog, url ->
+            val failed = uiState as? UpdateUiState.Failed
+            if (failed?.isCheckFailure == true) checkUpdate()
+            else startDownload(version, changelog, url)
+        }
     )
 }
 

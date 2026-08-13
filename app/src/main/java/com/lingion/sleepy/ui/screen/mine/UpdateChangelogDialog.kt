@@ -27,7 +27,7 @@ sealed class UpdateUiState {
     data class UpdateAvailable(val version: String, val changelog: String, val url: String) : UpdateUiState()
     data class Downloading(val progress: Int) : UpdateUiState()
     object Installing : UpdateUiState()
-    data class Failed(val message: String, val version: String = "", val changelog: String = "", val url: String = "") : UpdateUiState()
+    data class Failed(val message: String, val version: String = "", val changelog: String = "", val url: String = "", val isCheckFailure: Boolean = false) : UpdateUiState()
 }
 
 @Composable
@@ -73,10 +73,11 @@ fun UpdateChangelogDialog(
                 titleContentColor = colors.onSurface,
                 title = {
                     Text(
-                        if (state is UpdateUiState.Installing)
-                            stringResource(R.string.update_installing)
-                        else
-                            stringResource(R.string.update_found_title, version),
+                        when (state) {
+                            is UpdateUiState.Installing -> stringResource(R.string.update_installing)
+                            is UpdateUiState.Downloading -> stringResource(R.string.update_downloading, (state as UpdateUiState.Downloading).progress)
+                            else -> stringResource(R.string.update_found_title, version)
+                        },
                         style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold)
                     )
                 },
