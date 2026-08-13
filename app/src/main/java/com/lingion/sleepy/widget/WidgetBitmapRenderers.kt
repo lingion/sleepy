@@ -372,9 +372,9 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * WeekView widget 渲染 — 每天一行, 纯文字课程名列表 (无胶囊无彩色)。
-     * 复刻 v1.0.10 之前的 WeekDayRow 布局 (100% 对齐软件周视图的行列表)。
-     * 左边星期几 + 右边课程名竖排(最多 maxPerDay 门 + "+N"), 无课显示"无课"。
+     * WeekView widget 渲染 — 7 列日列 (无课程颜色版)
+     * 与 renderWeekList 布局完全一致, 唯一区别:
+     * 课程胶囊背景用 surfaceVariant (无 pickCourseColor), 文字用 onSurfaceVariant。
      */
     fun renderWeekView(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
         val density = context.resources.displayMetrics.density
@@ -392,73 +392,91 @@ object WidgetBitmapRenderers {
         canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
             20f * density, 20f * density, p)
 
-        val ctx = SleepyApp.get()
-        val pad = 14f * density
+        val outerPad = 6f * density
+        val innerW = w - outerPad * 2
+        val innerH = h - outerPad * 2
 
         if (!data.hasTable || data.days.isEmpty()) {
             p.color = s.onSurface
             p.textSize = 15f * density
-            canvas.drawText(ctx.getString(R.string.widget_create_schedule), pad, pad + 15f * density, p)
+            canvas.drawText(SleepyApp.get().getString(R.string.widget_create_schedule),
+                outerPad, outerPad + 15f * density, p)
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        // 标题
-        p.color = s.primary
-        p.textSize = 13f * density
-        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(ctx.getString(R.string.widget_week_view_label), pad, pad + 13f * density, p)
-
-        // 7 行 — 每天: 左 dayLabelW 星期几 + 右课程名竖排
         val todayDow = LocalDate.now().dayOfWeek.value
-        val dayLabelW = 36f * density
-        val titleH = 13f * density
-        val titleGap = 8f * density
-        val rowTop0 = pad + titleH + titleGap
-        val availH = h - rowTop0 - pad
-        val maxPerDay = 3
-        val lineH = 14f * density  // 课程名行高
-        val courseX = pad + dayLabelW + 4f * density
-        val courseMaxW = w - courseX - pad
+        val colGap = 4f * density
+        val colW = (innerW - colGap * 6) / 7
 
-        var rowY = rowTop0
-        for (day in data.days) {
+        // 7 列
+        for (i in data.days.indices) {
+            val day = data.days[i]
+            val x = outerPad + i * (colW + colGap)
             val isToday = day.dayOfWeek == todayDow
-            val rowH = availH / 7f
+            val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
 
-            // 星期几 (today 用 primary 加粗, 其他 onSurfaceVariant)
-            p.color = if (isToday) s.primary else s.onSurfaceVariant
-            p.textSize = 11f * density
-            p.typeface = Typeface.create(Typeface.DEFAULT, if (isToday) Typeface.BOLD else Typeface.NORMAL)
-            canvas.drawText(dayLabels[day.dayOfWeek], pad, rowY + 11f * density, p)
+            // 列背景
+            p.color = cardBg
+            canvas.drawRoundRect(RectF(x, outerPad, x + colW, outerPad + innerH),
+                14f * density, 14f * density, p)
 
-            // 课程名竖排
-            if (day.courses.isEmpty()) {
+            var cy = outerPad + 12f * density
+
+            // 星期标题
+            p.color = if (isToday) s.onPrimaryContainer else s.onSurface
+            p.textSize = 12f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val title = dayLabels[day.dayOfWeek]
+            val tw = p.measureText(title)
+            canvas.drawText(title, x + (colW - tw) / 2, cy, p)
+            cy += 14f * density
+
+            // 课程数量 chip
+            if (day.courses.isNotEmpty()) {
+                val chipText = "${day.courses.size} 门"
+                p.color = s.surfaceVariant
+                val chipW = (chipText.length * 6f + 12f) * density
+                val chipH = 14f * density
+                canvas.drawRoundRect(RectF(x + (colW - chipW) / 2, cy, x + (colW - chipW) / 2 + chipW, cy + chipH),
+                    50f, 50f, p)
                 p.color = s.onSurfaceVariant
-                p.textSize = 11f * density
+                p.textSize = 9f * density
+                val ctw = p.measureText(chipText)
+                val chipFm = p.fontMetrics
+                val chipBaseline = cy + (chipH - (chipFm.descent - chipFm.ascent)) / 2f - chipFm.ascent
+                canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
+                cy += chipH + 6f * density
+
+                // 课程列表 — 每门课带 surfaceVariant 胶囊背景 (无课程颜色)
+                p.textSize = 9f * density
                 p.typeface = Typeface.DEFAULT
-                canvas.drawText(ctx.getString(R.string.no_course), courseX, rowY + 11f * density, p)
-            } else {
-                p.color = s.onSurface
-                p.textSize = 11f * density
-                p.typeface = Typeface.DEFAULT
-                val visible = day.courses.take(maxPerDay)
-                visible.forEachIndexed { idx, course ->
-                    var name = course.courseName
-                    if (course.room.isNotBlank()) name = "$name ${course.room}"
-                    if (p.measureText(name) > courseMaxW) {
-                        while (name.isNotEmpty() && p.measureText("$name…") > courseMaxW) name = name.dropLast(1)
-                        name = "$name…"
-                    }
-                    canvas.drawText(name, courseX, rowY + (idx + 1) * lineH, p)
-                }
-                if (day.courses.size > maxPerDay) {
+                val coursePad = 3f * density
+                val courseRowH = 16f * density
+                val courseGap = 3f * density
+                day.courses.forEachIndexed { idx, course ->
+                    val name = course.courseName
+                    // ★ 无色胶囊背景 (surfaceVariant, 不用 pickCourseColor)
+                    val bgColor = s.surfaceVariant
+                    p.color = bgColor
+                    canvas.drawRoundRect(
+                        RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
+                        4f * density, 4f * density, p)
+                    // 课程名 — ★ onSurfaceVariant (搭配 surfaceVariant 背景)
                     p.color = s.onSurfaceVariant
-                    p.textSize = 10f * density
-                    canvas.drawText("+${day.courses.size - maxPerDay}",
-                        courseX, rowY + (visible.size + 1) * lineH, p)
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    val maxTextWidth = colW - coursePad * 2 - 4f * density
+                    val displayName = if (p.measureText(name) > maxTextWidth) {
+                        var n = name
+                        while (n.isNotEmpty() && p.measureText("$n…") > maxTextWidth) n = n.dropLast(1)
+                        "$n…"
+                    } else name
+                    val fm = p.fontMetrics
+                    val textBaseline = cy + (courseRowH - (fm.descent - fm.ascent)) / 2f - fm.ascent
+                    canvas.drawText(displayName, x + coursePad + 2f * density, textBaseline, p)
+                    p.typeface = Typeface.DEFAULT
+                    cy += courseRowH + courseGap
                 }
             }
-            rowY += rowH
         }
 
         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
