@@ -406,4 +406,36 @@
     <string name="settings_vert_punct">縦書き記号の最適化</string>
     <string name="settings_vert_punct_sub">科目名の縦書き表示時に（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
     <string name="widget_scroll_hint">↑ スクロールで続きを表示</string>
+    <!-- i18n: hardcoded string extraction -->
+    <string name="edit_period_input">入力</string>
+    <string name="edit_period_duration_label">1時限の時間</string>
+    <string name="unit_minutes">分</string>
+    <string name="edit_period_total_label">総時限数</string>
+    <string name="unit_periods">コマ</string>
+    <string name="edit_period_first_start">1時限目開始</string>
+    <string name="short_break">短い休み</string>
+    <string name="long_break">長い休み</string>
+    <string name="break_assign_hint">休み割り当て（タップで切替）</string>
+    <string name="preview">プレビュー</string>
+    <string name="break_min_two_periods">休みを割り当てるには最低2時限必要</string>
+    <string name="empty_placeholder">(空)</string>
+    <string name="period_format_node">第%1$s時限</string>
+    <string name="period_time_range">第%1$s時限  %2$s ~ %3$s</string>
+    <string name="break_continuous_0">  ↓ 0分連続</string>
+    <string name="break_continuous_n">  ↓ %1$d分 %2$s</string>
+    <string name="add_label">%1$sを追加</string>
+    <string name="mode_manual">手動モード</string>
+    <string name="mode_auto">自動モード</string>
+    <string name="label_from">開始</string>
+    <string name="schedule_jump_week">週にジャンプ</string>
+    <string name="schedule_empty_name">「%1$s」はまだ空です</string>
+    <string name="schedule_empty_name_hint">この時間割に科目を追加するか、新しい時間割をインポート</string>
+    <string name="course_count_format">%1$d コマ</string>
+    <string name="today_suffix"> ・今日</string>
+    <string name="no_course_today"> ・授業なし</string>
+    <string name="default_course_name">科目</string>
+    <string name="default_room">教室</string>
+    <string name="error_unknown">不明なエラー</string>
+    <string name="error_no_version_found">本サイトでもミラーでもバージョンが見つかりません</string>
+    <string name="error_empty_download">ダウンロードファイルが空です</string>
 </resources>

@@ -42,7 +42,7 @@ object UpdateManager {
         val page = readText(MIRROR_RELEASE)
         val tag = Regex("/lingion/sleepy/releases/tag/(v[0-9A-Za-z.+_-]+)").find(page)
             ?.groupValues?.get(1)
-            ?: throw IllegalStateException("主站和镜像都没找到最新版本")
+            ?: throw IllegalStateException(context.getString(com.lingion.sleepy.R.string.error_no_version_found))
         val version = tag.removePrefix("v")
         val url = "$MIRROR_PREFIX$tag/$abiAsset"
         val isUpdate = VersionUtils.compare(version, BuildConfig.VERSION_NAME) > 0
@@ -78,7 +78,7 @@ object UpdateManager {
             conn.disconnect()
         }
         if (!target.isFile || target.length() == 0L)
-            throw IllegalStateException("下载文件为空")
+            throw IllegalStateException(context.getString(com.lingion.sleepy.R.string.error_empty_download))
         target
     }
 

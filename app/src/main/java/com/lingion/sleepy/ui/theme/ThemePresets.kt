@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.theme
 
+import androidx.annotation.StringRes
 import androidx.compose.ui.graphics.Color
+import com.lingion.sleepy.R
 
 /**
  * 主题色预设 — 5 套静态 + 1 套"跟随系统"（由 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 特殊处理）
@@ -11,7 +13,7 @@ import androidx.compose.ui.graphics.Color
  */
 data class ThemePreset(
     val key: String,
-    val displayName: String,
+    @StringRes val nameRes: Int,
     val light: WakeUpColorScheme,
     val dark: WakeUpColorScheme
 )
@@ -28,7 +30,7 @@ object ThemePresets {
     /** 默认淡紫 — 保留 v1.0.6 行为 */
     val Default = ThemePreset(
         key = KEY_DEFAULT,
-        displayName = "默认淡紫",
+        nameRes = R.string.theme_name_default,
         light = LightScheme,
         dark = DarkScheme
     )
@@ -110,7 +112,7 @@ object ThemePresets {
     )
     val Spring = ThemePreset(
         key = KEY_SPRING,
-        displayName = "春绿",
+        nameRes = R.string.theme_name_spring,
         light = SpringLight,
         dark = SpringDark
     )
@@ -192,7 +194,7 @@ object ThemePresets {
     )
     val Ocean = ThemePreset(
         key = KEY_OCEAN,
-        displayName = "海蓝",
+        nameRes = R.string.theme_name_ocean,
         light = OceanLight,
         dark = OceanDark
     )
@@ -274,7 +276,7 @@ object ThemePresets {
     )
     val Peach = ThemePreset(
         key = KEY_PEACH,
-        displayName = "蜜桃粉",
+        nameRes = R.string.theme_name_peach,
         light = PeachLight,
         dark = PeachDark
     )
@@ -356,7 +358,7 @@ object ThemePresets {
     )
     val Slate = ThemePreset(
         key = KEY_SLATE,
-        displayName = "石板灰",
+        nameRes = R.string.theme_name_slate,
         light = SlateLight,
         dark = SlateDark
     )

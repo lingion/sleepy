@@ -270,7 +270,7 @@ private fun TopBar(
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
-                        text = "跳转到周次",
+                        text = stringResource(R.string.schedule_jump_week),
                         fontSize = 12.sp,
                         color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
@@ -353,12 +353,12 @@ private fun NoCourseState(
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Text(
-            text = "「$tableName」还是空的",
+            text = stringResource(R.string.schedule_empty_name, tableName),
             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
             color = colors.onSurface
         )
         Text(
-            text = "往这张课表里加课，或导入新的课表",
+            text = stringResource(R.string.schedule_empty_name_hint),
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )

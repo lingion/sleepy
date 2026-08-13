@@ -406,4 +406,36 @@
     <string name="settings_vert_punct">Optimización de puntuación vertical</string>
     <string name="settings_vert_punct_sub">Reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
     <string name="widget_scroll_hint">↑ Desliza para ver más</string>
+    <!-- i18n: hardcoded string extraction -->
+    <string name="edit_period_input">Entrada</string>
+    <string name="edit_period_duration_label">Duración por periodo</string>
+    <string name="unit_minutes">minutos</string>
+    <string name="edit_period_total_label">Períodos totales</string>
+    <string name="unit_periods">períodos</string>
+    <string name="edit_period_first_start">Primer periodo</string>
+    <string name="short_break">Pausa corta</string>
+    <string name="long_break">Pausa larga</string>
+    <string name="break_assign_hint">Asignación de pausas (toca para cambiar)</string>
+    <string name="preview">Vista previa</string>
+    <string name="break_min_two_periods">Necesitas al menos 2 períodos para asignar pausas</string>
+    <string name="empty_placeholder">(Vacío)</string>
+    <string name="period_format_node">Periodo %1$s</string>
+    <string name="period_time_range">Periodo %1$s  %2$s ~ %3$s</string>
+    <string name="break_continuous_0">  ↓ 0 min continuo</string>
+    <string name="break_continuous_n">  ↓ %1$d min %2$s</string>
+    <string name="add_label">Añadir %1$s</string>
+    <string name="mode_manual">Modo manual</string>
+    <string name="mode_auto">Modo automático</string>
+    <string name="label_from">Desde</string>
+    <string name="schedule_jump_week">Ir a semana</string>
+    <string name="schedule_empty_name">Horario "%1$s" está vacío</string>
+    <string name="schedule_empty_name_hint">Añade cursos o importa un nuevo horario</string>
+    <string name="course_count_format">%1$d cursos</string>
+    <string name="today_suffix"> · Hoy</string>
+    <string name="no_course_today"> · Sin clase</string>
+    <string name="default_course_name">Curso</string>
+    <string name="default_room">Ubicación</string>
+    <string name="error_unknown">Error desconocido</string>
+    <string name="error_no_version_found">No se encontró versión en sitio principal ni espejo</string>
+    <string name="error_empty_download">El archivo descargado está vacío</string>
 </resources>

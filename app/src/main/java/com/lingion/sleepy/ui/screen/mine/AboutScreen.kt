@@ -83,7 +83,7 @@ fun AboutScreen(onBack: () -> Unit) {
                         uiState = UpdateUiState.NoUpdate(info.version)
                     }
                 }
-                .onFailure { uiState = UpdateUiState.Failed(it.message ?: "未知错误", isCheckFailure = true) }
+                .onFailure { uiState = UpdateUiState.Failed(it.message ?: context.getString(R.string.error_unknown), isCheckFailure = true) }
         }
     }
 
@@ -103,7 +103,7 @@ fun AboutScreen(onBack: () -> Unit) {
                     uiState = UpdateUiState.UpdateAvailable(version, changelog, url)
                 } else {
                     uiState = UpdateUiState.Failed(
-                        e.message ?: "未知错误", version, changelog, url
+                        e.message ?: context.getString(R.string.error_unknown), version, changelog, url
                     )
                 }
             }

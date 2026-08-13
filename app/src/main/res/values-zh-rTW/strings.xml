@@ -406,4 +406,36 @@
     <string name="settings_vert_punct">直排標點最佳化</string>
     <string name="settings_vert_punct_sub">課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
     <string name="widget_scroll_hint">↑ 滑動查看更多</string>
+    <!-- i18n: hardcoded string extraction -->
+    <string name="edit_period_input">輸入</string>
+    <string name="edit_period_duration_label">每節時長</string>
+    <string name="unit_minutes">分鐘</string>
+    <string name="edit_period_total_label">總節數</string>
+    <string name="unit_periods">節</string>
+    <string name="edit_period_first_start">第一節開始</string>
+    <string name="short_break">小課間</string>
+    <string name="long_break">大課間</string>
+    <string name="break_assign_hint">課間分配（點擊切換）</string>
+    <string name="preview">預覽</string>
+    <string name="break_min_two_periods">總節數至少 2 節才能分配課間</string>
+    <string name="empty_placeholder">(空)</string>
+    <string name="period_format_node">第%1$s節</string>
+    <string name="period_time_range">第%1$s節  %2$s ~ %3$s</string>
+    <string name="break_continuous_0">  ↓ 0 分鐘連續</string>
+    <string name="break_continuous_n">  ↓ %1$d 分鐘 %2$s</string>
+    <string name="add_label">添加%1$s</string>
+    <string name="mode_manual">手動模式</string>
+    <string name="mode_auto">自動模式</string>
+    <string name="label_from">起</string>
+    <string name="schedule_jump_week">跳轉到週次</string>
+    <string name="schedule_empty_name">「%1$s」還是空的</string>
+    <string name="schedule_empty_name_hint">往這張課表裡加課，或匯入新的課表</string>
+    <string name="course_count_format">%1$d 門</string>
+    <string name="today_suffix"> · 今天</string>
+    <string name="no_course_today"> · 無課程</string>
+    <string name="default_course_name">課程</string>
+    <string name="default_room">上課地點</string>
+    <string name="error_unknown">未知錯誤</string>
+    <string name="error_no_version_found">主站和鏡像都沒找到最新版本</string>
+    <string name="error_empty_download">下載檔案為空</string>
 </resources>

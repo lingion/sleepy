@@ -406,4 +406,36 @@
     <string name="settings_vert_punct">Vertical Punctuation Optimization</string>
     <string name="settings_vert_punct_sub">Replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
     <string name="widget_scroll_hint">↑ Scroll for more</string>
+    <!-- i18n: hardcoded string extraction -->
+    <string name="edit_period_input">Input</string>
+    <string name="edit_period_duration_label">Per-period duration</string>
+    <string name="unit_minutes">minutes</string>
+    <string name="edit_period_total_label">Total periods</string>
+    <string name="unit_periods">periods</string>
+    <string name="edit_period_first_start">First period starts</string>
+    <string name="short_break">Short break</string>
+    <string name="long_break">Long break</string>
+    <string name="break_assign_hint">Break assignment (tap to toggle)</string>
+    <string name="preview">Preview</string>
+    <string name="break_min_two_periods">Need at least 2 periods to assign breaks</string>
+    <string name="empty_placeholder">(Empty)</string>
+    <string name="period_format_node">Period %1$s</string>
+    <string name="period_time_range">Period %1$s  %2$s ~ %3$s</string>
+    <string name="break_continuous_0">  ↓ 0 min continuous</string>
+    <string name="break_continuous_n">  ↓ %1$d min %2$s</string>
+    <string name="add_label">Add %1$s</string>
+    <string name="mode_manual">Manual mode</string>
+    <string name="mode_auto">Auto mode</string>
+    <string name="label_from">From</string>
+    <string name="schedule_jump_week">Jump to week</string>
+    <string name="schedule_empty_name">Schedule \"%1$s\" is still empty</string>
+    <string name="schedule_empty_name_hint">Add courses to this schedule, or import a new one</string>
+    <string name="course_count_format">%1$d courses</string>
+    <string name="today_suffix"> · Today</string>
+    <string name="no_course_today"> · No class</string>
+    <string name="default_course_name">Course</string>
+    <string name="default_room">Location</string>
+    <string name="error_unknown">Unknown error</string>
+    <string name="error_no_version_found">No version found from main site or mirror</string>
+    <string name="error_empty_download">Downloaded file is empty</string>
 </resources>

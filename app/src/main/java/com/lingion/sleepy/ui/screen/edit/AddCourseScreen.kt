@@ -1019,7 +1019,7 @@ private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
             .clickable(onClick = onClick)
     ) {
         Text(
-            text = "自",
+            text = stringResource(R.string.label_from),
             fontSize = 11.sp,
             color = SleepyTheme.colors.onSurfaceVariant,
             modifier = Modifier.align(Alignment.Center)

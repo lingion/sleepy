@@ -133,7 +133,7 @@ fun ThemeColorScreen(
                                         onClick = {
                                             AppPrefs.setThemeKey(context, preset.key)
                                             scope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
-                                            scope.launch { snackbar.showSnackbar(context.getString(R.string.theme_switched_preset, preset.displayName)) }
+                                            scope.launch { snackbar.showSnackbar(context.getString(R.string.theme_switched_preset, context.getString(preset.nameRes))) }
                                         }
                                     )
                                 }
@@ -240,7 +240,7 @@ private fun PresetThemeCard(
             Spacer(modifier = Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(
-                    text = preset.displayName,
+                    text = stringResource(preset.nameRes),
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
                     color = colors.onSurface,
                     modifier = Modifier.weight(1f)

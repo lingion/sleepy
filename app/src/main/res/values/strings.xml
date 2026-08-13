@@ -427,4 +427,36 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <!-- i18n: hardcoded string extraction -->
+    <string name="edit_period_input">输入</string>
+    <string name="edit_period_duration_label">每节时长</string>
+    <string name="unit_minutes">分钟</string>
+    <string name="edit_period_total_label">总节数</string>
+    <string name="unit_periods">节</string>
+    <string name="edit_period_first_start">第一节开始</string>
+    <string name="short_break">小课间</string>
+    <string name="long_break">大课间</string>
+    <string name="break_assign_hint">课间分配（点击切换）</string>
+    <string name="preview">预览</string>
+    <string name="break_min_two_periods">总节数至少 2 节才能分配课间</string>
+    <string name="empty_placeholder">(空)</string>
+    <string name="period_format_node">第%1$s节</string>
+    <string name="period_time_range">第%1$s节  %2$s ~ %3$s</string>
+    <string name="break_continuous_0">  ↓ 0 分钟连续</string>
+    <string name="break_continuous_n">  ↓ %1$d 分钟 %2$s</string>
+    <string name="add_label">添加%1$s</string>
+    <string name="mode_manual">手动模式</string>
+    <string name="mode_auto">自动模式</string>
+    <string name="label_from">自</string>
+    <string name="schedule_jump_week">跳转到周次</string>
+    <string name="schedule_empty_name">「%1$s」还是空的</string>
+    <string name="schedule_empty_name_hint">往这张课表里加课，或导入新的课表</string>
+    <string name="course_count_format">%1$d 门</string>
+    <string name="today_suffix"> · 今天</string>
+    <string name="no_course_today"> · 无课程</string>
+    <string name="default_course_name">课程</string>
+    <string name="default_room">上课地点</string>
+    <string name="error_unknown">未知错误</string>
+    <string name="error_no_version_found">主站和镜像都没找到最新版本</string>
+    <string name="error_empty_download">下载文件为空</string>
 </resources>
