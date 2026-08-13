@@ -302,4 +302,12 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
+    <string name="update_found_title">Nueva versión v%1$s disponible</string>
+    <string name="update_download">Descargar</string>
+    <string name="update_cancel">Cancelar</string>
+    <string name="update_downloading">Descargando %1$d%%</string>
+    <string name="update_installing">Descarga completa, abriendo instalador</string>
+    <string name="update_retry">Reintentar</string>
+    <string name="update_download_failed">Error de descarga: %1$s</string>
 </resources>

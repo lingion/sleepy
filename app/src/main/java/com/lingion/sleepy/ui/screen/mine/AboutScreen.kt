@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -23,17 +24,20 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -50,7 +54,9 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.UpdateInfo
 import com.lingion.sleepy.util.UpdateManager
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -59,8 +65,66 @@ fun AboutScreen(onBack: () -> Unit) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    var updateState by remember { mutableStateOf<String?>(null) }
-    var updating by remember { mutableStateOf(false) }
+    var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
+    var downloadJob by remember { mutableStateOf<Job?>(null) }
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    fun checkUpdate() {
+        if (uiState is UpdateUiState.Checking) return
+        uiState = UpdateUiState.Checking
+        scope.launch {
+            runCatching { UpdateManager.fetchUpdateInfo(context) }
+                .onSuccess { info ->
+                    if (info.isUpdateAvailable) {
+                        uiState = UpdateUiState.UpdateAvailable(
+                            info.version, info.changelog, info.downloadUrl
+                        )
+                    } else {
+                        uiState = UpdateUiState.NoUpdate(info.version)
+                    }
+                }
+                .onFailure { uiState = UpdateUiState.Failed(it.message ?: "未知错误") }
+        }
+    }
+
+    fun startDownload(version: String, changelog: String, url: String) {
+        val info = UpdateInfo(version, changelog, url, true)
+        uiState = UpdateUiState.Downloading(0)
+        downloadJob = scope.launch {
+            runCatching {
+                UpdateManager.downloadApk(context, info) { progress ->
+                    uiState = UpdateUiState.Downloading(progress)
+                }
+            }.onSuccess { file ->
+                uiState = UpdateUiState.Installing
+                UpdateManager.install(context, file)
+            }.onFailure { e ->
+                if (e is kotlinx.coroutines.CancellationException) {
+                    uiState = UpdateUiState.UpdateAvailable(version, changelog, url)
+                } else {
+                    uiState = UpdateUiState.Failed(
+                        e.message ?: "未知错误", version, changelog, url
+                    )
+                }
+            }
+        }
+    }
+
+    fun cancelDownload(version: String, changelog: String, url: String) {
+        downloadJob?.cancel()
+        uiState = UpdateUiState.UpdateAvailable(version, changelog, url)
+    }
+
+    LaunchedEffect(uiState) {
+        if (uiState is UpdateUiState.NoUpdate) {
+            scope.launch {
+                snackbarHostState.showSnackbar(
+                    context.getString(R.string.about_update_latest, (uiState as UpdateUiState.NoUpdate).version)
+                )
+            }
+            uiState = UpdateUiState.Idle
+        }
+    }
 
     Scaffold(
         topBar = {
@@ -77,6 +141,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 )
             )
         },
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = colors.background
     ) { innerPadding ->
         Column(
@@ -135,9 +200,9 @@ fun AboutScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // One-click update: the manager routes GitHub -> mirror in the background.
+            // One-click update
             InfoCard {
-                Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(12.dp)) {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Icon(
                             imageVector = Icons.Outlined.Download,
@@ -160,31 +225,16 @@ fun AboutScreen(onBack: () -> Unit) {
                         }
                     }
                     Button(
-                        onClick = {
-                            if (updating) return@Button
-                            updating = true
-                            updateState = context.getString(R.string.about_update_checking)
-                            scope.launch {
-                                runCatching {
-                                    UpdateManager.downloadLatest(context)
-                                }.onSuccess { result ->
-                                    updateState = context.getString(R.string.about_update_ready, result.version)
-                                    UpdateManager.install(context, result.file)
-                                }.onFailure { error ->
-                                    updateState = error.message ?: context.getString(R.string.about_update_failed, "未知错误")
-                                }
-                                updating = false
-                            }
-                        },
-                        enabled = !updating,
+                        onClick = { checkUpdate() },
+                        enabled = uiState !is UpdateUiState.Checking,
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Icon(Icons.Outlined.Download, contentDescription = null)
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(stringResource(if (updating) R.string.about_update_downloading else R.string.about_update))
-                    }
-                    if (updateState != null) {
-                        Text(updateState!!, color = colors.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+                        Text(stringResource(
+                            if (uiState is UpdateUiState.Checking) R.string.about_update_checking
+                            else R.string.about_update
+                        ))
                     }
                 }
             }
@@ -286,6 +336,14 @@ fun AboutScreen(onBack: () -> Unit) {
             Spacer(modifier = Modifier.height(32.dp))
         }
     }
+
+    UpdateChangelogDialog(
+        state = uiState,
+        onDismiss = { uiState = UpdateUiState.Idle },
+        onDownload = { version, changelog, url -> startDownload(version, changelog, url) },
+        onCancelDownload = { version, changelog, url -> cancelDownload(version, changelog, url) },
+        onRetry = { version, changelog, url -> startDownload(version, changelog, url) }
+    )
 }
 
 

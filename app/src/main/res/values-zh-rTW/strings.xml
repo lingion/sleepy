@@ -302,4 +302,12 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="about_update_latest">目前已是最新版本 v%1$s</string>
+    <string name="update_found_title">發現新版本 v%1$s</string>
+    <string name="update_download">下載</string>
+    <string name="update_cancel">取消</string>
+    <string name="update_downloading">下載中 %1$d%%</string>
+    <string name="update_installing">下載完成，正在開啟安裝器</string>
+    <string name="update_retry">重試</string>
+    <string name="update_download_failed">下載失敗：%1$s</string>
 </resources>

@@ -302,4 +302,12 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="about_update_latest">最新バージョン v%1$s です</string>
+    <string name="update_found_title">新しいバージョン v%1$s があります</string>
+    <string name="update_download">ダウンロード</string>
+    <string name="update_cancel">キャンセル</string>
+    <string name="update_downloading">ダウンロード中 %1$d%%</string>
+    <string name="update_installing">ダウンロード完了、インストーラーを起動中</string>
+    <string name="update_retry">再試行</string>
+    <string name="update_download_failed">ダウンロード失敗: %1$s</string>
 </resources>
