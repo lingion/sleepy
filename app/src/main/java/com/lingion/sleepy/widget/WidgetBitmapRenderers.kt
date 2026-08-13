@@ -447,27 +447,43 @@ object WidgetBitmapRenderers {
                 canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
                 cy += chipH + 4f * density  // 4dp gap (DaySummaryCell L624)
 
-                // 课程 mini-list — 纯文本无胶囊背景 (复刻 DaySummaryCell L627-L640)
+                // 课程 mini-list — 最多2行换行 + 课程间分隔线
                 p.textSize = 9f * density
                 p.typeface = Typeface.DEFAULT
+                p.style = Paint.Style.FILL
                 val textPad = 4f * density
                 val maxTextWidth = colW - textPad * 2
                 val courseGap = 2f * density  // spacedBy(2.dp)
-                day.courses.take(5).forEach { course ->
+                val fm = p.fontMetrics
+                val lineH = fm.descent - fm.ascent
+                val courses = day.courses.take(5)
+                courses.forEachIndexed { idx, course ->
                     val name = course.courseName
                     // today → onPrimaryContainer@0.82alpha, 其他 → onSurfaceVariant
                     p.color = if (isToday)
                         (0xD1 shl 24) or (s.onPrimaryContainer and 0x00FFFFFF)
                     else
                         s.onSurfaceVariant
-                    val displayName = if (p.measureText(name) > maxTextWidth) {
-                        var n = name
-                        while (n.isNotEmpty() && p.measureText("$n…") > maxTextWidth) n = n.dropLast(1)
-                        if (n.isNotEmpty()) "$n…" else name
-                    } else name
-                    val fm = p.fontMetrics
-                    canvas.drawText(displayName, x + textPad, cy - fm.ascent, p)
-                    cy += (fm.descent - fm.ascent) + courseGap
+
+                    val lines = wrapMax2Lines(name, p, maxTextWidth)
+                    lines.forEach { line ->
+                        canvas.drawText(line, x + textPad, cy - fm.ascent, p)
+                        cy += lineH
+                    }
+
+                    // 课程间分隔线 (首门前/末门后不画)
+                    if (idx < courses.size - 1) {
+                        cy += courseGap / 2f
+                        p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x20000000
+                        p.style = Paint.Style.STROKE
+                        p.strokeWidth = 0.5f * density
+                        canvas.drawLine(x + textPad, cy, x + colW - textPad, cy, p)
+                        p.style = Paint.Style.FILL
+                        p.strokeWidth = 0f
+                        cy += courseGap / 2f
+                    } else {
+                        cy += courseGap
+                    }
                 }
             }
         }
@@ -565,5 +581,49 @@ object WidgetBitmapRenderers {
         }
 
         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+    }
+
+    /**
+     * Canvas 手动换行: 最多2行, 超出截断 "…".
+     * CJK 按字符断行; Latin 在空格处断行.
+     */
+    private fun wrapMax2Lines(
+        text: String,
+        paint: Paint,
+        maxWidth: Float
+    ): List<String> {
+        val charsFit = paint.breakText(text, true, maxWidth, null)
+        if (charsFit <= 0) return listOf("…")  // 列极窄: 连一个字都放不下
+        if (charsFit >= text.length) return listOf(text)
+
+        // 找行1断点: 优先空格, 否则字符边界
+        val lastSpace = text.lastIndexOf(' ', charsFit)
+        val line1End: Int
+        val remainderStart: Int
+        if (lastSpace > 0 && lastSpace > charsFit * 4 / 5) {
+            line1End = lastSpace
+            remainderStart = lastSpace + 1
+        } else {
+            line1End = charsFit
+            remainderStart = charsFit
+        }
+
+        val line1 = text.substring(0, line1End)
+        val remainder = text.substring(remainderStart)
+        if (remainder.isEmpty()) return listOf(line1)
+
+        val charsFit2 = paint.breakText(remainder, true, maxWidth, null)
+        if (charsFit2 >= remainder.length) return listOf(line1, remainder)
+
+        // 行2超宽 → 截断 "…"
+        var lo = 0
+        var hi = remainder.length
+        while (lo < hi) {
+            val mid = (lo + hi + 1) / 2
+            if (paint.measureText(remainder.substring(0, mid) + "…") <= maxWidth) lo = mid
+            else hi = mid - 1
+        }
+        val line2 = if (lo == 0) "…" else remainder.substring(0, lo) + "…"
+        return listOf(line1, line2)
     }
 }
