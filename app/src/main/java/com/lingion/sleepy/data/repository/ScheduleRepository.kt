@@ -43,7 +43,15 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun deleteTable(id: Long) {
+        // ★ 删除前先取该表全部课程 id：tableDao.deleteById 靠外键 CASCADE 级联删课程，
+        //   删完后这些 id 已不在库里，scheduleAll → cancelAll 按"现存课程"枚举 cancel 不到它们，
+        //   当天已排的课程级课前闹钟（RC_BEFORE_CLASS_BASE+cid）会残留到点继续响。
+        //   因此必须在删除前捕获 id 列表，删除后对这些"孤儿 id"显式取消闹钟。
+        val orphanCourseIds = courseDao.getByTable(id).map { it.id }
         tableDao.deleteById(id)
+        if (orphanCourseIds.isNotEmpty()) {
+            SleepyApp.get().notificationScheduler.cancelCourseAlarms(orphanCourseIds)
+        }
         onDataChanged()
     }
 

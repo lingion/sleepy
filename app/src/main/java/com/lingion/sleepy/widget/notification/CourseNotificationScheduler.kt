@@ -95,6 +95,21 @@ class CourseNotificationScheduler(private val context: Context) {
                 }.map { it.id.toInt() }
             }.getOrDefault(emptyList())
         }
+        cancelCourseAlarmIds(alarmManager, courseIds)
+    }
+
+    /**
+     * ★ 取消指定课程 id 的课前闹钟（PendingIntent 语义：extras 不参与匹配）。
+     * 调用方：ScheduleRepository.deleteTable —— 删表靠外键 CASCADE 级联删课程，
+     * 删除后这些课程 id 已查不到，cancelAll 的"现存课程"枚举覆盖不到，
+     * 故删除前捕获 id 列表、删除后调这里显式清理孤儿闹钟。
+     */
+    fun cancelCourseAlarms(courseIds: List<Long>) {
+        val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
+        cancelCourseAlarmIds(alarmManager, courseIds.map { it.toInt() })
+    }
+
+    private fun cancelCourseAlarmIds(alarmManager: AlarmManager, courseIds: List<Int>) {
         for (cid in courseIds) {
             try {
                 alarmManager.cancel(buildPendingIntent(RC_BEFORE_CLASS_BASE + cid, BeforeClassNotifyReceiver::class.java))
