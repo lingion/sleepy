@@ -2,6 +2,7 @@ package com.lingion.sleepy.util
 
 import androidx.compose.ui.graphics.Color
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.ui.theme.CoursePalette
 
 /**
  * 课程底色单一事实来源 — 三层结构（决策 D3）
@@ -59,6 +60,17 @@ object CourseColorUtil {
      */
     fun hasCustomColor(course: CourseEntity): Boolean =
         course.color.isNotBlank() && !course.color.equals(SENTINEL_COLOR, ignoreCase = true)
+
+    /**
+     * 明暗探针 — 读 CoursePalette.primary 亮度（原四副本中 isPaletteDark 的唯一收敛点）。
+     * 注意: 只能用 CoursePalette（亮=0xFFEADDFF / 暗=0xFF4F378B），不能用 WakeUpColorScheme.primary
+     * （亮色=0xFF6750A4 加权亮度 0.38 会被误判为暗色）。
+     */
+    fun isPaletteDark(p: CoursePalette): Boolean {
+        val c = p.primary
+        val lum = 0.299f * c.red + 0.587f * c.green + 0.114f * c.blue
+        return lum < 0.5f
+    }
 
     // ============================ 第二层 · HSL 转换 ============================
 

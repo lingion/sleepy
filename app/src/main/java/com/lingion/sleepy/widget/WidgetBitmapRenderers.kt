@@ -12,6 +12,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
@@ -83,45 +84,8 @@ object WidgetBitmapRenderers {
         )
     }
 
-    /**
-     * HSL → ARGB Int (复刻 WeekGridWidgetProvider.hslToColorInt / CourseTableView.hslToColor)
-     */
-    private fun hslToColorInt(h: Float, s: Float, l: Float): Int {
-        val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-        val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-        val m = l - c / 2f
-        val (r, g, b) = when {
-            h < 60f  -> Triple(c, x, 0f)
-            h < 120f -> Triple(x, c, 0f)
-            h < 180f -> Triple(0f, c, x)
-            h < 240f -> Triple(0f, x, c)
-            h < 300f -> Triple(x, 0f, c)
-            else     -> Triple(c, 0f, x)
-        }
-        return (0xFF shl 24) or
-            ((r + m).coerceIn(0f, 1f).times(255f).toInt() shl 16) or
-            ((g + m).coerceIn(0f, 1f).times(255f).toInt() shl 8) or
-            (b + m).coerceIn(0f, 1f).times(255f).toInt()
-    }
-
-    /**
-     * 课程颜色 — 对齐 CourseTableView / WeekGridWidgetProvider 的 groupId 黄金角 HSL。
-     * 用户自定义 color 优先 → 否则 groupId.hashCode() 撒 hue。
-     * 同一门课的所有节次永远同色(确定性基于 groupId), 与数据库一致。
-     * 之前用 resolveCourseColorKey 关键词分类 → 与首页/WeekGrid 色系不一致, 已废弃。
-     */
-    private fun pickCourseColor(course: CourseEntity, isDark: Boolean, scheme: Scheme, colorless: Boolean): Int {
-        val userColor = course.color
-        if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
-            runCatching { return Color.parseColor(userColor) }
-        }
-        if (colorless) return scheme.surfaceVariant
-        val stableId = course.groupId.hashCode().toLong()
-        val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
-        val s = if (isDark) 0.40f else 0.55f
-        val l = if (isDark) 0.28f else 0.82f
-        return hslToColorInt(hue, s, l)
-    }
+    // hslToColorInt / pickCourseColor 本地副本已收敛至 util/CourseColorUtil.kt (决策 D3 单一事实来源)。
+    // 之前用 resolveCourseColorKey 关键词分类 → 与首页/WeekGrid 色系不一致, 已废弃。
 
     private val dayLabels = arrayOf("", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
@@ -129,7 +93,8 @@ object WidgetBitmapRenderers {
         c: Canvas, p: Paint, course: CourseEntity, timeJson: String, x: Float, y: Float, w: Float, h: Float,
         scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false
     ) {
-        val bgColor = pickCourseColor(course, scheme.isDark, scheme, colorless)
+        // 统一取色入口 (决策 D3) — colorless 灰底传 scheme.surfaceVariant 的 Int 值
+        val bgColor = CourseColorUtil.pickCourseColorInt(course, scheme.isDark, scheme.surfaceVariant, colorless)
         val pad = (3f * density).coerceAtLeast(1f)
         p.color = bgColor
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
@@ -348,8 +313,8 @@ object WidgetBitmapRenderers {
                 val courseGap = 3f * density
                 day.courses.forEachIndexed { idx, course ->
                     val name = course.courseName
-                    // ★ 课程颜色背景 (对齐 WeekGrid 风格)
-                    val bgColor = pickCourseColor(course, s.isDark, s, colorless)
+                    // ★ 课程颜色背景 (对齐 WeekGrid 风格) — 统一入口 CourseColorUtil (决策 D3)
+                    val bgColor = CourseColorUtil.pickCourseColorInt(course, s.isDark, s.surfaceVariant, colorless)
                     p.color = bgColor
                     canvas.drawRoundRect(
                         RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),

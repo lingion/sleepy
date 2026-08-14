@@ -407,8 +407,8 @@
     <string name="settings_vert_punct">縦書き記号の最適化</string>
     <string name="settings_vert_punct_sub">科目名の縦書き表示時に（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
     <string name="settings_widget">ウィジェット設定</string>
-    <string name="settings_widget_colorless">無色モード</string>
-    <string name="settings_widget_colorless_sub">ウィジェットの授業カプセルが統一されたグレーになります</string>
+    <string name="settings_widget_colorless">授業の背景色を統一</string>
+    <string name="settings_widget_colorless_sub">アプリ内とウィジェットの授業背景色をニュートラルグレーに統一します。色をカスタマイズした授業には適用されません</string>
     <string name="settings_widget_separator">週表示の区切り線</string>
     <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
     <string name="widget_scroll_hint">↑ スクロールで続きを表示</string>

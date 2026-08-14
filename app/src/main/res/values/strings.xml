@@ -213,8 +213,8 @@
     <string name="settings_vert_punct">竖排标点优化</string>
     <string name="settings_vert_punct_sub">课名竖排时将（）《》等横排符号替换为专用竖排符号（实验功能）</string>
     <string name="settings_widget">小组件设置</string>
-    <string name="settings_widget_colorless">无色模式</string>
-    <string name="settings_widget_colorless_sub">开启后小组件课程胶囊变为统一灰色</string>
+    <string name="settings_widget_colorless">统一课程底色</string>
+    <string name="settings_widget_colorless_sub">开启后课表和小组件的课程底色统一为中性灰，自定义颜色的课程不受影响</string>
     <string name="settings_widget_separator">周视图分隔线</string>
     <string name="settings_widget_separator_sub">纯文字周视图中课程名之间是否显示分隔线</string>
 

@@ -46,6 +46,8 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalTime
@@ -271,7 +273,14 @@ private fun CourseOverlayCard(
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
-    val bg = pickCourseColor(course, palette)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs，与小组件共用同一开关
+    val bg = CourseColorUtil.pickCourseColorCompose(
+        course = course,
+        isDark = CourseColorUtil.isPaletteDark(palette),
+        neutralColor = colors.surfaceVariant,
+        colorless = AppPrefs.isWidgetColorless(context)
+    )
     val fg = colors.onSurface
     val shape = RoundedCornerShape(12.dp)
 
@@ -449,49 +458,8 @@ private fun SpannedTimeHeadCell(
     }
 }
 
-/**
- * 课程颜色 — 基于 groupId 的确定性 HSL 分配，同一门课的所有时间块同色。
- *
- * - 黄金角 137.508° 撒 hue → 相邻 id 色差最大化（13 门课最少差 ~27°）
- * - 亮色模式：S=0.48, L=0.88（柔和粉彩，不刺眼）
- * - 暗色模式：S=0.35, L=0.26（沉稳低饱和，可读性好）
- * - 同一 id 永远同色（确定性），换课表不漂移
- */
-private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
-    // 用户自定义颜色优先
-    val userColor = course.color
-    if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
-        runCatching { return Color(android.graphics.Color.parseColor(userColor)) }
-    }
-    // 无自定义 → 按 id 黄金角 HSL 分配
-    val isDark = isPaletteDark(palette)
-    val stableId = course.groupId.hashCode().toLong()
-    val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
-    val s = if (isDark) 0.40f else 0.55f
-    val l = if (isDark) 0.28f else 0.82f
-    return hslToColor(hue, s, l)
-}
-
-private fun isPaletteDark(p: com.lingion.sleepy.ui.theme.CoursePalette): Boolean {
-    val c = p.primary
-    val lum = 0.299f * c.red + 0.587f * c.green + 0.114f * c.blue
-    return lum < 0.5f
-}
-
-private fun hslToColor(h: Float, s: Float, l: Float): Color {
-    val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-    val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-    val m = l - c / 2f
-    val (r, g, b) = when {
-        h < 60f   -> Triple(c, x, 0f)
-        h < 120f  -> Triple(x, c, 0f)
-        h < 180f  -> Triple(0f, c, x)
-        h < 240f  -> Triple(0f, x, c)
-        h < 300f  -> Triple(x, 0f, c)
-        else      -> Triple(c, 0f, x)
-    }
-    return Color(r + m, g + m, b + m)
-}
+// pickCourseColor / isPaletteDark / hslToColor 三函数已收敛至 util/CourseColorUtil.kt（决策 D3 单一事实来源）。
+// 原注释 S/L 值写错（0.48/0.88、0.35/0.26），实际为亮色 S=0.55 L=0.82 / 暗色 S=0.40 L=0.28，正确值见 CourseColorUtil 常量。
 
 // =====================================================================================
 // 7days full 视图 — switchable.html #fullView
@@ -732,7 +700,13 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
-    val bg = pickCourseColor(course, palette)
+    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs，与小组件共用同一开关
+    val bg = CourseColorUtil.pickCourseColorCompose(
+        course = course,
+        isDark = CourseColorUtil.isPaletteDark(palette),
+        neutralColor = colors.surfaceVariant,
+        colorless = AppPrefs.isWidgetColorless(context)
+    )
 
     // time 模式：「08:00-\n08:45」——时间段在连字符后折行，行距收紧读成一个整体
     val timeParts = if (displayMode == "time" && timeJson.isNotBlank()) {

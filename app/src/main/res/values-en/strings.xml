@@ -407,8 +407,8 @@
     <string name="settings_vert_punct">Vertical Punctuation Optimization</string>
     <string name="settings_vert_punct_sub">Replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
     <string name="settings_widget">Widget settings</string>
-    <string name="settings_widget_colorless">Colorless mode</string>
-    <string name="settings_widget_colorless_sub">Course capsules use a neutral gray</string>
+    <string name="settings_widget_colorless">Unified course colors</string>
+    <string name="settings_widget_colorless_sub">Course backgrounds in the app and widgets use a neutral gray; courses with custom colors are unaffected</string>
     <string name="settings_widget_separator">Week view separator</string>
     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
     <string name="widget_scroll_hint">↑ Scroll for more</string>

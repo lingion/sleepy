@@ -21,8 +21,8 @@ import android.widget.RemoteViews
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
-import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -150,37 +150,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             // hue = groupId.hashCode() * 137.508° → 相邻课色差最大化, 同门课永远同色
             // 亮色 S=0.55 L=0.82 (粉彩), 暗色 S=0.40 L=0.28 (沉稳)
             // 用户自定义 color 优先 (#FF6750A4 视为未设置)
-            fun hslToColorInt(h: Float, s: Float, l: Float): Int {
-                val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-                val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-                val m = l - c / 2f
-                val (r, g, b) = when {
-                    h < 60f  -> Triple(c, x, 0f)
-                    h < 120f -> Triple(x, c, 0f)
-                    h < 180f -> Triple(0f, c, x)
-                    h < 240f -> Triple(0f, x, c)
-                    h < 300f -> Triple(x, 0f, c)
-                    else     -> Triple(c, 0f, x)
-                }
-                return (0xFF shl 24) or
-                    ((r + m).coerceIn(0f, 1f).times(255f).toInt() shl 16) or
-                    ((g + m).coerceIn(0f, 1f).times(255f).toInt() shl 8) or
-                    (b + m).coerceIn(0f, 1f).times(255f).toInt()
-            }
-            fun pickCourseColor(course: CourseEntity): Int {
-                // 用户自定义 color 优先 (colorless 不覆盖用户手动设的颜色)
-                val userColor = course.color
-                if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
-                    runCatching { return android.graphics.Color.parseColor(userColor) }
-                }
-                // 无色模式: 统一中性灰底 (复用 surfaceVariant, 与网格线同色保持一致)
-                if (colorless) return gridLine
-                val stableId = course.groupId.hashCode().toLong()
-                val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
-                val s = if (isDark) 0.40f else 0.55f
-                val l = if (isDark) 0.28f else 0.82f
-                return hslToColorInt(hue, s, l)
-            }
+            // (本地 hslToColorInt/pickCourseColor 副本已收敛至 util/CourseColorUtil.kt, 决策 D3)
 
             // ── 数据 ──
             val timeJson = data.days.firstOrNull()?.timeJson ?: ""
@@ -377,8 +347,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val cardH = slotH * step + gapH * (step - 1)
                     val cardRect = RectF(colX, cardTop, colX + dayW, cardTop + cardH)
 
-                    // 卡片背景色 (v19e: 对齐 CourseTableView palette)
-                    val baseColor = pickCourseColor(course)
+                    // 卡片背景色 (v19e: 对齐 CourseTableView palette) — 统一入口 CourseColorUtil (决策 D3)
+                    // colorless 灰底传 gridLine(即 surfaceVariant 的 Int), 与原实现一致
+                    val baseColor = CourseColorUtil.pickCourseColorInt(course, isDark, gridLine, colorless)
                     p.color = baseColor
                     p.alpha = 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)
