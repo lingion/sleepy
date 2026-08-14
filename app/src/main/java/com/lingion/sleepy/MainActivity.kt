@@ -36,11 +36,10 @@ import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
+import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
-import com.lingion.sleepy.ui.screen.mine.MoreSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
-import com.lingion.sleepy.ui.screen.mine.ThemeColorScreen
-import com.lingion.sleepy.ui.screen.mine.ThemeSettingsScreen
+import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
@@ -150,7 +149,7 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 private enum class OverlayScreen {
-    AddCourse, AllTables, EditTable, Theme, ThemeColor, MoreSettings, Export, Reminder, About
+    AddCourse, AllTables, EditTable, Theme, General, Export, Reminder, About
 }
 
 @Composable
@@ -205,15 +204,11 @@ private fun AppRoot(
         return
     }
     if (overlayScreen == OverlayScreen.Theme) {
-        ThemeSettingsScreen(onBack = { overlayScreen = null }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
+        AppearanceScreen(onBack = { overlayScreen = null }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
         return
     }
-    if (overlayScreen == OverlayScreen.ThemeColor) {
-        ThemeColorScreen(onBack = { overlayScreen = null })
-        return
-    }
-    if (overlayScreen == OverlayScreen.MoreSettings) {
-        MoreSettingsScreen(onBack = { overlayScreen = null })
+    if (overlayScreen == OverlayScreen.General) {
+        GeneralSettingsScreen(onBack = { overlayScreen = null })
         return
     }
     if (overlayScreen == OverlayScreen.Export) {
@@ -255,9 +250,12 @@ private fun AppRoot(
                     }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable }, onImported = {}, onOpenEditTable = { tableId -> editTableId = tableId; overlayScreen = OverlayScreen.EditTable })
                 }
                 Tab.Mine -> MineScreen(
-                    themeMode = themeMode, onThemeModeChange = onThemeModeChange, onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
-                    onOpenTheme = { overlayScreen = OverlayScreen.Theme }, onOpenMoreSettings = { overlayScreen = OverlayScreen.MoreSettings },
-                    onOpenExport = { overlayScreen = OverlayScreen.Export }, onOpenReminder = { overlayScreen = OverlayScreen.Reminder }, onOpenAbout = { overlayScreen = OverlayScreen.About })
+                    onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
+                    onOpenAppearance = { overlayScreen = OverlayScreen.Theme },
+                    onOpenGeneral = { overlayScreen = OverlayScreen.General },
+                    onOpenExport = { overlayScreen = OverlayScreen.Export },
+                    onOpenReminder = { overlayScreen = OverlayScreen.Reminder },
+                    onOpenAbout = { overlayScreen = OverlayScreen.About })
             }
         }
     }

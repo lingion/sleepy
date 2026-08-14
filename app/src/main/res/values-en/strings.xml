@@ -32,7 +32,7 @@
     <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d courses</string>
     <string name="current_table_week">Current · Week %1$d</string>
     <string name="table_start_date">Start: %1$s</string>
-    <string name="all_tables">Manage Schedules</string>
+    <string name="all_tables">All Schedules</string>
     <string name="all_tables_new">New Schedule</string>
     <string name="all_tables_switch">Set as current</string>
     <string name="edit_table_title">Edit Schedule</string>
@@ -164,7 +164,6 @@
     <string name="mine_reminder_off">Daily reminder disabled</string>
     <string name="mine_dark_mode">Dark Mode</string>
     <string name="mine_theme_color">Theme Color</string>
-    <string name="mine_more_settings">More Settings</string>
     <string name="mine_export">Export</string>
     <string name="mine_export_coming">Export — coming in a future update (ICS support)</string>
     <string name="mine_stat_tables">Schedules</string>
@@ -299,7 +298,8 @@
     <string name="day_short_7">S</string>
     <string name="section_node_format">Period %1$d–%2$d</string>
     <string name="section_single">Period %1$d</string>
-    <string name="mine_theme">Theme</string>
+    <string name="mine_appearance">Appearance &amp; display</string>
+    <string name="mine_general">General</string>
     <string name="theme_appearance">外观</string>
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>

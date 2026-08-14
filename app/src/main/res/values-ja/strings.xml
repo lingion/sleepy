@@ -32,7 +32,7 @@
     <string name="table_info">開始日: %1$s  |  第%2$d週  |  %3$dコマ</string>
     <string name="current_table_week">現在 · 第%1$d週</string>
     <string name="table_start_date">開始日: %1$s</string>
-    <string name="all_tables">時間割管理</string>
+    <string name="all_tables">すべての時間割</string>
     <string name="all_tables_new">新規作成</string>
     <string name="all_tables_switch">現在の時間割に設定</string>
     <string name="edit_table_title">時間割を編集</string>
@@ -163,7 +163,6 @@
     <string name="mine_reminder_off">毎日のリマインダーを無効にしました</string>
     <string name="mine_dark_mode">ダークモード</string>
     <string name="mine_theme_color">テーマカラー</string>
-    <string name="mine_more_settings">その他の設定</string>
     <string name="mine_export">エクスポート</string>
     <string name="mine_export_coming">エクスポート — 今後のアップデートで ICS をサポート予定</string>
     <string name="mine_stat_tables">時間割数</string>
@@ -298,7 +297,8 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d–%2$d限</string>
     <string name="section_single">第%1$d限</string>
-    <string name="mine_theme">テーマ</string>
+    <string name="mine_appearance">外観と表示</string>
+    <string name="mine_general">一般</string>
     <string name="theme_appearance">外观</string>
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>

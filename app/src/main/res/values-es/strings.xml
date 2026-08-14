@@ -32,7 +32,7 @@
     <string name="table_info">Inicio: %1$s  |  Semana %2$d  |  %3$d cursos</string>
     <string name="current_table_week">Actual · Semana %1$d</string>
     <string name="table_start_date">Inicio: %1$s</string>
-    <string name="all_tables">Gestionar horarios</string>
+    <string name="all_tables">Todos los horarios</string>
     <string name="all_tables_new">Nuevo horario</string>
     <string name="all_tables_switch">Establecer como actual</string>
     <string name="edit_table_title">Editar horario</string>
@@ -163,7 +163,6 @@
     <string name="mine_reminder_off">Recordatorio diario desactivado</string>
     <string name="mine_dark_mode">Modo oscuro</string>
     <string name="mine_theme_color">Color del tema</string>
-    <string name="mine_more_settings">Más ajustes</string>
     <string name="mine_export">Exportar</string>
     <string name="mine_export_coming">Exportar — disponible en futuras actualizaciones (soporte ICS)</string>
     <string name="mine_stat_tables">Horarios</string>
@@ -298,7 +297,8 @@
     <string name="day_short_7">D</string>
     <string name="section_node_format">Hora %1$d–%2$d</string>
     <string name="section_single">Hora %1$d</string>
-    <string name="mine_theme">Tema</string>
+    <string name="mine_appearance">Apariencia y pantalla</string>
+    <string name="mine_general">General</string>
     <string name="theme_appearance">外观</string>
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>

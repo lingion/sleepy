@@ -35,7 +35,7 @@
     <string name="table_info">开始日期: %1$s  |  第%2$d周  |  %3$d门课</string>
     <string name="current_table_week">当前课表 · 第%1$d周</string>
     <string name="table_start_date">开始日期: %1$s</string>
-    <string name="all_tables">课表管理</string>
+    <string name="all_tables">所有课表</string>
     <string name="all_tables_new">新建课表</string>
     <string name="all_tables_switch">切换为当前</string>
     <string name="edit_table_title">编辑课表</string>
@@ -172,7 +172,6 @@
     <string name="mine_reminder_off">已关闭每日提醒</string>
     <string name="mine_dark_mode">深色模式</string>
     <string name="mine_theme_color">主题颜色</string>
-    <string name="mine_more_settings">更多设置</string>
     <string name="mine_export">导出课表</string>
     <string name="mine_export_coming">导出课表 — 该功能开发中，后续版本支持 ICS 导出</string>
     <string name="mine_stat_tables">课表数</string>
@@ -306,7 +305,8 @@
     <string name="theme_name_ocean">海蓝</string>
     <string name="theme_name_peach">蜜桃粉</string>
     <string name="theme_name_slate">石板灰</string>
-    <string name="mine_theme">主题</string>
+    <string name="mine_appearance">外观与显示</string>
+    <string name="mine_general">通用</string>
     <string name="theme_appearance">外观</string>
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>

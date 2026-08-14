@@ -56,7 +56,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ThemeSettingsScreen(
+fun AppearanceScreen(
     onBack: () -> Unit,
     themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
     onThemeModeChange: (String) -> Unit = {}
@@ -69,7 +69,7 @@ fun ThemeSettingsScreen(
     // (WeekGrid 靠系统 configuration change 兜底能变, Glance 不行 → 必须主动 notifyDataChanged)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     fun refreshWidgets() {
-        android.util.Log.e("ThemeSettings", ">>> refreshWidgets() CALLED from ThemeSettingsScreen")
+        android.util.Log.e("Appearance", ">>> refreshWidgets() CALLED from AppearanceScreen")
         widgetScope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
     }
 
@@ -78,7 +78,7 @@ fun ThemeSettingsScreen(
         containerColor = colors.background,
         topBar = {
             TopAppBar(
-                title = { Text(stringResource(R.string.mine_theme)) },
+                title = { Text(stringResource(R.string.mine_appearance)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
                         Icon(Icons.AutoMirrored.Outlined.ArrowBack, stringResource(R.string.back))
