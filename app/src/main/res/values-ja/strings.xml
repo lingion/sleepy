@@ -409,6 +409,8 @@
     <string name="settings_widget">ウィジェット設定</string>
     <string name="settings_widget_colorless">無色モード</string>
     <string name="settings_widget_colorless_sub">ウィジェットの授業カプセルが統一されたグレーになります</string>
+    <string name="settings_widget_separator">週表示の区切り線</string>
+    <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
     <string name="widget_scroll_hint">↑ スクロールで続きを表示</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">入力</string>

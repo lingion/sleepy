@@ -409,6 +409,8 @@
     <string name="settings_widget">Widget settings</string>
     <string name="settings_widget_colorless">Colorless mode</string>
     <string name="settings_widget_colorless_sub">Course capsules use a neutral gray</string>
+    <string name="settings_widget_separator">Week view separator</string>
+    <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
     <string name="widget_scroll_hint">↑ Scroll for more</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Input</string>

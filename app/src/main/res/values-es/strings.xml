@@ -409,6 +409,8 @@
     <string name="settings_widget">Ajustes del widget</string>
     <string name="settings_widget_colorless">Modo sin color</string>
     <string name="settings_widget_colorless_sub">Las cápsulas de cursos usan un gris neutro</string>
+    <string name="settings_widget_separator">Separador vista semanal</string>
+    <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
     <string name="widget_scroll_hint">↑ Desliza para ver más</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>

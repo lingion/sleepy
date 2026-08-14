@@ -67,6 +67,7 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
+    var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
     val scope = rememberCoroutineScope()
 
     val languages = listOf(
@@ -168,6 +169,16 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
                         onCheckedChange = {
                             widgetColorless = it
                             AppPrefs.setWidgetColorless(context, it)
+                            scope.launch { WidgetUpdater.notifyDataChanged(context) }
+                        }
+                    )
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_widget_separator),
+                        subtitle = stringResource(R.string.settings_widget_separator_sub),
+                        checked = widgetSeparator,
+                        onCheckedChange = {
+                            widgetSeparator = it
+                            AppPrefs.setWidgetSeparator(context, it)
                             scope.launch { WidgetUpdater.notifyDataChanged(context) }
                         }
                     )

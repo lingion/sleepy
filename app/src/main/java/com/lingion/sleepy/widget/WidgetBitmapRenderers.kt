@@ -385,6 +385,7 @@ object WidgetBitmapRenderers {
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
+        val showSeparator = AppPrefs.isWidgetSeparator(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -451,13 +452,13 @@ object WidgetBitmapRenderers {
                 canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
                 cy += chipH + 4f * density  // 4dp gap (DaySummaryCell L624)
 
-                // 课程 mini-list — 最多2行换行 + 课程间分隔线
+                // 课程 mini-list — 最多2行换行 + 课程间分隔线(可选)
                 p.textSize = 9f * density
                 p.typeface = Typeface.DEFAULT
                 p.style = Paint.Style.FILL
                 val textPad = 4f * density
                 val maxTextWidth = colW - textPad * 2
-                val courseGap = 2f * density  // spacedBy(2.dp)
+                val courseGap = 3f * density  // 3dp (原2dp太紧, workflow验证阶段推荐3dp对齐胶囊版)
                 val fm = p.fontMetrics
                 val lineH = fm.descent - fm.ascent
                 val courses = day.courses.take(5)
@@ -475,16 +476,20 @@ object WidgetBitmapRenderers {
                         cy += lineH
                     }
 
-                    // 课程间分隔线 (首门前/末门后不画)
+                    // 课程间分隔: 开关ON→可见1dp@40%线; OFF→纯3dp留白
                     if (idx < courses.size - 1) {
-                        cy += courseGap / 2f
-                        p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x20000000
-                        p.style = Paint.Style.STROKE
-                        p.strokeWidth = 0.5f * density
-                        canvas.drawLine(x + textPad, cy, x + colW - textPad, cy, p)
-                        p.style = Paint.Style.FILL
-                        p.strokeWidth = 0f
-                        cy += courseGap / 2f
+                        if (showSeparator) {
+                            cy += courseGap / 2f
+                            p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x66000000
+                            p.style = Paint.Style.STROKE
+                            p.strokeWidth = 1f * density
+                            canvas.drawLine(x + textPad, cy, x + colW - textPad, cy, p)
+                            p.style = Paint.Style.FILL
+                            p.strokeWidth = 0f
+                            cy += courseGap / 2f
+                        } else {
+                            cy += courseGap
+                        }
                     } else {
                         cy += courseGap
                     }
