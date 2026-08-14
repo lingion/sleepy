@@ -169,26 +169,19 @@
     <string name="mine_stat_courses">課程數</string>
     <string name="mine_stat_week">目前週</string>
 
-    <string name="settings_title">更多設定</string>
     <string name="settings_language">語言 / Language</string>
     <string name="settings_display_mode">課程時間顯示</string>
     <string name="settings_display_node">統一顯示節次</string>
     <string name="settings_display_node_sub">所有課程顯示為「第N節」</string>
     <string name="settings_display_time">統一顯示時間</string>
     <string name="settings_display_time_sub">所有課程顯示為「HH:mm–HH:mm」</string>
-    <string name="settings_grid_view">網格檢視</string>
     <string name="settings_show_date">課表顯示日期</string>
     <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>
     <string name="settings_visible_days">顯示星期</string>
     <string name="settings_visible_days_sub">取消勾選的星期將在所有檢視中隱藏</string>
 
-    <string name="theme_title">主題顏色</string>
-    <string name="theme_presets">預設主題</string>
     <string name="theme_system">跟隨系統</string>
     <string name="theme_system_desc">Material You 動態取色（Android 12+）</string>
-    <string name="theme_system_needs_12">跟隨系統需要 Android 12 及以上。</string>
-    <string name="theme_switched_system">已切換為跟隨系統</string>
-    <string name="theme_switched_preset">已切換為 %1$s</string>
 
     <string name="view_full">週檢視</string>
     <string name="view_cards">網格</string>

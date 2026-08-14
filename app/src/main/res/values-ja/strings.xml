@@ -169,26 +169,19 @@
     <string name="mine_stat_courses">授業数</string>
     <string name="mine_stat_week">現在の週</string>
 
-    <string name="settings_title">その他の設定</string>
     <string name="settings_language">言語 / Language</string>
     <string name="settings_display_mode">時間表示</string>
     <string name="settings_display_node">時限で統一</string>
     <string name="settings_display_node_sub">すべての授業を「第N時限」と表示</string>
     <string name="settings_display_time">時刻で統一</string>
     <string name="settings_display_time_sub">すべての授業を「HH:mm–HH:mm」と表示</string>
-    <string name="settings_grid_view">グリッドビュー</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>
     <string name="settings_visible_days_sub">チェックを外した曜日はすべてのビューで非表示になります</string>
 
-    <string name="theme_title">テーマカラー</string>
-    <string name="theme_presets">プリセット</string>
     <string name="theme_system">システムに従う</string>
     <string name="theme_system_desc">Material You ダイナミックカラー (Android 12+)</string>
-    <string name="theme_system_needs_12">システムに従うには Android 12 以上が必要です。</string>
-    <string name="theme_switched_system">システムに従うに切り替えました</string>
-    <string name="theme_switched_preset">%1$s に切り替えました</string>
 
     <string name="view_full">週表示</string>
     <string name="view_cards">グリッド</string>

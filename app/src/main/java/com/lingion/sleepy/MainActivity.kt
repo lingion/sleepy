@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -163,7 +164,9 @@ private fun AppRoot(
 ) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
-    var overlayScreen by remember { mutableStateOf<OverlayScreen?>(null) }
+    // ★ 语言切换触发 Activity.recreate() 后, 用 rememberSaveable 保留 overlayScreen 导航状态,
+    //   否则用户切语言后会丢失设置页上下文、退回主 Tab(决策 D2 重排修复)。
+    var overlayScreen by rememberSaveable { mutableStateOf<OverlayScreen?>(null) }
     var editTableId by remember { mutableStateOf<Long?>(null) }
     var pendingNewTableId by remember { mutableStateOf<Long?>(null) }
     var previousDefaultTableId by remember { mutableStateOf<Long?>(null) }

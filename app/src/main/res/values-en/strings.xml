@@ -170,26 +170,19 @@
     <string name="mine_stat_courses">Courses</string>
     <string name="mine_stat_week">Week</string>
 
-    <string name="settings_title">More Settings</string>
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>
     <string name="settings_display_node">Show as periods</string>
     <string name="settings_display_node_sub">All courses show as \"Period N\"</string>
     <string name="settings_display_time">Show as times</string>
     <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
-    <string name="settings_grid_view">Grid View</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>
     <string name="settings_visible_days_sub">Unchecked days are hidden in all views</string>
 
-    <string name="theme_title">Theme Color</string>
-    <string name="theme_presets">Preset Themes</string>
     <string name="theme_system">Follow System</string>
     <string name="theme_system_desc">Material You dynamic color (Android 12+)</string>
-    <string name="theme_system_needs_12">Follow System requires Android 12 or above.</string>
-    <string name="theme_switched_system">Switched to Follow System</string>
-    <string name="theme_switched_preset">Switched to %1$s</string>
 
     <string name="view_full">Week</string>
     <string name="view_cards">Grid</string>

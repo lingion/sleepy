@@ -197,14 +197,12 @@
     <string name="mine_stat_week">当前周</string>
 
     <!-- More Settings -->
-    <string name="settings_title">更多设置</string>
     <string name="settings_language">语言 / Language</string>
     <string name="settings_display_mode">课程时间显示</string>
     <string name="settings_display_node">统一显示节次</string>
     <string name="settings_display_node_sub">所有课程显示为「第N节」</string>
     <string name="settings_display_time">统一显示时间</string>
     <string name="settings_display_time_sub">所有课程显示为「HH:mm–HH:mm」</string>
-    <string name="settings_grid_view">网格视图</string>
     <string name="settings_show_date">课表显示日期</string>
     <string name="settings_show_date_sub">在每列表头显示具体日期（月/日）</string>
     <string name="settings_visible_days">显示星期</string>
@@ -218,13 +216,8 @@
     <string name="settings_widget_separator_sub">纯文字周视图中课程名之间是否显示分隔线</string>
 
     <!-- Theme -->
-    <string name="theme_title">主题颜色</string>
-    <string name="theme_presets">预设主题</string>
     <string name="theme_system">跟随系统</string>
     <string name="theme_system_desc">Material You 动态取色（Android 12+）</string>
-    <string name="theme_system_needs_12">跟随系统需要 Android 12 及以上。</string>
-    <string name="theme_switched_system">已切换为跟随系统</string>
-    <string name="theme_switched_preset">已切换为 %1$s</string>
 
     <!-- Schedule view modes -->
     <string name="view_full">周视图</string>

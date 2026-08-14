@@ -126,12 +126,10 @@ fun ReminderScreen(onBack: () -> Unit) {
                 requestNotificationPermission()
             }
         } else {
+            // ★ 关闭 master 只设 reminder_master=false + cancelAll(); scheduleAll 与各 Receiver 均双重检查
+            //   isReminderEnabled, 无需覆写子开关(否则重开 master 后 daily/beforeClass 配置全丢)。
             masterEnabled = false
-            dailyEnabled = false
-            beforeClassEnabled = false
             AppPrefs.setReminderEnabled(context, false)
-            AppPrefs.setDailyReminderEnabled(context, false)
-            AppPrefs.setBeforeClassEnabled(context, false)
             SleepyApp.get().notificationScheduler.cancelAll()
         }
     }

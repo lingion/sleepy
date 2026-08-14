@@ -169,26 +169,19 @@
     <string name="mine_stat_courses">Cursos</string>
     <string name="mine_stat_week">Semana</string>
 
-    <string name="settings_title">Más ajustes</string>
     <string name="settings_language">Idioma / Language</string>
     <string name="settings_display_mode">Visualización de hora</string>
     <string name="settings_display_node">Mostrar como períodos</string>
     <string name="settings_display_node_sub">Todos los cursos muestran \"Período N\"</string>
     <string name="settings_display_time">Mostrar como horas</string>
     <string name="settings_display_time_sub">Todos los cursos muestran \"HH:mm–HH:mm\"</string>
-    <string name="settings_grid_view">Vista de cuadrícula</string>
     <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>
     <string name="settings_visible_days_sub">Los días desmarcados se ocultan en todas las vistas</string>
 
-    <string name="theme_title">Color del tema</string>
-    <string name="theme_presets">Temas predefinidos</string>
     <string name="theme_system">Seguir sistema</string>
     <string name="theme_system_desc">Material You color dinámico (Android 12+)</string>
-    <string name="theme_system_needs_12">Seguir sistema requiere Android 12 o superior.</string>
-    <string name="theme_switched_system">Cambiado a Seguir sistema</string>
-    <string name="theme_switched_preset">Cambiado a %1$s</string>
 
     <string name="view_full">Semana</string>
     <string name="view_cards">Cuadrícula</string>
