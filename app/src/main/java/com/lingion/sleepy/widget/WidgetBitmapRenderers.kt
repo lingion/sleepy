@@ -91,7 +91,8 @@ object WidgetBitmapRenderers {
 
     private fun drawCourse(
         c: Canvas, p: Paint, course: CourseEntity, timeJson: String, x: Float, y: Float, w: Float, h: Float,
-        scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false
+        scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false,
+        displayMode: String = "node"
     ) {
         // 统一取色入口 (决策 D3) — colorless 灰底传 scheme.surfaceVariant 的 Int 值
         val bgColor = CourseColorUtil.pickCourseColorInt(course, scheme.isDark, scheme.surfaceVariant, colorless)
@@ -100,14 +101,20 @@ object WidgetBitmapRenderers {
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
 
         // 时间 + 地点 — 先算 meta 文本 (需要知道是否有第二行才能居中)
-        val timeStr = TimeTableUtils.courseTimeString(
-            courseStartNode = course.startNode,
-            courseStep = course.step,
-            timeJson = timeJson,
-            ownTime = course.ownTime,
-            startTime = course.startTime,
-            endTime = course.endTime
-        ) ?: ""
+        // ★ displayMode (决策 D5-12, 对齐 CourseTableView.LessonRow):
+        //   "time" → 具体时间段 "08:00-09:35"; "node"(默认) → 节次 "3-4节"
+        val timeStr = if (displayMode == "time" && timeJson.isNotBlank()) {
+            TimeTableUtils.courseTimeString(
+                courseStartNode = course.startNode,
+                courseStep = course.step,
+                timeJson = timeJson,
+                ownTime = course.ownTime,
+                startTime = course.startTime,
+                endTime = course.endTime
+            ) ?: course.shortNodeString(SleepyApp.get())
+        } else {
+            course.shortNodeString(SleepyApp.get())
+        }
         val meta = if (course.room.isNotBlank()) "$timeStr · ${course.room}" else timeStr
         val hasMeta = meta.isNotBlank()
 
@@ -165,6 +172,9 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
+        // ★ 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
+        val displayMode = AppPrefs.getDisplayMode(context)
+        val showDate = AppPrefs.isShowDate(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -179,7 +189,7 @@ object WidgetBitmapRenderers {
         val pad = 14f * density
         var y = pad
 
-        // 标题行：今天 · 周X  +  日期
+        // 标题行：今天 · 周X  +  日期 (★ showDate=false 时隐藏右侧日期, 对齐课表页设置)
         val ctx = SleepyApp.get()
         p.color = s.primary
         p.textSize = 13f * density
@@ -187,12 +197,14 @@ object WidgetBitmapRenderers {
         val titleStr = "${ctx.getString(R.string.today_today)} · ${DateUtils.localizedDay(data.date.dayOfWeek.value, ctx)}"
         canvas.drawText(titleStr, pad, y + 13f * density, p)
 
-        p.color = s.onSurfaceVariant
-        p.textSize = 12f * density
-        p.typeface = Typeface.DEFAULT
-        val dateStr = "${data.date.monthValue}/${data.date.dayOfMonth}"
-        val dateWidth = p.measureText(dateStr)
-        canvas.drawText(dateStr, w - pad - dateWidth, y + 13f * density, p)
+        if (showDate) {
+            p.color = s.onSurfaceVariant
+            p.textSize = 12f * density
+            p.typeface = Typeface.DEFAULT
+            val dateStr = "${data.date.monthValue}/${data.date.dayOfMonth}"
+            val dateWidth = p.measureText(dateStr)
+            canvas.drawText(dateStr, w - pad - dateWidth, y + 13f * density, p)
+        }
 
         y += 24f * density
 
@@ -222,7 +234,8 @@ object WidgetBitmapRenderers {
         val rowW = w - pad * 2
 
         data.courses.forEachIndexed { idx, course ->
-            drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density, fontSizeSp = 12f, colorless = colorless)
+            drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density,
+                fontSizeSp = 12f, colorless = colorless, displayMode = displayMode)
             y += rowH
             if (idx < data.courses.size - 1) y += rowGap
         }
@@ -239,6 +252,11 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
+        // ★ visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
+        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
+        val visibleDays = AppPrefs.getVisibleDays(context)
+        val shownDays = if (visibleDays.isEmpty()) data.days
+            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -254,7 +272,7 @@ object WidgetBitmapRenderers {
         val innerW = w - outerPad * 2
         val innerH = h - outerPad * 2
 
-        if (!data.hasTable || data.days.isEmpty()) {
+        if (!data.hasTable || shownDays.isEmpty()) {
             p.color = s.onSurface
             p.textSize = 15f * density
             canvas.drawText(SleepyApp.get().getString(R.string.widget_create_schedule),
@@ -264,11 +282,12 @@ object WidgetBitmapRenderers {
 
         val todayDow = LocalDate.now().dayOfWeek.value
         val colGap = 4f * density
-        val colW = (innerW - colGap * 6) / 7
+        val dayCount = shownDays.size
+        val colW = (innerW - colGap * (dayCount - 1)) / dayCount
 
-        // 7 列
-        for (i in data.days.indices) {
-            val day = data.days[i]
+        // 列数随 visibleDays 变化 (原硬编码 7 列)
+        for (i in shownDays.indices) {
+            val day = shownDays[i]
             val x = outerPad + i * (colW + colGap)
             val isToday = day.dayOfWeek == todayDow
             val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
@@ -351,6 +370,11 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val showSeparator = AppPrefs.isWidgetSeparator(context)
+        // ★ visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
+        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
+        val visibleDays = AppPrefs.getVisibleDays(context)
+        val shownDays = if (visibleDays.isEmpty()) data.days
+            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -366,7 +390,7 @@ object WidgetBitmapRenderers {
         val innerW = w - outerPad * 2
         val innerH = h - outerPad * 2
 
-        if (!data.hasTable || data.days.isEmpty()) {
+        if (!data.hasTable || shownDays.isEmpty()) {
             p.color = s.onSurface
             p.textSize = 15f * density
             canvas.drawText(SleepyApp.get().getString(R.string.widget_create_schedule),
@@ -376,11 +400,12 @@ object WidgetBitmapRenderers {
 
         val todayDow = LocalDate.now().dayOfWeek.value
         val colGap = 4f * density
-        val colW = (innerW - colGap * 6) / 7
+        val dayCount = shownDays.size
+        val colW = (innerW - colGap * (dayCount - 1)) / dayCount
 
-        // 7 列
-        for (i in data.days.indices) {
-            val day = data.days[i]
+        // 列数随 visibleDays 变化 (原硬编码 7 列)
+        for (i in shownDays.indices) {
+            val day = shownDays[i]
             val x = outerPad + i * (colW + colGap)
             val isToday = day.dayOfWeek == todayDow
             val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
@@ -475,6 +500,9 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
+        // ★ 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
+        val displayMode = AppPrefs.getDisplayMode(context)
+        val showDate = AppPrefs.isShowDate(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -526,10 +554,13 @@ object WidgetBitmapRenderers {
             canvas.drawText(title, colX, listTop + 12f * density, p)
             val titleW = p.measureText(title)
 
-            p.color = s.onSurfaceVariant
-            p.textSize = 10f * density
-            p.typeface = Typeface.DEFAULT
-            canvas.drawText(day.dayLabel, colX + titleW + 6f * density, listTop + 12f * density, p)
+            // ★ showDate=false 时隐藏列标题旁的日期 (对齐课表页设置)
+            if (showDate) {
+                p.color = s.onSurfaceVariant
+                p.textSize = 10f * density
+                p.typeface = Typeface.DEFAULT
+                canvas.drawText(day.dayLabel, colX + titleW + 6f * density, listTop + 12f * density, p)
+            }
 
             var cy = listTop + 20f * density
 
@@ -542,7 +573,8 @@ object WidgetBitmapRenderers {
                 val rowGap = 8f * density
                 val maxRowH = 44f * density
                 day.courses.forEach { course ->
-                    drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density, fontSizeSp = 10f, colorless = colorless)
+                    drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density,
+                        fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
                     cy += maxRowH + rowGap
                 }
             }
