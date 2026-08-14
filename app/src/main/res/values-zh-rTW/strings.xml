@@ -30,7 +30,7 @@
     <string name="manage_manual_add">手動新增課程</string>
     <string name="manage_manual_add_sub">直接新增一門課程到目前課表</string>
     <string name="table_info">開始日期: %1$s  |  第%2$d週  |  %3$d門課</string>
-    <string name="current_table_week">當前課表 · 第%1$d週</string>
+    <string name="current_table_week">目前課表 · 第%1$d週</string>
     <string name="table_start_date">開始日期: %1$s</string>
     <string name="all_tables">所有課表</string>
     <string name="all_tables_new">建立課表</string>
@@ -83,18 +83,18 @@
     <string name="import_select_table">請先選擇課表</string>
     <string name="read_failed">讀取失敗: %1$s</string>
     <string name="cannot_read_file">無法讀取檔案</string>
-    <string name="import_preview_sub">先預覽，再導入，不讓課表被一把覆蓋</string>
-    <string name="format_wakeup_share">WakeUp 分享文本</string>
+    <string name="import_preview_sub">先預覽，再匯入，不讓課表被一把覆蓋</string>
+    <string name="format_wakeup_share">WakeUp 分享文字</string>
     <string name="format_wakeup_desc">【來自WakeUp課程表】開頭</string>
     <string name="format_wakeup_json">WakeUp JSON</string>
-    <string name="format_json_desc">導出文件 .json</string>
+    <string name="format_json_desc">匯出檔案 .json</string>
     <string name="format_ics">ICS 日曆</string>
-    <string name="format_ics_desc">可從學校教務處導出</string>
-    <string name="format_csv">CSV 文件</string>
+    <string name="format_ics_desc">可從學校教務處匯出</string>
+    <string name="format_csv">CSV 檔案</string>
     <string name="format_csv_desc">含表頭的 .csv，逗號分隔</string>
     <string name="format_html">HTML 表格</string>
     <string name="format_html_desc">&lt;table&gt; 形式，識別表頭後逐行解析</string>
-    <string name="format_plain">純文本</string>
+    <string name="format_plain">純文字</string>
     <string name="format_plain_desc">一行一課，製表符分隔</string>
     <string name="import_start_date_required">請填寫學期開始日期</string>
     <string name="start_date_format">日期格式應為YYYY-MM-DD</string>
@@ -203,8 +203,8 @@
     <string name="action_close">關閉</string>
 
     <!-- Widget / Common UI -->
-    <string name="widget_create_schedule">請先創建課表</string>
-    <string name="widget_open_sleepy">打開 Sleepy 開始添加</string>
+    <string name="widget_create_schedule">請先建立課表</string>
+    <string name="widget_open_sleepy">開啟 Sleepy 開始新增</string>
     <string name="more_sections">還有 %1$d 節…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 節課程</string>
@@ -245,7 +245,7 @@
     <string name="select_time">選擇時間</string>
 
     <!-- Time Slot Editor -->
-    <string name="add_period">添加一節</string>
+    <string name="add_period">新增一節</string>
     <string name="start_label">開始</string>
     <string name="end_label">結束</string>
     <string name="delete_period">刪除此節</string>
@@ -426,7 +426,7 @@
     <string name="period_time_range">第%1$s節  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 分鐘連續</string>
     <string name="break_continuous_n">  ↓ %1$d 分鐘 %2$s</string>
-    <string name="add_label">添加%1$s</string>
+    <string name="add_label">新增%1$s</string>
     <string name="mode_manual">手動模式</string>
     <string name="mode_auto">自動模式</string>
     <string name="label_from">起</string>

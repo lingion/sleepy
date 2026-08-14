@@ -95,7 +95,7 @@
     <string name="format_html">HTMLテーブル</string>
     <string name="format_html_desc">&lt;table&gt;形式、ヘッダー検出後に行ごとに解析</string>
     <string name="format_plain">プレーンテキスト</string>
-    <string name="format_plain_desc">1行1コース、タブ区切り</string>
+    <string name="format_plain_desc">1行1授業、タブ区切り</string>
     <string name="import_start_date_required">学期開始日を入力してください</string>
     <string name="start_date_format">日付形式はYYYY-MM-DDで入力してください</string>
     <string name="slot_time_required">第%1$d時限の時間が必要です</string>
@@ -142,7 +142,7 @@
     <string name="end_time">終了時刻</string>
     <string name="mode_by_node">時限で</string>
     <string name="mode_by_time">時刻で</string>
-    <string name="course_name_empty">コース名が必要です</string>
+    <string name="course_name_empty">授業名が必要です</string>
     <string name="week_must_be_positive">週は0より大きくなければなりません</string>
     <string name="slot_at_least_one_day">スロット %1$d は最低1日必要です</string>
     <string name="slot_start_node_positive">スロット %1$d の開始時限は0より大きくなければなりません</string>
@@ -329,7 +329,7 @@
     <string name="action_confirm">OK</string>
     <string name="course_color">色</string>
     <string name="export_copied_hint">共有パネルを開きました</string>
-    <string name="export_course_count">%1$d 科目</string>
+    <string name="export_course_count">%1$d 授業</string>
     <string name="export_failed">エクスポート失敗、再試行してください</string>
     <string name="export_ics_subtitle">標準 iCalendar 形式、システムカレンダー / Google / Apple Calendar にインポート可能</string>
     <string name="export_ics_title">ICS カレンダー</string>
@@ -350,8 +350,8 @@
     <string name="jw_pending_grad">大学院</string>
     <string name="jw_pending_input_url">URL を手動入力</string>
     <string name="jw_pending_legacy">旧版</string>
-    <string name="jw_pending_manual">手動で科目を追加</string>
-    <string name="jw_pending_msg">%1$s の教務システムは Sleepy の対応リストにありません。\n\n以下の方法があります：\n1.「対応をリクエスト」をタップして開発者に送信\n2.「URL を手動入力」をタップして WebView で開きログイン\n3. 一時的に HTML / CSV ファイルからインポート、または手動で科目を追加</string>
+    <string name="jw_pending_manual">手動で授業を追加</string>
+    <string name="jw_pending_msg">%1$s の教務システムは Sleepy の対応リストにありません。\n\n以下の方法があります：\n1.「対応をリクエスト」をタップして開発者に送信\n2.「URL を手動入力」をタップして WebView で開きログイン\n3. 一時的に HTML / CSV ファイルからインポート、または手動で授業を追加</string>
     <string name="jw_pending_pending">未対応</string>
     <string name="jw_pending_supported">対応済み</string>
     <string name="jw_pending_title">この学校の教務インポートは未実装です</string>
@@ -384,7 +384,7 @@
     <string name="reminder_daily_sub">指定した時刻に毎日の授業サマリーを通知</string>
     <string name="reminder_daily_time_label">リマインダー時刻</string>
     <string name="reminder_daily_title">毎日リマインダー</string>
-    <string name="reminder_fluid_field_name">科目名</string>
+    <string name="reminder_fluid_field_name">授業名</string>
     <string name="reminder_fluid_field_room">教室</string>
     <string name="reminder_fluid_field_teacher">担当教員</string>
     <string name="reminder_fluid_field_time">時刻</string>
@@ -402,7 +402,7 @@
     <string name="school_pinyin_hint">ピンイン頭文字 / 学校の英語略称 に対応（例: hrbeu）</string>
     <string name="semester_out_of_range">現在は学期の範囲外です</string>
     <string name="settings_vert_punct">縦書き記号の最適化</string>
-    <string name="settings_vert_punct_sub">科目名の縦書き表示時に（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
+    <string name="settings_vert_punct_sub">授業名の縦書き表示時に（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
     <string name="settings_widget">ウィジェット設定</string>
     <string name="settings_widget_colorless">授業の背景色を統一</string>
     <string name="settings_widget_colorless_sub">アプリ内とウィジェットの授業背景色をニュートラルグレーに統一します。色をカスタマイズした授業には適用されません</string>
@@ -432,11 +432,11 @@
     <string name="label_from">開始</string>
     <string name="schedule_jump_week">週にジャンプ</string>
     <string name="schedule_empty_name">「%1$s」はまだ空です</string>
-    <string name="schedule_empty_name_hint">この時間割に科目を追加するか、新しい時間割をインポート</string>
+    <string name="schedule_empty_name_hint">この時間割に授業を追加するか、新しい時間割をインポート</string>
     <string name="course_count_format">%1$d コマ</string>
     <string name="today_suffix"> ・今日</string>
     <string name="no_course_today"> ・授業なし</string>
-    <string name="default_course_name">科目</string>
+    <string name="default_course_name">授業</string>
     <string name="default_room">教室</string>
     <string name="error_unknown">不明なエラー</string>
     <string name="error_no_version_found">本サイトでもミラーでもバージョンが見つかりません</string>
