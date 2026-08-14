@@ -34,7 +34,6 @@
     <string name="table_start_date">開始日期: %1$s</string>
     <string name="all_tables">所有課表</string>
     <string name="all_tables_new">建立課表</string>
-    <string name="all_tables_switch">切換為目前</string>
     <string name="edit_table_title">編輯課表</string>
     <string name="edit_table_basic_info">基本資訊</string>
     <string name="edit_table_name">課表名稱</string>
@@ -158,13 +157,7 @@
 
     <string name="mine_title">我的</string>
     <string name="mine_subtitle">管理你的課表與設定</string>
-    <string name="mine_reminder">每日提醒</string>
-    <string name="mine_reminder_on">已開啟每日 7:00 課程提醒</string>
-    <string name="mine_reminder_off">已關閉每日提醒</string>
-    <string name="mine_dark_mode">深色模式</string>
-    <string name="mine_theme_color">主題顏色</string>
     <string name="mine_export">匯出課表</string>
-    <string name="mine_export_coming">匯出課表 — 此功能開發中，後續版本支援 ICS 匯出</string>
     <string name="mine_stat_tables">課表數</string>
     <string name="mine_stat_courses">課程數</string>
     <string name="mine_stat_week">目前週</string>
@@ -250,7 +243,6 @@
     <string name="end_label">結束</string>
     <string name="delete_period">刪除此節</string>
 
-    <string name="mine_about_title">關於 Sleepy 課表</string>
     <string name="mine_about">關於</string>
     <string name="mine_about_body">Sleepy 課表 v%1$s\n\n一個極簡、乾淨、本地優先的課表工具。\n所有資料均儲存在你的裝置上，不上傳任何伺服器。\n\n· 無廣告\n· 無追蹤\n· 支援 WakeUp / ICS / CSV / HTML / 純文字 匯入</string>
 
@@ -266,8 +258,6 @@
 
     <!-- Localized date / theme display -->
     <string name="date_long_format">%1$d月%2$d日</string>
-    <string name="notif_channel_name">每日課程提醒</string>
-    <string name="notif_channel_desc">每天早上推送今日課程安排</string>
     <string name="notif_title">今日課程 — %1$s %2$s</string>
     <string name="notif_text">點擊查看今日課程安排</string>
     <string name="theme_name_default">預設淡紫</string>
@@ -317,11 +307,6 @@
     <string name="about_update">取得更新</string>
     <string name="about_update_checking">正在檢查更新…</string>
     <string name="about_update_detail">GitHub 主站不可用時，可改用鏡像下載</string>
-    <string name="about_update_downloading">正在取得更新…</string>
-    <string name="about_update_failed">更新失敗：%1$s</string>
-    <string name="about_update_github">從 GitHub 取得</string>
-    <string name="about_update_mirror">從鏡像 gh.qdp.qzz.io 取得</string>
-    <string name="about_update_ready">已下載 v%1$s，正在開啟系統安裝器</string>
     <string name="about_version">版本資訊</string>
     <string name="about_version_detail">版本 %1$s（建構 %2$d）</string>
     <string name="action_cancel">取消</string>

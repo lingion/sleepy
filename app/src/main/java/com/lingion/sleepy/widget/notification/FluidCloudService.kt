@@ -147,7 +147,6 @@ class FluidCloudService : Service() {
 
     companion object {
         private const val UPDATE_INTERVAL_MS = 15_000L
-        const val MODE_A = "progress_style"
-        const val MODE_B = "marquee"
+        // MODE_A / MODE_B 死常量已删（从未被读取——服务固定走 ProgressStyle 进度条模式）
     }
 }

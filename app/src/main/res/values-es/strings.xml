@@ -34,7 +34,6 @@
     <string name="table_start_date">Inicio: %1$s</string>
     <string name="all_tables">Todos los horarios</string>
     <string name="all_tables_new">Nuevo horario</string>
-    <string name="all_tables_switch">Establecer como actual</string>
     <string name="edit_table_title">Editar horario</string>
     <string name="edit_table_basic_info">Información básica</string>
     <string name="edit_table_name">Nombre del horario</string>
@@ -158,13 +157,7 @@
 
     <string name="mine_title">Ajustes</string>
     <string name="mine_subtitle">Gestiona horarios y configuración</string>
-    <string name="mine_reminder">Recordatorio diario</string>
-    <string name="mine_reminder_on">Recordatorio diario a las 7:00 activado</string>
-    <string name="mine_reminder_off">Recordatorio diario desactivado</string>
-    <string name="mine_dark_mode">Modo oscuro</string>
-    <string name="mine_theme_color">Color del tema</string>
     <string name="mine_export">Exportar</string>
-    <string name="mine_export_coming">Exportar — disponible en futuras actualizaciones (soporte ICS)</string>
     <string name="mine_stat_tables">Horarios</string>
     <string name="mine_stat_courses">Cursos</string>
     <string name="mine_stat_week">Semana</string>
@@ -250,7 +243,6 @@
     <string name="end_label">Fin</string>
     <string name="delete_period">Eliminar este período</string>
 
-    <string name="mine_about_title">Acerca de Sleepy</string>
     <string name="mine_about">Acerca de</string>
     <string name="mine_about_body">Sleepy Horario v%1$s\n\nUna aplicación de horario minimalista, limpia y local.\nTodos los datos se guardan en tu dispositivo — nada se sube a servidores.\n\n· Sin anuncios\n· Sin rastreo\n· Compatible con WakeUp / ICS / CSV / HTML / texto plano</string>
 
@@ -266,8 +258,6 @@
 
     <!-- Localized date / theme display -->
     <string name="date_long_format">%1$d/%2$d</string>
-    <string name="notif_channel_name">Recordatorio diario de clases</string>
-    <string name="notif_channel_desc">Notificación diaria con las clases del día</string>
     <string name="notif_title">Clases de hoy — %1$s %2$s</string>
     <string name="notif_text">Toca para ver el horario de hoy</string>
     <string name="theme_name_default">Lila</string>
@@ -317,11 +307,6 @@
     <string name="about_update">Buscar actualizaciones</string>
     <string name="about_update_checking">Comprobando actualizaciones…</string>
     <string name="about_update_detail">Si GitHub no está disponible, puedes descargar desde el espejo</string>
-    <string name="about_update_downloading">Descargando actualización…</string>
-    <string name="about_update_failed">Error de actualización: %1$s</string>
-    <string name="about_update_github">Obtener de GitHub</string>
-    <string name="about_update_mirror">Obtener del espejo gh.qdp.qzz.io</string>
-    <string name="about_update_ready">Descargada v%1$s, abriendo instalador del sistema</string>
     <string name="about_version">Versión</string>
     <string name="about_version_detail">Versión %1$s (Compilación %2$d)</string>
     <string name="action_cancel">Cancelar</string>

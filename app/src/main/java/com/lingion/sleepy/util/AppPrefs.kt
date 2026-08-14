@@ -151,9 +151,7 @@ object AppPrefs {
         (sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_FIELDS, "name,time,room,teacher")
             ?: "name,time,room,teacher").split(",").filter { it.isNotBlank() }.toSet()
 
-    fun setBeforeClassFluidFields(ctx: Context, fields: Set<String>) {
-        sp(ctx).edit().putString(KEY_BEFORE_CLASS_FLUID_FIELDS, fields.joinToString(",")).apply()
-    }
+    // setBeforeClassFluidFields 死写路径已删（legacy 多选写入口, 全库零调用; 读取仅 BeforeClassNotifyReceiver 用旧数据）
 
     fun getBeforeClassFluidPrimary(ctx: Context): String =
         sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_PRIMARY, "room") ?: "room"

@@ -247,8 +247,5 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     }
 }
 
-private fun findCourseTime(course: CourseEntity): String? {
-    // 已被 TimeTableUtils.courseTimeString 取代，保留为空函数避免其他地方误调
-    return null
-}
+// findCourseTime 空函数已删（死代码清理: 注释自述被 TimeTableUtils.courseTimeString 取代, 全库零调用）。
 // pickCourseColor / isPaletteDark / hslToColor 三函数已收敛至 util/CourseColorUtil.kt（决策 D3 单一事实来源）

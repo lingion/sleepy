@@ -138,7 +138,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     ((this.green * 255).toInt() shl 8) or (this.blue * 255).toInt()
             val bgSurface       = scheme.surface.toIntArgb()
             val bgContainer     = scheme.surfaceContainer.toIntArgb()
-            val bgCell          = scheme.surface.toIntArgb()
             val bgToday         = scheme.primaryContainer.toIntArgb()
             val fgPrimary       = scheme.primary.toIntArgb()
             val fgOnSurface     = scheme.onSurface.toIntArgb()
@@ -370,7 +369,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
 
-                    val nameChars = course.courseName.filter { it != '\n' && it != ' ' }.toList()
+                    // nameChars 死变量已删 (v21 起 token 化走 tokenizeName, 不再用字符列表)
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
@@ -502,14 +501,8 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
                         c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
-                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px charSize=${charSize.toInt()}px availH=${nameAvailH.toInt()}px " +
-                            "name='${course.courseName}'(drawn=${drawn.size}${if(showEllipsis)"+…"else ""} h=${cumH.toInt()}px) " +
-                            "room='${roomStr}'(${roomStr.length}→${roomVisible.length}chars max=$maxRoomChars)")
-                    } else {
-                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px charSize=${charSize.toInt()}px availH=${nameAvailH.toInt()}px " +
-                            "name='${course.courseName}'(drawn=${drawn.size}${if(showEllipsis)"+…"else ""} h=${cumH.toInt()}px) " +
-                            "room=none")
                     }
+                    // 循环内 Log.d 渲染调试日志已删（每张课程卡都求值字符串模板, Release 也无法被 R8 消除）
                 }
             }
 
@@ -602,7 +595,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 // 方案B: 标点先替换为 Vertical Forms → 归为 CJK 直立
                 val c = if (useVertForms && ch in VERT_FORM_MAP) VERT_FORM_MAP[ch]!! else ch
                 val t = when {
-                    isLatin(c) && isLatin(c) -> TT.LATIN
                     isCJK(c) -> TT.CJK
                     c in PUNCT_CHARS -> TT.PUNCT
                     isLatin(c) -> TT.LATIN
@@ -655,9 +647,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = AppPrefs.getThemeKey(context)
-            val themeMode = AppPrefs.getThemeMode(context)
-            Log.d(TAG, "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
-            val displayMode = AppPrefs.getDisplayMode(context)
             val showDate = AppPrefs.isShowDate(context)
             val visibleDays = AppPrefs.getVisibleDays(context)
             return try {
@@ -677,7 +666,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
                 if (table == null) {
                     WeekData(days = emptyList(), hasTable = false, isDark = isDark,
-                        themeKey = themeKey, displayMode = displayMode,
+                        themeKey = themeKey,
                         showDate = showDate, visibleDays = visibleDays)
                 } else {
                     val days = daysPerCourse.map { (dow, courses) ->
@@ -685,13 +674,13 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = table.timeJson)
                     }
                     WeekData(days = days, hasTable = true, isDark = isDark,
-                        themeKey = themeKey, displayMode = displayMode,
+                        themeKey = themeKey,
                         showDate = showDate, visibleDays = visibleDays)
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "loadWeekData failed", e)
                 WeekData(days = emptyList(), hasTable = false, isDark = isDark,
-                    themeKey = themeKey, displayMode = displayMode,
+                    themeKey = themeKey,
                     showDate = showDate, visibleDays = visibleDays)
             }
         }

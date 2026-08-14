@@ -48,8 +48,6 @@ import com.lingion.sleepy.data.entity.BreakOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
-
 /**
  * v1.0.16 智慧节次编辑器（自动模式）
  *
@@ -445,7 +443,4 @@ private fun AddBreakChip(
     )
 }
 
-/**
- * 把智慧节次编辑器生成的 rows 转化为 Result 供调用方使用
- */
-fun smartConfigToRows(config: SmartPeriodConfig): List<TimeSlotRow> = config.derive()
+// smartConfigToRows 死函数已删（全库零调用; 调用方直接用 SmartPeriodConfig.derive()）

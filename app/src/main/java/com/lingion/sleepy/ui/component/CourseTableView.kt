@@ -65,11 +65,9 @@ data class TimeSlot(
     val nodeStart: Int,
     val nodeEnd: Int
 ) {
-    val nodeString: String get() = "$nodeStart-$nodeEnd"
+    // nodeString 死属性已删（恒返回 "N-N" 且全库零调用; 界面用的是 CourseEntity.nodeString 本地化版本）
     val timeString: String get() = "$displayStart-$displayEnd"
 }
-
-private val CELL_H = 52.dp
 
 /**
  * Cards 网格视图
@@ -247,20 +245,7 @@ private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun EmptyGridCell(modifier: Modifier = Modifier, isToday: Boolean) {
-    val colors = SleepyTheme.colors
-    Box(
-        modifier = modifier
-            .padding(2.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(
-                width = 0.5.dp,
-                color = colors.outlineVariant.copy(alpha = 0.50f),
-                shape = RoundedCornerShape(12.dp)
-            )
-    )
-}
+// EmptyGridCell 死组件已删（注释自述弃用, 全库零调用——Cards 网格走 SingleTimeHeadCell + CourseOverlayCard）。
 
 @Composable
 private fun CourseOverlayCard(
@@ -370,93 +355,8 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
 }
 
 
-@Composable
-private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
-    val colors = SleepyTheme.colors
-    Box(
-        modifier = modifier
-            .height(CELL_H)
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.surface)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
-            .padding(4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(R.string.period_format_node, slot.label),
-                style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.height(1.dp))
-            Text(
-                text = slot.timeString,
-                style = SleepyTextStyle.micro(),
-                color = colors.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
-
-/**
- * 跨界行的节次栏 — 单节时空 box；跨节时被 Row 高度撑开，渲染 N 个「第X节」标签
- * 按行均匀分布。这是最简版本：和 8a990ea two-layer 方案配套使用，跨节卡片
- * 用 Layout 绝对定位，时间栏只负责每个 node 显示一个「第X节」标签。
- *
- * 当 span>1 时本组件不渲染任何额外视觉框——Box 高度 = slotH，撑开由 Row.height 完成。
- */
-@Composable
-private fun SpannedTimeHeadCell(
-    timeSlots: List<TimeSlot>,
-    startIdx: Int,
-    span: Int,
-    slotH: androidx.compose.ui.unit.Dp,
-    gapH: androidx.compose.ui.unit.Dp,
-    onlyFirst: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    // 实际已不再使用此组件——改走 TwoLayerGrid 的 TimeHeadCell 单节渲染。
-    // 保留此签名以兼容旧引用。
-    val colors = SleepyTheme.colors
-    val slot = timeSlots.getOrNull(startIdx) ?: return
-    val shape = RoundedCornerShape(12.dp)
-    Box(
-        modifier = modifier.fillMaxHeight(),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(2.dp)
-                .clip(shape)
-                .background(colors.surface)
-                .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
-                .padding(4.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = stringResource(R.string.period_format_node, slot.label),
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                    color = colors.onSurface,
-                    maxLines = 1
-                )
-                Spacer(modifier = Modifier.height(1.dp))
-                Text(
-                    text = slot.timeString,
-                    style = SleepyTextStyle.micro(),
-                    color = colors.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
+// TimeHeadCell / SpannedTimeHeadCell 死组件已删（SpannedTimeHeadCell 注释自述弃用,
+// TimeHeadCell 被 SingleTimeHeadCell 取代, 两者全库零调用; CELL_H 常量随之删除）。
 
 // pickCourseColor / isPaletteDark / hslToColor 三函数已收敛至 util/CourseColorUtil.kt（决策 D3 单一事实来源）。
 // 原注释 S/L 值写错（0.48/0.88、0.35/0.26），实际为亮色 S=0.55 L=0.82 / 暗色 S=0.40 L=0.28，正确值见 CourseColorUtil 常量。

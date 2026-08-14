@@ -147,46 +147,22 @@ val DarkScheme = WakeUpColorScheme(
 )
 
 /**
- * Material You 课程主题色（卡片背景）
- * 来源: switchable.html .card.primary/.secondary/.tertiary/.surface/.english/.military/...
+ * 课程色明暗探针调色板（决策 D5-死代码清理）
+ * 原有 10 个命名色（secondary/tertiary/surface/english/… 等 9 个）全库零读取，已删；
+ * 仅保留 primary —— CourseColorUtil.isPaletteDark 读它的亮度判定明暗模式。
+ * 课程实际配色走 CourseColorUtil 黄金角 HSL（groupId 撒色），不走本调色板。
  */
 data class CoursePalette(
-    val primary: Color,        // 高数 / 主课
-    val secondary: Color,      // 英语 / 外语
-    val tertiary: Color,       // 史纲 / 思政
-    val surface: Color,        // 体育 / 通用
-    val english: Color,
-    val military: Color,
-    val physics: Color,
-    val history: Color,
-    val psychology: Color,
-    val practice: Color
+    /** 明暗探针用（亮=0xFFEADDFF / 暗=0xFF4F378B），勿用于课程底色 */
+    val primary: Color
 )
 
 val LightCoursePalette = CoursePalette(
-    primary = Color(0xFFEADDFF),       // primary-container
-    secondary = Color(0xFFE8DEF8),     // secondary-container
-    tertiary = Color(0xFFFFD8E4),      // tertiary-container
-    surface = Color(0xFFF3EDF7),       // surface-container
-    english = Color(0xFFD8F2FF),
-    military = Color(0xFFE7F3DC),
-    physics = Color(0xFFFFE7C7),
-    history = Color(0xFFF7D9D9),
-    psychology = Color(0xFFE6DDFB),
-    practice = Color(0xFFD7F0E8)
+    primary = Color(0xFFEADDFF)       // primary-container
 )
 
 val DarkCoursePalette = CoursePalette(
-    primary = Color(0xFF4F378B),
-    secondary = Color(0xFF4A4458),
-    tertiary = Color(0xFF633B48),
-    surface = Color(0xFF211F26),
-    english = Color(0xFF1E3A4D),
-    military = Color(0xFF2E3F26),
-    physics = Color(0xFF4D3A1E),
-    history = Color(0xFF4D2828),
-    psychology = Color(0xFF352B4D),
-    practice = Color(0xFF1E3D32)
+    primary = Color(0xFF4F378B)
 )
 
 val LocalWakeUpColors = staticCompositionLocalOf { LightScheme }

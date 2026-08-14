@@ -44,7 +44,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
-import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
@@ -119,7 +118,7 @@ fun MineScreen(
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
                     Divider()
-                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), isLast = true, onClick = onOpenAbout)
+                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), onClick = onOpenAbout)
                 }
             }
 
@@ -171,7 +170,8 @@ private fun StatItem(value: String, label: String) {
 }
 
 @Composable
-private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}, isLast: Boolean = false, trailing: @Composable (() -> Unit)? = null) {
+// isLast / trailing 死参数已删（函数体从未读取 isLast; trailing 无任何调用方传值）
+private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}) {
     val colors = SleepyTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
@@ -181,7 +181,6 @@ private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit =
             Icon(icon, null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.weight(1f).padding(start = 16.dp))
-        if (trailing != null) trailing()
     }
 }
 

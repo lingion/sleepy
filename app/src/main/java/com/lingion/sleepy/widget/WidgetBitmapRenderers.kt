@@ -7,7 +7,6 @@ import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.RectF
 import android.graphics.Typeface
-import android.util.Log
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -26,12 +25,11 @@ import kotlin.math.roundToInt
  */
 object WidgetBitmapRenderers {
 
-    private const val TAG = "WidgetBitmap"
-
     // ── Scheme 颜色（与 WidgetContent.resolveSchemePublic 一致） ──
+    // 死代码清理: cPrimary…cPractice 9 个课程色字段与 surface 字段赋值后从未被渲染消费
+    // (课程底色走 CourseColorUtil, 背景实际用 bg/surfaceContainer), 已删。
     data class Scheme(
         val bg: Int,
-        val surface: Int,
         val primary: Int,
         val primaryContainer: Int,
         val onPrimaryContainer: Int,
@@ -39,16 +37,7 @@ object WidgetBitmapRenderers {
         val onSurfaceVariant: Int,
         val surfaceContainer: Int,
         val surfaceVariant: Int,
-        val isDark: Boolean,
-        val cPrimary: Int,
-        val cSecondary: Int,
-        val cTertiary: Int,
-        val cEnglish: Int,
-        val cMilitary: Int,
-        val cPhysics: Int,
-        val cHistory: Int,
-        val cPsychology: Int,
-        val cPractice: Int
+        val isDark: Boolean
     )
 
     /**
@@ -63,7 +52,6 @@ object WidgetBitmapRenderers {
                 ((this.green * 255).toInt() shl 8) or (this.blue * 255).toInt()
         return Scheme(
             bg = s.bg.toIntArgb(),
-            surface = s.surface.toIntArgb(),
             primary = s.primary.toIntArgb(),
             primaryContainer = s.primaryContainer.toIntArgb(),
             onPrimaryContainer = s.onPrimaryContainer.toIntArgb(),
@@ -71,16 +59,7 @@ object WidgetBitmapRenderers {
             onSurfaceVariant = s.onSurfaceVariant.toIntArgb(),
             surfaceContainer = s.surfaceContainer.toIntArgb(),
             surfaceVariant = s.surfaceVariant.toIntArgb(),
-            isDark = isDark,
-            cPrimary = s.coursePrimary.toIntArgb(),
-            cSecondary = s.courseSecondary.toIntArgb(),
-            cTertiary = s.courseTertiary.toIntArgb(),
-            cEnglish = s.courseEnglish.toIntArgb(),
-            cMilitary = s.courseMilitary.toIntArgb(),
-            cPhysics = s.coursePhysics.toIntArgb(),
-            cHistory = s.courseHistory.toIntArgb(),
-            cPsychology = s.coursePsychology.toIntArgb(),
-            cPractice = s.coursePractice.toIntArgb()
+            isDark = isDark
         )
     }
 

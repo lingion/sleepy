@@ -8,8 +8,7 @@ import com.lingion.sleepy.R
  * 主题色预设 — 5 套静态 + 1 套"跟随系统"（由 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 特殊处理）
  *
  * 颜色取自 Material 3 官方 tonal palette 推荐值。
- * 每套主题包含 light/dark 一对 [WakeUpColorScheme]，
- * 课程色 [CoursePalette] 5 套共用同一份（保持课程视觉一致）。
+ * 每套主题包含 light/dark 一对 [WakeUpColorScheme]。
  */
 data class ThemePreset(
     val key: String,

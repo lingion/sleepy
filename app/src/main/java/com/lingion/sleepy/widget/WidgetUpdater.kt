@@ -51,7 +51,6 @@ object WidgetUpdater {
      * suspend: 调用方(MineScreen 按钮/主题切换/SleepyApp 等)在协程里 await。
      */
     suspend fun notifyDataChanged(context: Context) {
-        Log.e(TAG, ">>> notifyDataChanged ENTERED")
         withContext(Dispatchers.IO) {
             val awm = AppWidgetManager.getInstance(context)
 

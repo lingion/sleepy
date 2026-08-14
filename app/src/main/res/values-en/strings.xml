@@ -34,7 +34,6 @@
     <string name="table_start_date">Start: %1$s</string>
     <string name="all_tables">All Schedules</string>
     <string name="all_tables_new">New Schedule</string>
-    <string name="all_tables_switch">Set as current</string>
     <string name="edit_table_title">Edit Schedule</string>
     <string name="edit_table_basic_info">Basic Info</string>
     <string name="edit_table_name">Schedule Name</string>
@@ -159,13 +158,7 @@
 
     <string name="mine_title">Me</string>
     <string name="mine_subtitle">Manage schedules and settings</string>
-    <string name="mine_reminder">Daily Reminder</string>
-    <string name="mine_reminder_on">Daily 7:00 AM reminder enabled</string>
-    <string name="mine_reminder_off">Daily reminder disabled</string>
-    <string name="mine_dark_mode">Dark Mode</string>
-    <string name="mine_theme_color">Theme Color</string>
     <string name="mine_export">Export</string>
-    <string name="mine_export_coming">Export — coming in a future update (ICS support)</string>
     <string name="mine_stat_tables">Schedules</string>
     <string name="mine_stat_courses">Courses</string>
     <string name="mine_stat_week">Week</string>
@@ -251,7 +244,6 @@
     <string name="end_label">End</string>
     <string name="delete_period">Delete this period</string>
 
-    <string name="mine_about_title">About Sleepy</string>
     <string name="mine_about">About</string>
     <string name="mine_about_body">Sleepy Schedule v%1$s\n\nA minimal, clean, local-first schedule app.\nAll data stays on your device — nothing is uploaded.\n\n· No ads\n· No tracking\n· Supports WakeUp / ICS / CSV / HTML / plain text import</string>
 
@@ -267,8 +259,6 @@
 
     <!-- Localized date / theme display -->
     <string name="date_long_format">%1$d/%2$d</string>
-    <string name="notif_channel_name">Daily Class Reminder</string>
-    <string name="notif_channel_desc">Push today\'s classes every morning</string>
     <string name="notif_title">Today\'s Classes — %1$s %2$s</string>
     <string name="notif_text">Tap to view today\'s schedule</string>
     <string name="theme_name_default">Lilac</string>
@@ -318,11 +308,6 @@
     <string name="about_update">Check for Updates</string>
     <string name="about_update_checking">Checking for updates…</string>
     <string name="about_update_detail">If GitHub is unavailable, you can download from the mirror instead</string>
-    <string name="about_update_downloading">Downloading update…</string>
-    <string name="about_update_failed">Update failed: %1$s</string>
-    <string name="about_update_github">Get from GitHub</string>
-    <string name="about_update_mirror">Get from mirror gh.qdp.qzz.io</string>
-    <string name="about_update_ready">Downloaded v%1$s, opening system installer</string>
     <string name="about_version">Version</string>
     <string name="about_version_detail">Version %1$s (Build %2$d)</string>
     <string name="action_cancel">Cancel</string>

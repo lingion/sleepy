@@ -312,11 +312,7 @@ class CourseNotificationScheduler(private val context: Context) {
         ).apply { description = context.getString(R.string.notif_channel_fluid_desc) })
     }
 
-    private fun buildPendingIntInfo(rc: Int, cls: Class<*>): PendingIntent =
-        PendingIntent.getBroadcast(
-            context, rc, Intent(context, cls),
-            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-        )
+    // buildPendingIntInfo 死函数已删（实际全部走下方 buildPendingIntent）
 
     @Suppress("UNCHECKED_CAST")
     private fun buildPendingIntent(rc: Int, cls: Class<out BroadcastReceiver>): PendingIntent =
@@ -447,20 +443,8 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
             if ("room" in fields && room.isNotBlank()) add(roomStr)
             if ("teacher" in fields && teacher.isNotBlank()) add(teacher)
         }.ifEmpty { listOf(courseName) }.joinToString("  ·  ")
-        val primary = AppPrefs.getBeforeClassFluidPrimary(context)
-        val primaryText = when (primary) {
-            "name" -> courseName
-            "time" -> startTime
-            else -> roomStr
-        }
-        val roomTeacherText = buildList {
-            if (room.isNotBlank()) add(roomStr)
-            if (teacher.isNotBlank()) add(teacher)
-        }.ifEmpty { listOf(roomStr) }.joinToString("  ·  ")
-        val timeTeacherText = buildList {
-            if (startTime.isNotBlank()) add(startTime)
-            if (teacher.isNotBlank()) add(teacher)
-        }.ifEmpty { listOf(startTime.ifBlank { context.getString(R.string.notif_before_class_title) }) }.joinToString("  ·  ")
+        // primaryText / roomTeacherText / timeTeacherText 三个死变量已删
+        // (计算后从未被使用——SDK>=26 路径直接交给 FluidCloudService, fallback 用上面的 fluidText/text)
 
         val text = if (teacher.isBlank()) {
             context.getString(R.string.notif_before_class_text, courseName, startTime, roomStr)

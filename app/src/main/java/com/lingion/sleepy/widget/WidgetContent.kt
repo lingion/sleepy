@@ -4,8 +4,6 @@ import android.content.Context
 import androidx.compose.ui.graphics.Color
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.ThemePresets
-import com.lingion.sleepy.ui.theme.LightCoursePalette
-import com.lingion.sleepy.ui.theme.DarkCoursePalette
 import com.lingion.sleepy.ui.theme.WakeUpColorScheme
 import com.lingion.sleepy.util.DateUtils
 import java.time.LocalDate
@@ -45,7 +43,9 @@ data class WidgetData(
 /**
  * 4 元组：背景 / 主题强调色 / 正文色 / 次要色
  * 跟 app M3 scheme 派生方式相同：surface / primary / onSurface / onSurfaceVariant
- * 额外携带课程调色板（从主题 container 色派生，跟随主题切换）
+ *
+ * 死代码清理: 原 coursePrimary…coursePractice 9 个课程色字段赋值后从未被渲染使用
+ * (课程底色实际走 CourseColorUtil 黄金角 HSL), 已随 CoursePalette 死属性一并删除。
  */
 data class WidgetScheme(
     val bg: Color = Color(0xFFFDFCFF),
@@ -57,17 +57,7 @@ data class WidgetScheme(
     val onSurfaceVariant: Color = Color(0xFF79747E),
     val surfaceContainer: Color = Color(0xFFF3EDF7),
     val surfaceVariant: Color = Color(0xFFE7E0EC),
-    val isDark: Boolean = false,
-    // 课程色 — 从主题 container 色派生
-    val coursePrimary: Color = Color(0xFFEADDFF),
-    val courseSecondary: Color = Color(0xFFE8DEF8),
-    val courseTertiary: Color = Color(0xFFFFD8E4),
-    val courseEnglish: Color = Color(0xFFD8F2FF),
-    val courseMilitary: Color = Color(0xFFE7F3DC),
-    val coursePhysics: Color = Color(0xFFFFE7C7),
-    val courseHistory: Color = Color(0xFFF7D9D9),
-    val coursePsychology: Color = Color(0xFFE6DDFB),
-    val coursePractice: Color = Color(0xFFD7F0E8)
+    val isDark: Boolean = false
 )
 
 /**
@@ -76,11 +66,8 @@ data class WidgetScheme(
  * ★ themeKey == "system" 时走 Material You 动态取色(dynamicLightColorScheme / dynamicDarkColorScheme),
  *   与 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 的处理对齐 — 之前 widget 把 "system"
  *   当未知 key → ThemePresets.byKey 返回 Default(紫色) → 小组件永远紫色, 不跟随系统壁纸取色。
- *
- * 课程色使用 app 的 LightCoursePalette / DarkCoursePalette（全局统一，不随主题变）。
  */
 internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boolean): WidgetScheme {
-    val palette = if (isDark) DarkCoursePalette else LightCoursePalette
     // "跟随系统" 主题 → Material You 动态取色 (API 31+), 低版本降级 Default
     val s = if (themeKey == ThemePresets.KEY_SYSTEM && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
         val dyn = if (isDark) androidx.compose.material3.dynamicDarkColorScheme(context)
@@ -115,16 +102,7 @@ internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boo
         onSurfaceVariant = s.onSurfaceVariant,
         surfaceContainer = s.surfaceContainer,
         surfaceVariant = s.surfaceVariant,
-        isDark = isDark,
-        coursePrimary = palette.primary,
-        courseSecondary = palette.secondary,
-        courseTertiary = palette.tertiary,
-        courseEnglish = palette.english,
-        courseMilitary = palette.military,
-        coursePhysics = palette.physics,
-        courseHistory = palette.history,
-        coursePsychology = palette.psychology,
-        coursePractice = palette.practice
+        isDark = isDark
     )
 }
 
@@ -151,7 +129,7 @@ data class WeekData(
     val hasTable: Boolean,
     val isDark: Boolean = false,
     val themeKey: String = ThemePresets.KEY_DEFAULT,
-    val displayMode: String = "node",
+    // displayMode 死字段已删（renderer 各自直读 AppPrefs.getDisplayMode, 传入字段从未被消费）
     val showDate: Boolean = false,
     val visibleDays: Set<Int> = (1..7).toSet()
 )
