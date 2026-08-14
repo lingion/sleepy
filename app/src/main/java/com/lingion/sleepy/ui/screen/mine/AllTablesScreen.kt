@@ -39,8 +39,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
@@ -51,12 +49,12 @@ import com.lingion.sleepy.util.DateUtils
 @Composable
 fun AllTablesScreen(
     onBack: () -> Unit,
+    onCreateNewTable: () -> Unit,
     onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -139,12 +137,7 @@ fun AllTablesScreen(
 
             item {
                 FilledTonalButton(
-                    onClick = {
-                        scope.launch {
-                            val id = viewModel.createEmptyTable()
-                            onOpenEditTable(id)
-                        }
-                    },
+                    onClick = onCreateNewTable,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(18.dp)
                 ) {

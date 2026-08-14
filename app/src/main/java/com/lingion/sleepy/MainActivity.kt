@@ -195,7 +195,13 @@ private fun AppRoot(
         return
     }
     if (overlayScreen == OverlayScreen.AllTables) {
-        AllTablesScreen(onBack = { overlayScreen = null }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable })
+        AllTablesScreen(onBack = { overlayScreen = null }, onCreateNewTable = {
+            mainScope.launch {
+                val previousId = mainVm.state.value.currentTable?.id
+                val newId = mainVm.createEmptyTable(commitSelection = false)
+                previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; overlayScreen = OverlayScreen.EditTable
+            }
+        }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable })
         return
     }
     if (overlayScreen == OverlayScreen.EditTable) {
