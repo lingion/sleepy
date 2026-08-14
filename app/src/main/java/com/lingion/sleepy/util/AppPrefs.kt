@@ -30,6 +30,8 @@ object AppPrefs {
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
+    const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
+    const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -206,5 +208,23 @@ object AppPrefs {
 
     fun setVertPunctReplace(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_VERT_PUNCT_REPLACE, v).apply()
+    }
+
+    // ===== 小组件无色模式 — 默认 false =====
+
+    fun isWidgetColorless(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_WIDGET_COLORLESS, false)
+
+    fun setWidgetColorless(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_WIDGET_COLORLESS, v).apply()
+    }
+
+    // ===== WeekView 纯文字组件：课程间分隔线 — 默认 true =====
+
+    fun isWidgetSeparator(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_WIDGET_SEPARATOR, true)
+
+    fun setWidgetSeparator(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_WIDGET_SEPARATOR, v).apply()
     }
 }

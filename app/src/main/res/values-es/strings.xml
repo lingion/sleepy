@@ -406,6 +406,11 @@
     <string name="semester_out_of_range">La fecha actual está fuera del rango del semestre</string>
     <string name="settings_vert_punct">Optimización de puntuación vertical</string>
     <string name="settings_vert_punct_sub">Reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
+    <string name="settings_widget">Ajustes del widget</string>
+    <string name="settings_widget_colorless">Modo sin color</string>
+    <string name="settings_widget_colorless_sub">Las cápsulas de cursos usan un gris neutro</string>
+    <string name="settings_widget_separator">Separador vista semanal</string>
+    <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
     <string name="widget_scroll_hint">↑ Desliza para ver más</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>

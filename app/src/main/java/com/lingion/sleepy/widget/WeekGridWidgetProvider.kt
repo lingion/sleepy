@@ -144,6 +144,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val fgOnSurface     = scheme.onSurface.toIntArgb()
             val fgOnSurfaceVar  = scheme.onSurfaceVariant.toIntArgb()
             val gridLine        = scheme.surfaceVariant.toIntArgb()
+            val colorless       = AppPrefs.isWidgetColorless(context)
 
             // ★ v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
             // hue = groupId.hashCode() * 137.508° → 相邻课色差最大化, 同门课永远同色
@@ -167,10 +168,13 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     (b + m).coerceIn(0f, 1f).times(255f).toInt()
             }
             fun pickCourseColor(course: CourseEntity): Int {
+                // 用户自定义 color 优先 (colorless 不覆盖用户手动设的颜色)
                 val userColor = course.color
                 if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
                     runCatching { return android.graphics.Color.parseColor(userColor) }
                 }
+                // 无色模式: 统一中性灰底 (复用 surfaceVariant, 与网格线同色保持一致)
+                if (colorless) return gridLine
                 val stableId = course.groupId.hashCode().toLong()
                 val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
                 val s = if (isDark) 0.40f else 0.55f

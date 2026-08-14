@@ -406,6 +406,11 @@
     <string name="semester_out_of_range">目前不在學期範圍內</string>
     <string name="settings_vert_punct">直排標點最佳化</string>
     <string name="settings_vert_punct_sub">課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
+    <string name="settings_widget">小工具設定</string>
+    <string name="settings_widget_colorless">無色模式</string>
+    <string name="settings_widget_colorless_sub">開啟後小工具課程膠囊變為統一灰色</string>
+    <string name="settings_widget_separator">週檢視分隔線</string>
+    <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
     <string name="widget_scroll_hint">↑ 滑動查看更多</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">輸入</string>

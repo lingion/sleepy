@@ -11,6 +11,7 @@ import android.util.Log
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
@@ -109,11 +110,12 @@ object WidgetBitmapRenderers {
      * 同一门课的所有节次永远同色(确定性基于 groupId), 与数据库一致。
      * 之前用 resolveCourseColorKey 关键词分类 → 与首页/WeekGrid 色系不一致, 已废弃。
      */
-    private fun pickCourseColor(course: CourseEntity, isDark: Boolean): Int {
+    private fun pickCourseColor(course: CourseEntity, isDark: Boolean, scheme: Scheme, colorless: Boolean): Int {
         val userColor = course.color
         if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
             runCatching { return Color.parseColor(userColor) }
         }
+        if (colorless) return scheme.surfaceVariant
         val stableId = course.groupId.hashCode().toLong()
         val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
         val s = if (isDark) 0.40f else 0.55f
@@ -125,9 +127,9 @@ object WidgetBitmapRenderers {
 
     private fun drawCourse(
         c: Canvas, p: Paint, course: CourseEntity, timeJson: String, x: Float, y: Float, w: Float, h: Float,
-        scheme: Scheme, density: Float, fontSizeSp: Float = 11f
+        scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false
     ) {
-        val bgColor = pickCourseColor(course, scheme.isDark)
+        val bgColor = pickCourseColor(course, scheme.isDark, scheme, colorless)
         val pad = (3f * density).coerceAtLeast(1f)
         p.color = bgColor
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
@@ -197,6 +199,7 @@ object WidgetBitmapRenderers {
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
+        val colorless = AppPrefs.isWidgetColorless(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -254,7 +257,7 @@ object WidgetBitmapRenderers {
         val rowW = w - pad * 2
 
         data.courses.forEachIndexed { idx, course ->
-            drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density, fontSizeSp = 12f)
+            drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density, fontSizeSp = 12f, colorless = colorless)
             y += rowH
             if (idx < data.courses.size - 1) y += rowGap
         }
@@ -270,6 +273,7 @@ object WidgetBitmapRenderers {
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
+        val colorless = AppPrefs.isWidgetColorless(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -345,7 +349,7 @@ object WidgetBitmapRenderers {
                 day.courses.forEachIndexed { idx, course ->
                     val name = course.courseName
                     // ★ 课程颜色背景 (对齐 WeekGrid 风格)
-                    val bgColor = pickCourseColor(course, s.isDark)
+                    val bgColor = pickCourseColor(course, s.isDark, s, colorless)
                     p.color = bgColor
                     canvas.drawRoundRect(
                         RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
@@ -381,6 +385,7 @@ object WidgetBitmapRenderers {
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
+        val showSeparator = AppPrefs.isWidgetSeparator(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -447,13 +452,13 @@ object WidgetBitmapRenderers {
                 canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
                 cy += chipH + 4f * density  // 4dp gap (DaySummaryCell L624)
 
-                // 课程 mini-list — 最多2行换行 + 课程间分隔线
+                // 课程 mini-list — 最多2行换行 + 课程间分隔线(可选)
                 p.textSize = 9f * density
                 p.typeface = Typeface.DEFAULT
                 p.style = Paint.Style.FILL
                 val textPad = 4f * density
                 val maxTextWidth = colW - textPad * 2
-                val courseGap = 2f * density  // spacedBy(2.dp)
+                val courseGap = 3f * density  // 3dp (原2dp太紧, workflow验证阶段推荐3dp对齐胶囊版)
                 val fm = p.fontMetrics
                 val lineH = fm.descent - fm.ascent
                 val courses = day.courses.take(5)
@@ -471,16 +476,20 @@ object WidgetBitmapRenderers {
                         cy += lineH
                     }
 
-                    // 课程间分隔线 (首门前/末门后不画)
+                    // 课程间分隔: 开关ON→可见1dp@40%线; OFF→纯3dp留白
                     if (idx < courses.size - 1) {
-                        cy += courseGap / 2f
-                        p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x20000000
-                        p.style = Paint.Style.STROKE
-                        p.strokeWidth = 0.5f * density
-                        canvas.drawLine(x + textPad, cy, x + colW - textPad, cy, p)
-                        p.style = Paint.Style.FILL
-                        p.strokeWidth = 0f
-                        cy += courseGap / 2f
+                        if (showSeparator) {
+                            cy += courseGap / 2f
+                            p.color = (s.onSurfaceVariant and 0x00FFFFFF) or 0x66000000
+                            p.style = Paint.Style.STROKE
+                            p.strokeWidth = 1f * density
+                            canvas.drawLine(x + textPad, cy, x + colW - textPad, cy, p)
+                            p.style = Paint.Style.FILL
+                            p.strokeWidth = 0f
+                            cy += courseGap / 2f
+                        } else {
+                            cy += courseGap
+                        }
                     } else {
                         cy += courseGap
                     }
@@ -500,6 +509,7 @@ object WidgetBitmapRenderers {
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
+        val colorless = AppPrefs.isWidgetColorless(context)
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -567,7 +577,7 @@ object WidgetBitmapRenderers {
                 val rowGap = 8f * density
                 val maxRowH = 44f * density
                 day.courses.forEach { course ->
-                    drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density, fontSizeSp = 10f)
+                    drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density, fontSizeSp = 10f, colorless = colorless)
                     cy += maxRowH + rowGap
                 }
             }
