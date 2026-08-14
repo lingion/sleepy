@@ -45,6 +45,9 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.widget.WidgetUpdater
+import androidx.compose.runtime.rememberCoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -63,6 +66,8 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
+    var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
+    val scope = rememberCoroutineScope()
 
     val languages = listOf(
         "zh-CN" to "简体中文",
@@ -151,6 +156,21 @@ fun MoreSettingsScreen(onBack: () -> Unit) {
                         }
                         if (day != 7) Divider(color = colors.outlineVariant.copy(alpha = 0.3f))
                     }
+                }
+            }
+
+            item {
+                SettingsCard(title = stringResource(R.string.settings_widget), expanded = 4 in expandedSections, onToggle = { toggleSection(4) }) {
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_widget_colorless),
+                        subtitle = stringResource(R.string.settings_widget_colorless_sub),
+                        checked = widgetColorless,
+                        onCheckedChange = {
+                            widgetColorless = it
+                            AppPrefs.setWidgetColorless(context, it)
+                            scope.launch { WidgetUpdater.notifyDataChanged(context) }
+                        }
+                    )
                 }
             }
         }

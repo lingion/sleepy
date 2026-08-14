@@ -406,6 +406,9 @@
     <string name="semester_out_of_range">現在は学期の範囲外です</string>
     <string name="settings_vert_punct">縦書き記号の最適化</string>
     <string name="settings_vert_punct_sub">科目名の縦書き表示時に（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
+    <string name="settings_widget">ウィジェット設定</string>
+    <string name="settings_widget_colorless">無色モード</string>
+    <string name="settings_widget_colorless_sub">ウィジェットの授業カプセルが統一されたグレーになります</string>
     <string name="widget_scroll_hint">↑ スクロールで続きを表示</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">入力</string>
