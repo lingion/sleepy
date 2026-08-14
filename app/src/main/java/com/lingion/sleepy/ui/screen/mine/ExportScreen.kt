@@ -215,13 +215,15 @@ private fun ExportItem(
             modifier = Modifier
                 .size(44.dp)
                 .clip(RoundedCornerShape(12.dp))
-                .background(colors.primary.copy(alpha = 0.12f)),
+                // ★ 对齐 MineScreen.SettingsItem 同语义图标容器（primaryContainer），
+                // 之前 primary.copy(0.12f) 与本文件顶部信息卡的 primaryContainer 也不一致
+                .background(colors.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
             Icon(
                 imageVector = icon,
                 contentDescription = null,
-                tint = colors.primary
+                tint = colors.onPrimaryContainer
             )
         }
         Spacer(modifier = Modifier.size(16.dp))

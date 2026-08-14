@@ -111,15 +111,23 @@ fun AllTablesScreen(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
+                        // ★ M3 对比度修正：当前行背景是 primaryContainer，文字/副标题应配对
+                        // onPrimaryContainer 系（之前用 onSurface/onSurfaceVariant，自定义高对比主题下对比度不足）。
+                        // 非当前行背景 surfaceContainer 维持 onSurface/onSurfaceVariant。
+                        val (titleColor, subtitleColor) = if (isCurrent) {
+                            colors.onPrimaryContainer to colors.onPrimaryContainer.copy(alpha = 0.8f)
+                        } else {
+                            colors.onSurface to colors.onSurfaceVariant
+                        }
                         Text(
                             text = table.name,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface
+                            color = titleColor
                         )
                         Text(
                             text = if (isCurrent) stringResource(R.string.current_table_week, state.currentWeek) else stringResource(R.string.table_start_date, table.startDate),
                             style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
+                            color = subtitleColor
                         )
                     }
                     IconButton(onClick = { onOpenEditTable(table.id) }) {

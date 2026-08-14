@@ -6,10 +6,12 @@ import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
+import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.widget.resolveSchemePublic
 
 /**
  * Keeps the promoted course notification's progress synchronized with the
@@ -102,9 +104,20 @@ class FluidCloudService : Service() {
         // 不分 segments：课前提醒是一个连续倒计时进度，旧代码的 70/30 分段没有实际语义，
         // 反而在 70% 处把进度条断开造成视觉割裂。
 
+        // ★ 通知色跟随主题（之前硬编码默认紫 0xFF6750A4，用户选春绿/海蓝等主题后通知色与 app 内不一致）。
+        // 复用 widget 渲染侧的 resolveSchemePublic 派生 primary（支持 system=MaterialYou 动态取色）。
+        val isSystemDark = (resources.configuration.uiMode and
+            android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
+            android.content.res.Configuration.UI_MODE_NIGHT_YES
+        val themePrimaryArgb = resolveSchemePublic(
+            this,
+            AppPrefs.getThemeKey(this),
+            AppPrefs.isDarkMode(this, isSystemDark)
+        ).primary.toArgb()
+
         val notification = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
             .setSmallIcon(R.drawable.ic_notification_time)
-            .setColor(0xFF6750A4.toInt())
+            .setColor(themePrimaryArgb)
             .setContentTitle(courseName)
             .setContentText(coursePreview)
             .setStyle(style)

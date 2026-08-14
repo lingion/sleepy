@@ -537,7 +537,15 @@ private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean,
             Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange)
+        // ★ 补主题色：之前无 colors 参数走默认 Material3 蓝，与同屏三个主开关不一致
+        Switch(
+            checked = checked,
+            onCheckedChange = onCheckedChange,
+            colors = SwitchDefaults.colors(
+                checkedThumbColor = colors.onPrimary,
+                checkedTrackColor = colors.primary
+            )
+        )
     }
 }
 

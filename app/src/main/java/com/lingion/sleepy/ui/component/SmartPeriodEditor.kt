@@ -165,7 +165,17 @@ fun SmartPeriodEditor(
                         onConfigChange(config.copy(transitionAssignments = newAssigns))
                     },
                     onDelete = {
-                        val newAssigns = assigns.map { if (it == groupIdx) null else it }.toMutableList()
+                        // ★ 删除组后索引重映射：被删组清空 + 大于被删索引的全部减 1。
+                        // 之前只把 ==groupIdx 的置 null，breaks.removeAt 后所有 >groupIdx 的
+                        // 索引指向错位元素，被 effectiveAssignments 判越界置 null——
+                        // 删一个课间组，其后所有课间的分配静默清空。
+                        val newAssigns = assigns.map { v ->
+                            when {
+                                v == groupIdx -> null
+                                v != null && v > groupIdx -> v - 1
+                                else -> v
+                            }
+                        }
                         onConfigChange(config.copy(
                             breaks = config.breaks.toMutableList().also { it.removeAt(groupIdx) },
                             transitionAssignments = newAssigns
