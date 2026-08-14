@@ -423,7 +423,8 @@
     <string name="mine_appearance">外观与显示</string>
     <string name="mine_general">通用</string>
     <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
+    <!-- 深浅色模式的"跟随系统",与主题取色的 theme_system(跟随系统)区分 -->
+    <string name="theme_mode_system">深浅色跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
     <string name="appearance_section_theme">主题色彩</string>

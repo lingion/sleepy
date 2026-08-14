@@ -370,8 +370,9 @@
     <string name="notif_channel_fluid_desc">Shows an expandable real-time course card before class</string>
     <string name="notif_daily_text_first">First class: %1$s at %2$s in %3$s</string>
     <string name="notif_daily_text_no_course">Take a break and enjoy the day!</string>
-    <string name="notif_daily_title">Today is the %1$dst, you have %2$d classes</string>
-    <string name="notif_daily_title_no_course">Today is the %1$dst, no classes today</string>
+    <!-- 无序数句式: 英语序数后缀仅 1st/21st/31st 匹配 st, 硬编码 %1$dst 在其余日期全错 -->
+    <string name="notif_daily_title">Today is day %1$d of the month, you have %2$d classes</string>
+    <string name="notif_daily_title_no_course">Today is day %1$d of the month, no classes today</string>
     <string name="notif_room_unknown">Unknown room</string>
     <string name="reminder_banner_sub">Show a before-class banner in the notification bar</string>
     <string name="reminder_banner_title">Banner Reminder</string>

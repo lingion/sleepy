@@ -152,7 +152,7 @@ fun AppearanceScreen(
                 }
             }
 
-            // 外观模式: 浅色 / 深色 / 跟随系统 三态分段控件
+            // 外观模式: 浅色 / 深色 / 深浅色跟随系统 三态分段控件(标签与主题取色的 theme_system"跟随系统"区分)
             item {
                 Text(stringResource(R.string.theme_appearance), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
                 Spacer(Modifier.height(8.dp))
