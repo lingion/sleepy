@@ -72,6 +72,45 @@ object CourseColorUtil {
         return lum < 0.5f
     }
 
+    // ============================ 第二层 · 文字色亮度自适应（决策 D5-13） ============================
+
+    /**
+     * BT.601 加权亮度（0f~1f）— 纯函数，权重与人眼感光曲线一致（绿最敏感）。
+     * 与 WeekGridWidgetProvider 原 isDarkOn 私有实现同一算法，收敛至此单点。
+     */
+    fun luminance(color: Int): Float {
+        val r = (color shr 16 and 0xFF) / 255f
+        val g = (color shr 8 and 0xFF) / 255f
+        val b = (color and 0xFF) / 255f
+        return 0.299f * r + 0.587f * g + 0.114f * b
+    }
+
+    /** Compose Color 版本 — 同 BT.601 权重 */
+    fun luminance(color: Color): Float =
+        0.299f * color.red + 0.587f * color.green + 0.114f * color.blue
+
+    /**
+     * 按背景亮度自适应选文字色 — 深色自定义课色上文字必须可读（决策 D5-13）：
+     *   深色底（luminance<0.5） → 白字（原固定 onSurface 在浅色主题下是深字，深字压深底不可见）
+     *   浅色底+浅色主题         → onSurface（浅色 HSL 默认底 L=0.82 恰好可读，行为不变）
+     *   浅色底+暗色主题         → 黑字（暗色主题 onSurface 是浅色，用户自定义亮色课色上不可读）
+     * HSL 默认底（亮 0.82 / 暗 0.28）与 colorless 灰底均落在「行为不变」分支，仅自定义色跨界时切换。
+     *
+     * @param onSurface 当前主题的 onSurface（Compose 路径传 WakeUpColorScheme.onSurface）
+     */
+    fun textColorOn(bg: Color, isDark: Boolean, onSurface: Color): Color = when {
+        luminance(bg) < 0.5f -> Color.White
+        isDark -> Color.Black
+        else -> onSurface
+    }
+
+    /** Canvas 路径版本（ARGB Int）— 同一决策树，供 WidgetBitmapRenderers 等画布渲染 */
+    fun textColorOn(bg: Int, isDark: Boolean, onSurface: Int): Int = when {
+        luminance(bg) < 0.5f -> android.graphics.Color.WHITE
+        isDark -> android.graphics.Color.BLACK
+        else -> onSurface
+    }
+
     // ============================ 第二层 · HSL 转换 ============================
 
     /** HSL → Compose Color（供 TodayScreen / CourseTableView 的 Compose 路径） */

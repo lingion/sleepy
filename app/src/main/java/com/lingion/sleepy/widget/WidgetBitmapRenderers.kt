@@ -75,6 +75,8 @@ object WidgetBitmapRenderers {
     ) {
         // 统一取色入口 (决策 D3) — colorless 灰底传 scheme.surfaceVariant 的 Int 值
         val bgColor = CourseColorUtil.pickCourseColorInt(course, scheme.isDark, scheme.surfaceVariant, colorless)
+        // 文字色亮度自适应 (决策 D5-13) — 深色自定义课色上切白字, 浅色底仍 onSurface
+        val textColor = CourseColorUtil.textColorOn(bgColor, scheme.isDark, scheme.onSurface)
         val pad = (3f * density).coerceAtLeast(1f)
         p.color = bgColor
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
@@ -120,10 +122,10 @@ object WidgetBitmapRenderers {
         val totalH = nameH + (if (hasMeta) lineGap + metaH else 0f)
         val blockTop = y + (h - totalH) / 2f
 
-        // 课程名 — 黑色(onSurface) 居中
+        // 课程名 — 亮度自适应文字色 (决策 D5-13)
         p.textSize = nameSize
         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        p.color = scheme.onSurface
+        p.color = textColor
         val name = course.courseName
         val maxWidth = w - pad * 2
         val displayName = if (p.measureText(name) > maxWidth) {
@@ -133,11 +135,11 @@ object WidgetBitmapRenderers {
         } else name
         c.drawText(displayName, x + pad, blockTop - fmName.ascent, p)
 
-        // 时间 + 地点 — ★ 黑色(onSurface) 非 onSurfaceVariant(灰)
+        // 时间 + 地点 — ★ 亮度自适应文字色 (决策 D5-13), 非 onSurfaceVariant(灰)
         if (hasMeta) {
             p.textSize = metaSize
             p.typeface = Typeface.DEFAULT
-            p.color = scheme.onSurface
+            p.color = textColor
             c.drawText(meta, x + pad, blockTop + nameH + lineGap - fmMeta!!.ascent, p)
         }
     }

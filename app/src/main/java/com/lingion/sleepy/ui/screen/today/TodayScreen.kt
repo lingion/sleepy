@@ -185,6 +185,8 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isWidgetColorless(context)
     )
+    // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
+    val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val time = if (course.ownTime && course.startTime.isNotBlank() && course.endTime.isNotBlank()) {
         "${course.startTime}-${course.endTime}"
     } else {
@@ -208,13 +210,13 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
             Text(
                 text = course.shortNodeString(context),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = colors.onSurface
+                color = fg
             )
             if (time != null) {
                 Text(
                     text = time,
                     style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurface.copy(alpha = 0.72f),
+                    color = fg.copy(alpha = 0.72f),
                     maxLines = 1,
                     softWrap = false
                 )
@@ -225,7 +227,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
             Text(
                 text = course.courseName,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
+                color = fg,
                 maxLines = 2
             )
             if (course.teacher.isNotBlank() || course.room.isNotBlank()) {
@@ -240,7 +242,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
                 Text(
                     text = meta,
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurface.copy(alpha = 0.72f)
+                    color = fg.copy(alpha = 0.72f)
                 )
             }
         }

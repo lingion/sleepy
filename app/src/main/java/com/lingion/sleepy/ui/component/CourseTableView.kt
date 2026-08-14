@@ -266,7 +266,8 @@ private fun CourseOverlayCard(
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isWidgetColorless(context)
     )
-    val fg = colors.onSurface
+    // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
+    val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val shape = RoundedCornerShape(12.dp)
 
     Box(
@@ -607,6 +608,8 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isWidgetColorless(context)
     )
+    // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
+    val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
 
     // time 模式：「08:00-\n08:45」——时间段在连字符后折行，行距收紧读成一个整体
     val timeParts = if (displayMode == "time" && timeJson.isNotBlank()) {
@@ -634,14 +637,14 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
             Text(
                 text = "${timeParts.first}-\n${timeParts.second}",
                 style = sideStyle,
-                color = colors.onSurface,
+                color = fg,
                 modifier = Modifier.width(42.dp)
             )
         } else {
             Text(
                 text = nodeLabel,
                 style = sideStyle,
-                color = colors.onSurface,
+                color = fg,
                 modifier = Modifier.width(42.dp),
                 maxLines = 1
             )
@@ -656,7 +659,7 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                         trim = LineHeightStyle.Trim.FirstLineTop
                     )
                 ),
-                color = colors.onSurface,
+                color = fg,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -671,7 +674,7 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                 Text(
                     text = meta,
                     style = SleepyTextStyle.smallMeta(),
-                    color = colors.onSurface.copy(alpha = 0.72f),
+                    color = fg.copy(alpha = 0.72f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
