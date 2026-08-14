@@ -292,10 +292,10 @@
     <string name="section_single">Hora %1$d</string>
     <string name="mine_appearance">Apariencia y pantalla</string>
     <string name="mine_general">General</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
-    <string name="theme_mode_dark">深色</string>
+    <string name="theme_appearance">Apariencia</string>
+    <string name="theme_mode_system">Automático (claro/oscuro)</string>
+    <string name="theme_mode_light">Claro</string>
+    <string name="theme_mode_dark">Oscuro</string>
     <string name="appearance_section_theme">Colores del tema</string>
     <string name="appearance_section_display">Visualización de cursos</string>
     <string name="appearance_section_widget">Widget</string>

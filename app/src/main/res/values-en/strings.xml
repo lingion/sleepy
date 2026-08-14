@@ -293,10 +293,10 @@
     <string name="section_single">Period %1$d</string>
     <string name="mine_appearance">Appearance &amp; display</string>
     <string name="mine_general">General</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
-    <string name="theme_mode_dark">深色</string>
+    <string name="theme_appearance">Appearance</string>
+    <string name="theme_mode_system">Auto (light/dark)</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
     <string name="appearance_section_theme">Theme colors</string>
     <string name="appearance_section_display">Course display</string>
     <string name="appearance_section_widget">Widget</string>

@@ -292,10 +292,10 @@
     <string name="section_single">第%1$d限</string>
     <string name="mine_appearance">外観と表示</string>
     <string name="mine_general">一般</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
-    <string name="theme_mode_dark">深色</string>
+    <string name="theme_appearance">外観</string>
+    <string name="theme_mode_system">明暗はシステムに従う</string>
+    <string name="theme_mode_light">ライト</string>
+    <string name="theme_mode_dark">ダーク</string>
     <string name="appearance_section_theme">テーマカラー</string>
     <string name="appearance_section_display">授業の表示</string>
     <string name="appearance_section_widget">ウィジェット</string>

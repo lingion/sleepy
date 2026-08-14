@@ -292,9 +292,9 @@
     <string name="section_single">第%1$d 節</string>
     <string name="mine_appearance">外觀與顯示</string>
     <string name="mine_general">一般</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
+    <string name="theme_appearance">外觀</string>
+    <string name="theme_mode_system">深淺色跟隨系統</string>
+    <string name="theme_mode_light">淺色</string>
     <string name="theme_mode_dark">深色</string>
     <string name="appearance_section_theme">主題色彩</string>
     <string name="appearance_section_display">課程顯示</string>
