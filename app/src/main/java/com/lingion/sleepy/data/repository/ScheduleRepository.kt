@@ -37,11 +37,20 @@ class ScheduleRepository(private val db: AppDatabase) {
         return id
     }
 
-    suspend fun updateTable(table: TimeTableEntity) = tableDao.update(table)
+    suspend fun updateTable(table: TimeTableEntity) {
+        tableDao.update(table)
+        onDataChanged()
+    }
 
-    suspend fun deleteTable(id: Long) = tableDao.deleteById(id)
+    suspend fun deleteTable(id: Long) {
+        tableDao.deleteById(id)
+        onDataChanged()
+    }
 
-    suspend fun setDefault(id: Long) = tableDao.setDefault(id)
+    suspend fun setDefault(id: Long) {
+        tableDao.setDefault(id)
+        onDataChanged()
+    }
 
     suspend fun tableCount(): Int = tableDao.count()
 
