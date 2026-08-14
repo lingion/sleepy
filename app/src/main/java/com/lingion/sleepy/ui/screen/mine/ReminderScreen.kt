@@ -47,6 +47,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -65,6 +66,11 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -83,6 +89,17 @@ fun ReminderScreen(onBack: () -> Unit) {
     var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
+
+    // ★ debounce：分钟输入停止 500ms 后才持久化并重排提醒，
+    //   避免每敲一键就触发一次全量 cancelAll + scheduleAll（查库 + 重排全部闹钟）。
+    LaunchedEffect(minutesInput) {
+        if (minutesInput.isBlank()) return@LaunchedEffect
+        delay(500)
+        val v = minutesInput.toIntOrNull()?.coerceIn(1, 999) ?: return@LaunchedEffect
+        beforeClassMinutes = v
+        AppPrefs.setBeforeClassMinutes(context, v)
+        SleepyApp.get().notificationScheduler.scheduleAll()
+    }
 
     // Permission launcher — NOT one-shot, can be re-triggered by clicking toggle again
     val permissionLauncher = rememberLauncherForActivityResult(
@@ -130,7 +147,10 @@ fun ReminderScreen(onBack: () -> Unit) {
             //   isReminderEnabled, 无需覆写子开关(否则重开 master 后 daily/beforeClass 配置全丢)。
             masterEnabled = false
             AppPrefs.setReminderEnabled(context, false)
-            SleepyApp.get().notificationScheduler.cancelAll()
+            // ★ cancelAll 现为 suspend，由 IO 协程调用，避免主线程查库阻塞
+            CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+                SleepyApp.get().notificationScheduler.cancelAll()
+            }
         }
     }
 
@@ -333,10 +353,6 @@ fun ReminderScreen(onBack: () -> Unit) {
                                             val v = digits.toIntOrNull() ?: 0
                                             if (v <= 999) minutesInput = digits
                                         }
-                                        val v = minutesInput.toIntOrNull() ?: 1
-                                        beforeClassMinutes = v.coerceIn(1, 999)
-                                        AppPrefs.setBeforeClassMinutes(context, beforeClassMinutes)
-                                        SleepyApp.get().notificationScheduler.scheduleAll()
                                     },
                                     modifier = Modifier.width(80.dp),
                                     shape = RoundedCornerShape(50),
