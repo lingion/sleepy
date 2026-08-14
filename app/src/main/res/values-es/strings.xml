@@ -177,7 +177,7 @@
     <string name="settings_display_time">Mostrar como horas</string>
     <string name="settings_display_time_sub">Todos los cursos muestran \"HH:mm–HH:mm\"</string>
     <string name="settings_grid_view">Vista de cuadrícula</string>
-    <string name="settings_show_date">Mostrar fechas</string>
+    <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>
     <string name="settings_visible_days_sub">Los días desmarcados se ocultan en todas las vistas</string>
@@ -303,6 +303,10 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="appearance_section_theme">Colores del tema</string>
+    <string name="appearance_section_display">Visualización de cursos</string>
+    <string name="appearance_section_widget">Widget</string>
+    <string name="appearance_affects_both">Afecta tanto al horario como a los widgets</string>
     <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
     <string name="update_found_title">Nueva versión v%1$s disponible</string>
     <string name="update_download">Descargar</string>

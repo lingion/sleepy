@@ -178,7 +178,7 @@
     <string name="settings_display_time">Show as times</string>
     <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
     <string name="settings_grid_view">Grid View</string>
-    <string name="settings_show_date">Show dates</string>
+    <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>
     <string name="settings_visible_days_sub">Unchecked days are hidden in all views</string>
@@ -304,6 +304,10 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="appearance_section_theme">Theme colors</string>
+    <string name="appearance_section_display">Course display</string>
+    <string name="appearance_section_widget">Widget</string>
+    <string name="appearance_affects_both">Affects both the schedule and widgets</string>
     <string name="about_update_latest">You\'re on the latest version v%1$s</string>
     <string name="update_found_title">New version v%1$s available</string>
     <string name="update_download">Download</string>

@@ -177,7 +177,7 @@
     <string name="settings_display_time">時刻で統一</string>
     <string name="settings_display_time_sub">すべての授業を「HH:mm–HH:mm」と表示</string>
     <string name="settings_grid_view">グリッドビュー</string>
-    <string name="settings_show_date">日付を表示</string>
+    <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>
     <string name="settings_visible_days_sub">チェックを外した曜日はすべてのビューで非表示になります</string>
@@ -303,6 +303,10 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="appearance_section_theme">テーマカラー</string>
+    <string name="appearance_section_display">授業の表示</string>
+    <string name="appearance_section_widget">ウィジェット</string>
+    <string name="appearance_affects_both">時間割とウィジェットの両方に影響します</string>
     <string name="about_update_latest">最新バージョン v%1$s です</string>
     <string name="update_found_title">新しいバージョン v%1$s があります</string>
     <string name="update_download">ダウンロード</string>

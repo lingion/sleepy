@@ -177,7 +177,7 @@
     <string name="settings_display_time">統一顯示時間</string>
     <string name="settings_display_time_sub">所有課程顯示為「HH:mm–HH:mm」</string>
     <string name="settings_grid_view">網格檢視</string>
-    <string name="settings_show_date">顯示日期</string>
+    <string name="settings_show_date">課表顯示日期</string>
     <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>
     <string name="settings_visible_days">顯示星期</string>
     <string name="settings_visible_days_sub">取消勾選的星期將在所有檢視中隱藏</string>
@@ -303,6 +303,10 @@
     <string name="theme_mode_system">跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="appearance_section_theme">主題色彩</string>
+    <string name="appearance_section_display">課程顯示</string>
+    <string name="appearance_section_widget">小工具</string>
+    <string name="appearance_affects_both">同時影響課表與小工具</string>
     <string name="about_update_latest">目前已是最新版本 v%1$s</string>
     <string name="update_found_title">發現新版本 v%1$s</string>
     <string name="update_download">下載</string>
