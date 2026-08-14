@@ -195,7 +195,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val containerRect = RectF(0f, 0f, wPx.toFloat(), hPx.toFloat())
             c.drawRoundRect(containerRect, dp(18f).toFloat(), dp(18f).toFloat(), p)
 
-            // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格(与 Glance 版 EmptyTableState 一致)
+            // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格
             if (!data.hasTable || data.days.isEmpty() || data.days.all { it.courses.isEmpty() }) {
                 val ctx = SleepyApp.get()
                 p.color = fgOnSurface

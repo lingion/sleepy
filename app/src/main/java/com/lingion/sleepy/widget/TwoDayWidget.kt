@@ -3,14 +3,8 @@ package com.lingion.sleepy.widget
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.content.Intent
 import android.os.Bundle
 import android.util.Log
-import androidx.glance.GlanceId
-import androidx.glance.appwidget.GlanceAppWidget
-import androidx.glance.appwidget.action.actionStartActivity
-import androidx.glance.appwidget.provideContent
-import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
@@ -18,29 +12,58 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
 import java.time.LocalDate
 
 /**
- * Glance 版 TwoDayWidget — 仅供 WidgetRenderActivity (调试预览) 使用。
- * 桌面实际渲染走 [TwoDayWidgetReceiver] (同步 RemoteViews)。
+ * ★ 桌面 TwoDay 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+ * 原因见 [TodayWidgetReceiver] 注释。
+ *
+ * Glance 版 TwoDayWidget 类已删除(决策 D5-11): 5 个生产入口全走 RemoteViews,
+ * Glance 层生产不可达; loadDataSync 自 Glance companion 迁入本类。
  */
-class TwoDayWidget : GlanceAppWidget() {
+class TwoDayWidgetReceiver : AppWidgetProvider() {
+    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
-    override suspend fun provideGlance(context: Context, id: GlanceId) {
-        val data = withContext(Dispatchers.IO) { loadDataSync(context) }
-        val openAppIntent = Intent(context, MainActivity::class.java).apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+    override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
+        val pending = goAsync()
+        ioScope.launch {
+            try {
+                for (id in ids) {
+                    try {
+                        RemoteViewsWidgetHelper.renderAndPush(
+                            context, awm, id, TAG,
+                            loadData = { loadDataSync(context) },
+                            renderBitmap = { data, wDp, hDp ->
+                                WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
+                            }
+                        )
+                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                }
+            } finally { pending.finish() }
         }
-        provideContent {
-            TwoDayContent(
-                data = data,
-                openAppAction = actionStartActivity(openAppIntent)
-            )
+    }
+
+    override fun onAppWidgetOptionsChanged(
+        context: Context, awm: AppWidgetManager, id: Int, newOptions: Bundle
+    ) {
+        val pending = goAsync()
+        ioScope.launch {
+            try {
+                RemoteViewsWidgetHelper.renderAndPush(
+                    context, awm, id, TAG,
+                    loadData = { loadDataSync(context) },
+                    renderBitmap = { data, wDp, hDp ->
+                        WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
+                    }
+                )
+            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            finally { pending.finish() }
         }
     }
 
     companion object {
+        private const val TAG = "TwoDayRV"
+
         /**
          * 同步版数据加载 — 今天 + 明天课程。
          */
@@ -81,51 +104,4 @@ class TwoDayWidget : GlanceAppWidget() {
             }
         }
     }
-}
-
-/**
- * ★ 桌面 TwoDay 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
- * 原因见 [TodayWidgetReceiver] 注释。
- */
-class TwoDayWidgetReceiver : AppWidgetProvider() {
-    private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
-
-    override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
-        val pending = goAsync()
-        ioScope.launch {
-            try {
-                for (id in ids) {
-                    try {
-                        RemoteViewsWidgetHelper.renderAndPush(
-                            context, awm, id, TAG,
-                            loadData = { TwoDayWidget.loadDataSync(context) },
-                            renderBitmap = { data, wDp, hDp ->
-                                WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
-                            }
-                        )
-                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
-                }
-            } finally { pending.finish() }
-        }
-    }
-
-    override fun onAppWidgetOptionsChanged(
-        context: Context, awm: AppWidgetManager, id: Int, newOptions: Bundle
-    ) {
-        val pending = goAsync()
-        ioScope.launch {
-            try {
-                RemoteViewsWidgetHelper.renderAndPush(
-                    context, awm, id, TAG,
-                    loadData = { TwoDayWidget.loadDataSync(context) },
-                    renderBitmap = { data, wDp, hDp ->
-                        WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
-                    }
-                )
-            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
-            finally { pending.finish() }
-        }
-    }
-
-    companion object { private const val TAG = "TwoDayRV" }
 }

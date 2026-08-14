@@ -189,7 +189,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar"
             android:excludeFromRecents="true" />
 
-        <!-- 真实 Glance widget 渲染验证 -->
+        <!-- 真实 widget bitmap 渲染验证 (debug only, 渲染 RemoteViews Canvas bitmap 用于截图) -->
         <activity
             android:name=".widget.WidgetRenderActivity"
             android:exported="true"

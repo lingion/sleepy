@@ -99,7 +99,7 @@ class MainActivity : ComponentActivity() {
                         AppPrefs.setThemeMode(this@MainActivity, mode)
                         themeMode = mode
                         applyTheme()
-                        // ★ 手动切主题时联动刷新 widget(双路:广播+Glance直更)
+                        // ★ 手动切主题时联动刷新 widget(广播 APPWIDGET_UPDATE)
                         lifecycleScope.launch {
                             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(this@MainActivity)
                         }

@@ -52,13 +52,12 @@ class SleepyApp : Application() {
      * ★ 系统【运行时】切换深/浅色模式时联动刷新小组件。
      *
      * Android 原生行为:configuration change 会让系统重发 APPWIDGET_UPDATE 给所有 widget。
-     * 但在 OPPO ColorOS 上,GlanceAppWidgetReceiver.onUpdate() 内部调
-     * GlanceAppWidgetManager.getGlanceIdBy(appWidgetId) 返回 null → 静默跳过 →
-     * 3 个 Glance widget(Today/WeekList/TwoDay)不重渲染 → 不跟随系统主题。
-     * WeekGrid(RemoteViews)不受影响,系统 update 正常触发其 onUpdate。
+     * 历史上 OPPO ColorOS 上 Glance 版 widget(Today/WeekList/TwoDay)因
+     * GlanceAppWidgetManager.getGlanceIdBy 返回 null 被静默跳过(v1.0.29 已全移植为
+     * 同步 RemoteViews, Glance 层已删除, 决策 D5-11)。
      *
-     * 这里主动调 notifyDataChanged() 走双路刷新(广播 + Glance 直更),
-     * 绕过 GlanceAppWidgetManager 的 OPPO bug,强制 3 个 Glance widget 重渲染。
+     * 这里主动调 notifyDataChanged() 广播 APPWIDGET_UPDATE,强制全部 5 个
+     * RemoteViews widget 重渲染,确保跟随系统主题。
      */
     private var lastNightMode: Int = -1
 

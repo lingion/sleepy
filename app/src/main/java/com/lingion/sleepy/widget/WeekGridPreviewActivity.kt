@@ -37,8 +37,8 @@ import java.time.LocalDate
 /**
  * WeekGridWidget 真复刻 — 1:1 复刻 ScheduleScreen 的 CardsGridView（app 内"网格"视图）
  *
- * 不再复刻 WidgetContent.kt 的 WeekGridContent（Glance widget），因为那不是 app 内的"网格"视图
- * 这次直接调 ui.component.CardsGridView + 加 TopBar + SegmentedSwitcher + 底部 nav
+ * 直接调 ui.component.CardsGridView + 加 TopBar + SegmentedSwitcher + 底部 nav
+ * (历史上的 Glance WeekGridContent 复刻已废弃, Glance 层已删除, 决策 D5-11)
  */
 class WeekGridPreviewActivity : ComponentActivity() {
 

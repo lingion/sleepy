@@ -280,7 +280,6 @@
     <string name="new_course">New Course</string>
     <string name="jw_import_title">Import - %1$s</string>
     <string name="month_day_format">%1$d/%2$d</string>
-    <string name="today_text">Today</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">M</string>
     <string name="day_short_2">T</string>
@@ -409,7 +408,6 @@
     <string name="settings_widget_colorless_sub">Course backgrounds in the app and widgets use a neutral gray; courses with custom colors are unaffected</string>
     <string name="settings_widget_separator">Week view separator</string>
     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
-    <string name="widget_scroll_hint">↑ Scroll for more</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Input</string>
     <string name="edit_period_duration_label">Per-period duration</string>

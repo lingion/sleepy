@@ -279,7 +279,6 @@
     <string name="new_course">Nueva materia</string>
     <string name="jw_import_title">Importar - %1$s</string>
     <string name="month_day_format">%1$d/%2$d</string>
-    <string name="today_text">Hoy</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">L</string>
     <string name="day_short_2">M</string>
@@ -408,7 +407,6 @@
     <string name="settings_widget_colorless_sub">Los fondos de los cursos en la app y los widgets usan un gris neutro; los cursos con color personalizado no se ven afectados</string>
     <string name="settings_widget_separator">Separador vista semanal</string>
     <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
-    <string name="widget_scroll_hint">↑ Desliza para ver más</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>
     <string name="edit_period_duration_label">Duración por período</string>

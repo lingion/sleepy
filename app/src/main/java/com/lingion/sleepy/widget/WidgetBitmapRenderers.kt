@@ -19,8 +19,8 @@ import java.time.LocalDate
 import kotlin.math.roundToInt
 
 /**
- * Canvas bitmap 渲染器 — 复用 Glance widget 的数据加载逻辑，
- * 复刻它们的视觉样式输出 PNG（WidgetRenderActivity 用）。
+ * Canvas bitmap 渲染器 — 各 Receiver.loadDataSync 拉数据后由本对象渲染，
+ * 输出 PNG bitmap 推给 RemoteViews（生产桌面渲染 + WidgetRenderActivity 调试预览共用）。
  *
  * 4 个 widget 复用同一份 scheme，色彩与 app 主题一致。
  */
@@ -52,7 +52,7 @@ object WidgetBitmapRenderers {
     )
 
     /**
-     * ★ 主题色 — 走 resolveSchemePublic (与 4 个 widget 的 Glance composables 同一函数)
+     * ★ 主题色 — 走 resolveSchemePublic (WidgetContent.kt, 全部 widget 渲染共用)
      * 之前硬编码 Default 紫色 → 不跟随 app 主题/system 动态取色 → 移植到 RemoteViews 后仍是错的。
      * 现在接收 themeKey, 完全对齐 WeekGridWidgetProvider.renderBitmap 的取色方式。
      */

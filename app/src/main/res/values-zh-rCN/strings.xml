@@ -420,8 +420,6 @@
     <string name="section_short">%1$d</string>
     <string name="section_single">第%1$d 节</string>
     <string name="semester_out_of_range">当前不在学期范围内</string>
-    <string name="today_text">今天</string>
-    <string name="widget_scroll_hint">↑ 滑动查看更多</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">输入</string>
     <string name="edit_period_duration_label">每节时长</string>

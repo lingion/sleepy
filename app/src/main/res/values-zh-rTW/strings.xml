@@ -279,7 +279,6 @@
     <string name="new_course">新課程</string>
     <string name="jw_import_title">教務匯入 - %1$s</string>
     <string name="month_day_format">%1$d月%2$d日</string>
-    <string name="today_text">今天</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">一</string>
     <string name="day_short_2">二</string>
@@ -408,7 +407,6 @@
     <string name="settings_widget_colorless_sub">開啟後課表與小工具的課程底色統一為中性灰，自訂顏色的課程不受影響</string>
     <string name="settings_widget_separator">週檢視分隔線</string>
     <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
-    <string name="widget_scroll_hint">↑ 滑動查看更多</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">輸入</string>
     <string name="edit_period_duration_label">每節時長</string>

@@ -279,7 +279,6 @@
     <string name="new_course">新規授業</string>
     <string name="jw_import_title">インポート - %1$s</string>
     <string name="month_day_format">%1$d/%2$d</string>
-    <string name="today_text">今日</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">月</string>
     <string name="day_short_2">火</string>
@@ -408,7 +407,6 @@
     <string name="settings_widget_colorless_sub">アプリ内とウィジェットの授業背景色をニュートラルグレーに統一します。色をカスタマイズした授業には適用されません</string>
     <string name="settings_widget_separator">週表示の区切り線</string>
     <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
-    <string name="widget_scroll_hint">↑ スクロールで続きを表示</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">入力</string>
     <string name="edit_period_duration_label">1時限の時間</string>

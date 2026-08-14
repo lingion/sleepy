@@ -90,7 +90,7 @@ fun AppearanceScreen(
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
 
-    // ★ 选主题/模式/显示项后立即刷小组件: 之前只写 SP 不刷 widget → Glance 小组件不跟主题变
+    // ★ 选主题/模式/显示项后立即刷小组件: 之前只写 SP 不刷 widget → 小组件不跟主题变
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     fun refreshWidgets() {
         widgetScope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }
