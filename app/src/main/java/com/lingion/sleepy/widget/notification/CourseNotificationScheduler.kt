@@ -395,8 +395,15 @@ class DailyNotifyReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        NotificationManagerCompat.from(context)
-            .notify(CourseNotificationScheduler.NOTIFY_DAILY, notif)
+        // ★ Lint MissingPermission + 运行时兜底: onReceive 里虽已校验, 但本函数在 IO 协程执行,
+        //   协程窗口期内权限可能被用户撤销 → post 前内联 checkSelfPermission 再兜底一次
+        //   (lint 只识别 ContextCompat.checkSelfPermission 标准模式, 不穿透自定义 helper)
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(context)
+                .notify(CourseNotificationScheduler.NOTIFY_DAILY, notif)
+        }
     }
 }
 
@@ -487,8 +494,14 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        NotificationManagerCompat.from(context)
-            .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, notif)
+        // ★ Lint MissingPermission + 运行时兜底: 同 DailyNotifyReceiver,
+        //   onReceive 校验后到此处之间权限可能被撤销 → 内联 checkSelfPermission 再查一次
+        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+            == PackageManager.PERMISSION_GRANTED
+        ) {
+            NotificationManagerCompat.from(context)
+                .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, notif)
+        }
     }
 }
 

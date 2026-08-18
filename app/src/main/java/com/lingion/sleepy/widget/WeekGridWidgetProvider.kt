@@ -94,10 +94,17 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         val optMinH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
         var wDp = 0
         var hDp = 0
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            // ★ 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
+            //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             val sizes = opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, android.util.SizeF::class.java)
             sizes?.maxByOrNull { it.width * it.height }?.let { s -> wDp = s.width.toInt(); hDp = s.height.toInt() }
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            // API 31/32: OPTION_APPWIDGET_SIZES 已存在但只有无类型重载(开发期过时警告, 运行时安全)
+            @Suppress("DEPRECATION", "UncheckedCast")
+            val legacy = opts.getParcelableArrayList<android.util.SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES)
+            legacy?.maxByOrNull { it.width * it.height }?.let { s -> wDp = s.width.toInt(); hDp = s.height.toInt() }
         }
         if (wDp <= 0 || hDp <= 0) {
             // 回退: MIN_W (最窄) × MAX_H (最高) ≈ 默认放置后的窄高容器

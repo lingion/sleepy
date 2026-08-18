@@ -8,6 +8,7 @@ import android.os.IBinder
 import android.os.Looper
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
+import androidx.core.content.ContextCompat
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 import com.lingion.sleepy.util.AppPrefs
@@ -140,10 +141,18 @@ class FluidCloudService : Service() {
             .build()
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
+            // 前台服务路径: startForeground 本身不需要 POST_NOTIFICATIONS 运行时权限
             startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, notification)
         } else {
-            androidx.core.app.NotificationManagerCompat.from(this)
-                .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, notification)
+            // ★ Lint MissingPermission: 前台服务由 startForegroundService 启动链路触发,
+            //   但 API<26 notify 分支仍需权限校验兜底(权限被拒时静默跳过, 不抛 SecurityException)
+            if (ContextCompat.checkSelfPermission(
+                    this, android.Manifest.permission.POST_NOTIFICATIONS
+                ) == android.content.pm.PackageManager.PERMISSION_GRANTED
+            ) {
+                androidx.core.app.NotificationManagerCompat.from(this)
+                    .notify(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, notification)
+            }
         }
         android.util.Log.d(
             "FluidCloudService",

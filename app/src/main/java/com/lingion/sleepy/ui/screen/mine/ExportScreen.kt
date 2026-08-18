@@ -247,7 +247,8 @@ private fun Divider(color: Color) {
 private fun stamp(): String =
     SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
 
-/** 用 MediaStore API 写到公共 Downloads 目录（无需存储权限，Android 10+），然后触发分享 */
+/** 用 MediaStore API 写到公共 Downloads 目录（无需存储权限，Android 10+），然后触发分享。
+ *  API 26-28 无 MediaStore.Downloads → 回退写到应用 cache 目录经 FileProvider 分享 */
 private suspend fun exportAndShare(
     ctx: android.content.Context,
     fileName: String,
@@ -257,7 +258,11 @@ private suspend fun exportAndShare(
 ) {
     withContext(Dispatchers.IO) {
         val uri = withContext(Dispatchers.IO) {
-            writeToDownloads(ctx, fileName, mime, content)
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
+                writeToDownloads(ctx, fileName, mime, content)
+            } else {
+                writeToCacheViaFileProvider(ctx, fileName, content)
+            }
         }
         if (uri == null) {
             withContext(Dispatchers.Main) {
@@ -282,6 +287,9 @@ private suspend fun exportAndShare(
     }
 }
 
+/** ★ 仅在 Q(29)+ 被调用(API<29 由 exportAndShare 分流到 writeToCacheViaFileProvider):
+ *    MediaStore.Downloads 整族 API 29 新增, 函数内不再需要 Q 判断 */
+@androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.Q)
 private fun writeToDownloads(
     ctx: android.content.Context,
     fileName: String,
@@ -292,10 +300,8 @@ private fun writeToDownloads(
         val values = android.content.ContentValues().apply {
             put(android.provider.MediaStore.Downloads.DISPLAY_NAME, fileName)
             put(android.provider.MediaStore.Downloads.MIME_TYPE, mime)
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-                put(android.provider.MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/Sleepy")
-                put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
-            }
+            put(android.provider.MediaStore.Downloads.RELATIVE_PATH, android.os.Environment.DIRECTORY_DOWNLOADS + "/Sleepy")
+            put(android.provider.MediaStore.Downloads.IS_PENDING, 1)
         }
         val resolver = ctx.contentResolver
         val collection = android.provider.MediaStore.Downloads.getContentUri(
@@ -303,14 +309,29 @@ private fun writeToDownloads(
         )
         val uri = resolver.insert(collection, values) ?: return null
         resolver.openOutputStream(uri)?.use { os -> os.write(content.toByteArray(Charsets.UTF_8)) }
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.Q) {
-            values.clear()
-            values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
-            resolver.update(uri, values, null, null)
-        }
+        values.clear()
+        values.put(android.provider.MediaStore.Downloads.IS_PENDING, 0)
+        resolver.update(uri, values, null, null)
         uri
     } catch (e: Exception) {
         android.util.Log.e("ExportScreen", "writeToDownloads failed", e)
+        null
+    }
+}
+
+/** API 26-28 回退: 写入应用 cache 目录, 经 FileProvider(cache-path, 见 xml/file_paths.xml)生成 content Uri 供分享 */
+private fun writeToCacheViaFileProvider(
+    ctx: android.content.Context,
+    fileName: String,
+    content: String
+): android.net.Uri? {
+    return try {
+        val dir = java.io.File(ctx.cacheDir, "exports").apply { mkdirs() }
+        val file = java.io.File(dir, fileName)
+        file.writeText(content, Charsets.UTF_8)
+        androidx.core.content.FileProvider.getUriForFile(ctx, "${ctx.packageName}.fileprovider", file)
+    } catch (e: Exception) {
+        android.util.Log.e("ExportScreen", "writeToCacheViaFileProvider failed", e)
         null
     }
 }

@@ -308,8 +308,14 @@ fun SleepyThemeProvider(
     //   防止 Compose 因 if/else 树结构变化而丢失 AppRoot 的 remember 状态。
     //   之前 preset==null 走 early return → content() 在不同树位置 → 切换时状态丢失。
     val (wakeColors, palette, m3Scheme) = if (preset == null) {
-        // dynamic 取色 — API 31+ Material You
-        val m3Dynamic = if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        // dynamic 取色 — API 31+ Material You (preset==null 仅在 dynamicAvailable(S/31)+ 时成立,
+        // lint 需要显式版本守卫才能识别 dynamicDarkColorScheme/dynamicLightColorScheme 的 API 31 要求)
+        val m3Dynamic = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+        } else {
+            // 理论不可达: preset==null 已含 S 守卫; 防御性回退默认 scheme
+            if (darkTheme) darkColorScheme() else lightColorScheme()
+        }
         // 用 dynamic scheme 的值构造 WakeUpColorScheme（课程色退回默认）
         val wc = WakeUpColorScheme(
             primary = m3Dynamic.primary,
