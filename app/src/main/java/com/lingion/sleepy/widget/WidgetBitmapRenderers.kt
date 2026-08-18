@@ -319,8 +319,8 @@ object WidgetBitmapRenderers {
                     canvas.drawRoundRect(
                         RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
                         4f * density, 4f * density, p)
-                    // 课程名 — ★ FontMetrics 垂直居中
-                    p.color = s.onSurface
+                    // 课程名 — ★ FontMetrics 垂直居中 + 亮度自适应文字色 (决策 D5-13, 对齐 drawCourse 同入口)
+                    p.color = CourseColorUtil.textColorOn(bgColor, s.isDark, s.onSurface)
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     val maxTextWidth = colW - coursePad * 2 - 4f * density
                     val displayName = if (p.measureText(name) > maxTextWidth) {
