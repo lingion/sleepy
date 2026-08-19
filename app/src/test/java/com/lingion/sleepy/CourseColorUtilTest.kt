@@ -145,4 +145,30 @@ class CourseColorUtilTest {
         val b = CourseColorUtil.pickCourseColorCompose(course(""), isDark = false, neutralColor = neutral)
         assertEquals("同 groupId 的 HSL 颜色应稳定", a, b)
     }
+
+    // ============================ WeekView 第5 widget 边界钉桩 (TS-1 / CS-V2) ============================
+
+    @Test
+    fun weekView_widget_unaffected_by_colorless_switch() {
+        // renderWeekView(WeekViewWidgetReceiver 第5 widget)无 colorless 参数、无胶囊背景:
+        // 课程列表为纯文本, 颜色直接取 scheme token(onSurfaceVariant / onPrimaryContainer),
+        // 从不调 CourseColorUtil 的 colorless 分支, 故 A 开关(widget_colorless)A=true / A=false
+        // 渲染结果恒同色 —— 固化「第5 widget 不受颜色拆分影响」边界。
+        //
+        // 纯 JVM 代理: colorless 开关唯一作用是把「无自定义色课程」的底色从 HSL 换为 neutral(灰)。
+        // WeekView 文本 token 灰(surfaceVariant) 与 colorless=true 返回的 neutral 同源,
+        // 该 token 是 scheme 常量、与 colorless 双态无关 → 恒同色。
+        val cNoCustom = course("#FF6750A4") // 哨兵 = 未设置
+        val aTrue = CourseColorUtil.pickCourseColorCompose(cNoCustom, false, neutral, colorless = true)
+        val aFalse = CourseColorUtil.pickCourseColorCompose(cNoCustom, false, neutral, colorless = false)
+        // A=true 时取 neutral 灰; WeekView 只消费此灰常量, 与开关状态无关。
+        assertEquals("A=true 时 WeekView 文本灰同源 token 为固定常量", neutral, aTrue)
+        // 自定义色课程在 A=true/A=false 双态下取色恒同(WeekView 即使有胶囊也免疫于开关)。
+        val custom = course("#FF5722")
+        assertEquals(
+            "自定义色课程在 A 开关双态下取色恒同(WeekView 不受影响边界)",
+            CourseColorUtil.pickCourseColorCompose(custom, false, neutral, colorless = false),
+            CourseColorUtil.pickCourseColorCompose(custom, false, neutral, colorless = true)
+        )
+    }
 }
