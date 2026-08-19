@@ -32,9 +32,8 @@
     <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d courses</string>
     <string name="current_table_week">Current · Week %1$d</string>
     <string name="table_start_date">Start: %1$s</string>
-    <string name="all_tables">Manage Schedules</string>
+    <string name="all_tables">All Schedules</string>
     <string name="all_tables_new">New Schedule</string>
-    <string name="all_tables_switch">Set as current</string>
     <string name="edit_table_title">Edit Schedule</string>
     <string name="edit_table_basic_info">Basic Info</string>
     <string name="edit_table_name">Schedule Name</string>
@@ -159,38 +158,24 @@
 
     <string name="mine_title">Me</string>
     <string name="mine_subtitle">Manage schedules and settings</string>
-    <string name="mine_reminder">Daily Reminder</string>
-    <string name="mine_reminder_on">Daily 7:00 AM reminder enabled</string>
-    <string name="mine_reminder_off">Daily reminder disabled</string>
-    <string name="mine_dark_mode">Dark Mode</string>
-    <string name="mine_theme_color">Theme Color</string>
-    <string name="mine_more_settings">More Settings</string>
     <string name="mine_export">Export</string>
-    <string name="mine_export_coming">Export — coming in a future update (ICS support)</string>
     <string name="mine_stat_tables">Schedules</string>
     <string name="mine_stat_courses">Courses</string>
     <string name="mine_stat_week">Week</string>
 
-    <string name="settings_title">More Settings</string>
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>
     <string name="settings_display_node">Show as periods</string>
     <string name="settings_display_node_sub">All courses show as \"Period N\"</string>
     <string name="settings_display_time">Show as times</string>
     <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
-    <string name="settings_grid_view">Grid View</string>
-    <string name="settings_show_date">Show dates</string>
+    <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>
     <string name="settings_visible_days_sub">Unchecked days are hidden in all views</string>
 
-    <string name="theme_title">Theme Color</string>
-    <string name="theme_presets">Preset Themes</string>
     <string name="theme_system">Follow System</string>
     <string name="theme_system_desc">Material You dynamic color (Android 12+)</string>
-    <string name="theme_system_needs_12">Follow System requires Android 12 or above.</string>
-    <string name="theme_switched_system">Switched to Follow System</string>
-    <string name="theme_switched_preset">Switched to %1$s</string>
 
     <string name="view_full">Week</string>
     <string name="view_cards">Grid</string>
@@ -259,7 +244,6 @@
     <string name="end_label">End</string>
     <string name="delete_period">Delete this period</string>
 
-    <string name="mine_about_title">About Sleepy</string>
     <string name="mine_about">About</string>
     <string name="mine_about_body">Sleepy Schedule v%1$s\n\nA minimal, clean, local-first schedule app.\nAll data stays on your device — nothing is uploaded.\n\n· No ads\n· No tracking\n· Supports WakeUp / ICS / CSV / HTML / plain text import</string>
 
@@ -275,8 +259,6 @@
 
     <!-- Localized date / theme display -->
     <string name="date_long_format">%1$d/%2$d</string>
-    <string name="notif_channel_name">Daily Class Reminder</string>
-    <string name="notif_channel_desc">Push today\'s classes every morning</string>
     <string name="notif_title">Today\'s Classes — %1$s %2$s</string>
     <string name="notif_text">Tap to view today\'s schedule</string>
     <string name="theme_name_default">Lilac</string>
@@ -288,7 +270,6 @@
     <string name="new_course">New Course</string>
     <string name="jw_import_title">Import - %1$s</string>
     <string name="month_day_format">%1$d/%2$d</string>
-    <string name="today_text">Today</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">M</string>
     <string name="day_short_2">T</string>
@@ -299,11 +280,15 @@
     <string name="day_short_7">S</string>
     <string name="section_node_format">Period %1$d–%2$d</string>
     <string name="section_single">Period %1$d</string>
-    <string name="mine_theme">Theme</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
-    <string name="theme_mode_dark">深色</string>
+    <string name="mine_appearance">Appearance &amp; display</string>
+    <string name="mine_general">General</string>
+    <string name="theme_appearance">Appearance</string>
+    <string name="theme_mode_system">Auto (light/dark)</string>
+    <string name="theme_mode_light">Light</string>
+    <string name="theme_mode_dark">Dark</string>
+    <string name="appearance_section_theme">Theme colors</string>
+    <string name="appearance_section_display">Course display</string>
+    <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">You\'re on the latest version v%1$s</string>
     <string name="update_found_title">New version v%1$s available</string>
     <string name="update_download">Download</string>
@@ -321,12 +306,7 @@
     <string name="about_title">About</string>
     <string name="about_update">Check for Updates</string>
     <string name="about_update_checking">Checking for updates…</string>
-    <string name="about_update_detail">If GitHub is unavailable, you can download from the mirror instead</string>
-    <string name="about_update_downloading">Downloading update…</string>
-    <string name="about_update_failed">Update failed: %1$s</string>
-    <string name="about_update_github">Get from GitHub</string>
-    <string name="about_update_mirror">Get from mirror gh.qdp.qzz.io</string>
-    <string name="about_update_ready">Downloaded v%1$s, opening system installer</string>
+    <string name="about_update_detail">If GitHub is unavailable, the app will fall back to the mirror automatically</string>
     <string name="about_version">Version</string>
     <string name="about_version_detail">Version %1$s (Build %2$d)</string>
     <string name="action_cancel">Cancel</string>
@@ -373,8 +353,9 @@
     <string name="notif_channel_fluid_desc">Shows an expandable real-time course card before class</string>
     <string name="notif_daily_text_first">First class: %1$s at %2$s in %3$s</string>
     <string name="notif_daily_text_no_course">Take a break and enjoy the day!</string>
-    <string name="notif_daily_title">Today is the %1$dst, you have %2$d classes</string>
-    <string name="notif_daily_title_no_course">Today is the %1$dst, no classes today</string>
+    <!-- 无序数句式: 英语序数后缀仅 1st/21st/31st 匹配 st, 硬编码 %1$dst 在其余日期全错 -->
+    <string name="notif_daily_title">Today is day %1$d of the month, you have %2$d classes</string>
+    <string name="notif_daily_title_no_course">Today is day %1$d of the month, no classes today</string>
     <string name="notif_room_unknown">Unknown room</string>
     <string name="reminder_banner_sub">Show a before-class banner in the notification bar</string>
     <string name="reminder_banner_title">Banner Reminder</string>
@@ -405,13 +386,14 @@
     <string name="school_pinyin_hint">Supports pinyin initials / school abbreviations (e.g. hrbeu)</string>
     <string name="semester_out_of_range">Current date is outside the semester range</string>
     <string name="settings_vert_punct">Vertical Punctuation Optimization</string>
-    <string name="settings_vert_punct_sub">Replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
+    <string name="settings_vert_punct_sub">In the grid widget, replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
     <string name="settings_widget">Widget settings</string>
-    <string name="settings_widget_colorless">Colorless mode</string>
-    <string name="settings_widget_colorless_sub">Course capsules use a neutral gray</string>
+    <string name="settings_widget_colorless">Uniform widget course colors</string>
+    <string name="settings_widget_colorless_sub">Only courses with backgrounds in widgets use a neutral gray; pure-text week view is unaffected, and courses with custom colors are unaffected</string>
+    <string name="settings_course_colorless">Uniform course-pill colors</string>
+    <string name="settings_course_colorless_sub">Only course pills in the app use a neutral gray; widget settings are unaffected, and courses with custom colors are unaffected</string>
     <string name="settings_widget_separator">Week view separator</string>
     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
-    <string name="widget_scroll_hint">↑ Scroll for more</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Input</string>
     <string name="edit_period_duration_label">Per-period duration</string>

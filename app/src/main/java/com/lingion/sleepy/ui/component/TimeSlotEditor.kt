@@ -91,18 +91,7 @@ fun TimeSlotEditor(
     }
 }
 
-/**
- * 给"导入前确认"等场景用的简化包装：
- * 只用手动模式（无 Tab 切换），保持向后兼容。
- */
-@Composable
-fun TimeSlotEditorManualOnly(
-    rows: List<TimeSlotRow>,
-    onRowsChange: (List<TimeSlotRow>) -> Unit,
-    modifier: Modifier = Modifier
-) {
-    ManualTimeSlotEditor(rows = rows, onRowsChange = onRowsChange, modifier = modifier)
-}
+// TimeSlotEditorManualOnly 死包装已删（全库零调用; 导入场景直接用 TimeSlotEditor(mode=Manual)）
 
 enum class Mode { Manual, Auto }
 

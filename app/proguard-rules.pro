@@ -1,7 +1,7 @@
 # Add project specific ProGuard rules here.
 
 # 全局: 保留原始类名/方法名, 只做 shrinking + 优化。
-# 这避免了 Glance 反射、Room 生成类、Serialization 反射因改名而崩溃。
+# 这避免了 Room 生成类、Serialization 反射因改名而崩溃。
 -dontobfuscate
 
 # ── 通用: 保留注解、内部类、泛型签名、源文件名(堆栈可读)、调试行号 ──
@@ -30,10 +30,7 @@
 -keep class androidx.work.** { *; }
 -keep class * extends androidx.work.ListenableWorker { <init>(...); }
 
-# ── Glance / Compose (RemoteViews 通过反射膨胀, 不能裁) ──
--keep class androidx.glance.** { *; }
--keep class androidx.glance.appwidget.** { *; }
--dontwarn androidx.glance.**
+# Glance keep 规则已随死代码删除移除(决策 D5-11): widget 全走 RemoteViews + Canvas bitmap
 # AppWidgetProvider 子类: 系统通过 Manifest 反射实例化
 -keep class * extends android.appwidget.AppWidgetProvider { <init>(); }
 # BroadcastReceiver/Activity 子类: 同上

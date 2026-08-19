@@ -48,8 +48,6 @@ import com.lingion.sleepy.data.entity.BreakOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
-
 /**
  * v1.0.16 智慧节次编辑器（自动模式）
  *
@@ -167,7 +165,17 @@ fun SmartPeriodEditor(
                         onConfigChange(config.copy(transitionAssignments = newAssigns))
                     },
                     onDelete = {
-                        val newAssigns = assigns.map { if (it == groupIdx) null else it }.toMutableList()
+                        // ★ 删除组后索引重映射：被删组清空 + 大于被删索引的全部减 1。
+                        // 之前只把 ==groupIdx 的置 null，breaks.removeAt 后所有 >groupIdx 的
+                        // 索引指向错位元素，被 effectiveAssignments 判越界置 null——
+                        // 删一个课间组，其后所有课间的分配静默清空。
+                        val newAssigns = assigns.map { v ->
+                            when {
+                                v == groupIdx -> null
+                                v != null && v > groupIdx -> v - 1
+                                else -> v
+                            }
+                        }
                         onConfigChange(config.copy(
                             breaks = config.breaks.toMutableList().also { it.removeAt(groupIdx) },
                             transitionAssignments = newAssigns
@@ -445,7 +453,4 @@ private fun AddBreakChip(
     )
 }
 
-/**
- * 把智慧节次编辑器生成的 rows 转化为 Result 供调用方使用
- */
-fun smartConfigToRows(config: SmartPeriodConfig): List<TimeSlotRow> = config.derive()
+// smartConfigToRows 死函数已删（全库零调用; 调用方直接用 SmartPeriodConfig.derive()）

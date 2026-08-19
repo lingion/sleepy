@@ -21,8 +21,8 @@ import android.widget.RemoteViews
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
-import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -94,10 +94,17 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         val optMinH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
         var wDp = 0
         var hDp = 0
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+            // ★ 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
+            //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             val sizes = opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, android.util.SizeF::class.java)
             sizes?.maxByOrNull { it.width * it.height }?.let { s -> wDp = s.width.toInt(); hDp = s.height.toInt() }
+        } else if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
+            // API 31/32: OPTION_APPWIDGET_SIZES 已存在但只有无类型重载(开发期过时警告, 运行时安全)
+            @Suppress("DEPRECATION", "UncheckedCast")
+            val legacy = opts.getParcelableArrayList<android.util.SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES)
+            legacy?.maxByOrNull { it.width * it.height }?.let { s -> wDp = s.width.toInt(); hDp = s.height.toInt() }
         }
         if (wDp <= 0 || hDp <= 0) {
             // 回退: MIN_W (最窄) × MAX_H (最高) ≈ 默认放置后的窄高容器
@@ -138,7 +145,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     ((this.green * 255).toInt() shl 8) or (this.blue * 255).toInt()
             val bgSurface       = scheme.surface.toIntArgb()
             val bgContainer     = scheme.surfaceContainer.toIntArgb()
-            val bgCell          = scheme.surface.toIntArgb()
             val bgToday         = scheme.primaryContainer.toIntArgb()
             val fgPrimary       = scheme.primary.toIntArgb()
             val fgOnSurface     = scheme.onSurface.toIntArgb()
@@ -150,37 +156,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             // hue = groupId.hashCode() * 137.508° → 相邻课色差最大化, 同门课永远同色
             // 亮色 S=0.55 L=0.82 (粉彩), 暗色 S=0.40 L=0.28 (沉稳)
             // 用户自定义 color 优先 (#FF6750A4 视为未设置)
-            fun hslToColorInt(h: Float, s: Float, l: Float): Int {
-                val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-                val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-                val m = l - c / 2f
-                val (r, g, b) = when {
-                    h < 60f  -> Triple(c, x, 0f)
-                    h < 120f -> Triple(x, c, 0f)
-                    h < 180f -> Triple(0f, c, x)
-                    h < 240f -> Triple(0f, x, c)
-                    h < 300f -> Triple(x, 0f, c)
-                    else     -> Triple(c, 0f, x)
-                }
-                return (0xFF shl 24) or
-                    ((r + m).coerceIn(0f, 1f).times(255f).toInt() shl 16) or
-                    ((g + m).coerceIn(0f, 1f).times(255f).toInt() shl 8) or
-                    (b + m).coerceIn(0f, 1f).times(255f).toInt()
-            }
-            fun pickCourseColor(course: CourseEntity): Int {
-                // 用户自定义 color 优先 (colorless 不覆盖用户手动设的颜色)
-                val userColor = course.color
-                if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
-                    runCatching { return android.graphics.Color.parseColor(userColor) }
-                }
-                // 无色模式: 统一中性灰底 (复用 surfaceVariant, 与网格线同色保持一致)
-                if (colorless) return gridLine
-                val stableId = course.groupId.hashCode().toLong()
-                val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
-                val s = if (isDark) 0.40f else 0.55f
-                val l = if (isDark) 0.28f else 0.82f
-                return hslToColorInt(hue, s, l)
-            }
+            // (本地 hslToColorInt/pickCourseColor 副本已收敛至 util/CourseColorUtil.kt, 决策 D3)
 
             // ── 数据 ──
             val timeJson = data.days.firstOrNull()?.timeJson ?: ""
@@ -225,7 +201,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val containerRect = RectF(0f, 0f, wPx.toFloat(), hPx.toFloat())
             c.drawRoundRect(containerRect, dp(18f).toFloat(), dp(18f).toFloat(), p)
 
-            // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格(与 Glance 版 EmptyTableState 一致)
+            // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格
             if (!data.hasTable || data.days.isEmpty() || data.days.all { it.courses.isEmpty() }) {
                 val ctx = SleepyApp.get()
                 p.color = fgOnSurface
@@ -377,8 +353,9 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val cardH = slotH * step + gapH * (step - 1)
                     val cardRect = RectF(colX, cardTop, colX + dayW, cardTop + cardH)
 
-                    // 卡片背景色 (v19e: 对齐 CourseTableView palette)
-                    val baseColor = pickCourseColor(course)
+                    // 卡片背景色 (v19e: 对齐 CourseTableView palette) — 统一入口 CourseColorUtil (决策 D3)
+                    // colorless 灰底传 gridLine(即 surfaceVariant 的 Int), 与原实现一致
+                    val baseColor = CourseColorUtil.pickCourseColorInt(course, isDark, gridLine, colorless)
                     p.color = baseColor
                     p.alpha = 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)
@@ -399,7 +376,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.color = textColor
                     p.textAlign = Paint.Align.CENTER
 
-                    val nameChars = course.courseName.filter { it != '\n' && it != ' ' }.toList()
+                    // nameChars 死变量已删 (v21 起 token 化走 tokenizeName, 不再用字符列表)
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
@@ -531,14 +508,8 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
                         c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
-                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px charSize=${charSize.toInt()}px availH=${nameAvailH.toInt()}px " +
-                            "name='${course.courseName}'(drawn=${drawn.size}${if(showEllipsis)"+…"else ""} h=${cumH.toInt()}px) " +
-                            "room='${roomStr}'(${roomStr.length}→${roomVisible.length}chars max=$maxRoomChars)")
-                    } else {
-                        Log.d(TAG, "CARD dow=$dow start=${startIdx + 1} step=$step cardH=${cardRect.height().toInt()}px charSize=${charSize.toInt()}px availH=${nameAvailH.toInt()}px " +
-                            "name='${course.courseName}'(drawn=${drawn.size}${if(showEllipsis)"+…"else ""} h=${cumH.toInt()}px) " +
-                            "room=none")
                     }
+                    // 循环内 Log.d 渲染调试日志已删（每张课程卡都求值字符串模板, Release 也无法被 R8 消除）
                 }
             }
 
@@ -631,7 +602,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 // 方案B: 标点先替换为 Vertical Forms → 归为 CJK 直立
                 val c = if (useVertForms && ch in VERT_FORM_MAP) VERT_FORM_MAP[ch]!! else ch
                 val t = when {
-                    isLatin(c) && isLatin(c) -> TT.LATIN
                     isCJK(c) -> TT.CJK
                     c in PUNCT_CHARS -> TT.PUNCT
                     isLatin(c) -> TT.LATIN
@@ -684,9 +654,6 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = AppPrefs.getThemeKey(context)
-            val themeMode = AppPrefs.getThemeMode(context)
-            Log.d(TAG, "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
-            val displayMode = AppPrefs.getDisplayMode(context)
             val showDate = AppPrefs.isShowDate(context)
             val visibleDays = AppPrefs.getVisibleDays(context)
             return try {
@@ -706,7 +673,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
                 if (table == null) {
                     WeekData(days = emptyList(), hasTable = false, isDark = isDark,
-                        themeKey = themeKey, displayMode = displayMode,
+                        themeKey = themeKey,
                         showDate = showDate, visibleDays = visibleDays)
                 } else {
                     val days = daysPerCourse.map { (dow, courses) ->
@@ -714,13 +681,13 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = table.timeJson)
                     }
                     WeekData(days = days, hasTable = true, isDark = isDark,
-                        themeKey = themeKey, displayMode = displayMode,
+                        themeKey = themeKey,
                         showDate = showDate, visibleDays = visibleDays)
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "loadWeekData failed", e)
                 WeekData(days = emptyList(), hasTable = false, isDark = isDark,
-                    themeKey = themeKey, displayMode = displayMode,
+                    themeKey = themeKey,
                     showDate = showDate, visibleDays = visibleDays)
             }
         }

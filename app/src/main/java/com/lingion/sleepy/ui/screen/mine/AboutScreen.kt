@@ -137,7 +137,8 @@ fun AboutScreen(onBack: () -> Unit) {
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = colors.background,
-                    titleContentColor = colors.onSurface
+                    // ★ 对齐其余 mine 子页（AllTables/Export/Reminder 等统一 onBackground）
+                    titleContentColor = colors.onBackground
                 )
             )
         },

@@ -31,6 +31,7 @@ object AppPrefs {
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
     const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
+    const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
@@ -151,9 +152,7 @@ object AppPrefs {
         (sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_FIELDS, "name,time,room,teacher")
             ?: "name,time,room,teacher").split(",").filter { it.isNotBlank() }.toSet()
 
-    fun setBeforeClassFluidFields(ctx: Context, fields: Set<String>) {
-        sp(ctx).edit().putString(KEY_BEFORE_CLASS_FLUID_FIELDS, fields.joinToString(",")).apply()
-    }
+    // setBeforeClassFluidFields 死写路径已删（legacy 多选写入口, 全库零调用; 读取仅 BeforeClassNotifyReceiver 用旧数据）
 
     fun getBeforeClassFluidPrimary(ctx: Context): String =
         sp(ctx).getString(KEY_BEFORE_CLASS_FLUID_PRIMARY, "room") ?: "room"
@@ -217,6 +216,15 @@ object AppPrefs {
 
     fun setWidgetColorless(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WIDGET_COLORLESS, v).apply()
+    }
+
+    // ===== App 课程胶囊无色模式 — 默认 false =====
+
+    fun isCourseColorless(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_COURSE_COLORLESS, false)
+
+    fun setCourseColorless(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_COURSE_COLORLESS, v).apply()
     }
 
     // ===== WeekView 纯文字组件：课程间分隔线 — 默认 true =====

@@ -13,8 +13,8 @@ android {
         applicationId = "com.lingion.sleepy"
         minSdk = 26
         targetSdk = 37
-        versionCode = 34
-        versionName = "1.0.33"
+        versionCode = 35
+        versionName = "1.0.34"
         vectorDrawables { useSupportLibrary = true }
         androidResources {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")
@@ -28,7 +28,7 @@ android {
         }
         release {
             isMinifyEnabled = true
-            // 保留 R8 shrinking 能力但关闭混淆改名(避免 Glance 反射/序列化类被重命名后崩溃)
+            // 保留 R8 shrinking 能力但关闭混淆改名(避免反射/序列化类被重命名后崩溃)
             // 真正的混淆(mangling)由 shrinkResources + 下面的 keep 规则共同保护
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -132,11 +132,8 @@ dependencies {
     // jsoup (HTML parsing for 教务直连 import)
     implementation("org.jsoup:jsoup:1.18.1")
 
-    // Glance (App Widgets)
-    implementation("androidx.glance:glance-appwidget:1.1.0")
-    implementation("androidx.glance:glance-material3:1.1.0")
-
     // WorkManager (Daily notifications)
+    // Glance 依赖已随死代码删除移除(决策 D5-11): 5 个生产 widget 全走 RemoteViews + Canvas bitmap
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     // Splash screen

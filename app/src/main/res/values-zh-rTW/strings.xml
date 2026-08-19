@@ -30,11 +30,10 @@
     <string name="manage_manual_add">手動新增課程</string>
     <string name="manage_manual_add_sub">直接新增一門課程到目前課表</string>
     <string name="table_info">開始日期: %1$s  |  第%2$d週  |  %3$d門課</string>
-    <string name="current_table_week">當前課表 · 第%1$d週</string>
+    <string name="current_table_week">目前課表 · 第%1$d週</string>
     <string name="table_start_date">開始日期: %1$s</string>
-    <string name="all_tables">課表管理</string>
+    <string name="all_tables">所有課表</string>
     <string name="all_tables_new">建立課表</string>
-    <string name="all_tables_switch">切換為目前</string>
     <string name="edit_table_title">編輯課表</string>
     <string name="edit_table_basic_info">基本資訊</string>
     <string name="edit_table_name">課表名稱</string>
@@ -83,18 +82,18 @@
     <string name="import_select_table">請先選擇課表</string>
     <string name="read_failed">讀取失敗: %1$s</string>
     <string name="cannot_read_file">無法讀取檔案</string>
-    <string name="import_preview_sub">先預覽，再導入，不讓課表被一把覆蓋</string>
-    <string name="format_wakeup_share">WakeUp 分享文本</string>
+    <string name="import_preview_sub">先預覽，再匯入，不讓課表被一把覆蓋</string>
+    <string name="format_wakeup_share">WakeUp 分享文字</string>
     <string name="format_wakeup_desc">【來自WakeUp課程表】開頭</string>
     <string name="format_wakeup_json">WakeUp JSON</string>
-    <string name="format_json_desc">導出文件 .json</string>
+    <string name="format_json_desc">匯出檔案 .json</string>
     <string name="format_ics">ICS 日曆</string>
-    <string name="format_ics_desc">可從學校教務處導出</string>
-    <string name="format_csv">CSV 文件</string>
+    <string name="format_ics_desc">可從學校教務處匯出</string>
+    <string name="format_csv">CSV 檔案</string>
     <string name="format_csv_desc">含表頭的 .csv，逗號分隔</string>
     <string name="format_html">HTML 表格</string>
     <string name="format_html_desc">&lt;table&gt; 形式，識別表頭後逐行解析</string>
-    <string name="format_plain">純文本</string>
+    <string name="format_plain">純文字</string>
     <string name="format_plain_desc">一行一課，製表符分隔</string>
     <string name="import_start_date_required">請填寫學期開始日期</string>
     <string name="start_date_format">日期格式應為YYYY-MM-DD</string>
@@ -158,38 +157,24 @@
 
     <string name="mine_title">我的</string>
     <string name="mine_subtitle">管理你的課表與設定</string>
-    <string name="mine_reminder">每日提醒</string>
-    <string name="mine_reminder_on">已開啟每日 7:00 課程提醒</string>
-    <string name="mine_reminder_off">已關閉每日提醒</string>
-    <string name="mine_dark_mode">深色模式</string>
-    <string name="mine_theme_color">主題顏色</string>
-    <string name="mine_more_settings">更多設定</string>
     <string name="mine_export">匯出課表</string>
-    <string name="mine_export_coming">匯出課表 — 此功能開發中，後續版本支援 ICS 匯出</string>
     <string name="mine_stat_tables">課表數</string>
     <string name="mine_stat_courses">課程數</string>
     <string name="mine_stat_week">目前週</string>
 
-    <string name="settings_title">更多設定</string>
     <string name="settings_language">語言 / Language</string>
     <string name="settings_display_mode">課程時間顯示</string>
     <string name="settings_display_node">統一顯示節次</string>
     <string name="settings_display_node_sub">所有課程顯示為「第N節」</string>
     <string name="settings_display_time">統一顯示時間</string>
     <string name="settings_display_time_sub">所有課程顯示為「HH:mm–HH:mm」</string>
-    <string name="settings_grid_view">網格檢視</string>
-    <string name="settings_show_date">顯示日期</string>
+    <string name="settings_show_date">課表顯示日期</string>
     <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>
     <string name="settings_visible_days">顯示星期</string>
     <string name="settings_visible_days_sub">取消勾選的星期將在所有檢視中隱藏</string>
 
-    <string name="theme_title">主題顏色</string>
-    <string name="theme_presets">預設主題</string>
     <string name="theme_system">跟隨系統</string>
     <string name="theme_system_desc">Material You 動態取色（Android 12+）</string>
-    <string name="theme_system_needs_12">跟隨系統需要 Android 12 及以上。</string>
-    <string name="theme_switched_system">已切換為跟隨系統</string>
-    <string name="theme_switched_preset">已切換為 %1$s</string>
 
     <string name="view_full">週檢視</string>
     <string name="view_cards">網格</string>
@@ -211,8 +196,8 @@
     <string name="action_close">關閉</string>
 
     <!-- Widget / Common UI -->
-    <string name="widget_create_schedule">請先創建課表</string>
-    <string name="widget_open_sleepy">打開 Sleepy 開始添加</string>
+    <string name="widget_create_schedule">請先建立課表</string>
+    <string name="widget_open_sleepy">開啟 Sleepy 開始新增</string>
     <string name="more_sections">還有 %1$d 節…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 節課程</string>
@@ -253,12 +238,11 @@
     <string name="select_time">選擇時間</string>
 
     <!-- Time Slot Editor -->
-    <string name="add_period">添加一節</string>
+    <string name="add_period">新增一節</string>
     <string name="start_label">開始</string>
     <string name="end_label">結束</string>
     <string name="delete_period">刪除此節</string>
 
-    <string name="mine_about_title">關於 Sleepy 課表</string>
     <string name="mine_about">關於</string>
     <string name="mine_about_body">Sleepy 課表 v%1$s\n\n一個極簡、乾淨、本地優先的課表工具。\n所有資料均儲存在你的裝置上，不上傳任何伺服器。\n\n· 無廣告\n· 無追蹤\n· 支援 WakeUp / ICS / CSV / HTML / 純文字 匯入</string>
 
@@ -274,8 +258,6 @@
 
     <!-- Localized date / theme display -->
     <string name="date_long_format">%1$d月%2$d日</string>
-    <string name="notif_channel_name">每日課程提醒</string>
-    <string name="notif_channel_desc">每天早上推送今日課程安排</string>
     <string name="notif_title">今日課程 — %1$s %2$s</string>
     <string name="notif_text">點擊查看今日課程安排</string>
     <string name="theme_name_default">預設淡紫</string>
@@ -287,7 +269,6 @@
     <string name="new_course">新課程</string>
     <string name="jw_import_title">教務匯入 - %1$s</string>
     <string name="month_day_format">%1$d月%2$d日</string>
-    <string name="today_text">今天</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">一</string>
     <string name="day_short_2">二</string>
@@ -298,11 +279,15 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d–%2$d節</string>
     <string name="section_single">第%1$d 節</string>
-    <string name="mine_theme">主題</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
+    <string name="mine_appearance">外觀與顯示</string>
+    <string name="mine_general">一般</string>
+    <string name="theme_appearance">外觀</string>
+    <string name="theme_mode_system">深淺色跟隨系統</string>
+    <string name="theme_mode_light">淺色</string>
     <string name="theme_mode_dark">深色</string>
+    <string name="appearance_section_theme">主題色彩</string>
+    <string name="appearance_section_display">課程顯示</string>
+    <string name="appearance_section_widget">小工具</string>
     <string name="about_update_latest">目前已是最新版本 v%1$s</string>
     <string name="update_found_title">發現新版本 v%1$s</string>
     <string name="update_download">下載</string>
@@ -320,12 +305,7 @@
     <string name="about_title">關於</string>
     <string name="about_update">取得更新</string>
     <string name="about_update_checking">正在檢查更新…</string>
-    <string name="about_update_detail">GitHub 主站不可用時，可改用鏡像下載</string>
-    <string name="about_update_downloading">正在取得更新…</string>
-    <string name="about_update_failed">更新失敗：%1$s</string>
-    <string name="about_update_github">從 GitHub 取得</string>
-    <string name="about_update_mirror">從鏡像 gh.qdp.qzz.io 取得</string>
-    <string name="about_update_ready">已下載 v%1$s，正在開啟系統安裝器</string>
+    <string name="about_update_detail">GitHub 主站不可用時，自動回退鏡像下載</string>
     <string name="about_version">版本資訊</string>
     <string name="about_version_detail">版本 %1$s（建構 %2$d）</string>
     <string name="action_cancel">取消</string>
@@ -405,13 +385,14 @@
     <string name="school_pinyin_hint">支援拼音首字母 / 學校英文簡稱 (如 hrbeu)</string>
     <string name="semester_out_of_range">目前不在學期範圍內</string>
     <string name="settings_vert_punct">直排標點最佳化</string>
-    <string name="settings_vert_punct_sub">課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
+    <string name="settings_vert_punct_sub">網格小工具課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
     <string name="settings_widget">小工具設定</string>
-    <string name="settings_widget_colorless">無色模式</string>
-    <string name="settings_widget_colorless_sub">開啟後小工具課程膠囊變為統一灰色</string>
+    <string name="settings_widget_colorless">小工具統一課程底色</string>
+    <string name="settings_widget_colorless_sub">僅將帶課程背景的小工具課程統一為中性底色；純文字週檢視不受影響，自訂顏色課程不受影響</string>
+    <string name="settings_course_colorless">課程膠囊統一底色</string>
+    <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色；小工具設定不受影響，自訂顏色課程不受影響</string>
     <string name="settings_widget_separator">週檢視分隔線</string>
     <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
-    <string name="widget_scroll_hint">↑ 滑動查看更多</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">輸入</string>
     <string name="edit_period_duration_label">每節時長</string>
@@ -429,7 +410,7 @@
     <string name="period_time_range">第%1$s節  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 分鐘連續</string>
     <string name="break_continuous_n">  ↓ %1$d 分鐘 %2$s</string>
-    <string name="add_label">添加%1$s</string>
+    <string name="add_label">新增%1$s</string>
     <string name="mode_manual">手動模式</string>
     <string name="mode_auto">自動模式</string>
     <string name="label_from">起</string>

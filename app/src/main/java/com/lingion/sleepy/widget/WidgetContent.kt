@@ -1,51 +1,26 @@
 package com.lingion.sleepy.widget
 
 import android.content.Context
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
-import androidx.glance.LocalContext
-import androidx.glance.LocalSize
-import android.util.Log
-import androidx.compose.ui.unit.Dp
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
-import androidx.glance.GlanceModifier
-import androidx.glance.action.Action
-import androidx.glance.action.clickable
-import androidx.glance.appwidget.cornerRadius
-import androidx.glance.background
-import androidx.glance.layout.Alignment
-import androidx.glance.layout.Box
-import androidx.glance.layout.Column
-import androidx.glance.layout.Row
-import androidx.glance.layout.Spacer
-import androidx.glance.layout.fillMaxHeight
-import androidx.glance.layout.fillMaxSize
-import androidx.glance.layout.fillMaxWidth
-import androidx.glance.layout.height
-import androidx.glance.appwidget.lazy.LazyColumn
-import androidx.glance.appwidget.lazy.items
-import androidx.glance.layout.padding
-import androidx.glance.layout.size
-import androidx.glance.layout.width
-import androidx.glance.text.FontWeight
-import androidx.glance.text.Text
-import androidx.glance.text.TextStyle
-import androidx.glance.unit.ColorProvider
-import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
-import com.lingion.sleepy.ui.component.TimeSlot
 import com.lingion.sleepy.ui.theme.ThemePresets
-import com.lingion.sleepy.ui.theme.LightCoursePalette
-import com.lingion.sleepy.ui.theme.DarkCoursePalette
 import com.lingion.sleepy.ui.theme.WakeUpColorScheme
 import com.lingion.sleepy.util.DateUtils
-import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
 
 /**
- * 小组件渲染数据 — 让 Composable 单纯渲染，不读 DB。
- * TodayWidget.provideGlance 在 IO 线程上拉数据，组装成这个 model 喂给 Composable。
+ * 小组件数据模型 + 配色派生 — 生产 RemoteViews 渲染链路
+ * (WidgetBitmapRenderers / WeekGridWidgetProvider / WidgetRenderActivity) 共用。
+ *
+ * Glance composable 层(WidgetContent/WeekListContent/TwoDayContent/WeekGridContent)
+ * 已删除(决策 D5-11): 5 个生产入口全走 RemoteViews + Canvas bitmap,
+ * Glance 层生产不可达, 其旧关键词配色路径(CourseColorRules)一并移除。
+ * 文件名保留 WidgetContent.kt 以减小 diff; 如需可后续重命名为 WidgetModels.kt。
+ */
+
+/**
+ * 小组件渲染数据 — 让渲染端单纯绘制，不读 DB。
+ * Receiver.loadDataSync 在后台线程拉数据，组装成这个 model 喂给 renderer。
  */
 data class WidgetData(
     /** 今日日期 */
@@ -65,56 +40,12 @@ data class WidgetData(
     val dateLabel: String get() = "${date.monthValue}/${date.dayOfMonth}"
 }
 
-@Composable
-fun WidgetContent(data: WidgetData, openAppAction: Action, openCourseAction: (Long) -> Action) {
-    val context = LocalContext.current
-    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
-
-    Column(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(ColorProvider(scheme.bg))
-            .cornerRadius(20.dp)
-            .padding(14.dp)
-            .clickable(openAppAction),
-        verticalAlignment = Alignment.Top,
-        horizontalAlignment = Alignment.Start
-    ) {
-        Row(
-            modifier = GlanceModifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = "${context.getString(R.string.today_today)} · ${data.dayName}",
-                style = TextStyle(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorProvider(scheme.primary)
-                ),
-                modifier = GlanceModifier.defaultWeight()
-            )
-            Text(
-                text = data.dateLabel,
-                style = TextStyle(
-                    fontSize = 12.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
-                )
-            )
-        }
-        Spacer(modifier = GlanceModifier.height(8.dp))
-
-        when {
-            !data.hasTable -> EmptyTableState(scheme)
-            data.courses.isEmpty() -> NoCourseState(scheme)
-            else -> CourseList(data, openCourseAction, scheme)
-        }
-    }
-}
-
 /**
  * 4 元组：背景 / 主题强调色 / 正文色 / 次要色
  * 跟 app M3 scheme 派生方式相同：surface / primary / onSurface / onSurfaceVariant
- * 额外携带课程调色板（从主题 container 色派生，跟随主题切换）
+ *
+ * 死代码清理: 原 coursePrimary…coursePractice 9 个课程色字段赋值后从未被渲染使用
+ * (课程底色实际走 CourseColorUtil 黄金角 HSL), 已随 CoursePalette 死属性一并删除。
  */
 data class WidgetScheme(
     val bg: Color = Color(0xFFFDFCFF),
@@ -126,33 +57,8 @@ data class WidgetScheme(
     val onSurfaceVariant: Color = Color(0xFF79747E),
     val surfaceContainer: Color = Color(0xFFF3EDF7),
     val surfaceVariant: Color = Color(0xFFE7E0EC),
-    val isDark: Boolean = false,
-    // 课程色 — 从主题 container 色派生
-    val coursePrimary: Color = Color(0xFFEADDFF),
-    val courseSecondary: Color = Color(0xFFE8DEF8),
-    val courseTertiary: Color = Color(0xFFFFD8E4),
-    val courseEnglish: Color = Color(0xFFD8F2FF),
-    val courseMilitary: Color = Color(0xFFE7F3DC),
-    val coursePhysics: Color = Color(0xFFFFE7C7),
-    val courseHistory: Color = Color(0xFFF7D9D9),
-    val coursePsychology: Color = Color(0xFFE6DDFB),
-    val coursePractice: Color = Color(0xFFD7F0E8)
+    val isDark: Boolean = false
 )
-
-// ── 课程色规则 — 关键词/ hash 逻辑见 CourseColorRules.kt (单一事实来源) ──
-private fun WidgetScheme.colorByKey(key: CourseColorKey): Color = when (key) {
-    CourseColorKey.ENGLISH    -> courseEnglish
-    CourseColorKey.MILITARY   -> courseMilitary
-    CourseColorKey.PHYSICS    -> coursePhysics
-    CourseColorKey.HISTORY    -> courseHistory
-    CourseColorKey.PSYCHOLOGY -> coursePsychology
-    CourseColorKey.PRACTICE   -> coursePractice
-    CourseColorKey.PRIMARY    -> coursePrimary
-    CourseColorKey.TERTIARY   -> courseTertiary
-    CourseColorKey.SECONDARY  -> courseSecondary
-}
-internal fun courseColor(name: String, scheme: WidgetScheme): Color =
-    scheme.colorByKey(resolveCourseColorKey(name))
 
 /**
  * 按 themeKey + isDark 派生小组件配色。
@@ -160,11 +66,8 @@ internal fun courseColor(name: String, scheme: WidgetScheme): Color =
  * ★ themeKey == "system" 时走 Material You 动态取色(dynamicLightColorScheme / dynamicDarkColorScheme),
  *   与 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 的处理对齐 — 之前 widget 把 "system"
  *   当未知 key → ThemePresets.byKey 返回 Default(紫色) → 小组件永远紫色, 不跟随系统壁纸取色。
- *
- * 课程色使用 app 的 LightCoursePalette / DarkCoursePalette（全局统一，不随主题变）。
  */
 internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boolean): WidgetScheme {
-    val palette = if (isDark) DarkCoursePalette else LightCoursePalette
     // "跟随系统" 主题 → Material You 动态取色 (API 31+), 低版本降级 Default
     val s = if (themeKey == ThemePresets.KEY_SYSTEM && android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.S) {
         val dyn = if (isDark) androidx.compose.material3.dynamicDarkColorScheme(context)
@@ -199,152 +102,12 @@ internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boo
         onSurfaceVariant = s.onSurfaceVariant,
         surfaceContainer = s.surfaceContainer,
         surfaceVariant = s.surfaceVariant,
-        isDark = isDark,
-        coursePrimary = palette.primary,
-        courseSecondary = palette.secondary,
-        courseTertiary = palette.tertiary,
-        courseEnglish = palette.english,
-        courseMilitary = palette.military,
-        coursePhysics = palette.physics,
-        courseHistory = palette.history,
-        coursePsychology = palette.psychology,
-        coursePractice = palette.practice
+        isDark = isDark
     )
 }
 
-@Composable
-private fun EmptyTableState(scheme: WidgetScheme) {
-    val context = LocalContext.current
-    Column(
-        modifier = GlanceModifier.fillMaxSize(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = context.getString(R.string.widget_create_schedule),
-            style = TextStyle(
-                fontSize = 15.sp,
-                fontWeight = FontWeight.Medium,
-                color = ColorProvider(scheme.onSurface)
-            )
-        )
-        Spacer(modifier = GlanceModifier.height(4.dp))
-        Text(
-            text = context.getString(R.string.widget_open_sleepy),
-            style = TextStyle(
-                fontSize = 12.sp,
-                color = ColorProvider(scheme.onSurfaceVariant)
-            )
-        )
-    }
-}
-
-@Composable
-private fun NoCourseState(scheme: WidgetScheme) {
-    val context = LocalContext.current
-    Column(
-        modifier = GlanceModifier.fillMaxSize(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = context.getString(R.string.today_no_course),
-            style = TextStyle(
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Medium,
-                color = ColorProvider(scheme.onSurface)
-            )
-        )
-        Spacer(modifier = GlanceModifier.height(4.dp))
-        Text(
-            text = context.getString(R.string.today_rest),
-            style = TextStyle(
-                fontSize = 12.sp,
-                color = ColorProvider(scheme.onSurfaceVariant)
-            )
-        )
-    }
-}
-
-@Composable
-private fun CourseList(data: WidgetData, openCourseAction: (Long) -> Action, scheme: WidgetScheme) {
-    val context = LocalContext.current
-    // ★ v1.0.18: 全部课程可滚动 — 不再截断到 MAX_COURSES
-    LazyColumn(
-        modifier = GlanceModifier.fillMaxSize()
-    ) {
-        items(data.courses, itemId = { it.id }) { course ->
-            CourseRow(
-                course = course,
-                timeJson = data.timeJson,
-                scheme = scheme,
-                onClick = openCourseAction(course.id)
-            )
-            Spacer(modifier = GlanceModifier.height(10.dp))
-        }
-        if (data.courses.size > 1) {
-            item {
-                Text(
-                    text = context.getString(R.string.widget_scroll_hint),
-                    style = TextStyle(
-                        fontSize = 10.sp,
-                        color = ColorProvider(scheme.onSurfaceVariant)
-                    )
-                )
-            }
-        }
-    }
-}
-
-@Composable
-private fun CourseRow(course: CourseEntity, timeJson: String, scheme: WidgetScheme, onClick: Action) {
-    val context = LocalContext.current
-    val timeStr = TimeTableUtils.courseTimeString(
-        courseStartNode = course.startNode,
-        courseStep = course.step,
-        timeJson = timeJson,
-        ownTime = course.ownTime,
-        startTime = course.startTime,
-        endTime = course.endTime
-    ) ?: context.getString(R.string.course_node_format, course.startNode.toString())
-
-    val bgColor = courseColor(course.courseName, scheme)
-
-    // 课程色胶囊 — 复刻首页 LessonRow 样式
-    Row(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .background(ColorProvider(bgColor))
-            .cornerRadius(10.dp)
-            .clickable(onClick)
-            .padding(8.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = GlanceModifier.defaultWeight()) {
-            Text(
-                text = course.courseName,
-                style = TextStyle(
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorProvider(scheme.onSurface)
-                ),
-                maxLines = 1
-            )
-            Spacer(modifier = GlanceModifier.height(2.dp))
-            Text(
-                text = timeStr + (if (course.room.isNotBlank()) "  ·  ${course.room}" else ""),
-                style = TextStyle(
-                    fontSize = 10.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)  // lighter secondary
-                ),
-                maxLines = 1
-            )
-        }
-    }
-}
-
 // ═══════════════════════════════════════════════════════
-// Multi-day widget data & composables
+// Multi-day widget data
 // ═══════════════════════════════════════════════════════
 
 /** 单天数据 */
@@ -356,7 +119,6 @@ data class DayData(
 ) {
     val dayLabel: String get() = DateUtils.shortDate(date)
     val dayName: String get() = DateUtils.localizedDay(dayOfWeek, com.lingion.sleepy.SleepyApp.get())
-    val subtitle: String get() = if (date == LocalDate.now()) com.lingion.sleepy.SleepyApp.get().getString(com.lingion.sleepy.R.string.today_text) else dayName
     val isToday: Boolean get() = date == LocalDate.now()
     val isTomorrow: Boolean get() = date == LocalDate.now().plusDays(1)
 }
@@ -367,7 +129,7 @@ data class WeekData(
     val hasTable: Boolean,
     val isDark: Boolean = false,
     val themeKey: String = ThemePresets.KEY_DEFAULT,
-    val displayMode: String = "node",
+    // displayMode 死字段已删（renderer 各自直读 AppPrefs.getDisplayMode, 传入字段从未被消费）
     val showDate: Boolean = false,
     val visibleDays: Set<Int> = (1..7).toSet()
 )
@@ -379,474 +141,3 @@ data class TwoDayData(
     val isDark: Boolean = false,
     val themeKey: String = ThemePresets.KEY_DEFAULT
 )
-
-@Composable
-fun WeekListContent(data: WeekData, openAppAction: Action) {
-    val context = LocalContext.current
-    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
-    val todayDow = LocalDate.now().dayOfWeek.value
-    val dayLabels = listOf("", 
-        context.getString(R.string.day_short_1),
-        context.getString(R.string.day_short_2),
-        context.getString(R.string.day_short_3),
-        context.getString(R.string.day_short_4),
-        context.getString(R.string.day_short_5),
-        context.getString(R.string.day_short_6),
-        context.getString(R.string.day_short_7))
-    val colGap = 4.dp
-
-    Column(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(ColorProvider(scheme.bg))
-            .cornerRadius(20.dp)
-            .padding(6.dp)
-            .clickable(openAppAction),
-        verticalAlignment = Alignment.Top
-    ) {
-        when {
-            !data.hasTable -> EmptyTableState(scheme)
-            data.days.isEmpty() -> EmptyTableState(scheme)
-            else -> {
-                // 7 列竖向并排 — 不用 Spacer（LinearLayout weight+固定宽度混用 bug）
-                // 间距方案：外层 Box(defaultWeight) padding 透明 → 内层 Column 有背景
-                Row(
-                    modifier = GlanceModifier
-                        .fillMaxWidth()
-                        .defaultWeight(),
-                    verticalAlignment = Alignment.Top
-                ) {
-                    data.days.forEach { day ->
-                        val isToday = day.dayOfWeek == todayDow
-                        val cardBg = if (isToday) scheme.primaryContainer else scheme.surfaceContainer
-                        val titleColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurface
-                        val nameColor = if (isToday) scheme.onPrimaryContainer else scheme.onSurfaceVariant
-                        val chipBg = scheme.surfaceVariant
-                        val chipFg = scheme.onSurfaceVariant
-
-                        Box(
-                            modifier = GlanceModifier
-                                .defaultWeight()
-                                .fillMaxHeight()
-                                .padding(horizontal = 2.dp)
-                        ) {
-                            LazyColumn(
-                                modifier = GlanceModifier
-                                    .fillMaxWidth()
-                                    .fillMaxHeight()
-                                    .background(ColorProvider(cardBg))
-                                    .cornerRadius(14.dp)
-                                    .padding(vertical = 6.dp, horizontal = 4.dp),
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                // 星期标题
-                                item {
-                                    Text(
-                                        text = dayLabels[day.dayOfWeek],
-                                        style = TextStyle(
-                                            fontSize = 12.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = ColorProvider(titleColor)
-                                        )
-                                    )
-                                }
-                                item { Spacer(modifier = GlanceModifier.height(6.dp)) }
-
-                                if (day.courses.isNotEmpty()) {
-                                    // Chip「X门」
-                                    item {
-                                        Box(
-                                            modifier = GlanceModifier
-                                                .background(ColorProvider(chipBg))
-                                                .cornerRadius(50.dp)
-                                                .padding(horizontal = 6.dp, vertical = 2.dp),
-                                            contentAlignment = Alignment.Center
-                                        ) {
-                                            Text(
-                                                text = context.getString(R.string.n_courses, day.courses.size),
-                                                style = TextStyle(
-                                                    fontSize = 9.sp,
-                                                    fontWeight = FontWeight.Bold,
-                                                    color = ColorProvider(chipFg)
-                                                )
-                                            )
-                                        }
-                                    }
-                                    item { Spacer(modifier = GlanceModifier.height(4.dp)) }
-
-                                    // 每门课单独一个item，分隔线单独一个item，ListView不会混淆
-                                    day.courses.forEachIndexed { idx, c ->
-                                        item {
-                                            Text(
-                                                text = c.courseName,
-                                                style = TextStyle(
-                                                    fontSize = 9.sp,
-                                                    color = ColorProvider(nameColor)
-                                                ),
-                                                maxLines = 2
-                                            )
-                                        }
-                                        // 课程之间加分隔线，最后一门不加
-                                        if (idx < day.courses.size - 1) {
-                                            item {
-                                                Spacer(modifier = GlanceModifier.height(1.dp))
-                                                Box(
-                                                    modifier = GlanceModifier
-                                                        .fillMaxWidth()
-                                                        .height(1.dp)
-                                                        .background(ColorProvider(Color(0x5979747E)))
-                                                ) {}
-                                                Spacer(modifier = GlanceModifier.height(1.dp))
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                        }  // end Box
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-fun TwoDayContent(data: TwoDayData, openAppAction: Action) {
-    val context = LocalContext.current
-    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
-
-    Column(
-        modifier = GlanceModifier
-            .fillMaxSize()
-            .background(ColorProvider(scheme.bg))
-            .cornerRadius(20.dp)
-            .padding(12.dp)
-            .clickable(openAppAction),
-        verticalAlignment = Alignment.Top
-    ) {
-        Text(
-            text = context.getString(R.string.widget_twoday_label),
-            style = TextStyle(
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Medium,
-                color = ColorProvider(scheme.primary)
-            )
-        )
-        Spacer(modifier = GlanceModifier.height(8.dp))
-
-        when {
-            !data.hasTable -> EmptyTableState(scheme)
-            data.days.isEmpty() -> EmptyTableState(scheme)
-            else -> {
-                // ★ v1.0.28: 左右两栏 — 今天/明天 并排(用户反馈: 不要把第二天堆在底下)
-                Row(
-                    modifier = GlanceModifier.fillMaxSize(),
-                    horizontalAlignment = Alignment.Start
-                ) {
-                    data.days.forEachIndexed { dayIdx, day ->
-                        if (dayIdx > 0) {
-                            Spacer(modifier = GlanceModifier.width(5.dp))
-                            Box(
-                                modifier = GlanceModifier
-                                    .width(1.dp)
-                                    .fillMaxHeight()
-                                    .background(ColorProvider(Color(0x2079747E)))
-                            ) {}
-                            Spacer(modifier = GlanceModifier.width(5.dp))
-                        }
-                        Column(
-                            modifier = GlanceModifier.defaultWeight().fillMaxHeight()
-                        ) {
-                            TwoDayDayHeader(day = day, scheme = scheme)
-                            if (day.courses.isEmpty()) {
-                                Spacer(modifier = GlanceModifier.height(4.dp))
-                                Text(
-                                    text = context.getString(R.string.no_course),
-                                    style = TextStyle(
-                                        fontSize = 11.sp,
-                                        color = ColorProvider(scheme.onSurfaceVariant)
-                                    )
-                                )
-                            } else {
-                                LazyColumn(
-                                    modifier = GlanceModifier.fillMaxSize()
-                                ) {
-                                    items(day.courses, itemId = { it.id }) { course ->
-                                        Spacer(modifier = GlanceModifier.height(8.dp))
-                                        TwoDayCourseRow(course = course, day = day, scheme = scheme)
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-}
-
-@Composable
-private fun TwoDayDayHeader(day: DayData, scheme: WidgetScheme) {
-    val context = LocalContext.current
-    Row(
-        modifier = GlanceModifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Text(
-            text = if (day.isToday) context.getString(R.string.today_today) else if (day.isTomorrow) context.getString(R.string.tomorrow) else day.dayName,
-            style = TextStyle(
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
-                color = ColorProvider(scheme.primary)
-            )
-        )
-        Spacer(modifier = GlanceModifier.width(6.dp))
-        Text(
-            text = day.dayLabel,
-            style = TextStyle(
-                fontSize = 10.sp,
-                color = ColorProvider(scheme.onSurfaceVariant)
-            )
-        )
-    }
-}
-
-@Composable
-private fun TwoDayCourseRow(course: CourseEntity, day: DayData, scheme: WidgetScheme) {
-    val context = LocalContext.current
-    val bgColor = courseColor(course.courseName, scheme)
-    val meta = buildString {
-        append(TimeTableUtils.courseTimeString(course.startNode, course.step, day.timeJson, course.ownTime, course.startTime, course.endTime) ?: context.getString(R.string.section_single, course.startNode))
-        if (course.room.isNotBlank()) append("  ·  ${course.room}")
-    }
-    Row(
-        modifier = GlanceModifier
-            .fillMaxWidth()
-            .background(ColorProvider(bgColor))
-            .cornerRadius(8.dp)
-            .padding(5.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Column(modifier = GlanceModifier.defaultWeight()) {
-            Text(
-                text = course.courseName,
-                style = TextStyle(
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = ColorProvider(scheme.onSurface)
-                ),
-                maxLines = 1
-            )
-            Text(
-                text = meta,
-                style = TextStyle(
-                    fontSize = 9.sp,
-                    color = ColorProvider(scheme.onSurfaceVariant)
-                ),
-                maxLines = 1
-            )
-        }
-    }
-}
-
-// ═══════════════════════════════════════════════════════
-// Week Grid — 7列网格样式
-// ═══════════════════════════════════════════════════════
-
-@Composable
-fun WeekGridContent(data: WeekData, openAppAction: Action, widgetWidthDp: Int = 320, widgetHeightDp: Int = 280) {
-    val context = LocalContext.current
-    val scheme = resolveSchemePublic(context, data.themeKey, data.isDark)
-    val todayDow = LocalDate.now().dayOfWeek.value
-
-    val timeJson = data.days.firstOrNull()?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-    val allTimeSlots = TimeTableUtils.timeSlotsFor(timeJson)
-    val sortedDays = data.visibleDays.sorted()
-
-    // ★ FIX 1: maxNode = max(startNode + step - 1) — 之前 maxSumStep 是 bug
-    val rawMaxNode = data.days.maxOfOrNull { d ->
-        d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
-    } ?: 0
-    // ★ v18: maxNode 完全由用户课表决定 (永不截断, 1~9999 全支持)
-    // 用户原话: "用户课表填1个时间段小组件就1个 填9999个小组件就9999个"
-    // 算法: maxNode = max(startNode + step - 1)  // timeSlots 自动决定
-    val maxNode = rawMaxNode.coerceAtLeast(1)  // 完全用户课表, 永不截断
-    val timeSlots = allTimeSlots.take(maxNode)
-    android.util.Log.d("WeekGridContent", "rawMaxNode=$rawMaxNode, maxNode=$maxNode, allTimeSlots=${allTimeSlots.size}, perDayMax=${data.days.map { d -> "${d.dayOfWeek}=${d.courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0}" }}")
-
-    val containerBg = scheme.surfaceContainer
-    val cellBg = scheme.surface
-    val todayHeadBg = scheme.primaryContainer
-    val onSurface = scheme.onSurface
-    val onSurfaceVar = scheme.onSurfaceVariant
-    val onPrimaryCont = scheme.onPrimaryContainer
-    // ★ v1.0.16-rebuild-14: widget size = widgetHeightDp - 8 (Glance internal 8dp padding)
-    // 让 Period 1-10 撑满 widget 真分配尺寸，Period 11+ 因 Glance RemoteViews bug 不显示
-    val realWidgetW = widgetWidthDp.toFloat()
-    val realWidgetH = (widgetHeightDp - 8).toFloat()
-
-    val outerPad = 12f  // 6dp × 2（上下或左右）
-    val headerHdp = 30f
-    val bodyW = (realWidgetW - outerPad).coerceAtLeast(100f)
-    val bodyH = (realWidgetH - outerPad - headerHdp).coerceAtLeast(100f)
-    val colW = (bodyW / 8f).dp
-    val slotH = (bodyH / maxNode).dp
-    val totalBodyH = (slotH.value * maxNode).dp
-    val rowH = slotH  // 单节高度 = slotH
-    val headerH = 30.dp  // Glance 需要 Dp 类型
-
-    Column(
-        modifier = GlanceModifier
-            .size(Dp(realWidgetW), Dp(realWidgetH))  // ★ 强制撑满 widget 尺寸（不靠 fillMaxSize）
-            .background(ColorProvider(containerBg))
-            .cornerRadius(18.dp)
-            .padding(6.dp)
-            .clickable(openAppAction),
-        verticalAlignment = Alignment.Top
-    ) {
-        if (!data.hasTable || data.days.isEmpty()) {
-            EmptyTableState(scheme)
-        } else {
-            // ====== Header — 8 cells 显式宽度（不用 defaultWeight） ======
-            Row(
-                modifier = GlanceModifier.fillMaxWidth().height(headerH),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Box(modifier = GlanceModifier.width(colW).fillMaxHeight()) {}
-                for (day in 1..7) {
-                    val isVisible = day in sortedDays
-                    val isToday = day == todayDow
-                    val dayData = data.days.firstOrNull { it.dayOfWeek == day }
-                    val count = dayData?.courses?.size ?: 0
-                    val dateStr = if (data.showDate && dayData != null) DateUtils.shortDate(dayData.date) else null
-
-                    Box(
-                        modifier = GlanceModifier.width(colW).fillMaxHeight()
-                            .padding(horizontal = 1.dp)
-                            .background(if (isVisible) ColorProvider(if (isToday) todayHeadBg else cellBg) else ColorProvider(Color.Transparent))
-                            .cornerRadius(6.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        if (isVisible) {
-                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                Text(
-                                    text = DateUtils.localizedDay(day, LocalContext.current),
-                                    style = TextStyle(
-                                        fontSize = 9.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = ColorProvider(if (isToday) onPrimaryCont else onSurface)
-                                    )
-                                )
-                                if (dateStr != null) {
-                                    Text(
-                                        text = dateStr,
-                                        style = TextStyle(fontSize = 7.sp, color = ColorProvider(onSurfaceVar))
-                                    )
-                                } else {
-                                    Text(
-                                        text = if (count > 0) "${count}" else "—",
-                                        style = TextStyle(fontSize = 7.sp, color = ColorProvider(onSurfaceVar))
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-
-            // ====== Body — 8 cells 显式宽度（跟 header 同宽！） ======
-            // ★ 用 size 强制撑满 body = widget 减去 padding/header
-            val bodySizeW = realWidgetW - outerPad
-            val bodySizeH = realWidgetH - outerPad - headerHdp
-            Row(
-                modifier = GlanceModifier.size(Dp(bodySizeW), Dp(bodySizeH)),
-                verticalAlignment = Alignment.Top
-            ) {
-                // 时间列 — maxNode 个 Box（每个 rowH 高度）
-                Column(
-                    modifier = GlanceModifier.width(colW).fillMaxHeight().padding(end = 4.dp),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    android.util.Log.d("WeekGridContent", "=== RENDER PERIOD LOOP === for (i in 1..$maxNode), timeSlots.size=${timeSlots.size}, rowH=$rowH, realW=$realWidgetW, realH=$realWidgetH, bodyW=$bodyW, bodyH=$bodyH")
-                    for (i in 1..maxNode) {
-                        val slot = timeSlots.getOrNull(i - 1)
-                        if (i >= 10) android.util.Log.d("WeekGridContent", "rendering Period $i, slot=${slot?.displayStart}, height=${rowH.value}")
-                        Box(
-                            modifier = GlanceModifier.fillMaxWidth().height(rowH),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            if (slot != null) {
-                                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                                    Text(
-                                        text = "${i}",
-                                        style = TextStyle(
-                                            fontSize = 9.sp,
-                                            fontWeight = FontWeight.Bold,
-                                            color = ColorProvider(onSurface)
-                                        )
-                                    )
-                                    Text(
-                                        text = slot.displayStart,
-                                        style = TextStyle(
-                                            fontSize = 6.sp,
-                                            color = ColorProvider(onSurfaceVar)
-                                        )
-                                    )
-                                }
-                            }
-                        }
-                    }
-                }
-
-                // 7 天列 — 固定 7 列位置，visibleDays 之外的列透明空 Box
-                for (day in 1..7) {
-                    val isVisible = day in sortedDays
-                    val dayData = data.days.firstOrNull { it.dayOfWeek == day }
-                    val dayCourses = dayData?.courses ?: emptyList()
-
-                    if (isVisible) {
-                        Column(
-                            modifier = GlanceModifier.width(colW).fillMaxHeight()
-                                .padding(horizontal = 1.dp),
-                            horizontalAlignment = Alignment.CenterHorizontally
-                        ) {
-                            var prevEndNode = 0
-                            for (i in 1..maxNode) {
-                                if (i <= prevEndNode) continue
-                                val course = dayCourses.firstOrNull { it.startNode == i }
-                                if (course != null) {
-                                    // ★ FIX 3: 跨节 Box height = perNodeHeight * step（真 rowspan）
-                                    val cardH = (rowH.value * course.step).dp
-                                    Box(
-                                        modifier = GlanceModifier.fillMaxWidth()
-                                            .height(cardH)
-                                            .background(ColorProvider(courseColor(course.courseName, scheme)))
-                                            .cornerRadius(4.dp)
-                                            .padding(2.dp),
-                                        contentAlignment = Alignment.Center
-                                    ) {
-                                        // ★ FIX 4: 不再显示 "1-2" 标签 — 用户核心诉求
-                                        Text(
-                                            text = course.courseName,
-                                            style = TextStyle(
-                                                fontSize = 9.sp,
-                                                fontWeight = FontWeight.Bold,
-                                                color = ColorProvider(onSurface)
-                                            ),
-                                            maxLines = (course.step * 2).coerceAtLeast(1)
-                                        )
-                                    }
-                                    prevEndNode = course.startNode + course.step - 1
-                                } else {
-                                    Box(modifier = GlanceModifier.fillMaxWidth().height(rowH)) {}
-                                }
-                            }
-                        }
-                    } else {
-                        Box(modifier = GlanceModifier.width(colW).fillMaxHeight()) {}
-                    }
-                }
-            }
-        }
-    }
-}

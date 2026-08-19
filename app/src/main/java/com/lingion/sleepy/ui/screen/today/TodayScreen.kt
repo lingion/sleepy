@@ -40,6 +40,8 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
@@ -175,7 +177,16 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = LocalContext.current
-    val bg = pickCourseColor(course, palette)
+    // 统一取色入口 — hue 源自动对齐 groupId（修复原 course.id%360 导致同门课多节次异色+三屏三色）
+    // colorless 读取 AppPrefs course_colorless 独立开关
+    val bg = CourseColorUtil.pickCourseColorCompose(
+        course = course,
+        isDark = CourseColorUtil.isPaletteDark(palette),
+        neutralColor = colors.surfaceVariant,
+        colorless = AppPrefs.isCourseColorless(context)
+    )
+    // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
+    val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val time = if (course.ownTime && course.startTime.isNotBlank() && course.endTime.isNotBlank()) {
         "${course.startTime}-${course.endTime}"
     } else {
@@ -199,13 +210,13 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
             Text(
                 text = course.shortNodeString(context),
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
-                color = colors.onSurface
+                color = fg
             )
             if (time != null) {
                 Text(
                     text = time,
                     style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurface.copy(alpha = 0.72f),
+                    color = fg.copy(alpha = 0.72f),
                     maxLines = 1,
                     softWrap = false
                 )
@@ -216,7 +227,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
             Text(
                 text = course.courseName,
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
+                color = fg,
                 maxLines = 2
             )
             if (course.teacher.isNotBlank() || course.room.isNotBlank()) {
@@ -231,48 +242,12 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
                 Text(
                     text = meta,
                     style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurface.copy(alpha = 0.72f)
+                    color = fg.copy(alpha = 0.72f)
                 )
             }
         }
     }
 }
 
-private fun findCourseTime(course: CourseEntity): String? {
-    // 已被 TimeTableUtils.courseTimeString 取代，保留为空函数避免其他地方误调
-    return null
-}
-
-private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
-    val userColor = course.color
-    if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
-        runCatching { return Color(android.graphics.Color.parseColor(userColor)) }
-    }
-    val isDark = isPaletteDark(palette)
-    val id = (course.id % 360).toInt()
-    val hue = ((id * 137.508f) % 360f + 360f) % 360f
-    val s = if (isDark) 0.40f else 0.55f
-    val l = if (isDark) 0.28f else 0.82f
-    return hslToColor(hue, s, l)
-}
-
-private fun isPaletteDark(p: com.lingion.sleepy.ui.theme.CoursePalette): Boolean {
-    val c = p.primary
-    val lum = 0.299f * c.red + 0.587f * c.green + 0.114f * c.blue
-    return lum < 0.5f
-}
-
-private fun hslToColor(h: Float, s: Float, l: Float): Color {
-    val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-    val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-    val m = l - c / 2f
-    val (r, g, b) = when {
-        h < 60f   -> Triple(c, x, 0f)
-        h < 120f  -> Triple(x, c, 0f)
-        h < 180f  -> Triple(0f, c, x)
-        h < 240f  -> Triple(0f, x, c)
-        h < 300f  -> Triple(x, 0f, c)
-        else      -> Triple(c, 0f, x)
-    }
-    return Color(r + m, g + m, b + m)
-}
+// findCourseTime 空函数已删（死代码清理: 注释自述被 TimeTableUtils.courseTimeString 取代, 全库零调用）。
+// pickCourseColor / isPaletteDark / hslToColor 三函数已收敛至 util/CourseColorUtil.kt（决策 D3 单一事实来源）

@@ -22,6 +22,8 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -36,11 +38,10 @@ import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
+import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
-import com.lingion.sleepy.ui.screen.mine.MoreSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
-import com.lingion.sleepy.ui.screen.mine.ThemeColorScreen
-import com.lingion.sleepy.ui.screen.mine.ThemeSettingsScreen
+import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
@@ -99,7 +100,7 @@ class MainActivity : ComponentActivity() {
                         AppPrefs.setThemeMode(this@MainActivity, mode)
                         themeMode = mode
                         applyTheme()
-                        // ★ 手动切主题时联动刷新 widget(双路:广播+Glance直更)
+                        // ★ 手动切主题时联动刷新 widget(广播 APPWIDGET_UPDATE)
                         lifecycleScope.launch {
                             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(this@MainActivity)
                         }
@@ -150,7 +151,7 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 private enum class OverlayScreen {
-    AddCourse, AllTables, EditTable, Theme, ThemeColor, MoreSettings, Export, Reminder, About
+    AddCourse, AllTables, EditTable, Theme, General, Export, Reminder, About
 }
 
 @Composable
@@ -164,10 +165,22 @@ private fun AppRoot(
 ) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
-    var overlayScreen by remember { mutableStateOf<OverlayScreen?>(null) }
-    var editTableId by remember { mutableStateOf<Long?>(null) }
-    var pendingNewTableId by remember { mutableStateOf<Long?>(null) }
-    var previousDefaultTableId by remember { mutableStateOf<Long?>(null) }
+    // ★ 语言切换触发 Activity.recreate() 后, 用 rememberSaveable 保留 overlayScreen 导航状态,
+    //   否则用户切语言后会丢失设置页上下文、退回主 Tab(决策 D2 重排修复)。
+    // ★ editingCourse(CourseEntity)无法 Bundle 化: 编辑课程会话中不保存 overlayScreen,
+    //   旋转/进程恢复后退回主 Tab(丢弃编辑但安全), 避免恢复成"新增课程"空表单造成重复加课。
+    var overlayScreen by rememberSaveable(
+        stateSaver = Saver<OverlayScreen?, OverlayScreen>(
+            save = { if (editingCourse == null) it else null },
+            restore = { it }
+        )
+    ) { mutableStateOf<OverlayScreen?>(null) }
+    // ★ overlayScreen 的伴生导航参数必须同步持久化, 否则旋转恢复后 overlay 存活但参数归 null:
+    //   EditTable 的 tableId=null 语义为"编辑当前课表", 会静默改错表; pendingNewTableId 丢失
+    //   会让新建空表遗留在 DB 且误显示删除按钮。三者均可 Bundle 化(Long?), 一并 rememberSaveable。
+    var editTableId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var pendingNewTableId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var previousDefaultTableId by rememberSaveable { mutableStateOf<Long?>(null) }
     var autoImportTriggered by remember { mutableStateOf(false) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
@@ -193,7 +206,13 @@ private fun AppRoot(
         return
     }
     if (overlayScreen == OverlayScreen.AllTables) {
-        AllTablesScreen(onBack = { overlayScreen = null }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable })
+        AllTablesScreen(onBack = { overlayScreen = null }, onCreateNewTable = {
+            mainScope.launch {
+                val previousId = mainVm.state.value.currentTable?.id
+                val newId = mainVm.createEmptyTable(commitSelection = false)
+                previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; overlayScreen = OverlayScreen.EditTable
+            }
+        }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable })
         return
     }
     if (overlayScreen == OverlayScreen.EditTable) {
@@ -205,15 +224,11 @@ private fun AppRoot(
         return
     }
     if (overlayScreen == OverlayScreen.Theme) {
-        ThemeSettingsScreen(onBack = { overlayScreen = null }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
+        AppearanceScreen(onBack = { overlayScreen = null }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
         return
     }
-    if (overlayScreen == OverlayScreen.ThemeColor) {
-        ThemeColorScreen(onBack = { overlayScreen = null })
-        return
-    }
-    if (overlayScreen == OverlayScreen.MoreSettings) {
-        MoreSettingsScreen(onBack = { overlayScreen = null })
+    if (overlayScreen == OverlayScreen.General) {
+        GeneralSettingsScreen(onBack = { overlayScreen = null })
         return
     }
     if (overlayScreen == OverlayScreen.Export) {
@@ -255,9 +270,12 @@ private fun AppRoot(
                     }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable }, onImported = {}, onOpenEditTable = { tableId -> editTableId = tableId; overlayScreen = OverlayScreen.EditTable })
                 }
                 Tab.Mine -> MineScreen(
-                    themeMode = themeMode, onThemeModeChange = onThemeModeChange, onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
-                    onOpenTheme = { overlayScreen = OverlayScreen.Theme }, onOpenMoreSettings = { overlayScreen = OverlayScreen.MoreSettings },
-                    onOpenExport = { overlayScreen = OverlayScreen.Export }, onOpenReminder = { overlayScreen = OverlayScreen.Reminder }, onOpenAbout = { overlayScreen = OverlayScreen.About })
+                    onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
+                    onOpenAppearance = { overlayScreen = OverlayScreen.Theme },
+                    onOpenGeneral = { overlayScreen = OverlayScreen.General },
+                    onOpenExport = { overlayScreen = OverlayScreen.Export },
+                    onOpenReminder = { overlayScreen = OverlayScreen.Reminder },
+                    onOpenAbout = { overlayScreen = OverlayScreen.About })
             }
         }
     }

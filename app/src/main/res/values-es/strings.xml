@@ -32,9 +32,8 @@
     <string name="table_info">Inicio: %1$s  |  Semana %2$d  |  %3$d cursos</string>
     <string name="current_table_week">Actual · Semana %1$d</string>
     <string name="table_start_date">Inicio: %1$s</string>
-    <string name="all_tables">Gestionar horarios</string>
+    <string name="all_tables">Todos los horarios</string>
     <string name="all_tables_new">Nuevo horario</string>
-    <string name="all_tables_switch">Establecer como actual</string>
     <string name="edit_table_title">Editar horario</string>
     <string name="edit_table_basic_info">Información básica</string>
     <string name="edit_table_name">Nombre del horario</string>
@@ -158,38 +157,24 @@
 
     <string name="mine_title">Ajustes</string>
     <string name="mine_subtitle">Gestiona horarios y configuración</string>
-    <string name="mine_reminder">Recordatorio diario</string>
-    <string name="mine_reminder_on">Recordatorio diario a las 7:00 activado</string>
-    <string name="mine_reminder_off">Recordatorio diario desactivado</string>
-    <string name="mine_dark_mode">Modo oscuro</string>
-    <string name="mine_theme_color">Color del tema</string>
-    <string name="mine_more_settings">Más ajustes</string>
     <string name="mine_export">Exportar</string>
-    <string name="mine_export_coming">Exportar — disponible en futuras actualizaciones (soporte ICS)</string>
     <string name="mine_stat_tables">Horarios</string>
     <string name="mine_stat_courses">Cursos</string>
     <string name="mine_stat_week">Semana</string>
 
-    <string name="settings_title">Más ajustes</string>
     <string name="settings_language">Idioma / Language</string>
     <string name="settings_display_mode">Visualización de hora</string>
     <string name="settings_display_node">Mostrar como períodos</string>
     <string name="settings_display_node_sub">Todos los cursos muestran \"Período N\"</string>
     <string name="settings_display_time">Mostrar como horas</string>
     <string name="settings_display_time_sub">Todos los cursos muestran \"HH:mm–HH:mm\"</string>
-    <string name="settings_grid_view">Vista de cuadrícula</string>
-    <string name="settings_show_date">Mostrar fechas</string>
+    <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>
     <string name="settings_visible_days_sub">Los días desmarcados se ocultan en todas las vistas</string>
 
-    <string name="theme_title">Color del tema</string>
-    <string name="theme_presets">Temas predefinidos</string>
     <string name="theme_system">Seguir sistema</string>
     <string name="theme_system_desc">Material You color dinámico (Android 12+)</string>
-    <string name="theme_system_needs_12">Seguir sistema requiere Android 12 o superior.</string>
-    <string name="theme_switched_system">Cambiado a Seguir sistema</string>
-    <string name="theme_switched_preset">Cambiado a %1$s</string>
 
     <string name="view_full">Semana</string>
     <string name="view_cards">Cuadrícula</string>
@@ -258,7 +243,6 @@
     <string name="end_label">Fin</string>
     <string name="delete_period">Eliminar este período</string>
 
-    <string name="mine_about_title">Acerca de Sleepy</string>
     <string name="mine_about">Acerca de</string>
     <string name="mine_about_body">Sleepy Horario v%1$s\n\nUna aplicación de horario minimalista, limpia y local.\nTodos los datos se guardan en tu dispositivo — nada se sube a servidores.\n\n· Sin anuncios\n· Sin rastreo\n· Compatible con WakeUp / ICS / CSV / HTML / texto plano</string>
 
@@ -274,8 +258,6 @@
 
     <!-- Localized date / theme display -->
     <string name="date_long_format">%1$d/%2$d</string>
-    <string name="notif_channel_name">Recordatorio diario de clases</string>
-    <string name="notif_channel_desc">Notificación diaria con las clases del día</string>
     <string name="notif_title">Clases de hoy — %1$s %2$s</string>
     <string name="notif_text">Toca para ver el horario de hoy</string>
     <string name="theme_name_default">Lila</string>
@@ -287,7 +269,6 @@
     <string name="new_course">Nueva materia</string>
     <string name="jw_import_title">Importar - %1$s</string>
     <string name="month_day_format">%1$d/%2$d</string>
-    <string name="today_text">Hoy</string>
     <string name="section_short">%1$d</string>
     <string name="day_short_1">L</string>
     <string name="day_short_2">M</string>
@@ -296,13 +277,17 @@
     <string name="day_short_5">V</string>
     <string name="day_short_6">S</string>
     <string name="day_short_7">D</string>
-    <string name="section_node_format">Hora %1$d–%2$d</string>
-    <string name="section_single">Hora %1$d</string>
-    <string name="mine_theme">Tema</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
-    <string name="theme_mode_dark">深色</string>
+    <string name="section_node_format">Período %1$d–%2$d</string>
+    <string name="section_single">Período %1$d</string>
+    <string name="mine_appearance">Apariencia y pantalla</string>
+    <string name="mine_general">General</string>
+    <string name="theme_appearance">Apariencia</string>
+    <string name="theme_mode_system">Automático (claro/oscuro)</string>
+    <string name="theme_mode_light">Claro</string>
+    <string name="theme_mode_dark">Oscuro</string>
+    <string name="appearance_section_theme">Colores del tema</string>
+    <string name="appearance_section_display">Visualización de cursos</string>
+    <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
     <string name="update_found_title">Nueva versión v%1$s disponible</string>
     <string name="update_download">Descargar</string>
@@ -320,12 +305,7 @@
     <string name="about_title">Acerca de</string>
     <string name="about_update">Buscar actualizaciones</string>
     <string name="about_update_checking">Comprobando actualizaciones…</string>
-    <string name="about_update_detail">Si GitHub no está disponible, puedes descargar desde el espejo</string>
-    <string name="about_update_downloading">Descargando actualización…</string>
-    <string name="about_update_failed">Error de actualización: %1$s</string>
-    <string name="about_update_github">Obtener de GitHub</string>
-    <string name="about_update_mirror">Obtener del espejo gh.qdp.qzz.io</string>
-    <string name="about_update_ready">Descargada v%1$s, abriendo instalador del sistema</string>
+    <string name="about_update_detail">Si GitHub no está disponible, la app recurrirá automáticamente al espejo</string>
     <string name="about_version">Versión</string>
     <string name="about_version_detail">Versión %1$s (Compilación %2$d)</string>
     <string name="action_cancel">Cancelar</string>
@@ -405,28 +385,29 @@
     <string name="school_pinyin_hint">Admite iniciales de pinyin / abreviaturas de escuela (ej. hrbeu)</string>
     <string name="semester_out_of_range">La fecha actual está fuera del rango del semestre</string>
     <string name="settings_vert_punct">Optimización de puntuación vertical</string>
-    <string name="settings_vert_punct_sub">Reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
+    <string name="settings_vert_punct_sub">En el widget de cuadrícula, reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
     <string name="settings_widget">Ajustes del widget</string>
-    <string name="settings_widget_colorless">Modo sin color</string>
-    <string name="settings_widget_colorless_sub">Las cápsulas de cursos usan un gris neutro</string>
+    <string name="settings_widget_colorless">Colores uniformes de cursos en widgets</string>
+    <string name="settings_widget_colorless_sub">Solo los cursos con fondo en los widgets usan un gris neutro; la vista semanal de texto no se ve afectada y los cursos con color personalizado no se ven afectados</string>
+    <string name="settings_course_colorless">Colores uniformes de cápsulas de cursos</string>
+    <string name="settings_course_colorless_sub">Solo las cápsulas de cursos en la app usan un gris neutro; los ajustes de widgets no se ven afectados y los cursos con color personalizado no se ven afectados</string>
     <string name="settings_widget_separator">Separador vista semanal</string>
     <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
-    <string name="widget_scroll_hint">↑ Desliza para ver más</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>
-    <string name="edit_period_duration_label">Duración por periodo</string>
+    <string name="edit_period_duration_label">Duración por período</string>
     <string name="unit_minutes">minutos</string>
     <string name="edit_period_total_label">Períodos totales</string>
     <string name="unit_periods">períodos</string>
-    <string name="edit_period_first_start">Primer periodo</string>
+    <string name="edit_period_first_start">Primer período</string>
     <string name="short_break">Pausa corta</string>
     <string name="long_break">Pausa larga</string>
     <string name="break_assign_hint">Asignación de pausas (toca para cambiar)</string>
     <string name="preview">Vista previa</string>
     <string name="break_min_two_periods">Necesitas al menos 2 períodos para asignar pausas</string>
     <string name="empty_placeholder">(Vacío)</string>
-    <string name="period_format_node">Periodo %1$s</string>
-    <string name="period_time_range">Periodo %1$s  %2$s ~ %3$s</string>
+    <string name="period_format_node">Período %1$s</string>
+    <string name="period_time_range">Período %1$s  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 min continuo</string>
     <string name="break_continuous_n">  ↓ %1$d min %2$s</string>
     <string name="add_label">Añadir %1$s</string>

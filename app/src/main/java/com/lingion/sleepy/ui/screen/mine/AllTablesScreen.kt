@@ -39,24 +39,20 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.compose.runtime.rememberCoroutineScope
-import kotlinx.coroutines.launch
 import com.lingion.sleepy.R
-import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.util.DateUtils
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
 fun AllTablesScreen(
     onBack: () -> Unit,
+    onCreateNewTable: () -> Unit,
     onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
-    val scope = rememberCoroutineScope()
 
     Scaffold(
         topBar = {
@@ -115,15 +111,23 @@ fun AllTablesScreen(
                     }
                     Spacer(modifier = Modifier.width(12.dp))
                     Column(modifier = Modifier.weight(1f)) {
+                        // ★ M3 对比度修正：当前行背景是 primaryContainer，文字/副标题应配对
+                        // onPrimaryContainer 系（之前用 onSurface/onSurfaceVariant，自定义高对比主题下对比度不足）。
+                        // 非当前行背景 surfaceContainer 维持 onSurface/onSurfaceVariant。
+                        val (titleColor, subtitleColor) = if (isCurrent) {
+                            colors.onPrimaryContainer to colors.onPrimaryContainer.copy(alpha = 0.8f)
+                        } else {
+                            colors.onSurface to colors.onSurfaceVariant
+                        }
                         Text(
                             text = table.name,
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface
+                            color = titleColor
                         )
                         Text(
                             text = if (isCurrent) stringResource(R.string.current_table_week, state.currentWeek) else stringResource(R.string.table_start_date, table.startDate),
                             style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
+                            color = subtitleColor
                         )
                     }
                     IconButton(onClick = { onOpenEditTable(table.id) }) {
@@ -139,12 +143,7 @@ fun AllTablesScreen(
 
             item {
                 FilledTonalButton(
-                    onClick = {
-                        scope.launch {
-                            val id = viewModel.createEmptyTable()
-                            onOpenEditTable(id)
-                        }
-                    },
+                    onClick = onCreateNewTable,
                     modifier = Modifier.fillMaxWidth().height(52.dp),
                     shape = RoundedCornerShape(18.dp)
                 ) {

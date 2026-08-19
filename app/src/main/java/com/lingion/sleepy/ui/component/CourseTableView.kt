@@ -46,6 +46,8 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalTime
@@ -63,11 +65,9 @@ data class TimeSlot(
     val nodeStart: Int,
     val nodeEnd: Int
 ) {
-    val nodeString: String get() = "$nodeStart-$nodeEnd"
+    // nodeString 死属性已删（恒返回 "N-N" 且全库零调用; 界面用的是 CourseEntity.nodeString 本地化版本）
     val timeString: String get() = "$displayStart-$displayEnd"
 }
-
-private val CELL_H = 52.dp
 
 /**
  * Cards 网格视图
@@ -245,20 +245,7 @@ private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     }
 }
 
-@Composable
-private fun EmptyGridCell(modifier: Modifier = Modifier, isToday: Boolean) {
-    val colors = SleepyTheme.colors
-    Box(
-        modifier = modifier
-            .padding(2.dp)
-            .clip(RoundedCornerShape(12.dp))
-            .border(
-                width = 0.5.dp,
-                color = colors.outlineVariant.copy(alpha = 0.50f),
-                shape = RoundedCornerShape(12.dp)
-            )
-    )
-}
+// EmptyGridCell 死组件已删（注释自述弃用, 全库零调用——Cards 网格走 SingleTimeHeadCell + CourseOverlayCard）。
 
 @Composable
 private fun CourseOverlayCard(
@@ -271,8 +258,16 @@ private fun CourseOverlayCard(
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
-    val bg = pickCourseColor(course, palette)
-    val fg = colors.onSurface
+    val context = androidx.compose.ui.platform.LocalContext.current
+    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
+    val bg = CourseColorUtil.pickCourseColorCompose(
+        course = course,
+        isDark = CourseColorUtil.isPaletteDark(palette),
+        neutralColor = colors.surfaceVariant,
+        colorless = AppPrefs.isCourseColorless(context)
+    )
+    // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
+    val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val shape = RoundedCornerShape(12.dp)
 
     Box(
@@ -361,137 +356,11 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
 }
 
 
-@Composable
-private fun TimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
-    val colors = SleepyTheme.colors
-    Box(
-        modifier = modifier
-            .height(CELL_H)
-            .clip(RoundedCornerShape(12.dp))
-            .background(colors.surface)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(12.dp))
-            .padding(4.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Text(
-                text = stringResource(R.string.period_format_node, slot.label),
-                style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
-                maxLines = 1
-            )
-            Spacer(modifier = Modifier.height(1.dp))
-            Text(
-                text = slot.timeString,
-                style = SleepyTextStyle.micro(),
-                color = colors.onSurfaceVariant,
-                maxLines = 1,
-                overflow = TextOverflow.Ellipsis
-            )
-        }
-    }
-}
+// TimeHeadCell / SpannedTimeHeadCell 死组件已删（SpannedTimeHeadCell 注释自述弃用,
+// TimeHeadCell 被 SingleTimeHeadCell 取代, 两者全库零调用; CELL_H 常量随之删除）。
 
-/**
- * 跨界行的节次栏 — 单节时空 box；跨节时被 Row 高度撑开，渲染 N 个「第X节」标签
- * 按行均匀分布。这是最简版本：和 8a990ea two-layer 方案配套使用，跨节卡片
- * 用 Layout 绝对定位，时间栏只负责每个 node 显示一个「第X节」标签。
- *
- * 当 span>1 时本组件不渲染任何额外视觉框——Box 高度 = slotH，撑开由 Row.height 完成。
- */
-@Composable
-private fun SpannedTimeHeadCell(
-    timeSlots: List<TimeSlot>,
-    startIdx: Int,
-    span: Int,
-    slotH: androidx.compose.ui.unit.Dp,
-    gapH: androidx.compose.ui.unit.Dp,
-    onlyFirst: Boolean = false,
-    modifier: Modifier = Modifier
-) {
-    // 实际已不再使用此组件——改走 TwoLayerGrid 的 TimeHeadCell 单节渲染。
-    // 保留此签名以兼容旧引用。
-    val colors = SleepyTheme.colors
-    val slot = timeSlots.getOrNull(startIdx) ?: return
-    val shape = RoundedCornerShape(12.dp)
-    Box(
-        modifier = modifier.fillMaxHeight(),
-        contentAlignment = Alignment.Center
-    ) {
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .fillMaxHeight()
-                .padding(2.dp)
-                .clip(shape)
-                .background(colors.surface)
-                .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
-                .padding(4.dp),
-            contentAlignment = Alignment.Center
-        ) {
-            Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = stringResource(R.string.period_format_node, slot.label),
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
-                    color = colors.onSurface,
-                    maxLines = 1
-                )
-                Spacer(modifier = Modifier.height(1.dp))
-                Text(
-                    text = slot.timeString,
-                    style = SleepyTextStyle.micro(),
-                    color = colors.onSurfaceVariant,
-                    maxLines = 1,
-                    overflow = TextOverflow.Ellipsis
-                )
-            }
-        }
-    }
-}
-
-/**
- * 课程颜色 — 基于 groupId 的确定性 HSL 分配，同一门课的所有时间块同色。
- *
- * - 黄金角 137.508° 撒 hue → 相邻 id 色差最大化（13 门课最少差 ~27°）
- * - 亮色模式：S=0.48, L=0.88（柔和粉彩，不刺眼）
- * - 暗色模式：S=0.35, L=0.26（沉稳低饱和，可读性好）
- * - 同一 id 永远同色（确定性），换课表不漂移
- */
-private fun pickCourseColor(course: CourseEntity, palette: com.lingion.sleepy.ui.theme.CoursePalette): Color {
-    // 用户自定义颜色优先
-    val userColor = course.color
-    if (userColor.isNotBlank() && !userColor.equals("#FF6750A4", ignoreCase = true)) {
-        runCatching { return Color(android.graphics.Color.parseColor(userColor)) }
-    }
-    // 无自定义 → 按 id 黄金角 HSL 分配
-    val isDark = isPaletteDark(palette)
-    val stableId = course.groupId.hashCode().toLong()
-    val hue = ((stableId * 137.508f) % 360f + 360f) % 360f
-    val s = if (isDark) 0.40f else 0.55f
-    val l = if (isDark) 0.28f else 0.82f
-    return hslToColor(hue, s, l)
-}
-
-private fun isPaletteDark(p: com.lingion.sleepy.ui.theme.CoursePalette): Boolean {
-    val c = p.primary
-    val lum = 0.299f * c.red + 0.587f * c.green + 0.114f * c.blue
-    return lum < 0.5f
-}
-
-private fun hslToColor(h: Float, s: Float, l: Float): Color {
-    val c = (1f - kotlin.math.abs(2f * l - 1f)) * s
-    val x = c * (1f - kotlin.math.abs((h / 60f) % 2f - 1f))
-    val m = l - c / 2f
-    val (r, g, b) = when {
-        h < 60f   -> Triple(c, x, 0f)
-        h < 120f  -> Triple(x, c, 0f)
-        h < 180f  -> Triple(0f, c, x)
-        h < 240f  -> Triple(0f, x, c)
-        h < 300f  -> Triple(x, 0f, c)
-        else      -> Triple(c, 0f, x)
-    }
-    return Color(r + m, g + m, b + m)
-}
+// pickCourseColor / isPaletteDark / hslToColor 三函数已收敛至 util/CourseColorUtil.kt（决策 D3 单一事实来源）。
+// 原注释 S/L 值写错（0.48/0.88、0.35/0.26），实际为亮色 S=0.55 L=0.82 / 暗色 S=0.40 L=0.28，正确值见 CourseColorUtil 常量。
 
 // =====================================================================================
 // 7days full 视图 — switchable.html #fullView
@@ -732,7 +601,15 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
-    val bg = pickCourseColor(course, palette)
+    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
+    val bg = CourseColorUtil.pickCourseColorCompose(
+        course = course,
+        isDark = CourseColorUtil.isPaletteDark(palette),
+        neutralColor = colors.surfaceVariant,
+        colorless = AppPrefs.isCourseColorless(context)
+    )
+    // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
+    val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
 
     // time 模式：「08:00-\n08:45」——时间段在连字符后折行，行距收紧读成一个整体
     val timeParts = if (displayMode == "time" && timeJson.isNotBlank()) {
@@ -760,14 +637,14 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
             Text(
                 text = "${timeParts.first}-\n${timeParts.second}",
                 style = sideStyle,
-                color = colors.onSurface,
+                color = fg,
                 modifier = Modifier.width(42.dp)
             )
         } else {
             Text(
                 text = nodeLabel,
                 style = sideStyle,
-                color = colors.onSurface,
+                color = fg,
                 modifier = Modifier.width(42.dp),
                 maxLines = 1
             )
@@ -782,7 +659,7 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                         trim = LineHeightStyle.Trim.FirstLineTop
                     )
                 ),
-                color = colors.onSurface,
+                color = fg,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
             )
@@ -797,7 +674,7 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                 Text(
                     text = meta,
                     style = SleepyTextStyle.smallMeta(),
-                    color = colors.onSurface.copy(alpha = 0.72f),
+                    color = fg.copy(alpha = 0.72f),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )

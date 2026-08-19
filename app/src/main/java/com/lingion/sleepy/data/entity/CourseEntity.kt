@@ -89,8 +89,8 @@ data class CourseEntity(
         if (week < startWeek || week > endWeek) return false
         return when (type) {
             0 -> true  // 每周
-            1 -> week % 2 == 1 || week == startWeek || week == endWeek  // 单周
-            2 -> week % 2 == 0 || week == startWeek || week == endWeek  // 双周
+            1 -> week % 2 == 1  // 单周
+            2 -> week % 2 == 0  // 双周
             else -> true
         }
     }

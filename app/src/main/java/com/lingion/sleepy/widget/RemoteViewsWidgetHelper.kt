@@ -33,10 +33,18 @@ object RemoteViewsWidgetHelper {
     fun computeSizeDp(opts: android.os.Bundle): Pair<Int, Int> {
         var wDp = 0
         var hDp = 0
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            // ★ 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
+            //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java
             )?.maxByOrNull { it.width * it.height }
+                ?.let { wDp = it.width.toInt(); hDp = it.height.toInt() }
+        } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            // API 31/32: OPTION_APPWIDGET_SIZES 已存在但只有无类型重载(开发期过时警告, 运行时安全)
+            @Suppress("DEPRECATION", "UncheckedCast")
+            val legacy = opts.getParcelableArrayList<SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES)
+            legacy?.maxByOrNull { it.width * it.height }
                 ?.let { wDp = it.width.toInt(); hDp = it.height.toInt() }
         }
         if (wDp <= 0 || hDp <= 0) {

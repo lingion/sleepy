@@ -23,6 +23,7 @@ import androidx.compose.material.icons.outlined.Palette
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.Tune
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
@@ -43,20 +44,16 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
-import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.launch
 
 @Composable
 fun MineScreen(
     viewModel: ScheduleViewModel = viewModel(),
-    themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
-    onThemeModeChange: (String) -> Unit = {},
     onOpenAllTables: () -> Unit = {},
-    onOpenTheme: () -> Unit = {},
-    onOpenMoreSettings: () -> Unit = {},
+    onOpenAppearance: () -> Unit = {},
+    onOpenGeneral: () -> Unit = {},
     onOpenExport: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
     onOpenAbout: () -> Unit = {}
@@ -103,7 +100,7 @@ fun MineScreen(
                 )
             }
 
-            // 设置项
+            // 设置项 (5 个导航项扁平列表)
             item {
                 Column(
                     modifier = Modifier
@@ -117,18 +114,29 @@ fun MineScreen(
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Notifications, label = stringResource(R.string.reminder_title), onClick = onOpenReminder)
                     Divider()
-                    SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_theme), onClick = onOpenTheme)
+                    SettingsItem(icon = Icons.Outlined.Palette, label = stringResource(R.string.mine_appearance), onClick = onOpenAppearance)
                     Divider()
-                    SettingsItem(icon = Icons.Outlined.Refresh, label = stringResource(R.string.mine_refresh_widgets), onClick = {
+                    SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
+                    Divider()
+                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), onClick = onOpenAbout)
+                }
+            }
+
+            // 动作区: 刷新所有小组件 (FilledTonalButton, 与上方导航项物理隔离)
+            item {
+                FilledTonalButton(
+                    onClick = {
                         scope.launch {
                             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context)
                             showSnack(context.getString(R.string.mine_refresh_widgets_done))
                         }
-                    })
-                    Divider()
-                    SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_more_settings), onClick = onOpenMoreSettings)
-                    Divider()
-                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), isLast = true, onClick = onOpenAbout)
+                    },
+                    modifier = Modifier.fillMaxWidth().height(52.dp),
+                    shape = RoundedCornerShape(18.dp)
+                ) {
+                    Icon(Icons.Outlined.Refresh, contentDescription = null)
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text(stringResource(R.string.mine_refresh_widgets))
                 }
             }
         }
@@ -162,7 +170,8 @@ private fun StatItem(value: String, label: String) {
 }
 
 @Composable
-private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}, isLast: Boolean = false, trailing: @Composable (() -> Unit)? = null) {
+// isLast / trailing 死参数已删（函数体从未读取 isLast; trailing 无任何调用方传值）
+private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}) {
     val colors = SleepyTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
@@ -172,7 +181,6 @@ private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit =
             Icon(icon, null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.weight(1f).padding(start = 16.dp))
-        if (trailing != null) trailing()
     }
 }
 

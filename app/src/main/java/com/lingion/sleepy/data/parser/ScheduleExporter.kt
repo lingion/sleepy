@@ -98,18 +98,36 @@ object ScheduleExporter {
         sb.appendLine("METHOD:PUBLISH")
         sb.appendLine("X-WR-CALNAME:${table.name}")
 
-        // 简化：每门课生成一个 VEVENT，根据节次推算时间
+        // 学期起始日规范化为周一(应用约定 day=1 对应周一;导入数据可能非周一,直接 plusDays(day-1) 会整体偏移)
         val start = java.time.LocalDate.parse(table.startDate)
+            .with(java.time.DayOfWeek.MONDAY)
         val nodeStartTimes = parseNodeTimes(table.timeJson)
 
         for (c in courses) {
-            val startDate = start.plusWeeks((c.startWeek - 1).toLong())
+            // 单双周(type=1 单周/2 双周)按起止周奇偶选第一个实际发生周
+            val firstWeek = when (c.type) {
+                1 -> if (c.startWeek % 2 == 1) c.startWeek else c.startWeek + 1
+                2 -> if (c.startWeek % 2 == 0) c.startWeek else c.startWeek + 1
+                else -> c.startWeek
+            }
+            // 起止周奇偶不符导致无实际发生周时跳过,避免生成错误事件
+            if (firstWeek > c.endWeek) continue
+
+            val startDate = start.plusWeeks((firstWeek - 1).toLong())
                 .plusDays((c.day - 1).toLong())
             val endDate = start.plusWeeks((c.endWeek - 1).toLong())
                 .plusDays((c.day - 1).toLong())
 
-            val startTime = nodeStartTimes.getOrNull(c.startNode - 1)?.first ?: "080000"
-            val endTime = nodeStartTimes.getOrNull(c.startNode + c.step - 2)?.second ?: "090000"
+            // ownTime 课程用自身自定义时间,否则按节次反查
+            val startTime: String
+            val endTime: String
+            if (c.ownTime && c.startTime.isNotBlank() && c.endTime.isNotBlank()) {
+                startTime = compactTime(c.startTime)
+                endTime = compactTime(c.endTime)
+            } else {
+                startTime = nodeStartTimes.getOrNull(c.startNode - 1)?.first ?: "080000"
+                endTime = nodeStartTimes.getOrNull(c.startNode + c.step - 2)?.second ?: "090000"
+            }
 
             val dtStart = "${startDate.toString().replace("-", "")}T$startTime"
             val dtEnd = "${startDate.toString().replace("-", "")}T$endTime"
@@ -119,15 +137,19 @@ object ScheduleExporter {
                 5 -> "FR"; 6 -> "SA"; 7 -> "SU"; else -> null
             }
 
+            // 单双周加 INTERVAL=2 表示隔周重复
+            val interval = if (c.type == 1 || c.type == 2) ";INTERVAL=2" else ""
+            val until = ";UNTIL=${endDate.toString().replace("-", "")}T235959Z"
+
             sb.appendLine("BEGIN:VEVENT")
-            sb.appendLine("UID:${c.id}-${c.courseName.hashCode()}@wakeup-pure")
+            sb.appendLine("UID:${c.id}-${c.courseName.hashCode()}@sleepy")
             sb.appendLine("DTSTAMP:${java.time.ZonedDateTime.now(java.time.ZoneOffset.UTC).toString().replace(Regex("[^0-9TZ]"), "").take(15)}Z")
             sb.appendLine("DTSTART:$dtStart")
             sb.appendLine("DTEND:$dtEnd")
             if (byDay != null) {
-                sb.appendLine("RRULE:FREQ=WEEKLY;BYDAY=$byDay;UNTIL=${endDate.toString().replace("-", "")}T235959Z")
+                sb.appendLine("RRULE:FREQ=WEEKLY;BYDAY=$byDay$interval$until")
             } else {
-                sb.appendLine("RRULE:FREQ=WEEKLY;UNTIL=${endDate.toString().replace("-", "")}T235959Z")
+                sb.appendLine("RRULE:FREQ=WEEKLY$interval$until")
             }
             sb.appendLine("SUMMARY:${escapeIcs(c.courseName)}")
             if (c.room.isNotBlank()) sb.appendLine("LOCATION:${escapeIcs(c.room)}")
@@ -140,6 +162,15 @@ object ScheduleExporter {
 
     private fun escapeIcs(s: String): String =
         s.replace("\\", "\\\\").replace(",", "\\,").replace(";", "\\;").replace("\n", "\\n")
+
+    /** 将 "HH:mm" 自定义时间压缩为 ICS 的 "HHmmss" 格式(补足秒) */
+    private fun compactTime(hhmm: String): String {
+        val t = hhmm.replace(":", "").trim()
+        return when (t.length) {
+            4 -> "${t}00"
+            else -> t
+        }
+    }
 
     private fun parseNodeTimes(jsonStr: String): List<Pair<String, String>> {
         return try {
