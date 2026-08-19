@@ -415,7 +415,6 @@
     <string name="appearance_section_theme">主题色彩</string>
     <string name="appearance_section_display">课程显示</string>
     <string name="appearance_section_widget">小组件</string>
-    <string name="appearance_affects_both">同时影响课表和小组件</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">输入</string>
     <string name="edit_period_duration_label">每节时长</string>

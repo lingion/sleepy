@@ -288,7 +288,6 @@
     <string name="appearance_section_theme">主題色彩</string>
     <string name="appearance_section_display">課程顯示</string>
     <string name="appearance_section_widget">小工具</string>
-    <string name="appearance_affects_both">同時影響課表與小工具</string>
     <string name="about_update_latest">目前已是最新版本 v%1$s</string>
     <string name="update_found_title">發現新版本 v%1$s</string>
     <string name="update_download">下載</string>

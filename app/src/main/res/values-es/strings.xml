@@ -288,7 +288,6 @@
     <string name="appearance_section_theme">Colores del tema</string>
     <string name="appearance_section_display">Visualización de cursos</string>
     <string name="appearance_section_widget">Widget</string>
-    <string name="appearance_affects_both">Afecta tanto al horario como a los widgets</string>
     <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
     <string name="update_found_title">Nueva versión v%1$s disponible</string>
     <string name="update_download">Descargar</string>

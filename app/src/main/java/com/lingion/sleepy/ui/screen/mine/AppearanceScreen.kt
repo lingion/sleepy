@@ -88,6 +88,7 @@ fun AppearanceScreen(
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
+    var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
 
     // ★ 选主题/模式/显示项后立即刷小组件: 之前只写 SP 不刷 widget → 小组件不跟主题变
@@ -186,10 +187,7 @@ fun AppearanceScreen(
 
             // ── 分组② 课程显示 ──
             item {
-                SectionHeader(
-                    title = stringResource(R.string.appearance_section_display),
-                    subtitle = stringResource(R.string.appearance_affects_both)
-                )
+                SectionHeader(title = stringResource(R.string.appearance_section_display))
             }
 
             // 课程时间显示: 节次 / 时间
@@ -244,6 +242,18 @@ fun AppearanceScreen(
                         subtitle = stringResource(R.string.settings_show_date_sub),
                         checked = showDate,
                         onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
+                    )
+                }
+            }
+
+            // 课程胶囊统一底色: 开关(App 侧独立, 不刷新小组件)
+            item {
+                SettingsCard(title = stringResource(R.string.settings_course_colorless), expanded = "courseColorless" in expandedSections, onToggle = { toggleSection("courseColorless") }) {
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_course_colorless),
+                        subtitle = stringResource(R.string.settings_course_colorless_sub),
+                        checked = courseColorless,
+                        onCheckedChange = { courseColorless = it; AppPrefs.setCourseColorless(context, it) }
                     )
                 }
             }

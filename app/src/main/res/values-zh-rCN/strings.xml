@@ -299,7 +299,6 @@
     <string name="appearance_section_theme">主题色彩</string>
     <string name="appearance_section_display">课程显示</string>
     <string name="appearance_section_widget">小组件</string>
-    <string name="appearance_affects_both">同时影响课表和小组件</string>
     <string name="about_update_latest">当前已是最新版本 v%1$s</string>
     <string name="update_found_title">发现新版本 v%1$s</string>
     <string name="update_download">下载</string>

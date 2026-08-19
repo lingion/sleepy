@@ -288,7 +288,6 @@
     <string name="appearance_section_theme">テーマカラー</string>
     <string name="appearance_section_display">授業の表示</string>
     <string name="appearance_section_widget">ウィジェット</string>
-    <string name="appearance_affects_both">時間割とウィジェットの両方に影響します</string>
     <string name="about_update_latest">最新バージョン v%1$s です</string>
     <string name="update_found_title">新しいバージョン v%1$s があります</string>
     <string name="update_download">ダウンロード</string>
