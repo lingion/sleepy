@@ -259,12 +259,12 @@ private fun CourseOverlayCard(
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
     val context = androidx.compose.ui.platform.LocalContext.current
-    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs，与小组件共用同一开关
+    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     val bg = CourseColorUtil.pickCourseColorCompose(
         course = course,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
-        colorless = AppPrefs.isWidgetColorless(context)
+        colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
@@ -601,12 +601,12 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
-    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs，与小组件共用同一开关
+    // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     val bg = CourseColorUtil.pickCourseColorCompose(
         course = course,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
-        colorless = AppPrefs.isWidgetColorless(context)
+        colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)

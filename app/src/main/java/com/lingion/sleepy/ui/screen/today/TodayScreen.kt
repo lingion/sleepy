@@ -178,12 +178,12 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     val palette = SleepyTheme.palette
     val context = LocalContext.current
     // 统一取色入口 — hue 源自动对齐 groupId（修复原 course.id%360 导致同门课多节次异色+三屏三色）
-    // colorless 读取 AppPrefs，与小组件共用同一开关
+    // colorless 读取 AppPrefs course_colorless 独立开关
     val bg = CourseColorUtil.pickCourseColorCompose(
         course = course,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
-        colorless = AppPrefs.isWidgetColorless(context)
+        colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
