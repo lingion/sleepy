@@ -183,10 +183,12 @@
     <string name="settings_visible_days">显示星期</string>
     <string name="settings_visible_days_sub">取消勾选的星期将在所有视图中隐藏</string>
     <string name="settings_vert_punct">竖排标点优化</string>
-    <string name="settings_vert_punct_sub">课名竖排时将（）《》等横排符号替换为专用竖排符号（实验功能）</string>
+    <string name="settings_vert_punct_sub">网格小组件课名竖排时将（）《》等横排符号替换为专用竖排符号（实验功能）</string>
     <string name="settings_widget">小组件设置</string>
-    <string name="settings_widget_colorless">统一课程底色</string>
-    <string name="settings_widget_colorless_sub">开启后课表和小组件的课程底色统一为中性灰，自定义颜色的课程不受影响</string>
+    <string name="settings_widget_colorless">小组件统一课程底色</string>
+    <string name="settings_widget_colorless_sub">仅将带课程背景的小组件课程统一为中性底色；纯文字周视图不受影响，自定义颜色课程不受影响</string>
+    <string name="settings_course_colorless">课程胶囊统一底色</string>
+    <string name="settings_course_colorless_sub">仅将 App 内课程胶囊统一为中性底色；小组件设置不受影响，自定义颜色课程不受影响</string>
     <string name="settings_widget_separator">周视图分隔线</string>
     <string name="settings_widget_separator_sub">纯文字周视图中课程名之间是否显示分隔线</string>
 
@@ -315,7 +317,7 @@
     <string name="about_title">关于</string>
     <string name="about_update">获取更新</string>
     <string name="about_update_checking">正在检查更新…</string>
-    <string name="about_update_detail">GitHub 主站不可用时，可改用镜像下载</string>
+    <string name="about_update_detail">GitHub 主站不可用时，自动回退镜像下载</string>
     <string name="about_version">版本信息</string>
     <string name="about_version_detail">版本 %1$s（构建 %2$d）</string>
     <string name="action_cancel">取消</string>

@@ -306,7 +306,7 @@
     <string name="about_title">について</string>
     <string name="about_update">更新を確認</string>
     <string name="about_update_checking">更新を確認中…</string>
-    <string name="about_update_detail">GitHub が利用できない場合は、ミラーからダウンロードできます</string>
+    <string name="about_update_detail">GitHub が利用できない場合は、自動でミラーにフォールバックします</string>
     <string name="about_version">バージョン情報</string>
     <string name="about_version_detail">バージョン %1$s（ビルド %2$d）</string>
     <string name="action_cancel">キャンセル</string>
@@ -386,10 +386,12 @@
     <string name="school_pinyin_hint">ピンイン頭文字 / 学校の英語略称 に対応（例: hrbeu）</string>
     <string name="semester_out_of_range">現在は学期の範囲外です</string>
     <string name="settings_vert_punct">縦書き記号の最適化</string>
-    <string name="settings_vert_punct_sub">授業名の縦書き表示時に（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
+    <string name="settings_vert_punct_sub">グリッドウィジェットで授業名を縦書き表示する際に、（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
     <string name="settings_widget">ウィジェット設定</string>
-    <string name="settings_widget_colorless">授業の背景色を統一</string>
-    <string name="settings_widget_colorless_sub">アプリ内とウィジェットの授業背景色をニュートラルグレーに統一します。色をカスタマイズした授業には適用されません</string>
+    <string name="settings_widget_colorless">ウィジェットの授業色を統一</string>
+    <string name="settings_widget_colorless_sub">ウィジェットの背景色付き授業のみをニュートラルグレーに統一します。テキストのみの週表示には影響せず、色をカスタマイズした授業には適用されません</string>
+    <string name="settings_course_colorless">アプリ内授業カプセルの色を統一</string>
+    <string name="settings_course_colorless_sub">アプリ内の授業カプセルのみをニュートラルグレーに統一します。ウィジェット設定には影響せず、色をカスタマイズした授業には適用されません</string>
     <string name="settings_widget_separator">週表示の区切り線</string>
     <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
     <!-- i18n: hardcoded string extraction -->

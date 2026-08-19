@@ -306,7 +306,7 @@
     <string name="about_title">關於</string>
     <string name="about_update">取得更新</string>
     <string name="about_update_checking">正在檢查更新…</string>
-    <string name="about_update_detail">GitHub 主站不可用時，可改用鏡像下載</string>
+    <string name="about_update_detail">GitHub 主站不可用時，自動回退鏡像下載</string>
     <string name="about_version">版本資訊</string>
     <string name="about_version_detail">版本 %1$s（建構 %2$d）</string>
     <string name="action_cancel">取消</string>
@@ -386,10 +386,12 @@
     <string name="school_pinyin_hint">支援拼音首字母 / 學校英文簡稱 (如 hrbeu)</string>
     <string name="semester_out_of_range">目前不在學期範圍內</string>
     <string name="settings_vert_punct">直排標點最佳化</string>
-    <string name="settings_vert_punct_sub">課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
+    <string name="settings_vert_punct_sub">網格小工具課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
     <string name="settings_widget">小工具設定</string>
-    <string name="settings_widget_colorless">統一課程底色</string>
-    <string name="settings_widget_colorless_sub">開啟後課表與小工具的課程底色統一為中性灰，自訂顏色的課程不受影響</string>
+    <string name="settings_widget_colorless">小工具統一課程底色</string>
+    <string name="settings_widget_colorless_sub">僅將帶課程背景的小工具課程統一為中性底色；純文字週檢視不受影響，自訂顏色課程不受影響</string>
+    <string name="settings_course_colorless">課程膠囊統一底色</string>
+    <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色；小工具設定不受影響，自訂顏色課程不受影響</string>
     <string name="settings_widget_separator">週檢視分隔線</string>
     <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
     <!-- i18n: hardcoded string extraction -->

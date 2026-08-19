@@ -306,7 +306,7 @@
     <string name="about_title">Acerca de</string>
     <string name="about_update">Buscar actualizaciones</string>
     <string name="about_update_checking">Comprobando actualizaciones…</string>
-    <string name="about_update_detail">Si GitHub no está disponible, puedes descargar desde el espejo</string>
+    <string name="about_update_detail">Si GitHub no está disponible, la app recurrirá automáticamente al espejo</string>
     <string name="about_version">Versión</string>
     <string name="about_version_detail">Versión %1$s (Compilación %2$d)</string>
     <string name="action_cancel">Cancelar</string>
@@ -386,10 +386,12 @@
     <string name="school_pinyin_hint">Admite iniciales de pinyin / abreviaturas de escuela (ej. hrbeu)</string>
     <string name="semester_out_of_range">La fecha actual está fuera del rango del semestre</string>
     <string name="settings_vert_punct">Optimización de puntuación vertical</string>
-    <string name="settings_vert_punct_sub">Reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
+    <string name="settings_vert_punct_sub">En el widget de cuadrícula, reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
     <string name="settings_widget">Ajustes del widget</string>
-    <string name="settings_widget_colorless">Color de curso unificado</string>
-    <string name="settings_widget_colorless_sub">Los fondos de los cursos en la app y los widgets usan un gris neutro; los cursos con color personalizado no se ven afectados</string>
+    <string name="settings_widget_colorless">Colores uniformes de cursos en widgets</string>
+    <string name="settings_widget_colorless_sub">Solo los cursos con fondo en los widgets usan un gris neutro; la vista semanal de texto no se ve afectada y los cursos con color personalizado no se ven afectados</string>
+    <string name="settings_course_colorless">Colores uniformes de cápsulas de cursos</string>
+    <string name="settings_course_colorless_sub">Solo las cápsulas de cursos en la app usan un gris neutro; los ajustes de widgets no se ven afectados y los cursos con color personalizado no se ven afectados</string>
     <string name="settings_widget_separator">Separador vista semanal</string>
     <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
     <!-- i18n: hardcoded string extraction -->

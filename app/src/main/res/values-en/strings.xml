@@ -307,7 +307,7 @@
     <string name="about_title">About</string>
     <string name="about_update">Check for Updates</string>
     <string name="about_update_checking">Checking for updates…</string>
-    <string name="about_update_detail">If GitHub is unavailable, you can download from the mirror instead</string>
+    <string name="about_update_detail">If GitHub is unavailable, the app will fall back to the mirror automatically</string>
     <string name="about_version">Version</string>
     <string name="about_version_detail">Version %1$s (Build %2$d)</string>
     <string name="action_cancel">Cancel</string>
@@ -387,10 +387,12 @@
     <string name="school_pinyin_hint">Supports pinyin initials / school abbreviations (e.g. hrbeu)</string>
     <string name="semester_out_of_range">Current date is outside the semester range</string>
     <string name="settings_vert_punct">Vertical Punctuation Optimization</string>
-    <string name="settings_vert_punct_sub">Replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
+    <string name="settings_vert_punct_sub">In the grid widget, replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
     <string name="settings_widget">Widget settings</string>
-    <string name="settings_widget_colorless">Unified course colors</string>
-    <string name="settings_widget_colorless_sub">Course backgrounds in the app and widgets use a neutral gray; courses with custom colors are unaffected</string>
+    <string name="settings_widget_colorless">Uniform widget course colors</string>
+    <string name="settings_widget_colorless_sub">Only courses with backgrounds in widgets use a neutral gray; pure-text week view is unaffected, and courses with custom colors are unaffected</string>
+    <string name="settings_course_colorless">Uniform course-pill colors</string>
+    <string name="settings_course_colorless_sub">Only course pills in the app use a neutral gray; widget settings are unaffected, and courses with custom colors are unaffected</string>
     <string name="settings_widget_separator">Week view separator</string>
     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
     <!-- i18n: hardcoded string extraction -->
