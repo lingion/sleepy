@@ -39,9 +39,11 @@ Single/double-week courses were being expanded into a continuous "start week to 
 
 This means some schedules look like they lost cells after updating. They didn't. The old display was wrong. If a course only meets on odd weeks, it shows on odd weeks — not as a block running from week 1 to week 16.
 
-### Cloud backup rules fixed
+### Android backup rules pointed at the wrong filename
 
-The cloud backup / device-transfer rules pointed at `settings.xml`. The actual preference file is `sleepy_prefs.xml`. Since v1.0.0, cloud backup has never actually covered your preferences. The three rule entries now point at the real file.
+Sleepy has no cloud service and no in-app backup. The `backup_rules.xml` and `data_extraction_rules.xml` files are the platform-side rules Android reads when the OS does auto-backup or device-transfer. They listed `settings.xml` as the preference file to back up. That file doesn't exist — `AppPrefs` writes to `sleepy_prefs.xml`. The result: whenever Android tried to back up or transfer your Sleepy settings, it copied nothing.
+
+Three rule entries — `backup_rules.xml` plus the cloud-backup and device-transfer sections of `data_extraction_rules.xml` — now point at the real filename. Whether anything actually gets backed up is still up to Android and your device vendor.
 
 ### Internationalization
 
@@ -111,9 +113,11 @@ Glance 框架没了。五个小组件现在全走同步的 RemoteViews + Canvas�
 
 这意味着有些课表更新后看起来「少了几格」。其实没少。是旧的显示错了。一门只上单周的课,就显示在单周——不是从第 1 周到第 16 周拉一条。
 
-### 云备份规则修正
+### Android 备份规则指向了错的文件名
 
-云备份 / 设备迁移的规则指向了 `settings.xml`。实际的偏好文件是 `sleepy_prefs.xml`。自 v1.0.0 起,云备份从来没真正覆盖过你的偏好。三处规则条目现在指向真实的文件。
+Sleepy 没有云服务,也没有应用内备份。`backup_rules.xml` 和 `data_extraction_rules.xml` 是 Android 系统做自动备份或换机迁移时读取的平台侧规则。里面把偏好文件写成了 `settings.xml`。这文件根本不存在——`AppPrefs` 写的是 `sleepy_prefs.xml`。结果就是:Android 一旦尝试备份或迁移你的 Sleepy 设置,拷过去的是空气。
+
+三处规则——`backup_rules.xml` 加上 `data_extraction_rules.xml` 的 cloud-backup 和 device-transfer 两段——现在指向真实文件名。到底有没有真的备份上去,还是看 Android 和手机厂商。
 
 ### 国际化
 
