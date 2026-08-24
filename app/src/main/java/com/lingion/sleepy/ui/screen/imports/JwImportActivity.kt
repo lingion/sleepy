@@ -27,13 +27,13 @@ import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -49,6 +49,7 @@ import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -69,9 +70,14 @@ class JwImportActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            val dark = isSystemInDarkTheme()
-            val themeKey = androidx.compose.runtime.remember { mutableStateOf("default") }
-            SleepyThemeProvider(darkTheme = dark, themeKey = themeKey.value) {
+            // ★ 跟随 app 主题设置(此前硬编码 default+只跟系统深色,选春绿/海蓝后此页不跟随)
+            val systemDark = isSystemInDarkTheme()
+            val dark = remember(systemDark) {
+                AppPrefs.isDarkMode(this@JwImportActivity, systemDark)
+            }
+            val themeKey by AppPrefs.themeKeyFlow(this@JwImportActivity)
+                .collectAsState(initial = AppPrefs.getThemeKey(this@JwImportActivity))
+            SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 val jwViewModel: JwImportViewModel = viewModel()
                 val scheduleViewModel: ScheduleViewModel = viewModel()
                 val scope = rememberCoroutineScope()
@@ -277,7 +283,7 @@ class JwImportActivity : ComponentActivity() {
                     ) {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = Color(0xFFFFEBEE)
+                                containerColor = SleepyTheme.colors.errorContainer
                             )
                         ) {
                             Text(
@@ -285,7 +291,7 @@ class JwImportActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .padding(16.dp),
-                                color = Color(0xFFB71C1C)
+                                color = SleepyTheme.colors.onErrorContainer
                             )
                         }
                     }

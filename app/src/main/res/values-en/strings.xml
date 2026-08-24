@@ -169,6 +169,13 @@
     <string name="settings_display_node_sub">All courses show as \"Period N\"</string>
     <string name="settings_display_time">Show as times</string>
     <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
+    <string name="settings_grid_sub_info">Grid card sub-info</string>
+    <string name="settings_grid_sub_room">Room</string>
+    <string name="settings_grid_sub_room_sub">Show room under course name (hidden if empty)</string>
+    <string name="settings_grid_sub_teacher">Teacher</string>
+    <string name="settings_grid_sub_teacher_sub">Show teacher under course name (hidden if empty)</string>
+    <string name="settings_grid_sub_none">None</string>
+    <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>

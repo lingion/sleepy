@@ -168,6 +168,13 @@
     <string name="settings_display_node_sub">すべての授業を「第N時限」と表示</string>
     <string name="settings_display_time">時刻で統一</string>
     <string name="settings_display_time_sub">すべての授業を「HH:mm–HH:mm」と表示</string>
+    <string name="settings_grid_sub_info">グリッドカードの補足情報</string>
+    <string name="settings_grid_sub_room">教室</string>
+    <string name="settings_grid_sub_room_sub">授業名の下に教室を表示（未設定なら非表示）</string>
+    <string name="settings_grid_sub_teacher">教員</string>
+    <string name="settings_grid_sub_teacher_sub">授業名の下に教員を表示（未設定なら非表示）</string>
+    <string name="settings_grid_sub_none">なし</string>
+    <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>

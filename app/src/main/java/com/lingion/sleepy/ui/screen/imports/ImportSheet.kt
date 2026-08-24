@@ -531,8 +531,8 @@ private fun ImportPreviewDialog(
                         PreviewMetricCard(
                             label = stringResource(R.string.import_conflicts),
                             value = preview.conflictCount.toString(),
-                            bg = if (preview.conflictCount > 0) Color(0xFFFFE1DE) else colors.secondaryContainer,
-                            fg = if (preview.conflictCount > 0) Color(0xFF8C1D18) else colors.onSecondaryContainer,
+                            bg = if (preview.conflictCount > 0) colors.errorContainer else colors.secondaryContainer,
+                            fg = if (preview.conflictCount > 0) colors.onErrorContainer else colors.onSecondaryContainer,
                             modifier = Modifier.weight(1f)
                         )
                         PreviewMetricCard(

@@ -27,8 +27,10 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.CardsGridView
 import com.lingion.sleepy.ui.component.TimeSlot
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import androidx.compose.runtime.collectAsState
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -54,7 +56,14 @@ class WeekGridPreviewActivity : ComponentActivity() {
             or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             )
         setContent {
-            com.lingion.sleepy.ui.theme.SleepyThemeProvider {
+            // ★ 跟随 app 主题设置(此前全默认参=永远浅色+默认紫)
+            val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+            val dark = androidx.compose.runtime.remember(systemDark) {
+                com.lingion.sleepy.util.AppPrefs.isDarkMode(this@WeekGridPreviewActivity, systemDark)
+            }
+            val themeKey by AppPrefs.themeKeyFlow(this@WeekGridPreviewActivity)
+                .collectAsState(initial = AppPrefs.getThemeKey(this@WeekGridPreviewActivity))
+            com.lingion.sleepy.ui.theme.SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
                 AppScheduleScreen()
             }
         }
@@ -82,8 +91,6 @@ class WeekGridPreviewActivity : ComponentActivity() {
                 showDate = true,
                 startDate = d.startDate,
                 currentWeek = d.currentWeek,
-                displayMode = "node",
-                timeJson = d.timeJson,
                 onCourseClick = { Log.d("Preview", "clicked: ${it.courseName}") }
             )
         }

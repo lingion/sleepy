@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentHeight
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -37,6 +36,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
 import androidx.compose.ui.unit.dp
@@ -91,8 +91,6 @@ fun CardsGridView(
     showDate: Boolean = false,
     startDate: String = "",
     currentWeek: Int = 1,
-    displayMode: String = "node",
-    timeJson: String = "",
     today: Int = DateUtils.todayDayOfWeek(),
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier
@@ -191,9 +189,6 @@ fun CardsGridView(
 
                         CourseOverlayCard(
                             course = course,
-                            steps = steps,
-                            displayMode = displayMode,
-                            timeJson = timeJson,
                             onClick = { onCourseClick(course) },
                             modifier = Modifier
                                 .offset(x = cardX, y = cardY)
@@ -250,9 +245,6 @@ private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
 @Composable
 private fun CourseOverlayCard(
     course: CourseEntity,
-    steps: Int,
-    displayMode: String,
-    timeJson: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -269,6 +261,14 @@ private fun CourseOverlayCard(
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
     val shape = RoundedCornerShape(12.dp)
+    // 副信息（教室/教师/无）— 左栏 SingleTimeHeadCell 已有节次+时间，卡片 y 位置本身编码节次，
+    // 故卡内不再显示节次/时间，改由 grid_sub_info 设置决定
+    val subInfo = AppPrefs.getGridSubInfo(context)
+    val subText = when (subInfo) {
+        "room" -> course.room
+        "teacher" -> course.teacher
+        else -> ""
+    }
 
     Box(
         modifier = modifier
@@ -277,10 +277,10 @@ private fun CourseOverlayCard(
             .background(bg)
             .border(0.5.dp, colors.outline.copy(alpha = 0.12f), shape)
             .clickable(onClick = onClick)
-            .padding(4.dp),
-        contentAlignment = Alignment.Center
+            .padding(4.dp)
     ) {
-        Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        if (subText.isBlank()) {
+            // 无副信息: 课程名整体居中(原行为)
             Text(
                 text = course.courseName,
                 style = MaterialTheme.typography.labelSmall.copy(
@@ -290,20 +290,37 @@ private fun CourseOverlayCard(
                 ),
                 color = fg,
                 maxLines = 6,
-                overflow = TextOverflow.Ellipsis
+                overflow = TextOverflow.Ellipsis,
+                modifier = Modifier.align(Alignment.Center)
             )
-            if (steps > 1) {
-                val nodeFallback = "${course.startNode}-${course.startNode + steps - 1}"
-                val timeLabel = if (displayMode == "time" && timeJson.isNotBlank()) {
-                    TimeTableUtils.courseTimeString(course.startNode, course.step, timeJson, course.ownTime, course.startTime, course.endTime)
-                        ?: nodeFallback
-                } else {
-                    nodeFallback
+        } else {
+            // 有副信息: 课程名在剩余空间内居中, 副信息贴卡底 — 主文字不再紧贴副文字
+            Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.SpaceBetween,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                // 用 weight(1f) 占位让课程名在上半区居中, 避免正正好好贴住副文字
+                Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
+                    Text(
+                        text = course.courseName,
+                        style = MaterialTheme.typography.labelSmall.copy(
+                            fontWeight = FontWeight.SemiBold,
+                            fontSize = 10.sp,
+                            lineHeight = 13.sp
+                        ),
+                        color = fg,
+                        maxLines = 6,
+                        overflow = TextOverflow.Ellipsis
+                    )
                 }
                 Text(
-                    text = timeLabel,
+                    text = subText,
                     style = SleepyTextStyle.micro(),
-                    color = fg.copy(alpha = 0.65f)
+                    color = fg.copy(alpha = 0.65f),
+                    maxLines = 2,
+                    overflow = TextOverflow.Ellipsis,
+                    textAlign = TextAlign.Center
                 )
             }
         }

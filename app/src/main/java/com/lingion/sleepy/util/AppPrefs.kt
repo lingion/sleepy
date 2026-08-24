@@ -27,6 +27,7 @@ object AppPrefs {
     const val KEY_THEME = "theme_key"
     const val KEY_LANG = "language"
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
+    const val KEY_GRID_SUB_INFO = "grid_sub_info" // "room" / "teacher" / "none" — 网格卡片副信息（周视图网格卡课程名下方那行；左栏已有节次，故此处不再显示节次/时间）
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
@@ -178,6 +179,16 @@ object AppPrefs {
 
     fun setDisplayMode(ctx: Context, mode: String) {
         sp(ctx).edit().putString(KEY_DISPLAY_MODE, mode).apply()
+    }
+
+    // ===== 网格卡片副信息：教室 / 教师 / 无 =====
+
+    fun getGridSubInfo(ctx: Context): String =
+        sp(ctx).getString(KEY_GRID_SUB_INFO, "room") ?: "room"
+
+    fun setGridSubInfo(ctx: Context, value: String) {
+        require(value == "room" || value == "teacher" || value == "none")
+        sp(ctx).edit().putString(KEY_GRID_SUB_INFO, value).apply()
     }
 
     // ===== 网格显示日期 =====
