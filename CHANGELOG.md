@@ -1,5 +1,47 @@
 # Changelog
 
+## v1.0.35
+
+### Grid card sub-info — room, teacher, or nothing
+
+Week grid cards showed course name plus a "3-4节" node label under it. The leftmost column already carries the node numbers and times. The card's vertical position *is* the node. That second line repeated information you get for free.
+
+Setting now in 通用设置 → 课程显示 → 网格卡片副信息. Three options:
+
+- 教室 — the room under the course name. Default.
+- 教师 — the teacher instead.
+- 无 — course name only, centered in the card.
+
+Empty room or empty teacher renders as "none" for that card; no blank line. Changes take effect immediately, no restart.
+
+### Three pages stopped ignoring your theme
+
+You pick spring green. Most of the app turns spring green. Three screens didn't get the memo:
+
+The JW import page (教务导入) hardcoded `themeKey = "default"` and followed the *system* dark mode instead of the in-app setting. So with spring green selected and dark mode set to "always light" in-app, the import flow showed default purple in dark. Same story in the week grid preview. The import conflict card also drew its red background from two hex literals — `0xFFFFEBEE` / `0xFFB71C1C` — which are light-theme pink-red and stay pink-red in every theme. Now they read `errorContainer` / `onErrorContainer` from whatever theme you picked.
+
+All three pages now subscribe to `AppPrefs.themeKeyFlow` and `AppPrefs.isDarkMode`, same as the main schedule. Change theme, they follow.
+
+### Course capsule text no longer hugs the bottom
+
+With sub-info showing, the course name sat directly on top of the room line — zero gap at two-line heights. The card now splits its space: name centered in the upper region, sub-info pinned to the bottom edge. Cards without sub-info center the name as before.
+
+### Settings pages split
+
+外观 (Appearance) held theme colors, course display, and widget settings — three groups, one page. The course-display and widget groups moved to 通用设置 (General). Appearance is now theme colors only. The `refreshWidgets()` pipeline moved with them, so display changes still refresh widgets instantly.
+
+The shared card components (SectionHeader / SettingsCard / DisplayModeOption / SettingToggleRow) were pulled into a single `SettingsCards.kt` used by both pages, instead of two diverging copies.
+
+### Build
+
+- versionCode: 36
+- versionName: 1.0.35
+- APKs: `app-arm64-v8a-release.apk` (most phones), `app-armeabi-v7a-release.apk` (older arm32), `app-x86_64-release.apk` (emulator)
+
+— Lingion
+
+---
+
 ## v1.0.34
 
 ### Course color split — one toggle became two
@@ -69,6 +111,48 @@ Fresh installs don't get the 15-minute fallback widget refresh — `WidgetUpdate
 - versionCode: 35
 - versionName: 1.0.34
 - APKs: `app-arm64-v8a-release.apk` (most phones), `app-armeabi-v7a-release.apk` (older arm32), `app-x86_64-release.apk` (emulator)
+
+— Lingion
+
+---
+
+## v1.0.35
+
+### 网格卡片副信息——教室 / 教师 / 无
+
+周视图网格卡之前在课程名下面垫一行「3-4节」。左栏本来就印着节次和时间，卡片在网格里的纵向位置本身就对应节次。那行字等于重复了一遍免费就能看到的信息。
+
+设置入口:通用设置 → 课程显示 → 网格卡片副信息。三个选项:
+
+- 教室——课程名下方显示上课地点。默认。
+- 教师——显示授课教师。
+- 无——只显示课程名，居中。
+
+某门课没填教室/教师时，那张卡自动按「无」处理，不会留一行空白。改完立即生效。
+
+### 三个页面终于肯跟主题走了
+
+你选了春绿，App 大部分地方跟着变绿。有三处没跟上:
+
+教务导入页把 `themeKey` 写死成 `"default"`,深浅色跟的是系统而不是 App 内设置。于是你 App 里选了春绿+强制浅色，导入流程照样渲染默认紫+暗色。周视图预览页同样的问题。导入冲突数卡片还有两处写死的红色——`0xFFFFEBEE` / `0xFFB71C1C`,浅色主题的粉红，在任何主题下都是那个粉红。现在改读主题的 `errorContainer` / `onErrorContainer`。
+
+三个页面现在都订阅 `AppPrefs.themeKeyFlow` 和 `AppPrefs.isDarkMode`,跟主课表同一条线。换主题，它们跟着换。
+
+### 课程名不再贴着副文字
+
+显示副信息时，课程名紧贴在教室/教师那行上面——两行文字零间距。现在卡片空间一分为二:课程名在上半区居中，副信息贴卡片底边。没副信息的卡保持原来的整体居中。
+
+### 设置页拆分
+
+外观页一度装了主题色彩、课程显示、小组件三组。课程显示和小组件两组迁去了通用设置，外观页只剩主题色彩。`refreshWidgets()` 管线随迁，改显示项后小组件照旧即时刷新。
+
+公共卡片组件(SectionHeader / SettingsCard / DisplayModeOption / SettingToggleRow)抽成了单独的 `SettingsCards.kt`,两页共用，不再各养一份各漂各的。
+
+### 构建
+
+- versionCode: 36
+- versionName: 1.0.35
+- APK:`app-arm64-v8a-release.apk`(多数手机)、`app-armeabi-v7a-release.apk`(旧款 arm32)、`app-x86_64-release.apk`(模拟器)
 
 — Lingion
 
