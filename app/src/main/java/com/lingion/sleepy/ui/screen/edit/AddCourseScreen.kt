@@ -2,8 +2,6 @@ package com.lingion.sleepy.ui.screen.edit
 
 import com.lingion.sleepy.R
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Arrangement
@@ -21,6 +19,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -35,9 +34,11 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -70,6 +71,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.launch
@@ -112,20 +114,8 @@ fun AddCourseScreen(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val currentTable = state.currentTable
-    val fieldShape = RoundedCornerShape(18.dp)
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedPlaceholderColor = colors.onSurfaceVariant,
-        unfocusedPlaceholderColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary,
-        focusedContainerColor = colors.surfaceContainerLowest,
-        unfocusedContainerColor = colors.surfaceContainerLowest
-    )
+    val fieldShape = SleepyTheme.fieldShape
+    val fieldColors = SleepyTheme.fieldColors()
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
     var teacher by remember(editingCourse?.id) { mutableStateOf(editingCourse?.teacher ?: "") }
@@ -218,7 +208,7 @@ fun AddCourseScreen(
                     subtitle = stringResource(R.string.course_basic_info_sub)
                 ) {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
+                        TextField(
                             value = courseName,
                             onValueChange = { courseName = it },
                             label = { Text(stringResource(R.string.course_name_required)) },
@@ -227,7 +217,7 @@ fun AddCourseScreen(
                             shape = fieldShape,
                             colors = fieldColors
                         )
-                        OutlinedTextField(
+                        TextField(
                             value = teacher,
                             onValueChange = { teacher = it },
                             label = { Text(stringResource(R.string.course_teacher)) },
@@ -236,7 +226,7 @@ fun AddCourseScreen(
                             shape = fieldShape,
                             colors = fieldColors
                         )
-                        OutlinedTextField(
+                        TextField(
                             value = room,
                             onValueChange = { room = it },
                             label = { Text(stringResource(R.string.course_room)) },
@@ -245,7 +235,7 @@ fun AddCourseScreen(
                             shape = fieldShape,
                             colors = fieldColors
                         )
-                        OutlinedTextField(
+                        TextField(
                             value = note,
                             onValueChange = { note = it },
                             label = { Text(stringResource(R.string.course_note)) },
@@ -369,8 +359,8 @@ fun AddCourseScreen(
                         )
                         nextBlockId += 1
                     },
-                    modifier = Modifier.fillMaxWidth().height(46.dp),
-                    shape = RoundedCornerShape(16.dp),
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                    shape = SleepyTheme.Buttons.shape,
                     colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null, tint = colors.onSecondaryContainer)
@@ -440,8 +430,8 @@ fun AddCourseScreen(
                     enabled = canSave,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(54.dp),
-                    shape = RoundedCornerShape(18.dp)
+                        .height(SleepyTheme.Buttons.ctaHeight),
+                    shape = SleepyTheme.Buttons.shape
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -455,8 +445,8 @@ fun AddCourseScreen(
 
                     Button(
                         onClick = { showDeleteConfirm = true },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                        shape = SleepyTheme.Buttons.shape,
                         colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
                     ) {
                         Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
@@ -467,7 +457,6 @@ fun AddCourseScreen(
                     if (showDeleteConfirm) {
                         AlertDialog(
                             onDismissRequest = { showDeleteConfirm = false },
-                            containerColor = colors.surface,
                             title = { Text(stringResource(R.string.confirm_delete), color = colors.onSurface) },
                             text = { Text(stringResource(R.string.delete_course_confirm, editingCourse.courseName), color = colors.onSurfaceVariant) },
                             confirmButton = {
@@ -665,7 +654,7 @@ private fun ValidationCard(issues: List<ValidationIssue>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.errorContainer)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(6.dp)
@@ -702,7 +691,7 @@ private fun CardSection(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(SleepyTheme.shapes.extraLarge)
             .background(colors.surfaceContainer)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
@@ -729,7 +718,7 @@ private fun MeetingBlockEditor(
     block: MeetingBlockDraft,
     canRemove: Boolean,
     issues: List<String>,
-    fieldShape: RoundedCornerShape,
+    fieldShape: CornerBasedShape,
     fieldColors: androidx.compose.material3.TextFieldColors,
     onRemove: () -> Unit
 ) {
@@ -738,13 +727,9 @@ private fun MeetingBlockEditor(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
-            .background(colors.surfaceContainerHigh)
-            .border(
-                width = if (issues.isNotEmpty()) 1.5.dp else 0.dp,
-                color = if (issues.isNotEmpty()) colors.error else Color.Transparent,
-                shape = RoundedCornerShape(20.dp)
-            )
+            .clip(SleepyTheme.shapes.large)
+            // 错误态: errorContainer 色块底替代 error 描边 (2026-08-25 色块统一)
+            .background(if (issues.isNotEmpty()) colors.errorContainer else colors.surfaceContainerHigh)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -839,51 +824,27 @@ private fun ModePicker(
     mode: MeetingInputMode,
     onChange: (MeetingInputMode) -> Unit
 ) {
-    val colors = SleepyTheme.colors
-    Row(
+    val modes = listOf(MeetingInputMode.ByNode to R.string.mode_by_node, MeetingInputMode.ByClock to R.string.mode_by_time)
+    SingleChoiceSegmentedButtonRow(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
-            .background(colors.surfaceContainerHighest)
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .height(40.dp)
     ) {
-        ModeChip(
-            label = stringResource(R.string.mode_by_node),
-            selected = mode == MeetingInputMode.ByNode,
-            modifier = Modifier.weight(1f),
-            onClick = { onChange(MeetingInputMode.ByNode) }
-        )
-        ModeChip(
-            label = stringResource(R.string.mode_by_time),
-            selected = mode == MeetingInputMode.ByClock,
-            modifier = Modifier.weight(1f),
-            onClick = { onChange(MeetingInputMode.ByClock) }
-        )
-    }
-}
-
-@Composable
-private fun ModeChip(
-    label: String,
-    selected: Boolean,
-    modifier: Modifier = Modifier,
-    onClick: () -> Unit
-) {
-    val colors = SleepyTheme.colors
-    Box(
-        modifier = modifier
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (selected) colors.primary else Color.Transparent)
-            .clickable(onClick = onClick)
-            .padding(vertical = 10.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.Medium),
-            color = if (selected) colors.onPrimary else colors.onSurfaceVariant
-        )
+        modes.forEachIndexed { index, (m, labelRes) ->
+            SegmentedButton(
+                selected = mode == m,
+                onClick = { onChange(m) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
+                label = {
+                    Text(
+                        stringResource(labelRes),
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = if (mode == m) FontWeight.SemiBold else FontWeight.Medium
+                        )
+                    )
+                }
+            )
+        }
     }
 }
 
@@ -904,15 +865,10 @@ private fun MultiDayPicker(
                     Box(
                         modifier = Modifier
                             .weight(1f)
-                            .height(42.dp)
-                            .clip(RoundedCornerShape(14.dp))
+                            .height(40.dp)
+                            .clip(SleepyTheme.shapes.medium)
                             .background(if (selected) colors.primary else colors.surfaceContainerHighest)
-                            .border(
-                                width = if (selected) 0.dp else 1.dp,
-                                color = if (selected) Color.Transparent else colors.outlineVariant,
-                                shape = RoundedCornerShape(14.dp)
-                            )
-                            .clickable { onToggleDay(day) },
+                            .noRippleClickable { onToggleDay(day) },
                         contentAlignment = Alignment.Center
                     ) {
                         Text(
@@ -936,7 +892,7 @@ private fun NumberField(
     min: Int,
     max: Int,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape,
+    shape: CornerBasedShape,
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (Int) -> Unit
 ) {
@@ -950,7 +906,7 @@ private fun NumberField(
         }
     }
 
-    OutlinedTextField(
+    TextField(
         value = text,
         onValueChange = { txt ->
             text = txt
@@ -980,13 +936,13 @@ private fun TimeField(
     label: String,
     value: String,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape,
+    shape: CornerBasedShape,
     colors: androidx.compose.material3.TextFieldColors,
     onChange: (String) -> Unit
 ) {
     var text by remember(value) { mutableStateOf(value) }
 
-    OutlinedTextField(
+    TextField(
         value = text,
         onValueChange = { txt ->
             val filtered = txt.take(5)
@@ -1007,23 +963,24 @@ private fun TimeField(
 
 @Composable
 private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .clip(androidx.compose.foundation.shape.CircleShape)
-            .background(SleepyTheme.colors.surfaceVariant)
-            .then(
-                if (selected) Modifier.border(2.5.dp, SleepyTheme.colors.primary, androidx.compose.foundation.shape.CircleShape)
-                else Modifier.border(0.5.dp, SleepyTheme.colors.outlineVariant, androidx.compose.foundation.shape.CircleShape)
+    // IconButton 包裹 — 裸 32dp 圆点的涟漪半径过小且无 48dp 最小触达区
+    IconButton(onClick = onClick) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(
+                    if (selected) SleepyTheme.colors.primaryContainer
+                    else SleepyTheme.colors.surfaceVariant
+                )
+        ) {
+            Text(
+                text = stringResource(R.string.label_from),
+                fontSize = 11.sp,
+                color = if (selected) SleepyTheme.colors.onPrimaryContainer else SleepyTheme.colors.onSurfaceVariant,
+                modifier = Modifier.align(Alignment.Center)
             )
-            .clickable(onClick = onClick)
-    ) {
-        Text(
-            text = stringResource(R.string.label_from),
-            fontSize = 11.sp,
-            color = SleepyTheme.colors.onSurfaceVariant,
-            modifier = Modifier.align(Alignment.Center)
-        )
+        }
     }
 }
 
@@ -1035,21 +992,22 @@ private fun CustomColorDot(hex: String?, onClick: () -> Unit) {
     } else {
         SleepyTheme.colors.surfaceVariant
     }
-    Box(
-        modifier = Modifier
-            .size(32.dp)
-            .clip(androidx.compose.foundation.shape.CircleShape)
-            .background(c)
-            .border(0.5.dp, SleepyTheme.colors.outlineVariant, androidx.compose.foundation.shape.CircleShape)
-            .clickable(onClick = onClick)
-    ) {
-        if (hex == null) {
-            Text(
-                text = "＋",
-                fontSize = 16.sp,
-                color = SleepyTheme.colors.onSurfaceVariant,
-                modifier = Modifier.align(Alignment.Center)
-            )
+    // IconButton 包裹 — 裸 32dp 圆点的涟漪半径过小且无 48dp 最小触达区
+    IconButton(onClick = onClick) {
+        Box(
+            modifier = Modifier
+                .size(32.dp)
+                .clip(androidx.compose.foundation.shape.CircleShape)
+                .background(c)
+        ) {
+            if (hex == null) {
+                Text(
+                    text = "＋",
+                    fontSize = 16.sp,
+                    color = SleepyTheme.colors.onSurfaceVariant,
+                    modifier = Modifier.align(Alignment.Center)
+                )
+            }
         }
     }
 }
@@ -1081,7 +1039,6 @@ private fun ColorPickerDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = colors.surface,
         title = {
             Text(stringResource(R.string.course_color), color = colors.onSurface)
         },
@@ -1102,7 +1059,7 @@ private fun ColorPickerDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(200.dp)
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(SleepyTheme.shapes.large)
                 )
 
                 // 色相滑条
@@ -1112,7 +1069,7 @@ private fun ColorPickerDialog(
                     modifier = Modifier
                         .fillMaxWidth()
                         .height(36.dp)
-                        .clip(RoundedCornerShape(18.dp))
+                        .clip(SleepyTheme.shapes.large)
                 )
 
                 // 预览 + Hex
@@ -1126,7 +1083,6 @@ private fun ColorPickerDialog(
                             .size(40.dp)
                             .clip(androidx.compose.foundation.shape.CircleShape)
                             .background(currentColor)
-                            .border(1.dp, colors.outlineVariant, androidx.compose.foundation.shape.CircleShape)
                     )
                     Text(
                         text = currentHex,
@@ -1201,7 +1157,7 @@ private fun SVPanel(
             val cx = saturation * size.width
             val cy = (1f - value) * size.height
             drawCircle(Color.White, radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy))
-            drawCircle(Color.Black.copy(alpha = 0.3f), radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
+            drawCircle(Color.Black.copy(alpha = SleepyTheme.Alpha.hairline), radius = 10f, center = androidx.compose.ui.geometry.Offset(cx, cy), style = androidx.compose.ui.graphics.drawscope.Stroke(width = 2f))
         }
     }
 }

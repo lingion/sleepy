@@ -1,9 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import android.content.Intent
-import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -24,14 +22,18 @@ import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -47,6 +49,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.parser.ScheduleExporter
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -71,6 +74,7 @@ fun ExportScreen(
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
     val colors = SleepyTheme.colors
+    val snackbarHostState = remember { SnackbarHostState() }
 
     val table = state.currentTable
     val courses = state.courses
@@ -78,22 +82,22 @@ fun ExportScreen(
     Scaffold(
         modifier = Modifier.fillMaxSize().background(colors.background),
         containerColor = colors.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
         topBar = {
             TopAppBar(
                 title = { Text(stringResource(R.string.export_title), fontWeight = FontWeight.SemiBold) },
                 navigationIcon = {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(R.string.back),
-                        modifier = Modifier
-                            .padding(8.dp)
-                            .size(24.dp)
-                            .clickable(onClick = onBack)
-                    )
+                    IconButton(onClick = onBack) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
+                            contentDescription = stringResource(R.string.back)
+                        )
+                    }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
                     containerColor = colors.background,
-                    titleContentColor = colors.onBackground
+                    titleContentColor = colors.onBackground,
+                    navigationIconContentColor = colors.onBackground
                 )
             )
         }
@@ -115,7 +119,7 @@ fun ExportScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(SleepyTheme.shapes.large)
                         .background(colors.primaryContainer)
                         .padding(20.dp)
                 ) {
@@ -139,7 +143,7 @@ fun ExportScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                 ) {
                     ExportItem(
@@ -153,12 +157,13 @@ fun ExportScreen(
                                     fileName = "sleepy_${table.name}_${stamp()}.json",
                                     mime = "application/json",
                                     content = ScheduleExporter.exportWakeUpJson(table, courses),
-                                    displayName = table.name
+                                    displayName = table.name,
+                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
                                 )
                             }
                         }
                     )
-                    Divider(colors.outlineVariant.copy(alpha = 0.5f))
+                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     ExportItem(
                         icon = Icons.Outlined.Share,
                         title = stringResource(R.string.export_share_title),
@@ -168,12 +173,13 @@ fun ExportScreen(
                                 shareText(
                                     ctx = ctx,
                                     content = ScheduleExporter.exportWakeUpShareText(table, courses),
-                                    subject = table.name
+                                    subject = table.name,
+                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
                                 )
                             }
                         }
                     )
-                    Divider(colors.outlineVariant.copy(alpha = 0.5f))
+                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     ExportItem(
                         icon = Icons.Outlined.CalendarMonth,
                         title = stringResource(R.string.export_ics_title),
@@ -185,7 +191,8 @@ fun ExportScreen(
                                     fileName = "sleepy_${table.name}_${stamp()}.ics",
                                     mime = "text/calendar",
                                     content = ScheduleExporter.exportIcs(table, courses),
-                                    displayName = table.name
+                                    displayName = table.name,
+                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
                                 )
                             }
                         }
@@ -207,14 +214,14 @@ private fun ExportItem(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick)
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(SleepyTheme.shapes.medium)
                 // ★ 对齐 MineScreen.SettingsItem 同语义图标容器（primaryContainer），
                 // 之前 primary.copy(0.12f) 与本文件顶部信息卡的 primaryContainer 也不一致
                 .background(colors.primaryContainer),
@@ -254,7 +261,8 @@ private suspend fun exportAndShare(
     fileName: String,
     mime: String,
     content: String,
-    displayName: String
+    displayName: String,
+    onResult: suspend (String) -> Unit
 ) {
     withContext(Dispatchers.IO) {
         val uri = withContext(Dispatchers.IO) {
@@ -266,7 +274,7 @@ private suspend fun exportAndShare(
         }
         if (uri == null) {
             withContext(Dispatchers.Main) {
-                Toast.makeText(ctx, R.string.export_failed, Toast.LENGTH_SHORT).show()
+                onResult(ctx.getString(R.string.export_failed))
             }
             return@withContext
         }
@@ -278,11 +286,7 @@ private suspend fun exportAndShare(
                 addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
             }
             ctx.startActivity(Intent.createChooser(send, ctx.getString(R.string.export_share_chooser)))
-            Toast.makeText(
-                ctx,
-                ctx.getString(R.string.export_saved_to, fileName),
-                Toast.LENGTH_LONG
-            ).show()
+            onResult(ctx.getString(R.string.export_saved_to, fileName))
         }
     }
 }
@@ -337,12 +341,17 @@ private fun writeToCacheViaFileProvider(
 }
 
 /** 直接分享文本 */
-private fun shareText(ctx: android.content.Context, content: String, subject: String) {
+private suspend fun shareText(
+    ctx: android.content.Context,
+    content: String,
+    subject: String,
+    onResult: suspend (String) -> Unit
+) {
     val intent = Intent(Intent.ACTION_SEND).apply {
         type = "text/plain"
         putExtra(Intent.EXTRA_TEXT, content)
         putExtra(Intent.EXTRA_SUBJECT, subject)
     }
     ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.export_share_chooser)))
-    Toast.makeText(ctx, R.string.export_copied_hint, Toast.LENGTH_SHORT).show()
+    onResult(ctx.getString(R.string.export_copied_hint))
 }

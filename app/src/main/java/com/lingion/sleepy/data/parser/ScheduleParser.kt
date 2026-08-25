@@ -6,6 +6,8 @@ import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
+import java.time.LocalTime
+import java.util.TreeMap
 
 /**
  * 课程表文本解析器 — 支持：
@@ -182,47 +184,229 @@ object ScheduleParser {
 
     /**
      * 解析 ICS 日历文件 (RFC 5545)。
-     * 简化版：每个 VEVENT 视为一节课，按 RRULE 展开成单双周处理。
+     *
+     * 支持两类来源:
+     * 1. WakeUp 课程表导出 — SUMMARY=课名, DESCRIPTION="第X - Y节\n教室\n教师"(字面 \n 转义),
+     *    每个实际上课时段一条 VEVENT(双周课拆成 N 条 INTERVAL=1 的短事件),
+     *    UNTIL 日期为最后一次发生的日历日(可能比该次晚 6 天,按同星期几对齐回推)。
+     * 2. Sleepy 自家导出 — DESCRIPTION="老师：X", 单双周用 INTERVAL=2 表达。
+     *
+     * 语义:
+     * - 学期锚点 = 最早 DTSTART 所在周的周一 → startDate(周数编号基准)
+     * - 周区间 = [DTSTART 周, UNTIL 对齐星期几后的最后一次发生周]
+     * - 节次优先读 DESCRIPTION "第X - Y节", 无则按 55min/节估算
+     * - 同(课名,星期,节次,教师)的多个 VEVENT 按周序列合并:
+     *   连续拼合→type=0; 全同奇偶且间距2→单/双周; 否则(散周)保持独立行
      */
     private fun parseIcs(text: String, defaultTableId: Long, defaultColor: String): ParseResult {
-        val courses = mutableListOf<CourseEntity>()
-        val events = text.split("BEGIN:VEVENT").drop(1)
-        for (event in events) {
-            val end = event.indexOf("END:VEVENT")
-            val block = if (end > 0) event.substring(0, end) else event
+        data class Event(
+            val name: String, val day: Int, val startNode: Int, val step: Int,
+            val teacher: String, val room: String,
+            val firstDate: java.time.LocalDate, val lastDate: java.time.LocalDate, val interval: Int
+        )
+
+        val events = mutableListOf<Event>()
+        // 全校作息收割: 节次 → (start,end)。每个 VEVENT 直接给出
+        // node[首节].start=DTSTART, node[末节].end=DTEND, 中间节次按边界推导。
+        val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
+        for (raw in text.split("BEGIN:VEVENT").drop(1)) {
+            val end = raw.indexOf("END:VEVENT")
+            val block = if (end > 0) raw.substring(0, end) else raw
 
             val summary = extractIcsField(block, "SUMMARY") ?: continue
             val location = extractIcsField(block, "LOCATION") ?: ""
             val description = extractIcsField(block, "DESCRIPTION") ?: ""
+            val descLines = description.split("\\n")
 
-            val (startNode, step) = extractIcsTime(block) ?: continue
+            // WakeUp: DESCRIPTION="第X - Y节\n教室\n教师", LOCATION="教室 教师" / Sleepy: DESCRIPTION="老师：X"
+            val teacher = when {
+                descLines.size >= 3 -> descLines[2].trim()
+                description.startsWith("老师：") -> description.substringAfter("老师：").trim()
+                description.startsWith("老师:") -> description.substringAfter("老师:").trim()
+                else -> ""
+            }
+            val room = when {
+                descLines.size >= 2 && descLines[1].isNotBlank() -> descLines[1].trim()
+                location.isNotBlank() && teacher.isNotBlank() && location.endsWith(teacher) ->
+                    location.removeSuffix(teacher).trim()
+                else -> location
+            }
+
             val day = extractIcsDayOfWeek(block) ?: continue
-            val (startWeek, endWeek, type) = extractIcsWeeks(block) ?: Triple(1, 16, 0)
+            val dtstart = extractIcsDate(block) ?: continue
+            val (startNode, step) = extractIcsNode(description) ?: extractIcsTime(block) ?: continue
 
-            val teacher = if (description.isNotBlank()) description else ""
-            courses += CourseEntity(
-                id = 0,
-                groupId = "",
-                tableId = defaultTableId,
-                courseName = summary,
-                teacher = teacher,
-                room = location,
-                note = "",
-                day = day,
-                startNode = startNode,
-                step = step,
-                startWeek = startWeek,
-                endWeek = endWeek,
-                type = type,
-                color = defaultColor
-            )
+            // 作息收割: 有节次行 + 有起止钟点才有贡献(Sleepy 自家导出也满足)
+            harvestNodeTimes(block, startNode, step, nodeTimes)
+
+            val rrule = extractIcsField(block, "RRULE") ?: ""
+            val interval = if (rrule.contains("INTERVAL=2")) 2 else 1
+            val untilDate = Regex("UNTIL=(\\d{8})").find(rrule)?.groupValues?.get(1)
+                ?.let { parseIcsDate(it) } ?: dtstart
+            // UNTIL 是最后一次发生的日历日(可能晚于该次 0-6 天) → 对齐回同星期几
+            val deltaDays = java.time.temporal.ChronoUnit.DAYS.between(dtstart, untilDate).toInt()
+            val lastOccurrence = dtstart.plusDays((deltaDays - deltaDays % 7).toLong())
+
+            events += Event(summary, day, startNode, step, teacher, room, dtstart, lastOccurrence, interval)
+        }
+
+        if (events.isEmpty()) {
+            return ParseResult("导入的 ICS 课表", java.time.LocalDate.now().toString(), emptyList())
+        }
+
+        // 锚点: 最早 DTSTART 所在周的周一 → 周数编号基准
+        val anchor = events.minOf { it.firstDate }.with(java.time.DayOfWeek.MONDAY)
+
+        fun weekOf(d: java.time.LocalDate): Int =
+            (java.time.temporal.ChronoUnit.DAYS.between(anchor, d) / 7).toInt() + 1
+
+        // 按 (课名,星期,节次,教师) 聚合各周区间 — room 不进键:
+        // WakeUp 会把"每周换教室的同一门课"拆成多条 VEVENT,若 room 进键会把同一时段拆成
+        // 两组各自"同奇偶间距2"的散周 → 被误判成两个假单双周(实证: 24sp 管理心理学)。
+        // room 变化交给散周 room-run 合并处理。
+        data class SlotKey(val name: String, val day: Int, val node: Int, val step: Int, val teacher: String)
+
+        val groups = LinkedHashMap<SlotKey, MutableList<Triple<Int, Int, String>>>() // (startW, endW, room)
+        val groupInterval = HashMap<SlotKey, Int>()
+        for (e in events) {
+            val key = SlotKey(e.name, e.day, e.startNode, e.step, e.teacher)
+            groups.getOrPut(key) { mutableListOf() }.add(Triple(weekOf(e.firstDate), weekOf(e.lastDate), e.room))
+            groupInterval[key] = e.interval
+        }
+
+        val courses = mutableListOf<CourseEntity>()
+        for ((key, chunks) in groups) {
+            val sorted = chunks.sortedWith(compareBy({ it.first }, { it.second }, { it.third }))
+            val interval = groupInterval[key] ?: 1
+
+            fun emit(startWeek: Int, endWeek: Int, type: Int, room: String) {
+                courses += CourseEntity(
+                    id = 0,
+                    groupId = "",
+                    tableId = defaultTableId,
+                    courseName = key.name,
+                    teacher = key.teacher,
+                    room = room,
+                    note = "",
+                    day = key.day,
+                    startNode = key.node,
+                    step = key.step,
+                    startWeek = startWeek,
+                    endWeek = endWeek,
+                    type = type,
+                    color = defaultColor
+                )
+            }
+
+            val spans = sorted.map { it.first to it.second }
+
+            fun contiguous() = spans.zipWithNext().all { (a, b) -> b.first - a.second == 1 }
+            fun allSingleSameParitySpaced2(): Boolean {
+                if (spans.any { it.first != it.second }) return false
+                val starts = spans.map { it.first }
+                if (starts.map { it % 2 }.toSet().size != 1) return false
+                return starts.zipWithNext().all { (a, b) -> b - a == 2 }
+            }
+
+            when {
+                spans.size == 1 ->
+                    emit(spans[0].first, spans[0].second, 0, sorted[0].third)
+                // 1) 逐周连续 → 合并为每周区间(room 取首个 chunk)
+                contiguous() ->
+                    emit(spans.first().first, spans.last().second, 0, sorted[0].third)
+                // 2) 全部单周且同奇偶且间距 2 → 单/双周序列(INTERVAL=2 单条事件同理)
+                interval == 2 || allSingleSameParitySpaced2() -> {
+                    val startW = spans.first().first
+                    emit(startW, spans.last().first, if (startW % 2 == 1) 1 else 2, sorted[0].third)
+                }
+                // 3) 散周: 按教室分段合并连续段,每段一行(换教室课程按实际分段输出)
+                else -> {
+                    var curRoom: String? = null
+                    var curStart = 0; var curEnd = 0
+                    for ((a, b, r) in sorted) {
+                        if (r == curRoom && a <= curEnd + 1) {
+                            curEnd = maxOf(curEnd, b)
+                        } else {
+                            if (curRoom != null) emit(curStart, curEnd, 0, curRoom)
+                            curRoom = r; curStart = a; curEnd = b
+                        }
+                    }
+                    if (curRoom != null) emit(curStart, curEnd, 0, curRoom)
+                }
+            }
         }
 
         return ParseResult(
             tableName = "导入的 ICS 课表",
-            startDate = java.time.LocalDate.now().toString(),
-            courses = courses
+            startDate = anchor.toString(),
+            courses = courses,
+            timeJson = buildTimeJson(nodeTimes),
+            nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
         )
+    }
+
+    /**
+     * 从单个 VEVENT 收割节次边界: 事件占 [startNode, startNode+step-1] 节,
+     * DTSTART=首节start, DTEND=末节end, 中间节次边界从相邻块推导(块内均匀)。
+     * 冲突时后写覆盖 — 同校作息一致,不同事件只是补充对方缺的节次。
+     */
+    private fun harvestNodeTimes(
+        block: String, startNode: Int, step: Int,
+        out: TreeMap<Int, Pair<LocalTime, LocalTime>>
+    ) {
+        val dtstart = extractIcsField(block, "DTSTART") ?: return
+        val dtend = extractIcsField(block, "DTEND") ?: return
+        val start = runCatching { parseIcsTimeOfDay(dtstart.substringAfter("T").take(6)) }.getOrNull() ?: return
+        val end = runCatching { parseIcsTimeOfDay(dtend.substringAfter("T").take(6)) }.getOrNull() ?: return
+        if (!start.isBefore(end)) return
+
+        val endNode = startNode + step - 1
+        // 跨 lunch/晚上的多节块(如 1-4 @ 08:20-12:00)不能均匀切 — 只锚定两端,
+        // 中间节次交给其他恰好落界的块(如 1-2/3-4)去补,补不上就保持 gap。
+        if (step <= 2) {
+            for (n in startNode..endNode) {
+                val s = if (n == startNode) start else null
+                val e = if (n == endNode) end else null
+                val prev = out[n]
+                out[n] = (s ?: prev?.first ?: start) to (e ?: prev?.second ?: end)
+            }
+        } else {
+            val prevFirst = out[startNode]
+            val prevLast = out[endNode]
+            out[startNode] = start to (prevFirst?.second ?: end)
+            out[endNode] = (prevLast?.first ?: start) to end
+        }
+    }
+
+    /** nodeTimes → timeJson。空 → 空串(调用方用默认)。非连续节次照样输出存在的那些。 */
+    private fun buildTimeJson(nodeTimes: TreeMap<Int, Pair<LocalTime, LocalTime>>): String {
+        if (nodeTimes.isEmpty()) return ""
+        val sb = StringBuilder("[")
+        for ((n, t) in nodeTimes) {
+            if (sb.length > 1) sb.append(',')
+            sb.append("""{"node":$n,"start":"${t.first}","end":"${t.second}"}""")
+        }
+        sb.append(']')
+        return sb.toString()
+    }
+
+    private fun parseIcsDate(s: String): java.time.LocalDate? = try {
+        java.time.LocalDate.of(s.substring(0, 4).toInt(), s.substring(4, 6).toInt(), s.substring(6, 8).toInt())
+    } catch (_: Exception) { null }
+
+    /** 从 DTSTART 值提取日期部分(形如 20260831T082000 / 20260831) */
+    private fun extractIcsDate(block: String): java.time.LocalDate? {
+        val dtstart = extractIcsField(block, "DTSTART") ?: return null
+        return parseIcsDate(dtstart.substringBefore("T").take(8))
+    }
+
+    /** 从 DESCRIPTION "第X - Y节" 提取节次; 兼容 Sleepy 自家导出(无此行,返回 null 走时间估算) */
+    private fun extractIcsNode(description: String): Pair<Int, Int>? {
+        val m = Regex("第\\s*(\\d+)\\s*[-–]\\s*(\\d+)\\s*节").find(description) ?: return null
+        val a = m.groupValues[1].toInt()
+        val b = m.groupValues[2].toInt()
+        if (a < 1 || b < a) return null
+        return a to (b - a + 1)
     }
 
     private fun extractIcsField(block: String, name: String): String? {
@@ -233,7 +417,7 @@ object ScheduleParser {
             ?.trim()
     }
 
-    /** 从 DTSTART/DTEND 提取节次（按 ~55min/节粗略估算；ICS 不含节次表，仅近似） */
+    /** 从 DTSTART/DTEND 提取节次（按 45min课+5min课间≈50min/节估算；DESCRIPTION 无"第X-Y节"时的兜底） */
     private fun extractIcsTime(block: String): Pair<Int, Int>? {
         val dtstart = extractIcsField(block, "DTSTART") ?: return null
         val dtend = extractIcsField(block, "DTEND") ?: return null
@@ -244,9 +428,9 @@ object ScheduleParser {
             val startMin = start.hour * 60 + start.minute
             val endMin = end.hour * 60 + end.minute
             val duration = endMin - startMin
-            // 8:00 = 第 1 节，每节约 55 分钟（含课间）近似映射
-            val startNode = ((startMin - 480) / 55).toInt() + 1
-            val step = (duration / 55).coerceAtLeast(1)
+            // 8:00 = 第 1 节; 节边界按 50min 周期近似(45课+5课间), +10min 防边界抖动
+            val startNode = ((startMin - 480 + 10) / 50).toInt() + 1
+            val step = Math.round(duration / 50.0).toInt().coerceAtLeast(1)
             Pair(startNode.coerceAtLeast(1), step)
         } catch (e: Exception) { null }
     }
@@ -280,11 +464,6 @@ object ScheduleParser {
             "FR" -> 5; "SA" -> 6; "SU" -> 7
             else -> null
         }
-    }
-
-    private fun extractIcsWeeks(block: String): Triple<Int, Int, Int>? {
-        // 仅做最简支持：使用 UNTIL/COUNT 推导范围，type 默认为每周
-        return Triple(1, 16, 0)
     }
 
     /**
@@ -734,6 +913,10 @@ object ScheduleParser {
     data class ParseResult(
         val tableName: String,
         val startDate: String,
-        val courses: List<CourseEntity>
+        val courses: List<CourseEntity>,
+        /** ICS 事件里收割出的节次时间表 JSON; 非ICS/收割不到 → 空串(用默认) */
+        val timeJson: String = "",
+        /** timeJson 覆盖的最大节次; 无 → 0 */
+        val nodesPerDay: Int = 0
     )
 }

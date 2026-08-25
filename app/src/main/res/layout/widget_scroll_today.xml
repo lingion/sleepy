@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 可滚动 Today — 壳图(原渲染器按容器尺寸渲染: 圆角背景+首屏内容) + 条带 ListView。
+     FrameLayout clipToOutline 圆角裁剪 → 条带方形角被裁掉, 露出壳的圆角背景。
+     条带与壳同源同坐标系 → 滚动位置 0 与主分支静态渲染逐像素一致。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_scroll_clip"
+    android:outlineProvider="background"
+    android:clipToOutline="true">
+    <ImageView
+        android:id="@+id/widget_shell"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="false" />
+    <ListView
+        android:id="@+id/widget_strip_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="none"
+        android:cacheColorHint="@android:color/transparent"
+        android:listSelector="@android:color/transparent" />
+</FrameLayout>

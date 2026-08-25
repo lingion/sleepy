@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 可滚动 widget 圆角裁剪 — 圆角半径 20dp 与原渲染器 drawRoundRect 一致。
+     FrameLayout outlineProvider=background + clipToOutline=true → ListView 条带
+     方形角被裁掉, 露出底层壳图的圆角背景。 -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android" shape="rectangle">
+    <solid android:color="@android:color/transparent" />
+    <corners android:radius="20dp" />
+</shape>

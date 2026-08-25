@@ -87,7 +87,7 @@ private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
             .padding(16.dp)
     ) {
@@ -135,7 +135,7 @@ private fun Stat(label: String, bg: Color, fg: Color) {
         style = MaterialTheme.typography.labelMedium.copy(fontWeight = FontWeight.Medium),
         color = fg,
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(SleepyTheme.shapes.medium)
             .background(bg)
             .padding(horizontal = 12.dp, vertical = 6.dp)
     )
@@ -147,7 +147,7 @@ private fun EmptyToday() {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
             .padding(32.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -196,7 +196,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(16.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(bg)
             .padding(12.dp),
         verticalAlignment = Alignment.Top,
@@ -216,7 +216,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
                 Text(
                     text = time,
                     style = MaterialTheme.typography.labelSmall,
-                    color = fg.copy(alpha = 0.72f),
+                    color = fg.copy(alpha = SleepyTheme.Alpha.highContent),
                     maxLines = 1,
                     softWrap = false
                 )
@@ -242,7 +242,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
                 Text(
                     text = meta,
                     style = MaterialTheme.typography.bodySmall,
-                    color = fg.copy(alpha = 0.72f)
+                    color = fg.copy(alpha = SleepyTheme.Alpha.highContent)
                 )
             }
         }

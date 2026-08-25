@@ -90,4 +90,48 @@ object RemoteViewsWidgetHelper {
         bmp.recycle()
         Log.d(tag, "renderAndPush id=$widgetId ${wDp}x${hDp}dp → ${wPx}x${hPx}px")
     }
+
+    /**
+     * ★ 可滚动推送 (v1.0.36 第二次实现) — 内容超出容器时启用。
+     *
+     * 结构: 壳图(原渲染器按容器尺寸画 = 圆角背景+首屏内容, 与主分支静态渲染同一次调用)
+     * + ListView(ScrollStripService 条带, 原渲染器按全展开高度画长图后横切)。
+     * 条带与壳同源 → 滚动位置 0 与主分支静态 widget 像素一致。
+     *
+     * @param shellBitmap 壳图 (调用方用原渲染器按 wDp×hDp 渲染)
+     * @param layoutRes 可滚动容器布局 (含 widget_shell + widget_strip_list)
+     */
+    fun pushScrollable(
+        context: Context,
+        awm: AppWidgetManager,
+        widgetId: Int,
+        tag: String,
+        layoutRes: Int,
+        shellBitmap: Bitmap,
+        scopeExtra: String
+    ) {
+        val views = RemoteViews(context.packageName, layoutRes)
+        views.setImageViewBitmap(R.id.widget_shell, shellBitmap)
+
+        val svcIntent = Intent(context, ScrollStripService::class.java).apply {
+            putExtra(ScrollStripService.StripFactory.EXTRA_WIDGET_ID, widgetId)
+            putExtra(ScrollStripService.StripFactory.EXTRA_SCOPE, scopeExtra)
+            data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+        }
+        views.setRemoteAdapter(R.id.widget_strip_list, svcIntent)
+
+        val template = PendingIntent.getActivity(
+            context, widgetId,
+            Intent(context, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            },
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+        views.setPendingIntentTemplate(R.id.widget_strip_list, template)
+
+        awm.updateAppWidget(widgetId, views)
+        awm.notifyAppWidgetViewDataChanged(widgetId, R.id.widget_strip_list)
+        shellBitmap.recycle()
+        Log.d(tag, "pushScrollable id=$widgetId scope=$scopeExtra")
+    }
 }

@@ -23,28 +23,45 @@ import java.time.LocalDate
  * 现在克隆 WeekGridWidgetProvider 模式: goAsync → 加载 → 画 bitmap → awm.updateAppWidget,
  * 全程在冻结窗口前完成 → 秒刷 + 主题正确。
  *
- * 失去 Glance 交互(单课点击跳转/滚动) → 整个 widget 单击打开 app (与 WeekGrid 同取舍)。
+ * v1.0.36: 内容装得下走静态 renderAndPush(与主分支一致); 装不下走 pushScrollable
+ * (壳图+条带 ListView, 条带与静态渲染同源 → 顶部像素一致, 可滚动)。
  *
- * Glance 版 TodayWidget 类已删除(决策 D5-11): 5 个生产入口全走 RemoteViews,
- * Glance 层生产不可达; loadDataSync 自 Glance companion 迁入本类。
+ * Glance 版 TodayWidget 类已删除(决策 D5-11); loadDataSync 自 Glance companion 迁入本类。
  */
 class TodayWidgetReceiver : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private fun push(context: Context, awm: AppWidgetManager, id: Int) {
+        val data = loadDataSync(context)
+        val opts = awm.getAppWidgetOptions(id)
+        val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
+        val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
+        if (contentH <= hDp) {
+            // 内容装得下 — 原静态路径, 与主分支逐字节一致
+            RemoteViewsWidgetHelper.renderAndPush(
+                context, awm, id, TAG,
+                loadData = { data },
+                renderBitmap = { d, w, h -> WidgetBitmapRenderers.renderToday(context, d, w, h) }
+            )
+        } else {
+            // 超出 — 可滚动: 壳图 = 原渲染器按容器尺寸画(圆角背景+首屏)
+            val shell = WidgetBitmapRenderers.renderToday(context, data, wDp.toFloat(), hDp.toFloat())
+            RemoteViewsWidgetHelper.pushScrollable(
+                context, awm, id, TAG,
+                layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
+                shellBitmap = shell,
+                scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY
+            )
+        }
+    }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
         val pending = goAsync()
         ioScope.launch {
             try {
                 for (id in ids) {
-                    try {
-                        RemoteViewsWidgetHelper.renderAndPush(
-                            context, awm, id, TAG,
-                            loadData = { loadDataSync(context) },
-                            renderBitmap = { data, wDp, hDp ->
-                                WidgetBitmapRenderers.renderToday(context, data, wDp, hDp)
-                            }
-                        )
-                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                    try { push(context, awm, id) }
+                    catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
                 }
             } finally { pending.finish() }
         }
@@ -55,15 +72,8 @@ class TodayWidgetReceiver : AppWidgetProvider() {
     ) {
         val pending = goAsync()
         ioScope.launch {
-            try {
-                RemoteViewsWidgetHelper.renderAndPush(
-                    context, awm, id, TAG,
-                    loadData = { loadDataSync(context) },
-                    renderBitmap = { data, wDp, hDp ->
-                        WidgetBitmapRenderers.renderToday(context, data, wDp, hDp)
-                    }
-                )
-            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            try { push(context, awm, id) }
+            catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
             finally { pending.finish() }
         }
     }

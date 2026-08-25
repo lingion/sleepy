@@ -112,7 +112,6 @@ class JwImportActivity : ComponentActivity() {
                                 stage = Stage.WebViewLogin
                                 parsedCourses = emptyList()
                             },
-                            containerColor = colors.surface,
                             title = {
                                 Column {
                                     Text(getString(R.string.jw_config_title), color = colors.onSurface)

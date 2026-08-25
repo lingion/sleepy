@@ -18,26 +18,42 @@ import java.time.LocalDate
  * ★ 桌面 TwoDay 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
  * 原因见 [TodayWidgetReceiver] 注释。
  *
- * Glance 版 TwoDayWidget 类已删除(决策 D5-11): 5 个生产入口全走 RemoteViews,
- * Glance 层生产不可达; loadDataSync 自 Glance companion 迁入本类。
+ * v1.0.36: 内容装得下走静态 renderAndPush; 超出走 pushScrollable(壳图+条带)。
+ *
+ * Glance 版 TwoDayWidget 类已删除(决策 D5-11); loadDataSync 自 Glance companion 迁入本类。
  */
 class TwoDayWidgetReceiver : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    private fun push(context: Context, awm: AppWidgetManager, id: Int) {
+        val data = loadDataSync(context)
+        val opts = awm.getAppWidgetOptions(id)
+        val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
+        val contentH = WidgetBitmapRenderers.twoDayContentHeightDp(data)
+        if (contentH <= hDp) {
+            RemoteViewsWidgetHelper.renderAndPush(
+                context, awm, id, TAG,
+                loadData = { data },
+                renderBitmap = { d, w, h -> WidgetBitmapRenderers.renderTwoDay(context, d, w, h) }
+            )
+        } else {
+            val shell = WidgetBitmapRenderers.renderTwoDay(context, data, wDp.toFloat(), hDp.toFloat())
+            RemoteViewsWidgetHelper.pushScrollable(
+                context, awm, id, TAG,
+                layoutRes = com.lingion.sleepy.R.layout.widget_scroll_twoday,
+                shellBitmap = shell,
+                scopeExtra = ScrollStripService.StripFactory.SCOPE_TWODAY
+            )
+        }
+    }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
         val pending = goAsync()
         ioScope.launch {
             try {
                 for (id in ids) {
-                    try {
-                        RemoteViewsWidgetHelper.renderAndPush(
-                            context, awm, id, TAG,
-                            loadData = { loadDataSync(context) },
-                            renderBitmap = { data, wDp, hDp ->
-                                WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
-                            }
-                        )
-                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                    try { push(context, awm, id) }
+                    catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
                 }
             } finally { pending.finish() }
         }
@@ -48,15 +64,8 @@ class TwoDayWidgetReceiver : AppWidgetProvider() {
     ) {
         val pending = goAsync()
         ioScope.launch {
-            try {
-                RemoteViewsWidgetHelper.renderAndPush(
-                    context, awm, id, TAG,
-                    loadData = { loadDataSync(context) },
-                    renderBitmap = { data, wDp, hDp ->
-                        WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
-                    }
-                )
-            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            try { push(context, awm, id) }
+            catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
             finally { pending.finish() }
         }
     }
