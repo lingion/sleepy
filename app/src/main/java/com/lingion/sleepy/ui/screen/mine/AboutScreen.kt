@@ -3,7 +3,6 @@ package com.lingion.sleepy.ui.screen.mine
 import android.content.Intent
 import android.net.Uri
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -132,7 +131,7 @@ fun AboutScreen(onBack: () -> Unit) {
                 title = { Text(stringResource(R.string.about_title)) },
                 navigationIcon = {
                     IconButton(onClick = onBack) {
-                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = null)
+                        Icon(Icons.AutoMirrored.Outlined.ArrowBack, contentDescription = stringResource(R.string.back))
                     }
                 },
                 colors = TopAppBarDefaults.topAppBarColors(
@@ -264,16 +263,17 @@ fun AboutScreen(onBack: () -> Unit) {
                             color = colors.onSurfaceVariant
                         )
                     }
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion")))
-                            }
-                    )
+                    // IconButton 而非裸 Icon+clickable — 裸 20dp 图标的涟漪半径过小且无 48dp 最小触达区
+                    IconButton(onClick = {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion")))
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = null,
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
@@ -302,16 +302,16 @@ fun AboutScreen(onBack: () -> Unit) {
                             textDecoration = TextDecoration.Underline
                         )
                     }
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-                        contentDescription = null,
-                        tint = colors.primary,
-                        modifier = Modifier
-                            .size(20.dp)
-                            .clickable {
-                                context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy")))
-                            }
-                    )
+                    IconButton(onClick = {
+                        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy")))
+                    }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = null,
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
 
@@ -358,7 +358,7 @@ private fun InfoCard(content: @Composable () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
             .padding(20.dp)
     ) {

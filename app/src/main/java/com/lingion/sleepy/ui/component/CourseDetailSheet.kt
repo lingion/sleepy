@@ -56,7 +56,6 @@ fun CourseDetailSheet(
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
-            containerColor = SleepyTheme.colors.surface,
             shape = RoundedCornerShape(topStart = 28.dp, topEnd = 28.dp)
         ) {
             Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
@@ -92,7 +91,7 @@ fun CourseDetailSheet(
                         Button(
                             onClick = { onEdit(course) },
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = SleepyTheme.shapes.large,
                             colors = ButtonDefaults.buttonColors(containerColor = SleepyTheme.colors.primary)
                         ) {
                             Text(stringResource(R.string.course_detail_edit_course))
@@ -134,7 +133,7 @@ private fun TimeChip(text: String) {
         style = MaterialTheme.typography.labelMedium,
         color = colors.onSecondaryContainer,
         modifier = Modifier
-            .clip(RoundedCornerShape(12.dp))
+            .clip(SleepyTheme.shapes.medium)
             .background(colors.secondaryContainer)
             .padding(horizontal = 12.dp, vertical = 6.dp)
     )

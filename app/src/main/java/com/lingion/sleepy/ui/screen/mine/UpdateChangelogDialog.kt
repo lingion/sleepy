@@ -69,7 +69,6 @@ fun UpdateChangelogDialog(
                 onDismissRequest = {
                     if (state !is UpdateUiState.Downloading) onDismiss()
                 },
-                containerColor = colors.surfaceContainer,
                 titleContentColor = colors.onSurface,
                 title = {
                     Text(

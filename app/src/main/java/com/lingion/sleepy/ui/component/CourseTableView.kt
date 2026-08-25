@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
@@ -46,6 +44,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
@@ -111,8 +110,7 @@ fun CardsGridView(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.surfaceContainerHigh, RoundedCornerShape(18.dp))
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(18.dp))
+            .background(colors.surfaceContainerHigh, SleepyTheme.shapes.large)
             .padding(8.dp)
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
@@ -205,7 +203,7 @@ fun CardsGridView(
 @Composable
 private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
-    val shape = RoundedCornerShape(12.dp)
+    val shape = SleepyTheme.shapes.medium
     Box(
         modifier = modifier.padding(2.dp),
         contentAlignment = Alignment.Center
@@ -215,8 +213,7 @@ private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .clip(shape)
-                .background(colors.surface)
-                .border(0.5.dp, colors.outline.copy(alpha = 0.10f), shape)
+                .background(colors.surfaceContainerLow)
                 .padding(4.dp),
             contentAlignment = Alignment.Center
         ) {
@@ -260,7 +257,7 @@ private fun CourseOverlayCard(
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
-    val shape = RoundedCornerShape(12.dp)
+    val shape = SleepyTheme.shapes.medium
     // 副信息（教室/教师/无）— 左栏 SingleTimeHeadCell 已有节次+时间，卡片 y 位置本身编码节次，
     // 故卡内不再显示节次/时间，改由 grid_sub_info 设置决定
     val subInfo = AppPrefs.getGridSubInfo(context)
@@ -275,8 +272,7 @@ private fun CourseOverlayCard(
             .padding(2.dp)
             .clip(shape)
             .background(bg)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.12f), shape)
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick)
             .padding(4.dp)
     ) {
         if (subText.isBlank()) {
@@ -317,7 +313,7 @@ private fun CourseOverlayCard(
                 Text(
                     text = subText,
                     style = SleepyTextStyle.micro(),
-                    color = fg.copy(alpha = 0.65f),
+                    color = fg.copy(alpha = SleepyTheme.Alpha.highContent),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
                     textAlign = TextAlign.Center
@@ -332,14 +328,13 @@ private fun DayHeadCell(day: Int, isToday: Boolean, courseCount: Int, dateStr: S
     val colors = SleepyTheme.colors
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isToday) colors.onPrimaryContainer else colors.onSurface
-    val subFg = if (isToday) colors.onPrimaryContainer.copy(alpha = 0.78f) else colors.onSurfaceVariant
+    val subFg = if (isToday) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant
 
     Box(
         modifier = modifier
             .height(if (dateStr != null) 56.dp else 52.dp)
-            .clip(RoundedCornerShape(16.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(bg)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f), RoundedCornerShape(16.dp))
             .padding(vertical = 6.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -460,7 +455,7 @@ private fun DaySummaryCell(
     Column(
         modifier = modifier
             .height(132.dp)
-            .clip(RoundedCornerShape(14.dp))
+            .clip(SleepyTheme.shapes.medium)
             .background(bg)
             .padding(horizontal = 6.dp, vertical = 8.dp)
     ) {
@@ -518,7 +513,7 @@ private fun DaySummaryCell(
                 Text(
                     text = c.courseName,
                     style = SleepyTextStyle.micro(),
-                    color = if (isToday) colors.onPrimaryContainer.copy(alpha = 0.82f) else colors.onSurfaceVariant,
+                    color = if (isToday) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )
@@ -541,7 +536,7 @@ private fun DetailPanel(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainerHigh)
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -575,13 +570,8 @@ private fun DetailDayCard(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .background(if (courses.isEmpty()) Color.Transparent else colors.surface)
-            .let { m ->
-                if (courses.isEmpty()) m.border(
-                    1.dp, colors.outlineVariant, RoundedCornerShape(14.dp)
-                ) else m
-            }
+            .clip(SleepyTheme.shapes.medium)
+            .background(if (courses.isEmpty()) colors.surfaceContainerLow else colors.surface)
             .padding(10.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -637,9 +627,9 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(12.dp))
+            .clip(SleepyTheme.shapes.medium)
             .background(bg)
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick)
             .padding(9.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
@@ -691,7 +681,7 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                 Text(
                     text = meta,
                     style = SleepyTextStyle.smallMeta(),
-                    color = fg.copy(alpha = 0.72f),
+                    color = fg.copy(alpha = SleepyTheme.Alpha.highContent),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
                 )

@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -26,8 +25,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
@@ -57,6 +55,7 @@ import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.PinyinMatcher
 import kotlinx.coroutines.launch
 
@@ -130,15 +129,7 @@ fun SchoolSelectScreen(
     val colors = SleepyTheme.colors
     val scope = rememberCoroutineScope()
 
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary
-    )
+    val fieldColors = SleepyTheme.fieldColors()
 
     val filtered = remember(schools, query) {
         if (query.isBlank()) schools
@@ -211,7 +202,7 @@ fun SchoolSelectScreen(
                 .fillMaxSize()
                 .padding(padding)
         ) {
-            OutlinedTextField(
+            TextField(
                 value = query,
                 onValueChange = { query = it },
                 modifier = Modifier
@@ -225,7 +216,7 @@ fun SchoolSelectScreen(
                     )
                 },
                 singleLine = true,
-                shape = RoundedCornerShape(12.dp),
+                shape = SleepyTheme.fieldShape,
                 colors = fieldColors
             )
 
@@ -297,7 +288,7 @@ fun SchoolSelectScreen(
                                     school = school,
                                     onClick = { onSchoolSelected(school) }
                                 )
-                                HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                                HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                             }
                         }
                     }
@@ -340,8 +331,8 @@ private fun SectionHeader(letter: String) {
             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Bold),
             color = colors.primary,
             modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
-                .background(colors.primaryContainer.copy(alpha = 0.5f))
+                .clip(SleepyTheme.shapes.extraSmall)
+                .background(colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.hairline))
                 .padding(horizontal = 10.dp, vertical = 2.dp)
         )
     }
@@ -398,9 +389,9 @@ private fun AlphabetIndexBar(
                     else MaterialTheme.typography.labelSmall,
                     color = if (isActive) colors.primary else colors.onSurfaceVariant,
                     modifier = Modifier
-                        .clip(RoundedCornerShape(4.dp))
+                        .clip(SleepyTheme.shapes.extraSmall)
                         .background(
-                            if (isActive) colors.primaryContainer.copy(alpha = 0.7f) else Color.Transparent
+                            if (isActive) colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive) else Color.Transparent
                         )
                         .padding(horizontal = 4.dp, vertical = 1.dp)
                 )
@@ -415,14 +406,14 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(SleepyTheme.shapes.small)
                 .background(colors.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
@@ -458,14 +449,14 @@ private fun UrlDirectRow(url: String, protocolType: String?, onClick: () -> Unit
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(36.dp)
-                .clip(RoundedCornerShape(10.dp))
+                .clip(SleepyTheme.shapes.small)
                 .background(colors.primary),
             contentAlignment = Alignment.Center
         ) {

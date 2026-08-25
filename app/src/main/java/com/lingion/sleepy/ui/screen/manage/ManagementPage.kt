@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.screen.manage
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -43,6 +42,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.screen.imports.ImportSheet
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -82,7 +82,7 @@ fun ManagementPage(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(20.dp))
+                            .clip(SleepyTheme.shapes.large)
                             .background(colors.surfaceContainer)
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -164,16 +164,16 @@ private fun ManageCard(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(18.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
-            .clickable(onClick = onClick)
+            .noRippleClickable(onClick)
             .padding(16.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(44.dp)
-                .clip(RoundedCornerShape(14.dp))
+                .clip(SleepyTheme.shapes.medium)
                 .background(colors.primaryContainer),
             contentAlignment = Alignment.Center
         ) {

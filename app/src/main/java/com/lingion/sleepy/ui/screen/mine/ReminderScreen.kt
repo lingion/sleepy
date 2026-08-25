@@ -6,8 +6,6 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,20 +22,19 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.AccessTime
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.School
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerDefaults
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.AlertDialog
@@ -65,6 +62,7 @@ import androidx.core.content.ContextCompat
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -263,7 +261,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                             Row(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .clickable { showTimePicker = true }
+                                    .noRippleClickable { showTimePicker = true }
                                     .padding(vertical = 12.dp, horizontal = 4.dp),
                                 horizontalArrangement = Arrangement.SpaceBetween,
                                 verticalAlignment = Alignment.CenterVertically
@@ -343,7 +341,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                     color = colors.onSurface
                                 )
                                 Spacer(modifier = Modifier.weight(1f))
-                                OutlinedTextField(
+                                TextField(
                                     value = minutesInput,
                                     onValueChange = { txt ->
                                         val digits = txt.filter { it.isDigit() }
@@ -354,29 +352,18 @@ fun ReminderScreen(onBack: () -> Unit) {
                                             if (v <= 999) minutesInput = digits
                                         }
                                     },
-                                    modifier = Modifier.width(80.dp),
-                                    shape = RoundedCornerShape(50),
+                                    modifier = Modifier.width(120.dp),
+                                    shape = SleepyTheme.fieldShape,
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
-                                    textStyle = MaterialTheme.typography.bodyLarge.copy(
-                                        fontWeight = FontWeight.Medium,
-                                        textAlign = androidx.compose.ui.text.style.TextAlign.Center
-                                    ),
-                                    colors = OutlinedTextFieldDefaults.colors(
-                                        focusedBorderColor = colors.primary,
-                                        unfocusedBorderColor = colors.outlineVariant,
-                                        focusedContainerColor = colors.surface,
-                                        unfocusedContainerColor = colors.surface,
-                                        focusedTextColor = colors.primary,
-                                        unfocusedTextColor = colors.onSurface
-                                    ),
-                                    interactionSource = remember { MutableInteractionSource() }
-                                )
-                                Spacer(modifier = Modifier.width(8.dp))
-                                Text(
-                                    text = stringResource(R.string.reminder_before_minutes_unit),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = colors.onSurfaceVariant
+                                    suffix = {
+                                        Text(
+                                            text = stringResource(R.string.reminder_before_minutes_unit),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = colors.onSurfaceVariant
+                                        )
+                                    },
+                                    colors = SleepyTheme.fieldColors()
                                 )
                             }
                             SubDivider()
@@ -420,26 +407,27 @@ fun ReminderScreen(onBack: () -> Unit) {
                                     androidx.compose.foundation.layout.Box(
                                         modifier = Modifier
                                             .fillMaxWidth()
-                                            .clickable { fieldsMenuExpanded = true }
+                                            .clip(SleepyTheme.fieldShape)
+                                            .noRippleClickable { fieldsMenuExpanded = true }
                                     ) {
-                                        OutlinedTextField(
+                                        TextField(
                                             value = fluidPrimaryLabel(context, fluidPrimary),
                                             onValueChange = {},
                                             readOnly = true,
                                             enabled = false,
                                             modifier = Modifier.fillMaxWidth(),
                                             label = { Text(stringResource(R.string.reminder_fluid_fields_hint)) },
-                                            trailingIcon = { Text("▾", color = colors.primary) },
-                                            colors = OutlinedTextFieldDefaults.colors(
-                                                focusedBorderColor = colors.primary,
-                                                unfocusedBorderColor = colors.outlineVariant,
-                                                focusedContainerColor = colors.surface,
-                                                unfocusedContainerColor = colors.surface
-                                            )
+                                            trailingIcon = {
+                                                Icon(Icons.Outlined.ExpandMore, contentDescription = null, tint = colors.onSurfaceVariant)
+                                            },
+                                            shape = SleepyTheme.fieldShape,
+                                            colors = SleepyTheme.fieldColors()
                                         )
                                         DropdownMenu(
                                             expanded = fieldsMenuExpanded,
-                                            onDismissRequest = { fieldsMenuExpanded = false }
+                                            onDismissRequest = { fieldsMenuExpanded = false },
+                                            // 菜单浮在 surfaceContainer 卡片上, 用 Highest 拉开对比(默认 High 与卡片几乎同色=隐形)
+                                            containerColor = colors.surfaceContainerHighest
                                         ) {
                                             listOf(
                                                 "name" to R.string.reminder_fluid_field_name,
@@ -491,15 +479,8 @@ fun ReminderScreen(onBack: () -> Unit) {
             onDismissRequest = { showTimePicker = false },
             title = { Text(stringResource(R.string.reminder_pick_time)) },
             text = {
-                TimePicker(
-                    state = timeState,
-                    colors = TimePickerDefaults.colors(
-                        clockDialColor = colors.surfaceContainer,
-                        selectorColor = colors.primary,
-                        timeSelectorSelectedContainerColor = colors.primaryContainer,
-                        timeSelectorSelectedContentColor = colors.onPrimaryContainer
-                    )
-                )
+                // 默认 TimePicker 配色 — 与 TimePickerField 弹窗一致, 不再单独覆写表盘色
+                TimePicker(state = timeState)
             },
             confirmButton = {
                 TextButton(onClick = {
@@ -518,7 +499,6 @@ fun ReminderScreen(onBack: () -> Unit) {
                     Text(stringResource(R.string.action_cancel))
                 }
             },
-            containerColor = colors.surface,
             titleContentColor = colors.onSurface,
             textContentColor = colors.onSurfaceVariant
         )
@@ -564,7 +544,7 @@ private fun ReminderCard(content: @Composable () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(20.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
             .padding(16.dp)
     ) {
@@ -578,7 +558,7 @@ private fun IconBox(icon: ImageVector, color: androidx.compose.ui.graphics.Color
     androidx.compose.foundation.layout.Box(
         modifier = Modifier
             .size(36.dp)
-            .clip(RoundedCornerShape(10.dp))
+            .clip(SleepyTheme.shapes.small)
             .background(colors.primaryContainer),
         contentAlignment = Alignment.Center
     ) {
@@ -596,6 +576,6 @@ private fun SubDivider() {
     val colors = SleepyTheme.colors
     androidx.compose.material3.HorizontalDivider(
         modifier = Modifier.padding(start = 52.dp),
-        color = colors.outline.copy(alpha = 0.15f)
+        color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
     )
 }

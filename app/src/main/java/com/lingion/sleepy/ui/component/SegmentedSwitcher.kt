@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.animation.animateColorAsState
-import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -32,8 +31,8 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
  *  │ └────────────────────┘  └──────────────┘ │
  *  └──────────────────────────────────────────┘
  *
- * 容器: surface-container (M3), 圆角 16dp
- * 选中: secondary-container + elevation-1
+ * 容器: surface-container (M3), 圆角 14dp
+ * 选中: secondary-container 色块（无描边，色块填充风格）
  */
 @Composable
 fun <T> SegmentedSwitcher(

@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -42,6 +41,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
 @Composable
@@ -83,9 +83,9 @@ fun AllTablesScreen(
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(18.dp))
+                        .clip(SleepyTheme.shapes.large)
                         .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
-                        .clickable {
+                        .noRippleClickable {
                             if (!isCurrent) {
                                 viewModel.selectTable(table.id)
                                 onBack()
@@ -105,7 +105,7 @@ fun AllTablesScreen(
                         Box(
                             modifier = Modifier
                                 .size(24.dp)
-                                .clip(RoundedCornerShape(12.dp))
+                                .clip(SleepyTheme.shapes.medium)
                                 .background(colors.outlineVariant)
                         )
                     }
@@ -115,7 +115,7 @@ fun AllTablesScreen(
                         // onPrimaryContainer 系（之前用 onSurface/onSurfaceVariant，自定义高对比主题下对比度不足）。
                         // 非当前行背景 surfaceContainer 维持 onSurface/onSurfaceVariant。
                         val (titleColor, subtitleColor) = if (isCurrent) {
-                            colors.onPrimaryContainer to colors.onPrimaryContainer.copy(alpha = 0.8f)
+                            colors.onPrimaryContainer to colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent)
                         } else {
                             colors.onSurface to colors.onSurfaceVariant
                         }
@@ -144,8 +144,8 @@ fun AllTablesScreen(
             item {
                 FilledTonalButton(
                     onClick = onCreateNewTable,
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(18.dp)
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                    shape = SleepyTheme.Buttons.shape
                 ) {
                     Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))

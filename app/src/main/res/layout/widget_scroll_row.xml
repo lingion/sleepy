@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 条带行 — 高度必须 == ScrollStripService.STRIP_DP (48dp)。
+     条带宽 == widget 宽 → fitXY 1:1 无畸变; 条带间无间隙 → 连续长图。 -->
+<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_row_bitmap"
+    android:layout_width="match_parent"
+    android:layout_height="48dp"
+    android:scaleType="fitXY"
+    android:adjustViewBounds="false" />

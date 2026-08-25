@@ -1,9 +1,7 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,15 +10,15 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.SegmentedButton
+import androidx.compose.material3.SegmentedButtonDefaults
+import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -38,6 +36,7 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.TimeTableUtils.TimeSlotRow
 
@@ -97,36 +96,29 @@ enum class Mode { Manual, Auto }
 
 @Composable
 private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit) {
-    val colors = SleepyTheme.colors
-    Row(
+    val modes = Mode.entries
+    SingleChoiceSegmentedButtonRow(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surfaceContainerLow, RoundedCornerShape(12.dp))
-            .padding(4.dp),
-        horizontalArrangement = Arrangement.spacedBy(0.dp)
+            .height(40.dp)
     ) {
-        Mode.values().forEach { m ->
-            val selected = m == current
-            val bg = if (selected) colors.primary else Color.Transparent
-            val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
-            Box(
-                modifier = Modifier
-                    .weight(1f)
-                    .background(bg, RoundedCornerShape(10.dp))
-                    .clickable { onChange(m) }
-                    .padding(vertical = 10.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    when (m) {
-                        Mode.Manual -> stringResource(R.string.mode_manual)
-                        Mode.Auto -> stringResource(R.string.mode_auto)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    fontWeight = if (selected) FontWeight.Bold else FontWeight.Normal,
-                    color = fg
-                )
-            }
+        modes.forEachIndexed { index, m ->
+            SegmentedButton(
+                selected = m == current,
+                onClick = { onChange(m) },
+                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
+                label = {
+                    Text(
+                        when (m) {
+                            Mode.Manual -> stringResource(R.string.mode_manual)
+                            Mode.Auto -> stringResource(R.string.mode_auto)
+                        },
+                        style = MaterialTheme.typography.labelLarge.copy(
+                            fontWeight = if (m == current) FontWeight.SemiBold else FontWeight.Medium
+                        )
+                    )
+                }
+            )
         }
     }
 }
@@ -168,7 +160,7 @@ private fun ManualTimeSlotEditor(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .background(colors.surfaceContainerLow, RoundedCornerShape(16.dp))
+                .background(colors.surfaceContainerLow, SleepyTheme.shapes.large)
                 .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {

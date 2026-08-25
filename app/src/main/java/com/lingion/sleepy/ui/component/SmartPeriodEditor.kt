@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -15,7 +13,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
@@ -25,6 +22,7 @@ import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -36,9 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -48,6 +44,7 @@ import com.lingion.sleepy.data.entity.BreakOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 /**
  * v1.0.16 智慧节次编辑器（自动模式）
  *
@@ -216,7 +213,7 @@ private fun BreakGroupSection(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp)
-            .background(colors.surfaceContainerLow, RoundedCornerShape(14.dp))
+            .background(colors.surfaceContainerLow, SleepyTheme.shapes.medium)
             .padding(12.dp)
     ) {
         // Header: 名称 + 分钟数 + 删除
@@ -307,8 +304,8 @@ private fun PositionCard(
     Box(
         modifier = modifier
             .heightIn(min = 36.dp)
-            .background(bg, RoundedCornerShape(10.dp))
-            .clickable(onClick = onClick)
+            .background(bg, SleepyTheme.shapes.small)
+            .noRippleClickable(onClick)
             .padding(vertical = 8.dp),
         contentAlignment = Alignment.Center
     ) {
@@ -339,7 +336,7 @@ private fun PreviewList(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surfaceContainerLow, RoundedCornerShape(14.dp))
+            .background(colors.surfaceContainerLow, SleepyTheme.shapes.medium)
             .padding(12.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
@@ -374,53 +371,31 @@ private fun NumberField(
     onValueChange: (Int) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
     var text by remember(value) { mutableStateOf(value.toString()) }
-    Column(
-        modifier = modifier
-            .background(colors.surfaceContainerLow, RoundedCornerShape(12.dp))
-            .padding(horizontal = 12.dp, vertical = 8.dp)
-    ) {
-        if (label.isNotBlank()) {
-            Text(
-                label,
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant
-            )
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            BasicTextField(
-                value = text,
-                onValueChange = { newText ->
-                    if (newText.all { it.isDigit() } && newText.length <= 4) {
-                        text = newText
-                        val parsed = newText.toIntOrNull()
-                        if (parsed != null) onValueChange(parsed)
-                    }
-                },
-                textStyle = TextStyle(
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = colors.onSurface
-                ),
-                cursorBrush = SolidColor(colors.primary),
-                keyboardOptions = KeyboardOptions(
-                    keyboardType = KeyboardType.Number,
-                    imeAction = ImeAction.Done
-                ),
-                modifier = Modifier.weight(1f),
-                singleLine = true
-            )
-            if (unit.isNotBlank()) {
-                Spacer(Modifier.width(4.dp))
-                Text(
-                    unit,
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
+    TextField(
+        value = text,
+        onValueChange = { newText ->
+            if (newText.all { it.isDigit() } && newText.length <= 4) {
+                text = newText
+                val parsed = newText.toIntOrNull()
+                if (parsed != null) onValueChange(parsed)
             }
-        }
-    }
+        },
+        label = if (label.isNotBlank()) {
+            { Text(label) }
+        } else null,
+        suffix = if (unit.isNotBlank()) {
+            { Text(unit) }
+        } else null,
+        singleLine = true,
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Number,
+            imeAction = ImeAction.Done
+        ),
+        shape = SleepyTheme.fieldShape,
+        colors = SleepyTheme.fieldColors(),
+        modifier = modifier
+    )
 }
 
 @Composable
@@ -446,7 +421,7 @@ private fun AddBreakChip(
             }
         },
         colors = FilterChipDefaults.filterChipColors(
-            containerColor = color.copy(alpha = 0.1f),
+            containerColor = color.copy(alpha = SleepyTheme.Alpha.tinted),
             labelColor = color
         ),
         modifier = modifier

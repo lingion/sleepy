@@ -2,7 +2,6 @@ package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +45,7 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.ui.theme.ThemePreset
 import com.lingion.sleepy.ui.theme.ThemePresets
 import com.lingion.sleepy.util.AppPrefs
@@ -142,13 +142,13 @@ fun AppearanceScreen(
                     AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(14.dp)).background(colors.surfaceContainer).padding(3.dp),
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.medium).background(colors.surfaceContainer).padding(3.dp),
                     horizontalArrangement = Arrangement.spacedBy(3.dp)
                 ) {
                     modes.forEach { (mode, label) ->
                         val sel = mode == selectedMode
                         Box(
-                            modifier = Modifier.weight(1f).clip(RoundedCornerShape(12.dp)).background(if (sel) colors.primary else colors.surfaceContainer).clickable {
+                            modifier = Modifier.weight(1f).clip(SleepyTheme.shapes.medium).background(if (sel) colors.primary else colors.surfaceContainer).noRippleClickable {
                                 if (mode != selectedMode) {
                                     AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
                                 }
@@ -169,15 +169,15 @@ fun AppearanceScreen(
 @Composable
 private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
-    val borderColor = if (selected) colors.primary else colors.outline.copy(alpha = 0.18f)
+    val borderColor = if (selected) colors.primary else colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
     val borderWidth = if (selected) 2.dp else 1.dp
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick),
-        color = colors.surfaceContainer, shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        color = colors.surfaceContainer, shape = SleepyTheme.shapes.large,
         border = BorderStroke(borderWidth, borderColor)
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Box(Modifier.size(56.dp).clip(RoundedCornerShape(16.dp)).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
+            Box(Modifier.size(56.dp).clip(SleepyTheme.shapes.large).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
                 Icon(Icons.Outlined.AutoAwesome, null, tint = colors.onPrimaryContainer, modifier = Modifier.size(28.dp))
             }
             Spacer(Modifier.width(16.dp))
@@ -195,11 +195,11 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
 private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val scheme = if (colors.background.red < 0.5f) preset.light else preset.dark
-    val borderColor = if (selected) colors.primary else colors.outline.copy(alpha = 0.18f)
+    val borderColor = if (selected) colors.primary else colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
     val borderWidth = if (selected) 2.dp else 1.dp
     Surface(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).clickable(onClick = onClick),
-        color = colors.surfaceContainer, shape = RoundedCornerShape(20.dp),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        color = colors.surfaceContainer, shape = SleepyTheme.shapes.large,
         border = BorderStroke(borderWidth, borderColor)
     ) {
         Column(Modifier.padding(16.dp)) {
@@ -219,5 +219,5 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
 
 @Composable
 private fun ColorSwatch(color: Color) {
-    Box(Modifier.size(28.dp).clip(RoundedCornerShape(8.dp)).background(color))
+    Box(Modifier.size(28.dp).clip(SleepyTheme.shapes.small).background(color))
 }

@@ -53,10 +53,10 @@ for d in values values-en values-es values-ja values-zh-rCN values-zh-rTW; do
   [ "$c" -ge 2 ] || { echo "FAIL: $d settings_course_colorless < 2" >&2; exit 1; }
 done
 
-# (f) versionName=1.0.35 且 versionCode=36
+# (f) versionName=1.0.36 且 versionCode=37
 echo "--- (f) 版本 gate ---"
-grep -n 'versionName = "1.0.35"' app/build.gradle.kts
-grep -n 'versionCode = 36' app/build.gradle.kts
+grep -n 'versionName = "1.0.36"' app/build.gradle.kts
+grep -n 'versionCode = 37' app/build.gradle.kts
 
 # (g) changelog 含 inWeek 注记
 echo "--- (g) changelog gate ---"

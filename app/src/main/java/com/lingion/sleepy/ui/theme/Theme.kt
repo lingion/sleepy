@@ -1,9 +1,12 @@
 package com.lingion.sleepy.ui.theme
 
 import android.os.Build
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.Shapes
+import androidx.compose.material3.TextFieldColors
 import androidx.compose.material3.Typography
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -88,7 +91,7 @@ val LightScheme = WakeUpColorScheme(
 
     background = Color(0xFFFEF7FF),
     onBackground = Color(0xFF1D1B20),
-    surface = Color(0xFFFFFBFE),
+    surface = Color(0xFFFEF7FF),
     onSurface = Color(0xFF1D1B20),
     surfaceVariant = Color(0xFFE7E0EC),
     onSurfaceVariant = Color(0xFF49454F),
@@ -110,40 +113,40 @@ val LightScheme = WakeUpColorScheme(
 
 val DarkScheme = WakeUpColorScheme(
     primary = Color(0xFFD0BCFF),
-    onPrimary = Color(0xFF2D165C),
-    primaryContainer = Color(0xFF564092),
-    onPrimaryContainer = Color(0xFFF2E8FF),
+    onPrimary = Color(0xFF381E72),
+    primaryContainer = Color(0xFF4F378B),
+    onPrimaryContainer = Color(0xFFEADDFF),
 
-    secondary = Color(0xFFD8CEE8),
-    onSecondary = Color(0xFF2C2638),
-    secondaryContainer = Color(0xFF524B61),
-    onSecondaryContainer = Color(0xFFF0E7FF),
+    secondary = Color(0xFFCCC2DC),
+    onSecondary = Color(0xFF332D41),
+    secondaryContainer = Color(0xFF4A4458),
+    onSecondaryContainer = Color(0xFFE8DEF8),
 
-    tertiary = Color(0xFFF4C3D2),
-    onTertiary = Color(0xFF472230),
-    tertiaryContainer = Color(0xFF6E4452),
-    onTertiaryContainer = Color(0xFFFFEAF1),
+    tertiary = Color(0xFFEFB8C8),
+    onTertiary = Color(0xFF492532),
+    tertiaryContainer = Color(0xFF633B48),
+    onTertiaryContainer = Color(0xFFFFD8E4),
 
     background = Color(0xFF141218),
-    onBackground = Color(0xFFF4EEF4),
-    surface = Color(0xFF161419),
-    onSurface = Color(0xFFF4EEF4),
-    surfaceVariant = Color(0xFF4F4A55),
-    onSurfaceVariant = Color(0xFFE4DCE8),
-    surfaceContainerLowest = Color(0xFF100E13),
-    surfaceContainerLow = Color(0xFF1D1A22),
-    surfaceContainer = Color(0xFF25212B),
-    surfaceContainerHigh = Color(0xFF302C36),
-    surfaceContainerHighest = Color(0xFF3B3641),
+    onBackground = Color(0xFFE6E0E9),
+    surface = Color(0xFF141218),
+    onSurface = Color(0xFFE6E0E9),
+    surfaceVariant = Color(0xFF49454F),
+    onSurfaceVariant = Color(0xFFCAC4D0),
+    surfaceContainerLowest = Color(0xFF0F0D13),
+    surfaceContainerLow = Color(0xFF1D1B20),
+    surfaceContainer = Color(0xFF211F26),
+    surfaceContainerHigh = Color(0xFF2B2930),
+    surfaceContainerHighest = Color(0xFF36343B),
 
-    outline = Color(0xFFA9A2AE),
-    outlineVariant = Color(0xFF5C5661),
+    outline = Color(0xFF938F99),
+    outlineVariant = Color(0xFF49454F),
     scrim = Color(0xFF000000),
 
-    error = Color(0xFFFFB4AB),
-    onError = Color(0xFF690005),
-    errorContainer = Color(0xFF93000A),
-    onErrorContainer = Color(0xFFFFDAD6)
+    error = Color(0xFFF2B8B5),
+    onError = Color(0xFF601410),
+    errorContainer = Color(0xFF8C1D18),
+    onErrorContainer = Color(0xFFF9DEDC)
 )
 
 /**
@@ -169,29 +172,57 @@ val LocalWakeUpColors = staticCompositionLocalOf { LightScheme }
 val LocalCoursePalette = staticCompositionLocalOf { LightCoursePalette }
 
 /**
- * Material You 字体系统 — 完整 M3 type scale，对应 switchable.html 字号
- * (11/12/13/15/22, line-height: 13/16/18/22/28)
+ * Material You 字体系统 — 1:1 官方 M3 baseline type scale
+ * (m3.material.io/styles/typography/type-scale-tokens;
+ *  同源: material-3-skill references/typography-and-shape.md Baseline Type Scale)
+ * 全 15 档 size/lineHeight/weight/tracking 逐项对官方值,不再沿用 switchable.html 旧值。
  */
 val SleepyTypography = Typography(
+    displayLarge = TextStyle(
+        fontSize = 57.sp,
+        lineHeight = 64.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = (-0.25).sp
+    ),
+    displayMedium = TextStyle(
+        fontSize = 45.sp,
+        lineHeight = 52.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    ),
     displaySmall = TextStyle(
+        fontSize = 36.sp,
+        lineHeight = 44.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    ),
+    headlineLarge = TextStyle(
+        fontSize = 32.sp,
+        lineHeight = 40.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
+    ),
+    headlineMedium = TextStyle(
         fontSize = 28.sp,
         lineHeight = 36.sp,
         fontWeight = FontWeight.Normal,
         letterSpacing = 0.sp
     ),
-    headlineMedium = TextStyle(
-        fontSize = 22.sp,
-        lineHeight = 28.sp,
-        fontWeight = FontWeight.Normal
+    headlineSmall = TextStyle(
+        fontSize = 24.sp,
+        lineHeight = 32.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
     ),
     titleLarge = TextStyle(
-        fontSize = 20.sp,
-        lineHeight = 26.sp,
-        fontWeight = FontWeight.Medium
+        fontSize = 22.sp,
+        lineHeight = 28.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.sp
     ),
     titleMedium = TextStyle(
         fontSize = 16.sp,
-        lineHeight = 22.sp,
+        lineHeight = 24.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.15.sp
     ),
@@ -203,51 +234,54 @@ val SleepyTypography = Typography(
     ),
     bodyLarge = TextStyle(
         fontSize = 16.sp,
-        lineHeight = 22.sp,
-        fontWeight = FontWeight.Normal
+        lineHeight = 24.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.5.sp
     ),
     bodyMedium = TextStyle(
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        fontWeight = FontWeight.Normal
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.25.sp
     ),
     bodySmall = TextStyle(
         fontSize = 12.sp,
-        lineHeight = 18.sp,
-        fontWeight = FontWeight.Normal
+        lineHeight = 16.sp,
+        fontWeight = FontWeight.Normal,
+        letterSpacing = 0.4.sp
     ),
     labelLarge = TextStyle(
         fontSize = 14.sp,
         lineHeight = 20.sp,
-        fontWeight = FontWeight.Medium
+        fontWeight = FontWeight.Medium,
+        letterSpacing = 0.1.sp
     ),
     labelMedium = TextStyle(
         fontSize = 12.sp,
         lineHeight = 16.sp,
-        fontWeight = FontWeight.Medium
+        fontWeight = FontWeight.Medium,
+        letterSpacing = 0.5.sp
     ),
     labelSmall = TextStyle(
         fontSize = 11.sp,
-        lineHeight = 14.sp,
+        lineHeight = 16.sp,
         fontWeight = FontWeight.Medium,
         letterSpacing = 0.5.sp
     )
 )
 
 /**
- * Material You 形状系统 — 对应 switchable.html 的圆角 (16/18/20/24)
- * - card: 16dp
- * - panel: 18-20dp
- * - bottom sheet: 24-28dp
- * - segment button: 12dp
- * - pill: full
+ * Material You 形状系统 — 1:1 官方 M3 shape tokens
+ * (material-web tokens/_md-sys-shape: none=0, xs=4, sm=8, md=12, lg=16, xl=28)
+ * Compose Shapes 无 20dp/28dp 档位名,large=16 覆盖 FAB/导航;
+ * extraLarge 用官方 28(dialog/bottom sheet),此前 24 是旧 switchable 值。
  */
 val SleepyShapes = Shapes(
     extraSmall = RoundedCornerShape(4.dp),
     small = RoundedCornerShape(8.dp),
     medium = RoundedCornerShape(12.dp),
     large = RoundedCornerShape(16.dp),
-    extraLarge = RoundedCornerShape(24.dp)
+    extraLarge = RoundedCornerShape(28.dp)
 )
 
 /**
@@ -285,6 +319,65 @@ object SleepyTheme {
         @Composable
         @ReadOnlyComposable
         get() = SleepyTypography
+
+    /** 语义 alpha 档位 — 替代散落的野值,全 app 只许这几个 */
+    object Alpha {
+        /** 高内容强调(时间轴文字/主容器上副文字) */
+        const val highContent = 0.8f
+
+        /** 微弱边界(divider/卡片描边) */
+        const val hairline = 0.3f
+
+        /** 着色背景(选中态底色/色块背景) */
+        const val tinted = 0.12f
+
+        /** 未选中态强调减弱(按钮/文字提示) */
+        const val inactive = 0.6f
+    }
+
+    /** 统一输入框形状 — 全 app 输入框唯一档位(此前 large/medium 混用) */
+    val fieldShape: CornerBasedShape
+        get() = SleepyShapes.medium
+
+    /** 统一按钮档位 — 此前 40~54dp 六种高度混布, 收敛为两档:
+     *  常规动作 48dp / 页面主 CTA 56dp。形状统一 large。 */
+    object Buttons {
+        val regularHeight = 48.dp
+        val ctaHeight = 56.dp
+        val shape: CornerBasedShape
+            get() = SleepyShapes.large
+    }
+
+    /** 统一输入框配色 — 全 app 输入框唯一入口, 各屏禁止手搓 TextFieldDefaults.colors
+     *  ★ filled 色块风格 (2026-08-25 用户指令: 全 app 统一色块, 禁描线):
+     *    组件换 TextField (原 OutlinedTextField), 底色 surfaceContainerHighest 色块,
+     *    指示线透明化 → 无任何描线。
+     *  disabled 系列与正常态同色: 点击穿透式字段(TimePickerField/下拉)用 enabled=false
+     *  挡键盘, 但视觉上必须和普通字段一模一样, 不能显灰。 */
+    @Composable
+    fun fieldColors(): TextFieldColors {
+        val c = colors
+        return TextFieldDefaults.colors(
+            focusedTextColor = c.onSurface,
+            unfocusedTextColor = c.onSurface,
+            disabledTextColor = c.onSurface,
+            focusedLabelColor = c.primary,
+            unfocusedLabelColor = c.onSurfaceVariant,
+            disabledLabelColor = c.onSurfaceVariant,
+            focusedPlaceholderColor = c.onSurfaceVariant,
+            unfocusedPlaceholderColor = c.onSurfaceVariant,
+            disabledPlaceholderColor = c.onSurfaceVariant,
+            focusedIndicatorColor = Color.Transparent,
+            unfocusedIndicatorColor = Color.Transparent,
+            disabledIndicatorColor = Color.Transparent,
+            cursorColor = c.primary,
+            focusedContainerColor = c.surfaceContainerHighest,
+            unfocusedContainerColor = c.surfaceContainerHighest,
+            disabledContainerColor = c.surfaceContainerHighest,
+            disabledTrailingIconColor = c.onSurfaceVariant,
+            disabledLeadingIconColor = c.onSurfaceVariant
+        )
+    }
 }
 
 @Composable

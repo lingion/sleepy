@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -44,6 +43,7 @@ import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
@@ -129,7 +129,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                         selected = displayMode == "node",
                         onClick = { displayMode = "node"; AppPrefs.setDisplayMode(context, "node"); refreshWidgets() }
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     DisplayModeOption(
                         label = stringResource(R.string.settings_display_time),
                         subtitle = stringResource(R.string.settings_display_time_sub),
@@ -148,14 +148,14 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                         selected = gridSubInfo == "room",
                         onClick = { gridSubInfo = "room"; AppPrefs.setGridSubInfo(context, "room"); refreshWidgets() }
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     DisplayModeOption(
                         label = stringResource(R.string.settings_grid_sub_teacher),
                         subtitle = stringResource(R.string.settings_grid_sub_teacher_sub),
                         selected = gridSubInfo == "teacher",
                         onClick = { gridSubInfo = "teacher"; AppPrefs.setGridSubInfo(context, "teacher"); refreshWidgets() }
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     DisplayModeOption(
                         label = stringResource(R.string.settings_grid_sub_none),
                         subtitle = stringResource(R.string.settings_grid_sub_none_sub),
@@ -172,7 +172,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                     (1..7).forEach { day ->
                         val checked = day in visibleDays
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable {
+                            modifier = Modifier.fillMaxWidth().noRippleClickable {
                                 val n = if (checked) visibleDays - day else visibleDays + day
                                 if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
                             }.padding(vertical = 8.dp, horizontal = 4.dp),
@@ -185,7 +185,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                                 if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
                             }, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
                         }
-                        if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                        if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     }
                 }
             }
@@ -215,7 +215,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
             }
 
             // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.4f)) }
+            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
 
             // ── 分组② 小组件 ──
             item {
@@ -234,7 +234,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                             refreshWidgets()
                         }
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_widget_separator),
                         subtitle = stringResource(R.string.settings_widget_separator_sub),
@@ -245,7 +245,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                             refreshWidgets()
                         }
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_vert_punct),
                         subtitle = stringResource(R.string.settings_vert_punct_sub),
@@ -260,7 +260,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
             }
 
             // ── 分隔线 ──
-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.4f)) }
+            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
 
             // ── 分组③ 语言 ──
             item {
@@ -269,13 +269,13 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
 
             item {
                 Column(
-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surfaceContainer).padding(16.dp),
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(16.dp),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     languages.forEach { (code, label) ->
                         val selected = language == code
                         Row(
-                            modifier = Modifier.fillMaxWidth().clickable {
+                            modifier = Modifier.fillMaxWidth().noRippleClickable {
                                 language = code
                                 AppPrefs.setLanguage(context, code)
                                 (context as? android.app.Activity)?.recreate()
@@ -286,7 +286,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
                             if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
                         }
-                        if (code != languages.last().first) HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
+                        if (code != languages.last().first) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     }
                 }
             }

@@ -31,7 +31,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
@@ -158,9 +157,8 @@ fun JwWebViewLoginScreen(
             )
         },
         snackbarHost = {
-            SnackbarHost(snackbar) { data ->
-                Snackbar(snackbarData = data, containerColor = colors.surfaceContainer)
-            }
+            // 默认 Snackbar 配色 — 与其余 4 处 SnackbarHost 一致, 不再单独覆写容器色
+            SnackbarHost(snackbar)
         },
         bottomBar = {
             CaptureBar(
@@ -352,7 +350,7 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
         Button(
             onClick = onCapture,
             enabled = enabled,
-            shape = RoundedCornerShape(24.dp),
+            shape = SleepyTheme.shapes.extraLarge,
             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
             Icon(

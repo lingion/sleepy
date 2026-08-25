@@ -1,11 +1,12 @@
 package com.lingion.sleepy.ui.component
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -15,8 +16,7 @@ import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import java.time.Instant
 import java.time.LocalTime
 import java.time.ZoneId
@@ -48,30 +49,19 @@ fun DatePickerField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(14.dp),
+    shape: CornerBasedShape = SleepyTheme.fieldShape,
     isError: Boolean = false
 ) {
     val colors = SleepyTheme.colors
     var showPicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
-
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary,
-        focusedContainerColor = colors.surfaceContainerLowest,
-        unfocusedContainerColor = colors.surfaceContainerLowest
-    )
+    val fieldColors = SleepyTheme.fieldColors()
 
     Row(
         modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        OutlinedTextField(
+        TextField(
             value = value,
             onValueChange = onValueChange,
             label = { Text(label) },
@@ -127,7 +117,7 @@ fun TimePickerField(
     onValueChange: (String) -> Unit,
     label: String,
     modifier: Modifier = Modifier,
-    shape: RoundedCornerShape = RoundedCornerShape(12.dp)
+    shape: CornerBasedShape = SleepyTheme.fieldShape
 ) {
     val colors = SleepyTheme.colors
     var showPicker by remember { mutableStateOf(false) }
@@ -136,23 +126,17 @@ fun TimePickerField(
         initialMinute = value.substringAfter(":").toIntOrNull() ?: 0,
         is24Hour = true
     )
-
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary,
-        focusedContainerColor = colors.surfaceContainerLowest,
-        unfocusedContainerColor = colors.surfaceContainerLowest
-    )
+    val fieldColors = SleepyTheme.fieldColors()
 
     // Box + clickable 包装：OutlinedTextField 内部设 enabled=false
-    // 让 click 事件穿透到外层 Box 的 clickable
-    Box(modifier = modifier.clickable { showPicker = true }) {
-        OutlinedTextField(
+    // 让 click 事件穿透到外层 Box 的 clickable。
+    // Box 必须先 clip(shape) 再 clickable — 否则涟漪是方角、且能溢出字段圆角。
+    Box(
+        modifier = modifier
+            .clip(shape)
+            .noRippleClickable { showPicker = true }
+    ) {
+        TextField(
             value = value,
             onValueChange = {},
             label = { Text(label) },
@@ -169,6 +153,7 @@ fun TimePickerField(
             onDismissRequest = { showPicker = false },
             title = { Text(stringResource(R.string.select_time), color = colors.onSurface) },
             text = {
+                // 默认 TimePicker 配色 — 与 ReminderScreen 时间弹窗一致, 不再单独覆写表盘色
                 TimePicker(state = timePickerState)
             },
             confirmButton = {
@@ -182,7 +167,6 @@ fun TimePickerField(
             dismissButton = {
                 TextButton(onClick = { showPicker = false }) { Text(stringResource(R.string.cancel)) }
             },
-            containerColor = colors.surface
         )
     }
 }

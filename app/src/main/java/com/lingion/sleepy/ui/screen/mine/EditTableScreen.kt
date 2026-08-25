@@ -1,8 +1,11 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -20,7 +23,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
-import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -28,8 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -46,6 +47,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.res.stringResource
@@ -59,6 +61,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -131,17 +134,7 @@ fun EditTableScreen(
         )
     }
 
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary,
-        focusedContainerColor = colors.surfaceContainerLowest,
-        unfocusedContainerColor = colors.surfaceContainerLowest
-    )
+    val fieldColors = SleepyTheme.fieldColors()
 
     val handleBack = {
         if (pendingNewTableId != null) onDiscardPending() else onBack()
@@ -175,33 +168,33 @@ fun EditTableScreen(
             item {
                 CardSection(stringResource(R.string.edit_table_basic_info), "") {
                     Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                        OutlinedTextField(
+                        TextField(
                             value = name,
                             onValueChange = { name = it },
                             label = { Text(stringResource(R.string.edit_table_name)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = SleepyTheme.fieldShape,
                             colors = fieldColors
                         )
-                        OutlinedTextField(
+                        TextField(
                             value = startDate,
                             onValueChange = { startDate = it },
                             label = { Text(stringResource(R.string.edit_table_start_date)) },
                             placeholder = { Text(stringResource(R.string.edit_table_start_date_hint)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = SleepyTheme.fieldShape,
                             colors = fieldColors
                         )
-                        OutlinedTextField(
+                        TextField(
                             value = maxWeekText,
                             onValueChange = { maxWeekText = it.filter { ch -> ch.isDigit() } },
                             label = { Text(stringResource(R.string.edit_table_max_week)) },
                             singleLine = true,
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = RoundedCornerShape(18.dp),
+                            shape = SleepyTheme.fieldShape,
                             colors = fieldColors
                         )
                     }
@@ -213,13 +206,13 @@ fun EditTableScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(22.dp))
+                        .clip(SleepyTheme.shapes.extraLarge)
                         .background(colors.surfaceContainer)
                 ) {
                     Row(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clickable { timeSlotsExpanded = !timeSlotsExpanded }
+                            .noRippleClickable { timeSlotsExpanded = !timeSlotsExpanded }
                             .padding(16.dp),
                         verticalAlignment = androidx.compose.ui.Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.SpaceBetween
@@ -237,13 +230,18 @@ fun EditTableScreen(
                             )
                         }
                         Icon(
-                            if (timeSlotsExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                            Icons.Outlined.ExpandMore,
                             contentDescription = null,
-                            tint = colors.onSurfaceVariant
+                            tint = colors.onSurfaceVariant,
+                            modifier = Modifier.rotate(if (timeSlotsExpanded) 180f else 0f)
                         )
                     }
 
-                    if (timeSlotsExpanded) {
+                    AnimatedVisibility(
+                        visible = timeSlotsExpanded,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
                         Column(
                             modifier = Modifier.padding(start = 16.dp, end = 16.dp, bottom = 16.dp)
                         ) {
@@ -297,8 +295,8 @@ fun EditTableScreen(
                             onSaved()
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(54.dp),
-                    shape = RoundedCornerShape(18.dp)
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+                    shape = SleepyTheme.Buttons.shape
                 ) {
                     Icon(Icons.Outlined.Check, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -311,8 +309,8 @@ fun EditTableScreen(
                 item {
                     Button(
                         onClick = { showDeleteConfirm = true },
-                        modifier = Modifier.fillMaxWidth().height(48.dp),
-                        shape = RoundedCornerShape(18.dp),
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                        shape = SleepyTheme.Buttons.shape,
                         colors = ButtonDefaults.buttonColors(containerColor = colors.errorContainer)
                     ) {
                         Icon(Icons.Outlined.Delete, contentDescription = null, tint = colors.onErrorContainer)
@@ -329,7 +327,6 @@ fun EditTableScreen(
     if (showDeleteConfirm) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
-            containerColor = colors.surface,
             title = { Text(stringResource(R.string.edit_table_delete_confirm), color = colors.onSurface) },
             text = { Text(stringResource(R.string.edit_table_delete_msg, table.name), color = colors.onSurfaceVariant) },
             confirmButton = {
@@ -354,7 +351,7 @@ private fun CardSection(title: String, subtitle: String, content: @Composable ()
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colors.surfaceContainer, RoundedCornerShape(22.dp))
+            .background(colors.surfaceContainer, SleepyTheme.shapes.extraLarge)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {

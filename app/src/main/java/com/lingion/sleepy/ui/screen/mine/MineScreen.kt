@@ -1,7 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -46,6 +45,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
 
 @Composable
@@ -105,7 +105,7 @@ fun MineScreen(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(20.dp))
+                        .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                 ) {
                     SettingsItem(icon = Icons.Outlined.Edit, label = stringResource(R.string.all_tables), onClick = onOpenAllTables)
@@ -131,8 +131,8 @@ fun MineScreen(
                             showSnack(context.getString(R.string.mine_refresh_widgets_done))
                         }
                     },
-                    modifier = Modifier.fillMaxWidth().height(52.dp),
-                    shape = RoundedCornerShape(18.dp)
+                    modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                    shape = SleepyTheme.Buttons.shape
                 ) {
                     Icon(Icons.Outlined.Refresh, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
@@ -148,7 +148,7 @@ fun MineScreen(
 private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
     val colors = SleepyTheme.colors
     Row(
-        modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -174,10 +174,10 @@ private fun StatItem(value: String, label: String) {
 private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}) {
     val colors = SleepyTheme.colors
     Row(
-        modifier = Modifier.fillMaxWidth().clickable(onClick = onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        Box(modifier = Modifier.size(40.dp).clip(RoundedCornerShape(12.dp)).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
+        Box(modifier = Modifier.size(40.dp).clip(SleepyTheme.shapes.medium).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
             Icon(icon, null, tint = colors.onPrimaryContainer, modifier = Modifier.size(20.dp))
         }
         Text(label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.weight(1f).padding(start = 16.dp))
@@ -187,6 +187,6 @@ private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit =
 @Composable
 private fun Divider(vertical: Boolean = false) {
     val colors = SleepyTheme.colors
-    if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = 0.18f))
-    else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = 0.18f))
+    if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
+    else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
 }

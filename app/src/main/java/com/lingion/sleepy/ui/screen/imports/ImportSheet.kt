@@ -10,9 +10,9 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -39,10 +39,9 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
+import androidx.compose.material3.TextField
 import androidx.compose.material3.SheetState
+import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -75,6 +74,7 @@ import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import kotlinx.coroutines.launch
 
 /**
@@ -154,17 +154,7 @@ fun ImportSheet(
         }
     }
 
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary,
-        focusedContainerColor = colors.surfaceContainerLowest,
-        unfocusedContainerColor = colors.surfaceContainerLowest
-    )
+    val fieldColors = SleepyTheme.fieldColors()
 
     val filePicker = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.OpenDocument()
@@ -197,8 +187,8 @@ fun ImportSheet(
     ModalBottomSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
-        containerColor = colors.surface
     ) {
+        BoxWithConstraints {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -247,7 +237,7 @@ fun ImportSheet(
                         .padding(start = 56.dp, top = 4.dp, bottom = 8.dp, end = 4.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    OutlinedTextField(
+                    TextField(
                         value = inputText,
                         onValueChange = { inputText = it },
                         modifier = Modifier
@@ -255,7 +245,7 @@ fun ImportSheet(
                             .height(160.dp),
                         placeholder = { Text(stringResource(R.string.import_paste_hint), color = colors.onSurfaceVariant) },
                         enabled = !isLoading,
-                        shape = RoundedCornerShape(12.dp),
+                        shape = SleepyTheme.fieldShape,
                         colors = fieldColors
                     )
                     Button(
@@ -273,9 +263,9 @@ fun ImportSheet(
                                 }
                             }
                         },
-                        modifier = Modifier.fillMaxWidth().height(44.dp),
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         enabled = !isLoading && inputText.isNotBlank(),
-                        shape = RoundedCornerShape(22.dp),
+                        shape = SleepyTheme.Buttons.shape,
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(
@@ -303,7 +293,7 @@ fun ImportSheet(
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
+                    .clip(SleepyTheme.shapes.large)
                     .background(colors.surfaceContainer)
                     .padding(14.dp)
             ) {
@@ -323,6 +313,14 @@ fun ImportSheet(
 
             Spacer(modifier = Modifier.height(24.dp))
         }
+
+        // 错误反馈通道: 上面 errorMsg → snackbar.showSnackbar 依赖此 host,
+        // 之前 sheet 内无 host → 导入失败提示被静默吞掉。默认 M3 配色, 与其余 5 处一致。
+        SnackbarHost(
+            hostState = snackbar,
+            modifier = Modifier.align(Alignment.BottomCenter)
+        )
+        }
     }
 
     // 预览对话框
@@ -338,7 +336,10 @@ fun ImportSheet(
                 confirmedTableName = currentPreview.parseResult.tableName.ifBlank {
                     existingTable?.name ?: context.getString(R.string.default_table_name)
                 }
-                confirmedTimeJson = existingTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+                // 时间表优先级: ICS 收割的全校作息 > 现有表 > 默认
+                confirmedTimeJson = currentPreview.parseResult.timeJson.ifBlank {
+                    existingTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+                }
                 pendingMode = mode
             }
         )
@@ -393,15 +394,15 @@ private fun ImportMethodRow(
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(14.dp))
-            .clickable(onClick = onClick)
+            .clip(SleepyTheme.shapes.medium)
+            .noRippleClickable(onClick)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
             modifier = Modifier
                 .size(40.dp)
-                .clip(RoundedCornerShape(12.dp))
+                .clip(SleepyTheme.shapes.medium)
                 .background(colors.primaryContainer),
             contentAlignment = Alignment.Center
         ) {
@@ -493,7 +494,6 @@ private fun ImportPreviewDialog(
     val colors = SleepyTheme.colors
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = colors.surface,
         titleContentColor = colors.onSurface,
         textContentColor = colors.onSurfaceVariant,
         title = {
@@ -547,7 +547,7 @@ private fun ImportPreviewDialog(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .clip(RoundedCornerShape(16.dp))
+                        .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
                         .padding(14.dp),
                     verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -568,7 +568,7 @@ private fun ImportPreviewDialog(
                     Column(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .clip(RoundedCornerShape(16.dp))
+                            .clip(SleepyTheme.shapes.large)
                             .background(colors.surfaceContainer)
                             .padding(14.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
@@ -603,7 +603,7 @@ private fun ImportPreviewDialog(
                     Button(
                         onClick = { onApply(ImportApplyMode.ImportAsNew) },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
+                        shape = SleepyTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(stringResource(R.string.import_as_new), maxLines = 1)
@@ -616,7 +616,7 @@ private fun ImportPreviewDialog(
                         Button(
                             onClick = { onApply(ImportApplyMode.AppendNonConflict) },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(14.dp),
+                            shape = SleepyTheme.shapes.medium,
                             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_only), maxLines = 1)
@@ -624,17 +624,22 @@ private fun ImportPreviewDialog(
                         Button(
                             onClick = { onApply(ImportApplyMode.ImportAsNew) },
                             modifier = Modifier.weight(1f),
-                            shape = RoundedCornerShape(14.dp),
+                            shape = SleepyTheme.shapes.medium,
                             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
                     }
-                    OutlinedButton(
+                    // ★ 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
+                    //   errorContainer 色块底 + onErrorContainer 文字
+                    Button(
                         onClick = { onApply(ImportApplyMode.ReplaceCurrent) },
                         modifier = Modifier.fillMaxWidth(),
-                        shape = RoundedCornerShape(14.dp),
-                        colors = ButtonDefaults.outlinedButtonColors(contentColor = colors.error)
+                        shape = SleepyTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.errorContainer,
+                            contentColor = colors.onErrorContainer
+                        )
                     ) {
                         Text(stringResource(R.string.import_overwrite))
                     }
@@ -658,12 +663,12 @@ private fun PreviewMetricCard(
 ) {
     Column(
         modifier = modifier
-            .clip(RoundedCornerShape(16.dp))
+            .clip(SleepyTheme.shapes.large)
             .background(bg)
             .padding(vertical = 12.dp, horizontal = 10.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
     ) {
-        Text(text = label, style = MaterialTheme.typography.labelSmall, color = fg.copy(alpha = 0.92f))
+        Text(text = label, style = MaterialTheme.typography.labelSmall, color = fg.copy(alpha = SleepyTheme.Alpha.highContent))
         Text(text = value, style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.Bold), color = fg)
     }
 }
@@ -690,24 +695,13 @@ private fun ImportConfirmDialog(
 ) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
-    val fieldColors = OutlinedTextFieldDefaults.colors(
-        focusedTextColor = colors.onSurface,
-        unfocusedTextColor = colors.onSurface,
-        focusedLabelColor = colors.primary,
-        unfocusedLabelColor = colors.onSurfaceVariant,
-        focusedBorderColor = colors.primary,
-        unfocusedBorderColor = colors.outlineVariant,
-        cursorColor = colors.primary,
-        focusedContainerColor = colors.surfaceContainerLowest,
-        unfocusedContainerColor = colors.surfaceContainerLowest
-    )
+    val fieldColors = SleepyTheme.fieldColors()
     var rows by remember(timeJson) {
         mutableStateOf(TimeTableUtils.parseTimeSlotRows(timeJson))
     }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = colors.surface,
         title = { Text(stringResource(R.string.import_confirm_title), color = colors.onSurface) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
@@ -716,12 +710,14 @@ private fun ImportConfirmDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant
                 )
-                OutlinedTextField(
+                TextField(
                     value = tableName,
                     onValueChange = onTableNameChange,
                     label = { Text(stringResource(R.string.import_table_name)) },
                     singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = SleepyTheme.fieldShape,
+                    colors = fieldColors
                 )
                 DatePickerField(
                     value = startDate,
@@ -850,7 +846,8 @@ private suspend fun applyImportPreview(
                     existing.copy(
                         name = confirmedTableName.trim().ifBlank { preview.parseResult.tableName },
                         startDate = confirmedStartDate,
-                        timeJson = confirmedTimeJson
+                        timeJson = confirmedTimeJson,
+                        nodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else existing.nodesPerDay
                     )
                 )
             }
@@ -865,7 +862,7 @@ private suspend fun applyImportPreview(
                     name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
                     maxWeek = base?.maxWeek ?: 20,
-                    nodesPerDay = base?.nodesPerDay ?: 12,
+                    nodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else base?.nodesPerDay ?: 12,
                     timeJson = confirmedTimeJson,
                     color = base?.color ?: "#FF6750A4",
                     isDefault = false

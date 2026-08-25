@@ -1,8 +1,6 @@
 package com.lingion.sleepy.ui.screen.schedule
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -57,6 +55,7 @@ import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
@@ -229,7 +228,6 @@ private fun TopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.surface)
-            .border(0.5.dp, colors.outline.copy(alpha = 0.10f))
             .padding(horizontal = 16.dp, vertical = 6.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -245,9 +243,9 @@ private fun TopBar(
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                 modifier = Modifier
-                    .clip(RoundedCornerShape(14.dp))
-                    .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = 0.6f))
-                    .clickable {
+                    .clip(SleepyTheme.shapes.medium)
+                    .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive))
+                    .noRippleClickable {
                         if (isOnActual) {
                             // 在当前实际周 → 弹下拉菜单
                             menuOpen = true
@@ -264,12 +262,14 @@ private fun TopBar(
             DropdownMenu(
                 expanded = menuOpen,
                 onDismissRequest = { menuOpen = false },
-                modifier = Modifier.width(280.dp)
+                modifier = Modifier.width(280.dp),
+                // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
+                containerColor = colors.surfaceContainerHighest
             ) {
                 Column(modifier = Modifier.padding(12.dp)) {
                     Text(
                         text = stringResource(R.string.schedule_jump_week),
-                        fontSize = 12.sp,
+                        style = MaterialTheme.typography.labelMedium,
                         color = colors.onSurfaceVariant,
                         modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
                     )
@@ -288,7 +288,7 @@ private fun TopBar(
                                         if (isCurrent) colors.primary
                                         else colors.surfaceContainerHigh
                                     )
-                                    .clickable {
+                                    .noRippleClickable {
                                         onSelectWeek(w)
                                         menuOpen = false
                                     },
@@ -296,8 +296,9 @@ private fun TopBar(
                             ) {
                                 Text(
                                     text = w.toString(),
-                                    fontSize = 14.sp,
-                                    fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal,
+                                    style = MaterialTheme.typography.labelLarge.copy(
+                                        fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
+                                    ),
                                     color = if (isCurrent) colors.onPrimary else colors.onSurface
                                 )
                             }
@@ -322,8 +323,8 @@ private fun WeekNavButton(
             .size(32.dp)
             .clip(CircleShape)
             .background(colors.surfaceContainerHigh)
-            .padding(6.dp)
-            .clickable(onClick = onClick),
+            .noRippleClickable(onClick)
+            .padding(6.dp),
         contentAlignment = Alignment.Center
     ) {
         Icon(
@@ -344,7 +345,7 @@ private fun NoCourseState(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(RoundedCornerShape(24.dp))
+            .clip(SleepyTheme.shapes.extraLarge)
             .background(colors.surfaceContainer)
             .padding(horizontal = 22.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -362,16 +363,16 @@ private fun NoCourseState(
         )
         Button(
             onClick = onAddCourse,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(18.dp),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            shape = SleepyTheme.Buttons.shape,
             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
             Text(stringResource(R.string.schedule_manual_first), color = colors.onPrimary)
         }
         Button(
             onClick = onImport,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(18.dp),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            shape = SleepyTheme.Buttons.shape,
             colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
             Text(stringResource(R.string.schedule_go_manage), color = colors.onSecondaryContainer)
@@ -389,7 +390,7 @@ private fun EmptyState(
     Column(
         modifier = modifier
             .padding(horizontal = 22.dp)
-            .clip(RoundedCornerShape(24.dp))
+            .clip(SleepyTheme.shapes.extraLarge)
             .background(colors.surfaceContainer)
             .padding(horizontal = 22.dp, vertical = 24.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -407,16 +408,16 @@ private fun EmptyState(
         )
         Button(
             onClick = onGoImport,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(18.dp),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            shape = SleepyTheme.Buttons.shape,
             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
             Text(stringResource(R.string.schedule_go_manage), color = colors.onPrimary)
         }
         Button(
             onClick = onManualAdd,
-            modifier = Modifier.fillMaxWidth().height(50.dp),
-            shape = RoundedCornerShape(18.dp),
+            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
+            shape = SleepyTheme.Buttons.shape,
             colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
             Text(stringResource(R.string.schedule_manual_first), color = colors.onSecondaryContainer)

@@ -225,6 +225,59 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * ★ Today 内容全展开高度(dp) — 可滚动条带渲染用。
+     * 纯计算零绘制; 布局常量逐一镜像 renderToday (改那边必须同步这边)。
+     */
+    fun todayContentHeightDp(data: WidgetData): Float {
+        // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24
+        var h = 14f + 24f
+        if (!data.hasTable) return h + 20f          // "去创建课表" 一行
+        if (data.courses.isEmpty()) return h + 22f + 14f  // 无课标题 + 休息副行
+        val rowH = 38f
+        val rowGap = 10f
+        h += data.courses.size * rowH + (data.courses.size - 1) * rowGap
+        h += 14f                                    // 底部 pad
+        return h
+    }
+
+    /**
+     * ★ TwoDay 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderTwoDay。
+     */
+    fun twoDayContentHeightDp(data: TwoDayData): Float {
+        var h = 12f + 22f                           // pad + 顶部标签行
+        if (!data.hasTable || data.days.isEmpty()) return h + 20f
+        // 最高一列决定整体高度; 每列: 列头(20) + 课程(44+8)*n / "无课程"一行
+        val colH = data.days.maxOf { day ->
+            if (day.courses.isEmpty()) 20f + 16f
+            else 20f + day.courses.size * 44f + (day.courses.size - 1) * 8f
+        }
+        h += colH + 12f                             // 底部 pad
+        return h
+    }
+
+    /**
+     * ★ WeekList 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderWeekList。
+     */
+    fun weekListContentHeightDp(context: Context, data: WeekData): Float {
+        val outerPad = 6f
+        if (!data.hasTable) return outerPad * 2 + 20f
+        val visibleDays = AppPrefs.getVisibleDays(context)
+        val shownDays = if (visibleDays.isEmpty()) data.days
+            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
+        if (shownDays.isEmpty()) return outerPad * 2 + 20f
+        // 最高一列: 标题(12+14) + chip 行(14+6) + 课程行 (16+3)*n
+        val colH = shownDays.maxOf { day ->
+            var cy = 12f + 14f
+            if (day.courses.isNotEmpty()) {
+                cy += 14f + 6f
+                cy += day.courses.size * 16f + (day.courses.size - 1) * 3f
+            }
+            cy
+        }
+        return outerPad * 2 + colH
+    }
+
+    /**
      * WeekList widget 渲染 — 7 列日列
      */
     fun renderWeekList(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
