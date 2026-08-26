@@ -642,7 +642,7 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                             color = colors.onPrimaryContainer
                         )
                         Text(
-                            text = stringResource(R.string.ai_prompt_text),
+                            text = stringResource(R.string.ai_prompt_text).replace("\\n", "\n"),
                             style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = MaterialTheme.typography.labelSmall.fontSize),
                             color = colors.onPrimaryContainer,
                             modifier = Modifier
