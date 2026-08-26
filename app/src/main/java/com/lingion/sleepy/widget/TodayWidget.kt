@@ -101,9 +101,12 @@ class TodayWidgetReceiver : AppWidgetProvider() {
                         WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
                         val week = DateUtils.currentWeek(table.startDate, today)
+                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
                         val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
-                        val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                        WidgetData(date = today, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey)
+                        // ★ 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
+                        val visible = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
+                            all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        WidgetData(date = today, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status)
                     }
                 }
             } catch (_: Throwable) {

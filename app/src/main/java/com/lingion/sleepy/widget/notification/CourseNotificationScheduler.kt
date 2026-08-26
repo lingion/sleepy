@@ -174,6 +174,8 @@ class CourseNotificationScheduler(private val context: Context) {
         if (table == null) return
         val week = DateUtils.currentWeek(table.startDate, today)
         val allCourses = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
+        // 防呆: 学期范围外不上课前闹钟(钳制周数会误匹配第 1 周的课)
+        if (DateUtils.semesterStatus(table.startDate, table.maxWeek, today) != DateUtils.SemesterStatus.IN_RANGE) return
         val courses = allCourses.filter { it.inWeek(week) }
         android.util.Log.d("CourseScheduler", "week=$week coursesAll=${allCourses.size} coursesInWeek=${courses.size}")
 
@@ -252,6 +254,8 @@ class CourseNotificationScheduler(private val context: Context) {
         val dow = DateUtils.todayDayOfWeek(today)
         val table = resolveCurrentTable() ?: return
         val week = DateUtils.currentWeek(table.startDate, today)
+        // 防呆: 学期范围外不触发流体云(钳制周数会误匹配第 1 周的课)
+        if (DateUtils.semesterStatus(table.startDate, table.maxWeek, today) != DateUtils.SemesterStatus.IN_RANGE) return
         val nodes = TimeTableUtils.parseNodes(table.timeJson)
         val now = System.currentTimeMillis()
 
@@ -365,7 +369,9 @@ class DailyNotifyReceiver : BroadcastReceiver() {
             text = context.getString(R.string.notif_daily_text_no_course)
         } else {
             val week = DateUtils.currentWeek(table.startDate, today)
-            val courses = SleepyApp.get().repository
+            // 防呆: 学期范围外不发"今日有课"摘要(钳制周数会误匹配第 1 周的课)
+            val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, today) == DateUtils.SemesterStatus.IN_RANGE
+            val courses = if (!inSemester) emptyList() else SleepyApp.get().repository
                 .getCoursesByDayOnce(table.id, dow)
                 .filter { it.inWeek(week) }
                 .sortedBy { it.startNode }

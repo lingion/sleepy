@@ -202,19 +202,31 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             c.drawRoundRect(containerRect, dp(18f).toFloat(), dp(18f).toFloat(), p)
 
             // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格
+            // ★ 学期后课程被清空 → 落到这分支; 学期状态文案优先于"去创建课表"
             if (!data.hasTable || data.days.isEmpty() || data.days.all { it.courses.isEmpty() }) {
                 val ctx = SleepyApp.get()
+                p.textAlign = Paint.Align.CENTER
                 p.color = fgOnSurface
                 p.textSize = dp(15f).toFloat()
                 p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                p.textAlign = Paint.Align.CENTER
-                c.drawText(ctx.getString(R.string.widget_create_schedule),
-                    wPx / 2f, hPx / 2f - dp(8f), p)
-                p.textSize = dp(11f).toFloat()
-                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                p.color = fgOnSurfaceVar
-                c.drawText(ctx.getString(R.string.widget_open_sleepy),
-                    wPx / 2f, hPx / 2f + dp(12f), p)
+                if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+                    val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                        R.string.semester_not_started else R.string.semester_ended
+                    c.drawText(ctx.getString(statusRes), wPx / 2f, hPx / 2f - dp(8f), p)
+                    p.textSize = dp(11f).toFloat()
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    p.color = fgOnSurfaceVar
+                    c.drawText(ctx.getString(R.string.today_semester_out_hint),
+                        wPx / 2f, hPx / 2f + dp(12f), p)
+                } else {
+                    c.drawText(ctx.getString(R.string.widget_create_schedule),
+                        wPx / 2f, hPx / 2f - dp(8f), p)
+                    p.textSize = dp(11f).toFloat()
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    p.color = fgOnSurfaceVar
+                    c.drawText(ctx.getString(R.string.widget_open_sleepy),
+                        wPx / 2f, hPx / 2f + dp(12f), p)
+                }
                 return bmp
             }
 
@@ -231,6 +243,16 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             p.color = bgSurface
             c.drawRoundRect(RectF(x, y, x + timeW, y + headH),
                 dp(14f).toFloat(), dp(14f).toFloat(), p)
+
+            // ★ 学期前(课照常显示供预习): 角落画学期状态, 用户知道现在学期没开始
+            if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START) {
+                val ctx2 = SleepyApp.get()
+                p.color = fgOnSurfaceVar
+                p.textSize = (headH * 0.16f).coerceAtMost(dp(9f).toFloat()).coerceAtLeast(dp(6f).toFloat())
+                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                p.textAlign = Paint.Align.CENTER
+                c.drawText(ctx2.getString(R.string.semester_not_started), x + timeW / 2f, y + headH * 0.6f, p)
+            }
 
             // day headers
             for ((idx, dow) in sortedDays.withIndex()) {
@@ -657,32 +679,41 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val showDate = AppPrefs.isShowDate(context)
             val visibleDays = AppPrefs.getVisibleDays(context)
             return try {
-                val (table, daysPerCourse) = kotlinx.coroutines.runBlocking {
+                // Triple<Table?, Status, List<Pair<dow, courses>>>
+                val loaded = kotlinx.coroutines.runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
                     // 选表逻辑统一走 WidgetTableResolver（默认表优先），避免与 App 选中表不同步
                     val t = WidgetTableResolver.resolveCurrentTable()
+                    val status = if (t != null)
+                        DateUtils.semesterStatus(t.startDate, t.maxWeek, today)
+                    else DateUtils.SemesterStatus.IN_RANGE
                     val map = if (t != null) {
                         val week = DateUtils.currentWeek(t.startDate, today)
                         (1..7).map { dow ->
-                            dow to repo.getCoursesByDayOnce(t.id, dow)
-                                .filter { it.inWeek(week) }.sortedBy { it.startNode }
+                            // ★ 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
+                            val courses = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
+                                repo.getCoursesByDayOnce(t.id, dow)
+                                    .filter { it.inWeek(week) }.sortedBy { it.startNode }
+                            dow to courses
                         }
                     } else emptyList()
-                    Pair(t, map)
+                    Triple(t, status, map)
                 }
-                if (table == null) {
+                val (t, status, daysPerCourse) = loaded
+                if (t == null) {
                     WeekData(days = emptyList(), hasTable = false, isDark = isDark,
                         themeKey = themeKey,
                         showDate = showDate, visibleDays = visibleDays)
                 } else {
                     val days = daysPerCourse.map { (dow, courses) ->
                         val date = DateUtils.dateOfWeekDay(today, dow)
-                        DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = table.timeJson)
+                        DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = t.timeJson)
                     }
                     WeekData(days = days, hasTable = true, isDark = isDark,
                         themeKey = themeKey,
-                        showDate = showDate, visibleDays = visibleDays)
+                        showDate = showDate, visibleDays = visibleDays,
+                        semesterStatus = status)
                 }
             } catch (e: Throwable) {
                 Log.e(TAG, "loadWeekData failed", e)

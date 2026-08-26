@@ -47,7 +47,7 @@
     <string name="edit_table_validation_error">La fecha debe ser yyyy-MM-dd, la hora HH:mm con inicio antes del fin</string>
     <string name="edit_table_delete_confirm">Confirmar eliminación</string>
     <string name="edit_table_delete_msg">¿Eliminar horario \"%1$s\"? Esta acción no se puede deshacer.</string>
-    <string name="default_table_name">Predeterminado</string>
+    <string name="edit_table_delete_msg_count">¿Eliminar el horario "%1$s"? Sus %2$d cursos también se eliminarán. Esto no se puede deshacer.</string>    <string name="default_table_name">Predeterminado</string>
     <string name="import_paste">Pegar texto</string>
     <string name="import_paste_hint">Pega el texto del horario…</string>
     <string name="import_file">Importar archivo</string>
@@ -95,6 +95,83 @@
     <string name="format_html_desc">&lt;table&gt; formato, analizar por fila después de detectar encabezados</string>
     <string name="format_plain">Texto plano</string>
     <string name="format_plain_desc">Un curso por línea, separado por tabulaciones</string>
+
+    <!-- Diálogos de detalle de formato: el texto debe coincidir con el comportamiento real de ScheduleParser -->
+    <string name="format_help_spec">Requisitos de reconocimiento</string>
+    <string name="format_help_example">Ejemplo</string>
+    <string name="format_help_close">Entendido</string>
+    <string name="format_detail_content_desc">Ver detalles del formato</string>
+    <string name="copy_prompt">Copiar prompt</string>
+    <string name="copied">Copiado</string>
+    <string name="ai_prompt_title">Deja que la IA convierta tu captura</string>
+    <string name="ai_prompt_hint">Copia el prompt de abajo a cualquier IA (Doubao, ChatGPT…), envía la captura de tu horario, y pega la salida de la IA en el campo de texto de arriba para importar.</string>
+    <string name="ai_prompt_text">Convierte la captura de horario que te envío a continuación en texto plano con estas reglas:\n1. Una línea por sesión de clase, 7 columnas separadas por tabulaciones: curso, profesor, aula, día, periodo, semanas, tipo\n2. Día como número: 1=lunes … 7=domingo\n3. Periodo como rango, p. ej. 1-2; un solo periodo es solo el número, p. ej. 3\n4. Semanas como rango, p. ej. 1-16; cursos parciales usan el rango real, p. ej. 1-8\n5. Tipo: 0=todas las semanas, 1=impares, 2=pares\n6. Si el profesor o el aula no aparecen en la captura, usa - como marcador; nunca inventes valores\n7. Un curso con varios horarios se divide en varias líneas; sin espacios dentro de los nombres\n8. La primera línea debe ser exactamente &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; y la última exactamente &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;, con las líneas de cursos en medio; nada fuera de esas dos líneas — sin explicaciones, ejemplos ni bloques de código\n\n9. Si la captura muestra los horarios de cada periodo arriba (p. ej. "Periodo 1 08:00-09:35"), escríbelos tal cual, una línea por periodo, antes de las líneas de cursos. Formato: PeriodoN HH:mm HH:mmEjemplo de salida (solo referencia de formato, no copies el contenido):\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+
+    <string name="format_wakeup_share_when">Migrar todo desde la app WakeUp. Copia el texto completo generado por "Compartir cursos" de WakeUp y pégalo tal cual.</string>
+    <string-array name="format_wakeup_share_spec">
+        <item>Copia todo el texto compartido, incluida la cabecera 【来自WakeUp课程表】</item>
+        <item>Debe contener un campo courseDetailJson (WakeUp lo añade automáticamente)</item>
+        <item>El nombre, la fecha de inicio y los colores por curso también se importan</item>
+    </string-array>
+    <string name="format_wakeup_share_example" formatted="false">【来自WakeUp课程表】\n课程分享:\n{"name":"Mi horario","startDate":"2026-09-07","courseDetailJson":"%5B%7B%22name%22…%5D"}</string>
+
+    <string name="format_wakeup_json_when">Contenido de un .json exportado por WakeUp, o JSON escrito por ti con esta estructura.</string>
+    <string-array name="format_wakeup_json_spec">
+        <item>Todo el texto debe ser JSON: empieza con { y contiene un array courses</item>
+        <item>Nivel superior: name (nombre), startDate (formato 2026-09-07)</item>
+        <item>Cada curso: name, teacher, position (aula), day (1-7, 1=lunes), startNode (primer periodo), step (cuántos periodos), startWeek/endWeek, type (0 semanal / 1 impar / 2 par)</item>
+        <item>Periodos 3-4 = startNode 3, step 2 (no 3 y 4)</item>
+        <item>color es opcional</item>
+    </string-array>
+    <string name="format_wakeup_json_example" formatted="false">{\n  "name": "Mi horario",\n  "startDate": "2026-09-07",\n  "courses": [\n    {"name":"Cálculo","teacher":"Juan","position":"A101","day":1,"startNode":1,"step":2,"startWeek":1,"endWeek":16,"type":0}\n  ]\n}</string>
+
+    <string name="format_ics_when">Archivos de calendario (.ics) exportados del sistema escolar o WakeUp. Selecciónalo con "Importar desde archivo", o ábrelo en un editor de texto y pega todo.</string>
+    <string-array name="format_ics_spec">
+        <item>El texto debe empezar con BEGIN:VCALENDAR — si falta la primera línea no se reconoce</item>
+        <item>Cada clase es un evento: SUMMARY = curso, LOCATION = aula; el profesor se lee de la descripción</item>
+        <item>El día se deduce de la fecha del evento; semana 1 = el lunes de la semana del evento más antiguo</item>
+        <item>Los periodos se leen de la línea "第X - Y节" de la descripción, o se estiman por las horas</item>
+        <item>Los eventos bisemanales se fusionan automáticamente</item>
+    </string-array>
+    <string name="format_ics_example" formatted="false">BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Cálculo\nLOCATION:A101\nDESCRIPTION:第1 - 2节\\nA101\\nJuan\nDTSTART:20260907T010000Z\nDTEND:20260907T015500Z\nRRULE:FREQ=WEEKLY;UNTIL=20261227T010000Z\nEND:VEVENT\nEND:VCALENDAR</string>
+
+    <string name="format_csv_when">Tablas exportadas del registro escolar, o Excel guardado como "CSV (delimitado por comas)".</string>
+    <string-array name="format_csv_spec">
+        <item>La primera línea debe ser una cabecera con: columna de curso (curso/nombre) + columna de profesor + columna de día o semanas — sin la columna de profesor no se detecta como CSV; si tu tabla no tiene profesor, añade tú una columna "profesor" vacía</item>
+        <item>Columnas obligatorias: curso, día, semanas, periodo; opcionales: profesor, aula, tipo, nota</item>
+        <item>Periodo: una columna "1-2", o columnas separadas de inicio/fin</item>
+        <item>El día acepta 1-7, lunes o Monday</item>
+        <item>Semanas acepta 1-16, 2-5,7-9, 11,13,15 — los rangos se convierten en varios cursos</item>
+        <item>Columnas opcionales "hora de inicio"/"hora de fin" (HH:mm): los horarios reales se aplican automáticamente al importar</item>
+            <item>Tipo acepta 0/1/2 o semanal/impar/par</item>
+    </string-array>
+    <string name="format_csv_example" formatted="false">curso,profesor,aula,día,periodo,semanas,tipo\nCálculo,Juan,A101,lunes,1-2,1-16,semanal\nInglés,María,B202,3,3-4,1-16,impar</string>
+
+    <string name="format_html_when">Páginas de horario guardadas como .html, o código fuente de tablas copiado.</string>
+    <string-array name="format_html_spec">
+        <item>El texto debe empezar con una etiqueta como &lt;!DOCTYPE, &lt;html o &lt;table — texto normal al principio rompe el reconocimiento, elimínalo antes</item>
+        <item>La página debe contener una tabla cuya cabecera mencione la columna curso</item>
+        <item>Los nombres de columnas son como en CSV: curso, día, periodo, semanas obligatorios; profesor, aula, tipo, nota opcionales</item>
+        <item>Las cuadrículas lunes-domingo no se analizan; hace falta una tabla larga de "un curso por fila"</item>
+    </string-array>
+    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;curso&lt;/td&gt;&lt;td&gt;profesor&lt;/td&gt;&lt;td&gt;aula&lt;/td&gt;&lt;td&gt;día&lt;/td&gt;&lt;td&gt;periodo&lt;/td&gt;&lt;td&gt;semanas&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Cálculo&lt;/td&gt;&lt;td&gt;Juan&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
+
+    <string name="format_plain_when">El formato más flexible: una línea por sesión de clase. Sirve para escribir a mano, y mejor aún para texto generado por IA desde capturas (ver prompt abajo).</string>
+    <string-array name="format_plain_spec">
+        <item>Orden fijo de columnas: curso, profesor, aula, día, periodo, semanas, tipo (última opcional, por defecto semanal)</item>
+        <item>Separa las columnas con tabulación, espacios o coma ancha</item>
+        <item>El día debe ser un número 1-7 (1=lunes); "lunes" no se reconoce</item>
+        <item>Periodo como rango: 1-2; un solo periodo es solo el número: 3</item>
+        <item>Semanas como rango: 1-16</item>
+        <item>Tipo numérico: 0=semanal 1=impar 2=par</item>
+        <item>Usa - si falta profesor o aula; las líneas que empiezan por # se ignoran</item>
+        <item>Sin espacios en los nombres de curso, o la línea se descarta</item>
+        <item>Si el origen tiene una tabla de horarios por periodo, escribe una línea por periodo antes de los cursos: PeriodoN HH:mm HH:mm — los horarios reales se aplican automáticamente al importar</item>
+            <item>Pegar salida de IA con charla alrededor no es problema: envuelve los datos en &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; y &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt; — lo que quede fuera se ignora</item>
+    </string-array>
+    <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2節 09:55-11:30\n第3节 13:30-15:05\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\nDeporte\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="import_dropped_title">%1$d líneas no se pudieron analizar</string>
+    <string name="import_dropped_hint">Estas líneas se omitieron. Revisa su formato y vuelve a importar:</string>
     <string name="import_start_date_required">Por favor ingrese la fecha de inicio del semestre</string>
     <string name="start_date_format">El formato de fecha debe ser YYYY-MM-DD</string>
     <string name="slot_time_required">El tiempo del período %1$d es requerido</string>
@@ -391,6 +468,10 @@
     <string name="school_count_total">%1$d en total</string>
     <string name="school_pinyin_hint">Admite iniciales de pinyin / abreviaturas de escuela (ej. hrbeu)</string>
     <string name="semester_out_of_range">La fecha actual está fuera del rango del semestre</string>
+    <string name="semester_not_started">El semestre aún no comienza</string>
+    <string name="semester_ended">El semestre terminó</string>
+    <string name="schedule_week_prefix">Semana %1$d</string>
+    <string name="today_semester_out_hint">Fuera del rango del semestre: las clases son solo de referencia</string>
     <string name="settings_vert_punct">Optimización de puntuación vertical</string>
     <string name="settings_vert_punct_sub">En el widget de cuadrícula, reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
     <string name="settings_widget">Ajustes del widget</string>

@@ -91,12 +91,16 @@ class TwoDayWidgetReceiver : AppWidgetProvider() {
                         TwoDayData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
                         val week = DateUtils.currentWeek(table.startDate, today)
+                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
                         val todayDow = today.dayOfWeek.value
                         val tomorrowDow = tomorrow.dayOfWeek.value
-                        val todayCourses = repo.getCoursesByDayOnce(table.id, todayDow)
-                            .filter { it.inWeek(week) }.sortedBy { it.startNode }
-                        val tomorrowCourses = repo.getCoursesByDayOnce(table.id, tomorrowDow)
-                            .filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        // ★ 学期外不展示课程 — 与 App 今日页同语义
+                        val todayCourses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
+                            repo.getCoursesByDayOnce(table.id, todayDow)
+                                .filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        val tomorrowCourses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
+                            repo.getCoursesByDayOnce(table.id, tomorrowDow)
+                                .filter { it.inWeek(week) }.sortedBy { it.startNode }
                         TwoDayData(
                             days = listOf(
                                 DayData(date = today, dayOfWeek = todayDow, courses = todayCourses, timeJson = table.timeJson),
@@ -104,7 +108,8 @@ class TwoDayWidgetReceiver : AppWidgetProvider() {
                             ),
                             hasTable = true,
                             isDark = isDark,
-                            themeKey = themeKey
+                            themeKey = themeKey,
+                            semesterStatus = status
                         )
                     }
                 }

@@ -235,11 +235,17 @@ private fun TopBar(
         WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
 
         // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
+        // ★ 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
         Box {
+            val statusRes = when (semesterStatus) {
+                DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
+                DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
+                else -> 0
+            }
             Text(
-                text = if (semesterStatus == DateUtils.SemesterStatus.IN_RANGE)
+                text = if (statusRes == 0)
                     stringResource(R.string.schedule_current_week, currentWeek)
-                else stringResource(R.string.semester_out_of_range),
+                else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
                 style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                 modifier = Modifier

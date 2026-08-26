@@ -34,7 +34,9 @@ data class WidgetData(
     /** 跟 app 主题保持一致：true=深色小组件 */
     val isDark: Boolean = false,
     /** 跟 app 主题色（ThemePresets key） */
-    val themeKey: String = ThemePresets.KEY_DEFAULT
+    val themeKey: String = ThemePresets.KEY_DEFAULT,
+    /** ★ 学期状态（v1.0.37）: 学期外时 Today 渲染状态文案不渲染课程 */
+    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
 ) {
     val dayName: String get() = DateUtils.localizedDay(date.dayOfWeek.value, com.lingion.sleepy.SleepyApp.get())
     val dateLabel: String get() = "${date.monthValue}/${date.dayOfMonth}"
@@ -131,7 +133,9 @@ data class WeekData(
     val themeKey: String = ThemePresets.KEY_DEFAULT,
     // displayMode 死字段已删（renderer 各自直读 AppPrefs.getDisplayMode, 传入字段从未被消费）
     val showDate: Boolean = false,
-    val visibleDays: Set<Int> = (1..7).toSet()
+    val visibleDays: Set<Int> = (1..7).toSet(),
+    /** ★ 学期状态（v1.0.37）: 学期外时列头加状态行 */
+    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
 )
 
 /** 两天视图数据 */
@@ -139,5 +143,7 @@ data class TwoDayData(
     val days: List<DayData>,
     val hasTable: Boolean,
     val isDark: Boolean = false,
-    val themeKey: String = ThemePresets.KEY_DEFAULT
+    val themeKey: String = ThemePresets.KEY_DEFAULT,
+    /** ★ 学期状态（v1.0.37）: 学期外时渲染状态文案不渲染课程 */
+    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
 )

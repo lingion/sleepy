@@ -25,7 +25,9 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -37,9 +39,11 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
@@ -48,15 +52,23 @@ import java.time.LocalDate
 
 @Composable
 fun TodayScreen(
+    onEditCourse: (CourseEntity) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
     val today = LocalDate.now()
     val dayOfWeek = DateUtils.todayDayOfWeek(today)
     val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
-    val todayCourses = state.courses.filter {
+    // ★ 学期外感知: BEFORE_START/AFTER_END 时今日课不按周过滤展示
+    val semesterStatus = state.currentTable?.let {
+        DateUtils.semesterStatus(it.startDate, it.maxWeek, today)
+    } ?: DateUtils.SemesterStatus.IN_RANGE
+    val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
+    val todayCourses = if (isOutOfSemester) emptyList() else state.courses.filter {
         it.day == dayOfWeek && it.inWeek(actualWeek)
     }.sortedBy { it.startNode }
+
+    var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
     LazyColumn(
         modifier = Modifier
@@ -65,23 +77,38 @@ fun TodayScreen(
         contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        item { TodayHeader(date = today, week = actualWeek, count = todayCourses.size) }
+        item { TodayHeader(date = today, week = actualWeek, count = todayCourses.size, semesterStatus = semesterStatus) }
 
         if (todayCourses.isEmpty()) {
-            item { EmptyToday() }
+            item { EmptyToday(semesterStatus = semesterStatus) }
         } else {
             item {
                 SectionHead(title = stringResource(R.string.widget_today_label), action = stringResource(R.string.n_periods, todayCourses.size))
             }
             items(todayCourses, key = { it.id }) { course ->
-                TodayCourseCard(course = course, timeJson = state.currentTable?.timeJson)
+                TodayCourseCard(
+                    course = course,
+                    timeJson = state.currentTable?.timeJson,
+                    onClick = { selectedCourse = course }
+                )
             }
         }
     }
+
+    // 详情 Bottom Sheet — 与课表页同一组件同一交互
+    CourseDetailSheet(
+        course = selectedCourse,
+        timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
+        onDismiss = { selectedCourse = null },
+        onEdit = { course ->
+            selectedCourse = null
+            onEditCourse(course)
+        }
+    )
 }
 
 @Composable
-private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
+private fun TodayHeader(date: LocalDate, week: Int, count: Int, semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     Column(
@@ -118,7 +145,15 @@ private fun TodayHeader(date: LocalDate, week: Int, count: Int) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Stat(label = stringResource(R.string.schedule_current_week, week), bg = colors.primaryContainer, fg = colors.onPrimaryContainer)
+            // ★ 学期外: 周次 chip 换学期状态, 不再显示误导性的"第 1 周"
+            when (semesterStatus) {
+                DateUtils.SemesterStatus.BEFORE_START ->
+                    Stat(label = stringResource(R.string.semester_not_started), bg = colors.secondaryContainer, fg = colors.onSecondaryContainer)
+                DateUtils.SemesterStatus.AFTER_END ->
+                    Stat(label = stringResource(R.string.semester_ended), bg = colors.secondaryContainer, fg = colors.onSecondaryContainer)
+                else ->
+                    Stat(label = stringResource(R.string.schedule_current_week, week), bg = colors.primaryContainer, fg = colors.onPrimaryContainer)
+            }
             Stat(
                 label = if (count == 0) stringResource(R.string.no_course) else stringResource(R.string.n_course_periods, count),
                 bg = colors.tertiaryContainer,
@@ -142,7 +177,7 @@ private fun Stat(label: String, bg: Color, fg: Color) {
 }
 
 @Composable
-private fun EmptyToday() {
+private fun EmptyToday(semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE) {
     val colors = SleepyTheme.colors
     Column(
         modifier = Modifier
@@ -159,21 +194,49 @@ private fun EmptyToday() {
             tint = colors.onSurfaceVariant,
             modifier = Modifier.size(48.dp)
         )
-        Text(
-            text = stringResource(R.string.schedule_no_course_today),
-            style = MaterialTheme.typography.titleMedium,
-            color = colors.onSurface
-        )
-        Text(
-            text = stringResource(R.string.today_no_course),
-            style = MaterialTheme.typography.bodyMedium,
-            color = colors.onSurfaceVariant
-        )
+        when (semesterStatus) {
+            DateUtils.SemesterStatus.BEFORE_START -> {
+                Text(
+                    text = stringResource(R.string.semester_not_started),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.today_semester_out_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            DateUtils.SemesterStatus.AFTER_END -> {
+                Text(
+                    text = stringResource(R.string.semester_ended),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.today_semester_out_hint),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            else -> {
+                Text(
+                    text = stringResource(R.string.schedule_no_course_today),
+                    style = MaterialTheme.typography.titleMedium,
+                    color = colors.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.today_no_course),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+            }
+        }
     }
 }
 
 @Composable
-private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
+private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onClick: (() -> Unit)? = null) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = LocalContext.current
@@ -198,6 +261,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null) {
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             .background(bg)
+            .then(if (onClick != null) Modifier.noRippleClickable(onClick = onClick) else Modifier)
             .padding(12.dp),
         verticalAlignment = Alignment.Top,
         horizontalArrangement = Arrangement.spacedBy(12.dp)

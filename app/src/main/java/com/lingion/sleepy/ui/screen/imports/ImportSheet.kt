@@ -1,6 +1,9 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import android.content.Context
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context.CLIPBOARD_SERVICE
 import android.net.Uri
 import com.lingion.sleepy.BuildConfig
 import org.json.JSONArray
@@ -27,10 +30,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Description
 import androidx.compose.material.icons.outlined.ExpandLess
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.QrCode2
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
@@ -39,6 +44,7 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
@@ -59,7 +65,9 @@ import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -104,6 +112,7 @@ fun ImportSheet(
 
     var textExpanded by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
+    var detailFormat by remember { mutableStateOf<ImportFormat?>(null) }
     var isLoading by remember { mutableStateOf(false) }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     var preview by remember { mutableStateOf<ImportPreview?>(null) }
@@ -303,12 +312,36 @@ fun ImportSheet(
                     color = colors.onSurface,
                     modifier = Modifier.padding(bottom = 8.dp)
                 )
-                FormatRow(stringResource(R.string.format_wakeup_share), stringResource(R.string.format_wakeup_desc))
-                FormatRow(stringResource(R.string.format_wakeup_json), stringResource(R.string.format_json_desc))
-                FormatRow(stringResource(R.string.format_ics), stringResource(R.string.format_ics_desc))
-                FormatRow(stringResource(R.string.format_csv), stringResource(R.string.format_csv_desc))
-                FormatRow(stringResource(R.string.format_html), stringResource(R.string.format_html_desc))
-                FormatRow(stringResource(R.string.format_plain), stringResource(R.string.format_plain_desc))
+                FormatRow(
+                    name = stringResource(R.string.format_wakeup_share),
+                    desc = stringResource(R.string.format_wakeup_desc),
+                    onDetail = { detailFormat = ImportFormat.WAKEUP_SHARE }
+                )
+                FormatRow(
+                    name = stringResource(R.string.format_wakeup_json),
+                    desc = stringResource(R.string.format_json_desc),
+                    onDetail = { detailFormat = ImportFormat.WAKEUP_JSON }
+                )
+                FormatRow(
+                    name = stringResource(R.string.format_ics),
+                    desc = stringResource(R.string.format_ics_desc),
+                    onDetail = { detailFormat = ImportFormat.ICS }
+                )
+                FormatRow(
+                    name = stringResource(R.string.format_csv),
+                    desc = stringResource(R.string.format_csv_desc),
+                    onDetail = { detailFormat = ImportFormat.CSV }
+                )
+                FormatRow(
+                    name = stringResource(R.string.format_html),
+                    desc = stringResource(R.string.format_html_desc),
+                    onDetail = { detailFormat = ImportFormat.HTML }
+                )
+                FormatRow(
+                    name = stringResource(R.string.format_plain),
+                    desc = stringResource(R.string.format_plain_desc),
+                    onDetail = { detailFormat = ImportFormat.PLAIN }
+                )
             }
 
             Spacer(modifier = Modifier.height(24.dp))
@@ -321,6 +354,11 @@ fun ImportSheet(
             modifier = Modifier.align(Alignment.BottomCenter)
         )
         }
+    }
+
+    // 格式详情弹窗 ("支持格式"每行 ⓘ 点开)
+    detailFormat?.let { fmt ->
+        FormatDetailDialog(format = fmt, onDismiss = { detailFormat = null })
     }
 
     // 预览对话框
@@ -432,7 +470,7 @@ private fun ImportMethodRow(
 }
 
 @Composable
-private fun FormatRow(name: String, desc: String) {
+private fun FormatRow(name: String, desc: String, onDetail: () -> Unit) {
     val colors = SleepyTheme.colors
     Row(
         modifier = Modifier
@@ -455,9 +493,190 @@ private fun FormatRow(name: String, desc: String) {
         Text(
             text = desc,
             style = MaterialTheme.typography.bodySmall,
-            color = colors.onSurfaceVariant
+            color = colors.onSurfaceVariant,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            imageVector = Icons.Outlined.Info,
+            contentDescription = stringResource(R.string.format_detail_content_desc),
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier
+                .padding(start = 6.dp, top = 2.dp)
+                .size(16.dp)
+                .clip(SleepyTheme.shapes.small)
+                .noRippleClickable(onClick = onDetail)
         )
     }
+}
+
+/** 导入格式标识 — 对应"支持格式"列表的 6 行, 详情弹窗按它取 strings */
+private enum class ImportFormat {
+    WAKEUP_SHARE, WAKEUP_JSON, ICS, CSV, HTML, PLAIN
+}
+
+/**
+ * 格式详情弹窗 — "支持格式"每行 ⓘ 点开。
+ *
+ * 文案全部来自 strings.xml (与 ScheduleParser 实际行为一一对应, 改解析器必须同步改文案):
+ *  - 什么时候用: format_*_when
+ *  - 识别要求:   format_*_spec (string-array, 逐条)
+ *  - 示例:       format_*_example (monospace 块)
+ * 纯文本格式额外带 "AI 截图转换" 区: 可复制 Prompt, 让豆包等识图生成纯文本。
+ */
+@Composable
+private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
+    val colors = SleepyTheme.colors
+    val context = LocalContext.current
+
+    val titleRes = when (format) {
+        ImportFormat.WAKEUP_SHARE -> R.string.format_wakeup_share
+        ImportFormat.WAKEUP_JSON -> R.string.format_wakeup_json
+        ImportFormat.ICS -> R.string.format_ics
+        ImportFormat.CSV -> R.string.format_csv
+        ImportFormat.HTML -> R.string.format_html
+        ImportFormat.PLAIN -> R.string.format_plain
+    }
+    val whenRes = when (format) {
+        ImportFormat.WAKEUP_SHARE -> R.string.format_wakeup_share_when
+        ImportFormat.WAKEUP_JSON -> R.string.format_wakeup_json_when
+        ImportFormat.ICS -> R.string.format_ics_when
+        ImportFormat.CSV -> R.string.format_csv_when
+        ImportFormat.HTML -> R.string.format_html_when
+        ImportFormat.PLAIN -> R.string.format_plain_when
+    }
+    val specRes = when (format) {
+        ImportFormat.WAKEUP_SHARE -> R.array.format_wakeup_share_spec
+        ImportFormat.WAKEUP_JSON -> R.array.format_wakeup_json_spec
+        ImportFormat.ICS -> R.array.format_ics_spec
+        ImportFormat.CSV -> R.array.format_csv_spec
+        ImportFormat.HTML -> R.array.format_html_spec
+        ImportFormat.PLAIN -> R.array.format_plain_spec
+    }
+    val exampleRes = when (format) {
+        ImportFormat.WAKEUP_SHARE -> R.string.format_wakeup_share_example
+        ImportFormat.WAKEUP_JSON -> R.string.format_wakeup_json_example
+        ImportFormat.ICS -> R.string.format_ics_example
+        ImportFormat.CSV -> R.string.format_csv_example
+        ImportFormat.HTML -> R.string.format_html_example
+        ImportFormat.PLAIN -> R.string.format_plain_example
+    }
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        titleContentColor = colors.onSurface,
+        textContentColor = colors.onSurfaceVariant,
+        title = { Text(stringResource(titleRes), style = MaterialTheme.typography.titleLarge) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 440.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Text(
+                    text = stringResource(whenRes),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.format_help_spec),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface
+                )
+                stringArrayResource(specRes).forEach { item ->
+                    Row {
+                        Text(
+                            text = "•",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.primary,
+                            modifier = Modifier.padding(end = 8.dp)
+                        )
+                        Text(
+                            text = item,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                }
+                Text(
+                    text = stringResource(R.string.format_help_example),
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface
+                )
+                Text(
+                    text = stringResource(exampleRes),
+                    style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                    color = colors.onSurface,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SleepyTheme.shapes.medium)
+                        .background(colors.surfaceContainer)
+                        .padding(12.dp)
+                )
+                // 纯文本独有: AI 截图转换 Prompt (可复制)
+                if (format == ImportFormat.PLAIN) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SleepyTheme.shapes.large)
+                            .background(colors.primaryContainer)
+                            .padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.ai_prompt_title),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onPrimaryContainer
+                        )
+                        Text(
+                            text = stringResource(R.string.ai_prompt_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onPrimaryContainer
+                        )
+                        Text(
+                            text = stringResource(R.string.ai_prompt_text),
+                            style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace, fontSize = MaterialTheme.typography.labelSmall.fontSize),
+                            color = colors.onPrimaryContainer,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(SleepyTheme.shapes.medium)
+                                .background(colors.surfaceContainer)
+                                .padding(10.dp)
+                        )
+                        OutlinedButton(
+                            onClick = {
+                                val cm = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
+                                cm.setPrimaryClip(
+                                    ClipData.newPlainText(
+                                        "prompt",
+                                        context.getString(R.string.ai_prompt_text).replace("\\n", "\n").replace("\\t", "\t")
+                                    )
+                                )
+                            },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = SleepyTheme.shapes.medium
+                        ) {
+                            Icon(
+                                imageVector = Icons.Outlined.ContentCopy,
+                                contentDescription = null,
+                                tint = colors.onPrimaryContainer,
+                                modifier = Modifier.size(16.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(stringResource(R.string.copy_prompt), color = colors.onPrimaryContainer)
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) {
+                Text(stringResource(R.string.format_help_close))
+            }
+        },
+        dismissButton = {}
+    )
 }
 
 // --- shared types / dialogs (copied from ImportScreen to keep sheet self-contained) ---
@@ -590,6 +809,43 @@ private fun ImportPreviewDialog(
                                 text = stringResource(R.string.import_conflict_more, preview.conflicts.size - 3),
                                 style = MaterialTheme.typography.labelSmall,
                                 color = colors.onSurfaceVariant
+                            )
+                        }
+                    }
+                }
+                // 防呆: 输入里有行没解析成功 → 明确告诉用户哪些行被跳过, 不静默丢
+                val dropped = preview.parseResult.droppedLines
+                if (dropped.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SleepyTheme.shapes.large)
+                            .background(colors.errorContainer)
+                            .padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.import_dropped_title, dropped.size),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colors.onErrorContainer
+                        )
+                        Text(
+                            text = stringResource(R.string.import_dropped_hint),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onErrorContainer
+                        )
+                        dropped.take(3).forEach { line ->
+                            Text(
+                                text = "• $line",
+                                style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
+                                color = colors.onErrorContainer
+                            )
+                        }
+                        if (dropped.size > 3) {
+                            Text(
+                                text = stringResource(R.string.import_conflict_more, dropped.size - 3),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.onErrorContainer
                             )
                         }
                     }

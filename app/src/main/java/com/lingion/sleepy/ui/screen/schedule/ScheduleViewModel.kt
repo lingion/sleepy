@@ -193,7 +193,9 @@ class ScheduleViewModel : ViewModel() {
     }
 
     fun changeWeek(week: Int) {
-        if (week < 1) return
+        // 防呆: 下限 1, 上限 maxWeek — 之前只有下限, 右箭头可以无限翻出学期范围外
+        val maxWeek = _state.value.currentTable?.maxWeek ?: 20
+        if (week < 1 || week > maxWeek) return
         _state.update { it.copy(selectedWeek = week) }
     }
 

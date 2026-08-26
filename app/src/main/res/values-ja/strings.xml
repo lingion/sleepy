@@ -47,7 +47,7 @@
     <string name="edit_table_validation_error">日付は yyyy-MM-dd、時刻は HH:mm で開始が終了より前である必要があります</string>
     <string name="edit_table_delete_confirm">削除の確認</string>
     <string name="edit_table_delete_msg">時間割「%1$s」を削除しますか？この操作は取り消せません。</string>
-    <string name="default_table_name">デフォルト</string>
+    <string name="edit_table_delete_msg_count">時間割「%1$s」を削除しますか？%2$d 件の授業も一緒に削除されます。この操作は元に戻せません。</string>    <string name="default_table_name">デフォルト</string>
     <string name="import_paste">テキストを貼り付け</string>
     <string name="import_paste_hint">時間割テキストを貼り付け…</string>
     <string name="import_file">ファイルから</string>
@@ -95,6 +95,83 @@
     <string name="format_html_desc">&lt;table&gt;形式、ヘッダー検出後に行ごとに解析</string>
     <string name="format_plain">プレーンテキスト</string>
     <string name="format_plain_desc">1行1授業、タブ区切り</string>
+
+    <!-- フォーマット詳細ダイアログ: 文言は ScheduleParser の実際の識別動作と一致させること -->
+    <string name="format_help_spec">識別条件</string>
+    <string name="format_help_example">例</string>
+    <string name="format_help_close">閉じる</string>
+    <string name="format_detail_content_desc">フォーマットの詳細を見る</string>
+    <string name="copy_prompt">プロンプトをコピー</string>
+    <string name="copied">コピーしました</string>
+    <string name="ai_prompt_title">AI でスクリーンショットを変換</string>
+    <string name="ai_prompt_hint">下のプロンプトを AI（Doubao、ChatGPT など）にコピーして送り、時間割のスクリーンショットを送信。AI の出力をそのまま上の入力欄に貼り付ければインポートできます。</string>
+    <string name="ai_prompt_text">次に送る時間割のスクリーンショットを、以下のルールでプレーンテキストに変換してください：\n1. 1つの授業时段を1行とし、7列をタブで区切る：科目名、教員、教室、曜日、時限、週、種別\n2. 曜日は数字：1=月、2=火…7=日\n3. 時限は範囲で書く（例：1-2）、1時限のみなら数字だけ（例：3）\n4. 週は範囲で書く（例：1-16）、期間の一部なら実際の範囲（例：1-8）\n5. 種別：毎週=0、奇数週=1、偶数週=2\n6. スクリーンショットにない教員・教室は - を埋める。でっち上げないこと\n7. 同じ科目が複数時間帯にある場合は複数行に分ける。科目名にスペースを入れない\n8. 1行目は &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; だけ、最終行は &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt; だけを出力し、授業行はその間に置く。この2行の外に説明・例・コードブロック記号を一切出力しない\n\n9. スクリーンショット上部に各時限の開始・終了時刻（例：「第1節 08:00-09:35」）があれば、授業行の前にそのまま1行ずつ出力する。形式：第N節 HH:mm HH:mm出力サンプル（形式の参考。内容は写さないこと）：\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n微積分\t田中\tA101\t1\t1-2\t1-16\t0\n英語\t山田\tB202\t3\t3-4\t1-16\t1\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+
+    <string name="format_wakeup_share_when">WakeUp アプリからの乗り換え。WakeUp の「コース共有」で生成されたテキスト全体をそのまま貼り付け。</string>
+    <string-array name="format_wakeup_share_spec">
+        <item>共有テキスト全体を先頭行の【来自WakeUp课程表】ごとコピー</item>
+        <item>courseDetailJson フィールドが含まれていること（WakeUp が自動で付与）</item>
+        <item>時間割名・学期開始日・科目ごとの色も一緒にインポートされる</item>
+    </string-array>
+    <string name="format_wakeup_share_example" formatted="false">【来自WakeUp课程表】\n课程分享:\n{"name":"My table","startDate":"2026-09-07","courseDetailJson":"%5B%7B%22name%22…%5D"}</string>
+
+    <string name="format_wakeup_json_when">WakeUp がエクスポートした .json ファイルの中身、または同じ構造で自分で書いた JSON。</string>
+    <string-array name="format_wakeup_json_spec">
+        <item>テキスト全体が JSON であること：{ で始まり courses 配列を含む</item>
+        <item>最上位：name（時間割名）、startDate（2026-09-07 形式）</item>
+        <item>各科目：name、teacher、position（教室）、day（1-7、1=月）、startNode（開始時限）、step（時限数）、startWeek/endWeek、type（0=毎週 / 1=奇数週 / 2=偶数週）</item>
+        <item>3-4時限の授業 = startNode 3、step 2（3 と 4 ではない）</item>
+        <item>color は省略可</item>
+    </string-array>
+    <string name="format_wakeup_json_example" formatted="false">{\n  "name": "My table",\n  "startDate": "2026-09-07",\n  "courses": [\n    {"name":"Calculus","teacher":"John","position":"A101","day":1,"startNode":1,"step":2,"startWeek":1,"endWeek":16,"type":0}\n  ]\n}</string>
+
+    <string name="format_ics_when">学校システムや WakeUp がエクスポートしたカレンダーファイル（.ics）。「ファイルからインポート」で選ぶか、テキストエディタで開いて全て貼り付け。</string>
+    <string-array name="format_ics_spec">
+        <item>テキストは BEGIN:VCALENDAR で始まること —— 1行目を落とすと識別できない</item>
+        <item>各授業は1イベント：SUMMARY=科目名、LOCATION=教室、教員は説明から自動識別</item>
+        <item>曜日はイベントの日付から推定。第1週 = 最初のイベントがある週の月曜日</item>
+        <item>時限は説明の「第X - Y節」を優先、なければ開始/終了時刻から推定</item>
+        <item>隔週イベントは自動的に1つに統合</item>
+    </string-array>
+    <string name="format_ics_example" formatted="false">BEGIN:VCALENDAR\nBEGIN:VEVENT\nSUMMARY:Calculus\nLOCATION:A101\nDESCRIPTION:第1 - 2節\\nA101\\nJohn\nDTSTART:20260907T010000Z\nDTEND:20260907T015500Z\nRRULE:FREQ=WEEKLY;UNTIL=20261227T010000Z\nEND:VEVENT\nEND:VCALENDAR</string>
+
+    <string name="format_csv_when">教務課からエクスポートされた表、または Excel で「CSV (カンマ区切り)」として保存した内容。</string>
+    <string-array name="format_csv_spec">
+        <item>1行目はヘッダーで、科目列（course/name）+ 教員列（teacher）+ 曜日列または週列を全て含むこと —— 教員列がないと CSV として識別されない。教員データがなければ空の「teacher」列を自分で追加</item>
+        <item>必須列：科目、曜日、週、時限。任意列：教員、教室、種別、備考</item>
+        <item>時限は「1-2」の1列、または開始・終了時限の2列</item>
+        <item>曜日は 1-7、月曜日、Monday いずれも可</item>
+        <item>週は 1-16、2-5,7-9、11,13,15 に対応。複数区間は複数科目に展開</item>
+        <item>任意の「開始時間」「終了時間」列（HH:mm）：インポート時に実際の時刻が自動適用される</item>
+            <item>種別は 0/1/2 または 毎週/奇数週/偶数週</item>
+    </string-array>
+    <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type\nCalculus,John,A101,Monday,1-2,1-16,weekly\nEnglish,Mary,B202,3,3-4,1-16,odd</string>
+
+    <string name="format_html_when">時間割ページを .html として保存したもの、またはコピーしたテーブルのソース。</string>
+    <string-array name="format_html_spec">
+        <item>テキストは &lt;!DOCTYPE、&lt;html、&lt;table などのタグで始まること —— 前に普通の文章があると識別できない。削除してから貼ること</item>
+        <item>ページ内にテーブルがあり、ヘッダー行に科目列が見つかること</item>
+        <item>列名は CSV と同じ：科目・曜日・時限・週は必須、教員・教室・種別・備考は任意</item>
+        <item>月〜日のグリッド型時間割は解析不可。「1行1科目」の縦長テーブルが必要</item>
+    </string-array>
+    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
+
+    <string name="format_plain_when">最も柔軟な形式：1行1授業。手入力にも、AI にスクリーンショットから生成させるにも最適（下のプロンプト参照）。</string>
+    <string-array name="format_plain_spec">
+        <item>列順は固定：科目名、教員、教室、曜日、時限、週、種別（最後の列は省略可、既定=毎週）</item>
+        <item>区切りはタブ・スペース・全角カンマ</item>
+        <item>曜日は数字 1-7（1=月）。「月曜日」と書くと識別できない</item>
+        <item>時限は範囲：1-2。1時限のみなら数字だけ：3</item>
+        <item>週は範囲：1-16</item>
+        <item>種別は数字：0=毎週 1=奇数週 2=偶数週</item>
+        <item>教員・教室がなければ - を入れる。# 始まりの行は無視される</item>
+        <item>科目名にスペースを入れるとその行は捨てられる</item>
+        <item>元データに時限の時刻表があれば、授業行の前に1行ずつ出力：第N節 HH:mm HH:mm — インポート時に実際の時刻が自動適用される</item>
+            <item>AI の出力におしゃべりが混ざっていてもOK：データを &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; と &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt; で囲めば、外側は自動的に無視される</item>
+    </string-array>
+    <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1節 08:00-09:35\n第2節 09:55-11:30\n第3節 13:30-15:05\n微積分\t田中\tA101\t1\t1-2\t1-16\t0\n英語\t山田\tB202\t3\t3-4\t1-16\t1\n体育\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="import_dropped_title">%1$d 行を認識できませんでした</string>
+    <string name="import_dropped_hint">これらの行はスキップされました。形式を確認して再インポートしてください：</string>
     <string name="import_start_date_required">学期開始日を入力してください</string>
     <string name="start_date_format">日付形式はYYYY-MM-DDで入力してください</string>
     <string name="slot_time_required">第%1$d時限の時間が必要です</string>
@@ -391,6 +468,10 @@
     <string name="school_count_total">全 %1$d 校</string>
     <string name="school_pinyin_hint">ピンイン頭文字 / 学校の英語略称 に対応（例: hrbeu）</string>
     <string name="semester_out_of_range">現在は学期の範囲外です</string>
+    <string name="semester_not_started">学期はまだ始まっていません</string>
+    <string name="semester_ended">学期は終了しました</string>
+    <string name="schedule_week_prefix">第 %1$d 週</string>
+    <string name="today_semester_out_hint">学期範囲外のため、授業は参考です</string>
     <string name="settings_vert_punct">縦書き記号の最適化</string>
     <string name="settings_vert_punct_sub">グリッドウィジェットで授業名を縦書き表示する際に、（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
     <string name="settings_widget">ウィジェット設定</string>

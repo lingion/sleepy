@@ -1,7 +1,9 @@
 package com.lingion.sleepy.data.parser
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -26,12 +28,34 @@ object ScheduleParser {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
 
+    /** AI 输出隔离标识 — 标识之间的才是课表数据, 标识外(AI 开场白/结尾废话)全部丢弃 */
+    private const val BEGIN_MARKER = "<<<SLEEPY-BEGIN>>>"
+    private const val END_MARKER = "<<<SLEEPY-END>>>"
+
+    /**
+     * 节次时间表行 — "时间表 1 08:00 09:35" / "第1节 08:00-09:35" / "1 08:00~09:35"。
+     * 课程行不含冒号, 所以"带两个 HH:mm 的行"必是时间表行, 无歧义。
+     */
+    private val timeTableRegex = Regex(
+        """^\s*(?:时间表|节次|第)?\s*(\d{1,2})\s*节?\s*[\s:：]*\s*(\d{1,2}):(\d{2})\s*[-–~～至\s]+\s*(\d{1,2}):(\d{2})\s*$"""
+    )
+
+    /** "08:00-09:35" / "08:00~09:35" / "08:00 09:35" → LocalTime 对; 非法返回 null */
+    private fun parseTimeRange(s: String): Pair<LocalTime, LocalTime>? {
+        val m = Regex("""(\d{1,2}):(\d{2})\s*[-–~～至\s]+\s*(\d{1,2}):(\d{2})""").find(s) ?: return null
+        val st = runCatching { LocalTime.of(m.groupValues[1].toInt(), m.groupValues[2].toInt()) }.getOrNull() ?: return null
+        val et = runCatching { LocalTime.of(m.groupValues[3].toInt(), m.groupValues[4].toInt()) }.getOrNull() ?: return null
+        return if (st.isBefore(et)) st to et else null
+    }
+
     /**
      * 解析课表文本。返回 Result.success(list) 或 Result.failure。
      */
     fun parse(text: String, defaultTableId: Long, defaultColor: String = "#FF6750A4"): Result<ParseResult> {
-        val trimmed = text.trim()
-        if (trimmed.isEmpty()) return Result.failure(IllegalArgumentException("空内容"))
+        val raw = text.trim()
+        if (raw.isEmpty()) return Result.failure(IllegalArgumentException("空内容"))
+        // 防呆: 先统一全角字符(AI 常输出 １－２ / ～), 再提取标识, 再分派
+        val trimmed = extractMarkedBody(normalizeFullWidth(raw))
 
         // 兼容性：导出端常在 JSON 前加 "【来自Sleepy】\n课程分享：\n\n" 前缀。
         // 如果 trimmed 不以 { 开头但包含 {，剥掉前缀再判别。
@@ -54,15 +78,61 @@ object ScheduleParser {
     }
 
     private fun startsWithAnyTag(s: String, vararg tags: String): Boolean {
-        val t = s.lowercase()
+        // BOM 已在 normalizeFullWidth 里转成空格, 再 trim 一次防 Windows 编辑器带 BOM 的 HTML
+        val t = s.trim().lowercase()
         if (t.startsWith("<!doctype") || t.startsWith("<?xml")) return true
         return tags.any { tag -> t.startsWith("<$tag") }
     }
 
     /**
+     * 提取 <<<SLEEPY-BEGIN>>> 和 <<<SLEEPY-END>>> 之间的内容(纯文本导入的 AI 输出隔离)。
+     * - 容忍标识写歪: 少/多横线、大小写、不同括号、首尾空白
+     * - 只有 BEGIN: 取 BEGIN 之后全部(END 缺失容错)
+     * - 只有 END: 取 END 之前全部
+     * - 都没有: 原样返回(手工输入不带标识, 走原有路径)
+     */
+    private fun extractMarkedBody(text: String): String {
+        // 匹配 <<< / {{ / (( 等 2-4 个任意括号 + SLEEPY[- ]?(BEGIN|END) + 对应右括号, 大小写不敏感
+        fun markerRegex(kind: String): Regex {
+            val k = kind.lowercase()
+            return Regex("(?i)[<{(]{2,4}\\s*SLEEPY\\s*[-_ ]?\\s*$k\\s*[>})]{2,4}")
+        }
+        val beginM = markerRegex("begin").find(text)
+        val endM = markerRegex("end").find(text)
+        return when {
+            beginM != null && endM != null && endM.range.first > beginM.range.last ->
+                text.substring(beginM.range.last + 1, endM.range.first)
+            beginM != null -> text.substring(beginM.range.last + 1)
+            endM != null -> text.substring(0, endM.range.first)
+            else -> text
+        }.trim()
+    }
+
+    /** 全角→半角归一: 数字/字母/横线/波浪线/空格。AI 常输出 １－２ 或 1～16, 不归一就静默丢行。 */
+    private fun normalizeFullWidth(s: String): String {
+        val sb = StringBuilder(s.length)
+        for (c in s) {
+            sb.append(
+                when (c) {
+                    in '０'..'９' -> ('0' + (c - '０'))
+                    in 'ａ'..'ｚ' -> ('a' + (c - 'ａ'))
+                    in 'Ａ'..'Ｚ' -> ('A' + (c - 'Ａ'))
+                    '－', '—', '―', '﹣' -> '-'
+                    '～', '～' -> '~'
+                    '　' -> ' '
+                    '﻿' -> ' '   // BOM
+                    else -> c
+                }
+            )
+        }
+        return sb.toString()
+    }
+
+    /**
      * 判断是否为 CSV：
      * 1) 第一行包含逗号，且第二行也存在
-     * 2) 包含常见表头：课程/课程名/名称/course/name + 教师/老师/teacher
+     * 2) 包含常见表头：课程/课程名/名称/course/name + (教师/老师/teacher 或 周次/星期)
+     *    — 教师列不再硬性要求: 教务导出常无教师列, 靠 课程+星期/周次 就足够定位 CSV
      */
     private fun isLikelyCsv(s: String): Boolean {
         if (s.count { it == '\n' } < 1) return false
@@ -71,7 +141,7 @@ object ScheduleParser {
         val hasCourse = firstLine.contains("课程") || firstLine.contains("course") || firstLine.contains("name")
         val hasTeacher = firstLine.contains("教师") || firstLine.contains("老师") || firstLine.contains("teacher")
         val hasDay = firstLine.contains("星期") || firstLine.contains("周几") || firstLine.contains("day") || firstLine.contains("周次")
-        return hasCourse && hasTeacher && hasDay
+        return hasCourse && (hasTeacher || hasDay)
     }
 
     /**
@@ -112,11 +182,50 @@ object ScheduleParser {
             parseCourseJsonArrayRaw(arr, defaultTableId)
         }
 
+        // 节次时间表: Sleepy 自家导出把 timeJson 放在 tableInfo.time — 之前丢弃, 现在往返保真
+        val (timeJson, nodesPerDay) = harvestTimeJsonFromTableInfo(root)
+
         return ParseResult(
             tableName = name,
             startDate = startDate,
-            courses = courses
+            courses = courses,
+            timeJson = timeJson,
+            nodesPerDay = nodesPerDay
         )
+    }
+
+    /**
+     * 从 WakeUp JSON / Sleepy 导出的 tableInfo 里收割节次时间表。
+     * Sleepy 导出: tableInfo.time = 我们的 timeJson 原文, 直接用。
+     * WakeUp 原生: tableInfo.timeList = [{node, startTime, endTime}...] 逐条转。
+     */
+    private fun harvestTimeJsonFromTableInfo(root: kotlinx.serialization.json.JsonObject): Pair<String, Int> {
+        val tableInfo = root["tableInfo"]?.jsonObject ?: return "" to 0
+        // Sleepy 自家格式: time 字段就是 timeJson
+        tableInfo["time"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }?.let {
+            val nodes = TimeTableUtils.parseNodes(it)
+            if (nodes.isNotEmpty()) return it to nodes.last().node
+        }
+        // WakeUp 原生: timeList 数组
+        val timeList = tableInfo["timeList"]?.jsonArray ?: return "" to 0
+        val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
+        for (el in timeList) {
+            val o = el.jsonObject
+            val node = o["node"]?.jsonPrimitive?.intOrZero() ?: continue
+            val st = o["startTime"]?.jsonPrimitive?.content?.let { parseHmLenient(it) } ?: continue
+            val et = o["endTime"]?.jsonPrimitive?.content?.let { parseHmLenient(it) } ?: continue
+            if (node >= 1 && st.isBefore(et)) nodeTimes[node] = st to et
+        }
+        if (nodeTimes.isEmpty()) return "" to 0
+        return buildTimeJson(nodeTimes) to nodeTimes.lastKey()
+    }
+
+    /** "08:00" / "8:00" / "0800" → LocalTime; 非法 null */
+    private fun parseHmLenient(s: String): LocalTime? {
+        val m = Regex("""(\d{1,2}):?(\d{2})""").find(s.trim()) ?: return null
+        val h = m.groupValues[1].toIntOrNull() ?: return null
+        val mi = m.groupValues[2].toIntOrNull() ?: return null
+        return if (h in 0..23 && mi in 0..59) LocalTime.of(h, mi) else null
     }
 
     private fun parseWakeUpJson(text: String, defaultTableId: Long, defaultColor: String): ParseResult {
@@ -150,7 +259,9 @@ object ScheduleParser {
             )
         }
 
-        return ParseResult(name, startDate, courses)
+        // 节次时间表: tableInfo.time(Sleepy 导出) / timeList(WakeUp 原生)
+        val (timeJson, nodesPerDay) = harvestTimeJsonFromTableInfo(root)
+        return ParseResult(name, startDate, courses, timeJson, nodesPerDay)
     }
 
     private fun parseCourseJsonArray(jsonStr: String, tableId: Long): List<CourseEntity> {
@@ -470,34 +581,69 @@ object ScheduleParser {
      * 解析简化的纯文本格式：
      * 一行一课，字段间用制表符或全角逗号分隔。
      *
-     * 示例:
-     * ```
-     * 高等数学\t张三\tA101\t1\t1-2\t1-16\t0
-     * 大学英语\t李四\tB202\t2\t3-4\t1-16\t0
-     * ```
+     * 时间表(2026-08-26): 课前可混排节次时间行 — "时间表 1 08:00 09:35" / "第1节 08:00-09:35",
+     * 截图带时间的场景 AI 直接照抄, 导入即拥有真实作息。课程行不含冒号, 无冲突。
+     *
+     * 防呆(AI 输出不可信, 2026-08-26):
+     *  - Markdown 表格行(| a | b |)和 |---| 分隔行先剥管道再解析
+     *  - 星号加粗 **高数** → 高数
+     *  - 星期列接受 周一/Monday/mon
+     *  - 区间反写 16-1 自动排序
+     *  - day 越界(0/8)钳到 1..7
+     *  - 解析失败的非空行计入 droppedLines, UI 提示用户
      */
     private fun parseSimpleText(text: String, defaultTableId: Long, defaultColor: String): ParseResult {
         val courses = mutableListOf<CourseEntity>()
+        val dropped = mutableListOf<String>()
+        val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
         val lines = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }
 
-        for (line in lines) {
-            // 支持 tab / 多空格 / 全角逗号
+        for (raw in lines) {
+            // 节次时间表行: "时间表 1 08:00 09:35" 形态 — 先于课程行判断(带 HH:mm 必非课程行)
+            val tt = timeTableRegex.find(raw)
+            if (tt != null) {
+                val node = tt.groupValues[1].toIntOrNull() ?: continue
+                val st = runCatching { LocalTime.of(tt.groupValues[2].toInt(), tt.groupValues[3].toInt()) }.getOrNull()
+                val et = runCatching { LocalTime.of(tt.groupValues[4].toInt(), tt.groupValues[5].toInt()) }.getOrNull()
+                if (node >= 1 && st != null && et != null && st.isBefore(et)) {
+                    nodeTimes[node] = st to et
+                }
+                continue
+            }
+            // 剥 Markdown: 管道表格行 + 表头分隔行 + 星号加粗 + 反引号
+            var line = raw.trim()
+            if (Regex("^\\|?[\\s|:-]+\\|?$").matches(line)) continue  // |---|---| 或整行管道
+            if (line.startsWith("|") || line.endsWith("|")) {
+                line = line.trim('|').replace(Regex("\\s*\\|\\s*"), "\t")
+            }
+            line = line.replace("**", "").replace("`", "").trim()
+
             val parts = line
-                .trim()
                 .split(Regex("\\s+|，"))
                 .map { it.trim() }
                 .filter { it.isNotEmpty() }
-            if (parts.size < 6) continue
+            if (parts.size < 6) {
+                if (line.isNotEmpty()) dropped += line.take(40)
+                continue
+            }
 
             val name = parts[0]
             val teacher = parts[1]
             val room = parts[2]
-            val day = parts[3].toIntOrNull() ?: continue
-            // 节次列是 start-end 格式 (e.g. "1-2"), 转为 (startNode, step=end-start+1)
-            val (nodeStart, nodeEnd) = parseRange(parts[4]) ?: continue
+            // 纯数字 0/8 越界也收(钳到 1..7), 其余走 parseDay(周一/Monday)
+            val day = (parts[3].trim().toIntOrNull() ?: parseDay(parts[3]))
+                ?.coerceIn(1, 7) ?: run {
+                dropped += line.take(40); continue
+            }
+            // 节次列是 start-end 格式 (e.g. "1-2"), 转为 (startNode, step=end-start+1); 反写自动排序
+            val (nodeStart, nodeEnd) = parseRange(parts[4])?.let { sortRange(it) } ?: run {
+                dropped += line.take(40); continue
+            }
             val step = (nodeEnd - nodeStart + 1).coerceAtLeast(1)
-            val (startWeek, endWeek) = parseRange(parts[5]) ?: continue
-            val type = parts.getOrNull(6)?.toIntOrNull() ?: 0
+            val (startWeek, endWeek) = parseRange(parts[5])?.let { sortRange(it) } ?: run {
+                dropped += line.take(40); continue
+            }
+            val type = parts.getOrNull(6)?.let { parseType(it) } ?: 0
 
             courses += CourseEntity(
                 id = 0,
@@ -521,9 +667,16 @@ object ScheduleParser {
         return ParseResult(
             tableName = "导入的课表",
             startDate = java.time.LocalDate.now().toString(),
-            courses = courses
+            courses = courses,
+            timeJson = buildTimeJson(TreeMap(nodeTimes)),
+            nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey(),
+            droppedLines = dropped
         )
     }
+
+    /** 区间反写(16-1)自动排序为 (1,16) */
+    private fun sortRange(p: Pair<Int, Int>): Pair<Int, Int> =
+        if (p.first <= p.second) p else p.second to p.first
 
     private fun parseRange(s: String): Pair<Int, Int>? {
         val parts = s.split('-', '~', '至')
@@ -575,6 +728,9 @@ object ScheduleParser {
             ?: throw IllegalArgumentException("找不到课程名列")
         val teacherIdx = findCol("教师", "老师", "teacher")
         val roomIdx = findCol("教室", "位置", "地点", "room", "position")
+        // 时间列(可选): "开始时间"+"结束时间" 成对出现 → 每行收割该节次的真实作息
+        val timeStartIdx = findCol("开始时间", "上课时间", "start time", "starttime")
+        val timeEndIdx = findCol("结束时间", "下课时间", "end time", "endtime")
         val dayIdx = findCol("星期", "周几", "day")
             ?: throw IllegalArgumentException("找不到星期列")
         // 节次列三种兼容模式
@@ -593,6 +749,7 @@ object ScheduleParser {
         }
 
         val courses = mutableListOf<CourseEntity>()
+        val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
         for (i in 1 until rows.size) {
             val row = rows[i]
             if (row.isEmpty() || row.all { it.isBlank() }) continue
@@ -615,6 +772,17 @@ object ScheduleParser {
                 parseRange(cell(nodeIdx)) ?: continue
             }
             val step = (nodeEnd - nodeStart + 1).coerceAtLeast(1)
+
+            // 时间列收割: 该行带真实起止钟点 → 记录首末节的边界作息(中间节交给恰好落界的行补)
+            if (timeStartIdx != null && timeEndIdx != null) {
+                parseTimeRange(cell(timeStartIdx) + "-" + cell(timeEndIdx))?.let { (st, et) ->
+                    nodeTimes[nodeStart] = (nodeTimes[nodeStart]?.first ?: st) to
+                        if (nodeEnd == nodeStart) et else (nodeTimes[nodeStart]?.second ?: et)
+                    if (nodeEnd != nodeStart) {
+                        nodeTimes[nodeEnd] = (nodeTimes[nodeEnd]?.first ?: st) to et
+                    }
+                }
+            }
 
             // 解析周次——支持多区间 "2-5,7-9,11-14" / 离散 "11,13,15" / 单周 "5" / 区间 "2-16"
             val weekRanges = parseWeekRanges(cell(weekIdx))
@@ -651,7 +819,9 @@ object ScheduleParser {
         return ParseResult(
             tableName = "导入的 CSV 课表",
             startDate = java.time.LocalDate.now().toString(),
-            courses = courses
+            courses = courses,
+            timeJson = buildTimeJson(nodeTimes),
+            nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
         )
     }
 
@@ -917,6 +1087,8 @@ object ScheduleParser {
         /** ICS 事件里收割出的节次时间表 JSON; 非ICS/收割不到 → 空串(用默认) */
         val timeJson: String = "",
         /** timeJson 覆盖的最大节次; 无 → 0 */
-        val nodesPerDay: Int = 0
+        val nodesPerDay: Int = 0,
+        /** 防呆: 输入里非空但没解析成功的行(前 40 字符), UI 拿去提示用户 "这几行没进去" */
+        val droppedLines: List<String> = emptyList()
     )
 }

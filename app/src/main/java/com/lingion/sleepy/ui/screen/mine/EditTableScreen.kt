@@ -304,8 +304,8 @@ fun EditTableScreen(
                 }
             }
 
-            // 删除（新建未保存的表不显示此按钮——退出即丢弃）
-            if (pendingNewTableId == null) {
+            // 删除（新建未保存的表不显示此按钮——退出即丢弃; 最后一张表禁删, 防呆)
+            if (pendingNewTableId == null && state.tables.size > 1) {
                 item {
                     Button(
                         onClick = { showDeleteConfirm = true },
@@ -328,7 +328,18 @@ fun EditTableScreen(
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.edit_table_delete_confirm), color = colors.onSurface) },
-            text = { Text(stringResource(R.string.edit_table_delete_msg, table.name), color = colors.onSurfaceVariant) },
+            // 防呆: 删表=连带删全部课程, 明示数量让用户知道要失去多少数据
+            text = {
+                Text(
+                    stringResource(
+                        if (state.courses.isNotEmpty()) R.string.edit_table_delete_msg_count
+                        else R.string.edit_table_delete_msg,
+                        table.name,
+                        state.courses.size
+                    ),
+                    color = colors.onSurfaceVariant
+                )
+            },
             confirmButton = {
                 TextButton(onClick = {
                     showDeleteConfirm = false

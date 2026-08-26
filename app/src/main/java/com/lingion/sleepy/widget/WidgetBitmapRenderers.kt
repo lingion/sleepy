@@ -196,6 +196,22 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
+        // ★ 学期外: 状态标题 + 提示行, 不画课程 (loadDataSync 已清空 courses, 此处为标题语义)
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+            val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                R.string.semester_not_started else R.string.semester_ended
+            p.color = s.onSurface
+            p.textSize = 15f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            canvas.drawText(ctx.getString(statusRes), pad, y + 15f * density, p)
+            y += 22f * density
+            p.color = s.onSurfaceVariant
+            p.textSize = 11f * density
+            p.typeface = Typeface.DEFAULT
+            canvas.drawText(ctx.getString(R.string.today_semester_out_hint), pad, y + 11f * density, p)
+            return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+        }
+
         if (data.courses.isEmpty()) {
             p.color = s.onSurface
             p.textSize = 16f * density
@@ -232,6 +248,7 @@ object WidgetBitmapRenderers {
         // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24
         var h = 14f + 24f
         if (!data.hasTable) return h + 20f          // "去创建课表" 一行
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 学期状态 + 提示行
         if (data.courses.isEmpty()) return h + 22f + 14f  // 无课标题 + 休息副行
         val rowH = 38f
         val rowGap = 10f
@@ -246,6 +263,7 @@ object WidgetBitmapRenderers {
     fun twoDayContentHeightDp(data: TwoDayData): Float {
         var h = 12f + 22f                           // pad + 顶部标签行
         if (!data.hasTable || data.days.isEmpty()) return h + 20f
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 状态 + 提示
         // 最高一列决定整体高度; 每列: 列头(20) + 课程(44+8)*n / "无课程"一行
         val colH = data.days.maxOf { day ->
             if (day.courses.isEmpty()) 20f + 16f
@@ -265,9 +283,11 @@ object WidgetBitmapRenderers {
         val shownDays = if (visibleDays.isEmpty()) data.days
             else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
         if (shownDays.isEmpty()) return outerPad * 2 + 20f
-        // 最高一列: 标题(12+14) + chip 行(14+6) + 课程行 (16+3)*n
+        // 学期外状态行: 顶部全宽 +16dp (renderWeekList ★ 学期外段)
+        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) 16f else 0f
+        // 最高一列: [状态行] + 标题(12+14) + chip 行(14+6) + 课程行 (16+3)*n
         val colH = shownDays.maxOf { day ->
-            var cy = 12f + 14f
+            var cy = statusH + 12f + 14f
             if (day.courses.isNotEmpty()) {
                 cy += 14f + 6f
                 cy += day.courses.size * 16f + (day.courses.size - 1) * 3f
@@ -319,6 +339,20 @@ object WidgetBitmapRenderers {
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
 
+        // ★ 学期外: 顶部全宽状态行(只画一次; 学期前=第1周课照常预习 / 学期后=课程已清空)
+        var colTop = outerPad
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+            val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                R.string.semester_not_started else R.string.semester_ended
+            p.color = s.onSurfaceVariant
+            p.textSize = 10f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val statusText = SleepyApp.get().getString(statusRes)
+            val stw = p.measureText(statusText)
+            canvas.drawText(statusText, (w - stw) / 2f, outerPad + 10f * density, p)
+            colTop = outerPad + 16f * density
+        }
+
         // 列数随 visibleDays 变化 (原硬编码 7 列)
         for (i in shownDays.indices) {
             val day = shownDays[i]
@@ -328,10 +362,10 @@ object WidgetBitmapRenderers {
 
             // 列背景
             p.color = cardBg
-            canvas.drawRoundRect(RectF(x, outerPad, x + colW, outerPad + innerH),
+            canvas.drawRoundRect(RectF(x, colTop, x + colW, outerPad + innerH),
                 14f * density, 14f * density, p)
 
-            var cy = outerPad + 12f * density
+            var cy = colTop + 12f * density
 
             // 星期标题
             p.color = if (isToday) s.onPrimaryContainer else s.onSurface
@@ -437,6 +471,20 @@ object WidgetBitmapRenderers {
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
 
+        // ★ 学期外: 顶部全宽状态行(只画一次, 同 renderWeekList)
+        var colTop = outerPad
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+            val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                R.string.semester_not_started else R.string.semester_ended
+            p.color = s.onSurfaceVariant
+            p.textSize = 10f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            val statusText = SleepyApp.get().getString(statusRes)
+            val stw = p.measureText(statusText)
+            canvas.drawText(statusText, (w - stw) / 2f, outerPad + 10f * density, p)
+            colTop = outerPad + 16f * density
+        }
+
         // 列数随 visibleDays 变化 (原硬编码 7 列)
         for (i in shownDays.indices) {
             val day = shownDays[i]
@@ -446,10 +494,10 @@ object WidgetBitmapRenderers {
 
             // 列背景
             p.color = cardBg
-            canvas.drawRoundRect(RectF(x, outerPad, x + colW, outerPad + innerH),
+            canvas.drawRoundRect(RectF(x, colTop, x + colW, outerPad + innerH),
                 14f * density, 14f * density, p)
 
-            var cy = outerPad + 12f * density
+            var cy = colTop + 12f * density
 
             // 星期标题
             p.color = if (isToday) s.onPrimaryContainer else s.onSurface
@@ -563,6 +611,22 @@ object WidgetBitmapRenderers {
             p.color = s.onSurface
             p.textSize = 15f * density
             canvas.drawText(ctx.getString(R.string.widget_create_schedule), pad, y + 15f * density, p)
+            return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+        }
+
+        // ★ 学期外: 状态标题 + 提示行, 不画两栏课程 (loadDataSync 已清空, 此处给标题语义)
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+            val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                R.string.semester_not_started else R.string.semester_ended
+            p.color = s.onSurface
+            p.textSize = 15f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            canvas.drawText(ctx.getString(statusRes), pad, y + 15f * density, p)
+            y += 22f * density
+            p.color = s.onSurfaceVariant
+            p.textSize = 11f * density
+            p.typeface = Typeface.DEFAULT
+            canvas.drawText(ctx.getString(R.string.today_semester_out_hint), pad, y + 11f * density, p)
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 

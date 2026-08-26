@@ -100,8 +100,15 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun getGroupCourses(tableId: Long, groupId: String): List<CourseEntity> =
         courseDao.getByGroupId(tableId, groupId)
 
-    /** 编辑课程组：原子地删除同 groupId 全部记录并插入新草稿（DAO 层 @Transaction） */
+    /** 编辑课程组：原子地删除同 groupId 全部记录并插入新草稿（DAO 层 @Transaction）。
+     *  防呆: groupId 空串(早期版本导入的存量数据)禁止走组替换 — 否则 DELETE WHERE groupId=''
+     *  会把该表全部空组课程一起删掉。空组时退化为逐条插入。 */
     suspend fun updateCourseGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
+        if (groupId.isBlank()) {
+            courseDao.insertAll(newCourses)
+            onDataChanged()
+            return
+        }
         courseDao.replaceGroup(tableId, groupId, newCourses)
         onDataChanged()
     }
@@ -111,8 +118,9 @@ class ScheduleRepository(private val db: AppDatabase) {
         onDataChanged()
     }
 
-    /** 删除同 groupId 全部记录 */
+    /** 删除同 groupId 全部记录。防呆: 空 groupId 拒删(否则整表空组课程全没了) */
     suspend fun deleteCourseGroup(tableId: Long, groupId: String) {
+        if (groupId.isBlank()) return
         courseDao.deleteByGroupId(tableId, groupId)
         onDataChanged()
     }

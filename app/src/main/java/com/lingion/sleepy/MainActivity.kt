@@ -258,7 +258,7 @@ private fun AppRoot(
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (currentTab) {
                 Tab.Schedule -> ScheduleScreen(onGoImport = { currentTab = Tab.Manage }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCourse = { course -> editingCourse = course })
-                Tab.Today -> TodayScreen()
+                Tab.Today -> TodayScreen(onEditCourse = { course -> editingCourse = course })
                 Tab.Manage -> {
                     val ctx = LocalContext.current
                     ManagementPage(autoShowImportSheet = pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = {

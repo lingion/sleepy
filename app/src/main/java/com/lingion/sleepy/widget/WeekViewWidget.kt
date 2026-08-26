@@ -80,13 +80,16 @@ class WeekViewWidgetReceiver : AppWidgetProvider() {
                         WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
                         val week = DateUtils.currentWeek(table.startDate, today)
+                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
+                        // ★ 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
                             val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
                             val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
-                            val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                            val visible = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
+                                all.filter { it.inWeek(week) }.sortedBy { it.startNode }
                             DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
                         }
-                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey)
+                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status)
                     }
                 }
             } catch (_: Throwable) {
