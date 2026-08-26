@@ -105,7 +105,7 @@
     <string name="copied">Copiado</string>
     <string name="ai_prompt_title">Deja que la IA convierta tu captura</string>
     <string name="ai_prompt_hint">Copia el prompt de abajo a cualquier IA (Doubao, ChatGPT…), envía la captura de tu horario, y pega la salida de la IA en el campo de texto de arriba para importar.</string>
-    <string name="ai_prompt_text">Convierte la captura de horario que te envío a continuación en texto plano con estas reglas:\n1. Una línea por sesión de clase, 7 columnas separadas por tabulaciones: curso, profesor, aula, día, periodo, semanas, tipo\n2. Día como número: 1=lunes … 7=domingo\n3. Periodo como rango, p. ej. 1-2; un solo periodo es solo el número, p. ej. 3\n4. Semanas como rango, p. ej. 1-16; cursos parciales usan el rango real, p. ej. 1-8\n5. Tipo: 0=todas las semanas, 1=impares, 2=pares\n6. Si el profesor o el aula no aparecen en la captura, usa - como marcador; nunca inventes valores\n7. Un curso con varios horarios se divide en varias líneas; sin espacios dentro de los nombres\n8. La primera línea debe ser exactamente &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; y la última exactamente &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;, con las líneas de cursos en medio; nada fuera de esas dos líneas — sin explicaciones, ejemplos ni bloques de código\n\n9. Si la captura muestra los horarios de cada periodo arriba (p. ej. "Periodo 1 08:00-09:35"), escríbelos tal cual, una línea por periodo, antes de las líneas de cursos. Formato: PeriodoN HH:mm HH:mmEjemplo de salida (solo referencia de formato, no copies el contenido):\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="ai_prompt_text">Convierte la captura del horario que enviaré a continuación en texto plano. Toda la salida contiene exactamente tres tipos de líneas, nada más:\n\n1. Primera línea: &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n\n2. Última línea: &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;\n\n3. Entre ellas, una línea por sesión de clase, 7 columnas separadas por Tab:\nasignatura\\tdocente\\taula\\tdía\\tbloque\\tsemana\\ttipo\n\nReglas de columnas:\n· día: 1-7, 1=lunes, 7=domingo\n· bloque: rango como 1-2, solo uno como 3\n· semana: rango como 1-16, parcial como 1-8\n· tipo: semanal=0, impar=1, par=2\n· Usa - si falta docente o aula, nunca inventes\n· Misma asignatura en varias horas = una línea por hora; sin espacios en el nombre\n\nSi la captura muestra los horarios de cada bloque (p. ej. "Bloque 1 08:00-09:35"), pon esas líneas antes de las asignaturas, formato: Bloque N HH:mm-HH:mm\n\nNo output nada más: sin explicaciones, sin bloques de código, sin texto extra.\n\nEjemplo (solo referencia de formato, no copies el contenido):\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\nBloque 1 08:00-09:35\nBloque 2 09:55-11:30\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\nEducación Física\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
 
     <string name="format_wakeup_share_when">Migrar todo desde la app WakeUp. Copia el texto completo generado por "Compartir cursos" de WakeUp y pégalo tal cual.</string>
     <string-array name="format_wakeup_share_spec">
@@ -137,37 +137,38 @@
 
     <string name="format_csv_when">Tablas exportadas del registro escolar, o Excel guardado como "CSV (delimitado por comas)".</string>
     <string-array name="format_csv_spec">
-        <item>La primera línea debe ser una cabecera con: columna de curso (curso/nombre) + columna de profesor + columna de día o semanas — sin la columna de profesor no se detecta como CSV; si tu tabla no tiene profesor, añade tú una columna "profesor" vacía</item>
-        <item>Columnas obligatorias: curso, día, semanas, periodo; opcionales: profesor, aula, tipo, nota</item>
-        <item>Periodo: una columna "1-2", o columnas separadas de inicio/fin</item>
-        <item>El día acepta 1-7, lunes o Monday</item>
-        <item>Semanas acepta 1-16, 2-5,7-9, 11,13,15 — los rangos se convierten en varios cursos</item>
-        <item>Columnas opcionales "hora de inicio"/"hora de fin" (HH:mm): los horarios reales se aplican automáticamente al importar</item>
-            <item>Tipo acepta 0/1/2 o semanal/impar/par</item>
+        <item>La primera línea es la cabecera. Columnas obligatorias: asignatura (curso/nombre), día (día/weekday), bloque, semana (semana/weeks)</item>
+        <item>Columnas opcionales: docente, aula, tipo, nota</item>
+        <item>Bloque, dos formas: una columna tipo 1-2, o dividida en "bloque inicio" + "bloque fin"</item>
+        <item>Día acepta 1-7, lunes, Monday</item>
+        <item>Semana admite 1-16, 2-5,7-9, 11,13,15 — los rangos múltiples se convierten en asignaturas separadas</item>
+        <item>Columnas opcionales "hora inicio" + "hora fin" (HH:mm): los horarios reales se aplican automáticamente al importar</item>
+        <item>Tipo acepta 0/1/2 o semanal/impar/par</item>
     </string-array>
     <string name="format_csv_example" formatted="false">curso,profesor,aula,día,periodo,semanas,tipo\nCálculo,Juan,A101,lunes,1-2,1-16,semanal\nInglés,María,B202,3,3-4,1-16,impar</string>
 
     <string name="format_html_when">Páginas de horario guardadas como .html, o código fuente de tablas copiado.</string>
     <string-array name="format_html_spec">
-        <item>El texto debe empezar con una etiqueta como &lt;!DOCTYPE, &lt;html o &lt;table — texto normal al principio rompe el reconocimiento, elimínalo antes</item>
-        <item>La página debe contener una tabla cuya cabecera mencione la columna curso</item>
-        <item>Los nombres de columnas son como en CSV: curso, día, periodo, semanas obligatorios; profesor, aula, tipo, nota opcionales</item>
-        <item>Las cuadrículas lunes-domingo no se analizan; hace falta una tabla larga de "un curso por fila"</item>
+        <item>El texto debe empezar con una etiqueta como &lt;!DOCTYPE, &lt;html o &lt;table — cualquier texto normal antes rompe la detección, bórralo primero</item>
+        <item>La página debe contener una tabla cuya cabecera incluya la asignatura</item>
+        <item>Nombres de columnas iguales que CSV: asignatura, día, bloque, semana obligatorios; docente, aula, tipo, nota opcionales</item>
+        <item>Igual que CSV: columnas opcionales "hora inicio" + "hora fin", aplicadas automáticamente al importar</item>
+        <item>Las rejillas con columnas lunes-domingo no se pueden analizar; hace falta una tabla larga con una asignatura por fila</item>
     </string-array>
     <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;curso&lt;/td&gt;&lt;td&gt;profesor&lt;/td&gt;&lt;td&gt;aula&lt;/td&gt;&lt;td&gt;día&lt;/td&gt;&lt;td&gt;periodo&lt;/td&gt;&lt;td&gt;semanas&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Cálculo&lt;/td&gt;&lt;td&gt;Juan&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
     <string name="format_plain_when">El formato más flexible: una línea por sesión de clase. Sirve para escribir a mano, y mejor aún para texto generado por IA desde capturas (ver prompt abajo).</string>
     <string-array name="format_plain_spec">
-        <item>Orden fijo de columnas: curso, profesor, aula, día, periodo, semanas, tipo (última opcional, por defecto semanal)</item>
-        <item>Separa las columnas con tabulación, espacios o coma ancha</item>
-        <item>El día debe ser un número 1-7 (1=lunes); "lunes" no se reconoce</item>
-        <item>Periodo como rango: 1-2; un solo periodo es solo el número: 3</item>
-        <item>Semanas como rango: 1-16</item>
-        <item>Tipo numérico: 0=semanal 1=impar 2=par</item>
-        <item>Usa - si falta profesor o aula; las líneas que empiezan por # se ignoran</item>
-        <item>Sin espacios en los nombres de curso, o la línea se descarta</item>
-        <item>Si el origen tiene una tabla de horarios por periodo, escribe una línea por periodo antes de los cursos: PeriodoN HH:mm HH:mm — los horarios reales se aplican automáticamente al importar</item>
-            <item>Pegar salida de IA con charla alrededor no es problema: envuelve los datos en &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; y &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt; — lo que quede fuera se ignora</item>
+        <item>Orden fijo de columnas: asignatura, docente, aula, día, bloque, semana, tipo (la última es opcional, por defecto semanal)</item>
+        <item>Separadores: Tab, espacios o coma ancha</item>
+        <item>Día acepta 1-7 o lunes-domingo</item>
+        <item>Bloque: rango como 1-2; un solo periodo como 3</item>
+        <item>Semana: rango como 1-16</item>
+        <item>Tipo acepta 0/1/2 o semanal/impar/par</item>
+        <item>Usa - si falta docente o aula; las líneas que empiezan por # se ignoran</item>
+        <item>Sin espacios en el nombre de la asignatura, o la línea se descarta</item>
+        <item>Líneas de horario (opcionales): Bloque N HH:mm-HH:mm antes de las asignaturas, se aplican automáticamente al importar</item>
+        <item>La palabrería de la IA no importa: envuelve los datos entre &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; y &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;, lo de fuera se ignora</item>
     </string-array>
     <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2節 09:55-11:30\n第3节 13:30-15:05\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\nDeporte\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
     <string name="import_dropped_title">%1$d líneas no se pudieron analizar</string>
