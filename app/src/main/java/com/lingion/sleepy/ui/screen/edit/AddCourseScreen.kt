@@ -36,9 +36,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -69,6 +66,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
+import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -824,28 +822,17 @@ private fun ModePicker(
     mode: MeetingInputMode,
     onChange: (MeetingInputMode) -> Unit
 ) {
-    val modes = listOf(MeetingInputMode.ByNode to R.string.mode_by_node, MeetingInputMode.ByClock to R.string.mode_by_time)
-    SingleChoiceSegmentedButtonRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(40.dp)
-    ) {
-        modes.forEachIndexed { index, (m, labelRes) ->
-            SegmentedButton(
-                selected = mode == m,
-                onClick = { onChange(m) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
-                label = {
-                    Text(
-                        stringResource(labelRes),
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = if (mode == m) FontWeight.SemiBold else FontWeight.Medium
-                        )
-                    )
-                }
-            )
-        }
-    }
+    // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
+    // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
+    SegmentedSwitcher(
+        options = listOf(
+            MeetingInputMode.ByNode to stringResource(R.string.mode_by_node),
+            MeetingInputMode.ByClock to stringResource(R.string.mode_by_time)
+        ),
+        selected = mode,
+        onSelect = onChange,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable

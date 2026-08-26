@@ -16,9 +16,6 @@ import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -31,7 +28,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
@@ -96,31 +92,14 @@ enum class Mode { Manual, Auto }
 
 @Composable
 private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit) {
-    val modes = Mode.entries
-    SingleChoiceSegmentedButtonRow(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(40.dp)
-    ) {
-        modes.forEachIndexed { index, m ->
-            SegmentedButton(
-                selected = m == current,
-                onClick = { onChange(m) },
-                shape = SegmentedButtonDefaults.itemShape(index = index, count = modes.size),
-                label = {
-                    Text(
-                        when (m) {
-                            Mode.Manual -> stringResource(R.string.mode_manual)
-                            Mode.Auto -> stringResource(R.string.mode_auto)
-                        },
-                        style = MaterialTheme.typography.labelLarge.copy(
-                            fontWeight = if (m == current) FontWeight.SemiBold else FontWeight.Medium
-                        )
-                    )
-                }
-            )
-        }
-    }
+    // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
+    // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
+    SegmentedSwitcher(
+        options = Mode.entries.map { it to stringResource(if (it == Mode.Manual) R.string.mode_manual else R.string.mode_auto) },
+        selected = current,
+        onSelect = onChange,
+        modifier = Modifier.fillMaxWidth()
+    )
 }
 
 @Composable
