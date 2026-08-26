@@ -102,7 +102,6 @@ fun ImportSheet(
     onDismiss: () -> Unit,
     onJwImportRequested: () -> Unit,
     onImported: () -> Unit,
-    onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
@@ -120,6 +119,7 @@ fun ImportSheet(
     var confirmedTableName by remember { mutableStateOf("") }
     var confirmedStartDate by remember { mutableStateOf("") }
     var confirmedTimeJson by remember { mutableStateOf("") }
+    var importJustApplied by remember { mutableStateOf(false) }
     val snackbar = remember { androidx.compose.material3.SnackbarHostState() }
 
     // 外部 app (文件管理器 / 其他课表 app) 通过 Intent 打开 json 时,
@@ -353,6 +353,13 @@ fun ImportSheet(
             hostState = snackbar,
             modifier = Modifier.align(Alignment.BottomCenter)
         )
+        // 导入成功提示: 不再跳编辑课表页(假保存闸), 用 snackbar 明示已落库
+        LaunchedEffect(preview, pendingMode) {
+            if (preview == null && pendingMode == null && importJustApplied) {
+                importJustApplied = false
+                snackbar.showSnackbar(context.getString(R.string.import_success))
+            }
+        }
         }
     }
 
@@ -398,7 +405,10 @@ fun ImportSheet(
                 scope.launch {
                     isLoading = true
                     try {
-                        val resultTableId = applyImportPreview(
+                        // 「确认导入」= 唯一写库点, 点下即落库。
+                        // 之后不再跳编辑课表页 — 那个页面有「保存」按钮, 会造成
+                        // "没点保存数据也在"的假保存闸误导(用户以为还有反悔机会, 实际已提交)。
+                        applyImportPreview(
                             preview = currentPreview,
                             mode = mode,
                             confirmedStartDate = confirmedStartDate,
@@ -409,9 +419,7 @@ fun ImportSheet(
                         ) { msg -> errorMsg = msg }
                         preview = null
                         pendingMode = null
-                        if (resultTableId != null) {
-                            onOpenEditTable(resultTableId)
-                        }
+                        importJustApplied = true
                     } finally {
                         isLoading = false
                     }
@@ -1092,7 +1100,7 @@ private suspend fun applyImportPreview(
     context: android.content.Context,
     onImported: () -> Unit,
     onError: (String) -> Unit
-): Long? {
+) {
     val repo = SleepyApp.get().repository
     when (mode) {
         ImportApplyMode.ReplaceCurrent -> {
@@ -1109,7 +1117,6 @@ private suspend fun applyImportPreview(
             }
             repo.replaceCourses(preview.targetTableId, preview.parseResult.courses)
             onImported()
-            return preview.targetTableId
         }
         ImportApplyMode.ImportAsNew -> {
             val base = repo.getTable(preview.targetTableId)
@@ -1127,7 +1134,6 @@ private suspend fun applyImportPreview(
             repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
             repo.setDefault(newTableId)
             onImported()
-            return newTableId
         }
         ImportApplyMode.AppendNonConflict -> {
             val cleanCourses = preview.parseResult.courses.filterNot { incoming ->
@@ -1135,11 +1141,10 @@ private suspend fun applyImportPreview(
             }
             if (cleanCourses.isEmpty()) {
                 onError(context.getString(R.string.import_all_conflict))
-                return null
+                return
             }
             repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
             onImported()
-            return preview.targetTableId
         }
     }
 }

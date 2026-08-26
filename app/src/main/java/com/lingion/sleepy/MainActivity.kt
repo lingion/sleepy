@@ -267,7 +267,7 @@ private fun AppRoot(
                             val newId = mainVm.createEmptyTable(commitSelection = false)
                             previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; overlayScreen = OverlayScreen.EditTable
                         }
-                    }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable }, onImported = {}, onOpenEditTable = { tableId -> editTableId = tableId; overlayScreen = OverlayScreen.EditTable })
+                    }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable }, onImported = { currentTab = Tab.Schedule })
                 }
                 Tab.Mine -> MineScreen(
                     onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },

@@ -52,7 +52,6 @@ fun ManagementPage(
     onManualAdd: () -> Unit,
     onEditCurrentTable: () -> Unit,
     onImported: () -> Unit,
-    onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel(),
     autoShowImportSheet: Boolean = false
 ) {
@@ -147,7 +146,6 @@ fun ManagementPage(
                 onJwImportRequested()
             },
             onImported = onImported,
-            onOpenEditTable = onOpenEditTable,
             viewModel = viewModel
         )
     }
