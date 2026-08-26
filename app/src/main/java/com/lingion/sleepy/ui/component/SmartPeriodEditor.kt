@@ -424,6 +424,14 @@ private fun AddBreakChip(
             containerColor = color.copy(alpha = SleepyTheme.Alpha.tinted),
             labelColor = color
         ),
+        border = FilterChipDefaults.filterChipBorder(
+            enabled = true,
+            selected = false,
+            borderColor = Color.Transparent,
+            selectedBorderColor = Color.Transparent,
+            disabledBorderColor = Color.Transparent,
+            disabledSelectedBorderColor = Color.Transparent
+        ),
         modifier = modifier
     )
 }
