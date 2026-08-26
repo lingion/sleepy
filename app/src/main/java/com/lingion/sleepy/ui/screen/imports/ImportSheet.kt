@@ -665,7 +665,8 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                             shape = SleepyTheme.Buttons.shape,
                             colors = ButtonDefaults.buttonColors(
-                                containerColor = colors.surface,
+                                // 纯文字伪按钮不可接受：用 primaryContainer 色块和背景拉开层级，仍不加描边
+                                containerColor = colors.primaryContainer,
                                 contentColor = colors.onPrimaryContainer
                             )
                         ) {
