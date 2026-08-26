@@ -22,6 +22,6 @@ Linux操作系统实验(环宇)	何静	3教337	1	1-2	17	0
         }
         val parsed = result.getOrThrow()
         assert(parsed.courses.size == 2) { "courses: ${parsed.courses.size}" }
-        assert(parsed.nodesPerDay == 9) { "nodesPerDay: ${parsed.nodesPerDay}" }
+        assert(parsed.nodesPerDay == 10) { "nodesPerDay: ${parsed.nodesPerDay}" }
     }
 }

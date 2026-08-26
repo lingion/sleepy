@@ -105,7 +105,39 @@
     <string name="copied">Copiado</string>
     <string name="ai_prompt_title">Deja que la IA convierta tu captura</string>
     <string name="ai_prompt_hint">Copia el prompt de abajo a cualquier IA (Doubao, ChatGPT…), envía la captura de tu horario, y pega la salida de la IA en el campo de texto de arriba para importar.</string>
-    <string name="ai_prompt_text">Convierte la captura del horario que enviaré a continuación en texto plano. Toda la salida contiene exactamente tres tipos de líneas, nada más:\n\n1. Primera línea: &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n\n2. Última línea: &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;\n\n3. Entre ellas, una línea por sesión de clase, 7 columnas separadas por Tab:\nasignatura\\tdocente\\taula\\tdía\\tbloque\\tsemana\\ttipo\n\nReglas de columnas:\n· día: 1-7, 1=lunes, 7=domingo\n· bloque: rango como 1-2, solo uno como 3\n· semana: rango como 1-16, parcial como 1-8\n· tipo: semanal=0, impar=1, par=2\n· Usa - si falta docente o aula, nunca inventes\n· Misma asignatura en varias horas = una línea por hora; sin espacios en el nombre\n\nSi la captura muestra los horarios de cada bloque (p. ej. "Bloque 1 08:00-09:35"), envuélvelos con estas dos líneas de marca antes de las asignaturas:\n&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;\nBloque N HH:mm-HH:mm\n&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;\nSolo escribe este bloque cuando la captura muestre horarios; si no hay tiempos, omite ambas líneas TIME. No pongas líneas vacías dentro del bloque.\n\nNo output nada más: sin explicaciones, sin bloques de código, sin texto extra.\n\nEjemplo (solo referencia de formato, no copies el contenido):\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;\nBloque 1 08:00-09:35\nBloque 2 09:55-11:30\n&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\nEducación Física\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="ai_prompt_text">Convierte la captura del horario que enviaré a continuación en texto plano. Solo genera las líneas de marca, las líneas de horario y las líneas de curso. Sin explicaciones.
+
+Estructura de salida (orden inmutable):
+1. Primera línea: &amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
+2. Si el horario de cada período es visible en la captura, genera: &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;, luego las líneas de horario, luego &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;. Si no hay horarios, omite estas tres líneas.
+3. Líneas de curso (una por sesión de clase).
+4. Última línea: &amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;
+
+Formato único de línea de horario: inicio-fin HH:MM-HH:MM.
+Ejemplo: 1-2 08:20-10:00 significa que el período 1 y el período 2 comparten 08:20-10:00. Ejemplo: 3 10:20-12:00 significa solo el período 3. Cada período en un rango usa el mismo tiempo. No escribir 1-2 como dos registros separados.
+Ordenar las líneas de horario por número de período. Sin palabras adicionales como "período", "bloque", "第". Sin líneas vacías.
+
+Cada línea de curso debe tener exactamente 7 columnas separadas por Tab (no espacios ni comas):
+asignatura\tdocente\taula\tdía\tperíodos\tsemanas\ttipo
+· asignatura: nombre completo de la captura, sin borrar caracteres, sin Tab dentro.
+· docente, aula: escribir - si no aparecen; no inventar.
+· día: número 1-7; 1=lunes, 7=domingo.
+· períodos: rango continuo de períodos. 1-2 significa períodos 1 y 2; 3 significa solo período 3. No escribir hora aquí.
+· semanas: 1-16 significa semanas 1 a 16; no consecutivas como 1,3,5. Combinar rangos y individuales como 1-8,10,12-16.
+· tipo: número 0, 1 o 2; 0=semanal, 1=impar, 2=par.
+· No inventar campos inciertos: docente y aula = -; si día, períodos o semanas no están claros, omitir esa línea de curso.
+
+Líneas de marca exactas, sin espacios adicionales, sin acentos graves, sin cercas Markdown. Sin líneas vacías dentro del bloque de horario o curso.
+
+Ejemplo (aprender el formato, no copiar contenido):
+&amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
+&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;
+1-2 08:20-10:00
+3-4 10:20-12:00
+&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;
+Cálculo\tJuan\tA101\t1\t1-2\t1-16\t0
+Inglés\tMaría\tB202\t1\t3-4\t1-16\t1
+&amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;</string>
 
     <string name="format_wakeup_share_when">Migrar todo desde la app WakeUp. Copia el texto completo generado por "Compartir cursos" de WakeUp y pégalo tal cual.</string>
     <string-array name="format_wakeup_share_spec">

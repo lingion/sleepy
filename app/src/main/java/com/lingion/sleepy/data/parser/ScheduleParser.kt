@@ -40,8 +40,8 @@ object ScheduleParser {
      */
     private val timeTableRegex = Regex(
         // 作息行。AI 常输出「第1-2节 08:20-10:00」(连上两节), 也可能「第1节 08:00-09:35」(单节)
-        // 取第一个数字作为起始节点
-        """^\s*(?:时间表|节次|第)?\s*(\d{1,2})(?:\s*[-–]\s*\d{1,2})?\s*节?\s*[\s:：]*\s*(\d{1,2}):(\d{2})\s*[-–~～至\s]+\s*(\d{1,2}):(\d{2})\s*$"""
+        // 捕获起始和结束节点；解析时将区间展开为每个节点各一条相同时间
+        """^\s*(?:时间表|节次|第)?\s*(\d{1,2})(?:\s*[-–]\s*(\d{1,2}))?\s*节?\s*[\s:：]*\s*(\d{1,2}):(\d{2})\s*[-–~～至\s]+\s*(\d{1,2}):(\d{2})\s*$"""
     )
 
     /**
@@ -647,11 +647,12 @@ object ScheduleParser {
         for (tl in timeBlock.lines()) {
             if (tl.isBlank()) continue
             val tt = timeTableRegex.find(tl) ?: run { timeBlockDropped += tl.trim().take(40); continue }
-            val node = tt.groupValues[1].toIntOrNull() ?: run { timeBlockDropped += tl.trim().take(40); continue }
-            val st = runCatching { LocalTime.of(tt.groupValues[2].toInt(), tt.groupValues[3].toInt()) }.getOrNull()
-            val et = runCatching { LocalTime.of(tt.groupValues[4].toInt(), tt.groupValues[5].toInt()) }.getOrNull()
-            if (node >= 1 && st != null && et != null && st.isBefore(et)) {
-                nodeTimes[node] = st to et
+            val startNode = tt.groupValues[1].toIntOrNull()
+            val endNode = tt.groupValues[2].toIntOrNull() ?: startNode
+            val st = runCatching { LocalTime.of(tt.groupValues[3].toInt(), tt.groupValues[4].toInt()) }.getOrNull()
+            val et = runCatching { LocalTime.of(tt.groupValues[5].toInt(), tt.groupValues[6].toInt()) }.getOrNull()
+            if (startNode != null && endNode != null && endNode >= startNode && st != null && et != null && st.isBefore(et)) {
+                for (node in startNode..endNode) nodeTimes[node] = st to et
             } else {
                 timeBlockDropped += tl.trim().take(40)
             }
@@ -663,11 +664,12 @@ object ScheduleParser {
             // 裸作息行兼容: 没写 TIME 标识的输入, "带两个 HH:mm 的行"必是时间表行
             val tt = timeTableRegex.find(raw)
             if (tt != null) {
-                val node = tt.groupValues[1].toIntOrNull() ?: continue
-                val st = runCatching { LocalTime.of(tt.groupValues[2].toInt(), tt.groupValues[3].toInt()) }.getOrNull()
-                val et = runCatching { LocalTime.of(tt.groupValues[4].toInt(), tt.groupValues[5].toInt()) }.getOrNull()
-                if (node >= 1 && st != null && et != null && st.isBefore(et)) {
-                    nodeTimes[node] = st to et
+                val startNode = tt.groupValues[1].toIntOrNull() ?: continue
+                val endNode = tt.groupValues[2].toIntOrNull() ?: startNode
+                val st = runCatching { LocalTime.of(tt.groupValues[3].toInt(), tt.groupValues[4].toInt()) }.getOrNull()
+                val et = runCatching { LocalTime.of(tt.groupValues[5].toInt(), tt.groupValues[6].toInt()) }.getOrNull()
+                if (endNode >= startNode && st != null && et != null && st.isBefore(et)) {
+                    for (node in startNode..endNode) nodeTimes[node] = st to et
                 }
                 continue
             }

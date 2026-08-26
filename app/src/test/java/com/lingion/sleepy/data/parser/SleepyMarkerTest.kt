@@ -263,7 +263,7 @@ class SleepyMarkerTest {
 // ==== 2026-08-26: TIME block 标识符 ====
 
     @Test fun timeBlock_valid() {
-        val input = "<SLEEPY-TIME-BEGIN>" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n<SLEEPY-TIME-END>" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
+        val input = "<<<SLEEPY-TIME-BEGIN>>>" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n<<<SLEEPY-TIME-END>>>" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
         val r = ScheduleParser.parse(input, 0L).getOrThrow()
         assertEquals(1, r.courses.size)
         assertEquals(2, r.nodesPerDay)
@@ -272,7 +272,7 @@ class SleepyMarkerTest {
 
     @Test fun timeBlock_missingEnd_selfHeal() {
         // 无 END 时：连续作息行被吞掉，碰到非作息行停止（自愈）
-        val input = "<SLEEPY-TIME-BEGIN>" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
+        val input = "<<<SLEEPY-TIME-BEGIN>>>" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
         val r = ScheduleParser.parse(input, 0L).getOrThrow()
         assertEquals(1, r.courses.size)
         assertEquals(2, r.nodesPerDay)
