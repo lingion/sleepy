@@ -35,10 +35,53 @@ object ScheduleParser {
     /**
      * 节次时间表行 — "时间表 1 08:00 09:35" / "第1节 08:00-09:35" / "1 08:00~09:35"。
      * 课程行不含冒号, 所以"带两个 HH:mm 的行"必是时间表行, 无歧义。
+     * 2026-08-26: 作息块有专用标识符后(见 [extractTimeBlock]), 本正则只负责逐行判定,
+     * 块边界不再靠猜。
      */
     private val timeTableRegex = Regex(
         """^\s*(?:时间表|节次|第)?\s*(\d{1,2})\s*节?\s*[\s:：]*\s*(\d{1,2}):(\d{2})\s*[-–~～至\s]+\s*(\d{1,2}):(\d{2})\s*$"""
     )
+
+    /**
+     * 作息表专用标识 — <<<SLEEPY-TIME-BEGIN>>> / <<<SLEEPY-TIME-END>>> 之间只放作息行。
+     * 与 BEGIN/END 同规格的宽松匹配: 大小写、2-4 个任意括号、-/_/空格变体。
+     * 注意不能被 markerRegex("begin"/"end") 误吞: SLEEPY 后面跟的是 -TIME-, 主标识正则匹配不上。
+     */
+    private fun timeMarkerRegex(kind: String): Regex {
+        val k = kind.lowercase()
+        // 左/右 2-4 个 "相同类别字符" (开括号类 vs 闭括号类)
+        //   <<+  /  {{+  /  ((+  三选一, 各自配对应闭括号 >>+ / }}+ / ))+
+        // 用显式 alternation 避免字符类里 {2,4} 量词歧义
+        return Regex("(?i)(?:<<+\\s*SLEEPY\\s*[-_ ]?\\s*TIME\\s*[-_ ]?\\s*$k\\s*>>+)" +
+                "|(?:\\{{2,4}\\s*SLEEPY\\s*[-_ ]?\\s*TIME\\s*[-_ ]?\\s*$k\\s*\\}}{2,4})" +
+                "|(?:\\({2,4}\\s*SLEEPY\\s*[-_ ]?\\s*TIME\\s*[-_ ]?\\s*$k\\s*\\){2,4})")
+    }
+
+    /**
+     * 切出作息块。返回 (剩余文本, 作息块文本)。
+     * - 双标识: TIME-BEGIN..TIME-END 之间 = 作息块(严格: 块内垃圾行由调用方计入 dropped)
+     * - 只有 TIME-BEGIN: 从标识后连续吞 timeTableRegex 能吃的行(含空行), 首个不匹配行起归还正文
+     *   — 自愈"AI 忘写 TIME-END"的场景, 课程行不会被吃进作息块
+     * - 没有 TIME 标识: 返回原文 + 空块(走老的裸行兼容路径)
+     */
+    private fun extractTimeBlock(text: String): Pair<String, String> {
+        val beginM = timeMarkerRegex("begin").find(text) ?: return text to ""
+        val afterBegin = text.substring(beginM.range.last + 1)
+        val endM = timeMarkerRegex("end").find(afterBegin)
+        if (endM != null) {
+            val block = afterBegin.substring(0, endM.range.first)
+            val rest = afterBegin.substring(endM.range.last + 1)
+            return rest to block
+        }
+        // TIME-END 缺失: 吞连续作息行, 碰到首个非作息行停
+        val lines = afterBegin.lines()
+        var i = 0
+        while (i < lines.size) {
+            val l = lines[i]
+            if (l.isBlank() || timeTableRegex.matches(l.trim())) i++ else break
+        }
+        return lines.drop(i).joinToString("\n") to lines.take(i).filter { it.isNotBlank() }.joinToString("\n")
+    }
 
     /** "08:00-09:35" / "08:00~09:35" / "08:00 09:35" → LocalTime 对; 非法返回 null */
     private fun parseTimeRange(s: String): Pair<LocalTime, LocalTime>? {
@@ -596,10 +639,29 @@ object ScheduleParser {
         val courses = mutableListOf<CourseEntity>()
         val dropped = mutableListOf<String>()
         val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
-        val lines = text.lines().filter { it.isNotBlank() && !it.startsWith("#") }
+
+        // 作息块: <<<SLEEPY-TIME-BEGIN>>>..<<<SLEEPY-TIME-END>>> 优先切出。
+        // 块内行全部走作息正则, 不匹配的计入 dropped(不静默丢)。
+        // 没有标识时兼容老的裸作息行(混排在课程行前面)。
+        val (courseText, timeBlock) = extractTimeBlock(text)
+        val timeBlockDropped = mutableListOf<String>()
+        for (tl in timeBlock.lines()) {
+            if (tl.isBlank()) continue
+            val tt = timeTableRegex.find(tl) ?: run { timeBlockDropped += tl.trim().take(40); continue }
+            val node = tt.groupValues[1].toIntOrNull() ?: run { timeBlockDropped += tl.trim().take(40); continue }
+            val st = runCatching { LocalTime.of(tt.groupValues[2].toInt(), tt.groupValues[3].toInt()) }.getOrNull()
+            val et = runCatching { LocalTime.of(tt.groupValues[4].toInt(), tt.groupValues[5].toInt()) }.getOrNull()
+            if (node >= 1 && st != null && et != null && st.isBefore(et)) {
+                nodeTimes[node] = st to et
+            } else {
+                timeBlockDropped += tl.trim().take(40)
+            }
+        }
+
+        val lines = courseText.lines().filter { it.isNotBlank() && !it.startsWith("#") }
 
         for (raw in lines) {
-            // 节次时间表行: "时间表 1 08:00 09:35" 形态 — 先于课程行判断(带 HH:mm 必非课程行)
+            // 裸作息行兼容: 没写 TIME 标识的输入, "带两个 HH:mm 的行"必是时间表行
             val tt = timeTableRegex.find(raw)
             if (tt != null) {
                 val node = tt.groupValues[1].toIntOrNull() ?: continue
@@ -670,7 +732,7 @@ object ScheduleParser {
             courses = courses,
             timeJson = buildTimeJson(TreeMap(nodeTimes)),
             nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey(),
-            droppedLines = dropped
+            droppedLines = dropped + timeBlockDropped
         )
     }
 

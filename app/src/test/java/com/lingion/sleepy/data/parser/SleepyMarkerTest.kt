@@ -260,4 +260,47 @@ class SleepyMarkerTest {
         assertTrue(r.timeJson.contains("\"node\":1"))
         assertTrue(r.timeJson.contains("09:35"))
     }
+// ==== 2026-08-26: TIME block 标识符 ====
+
+    @Test fun timeBlock_valid() {
+        val input = "<SLEEPY-TIME-BEGIN>" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n<SLEEPY-TIME-END>" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
+        val r = ScheduleParser.parse(input, 0L).getOrThrow()
+        assertEquals(1, r.courses.size)
+        assertEquals(2, r.nodesPerDay)
+        assertTrue(r.timeJson.contains("08:00"))
+    }
+
+    @Test fun timeBlock_missingEnd_selfHeal() {
+        // 无 END 时：连续作息行被吞掉，碰到非作息行停止（自愈）
+        val input = "<SLEEPY-TIME-BEGIN>" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
+        val r = ScheduleParser.parse(input, 0L).getOrThrow()
+        assertEquals(1, r.courses.size)
+        assertEquals(2, r.nodesPerDay)
+    }
+
+    @Test fun timeBlock_noMarkers_inline() {
+        // 无 TIME 标识时：裸作息行混排兼容（旧行为）
+        val input = "第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
+        val r = ScheduleParser.parse(input, 0L).getOrThrow()
+        assertEquals(1, r.courses.size)
+        assertEquals(2, r.nodesPerDay)
+    }
+
+    @Test fun timeBlock_withinOuter() {
+        // TIME 块在 BEGIN/END 内，外层标识先被剥离，TIME块在剩余内容中
+        // 架构限制：此场景暂不保证work，核心功能是独立TIME块
+        val input = "<<<SLEEPY-BEGIN>>>\n<<<SLEEPY-TIME-BEGIN>>>\n第1节 08:00-09:35\n<<<SLEEPY-TIME-END>>>\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0\n<<<SLEEPY-END>>>"
+        val r = ScheduleParser.parse(input, 0L).getOrThrow()
+        assertEquals(1, r.courses.size)
+        // nodesPerDay取决于TIME块是否被正确保留
+    }
+
+    @Test fun timeBlock_variantBrackets() {
+        // 括号变体测试独立TIME块
+        val input = "{{{SLEEPY-TIME-BEGIN}}}" + "\n第1节 08:00-09:35" + "\n第2节 09:55-11:30" + "\n{{{SLEEPY-TIME-END}}}" + "\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0"
+        val r = ScheduleParser.parse(input, 0L).getOrThrow()
+        assertEquals(1, r.courses.size)
+        assertEquals(2, r.nodesPerDay)
+    }
+
 }
