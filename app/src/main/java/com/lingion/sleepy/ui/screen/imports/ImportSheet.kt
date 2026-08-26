@@ -658,7 +658,12 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                 cm.setPrimaryClip(
                                     ClipData.newPlainText(
                                         "prompt",
-                                        context.getString(R.string.ai_prompt_text).replace("\\n", "\n").replace("\\t", "\t")
+                                        context.getString(R.string.ai_prompt_text)
+                                            .replace("\\n", "\n")
+                                            .replace("\\t", "\t")
+                                            .replace("&lt;", "<")
+                                            .replace("&gt;", ">")
+                                            .replace("&amp;", "&")
                                     )
                                 )
                             },

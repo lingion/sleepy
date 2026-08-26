@@ -113,9 +113,10 @@ Estructura de salida (orden inmutable):
 3. Líneas de curso (una por sesión de clase).
 4. Última línea: &amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;
 
-Formato único de línea de horario: inicio-fin HH:MM-HH:MM.
-Ejemplo: 1-2 08:20-10:00 significa que el período 1 y el período 2 comparten 08:20-10:00. Ejemplo: 3 10:20-12:00 significa solo el período 3. Cada período en un rango usa el mismo tiempo. No escribir 1-2 como dos registros separados.
-Ordenar las líneas de horario por número de período. Sin palabras adicionales como "período", "bloque", "第". Sin líneas vacías.
+Formato de línea de horario (elegir uno):
+· Período único: 第1节 08:00-09:35 (una línea por período)
+· Múltiples consecutivos: 1-2 08:20-10:00 (usar inicio-fin para períodos que comparten tiempo)
+Ordenar las líneas de horario por número de período. Sin palabras adicionales como "時間表". Sin líneas vacías.
 
 Cada línea de curso debe tener exactamente 7 columnas separadas por Tab (no espacios ni comas):
 asignatura\tdocente\taula\tdía\tperíodos\tsemanas\ttipo
@@ -132,8 +133,9 @@ Líneas de marca exactas, sin espacios adicionales, sin acentos graves, sin cerc
 Ejemplo (aprender el formato, no copiar contenido):
 &amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
 &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;
+第1节 08:00-09:35
+第2节 09:55-11:30
 1-2 08:20-10:00
-3-4 10:20-12:00
 &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;
 Cálculo\tJuan\tA101\t1\t1-2\t1-16\t0
 Inglés\tMaría\tB202\t1\t3-4\t1-16\t1
