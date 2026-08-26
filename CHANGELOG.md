@@ -1,34 +1,6 @@
 # Changelog
 
-## v1.0.36
-
-### 小组件现在能滚了
-
-Today、TwoDay、WeekList 之前只能把内容压进固定高度。课程一多，下面的内容直接消失。
-
-现在内容超过小组件高度时，会切成长图条带交给 Launcher 滚动；内容装得下的情况继续走原来的静态 bitmap 路径。三个小组件共用同一套 Canvas 渲染器，滚动停在顶部时不会换一套画法。WeekView 和 WeekGrid 仍保持静态。
-
-这次实现也顺手处理了几个容易踩坑的地方：按每个实例的实际尺寸计算内容高度，RemoteViewsService 使用独立的 widget ID 和数据范围，圆角由容器裁剪，条带点击仍然打开 App。
-
-### M3 主题和组件整理
-
-- 统一 Compose 的颜色、排版、圆角和间距 token，修掉页面各自写一套数值的问题。
-- 课程详情、课程表、日期选择、时间段编辑、导入流程、设置页和今日页改用新的 Material 3 组件样式。
-- 抽出无水波纹点击组件，减少重复的点击实现。
-- 设置页继续拆分，课程显示、小组件和外观设置各归其位；公共设置卡片组件集中到 `SettingsCards.kt`。
-- 教务课表解析补上 ICS 唤醒字段处理，并加入对应测试。
-- 修正导入、课程编辑和管理页面的状态与间距细节。
-
-### 构建
-
-- versionCode: 37
-- versionName: 1.0.36
-- APKs: `app-arm64-v8a-release.apk`（多数手机）、`app-armeabi-v7a-release.apk`（旧款 arm32）、`app-x86_64-release.apk`（模拟器）
-
-— Lingion
-
----
-
+## v1.0.35
 
 ### Grid card sub-info — room, teacher, or nothing
 
