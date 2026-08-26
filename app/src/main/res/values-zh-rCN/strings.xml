@@ -64,6 +64,7 @@
     <string name="import_supported_formats">支持格式</string>
     <string name="import_preview_title">导入预览</string>
     <string name="import_target_table">目标课表：%1$s</string>
+    <string name="import_new_table_hint">（将作为新课表创建）</string>
     <string name="import_courses">导入课程</string>
     <string name="import_conflicts">冲突课程</string>
     <string name="import_appendable">可追加</string>
@@ -108,41 +109,100 @@
     <string name="copied">已复制</string>
     <string name="ai_prompt_title">让 AI 帮你转换截图</string>
     <string name="ai_prompt_hint">把下面的 Prompt 复制给豆包、ChatGPT 等 AI，发送课表截图，AI 的输出直接粘贴回上方输入框即可导入。</string>
-    <string name="ai_prompt_text">把我接下来发的课表截图转成纯文本。只输出下面规定的标识行、作息行和课程行，不要输出解释。
+    <string name="ai_prompt_text">任务：把接下来发给你的课表截图，按下面的格式转成纯文本输出。不要写任何解释、不要用 Markdown 代码块、不要输出任何规定之外的字符。
 
-输出结构（顺序不可改变）：
-1. 第一行：&amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
-2. 如果截图中能读出作息时间，紧接着输出：&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;，然后是作息行，最后输出 &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;。如果截图没有作息时间，完全省略这三个内容。
-3. 课程行（每个课程时间段一行）。
-4. 最后一行：&amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;
+输出整体由四个块组成，按这个顺序出现：
+块A：单行标记 &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;（输出第一行）
+块B：作息表行（如果截图中能看到每节课的起止时间，才有这块；如果看不到作息时间，整块B连同它的两个时间标记一起省略——参见下面省略作息表的规则）
+块C：课程行
+块D：单行标记 &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;（输出最后一行）
 
-作息行格式二选一：
-· 单节：第1节 08:00-09:35（每节课单独一行）
-· 多节连上：1-2 08:20-10:00（用起止节数表示连续几节使用同一时间）
-作息行按节次从小到大排列。不要写"时间表"等其他文字，不要插空行。
+块B和块C本身都不允许空行。块A和块B之间、块B和块C之间、块C和块D之间都可以有或没有空行（建议都不要空行，按示例来）。
 
-每条课程行必须正好有7列，用Tab分隔，不能用空格或逗号：
-课程名\t老师\t教室\t星期\t节次\t周次\t类型
-· 课程名：截图中的完整课程名，不能删字，不能包含Tab；同一课程的不同上课时段分别输出一行。
-· 老师、教室：截图没有对应内容时填 -，不要猜测。
-· 星期：只能填数字1到7；1=周一，2=周二，3=周三，4=周四，5=周五，6=周六，7=周日。
-· 节次：课程占用的连续节次。1-2表示第1节和第2节，3表示只占第3节；不要填时间，不要填"第"或"节"。
-· 周次：1-16表示第1周至第16周；多个不连续周写1,3,5；范围和单周可以组合，如1-8,10,12-16。
-· 类型：只能填数字0、1或2；0=每周，1=单周，2=双周。
-· 不确定的字段不要编造，老师和教室填 -；星期、节次、周次无法确定时不要输出该课程行。
+========== 块B：作息表 ==========
 
-标识行必须原样书写，不能加空格，反引号或Markdown代码块。课程块和作息块内部都不能有空行。
+作息表描述的是每天第N节课从几点到几点，适用于周一到周日全部相同的情况。如果每周不一样，按省略作息表的规则处理。
 
-示例（只学习格式，不要照抄内容）：
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;
+作息表的标记：
+  &lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;
+  （作息行，每行一条）
+  &lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;
+（三个标记必须都出现或都不出现；不能只出现BEGIN或只出现END）
+
+作息行格式（两种写法都可以，按截图中实际形式选最贴合的）：
+  写法1：第N节 HH:MM-HH:MM
+    示例：第1节 08:00-09:35
+    说明：第N节表示第N节课，数字是节次编号，N从1开始；时间是该节课的起止时间。
+    如果截图中作息表是每节课单独一行的样式，用这种。
+  写法2：a-b HH:MM-HH:MM
+    示例：1-2 08:20-10:00
+    说明：a-b表示从第a节到第b节连续上同一时段；这里a和b之间的每一节（a、a+1、...、b）都使用同一段时间。
+    1-2 表示第1节和第2节都上08:20-10:00。
+    5 表示5 是 第5节单独 的简写，和 5-5 等价。
+    如果截图中作息表是连排多节共用同一时段的样式，用这种。
+
+作息行要求：
+  · 节次必须从 1 开始，按从小到大顺序排列
+  · 写法1和写法2不能混用——一份作息表只用其中一种
+  · 不能有空行
+  · 时间之间用一个空格分隔节次和起止时间
+  · HH:MM 是 24 小时制，HH 是 00-23，MM 是 00-59
+  · 不要在行首加 时间表  作息  课程表 等任何前缀
+
+省略作息表（块B）的规则——以下任意一种情况出现就完全省略块B及其三个标记行：
+  · 截图中完全没有看到任何起止时间
+  · 截图中每周每天的作息不一样（不能用一个作息表概括）
+  · 截图中能看到时间但你拿不准某节课具体几点
+
+========== 块C：课程行 ==========
+
+每个上课时段占一行，用 Tab（制表符，不是空格也不是逗号）分隔成 7 列。列的顺序和含义固定：
+  列1 课程名
+  列2 老师
+  列3 教室
+  列4 星期
+  列5 节次
+  列6 周次
+  列7 类型
+
+每一列的填写规则：
+  列1 课程名：截图中写的完整课程名，不删字不加字，不能包含 Tab 字符；如果同一门课在不同的时间上课，每个时段各占一行。
+  列2 老师：截图中有就写截图中写的全名；没有就写 -，绝不猜测。
+  列3 教室：截图中有就写截图中写的全名；没有就写 -，绝不猜测。
+  列4 星期：只能写数字 1 到 7，含义：1=周一，2=周二，3=周三，4=周四，5=周五，6=周六，7=周日。绝不能写周一 Monday 等。
+  列5 节次：写课程占用的连续节次。1-2 表示第1节和第2节都上这节课；3 表示只上第3节；3-5 表示第3、4、5节都上。必须是连续区间，不能写1,3,5。如果截图中两节不连续（比如第1节和第3节但第2节空着），按截图实际写1和3两条课程行，分别对应不同时间/周次。
+  列6 周次：
+    · 连续多周：用 a-b 表示从第a周到第b周，如 1-16 表示第1周至第16周连续上
+    · 不连续多周：用英文逗号分隔多个单周或区间，如 1,3,5 表示第1、第3、第5周；1-8,10,12-16 表示前8周加第10周加后5周
+    · 必须是数字 1-30 之间；超过30周视为学期安排异常，省略该课程行
+  列7 类型：只能写数字：0=每周都上；1=单周上（第1、3、5...周）；2=双周上（第2、4、6...周）。截图写单周/双周/每周也要转成数字。绝不能写 3 或其他数字。
+
+课程行的放弃规则——以下任意一种情况出现就完全省略该课程行（不输出）：
+  · 列4 星期 拿不准
+  · 列5 节次 拿不准
+  · 列6 周次 拿不准
+  · 列7 类型 拿不准（除上述映射外的情况）
+  · 列2 老师 或 列3 教室 缺失时填 -，不要因为它们缺失就放弃整行
+
+课程行内不能有空行。两个课程行之间也不要插空行。
+
+========== 标记行的写法 ==========
+
+所有标记行必须原样输出&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;，不能用反引号包起来（不能写 ```&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;```），也不能改成 [SLEEPY-BEGIN] 这种方括号形式。
+标记行和内容之间用换行符隔开。标记行必须是字面字符，不能加空格（&lt;&lt;&lt;和SLEEPY之间不能加空格）。
+
+========== 完整示例（请只学习格式，不要复制内容）==========
+
+&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;
+&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;
 第1节 08:00-09:35
 第2节 09:55-11:30
-1-2 08:20-10:00
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;
-高等数学\t张三\tA101\t1\t1-2\t1-16\t0
-大学英语\t李四\tB202\t1\t3-4\t1-16\t1
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;</string>
+第3节 13:30-15:05
+&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;
+高等数学	张三	A101	1	1-2	1-16	0
+大学英语	李四	B202	1	3-4	1-16	1
+体育	-	-	5	3	1-16	2
+&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
 
     <string name="format_wakeup_share_when">从 WakeUp 课程表 app 整体搬家。在 WakeUp 里点「分享课程」生成的整段文字，原样粘贴即可。</string>
     <string-array name="format_wakeup_share_spec">
@@ -278,7 +338,24 @@
     <!-- Mine -->
     <string name="mine_title">我的</string>
     <string name="mine_subtitle">管理你的课表与设置</string>
+    <string name="mine_refresh_widgets">刷新所有小组件</string>
+    <string name="mine_refresh_widgets_done">已刷新全部小组件</string>
     <string name="mine_export">导出课表</string>
+    <!-- Export -->
+    <string name="export_title">导出课表</string>
+    <string name="export_no_table">暂无可导出的课表</string>
+    <string name="export_course_count">%1$d 门课程</string>
+    <string name="export_start_date">开学 %1$s</string>
+    <string name="export_json_title">WakeUp 兼容 JSON</string>
+    <string name="export_json_subtitle">完整课表结构，可被 WakeUp 课表等同类 App 直接导入</string>
+    <string name="export_share_title">分享文本</string>
+    <string name="export_share_subtitle">短文本格式，可粘贴到任何聊天工具</string>
+    <string name="export_ics_title">ICS 日历</string>
+    <string name="export_ics_subtitle">标准 iCalendar 格式，可导入系统日历 / Google / Apple Calendar</string>
+    <string name="export_share_chooser">分享课表</string>
+    <string name="export_saved_to">已保存到 Download/Sleepy/%1$s</string>
+    <string name="export_copied_hint">已调起分享面板</string>
+    <string name="export_failed">导出失败，请重试</string>
     <string name="mine_stat_tables">课表数</string>
     <string name="mine_stat_courses">课程数</string>
     <string name="mine_stat_week">当前周</string>
@@ -348,6 +425,21 @@
 
     <!-- JW Import -->
     <string name="jw_no_url">该学校暂未配置教务 URL</string>
+    <string name="jw_pending_title">该学校暂未实现教务导入</string>
+    <string name="jw_pending_msg">%1$s 的教务系统未在 Sleepy 适配列表中。\n\n你可以：\n1. 点击「申请适配」提交给开发者\n2. 点击「手动输入 URL」在 WebView 打开并登录\n3. 暂用 HTML / CSV 文件导入，或手动添加课程</string>
+    <string name="jw_pending_supported">已支持</string>
+    <string name="jw_pending_pending">待适配</string>
+    <string name="jw_pending_grad">研究生</string>
+    <string name="jw_pending_legacy">旧版</string>
+    <string name="jw_pending_apply">申请适配</string>
+    <string name="jw_pending_input_url">手动输入 URL</string>
+    <string name="jw_pending_use_html">用 HTML 文件导入</string>
+    <string name="jw_pending_use_csv">用 CSV 文件导入</string>
+    <string name="jw_pending_manual">手动添加课程</string>
+    <string name="jw_pending_close">关闭</string>
+    <string name="school_count_supported">已支持 %1$d</string>
+    <string name="school_count_total">共 %1$d 所</string>
+    <string name="school_pinyin_hint">支持拼音首字母 / 学校英文简称 (如 hrbeu)</string>
     <string name="jw_parse_empty">解析结果为空，请确认已到达「个人课表」页（而非首页/登录页）</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>
@@ -404,20 +496,58 @@
     <string name="date_long_format">%1$d月%2$d日</string>
     <string name="notif_title">今日课程 — %1$s %2$s</string>
     <string name="notif_text">点击查看今日课程安排</string>
-    <string name="theme_name_default">默认淡紫</string>
-    <string name="theme_name_spring">春绿</string>
-    <string name="theme_name_ocean">海蓝</string>
-    <string name="theme_name_peach">蜜桃粉</string>
-    <string name="theme_name_slate">石板灰</string>
-    <string name="mine_appearance">外观与显示</string>
-    <string name="mine_general">通用</string>
-    <string name="theme_appearance">外观</string>
-    <string name="theme_mode_system">深浅色跟随系统</string>
-    <string name="theme_mode_light">浅色</string>
-    <string name="theme_mode_dark">深色</string>
-    <string name="appearance_section_theme">主题色彩</string>
-    <string name="appearance_section_display">课程显示</string>
-    <string name="appearance_section_widget">小组件</string>
+
+    <!-- v1.0.20 提醒功能 -->
+    <string name="reminder_title">提醒</string>
+    <string name="reminder_master_title">开启提醒</string>
+    <string name="reminder_master_sub">允许 Sleepy 发送课程通知</string>
+    <string name="reminder_daily_title">每日提醒</string>
+    <string name="reminder_daily_sub">每天在指定时间推送今日课程摘要</string>
+    <string name="reminder_daily_time_label">提醒时间</string>
+    <string name="reminder_daily_preview">示例：今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课</string>
+    <string name="reminder_before_class_title">每节课前提醒</string>
+    <string name="reminder_before_class_sub">在每节课开始前提醒下节课信息</string>
+    <string name="reminder_before_minutes_label">提前</string>
+    <string name="reminder_before_minutes_unit">分钟</string>
+    <string name="reminder_before_class_preview">示例：下节课 高等数学 于 08:00 在 教学楼A101 上课</string>
+    <string name="reminder_banner_title">横幅提醒</string>
+    <string name="reminder_banner_sub">在系统通知栏显示课前横幅</string>
+    <string name="reminder_fluid_title">流体云 / 超级岛</string>
+    <string name="reminder_fluid_sub">在支持的小米、OPPO 手机上显示实时课程卡片</string>
+    <string name="reminder_fluid_fields">胶囊主显示内容</string>
+    <string name="reminder_fluid_fields_hint">选择一个主显示内容</string>
+    <string name="reminder_fluid_field_name">课程名称</string>
+    <string name="reminder_fluid_field_time">上课时间</string>
+    <string name="reminder_fluid_field_room">上课地点</string>
+    <string name="reminder_fluid_field_teacher">任课老师</string>
+    <string name="reminder_fluid_note">点击通知后可展开课程详情。具体是否显示为流体云/超级岛由手机系统、通知权限和厂商服务资格决定。</string>
+    <string name="reminder_pick_time">选择提醒时间</string>
+    <string name="action_confirm">确定</string>
+    <string name="action_cancel">取消</string>
+    <!-- Notification channels -->
+    <string name="notif_channel_daily">每日课程提醒</string>
+    <string name="notif_channel_daily_desc">每天在指定时间推送今日课程摘要</string>
+    <string name="notif_channel_before_class">课前提醒</string>
+    <string name="notif_channel_before_class_desc">每节课开始前推送下节课信息</string>
+    <string name="notif_channel_fluid">流体云 / 超级岛</string>
+    <string name="notif_channel_fluid_desc">课前显示可展开的课程实时卡片</string>
+    <!-- Notification content -->
+    <string name="notif_daily_title">今日 %1$d 号，您有 %2$d 节课</string>
+    <string name="notif_daily_text_first">第一节课 %1$s 于 %2$s 在 %3$s 上课</string>
+    <string name="notif_daily_title_no_course">今日 %1$d 号，今天没有课程</string>
+    <string name="notif_daily_text_no_course">好好休息，享受一天！</string>
+    <string name="notif_before_class_title">课前提醒</string>
+    <string name="notif_before_class_text">下节课 %1$s 于 %2$s 在 %3$s 上课</string>
+    <string name="notif_before_class_text_with_teacher">下节课 %1$s 于 %2$s 在 %3$s 上课，老师：%4$s</string>
+    <string name="notif_room_unknown">未知教室</string>
+
+    <!-- 关于页面 -->
+    <string name="about_title">关于</string>
+    <string name="about_version">版本信息</string>
+    <string name="about_version_detail">版本 %1$s（构建 %2$d）</string>
+    <string name="about_update">获取更新</string>
+    <string name="about_update_detail">GitHub 主站不可用时，自动回退镜像下载</string>
+    <string name="about_update_checking">正在检查更新…</string>
     <string name="about_update_latest">当前已是最新版本 v%1$s</string>
     <string name="update_found_title">发现新版本 v%1$s</string>
     <string name="update_download">下载</string>
@@ -426,20 +556,28 @@
     <string name="update_installing">下载完成，正在打开安装器</string>
     <string name="update_retry">重试</string>
     <string name="update_download_failed">下载失败：%1$s</string>
+    <string name="semester_out_of_range">当前不在学期范围内</string>
+    <string name="semester_not_started">学期未开始</string>
+    <string name="semester_ended">学期已结束</string>
+    <string name="schedule_week_prefix">第 %1$d 周</string>
+    <string name="today_semester_out_hint">学期范围外，课程仅供参考</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
-    <string name="about_license_title">开源声明</string>
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
-    <string name="about_title">关于</string>
-    <string name="about_update">获取更新</string>
-    <string name="about_update_checking">正在检查更新…</string>
-    <string name="about_update_detail">GitHub 主站不可用时，自动回退镜像下载</string>
-    <string name="about_version">版本信息</string>
-    <string name="about_version_detail">版本 %1$s（构建 %2$d）</string>
-    <string name="action_cancel">取消</string>
-    <string name="action_confirm">确定</string>
+    <string name="about_license_title">开源声明</string>
+    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
+    <string name="theme_name_default">默认淡紫</string>
+    <string name="theme_name_spring">春绿</string>
+    <string name="theme_name_ocean">海蓝</string>
+    <string name="theme_name_peach">蜜桃粉</string>
+    <string name="theme_name_slate">石板灰</string>
+    <!-- i18n: additional strings added for full localization -->
+    <string name="default_table_with_num">默认%1$d</string>
+    <string name="new_course">新课程</string>
+    <string name="jw_import_title">教务导入 - %1$s</string>
+    <string name="month_day_format">%1$d月%2$d日</string>
+    <string name="section_short">%1$d</string>
     <string name="day_short_1">一</string>
     <string name="day_short_2">二</string>
     <string name="day_short_3">三</string>
@@ -447,88 +585,18 @@
     <string name="day_short_5">五</string>
     <string name="day_short_6">六</string>
     <string name="day_short_7">日</string>
-    <string name="default_table_with_num">默认%1$d</string>
-    <string name="export_copied_hint">已调起分享面板</string>
-    <string name="export_course_count">%1$d 门课程</string>
-    <string name="export_failed">导出失败，请重试</string>
-    <string name="export_ics_subtitle">标准 iCalendar 格式，可导入系统日历 / Google / Apple Calendar</string>
-    <string name="export_ics_title">ICS 日历</string>
-    <string name="export_json_subtitle">完整课表结构，可被 WakeUp 课表等同类 App 直接导入</string>
-    <string name="export_json_title">WakeUp 兼容 JSON</string>
-    <string name="export_no_table">暂无可导出的课表</string>
-    <string name="export_saved_to">已保存到 Download/Sleepy/%1$s</string>
-    <string name="export_share_chooser">分享课表</string>
-    <string name="export_share_subtitle">短文本格式，可粘贴到任何聊天工具</string>
-    <string name="export_share_title">分享文本</string>
-    <string name="export_start_date">开学 %1$s</string>
-    <string name="export_title">导出课表</string>
-    <string name="import_new_table_hint">（将作为新课表创建）</string>
-    <string name="jw_import_title">教务导入 - %1$s</string>
-    <string name="jw_pending_apply">申请适配</string>
-    <string name="jw_pending_close">关闭</string>
-    <string name="jw_pending_grad">研究生</string>
-    <string name="jw_pending_input_url">手动输入 URL</string>
-    <string name="jw_pending_legacy">旧版</string>
-    <string name="jw_pending_manual">手动添加课程</string>
-    <string name="jw_pending_msg">%1$s 的教务系统未在 Sleepy 适配列表中。\n\n你可以：\n1. 点击「申请适配」提交给开发者\n2. 点击「手动输入 URL」在 WebView 打开并登录\n3. 暂用 HTML / CSV 文件导入，或手动添加课程</string>
-    <string name="jw_pending_pending">待适配</string>
-    <string name="jw_pending_supported">已支持</string>
-    <string name="jw_pending_title">该学校暂未实现教务导入</string>
-    <string name="jw_pending_use_csv">用 CSV 文件导入</string>
-    <string name="jw_pending_use_html">用 HTML 文件导入</string>
-    <string name="mine_refresh_widgets">刷新所有小组件</string>
-    <string name="mine_refresh_widgets_done">已刷新全部小组件</string>
-    <string name="month_day_format">%1$d月%2$d日</string>
-    <string name="new_course">新课程</string>
-    <string name="notif_before_class_text">下节课 %1$s 于 %2$s 在 %3$s 上课</string>
-    <string name="notif_before_class_text_with_teacher">下节课 %1$s 于 %2$s 在 %3$s 上课，老师：%4$s</string>
-    <string name="notif_before_class_title">课前提醒</string>
-    <string name="notif_channel_before_class">课前提醒</string>
-    <string name="notif_channel_before_class_desc">每节课开始前推送下节课信息</string>
-    <string name="notif_channel_daily">每日课程提醒</string>
-    <string name="notif_channel_daily_desc">每天在指定时间推送今日课程摘要</string>
-    <string name="notif_channel_fluid">流体云 / 超级岛</string>
-    <string name="notif_channel_fluid_desc">课前显示可展开的课程实时卡片</string>
-    <string name="notif_daily_text_first">第一节课 %1$s 于 %2$s 在 %3$s 上课</string>
-    <string name="notif_daily_text_no_course">好好休息，享受一天！</string>
-    <string name="notif_daily_title">今日 %1$d 号，您有 %2$d 节课</string>
-    <string name="notif_daily_title_no_course">今日 %1$d 号，今天没有课程</string>
-    <string name="notif_room_unknown">未知教室</string>
-    <string name="reminder_banner_sub">在系统通知栏显示课前横幅</string>
-    <string name="reminder_banner_title">横幅提醒</string>
-    <string name="reminder_before_class_preview">示例：下节课 高等数学 于 08:00 在 教学楼A101 上课</string>
-    <string name="reminder_before_class_sub">在每节课开始前提醒下节课信息</string>
-    <string name="reminder_before_class_title">每节课前提醒</string>
-    <string name="reminder_before_minutes_label">提前</string>
-    <string name="reminder_before_minutes_unit">分钟</string>
-    <string name="reminder_daily_preview">示例：今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课</string>
-    <string name="reminder_daily_sub">每天在指定时间推送今日课程摘要</string>
-    <string name="reminder_daily_time_label">提醒时间</string>
-    <string name="reminder_daily_title">每日提醒</string>
-    <string name="reminder_fluid_field_name">课程名称</string>
-    <string name="reminder_fluid_field_room">上课地点</string>
-    <string name="reminder_fluid_field_teacher">任课老师</string>
-    <string name="reminder_fluid_field_time">上课时间</string>
-    <string name="reminder_fluid_fields">胶囊主显示内容</string>
-    <string name="reminder_fluid_fields_hint">选择一个主显示内容</string>
-    <string name="reminder_fluid_note">点击通知后可展开课程详情。具体是否显示为流体云/超级岛由手机系统、通知权限和厂商服务资格决定。</string>
-    <string name="reminder_fluid_sub">在支持的小米、OPPO 手机上显示实时课程卡片</string>
-    <string name="reminder_fluid_title">流体云 / 超级岛</string>
-    <string name="reminder_master_sub">允许 Sleepy 发送课程通知</string>
-    <string name="reminder_master_title">开启提醒</string>
-    <string name="reminder_pick_time">选择提醒时间</string>
-    <string name="reminder_title">提醒</string>
-    <string name="school_count_supported">已支持 %1$d</string>
-    <string name="school_count_total">共 %1$d 所</string>
-    <string name="school_pinyin_hint">支持拼音首字母 / 学校英文简称 (如 hrbeu)</string>
     <string name="section_node_format">第%1$d-%2$d节</string>
-    <string name="section_short">%1$d</string>
     <string name="section_single">第%1$d 节</string>
-    <string name="semester_out_of_range">当前不在学期范围内</string>
-    <string name="semester_not_started">学期未开始</string>
-    <string name="semester_ended">学期已结束</string>
-    <string name="schedule_week_prefix">第 %1$d 周</string>
-    <string name="today_semester_out_hint">学期范围外，课程仅供参考</string>
+    <string name="mine_appearance">外观与显示</string>
+    <string name="mine_general">通用</string>
+    <string name="theme_appearance">外观</string>
+    <!-- 深浅色模式的"跟随系统",与主题取色的 theme_system(跟随系统)区分 -->
+    <string name="theme_mode_system">深浅色跟随系统</string>
+    <string name="theme_mode_light">浅色</string>
+    <string name="theme_mode_dark">深色</string>
+    <string name="appearance_section_theme">主题色彩</string>
+    <string name="appearance_section_display">课程显示</string>
+    <string name="appearance_section_widget">小组件</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">输入</string>
     <string name="edit_period_duration_label">每节时长</string>

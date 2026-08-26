@@ -105,41 +105,98 @@
     <string name="copied">Copiado</string>
     <string name="ai_prompt_title">Deja que la IA convierta tu captura</string>
     <string name="ai_prompt_hint">Copia el prompt de abajo a cualquier IA (Doubao, ChatGPT…), envía la captura de tu horario, y pega la salida de la IA en el campo de texto de arriba para importar.</string>
-    <string name="ai_prompt_text">Convierte la captura del horario que enviaré a continuación en texto plano. Solo genera las líneas de marca, las líneas de horario y las líneas de curso. Sin explicaciones.
+    <string name="ai_prompt_text">Tarea: Convierte la captura del horario que envio a continuacion en texto plano usando el formato de abajo. No output nada mas—sin explicaciones, sin bloques de codigo Markdown, sin caracteres fuera de esta especificacion.
 
-Estructura de salida (orden inmutable):
-1. Primera línea: &amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
-2. Si el horario de cada período es visible en la captura, genera: &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;, luego las líneas de horario, luego &amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;. Si no hay horarios, omite estas tres líneas.
-3. Líneas de curso (una por sesión de clase).
-4. Última línea: &amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;
+La salida consiste en cuatro bloques en este orden exacto:
+Bloque A: Linea unica &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; (esta es la primera linea de salida)
+Bloque B: Lineas de horario (presente SOLO si la captura muestra hora de inicio/fin para cada periodo; si no hay horarios visibles, omite Bloque B completamente—ver reglas de Omision de Horario abajo)
+Bloque C: Lineas de curso
+Bloque D: Linea unica &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt; (esta es la ultima linea de salida)
 
-Formato de línea de horario (elegir uno):
-· Período único: 第1节 08:00-09:35 (una línea por período)
-· Múltiples consecutivos: 1-2 08:20-10:00 (usar inicio-fin para períodos que comparten tiempo)
-Ordenar las líneas de horario por número de período. Sin palabras adicionales como "時間表". Sin líneas vacías.
+Bloque B y Bloque C no deben contener lineas vacias. Entre Bloque A/B, B/C y C/D, las lineas vacias son opcionales (recomendado: sin lineas vacias, seguir el ejemplo).
 
-Cada línea de curso debe tener exactamente 7 columnas separadas por Tab (no espacios ni comas):
-asignatura\tdocente\taula\tdía\tperíodos\tsemanas\ttipo
-· asignatura: nombre completo de la captura, sin borrar caracteres, sin Tab dentro.
-· docente, aula: escribir - si no aparecen; no inventar.
-· día: número 1-7; 1=lunes, 7=domingo.
-· períodos: rango continuo de períodos. 1-2 significa períodos 1 y 2; 3 significa solo período 3. No escribir hora aquí.
-· semanas: 1-16 significa semanas 1 a 16; no consecutivas como 1,3,5. Combinar rangos y individuales como 1-8,10,12-16.
-· tipo: número 0, 1 o 2; 0=semanal, 1=impar, 2=par.
-· No inventar campos inciertos: docente y aula = -; si día, períodos o semanas no están claros, omitir esa línea de curso.
+========== Bloque B: Horario ==========
 
-Líneas de marca exactas, sin espacios adicionales, sin acentos graves, sin cercas Markdown. Sin líneas vacías dentro del bloque de horario o curso.
+El horario describe a que hora comienza y termina cada periodo, aplicable a todos los dias Lunes a Domingo. Si los dias tienen horarios diferentes, seguir las reglas de Omision de Horario.
 
-Ejemplo (aprender el formato, no copiar contenido):
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-BEGIN&amp;gt;&amp;gt;&amp;gt;
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-BEGIN&amp;gt;&amp;gt;&amp;gt;
-第1节 08:00-09:35
-第2节 09:55-11:30
-1-2 08:20-10:00
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-TIME-END&amp;gt;&amp;gt;&amp;gt;
-Cálculo\tJuan\tA101\t1\t1-2\t1-16\t0
-Inglés\tMaría\tB202\t1\t3-4\t1-16\t1
-&amp;lt;&amp;lt;&amp;lt;SLEEPY-END&amp;gt;&amp;gt;&amp;gt;</string>
+Marcadores de horario:
+  &lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;
+  (una linea de horario por periodo)
+  &lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;
+(Los tres marcadores deben aparecer juntos, o ninguno. No puede tener solo BEGIN sin END.)
+
+Formato de linea de horario (elegir UN formato, segun lo que muestre la captura):
+  Formato 1: PeriodoN HH:MM-HH:MM
+    Ejemplo: Periodo1 08:00-09:35
+    Significado: Periodo seguido del numero de periodo (1, 2, 3...). Usar esto si la captura lista cada periodo por separado.
+  Formato 2: a-b HH:MM-HH:MM
+    Ejemplo: 1-2 08:20-10:00
+    Significado: a-b significa que los periodos desde a hasta b comparten el mismo horario. 1-2 significa que el periodo 1 y 2 funcionan 08:20-10:00.
+    Abreviatura de un solo periodo: "5" es equivalente a "5-5" (periodo 5 solo).
+    Usar esto si la captura agrupa multiples periodos consecutivos bajo un mismo horario.
+
+Reglas de linea de horario:
+  · Los numeros de periodo deben empezar desde 1, en orden ascendente
+  · Usar SOLO un formato—NO mezclar Formato 1 y Formato 2 en el mismo horario
+  · Sin lineas vacias
+  · Un espacio entre periodo y hora
+  · HH:MM es formato 24 horas (HH: 00-23, MM: 00-59)
+  · No anteponer "Horario", "Periodos", "时间表" ni ningun otro texto
+
+Omision del Bloque de Horario (Bloque B)—omitir Bloque B completamente si ALGUNO de estos aplica:
+  · No hay horas de inicio/fin visibles en la captura
+  · Dias diferentes tienen horarios diferentes (no se puede expresar como una tabla)
+  · Puedes ver horas pero no estas seguro de un periodo especifico
+
+========== Bloque C: Lineas de Curso ==========
+
+Cada sesion de clase es UNA linea, separada en EXACTAMENTE 7 columnas por caracteres de Tabulacion (NO espacios, NO comas). El orden y significado de columnas es fijo:
+  Columna 1: Nombre del curso
+  Columna 2: Docente
+  Columna 3: Salon
+  Columna 4: Dia de la semana
+  Columna 5: Periodo(s)
+  Columna 6: Semana(s)
+  Columna 7: Tipo
+
+Reglas de columnas:
+  Columna 1 Nombre del curso: Escribir exactamente como aparece en la captura. No borrar/agregar caracteres. No puede contener Tab. Si el mismo curso tiene multiples horarios, escribir una linea por horario.
+  Columna 2 Docente: Escribir exactamente como aparece si esta presente; si no aparece, escribir "-" (guion). Nunca inventar.
+  Columna 3 Salon: Escribir exactamente como aparece si esta presente; si no aparece, escribir "-" (guion). Nunca inventar.
+  Columna 4 Dia de la semana: Escribir SOLO digitos 1-7. Significado: 1=Lunes, 2=Martes, 3=Miercoles, 4=Jueves, 5=Viernes, 6=Sabado, 7=Domingo. NUNCA escribir "Lunes", "周一", etc.
+  Columna 5 Periodo(s): Escribir el rango de periodos consecutivos para esta clase. "1-2" significa periodos 1 y 2; "3" significa solo periodo 3; "3-5" significa periodos 3, 4 y 5. Debe ser un rango continuo. NO escribir no continuos como "1,3,5". Si la captura muestra periodos no continuos (ej. periodo 1 y 3 pero periodo 2 vacio), escribir DOS lineas de curso separadas, cada una con su propio tiempo/semana.
+  Columna 6 Semana(s):
+    · Semanas consecutivas: Usar a-b, ej., 1-16 significa semanas 1 a 16
+    · Semanas no consecutivas: Usar elementos separados por coma, ej., 1,3,5 significa semanas 1, 3 y 5; 1-8,10,12-16 significa semanas 1-8 mas semana 10 mas semanas 12-16
+    · Debe ser digitos 1-30; si excede 30 semanas, tratar como anomalico y omitir esa linea de curso
+  Columna 7 Tipo: Escribir SOLO digito 0, 1 o 2. Significado: 0=todas las semanas; 1= semanas impares (1,3,5...); 2= semanas pares (2,4,6...). Si la captura dice "单周/双周/每周", convertir al digito. NUNCA escribir 3 u otro numero.
+
+Reglas de omision de linea de curso—omitir la LINEA ENTERA (no output) si ALGUNO de estos aplica:
+  · Columna 4 (dia) incierto
+  · Columna 5 (periodos) incierto
+  · Columna 6 (semanas) incierto
+  · Columna 7 (tipo) incierto (excepto el mapeo 0/1/2 de arriba)
+  · Nota: Si Columna 2 o Columna 3 falta, escribir "-" NO omitir la linea
+
+Las lineas de curso no deben contener lineas vacias. No insertar lineas vacias entre lineas de curso.
+
+========== Reglas de Marcadores ==========
+
+Todas las lineas de marcador deben outputse exactamente como: &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;, &lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;, &lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;, &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;. NO envolver en comillas invertidas (NO escribir ```&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;```) y NO cambiar a corchetes como [SLEEPY-BEGIN].
+Marcadores y contenido se separan por nuevas lineas. Los marcadores deben ser literales—sin espacios extras (sin espacio entre &lt;&lt;&lt; y SLEEPY).
+
+========== Ejemplo Completo (aprender formato solo, no copiar contenido) ==========
+
+&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;
+&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;
+Periodo1 08:00-09:35
+Periodo2 09:55-11:30
+Periodo3 13:30-15:05
+&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;
+Calculo	Juan	A101	1	1-2	1-16	0
+Ingles	Maria	B202	1	3-4	1-16	1
+Educacion Fisica	-	-	5	3	1-16	2
+&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
 
     <string name="format_wakeup_share_when">Migrar todo desde la app WakeUp. Copia el texto completo generado por "Compartir cursos" de WakeUp y pégalo tal cual.</string>
     <string-array name="format_wakeup_share_spec">
