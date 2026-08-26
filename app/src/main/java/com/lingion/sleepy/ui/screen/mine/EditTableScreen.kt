@@ -58,6 +58,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -177,15 +178,14 @@ fun EditTableScreen(
                             shape = SleepyTheme.fieldShape,
                             colors = fieldColors
                         )
-                        TextField(
+                        // ★ 学期开始日期: 手输 + 日历图标弹原生 DatePicker(与导入确认弹窗同款组件)。
+                        //   之前是裸 TextField 只能输数字, 用户没法直观改日期。
+                        DatePickerField(
                             value = startDate,
                             onValueChange = { startDate = it },
-                            label = { Text(stringResource(R.string.edit_table_start_date)) },
-                            placeholder = { Text(stringResource(R.string.edit_table_start_date_hint)) },
-                            singleLine = true,
+                            label = stringResource(R.string.edit_table_start_date),
                             modifier = Modifier.fillMaxWidth(),
-                            shape = SleepyTheme.fieldShape,
-                            colors = fieldColors
+                            isError = error != null
                         )
                         TextField(
                             value = maxWeekText,
