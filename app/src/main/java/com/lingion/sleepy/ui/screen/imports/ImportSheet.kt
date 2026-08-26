@@ -44,7 +44,6 @@ import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.SnackbarHost
@@ -652,7 +651,8 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                 .background(colors.surfaceContainer)
                                 .padding(10.dp)
                         )
-                        OutlinedButton(
+                        // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 用 surface 色块按钮, 非 OutlinedButton
+                        Button(
                             onClick = {
                                 val cm = context.getSystemService(CLIPBOARD_SERVICE) as ClipboardManager
                                 cm.setPrimaryClip(
@@ -662,8 +662,12 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                     )
                                 )
                             },
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = SleepyTheme.shapes.medium
+                            modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                            shape = SleepyTheme.Buttons.shape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colors.surface,
+                                contentColor = colors.onPrimaryContainer
+                            )
                         ) {
                             Icon(
                                 imageVector = Icons.Outlined.ContentCopy,

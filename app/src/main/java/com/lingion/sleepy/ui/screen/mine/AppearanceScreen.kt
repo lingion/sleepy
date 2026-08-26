@@ -1,6 +1,5 @@
 package com.lingion.sleepy.ui.screen.mine
 
-import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -169,12 +168,11 @@ fun AppearanceScreen(
 @Composable
 private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
-    val borderColor = if (selected) colors.primary else colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
-    val borderWidth = if (selected) 2.dp else 1.dp
+    // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
+    val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
-        color = colors.surfaceContainer, shape = SleepyTheme.shapes.large,
-        border = BorderStroke(borderWidth, borderColor)
+        color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
             Box(Modifier.size(56.dp).clip(SleepyTheme.shapes.large).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
@@ -195,12 +193,11 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
 private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val scheme = if (colors.background.red < 0.5f) preset.light else preset.dark
-    val borderColor = if (selected) colors.primary else colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)
-    val borderWidth = if (selected) 2.dp else 1.dp
+    // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
+    val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
-        color = colors.surfaceContainer, shape = SleepyTheme.shapes.large,
-        border = BorderStroke(borderWidth, borderColor)
+        color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
             Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
