@@ -58,6 +58,8 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayEntry
 import com.lingion.sleepy.util.HolidayManager
+import com.lingion.sleepy.util.HolidayRange
+import com.lingion.sleepy.util.HolidayRangeOps
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -89,11 +91,11 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
     var style by remember { mutableStateOf(AppPrefs.getHolidayStyle(context)) }
     var state by remember { mutableStateOf<HolidayUiState>(HolidayUiState.Loading) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
-    var overrides by remember { mutableStateOf(AppPrefs.getHolidayOverrides(context)) }
+    var overrides by remember { mutableStateOf(AppPrefs.getHolidayRanges(context)) }
     var editing by remember { mutableStateOf<EditingEntry?>(null) }
     var showAdd by remember { mutableStateOf(false) }
 
-    fun reload() { overrides = AppPrefs.getHolidayOverrides(context) }
+    fun reload() { overrides = AppPrefs.getHolidayRanges(context) }
 
     fun load(targetYear: Int, force: Boolean = false) {
         loadJob?.cancel()
@@ -104,7 +106,7 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             } else {
                 HolidayManager.getYearEntries(targetYear)
             }
-            overrides = AppPrefs.getHolidayOverrides(context)
+            overrides = AppPrefs.getHolidayRanges(context)
             state = when {
                 entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed
                 else -> HolidayUiState.Loaded(
@@ -273,9 +275,15 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             if (loaded != null) {
                 // 覆盖变化时基于原始网络数据即时重合并, 不重新走网络
                 val rawEntries = loaded.holidays + loaded.workdays
-                val merged = HolidayManager.mergeEntries(rawEntries, overrides)
-                val mergedHolidays = merged.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY }
-                val mergedWorkdays = merged.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
+                val merged = HolidayRangeOps.mergeSegments(rawEntries, overrides)
+                val mergedEntries = merged.active.flatMap { seg ->
+                    buildList {
+                        var d = seg.startDate
+                        while (!d.isAfter(seg.endDate)) { add(HolidayEntry(d, seg.name, seg.type)); d = d.plusDays(1) }
+                    }
+                }
+                val mergedHolidays = mergedEntries.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY }
+                val mergedWorkdays = mergedEntries.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
 
                 if (mergedHolidays.isNotEmpty()) {
                     item { SectionHeader(stringResource(R.string.holiday_list_holidays)) }
@@ -313,19 +321,18 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
     editing?.let { target ->
         HolidayEntryEditDialog(
             target = target,
-            isNew = target.date !in overrides && !overrides.containsKey(target.date),
+            isNew = overrides.none { it.startDate <= target.date && target.date <= it.endDate },
             onDismiss = { editing = null },
             onSave = { date, name, type ->
-                val next = overrides.toMutableMap()
-                next[date] = HolidayEntry(date, name, type)
-                AppPrefs.setHolidayOverrides(context, next)
+                val next = overrides.filter { !(it.startDate <= date && date <= it.endDate) }.toMutableList()
+                next.add(HolidayRange(HolidayRangeOps.newId(), name, date, date, type, null))
+                AppPrefs.setHolidayRanges(context, next)
                 reload()
                 editing = null
             },
             onRemove = { date ->
-                val next = overrides.toMutableMap()
-                next.remove(date)
-                AppPrefs.setHolidayOverrides(context, next)
+                val next = overrides.filter { !(it.startDate <= date && date <= it.endDate) }
+                AppPrefs.setHolidayRanges(context, next)
                 reload()
                 editing = null
             }
@@ -338,9 +345,9 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             isNew = true,
             onDismiss = { showAdd = false },
             onSave = { date, name, type ->
-                val next = overrides.toMutableMap()
-                next[date] = HolidayEntry(date, name, type)
-                AppPrefs.setHolidayOverrides(context, next)
+                val next = overrides.filter { !(it.startDate <= date && date <= it.endDate) }.toMutableList()
+                next.add(HolidayRange(HolidayRangeOps.newId(), name, date, date, type, null))
+                AppPrefs.setHolidayRanges(context, next)
                 reload()
                 showAdd = false
             },
@@ -353,7 +360,7 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
 private fun HolidayEntryListCard(
     entries: List<HolidayEntry>,
     showBadge: Boolean,
-    overrides: Map<LocalDate, HolidayEntry>,
+    overrides: List<HolidayRange>,
     onEdit: (HolidayEntry) -> Unit
 ) {
     val colors = SleepyTheme.colors
@@ -378,7 +385,7 @@ private fun HolidayEntryListCard(
                     color = colors.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                if (entry.date in overrides && overrides[entry.date]?.type != HolidayManager.OVERRIDE_REMOVED) {
+                if (overrides.any { it.type != HolidayRangeOps.REMOVED && it.startDate <= entry.date && entry.date <= it.endDate }) {
                     Box(
                         modifier = Modifier
                             .clip(SleepyTheme.shapes.small)

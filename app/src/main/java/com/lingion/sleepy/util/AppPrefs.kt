@@ -44,7 +44,7 @@ object AppPrefs {
     const val KEY_HOLIDAY_GREY_WEEKEND = "holiday_grey_weekend"   // bool default true
     const val KEY_HOLIDAY_STYLE = "holiday_style"                  // "grey" / "strikethrough" default "grey"
     const val KEY_HOLIDAY_IGNORE_WORKDAY = "holiday_ignore_workday" // bool default true (补班日忽略)
-    const val KEY_HOLIDAY_OVERRIDES = "holiday_overrides"           // JSON — 用户每日覆盖(编辑/新增/删除)
+    const val KEY_HOLIDAY_OVERRIDES = "holiday_overrides"           // JSON — 用户范围化覆盖(编辑/新增/删除节日段)
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -289,13 +289,13 @@ object AppPrefs {
         sp(ctx).edit().putBoolean(KEY_HOLIDAY_IGNORE_WORKDAY, v).apply()
     }
 
-    // ===== 节假日用户覆盖（每天微调）=====
+    // ===== 节假日用户覆盖（范围化段）=====
 
-    /** 用户对具体日期的覆盖: 编辑/新增/删除。JSON 由 HolidayManager 编解码。 */
-    fun getHolidayOverrides(ctx: Context): Map<java.time.LocalDate, com.lingion.sleepy.util.HolidayEntry> =
-        HolidayManager.decodeOverrides(sp(ctx).getString(KEY_HOLIDAY_OVERRIDES, "{}") ?: "{}")
+    /** 用户范围化覆盖段: 编辑/新增/删除节日段。JSON 由 HolidayRangeOps 编解码。 */
+    fun getHolidayRanges(ctx: Context): List<com.lingion.sleepy.util.HolidayRange> =
+        com.lingion.sleepy.util.HolidayRangeOps.decodeOverrides(sp(ctx).getString(KEY_HOLIDAY_OVERRIDES, "[]") ?: "[]")
 
-    fun setHolidayOverrides(ctx: Context, overrides: Map<java.time.LocalDate, com.lingion.sleepy.util.HolidayEntry>) {
-        sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, HolidayManager.encodeOverrides(overrides)).apply()
+    fun setHolidayRanges(ctx: Context, ranges: List<com.lingion.sleepy.util.HolidayRange>) {
+        sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
     }
 }
