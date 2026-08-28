@@ -2,7 +2,6 @@ package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -10,10 +9,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -43,8 +42,6 @@ import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
@@ -60,7 +57,7 @@ import kotlinx.coroutines.launch
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun GeneralSettingsScreen(onBack: () -> Unit) {
+fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     var language by remember { mutableStateOf(AppPrefs.getLanguage(context)) }
@@ -86,9 +83,6 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
     var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
-    var holidayWeekend by remember { mutableStateOf(AppPrefs.isHolidayGreyWeekend(context)) }
-    var holidayIgnoreWorkday by remember { mutableStateOf(AppPrefs.isHolidayIgnoreWorkday(context)) }
-    var holidayStyle by remember { mutableStateOf(AppPrefs.getHolidayStyle(context)) }
 
     // ★ 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -219,56 +213,35 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
-            // 节假日课程灰显
+            // 节假日课程灰显: 点击进入二级页
             item {
-                SettingsCard(title = stringResource(R.string.settings_holiday_title), expanded = "holiday" in expandedSections, onToggle = { toggleSection("holiday") }) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_holiday_weekend),
-                        subtitle = stringResource(R.string.settings_holiday_weekend_sub),
-                        checked = holidayWeekend,
-                        onCheckedChange = { holidayWeekend = it; AppPrefs.setHolidayGreyWeekend(context, it) }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_holiday_workday),
-                        subtitle = stringResource(R.string.settings_holiday_workday_sub),
-                        checked = holidayIgnoreWorkday,
-                        onCheckedChange = { holidayIgnoreWorkday = it; AppPrefs.setHolidayIgnoreWorkday(context, it) }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    // 灰显样式: 灰色 / 灰色加删除线 二选一
-                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer)
+                        .noRippleClickable(onOpenHoliday)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
                         Text(
-                            text = stringResource(R.string.settings_holiday_style),
-                            style = MaterialTheme.typography.labelMedium,
+                            text = stringResource(R.string.settings_holiday_title),
+                            style = MaterialTheme.typography.titleSmall,
                             color = colors.onSurface
                         )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            listOf(
-                                "grey" to stringResource(R.string.settings_holiday_style_grey),
-                                "strikethrough" to stringResource(R.string.settings_holiday_style_strikethrough)
-                            ).forEach { (key, label) ->
-                                val selected = holidayStyle == key
-                                Box(
-                                    modifier = Modifier
-                                        .clip(RoundedCornerShape(20.dp))
-                                        .background(if (selected) colors.primaryContainer else colors.surfaceContainer)
-                                        .noRippleClickable {
-                                            holidayStyle = key
-                                            AppPrefs.setHolidayStyle(context, key)
-                                        }
-                                        .padding(horizontal = 14.dp, vertical = 8.dp)
-                                ) {
-                                    Text(
-                                        text = label,
-                                        style = MaterialTheme.typography.labelMedium,
-                                        color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
-                                    )
-                                }
-                            }
-                        }
+                        Text(
+                            text = stringResource(R.string.settings_holiday_entry_sub),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
                     }
+                    Icon(
+                        Icons.Outlined.ChevronRight,
+                        contentDescription = null,
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
+                    )
                 }
             }
 
@@ -314,62 +287,6 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                             refreshWidgets()
                         }
                     )
-                }
-            }
-
-            // ── 节假日灰显 ──
-            item {
-                SettingsCard(title = stringResource(R.string.settings_holiday_title), expanded = "holiday" in expandedSections, onToggle = { toggleSection("holiday") }) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_holiday_weekend),
-                        subtitle = stringResource(R.string.settings_holiday_weekend_sub),
-                        checked = holidayWeekend,
-                        onCheckedChange = {
-                            holidayWeekend = it
-                            AppPrefs.setHolidayGreyWeekend(context, it)
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_holiday_workday),
-                        subtitle = stringResource(R.string.settings_holiday_workday_sub),
-                        checked = holidayIgnoreWorkday,
-                        onCheckedChange = {
-                            holidayIgnoreWorkday = it
-                            AppPrefs.setHolidayIgnoreWorkday(context, it)
-                        }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Text(
-                        text = stringResource(R.string.settings_holiday_style),
-                        style = MaterialTheme.typography.titleSmall,
-                        color = colors.onSurface,
-                        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
-                    )
-                    Text(
-                        text = stringResource(R.string.settings_holiday_style_sub),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant,
-                        modifier = Modifier.padding(bottom = 8.dp)
-                    )
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        com.lingion.sleepy.ui.component.HolidayStyleChip(
-                            label = stringResource(R.string.settings_holiday_style_grey),
-                            selected = holidayStyle == "grey",
-                            onClick = {
-                                holidayStyle = "grey"
-                                AppPrefs.setHolidayStyle(context, "grey")
-                            }
-                        )
-                        com.lingion.sleepy.ui.component.HolidayStyleChip(
-                            label = stringResource(R.string.settings_holiday_style_strikethrough),
-                            selected = holidayStyle == "strikethrough",
-                            onClick = {
-                                holidayStyle = "strikethrough"
-                                AppPrefs.setHolidayStyle(context, "strikethrough")
-                            }
-                        )
-                    }
                 }
             }
 

@@ -42,6 +42,7 @@ import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
+import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
@@ -151,7 +152,7 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 private enum class OverlayScreen {
-    AddCourse, AllTables, EditTable, Theme, General, Export, Reminder, About
+    AddCourse, AllTables, EditTable, Theme, General, Holiday, Export, Reminder, About
 }
 
 @Composable
@@ -228,7 +229,11 @@ private fun AppRoot(
         return
     }
     if (overlayScreen == OverlayScreen.General) {
-        GeneralSettingsScreen(onBack = { overlayScreen = null })
+        GeneralSettingsScreen(onBack = { overlayScreen = null }, onOpenHoliday = { overlayScreen = OverlayScreen.Holiday })
+        return
+    }
+    if (overlayScreen == OverlayScreen.Holiday) {
+        HolidaySettingsScreen(onBack = { overlayScreen = null })
         return
     }
     if (overlayScreen == OverlayScreen.Export) {

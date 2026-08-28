@@ -40,6 +40,7 @@ object AppPrefs {
     const val THEME_MODE_SYSTEM = "system"
 
     // ===== 节假日灰显开关 =====
+    const val KEY_HOLIDAY_GREY_HOLIDAY = "holiday_grey_holiday"   // bool default true
     const val KEY_HOLIDAY_GREY_WEEKEND = "holiday_grey_weekend"   // bool default true
     const val KEY_HOLIDAY_STYLE = "holiday_style"                  // "grey" / "strikethrough" default "grey"
     const val KEY_HOLIDAY_IGNORE_WORKDAY = "holiday_ignore_workday" // bool default true (补班日忽略)
@@ -253,6 +254,14 @@ object AppPrefs {
     }
 
     // ===== 节假日灰显 =====
+
+    /** 法定节假日灰显开关 — 默认 true */
+    fun isHolidayGreyHoliday(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_HOLIDAY_GREY_HOLIDAY, true)
+
+    fun setHolidayGreyHoliday(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_HOLIDAY_GREY_HOLIDAY, v).apply()
+    }
 
     /** 周末灰显开关 — 默认 true */
     fun isHolidayGreyWeekend(ctx: Context): Boolean =
