@@ -68,11 +68,11 @@ private sealed interface HolidayUiState {
     data object Loading : HolidayUiState
     data object Failed : HolidayUiState
     data object Empty : HolidayUiState
-    data class Loaded(val holidays: List<HolidayEntry>, val workdays: List<HolidayEntry>) : HolidayUiState
+    data class Loaded(val entries: List<HolidayEntry>) : HolidayUiState
 }
 
-/** 弹窗编辑目标: null=添加模式, 非 null=编辑该日期 */
-private data class EditingEntry(val date: LocalDate, val name: String, val type: String)
+/** 弹窗编辑目标: isNew=true 添加模式; isUserSaved 决定"恢复默认"是否可见(网络段无覆盖可恢复) */
+private data class EditingTarget(val range: HolidayRange, val isNew: Boolean, val isUserSaved: Boolean)
 
 private const val MIN_YEAR = 2005
 private const val MAX_YEAR = 2049
@@ -92,10 +92,42 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
     var state by remember { mutableStateOf<HolidayUiState>(HolidayUiState.Loading) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
     var overrides by remember { mutableStateOf(AppPrefs.getHolidayRanges(context)) }
-    var editing by remember { mutableStateOf<EditingEntry?>(null) }
-    var showAdd by remember { mutableStateOf(false) }
+    var editing by remember { mutableStateOf<EditingTarget?>(null) }
 
     fun reload() { overrides = AppPrefs.getHolidayRanges(context) }
+
+    /** 保存(新增或替换同 id)一段覆盖 */
+    fun saveRange(range: HolidayRange) {
+        val next = overrides.filter { it.id != range.id }.toMutableList()
+        next.add(range)
+        AppPrefs.setHolidayRanges(context, next)
+        reload()
+    }
+
+    /**
+     * 删除一段: 段 id 在 overrides 里 → 直接移除;
+     * 是网络段(聚合生成、无对应覆盖) → 写 type=REMOVED + sourceKey 的覆盖挂接该网络段。
+     */
+    fun deleteRange(range: HolidayRange) {
+        val known = overrides.any { it.id == range.id }
+        val next = overrides.filter { it.id != range.id }.toMutableList()
+        if (!known) {
+            next.add(
+                HolidayRange(
+                    HolidayRangeOps.newId(), range.name, range.startDate, range.endDate,
+                    HolidayRangeOps.REMOVED, networkKeyOf(range.type, range.startDate)
+                )
+            )
+        }
+        AppPrefs.setHolidayRanges(context, next)
+        reload()
+    }
+
+    /** 恢复默认: 移除该 id 的覆盖(含 REMOVED 型), 网络段随之回来 */
+    fun restoreRange(range: HolidayRange) {
+        AppPrefs.setHolidayRanges(context, overrides.filter { it.id != range.id })
+        reload()
+    }
 
     fun load(targetYear: Int, force: Boolean = false) {
         loadJob?.cancel()
@@ -109,10 +141,7 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             overrides = AppPrefs.getHolidayRanges(context)
             state = when {
                 entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed
-                else -> HolidayUiState.Loaded(
-                    holidays = entries.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY },
-                    workdays = entries.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
-                )
+                else -> HolidayUiState.Loaded(entries)
             }
         }
     }
@@ -274,42 +303,57 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             val loaded = state as? HolidayUiState.Loaded
             if (loaded != null) {
                 // 覆盖变化时基于原始网络数据即时重合并, 不重新走网络
-                val rawEntries = loaded.holidays + loaded.workdays
-                val merged = HolidayRangeOps.mergeSegments(rawEntries, overrides)
-                val mergedEntries = merged.active.flatMap { seg ->
-                    buildList {
-                        var d = seg.startDate
-                        while (!d.isAfter(seg.endDate)) { add(HolidayEntry(d, seg.name, seg.type)); d = d.plusDays(1) }
-                    }
-                }
-                val mergedHolidays = mergedEntries.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY }
-                val mergedWorkdays = mergedEntries.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
+                val merged = HolidayRangeOps.mergeSegments(loaded.entries, overrides)
+                val userRangeIds = overrides.map { it.id }.toSet()
+                val holidaySegments = merged.active.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY }
+                val workdaySegments = merged.active.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
 
-                if (mergedHolidays.isNotEmpty()) {
+                if (holidaySegments.isNotEmpty()) {
                     item { SectionHeader(stringResource(R.string.holiday_list_holidays)) }
                     item {
-                        HolidayEntryListCard(
-                            entries = mergedHolidays,
-                            showBadge = false,
-                            overrides = overrides,
-                            onEdit = { editing = EditingEntry(it.date, it.name, it.type) }
+                        HolidayRangeListCard(
+                            segments = holidaySegments,
+                            userRangeIds = userRangeIds,
+                            onEdit = { editing = resolveEditTarget(it, userRangeIds) }
                         )
                     }
                 }
-                if (mergedWorkdays.isNotEmpty()) {
+                if (workdaySegments.isNotEmpty()) {
                     item { SectionHeader(stringResource(R.string.holiday_list_workdays)) }
                     item {
-                        HolidayEntryListCard(
-                            entries = mergedWorkdays,
-                            showBadge = true,
-                            overrides = overrides,
-                            onEdit = { editing = EditingEntry(it.date, it.name, it.type) }
+                        HolidayRangeListCard(
+                            segments = workdaySegments,
+                            userRangeIds = userRangeIds,
+                            showWorkdayBadge = true,
+                            onEdit = { editing = resolveEditTarget(it, userRangeIds) }
+                        )
+                    }
+                }
+                if (merged.removed.isNotEmpty()) {
+                    item { SectionHeader(stringResource(R.string.holiday_removed_section)) }
+                    item {
+                        HolidayRemovedCard(
+                            segments = merged.removed,
+                            onRestore = { restoreRange(it) }
                         )
                     }
                 }
                 item {
                     FilledTonalButton(
-                        onClick = { showAdd = true },
+                        onClick = {
+                            editing = EditingTarget(
+                                HolidayRange(
+                                    id = HolidayRangeOps.newId(),
+                                    name = "",
+                                    startDate = LocalDate.of(year, 1, 1),
+                                    endDate = LocalDate.of(year, 1, 1),
+                                    type = HolidayManager.TYPE_PUBLIC_HOLIDAY,
+                                    sourceKey = null
+                                ),
+                                isNew = true,
+                                isUserSaved = false
+                            )
+                        },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         shape = SleepyTheme.Buttons.shape
                     ) { Text(stringResource(R.string.holiday_add_entry)) }
@@ -318,50 +362,62 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
         }
     }
 
-    editing?.let { target ->
-        HolidayEntryEditDialog(
-            target = target,
-            isNew = overrides.none { it.startDate <= target.date && target.date <= it.endDate },
+    editing?.let { t ->
+        HolidayRangeEditDialog(
+            target = t.range,
+            isNew = t.isNew,
+            showRestore = t.isUserSaved,
             onDismiss = { editing = null },
-            onSave = { date, name, type ->
-                val next = overrides.filter { !(it.startDate <= date && date <= it.endDate) }.toMutableList()
-                next.add(HolidayRange(HolidayRangeOps.newId(), name, date, date, type, null))
-                AppPrefs.setHolidayRanges(context, next)
-                reload()
+            onSave = { range ->
+                saveRange(range)
                 editing = null
             },
-            onRemove = { date ->
-                val next = overrides.filter { !(it.startDate <= date && date <= it.endDate) }
-                AppPrefs.setHolidayRanges(context, next)
-                reload()
+            onDelete = { range ->
+                deleteRange(range)
+                editing = null
+            },
+            onRestore = { range ->
+                restoreRange(range)
                 editing = null
             }
         )
     }
-
-    if (showAdd) {
-        HolidayEntryEditDialog(
-            target = null,
-            isNew = true,
-            onDismiss = { showAdd = false },
-            onSave = { date, name, type ->
-                val next = overrides.filter { !(it.startDate <= date && date <= it.endDate) }.toMutableList()
-                next.add(HolidayRange(HolidayRangeOps.newId(), name, date, date, type, null))
-                AppPrefs.setHolidayRanges(context, next)
-                reload()
-                showAdd = false
-            },
-            onRemove = null
-        )
-    }
 }
 
+/** 网络段键: "holiday:<start>"/"workday:<start>", 与 HolidayRangeOps.mergeSegments 的命中规则一致 */
+private fun networkKeyOf(type: String, date: LocalDate) =
+    "${if (type == HolidayManager.TYPE_TRANSFER_WORKDAY) "workday" else "holiday"}:$date"
+
+/**
+ * 行点击 → 弹窗编辑目标。网络段(聚合生成的 id 不在 overrides 里)复制一份并
+ * 立即补上 sourceKey, 保存/删除时即按该键整段挂接替换/删除, 不产生重复行。
+ */
+private fun resolveEditTarget(segment: HolidayRange, userRangeIds: Set<String>): EditingTarget =
+    if (segment.id in userRangeIds) {
+        EditingTarget(segment, isNew = false, isUserSaved = true)
+    } else {
+        EditingTarget(
+            segment.copy(sourceKey = networkKeyOf(segment.type, segment.startDate)),
+            isNew = false,
+            isUserSaved = false
+        )
+    }
+
+/** 段日期展示: 单日 M/d, 跨日 M/d – M/d */
+private fun segmentDateLabel(seg: HolidayRange): String =
+    if (seg.startDate == seg.endDate) {
+        DateUtils.shortDateSlash(seg.startDate)
+    } else {
+        "${DateUtils.shortDateSlash(seg.startDate)} – ${DateUtils.shortDateSlash(seg.endDate)}"
+    }
+
+/** 段列表卡: 名称 + 自定义 badge(若是用户段) + 补班 badge(可选) + 起止日期; 行点击进入编辑 */
 @Composable
-private fun HolidayEntryListCard(
-    entries: List<HolidayEntry>,
-    showBadge: Boolean,
-    overrides: List<HolidayRange>,
-    onEdit: (HolidayEntry) -> Unit
+private fun HolidayRangeListCard(
+    segments: List<HolidayRange>,
+    userRangeIds: Set<String>,
+    showWorkdayBadge: Boolean = false,
+    onEdit: (HolidayRange) -> Unit
 ) {
     val colors = SleepyTheme.colors
     Column(
@@ -371,21 +427,21 @@ private fun HolidayEntryListCard(
             .background(colors.surfaceContainer)
             .padding(horizontal = 16.dp, vertical = 8.dp)
     ) {
-        entries.forEachIndexed { index, entry ->
+        segments.forEachIndexed { index, segment ->
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .noRippleClickable { onEdit(entry) }
+                    .noRippleClickable { onEdit(segment) }
                     .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = entry.name.ifBlank { DateUtils.shortDateSlash(entry.date) },
+                    text = segment.name.ifBlank { DateUtils.shortDateSlash(segment.startDate) },
                     style = MaterialTheme.typography.bodyLarge,
                     color = colors.onSurface,
                     modifier = Modifier.weight(1f)
                 )
-                if (overrides.any { it.type != HolidayRangeOps.REMOVED && it.startDate <= entry.date && entry.date <= it.endDate }) {
+                if (segment.id in userRangeIds) {
                     Box(
                         modifier = Modifier
                             .clip(SleepyTheme.shapes.small)
@@ -396,7 +452,7 @@ private fun HolidayEntryListCard(
                     }
                     Spacer(Modifier.width(12.dp))
                 }
-                if (showBadge) {
+                if (showWorkdayBadge) {
                     Box(
                         modifier = Modifier
                             .clip(SleepyTheme.shapes.small)
@@ -407,49 +463,97 @@ private fun HolidayEntryListCard(
                     }
                     Spacer(Modifier.width(12.dp))
                 }
-                Text(DateUtils.shortDateSlash(entry.date), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+                Text(segmentDateLabel(segment), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
             }
-            if (index != entries.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+            if (index != segments.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+        }
+    }
+}
+
+/** 已删除区块: 被用户删除的网络段, 行尾"恢复默认"移除覆盖使网络段回来 */
+@Composable
+private fun HolidayRemovedCard(
+    segments: List<HolidayRange>,
+    onRestore: (HolidayRange) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.large)
+            .background(colors.surfaceContainer)
+            .padding(horizontal = 16.dp, vertical = 8.dp)
+    ) {
+        segments.forEachIndexed { index, segment ->
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 6.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = segment.name.ifBlank { DateUtils.shortDateSlash(segment.startDate) },
+                    style = MaterialTheme.typography.bodyLarge,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Text(segmentDateLabel(segment), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
+                Spacer(Modifier.width(12.dp))
+                TextButton(onClick = { onRestore(segment) }) {
+                    Text(stringResource(R.string.holiday_restore), color = colors.primary)
+                }
+            }
+            if (index != segments.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
         }
     }
 }
 
 /**
- * 编辑/添加弹窗。target=null 为添加模式(日期必填+日期选择器),
- * 否则编辑模式(日期固定展示, 可改名/切类型; onRemove 非空时提供"恢复默认")。
+ * 编辑/添加弹窗(起止日期范围段)。
+ * target 为网络段时, 保存时补 sourceKey="holiday|workday:<首日>" 挂接替换该网络段。
+ * 校验: start/end 均有效且 end >= start, 否则禁用保存并提示 holiday_date_invalid。
  */
 @Composable
-private fun HolidayEntryEditDialog(
-    target: EditingEntry?,
+private fun HolidayRangeEditDialog(
+    target: HolidayRange,
     isNew: Boolean,
+    showRestore: Boolean,
     onDismiss: () -> Unit,
-    onSave: (date: LocalDate, name: String, type: String) -> Unit,
-    onRemove: ((date: LocalDate) -> Unit)?
+    onSave: (HolidayRange) -> Unit,
+    onDelete: (HolidayRange) -> Unit,
+    onRestore: (HolidayRange) -> Unit
 ) {
     val colors = SleepyTheme.colors
-    var dateText by remember(target) { mutableStateOf(target?.date?.toString() ?: "") }
-    var name by remember(target) { mutableStateOf(target?.name ?: "") }
-    var type by remember(target) { mutableStateOf(target?.type ?: HolidayManager.TYPE_PUBLIC_HOLIDAY) }
-    val parsedDate = try { LocalDate.parse(dateText) } catch (_: Exception) { null }
-    val canSave = parsedDate != null
+    var name by remember(target) { mutableStateOf(target.name) }
+    var startText by remember(target) { mutableStateOf(target.startDate.toString()) }
+    var endText by remember(target) { mutableStateOf(target.endDate.toString()) }
+    var type by remember(target) { mutableStateOf(target.type) }
+    val startDate = try { LocalDate.parse(startText) } catch (_: Exception) { null }
+    val endDate = try { LocalDate.parse(endText) } catch (_: Exception) { null }
+    val datesValid = startDate != null && endDate != null && !endDate.isBefore(startDate)
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(if (target == null) R.string.holiday_add_title else R.string.holiday_edit_title), color = colors.onSurface) },
+        title = { Text(stringResource(if (isNew) R.string.holiday_add_title else R.string.holiday_edit_title), color = colors.onSurface) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                if (target == null) {
-                    DatePickerField(
-                        value = dateText,
-                        onValueChange = { dateText = it },
-                        label = stringResource(R.string.holiday_name_label_date),
-                        isError = dateText.isNotBlank() && parsedDate == null
-                    )
-                } else {
+                DatePickerField(
+                    value = startText,
+                    onValueChange = { startText = it },
+                    label = stringResource(R.string.holiday_name_label_date),
+                    isError = startText.isNotBlank() && startDate == null
+                )
+                DatePickerField(
+                    value = endText,
+                    onValueChange = { endText = it },
+                    label = stringResource(R.string.holiday_name_label_end),
+                    isError = endText.isNotBlank() && (endDate == null || (startDate != null && endDate.isBefore(startDate)))
+                )
+                if (!datesValid && (startText.isNotBlank() || endText.isNotBlank())) {
                     Text(
-                        DateUtils.shortDateSlash(target.date),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.onSurfaceVariant
+                        stringResource(R.string.holiday_date_invalid),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.error
                     )
                 }
                 OutlinedTextField(
@@ -471,16 +575,27 @@ private fun HolidayEntryEditDialog(
                         onClick = { type = HolidayManager.TYPE_TRANSFER_WORKDAY }
                     )
                 }
-                if (onRemove != null && target != null && !isNew) {
-                    TextButton(onClick = { onRemove(target.date) }) {
-                        Text(stringResource(R.string.holiday_remove_override), color = colors.primary)
+                if (!isNew) {
+                    Row {
+                        TextButton(onClick = { onDelete(target) }) {
+                            Text(stringResource(R.string.holiday_delete_range), color = colors.error)
+                        }
+                        if (showRestore) {
+                            Spacer(Modifier.width(8.dp))
+                            TextButton(onClick = { onRestore(target) }) {
+                                Text(stringResource(R.string.holiday_restore), color = colors.primary)
+                            }
+                        }
                     }
                 }
             }
         },
         confirmButton = {
-            TextButton(enabled = canSave, onClick = {
-                parsedDate?.let { onSave(it, name.trim(), type) }
+            TextButton(enabled = datesValid, onClick = {
+                val start = startDate ?: return@TextButton
+                val end = endDate ?: return@TextButton
+                // sourceKey 由 resolveEditTarget 填好: 网络段派生=挂接键, 纯用户段=保持 null
+                onSave(HolidayRange(target.id, name.trim(), start, end, type, target.sourceKey))
             }) { Text(stringResource(R.string.save)) }
         },
         dismissButton = {

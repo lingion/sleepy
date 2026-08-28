@@ -502,15 +502,19 @@
     <string name="settings_holiday_style_strikethrough">灰色加刪除線</string>
     <string name="settings_holiday_workday">忽略補班日</string>
     <string name="settings_holiday_workday_sub">法定假日資料中的補班日不灰顯</string>
-    <string name="holiday_edit_title">編輯條目</string>
-    <string name="holiday_add_title">新增條目</string>
-    <string name="holiday_name_label_date">日期</string>
-    <string name="holiday_name_label">名稱（可選）</string>
+    <string name="holiday_edit_title">編輯節日</string>
+    <string name="holiday_add_title">新增節日</string>
+    <string name="holiday_name_label_date">開始日期</string>
+    <string name="holiday_name_label">節日名稱</string>
+    <string name="holiday_name_label_end">結束日期</string>
+    <string name="holiday_date_invalid">日期無效或結束早於開始</string>
+    <string name="holiday_removed_section">已刪除</string>
+    <string name="holiday_restore">恢復預設</string>
+    <string name="holiday_delete_range">刪除</string>
     <string name="holiday_type_holiday">法定假日</string>
     <string name="holiday_type_workday">補班日</string>
-    <string name="holiday_remove_override">恢復預設</string>
     <string name="holiday_custom_badge">自訂</string>
-    <string name="holiday_add_entry">新增</string>
+    <string name="holiday_add_entry">新增節日</string>
     <string name="settings_holiday_style_sub">選擇法定假日課程的顯示方式</string>
     <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
     <!-- i18n: hardcoded string extraction -->

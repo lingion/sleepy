@@ -502,15 +502,19 @@
     <string name="settings_holiday_style_strikethrough">Gris con tachado</string>
     <string name="settings_holiday_workday">Ignorar días laborables compensatorios</string>
     <string name="settings_holiday_workday_sub">No atenuar los días laborables compensatorios</string>
-    <string name="holiday_edit_title">Editar entrada</string>
-    <string name="holiday_add_title">Añadir entrada</string>
-    <string name="holiday_name_label_date">Fecha</string>
-    <string name="holiday_name_label">Nombre (opcional)</string>
+    <string name="holiday_edit_title">Editar festivo</string>
+    <string name="holiday_add_title">Añadir festivo</string>
+    <string name="holiday_name_label_date">Fecha de inicio</string>
+    <string name="holiday_name_label">Nombre del festivo</string>
+    <string name="holiday_name_label_end">Fecha de fin</string>
+    <string name="holiday_date_invalid">Fechas no válidas o fin anterior al inicio</string>
+    <string name="holiday_removed_section">Eliminados</string>
+    <string name="holiday_restore">Restaurar predeterminado</string>
+    <string name="holiday_delete_range">Eliminar</string>
     <string name="holiday_type_holiday">Festivo</string>
     <string name="holiday_type_workday">Día de recuperación</string>
-    <string name="holiday_remove_override">Restaurar predeterminado</string>
     <string name="holiday_custom_badge">Personalizado</string>
-    <string name="holiday_add_entry">Añadir</string>
+    <string name="holiday_add_entry">Añadir festivo</string>
     <string name="settings_holiday_style_sub">Elige cómo mostrar los cursos en festivos</string>
     <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
     <!-- i18n: hardcoded string extraction -->

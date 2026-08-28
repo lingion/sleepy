@@ -503,15 +503,19 @@
     <string name="settings_holiday_style_strikethrough">Gray with strikethrough</string>
     <string name="settings_holiday_workday">Ignore make-up workdays</string>
     <string name="settings_holiday_workday_sub">Do not dim make-up workdays in the holiday data</string>
-    <string name="holiday_edit_title">Edit entry</string>
-    <string name="holiday_add_title">Add entry</string>
-    <string name="holiday_name_label_date">Date</string>
-    <string name="holiday_name_label">Name (optional)</string>
+    <string name="holiday_edit_title">Edit holiday</string>
+    <string name="holiday_add_title">Add holiday</string>
+    <string name="holiday_name_label_date">Start date</string>
+    <string name="holiday_name_label">Holiday name</string>
+    <string name="holiday_name_label_end">End date</string>
+    <string name="holiday_date_invalid">Invalid dates or end before start</string>
+    <string name="holiday_removed_section">Deleted</string>
+    <string name="holiday_restore">Restore default</string>
+    <string name="holiday_delete_range">Delete</string>
     <string name="holiday_type_holiday">Public holiday</string>
     <string name="holiday_type_workday">Makeup workday</string>
-    <string name="holiday_remove_override">Restore default</string>
     <string name="holiday_custom_badge">Custom</string>
-    <string name="holiday_add_entry">Add</string>
+    <string name="holiday_add_entry">Add holiday</string>
     <string name="settings_holiday_style_sub">Choose how courses on public holidays are displayed</string>
     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
     <!-- i18n: hardcoded string extraction -->
