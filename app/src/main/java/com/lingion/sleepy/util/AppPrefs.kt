@@ -44,6 +44,7 @@ object AppPrefs {
     const val KEY_HOLIDAY_GREY_WEEKEND = "holiday_grey_weekend"   // bool default true
     const val KEY_HOLIDAY_STYLE = "holiday_style"                  // "grey" / "strikethrough" default "grey"
     const val KEY_HOLIDAY_IGNORE_WORKDAY = "holiday_ignore_workday" // bool default true (补班日忽略)
+    const val KEY_HOLIDAY_OVERRIDES = "holiday_overrides"           // JSON — 用户每日覆盖(编辑/新增/删除)
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -286,5 +287,15 @@ object AppPrefs {
 
     fun setHolidayIgnoreWorkday(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_HOLIDAY_IGNORE_WORKDAY, v).apply()
+    }
+
+    // ===== 节假日用户覆盖（每天微调）=====
+
+    /** 用户对具体日期的覆盖: 编辑/新增/删除。JSON 由 HolidayManager 编解码。 */
+    fun getHolidayOverrides(ctx: Context): Map<java.time.LocalDate, com.lingion.sleepy.util.HolidayEntry> =
+        HolidayManager.decodeOverrides(sp(ctx).getString(KEY_HOLIDAY_OVERRIDES, "{}") ?: "{}")
+
+    fun setHolidayOverrides(ctx: Context, overrides: Map<java.time.LocalDate, com.lingion.sleepy.util.HolidayEntry>) {
+        sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, HolidayManager.encodeOverrides(overrides)).apply()
     }
 }

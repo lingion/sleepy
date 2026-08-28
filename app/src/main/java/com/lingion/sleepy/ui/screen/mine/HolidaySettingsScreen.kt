@@ -87,9 +87,9 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
         loadJob = scope.launch {
             state = HolidayUiState.Loading
             val entries = if (force) {
-                HolidayManager.refreshYearEntries(targetYear)
+                HolidayManager.refreshYearEntries(context, targetYear)
             } else {
-                HolidayManager.getYearEntries(targetYear)
+                HolidayManager.getYearEntries(context, targetYear)
             }
             state = when {
                 entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed

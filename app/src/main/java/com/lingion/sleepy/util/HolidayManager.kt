@@ -26,6 +26,9 @@ object HolidayManager {
     const val TYPE_PUBLIC_HOLIDAY = "public_holiday"
     const val TYPE_TRANSFER_WORKDAY = "transfer_workday"
 
+    /** 用户覆盖哨兵类型: 该日期被用户删除(强制不灰显) */
+    const val OVERRIDE_REMOVED = "override_removed"
+
     private const val BASE_URL = "https://unpkg.com/holiday-calendar/data/CN/"
     private const val CONNECT_TIMEOUT_MS = 5000
     private const val READ_TIMEOUT_MS = 5000
@@ -42,14 +45,16 @@ object HolidayManager {
         return date.dayOfWeek.value == 6 || date.dayOfWeek.value == 7
     }
 
-    /** 判断某日期是否应该灰显（根据用户设置） */
+    /** 判断某日期是否应该灰显（根据用户设置，含用户覆盖） */
     suspend fun shouldGrey(ctx: Context, date: LocalDate): Boolean {
+        val overrides = AppPrefs.getHolidayOverrides(ctx)
         val holidays = getHolidays(ctx, date.year)
         val workdays = if (AppPrefs.isHolidayGreyWeekend(ctx) && AppPrefs.isHolidayIgnoreWorkday(ctx)) {
             getWorkdays(ctx, date.year)
         } else emptySet()
-        return decideGrey(
+        return decideGreyWithOverrides(
             date = date,
+            overrides = overrides,
             holidays = holidays,
             workdays = workdays,
             greyHoliday = AppPrefs.isHolidayGreyHoliday(ctx),
@@ -75,26 +80,95 @@ object HolidayManager {
     }
 
     /**
-     * 获取某年全部条目(节假日+补班日, 带名称), 供设置二级页展示。
+     * 获取某年全部条目(节假日+补班日, 带名称, 含用户覆盖), 供设置二级页展示。
      * 空列表 + [yearFetchFailed] 为 true 表示网络失败而非"该年无数据"。
      */
-    suspend fun getYearEntries(year: Int): List<HolidayEntry> {
-        entriesCache[year]?.let { return it }
+    suspend fun getYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
+        val cached = entriesCache[year]
+        if (cached != null) return applyOverrides(cached, AppPrefs.getHolidayOverrides(ctx))
         val entries = fetchEntries(year)
         entriesCache[year] = entries
-        return entries
+        return applyOverrides(entries, AppPrefs.getHolidayOverrides(ctx))
     }
 
     /** 某年数据是否因网络原因拉取失败 */
     fun isYearFetchFailed(year: Int): Boolean = yearFetchFailed[year] == true
 
     /** 强制重新拉取某年条目(二级页"重试"用), 同时刷新灰显判定缓存 */
-    suspend fun refreshYearEntries(year: Int): List<HolidayEntry> {
+    suspend fun refreshYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
         entriesCache.remove(year)
         holidayCache.remove(year)
         workdayCache.remove(year)
         yearFetchFailed.remove(year)
-        return getYearEntries(year)
+        return getYearEntries(ctx, year)
+    }
+
+    // ===== 用户覆盖层 =====
+    // 存储: AppPrefs "holiday_overrides" JSON — { "yyyy-MM-dd": {"name":..., "type":...} }
+    // type 为 OVERRIDE_REMOVED 表示该日被用户删除(视作"什么都不标")。
+
+    /** 网络条目 + 用户覆盖 → 展示列表。编辑/新增替换或追加, 删除的剔除; 结果按日期排序。 */
+    fun mergeEntries(
+        networkEntries: List<HolidayEntry>,
+        overrides: Map<LocalDate, HolidayEntry>
+    ): List<HolidayEntry> {
+        val byDate = networkEntries.associateByTo(mutableMapOf()) { it.date }
+        for ((date, ov) in overrides) {
+            if (ov.type == OVERRIDE_REMOVED) byDate.remove(date)
+            else byDate[date] = ov.copy(date = date)
+        }
+        return byDate.values.sortedBy { it.date }
+    }
+
+    private fun applyOverrides(
+        networkEntries: List<HolidayEntry>,
+        overrides: Map<LocalDate, HolidayEntry>
+    ): List<HolidayEntry> = if (overrides.isEmpty()) networkEntries else mergeEntries(networkEntries, overrides)
+
+    /** 覆盖 JSON → Map(坏行跳过/类型不认的跳过/解析失败返回空) */
+    fun decodeOverrides(json: String): Map<LocalDate, HolidayEntry> {
+        val result = mutableMapOf<LocalDate, HolidayEntry>()
+        val root = try { JSONObject(json) } catch (_: Exception) { return emptyMap() }
+        for (key in root.keys()) {
+            val date = parseDate(key) ?: continue
+            val obj = root.optJSONObject(key) ?: continue
+            val type = obj.optString("type", "")
+            if (type != TYPE_PUBLIC_HOLIDAY && type != TYPE_TRANSFER_WORKDAY && type != OVERRIDE_REMOVED) continue
+            result[date] = HolidayEntry(date = date, name = obj.optString("name", ""), type = type)
+        }
+        return result
+    }
+
+    /** 覆盖 Map → JSON */
+    fun encodeOverrides(overrides: Map<LocalDate, HolidayEntry>): String {
+        val root = JSONObject()
+        for ((date, entry) in overrides) {
+            root.put(
+                dateFormat.format(date),
+                JSONObject().put("name", entry.name).put("type", entry.type)
+            )
+        }
+        return root.toString()
+    }
+
+    /**
+     * 灰显判定(含用户覆盖)。覆盖优先级最高:
+     * public_holiday → 灰, transfer_workday / removed → 不灰, 无覆盖走基础逻辑。
+     */
+    fun decideGreyWithOverrides(
+        date: LocalDate,
+        overrides: Map<LocalDate, HolidayEntry>,
+        holidays: Set<LocalDate>,
+        workdays: Set<LocalDate>,
+        greyHoliday: Boolean,
+        greyWeekend: Boolean,
+        ignoreWorkday: Boolean
+    ): Boolean {
+        when (overrides[date]?.type) {
+            TYPE_PUBLIC_HOLIDAY -> return true
+            TYPE_TRANSFER_WORKDAY, OVERRIDE_REMOVED -> return false
+        }
+        return decideGrey(date, holidays, workdays, greyHoliday, greyWeekend, ignoreWorkday)
     }
 
     private suspend fun fetchHolidays(year: Int): Set<LocalDate> =
