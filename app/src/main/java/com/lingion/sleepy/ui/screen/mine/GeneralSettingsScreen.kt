@@ -43,6 +43,8 @@ import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.height
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
@@ -84,6 +86,9 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
     var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
+    var holidayWeekend by remember { mutableStateOf(AppPrefs.isHolidayGreyWeekend(context)) }
+    var holidayIgnoreWorkday by remember { mutableStateOf(AppPrefs.isHolidayIgnoreWorkday(context)) }
+    var holidayStyle by remember { mutableStateOf(AppPrefs.getHolidayStyle(context)) }
 
     // ★ 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -214,6 +219,59 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                 }
             }
 
+            // 节假日课程灰显
+            item {
+                SettingsCard(title = stringResource(R.string.settings_holiday_title), expanded = "holiday" in expandedSections, onToggle = { toggleSection("holiday") }) {
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_holiday_weekend),
+                        subtitle = stringResource(R.string.settings_holiday_weekend_sub),
+                        checked = holidayWeekend,
+                        onCheckedChange = { holidayWeekend = it; AppPrefs.setHolidayGreyWeekend(context, it) }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_holiday_workday),
+                        subtitle = stringResource(R.string.settings_holiday_workday_sub),
+                        checked = holidayIgnoreWorkday,
+                        onCheckedChange = { holidayIgnoreWorkday = it; AppPrefs.setHolidayIgnoreWorkday(context, it) }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    // 灰显样式: 灰色 / 灰色加删除线 二选一
+                    Column(modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        Text(
+                            text = stringResource(R.string.settings_holiday_style),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = colors.onSurface
+                        )
+                        Spacer(modifier = Modifier.height(8.dp))
+                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            listOf(
+                                "grey" to stringResource(R.string.settings_holiday_style_grey),
+                                "strikethrough" to stringResource(R.string.settings_holiday_style_strikethrough)
+                            ).forEach { (key, label) ->
+                                val selected = holidayStyle == key
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(20.dp))
+                                        .background(if (selected) colors.primaryContainer else colors.surfaceContainer)
+                                        .noRippleClickable {
+                                            holidayStyle = key
+                                            AppPrefs.setHolidayStyle(context, key)
+                                        }
+                                        .padding(horizontal = 14.dp, vertical = 8.dp)
+                                ) {
+                                    Text(
+                                        text = label,
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
             // ── 分隔线 ──
             item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
 
@@ -256,6 +314,62 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
                             refreshWidgets()
                         }
                     )
+                }
+            }
+
+            // ── 节假日灰显 ──
+            item {
+                SettingsCard(title = stringResource(R.string.settings_holiday_title), expanded = "holiday" in expandedSections, onToggle = { toggleSection("holiday") }) {
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_holiday_weekend),
+                        subtitle = stringResource(R.string.settings_holiday_weekend_sub),
+                        checked = holidayWeekend,
+                        onCheckedChange = {
+                            holidayWeekend = it
+                            AppPrefs.setHolidayGreyWeekend(context, it)
+                        }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_holiday_workday),
+                        subtitle = stringResource(R.string.settings_holiday_workday_sub),
+                        checked = holidayIgnoreWorkday,
+                        onCheckedChange = {
+                            holidayIgnoreWorkday = it
+                            AppPrefs.setHolidayIgnoreWorkday(context, it)
+                        }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    Text(
+                        text = stringResource(R.string.settings_holiday_style),
+                        style = MaterialTheme.typography.titleSmall,
+                        color = colors.onSurface,
+                        modifier = Modifier.padding(top = 12.dp, bottom = 4.dp)
+                    )
+                    Text(
+                        text = stringResource(R.string.settings_holiday_style_sub),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant,
+                        modifier = Modifier.padding(bottom = 8.dp)
+                    )
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        com.lingion.sleepy.ui.component.HolidayStyleChip(
+                            label = stringResource(R.string.settings_holiday_style_grey),
+                            selected = holidayStyle == "grey",
+                            onClick = {
+                                holidayStyle = "grey"
+                                AppPrefs.setHolidayStyle(context, "grey")
+                            }
+                        )
+                        com.lingion.sleepy.ui.component.HolidayStyleChip(
+                            label = stringResource(R.string.settings_holiday_style_strikethrough),
+                            selected = holidayStyle == "strikethrough",
+                            onClick = {
+                                holidayStyle = "strikethrough"
+                                AppPrefs.setHolidayStyle(context, "strikethrough")
+                            }
+                        )
+                    }
                 }
             }
 

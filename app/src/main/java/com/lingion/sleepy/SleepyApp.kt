@@ -4,6 +4,7 @@ import android.app.Application
 import android.content.res.Configuration
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.repository.ScheduleRepository
+import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.widget.WidgetUpdater
 import com.lingion.sleepy.widget.notification.CourseNotificationScheduler
 import kotlinx.coroutines.CoroutineScope
@@ -45,6 +46,10 @@ class SleepyApp : Application() {
         )
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             WidgetUpdater.notifyDataChanged(this@SleepyApp)
+        }
+        // 后台预取节假日数据
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try { HolidayManager.preload(this@SleepyApp) } catch (_: Throwable) {}
         }
     }
 

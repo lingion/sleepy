@@ -481,6 +481,15 @@
     <string name="settings_course_colorless">アプリ内授業カプセルの色を統一</string>
     <string name="settings_course_colorless_sub">アプリ内の授業カプセルのみをニュートラルグレーに統一します。ウィジェット設定には影響せず、色をカスタマイズした授業には適用されません</string>
     <string name="settings_widget_separator">週表示の区切り線</string>
+    <string name="settings_holiday_title">祝日の授業を薄く表示</string>
+    <string name="settings_holiday_weekend">週末の授業を薄く表示</string>
+    <string name="settings_holiday_weekend_sub">土曜日と日曜日の授業を自動的に灰色で表示</string>
+    <string name="settings_holiday_style">表示スタイル</string>
+    <string name="settings_holiday_style_grey">灰色</string>
+    <string name="settings_holiday_style_strikethrough">灰色＋取り消し線</string>
+    <string name="settings_holiday_workday">振替出勤日を無視</string>
+    <string name="settings_holiday_workday_sub">祝日データの振替出勤日は薄く表示しない</string>
+    <string name="settings_holiday_style_sub">祝日の授業の表示方法を選択</string>
     <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">入力</string>

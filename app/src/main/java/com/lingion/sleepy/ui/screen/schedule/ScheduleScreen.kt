@@ -37,8 +37,10 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import java.time.LocalDate
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -58,6 +60,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.TimeTableUtils
 
 private enum class ViewMode(val labelRes: Int) {
@@ -171,13 +174,28 @@ fun ScheduleScreen(
                         val tj = state.currentTable?.timeJson
                         if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
                     }
+                // 计算本周哪些天是节假日/周末(灰显用)
+                val greyDays by produceState<Set<Int>>(emptySet(), page, state.currentTable?.startDate) {
+                    val start = state.currentTable?.startDate
+                    if (start.isNullOrBlank()) {
+                        value = emptySet()
+                    } else {
+                        val greySet = mutableSetOf<Int>()
+                        for (day in 1..7) {
+                            val date = DateUtils.dateOfWeek(start, page + 1, day)
+                            if (HolidayManager.shouldGrey(context, date)) greySet.add(day)
+                        }
+                        value = greySet
+                    }
+                }
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
                         courses = weekCourses,
                         visibleDays = visibleDays,
                         displayMode = displayMode,
                         timeJson = state.currentTable?.timeJson ?: "",
-                        onCourseClick = { selectedCourse = it }
+                        onCourseClick = { selectedCourse = it },
+                        greyDays = greyDays
                     )
                     ViewMode.Cards -> CardsGridView(
                         courses = weekCourses,
@@ -186,7 +204,8 @@ fun ScheduleScreen(
                         showDate = showDate,
                         startDate = state.currentTable?.startDate ?: "",
                         currentWeek = page + 1,
-                        onCourseClick = { selectedCourse = it }
+                        onCourseClick = { selectedCourse = it },
+                        greyDays = greyDays
                     )
                 }
             }

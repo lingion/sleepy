@@ -481,6 +481,15 @@
     <string name="settings_course_colorless">Colores uniformes de cápsulas de cursos</string>
     <string name="settings_course_colorless_sub">Solo las cápsulas de cursos en la app usan un gris neutro; los ajustes de widgets no se ven afectados y los cursos con color personalizado no se ven afectados</string>
     <string name="settings_widget_separator">Separador vista semanal</string>
+    <string name="settings_holiday_title">Atenuar cursos en festivos</string>
+    <string name="settings_holiday_weekend">Atenuar cursos del fin de semana</string>
+    <string name="settings_holiday_weekend_sub">Mostrar automáticamente en gris los cursos del sábado y domingo</string>
+    <string name="settings_holiday_style">Estilo de atenuación</string>
+    <string name="settings_holiday_style_grey">Gris</string>
+    <string name="settings_holiday_style_strikethrough">Gris con tachado</string>
+    <string name="settings_holiday_workday">Ignorar días laborables compensatorios</string>
+    <string name="settings_holiday_workday_sub">No atenuar los días laborables compensatorios</string>
+    <string name="settings_holiday_style_sub">Elige cómo mostrar los cursos en festivos</string>
     <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>

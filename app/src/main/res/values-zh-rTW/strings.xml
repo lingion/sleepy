@@ -481,6 +481,15 @@
     <string name="settings_course_colorless">課程膠囊統一底色</string>
     <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色；小工具設定不受影響，自訂顏色課程不受影響</string>
     <string name="settings_widget_separator">週檢視分隔線</string>
+    <string name="settings_holiday_title">假日課程灰顯</string>
+    <string name="settings_holiday_weekend">週末課程灰顯</string>
+    <string name="settings_holiday_weekend_sub">自動將週六、週日的課程顯示為灰色</string>
+    <string name="settings_holiday_style">灰顯樣式</string>
+    <string name="settings_holiday_style_grey">灰色</string>
+    <string name="settings_holiday_style_strikethrough">灰色加刪除線</string>
+    <string name="settings_holiday_workday">忽略補班日</string>
+    <string name="settings_holiday_workday_sub">法定假日資料中的補班日不灰顯</string>
+    <string name="settings_holiday_style_sub">選擇法定假日課程的顯示方式</string>
     <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">輸入</string>

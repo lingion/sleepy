@@ -482,6 +482,15 @@
     <string name="settings_course_colorless">Uniform course-pill colors</string>
     <string name="settings_course_colorless_sub">Only course pills in the app use a neutral gray; widget settings are unaffected, and courses with custom colors are unaffected</string>
     <string name="settings_widget_separator">Week view separator</string>
+    <string name="settings_holiday_title">Holiday course dimming</string>
+    <string name="settings_holiday_weekend">Dim weekend courses</string>
+    <string name="settings_holiday_weekend_sub">Automatically show Saturday and Sunday courses in gray</string>
+    <string name="settings_holiday_style">Dimming style</string>
+    <string name="settings_holiday_style_grey">Gray</string>
+    <string name="settings_holiday_style_strikethrough">Gray with strikethrough</string>
+    <string name="settings_holiday_workday">Ignore make-up workdays</string>
+    <string name="settings_holiday_workday_sub">Do not dim make-up workdays in the holiday data</string>
+    <string name="settings_holiday_style_sub">Choose how courses on public holidays are displayed</string>
     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Input</string>

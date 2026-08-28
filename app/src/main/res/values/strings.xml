@@ -294,6 +294,15 @@
     <string name="settings_course_colorless_sub">仅将 App 内课程胶囊统一为中性底色；小组件设置不受影响，自定义颜色课程不受影响</string>
     <string name="settings_widget_separator">周视图分隔线</string>
     <string name="settings_widget_separator_sub">纯文字周视图中课程名之间是否显示分隔线</string>
+    <string name="settings_holiday_title">节假日课程灰显</string>
+    <string name="settings_holiday_weekend">周末课程灰显</string>
+    <string name="settings_holiday_weekend_sub">自动将周六、周日的课程显示为灰色</string>
+    <string name="settings_holiday_style">灰显样式</string>
+    <string name="settings_holiday_style_grey">灰色</string>
+    <string name="settings_holiday_style_strikethrough">灰色加删除线</string>
+    <string name="settings_holiday_workday">忽略补班日</string>
+    <string name="settings_holiday_workday_sub">法定节假日数据中的补班日不灰显</string>
+    <string name="settings_holiday_style_sub">选择法定节假日课程的显示方式</string>
 
     <!-- Theme -->
     <string name="theme_system">跟随系统</string>

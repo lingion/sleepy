@@ -8,6 +8,7 @@ import androidx.compose.animation.fadeOut
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -110,5 +111,23 @@ fun SettingToggleRow(label: String, subtitle: String, checked: Boolean, onChecke
             Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
+    }
+}
+
+@Composable
+fun HolidayStyleChip(label: String, selected: Boolean, onClick: () -> Unit) {
+    val colors = SleepyTheme.colors
+    Box(
+        modifier = Modifier
+            .clip(SleepyTheme.shapes.medium)
+            .background(if (selected) colors.primaryContainer else colors.surfaceContainerHigh)
+            .noRippleClickable(onClick)
+            .padding(horizontal = 14.dp, vertical = 8.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
+            color = if (selected) colors.onPrimaryContainer else colors.onSurface
+        )
     }
 }

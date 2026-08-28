@@ -39,6 +39,11 @@ object AppPrefs {
     const val THEME_MODE_DARK = "dark"
     const val THEME_MODE_SYSTEM = "system"
 
+    // ===== 节假日灰显开关 =====
+    const val KEY_HOLIDAY_GREY_WEEKEND = "holiday_grey_weekend"   // bool default true
+    const val KEY_HOLIDAY_STYLE = "holiday_style"                  // "grey" / "strikethrough" default "grey"
+    const val KEY_HOLIDAY_IGNORE_WORKDAY = "holiday_ignore_workday" // bool default true (补班日忽略)
+
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
 
@@ -245,5 +250,32 @@ object AppPrefs {
 
     fun setWidgetSeparator(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WIDGET_SEPARATOR, v).apply()
+    }
+
+    // ===== 节假日灰显 =====
+
+    /** 周末灰显开关 — 默认 true */
+    fun isHolidayGreyWeekend(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_HOLIDAY_GREY_WEEKEND, true)
+
+    fun setHolidayGreyWeekend(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_HOLIDAY_GREY_WEEKEND, v).apply()
+    }
+
+    /** 灰显样式 — 默认 "grey" */
+    fun getHolidayStyle(ctx: Context): String =
+        sp(ctx).getString(KEY_HOLIDAY_STYLE, "grey") ?: "grey"
+
+    fun setHolidayStyle(ctx: Context, style: String) {
+        require(style == "grey" || style == "strikethrough")
+        sp(ctx).edit().putString(KEY_HOLIDAY_STYLE, style).apply()
+    }
+
+    /** 忽略补班日 — 默认 true */
+    fun isHolidayIgnoreWorkday(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_HOLIDAY_IGNORE_WORKDAY, true)
+
+    fun setHolidayIgnoreWorkday(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_HOLIDAY_IGNORE_WORKDAY, v).apply()
     }
 }
