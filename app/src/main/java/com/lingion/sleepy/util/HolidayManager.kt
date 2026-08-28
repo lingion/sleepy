@@ -80,27 +80,27 @@ object HolidayManager {
     }
 
     /**
-     * 获取某年全部条目(节假日+补班日, 带名称, 含用户覆盖), 供设置二级页展示。
+     * 获取某年全部原始网络条目(节假日+补班日, 带名称, 不含用户覆盖), 供设置二级页展示。
      * 空列表 + [yearFetchFailed] 为 true 表示网络失败而非"该年无数据"。
+     * 覆盖合并由调用方用 [mergeEntries] 完成。
      */
-    suspend fun getYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
-        val cached = entriesCache[year]
-        if (cached != null) return applyOverrides(cached, AppPrefs.getHolidayOverrides(ctx))
+    suspend fun getYearEntries(year: Int): List<HolidayEntry> {
+        entriesCache[year]?.let { return it }
         val entries = fetchEntries(year)
         entriesCache[year] = entries
-        return applyOverrides(entries, AppPrefs.getHolidayOverrides(ctx))
+        return entries
     }
 
     /** 某年数据是否因网络原因拉取失败 */
     fun isYearFetchFailed(year: Int): Boolean = yearFetchFailed[year] == true
 
     /** 强制重新拉取某年条目(二级页"重试"用), 同时刷新灰显判定缓存 */
-    suspend fun refreshYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
+    suspend fun refreshYearEntries(year: Int): List<HolidayEntry> {
         entriesCache.remove(year)
         holidayCache.remove(year)
         workdayCache.remove(year)
         yearFetchFailed.remove(year)
-        return getYearEntries(ctx, year)
+        return getYearEntries(year)
     }
 
     // ===== 用户覆盖层 =====
