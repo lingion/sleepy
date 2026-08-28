@@ -502,6 +502,15 @@
     <string name="settings_holiday_style_strikethrough">灰色＋取り消し線</string>
     <string name="settings_holiday_workday">振替出勤日を無視</string>
     <string name="settings_holiday_workday_sub">祝日データの振替出勤日は薄く表示しない</string>
+    <string name="holiday_edit_title">項目を編集</string>
+    <string name="holiday_add_title">項目を追加</string>
+    <string name="holiday_name_label_date">日付</string>
+    <string name="holiday_name_label">名前（任意）</string>
+    <string name="holiday_type_holiday">祝日</string>
+    <string name="holiday_type_workday">振替授業日</string>
+    <string name="holiday_remove_override">デフォルトに戻す</string>
+    <string name="holiday_custom_badge">カスタム</string>
+    <string name="holiday_add_entry">追加</string>
     <string name="settings_holiday_style_sub">祝日の授業の表示方法を選択</string>
     <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
     <!-- i18n: hardcoded string extraction -->

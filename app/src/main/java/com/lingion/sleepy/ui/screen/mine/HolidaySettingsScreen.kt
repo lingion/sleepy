@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -25,8 +26,10 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
@@ -45,10 +48,12 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.HolidayStyleChip
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayEntry
@@ -63,6 +68,9 @@ private sealed interface HolidayUiState {
     data object Empty : HolidayUiState
     data class Loaded(val holidays: List<HolidayEntry>, val workdays: List<HolidayEntry>) : HolidayUiState
 }
+
+/** 弹窗编辑目标: null=添加模式, 非 null=编辑该日期 */
+private data class EditingEntry(val date: LocalDate, val name: String, val type: String)
 
 private const val MIN_YEAR = 2005
 private const val MAX_YEAR = 2049
@@ -81,19 +89,24 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
     var style by remember { mutableStateOf(AppPrefs.getHolidayStyle(context)) }
     var state by remember { mutableStateOf<HolidayUiState>(HolidayUiState.Loading) }
     var loadJob by remember { mutableStateOf<Job?>(null) }
+    var overrides by remember { mutableStateOf(AppPrefs.getHolidayOverrides(context)) }
+    var editing by remember { mutableStateOf<EditingEntry?>(null) }
+    var showAdd by remember { mutableStateOf(false) }
+
+    fun reload() { overrides = AppPrefs.getHolidayOverrides(context) }
 
     fun load(targetYear: Int, force: Boolean = false) {
         loadJob?.cancel()
         loadJob = scope.launch {
             state = HolidayUiState.Loading
             val entries = if (force) {
-                HolidayManager.refreshYearEntries(context, targetYear)
+                HolidayManager.refreshYearEntries(targetYear)
             } else {
-                HolidayManager.getYearEntries(context, targetYear)
+                HolidayManager.getYearEntries(targetYear)
             }
+            overrides = AppPrefs.getHolidayOverrides(context)
             state = when {
                 entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed
-                entries.isEmpty() -> HolidayUiState.Empty
                 else -> HolidayUiState.Loaded(
                     holidays = entries.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY },
                     workdays = entries.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
@@ -257,20 +270,92 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             }
 
             val loaded = state as? HolidayUiState.Loaded
-            if (loaded != null && loaded.holidays.isNotEmpty()) {
-                item { SectionHeader(stringResource(R.string.holiday_list_holidays)) }
-                item { HolidayEntryListCard(loaded.holidays, showBadge = false) }
-            }
-            if (loaded != null && loaded.workdays.isNotEmpty()) {
-                item { SectionHeader(stringResource(R.string.holiday_list_workdays)) }
-                item { HolidayEntryListCard(loaded.workdays, showBadge = true) }
+            if (loaded != null) {
+                // 覆盖变化时基于原始网络数据即时重合并, 不重新走网络
+                val rawEntries = loaded.holidays + loaded.workdays
+                val merged = HolidayManager.mergeEntries(rawEntries, overrides)
+                val mergedHolidays = merged.filter { it.type == HolidayManager.TYPE_PUBLIC_HOLIDAY }
+                val mergedWorkdays = merged.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
+
+                if (mergedHolidays.isNotEmpty()) {
+                    item { SectionHeader(stringResource(R.string.holiday_list_holidays)) }
+                    item {
+                        HolidayEntryListCard(
+                            entries = mergedHolidays,
+                            showBadge = false,
+                            overrides = overrides,
+                            onEdit = { editing = EditingEntry(it.date, it.name, it.type) }
+                        )
+                    }
+                }
+                if (mergedWorkdays.isNotEmpty()) {
+                    item { SectionHeader(stringResource(R.string.holiday_list_workdays)) }
+                    item {
+                        HolidayEntryListCard(
+                            entries = mergedWorkdays,
+                            showBadge = true,
+                            overrides = overrides,
+                            onEdit = { editing = EditingEntry(it.date, it.name, it.type) }
+                        )
+                    }
+                }
+                item {
+                    FilledTonalButton(
+                        onClick = { showAdd = true },
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                        shape = SleepyTheme.Buttons.shape
+                    ) { Text(stringResource(R.string.holiday_add_entry)) }
+                }
             }
         }
+    }
+
+    editing?.let { target ->
+        HolidayEntryEditDialog(
+            target = target,
+            isNew = target.date !in overrides && !overrides.containsKey(target.date),
+            onDismiss = { editing = null },
+            onSave = { date, name, type ->
+                val next = overrides.toMutableMap()
+                next[date] = HolidayEntry(date, name, type)
+                AppPrefs.setHolidayOverrides(context, next)
+                reload()
+                editing = null
+            },
+            onRemove = { date ->
+                val next = overrides.toMutableMap()
+                next.remove(date)
+                AppPrefs.setHolidayOverrides(context, next)
+                reload()
+                editing = null
+            }
+        )
+    }
+
+    if (showAdd) {
+        HolidayEntryEditDialog(
+            target = null,
+            isNew = true,
+            onDismiss = { showAdd = false },
+            onSave = { date, name, type ->
+                val next = overrides.toMutableMap()
+                next[date] = HolidayEntry(date, name, type)
+                AppPrefs.setHolidayOverrides(context, next)
+                reload()
+                showAdd = false
+            },
+            onRemove = null
+        )
     }
 }
 
 @Composable
-private fun HolidayEntryListCard(entries: List<HolidayEntry>, showBadge: Boolean) {
+private fun HolidayEntryListCard(
+    entries: List<HolidayEntry>,
+    showBadge: Boolean,
+    overrides: Map<LocalDate, HolidayEntry>,
+    onEdit: (HolidayEntry) -> Unit
+) {
     val colors = SleepyTheme.colors
     Column(
         modifier = Modifier
@@ -281,7 +366,10 @@ private fun HolidayEntryListCard(entries: List<HolidayEntry>, showBadge: Boolean
     ) {
         entries.forEachIndexed { index, entry ->
             Row(
-                modifier = Modifier.fillMaxWidth().padding(vertical = 10.dp),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .noRippleClickable { onEdit(entry) }
+                    .padding(vertical = 10.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
@@ -290,6 +378,17 @@ private fun HolidayEntryListCard(entries: List<HolidayEntry>, showBadge: Boolean
                     color = colors.onSurface,
                     modifier = Modifier.weight(1f)
                 )
+                if (entry.date in overrides && overrides[entry.date]?.type != HolidayManager.OVERRIDE_REMOVED) {
+                    Box(
+                        modifier = Modifier
+                            .clip(SleepyTheme.shapes.small)
+                            .background(colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.tinted))
+                            .padding(horizontal = 8.dp, vertical = 2.dp)
+                    ) {
+                        Text(stringResource(R.string.holiday_custom_badge), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
+                    }
+                    Spacer(Modifier.width(12.dp))
+                }
                 if (showBadge) {
                     Box(
                         modifier = Modifier
@@ -306,4 +405,79 @@ private fun HolidayEntryListCard(entries: List<HolidayEntry>, showBadge: Boolean
             if (index != entries.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
         }
     }
+}
+
+/**
+ * 编辑/添加弹窗。target=null 为添加模式(日期必填+日期选择器),
+ * 否则编辑模式(日期固定展示, 可改名/切类型; onRemove 非空时提供"恢复默认")。
+ */
+@Composable
+private fun HolidayEntryEditDialog(
+    target: EditingEntry?,
+    isNew: Boolean,
+    onDismiss: () -> Unit,
+    onSave: (date: LocalDate, name: String, type: String) -> Unit,
+    onRemove: ((date: LocalDate) -> Unit)?
+) {
+    val colors = SleepyTheme.colors
+    var dateText by remember(target) { mutableStateOf(target?.date?.toString() ?: "") }
+    var name by remember(target) { mutableStateOf(target?.name ?: "") }
+    var type by remember(target) { mutableStateOf(target?.type ?: HolidayManager.TYPE_PUBLIC_HOLIDAY) }
+    val parsedDate = try { LocalDate.parse(dateText) } catch (_: Exception) { null }
+    val canSave = parsedDate != null
+
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(if (target == null) R.string.holiday_add_title else R.string.holiday_edit_title), color = colors.onSurface) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                if (target == null) {
+                    DatePickerField(
+                        value = dateText,
+                        onValueChange = { dateText = it },
+                        label = stringResource(R.string.holiday_name_label_date),
+                        isError = dateText.isNotBlank() && parsedDate == null
+                    )
+                } else {
+                    Text(
+                        DateUtils.shortDateSlash(target.date),
+                        style = MaterialTheme.typography.bodyMedium,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+                OutlinedTextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.holiday_name_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                    HolidayStyleChip(
+                        label = stringResource(R.string.holiday_type_holiday),
+                        selected = type == HolidayManager.TYPE_PUBLIC_HOLIDAY,
+                        onClick = { type = HolidayManager.TYPE_PUBLIC_HOLIDAY }
+                    )
+                    HolidayStyleChip(
+                        label = stringResource(R.string.holiday_type_workday),
+                        selected = type == HolidayManager.TYPE_TRANSFER_WORKDAY,
+                        onClick = { type = HolidayManager.TYPE_TRANSFER_WORKDAY }
+                    )
+                }
+                if (onRemove != null && target != null && !isNew) {
+                    TextButton(onClick = { onRemove(target.date) }) {
+                        Text(stringResource(R.string.holiday_remove_override), color = colors.primary)
+                    }
+                }
+            }
+        },
+        confirmButton = {
+            TextButton(enabled = canSave, onClick = {
+                parsedDate?.let { onSave(it, name.trim(), type) }
+            }) { Text(stringResource(R.string.save)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        }
+    )
 }
