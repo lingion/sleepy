@@ -27,6 +27,8 @@ object HolidayManager {
     const val TYPE_TRANSFER_WORKDAY = "transfer_workday"
 
     private const val BASE_URL = "https://unpkg.com/holiday-calendar/data/CN/"
+    /** 与 AppPrefs 同一个 SharedPreferences 文件 */
+    private const val PREFS_NAME = "sleepy_prefs"
     private const val CONNECT_TIMEOUT_MS = 5000
     private const val READ_TIMEOUT_MS = 5000
     private val dateFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
@@ -34,6 +36,40 @@ object HolidayManager {
     private val entriesCache = mutableMapOf<Int, List<HolidayEntry>>()
     /** 各年数据是否拉取成功过(空结果+成功=false => 网络失败) */
     private val yearFetchFailed = mutableMapOf<Int, Boolean>()
+
+    /**
+     * 磁盘缓存 — 拉成功一次即落盘, 进程重启后仍有效。
+     * 刷新走 [refreshYearEntries] 强制绕过内存+磁盘。
+     */
+    private const val CACHE_KEY_PREFIX = "holiday_entries_"
+    private const val CACHE_LOADED_SUFFIX = "_loaded"
+    private fun cacheKey(year: Int) = CACHE_KEY_PREFIX + year
+    private fun loadedKey(year: Int) = cacheKey(year) + CACHE_LOADED_SUFFIX
+
+    private fun diskCache(ctx: Context, year: Int): List<HolidayEntry>? {
+        val prefs = ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        // loaded 标记与数据同写: 空年份(该年确实无数据)也视为已缓存, 否则每次启动都会重复请求
+        if (!prefs.getBoolean(loadedKey(year), false)) return null
+        val json = prefs.getString(cacheKey(year), null) ?: return null
+        return try {
+            val dates = org.json.JSONArray(json)
+            val wrapped = org.json.JSONObject().put("dates", dates)
+            parseEntries(wrapped.toString())
+        } catch (_: Exception) {
+            null
+        }
+    }
+    private fun writeDiskCache(ctx: Context, year: Int, entries: List<HolidayEntry>) {
+        val arr = org.json.JSONArray()
+        entries.forEach { e ->
+            arr.put(org.json.JSONObject().put("date", e.date.toString()).put("name", e.name).put("type", e.type))
+        }
+        ctx.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .putString(cacheKey(year), arr.toString())
+            .putBoolean(loadedKey(year), true)
+            .apply()
+    }
 
     /** 判断某日期是否为周末 */
     fun isWeekend(date: LocalDate): Boolean {
@@ -43,7 +79,7 @@ object HolidayManager {
     /** 判断某日期是否应该灰显（根据用户设置，含用户范围化覆盖） */
     suspend fun shouldGrey(ctx: Context, date: LocalDate): Boolean {
         val ranges = AppPrefs.getHolidayRanges(ctx)
-        val networkEntries = getYearEntries(date.year)
+        val networkEntries = getYearEntries(ctx, date.year)
         val merged = HolidayRangeOps.mergeSegments(networkEntries, ranges)
         val (holidays, workdays) = HolidayRangeOps.toSets(merged.active)
         val workdaysForWeekend = if (AppPrefs.isHolidayGreyWeekend(ctx) && AppPrefs.isHolidayIgnoreWorkday(ctx)) {
@@ -61,24 +97,33 @@ object HolidayManager {
 
     /**
      * 获取某年全部原始网络条目(节假日+补班日, 带名称, 不含用户覆盖)。
+     * 取数顺序: 内存缓存 → 磁盘缓存(拉成功一次即永久) → 网络。
      * 空列表 + [yearFetchFailed] 为 true 表示网络失败而非"该年无数据"。
      * 灰显判定与设置页共用的唯一取数路径; 覆盖合并由调用方用 [HolidayRangeOps.mergeSegments] 完成。
      */
-    suspend fun getYearEntries(year: Int): List<HolidayEntry> {
+    suspend fun getYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
         entriesCache[year]?.let { return it }
+        diskCache(ctx, year)?.let {
+            entriesCache[year] = it
+            return it
+        }
         val entries = fetchEntries(year)
-        entriesCache[year] = entries
+        if (entries.isNotEmpty() || !isYearFetchFailed(year)) {
+            // 成功(含空年份, loaded 标记保证空数据也算已缓存)才落盘; 网络失败不缓存失败态
+            entriesCache[year] = entries
+            writeDiskCache(ctx, year, entries)
+        }
         return entries
     }
 
     /** 某年数据是否因网络原因拉取失败 */
     fun isYearFetchFailed(year: Int): Boolean = yearFetchFailed[year] == true
 
-    /** 强制重新拉取某年条目(二级页"重试"用) */
-    suspend fun refreshYearEntries(year: Int): List<HolidayEntry> {
+    /** 强制重新拉取某年条目(设置页"刷新"按钮用): 绕过内存+磁盘缓存 */
+    suspend fun refreshYearEntries(ctx: Context, year: Int): List<HolidayEntry> {
         entriesCache.remove(year)
         yearFetchFailed.remove(year)
-        return getYearEntries(year)
+        return getYearEntries(ctx, year)
     }
 
     /** 拉取并解析某年全部条目(带名称), 供二级页展示 */
@@ -146,7 +191,7 @@ object HolidayManager {
     /** 预加载当前年和明年的节假日数据 */
     suspend fun preload(ctx: Context) {
         val year = LocalDate.now().year
-        getYearEntries(year); getYearEntries(year + 1)
+        getYearEntries(ctx, year); getYearEntries(ctx, year + 1)
     }
 
     /**

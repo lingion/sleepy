@@ -19,6 +19,8 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
@@ -71,8 +73,8 @@ private sealed interface HolidayUiState {
     data class Loaded(val entries: List<HolidayEntry>) : HolidayUiState
 }
 
-/** 弹窗编辑目标: isNew=true 添加模式; isUserSaved 决定"恢复默认"是否可见(网络段无覆盖可恢复) */
-private data class EditingTarget(val range: HolidayRange, val isNew: Boolean, val isUserSaved: Boolean)
+/** 弹窗编辑目标: isNew=true 添加模式; 网络段派生目标会预填 sourceKey */
+private data class EditingTarget(val range: HolidayRange, val isNew: Boolean)
 
 private const val MIN_YEAR = 2005
 private const val MAX_YEAR = 2049
@@ -134,9 +136,9 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
         loadJob = scope.launch {
             state = HolidayUiState.Loading
             val entries = if (force) {
-                HolidayManager.refreshYearEntries(targetYear)
+                HolidayManager.refreshYearEntries(context, targetYear)
             } else {
-                HolidayManager.getYearEntries(targetYear)
+                HolidayManager.getYearEntries(context, targetYear)
             }
             overrides = AppPrefs.getHolidayRanges(context)
             state = when {
@@ -211,11 +213,28 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
                         .background(colors.surfaceContainer)
                         .padding(16.dp)
                 ) {
-                    Text(
-                        text = stringResource(R.string.holiday_data_source),
-                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                        color = colors.onSurface
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = stringResource(R.string.holiday_data_source),
+                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (state is HolidayUiState.Loaded || state is HolidayUiState.Empty) {
+                            Button(
+                                onClick = { load(year, force = true) },
+                                enabled = state !is HolidayUiState.Loading,
+                                modifier = Modifier.height(SleepyTheme.Buttons.regularHeight),
+                                shape = SleepyTheme.Buttons.shape,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = colors.secondaryContainer,
+                                    contentColor = colors.onSecondaryContainer
+                                )
+                            ) {
+                                Text(stringResource(R.string.holiday_data_refresh))
+                            }
+                        }
+                    }
                     Spacer(Modifier.height(8.dp))
                     when (state) {
                         HolidayUiState.Loading -> CircularProgressIndicator(
@@ -350,8 +369,7 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
                                     type = HolidayManager.TYPE_PUBLIC_HOLIDAY,
                                     sourceKey = null
                                 ),
-                                isNew = true,
-                                isUserSaved = false
+                                isNew = true
                             )
                         },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
@@ -366,7 +384,6 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
         HolidayRangeEditDialog(
             target = t.range,
             isNew = t.isNew,
-            showRestore = t.isUserSaved,
             onDismiss = { editing = null },
             onSave = { range ->
                 saveRange(range)
@@ -374,10 +391,6 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             },
             onDelete = { range ->
                 deleteRange(range)
-                editing = null
-            },
-            onRestore = { range ->
-                restoreRange(range)
                 editing = null
             }
         )
@@ -394,12 +407,11 @@ private fun networkKeyOf(type: String, date: LocalDate) =
  */
 private fun resolveEditTarget(segment: HolidayRange, userRangeIds: Set<String>): EditingTarget =
     if (segment.id in userRangeIds) {
-        EditingTarget(segment, isNew = false, isUserSaved = true)
+        EditingTarget(segment, isNew = false)
     } else {
         EditingTarget(
             segment.copy(sourceKey = networkKeyOf(segment.type, segment.startDate)),
-            isNew = false,
-            isUserSaved = false
+            isNew = false
         )
     }
 
@@ -499,9 +511,16 @@ private fun HolidayRemovedCard(
                 )
                 Text(segmentDateLabel(segment), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
                 Spacer(Modifier.width(12.dp))
-                TextButton(onClick = { onRestore(segment) }) {
-                    Text(stringResource(R.string.holiday_restore), color = colors.primary)
-                }
+                // 恢复用 secondaryContainer 色块 — 与删除/刷新同风格, 禁悬空文字按钮
+                Button(
+                    onClick = { onRestore(segment) },
+                    modifier = Modifier.height(SleepyTheme.Buttons.regularHeight),
+                    shape = SleepyTheme.Buttons.shape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.secondaryContainer,
+                        contentColor = colors.onSecondaryContainer
+                    )
+                ) { Text(stringResource(R.string.holiday_restore)) }
             }
             if (index != segments.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
         }
@@ -517,11 +536,9 @@ private fun HolidayRemovedCard(
 private fun HolidayRangeEditDialog(
     target: HolidayRange,
     isNew: Boolean,
-    showRestore: Boolean,
     onDismiss: () -> Unit,
     onSave: (HolidayRange) -> Unit,
-    onDelete: (HolidayRange) -> Unit,
-    onRestore: (HolidayRange) -> Unit
+    onDelete: (HolidayRange) -> Unit
 ) {
     val colors = SleepyTheme.colors
     var name by remember(target) { mutableStateOf(target.name) }
@@ -576,16 +593,19 @@ private fun HolidayRangeEditDialog(
                     )
                 }
                 if (!isNew) {
-                    Row {
-                        TextButton(onClick = { onDelete(target) }) {
-                            Text(stringResource(R.string.holiday_delete_range), color = colors.error)
-                        }
-                        if (showRestore) {
-                            Spacer(Modifier.width(8.dp))
-                            TextButton(onClick = { onRestore(target) }) {
-                                Text(stringResource(R.string.holiday_restore), color = colors.primary)
-                            }
-                        }
+                    // 删除走 errorContainer 色块 — 纯色块禁描边规则。
+                    // 弹窗不设"恢复": 已保存段删除=移除覆盖(可从已删除区恢复), 网络段删除=REMOVED 覆盖(同入口恢复);
+                    // 弹窗内两个按钮会做同一件事, 恢复入口统一收敛到"已删除"区块。
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(
+                            onClick = { onDelete(target) },
+                            modifier = Modifier.weight(1f).height(SleepyTheme.Buttons.regularHeight),
+                            shape = SleepyTheme.Buttons.shape,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colors.errorContainer,
+                                contentColor = colors.onErrorContainer
+                            )
+                        ) { Text(stringResource(R.string.holiday_delete_range)) }
                     }
                 }
             }
