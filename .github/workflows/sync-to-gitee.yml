@@ -62,11 +62,11 @@ jobs:
           mkdir -p assets
           count=$(jq '.assets | length' rel.json)
           echo "assets to sync: $count"
-          jq -r '.assets[].browser_download_url' rel.json | while read -r url; do
-            [ -n "$url" ] || continue
-            fname=$(basename "$url")
+          jq -r '.assets[] | "\(.id)\t\(.name)"' rel.json | while IFS=$'\t' read -r aid fname; do
+            [ -n "$aid" ] || continue
             echo "downloading $fname"
-            curl -sfL --retry 3 -H "Authorization: Bearer $GH_TOKEN" -o "assets/$fname" "$url"
+            curl -sfL --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
+              -o "assets/$fname" "https://api.github.com/repos/${GITHUB_REPO}/releases/assets/${aid}"
           done
 
           # create release on Gitee; if it already exists, reuse it
@@ -99,11 +99,10 @@ jobs:
             fname=$(basename "$f")
             echo "uploading $fname"
             # remove same-named asset if re-syncing
-            curl -s "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}/attach_files?access_token=${GITEE_TOKEN}" \
-              | jq -r '.attachments[]? | select(.name=="'"$fname"'") | .browser_download_url' > /dev/null
             curl -s -X POST "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}/attach_files" \
               -F "access_token=${GITEE_TOKEN}" \
-              -F "file=@$f" | jq -r '.name // "upload-failed: \('"$fname"'"' || true
+              -F "file=@$f" > upload_result.json
+            jq -r 'if type=="object" and .name then "  ok: \(.name)" else "  upload-failed" end' upload_result.json
           done
 
           echo "release $TAG synced -> https://gitee.com/lingion/${REPO_NAME}"
