@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README.en.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a>
+  <a href="README.md">中文</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a>
 </p>
 
 ---
@@ -50,7 +50,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.29</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy</code>
+  <code>v1.0.37</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy</code>
 </p>
 
 ---
@@ -104,7 +104,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖
 
 ---
 
-## ⏰ 节次配置（手动 / 自动双模式）
+## 节次配置（手动 / 自动双模式）
 
 v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式输入每节时长 + 总节数 + 首节时间 + 课间模板，自动推算全部时间。
 
@@ -165,7 +165,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 ---
 
-## ️ 课程编辑
+## 课程编辑
 
 <p align="left">
   <img src="docs/screenshots/18-add-course.png" width="280">
@@ -213,15 +213,24 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 | **WeekGrid** | 4×5 cell（250×360dp） | 完整时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
 
 实现要点：
-- Today / TwoDay / WeekList：Glance + Canvas 渲染
-- WeekGrid：纯 Canvas + Bitmap（不受 Glance 11+ child 数量限制）
+- Today / TwoDay / WeekList / WeekGrid：v1.0.29 起全部为同步 RemoteViews + Canvas 渲染（OPPO 等深度定制 launcher 会冻结 Glance 的异步 SessionWorker，导致卡片不刷新，故整体移植）
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
 - **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，均匀铺开且每门课稳定唯一
-- 刷新机制：对全部 4 个 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ Glance `.update()` 兜底 + WorkManager 每 15 分钟定时刷新
+- 刷新机制：对全部 4 个 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 每 15 分钟定时刷新
 
 ---
 
-## ⏰ 课程通知 & 提醒
+## OPPO 流体云
+
+v1.0.37 起支持 OPPO/一加 流体云（Seedling）卡片：课程开始前在状态栏/通知区展示课程名、时间、教室与状态字段，点按展开 sm/md/lg 三档尺寸的流体云卡片。
+
+- 基于 OPPO `SeedlingSupportSDK-lite 3.0.7`，通过 `SeedlingCardWidgetProvider` 桥接生命周期
+- UPK 源工程见 [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/)（API 2.0，`immediate` 触发，`notification/statusbar` 入口）
+- `identifier`、`intent` 等 OPPO 分配值在工程中保留为 `REPLACE_WITH_OPPO_*` 占位，详见该目录 README
+
+---
+
+## 课程通知 & 提醒
 
 入口在「我的」→「提醒」跳独立页面。master toggle 默认关闭，点击开启时请求通知权限——拒绝则回弹关闭，再点再问（非一次性）。
 
@@ -243,7 +252,7 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 ---
 
-## ℹ️ 关于
+## 关于
 
 入口在「我的」→「关于」跳独立页面，集中展示版本、作者、开源信息。
 
