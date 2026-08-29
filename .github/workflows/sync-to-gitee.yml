@@ -16,6 +16,6 @@ jobs:
         run: |
           git clone --mirror "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" repo.git
           cd repo.git
-          # strip GitHub-internal PR refs that Gitee rejects
           git for-each-ref --format='delete %(refname)' refs/pull | git update-ref --stdin || true
-          git push --mirror "https://oauth2:${GITEE_TOKEN}@gitee.com/lingion/${GITHUB_REPOSITORY##-*}.git"
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          git push --mirror "https://oauth2:${GITEE_TOKEN}@gitee.com/lingion/${REPO_NAME}.git"
