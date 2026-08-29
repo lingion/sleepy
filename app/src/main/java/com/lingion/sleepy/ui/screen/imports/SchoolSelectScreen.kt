@@ -87,7 +87,7 @@ private fun schoolSortKey(s: JwSchoolInfo): String {
     val firstLetter = if (s.sortKey.isNotEmpty() && s.sortKey[0].isLetter()) {
         s.sortKey[0].uppercase()
     } else {
-        "#"
+        "★"
     }
     // sortKeyFull 由 pypinyin 预生成，如 "haerbingongchengdaxue"
     // 缺失时 fallback 到 name（自定义 URL 场景）
@@ -105,7 +105,7 @@ private fun groupByLetter(schools: List<JwSchoolInfo>): List<SchoolSection> {
         val letter = if (s.sortKey.isNotEmpty() && s.sortKey[0].isLetter()) {
             s.sortKey[0].uppercase()
         } else {
-            "#"
+            "★"
         }
         groups.getOrPut(letter) { mutableListOf() }.add(s)
     }

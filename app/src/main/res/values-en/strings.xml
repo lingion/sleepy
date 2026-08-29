@@ -72,7 +72,7 @@
     <string name="import_conflict_more">%1$d more conflict(s)…</string>
     <string name="import_append_only">Append non-conflicting</string>
     <string name="import_as_new">Import as new schedule</string>
-    <string name="import_overwrite">Overwrite current (caution)</string>
+    <string name="import_overwrite">⚠ Overwrite current (caution)</string>
     <string name="import_confirm_title">Confirm Before Import</string>
     <string name="import_confirm_body">Verify the semester start date and class times — otherwise the current week will be inaccurate.</string>
     <string name="import_week_start">First week starts on</string>

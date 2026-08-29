@@ -72,7 +72,7 @@
     <string name="import_conflict_more">%1$d conflicto(s) más…</string>
     <string name="import_append_only">Añadir sin conflictos</string>
     <string name="import_as_new">Importar como nuevo horario</string>
-    <string name="import_overwrite">Sobrescribir actual (precaución)</string>
+    <string name="import_overwrite">⚠ Sobrescribir actual (precaución)</string>
     <string name="import_confirm_title">Confirmar antes de importar</string>
     <string name="import_confirm_body">Verifica la fecha de inicio y los horarios — de lo contrario la semana actual será incorrecta.</string>
     <string name="import_week_start">La primera semana empieza el</string>
