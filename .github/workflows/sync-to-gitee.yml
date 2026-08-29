@@ -4,13 +4,19 @@ on:
   push:
     branches: ["**"]
     tags: ["**"]
+  release:
+    types: [published, edited]
   workflow_dispatch:
 
+concurrency:
+  group: gitee-sync-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
-  sync:
+  sync-git:
     runs-on: ubuntu-latest
     steps:
-      - name: Mirror to Gitee
+      - name: Mirror git refs to Gitee
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
         run: |
@@ -19,3 +25,85 @@ jobs:
           git for-each-ref --format='delete %(refname)' refs/pull | git update-ref --stdin || true
           REPO_NAME="${GITHUB_REPOSITORY##*/}"
           git push --mirror "https://oauth2:${GITEE_TOKEN}@gitee.com/lingion/${REPO_NAME}.git"
+
+  sync-release:
+    runs-on: ubuntu-latest
+    needs: sync-git
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    steps:
+      - name: Sync this release (notes + assets) to Gitee
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          set -euo pipefail
+          REPO_NAME="${GITHUB_REPOSITORY##*/}"
+          GITHUB_REPO="${GITHUB_REPOSITORY}"
+
+          # release event carries the tag; manual dispatch syncs latest release
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            TAG=$(curl -sf -H "Authorization: Bearer $GH_TOKEN" \
+              "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" | jq -r '.tag_name') || {
+              echo "no releases on this repo, nothing to sync"; exit 0; }
+          else
+            TAG="${GITHUB_REF_NAME}"
+          fi
+          [ "$TAG" != "null" ] && [ -n "$TAG" ] || { echo "no tag resolved"; exit 0; }
+
+          # release metadata from GitHub
+          curl -sf -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/${GITHUB_REPO}/releases/tags/${TAG}" > rel.json
+
+          NAME=$(jq -r '.name | if . == "" or . == null then "'"$TAG"'" else . end' rel.json)
+          PRERELEASE=$(jq -r '.prerelease' rel.json)
+          jq -j '.body // ""' rel.json > rel_body.md
+
+          # fetch assets (GitHub-side network: fast)
+          mkdir -p assets
+          count=$(jq '.assets | length' rel.json)
+          echo "assets to sync: $count"
+          jq -r '.assets[].browser_download_url' rel.json | while read -r url; do
+            [ -n "$url" ] || continue
+            fname=$(basename "$url")
+            echo "downloading $fname"
+            curl -sfL --retry 3 -H "Authorization: Bearer $GH_TOKEN" -o "assets/$fname" "$url"
+          done
+
+          # create release on Gitee; if it already exists, reuse it
+          resp=$(mktemp); code=$(mktemp)
+          http=$(curl -s -o "$resp" -w "%{http_code}" -X POST \
+            "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases" \
+            -F "access_token=${GITEE_TOKEN}" \
+            -F "tag_name=${TAG}" \
+            -F "target_commitish=${{ github.event.repository.default_branch || 'main' }}" \
+            -F "name=${NAME}" \
+            -F "prerelease=${PRERELEASE}" \
+            -F "body=<rel_body.md")
+
+          rel_id=$(jq -r '.id // empty' "$resp")
+          if [ -z "$rel_id" ]; then
+            rel_id=$(curl -s "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/tags/${TAG}?access_token=${GITEE_TOKEN}" | jq -r '.id // empty')
+          fi
+          [ -n "$rel_id" ] || { echo "::error::gitee release create failed"; cat "$resp"; exit 1; }
+
+          # notes always updated to match GitHub
+          curl -s -X PATCH "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}" \
+            -F "access_token=${GITEE_TOKEN}" \
+            -F "tag_name=${TAG}" \
+            -F "name=${NAME}" \
+            -F "body=<rel_body.md" | jq -r '.tag_name // "patch failed"' > /dev/null
+
+          # upload assets, dedup by name (delete existing same-name asset first)
+          for f in assets/*; do
+            [ -e "$f" ] || continue
+            fname=$(basename "$f")
+            echo "uploading $fname"
+            # remove same-named asset if re-syncing
+            curl -s "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}/attach_files?access_token=${GITEE_TOKEN}" \
+              | jq -r '.attachments[]? | select(.name=="'"$fname"'") | .browser_download_url' > /dev/null
+            curl -s -X POST "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}/attach_files" \
+              -F "access_token=${GITEE_TOKEN}" \
+              -F "file=@$f" | jq -r '.name // "upload-failed: \('"$fname"'"' || true
+          done
+
+          echo "release $TAG synced -> https://gitee.com/lingion/${REPO_NAME}"
