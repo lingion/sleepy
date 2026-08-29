@@ -30,79 +30,134 @@ jobs:
     runs-on: ubuntu-latest
     needs: sync-git
     if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    timeout-minutes: 180
     steps:
-      - name: Sync this release (notes + assets) to Gitee
+      - name: Sync releases to Gitee (full catch-up on dispatch, incremental on release)
         env:
           GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
-          set -euo pipefail
-          REPO_NAME="${GITHUB_REPOSITORY##*/}"
-          GITHUB_REPO="${GITHUB_REPOSITORY}"
+          python3 - <<'PYEOF'
+          import json, os, subprocess, sys, time, urllib.request
 
-          # release event carries the tag; manual dispatch syncs latest release
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-            TAG=$(curl -sf -H "Authorization: Bearer $GH_TOKEN" \
-              "https://api.github.com/repos/${GITHUB_REPO}/releases/latest" | jq -r '.tag_name') || {
-              echo "no releases on this repo, nothing to sync"; exit 0; }
-          else
-            TAG="${GITHUB_REF_NAME}"
-          fi
-          [ "$TAG" != "null" ] && [ -n "$TAG" ] || { echo "no tag resolved"; exit 0; }
+          GITEE_TOKEN = os.environ["GITEE_TOKEN"]
+          GH_TOKEN = os.environ["GH_TOKEN"]
+          GITHUB_REPO = os.environ["GITHUB_REPOSITORY"]
+          REPO = GITHUB_REPO.split("/")[-1]
+          OWNER = "lingion"
+          GH = "https://api.github.com"
+          GE = "https://gitee.com/api/v5"
 
-          # release metadata from GitHub
-          curl -sf -H "Authorization: Bearer $GH_TOKEN" \
-            "https://api.github.com/repos/${GITHUB_REPO}/releases/tags/${TAG}" > rel.json
+          def gh_req(path):
+              req = urllib.request.Request(f"{GH}{path}", headers={
+                  "Authorization": f"Bearer {GH_TOKEN}",
+                  "Accept": "application/vnd.github+json"})
+              with urllib.request.urlopen(req, timeout=120) as r:
+                  return json.loads(r.read())
 
-          NAME=$(jq -r '.name | if . == "" or . == null then "'"$TAG"'" else . end' rel.json)
-          PRERELEASE=$(jq -r '.prerelease' rel.json)
-          jq -j '.body // ""' rel.json > rel_body.md
+          def curl_json(args):
+              out = subprocess.run(args, capture_output=True, text=True)
+              try:
+                  return json.loads(out.stdout)
+              except Exception:
+                  return None
 
-          # fetch assets (GitHub-side network: fast)
-          mkdir -p assets
-          count=$(jq '.assets | length' rel.json)
-          echo "assets to sync: $count"
-          jq -r '.assets[] | "\(.id)\t\(.name)"' rel.json | while IFS=$'\t' read -r aid fname; do
-            [ -n "$aid" ] || continue
-            echo "downloading $fname"
-            curl -sfL --retry 3 -H "Authorization: Bearer $GH_TOKEN" -H "Accept: application/octet-stream" \
-              -o "assets/$fname" "https://api.github.com/repos/${GITHUB_REPO}/releases/assets/${aid}"
-          done
+          def gitee_get(path):
+              sep = "&" if "?" in path else "?"
+              return curl_json(["curl", "-s", "--max-time", "120",
+                                f"{GE}{path}{sep}access_token={GITEE_TOKEN}"])
 
-          # create release on Gitee; if it already exists, reuse it
-          resp=$(mktemp); code=$(mktemp)
-          http=$(curl -s -o "$resp" -w "%{http_code}" -X POST \
-            "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases" \
-            -F "access_token=${GITEE_TOKEN}" \
-            -F "tag_name=${TAG}" \
-            -F "target_commitish=${{ github.event.repository.default_branch || 'main' }}" \
-            -F "name=${NAME}" \
-            -F "prerelease=${PRERELEASE}" \
-            -F "body=<rel_body.md")
+          def gitee_post(path, fields):
+              cmd = ["curl", "-s", "--max-time", "1800", "-X", "POST", f"{GE}{path}"]
+              for k, v in fields.items():
+                  cmd += ["-F", f"{k}={v}"]
+              return curl_json(cmd)
 
-          rel_id=$(jq -r '.id // empty' "$resp")
-          if [ -z "$rel_id" ]; then
-            rel_id=$(curl -s "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/tags/${TAG}?access_token=${GITEE_TOKEN}" | jq -r '.id // empty')
-          fi
-          [ -n "$rel_id" ] || { echo "::error::gitee release create failed"; cat "$resp"; exit 1; }
+          def gitee_patch(path, fields):
+              cmd = ["curl", "-s", "--max-time", "120", "-X", "PATCH", f"{GE}{path}"]
+              for k, v in fields.items():
+                  cmd += ["-F", f"{k}={v}"]
+              return curl_json(cmd)
 
-          # notes always updated to match GitHub
-          curl -s -X PATCH "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}" \
-            -F "access_token=${GITEE_TOKEN}" \
-            -F "tag_name=${TAG}" \
-            -F "name=${NAME}" \
-            -F "body=<rel_body.md" | jq -r '.tag_name // "patch failed"' > /dev/null
+          def gh_download(asset_id, dest):
+              for attempt in (1, 2):
+                  r = subprocess.run(["curl", "-sfL", "--retry", "3", "--max-time", "1800",
+                                      "-H", f"Authorization: Bearer {GH_TOKEN}",
+                                      "-H", "Accept: application/octet-stream",
+                                      "-o", dest, f"{GH}/repos/{GITHUB_REPO}/releases/assets/{asset_id}"])
+                  if r.returncode == 0:
+                      return
+                  time.sleep(5)
+              raise RuntimeError(f"download failed for asset {asset_id}")
 
-          # upload assets, dedup by name (delete existing same-name asset first)
-          for f in assets/*; do
-            [ -e "$f" ] || continue
-            fname=$(basename "$f")
-            echo "uploading $fname"
-            # remove same-named asset if re-syncing
-            curl -s -X POST "https://gitee.com/api/v5/repos/lingion/${REPO_NAME}/releases/${rel_id}/attach_files" \
-              -F "access_token=${GITEE_TOKEN}" \
-              -F "file=@$f" > upload_result.json
-            jq -r 'if type=="object" and .name then "  ok: \(.name)" else "  upload-failed" end' upload_result.json
-          done
+          def gitee_upload(rel_id, filepath):
+              last = None
+              for attempt in (1, 2):
+                  last = curl_json(["curl", "-s", "--max-time", "1800", "-X", "POST",
+                                    f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files",
+                                    "-F", f"access_token={GITEE_TOKEN}",
+                                    "-F", f"file=@{filepath}"])
+                  if isinstance(last, dict) and (last.get("id") or last.get("name") or last.get("browser_download_url")):
+                      return
+                  time.sleep(5)
+              raise RuntimeError(f"upload failed: {json.dumps(last)[:150] if last else 'no response'}")
 
-          echo "release $TAG synced -> https://gitee.com/lingion/${REPO_NAME}"
+          default_branch = gh_req(f"/repos/{GITHUB_REPO}")["default_branch"]
+          synced = failed = 0
+          page = 1
+          while True:
+              rels = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={page}")
+              if not rels:
+                  break
+              for rel in rels:
+                  tag = rel["tag_name"]
+                  name = rel.get("name") or tag
+                  pre = "true" if rel.get("prerelease") else "false"
+                  try:
+                      with open("/tmp/rel_body.md", "w") as f:
+                          f.write(rel.get("body") or "")
+                      cur = gitee_get(f"/repos/{OWNER}/{REPO}/releases/tags/{tag}")
+                      if isinstance(cur, dict) and cur.get("id"):
+                          rel_id = cur["id"]
+                          gitee_patch(f"/repos/{OWNER}/{REPO}/releases/{rel_id}", {
+                              "access_token": GITEE_TOKEN, "tag_name": tag,
+                              "name": name, "prerelease": pre,
+                              "body": "@/tmp/rel_body.md"})
+                      else:
+                          created = gitee_post(f"/repos/{OWNER}/{REPO}/releases", {
+                              "access_token": GITEE_TOKEN, "tag_name": tag,
+                              "target_commitish": default_branch,
+                              "name": name, "prerelease": pre,
+                              "body": "@/tmp/rel_body.md"})
+                          rel_id = created.get("id") if isinstance(created, dict) else None
+                          if not rel_id:
+                              raise RuntimeError(f"create failed: {json.dumps(created)[:200] if created else 'no response'}")
+                      atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files")
+                      have = set()
+                      if isinstance(atts, list):
+                          for a in atts:
+                              n = a.get("name") or (a.get("browser_download_url") or "").rstrip("/").split("/")[-1]
+                              if n:
+                                  have.add(n)
+                      for a in rel.get("assets", []):
+                          fname = a["name"]
+                          if fname in have:
+                              print(f"  = {tag}: asset {fname} already present")
+                              continue
+                          dest = f"/tmp/asset_{a['id']}_{fname}"
+                          gh_download(a["id"], dest)
+                          gitee_upload(rel_id, dest)
+                          os.remove(dest)
+                          print(f"  + {tag}: uploaded {fname}")
+                      synced += 1
+                      print(f"  ok {tag} ({len(rel.get('assets', []))} assets)")
+                  except Exception as e:
+                      failed += 1
+                      print(f"  !! {tag}: {e}")
+                  time.sleep(0.3)
+              if len(rels) < 100:
+                  break
+              page += 1
+          print(f"DONE releases synced={synced} failed={failed}")
+          sys.exit(1 if failed else 0)
+          PYEOF
