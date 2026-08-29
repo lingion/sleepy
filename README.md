@@ -65,7 +65,7 @@
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
-Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖，支持教务直连导入、多格式解析、四类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。
+Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖，支持教务直连导入、多格式解析、五类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。
 
 ---
 
@@ -201,30 +201,31 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 ---
 
-## 桌面 Widget（4 类）
+## 桌面 Widget（5 类）
 
-四类 Widget，WorkManager 定时刷新。布局尺寸与各 launcher 自适应。
+五类 Widget，WorkManager 定时刷新。布局尺寸与各 launcher 自适应。
 
 | Widget | 默认尺寸 | 用途 | 截图 |
 |---|---|---|---|
 | **Today** | 4×3 cell（250×180dp） | 今日课程列表 | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
 | **TwoDay** | 5×3 cell（320×220dp） | 今天 + 明天（左右双栏） | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
 | **WeekList** | 5×4 cell（320×200dp） | 7 日课程统计 + 名称 | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
+| **WeekView** | 5×4 cell（320×200dp） | 周视图缩略（无彩色胶囊，纯主题色） | 无独立截图 |
 | **WeekGrid** | 4×5 cell（250×360dp） | 完整时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
 
 实现要点：
-- Today / TwoDay / WeekList / WeekGrid：v1.0.29 起全部为同步 RemoteViews + Canvas 渲染（OPPO 等深度定制 launcher 会冻结 Glance 的异步 SessionWorker，导致卡片不刷新，故整体移植）
+- 全部 5 类：v1.0.29 起为同步 RemoteViews + Canvas 渲染（OPPO 等深度定制 launcher 会冻结 Glance 的异步 SessionWorker，导致卡片不刷新，故整体移植）
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
 - **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，均匀铺开且每门课稳定唯一
-- 刷新机制：对全部 4 个 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 每 15 分钟定时刷新
+- 刷新机制：对全部 5 个 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 每 15 分钟定时刷新
 
 ---
 
 ## OPPO 流体云
 
-v1.0.37 起支持 OPPO/一加 流体云（Seedling）卡片：课程开始前在状态栏/通知区展示课程名、时间、教室与状态字段，点按展开 sm/md/lg 三档尺寸的流体云卡片。
+v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务以 `NotificationCompat.ProgressStyle` 展示课程名、时间、教室，进度条随上课时间推进，状态栏持续可见（设置项默认关闭）。OPPO/一加 Seedling 卡片的接入材料已备好但**尚未接入构建**。
 
-- 基于 OPPO `SeedlingSupportSDK-lite 3.0.7`，通过 `SeedlingCardWidgetProvider` 桥接生命周期
+- OPPO `SeedlingSupportSDK-lite 3.0.7` AAR 在 `app/libs/`（要求 minSdk 26），gradle 尚未声明依赖，`SeedlingCardWidgetProvider` 未实现
 - UPK 源工程见 [`oppo-fluid-cloud-upk/`](oppo-fluid-cloud-upk/)（API 2.0，`immediate` 触发，`notification/statusbar` 入口）
 - `identifier`、`intent` 等 OPPO 分配值在工程中保留为 `REPLACE_WITH_OPPO_*` 占位，详见该目录 README
 
@@ -247,7 +248,7 @@ v1.0.37 起支持 OPPO/一加 流体云（Seedling）卡片：课程开始前在
 - 提醒内容**动态查询当天课表**，无课则推送「今日 X 号，今天没有课程」
 - 通知通过 `AlarmManager` 精确/非精确双路降级，Android 12+ 兼容
 - `BootReceiver` 重注册（开机/更新后自动恢复）
-- `DataStore` 持久化开关状态
+- 开关状态本地持久化（`AppPrefs`，SharedPreferences）
 - v1.0.21 起 master 关闭时**不再弹权限**（避免首次启动骚扰），所有权限请求都从 ReminderScreen 发起
 
 ---
@@ -271,7 +272,7 @@ v1.0.37 起支持 OPPO/一加 流体云（Seedling）卡片：课程开始前在
 
 ## 深色模式 & 主题
 
-5 套预设 + 跟随系统，每套含 Light/Dark 完整配色方案，`ThemeColorScreen` 一键切换。
+5 套预设 + 跟随系统，每套含 Light/Dark 完整配色方案，「我的」→「外观与显示」（`AppearanceScreen`）一键切换。
 
 <p align="left">
   <img src="docs/screenshots/11-theme.png" width="280">
@@ -303,10 +304,10 @@ language        = Kotlin 2.1.10
 ui              = Jetpack Compose (BOM 2024.10.00) + Material 3
 navigation      = Navigation Compose 2.8.3
 storage         = Room 2.7.0 (KSP)
-prefs           = DataStore Preferences 1.1.1
+prefs           = SharedPreferences (AppPrefs)；DataStore 1.1.1 已声明未使用
 serialization   = kotlinx-serialization-json 1.6.3
 html_parser     = jsoup 1.18.1
-widgets         = Glance AppWidget 1.1.0 + RemoteViews Canvas
+widgets         = RemoteViews + Canvas（同步渲染；Glance 依赖已删除）
 background      = WorkManager 2.9.1
 image           = Coil Compose 2.7.0
 splash          = Core Splash Screen 1.0.1
@@ -345,7 +346,7 @@ sleepy/
 │   │   │   │   └── mine/               # 我的 / 所有课表 / 编辑课表 / 主题 / 导出
 │   │   │   └── theme/                  # Theme + ThemePresets（5 套配色）
 │   │   ├── util/                       # AppPrefs / DateUtils / LocaleHelper / TimeTableUtils
-│   │   └── widget/                     # 4 类 widget + WidgetRenderActivity
+│   │   └── widget/                     # 5 类 widget + WidgetRenderActivity + ScrollStripService
 │   └── res/
 │       ├── values/                     # 默认资源 (zh-CN)
 │       ├── values-zh-rCN/              # 中文
@@ -353,7 +354,7 @@ sleepy/
 │       ├── values-en/                  # English
 │       ├── values-ja/                  # 日本語
 │       ├── values-es/                  # Español
-│       └── xml/                        # 4 个 widget 配置 + 网络/备份规则
+│       └── xml/                        # 5 个 widget 配置 + 网络/备份规则
 ├── docs/screenshots/                   # README 截图
 ├── assets/                             # logo 原图存档
 ├── build.gradle.kts                     # 根构建
