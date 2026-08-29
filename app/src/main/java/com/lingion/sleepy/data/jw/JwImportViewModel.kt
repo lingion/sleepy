@@ -98,32 +98,45 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             JwProtocol.TYPE_URP -> JwUrpParser(html)
             JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
             JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
-            JwProtocol.TYPE_ZF -> JwNewZfParser(html)
+            // zf / zf_1 = 老版正方（default2.aspx 时代），上游 wakeup 里 TYPE_ZF → ZhengFangParser
+            JwProtocol.TYPE_ZF -> JwOldZfParser(html)
+            JwProtocol.TYPE_ZF_1 -> JwOldZfParser(html, 1)
             JwProtocol.TYPE_ZF_NEW -> JwNewZfParser(html)
-            JwProtocol.TYPE_ZF_1 -> JwNewZfParser(html)
             else -> throw IllegalArgumentException("协议 $protocolType 暂不支持")
         }
         parser.generateCourseList()
     }
 
     /** 未知协议时，尝试所有 parser，取课程数最多的结果 */
-    private fun tryAllParsers(html: String): List<JwCourse> {
-        val candidates = listOf(
-            JwWiseduParser(html),
-            JwNewUrpParser(html),
-            JwNewZfParser(html),
-            JwQzParser(html),
-            JwQzCrazyParser(html),
-            JwUrpParser(html)
-        )
-        var best = emptyList<JwCourse>()
-        for (p in candidates) {
-            try {
-                val result = p.generateCourseList()
-                if (result.size > best.size) best = result
-            } catch (e: Exception) { continue }
+    private fun tryAllParsers(html: String): List<JwCourse> = tryAllParsersImpl(html)
+
+    companion object {
+        /**
+         * 兜底解析的实现，static 以便纯 JVM 单测直接验证兜底覆盖面
+         * （issue #5 回归：老版正方页面必须能被 tryAllParsers 解析出来）。
+         */
+        fun tryAllParsersForTest(html: String): List<JwCourse> = tryAllParsersImpl(html)
+
+        private fun tryAllParsersImpl(html: String): List<JwCourse> {
+            val candidates = listOf(
+                JwWiseduParser(html),
+                JwNewUrpParser(html),
+                JwNewZfParser(html),
+                JwOldZfParser(html),
+                JwOldZfParser(html, 1),
+                JwQzParser(html),
+                JwQzCrazyParser(html),
+                JwUrpParser(html)
+            )
+            var best = emptyList<JwCourse>()
+            for (p in candidates) {
+                try {
+                    val result = p.generateCourseList()
+                    if (result.size > best.size) best = result
+                } catch (e: Exception) { continue }
+            }
+            return best
         }
-        return best
     }
 
     /**
@@ -135,6 +148,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             u.contains("jwapp/sys/") || u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
             u.contains("jwglxt") || u.contains("/xtgl/") -> JwProtocol.TYPE_ZF_NEW
             u.contains("/jwtottxuxsysb/") -> JwProtocol.TYPE_ZF_NEW
+            // 老版正方指纹：登录页 default2.aspx / 课表页 xskbcx.aspx（issue #5：手输老正方地址猜不出协议）
+            u.contains("default2.aspx") || u.contains("xskbcx.aspx") -> JwProtocol.TYPE_ZF
+            // 强智入口指纹：/jsxsd/ 及其变体 /jxd/
+            u.contains("jsxsd") || u.contains("/jxd/") -> JwProtocol.TYPE_QZ
             u.contains("qz") || u.contains("strongdesk") -> JwProtocol.TYPE_QZ
             u.contains("urp") -> JwProtocol.TYPE_URP_NEW
             else -> null
