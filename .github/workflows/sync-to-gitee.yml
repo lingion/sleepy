@@ -38,7 +38,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 - <<'PYEOF'
-          import json, os, subprocess, sys, time, urllib.request
+          import json, os, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 
           GITEE_TOKEN = os.environ["GITEE_TOKEN"]
           GH_TOKEN = os.environ["GH_TOKEN"]
@@ -67,17 +67,24 @@ jobs:
               return curl_json(["curl", "-s", "--max-time", "120",
                                 f"{GE}{path}{sep}access_token={GITEE_TOKEN}"])
 
+          def gitee_form(method, path, fields):
+              # urlencoded form; Gitee rejects multipart bodies for release notes ("body is invalid")
+              data = "&".join(f"{k}={urllib.parse.quote(str(v), safe='')}" for k, v in fields.items()).encode()
+              req = urllib.request.Request(f"{GE}{path}", data=data, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=120) as r:
+                      return json.loads(r.read())
+              except urllib.error.HTTPError as e:
+                  try:
+                      return json.loads(e.read())
+                  except Exception:
+                      return {"http_status": e.code}
+
           def gitee_post(path, fields):
-              cmd = ["curl", "-s", "--max-time", "1800", "-X", "POST", f"{GE}{path}"]
-              for k, v in fields.items():
-                  cmd += ["-F", f"{k}={v}"]
-              return curl_json(cmd)
+              return gitee_form("POST", path, fields)
 
           def gitee_patch(path, fields):
-              cmd = ["curl", "-s", "--max-time", "120", "-X", "PATCH", f"{GE}{path}"]
-              for k, v in fields.items():
-                  cmd += ["-F", f"{k}={v}"]
-              return curl_json(cmd)
+              return gitee_form("PATCH", path, fields)
 
           def gh_download(asset_id, dest):
               for attempt in (1, 2):
@@ -114,21 +121,20 @@ jobs:
                   name = rel.get("name") or tag
                   pre = "true" if rel.get("prerelease") else "false"
                   try:
-                      with open("/tmp/rel_body.md", "w") as f:
-                          f.write(rel.get("body") or "")
+                      body_text = rel.get("body") or ""
                       cur = gitee_get(f"/repos/{OWNER}/{REPO}/releases/tags/{tag}")
                       if isinstance(cur, dict) and cur.get("id"):
                           rel_id = cur["id"]
                           gitee_patch(f"/repos/{OWNER}/{REPO}/releases/{rel_id}", {
                               "access_token": GITEE_TOKEN, "tag_name": tag,
                               "name": name, "prerelease": pre,
-                              "body": "@/tmp/rel_body.md"})
+                              "body": body_text})
                       else:
                           created = gitee_post(f"/repos/{OWNER}/{REPO}/releases", {
                               "access_token": GITEE_TOKEN, "tag_name": tag,
                               "target_commitish": default_branch,
                               "name": name, "prerelease": pre,
-                              "body": "@/tmp/rel_body.md"})
+                              "body": body_text})
                           rel_id = created.get("id") if isinstance(created, dict) else None
                           if not rel_id:
                               raise RuntimeError(f"create failed: {json.dumps(created)[:200] if created else 'no response'}")
