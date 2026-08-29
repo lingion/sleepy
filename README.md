@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README.en.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">⬇ Download APK</a>
+  <a href="README.md">中文</a> · <a href="README.en.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a>
 </p>
 
 ---
@@ -69,7 +69,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖
 
 ---
 
-## 🖥 三视图
+## 三视图
 
 课表主页内置三种视图，顶部一键切换。
 
@@ -88,7 +88,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖
 
 ---
 
-## 📚 多课表管理
+## 多课表管理
 
 可同时管理多张独立课表，每张表拥有自己的节次时间表、开学日期、最大周数。
 
@@ -123,7 +123,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 ---
 
-## 🎓 教务系统导入
+## 教务系统导入
 
 入口在底栏「课表管理」→「导入课表」弹窗，三种入口**先预览再导入**，绝不覆盖现有课表。
 
@@ -165,7 +165,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 ---
 
-## ✏️ 课程编辑
+## ️ 课程编辑
 
 <p align="left">
   <img src="docs/screenshots/18-add-course.png" width="280">
@@ -179,7 +179,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 ---
 
-## 📤 导出课表
+## 导出课表
 
 v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存到设备 `Download/Sleepy/` 并触发系统分享面板。
 
@@ -201,7 +201,7 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 ---
 
-## 🧩 桌面 Widget（4 类）
+## 桌面 Widget（4 类）
 
 四类 Widget，WorkManager 定时刷新。布局尺寸与各 launcher 自适应。
 
@@ -260,7 +260,7 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 ---
 
-## 🌙 深色模式 & 主题
+## 深色模式 & 主题
 
 5 套预设 + 跟随系统，每套含 Light/Dark 完整配色方案，`ThemeColorScreen` 一键切换。
 
@@ -279,7 +279,7 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 ---
 
-## 📋 课表管理总览
+## 课表管理总览
 
 <p align="left">
   <img src="docs/screenshots/09-manage.png" width="280">
