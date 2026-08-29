@@ -35,7 +35,7 @@ data class WidgetData(
     val isDark: Boolean = false,
     /** 跟 app 主题色（ThemePresets key） */
     val themeKey: String = ThemePresets.KEY_DEFAULT,
-    /** ★ 学期状态（v1.0.37）: 学期外时 Today 渲染状态文案不渲染课程 */
+    /** 学期状态（v1.0.37）: 学期外时 Today 渲染状态文案不渲染课程 */
     val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
 ) {
     val dayName: String get() = DateUtils.localizedDay(date.dayOfWeek.value, com.lingion.sleepy.SleepyApp.get())
@@ -65,7 +65,7 @@ data class WidgetScheme(
 /**
  * 按 themeKey + isDark 派生小组件配色。
  *
- * ★ themeKey == "system" 时走 Material You 动态取色(dynamicLightColorScheme / dynamicDarkColorScheme),
+ * themeKey == "system" 时走 Material You 动态取色(dynamicLightColorScheme / dynamicDarkColorScheme),
  *   与 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 的处理对齐 — 之前 widget 把 "system"
  *   当未知 key → ThemePresets.byKey 返回 Default(紫色) → 小组件永远紫色, 不跟随系统壁纸取色。
  */
@@ -134,7 +134,7 @@ data class WeekData(
     // displayMode 死字段已删（renderer 各自直读 AppPrefs.getDisplayMode, 传入字段从未被消费）
     val showDate: Boolean = false,
     val visibleDays: Set<Int> = (1..7).toSet(),
-    /** ★ 学期状态（v1.0.37）: 学期外时列头加状态行 */
+    /** 学期状态（v1.0.37）: 学期外时列头加状态行 */
     val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
 )
 
@@ -144,6 +144,6 @@ data class TwoDayData(
     val hasTable: Boolean,
     val isDark: Boolean = false,
     val themeKey: String = ThemePresets.KEY_DEFAULT,
-    /** ★ 学期状态（v1.0.37）: 学期外时渲染状态文案不渲染课程 */
+    /** 学期状态（v1.0.37）: 学期外时渲染状态文案不渲染课程 */
     val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
 )

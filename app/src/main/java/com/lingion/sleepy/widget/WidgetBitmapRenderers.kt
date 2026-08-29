@@ -41,7 +41,7 @@ object WidgetBitmapRenderers {
     )
 
     /**
-     * ★ 主题色 — 走 resolveSchemePublic (WidgetContent.kt, 全部 widget 渲染共用)
+     * 主题色 — 走 resolveSchemePublic (WidgetContent.kt, 全部 widget 渲染共用)
      * 之前硬编码 Default 紫色 → 不跟随 app 主题/system 动态取色 → 移植到 RemoteViews 后仍是错的。
      * 现在接收 themeKey, 完全对齐 WeekGridWidgetProvider.renderBitmap 的取色方式。
      */
@@ -82,7 +82,7 @@ object WidgetBitmapRenderers {
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
 
         // 时间 + 地点 — 先算 meta 文本 (需要知道是否有第二行才能居中)
-        // ★ displayMode (决策 D5-12, 对齐 CourseTableView.LessonRow):
+        // displayMode (决策 D5-12, 对齐 CourseTableView.LessonRow):
         //   "time" → 具体时间段 "08:00-09:35"; "node"(默认) → 节次 "3-4节"
         val timeStr = if (displayMode == "time" && timeJson.isNotBlank()) {
             TimeTableUtils.courseTimeString(
@@ -104,7 +104,7 @@ object WidgetBitmapRenderers {
         val metaSize = (fontSizeSp - 2f) * density
         val lineGap = 2f * density
 
-        // ★ 用 FontMetrics 算真实行高 → 垂直居中两行文字块
+        // 用 FontMetrics 算真实行高 → 垂直居中两行文字块
         p.textSize = nameSize
         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         p.isAntiAlias = true
@@ -135,7 +135,7 @@ object WidgetBitmapRenderers {
         } else name
         c.drawText(displayName, x + pad, blockTop - fmName.ascent, p)
 
-        // 时间 + 地点 — ★ 亮度自适应文字色 (决策 D5-13), 非 onSurfaceVariant(灰)
+        // 时间 + 地点 — 亮度自适应文字色 (决策 D5-13), 非 onSurfaceVariant(灰)
         if (hasMeta) {
             p.textSize = metaSize
             p.typeface = Typeface.DEFAULT
@@ -153,7 +153,7 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
-        // ★ 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
+        // 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
         val displayMode = AppPrefs.getDisplayMode(context)
         val showDate = AppPrefs.isShowDate(context)
 
@@ -170,7 +170,7 @@ object WidgetBitmapRenderers {
         val pad = 14f * density
         var y = pad
 
-        // 标题行：今天 · 周X  +  日期 (★ showDate=false 时隐藏右侧日期, 对齐课表页设置)
+        // 标题行：今天 · 周X  +  日期 (showDate=false 时隐藏右侧日期, 对齐课表页设置)
         val ctx = SleepyApp.get()
         p.color = s.primary
         p.textSize = 13f * density
@@ -196,7 +196,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        // ★ 学期外: 状态标题 + 提示行, 不画课程 (loadDataSync 已清空 courses, 此处为标题语义)
+        // 学期外: 状态标题 + 提示行, 不画课程 (loadDataSync 已清空 courses, 此处为标题语义)
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
             val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
                 R.string.semester_not_started else R.string.semester_ended
@@ -241,7 +241,7 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * ★ Today 内容全展开高度(dp) — 可滚动条带渲染用。
+     * Today 内容全展开高度(dp) — 可滚动条带渲染用。
      * 纯计算零绘制; 布局常量逐一镜像 renderToday (改那边必须同步这边)。
      */
     fun todayContentHeightDp(data: WidgetData): Float {
@@ -258,7 +258,7 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * ★ TwoDay 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderTwoDay。
+     * TwoDay 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderTwoDay。
      */
     fun twoDayContentHeightDp(data: TwoDayData): Float {
         var h = 12f + 22f                           // pad + 顶部标签行
@@ -274,7 +274,7 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * ★ WeekList 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderWeekList。
+     * WeekList 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderWeekList。
      */
     fun weekListContentHeightDp(context: Context, data: WeekData): Float {
         val outerPad = 6f
@@ -283,7 +283,7 @@ object WidgetBitmapRenderers {
         val shownDays = if (visibleDays.isEmpty()) data.days
             else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
         if (shownDays.isEmpty()) return outerPad * 2 + 20f
-        // 学期外状态行: 顶部全宽 +16dp (renderWeekList ★ 学期外段)
+        // 学期外状态行: 顶部全宽 +16dp (renderWeekList 学期外段)
         val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) 16f else 0f
         // 最高一列: [状态行] + 标题(12+14) + chip 行(14+6) + 课程行 (16+3)*n
         val colH = shownDays.maxOf { day ->
@@ -306,7 +306,7 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
-        // ★ visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
+        // visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
         // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
         val visibleDays = AppPrefs.getVisibleDays(context)
         val shownDays = if (visibleDays.isEmpty()) data.days
@@ -339,7 +339,7 @@ object WidgetBitmapRenderers {
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
 
-        // ★ 学期外: 顶部全宽状态行(只画一次; 学期前=第1周课照常预习 / 学期后=课程已清空)
+        // 学期外: 顶部全宽状态行(只画一次; 学期前=第1周课照常预习 / 学期后=课程已清空)
         var colTop = outerPad
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
             val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
@@ -400,13 +400,13 @@ object WidgetBitmapRenderers {
                 val courseGap = 3f * density
                 day.courses.forEachIndexed { idx, course ->
                     val name = course.courseName
-                    // ★ 课程颜色背景 (对齐 WeekGrid 风格) — 统一入口 CourseColorUtil (决策 D3)
+                    // 课程颜色背景 (对齐 WeekGrid 风格) — 统一入口 CourseColorUtil (决策 D3)
                     val bgColor = CourseColorUtil.pickCourseColorInt(course, s.isDark, s.surfaceVariant, colorless)
                     p.color = bgColor
                     canvas.drawRoundRect(
                         RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
                         4f * density, 4f * density, p)
-                    // 课程名 — ★ FontMetrics 垂直居中 + 亮度自适应文字色 (决策 D5-13, 对齐 drawCourse 同入口)
+                    // 课程名 — FontMetrics 垂直居中 + 亮度自适应文字色 (决策 D5-13, 对齐 drawCourse 同入口)
                     p.color = CourseColorUtil.textColorOn(bgColor, s.isDark, s.onSurface)
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
                     val maxTextWidth = colW - coursePad * 2 - 4f * density
@@ -438,7 +438,7 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val showSeparator = AppPrefs.isWidgetSeparator(context)
-        // ★ visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
+        // visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
         // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
         val visibleDays = AppPrefs.getVisibleDays(context)
         val shownDays = if (visibleDays.isEmpty()) data.days
@@ -471,7 +471,7 @@ object WidgetBitmapRenderers {
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
 
-        // ★ 学期外: 顶部全宽状态行(只画一次, 同 renderWeekList)
+        // 学期外: 顶部全宽状态行(只画一次, 同 renderWeekList)
         var colTop = outerPad
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
             val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
@@ -582,7 +582,7 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
-        // ★ 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
+        // 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
         val displayMode = AppPrefs.getDisplayMode(context)
         val showDate = AppPrefs.isShowDate(context)
 
@@ -614,7 +614,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        // ★ 学期外: 状态标题 + 提示行, 不画两栏课程 (loadDataSync 已清空, 此处给标题语义)
+        // 学期外: 状态标题 + 提示行, 不画两栏课程 (loadDataSync 已清空, 此处给标题语义)
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
             val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
                 R.string.semester_not_started else R.string.semester_ended
@@ -630,7 +630,7 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        // ★ 左右两栏: 每天一列, 中间竖直分隔
+        // 左右两栏: 每天一列, 中间竖直分隔
         val colGap = 10f * density
         val colW = (w - pad * 2 - colGap * (data.days.size - 1)) / data.days.size
         val listTop = y
@@ -652,7 +652,7 @@ object WidgetBitmapRenderers {
             canvas.drawText(title, colX, listTop + 12f * density, p)
             val titleW = p.measureText(title)
 
-            // ★ showDate=false 时隐藏列标题旁的日期 (对齐课表页设置)
+            // showDate=false 时隐藏列标题旁的日期 (对齐课表页设置)
             if (showDate) {
                 p.color = s.onSurfaceVariant
                 p.textSize = 10f * density
@@ -667,7 +667,7 @@ object WidgetBitmapRenderers {
                 p.textSize = 11f * density
                 canvas.drawText(ctx.getString(R.string.no_course), colX, cy + 11f * density, p)
             } else {
-                // ★ 胶囊固定最大高度 44dp, 不再撑满整个列
+                // 胶囊固定最大高度 44dp, 不再撑满整个列
                 val rowGap = 8f * density
                 val maxRowH = 44f * density
                 day.courses.forEach { course ->

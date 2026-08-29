@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 
 /**
- * ★ 桌面 TwoDay 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+ * 桌面 TwoDay 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
  * 原因见 [TodayWidgetReceiver] 注释。
  *
  * v1.0.36: 内容装得下走静态 renderAndPush; 超出走 pushScrollable(壳图+条带)。
@@ -94,7 +94,7 @@ class TwoDayWidgetReceiver : AppWidgetProvider() {
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
                         val todayDow = today.dayOfWeek.value
                         val tomorrowDow = tomorrow.dayOfWeek.value
-                        // ★ 学期外不展示课程 — 与 App 今日页同语义
+                        // 学期外不展示课程 — 与 App 今日页同语义
                         val todayCourses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
                             repo.getCoursesByDayOnce(table.id, todayDow)
                                 .filter { it.inWeek(week) }.sortedBy { it.startNode }

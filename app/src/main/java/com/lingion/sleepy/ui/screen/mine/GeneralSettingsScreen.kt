@@ -84,7 +84,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
 
-    // ★ 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
+    // 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     fun refreshWidgets() {
         widgetScope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }

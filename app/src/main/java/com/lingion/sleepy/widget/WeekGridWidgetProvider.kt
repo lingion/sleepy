@@ -45,7 +45,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
     /**
-     * ★ ANR 修复: onUpdate/onAppWidgetOptionsChanged 在主线程回调,
+     * ANR 修复: onUpdate/onAppWidgetOptionsChanged 在主线程回调,
      * 原实现 renderWidget 内含 runBlocking(DB) + Canvas 重活 → 主线程阻塞 → ANR。
      * 改用 goAsync() 获取 PendingResult, 在后台线程做完 DB 加载 + Bitmap 渲染后 finish。
      * 系统广播 ANR 阈值(前台~10s/后台~60s)由 goAsync 续命, 实际工作在 Dispatchers.Default。
@@ -80,7 +80,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         val opts = awm.getAppWidgetOptions(widgetId)
         val density = context.resources.displayMetrics.density
 
-        // ★★ FIX(字扁+巨大+黑边): 必须用「实际当前尺寸」而不是 MAX resize 边界。
+        // FIX(字扁+巨大+黑边): 必须用「实际当前尺寸」而不是 MAX resize 边界。
         // 之前读 OPTION_APPWIDGET_MAX_WIDTH/HEIGHT = 616×634dp (这是 widget 能拖到的最大尺寸, 不是当前尺寸!)
         //   实际 widget 在桌面只占 ~376×651dp (窄高, ratio 0.58)。
         //   用 616×634 (ratio 0.97) 画 bitmap → fitCenter 等比缩小塞进 0.58 容器 → 上下大片留白;
@@ -95,7 +95,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         var wDp = 0
         var hDp = 0
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-            // ★ 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
+            // 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
             //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             val sizes = opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, android.util.SizeF::class.java)
@@ -125,7 +125,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
         awm.updateAppWidget(widgetId, views)
-        // ★ Bitmap 回收: RemoteViews.setImageViewBitmap 会拷贝 bitmap 到 binder 事务,
+        // Bitmap 回收: RemoteViews.setImageViewBitmap 会拷贝 bitmap 到 binder 事务,
         // 本进程持有的原 bitmap 不再需要, 立即回收避免 ~7.8MB 大图累积占内存。
         bmp.recycle()
     }
@@ -152,7 +152,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val gridLine        = scheme.surfaceVariant.toIntArgb()
             val colorless       = AppPrefs.isWidgetColorless(context)
 
-            // ★ v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
+            // v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
             // hue = groupId.hashCode() * 137.508° → 相邻课色差最大化, 同门课永远同色
             // 亮色 S=0.55 L=0.82 (粉彩), 暗色 S=0.40 L=0.28 (沉稳)
             // 用户自定义 color 优先 (#FF6750A4 视为未设置)
@@ -171,7 +171,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
 
             // ── 布局 (dp → px, 跟 CourseTableView 同参数) ──
             val dp = { v: Float -> (v * density).roundToInt() }
-            // ★ v19c 字号参数 (用户原话: "你这个字号明显是不合格的")
+            // v19c 字号参数 (用户原话: "你这个字号明显是不合格的")
             // 之前 headH*0.30 cap dp(15f) 太大, day header 文字溢出 cell 边界全挤在一起
             // 改成: cap 降到 dp(13f), min 升到 dp(10f), 文字宽度永远 < dayW - padding
             val outerPad = dp(6f)
@@ -201,8 +201,8 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             val containerRect = RectF(0f, 0f, wPx.toFloat(), hPx.toFloat())
             c.drawRoundRect(containerRect, dp(18f).toFloat(), dp(18f).toFloat(), p)
 
-            // ★ 空状态: 无课表时显示占位提示, 不渲染空白网格
-            // ★ 学期后课程被清空 → 落到这分支; 学期状态文案优先于"去创建课表"
+            // 空状态: 无课表时显示占位提示, 不渲染空白网格
+            // 学期后课程被清空 → 落到这分支; 学期状态文案优先于"去创建课表"
             if (!data.hasTable || data.days.isEmpty() || data.days.all { it.courses.isEmpty() }) {
                 val ctx = SleepyApp.get()
                 p.textAlign = Paint.Align.CENTER
@@ -234,7 +234,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             var x = outerPad.toFloat()
             var y = outerPad.toFloat()
 
-            // ★ v19b: 字号完全根据 widget 宽高自适应 (用户原话: "能不能自动根据这个宽度, 高度调整")
+            // v19b: 字号完全根据 widget 宽高自适应 (用户原话: "能不能自动根据这个宽度, 高度调整")
             // 1dp 永远 = 1dp, 但用 widget 尺寸作为 scale 单位
             // dayW = (bodyW-timeW) / 7, cardH = slotH * step
             // 单节 course 卡片: cardH = slotH (小卡), 多节: cardH = slotH*N (大卡)
@@ -244,7 +244,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
             c.drawRoundRect(RectF(x, y, x + timeW, y + headH),
                 dp(14f).toFloat(), dp(14f).toFloat(), p)
 
-            // ★ 学期前(课照常显示供预习): 角落画学期状态, 用户知道现在学期没开始
+            // 学期前(课照常显示供预习): 角落画学期状态, 用户知道现在学期没开始
             if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START) {
                 val ctx2 = SleepyApp.get()
                 p.color = fgOnSurfaceVar
@@ -313,10 +313,10 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
             }
 
-            // ★ v21: 竖排(直书) — token 化 + 拉丁组旋转 + 标点优化
+            // v21: 竖排(直书) — token 化 + 拉丁组旋转 + 标点优化
             val useVertForms = AppPrefs.isVertPunctReplace(context)  // 方案B开关(默认false=方案A'旋转)
 
-            // ★ v20b: 字号统一到「全表最小理想值」— 自适应算法 + 统一字号
+            // v20b: 字号统一到「全表最小理想值」— 自适应算法 + 统一字号
             // 每卡按 cardH/unitHeight 算理想字号(v21: 用 token 单位高度替代旧字数)
             // → 全表取最小 → 所有卡用同一个字号(整齐)
             // 下限 11dp 保可读; 上限对齐表头"周一/周二"字号(用户原话: 课名字号最大不能超过周一周二)
@@ -392,7 +392,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.style = Paint.Style.FILL
                     p.alpha = 255
 
-                    // ★ v19k: 课名居中独占主体, 教室做底部小字角标
+                    // v19k: 课名居中独占主体, 教室做底部小字角标
                     // 卡片窄(~40dp), 双列并排挤死 → 改成: 课名竖排居中 + 教室缩到 0.6× 字号横排在底部
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
@@ -402,14 +402,14 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val roomChars = course.room.takeIf { it.isNotBlank() }
                         ?.filter { it != '\n' && it != ' ' }?.toList() ?: emptyList()
 
-                    // ★ v20b: 用全表统一字号(unifiedCharSize), 截断逻辑保留
+                    // v20b: 用全表统一字号(unifiedCharSize), 截断逻辑保留
                     val availCardH = cardRect.height() - unifiedPad * 2
                     val hasRoom = roomChars.isNotEmpty()
                     val roomReserveH = if (hasRoom) (nameMinDp * 0.7f).coerceAtMost(availCardH * 0.35f) else 0f
                     val nameAvailH = (availCardH - roomReserveH).coerceAtLeast(0f)
                     val charSize = unifiedCharSize
 
-                    // ★ v21: token 化课名 → 截断 → 按类型绘制
+                    // v21: token 化课名 → 截断 → 按类型绘制
                     val nameCenterX = cardRect.centerX()
                     p.textSize = charSize
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
@@ -418,7 +418,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
 
                     val tokens = tokenizeName(course.courseName, useVertForms)
 
-                    // ★ v22: 字符级贪心截断 — 任何 token 都可拆到字符级, 彻底杜绝溢出
+                    // v22: 字符级贪心截断 — 任何 token 都可拆到字符级, 彻底杜绝溢出
                     //   CJK/PUNCT: 逐字累加, 放不下就截断
                     //   LATIN(旋转组≥2): 不可拆 → 整组放不下则截断
                     p.textSize = charSize
@@ -514,7 +514,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                         c.drawText(ellipsisChar.toString(), nameCenterX, cy + charSize * 0.82f, p)
                     }
 
-                    // ★ 教室: 底部横排小字角标, 0.62× 字号, 半透明, 按卡片宽截断省略
+                    // 教室: 底部横排小字角标, 0.62× 字号, 半透明, 按卡片宽截断省略
                     if (roomChars.isNotEmpty()) {
                         val roomStr = course.room.filter { it != '\n' && it != ' ' }
                         val roomSize = (charSize * 0.62f).coerceAtMost(dp(8f).toFloat()).coerceAtLeast(dp(5f).toFloat())
@@ -691,7 +691,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
                     val map = if (t != null) {
                         val week = DateUtils.currentWeek(t.startDate, today)
                         (1..7).map { dow ->
-                            // ★ 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
+                            // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                             val courses = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
                                 repo.getCoursesByDayOnce(t.id, dow)
                                     .filter { it.inWeek(week) }.sortedBy { it.startNode }

@@ -222,7 +222,7 @@ private fun ExportItem(
             modifier = Modifier
                 .size(44.dp)
                 .clip(SleepyTheme.shapes.medium)
-                // ★ 对齐 MineScreen.SettingsItem 同语义图标容器（primaryContainer），
+                // 对齐 MineScreen.SettingsItem 同语义图标容器（primaryContainer），
                 // 之前 primary.copy(0.12f) 与本文件顶部信息卡的 primaryContainer 也不一致
                 .background(colors.primaryContainer),
             contentAlignment = Alignment.Center
@@ -291,7 +291,7 @@ private suspend fun exportAndShare(
     }
 }
 
-/** ★ 仅在 Q(29)+ 被调用(API<29 由 exportAndShare 分流到 writeToCacheViaFileProvider):
+/** 仅在 Q(29)+ 被调用(API<29 由 exportAndShare 分流到 writeToCacheViaFileProvider):
  *    MediaStore.Downloads 整族 API 29 新增, 函数内不再需要 Q 判断 */
 @androidx.annotation.RequiresApi(android.os.Build.VERSION_CODES.Q)
 private fun writeToDownloads(

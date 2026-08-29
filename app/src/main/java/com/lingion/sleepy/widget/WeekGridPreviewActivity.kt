@@ -46,7 +46,7 @@ class WeekGridPreviewActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // ★ 沉浸全屏 — 隐藏 system bars，让 CardsGridView 真占满屏幕
+        // 沉浸全屏 — 隐藏 system bars，让 CardsGridView 真占满屏幕
         window.decorView.systemUiVisibility = (
             android.view.View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
             or android.view.View.SYSTEM_UI_FLAG_FULLSCREEN
@@ -56,7 +56,7 @@ class WeekGridPreviewActivity : ComponentActivity() {
             or android.view.View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
             )
         setContent {
-            // ★ 跟随 app 主题设置(此前全默认参=永远浅色+默认紫)
+            // 跟随 app 主题设置(此前全默认参=永远浅色+默认紫)
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             val dark = androidx.compose.runtime.remember(systemDark) {
                 com.lingion.sleepy.util.AppPrefs.isDarkMode(this@WeekGridPreviewActivity, systemDark)

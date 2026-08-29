@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
                         AppPrefs.setThemeMode(this@MainActivity, mode)
                         themeMode = mode
                         applyTheme()
-                        // ★ 手动切主题时联动刷新 widget(广播 APPWIDGET_UPDATE)
+                        // 手动切主题时联动刷新 widget(广播 APPWIDGET_UPDATE)
                         lifecycleScope.launch {
                             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(this@MainActivity)
                         }
@@ -166,9 +166,9 @@ private fun AppRoot(
 ) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
-    // ★ 语言切换触发 Activity.recreate() 后, 用 rememberSaveable 保留 overlayScreen 导航状态,
+    // 语言切换触发 Activity.recreate() 后, 用 rememberSaveable 保留 overlayScreen 导航状态,
     //   否则用户切语言后会丢失设置页上下文、退回主 Tab(决策 D2 重排修复)。
-    // ★ editingCourse(CourseEntity)无法 Bundle 化: 编辑课程会话中不保存 overlayScreen,
+    // editingCourse(CourseEntity)无法 Bundle 化: 编辑课程会话中不保存 overlayScreen,
     //   旋转/进程恢复后退回主 Tab(丢弃编辑但安全), 避免恢复成"新增课程"空表单造成重复加课。
     var overlayScreen by rememberSaveable(
         stateSaver = Saver<OverlayScreen?, OverlayScreen>(
@@ -176,7 +176,7 @@ private fun AppRoot(
             restore = { it }
         )
     ) { mutableStateOf<OverlayScreen?>(null) }
-    // ★ overlayScreen 的伴生导航参数必须同步持久化, 否则旋转恢复后 overlay 存活但参数归 null:
+    // overlayScreen 的伴生导航参数必须同步持久化, 否则旋转恢复后 overlay 存活但参数归 null:
     //   EditTable 的 tableId=null 语义为"编辑当前课表", 会静默改错表; pendingNewTableId 丢失
     //   会让新建空表遗留在 DB 且误显示删除按钮。三者均可 Bundle 化(Long?), 一并 rememberSaveable。
     var editTableId by rememberSaveable { mutableStateOf<Long?>(null) }

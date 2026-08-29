@@ -88,7 +88,7 @@ fun ReminderScreen(onBack: () -> Unit) {
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
 
-    // ★ debounce：分钟输入停止 500ms 后才持久化并重排提醒，
+    // debounce：分钟输入停止 500ms 后才持久化并重排提醒，
     //   避免每敲一键就触发一次全量 cancelAll + scheduleAll（查库 + 重排全部闹钟）。
     LaunchedEffect(minutesInput) {
         if (minutesInput.isBlank()) return@LaunchedEffect
@@ -141,11 +141,11 @@ fun ReminderScreen(onBack: () -> Unit) {
                 requestNotificationPermission()
             }
         } else {
-            // ★ 关闭 master 只设 reminder_master=false + cancelAll(); scheduleAll 与各 Receiver 均双重检查
+            // 关闭 master 只设 reminder_master=false + cancelAll(); scheduleAll 与各 Receiver 均双重检查
             //   isReminderEnabled, 无需覆写子开关(否则重开 master 后 daily/beforeClass 配置全丢)。
             masterEnabled = false
             AppPrefs.setReminderEnabled(context, false)
-            // ★ cancelAll 现为 suspend，由 IO 协程调用，避免主线程查库阻塞
+            // cancelAll 现为 suspend，由 IO 协程调用，避免主线程查库阻塞
             CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                 SleepyApp.get().notificationScheduler.cancelAll()
             }
@@ -517,7 +517,7 @@ private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean,
             Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
-        // ★ 补主题色：之前无 colors 参数走默认 Material3 蓝，与同屏三个主开关不一致
+        // 补主题色：之前无 colors 参数走默认 Material3 蓝，与同屏三个主开关不一致
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,

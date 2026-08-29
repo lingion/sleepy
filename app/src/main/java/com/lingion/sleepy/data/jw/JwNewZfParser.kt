@@ -301,7 +301,7 @@ class JwNewZfParser(source: String) : JwParser(source) {
         val ranges = parseWeekStr(weekStr)
         val node = nodeCount * 2 - 1
 
-        // ★ 展开全部周次段（之前只取 ranges.first()，会丢失 "1-11周(单),13-16周" 的后半段）
+        // 展开全部周次段（之前只取 ranges.first()，会丢失 "1-11周(单),13-16周" 的后半段）
         return ranges.map { r ->
             JwCourse(
                 name = name,

@@ -69,7 +69,7 @@ fun AppearanceScreen(
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
     val selectedMode = themeMode
 
-    // ★ 选主题/模式后立即刷小组件: 之前只写 SP 不刷 widget → 小组件不跟主题变
+    // 选主题/模式后立即刷小组件: 之前只写 SP 不刷 widget → 小组件不跟主题变
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
     fun refreshWidgets() {
         widgetScope.launch { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context) }

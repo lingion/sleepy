@@ -54,7 +54,7 @@ class FluidCloudService : Service() {
         }
 
         if (classEpoch <= System.currentTimeMillis()) {
-            // ★ 修复 P0: startForegroundService 启动后，即使决定立即停止也必须先
+            // 修复 P0: startForegroundService 启动后，即使决定立即停止也必须先
             // startForeground()，否则 Android 12+ 抛 ForegroundServiceDidNotStartInTimeException。
             // 用最小占位通知履行契约，随后移除。
             if (android.os.Build.VERSION.SDK_INT >= 26) {
@@ -105,7 +105,7 @@ class FluidCloudService : Service() {
         // 不分 segments：课前提醒是一个连续倒计时进度，旧代码的 70/30 分段没有实际语义，
         // 反而在 70% 处把进度条断开造成视觉割裂。
 
-        // ★ 通知色跟随主题（之前硬编码默认紫 0xFF6750A4，用户选春绿/海蓝等主题后通知色与 app 内不一致）。
+        // 通知色跟随主题（之前硬编码默认紫 0xFF6750A4，用户选春绿/海蓝等主题后通知色与 app 内不一致）。
         // 复用 widget 渲染侧的 resolveSchemePublic 派生 primary（支持 system=MaterialYou 动态取色）。
         val isSystemDark = (resources.configuration.uiMode and
             android.content.res.Configuration.UI_MODE_NIGHT_MASK) ==
@@ -144,7 +144,7 @@ class FluidCloudService : Service() {
             // 前台服务路径: startForeground 本身不需要 POST_NOTIFICATIONS 运行时权限
             startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, notification)
         } else {
-            // ★ Lint MissingPermission: 前台服务由 startForegroundService 启动链路触发,
+            // Lint MissingPermission: 前台服务由 startForegroundService 启动链路触发,
             //   但 API<26 notify 分支仍需权限校验兜底(权限被拒时静默跳过, 不抛 SecurityException)
             if (ContextCompat.checkSelfPermission(
                     this, android.Manifest.permission.POST_NOTIFICATIONS
