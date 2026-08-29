@@ -76,7 +76,7 @@
     <string name="import_conflict_more">还有 %1$d 条冲突未展开</string>
     <string name="import_append_only">仅追加无冲突</string>
     <string name="import_as_new">导入为新课表</string>
-    <string name="import_overwrite">⚠ 覆盖当前（谨慎）</string>
+    <string name="import_overwrite">覆盖当前（谨慎）</string>
     <string name="import_confirm_title">导入前确认</string>
     <string name="import_confirm_body">先确认学期开始日期和每节时间，不然当前周次会一直不准。</string>
     <string name="import_week_start">第一周从哪天开始</string>
