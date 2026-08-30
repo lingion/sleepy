@@ -1,0 +1,22 @@
+package com.lingion.sleepy.util
+
+/** 判断两个周次区间（含单双周类型）是否有公共上课周。
+ *  type: 0=每周 1=单周 2=双周；奇偶按绝对周号判定，与 CourseEntity.inWeek 一致。 */
+fun weekRangesOverlap(
+    aStart: Int, aEnd: Int, aType: Int,
+    bStart: Int, bEnd: Int, bType: Int
+): Boolean {
+    val lo = maxOf(aStart, bStart)
+    val hi = minOf(aEnd, bEnd)
+    if (lo > hi) return false
+    fun hits(week: Int, type: Int): Boolean = when (type) {
+        1 -> week % 2 == 1
+        2 -> week % 2 == 0
+        else -> true
+    }
+    // 两个 type 在任一公共周同时命中即相交；步进 2 已覆盖全部奇偶组合
+    for (week in lo..hi) {
+        if (hits(week, aType) && hits(week, bType)) return true
+    }
+    return false
+}
