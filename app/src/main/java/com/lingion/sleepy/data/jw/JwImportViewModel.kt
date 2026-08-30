@@ -60,27 +60,6 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         }
     }
 
-    private fun parseSchoolsJson(text: String): List<JwSchoolInfo> {
-        val arr = JSONArray(text)
-        val list = ArrayList<JwSchoolInfo>(arr.length())
-        for (i in 0 until arr.length()) {
-            val obj = arr.getJSONObject(i)
-            val aliasesArr = obj.optJSONArray("aliases")
-            val aliases = if (aliasesArr != null) {
-                (0 until aliasesArr.length()).map { aliasesArr.getString(it) }
-            } else emptyList()
-            list += JwSchoolInfo(
-                sortKey = obj.optString("sortKey", ""),
-                name = obj.optString("name", ""),
-                url = obj.optString("url", ""),
-                type = obj.optString("type", "").ifBlank { null },
-                aliases = aliases,
-                sortKeyFull = obj.optString("sortKeyFull", "")
-            )
-        }
-        return list
-    }
-
     /**
      * 解析 HTML 源码，返回课程列表（不入库）
      */
@@ -142,6 +121,45 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
     }
 
     companion object {
+        /**
+         * T12: 解析 schools.json 文本为学校列表。
+         * companion static 使纯 JVM 单测无需构造 Android ViewModel。
+         * 跳过任何键以 "_" 开头的审计块（元数据不是学校条目）；
+         * status 字段缺失/未知回落 supported — 现有 146 条零行为变化。
+         */
+        fun parseSchoolsJson(text: String): List<JwSchoolInfo> {
+            val arr = JSONArray(text)
+            val list = ArrayList<JwSchoolInfo>(arr.length())
+            for (i in 0 until arr.length()) {
+                val obj = arr.getJSONObject(i)
+                // T12: 审计块过滤 — 键名以 "_" 开头的对象是元数据
+                if (obj.keys().asSequence().any { it.startsWith("_") }) continue
+                val aliasesArr = obj.optJSONArray("aliases")
+                val aliases = if (aliasesArr != null) {
+                    (0 until aliasesArr.length()).map { aliasesArr.getString(it) }
+                } else emptyList()
+                list += JwSchoolInfo(
+                    sortKey = obj.optString("sortKey", ""),
+                    name = obj.optString("name", ""),
+                    url = obj.optString("url", ""),
+                    type = obj.optString("type", "").ifBlank { null },
+                    status = obj.optString("status", "").ifBlank { JwSchoolInfo.STATUS_SUPPORTED }
+                        .let { raw ->
+                            when (raw) {
+                                JwSchoolInfo.STATUS_PENDING -> JwSchoolInfo.STATUS_PENDING
+                                JwSchoolInfo.STATUS_LEGACY -> JwSchoolInfo.STATUS_LEGACY
+                                JwSchoolInfo.STATUS_GRAD_SUPPORTED -> JwSchoolInfo.STATUS_GRAD_SUPPORTED
+                                JwSchoolInfo.STATUS_GRAD_PENDING -> JwSchoolInfo.STATUS_GRAD_PENDING
+                                else -> JwSchoolInfo.STATUS_SUPPORTED
+                            }
+                        },
+                    aliases = aliases,
+                    sortKeyFull = obj.optString("sortKeyFull", "")
+                )
+            }
+            return list
+        }
+
         /**
          * T3 保留：协议 → parser 实例（T8 起委托 JwParserRegistry 单一工厂表）。
          * 纯 JVM 单测验证分发覆盖面用。
