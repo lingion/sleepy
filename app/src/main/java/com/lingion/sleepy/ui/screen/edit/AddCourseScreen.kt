@@ -85,13 +85,19 @@ private class MeetingBlockDraft(
     startNode: Int,
     step: Int,
     startTime: String,
-    endTime: String
+    endTime: String,
+    startWeek: Int = 1,
+    endWeek: Int = 16,
+    weekType: Int = 0
 ) {
     var mode by mutableStateOf(initialMode)
     var startNode by mutableStateOf(startNode)
     var step by mutableStateOf(step)
     var startTime by mutableStateOf(startTime)
     var endTime by mutableStateOf(endTime)
+    var startWeek by mutableStateOf(startWeek)
+    var endWeek by mutableStateOf(endWeek)
+    var weekType by mutableStateOf(weekType)
 }
 
 private data class ValidationIssue(
@@ -157,7 +163,10 @@ fun AddCourseScreen(
                         startNode = first.startNode,
                         step = first.step,
                         startTime = first.startTime.ifBlank { "08:00" },
-                        endTime = first.endTime.ifBlank { "09:40" }
+                        endTime = first.endTime.ifBlank { "09:40" },
+                        startWeek = first.startWeek,
+                        endWeek = first.endWeek,
+                        weekType = first.type
                     ))
                 }
             }
@@ -352,7 +361,10 @@ fun AddCourseScreen(
                                 startNode = 3,
                                 step = 2,
                                 startTime = "10:00",
-                                endTime = "11:40"
+                                endTime = "11:40",
+                                startWeek = 1,
+                                endWeek = 16,
+                                weekType = 0
                             )
                         )
                         nextBlockId += 1
@@ -381,8 +393,6 @@ fun AddCourseScreen(
                         validationIssues = issues
                         if (issues.isNotEmpty()) return@Button
 
-                        val normalizedStartWeek = minOf(startWeek, endWeek)
-                        val normalizedEndWeek = maxOf(startWeek, endWeek)
                         val draftTableId = state.selectedTableId  // 进入 scope 前取，drafts 需要
                         val drafts = meetingBlocks.flatMap { block ->
                             block.days.sorted().map { day ->
@@ -395,8 +405,6 @@ fun AddCourseScreen(
                                     note = note.trim(),
                                     day = day,
                                     block = block,
-                                    startWeek = normalizedStartWeek,
-                                    endWeek = normalizedEndWeek,
                                     courseColor = courseColor.ifBlank { "#FF6750A4" }
                                 )
                             }
@@ -516,7 +524,10 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         startNode = course.startNode,
         step = course.step,
         startTime = course.startTime.ifBlank { "08:00" },
-        endTime = course.endTime.ifBlank { "09:40" }
+        endTime = course.endTime.ifBlank { "09:40" },
+        startWeek = course.startWeek,
+        endWeek = course.endWeek,
+        weekType = course.type
     )
 }
 
@@ -529,8 +540,6 @@ private fun buildCourseEntity(
     note: String,
     day: Int,
     block: MeetingBlockDraft,
-    startWeek: Int,
-    endWeek: Int,
     courseColor: String = "#FF6750A4"
 ): CourseEntity {
     val ownTime = block.mode == MeetingInputMode.ByClock
@@ -544,9 +553,9 @@ private fun buildCourseEntity(
         day = day,
         startNode = block.startNode,
         step = block.step,
-        startWeek = startWeek,
-        endWeek = endWeek,
-        type = 0,
+        startWeek = block.startWeek,
+        endWeek = block.endWeek,
+        type = block.weekType,
         color = courseColor.ifBlank { "#FF6750A4" },
         ownTime = ownTime,
         startTime = if (ownTime) block.startTime else "",
