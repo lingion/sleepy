@@ -403,10 +403,12 @@ private fun AlphabetIndexBar(
 @Composable
 private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
+    // T13: status 分流 — supported+有 URL 才可点; pending/legacy/no-url 不响应
+    val isClickable = school.isSupported && school.hasUrl
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable(onClick)
+            .then(if (isClickable) Modifier.noRippleClickable(onClick) else Modifier)
             .padding(vertical = 14.dp, horizontal = 4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
@@ -426,11 +428,16 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
         }
         Spacer(modifier = Modifier.size(12.dp))
         Column(modifier = Modifier.weight(1f)) {
-            Text(
-                text = school.name,
-                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                color = colors.onSurface
-            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // T13: status badge (supported 不渲染, 避免冗余)
+                SchoolStatusBadge(school = school)
+                Spacer(modifier = Modifier.size(6.dp))
+                Text(
+                    text = school.name,
+                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+                    color = if (isClickable) colors.onSurface else colors.onSurfaceVariant
+                )
+            }
             if (!school.url.isBlank()) {
                 Text(
                     text = JwProtocol.displayName(school.type) + " · " + school.url.replace("https://", "").replace("http://", "").trimEnd('/'),
@@ -440,6 +447,53 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
                 )
             }
         }
+    }
+}
+
+/**
+ * 学校状态 badge — T13 新增。
+ * supported 不渲染 badge（默认全功能）; pending=「待适配」tertiary chip;
+ * grad_supported=「研究生」secondary chip; legacy=「旧版」surfaceVariant chip。
+ * 文案消费 strings.xml 既有 jw_pending_* 键（此前 0 引用的 dead 字符串）。
+ */
+@Composable
+private fun SchoolStatusBadge(school: JwSchoolInfo) {
+    if (school.status == JwSchoolInfo.STATUS_SUPPORTED) return
+    val colors = SleepyTheme.colors
+    val (label, bg, fg) = when (school.status) {
+        JwSchoolInfo.STATUS_PENDING -> Triple(
+            stringResource(R.string.jw_pending_pending),
+            colors.tertiaryContainer,
+            colors.onTertiaryContainer
+        )
+        JwSchoolInfo.STATUS_GRAD_PENDING -> Triple(
+            stringResource(R.string.jw_pending_pending) + " · " + stringResource(R.string.jw_pending_grad),
+            colors.tertiaryContainer,
+            colors.onTertiaryContainer
+        )
+        JwSchoolInfo.STATUS_GRAD_SUPPORTED -> Triple(
+            stringResource(R.string.jw_pending_grad),
+            colors.secondaryContainer,
+            colors.onSecondaryContainer
+        )
+        JwSchoolInfo.STATUS_LEGACY -> Triple(
+            stringResource(R.string.jw_pending_legacy),
+            colors.surfaceVariant,
+            colors.onSurfaceVariant
+        )
+        else -> return
+    }
+    Box(
+        modifier = Modifier
+            .clip(SleepyTheme.shapes.small)
+            .background(bg)
+            .padding(horizontal = 6.dp, vertical = 2.dp)
+    ) {
+        Text(
+            text = label,
+            style = MaterialTheme.typography.labelSmall,
+            color = fg
+        )
     }
 }
 
