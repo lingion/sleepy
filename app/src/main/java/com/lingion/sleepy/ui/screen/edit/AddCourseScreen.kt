@@ -311,6 +311,20 @@ fun AddCourseScreen(
                             colors = fieldColors
                         ) { endWeek = it }
                     }
+                    // 显式应用 — 不再隐式下发，由用户一键覆盖所有时段
+                    Button(
+                        onClick = {
+                            meetingBlocks.forEach { b ->
+                                b.startWeek = startWeek
+                                b.endWeek = endWeek
+                            }
+                        },
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                        shape = SleepyTheme.Buttons.shape,
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+                    ) {
+                        Text(stringResource(R.string.apply_to_all_slots), color = colors.onSecondaryContainer)
+                    }
                 }
             }
 
@@ -821,6 +835,42 @@ private fun MeetingBlockEditor(
                 }
             }
         }
+
+        // 周次 — 每时段独立
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(12.dp)
+        ) {
+            NumberField(
+                label = stringResource(R.string.slot_week_range) + " " + stringResource(R.string.start_week),
+                value = block.startWeek,
+                min = 1,
+                max = 30,
+                modifier = Modifier.weight(1f),
+                shape = fieldShape,
+                colors = fieldColors
+            ) { block.startWeek = it }
+            NumberField(
+                label = stringResource(R.string.slot_week_range) + " " + stringResource(R.string.end_week),
+                value = block.endWeek,
+                min = 1,
+                max = 30,
+                modifier = Modifier.weight(1f),
+                shape = fieldShape,
+                colors = fieldColors
+            ) { block.endWeek = it }
+        }
+        // 单双周三态 — 项目统一 SegmentedSwitcher（色块选中，禁描边规则）
+        SegmentedSwitcher(
+            options = listOf(
+                0 to stringResource(R.string.week_every),
+                1 to stringResource(R.string.week_odd),
+                2 to stringResource(R.string.week_even)
+            ),
+            selected = block.weekType,
+            onSelect = { block.weekType = it },
+            modifier = Modifier.fillMaxWidth()
+        )
 
         if (issues.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
