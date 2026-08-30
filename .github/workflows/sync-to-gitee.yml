@@ -116,6 +116,9 @@ jobs:
               rels = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={page}")
               if not rels:
                   break
+              # Gitee web UI sorts releases by created_at ascending; newest must be created last
+              # to land on top. Process oldest-first to mimic GitHub release creation order.
+              rels.sort(key=lambda r: r.get("created_at") or "")
               for rel in rels:
                   tag = rel["tag_name"]
                   name = rel.get("name") or tag
