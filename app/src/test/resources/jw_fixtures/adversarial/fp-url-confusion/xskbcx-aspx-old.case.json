@@ -1,0 +1,21 @@
+{
+  "input": "xskbcx-aspx-old.html",
+  "id": "fp-url-confusion.xskbcx-aspx-old",
+  "title": "老正方 URL 含 xskbcx.aspx，页面里出现新 API 字符串 xskbcx_cxXsKb",
+  "inputUrl": "https://jw.usts.edu.cn/xskbcx.aspx",
+  "htmlFile": "xskbcx-aspx-old.html",
+  "expected": {
+    "detectProtocolFromUrl": "zf",
+    "routeByType": "JwOldZfParser(html)",
+    "parserBehavior": "parseImportBean 在 Table1 内解析 1 门课：高等数学/周一第1节{第1-16周}/张老师/A101",
+    "courseCount": 1,
+    "sideEffect": "若 URL 改为 xskbcx_cxXsKb.html (新 API 直连)，detectProtocolFromUrl 的 default2.aspx|xskbcx.aspx 分支不命中，JwOldZfParser 不会被显式路由；该 HTML 中嵌入 script 注释含 xskbcx_cxXsKb 但不触发 markers (kbxx/tmp_list/xskbcx/xskbcx_json)，故 parseEmbeddedJson 不误中。"
+  },
+  "parserImpact": "detectProtocolFromUrl L152: u.contains('xskbcx.aspx') 显式检测老正方菜单链接触发 TYPE_ZF。但若用户实际进入的是 jwglxt/kbcx/xskbcx_cxXsKb.html?gnmkdm=N2151 (新版个人课表 API 直连)，当前路由：contains('jwglxt') 先命中 → TYPE_ZF_NEW → JwNewZfParser，但 JwNewZfParser L42 的 markers = listOf(\"\\\"kbxx\\\"\", \"\\\"tmp_list\\\"\", \"\\\"xskbcx\\\"\", \"xskbcx_json\") 不含真实新正方的 'kbList'——这是另一处功能性 bug 而非纯 URL 误判，会导致 tryAllParsers 兜底也无 parser 命中 kbList。本 fixture 仅作为反向对照：确认 JwOldZfParser 在 URL=xskbcx.aspx 时确实被显式路由 (而非被 markers 中的 'xskbcx' 字符串二次触发)。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:146-158 L152 'xskbcx.aspx' → TYPE_ZF",
+    "JwImportViewModel.kt:102 TYPE_ZF → JwOldZfParser(html)",
+    "JwOldZfParser.kt Table1 解析路径",
+    "JwNewZfParser.kt:42 parseEmbeddedJson markers 缺 kbList (功能性 bug, 不在本次 URL 误判范围内但同源)"
+  ]
+}

@@ -37,6 +37,21 @@ object JwProtocol {
     const val TYPE_WISEDU = "wisedu"
 
     /**
+     * 湖南科大教务（正方青春版/强智混合自建，kdjw.hnust.cn / xxjw.hnust.cn）。
+     * schools.json 已有 3 所 type="hnust" 的学校；T3 移植 HNUSTParser，T6 先补常量
+     * 使 displayName/category 不落入 else 分支。
+     */
+    const val TYPE_HNUST = "hnust"
+
+    /**
+     * T6 协议识别置信度（仅内部诊断，不进 UI）。
+     *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
+     *  PAGE_HIGH = HTML 页面级唯一锚点（zftal-ui-、__VIEWSTATE+Table1 ...）
+     *  LOW = 弱锚点（仅 host 子串）
+     */
+    enum class DetectConfidence { HIGH, PAGE_HIGH, LOW }
+
+    /**
      * 协议显示名（用于 UI 提示）
      */
     fun displayName(type: String?): String = when (type) {
@@ -47,6 +62,7 @@ object JwProtocol {
         TYPE_PKU -> "北京大学"
         TYPE_BNUZ -> "北师珠"
         TYPE_WISEDU -> "金智教务（直连）"
+        TYPE_HNUST -> "湖南科大教务"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -61,6 +77,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_WISEDU -> "wisedu"
+        TYPE_CF, TYPE_PKU, TYPE_BNUZ, TYPE_HNUST -> "other"
         else -> "other"
     }
 }

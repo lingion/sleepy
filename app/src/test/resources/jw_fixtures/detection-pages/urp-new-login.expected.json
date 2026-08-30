@@ -1,0 +1,17 @@
+{
+  "_note": "URP 新版(URPNova)登录页指纹样本(参照 jwxt.imu.edu.cn/login 实测活体)。本 fixture 是登录页,不含课表 JSON — JwNewUrpParser 应解析为空列表。识别标记:URL 含 /login + 登录后跳 /student/courseSelect/thisSemesterCurriculum/ajaxStudentSchedule/callback;HTML 标记:/js/sm3/* SM3 加密资源 + /js/login/login.js + title=登录 + URPNova 版权。",
+  "_fingerprint": {
+    "urlMarkers": ["courseSelect", "thisSemesterCurriculum", "ajaxStudentSchedule"],
+    "htmlMarkers": [
+      "/js/sm3/",
+      "sm3.js",
+      "sm3web.js",
+      "/js/login/login.js",
+      "URPNova"
+    ],
+    "expectedProtocol": "urp_new",
+    "expectedConfidence": 100,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}

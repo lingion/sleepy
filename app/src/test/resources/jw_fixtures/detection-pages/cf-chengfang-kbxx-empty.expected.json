@@ -1,0 +1,8 @@
+{
+  "_note": "青果/乘方教务课表页边界样本 — var kbxx = [] 空数组,课表表格渲染为空。JwChengFangParser 走 substringAfter(\"var kbxx = \").substringBefore(\";\") 提取后 JSONArray 长度为 0,返回空课程列表。",
+  "_uncertain": [
+    "上游 ChengFangParser 的 source.substringAfter(\"var kbxx = \") 语义:找第一个 'var kbxx = ' 之后取 ';\\n' 前;本 fixture 用 var kbxx = []; 格式,Jsoup/Kotlin 标准库 substringAfter 直接命中,提取到 '[]'。",
+    "页面里存在 table#kbtable(青果部分部署也用 kbtable id)与强智同名 — 这正是 JwNewZfParser markers 里 'kbxx' 会误撞 CF 的原因;检测层需要按字段名(kcmc/teaxms/jxcdmcs)优先判 CF。"
+  ],
+  "courses": []
+}

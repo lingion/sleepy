@@ -1,0 +1,15 @@
+{
+  "_note": "青果/乘方教务登录页指纹样本(参照 zhjw.smu.edu.cn 实测活体,meta keywords 明写『乘方教务,乘方科技』)。本 fixture 是登录页,JwChengFangParser 应解析为空课程(source 中无 var kbxx = )。识别标记:meta keywords 含『乘方教务/乘方科技』、登录后课表页 /xsgrkbcx!xsAllKbList.action 或 /new/xskb + 含 var kbxx = [...] + 字段名 kcmc/teaxms/jxcdmcs/xq/jcdm2/zcs。",
+  "_fingerprint": {
+    "urlMarkers": ["/xsgrkbcx", "/new/xskb", "jxfw.gdut", "zhjw.smu", "jxgl.wyu", "jw.hbmu"],
+    "htmlMarkers": [
+      "乘方教务",
+      "乘方科技",
+      "/new/validateCode"
+    ],
+    "expectedProtocol": "cf",
+    "expectedConfidence": 80,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}

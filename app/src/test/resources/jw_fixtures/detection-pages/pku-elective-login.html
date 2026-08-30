@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>统一认证</title>
+<link rel="stylesheet" href="/iaaa/css/login.css">
+</head>
+<body>
+<div class="iaaa-wrapper">
+  <h1>北京大学统一认证</h1>
+  <form id="oauthForm" action="https://iaaa.pku.edu.cn/iaaa/oauth.jsp" method="post">
+    <input type="hidden" name="appID" value="syllabus">
+    <input type="hidden" name="appName" value="选课系统">
+    <input type="hidden" name="redirectUrl" value="https://elective.pku.edu.cn">
+    <div><label>用户名</label><input type="text" name="user" id="user"></div>
+    <div><label>密码</label><input type="password" name="password" id="password"></div>
+    <div><label>验证码</label>
+      <input type="text" name="randCode" id="randCode" maxlength="4">
+      <img src="https://iaaa.pku.edu.cn/iaaa/randCode" alt="验证码">
+    </div>
+    <button type="submit">登录</button>
+  </form>
+  <p class="footer-tip">登录成功后将跳转回应用</p>
+</div>
+</body>
+</html>

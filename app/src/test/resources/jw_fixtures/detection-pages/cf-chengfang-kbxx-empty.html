@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>个人课表 - 教务管理系统</title>
+</head>
+<body>
+<div class="container">
+  <nav class="navbar">
+    <span>李同学 2023002002</span>
+    <a href="/new/xskb">个人课表</a>
+    <a href="/new/cjcx">成绩查询</a>
+  </nav>
+  <h2>我的课表</h2>
+  <div id="kb-area">
+    <table id="kbtable" class="kb-table" border="1">
+      <thead>
+        <tr><th>节次\\星期</th><th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>1-2节</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+        <tr><td>3-4节</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+<script>
+// 本学期选课为空 — 后端注入空 kbxx 数组
+var kbxx = [];
+</script>
+<footer>技术支持:乘方科技</footer>
+</body>
+</html>

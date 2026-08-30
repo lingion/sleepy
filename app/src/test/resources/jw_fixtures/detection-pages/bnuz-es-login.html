@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>登录</title>
+<link href="css/style.css" rel="stylesheet">
+</head>
+<body>
+<form name="form1" method="post" action="default.aspx" id="form1">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="/wEPDwUKMTExMTExMTExMGRk">
+<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="/wEdAARQv5hKl4">
+<div class="login-wrapper">
+  <h1>北京师范大学珠海分校教务系统</h1>
+  <div class="form-row"><label>用户名</label><input name="txtUserName" type="text" id="txtUserName"></div>
+  <div class="form-row"><label>密码</label><input name="txtPassword" type="password" id="txtPassword"></div>
+  <div class="form-row"><label>验证码</label>
+    <input name="txtCode" type="text" id="txtCode" maxlength="4">
+    <img id="imgCode" src="CheckCode.aspx">
+  </div>
+  <input type="submit" name="btnLogin" value="登录" id="btnLogin">
+</div>
+</form>
+</body>
+</html>

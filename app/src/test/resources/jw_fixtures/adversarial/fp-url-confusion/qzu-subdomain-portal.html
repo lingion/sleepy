@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>青岛某学院教务入口 - 导航页</title>
+</head>
+<body>
+<!--
+  真实场景: 这是一所普通院校的域名 qzu.example.edu.cn (path 包含 "qz" 子串)
+  实际是新版正方 jwglxt 站点, 部署在 /jwglxt/ 路径下.
+  但域名本身含 "qz", 会触发 detectProtocolFromUrl 的 u.contains("qz") 分支 → TYPE_QZ.
+-->
+<header>
+  <h1>qzu.example.edu.cn 教务系统导航</h1>
+  <p>请选择身份:</p>
+  <ul>
+    <li><a href="/jwglxt/xtgl/login_slogin.html">学生入口 (新版正方 jwglxt)</a></li>
+    <li><a href="/jwglxt/xtgl/login_slogin.html?type=teacher">教师入口</a></li>
+  </ul>
+</header>
+<!--
+  假装用户已进入学生课表页 (实际数据由 AJAX 渲染, 此处只放空骨架,
+  模拟 "抓到页面但页面是骨架, 没有 <table id=kbtable>" 的真实形态).
+  关键观察: 没有任何 kbtable, 也没有 kbcontent 单元格, 也没有 Table1.
+-->
+<div id="main"></div>
+<script>
+  // 新版正方 Vue 渲染入口, AJAX 调用 jwglxt/kbcx/xskbcx_cxXsKb.html
+  // sleepy 的 JwQzParser 用 doc.getElementById("kbtable") 找不到 → 返回 []
+  fetch('/jwglxt/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151').then(r => r.text()).then(t => render(t));
+</script>
+</body>
+</html>

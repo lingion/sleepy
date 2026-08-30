@@ -1,0 +1,26 @@
+{
+  "_note": "新正方登录页指纹样本(用于 detectProtocolFromHtml / detectProtocolFromUrl 高置信 zf_new 判定)。本 fixture 是 HTML 页面,不会被喂给 JwNewZfParser.parseHtml 解析课程 — 检测层样本,期望输出不包含 courses,只列 UI 元素指纹与文案。",
+  "_fingerprint": {
+    "urlMarkers": [
+      "/jwglxt/",
+      "/xtgl/",
+      "/kbcx/"
+    ],
+    "htmlMarkers": [
+      "zftal-ui-v5-1.0.2",
+      "教学管理信息服务平台",
+      "正方软件股份有限公司",
+      "版本 V-8.0.0",
+      "login_slogin.html",
+      "csrftoken",
+      "统一身份认证登录"
+    ],
+    "expectedProtocol": "zf_new",
+    "expectedConfidence": 100
+  },
+  "_fixtures": {
+    "kind": "detection",
+    "target": "detectProtocolFromHtml(zf-new-login.html)"
+  },
+  "courses": []
+}

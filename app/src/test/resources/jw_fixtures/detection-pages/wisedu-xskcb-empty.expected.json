@@ -1,0 +1,8 @@
+{
+  "_note": "金智 jwapp 课表页边界样本 — 前端渲染前的服务端空响应(datas.xskcb.rows=[])。JwWiseduParser 解析时 source 是 __INITIAL_DATA__ 对应的 JSON 字符串(不是整段 HTML);本 fixture 的 HTML 外壳只用于描述检测上下文, courses 为空数组。运行时测试应提取 <script>window.__INITIAL_DATA__ = </script> 里的 JSON 喂给 JwWiseduParser;若直接喂 HTML,Parser 的 json.parseToJsonElement 会抛异常(符合预期:整段 HTML 不是金智解析器的输入形态)。",
+  "_uncertain": [
+    "JwWiseduParser 接受的 source 是 JSON 而非 HTML,本 fixture 的 HTML 外壳仅供检测层使用;测试时要么提取 JSON 段喂 parser,要么按 HTML 处理为空结果。",
+    "真实金智接口在 rows 为空时仍返回 code='0';本 fixture 未携带 code 字段,若 parser 严格校验 code 会走另一路径(当前 JwWiseduParser 不校验 code)。"
+  ],
+  "courses": []
+}

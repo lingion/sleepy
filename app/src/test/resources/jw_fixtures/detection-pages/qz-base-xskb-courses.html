@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title>学期理论课表 - 强智教务管理系统</title>
+</head>
+<body>
+<div class="kb-header">
+  <form id="semesterForm" action="/jsxsd/xskb/xskb_list.do" method="get">
+    <label>学年学期：<select name="xnxq01id" id="xnxq01id">
+      <option value="2024-2025-1" selected>2024-2025-1</option>
+      <option value="2023-2024-2">2023-2024-2</option>
+    </select></label>
+    <label>周次：<input type="text" name="zc" value="" placeholder="留空查全周"></label>
+    <input type="hidden" name="sfFD" value="1">
+    <button type="submit">查询</button>
+  </form>
+  <p>姓名：李同学 学号：2023002002 当前周：5</p>
+</div>
+
+<table id="kbtable" border="1" cellspacing="0" cellpadding="3" class="kb-table">
+  <thead>
+    <tr>
+      <th>节次\\星期</th>
+      <th>星期一</th>
+      <th>星期二</th>
+      <th>星期三</th>
+      <th>星期四</th>
+      <th>星期五</th>
+      <th>星期六</th>
+      <th>星期日</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <th rowspan="2" class="kb-time-slot">
+        第一节<br>08:00-08:45<br><br>第二节<br>08:55-09:40
+      </th>
+      <td>
+        <div class="kbcontent">
+          高等数学<font title="老师">张老师</font><br>
+          <font title="周次(节次)">1-16周[1-2节]</font><br>
+          <font title="教室">教一205</font>
+        </div>
+      </td>
+      <td>&nbsp;</td>
+      <td>
+        <div class="kbcontent">
+          大学英语<font title="老师">王老师</font><br>
+          <font title="周次(节次)">2-16周(单)[3-4节]</font><br>
+          <font title="教室">外语楼308</font>
+        </div>
+      </td>
+      <td>&nbsp;</td>
+      <td>
+        <div class="kbcontent">
+          数据结构<font title="老师">李老师</font><br>
+          <font title="周次(节次)">1-16周[1-2节]</font><br>
+          <font title="教室">信息楼B205</font>
+        </div>
+      </td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+    <tr>
+      <th>第三节<br>09:55-10:40<br><br>第四节<br>10:50-11:35</th>
+      <td>&nbsp;</td>
+      <td>
+        <div class="kbcontent">
+          线性代数<font title="老师">陈老师</font><br>
+          <font title="周次(节次)">1-16周[3-4节]</font><br>
+          <font title="教室">教二101</font>
+        </div>
+      </td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+      <td>
+        <div class="kbcontent">
+          物理实验<font title="老师">赵老师</font><br>
+          <font title="周次(节次)">3-15周(双)[3-4节]</font><br>
+          <font title="教室">实验楼A301</font>
+        </div>
+      </td>
+      <td>&nbsp;</td>
+      <td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="kb-footer">
+  <p>技术支持:强智科技 qzdatasoft.com</p>
+</div>
+</body>
+</html>

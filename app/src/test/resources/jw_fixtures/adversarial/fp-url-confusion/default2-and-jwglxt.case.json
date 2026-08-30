@@ -1,0 +1,21 @@
+{
+  "input": "default2-and-jwglxt.html",
+  "id": "fp-url-confusion.default2-and-jwglxt",
+  "title": "URL 链上同时出现 default2.aspx 与 jwglxt 时协议优先序",
+  "inputUrl": "https://jwgl.example.edu.cn/jwglxt/kbcx/xskbcx_cxXsKb.html?from=default2.aspx&gnmkdm=N2151",
+  "htmlFile": "default2-and-jwglxt.html",
+  "expected": {
+    "detectProtocolFromUrl": "zf_new (jwglxt 先命中)",
+    "routeByType": "JwNewZfParser(html)",
+    "parserBehavior": "parseEmbeddedJson markers (kbxx/tmp_list/xskbcx/xskbcx_json) 全不命中；trimmed.startsWith('{') 分支命中 JSON；parseCourseJsonArray 解析 kbList → firstInt('jc','3-4')→null → 丢课",
+    "courseCount": 0,
+    "boundaryNote": "若 URL 中 jwglxt 去掉 (例如 https://jw.example.edu.cn/default2.aspx?from=jwglxt)，当前实现会因 contains('default2.aspx') 命中 TYPE_ZF → JwOldZfParser，但 HTML 是新正方 → 老解析器也 0 课。本 fixture 仅展示 when 分支的优先序"
+  },
+  "parserImpact": "detectProtocolFromUrl L147-158 when 分支是 OR-of-substring 的有序链。当前顺序：(1) jwapp → WISEDU (2) jwglxt|xtgl → ZF_NEW (3) jwtottxuxsysb → ZF_NEW (4) default2.aspx|xskbcx.aspx → ZF (5) jsxsd|jxd → QZ (6) qz|strongdesk → QZ (7) urp → URP_NEW。jwglxt 在 default2.aspx 之前命中，因此 URL 包含 from=default2.aspx 不影响路由。但 parseEmbeddedJson markers 含字面 'xskbcx'，意味着 HTML 中任何含 xskbcx 的子串（如注释或文档字符串）都可能被当作 JSON 起点尝试解析。本 HTML 显式注释含 window.location='/jwglxt/kbcx/xskbcx_cxXsKb.html?from=default2.aspx' —— L42 marker 'xskbcx' 会命中 → extractBalanced 找 '[' 或 '{' 失败 → continue，不误中；JSON 段（__DATA__）也不含 kbxx/tmp_list/xskbcx_json/xskbcx，因此走 trimmed.startsWith('{') 兜底，但 jc='3-4' → firstInt 丢课。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:146-158 when 分支顺序",
+    "JwNewZfParser.kt:42 markers 含 xskbcx 子串",
+    "JwNewZfParser.kt:58-63 trimmed.startsWith 兜底分支",
+    "JwNewZfParser.kt:127 jc toIntOrNull → null → continue"
+  ]
+}

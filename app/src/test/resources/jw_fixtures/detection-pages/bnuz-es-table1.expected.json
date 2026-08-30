@@ -1,0 +1,88 @@
+{
+  "_note": "北师大珠海分校 es.bnuz.edu.cn 课表页样本。真实结构(对照上游 BNUZParser.kt):td 内 <span></span>占位 + 课程名 + <br> + 教师{周次} + <br> + 教室(N节) + <br>。解析逻辑:td.html().substringAfter('</span>').substringBeforeLast('<br>').split('<br>') → infos[0]=课程名,infos[i](i=1,3,5..) 是 教师{周次} 行,infos[i+1] 是 教室(N节) 行。节次行头是纯数字 td(1/3/5),空格 td 走 countDay++ 反推星期列。step 从教室 (N节) 的 N 提取,endNode=node+step-1。周次 ',' 拆段,'-' 拆 start/end,'单'/'双' 定 type。",
+  "_uncertain": [
+    "上游 substringBeforeLast('<br>') 会切到最后一个 <br>,若 td 只有 2 段信息(名+教师{周次}) 会把教师{周次} 误当代码块;本 fixture 每 td 3 段(名/师/教室) 全命中。",
+    "大学英语的 {2-16周,18周} 逗号拆成 ['2-16','18'] 两段,产生 2 条独立课程记录(上游 forEach weekList)。",
+    "近代史纲的 {1-8周(单)} 含'单'字,type=1,weekPattern1 matcher 的 group(1)=1,group(2)=8(正则只匹配数字段,'(单)' 不干扰)。",
+    "物理实验的 {3-15周(双)} type=2。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一205"
+    },
+    {
+      "name": "大学英语",
+      "day": 4,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "外语楼308"
+    },
+    {
+      "name": "大学英语",
+      "day": 4,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 18,
+      "endWeek": 18,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "外语楼308"
+    },
+    {
+      "name": "数据结构",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "信息楼B205"
+    },
+    {
+      "name": "线性代数",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "陈老师",
+      "room": "教二101"
+    },
+    {
+      "name": "近代史纲",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 8,
+      "type": 1,
+      "teacher": "赵老师",
+      "room": "文史楼201"
+    },
+    {
+      "name": "物理实验",
+      "day": 5,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 3,
+      "endWeek": 15,
+      "type": 2,
+      "teacher": "孙老师",
+      "room": "实验楼A301"
+    }
+  ]
+}

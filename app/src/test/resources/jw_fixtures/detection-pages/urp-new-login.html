@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>登录</title>
+<link rel="stylesheet" href="/css/common.css">
+<script src="/js/login/login.js"></script>
+<script src="/js/sm3/sm3.js"></script>
+<script src="/js/sm3/sm3web.js"></script>
+</head>
+<body class="login-body">
+<div class="login-box">
+  <h1 class="platform-name">研究生教务管理系统</h1>
+  <form id="loginForm" action="/login" method="post">
+    <div class="form-row">
+      <label>账号</label>
+      <input type="text" name="username" id="username" autocomplete="username">
+    </div>
+    <div class="form-row">
+      <label>密码</label>
+      <input type="password" name="password" id="password" autocomplete="current-password">
+    </div>
+    <div class="form-row captcha-row">
+      <label>验证码</label>
+      <input type="text" name="captcha" id="captcha" maxlength="4">
+      <img src="/captcha" alt="验证码" onclick="this.src='/captcha?t='+Date.now()">
+    </div>
+    <button type="submit" class="btn-primary">登 录</button>
+  </form>
+</div>
+<footer class="footer">PowerBy URPNova</footer>
+</body>
+</html>

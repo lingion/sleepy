@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>本学期课程 - 研究生教务管理系统</title>
+</head>
+<body>
+<div class="container">
+  <nav class="navbar">
+    <span>欢迎，李同学 2023002002</span>
+    <a href="/logout">退出</a>
+  </nav>
+  <h2>本学期课程表</h2>
+  <div id="schedule-area">
+    <!-- URPNova 课表页是 SPA,数据由前端 fetch 后端 JSON 后渲染;fixture 内嵌真实响应做离线回放 -->
+    <script>
+var scheduleResponse = {
+  "dateList": [
+    {
+      "weekNo": 1,
+      "selectCourseList": [
+        {
+          "courseName": "高等数学",
+          "courseCode": "MATH101",
+          "attendClassTeacher": "张老师",
+          "timeAndPlaceList": [
+            {
+              "classDay": 1,
+              "classSessions": 1,
+              "continuingSession": 2,
+              "classWeek": "11111111111111111000",
+              "campusName": "主校区",
+              "teachingBuildingName": "教一",
+              "classroomName": "205"
+            },
+            {
+              "classDay": 3,
+              "classSessions": 3,
+              "continuingSession": 2,
+              "classWeek": "10101010101010101010",
+              "campusName": "主校区",
+              "teachingBuildingName": "教一",
+              "classroomName": "205"
+            }
+          ]
+        },
+        {
+          "courseName": "大学英语",
+          "courseCode": "ENG202",
+          "attendClassTeacher": "王老师",
+          "timeAndPlaceList": [
+            {
+              "classDay": 5,
+              "classSessions": 5,
+              "continuingSession": 2,
+              "classWeek": "01111111111111111110",
+              "campusName": "主校区",
+              "teachingBuildingName": "外语楼",
+              "classroomName": "308"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+};
+    </script>
+  </div>
+</div>
+<script src="/js/student/schedule.js"></script>
+<footer>URPNova Platform</footer>
+</body>
+</html>

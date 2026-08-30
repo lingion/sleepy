@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>广东工业大学教务系统</title>
+<meta name="keywords" content="广东工业大学教务系统,广东工业大学,乘方教务,乘方科技">
+</head>
+<body>
+<div class="login-wrapper">
+  <h1>广东工业大学教务管理系统</h1>
+  <form id="loginForm" action="/new/login" method="post">
+    <div><label>学号</label><input type="text" name="userName" id="userName"></div>
+    <div><label>密码</label><input type="password" name="password" id="password"></div>
+    <div><label>验证码</label>
+      <input type="text" name="validateCode" id="validateCode" maxlength="4">
+      <img id="codeImg" src="/new/validateCode" onclick="this.src='/new/validateCode?t='+Date.now()">
+    </div>
+    <button type="submit">登录</button>
+  </form>
+</div>
+<footer>技术支持:乘方科技</footer>
+</body>
+</html>

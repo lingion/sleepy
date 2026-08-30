@@ -1,0 +1,18 @@
+{
+  "_note": "老正方登录页指纹样本(参照 jw.usts.edu.cn/default2.aspx 活体,GBK title『欢迎使用正方教务管理系统！请登录』+ __VIEWSTATE + ASP.NET_SessionId 形态)。本 fixture 是登录页,不含课表表格 — JwOldZfParser 应解析为空列表,不能崩溃。结构参考:苏州科技大学 default2.aspx,X-AspNet-Version 1.1.4322 响应头不在 HTML 内。注意:本 HTML 按 UTF-8 序列化,测试时若喂 JwOldZfParser 源码用 Jsoup.parse 即可。关键检测标记:__VIEWSTATE + gb2312 charset 声明 + 正方版权文字。",
+  "_fingerprint": {
+    "urlMarkers": ["default2.aspx", "xskbcx.aspx"],
+    "htmlMarkers": [
+      "__VIEWSTATE",
+      "charset=gb2312",
+      "欢迎使用正方教务管理系统",
+      "CheckCode.aspx",
+      "ASP.NET_SessionId",
+      "正方软件股份有限公司"
+    ],
+    "expectedProtocol": "zf",
+    "expectedConfidence": 100,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}

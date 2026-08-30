@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>我的课表 - 教学服务大厅</title>
+</head>
+<body>
+<div id="app">
+  <nav class="topbar">
+    <span class="user">李同学 2023002002</span>
+    <span class="term" data-elem="XNXQMC">2024-2025学年秋学期</span>
+    <a href="javascript:void(0)" onclick="logout()">退出</a>
+  </nav>
+  <div class="page-header">
+    <h2>学生课表</h2>
+    <p class="term-info" id="termInfo">当前学期：2024-2025学年第一学期（2024-09-02 至 2025-01-12）</p>
+  </div>
+  <div id="schedule-container" class="kb-area">
+    <!-- 课表网格由前端渲染 -->
+    <table class="kb-grid" id="xskcb-grid"></table>
+  </div>
+</div>
+<!-- 服务端先返回一帧无课程的响应,前端 JS 后续异步填数据;本 fixture 模拟此边界 -->
+<script>
+window.__INITIAL_DATA__ = {
+  "datas": {
+    "xskcb": {
+      "rows": [],
+      "totalCount": 0
+    }
+  }
+};
+</script>
+<script src="/jwapp/sys/wdkb/assets/js/render-schedule.js"></script>
+</body>
+</html>

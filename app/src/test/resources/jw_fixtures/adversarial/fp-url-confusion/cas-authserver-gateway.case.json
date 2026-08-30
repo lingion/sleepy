@@ -1,0 +1,20 @@
+{
+  "input": "cas-authserver-gateway.html",
+  "id": "fp-url-confusion.cas-authserver-gateway",
+  "title": "CAS / authserver 网关页被任何协议匹配都是误判",
+  "inputUrl": "https://cas.example.edu.cn/authserver/login?service=https://jwgl.example.edu.cn/jwglxt/xtgl/login_slogin.html",
+  "htmlFile": "cas-authserver-gateway.html",
+  "expected": {
+    "detectProtocolFromUrl": "null",
+    "routeByType": "protocolType 空 → tryAllParsers 兜底",
+    "parserBehavior": "全部 parser 在该 HTML 上 0 课（无 kbtable/Table1/kbList/td[id=周_节]/displayTag 任何锚点）",
+    "courseCount": 0,
+    "userVisibleResult": "网关页是登录前必经站，sleepy 在此应给出 '请等待业务页加载' 而非 '课程列表为空'。当前代码把空 HTML 一律视为登录页缺失，无法区分是 CAS 网关未跳转还是业务页 0 课"
+  },
+  "parserImpact": "detectProtocolFromUrl 不会匹配任何关键字（无 jwglxt/xtgl/default2.aspx/xskbcx.aspx/jsxsd/jxd/urp/qz/strongdesk/jwapp/jwtottxuxsysb），正确返回 null。tryAllParsers 在该 HTML 上不会产生误课程（因为所有锚点都不存在），但用户体验上仍是空列表 + '课程列表为空' 提示。对应 T7 任务：WebView 应在 CAS 认证完成后等业务页跳转才抓取，而不是在网关页停留。HTML 中 '认证成功后将跳转到 jwglxt 业务系统' 这类提示文案是 CAS 网关的特征，建议在 T9 诊断中作为 '网关未跳转' 分类依据。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:146-158 所有 when 分支都不匹配 cas/authserver",
+    "jw_research.json notes 'CAS/authserver 只代表登录网关, 不能作为协议类型指纹; 必须等登录回业务域后根据 URL/HTML 判定'",
+    "jw_research.json T6 recommendations '不以 CAS 单独判定'"
+  ]
+}

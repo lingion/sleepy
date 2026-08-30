@@ -228,11 +228,15 @@ class JwImportActivity : ComponentActivity() {
                             JwWebViewLoginScreen(
                                 school = school,
                                 onHtmlCaptured = { html, sch, periods ->
-                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} type=${sch.type} periods=${periods.size}")
+                                    // T6 双层判定：sch.type 已知直接用；空 → HTML/URL 组合兜底
+                                    val rawType = sch.type
+                                    val effectiveType = rawType?.takeIf { it.isNotBlank() }
+                                        ?: jwViewModel.detectProtocol(html, sch.url.ifBlank { null })
+                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} rawType=$rawType effectiveType=$effectiveType periods=${periods.size}")
                                     statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
-                                            val courses = jwViewModel.parseHtml(html, sch.type ?: "")
+                                            val courses = jwViewModel.parseHtml(html, effectiveType ?: "")
                                             Log.d("JwImport", "parseHtml returned ${courses.size} courses")
                                             if (courses.isEmpty()) {
                                                 errorMsg = getString(R.string.jw_parse_empty)
