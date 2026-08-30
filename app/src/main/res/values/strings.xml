@@ -384,6 +384,13 @@
     <string name="school_count_total">共 %1$d 所</string>
     <string name="school_pinyin_hint">支持拼音首字母 / 学校英文简称 (如 hrbeu)</string>
     <string name="jw_parse_empty">解析结果为空，请确认已到达「个人课表」页（而非首页/登录页）</string>
+    <!-- T7 — frame 抓取/渲染时序错误分类 -->
+    <string name="jw_err_cross_domain_iframe">检测到跨域内嵌框架，无法读取课表（%1$s）。请在校园网/VPN 环境下直接打开课表页后再试</string>
+    <string name="jw_err_container_empty_after_delay">课表区域已找到但内容尚未加载完成，请等待页面完整显示课表后再次点「导入此页」</string>
+    <string name="jw_err_iframe_nav_pending">课表框架尚未开始加载，请等待页面完整显示课表后再点「导入此页」</string>
+    <string name="jw_err_wrong_page">当前页面不是课表页，请先登录并进入「个人课表」页面</string>
+    <string name="jw_err_session_expired">登录已过期，请在页面中重新登录后再点「导入此页」</string>
+    <string name="jw_err_empty_semester">本学期暂无课程，请确认已选择正确学期；若课表为图片形式将无法导入</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>
     <string name="jw_parse_failed_hint">\n\n提示：HEU 需在浏览器中登录后导航到『个人课表』页面再点导入</string>

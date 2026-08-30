@@ -74,6 +74,7 @@ import kotlinx.coroutines.launch
 fun JwWebViewLoginScreen(
     school: JwSchoolInfo,
     onHtmlCaptured: (html: String, school: JwSchoolInfo, periods: List<Triple<Int, String, String>>) -> Unit,
+    onCaptureError: (status: FrameCaptureStatus, hint: String) -> Unit,
     onBack: () -> Unit,
     viewModel: JwImportViewModel = viewModel()
 ) {
@@ -178,52 +179,21 @@ fun JwWebViewLoginScreen(
                         wv.evaluateJavascript(WISEDU_FETCH_JS, null)
                         return@CaptureBar
                     }
-                    // 用 evaluateJavascript（API 19+）同步回调拿 HTML，不依赖 JS 桥跨域问题
-                    val js = """
-                        (function() {
-                            try {
-                                var ifrs = document.getElementsByTagName('iframe');
-                                var iframeContent = '';
-                                for (var i = 0; i < ifrs.length; i++) {
-                                    try { iframeContent += ifrs[i].contentDocument.documentElement.outerHTML; } catch(e) {}
-                                }
-                                var frs = document.getElementsByTagName('frame');
-                                var frameContent = '';
-                                for (var i = 0; i < frs.length; i++) {
-                                    try { frameContent += frs[i].contentDocument.documentElement.outerHTML; } catch(e) {}
-                                }
-                                var html = (document.documentElement && document.documentElement.outerHTML) || '';
-                                JSON.stringify({ok:true, url:location.href, len:html.length+iframeContent.length+frameContent.length, html:html+iframeContent+frameContent});
-                            } catch(err) {
-                                JSON.stringify({ok:false, err:String(err)});
-                            }
-                        })();
-                    """.trimIndent()
-                    wv.evaluateJavascript(js, ValueCallback<String> { raw ->
-                        Log.d("JwWebView", "evaluateJavascript returned len=${raw?.length ?: 0}")
-                        if (raw.isNullOrEmpty() || raw == "null") {
-                            scope.launch { snackbar.showSnackbar(fetchFailedNoResponseMsg) }
-                            return@ValueCallback
+                    // T7: DFS frame 抓取 + ready 重试, 决策在 JVM 层(可测可日志)
+                    captureWithRetry(wv, 0) { r ->
+                        Log.d("JwWebView", "captured frame=${r.selectedFramePath} anchors=${r.matchedAnchors} status=${r.status}")
+                        when (r.status) {
+                            FrameCaptureStatus.OK, FrameCaptureStatus.EMPTY_SEMESTER ->
+                                onHtmlCaptured(r.html, school, emptyList())   // 0 课交给 Activity 按空学期文案报
+                            FrameCaptureStatus.SESSION_EXPIRED,
+                            FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED,
+                            FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
+                            FrameCaptureStatus.IFRAME_NAV_PENDING,
+                            FrameCaptureStatus.WRONG_PAGE,
+                            FrameCaptureStatus.UNKNOWN ->
+                                onCaptureError(r.status, r.diagnosticHint)    // 不走 onHtmlCaptured, 避免伪"0 课"
                         }
-                        // raw 是 JSON 字符串（含转义），先解一层
-                        val unwrapped = try {
-                            org.json.JSONObject(raw).optString("html", "")
-                        } catch (e: Exception) {
-                            Log.e("JwWebView", "parse capture JSON failed", e)
-                            scope.launch { snackbar.showSnackbar(fetchFormatErrorMsg) }
-                            return@ValueCallback
-                        }
-                        val ok = try {
-                            org.json.JSONObject(raw).optBoolean("ok", false)
-                        } catch (e: Exception) { false }
-                        if (!ok || unwrapped.isBlank()) {
-                            val err = try { org.json.JSONObject(raw).optString("err", "") } catch (e: Exception) { "" }
-                            scope.launch { snackbar.showSnackbar(fetchFailedFmt.format(err.ifBlank { pageNotLoadedMsg })) }
-                            return@ValueCallback
-                        }
-                        Log.d("JwWebView", "captured html len=${unwrapped.length}")
-                        onHtmlCaptured(unwrapped, school, emptyList())
-                    })
+                    }
                 }
             )
         },
@@ -511,5 +481,116 @@ private class WiseduBridge(private val onResult: (String) -> Unit) {
     @android.webkit.JavascriptInterface
     fun onWiseduResult(json: String) {
         main.post { onResult(json) }
+    }
+}
+
+/**
+ * T7 抓取 JS — DFS 递归遍历 frame+iframe, 跨域记 blocked, 输出 FrameSnapshotList JSON。
+ *
+ * 与 FrameSnapshotList.fromJson 的字段契约(改任一侧必须同步):
+ *   {ok: true, url: location.href, depth: N, frames: [
+ *     {name, src, depth, path:[], html, blocked}]}
+ * blocked 非空 = 跨域或读取失败; html null = 同上。两者互斥。
+ */
+private const val CAPTURE_FRAMES_JS_TEMPLATE = """
+(function(maxDepth){
+  function snap(win, name, src, depth, path){
+    var html = null, blocked = '';
+    try { html = win.document.documentElement.outerHTML; }
+    catch(e) {
+      try { blocked = win.location.hostname || ''; } catch(_) { blocked = ''; }
+      if (!blocked) { blocked = String(src || 'unknown'); }
+    }
+    return {name:(name===undefined||name==='')?null:name,
+            src:(src===undefined||src==='')?null:src,
+            depth:depth, path:path.slice(), html:html, blocked:blocked};
+  }
+  function walk(win, depth, path, out){
+    if (depth > maxDepth) return;
+    var d; try { d = win.document; } catch(e) { return; }
+    if (depth === 0) { out.push(snap(win, '(top)', win.location.href, 0, [])); }
+    var tags = ['frame','iframe'];
+    for (var t = 0; t < tags.length; t++) {
+      var els; try { els = d.getElementsByTagName(tags[t]); } catch(e) { els = []; }
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i];
+        var nm = el.name || el.id || (tags[t] + '_' + i);
+        var p = path.concat([nm]);
+        var cw = null;
+        try { cw = el.contentWindow; } catch(e) { cw = null; }
+        if (!cw) {
+          out.push({name:nm, src:el.src||null, depth:depth+1, path:p, html:null,
+                    blocked: el.src ? String(el.src) : 'no-contentWindow'});
+          continue;
+        }
+        out.push(snap(cw, nm, el.src, depth+1, p));
+        walk(cw, depth+1, p, out);
+      }
+    }
+  }
+  var out = [];
+  walk(window, 0, [], out);
+  return JSON.stringify({ok:true, url:location.href, depth:maxDepth, frames:out});
+})
+"""
+
+/** 单次抓取: evaluateJavascript → FrameSnapshot.fromJson → selectBestFrame。回调已在主线程。 */
+private fun captureOnce(wv: WebView, onResult: (FrameCaptureResult) -> Unit) {
+    wv.evaluateJavascript(
+        CAPTURE_FRAMES_JS_TEMPLATE + "(8);",
+        ValueCallback<String> { raw ->
+            if (raw.isNullOrEmpty() || raw == "null") {
+                onResult(FrameCaptureResult(null, "", emptyList(),
+                    status = FrameCaptureStatus.WRONG_PAGE,
+                    diagnosticHint = "WebView 未返回响应"))
+                return@ValueCallback
+            }
+            try {
+                // evaluateJavascript 回传的是 JSON 字符串字面量(带引号+转义), 先解一层
+                val unquoted = if (raw.startsWith("\""))
+                    org.json.JSONTokener(raw).nextValue().toString()
+                else raw
+                onResult(FrameTraversalTree.selectBestFrame(FrameSnapshotList.fromJson(unquoted)))
+            } catch (e: Exception) {
+                Log.e("JwWebView", "parse frame snapshot failed", e)
+                onResult(FrameCaptureResult(null, "", emptyList(),
+                    status = FrameCaptureStatus.UNKNOWN,
+                    diagnosticHint = "解析抓取结果失败: ${e.message}"))
+            }
+        })
+}
+
+/** 带重试的抓取: 空壳 iframe / 延迟渲染容器按 1500ms 间隔重试, 至多 3 次。 */
+private fun captureWithRetry(wv: WebView, retryCount: Int, onResult: (FrameCaptureResult) -> Unit) {
+    captureOnce(wv) { first ->
+        // ① 空壳 iframe: 先于 Readiness 判定(about:blank 壳不属于"容器空")
+        val shell = first.html.isBlank() || RenderReadinessChecker.checkBlankShell(first.html)
+        // ② readiness 只看选中 frame 的 html
+        val readiness = when {
+            retryCount >= 3 -> RenderReadinessChecker.Readiness.GIVE_UP
+            shell -> RenderReadinessChecker.Readiness.DELAY   // 空壳 → 等导航
+            else -> RenderReadinessChecker.check(first.html, retryCount)
+        }
+        when (readiness) {
+            RenderReadinessChecker.Readiness.READY -> onResult(first)
+            RenderReadinessChecker.Readiness.DELAY -> {
+                Log.d("JwWebView", "frame not ready, retry #${retryCount + 1} after 1500ms")
+                wv.postDelayed({ captureWithRetry(wv, retryCount + 1, onResult) }, 1500L)
+            }
+            RenderReadinessChecker.Readiness.GIVE_UP -> onResult(first.copy(
+                status = when {
+                    first.status == FrameCaptureStatus.SESSION_EXPIRED -> FrameCaptureStatus.SESSION_EXPIRED
+                    first.html.isBlank() || RenderReadinessChecker.checkBlankShell(first.html)
+                        -> FrameCaptureStatus.IFRAME_NAV_PENDING
+                    else -> FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY
+                },
+                retryCount = retryCount,
+                diagnosticHint = when {
+                    first.status == FrameCaptureStatus.SESSION_EXPIRED -> first.diagnosticHint
+                    first.html.isBlank() -> "课表框架尚未开始加载(重试 $retryCount 次), 请等页面完全显示课表后再点导入"
+                    else -> "课表容器存在但内容未填充(重试 $retryCount 次), 请等待页面完全加载后再点导入"
+                }
+            ))
+        }
     }
 }

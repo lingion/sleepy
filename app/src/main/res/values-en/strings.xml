@@ -293,6 +293,13 @@
     <!-- JW Import -->
     <string name="jw_no_url">No registry URL configured for this school</string>
     <string name="jw_parse_empty">Parse result is empty. Please make sure you are on the "My Schedule" page (not home/login page)</string>
+    <!-- T7 — frame 抓取/渲染时序错误分类 -->
+    <string name="jw_err_cross_domain_iframe">Cross-origin embedded frame detected, unable to read the timetable (%1$s). Please open the timetable page directly on campus network/VPN and try again</string>
+    <string name="jw_err_container_empty_after_delay">Timetable area found but not fully loaded yet. Wait until the timetable is fully displayed, then tap "Import this page" again</string>
+    <string name="jw_err_iframe_nav_pending">The timetable frame has not started loading. Wait until the timetable is fully displayed, then tap "Import this page" again</string>
+    <string name="jw_err_wrong_page">This page is not the timetable page. Please log in and open your personal timetable first</string>
+    <string name="jw_err_session_expired">Session expired. Please log in again on the page, then tap "Import this page"</string>
+    <string name="jw_err_empty_semester">No courses this semester. Please confirm the correct semester is selected; image-based timetables cannot be imported</string>
     <string name="jw_import_success">Successfully imported %1$d courses</string>
     <string name="jw_parse_failed">Parse failed: %1$s</string>
     <string name="jw_parse_failed_hint">\n\nTip: For HEU, log in via browser then navigate to "My Schedule" page before clicking import</string>

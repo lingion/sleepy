@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gb2312">
+<title>老正方四级 iframe 嵌套 - 顶层菜单</title>
+<!--
+  真实陷阱:某些老正方学校的 default2.aspx 套了 4 层 iframe 嵌套
+  (a) L1: default2.aspx(本文件) - 仅 header + L2 iframe
+  (b) L2: xs_main.aspx - 包含 L3 iframe
+  (c) L3: xskbcx_main.aspx - 包含 L4 iframe
+  (d) L4: xskbcx.aspx - 才含真正的 Table1
+  WebView 抓取只递归到第一/二层就停,误以为已到课表页
+-->
+</head>
+<body>
+<h3>教务管理系统 - 个人课表查询(4层嵌套入口)</h3>
+<iframe name="L2_main" src="L2_xsmain.html" width="100%" height="700" frameborder="0"></iframe>
+</body>
+</html>

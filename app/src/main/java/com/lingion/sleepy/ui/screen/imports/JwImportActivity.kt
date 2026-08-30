@@ -239,7 +239,8 @@ class JwImportActivity : ComponentActivity() {
                                             val courses = jwViewModel.parseHtml(html, effectiveType ?: "")
                                             Log.d("JwImport", "parseHtml returned ${courses.size} courses")
                                             if (courses.isEmpty()) {
-                                                errorMsg = getString(R.string.jw_parse_empty)
+                                                // T7: 容器命中过(EMPTY_SEMESTER 语义) → 按空学期提示, 区别于页面不对
+                                                errorMsg = getString(R.string.jw_err_empty_semester)
                                                 statusMsg = null
                                                 return@launch
                                             }
@@ -268,6 +269,18 @@ class JwImportActivity : ComponentActivity() {
                                             statusMsg = null
                                         }
                                     }
+                                },
+                                onCaptureError = { status, hint ->
+                                    Log.w("JwImport", "capture failed status=$status hint=$hint")
+                                    errorMsg = when (status) {
+                                        FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED -> getString(R.string.jw_err_cross_domain_iframe, hint)
+                                        FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY -> getString(R.string.jw_err_container_empty_after_delay)
+                                        FrameCaptureStatus.IFRAME_NAV_PENDING          -> getString(R.string.jw_err_iframe_nav_pending)
+                                        FrameCaptureStatus.WRONG_PAGE                  -> getString(R.string.jw_err_wrong_page)
+                                        FrameCaptureStatus.SESSION_EXPIRED             -> getString(R.string.jw_err_session_expired)
+                                        else                                           -> getString(R.string.jw_parse_empty)
+                                    }
+                                    statusMsg = null
                                 },
                                 onBack = { stage = Stage.SelectSchool }
                             )
