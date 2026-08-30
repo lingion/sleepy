@@ -72,6 +72,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.weekRangesOverlap
 import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.LocalTime
@@ -610,6 +611,11 @@ private fun validateCourseDraft(
             val secondRange = blockRangeMinutes(second, table)
             if (firstRange == null || secondRange == null) continue
             if (firstRange.first < secondRange.second && secondRange.first < firstRange.second) {
+                if (!weekRangesOverlap(
+                        first.startWeek, first.endWeek, first.weekType,
+                        second.startWeek, second.endWeek, second.weekType
+                    )
+                ) continue
                 val dayText = overlapDays.sorted().joinToString(" / ") { DateUtils.localizedDay(it, context) }
                 issues += ValidationIssue(
                     second.id,
