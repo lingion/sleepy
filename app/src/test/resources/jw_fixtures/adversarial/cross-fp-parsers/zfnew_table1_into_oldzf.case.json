@@ -1,0 +1,11 @@
+{
+  "input": "zfnew_table1_into_oldzf.html",
+  "expected": {
+    "protocol_adjudication": "zf_new",
+    "correct_parser": "JwNewZfParser (table#table1 小写 + .festival + .title + p title)",
+    "courses_count": 3,
+    "current_behaviour_measured": "实测 8 parser 全 0 课, 与 case 注释的预判有一处出入: JwNewZfParser 的 [id*=kb] 选择器在 id='table1' 上并不命中 ('table1' 不含 'kb' 子串), 五级容器全部 miss → parseHtmlTableFromQz → Qz 兜底 → 无 kbtable → 0 课。上游 NewZFParser.kt L12 期望的 table1 + .festival + .title + p[title=教师/上课地点/节/周] 结构, sleepy JwNewZfParser 完全没有对应代码 — T4 明文要求补此变体。修复后 NewZf 应产出 3 课 (festival 行头作节次, td id 前段作星期, p[title=节/周] 作周次)。该结构同时是 BNUZ 的 id='table1' 撞名源 (见 bnuz_table1_id_collision.html)。",
+    "error_classification": "silent_zero_courses_upstream_table1_variant_missing",
+    "notes": "上游 NewZFParser.kt 期望结构 (dIT8Zv), id='table1' 小写"
+  }
+}

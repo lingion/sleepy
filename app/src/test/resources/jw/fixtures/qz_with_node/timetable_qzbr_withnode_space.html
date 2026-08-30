@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>个人课表</title>
+</head>
+<body>
+<h3>个人课表</h3>
+<!--
+  强智 qz_with_node 变体 · 空格分支 (代表学校: 广东外语外贸大学
+  jxgl.gdufs.edu.cn/jsxsd / 北邮 jwgl.bupt.edu.cn/jsxsd)。
+
+  判别特征: title="周次(节次)" 的 text 同时携带周次与节次, 以空格分隔:
+      <font title="周次(节次)">1-16(周) 1-2节</font>
+  基础 QzParser 只做 substringBefore("(周)"), 节次信息 "1-2节" 会被丢弃,
+  节次回落到"所在大格位置" (nodeCount*2-1) — 跨节连排/非常规排课时就错节。
+  QzWithNodeParser 第一分支 (tempStr.contains(' ')):
+      weekStr  = text.split(' ')[0]           → "1-16(周)"
+      nodeList = text.split(' ')[1]           → "1-2节" (或 "[1-2节]")
+                 .removeSurrounding("[","]")  →  "1-2节"
+                 .split('-')                  → ["1","2节"]
+      startNode = nodeList[0].substringBefore('节').toInt() = 1
+      endNode   = nodeList[last].substringBefore('节').toInt() = 2
+
+  【真实格式注意】周次段是 "N-M(周)" (周次数字后无"周"字),
+  因为该分支 weekStr 不再经过 substringBefore("(周)") 预处理,
+  直接 split('-') 后对第二段调 substringBefore('(').toInt();
+  若写成 "1-16周(周)", 上游会拿 "16周".toInt() 抛 NumberFormatException
+  (sleepy 的 toIntOrNull 变体则静默回退 startWeek=1, endWeek 错成 1)。
+  本 fixture 严格使用真实格式。
+
+  结构同 timetable_qzbr_normal.html 注释 1-8 条 (th 表头/节次列,
+  td 直接挂 div.kbcontent, '-----' 分隔同格多课)。
+
+  【title 元素必须用 <font> 而非 <span> — 上游课名提取的怪癖】
+  QzWithNodeParser 课名 = Jsoup.parse(infoStr.substringBefore("<font")
+      .substringBefore("<span>").trim()).text()
+  第二段 needle 是带闭合尖括号的 "<span>", 对 "<span title=..>" 永不命中
+  (实测 jsoup 1.18.1); 只有第一段 "<font" 能截断。若用 <span title=..>
+  携带老师/教室/周次, 课名会变成 "课名 老师 教室 1-16(周) 1-2节" 整串污染。
+  真实强智页面 (BUPT/JSNU/CSUFT 适配器均证) 用 <font title=..>, 本 fixture
+  与真实页面一致。另注意 jsoup html() 会重排换行, "<br>" 出现在行首,
+  课名后紧跟 "\n<br><font ..>" — substringBefore("<br>") 的 br 提取路径
+  (qz_br) 在此结构下同样有效。
+-->
+<table id="kbtable" border="1">
+  <tbody>
+    <!-- 星期表头行: 纯 th, 无 td, nodeCount 不增 -->
+    <tr>
+      <th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th>
+      <th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th>
+    </tr>
+    <!-- 第1-2节: nodeCount=1 (默认 node=1, 与 title 节次一致) -->
+    <tr>
+      <th>第1-2节<br>08:30-10:00</th>
+      <td>
+        <div class="kbcontent">大学英语<br>
+          <font title="老师">王老师</font><br>
+          <font title="教室">外语楼302</font><br>
+          <font title="周次(节次)">1-16(周) 1-2节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">高等数学<br>
+          <font title="老师">张老师</font><br>
+          <font title="教室">教一101</font><br>
+          <font title="周次(节次)">3-15(单周) 1-2节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第3-4节: nodeCount=2 -->
+    <!-- 周三 数据结构: 节次与所在大格一致 (3-4节) -->
+    <!-- 周五 体育: 1-16(周) 3-4节, 教室含分组段为空 -->
+    <tr>
+      <th>第3-4节<br>10:20-11:50</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">数据结构<br>
+          <font title="老师">李老师</font><br>
+          <font title="教室">教二205</font><br>
+          <font title="周次(节次)">1-16(周) 3-4节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">体育<br>
+          <font title="老师">孙老师</font><br>
+          <font title="教室">体育馆</font><br>
+          <font title="周次(节次)">1-16(周) 3-4节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第5-6节: nodeCount=3 -->
+    <!-- 周二 大学物理实验: 5-12(周) 5-6节 -->
+    <tr>
+      <th>第5-6节<br>14:00-15:30</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">大学物理实验<br>
+          <font title="老师">赵老师</font><br>
+          <font title="教室">实验楼303</font><br>
+          <font title="周次(节次)">5-12(周) 5-6节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第7-8节: 全空占位行, nodeCount=4 -->
+    <tr>
+      <th>第7-8节<br>15:50-17:20</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第9-10节: nodeCount=5, 默认 node=9 -->
+    <!-- 周一 计算机网络: title 节次 9-10节 与所在大格一致 -->
+    <tr>
+      <th>第9-10节<br>19:00-20:30</th>
+      <td>
+        <div class="kbcontent">计算机网络<br>
+          <font title="老师">吴老师</font><br>
+          <font title="教室">信息楼201</font><br>
+          <font title="周次(节次)">1-16(周) 9-10节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

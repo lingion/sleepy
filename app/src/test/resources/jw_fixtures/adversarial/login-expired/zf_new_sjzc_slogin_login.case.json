@@ -1,0 +1,13 @@
+{
+  "input": "zf_new_sjzc_slogin_login.html",
+  "expected": "判定: 未登录(title=教学管理信息服务平台 + /jwglxt/xtgl/login_slogin.html + csrftoken 隐藏域 + zftal-ui-v5 引用 + 正方软件版权)。课程数=0, 错误分类=NEED_LOGIN。注意: URL/HTML 都含 jwglxt/zftal 特征会被 detectProtocolFromHtml 判成 zf_new 协议正确, 但协议判定≠可解析——必须用登录页特征(login_slogin/csrftoken/请输入密码)在解析前短路",
+  "protocol": "zf_new (新版正方 jwglxt)",
+  "page": "登录页 login_slogin.html(按调研实测特征手写: 石家庄学院/河北师大同款 zftal-ui-v5 + csrftoken + yhm/mm + kaptcha + zfsoft 版权)",
+  "assert_markers": [
+    "login_slogin",
+    "csrftoken",
+    "zftal-ui-v5",
+    "教学管理信息服务平台",
+    "正方软件股份有限公司"
+  ]
+}

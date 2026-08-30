@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="utf-8">
+<title>个人课表</title>
+<link href="/zftal-ui-v5-1.0.2/assets/css/main.css" rel="stylesheet">
+<script src="/jwglxt/xsstatic/js/kbcx.js"></script>
+</head>
+<body>
+<!-- ADVERSARIAL (同构鉴别样本): 新正方渲染后的 kbcontent 单元格与强智 kbcontent
+     结构完全同构 (div.kbcontent + font title=老师/教室/周次(节次))。
+     本页面新增两个页面级指纹: URL 系 /jwglxt/ + zftal-ui-v5 资源路径 + gnmkdm 全局变量。
+     断言: 单元格级特征无法判协议 (Qz 与 NewZf 都能解出全部 2 课),
+     必须用页面级指纹 (zftal-ui-v5 / jwglxt / gnmkdm=N2151) 判 zf_new。
+     tryAllParsers 现行 '课程数最多 + 固定候选序' 在此样本上判给 NewZf 纯属
+     候选顺序先到先得, 不是识别 -->
+<script>var gnmkdm = "N2151";</script>
+<table id="kbtable" border="1">
+  <tr><td>节次</td><td>星期一</td><td>星期二</td><td>星期三</td><td>星期四</td><td>星期五</td><td>星期六</td><td>星期日</td></tr>
+  <tr>
+    <td>第一节</td>
+    <td><div class="kbcontent">毛概<br><font title="老师">刘老师</font><br><font title="教室">文B102</font><br><font title="周次(节次)">1-16(周)</font></div></td>
+    <td><div class="kbcontent">线性代数<br><font title="老师">陈老师</font><br><font title="教室">理教204</font><br><font title="周次(节次)">1-16(周)</font></div></td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+</table>
+</body>
+</html>

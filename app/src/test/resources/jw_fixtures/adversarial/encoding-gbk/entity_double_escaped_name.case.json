@@ -1,0 +1,34 @@
+{
+  "_note": "双重转义: 源码字面 '&amp;#39640;' → DOM text() 为字面 6 字符 '&#39640;' (Jsoup 1.18.1 实测 text()=[&#39640;&#31561;])。但 JwOldZfParser L72 从 td.html() 取串 — Jsoup html() 序列化把 & 重新编码 (实测 html()=[&amp;#39640;…]) → split[0] 课名='&amp;#39640;&amp;#31561;&amp;#25968;&amp;#23398;'。成因: 服务端对 HTML 做 escapeHtml 跑两遍, 或 ASP HttpUtility.HtmlEncode 套用两次, 部分老正方学校导出管道真实存在。解析层拿到的就是字面实体文本, 任何层不再解码 → 课名永久乱(渲染为 '&#39640;…' 字面串)。属 double-escape bug 而非编码 bug, 收进本组因其与实体混淆度最高。",
+  "input": "entity_double_escaped_name.html",
+  "expected": {
+    "protocol": "zf (TYPE_ZF → JwOldZfParser type=0)",
+    "courses": [
+      {
+        "name": "&amp;#39640;&amp;#31561;&amp;#25968;&amp;#23398;",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教学楼A101",
+        "_note": "name 是字面实体串(错课名), 其余字段全对"
+      },
+      {
+        "name": "大学英语",
+        "day": 4,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 2,
+        "endWeek": 8,
+        "type": 2,
+        "teacher": "李老师",
+        "room": "B202"
+      }
+    ],
+    "courseCount": 2,
+    "errorClass": "wrong_course_name — 结构字段(节次/周次/星期)全对, 课名字面乱(&amp;#NNNNN; 形态, 非纯 &#NNNNN; — 因 Jsoup html() 序列化再编码)。修复锚点: name 命中 ^&amp;(amp;)*#\\d+;$ 时先 unescapeEntities 两轮(第一轮去 &amp; 壳, 第二轮解实体); 禁无条件全局二次解码(会把正常含 &amp; 的文本破坏)"
+  }
+}

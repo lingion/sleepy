@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 老正方 zf_1 变体 (type=1) 空格分隔空课表:
+     单元格内为空格 / 空白字符, parseImportBean1 用 " ".toRegex() split 后会得到空 split, preIndex 永远 -1, 无任何课程.
+     jw_research.json 老正方页指出 zf_1 用空格分隔且周次带花括号.
+-->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td>     </td><td>     </td><td>     </td><td>     </td><td>     </td><td>     </td><td>     </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第一节</td>
+    <td>     </td><td>     </td><td>     </td><td>     </td><td>     </td><td>     </td><td>     </td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第二节</td>
+    <td>     </td><td>     </td><td>     </td><td>     </td><td>     </td><td>     </td><td>     </td>
+  </tr>
+</table>
+</body>
+</html>

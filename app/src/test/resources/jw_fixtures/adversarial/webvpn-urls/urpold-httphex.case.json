@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的老 URP xkAction.do 指纹 — 当前无此指纹",
+  "expected": {
+    "protocol": "urp (TYPE_URP)",
+    "protocolBasis": "jw_plan T6 URL 规则: xkAction.do -> URP(老版); 当前 detect 无 xkAction.do 分支, 本形态全 URL 无 'urp' 子串 -> 返回 null",
+    "courseCount": "1 (displayTag 横表单行样本: 课程名/教师/周次/星期/节次/节数/教学楼/教室)",
+    "errorClass": "期望: 无错误; 当前: null -> tryAllParsers, JwUrpParser(候选 L129) 恰好能吃 displayTag -> 侥幸成功",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "urp",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "当前: null -> tryAllParsers; JwUrpParser L20-22 找 class 恰为 'displayTag' 或 'table table-striped table-bordered' 的表 -> 命中 -> 解析。侥幸链成立的前提是 class 属性精确等于这两个值(真实页面常见 'displayTag tablesorter' 等复合 class 时 getElementsByAttributeValue(\"class\",...) 精确匹配失败 -> 0 课)。T6 的 xkAction.do -> TYPE_URP 指纹使路由确定化; 若老 URP 学校 host 恰含 'urp' 子串, 当前会被 L156 钉死 TYPE_URP_NEW -> JwNewUrpParser 找不到 dateList -> 0 课, 且 type 非空使 tryAllParsers 不再运行(L88-91 仅 isBlank 时兜底) — 这是比兜底更坏的静默失败。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "urpold-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/8d2f6a/xkAction.do?actionType=6",
+  "sampleKind": "webvpn-url"
+}

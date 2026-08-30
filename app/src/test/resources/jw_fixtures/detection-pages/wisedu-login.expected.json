@@ -1,0 +1,15 @@
+{
+  "_note": "金智 jwapp 登录页指纹样本(参照哈尔滨工程大学 jwgl.hrbeu.edu.cn → CAS authserver 跳转)。本 fixture 是登录页,JwWiseduParser 应解析为空课程(courses=[])。识别标记:/jwapp/ + /authserver/login 资源(松散匹配 — loginForm action=/authserver/login 本身不构成协议指纹,但页面引用的 /jwapp/sys/wdkb/ CSS 路径即足够)。",
+  "_fingerprint": {
+    "urlMarkers": ["/jwapp/"],
+    "htmlMarkers": [
+      "/jwapp/sys/",
+      "authserver/login",
+      "execution=e1s1"
+    ],
+    "expectedProtocol": "wisedu",
+    "expectedConfidence": 100,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}

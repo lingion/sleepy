@@ -1,0 +1,24 @@
+[
+  {
+    "name": "体育",
+    "day": 5,
+    "startNode": 6,
+    "endNode": 7,
+    "startWeek": 1,
+    "endWeek": 15,
+    "type": 1,
+    "teacher": "李老师",
+    "room": "田径场"
+  },
+  {
+    "name": "程序设计实验",
+    "day": 2,
+    "startNode": 9,
+    "endNode": 10,
+    "startWeek": 2,
+    "endWeek": 16,
+    "type": 2,
+    "teacher": "陈老师",
+    "room": "工程楼315"
+  }
+]

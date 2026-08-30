@@ -1,0 +1,18 @@
+{
+  "input": "zf_new_empty_json_with_stale_table.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 1,
+    "courses": [
+      { "name": "大学英语(残留学期数据)", "day": 2, "startNode": 1, "endNode": 2, "startWeek": 1, "endWeek": 16, "type": 0, "teacher": "李四", "room": "外语楼-201" }
+    ],
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: 当前实现导入 1 门残留旧学期课, 期望应为 0 课 EMPTY_SEMESTER — 这是本组核心对抗样本"
+  },
+  "rationale": "对抗语义陷阱(空 kbList script + 旧学期 kbtable 残留): JwNewZfParser.parseEmbeddedJson 行 42 markers=['kbxx','tmp_list','xskbcx','xskbcx_json'] 不含 'kbList', `var kbList = [];` 不被识别 → 掉到 parseHtmlTable 行 245 getElementById('kbtable') 命中残留表 → 抽出 1 门旧学期课返回。用户当前学期无课却被导入门 1 门不属于本学期的课('错课'而非'无课'也非'解析失败')。正确语义: zf_new 上下文中 kbList=[] 是当前学期权威信号, 应短路判 EMPTY_SEMESTER 覆盖 HTML 残留。修法: T4 把 'kbList' 加入 markers 并对空数组短路返回特殊状态; 或 parseEmbeddedJson 返回 (courses, sawMarker) 让上层区分 'marker命中但空' 与 'marker未命中'。"
+}

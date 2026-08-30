@@ -1,0 +1,44 @@
+{
+  "input": "zf_mixed_frames_and_iframes.html + zf_mixed_menu_side.html + zf_mixed_lastProgress_kbcx.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (default2.aspx 指纹)",
+    "frameStrategy": "顶层 getElementsByTagName('frame') 与 getElementsByTagName('iframe') 两类都必须收集(真实正方页面常 frame 做菜单壳+iframe 做内容)。DFS 到每个 frame 的 contentDocument 后,在该 document 上继续两类一起查;锚点判定用锚点链,命中后必须解析课程数>0 才停止,否则继续尝试其他候选 frame",
+    "courseCount": 3,
+    "expectedCourses": [
+      {
+        "name": "数据挖掘",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 1,
+        "teacher": "许老师",
+        "room": "数计楼402",
+        "weeks": "1-16"
+      },
+      {
+        "name": "编译原理",
+        "day": 4,
+        "startNode": 2,
+        "endNode": 2,
+        "teacher": "龚老师",
+        "room": "数计楼305",
+        "weeks": "1-16"
+      },
+      {
+        "name": "移动开发",
+        "day": 5,
+        "startNode": 3,
+        "endNode": 3,
+        "teacher": "丁老师",
+        "room": "软件楼220",
+        "weeks": "1-12"
+      }
+    ],
+    "errorClass": "none",
+    "diagnosticHint": "正常解析,无提示;若实现只查一类标签(frame 或 iframe),报 PARTIAL_FRAME_CAPTURE 并列全 skipped_frames=[menuFrame(frame),noticeFrame(iframe)]"
+  },
+  "currentBehavior": {
+    "capturedLayers": "当前实现其实两类都查(L185 iframe+L190 frame),但只查顶层一层;若 lastProgress 本身又嵌一层则 0 课。本样本单层命中时:顶层+menuFrame+noticeFrame+lastProgress 四段拼一起,Table1 在 lastProgress 段",
+    "result": "本样本当前实现可解析出 3 门课(单层 iframe 命中)。作为'正向对照'存在——验证 frame+iframe 混合收集在顶层一层就够时是好的;与 4 层嵌套样本对比定位'浅遍历够/不够'的边界",
+    "reason": "需要至少一个'当前实现应成功'的正向样本作对照组,防止把整组修成'所有 frame 场景都报错'。同时它暴露拼接语义风险: noticeFrame 的公告文本与 menuFrame 的菜单文本会拼进同一 html 串,JwNewZfParser 的宽 marker(如 xskbcx)可能误命中菜单里的'课表查询'链接——这是 T8 要收紧的 marker 问题的具象化"
+  }
+}

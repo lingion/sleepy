@@ -1,0 +1,12 @@
+{
+  "input": "bnuz_es_default_login.html",
+  "expected": "判定: 未登录(ASP.NET WebForm 登录页: __VIEWSTATE + __EVENTVALIDATION + __VIEWSTATEENCRYPTED + TextBox1 帐号/TextBox2 密码/TextBox3 验证码)。课程数=0, 错误分类=NEED_LOGIN。协议 bf 层可判 bnuz(URL es.bnuz), 但该页无 #table1 课表结构, JwBnuzParser 不得产错课",
+  "protocol": "bnuz (北师珠 ASP.NET WebForm)",
+  "page": "登录页 es.bnuz.edu.cn(活体, 2026-08 实抓): form action=default.aspx + __VIEWSTATE/__EVENTVALIDATION + TextBox1/2/3 · 已脱敏: __VIEWSTATE/__EVENTVALIDATION/__PREVIOUSPAGE 长值与 WebResource.axd?t= 时间戳替换为占位符(特征名与结构保留)",
+  "assert_markers": [
+    "action=\"default.aspx\"",
+    "__VIEWSTATE",
+    "__EVENTVALIDATION",
+    "TextBox1"
+  ]
+}

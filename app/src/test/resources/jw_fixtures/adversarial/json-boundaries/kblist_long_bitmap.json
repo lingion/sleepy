@@ -1,0 +1,59 @@
+{
+  "_note": "对抗样本: zcd 超长位图边界。sleepy JwNewZfParser.kt L179 的 bitmap 分支触发条件是 s.length>=10 且全 0/1; 新正方真实报文 jw_research 明确无位图形态, 位图是 URP classWeek(20位)和 Wisedu SKZC(长度随周数)的形态 — 但跨协议 tryAllParsers 时 JwNewZfParser 会被误喂到 Wisedu/URP 数据, 位图必须不崩。覆盖: ①length=9(边界下限, 9 位全 0/1 → 不进 bitmap 分支 → toIntOrNull 会爆) ②length=10(边界上限, 刚好触发) ③length=25(超过 URP 20 位) ④全 0 位图(0 门课, 语义=整学期无此课) ⑤长度 1 的 '1'(全非位图, 单周) ⑥长度 64 的混合位图。",
+  "_uncertain": [
+    "length=9 的 9 位串: parseWeekStr 走 else 分支, L198 filter{isDigit}='101010101'.toIntOrNull()=101010101 — Kotlin Int.MAX_VALUE=2147483647, 9 位不溢出 → 返回 Triple(101010101,101010101,0) 荒谬值。这个是真实 bug 证据。",
+    "全 0 位图: bitsToRanges(weeks=[]) 返回 emptyList, parseWeekStr L202 result.isEmpty() → 兜底 Triple(1,16,0) — 语义错! '第 0 周上课'应等于'这学期无此课', 但兜底会产出一门假 1-16 周的课。这是真实 bug 证据。",
+    "length 64 混合位图: 超过常规学期 25 周, 应该被判为非法数据, 当前实现无此检查。"
+  ],
+  "totalRecord": 6,
+  "kbList": [
+    {
+      "kcmc": "9位临界",
+      "xqj": 1,
+      "jc": "1-2",
+      "zcd": "101010101",
+      "cdmc": "教一101",
+      "xm": "张老师"
+    },
+    {
+      "kcmc": "10位临界",
+      "xqj": 2,
+      "jc": "3-4",
+      "zcd": "1010101010",
+      "cdmc": "教二205",
+      "xm": "李老师"
+    },
+    {
+      "kcmc": "URP位图形态",
+      "xqj": 3,
+      "jc": "5-6",
+      "zcd": "1111111111111111111100000",
+      "cdmc": "教三305",
+      "xm": "王老师"
+    },
+    {
+      "kcmc": "全零位图",
+      "xqj": 4,
+      "jc": "1-2",
+      "zcd": "00000000000000000000",
+      "cdmc": "教四401",
+      "xm": "赵老师"
+    },
+    {
+      "kcmc": "单字符周",
+      "xqj": 5,
+      "jc": "1-2",
+      "zcd": "1",
+      "cdmc": "教五501",
+      "xm": "钱老师"
+    },
+    {
+      "kcmc": "64位混合",
+      "xqj": 6,
+      "jc": "1-2",
+      "zcd": "1100110011001100110011001100110011001100110011001100110011001100",
+      "cdmc": "教六601",
+      "xm": "孙老师"
+    }
+  ]
+}

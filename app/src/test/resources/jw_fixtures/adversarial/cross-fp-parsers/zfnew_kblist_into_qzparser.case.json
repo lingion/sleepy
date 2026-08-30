@@ -1,0 +1,11 @@
+{
+  "input": "zfnew_kblist_into_qzparser.html",
+  "expected": {
+    "protocol_adjudication": "zf_new",
+    "correct_parser": "JwNewZfParser (kbList JSON, jc='1-2'/zcd='1-16周')",
+    "courses_count": 2,
+    "current_behaviour_measured": "实测 8 parser 全 0 课 — kbList JSON 在 <script> 里, JwNewZfParser.parseEmbeddedJson markers=[kbxx,tmp_list,xskbcx,xskbcx_json] 不含 kbList! (调研[1] 'markers 是 kbxx/tmp_list, 不含新正方标准的 kbList' 直接命中), trimmed.startsWith('{') 分支也不触发 (前面是 <html>...<script> 前缀)。Qz 无 kbtable 0 课。tryAllParsers 全灭 → '解析结果为空' 误导提示。T4 明文要求 JwNewZfParser JSON 覆盖 '只在 zf_new 上下文识别 kbList' — 本样本是该需求的可执行负向基线: 修复前 0 课, 修复后应 2 课。",
+    "error_classification": "silent_zero_courses_kblist_marker_missing",
+    "notes": "新正方 kbList JSON 装在 <script> 里"
+  }
+}

@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>班级课表</title>
+</head>
+<body>
+<!--
+  老正方 Table1 "纯组头行" 变体 (icharle/jwxt 广东白云学院 Getkebian())。
+
+  research finding 9 (老正方交叉对比三):
+    该校 Table1 首列是 早晨/上午/下午/晚上 四个组头, 无任何 "第N节" 逐节行头;
+    其 PHP 实现自己做了换算: 上午→第1节, 下午→第5节, 晚上→第9节 (1/5/9 为该校专属作息,
+    其他学校不同). sleepy/upstream 对 组头词 一律 OTHER_HEADER.contains → continue 跳过,
+    且 node 永远不被赋值, 保持 -1.
+
+  本 fixture 结构:
+    row0  表头 (节次\星期 + 星期一~日)
+    row1  早晨 (空行, OTHER_HEADER 命中 continue)
+    row2  上午  + 3 门课格 (countDay=1/2/3, node 仍 -1)
+    row3  下午  + 1 门课格 (countDay=1, node 仍 -1)
+    row4  晚上  + 1 门课格 (countDay=1, node 仍 -1)
+
+  关键对抗点: 每个组头行都把 countFlag 拉成... 等等 — 组头词命中 OTHER_HEADER 是
+  continue, 不设置 countFlag! 所以 row2 的 3 个空格 td (len<=1) 都不递增 countDay
+  (L35-38: if countFlag 才递增). 即 countDay 只在 countFlag=true 后才计数.
+
+  而本页没有任何 "第N节" 行头, countFlag 从未置 true → 所有空格 td 都不算数,
+  countDay 恒为 0 → 每行的第一格课程 cDay=1!  3 门课全塌缩到周一.
+
+  (注: 课程 timeInfo 都带 "周X" 前缀, importList2CourseList L159 会用 timeInfo 前缀
+   救回 day — 但若去掉 周X 前缀, day 全部塌缩为 1. startNode 恒 -1, 节次全丢.)
+-->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">早晨</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td><a href="#">高等数学<br>周一第1,2节{第1-16周}<br>张老师<br>教学楼A101</a></td>
+    <td><a href="#">大学物理<br>周二第1,2节{第1-16周}<br>李老师<br>实验楼D205</a></td>
+    <td><a href="#">大学英语<br>周三第3,4节{第1-16周}<br>王老师<br>外语楼308</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">下午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td><a href="#">数据结构<br>周四第5,6节{第2-16周}<br>赵老师<br>教学楼C303</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">晚上</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td><a href="#">体育<br>周六第9,10节{第1-16周}<br>钱老师<br>体育馆</a></td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

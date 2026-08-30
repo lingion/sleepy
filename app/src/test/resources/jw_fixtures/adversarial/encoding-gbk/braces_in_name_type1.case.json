@@ -1,0 +1,12 @@
+{
+  "_note": "outerHTML 已解码前提下第二类隐蔽乱码源: 数字实体 &#123;/&#125; 解码出 ASCII 花括号 { }, 落进 zf_1 单元格的课程名 token 里 — 解码本身正确, 乱码源是解码产物污染了 JwOldZfParser.parseImportBean1(L108-152) 的花括号分词约定(L114 contains('{')&&contains('}') 把时间 token 从课程名 token 里区分出来)。链路实测: (1)DOM 解码 &#x7B97;&#x6CD5;&#123;A&#125;&#x8BBE;&#x8BA1; → '算法{A}设计', text() 正确; (2)td.text().trim() L33 得 '算法{A}设计 {第1-16周} 张老师 A101', split(' ') L110 → 4 tokens: ['算法{A}设计', '{第1-16周}', '张老师', 'A101']; (3)i=0: token0 含 { 和 } → L114 命中, preIndex==-1 → L131 preIndex=0; (4)i=1: '{第1-16周}' 含 { } → L114 命中, preIndex=0≠-1 → L116 split[preIndex-1]=split[-1] → Kotlin IndexOutOfBoundsException (python [-1] 是尾环绕, Kotlin List.get(-1) 抛异常 — 这是 L116 与 L136 两个崩溃点里靠前的那个, 与 fullwidth_space_type1 触发的 L136 末位分支不同路径); (5)generateCourseList 在 td 循环内抛出 → 同 tr 里 cell1(大学英语 {第2-8周|双周} 李老师 B202) 本可独立解析出 1 门课也一起丢。JwImportViewModel L103 显式 TYPE_ZF_1 分发路径整次失败抛给 JwImportActivity L261 catch → jw_parse_failed; tryAllParsers L136 catch 吞异常静默 → JwOldZfParser(html,1) 候选 0 课; 同 html 的 JwOldZfParser(html) type=0 候选: 单元格无 <br> → parseImportBean L74 split.size<3 skip → 0 课; 其余 6 个候选 parser 也无 kbtable/kbList/td[id] 锚点 → 全 0 → tryAllParsers 返回 emptyList。",
+  "input": "braces_in_name_type1.html",
+  "expected": {
+    "protocol": "zf_1 (TYPE_ZF_1 → JwOldZfParser(html,1) 显式分发)",
+    "courses": [],
+    "courseCount": 0,
+    "expectedAfterFix": "1 门课: name='大学英语' day=1 startNode=1 endNode=2 startWeek=2 endWeek=8 type=2 teacher='李老师' room='B202'; '算法{A}设计' 这门因花括号侵入课程名无法忠实还原 — 修复方向是 L116/L136 加 preIndex>=1 卫语句使其降级为 0 课(而不是整次崩) + L114 花括号判定改用 startsWith('{')&&endsWith('}')",
+    "errorClass": "crash_IndexOutOfBounds — JwImportViewModel L103 显式分发路径: parseImportBean1 L116 split[preIndex-1] preIndex=0 → IndexOutOfBoundsException → 同 tr 后续可解析 cell 一起丢; tryAllParsers 路径: 候选异常 L136 被吞 + type=0 候选因无 <br> 得 0 课 → 静默 emptyList",
+    "diagnosisAnchor": "T9 诊断: 抓取串含 id=Table1 + td 内含 '{第N-M周' 模式 + td.text() 分词后首个 brace token 前无独立课程名 token → 报 'zf_1 花括号分词失败(课程名含花括号)'"
+  }
+}

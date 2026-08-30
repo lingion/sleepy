@@ -1,0 +1,11 @@
+{
+  "input": "cf_kbxx_into_newzf.html",
+  "expected": {
+    "protocol_adjudication": "cf",
+    "correct_parser": "JwChengFangParser(待实现) — 当前无 parser",
+    "courses_count": 2,
+    "current_behaviour_measured": "实测 JwNewZfParser=0 课 — CF 的字段名 kcmc 命中 name 候选 (L117), 但 teacher 候选 [jsxm,jsmc,teacher,attendClassTeacher,skjs] 不含 teaxms, room 候选 [jasmc,jsmc,classroomName,jxlh,jasdm] 不含 jxcdmcs, day 候选 [kcxq,xq,xqj,classDay,skxq] 含 'xq' (第二位) → day 命中, 节次候选 [ksjcsd,ksjc,jc,...] 不含 jcdm2 → firstInt 返回 null → L128 return 丢课。kbList/kbxx marker 被认领但字段体系不匹配 → parseEmbeddedJson 空 → parseHtmlTable → Qz 兜底 0 课。此样本证明 marker 级互斥不足, 必须做字段白名单二次校验 (T8)。可执行版见 cf_kbxx_into_newzf2.html。",
+    "error_classification": "silent_zero_courses_marker_hijack",
+    "notes": "CF/青果/乘方典型响应 var kbxx = [{kcmc,teaxms,jxcdmcs,xq,jcdm2,zcs}]"
+  }
+}

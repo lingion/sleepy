@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的北师珠 — host es.bnuz.edu.cn 可见, 可作 URL 级指纹锚点",
+  "expected": {
+    "protocol": "bnuz (TYPE_BNUZ)",
+    "protocolBasis": "host 段 es.bnuz.edu.cn 在 URL 可见; T6 可按 host 段边界正则补 es.bnuz 指纹(裸 'bnuz' 同样有子串误伤风险); 路径重写形态(bnuz-httphex)下该信号消失, 仍需 HTML 兜底",
+    "courseCount": "1",
+    "errorClass": "同 bnuz-httphex",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "null — cf/pku/bnuz 三协议 URL 层无可靠指纹(路径重写形态连 host 信号都被 hex 吞掉), 判定必须由 T6 detectProtocolFromHtml 在 onHtmlCaptured 二次判型接管",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "同 bnuz-httphex。两种 WebVPN 形态对 BNUZ 的判型可用信号不同(host 可见 vs 不可见), 印证 jw_plan T6 'URL+抓取 HTML 第二次判型' 的双层设计: URL 层 host 指纹只能在域名重写形态命中, 路径重写形态必须由 onHtmlCaptured(JwImportActivity.kt L230-238, 已有 html+url 输入)的 HTML 判型接管。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "bnuz-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/es.bnuz.edu.cn/default.aspx",
+  "sampleKind": "webvpn-url"
+}

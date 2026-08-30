@@ -1,0 +1,15 @@
+{
+  "input": "zf_old_zf1_space_empty.html",
+  "protocol": "zf_1",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程, 请确认是否选对学期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwOldZfParser(html,1) 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "老正方 zf_1 (type=1) 全空格 td: td.text().trim() 空串 length<=1 → countFlag 未置前 continue, 置后 countDay++ → parseImportBean1 永不调用 → []。0 课正确。注意 tryAllParsersImpl 候选里 JwOldZfParser(html,1) 也在场, 空样本下所有候选都 0 课, 无候选间噪声。"
+}

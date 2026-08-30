@@ -1,0 +1,20 @@
+{
+  "code": "0",
+  "msg": "success",
+  "datas": {
+    "xskcb": {
+      "rows": [
+        {
+          "KCM": "<img src='/img/kcm.png' alt='大学物理' />",
+          "SKJS": "<img src='/img/js.png' alt='赵老师' />",
+          "JASMC": "物理楼201",
+          "SKXQ": "2",
+          "KSJC": "3",
+          "JSJC": "4",
+          "SKZC": "11111111111111110000000000000000"
+        }
+      ],
+      "totalCount": 1
+    }
+  }
+}

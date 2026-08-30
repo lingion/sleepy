@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="gb2312"><title>顶层含残缺 Table1 的陷阱页</title></head>
+<!--
+  陷阱：顶层 default2.aspx 有一个 id=Table1 的空壳(可能是导航/周次切换控件遗留)，
+  真正的课表在 iframe 里另一个 Table1 中。
+  如果抓取 JS 把顶层和 iframe 内容简单拼接 + Jsoup.getElementById 取第一个，
+  会拿到顶层空壳 Table1 → 0 门课，即使 iframe 里的真 Table1 也在拼接结果里。
+-->
+<body>
+<table id="Table1" border="0">
+  <tr><td colspan="2">当前周次：第 1 周</td></tr>
+  <tr><td>学期:</td><td>2025-2026-1</td></tr>
+</table>
+<iframe name="kbcx" src="xskbcx_real.html" width="100%" height="500"></iframe>
+</body>
+</html>

@@ -1,0 +1,7 @@
+{
+  "_note": "新正方空 kbList 边界: totalRecord=0, kbList 是空数组。parseEmbeddedJson 走 markers 路径 → 找到 kbList(空数组) → parseCourseJsonArray 循环 0 次 → 返回空 → JwNewZfParser.generateCourseList 返回空列表。符合 jw_research.json T9 '有表但零课'的诊断分类,UI 应给出'该学期暂无课程'提示(不是错误)。",
+  "_uncertain": [
+    "totkRecord=0 是顶层字段;期望行为:空数组。"
+  ],
+  "courses": []
+}

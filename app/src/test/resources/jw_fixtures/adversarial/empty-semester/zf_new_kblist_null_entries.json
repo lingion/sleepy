@@ -1,0 +1,27 @@
+{
+  "_note": "新版正方 kbList 存在但条目全 null / 缺 kcmc: 常见于选课系统返回占位行(用户选了课但还没开课 / 教务占位数据 / 学期末清空)。totalRecord 与数组长度不一致是真实教务系统的已知现象。",
+  "_uncertain": [
+    "kbList 里出现 null 条目是否真实存在: 调研未确证; 真实抓包中更常见的是条目存在但字段值为空串或 null, 此处取更保守的空对象+null 两种混合。",
+    "totalRecord=2 但 kbList 长度 3 的不一致是否常见未确证。"
+  ],
+  "totalRecord": 2,
+  "kbList": [
+    null,
+    {
+      "kcmc": null,
+      "xm": null,
+      "cdmc": null,
+      "xqj": null,
+      "jcs": null,
+      "zcd": null
+    },
+    {
+      "kcmc": "",
+      "xm": "",
+      "cdmc": "",
+      "xqj": "",
+      "jcs": "",
+      "zcd": ""
+    }
+  ]
+}

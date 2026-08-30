@@ -1,0 +1,4 @@
+{
+  "_doc": "fixture=qz-base-crazy/missing_kbtable.html 适用 parser=JwQzCrazyParser。边界样本：登录后学生主页，但 DOM 内无 #kbtable (还没点 '学生课表' 导航)。generateCourseList() 第一行 `doc.getElementById(\"kbtable\") ?: return courseList` 直接返回空列表。UI 提示: '页面缺少 #kbtable，可能未到达课表页/选错教务类型'。与 no_kbtable_login.html 的差异: 此 fixture 模拟'已登录但未点击课表菜单'场景。",
+  "courses": []
+}

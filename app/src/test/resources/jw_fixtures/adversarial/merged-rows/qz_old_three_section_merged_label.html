@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>个人课表</title>
+</head>
+<body>
+<!--
+  强智 qz_old 变体 (代表学校: 湖南工学院 jwgl.hnit.edu.cn) + 三连节合并行头。
+
+  research finding (T2):
+    OldQzParser 遍历 table#kbtable → div(过滤 style='display:none;') → html().split('<br>')
+    → 找含 '['+']'+'周'+'节' 的行定位时间串 preIndex →
+    courseName=split[0], teacher=split[preIndex-1], room=split[preIndex+1].
+    节次从 '[N-M节]' 解析, 单元格文本不依赖位置语义.
+
+  对抗场景:
+    - 节次标签行 = "第1-2-3节" / "第4-5节" 三连/双连节, 但单元格时间串 [1-2节] 标注
+      真实占 2 节 (即行头与时间串语义不一致).
+    - sleepy 现版 JwQzParser 把所有 QZ_* 变体路由到 JwQzParser (T2 一锅烩),
+      JwQzParser 找不到 kbtable 直接 return emptyList().
+    - qz_old 必须由 JwOldQzParser 处理, 但该 parser 在 sleepy 尚未移植
+      (research 缺口).
+
+  本 fixture 验证:
+    (a) JwQzParser 解析 = emptyList (qz_old 不识别, 无 kbtable 外的兼容路径);
+    (b) JwOldQzParser(若已移植) 应正确处理 [1-2节] 文本, 行头三连节不参与计算;
+    (c) 节次真实值取自单元格 '周[1-2节]' 文本而非 '第1-2-3节' 行头.
+-->
+<table id="kbtable" border="1">
+  <tbody>
+    <!-- 第1-2-3节 (三连节标签, 但 1-2 节点已有课) -->
+    <tr>
+      <td>第1-2-3节</td>
+      <td><div>高等数学<br>张老师<br>1-16周[1-2节]<br>教一101</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>大学英语<br>王老师<br>2-16周[3-4节]<br>外语楼302</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <!-- 第4-5节 (双连节标签, 第 5 节无课) -->
+    <tr>
+      <td>第4-5节</td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>线性代数<br>李老师<br>3-15周[4-4节]<br>教二205</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <!-- 第6-7-8节 (三连节标签, 周二[7-8节]单独课) -->
+    <tr>
+      <td>第6-7-8节</td>
+      <td><div>&nbsp;</div></td>
+      <td><div>数据结构<br>赵老师<br>5-12周[7-8节]<br>实验楼303</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的新 URP 指纹 — host 含 urp 被裸子串命中(碰巧正确)",
+  "expected": {
+    "protocol": "urp_new (TYPE_URP_NEW)",
+    "protocolBasis": "L156 contains(\"urp\") 经由重写 host 段 urpjw.example.edu.cn 命中 — 本组裸子串碰巧判对, 但判对依据是 host 命名而非协议指纹(host 命名规律不可靠: jw_research domain[6] uncertainties 'urpjw.*=新, bkjw.*=老, 无法总结')",
+    "courseCount": "1",
+    "errorClass": "无错误(碰巧)",
+    "detectProtocolFromUrlNow": "urp_new",
+    "detectProtocolFromUrlAfterT6": "urp_new",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "L156 命中 -> TYPE_URP_NEW -> JwNewUrpParser(L99) -> dateList JSON -> 1 门课。与 urpnew-httphex 对比暴露当前实现的分叉: 同一部署, 前缀形态决定走显式路由还是兜底; T6 落地 courseSelect|thisSemesterCurriculum 指纹后两种形态收敛为同一确定路由, 不再依赖 'urp' 出现在哪个 URL 段。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "urpnew-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/urpjw.example.edu.cn/student/courseSelect/thisSemesterCurriculum/ajaxStudentSchedule/callback",
+  "sampleKind": "webvpn-url"
+}

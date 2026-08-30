@@ -1,0 +1,4 @@
+{
+  "_note": "边界 1: grid 视图存在但所有 td.td_wrap 都是空 div(本学期无课)。上游 NewZFParser 的 div.text().trim().length<=1 跳过 + courseName.isEmpty() 跳过 双层过滤, 最终 courseList 为空列表。parserList 同理 td.text().trim() 为空, font[0/1/2] 都是空串, 即便允许 name && sections && weeks.length && teacher && finalPosition 短路后也是空。",
+  "courses": []
+}

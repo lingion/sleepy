@@ -1,0 +1,21 @@
+{
+  "input": "xskbcx-cxxskb-new.html",
+  "id": "fp-url-confusion.xskbcx-cxxskb-new",
+  "title": "新正方 API 直连 URL 不含 jwglxt/xtgl/xskbcx.aspx；只有 kbList 关键字能识别",
+  "inputUrl": "https://jwgl.example.edu.cn/jwglxt/kbcx/xskbcx_cxXsKb.html?gnmkdm=N2151",
+  "htmlFile": "xskbcx-cxxskb-new.html",
+  "expected": {
+    "detectProtocolFromUrl": "zf_new",
+    "routeByType": "JwNewZfParser(html)",
+    "parserBehavior": "parseEmbeddedJson 找 markers (kbxx/tmp_list/xskbcx/xskbcx_json) → 全不命中；走 trimmed.startsWith('{') 分支 → parseCourseJsonArray({kbList:[{kcmc,xm,cdmc,xqj:1,jc:'1-2',zcd:'1-16周'}]}) → firstInt('jc','1-2')→null → firstInt('ksjc')→null → continue 丢课",
+    "courseCount": 0,
+    "realWorldBug": "jc='1-2' 不是纯数字，firstInt 永远返回 null → JwNewZfParser 对新正方真实 JSON 报 0 课。URL 路由正确，但解析器错。"
+  },
+  "parserImpact": "本 fixture 是功能性 bug 的最小复现：jwglxt URL 正确路由 zf_new，但 JwNewZfParser L127 firstInt(o,'ksjcsd','ksjc','jc','classSessions','ksjcd') 把字符串 '1-2' 喂 toIntOrNull 返回 null → continue 跳课。同一 case 还存在其他字段别名错：L121 firstStr(o,'jasmc',...) 取错教室（jasmc 是教学班场地，不是 cdmc）；L117 kcmc 别名 rlkcmc/jxbmc 优先级问题。对应 T4 任务核心修复点。",
+  "sourceRefs": [
+    "JwNewZfParser.kt:42 markers 缺 kbList → L58-63 trimmed.startsWith 分支兜底",
+    "JwNewZfParser.kt:94-155 parseCourseJsonArray 主循环",
+    "JwNewZfParser.kt:127 jc toIntOrNull 路径",
+    "jw_research.json finding 'jc 字段格式=1-2 范围串, 不是 0102 位号'"
+  ]
+}

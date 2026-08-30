@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<title>北师珠课表 - es.bnuz.edu.cn</title></head>
+<body>
+<!-- ADVERSARIAL (id 冲突): BNUZParser 与上游 NewZFParser 都选 id='table1' (小写)!
+     BNUZ 结构: tr=节次行, td 内 div: <span>课程名</span>教师{1-16周}<br>教室(2节)<br>...
+     NewZF(上游) 结构: tr 有 class='festival' 行头, td.attr('id')[0]=星期, div.title
+     sleepy JwOldZfParser 选 id='Table1' (大写) → 两边都不吃, 0 课
+     sleepy JwNewZfParser [id*=kb] → 无命中 → 0 课
+     未来若给 JwNewZfParser 加上游 table#table1 支持 (T4 明文要求), 两个协议的
+     id='table1' 会直接互吃 — BNUZ 结构会被 NewZF 的 div.title 逻辑吃空,
+     反之 NewZF 页面会被 BNUZ 的 substringAfter('</span>') 吃空
+     断言: id='table1' 不是任何协议的充分指纹, 必须 div 结构二次验证 -->
+<table id="table1" border="1">
+  <tr>
+    <td class="festival">1</td>
+    <td><div>
+      <span>高等数学</span>张老师{1-16周}<br>教学楼A101(2节)<br>
+    </div></td>
+    <td><div>
+      <span>大学英语</span>李老师{2-8周}<br>外语楼B202(2节)<br>
+    </div></td>
+    <td></td><td></td><td></td><td></td>
+  </tr>
+  <tr>
+    <td class="festival">3</td>
+    <td><div>
+      <span>数据结构</span>王老师{1-16周(单)}<br>机房301(2节)<br>
+    </div></td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+</table>
+</body>
+</html>

@@ -1,0 +1,83 @@
+{
+  "_doc": "fixture=qz-base-crazy/normal_grid.html 适用 parser=JwQzCrazyParser(tableName='kbcontent1')。语义锚定上游 dIT8Zv/WakeupSchedule_BUPT QzParser.kt convert()/generateCourseList() + QzCrazyParser.kt override(tableName='kbcontent1')，sleepy JwQwParser.kt L33-125 + JwQzCrazyParser.kt L11-13 忠实移植。td[0]=节次/星期表头列(无 kbcontent1 → day=1 永不产出课程)，td[1..7]=星期一..星期日(day=2..8)。nodeCount 随含 td 的 tr 递增：tr[0] 表头=1、tr[1]=2 → startNode=2*2-1=3/endNode=4、tr[2]=3 → startNode=5/endNode=6。weekStr='1-16(周)' 经 substringBefore('(周)')='1-16' → split(',')=['1-16'] → 含 '-' → startWeek=1/endWeek=16/type=0。'-----' 同格双课：第二块起点=indexOf('<br>', splitIndex)+4，因此第二块 infoStr 从 '体育' 起干净。expected 已用 jsoup 1.18.1 + Sim.java 双模式模拟器在 upstream 模式下逐字段验证一致。",
+  "_note_nodeCount": "本 fixture 首行是 节次+星期 表头(8 个 td, 无 kbcontent1)，按 upstream QzParser.generateCourseList 逻辑它会计入 nodeCount=1。因此第一节大节实际落在 tr[1] → nodeCount=2 → startNode=3。这不是 fixture 错误而是 upstream 算法的真实偏移；若想让第一节映射到 startNode=1，见 normal_grid_no_header.html。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "B202"
+    },
+    {
+      "name": "体育",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 3,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "孙老师",
+      "room": "操场"
+    },
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 2,
+      "endWeek": 8,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "C303"
+    },
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 10,
+      "endWeek": 10,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "C303"
+    },
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 12,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "C303"
+    },
+    {
+      "name": "大学物理",
+      "day": 6,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "实验楼D205"
+    }
+  ]
+}

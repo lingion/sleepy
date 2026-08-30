@@ -1,0 +1,16 @@
+{
+  "_note": "北京师范大学珠海分校 es.bnuz.edu.cn 登录页样本(ASP.NET WebForm,form action=default.aspx + __VIEWSTATE)。本 fixture 是登录页,JwBnuzParser 应解析为空课程(无 #table1)。识别标记:URL 含 es.bnuz.edu.cn;HTML 含 form action=default.aspx + __VIEWSTATE(注意:__VIEWSTATE 同时是老正方(zf)的特征 — BNUZ 需先看域名 es.bnuz 或 #table1 的 span 结构,避免和老正方 __VIEWSTATE 误撞)。",
+  "_fingerprint": {
+    "urlMarkers": ["es.bnuz"],
+    "htmlMarkers": [
+      "action=\"default.aspx\"",
+      "__VIEWSTATE",
+      "CheckCode.aspx"
+    ],
+    "expectedProtocol": "bnuz",
+    "expectedConfidence": 60,
+    "expectedParseResult": "empty",
+    "conflictWarning": "__VIEWSTATE 与老正方(zf)指纹冲突,须用域名/es.bnuz 或 #table1 内 <span> 包课程名+{N-M周} 花括号周次的结构特征区分"
+  },
+  "courses": []
+}

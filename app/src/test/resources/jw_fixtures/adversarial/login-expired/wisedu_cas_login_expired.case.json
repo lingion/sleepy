@@ -1,0 +1,11 @@
+{
+  "input": "wisedu_cas_login_expired.html",
+  "expected": "判定: 会话过期(fetch 链第一跳就 302 到 CAS)。期望 WISEDU_FETCH_JS 在 r.json() 抛异常时把 err 分类为 SESSION_EXPIRED 并提示重新登录, 而非笼统'抓取失败: 格式错误'。当前实现(JwWebViewLoginScreen.kt L394 .then(r=>r.json()) 抛异常落 .catch → ok:false err=TypeError)只能给通用错误。课程数=0",
+  "protocol": "wisedu (金智 jwapp, fetch 管线)",
+  "page": "金智会话失效: WISEDU_FETCH_JS 第一步 GET /jwapp/sys/wdkb/*default/index.do 被重定向到 CAS 登录页 HTML, r.json() 拿到的是 HTML",
+  "assert_markers": [
+    "/cas/authserver/login",
+    "请输入账号",
+    "请输入验证码"
+  ]
+}

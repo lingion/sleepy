@@ -1,0 +1,48 @@
+{
+  "input": "kblist_js_var_assignment.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_skipping_malformed_array_items",
+    "courseCount": 3,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "高等数学",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "A101"
+      },
+      {
+        "name": "大学英语",
+        "day": 3,
+        "startNode": 6,
+        "endNode": 7,
+        "startWeek": 2,
+        "endWeek": 16,
+        "type": 1,
+        "teacher": "李老师",
+        "room": "B205"
+      },
+      {
+        "name": "体育",
+        "day": 5,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "",
+        "room": "操场"
+      }
+    ],
+    "userMessage": "3 门课导入; 数组中 2 条残缺记录(第 2 项 null / 第 4 项字符串)被跳过"
+  },
+  "rationale": "数组中夹 null 与字符串是真实会出现: ①服务端序列化时 NULL 记录被序列化为 null 数组项; ②WebVPN 代理或 HTML 转义链路把某个对象误写成字符串。修复后 parser 必须跳过非 JSONObject 项继续处理后续项, 不能整条数组 fail-fast。修复路径: markers 加 '\"kbList\"' → parseEmbeddedJson L44-56 命中, L49 arrStart 从 '\"kbList\"'.length 后移到 '[', extractBalanced 抽出整个数组 → parseCourseJsonArray L113 for 循环 optJSONObject(i) 对 null/字符串返回 null → L114 continue → 跳过残缺项。注意: optJSONObject(i) 对字符串项在 json:20231013 返回 null(类型检查失败), 对 null 项也返回 null — 两者都会走 continue。",
+  "currentBehavior": "JwNewZfParser.kt L42 markers 不含 '\"kbList\"' → parseEmbeddedJson 返回空; L60 trimmed.startsWith('{') false → parseHtmlTable L249 '[id*=kb]' miss(该 HTML 只有 div.main, 无 id 含 kb 的元素) → parseHtmlTableFromQz() → JwQzParser getElementById('kbtable') null → 空。最终 0 门课。修复 marker 后: L114 optJSONObject(1) 对 null 返回 null → continue; optJSONObject(3) 对字符串返回 null → continue; 其余 3 条正常产出。",
+  "diagnosticHint": "数组内非对象项建议在解析日志里计数, 超 30% 告警(说明该学校序列化有系统性问题)"
+}

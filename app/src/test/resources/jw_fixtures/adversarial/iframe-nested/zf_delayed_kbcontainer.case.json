@@ -1,0 +1,18 @@
+{
+  "input": "zf_delayed_kbcontainer.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (顶层无 default2.aspx 时回退 URL 指纹;或 TYPE_ZF_NEW 因 jwglxt)",
+    "frameStrategy": "WebView JS 抓取阶段必须做'容器存在但内容空'的就绪检查：检测到 #Table1Wrap / #kbgrid_table_0 / .kbcontent / .timetable_con / blacktab 任一空容器锚点时，延迟 1–2 秒重试一次 evalJs 拉 outerHTML。重试上限 3 次(总等待 ≤4s)。重试仍空则按'容器存在但未填充'分类报错",
+    "courseCount": 1,
+    "expectedCourses": [
+      {"name": "软件工程", "day": 1, "startNode": 1, "endNode": 1, "teacher": "周老师", "room": "软件楼501", "weeks": "1-16"}
+    ],
+    "errorClass": "none(重试一次后命中)",
+    "diagnosticHint": "若 3 次重试仍空：errorClass=CONTAINER_EMPTY_AFTER_DELAY，提示用户'课表容器存在但内容未填充，请等待页面完全加载后(看到完整课表)再点导入'"
+  },
+  "currentBehavior": {
+    "capturedLayers": "顶层 HTML(只含 div#Table1Wrap + '课表加载中…'提示)",
+    "result": "0 门课(JwOldZfParser L24 getElementById('Table1') 返回 null → emptyList) + 用户看到'请确认已到达课表页面'",
+    "reason": "JwWebViewLoginScreen.kt L182-201 的 capture JS 没有任何 ready 检查/重试逻辑：evaluateJavascript 同步返回时页面已 0ms 渲染完，setTimeout 1.5s 注入的 Table1 还没出现；JwImportActivity.kt L237-241 直接把空列表喂给'课表为空'错误文案，用户分不清是'URL 不对'/'还在加载'/'真无课'"
+  }
+}

@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>学生个人课表 - 教学管理信息服务平台</title>
+<link rel="stylesheet" href="/zftal-ui-v5-1.0.2/assets/css/zftal-ui.css">
+</head>
+<body>
+<div class="page-header">
+  <h2>学生课表查询</h2>
+  <span class="user-info">学号：2024001001 姓名：张同学 学期：2024-2025-1</span>
+</div>
+<div class="query-form">
+  <label>学年：<select id="xnm">
+    <option value="2024">2024-2025</option>
+    <option value="2023">2023-2024</option>
+  </select></label>
+  <label>学期：<select id="xqm">
+    <option value="3">第一学期</option>
+    <option value="12">第二学期</option>
+  </select></label>
+  <button id="btn-query" onclick="loadSchedule()">查询</button>
+</div>
+<div id="kblist-container">
+  <!-- 数据由前端 AJAX 注入,服务端只渲染骨架 -->
+  <input type="hidden" id="gnmkdm" value="N2151">
+</div>
+<script>
+/* 后端返回的真实响应(POST /jwglxt/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151)
+   被前端内联为 kbList JSON,用于离线回放/fixture 验证 */
+var kbList = [
+  {"kcmc":"高等数学","kch_id":"MATH101","xm":"张老师","jsxm":"张老师","xqj":1,"xqjmc":"星期一","jc":"1-2","jcs":"1-2","zcd":"1-16周","cdmc":"教一101","xqmc":"主校区","xf":4.0},
+  {"kcmc":"大学英语","kch_id":"ENG202","xm":"王老师","jsxm":"王老师","xqj":3,"xqjmc":"星期三","jc":"3-4","jcs":"3-4","zcd":"2-16周(单)","cdmc":"外语楼308","xqmc":"主校区","xf":2.0},
+  {"kcmc":"数据结构","kch_id":"CS305","xm":"李老师","jsxm":"李老师","xqj":5,"xqjmc":"星期五","jc":"0102","jcs":"0102","zcd":"1-16周","cdmc":"信息楼B205","xqmc":"主校区","xf":3.0}
+];
+var xsxx = {"XH":"2024001001","XM":"张同学","XNM":"2024","XQMMC":"2024-2025学年秋学期","XQM":"3"};
+</script>
+<script src="/zftal-ui-v5-1.0.2/assets/js/render-kb.js"></script>
+<footer class="page-footer">
+  <p>版权所有 © 1999-2020 正方软件股份有限公司 版本 V-8.0.0</p>
+</footer>
+</body>
+</html>

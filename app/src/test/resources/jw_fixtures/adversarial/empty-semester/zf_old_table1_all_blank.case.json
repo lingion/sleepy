@@ -1,0 +1,25 @@
+{
+  "input": "zf_old_table1_all_blank.html",
+  "protocol": "zf",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "可信空课表(Table1 存在,节次行头齐全,所有单元格为 &nbsp;)",
+    "diagnosis": "当前学期无课或未选对学期",
+    "semantic": "Table1 + 第一节~第四节 行头 + 全部 td text() 为 U+00A0(NBSP,长度 1) = 学生本学期 0 门选课,非抓取失败"
+  },
+  "detectionPoints": [
+    "getElementById('Table1') != null",
+    "表头 8 列含 星期一..星期日 全部 7 天",
+    "4 个数据行,行头 td.text() 依次 第一节/第二节/第三节/第四节(HEADER_NODE_PATTERN 命中)",
+    "每个课程格 td.text() 为 ' '(NBSP,trim 后仍长 1,不触发 length<=1 短路前的空串检查)"
+  ],
+  "parserImpact": {
+    "JwOldZfParser.generateCourseList(L22-24)": "doc.getElementById('Table1') 命中 → trs 遍历 4 行 → 每行 tds.size=8 → 非空 → 节次行头 getNodeStr('第一节')=1 正常 → for td: td.text()=' '.length==1 → length<=1 分支 countDay++ (调研 finding 4 已确认 NBSP 长度=1 不被 Kotlin trim 删除) → 无 ImportBean 入列 → 循环结束 → 返回空列表。**静默 0 课,不抛异常**。",
+    "tryAllParsersImpl(L120-138)": "8 个候选全部尝试: JwOldZfParser 0 课 / JwOldZfParser(type=1) 0 课 / JwQzParser 无 kbtable 0 课 / JwNewZfParser 走 parseEmbeddedJson 无 marker → parseHtmlTable: getElementById('kbtable')=null, 'kbgrid'=null, table.el-table__body=null, .kbcapi-table=null, [id*=kb] 无 → parseHtmlTableFromQz → 0 课; JwWiseduParser json.parseToJsonElement 抛异常 catch; JwNewUrpParser 无 dateList → 0; JwUrpParser 无 displayTag → 0。best 一直为 emptyList → **返回 0 课且无任何异常**。",
+    "JwImportViewModel.importAsNewTable(L196)": "courses.isEmpty() → throw '课程列表为空,请确认已到达课表页面' → 用户看到的是'你可能没到课表页',但事实是用户已经在课表页只是没选课。**必须区分**: ①Table1 存在+行头齐=可信空学期; ②Table1 缺失=可能抓错 frame; ③Table1 存在但无行头=组头布局变体。当前实现三者合一。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=0 课; per-parser: OldZf=0 OldZf1=0 其余全 0, Wisedu 抛 JsonDecodingException — 静默空,无异常",
+    "verified": "yes"
+  }
+}

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=GBK">
+<title>山东科技大学综合教务管理系统-强智科技</title>
+<link href="/framework/commonJs/jquery.min.js" type="text/javascript">
+<link href="/framework/css/login.css" rel="stylesheet" type="text/css">
+</head>
+<body>
+<div class="login-wrapper">
+  <h1>教学一体化服务平台</h1>
+  <form action="/Logon.do?method=logon" method="post" name="loginForm" id="loginForm">
+    <input type="hidden" name="scode" value="abcdef">
+    <input type="hidden" name="sxh" value="1234567890">
+    <div class="form-row">
+      <label>账号</label>
+      <input type="text" name="userAccount" id="userAccount" maxlength="20">
+    </div>
+    <div class="form-row">
+      <label>密码</label>
+      <input type="password" name="userPassword" id="userPassword">
+    </div>
+    <div class="form-row captcha-row">
+      <label>验证码</label>
+      <input type="text" name="RANDOMCODE" id="RANDOMCODE" maxlength="4">
+      <img id="codeImg" src="/verifycode.servlet" onclick="this.src='/verifycode.servlet?t='+Date.now()">
+    </div>
+    <button type="submit">登录</button>
+    <div class="login-extra">
+      <a href="javascript:void(0)" onclick="qqLogin()">QQ 登录</a>
+    </div>
+  </form>
+</div>
+<footer>
+  <p>技术支持:<a href="https://www.qzdatasoft.com">qzdatasoft.com</a> 强智科技</p>
+</footer>
+</body>
+</html>

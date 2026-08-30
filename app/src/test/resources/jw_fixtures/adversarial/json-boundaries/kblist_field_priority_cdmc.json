@@ -1,0 +1,46 @@
+{
+  "_note": "对抗样本: 字段别名冲突边界。真实来源 jw_research finding 2: 'jasmc 是甲上/甲下教学班场地字段, 不是教室; cdmc 才是教室; jsmc 是教师场地(不是教师, 教师是 xm/jsxm)'. sleepy L120-121 firstStr 顺序把 jasmc 排第一(错误), jsmc 同时被 teacher 和 room 引用(字段语义混乱)。覆盖: ①jasmc 存在且与 cdmc 不同 ②jsmc 存在(教师场地)但 xm 为空 ③只有 cdmc ④只有 xm 没有 jsxm ⑤只有 jsxm 没有 xm ⑥教室字段全空。",
+  "_uncertain": [
+    "jasmc 具体是什么: jw_research finding 2 说 'jasmc 是甲上/甲下教学班场地字段, 不是教室' — '甲上/甲下' 可能指'甲班上课/下课', 具体语义未最终确认。本 fixture 把 jasmc 值设计成 '甲上' 样式, 期望 parser 不把它当教室。",
+    "jsmc 是否真的指'教师场地': 部分参考实现把它当教师名(如 zfn_api list_sessions 用 xm, 但也有代码用 jsmc 当教师)。jw_research finding 2 说 'jasmc 是错的(甲上/甲下), 应优先 cdmc' — 本 fixture 按此定位。"
+  ],
+  "totalRecord": 6,
+  "kbList": [
+    {
+      "kcmc": "甲上课",
+      "xm": "主讲甲",
+      "jasmc": "甲上",
+      "cdmc": "正解楼101",
+      "xqj": 1, "jc": "1-2", "zcd": "1-16周"
+    },
+    {
+      "kcmc": "只有jsmc",
+      "xm": "",
+      "jsmc": "教艺楼205",
+      "jsxm": "艺名教师",
+      "xqj": 2, "jc": "3-4", "zcd": "1-16周"
+    },
+    {
+      "kcmc": "只有cdmc",
+      "xm": "纯cdmc教师",
+      "cdmc": "纯楼301",
+      "xqj": 3, "jc": "5-6", "zcd": "1-16周"
+    },
+    {
+      "kcmc": "只有xm",
+      "xm": "纯xm教师",
+      "jsxm": "备用jsxm",
+      "cdmc": "纯楼302",
+      "xqj": 4, "jc": "1-2", "zcd": "1-16周"
+    },
+    {
+      "kcmc": "只有jsxm",
+      "jsxm": "jsxm教师",
+      "xqj": 5, "jc": "3-4", "zcd": "1-16周"
+    },
+    {
+      "kcmc": "全空字段",
+      "xqj": 6, "jc": "5-6", "zcd": "1-16周"
+    }
+  ]
+}

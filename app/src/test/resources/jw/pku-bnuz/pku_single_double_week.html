@@ -1,0 +1,56 @@
+<!--
+Fixture: PKU (北京大学) 单周/双周课程 — 边界用例
+协议: TYPE_PKU = "pku"
+真实场景: 同一门课在不同学期走单/双周分流, tds[8] 状态仍为"已选"
+上游 PekingParser 行为:
+  - type 检测: timeInfo[1].contains('单') → type=1, timeInfo[1].contains('双') → type=2
+  - 需把 "单" 或 "双" 字串放入 timeInfo[1] (即 星期+节次粘合字段)
+注:
+  - 已脱敏: 课程名改为 大学物理/化学实验, 教师改为 物理老师/化学老师
+  - 含 2 行: 1 行单周 + 1 行双周, 都通过 size>=11 与不含"未"状态
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>已选课程</title>
+</head>
+<body>
+<table class="datagrid">
+  <thead>
+    <tr>
+      <th>课程名</th><th>课号</th><th>学分</th><th>类别</th><th>教师</th>
+      <th>班号</th><th>起止周</th><th>时段</th><th>选课状态</th><th>备注</th><th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>大学物理</td>
+      <td>PHY3001</td>
+      <td>3</td>
+      <td>必修</td>
+      <td>物理老师</td>
+      <td>001</td>
+      <td>1~16</td>
+      <td>1~16周<br>1~16周 周一1~2节(单) 实验楼101 实验楼101</td>
+      <td>已选</td>
+      <td>单周</td>
+      <td>退选</td>
+    </tr>
+    <tr>
+      <td>化学实验</td>
+      <td>CHE3002</td>
+      <td>2</td>
+      <td>必修</td>
+      <td>化学老师</td>
+      <td>002</td>
+      <td>1~16</td>
+      <td>1~16周<br>1~16周 周四5~6节(双) 实验楼202 实验楼202</td>
+      <td>已选</td>
+      <td>双周</td>
+      <td>退选</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,10 @@
+{
+  "_note": "T5 ZF_NEW_FETCH_JS 若落地, evaluateJavascript 回调 raw = JSON.stringify({ok,url,len,html}) 的外包裹形态(JwWebViewLoginScreen L196 同构)。若调用方误把整串 raw 直接喂 JwNewZfParser(而不是先 JSONObject(raw).optString(\"html\")): trimmed.startsWith('{') 为 true → parseCourseJsonArray('{\"ok\":true,…}') → obj.keys() 找第一个 JSONArray 属性 → ok(bool)/url(String)/html(String) 均非数组 → found=null → emptyList。kbList 藏在 html 字段转义字符串里, 当前代码不拆。marker 检查: \\\"xskbcx\\\" 带引号形态在 url 值内是 xskbcx_cxXsgrkb.html 无前引号紧邻 → indexOf(\\\"\\\\\\\"xskbcx\\\\\\\"\") 实测 -1, 四 marker 全不命中。正确处理: 必须先解一层 JSON 取 html 字段; 若 html 字段本身是纯 kbList JSON 再走 parseCourseJsonArray。",
+  "input": "bridge_raw_wrapped_kblist.json",
+  "expected": {
+    "protocol": "n/a — 桥层样本, 检验 T5 实现约定: raw 必须解一层 JSONObject 后取 html/kbList 字段再喂 parser",
+    "courses": [],
+    "courseCount": 0,
+    "errorClass": "wrong_input_shape — 若直接喂 parser 得 0 课(空列表静默), 无异常; 属于集成层契约约束, expected 行为 = 调用方剥壳后 name='高等数学' day=2 startNode=1 endNode=2 的 1 门课(注: 当前 parseCourseJsonArray 对 jc='1-2' firstInt 返回 null → continue 丢课, 修 jc 字符串解析后才能得到这 1 门)"
+  }
+}

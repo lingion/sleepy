@@ -1,0 +1,33 @@
+{
+  "_note": "对抗样本: 纯 JSON 响应(fetch 直出)且顶层字段顺序把 kbList 放在数组字段的最后一个 — 验证 parseCourseJsonArray 的'找第一个非空 JSONArray 属性'启发式是否会误命中 sjkList(其他课程, jw_research finding 2 说顶层字段 kbList + xsxx + sjkList)。真实来源: zfn_api 的 list_sessions 返回 {kbList:[], xsxx:{...}, sjkList:[...]} 三键结构, 键序由后端序列化决定, 不可靠。本 fixture 覆盖: ①sjkList 在 kbList 之前(顺序敏感) ②xsxx 是对象(非数组) ③sjkList 与 kbList 都有内容(应取 kbList 而非第一个)。",
+  "_uncertain": [
+    "sjkList 的字段结构是否与 kbList 相同 — jw_research 只说 'sjkList(其他课程)', 无第一手样本; 本 fixture 假设字段结构一致, 但 'sjk' 字段的 kcmc 也存在, 若误取 sjkList 会产出'其他课程'的假课。"
+  ],
+  "xsxx": {
+    "XM": "学生甲",
+    "XH": "2024010101",
+    "XNM": "2025",
+    "XQMMC": "1"
+  },
+  "sjkList": [
+    {
+      "kcmc": "其他课程-不应被导入",
+      "xm": "外聘教师",
+      "xqj": 6,
+      "jc": "1-2",
+      "zcd": "1-16周",
+      "cdmc": "临教201"
+    }
+  ],
+  "kbList": [
+    {
+      "kcmc": "真课-本学期",
+      "xm": "主讲教师",
+      "xqj": 2,
+      "jc": "3-4",
+      "zcd": "1-16周",
+      "cdmc": "主楼302"
+    }
+  ],
+  "totalRecord": 1
+}

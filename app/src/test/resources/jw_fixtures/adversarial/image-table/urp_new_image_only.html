@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>个人课表</title>
+</head>
+<body>
+<!-- 新版 URP: 整个课表页是图片+JS 渲染, 注入的 dateList 是空数组 -->
+<div id="schedule-app">
+  <img src="/img/full-schedule.png" alt="本学期完整课表" usemap="#scheduleMap" />
+  <map name="scheduleMap">
+    <area shape="rect" coords="0,0,800,1200" href="javascript:void(0)" alt="课表" />
+  </map>
+</div>
+<script>
+// JS 渲染前端只注入了空数据, 用户看到的课表是上方整图
+var pageData = {"dateList":[]};
+</script>
+</body>
+</html>

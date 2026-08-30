@@ -41,6 +41,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.jw.JwCourse
 import com.lingion.sleepy.data.jw.JwImportViewModel
+import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
@@ -228,14 +229,29 @@ class JwImportActivity : ComponentActivity() {
                             JwWebViewLoginScreen(
                                 school = school,
                                 onHtmlCaptured = { html, sch, periods ->
-                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} type=${sch.type} periods=${periods.size}")
+                                    // T6 双层判定：sch.type 已知直接用；空 → HTML/URL 组合兜底
+                                    val rawType = sch.type
+                                    val effectiveType = rawType?.takeIf { it.isNotBlank() }
+                                        ?: jwViewModel.detectProtocol(html, sch.url.ifBlank { null })
+                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} rawType=$rawType effectiveType=$effectiveType periods=${periods.size}")
                                     statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
-                                            val courses = jwViewModel.parseHtml(html, sch.type ?: "")
+                                            val courses = jwViewModel.parseHtml(html, effectiveType ?: "")
                                             Log.d("JwImport", "parseHtml returned ${courses.size} courses")
                                             if (courses.isEmpty()) {
-                                                errorMsg = getString(R.string.jw_parse_empty)
+                                                // T9 诊断壳: classify 拿精确分类再选文案
+                                                val diag = try {
+                                                    JwParseDiagnostics.classify(
+                                                        html = html, url = "", school = sch,
+                                                        parsersAttempted = jwViewModel.lastDiagAttempts
+                                                    )
+                                                } catch (e: Exception) { null }
+                                                errorMsg = if (diag != null) {
+                                                    DiagMapper.mapImpl(diag, sch, this@JwImportActivity)
+                                                } else {
+                                                    getString(R.string.jw_err_empty_semester)
+                                                }
                                                 statusMsg = null
                                                 return@launch
                                             }
@@ -264,6 +280,18 @@ class JwImportActivity : ComponentActivity() {
                                             statusMsg = null
                                         }
                                     }
+                                },
+                                onCaptureError = { status, hint ->
+                                    Log.w("JwImport", "capture failed status=$status hint=$hint")
+                                    errorMsg = when (status) {
+                                        FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED -> getString(R.string.jw_err_cross_domain_iframe, hint)
+                                        FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY -> getString(R.string.jw_err_container_empty_after_delay)
+                                        FrameCaptureStatus.IFRAME_NAV_PENDING          -> getString(R.string.jw_err_iframe_nav_pending)
+                                        FrameCaptureStatus.WRONG_PAGE                  -> getString(R.string.jw_err_wrong_page)
+                                        FrameCaptureStatus.SESSION_EXPIRED             -> getString(R.string.jw_err_session_expired)
+                                        else                                           -> getString(R.string.jw_parse_empty)
+                                    }
+                                    statusMsg = null
                                 },
                                 onBack = { stage = Stage.SelectSchool }
                             )
@@ -314,5 +342,74 @@ class JwImportActivity : ComponentActivity() {
         object SelectSchool : Stage()
         object WebViewLogin : Stage()
         object ConfigureConfirm : Stage()
+    }
+}
+
+/**
+ * T9: 诊断结果 → 用户文案映射。
+ * Activity 实例走 [mapImpl] 带 Context 拉 strings.xml；
+ * 纯 JVM 单测走 [mapForTest]，context=null 时用静态拼接（VPN/hint 类提示不依赖资源）。
+ */
+@androidx.annotation.VisibleForTesting
+internal object DiagMapper {
+
+    @JvmStatic
+    fun mapForTest(diag: JwParseDiagnostics.Result, school: com.lingion.sleepy.data.jw.JwSchoolInfo): String =
+        mapImpl(diag, school, context = null)
+
+    /** 内部实现 — context 非空时用 strings 资源, 为 null 时用内置兜底文案 */
+    fun mapImpl(
+        diag: JwParseDiagnostics.Result,
+        school: com.lingion.sleepy.data.jw.JwSchoolInfo,
+        context: android.content.Context?
+    ): String {
+        fun str(resId: Int, vararg args: Any): String =
+            context?.getString(resId, *args)
+                ?: when (resId) {
+                    R.string.jw_diag_session_expired ->
+                        "${school.name} 的会话已过期或未登录。请重新登录后停留到「个人课表」页再点抓取"
+                    R.string.jw_diag_no_container ->
+                        "${school.name} 的页面未找到课表容器。可能原因：①抓取时机过早课表未加载；②页面为图片课表或跨域 iframe；③教务系统已升级"
+                    R.string.jw_diag_header_no_node ->
+                        "${school.name} 的课表缺少逐节行头。可能为图片课表或组头合并"
+                    R.string.jw_diag_image_cells ->
+                        "${school.name} 的课表单元格为图片，无法识别。请改用文件导入或手动添加课程"
+                    R.string.jw_diag_empty_semester ->
+                        "${school.name} 的页面声明本学期暂无课程。请确认已选对学期"
+                    R.string.jw_diag_wrong_protocol ->
+                        "${school.name} 的学校标注协议与实际页面不一致。请反馈开发者"
+                    else ->
+                        "${school.name} 解析结果为空。诊断特征：${diag.matchedFeatures.take(5).joinToString("/")}"
+                }
+        val catResId = when (diag.category) {
+            JwParseDiagnostics.Category.SESSION_EXPIRED -> R.string.jw_diag_session_expired
+            JwParseDiagnostics.Category.NO_TABLE_CONTAINER -> R.string.jw_diag_no_container
+            JwParseDiagnostics.Category.HEADER_NO_NODE -> R.string.jw_diag_header_no_node
+            JwParseDiagnostics.Category.IMAGE_OR_EMPTY_CELLS -> R.string.jw_diag_image_cells
+            JwParseDiagnostics.Category.EMPTY_SEMESTER -> R.string.jw_diag_empty_semester
+            JwParseDiagnostics.Category.WRONG_PROTOCOL -> R.string.jw_diag_wrong_protocol
+            JwParseDiagnostics.Category.UNKNOWN_EMPTY -> R.string.jw_diag_unknown_empty
+        }
+        val base = str(catResId, school.name)
+        // 特殊学校 hint: 临沂大学(校园网限制) / 强智系(会话踢下线)
+        val schoolHint = when {
+            school.url.contains("jwgl.lyu.edu.cn") ||
+            school.url.contains("jwxt.lyu.edu.cn") -> "该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试"
+            school.type in setOf(
+                com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ,
+                com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ_CRAZY,
+                com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ_BR,
+                com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ_WITH_NODE,
+                com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ_OLD
+            ) -> "若强智教务长时间无法加载，多为会话被踢或校外网络限制，请重新登录或换网络"
+            else -> ""
+        }
+        val hintPart = if (schoolHint.isNotBlank()) "\n\n$schoolHint" else ""
+        // UNKNOWN_EMPTY 应回显诊断特征
+        return if (diag.category == JwParseDiagnostics.Category.UNKNOWN_EMPTY) {
+            "$base（${diag.matchedFeatures.take(5).joinToString("/")}）$hintPart"
+        } else {
+            base + hintPart
+        }
     }
 }

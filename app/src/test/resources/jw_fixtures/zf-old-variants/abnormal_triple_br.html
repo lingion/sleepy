@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 老正方 type=0 异常变体(abnormal, research finding): 同格以 <br><br><br> 分隔,
+     每段 3 行[名,时间,老师] 无教室. parseImportBean 用 contains('<br><br><br>') 分流 → isAbnormal=true,
+     split.size==3 && isAbnormal → ImportBean(room='', teacher=split[2], timeInfo=split[1]).
+     本 fixture 同时覆盖: (a) 三连 br abnormal 多课 (b) 同表 normal <br><br> 双课对照 (3行+4行混合).
+     注: upstream 注释提到 'split[4+] 静默丢失' 是已知限制, 本 fixture 控制在 split=3. -->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第一节</td>
+    <td><a href="#">高等数学<br>周一第1,2节{第1-16周}<br>张老师</a><br><br><br><a href="#">大学英语<br>周一第1,2节{第1-16周}<br>李老师</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第二节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">下午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节</td>
+    <td>&nbsp;</td>
+    <td><a href="#">线性代数<br>周二第3,4节{第3-12周}<br>王老师<br>教学楼C303</a><br><br><a href="#">概率论<br>周二第3,4节{第3-12周}<br>赵老师<br>教学楼C304</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第四节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

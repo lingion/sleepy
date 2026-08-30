@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>学生个人课表</title>
+</head>
+<body>
+<!--
+  新正方 jwglxt kbgrid HTML 视图 + 真 rowspan 连堂课程格。
+
+  research findings:
+    - 新正方真实网格 DOM 是 #kbgrid_table_0 + td.td_wrap + .timetable_con(.title/.p font)
+      (shiguang_warehouse/SHUFEZJ 等 8 校适配脚本佐证) — sleepy JwNewZfParser.parseHtmlTable
+      L245-250 选择器链不包含 #kbgrid_table_0 / .td_wrap / .timetable_con, 会走
+      [id*=kb] 通配误命中.
+    - rowspan=连堂节数 是新版/网格 DOM 的真实表达 (FlowCourse parseSysuPcTable fixture
+      佐证: "课程格 rowspan=连堂节数; 第1行并排三格...次日 row 仅剩节次格").
+      sleepy 所有 HTML parser (JwQzParser/JwNewZfParser) 均无 rowspan 感知:
+      ① JwQzParser.generateCourseList L94 tr.getElementsByTag("td") 按出现次序计数,
+        次日 row 因 rowspan 被抽走而少 td → day 计数偏左 (课程落到前一天的列);
+      ② JwNewZfParser.parseHtmlTable L267 day++ 同理, 且不读 rowspan 属性,
+        连堂节数无法还原 (一律 nodeCount*2-1 + 1 固定 2 节).
+
+  本 fixture 是"浏览器渲染后 DOM"模拟: 课程格用 rowspan=2 占两行,
+  第 2 行该列位置无 td (被上一行的 rowspan 吃掉). 上游 FlowCourse 的
+  正确语义是: rowspan=2 → startSection=1, durationSections=2,
+  且次日 row 的 day 计数要跳过被 rowspan 占据的列.
+
+  parser 验证点:
+    - 现版 JwNewZfParser.parseHtmlTable: #kbgrid_table_0 不在选择器链;
+      若把 id 改成能命中 [id*=kb] 的形态, day 计数在 rowspan 行错位.
+    - 正确语义 (FlowCourse parseSysuPcTableHtml 对照): 量子力学 day=1
+      startSection=1 duration=2 (rowspan=2), 信号与系统 day=2 duration=2.
+-->
+<div id="kbgrid_table_0" class="el-table__body-wrapper">
+  <table class="el-table__body">
+    <thead>
+      <tr><th>节次</th><th><div>星期一</div></th><th><div>星期二</div></th><th><div>星期三</div></th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第1节</div></td>
+        <td class="td_wrap" rowspan="2">
+          <div class="timetable_con">
+            <div class="title">量子力学</div>
+            <p><font title="教师">贺彦章</font></p>
+            <p><font title="上课地点">第二教学楼-2216</font></p>
+            <p><font title="节/周">(1-2节){第1-16周}</font></p>
+          </div>
+        </td>
+        <td class="td_wrap">
+          <div class="timetable_con">
+            <div class="title">大学物理实验B</div>
+            <p><font title="教师">王五</font></p>
+            <p><font title="上课地点">实验楼-302</font></p>
+            <p><font title="节/周">(1节){第15-15周}</font></p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <!-- 周一列被上一行量子力学的 rowspan=2 占据, 此行物理上无周一 td -->
+        <td class="td_wrap"><div class="section-label">第2节</div></td>
+        <td class="td_wrap" rowspan="2">
+          <div class="timetable_con">
+            <div class="title">信号与系统</div>
+            <p><font title="教师">陈瑞</font></p>
+            <p><font title="上课地点">第五教学楼-逸201</font></p>
+            <p><font title="节/周">(2-3节){第2-9周|单周}</font></p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第3节</div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

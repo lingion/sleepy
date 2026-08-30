@@ -1,0 +1,11 @@
+{
+  "input": "zf_old_expired_302_frameset_merged.html",
+  "expected": "判定: 未登录/会话过期(拼接结果里无 Table1, frame 内文本=会话已超时,请重新登录)。课程数=0, 错误分类=SESSION_EXPIRED。这是 WebView 拼接管线的对抗变体: 修复方向是 parse 前置登录页检测, 而不是靠 0 课报'请确认已到达个人课表页'",
+  "protocol": "zf (老正方)",
+  "page": "会话过期: xskbcx.aspx 302 回 default2.aspx 登录框架, 模拟 WebView capture JS(主文档+frame contentDocument.outerHTML 拼接)的输出形态",
+  "assert_markers": [
+    "__VIEWSTATE",
+    "CheckCode.aspx",
+    "会话已超时"
+  ]
+}

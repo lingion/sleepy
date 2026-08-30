@@ -1,0 +1,77 @@
+{
+  "_note": "老正方(default2.aspx/xskbcx.aspx)课表页 type=0 标准变体样本 — 结构参照 zafu_jwc CourseService.java 注释逐字片段。JwOldZfParser.generateCourseList 语义:遍历 table#Table1 tr → td → td.text() 长度<=1 时按空格格 countDay++;td.text() 命中 otherHeader(早晨/上午/下午/晚上/中午)跳过;parseHeaderNodeString(第一节/第N节) 取行头节次 node;非行头且非空格 → countDay++ 后 parseImportBean 按 <br><br> 拆同格多课,每门课按 <br> 拆 split:split[0]=课名,split[1]=时间串(split[1]∈COURSE_PROPERTY 时 4/5 字段变体),split[2]=老师,split[3]=教室。时间串 parseTime:weekPattern {第N-M周} 拆 start/end 周,含'单周'/'双周'定 type,day 从 time[0:2] 中文星期推导。",
+  "_uncertain": [
+    "本 fixture 每格仅 1 门课(无 <br><br> 同格多课分隔),startNode 取 tr 行头 node(第一节=1,第三节=3,第五节=5),endNode = startNode + step - 1;step 从 nodePattern '(N-M节' 或 ',' 计数,本 fixture 时间串只有 {第N-M周} 无节次段 → step=0,upstream 语义下 endNode = startNode + 0 - 1 = startNode - 1,但 sleepy JwOldZfParser 可能会 coerce;此处按 wakeup 原版语义,step=0 时 endNode=startNode-1(部分 sleepy 代码可能有 coerceAtLeast(1) 保护,见 JwImportViewModel.toCourseEntities)。",
+    "老师'周六老师'是通用脱敏名(意指姓周的老师)而非星期字符串,测试应按完整字符串匹配。",
+    "class='Center' 对齐样式是 parseTime day==0 兜底 countStr(source,'Center') 的依赖锚点,本 fixture 时间串带'周X'前缀,result[0] 直接命中,timeInfo 首两字符是中文星期,不需走 Center 计数兜底。",
+    "single/double 周 type:单周=1,双周=2,整学期=0(与 JwOldZfParser.parseTime result[4] 一致)。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "王老师",
+      "room": "外语楼308"
+    },
+    {
+      "name": "数据结构",
+      "day": 5,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "信息楼B205"
+    },
+    {
+      "name": "线性代数",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 3,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "陈老师",
+      "room": "教二101"
+    },
+    {
+      "name": "物理实验",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 3,
+      "startWeek": 3,
+      "endWeek": 15,
+      "type": 2,
+      "teacher": "赵老师",
+      "room": "实验楼A301"
+    },
+    {
+      "name": "近代史纲",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 5,
+      "startWeek": 1,
+      "endWeek": 8,
+      "type": 0,
+      "teacher": "周六老师",
+      "room": "文史楼201"
+    }
+  ]
+}

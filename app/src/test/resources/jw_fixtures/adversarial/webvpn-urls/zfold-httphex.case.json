@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的老正方课表页 xskbcx.aspx 指纹(对照组)",
+  "expected": {
+    "protocol": "zf (TYPE_ZF)",
+    "protocolBasis": "L152 contains(\"xskbcx.aspx\") 命中内层路径; WebVPN 前缀不干扰",
+    "courseCount": "1 (最小 Table1 单课格: 高等数学/周一第1节{第1-16周}/张老师/A101)",
+    "errorClass": "无错误 — 本组是 URL 判型的对照组",
+    "detectProtocolFromUrlNow": "zf",
+    "detectProtocolFromUrlAfterT6": "zf",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "当前实现即应通过: detect L152 -> TYPE_ZF -> JwOldZfParser(JwImportViewModel.kt L102); 老正方 xskbcx.aspx 是服务端直出 __VIEWSTATE+Table1, outerHTML 路径足够(无 AJAX 时序问题); WebView 抓取 JS(JwWebViewLoginScreen.kt L182-201)已拼接 iframe/frame 内容, default2.aspx 框架页内的课表 iframe 也能带到。风险点仅在 T7: 若 WebVPN 把课表 iframe 变成跨域 frame, contentDocument 访问抛异常被 try/catch 吞掉(L188/193), Table1 拿不到 -> 0 课 -> '课程列表为空', 与登录页空结果不可区分。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "zfold-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/2b8e41/jw.example.edu.cn/xskbcx.aspx",
+  "sampleKind": "webvpn-url"
+}

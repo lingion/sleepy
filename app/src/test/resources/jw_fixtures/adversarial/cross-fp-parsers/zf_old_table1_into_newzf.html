@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html><head><meta charset="gb2312"><title>学生个人课表</title></head>
+<body>
+<!-- ADVERSARIAL: 老正方 xskbcx.aspx (Table1 + <a href> 课程格 + <br><br> 同格多课)
+     喂 JwNewZfParser:
+       1) parseEmbeddedJson 找 markers("kbxx","tmp_list","xskbcx","xskbcx_json")全 miss
+       2) parseHtmlTable 选 container: getElementById("kbtable")=null, "kbgrid"=null,
+          "table.el-table__body"=null, ".kbcapi-table"=null, [id*=kb]=null
+       3) → 走 parseHtmlTableFromQz() → JwQzParser(source).generateCourseList()
+       4) JwQzParser 同样 getElementById("kbtable")=null → return emptyList()
+     结论: 0 课, tryAllParsers 兜底被 JwOldZfParser 救起. 但这是 8 个 candidates 的
+           "课程数最多" 胜出, 顺序上 JwNewZfParser 先跑(0 课) → JwOldZfParser(2 课)
+           → best=OldZF 胜出, 行为正确. 风险点: 若新正方页面里恰好有 kbxx marker,
+           JwNewZfParser 会抢先生成空/错数据, 后续 parser 不再尝试 → 静默错数据 -->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">时间</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第一节</td>
+    <td>&nbsp;</td>
+    <td><a href="#">高等数学<br>周二第1,2节{第1-16周}<br>张老师<br>教学楼A101</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节</td>
+    <td><a href="#">大学英语<br>周一第3,4节{第2-16周|单周}<br>李老师<br>外语楼308</a></td>
+    <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+  </tr>
+</table>
+</body></html>

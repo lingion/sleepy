@@ -1,0 +1,9 @@
+{
+  "_note": "新版正方 (zf_new) 课表 API 响应边界: totalRecord=0 且 kbList=[], fetch 状态 200。语义=本学期无课/未选对学期(寒暑假/未选学期/退课),不是解析失败。",
+  "_uncertain": [
+    "是否所有 jwglxt 校都用 totalRecord+kbList: 调研 covers 上游 NewZfParser 用 kbList 数组, 部分老版本用 xskbcx + tmp_list, 但字段语义一致(数组=课表条目)。",
+    "接口端点(gnmkdm=N2151/N253508)在不同校间不同, 但 kbList 字段名稳定。"
+  ],
+  "totalRecord": 0,
+  "kbList": []
+}

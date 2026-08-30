@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gb2312">
+<title>老正方 default2.aspx - JS 延迟设置 iframe src</title>
+<!--
+  陷阱:页面加载时 iframe src=""(或占位 about:blank),内容由 JS 在 800ms 后
+  才设置真实 src 并触发导航。用户点'导入此页'时若 iframe 尚在加载:
+  contentDocument.documentElement.outerHTML 返回空壳(html/head/body 空标签),
+  不抛异常也不报错——是'容器在但内容空'的另一种形态(非 DOM 延迟注入,是导航延迟)。
+-->
+</head>
+<body>
+<h3>个人课表</h3>
+<iframe id="mainFrame" name="main" src="about:blank" width="100%" height="600"></iframe>
+<script>
+setTimeout(function(){
+  document.getElementById('mainFrame').src = 'xskbcx_delayed_target.html';
+}, 800);
+</script>
+</body>
+</html>

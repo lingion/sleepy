@@ -1,0 +1,22 @@
+{
+  "_note": "老正方 blacktab 变体边界样本 — table id 是 class='blacktab' 而非 id='Table1'(kechengbiao 实证结构),但本 fixture 在同一页面同时保留 class='blacktab' 和 id='Table1' 缺失以测试上游 Speas-y/ClassScheduleApp 兜底链: getElementById('Table1') → select('table.blacktab') → 遍历所有 table 取 text 含'星期一'或'星期日'的第一个。本 fixture 用 zafu_jwc CourseService.java 注释的真实逐字片段:'文化地理（网络课程）<br>周日第10节{第17-17周}<br>李老师<br>',用全角括号和'周日'字面。这同时覆盖三种边界:周日(星期 7)、单周(17-17)、网络课程属性(在 zf_old 词表之外的课程类型)。",
+  "_uncertain": [
+    "上游 JwOldZfParser 走 getElementById('Table1') 单选择器,对 class=blacktab 的页面会返回 null — 这是 T1 任务发现的移植缺口;本 fixture 故意不提供 id=Table1 让黑色 tab 路径生效,测试 W2 阶段补 'select(table.blacktab)' 兜底链。",
+    "时间串'周日第10节{第17-17周}':第一段是 day='周日'→CHINESE_WEEK_LIST 映射 day=7;第二段 nodePattern '第10节' 不命中(nodePattern 期望 '(N-M节' 形态),所以走节次行头 countStr 回退;startWeek=17,endWeek=17,type=0。",
+    "老师'李老师', 教室字符串(空)— 上游 4 行非属性分支中 room=split[3](空字符串),不报错。",
+    "周天 → CHINESE_WEEK_LIST 含周日不包含周天(不在),上游未发现需补充。本次用'周日'对齐上游。"
+  ],
+  "courses": [
+    {
+      "name": "文化地理（网络课程）",
+      "day": 7,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 17,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "李老师",
+      "room": ""
+    }
+  ]
+}

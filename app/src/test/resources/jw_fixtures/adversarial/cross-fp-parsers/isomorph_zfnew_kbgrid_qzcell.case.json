@@ -1,0 +1,15 @@
+{
+  "input": "isomorph_zfnew_kbgrid_qzcell.html",
+  "expected": {
+    "protocol_adjudication": "zf_new (页面级指纹: zftal-ui-v5 资源路径 + /jwglxt/ 脚本 + var gnmkdm='N2151')",
+    "correct_parser": "JwNewZfParser HTML 兜底路径即可解析此结构; 但协议判定必须来自页面级特征而非单元格",
+    "courses_count": 2,
+    "per_course_expectation": [
+      {"name": "毛概", "day": 1, "node": "1-2", "week": "1-16", "teacher": "刘老师", "room": "文B102"},
+      {"name": "线性代数", "day": 2, "node": "1-2", "week": "1-16", "teacher": "陈老师", "room": "理教204"}
+    ],
+    "current_behaviour_measured": "NewZf=2 课 (day=2/3, node=1-2) / Qz=2 课 (day=2/3, node=3-4), 课程数与字段同构, 仅节次公式不同 (NewZf node=nodeCount*2-1 同 Qz, 但 NewZf parseHtmlTable 的循环里 nodeCount 已因表头行包含 td 而偏移)。附带发现: 两个 parser 都把含 '节次' 表头文本的第一格计为 day=1, 真实 day=1/2 的课程全部右移一列 (day=2/3) — 这是 kbtable 无 thead 区分时的计数 bug, Qz JwQzParser L101-103 与 NewZf JwNewZfParser L267-268 同病。tryAllParsers 按候选序判 NewZf 胜出 — 结论恰好正确但机制错误: 纯属 Wisedu→NewUrp→NewZf 候选序先到先得, 页面级指纹 (zftal-ui-v5/jwglxt/gnmkdm) 未参与。",
+    "error_classification": "no_false_positive_but_adjudication_by_order_not_identity",
+    "notes": "调研[6] '强智与新版正方的课表单元格结构同构' 命中样本。此样本+qz_html_into_newzf.html 构成镜像对: 同一单元格结构, 一个带 zftal-ui-v5/jwglxt 指纹, 一个不带。T8 裁决机制 (detectProtocolFromHtml) 应能只凭页面级特征区分两者; 若实现仍依赖单元格特征或课程数, 两样本判型将无法解释。"
+  }
+}

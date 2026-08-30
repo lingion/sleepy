@@ -1,0 +1,4 @@
+{
+  "_note": "边界 2: 未登录重定向到 sso 登录页 /jwglxt/xtgl/login_slogin.html。无任何 kbgrid_table_0/kblist_table/table1.festival/title 类课表特征。所有 parser 路径(parseEmbeddedJson 找 kbList/xskbcx_json 标记也命中不到, parseHtmlTable getElementById('kbtable')/'kbgrid'/'table1' 全部 null) → 解析器返回空列表(0 门课), 触发产品层'未识别到课表,请确认已到达课表页面'分支。",
+  "courses": []
+}

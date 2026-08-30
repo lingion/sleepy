@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>个人课表</title>
+</head>
+<body>
+<h3>个人课表</h3>
+<!-- 强智老版(qz_old): table#kbtable 行=节次 列=星期, 每节次一行; 第一列为节次标签(纯文本), 第二列起为周一..周日 -->
+<!-- 单元格结构: <div>课程名<br>老师<br>1-16周[1-2节]<br>教室</div>; 不带 title 属性 -->
+<!-- 上游 OldQzParser 语义: div.attr('style')=='display: none;' 或 div.text().isBlank() 跳过; 按 <br> split; 含 [ ] 周 节 四要素的行=时间串 preIndex -->
+<table id="kbtable" border="1">
+  <tbody>
+    <!-- 第1-2节(上午) -->
+    <tr>
+      <td>第1-2节</td>
+      <td><div>高等数学<br>张老师<br>1-16周[1-2节]<br>教一101</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>大学英语<br>王老师<br>2-16周[3-4节]<br>外语楼302</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <!-- 第3-4节(上午) -->
+    <tr>
+      <td>第3-4节</td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>线性代数<br>李老师<br>3-15周[3-4节]<br>教二205</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <!-- 第5-6节(下午) -->
+    <tr>
+      <td>第5-6节</td>
+      <td><div>&nbsp;</div></td>
+      <td><div>数据结构<br>赵老师<br>5-12周[5-6节]<br>实验楼303</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <!-- 第7-8节(下午) -->
+    <tr>
+      <td>第7-8节</td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <!-- 第9-10节(晚上): 仅周日有一门课, 验证 day=7(周日)路径 -->
+    <tr>
+      <td>第9-10节</td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>大学物理实验<br>孙老师<br>10-17周[9-10节]<br>物理实验楼201</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

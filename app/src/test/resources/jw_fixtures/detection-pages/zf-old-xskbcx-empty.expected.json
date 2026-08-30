@@ -1,0 +1,8 @@
+{
+  "_note": "老正方课表页空表边界样本 — Table1 渲染但所有课程格为 &nbsp;,无课程文本。JwOldZfParser.generateCourseList 走完 countDay 循环后 importBeanList 为空,返回 [](空列表)。这模拟『学期已选但本学期无课』或『图片课表』的边界。注意:school.type=zf 即 type=0(标 cell 内 <a> 链接),本 fixture 无 <a> 也无 br — 实际应解析为 0 门课,但 JwOldZfParser type=0 假设 <a> 包装的 <br> 分隔;若无 <a>,td.html() 仍输出空字符串,length<=1 → 跳过,预期空。",
+  "_uncertain": [
+    "class=\"blacktab\" 是 kechengbiao 的一个变体识别特征,而 JwOldZfParser 用 getElementById('Table1') 兜底(空时遍历所有 table);若实现严格按 id=Table1,本 fixture 的 blacktab 类不影响 — Table1 id 与 blacktab class 同时存在。",
+    "class=\"Center\" 对齐样式是 JwOldZfParser.parseTime 内 countStr(source,\"Center\") 反推星期列号的依赖锚点。本 fixture 全空无课程,不会触发 countStr,但下游解析仍需稳健处理空 td。"
+  ],
+  "courses": []
+}

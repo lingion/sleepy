@@ -1,0 +1,18 @@
+{
+  "code": "0",
+  "msg": "操作成功",
+  "datas": {
+    "xskcb": {
+      "extParams": {
+        "code": 1,
+        "msg": "操作成功"
+      },
+      "page": {
+        "pageNo": 1,
+        "pageSize": 200,
+        "totalCount": 0
+      },
+      "rows": []
+    }
+  }
+}

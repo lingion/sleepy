@@ -17,6 +17,10 @@ class JwUrpParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val result = arrayListOf<JwCourse>()
         val doc = Jsoup.parse(source)
+        // T10: URP 网格变体 (td[id='day_node'] + div.class_div) — 真实结构来自 urp_01.js
+        val grid = parseUrpGrid(doc)
+        if (grid.isNotEmpty()) return grid
+
         var tables = doc.getElementsByAttributeValue("class", "displayTag")
         if (tables.isEmpty()) {
             tables = doc.getElementsByAttributeValue("class", "table table-striped table-bordered")
@@ -129,24 +133,115 @@ class JwUrpParser(source: String) : JwParser(source) {
             result += Triple(1, 20, 0)
             return result
         }
-        // 支持 "1-16周", "1,3,5周", "1-16周(单)"
-        weekStr.split(',').forEach { week ->
-            val cleaned = week.replace("周", "").replace("(", "").replace(")", "")
+        // 支持 "1-16周", "1-16周(单)", "2,4,6,8,10周"(逗号列表按上游 weekIntList2WeekBeanList 归并)
+        val type = when {
+            weekStr.contains('单') -> 1
+            weekStr.contains('双') -> 2
+            else -> 0
+        }
+        val cleaned = weekStr.replace("周", "").replace("(", "").replace(")", "")
+            .replace("单", "").replace("双", "").trim()
+        if (cleaned.contains('-')) {
+            val parts = cleaned.split('-')
+            val s = parts[0].trim().toIntOrNull() ?: 1
+            val e = parts.getOrNull(1)?.trim()?.toIntOrNull() ?: s
+            result += Triple(s, e, type)
+        } else if (cleaned.contains(',')) {
+            // 逗号列表: 归并成连续/单双周段 (T10 契约: "2,4,6,8,10周" → (2,10,type=2))
+            val weeks = cleaned.split(',').mapNotNull { it.trim().toIntOrNull() }
+            result += JwChengFangParser.weekIntList2WeekBeanList(weeks)
+        } else {
+            val v = cleaned.toIntOrNull() ?: 1
+            result += Triple(v, v, type)
+        }
+        return result
+    }
+
+    /**
+     * T10: URP 网格变体解析 — td[id='<day>_<node>'] 定位, div.class_div 含 >=5 个 <p>:
+     * p[0]=课名, p[1]=星号占位, p[2]=教师, p[3]=周次串, p[4]=节次串, p[5]=教室(可选)
+     */
+    private fun parseUrpGrid(doc: org.jsoup.nodes.Document): List<JwCourse> {
+        val result = mutableListOf<JwCourse>()
+        val gridTds = doc.select("td[id]") ?: return result
+        for (td in gridTds) {
+            val id = td.attr("id")
+            val parts = id.split("_")
+            if (parts.size != 2) continue
+            val day = parts[0].toIntOrNull() ?: continue
+            if (day !in 1..7) continue
+            val node = parts[1].toIntOrNull() ?: continue
+            val divs = td.getElementsByClass("class_div")
+            for (div in divs) {
+                val ps = div.getElementsByTag("p")
+                if (ps.size < 5) continue
+                val name = ps[0].text().trim()
+                if (name.isEmpty()) continue
+                val teacher = ps[2].text().trim()
+                val weekStr = ps[3].text().trim()
+                val nodeStr = ps[4].text().trim()
+                val ranges = gridWeekRanges(weekStr)
+                if (ranges.isEmpty()) continue
+                // 节次串 "N-M节" → start/end
+                val nParts = nodeStr.replace("节", "").split("-")
+                val startNode = nParts.getOrNull(0)?.trim()?.toIntOrNull() ?: node
+                val endNode = nParts.getOrNull(1)?.trim()?.toIntOrNull() ?: startNode
+                val room = if (ps.size >= 6) ps[5].text().trim() else ""
+                for (r in ranges) {
+                    result += JwCourse(
+                        name = name, teacher = teacher, room = room, day = day,
+                        startNode = startNode, endNode = endNode,
+                        startWeek = r.first, endWeek = r.second, type = r.third
+                    )
+                }
+            }
+        }
+        return result
+    }
+
+    /** 网格变体周次串: "1-16周" / "2-14周单周" / "1-8,10-17周" / "3-12周双周" → 归并段 */
+    private fun gridWeekRanges(weekStr: String): List<Triple<Int, Int, Int>> {
+        if (weekStr.isBlank()) return emptyList()
+        val result = mutableListOf<Triple<Int, Int, Int>>()
+        val cleaned = weekStr.replace("周", "")
+        cleaned.split(',', '，', ';', '；').forEach { seg0 ->
+            val seg = seg0.trim()
+            if (seg.isEmpty()) return@forEach
             val type = when {
-                week.contains('单') -> 1
-                week.contains('双') -> 2
+                seg.contains('单') -> 1
+                seg.contains('双') -> 2
                 else -> 0
             }
-            if (cleaned.contains('-')) {
-                val parts = cleaned.split('-')
-                val s = parts[0].toIntOrNull() ?: 1
+            val digits = seg.filter { it.isDigit() || it == '-' }
+            if (digits.contains('-')) {
+                val parts = digits.split('-')
+                val s = parts.getOrNull(0)?.toIntOrNull() ?: return@forEach
                 val e = parts.getOrNull(1)?.toIntOrNull() ?: s
-                result += Triple(s, e, type)
+                if (type == 0) {
+                    result += Triple(s, e, 0)
+                } else {
+                    // 单/双周: 展开成奇/偶周序列再归并 ("2-14周单周" → (3,13,1))
+                    val weeks = (s..e).filter { if (type == 1) it % 2 == 1 else it % 2 == 0 }
+                    result += JwChengFangParser.weekIntList2WeekBeanList(weeks)
+                }
             } else {
-                val v = cleaned.toIntOrNull() ?: 1
+                val v = digits.toIntOrNull() ?: return@forEach
                 result += Triple(v, v, type)
             }
         }
         return result
+    }
+
+    /** T8: displayTag = 100; table-striped = 90; urp grid td[id] = 100 */
+    override fun confidence(): Int = when {
+        Regex("""td[^>]+id="\d+_\d+"""").containsMatchIn(source) && source.contains("class_div") -> 100
+        source.contains("displayTag") -> 100
+        source.contains("table-striped") -> 90
+        else -> 0
+    }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("displayTag")) add("class=displayTag")
+        if (source.contains("table-striped")) add("class=table table-striped table-bordered")
     }
 }

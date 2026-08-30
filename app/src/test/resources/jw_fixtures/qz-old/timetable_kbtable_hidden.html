@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>个人课表</title>
+</head>
+<body>
+<h3>个人课表</h3>
+<!-- 边界样本 1: display:none 隐藏 div 混入, 验证 OldQzParser L29 'style=display: none;' 过滤 -->
+<table id="kbtable" border="1">
+  <tbody>
+    <tr>
+      <td>第1-2节</td>
+      <td>
+        <!-- 显示的课程 -->
+        <div>高等数学<br>张老师<br>1-16周[1-2节]<br>教一101</div>
+        <!-- 隐藏的干扰 div: OldQzParser 必须跳过 -->
+        <div style="display: none;">已被过滤的课程<br>不应出现<br>1-16周[1-2节]<br>不应出现</div>
+        <!-- 另一隐藏变体: 老 IE 实际可能输出 display:none; 与 display: none; 等价 -->
+        <div style="display:none;">也应被过滤<br>z老师<br>1-5周[3-4节]<br>A101</div>
+      </td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+    <tr>
+      <td>第3-4节</td>
+      <td><div>&nbsp;</div></td>
+      <td>
+        <!-- 整单元格 div 文本为空白: 也应跳过(div.text().isBlank()) -->
+        <div>&nbsp;</div>
+      </td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+      <td><div>&nbsp;</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

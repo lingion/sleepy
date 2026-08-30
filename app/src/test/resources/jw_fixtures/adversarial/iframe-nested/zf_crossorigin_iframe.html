@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gb2312">
+<title>老正方主域</title>
+<!-- 顶层老正方 default2.aspx，但内容 iframe src 是另一个域(SSO/CAS 域或反代域)，
+     WebView 跨域 iframe.contentDocument 抛 SecurityError 触发 try/catch 静默吞掉。 -->
+</head>
+<frameset cols="200,*" frameborder="0" border="0">
+  <frame name="menu" src="https://sso.other-school.edu.cn/cas/login?service=https://jw.main.edu.cn/default2.aspx">
+  <frame name="main" src="https://jw-vpn.campus.edu.cn/http/77726476706e69737468656265737421f3e6559377224c8dc2e59f4015c1a5c4b/xskbcx.aspx">
+</frameset>
+</html>

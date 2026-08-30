@@ -1,0 +1,25 @@
+{
+  "input": "zf_new_empty_kblist_canonical.json",
+  "protocol": "zf_new",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "可信空课表",
+    "diagnosis": "当前学期无课或未选对学期",
+    "semantic": "fetch 模式 200 + 合法 kbList=[] = 学生选课表为空,非解析失败"
+  },
+  "detectionPoints": [
+    "HTTP 200,响应 Content-Type=application/json;charset=UTF-8",
+    "顶层 kbList 存在且长度为 0(JSONArray.length()==0)",
+    "xsxx 学生信息结构完整,XM/XH/XNM/XQMMC 都有值,确认会话未过期",
+    "sjkList 也为空,与 kbList 共同证明非渲染中"
+  ],
+  "parserImpact": {
+    "JwNewZfParser": "parseEmbeddedJson markers 命中 'kbList'(L42),extractBalanced 截到 [],parseCourseJsonArray for 循环 0 次,return emptyList().generateCourseList 走 parseEmbeddedJson 拿到空 → 不走 parseHtmlTable → 最终返回 []。**问题**: 上游 NewZFParser 与 sleepy JwNewZfParser 都把空课表与'协议选错/未到课表页'混为同一个空列表,ViewModel JwImportViewModel.kt:196 抛 '课程列表为空,请确认已到达课表页面',**这恰好是误诊**(issue 域内观察: 用户实际已到课表页,只是本学期没选课)。",
+    "JwImportViewModel.parseHtml(zf_new)": "L104 JwNewZfParser(html) → generateCourseList 返回 [] → importAsNewTable L196 抛 IllegalArgumentException('课程列表为空,请确认已到达课表页面') → JwImportActivity UI 提示同一句话,误导用户去检查'是否到课表页'。",
+    "fetch 模式(WISEDU_FETCH_JS 仿写版本未实现)": "响应文本 kbList=[] 时,kbList.length==0 应当被检测并区分语义: 返回 {ok:true, courses:[], reason:'empty_semester'} 让 UI 提示'本学期暂无课程'而非'导入失败'。当前实现没有这个分支。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=0 课; per-parser: NewZf=0 OldZf=0 OldZf1=0 Qz=0 QzCrazy=0 Urp=0 NewUrp=0 Wisedu=0 — 全部静默空,无异常",
+    "verified": "yes"
+  }
+}

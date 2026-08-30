@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>登录 - 教学管理系统</title>
+<link rel="stylesheet" href="/css/urp.css">
+<script src="/js/xkAction.js"></script>
+</head>
+<body>
+<form id="loginForm" action="/xkAction.do?actionType=6" method="post">
+  <input type="hidden" name="loginType" value="student">
+  <div><label>用户名</label><input type="text" name="zjh" id="zjh"></div>
+  <div><label>密码</label><input type="password" name="mm" id="mm"></div>
+  <div><label>验证码</label>
+    <input type="text" name="checkCode" id="checkCode" maxlength="4">
+    <img src="/checkCode" alt="验证码" onclick="this.src='/checkCode?t='+Date.now()">
+  </div>
+  <button type="submit">登录</button>
+</form>
+</body>
+</html>

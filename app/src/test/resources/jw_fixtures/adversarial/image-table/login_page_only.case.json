@@ -1,0 +1,10 @@
+{
+  "input": "login_page_only.html",
+  "expected": {
+    "protocol": "zf_new",
+    "urlContext": "假设 WebView 当前 URL 为 https://jw.example.edu.cn/jwglxt/xtgl/login_slogin.html (fixture 本身不含 URL, 协议判定来自 detectProtocolFromUrl 的 u.contains(\"jwglxt\") || u.contains(\"/xtgl/\") 分支, JwImportViewModel.kt:149)",
+    "courseCount": 0,
+    "errorCategory": "会话过期或未登录",
+    "rationale": "JwNewZfParser: 无 'kbxx'/'tmp_list'/'xskbcx' marker(表单 action 是 /jwglxt/xtgl/login_slogin.html, 不含 xskbcx 子串) → parseHtmlTable: 容器五连getElementById/selectFirst 全 null(页面 id 只有 loginForm, 不含 kb 子串) → parseHtmlTableFromQz → JwQzParser.getElementById(\"kbtable\")=null → 空列表。所有 parser 0 课不崩, importAsNewTable 抛 '课程列表为空'。页面含 yhm/mm/csrftoken/验证码 img 等登录页指纹, 诊断层应先嗅探'登录'+'密码'特征给出'会话过期, 请重新登录'定向提示, 而非让用户以为到了课表页。"
+  }
+}

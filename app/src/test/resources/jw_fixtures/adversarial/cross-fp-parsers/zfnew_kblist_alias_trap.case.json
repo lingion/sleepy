@@ -1,0 +1,15 @@
+{
+  "input": "zfnew_kblist_alias_trap.html",
+  "expected": {
+    "protocol_adjudication": "zf_new (kbList + kcmc/xqj/jc/zcd/cdmc 真实字段)",
+    "correct_parser": "JwNewZfParser (T4 修复后): room 优先 cdmc, teacher 用 xm/jsxm, 节次解析 '1-2'/'0102'/'3-4,6-7' 字符串",
+    "courses_count": 2,
+    "per_course_expectation": [
+      {"name": "高等数学", "day": 1, "node": "1-2", "week": "1-16", "teacher": "张三", "room": "教一101"},
+      {"name": "大学英语", "day": 3, "node": "3-4", "week": "2-8单", "teacher": "李四", "room": "外语楼308"}
+    ],
+    "current_behaviour_measured": "JwNewZfParser=0 课。逐字段追踪 JwNewZfParser.parseCourseJsonArray: ① room: firstStr('jasmc','jsmc',...) L121 — jasmc 排第一, 取到 '教学楼A-001' 而不是真实 cdmc '教一101' (字段优先级 bug, T4 明文要求 'cdmc 优先不要把 jasmc 当教室'); ② 节次: firstInt('ksjcsd','ksjc','jc',...) L127 — 真实 jc='1-2' 是范围串, optString 后 toIntOrNull() 返回 null → L128 return, 该行整条被丢。两行全部被丢 → parseEmbeddedJson 返回空 → parseHtmlTable → Qz 兜底 → 0 课。同时 NewUrp 检测 'dateList' 失败也 0 课。",
+    "error_classification": "silent_zero_courses_alias_priority_and_jc_range_string",
+    "notes": "调研[1] 'jc 字段格式=1-2 范围串, 不是 0102 位号 — sleepy 现有解析有 bug' 直接命中样本。FlowCourse KBLIST_FIXTURE 原始报文同构。T4 tests 明文要求 'kbList 两课 fixture (jc=1-2/6-7) 断言不丢课' — 本样本即该断言的可执行形态。"
+  }
+}

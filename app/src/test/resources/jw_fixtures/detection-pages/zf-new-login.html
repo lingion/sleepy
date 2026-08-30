@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="Copyright" content="zfsoft">
+<meta name="renderer" content="webkit">
+<title>教学管理信息服务平台</title>
+<link rel="stylesheet" href="/zftal-ui-v5-1.0.2/assets/css/zftal-ui.css">
+<link rel="stylesheet" href="/jwglxt/xtgl/assets/css/login.css">
+<script src="/zftal-ui-v5-1.0.2/assets/js/jquery.min.js"></script>
+<script src="/jwglxt/xtgl/login_getPublicKey.html"></script>
+</head>
+<body class="login-bg">
+<div class="login-box">
+  <h1 class="title">教学管理信息服务平台</h1>
+  <form id="loginForm" action="/jwglxt/xtgl/login_slogin.html" method="post">
+    <input type="hidden" name="csrftoken" value="csrf-abcdef0123456789">
+    <input type="hidden" name="language" value="zh_CN">
+    <input type="hidden" name="yhm" id="encodedUsername" value="">
+    <div class="form-row">
+      <label>账号</label>
+      <input type="text" name="username" id="yhm" placeholder="学号 / 工号" autocomplete="off">
+    </div>
+    <div class="form-row">
+      <label>密码</label>
+      <input type="password" name="password" id="mm" autocomplete="off">
+    </div>
+    <div class="form-row captcha-row">
+      <label>验证码</label>
+      <input type="text" name="kaptcha" id="yzm" maxlength="4">
+      <img id="kaptchaImage" src="/jwglxt/xtgl/login_getKaptcha.html" alt="验证码" onclick="this.src='/jwglxt/xtgl/login_getKaptcha.html?t='+Date.now()">
+    </div>
+    <button type="submit" class="btn-login">登录</button>
+    <div class="login-extra">
+      <a href="/jwglxt/sso/zfiotlogin">统一身份认证登录</a>
+      <a href="javascript:void(0)" onclick="wechatLogin()">微信扫码</a>
+    </div>
+  </form>
+</div>
+<footer class="page-footer">
+  <p>版权所有 © 1999-2020 正方软件股份有限公司 版本 V-8.0.0</p>
+  <p>技术支持：<a href="http://www.zfsoft.com">正方软件</a></p>
+</footer>
+</body>
+</html>

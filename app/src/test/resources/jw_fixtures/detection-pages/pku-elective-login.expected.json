@@ -1,0 +1,16 @@
+{
+  "_note": "北京大学 IAAA 统一认证网关页样本(参照 iaaa.pku.edu.cn 实测活体,appID=syllabus)。本 fixture 是登录网关,不含 datagrid 表 — JwPekingParser 解析结果应为空列表。识别标记:URL 含 elective.pku / iaaa.pku / appID=syllabus;HTML 含 form action=oauth.jsp + redirectUrl=elective.pku.edu.cn。重要语义:IAAA 本身是认证网关,不是课表协议;协议判定要等登录后跳回 elective.pku.edu.cn 的已选课程页(含 table.datagrid)再做。",
+  "_fingerprint": {
+    "urlMarkers": ["elective.pku", "iaaa.pku", "syllabus"],
+    "htmlMarkers": [
+      "iaaa.pku.edu.cn",
+      "appID",
+      "syllabus",
+      "oauth.jsp"
+    ],
+    "expectedProtocol": "pku",
+    "expectedConfidence": 80,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}

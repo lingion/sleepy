@@ -1,0 +1,44 @@
+{
+  "_note": "北京大学 elective.pku.edu.cn 已选课程页样本 — JwPekingParser 按上游 PekingParser.kt 语义解析。关键逻辑:select('table[class=datagrid]') → tbody → tr → tds(必须 >=11 列)→ tds[8].text() 含'未'跳过 → courseName=tds[0]、teacher=tds[4]、timeInfos=tds[7].html().split('<br>')。每条 timeInfo 按空格 split 成 [周次, 星期+节次, 教室]:周次'1~16周'按 ~ 拆;节次 nodePattern1 按 ~ 拆;单/双周用 contains('单'/'双');星期用 chineseWeekList 包含匹配;room = timeInfo[2]。",
+  "_uncertain": [
+    "上游 tds[7] 是上课时间列,tds[8] 是选课状态列(含'未'跳过);本 fixture 有 11 列(含操作列),与上游 tds.size>=11 门槛一致,若真实页面列数不同需调整 tds 索引。",
+    "nodePattern1 是 wakeup Common.kt 的正则,本 fixture 使用'1~2节'/'3~4节'/'8~10节'形态;若真实页面是'第1~2节'或'1-2节'须以实际为准。",
+    "近代史纲行 tds[8]='未选上' 含'未' → 应被整行跳过,预期输出不含此课。",
+    "'2~16周(单)' startWeek=2, endWeek=16, type=1 — 上游代码 substringBefore('~')/substringAfter('~').substringBefore('周') 拆;type 由 timeInfo[1] 含'单'推导。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "高等数学",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 5,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "王老师",
+      "room": "外语楼308"
+    }
+  ]
+}

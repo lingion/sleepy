@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="GB2312">
+<title>个人课表</title>
+</head>
+<body>
+<h3>个人课表</h3>
+<!--
+  强智 qz_br 变体 (代表学校: 北京林业大学 newjwxt.bjfu.edu.cn / 长春大学
+  cdjwc.ccu.edu.cn/jsxsd / 长沙理工 xk.csust.edu.cn / 广东金融 jwxt.gduf.edu.cn
+  / 江西农大南昌商学院)。
+
+  结构要点 (依据上游 QzParser.generateCourseList 的行/列计数语义):
+  1. 表头行与节次列用 <th>, 只有 7 个星期格用 <td> —— 上游 day 从 0 起
+     每遇到一个 <td> 自增, 故 周一=day1 ... 周日=day7; 若节次列误用 <td>
+     整体右移一列 (这是现有 JwParserTest mockQzHtml 的隐患, 不得照抄)。
+  2. 纯 <th> 行 (星期表头) 的 getElementsByTag("td") 为空, nodeCount 不增。
+  3. 节次行 = 上游 nodeCount (第 N 行 → node = N*2-1, 连堂 endNode = node+1)。
+  4. 单元格 = td 下直接挂一个 div.kbcontent (不得再包一层 div, 否则
+     getElementsByTag("div") 会内外各命中一次, 课程重复)。
+  5. qz_br 与基础 qz 的差异: 课名行后直接 <br>, title 属性挂 <span>
+     (基础版挂 <font>)。基础 parseCourseName 的 substringBefore("<font")
+     落空 → 返回整段含老师/教室/周次的字符串拼成一串课名;
+     QzBrParser.parseCourseName 用 substringBefore("<br>") 取裸课名。
+     【上游怪癖】QzWithNodeParser 的课名提取链是
+     substringBefore("<font").substringBefore("<span>") — 第二段的 needle
+     是带闭合尖括号的 "<span>", 对 "<span title=..>" 永不命中, 全靠
+     "<font" 兜底; 因此 with_node 页面必须用 <font title=..> 结构,
+     见 timetable_qzbr_withnode_*.html。
+  6. 同格多门课用 '-----' (≥5 连字符, 实际页面为 21 个) 分隔。
+  7. 周次文本格式 "N-M(周)" (周次数字后无"周"字), 基础 convert 先
+     substringBefore("(周)") 得 "N-M", 再 split(',');
+     逗号多段 (如 5-15,17) 上游会为每段各生成一条课程。
+     单/双周写成 "(单周)"/"(双周)"; 若写 "N-M周(周)", 上游
+     weeks[1].substringBefore('(').toInt() 会拿 "16周" 抛异常
+     (sleepy 的 toIntOrNull 变体静默回退, endWeek 错成 startWeek)。
+  8. 单元格里的 &nbsp; 占位 (text() 为  , isBlank 跳过)。
+-->
+<table id="kbtable" border="1">
+  <tbody>
+    <!-- 星期表头行: 纯 th, 无 td, 不参与 nodeCount -->
+    <tr>
+      <th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th>
+      <th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th>
+    </tr>
+    <!-- 第1-2节: nodeCount=1 → node=1 → startNode=1, endNode=2 -->
+    <tr>
+      <th>第1-2节<br>08:30-10:00</th>
+      <td>
+        <div class="kbcontent">高等数学<br>
+          <span title="老师">张老师</span><br>
+          <span title="教室">教一101</span><br>
+          <span title="周次(节次)">1-16(周)</span>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">大学英语<br>
+          <span title="老师">王老师</span><br>
+          <span title="教室">外语楼302</span><br>
+          <span title="周次(节次)">2-16(周)</span>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第3-4节: nodeCount=2 → node=3 → startNode=3, endNode=4 -->
+    <tr>
+      <th>第3-4节<br>10:20-11:50</th>
+      <td>
+        <div class="kbcontent">线性代数<br>
+          <span title="老师">李老师</span><br>
+          <span title="教室">教二205</span><br>
+          <span title="周次(节次)">1-16(周)</span>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">思政<br>
+          <span title="老师">赵老师</span><br>
+          <span title="教室">综合楼401</span><br>
+          <span title="周次(节次)">5-12(周)</span>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第5-6节: nodeCount=3 → node=5 → startNode=5, endNode=6 -->
+    <tr>
+      <th>第5-6节<br>14:00-15:30</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">数据结构实验<br>
+          <span title="老师">孙老师</span><br>
+          <span title="教室">实验楼303</span><br>
+          <span title="周次(节次)">10-17(周)</span>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第7-8节: 全空行, nodeCount 仍递增 (=4), 验证占位行不丢节次锚点 -->
+    <tr>
+      <th>第7-8节<br>15:50-17:20</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第9-10节: nodeCount=5 → node=9 → startNode=9, endNode=10 -->
+    <!-- 周一同格两门课: '-----' 分隔; 第二门 5-15,17周 逗号多段 → 拆 2 条 -->
+    <tr>
+      <th>第9-10节<br>19:00-20:30</th>
+      <td>
+        <div class="kbcontent">大学物理<br>
+          <span title="老师">周老师</span><br>
+          <span title="教室">物理楼501</span><br>
+          <span title="周次(节次)">1-16(周)</span>
+          ---------------------<br>
+          计算机网络<br>
+          <span title="老师">吴老师</span><br>
+          <span title="教室">信息楼201</span><br>
+          <span title="周次(节次)">5-15,17(周)</span>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

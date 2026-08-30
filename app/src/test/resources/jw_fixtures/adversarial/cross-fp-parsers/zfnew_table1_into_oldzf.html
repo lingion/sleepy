@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>学生个人课表</title></head>
+<body>
+<!-- ADVERSARIAL: 上游 NewZFParser.kt 期望结构 (dIT8Zv) — table#table1 + td class=festival + div.title + p title
+     喂 JwOldZfParser:
+       getElementById("Table1") 找的是 id=Table1 大写, 这里是 id=table1 小写 → null
+       JwOldZfParser 没有任何 fallback 选择器 → emptyList()
+     走 tryAllParsers 时被 JwNewZfParser 救起. 但 JwNewZfParser parseHtmlTable 选 container:
+       getElementById("kbtable")=null, "kbgrid"=null, ".el-table__body"=null,
+       ".kbcapi-table"=null, [id*=kb]=[<table id="table1">] 命中!
+       但后面 table.getElementsByClass("kbcontent").isEmpty() → 跳过 → 0 课
+       最后走 parseHtmlTableFromQz() → JwQzParser → getElementById("kbtable")=null → emptyList()
+     风险: [id*=kb] 选择器在含 kb* id 的导航元素上可能误命中,产生诡异表格 -->
+<table id="table1" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" class="festival">1</td>
+    <td id="1-1"></td>
+    <td id="2-1">
+      <div>
+        <div class="title">高等数学</div>
+        <p title="教师">张老师</p>
+        <p title="上课地点">教学楼A101</p>
+        <p title="节/周">(1-2节)1-16周</p>
+      </div>
+    </td>
+    <td id="3-1">
+      <div>
+        <div class="title">大学英语</div>
+        <p title="教师">李老师</p>
+        <p title="上课地点">外语楼308</p>
+        <p title="节/周">(1-2节)2-8周(单)</p>
+      </div>
+    </td>
+    <td id="4-1"></td>
+    <td id="5-1"></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="festival">2</td>
+    <td id="1-2"></td>
+    <td id="2-2">
+      <div>
+        <div class="title">线性代数</div>
+        <p title="教师">王老师</p>
+        <p title="上课地点">教学楼B202</p>
+        <p title="节/周">(3-4节)1-16周</p>
+      </div>
+    </td>
+    <td id="3-2"></td>
+    <td id="4-2"></td>
+    <td id="5-2"></td>
+  </tr>
+</table>
+</body>
+</html>

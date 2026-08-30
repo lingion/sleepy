@@ -1,0 +1,20 @@
+{
+  "_note": "新正方缺字段边界:第 1 门课只有 kcmc + xqj, 缺 xm/jc/zcd/cdmc — sleep JwNewZfParser 当前实现:jc 用 firstInt('jc', ...) null → continue; zcd 缺 → parseWeekStr('')=[Triple(1,16,0)]; 但 jc 缺直接 continue 跳过整条 → 不产生课程。第 2 门课完整 → 正常解析。本 fixture 验证 parser 对缺字段数据的鲁棒性:不崩、不产残次数据、只输出有效课程。",
+  "_uncertain": [
+    "缺 jc 的条目是 continue(丢课)还是用默认 startNode=1 endNode=1(单节)? 当前 JwNewZfParser firstInt('jc') 失败 → continue → 丢课; 若 jw_research.json T4 修复 jc bug 后改成默认单节, expected 应改成 [高等数学 day=1 start=1 end=1 weeks=1-16]。",
+    "缺 zcd 时 parseWeekStr('') 返回 Triple(1,16,0) 作为兜底(整学期每周),这是合理降级,符合 jw_research.json T4 描述。"
+  ],
+  "courses": [
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "外语楼201"
+    }
+  ]
+}

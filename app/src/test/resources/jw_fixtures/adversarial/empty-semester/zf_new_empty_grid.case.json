@@ -1,0 +1,25 @@
+{
+  "input": "zf_new_empty_grid.html",
+  "protocol": "zf_new",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "可信空课表(容器存在但全部格子为空)",
+    "diagnosis": "当前学期无课或未选对学期",
+    "semantic": "容器 id=kbtable 存在 + 表头星期齐全 + 所有 td.kbcontent 空文本 = 页面已到课表视图,无课程数据"
+  },
+  "detectionPoints": [
+    "getElementById('kbtable') != null",
+    "表头行含 星期一..星期五 (5 列)",
+    "tbody 恰好 1 行,每个 td.kbcontent text() 都为空白",
+    "页面 title='教学管理信息服务平台' 证明这是 zf_new 系统且非登录页"
+  ],
+  "parserImpact": {
+    "JwNewZfParser.parseHtmlTable": "L245 getElementById('kbtable') 命中 → trs 1 行,tds.first().text()='' 不含 '节' → isSectionHeader=false → nodeCount=1 → 对每个 td 调 getElementsByClass('kbcontent') 命中,但 cell.html() 为 ''(L274 isBlank) → continue → result 空 → L284 走 parseHtmlTableFromQz() → JwQzParser(L90) getElementById('kbtable') 同一表命中但 div 无内容 → return emptyList → 最终 0 课。**静默 0 课**。注: parseEmbeddedJson 先跑,source 无 kbxx/tmp_list/xskbcx marker(trim 后不以 { [ 开头),返回空,故走 HTML 分支。",
+    "JwQzParser(L87-90)": "作为 JwNewZfParser 的兜底链尾部被显式调用(L322 parseHtmlTableFromQz),kbtable 命中但无任何课程 div → return 空列表,不抛异常。上游 Parser.kt saveCourse 会 throw,此处静默。",
+    "UI 语义": "与上一样本同病: JwImportViewModel L196 '课程列表为空,请确认已到达课表页面' 无法区分'容器在但格子空'(可信空学期)和'压根没到课表页'(需重试/导航)。需引入'容器命中且 0 课'的可信空判定。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=0 课; per-parser: NewZf=0 其余全 0, Wisedu 抛 JsonDecodingException(HTML 不是 JSON) — 与 canonical 空学期行为完全一致,无法区分",
+    "verified": "yes"
+  }
+}

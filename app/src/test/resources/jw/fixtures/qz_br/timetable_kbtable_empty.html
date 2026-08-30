@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="GB2312">
+<title>个人课表</title>
+</head>
+<body>
+<h3>个人课表</h3>
+<!--
+  qz_br / qz_with_node 共用的边界样本: 本学期无课。
+  kbtable 表结构完整 (表头 + 5 个节次行), 所有课程格均为 &nbsp; 占位。
+  div.kbcontent 的 text() 为  (U+00A0), isBlank() == true → 跳过。
+  QzBrParser / QzWithNodeParser 均应返回空 List (courses=[]), 不抛异常。
+  与 tryAllParsers 集成时须区分:
+    - "verified_empty"  零课但页面是合法课表页 (提示用户确认学期)
+    - "error"           页面异常/协议不符
+  不应把零课伪装成解析成功或解析失败。
+-->
+<table id="kbtable" border="1">
+  <tbody>
+    <tr>
+      <th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th>
+      <th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th>
+    </tr>
+    <tr>
+      <th>第1-2节<br>08:30-10:00</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <tr>
+      <th>第3-4节<br>10:20-11:50</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <tr>
+      <th>第5-6节<br>14:00-15:30</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <tr>
+      <th>第7-8节<br>15:50-17:20</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <tr>
+      <th>第9-10节<br>19:00-20:30</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

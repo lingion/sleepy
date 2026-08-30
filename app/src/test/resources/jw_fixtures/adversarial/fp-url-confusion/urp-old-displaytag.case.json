@@ -1,0 +1,21 @@
+{
+  "input": "urp-old-displaytag.html",
+  "id": "fp-url-confusion.urp-old-displaytag",
+  "title": "含 urp 子串的老 URP displayTag 页面被误判为 TYPE_URP_NEW",
+  "inputUrl": "https://urp.cqupt.edu.cn/courseTable/show",
+  "htmlFile": "urp-old-displaytag.html",
+  "expected": {
+    "detectProtocolFromUrl": "urp_new",
+    "routeByType": "JwNewUrpParser(html)",
+    "parserBehavior": "JwNewUrpParser 找 td[id=星期_节次] / displayTag 行，本 HTML 既无 td[id=周一_1-2] 也无其他 URP_NEW 锚点 → 0 课；旧 URP JwUrpParser 仅在 tryAllParsers 兜底时被尝试一次",
+    "courseCount": 0,
+    "userVisibleResult": "裸 'urp' 子串命中 URP_NEW，但页面是老 displayTag 写法 → 0 课静默失败"
+  },
+  "parserImpact": "detectProtocolFromUrl L156: `u.contains(\"urp\")` 一律返回 TYPE_URP_NEW。即便 URL 是 https://urp.cqupt.edu.cn/... 这种老部署（页面是 displayTag 而非新 URP 的 td[id=周_节] 结构），仍被钉死到 JwNewUrpParser；JwUrpParser 仅在协议类型为空（unknown 路径）或显式传 TYPE_URP 时才被实例化（tryAllParsers 候选表 L129）。结果是老 URP 学校走错 parser → 0 课 → 用户看到'课程列表为空'。修复方向是 URL 改为更精确的指纹：保留 `u.contains('xkAction.do')` 优先命中 TYPE_URP，否则 'urp' 落到 tryAllParsers 兜底而非直接钉死 URP_NEW。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:156 u.contains(\"urp\") → TYPE_URP_NEW",
+    "JwImportViewModel.kt:99 TYPE_URP_NEW → JwNewUrpParser(html)",
+    "JwImportViewModel.kt:129 tryAllParsers 包含 JwUrpParser",
+    "jw_research.json T6 recommendations '删除裸 qz 误判, 不能用裸 urp 判死 URP_NEW'"
+  ]
+}

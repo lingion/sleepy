@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 新版正方 老式嵌入 xskbcx_json + tmp_list=[] 空学期:
+     JwNewZfParser.parseEmbeddedJson 行 42 marker 'tmp_list' 会命中此结构.
+     命中后 行 50 arrStart 找 '[' → '[' 是 tmp_list 后的第一个 → 行 53 extractBalanced → "[]"
+     → 行 54 parseCourseJsonArray("[]") 行 98 jsonStr[0]=='[' → JSONArray("[]") 空数组
+     → 行 113 for 0 次 → return []
+     → 行 55 if (courses.isNotEmpty()) false → 继续下一个 marker (无) → 掉到 行 60 trimmed.startsWith
+     → 不是 → 返回 emptyList() → 走 parseHtmlTable → 无 table → parseHtmlTableFromQz → JwQzParser → 无 #kbtable → []
+     最终 return [] 正确, 但该样本的意义是: 'markers 命中但数组空' 应当停止 fallback 到其他协议, 而不是继续探索.
+-->
+<script>
+var xskbcx_json = {"tmp_list": [], "xnxq": "2025-2026-1"};
+</script>
+<div id="main">学期 2025-2026-1 无课程</div>
+</body>
+</html>

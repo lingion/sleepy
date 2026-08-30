@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<!-- SAMPLE: zf_new 会话过期/未登录页. 依据 /tmp/jw_research.json 实测特征手写(2026-08): 
+     jwgl.sjzc.edu.cn/jwglxt/xtgl/login_slogin.html 同款结构: title=教学管理信息服务平台, 
+     引用 zftal-ui-v5-1.0.2, 表单含 csrftoken+yhm+mm(RSA), kaptcha 验证码, 
+     页脚 "正方软件股份有限公司 版本V-8.0.0", "统一身份认证登录"+"微信扫码" 按钮 -->
+<html lang="zh_CN">
+<head>
+<meta charset="UTF-8">
+<meta name="Copyright" content="zfsoft">
+<title>教学管理信息服务平台</title>
+<link rel="stylesheet" href="/jwglxt/assets/zftal-ui-v5-1.0.2/css/index.css">
+<link rel="stylesheet" href="/jwglxt/assets/zftal-ui-v5-1.0.2/css/login.css">
+<script src="/jwglxt/assets/zftal-ui-v5-1.0.2/js/jquery.min.js"></script>
+<script src="/jwglxt/assets/zftal-ui-v5-1.0.2/js/login.js"></script>
+</head>
+<body class="xtgl_login_body">
+<div id="zftal_login_container">
+  <div class="zftal_login_panel">
+    <div class="zftal_login_title">教学管理信息服务平台</div>
+    <form id="frm_login" method="post" action="/jwglxt/xtgl/login_slogin.html">
+      <input type="hidden" id="csrftoken" name="csrftoken" value="8a2f4c1e9b0d3a5f7c2e">
+      <div class="zftal_form_item"><input type="text" id="yhm" name="yhm" placeholder="请输入账号"></div>
+      <div class="zftal_form_item"><input type="password" id="mm" name="mm" placeholder="请输入密码"></div>
+      <div class="zftal_form_item">
+        <input type="text" id="kaptchaText" name="kaptchaText" placeholder="请输入验证码">
+        <img id="kaptcha" src="/jwglxt/xtgl/login_captchaGetKaptcha.html" alt="验证码">
+      </div>
+      <button type="submit" id="zftal_login_btn">登 录</button>
+      <button type="button" onclick="window.location.href='https://cas.example.edu.cn/cas/login?service=https%3A%2F%2Fjwgl.example.edu.cn%2Fjwglxt%2Fsso%2Fzfiotlogin'">统一身份认证登录</button>
+      <button type="button" onclick="wxScanLogin()">微信扫码</button>
+    </form>
+    <div class="zftal_login_error"></div>
+  </div>
+</div>
+<div id="footer">版权所有&copy; 1999-2020 正方软件股份有限公司 版本V-8.0.0</div>
+</body>
+</html>

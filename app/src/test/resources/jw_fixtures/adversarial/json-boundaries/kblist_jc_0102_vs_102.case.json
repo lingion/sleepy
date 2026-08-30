@@ -1,0 +1,61 @@
+{
+  "input": "kblist_jc_0102_vs_102.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_with_zero_padded_semantics",
+    "courseCount": 4,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "补零正常",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教一101"
+      },
+      {
+        "name": "奇数位异常",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 1,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "李老师",
+        "room": "教二205",
+        "_semanticNote": "jc='102' 不可按补零解(奇数位)。修复后的 parser 应按 fallback: 取头两位'10' 当 startNode=10, 或判非法降级为单节 startNode=1。本 expected 选'保守降级为单节'语义, 因为 '102' 无任何真实来源佐证, 宁可给保守值也不给错值; 若未来拿到真实样本, 改成 startNode=10"
+      },
+      {
+        "name": "跨节压缩",
+        "day": 3,
+        "startNode": 10,
+        "endNode": 12,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "王老师",
+        "room": "教三305",
+        "_semanticNote": "jc='1012' 4 位补零 → [10,12] 即 10-12 节(晚课连排)。startNode=10 是真实存在的(临沂等下午晚课学校, jw_research finding 5 提到'真实存在的第11节以上行头(临沂大学等下午晚课学校)')"
+      },
+      {
+        "name": "单节补零",
+        "day": 4,
+        "startNode": 1,
+        "endNode": 1,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "赵老师",
+        "room": "教四401"
+      }
+    ],
+    "userMessage": "4 门课导入; '奇数位异常' 节次字段无法识别已降级为第 1 节, 请人工校对"
+  },
+  "rationale": "JwNewZfParser.kt L127 firstInt('ksjcsd','ksjc','jc','classSessions','ksjcd') 是纯 toIntOrNull 短路: jc='0102' → Kotlin toIntOrNull=102(前导零被丢) → startNode=102 错课; jc='102' → 102 错课; jc='1012' → 1012 错课; jc='0101' → 101 错课。修复方向: firstStr('jcs','jc') 取字符串, 偶数位纯数字按每 2 位一节拆段(0102→[1,2] 0101→[1,1] 1012→[10,12]), 奇数位或非纯数字串判非法 → 保守降级单节 + 告警。补零判断必须在 toInt 之前做, 因为 '0102' 与 '102' 的 toInt 结果相同, 无法事后区分。",
+  "currentBehavior": "JwNewZfParser.kt L127 firstInt 返回: 0102→102 / 102→102 / 1012→1012 / 0101→101, 4 门全部 startNode=endNode=错误值, 落库后 UI 显示'第102节/第1012节'。修复 kblist_range_sections 案例时若只处理 '1-2' 范围串而漏 '0102' 补零, 本 fixture 会立刻击穿。",
+  "diagnosticHint": "若 parser 把 jc='0102' 解出 startNode=102, 应在导入预览界面标红 — '第102节' 不可能是真实排课, 提示用户该课程节次字段异常"
+}

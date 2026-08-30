@@ -1,0 +1,13 @@
+{
+  "input": "zf_old_usts_default2_login.html",
+  "expected": "判定: 未登录(登录页特征 title=欢迎使用正方教务管理系统！请登录 + __VIEWSTATE + CheckCode.aspx 验证码 + form action=default2.aspx + txtUserName/TextBox2/txtSecretCode)。课程数=0 且错误分类=NEED_LOGIN(引导用户先登录), 不得走任何 parser 并报 0 课/解析失败。附带特征: GB2312 字节(WebView GBK 解码后 title 才可读, UTF-8 直解会乱码——detectProtocolFromHtml 判 title 时必须先按 charset 解码)",
+  "protocol": "zf (老正方 ASP.NET WebForm)",
+  "page": "登录页 default2.aspx(苏州科技活体,2026-08 实抓,原 GB2312 字节保留) · 已脱敏: __VIEWSTATE 等超长隐藏域值截断为占位符(字段名/表单结构保留), 站点 meta 令牌替换",
+  "assert_markers": [
+    "欢迎使用正方教务管理系统",
+    "__VIEWSTATE",
+    "CheckCode.aspx",
+    "txtSecretCode",
+    "action=\"default2.aspx\""
+  ]
+}

@@ -1,0 +1,4 @@
+{
+  "_doc": "fixture=qz-base-crazy/empty_kbtable.html 适用 parser=JwQzCrazyParser。边界样本：kbtable 存在但所有格子均无 kbcontent1 div(空表/&nbsp;)。JwQzCrazyParser.generateCourseList() 应返回空列表；courseElements.text().isBlank() 判断把 &nbsp; 展开后的空白格全部 continue 掉。",
+  "courses": []
+}

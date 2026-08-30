@@ -1,0 +1,71 @@
+{
+  "group": "adversarial/login-expired",
+  "说明": "登录页/会话过期页被当课表页抓取的对抗样本组。断言: 必须判为未登录/会话过期(NEED_LOGIN/SESSION_EXPIRED), 课程数=0, 禁止产出错课或伪装成 0 课成功。",
+  "samples": [
+    {
+      "input": "bnuz_es_default_login.html",
+      "protocol": "bnuz (北师珠 ASP.NET WebForm)",
+      "page": "登录页 es.bnuz.edu.cn(活体, 2026-08 实抓): form action=default.aspx + __VIEWSTATE/__EVENTVALIDATION + TextBox1/2/3 · 已脱敏: __VIEWSTATE/__EVENTVALIDATION/__PREVIOUSPAGE 长值与 WebResource.axd?t= 时间戳替换为占位符(特征名与结构保留)"
+    },
+    {
+      "input": "bnuz_expired_redirect_login.html",
+      "protocol": "bnuz (北师珠)",
+      "page": "课表页会话过期回跳登录 WebForm(结构按活体对齐手写)"
+    },
+    {
+      "input": "cf_qingguo_authserver_login.html",
+      "protocol": "cf (青果/乘方)",
+      "page": "未登录访问 /xsgrkbcx!xsAllKbList.action 被 302 到 authserver CAS 登录页(按调研 gdut 实测特征手写)"
+    },
+    {
+      "input": "pku_iaaa_login_redirect.html",
+      "protocol": "pku (北京大学)",
+      "page": "elective.pku.edu.cn 未登录重定向到 iaaa.pku.edu.cn 统一认证页(按调研实测特征手写: appID=syllabus, 标题统一认证)"
+    },
+    {
+      "input": "qz_kicked_session_interstitial.html",
+      "protocol": "qz (强智)",
+      "page": "会话被顶/失效中间页(按 qfnu_jwxt.py KICKED_MARKERS 手写): 您的账号在其它地方登录, 3 秒跳 Logon.do"
+    },
+    {
+      "input": "qz_sdust_logon_login.html",
+      "protocol": "qz (强智)",
+      "page": "登录页(山东科技活体, 2026-08 实抓): form action=/Logon.do?method=logon + verifycode.servlet + 强智科技 title · 已脱敏: __VIEWSTATE 等超长隐藏域值截断为占位符(字段名/表单结构保留), 站点 meta 令牌替换"
+    },
+    {
+      "input": "qz_tjutcm_jsxsd_login.html",
+      "protocol": "qz (强智, GBK)",
+      "page": "登录页 /jsxsd/ 入口(天津中医药活体, 2026-08 实抓, 原 GBK): form action=/jsxsd/xk/LoginToXk · 已脱敏: __VIEWSTATE 等超长隐藏域值截断为占位符(字段名/表单结构保留), 站点 meta 令牌替换"
+    },
+    {
+      "input": "urp_new_imu_login_login.html",
+      "protocol": "urp_new (新 URP/URPNova)",
+      "page": "登录页 /login(内蒙古大学活体, 2026-08 实抓): j_spring_security_check + j_username/j_password/j_captcha + SM3 加密脚本 · 已脱敏: __VIEWSTATE 等超长隐藏域值截断为占位符(字段名/表单结构保留), 站点 meta 令牌替换"
+    },
+    {
+      "input": "wisedu_cas_login_expired.html",
+      "protocol": "wisedu (金智 jwapp, fetch 管线)",
+      "page": "金智会话失效: WISEDU_FETCH_JS 第一步 GET /jwapp/sys/wdkb/*default/index.do 被重定向到 CAS 登录页 HTML, r.json() 拿到的是 HTML"
+    },
+    {
+      "input": "zf_new_fetch_expired_returns_login.html",
+      "protocol": "zf_new (新版正方 jwglxt, fetch 管线)",
+      "page": "WebView fetch POST xskbcx_cxXsgrkb.html 会话过期返回的登录页 HTML(200 而非 JSON), T5 计划的 fetch 模板对抗样本"
+    },
+    {
+      "input": "zf_new_sjzc_slogin_login.html",
+      "protocol": "zf_new (新版正方 jwglxt)",
+      "page": "登录页 login_slogin.html(按调研实测特征手写: 石家庄学院/河北师大同款 zftal-ui-v5 + csrftoken + yhm/mm + kaptcha + zfsoft 版权)"
+    },
+    {
+      "input": "zf_old_expired_302_frameset_merged.html",
+      "protocol": "zf (老正方)",
+      "page": "会话过期: xskbcx.aspx 302 回 default2.aspx 登录框架, 模拟 WebView capture JS(主文档+frame contentDocument.outerHTML 拼接)的输出形态"
+    },
+    {
+      "input": "zf_old_usts_default2_login.html",
+      "protocol": "zf (老正方 ASP.NET WebForm)",
+      "page": "登录页 default2.aspx(苏州科技活体,2026-08 实抓,原 GB2312 字节保留) · 已脱敏: __VIEWSTATE 等超长隐藏域值截断为占位符(字段名/表单结构保留), 站点 meta 令牌替换"
+    }
+  ]
+}

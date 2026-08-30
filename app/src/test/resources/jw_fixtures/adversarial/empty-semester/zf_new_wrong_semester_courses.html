@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 新版正方 grid 视图: 用户选错了学期(默认显示 2024-2025 学年第一学期, 而当前是第二学期),
+     但页面上渲染的是旧学期课程 (有数据).
+     这不是空课表, 是 '学期没切对' — 空学期对抗样本的反例:
+     fetch 模式下若 xnm/xqm 没显式指定, 默认学期可能不是用户想要的.
+-->
+<table id="kbgrid_table_0" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <td align="Center">节次\星期</td>
+      <td align="Center">星期一</td>
+      <td align="Center">星期二</td>
+      <td align="Center">星期三</td>
+      <td align="Center">星期四</td>
+      <td align="Center">星期五</td>
+      <td align="Center">星期六</td>
+      <td align="Center">星期日</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>第一节</td>
+      <td id="1-1" class="td_wrap">
+        <div class="kbcontent">
+          高等数学
+          <font title="老师">张三</font>
+          <font title="周次(节次)">1-16周(周)</font>
+          <font title="教室">教1-101</font>
+        </div>
+      </td>
+      <td id="2-1" class="td_wrap"></td>
+      <td id="3-1" class="td_wrap"></td>
+      <td id="4-1" class="td_wrap"></td>
+      <td id="5-1" class="td_wrap"></td>
+      <td id="6-1" class="td_wrap"></td>
+      <td id="7-1" class="td_wrap"></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

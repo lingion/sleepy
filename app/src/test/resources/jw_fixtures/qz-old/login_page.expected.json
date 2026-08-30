@@ -1,0 +1,18 @@
+{
+  "fixture": "login_page.html",
+  "protocol": "qz_old",
+  "description": "边界样本 3: 强智登录页 (GB2312 编码, 模仿湖南工学院等老强智学校), 整个页面无 #kbtable 表格, OldQzParser L14 doc.getElementById('kbtable') 返回 null → NPE 异常 (上游忠实语义); sleepy 改进路径建议在 JwOldQzParser 找不到 kbtable 时抛 IllegalArgumentException 而非 NPE, 让 UI 区分'协议选错'与'课表页为空'",
+  "result": "error",
+  "error": "kbtable_not_found",
+  "courses": [],
+  "assertions": [
+    "OldQzParser L14 doc.getElementById('kbtable') 返回 null",
+    "L15 kbtable.getElementsByTag('tr') 在 null 上调用 → Kotlin NPE (上游忠实行为)",
+    "sleepy 应改 NPE 为 IllegalArgumentException('页面缺少强智课表 table#kbtable, 可能选错教务类型或不在课表页'), 与 sleepy JwQzParser 改进方向一致"
+  ],
+  "identifiers": [
+    "登录页表单 action='/jsxsd/xk/LoginToXk' = 强智 (上游 wakeup L324 山东建筑大学/TJUCM 等的同构指纹)",
+    "title 含 '强智科技' 后缀 = 强智厂商指纹 (天津中医药大学实测样本)",
+    "meta charset=GB2312 = 老强智/IE 时代编码"
+  ]
+}

@@ -1,0 +1,11 @@
+{
+  "input": "pku_iaaa_login_redirect.html",
+  "expected": "判定: 未登录(iaaa 统一认证: title=统一认证 + /iaaa/oauth.jsp?appID=syllabus + oauth 重定向)。课程数=0, 错误分类=NEED_LOGIN。北大课表页特征是 table[class=datagrid], 登录页无; JwPekingParser 不应产错课",
+  "protocol": "pku (北京大学)",
+  "page": "elective.pku.edu.cn 未登录重定向到 iaaa.pku.edu.cn 统一认证页(按调研实测特征手写: appID=syllabus, 标题统一认证)",
+  "assert_markers": [
+    "/iaaa/oauth.jsp",
+    "appID=syllabus",
+    "统一认证"
+  ]
+}

@@ -1,0 +1,45 @@
+{
+  "_note": "URP 新版(URPNova)课表页样本 — JwNewUrpParser 走 extractJsonFromHtml(找 dateList marker → 配对大括号) 拿到 scheduleResponse JSON 后按 dateList[0].selectCourseList[].timeAndPlaceList[] 展开课程。字段映射:courseName/attendClassTeacher/classDay/classSessions/continuingSession/classWeek(20 位 0/1 bitmap)/campusName+teachingBuildingName+classroomName 拼成 room。classWeek 位图归并逻辑:连续段 → type=0;整体奇数位 → type=1;整体偶数位 → type=2。",
+  "_uncertain": [
+    "classWeek:'11111111111111111000' → weeks=[1..17] → startWeek=1,endWeek=17,type=0。",
+    "classWeek:'10101010101010101010' → weeks=[1,3,5,7,9,11,13,15,17,19](全奇) → startWeek=1,endWeek=19,type=1(单周)。",
+    "classWeek:'01111111111111111110' → weeks=[2..19] → startWeek=2,endWeek=19,type=0(连续段,不是双周)。",
+    "room 字段 campusName+teachingBuildingName+classroomName 三段拼接(sleepy JwNewUrpParser L78 fullRoom 语义,与 wakeup 一致);拼接顺序按源代码 campus + building + room,无分隔符。",
+    "一门课含多条 timeAndPlaceList 时展开成多条 JwCourse(本 fixture 高等数学 2 条)。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "主校区教一205"
+    },
+    {
+      "name": "高等数学",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 19,
+      "type": 1,
+      "teacher": "张老师",
+      "room": "主校区教一205"
+    },
+    {
+      "name": "大学英语",
+      "day": 5,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 2,
+      "endWeek": 19,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "主校区外语楼308"
+    }
+  ]
+}

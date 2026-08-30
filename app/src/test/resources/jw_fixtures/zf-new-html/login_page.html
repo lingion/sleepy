@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>统一身份认证登录</title>
+</head>
+<body>
+<!-- 边界 2: 未登录被 WebView 重定向到 sso 登录页(典型 jwglxt xtgl/login_slogin.html), 无任何 kbgrid_table_0/kblist_table/table1/festival/title 等新正方课表特征 -->
+<div class="login-container">
+  <form id="loginForm" action="/jwglxt/xtgl/login_slogin.html" method="post">
+    <input type="hidden" name="csrftoken" value="dummy_token" />
+    <div class="form-group">
+      <label for="yhm">用户名</label>
+      <input type="text" id="yhm" name="yhm" placeholder="请输入学号" />
+    </div>
+    <div class="form-group">
+      <label for="mm">密码</label>
+      <input type="password" id="mm" name="mm" placeholder="请输入密码" />
+    </div>
+    <div class="form-group">
+      <label for="yzm">验证码</label>
+      <input type="text" id="yzm" name="yzm" maxlength="4" />
+      <img src="/jwglxt/xtgl/code?random=abc" alt="验证码" />
+    </div>
+    <button type="submit" id="loginBtn">登录</button>
+  </form>
+  <p class="footer">© 教学管理信息服务平台 / 统一身份认证</p>
+</div>
+</body>
+</html>

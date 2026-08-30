@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>湖南科技大学教务管理系统 登录</title>
+</head>
+<body>
+<div class="login-box">
+  <form id="loginForm" action="/jwglxt/login_slogin.html" method="post">
+    <table>
+      <tr>
+        <td>用户名:</td>
+        <td><input type="text" name="userCode" id="userCode" /></td>
+      </tr>
+      <tr>
+        <td>密码:</td>
+        <td><input type="password" name="password" id="password" /></td>
+      </tr>
+      <tr>
+        <td>验证码:</td>
+        <td><input type="text" name="verifyCode" id="verifyCode" /><img src="/jwglxt/verifycode.servlet" alt="验证码" /></td>
+      </tr>
+      <tr>
+        <td colspan="2"><input type="submit" value="登录" /></td>
+      </tr>
+    </table>
+  </form>
+</div>
+</body>
+</html>

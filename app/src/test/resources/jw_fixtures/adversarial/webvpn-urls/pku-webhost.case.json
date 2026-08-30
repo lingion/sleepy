@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的北大 elective — host 段可见但仍无指纹",
+  "expected": {
+    "protocol": "pku (TYPE_PKU)",
+    "protocolBasis": "host elective.pku.edu.cn 在 URL 可见, 但当前 detect 对 elective/pku 均无分支 -> null; T6 若补指纹应按 host 段边界匹配 'elective.pku.edu.cn' 而非裸 'pku'",
+    "courseCount": "1",
+    "errorClass": "同 pku-httphex",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "null — cf/pku/bnuz 三协议 URL 层无可靠指纹(路径重写形态连 host 信号都被 hex 吞掉), 判定必须由 T6 detectProtocolFromHtml 在 onHtmlCaptured 二次判型接管",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "同 pku-httphex: 手输 URL 时 detect 返回 null -> tryAllParsers, JwUrpParser L20 getElementsByAttributeValue(\"class\",\"displayTag\") 精确匹配 PKU 的 class='datagrid' 不中, 全候选 0 课; 清单选校时 parseHtml L105 throw '协议 pku 暂不支持'。本形态特有风险: 若简单补 contains(\"pku\") URL 指纹, 任何域名含 pku 子串的站点(如 xx-pku-lib.example.edu.cn)会被误判 PKU — 与 L155 裸 'qz' 同款缺陷, T6 已要求删除裸子串匹配风格; 正确做法是 host 段边界正则 'elective.pku.edu.cn' 或 HTML 层 datagrid 判定。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "pku-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/elective.pku.edu.cn/elective2008/",
+  "sampleKind": "webvpn-url"
+}

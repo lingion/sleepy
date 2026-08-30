@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>统一身份认证 - 哈尔滨工程大学</title>
+<meta name="renderer" content="webkit">
+<link rel="stylesheet" href="/jwapp/sys/wdkb/assets/css/wdkb.css">
+<script src="/jwapp/sys/wdkb/assets/js/jquery.min.js"></script>
+</head>
+<body class="cas-login">
+<div class="cas-wrapper">
+  <h1 class="system-name">教学服务大厅</h1>
+  <form id="casLoginForm" action="/authserver/login" method="post">
+    <input type="hidden" name="execution" value="e1s1">
+    <input type="hidden" name="_eventId" value="submit">
+    <input type="hidden" name="rmShown" value="1">
+    <div class="form-row">
+      <label>用户名</label>
+      <input type="text" name="username" id="username" maxlength="50">
+    </div>
+    <div class="form-row">
+      <label>密码</label>
+      <input type="password" name="password" id="password">
+    </div>
+    <div class="form-row captcha-row">
+      <label>验证码</label>
+      <input type="text" name="captchaResponse" id="captcha" maxlength="4">
+      <img id="captchaImg" src="/authserver/captcha.html">
+    </div>
+    <button type="submit" class="btn-primary">登录</button>
+  </form>
+  <p class="footer-tip">登录后会自动跳转到教务系统</p>
+</div>
+<script src="/authserver/cas.js"></script>
+</body>
+</html>

@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<!-- SAMPLE: 青果/乘方(CF)协议 未登录访问课表页返回的登录页.
+     依据 /tmp/jw_research.json domain 3 fixtures: jxfw.gdut.edu.cn/xsgrkbcx!xsAllKbList.action
+     未登录 302 到 authserver.gdut.edu.cn; 课表页登录态下应含 var kbxx=[ChengFangInfo] -->
+<html><head><meta charset="utf-8"><title>统一身份认证平台</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="/authserver/common/css/login.css" rel="stylesheet"></head>
+<body>
+<div class="mod_login"><form id="casLoginForm" method="post" action="/authserver/login?service=https%3A%2F%2Fjxfw.example.edu.cn%2Fxsgrkbcx%21xsAllKbList.action">
+<input type="hidden" name="lt" value="LT-cas-placeholder">
+<input type="hidden" name="dllt" value="userNamePassword">
+<input type="hidden" name="execution" value="e1s1-placeholder">
+<input type="hidden" name="_eventId" value="submit">
+<input type="hidden" name="rmShown" value="1">
+<input id="username" name="username" placeholder="请输入账号">
+<input id="password" name="password" type="password" placeholder="请输入密码">
+<img id="captchaImg" src="/authserver/common/captcha" alt="验证码">
+<input id="captchaResponse" name="captchaResponse" placeholder="请输入验证码">
+<button type="submit" id="idcheckloginbtn">登 录</button>
+</form></div>
+</body></html>

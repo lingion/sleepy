@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的北大 elective — host 被十六进制吞掉, URL 层零信号",
+  "expected": {
+    "protocol": "pku (TYPE_PKU)",
+    "protocolBasis": "本形态下 host(elective.pku.edu.cn)整个被编码进 hex 段, 路径只剩 /elective2008/(北大选修系统真实 webapp 前缀), 当前 detect 无任何 pku/elective 分支 -> null; 修复后判型只能落在 HTML: table[class=datagrid] 11 列行, tds[8] 含 '未' 跳过, tds[7] 按 <br> 拆时段",
+    "courseCount": "1 (datagrid 单行, 状态列不含 '未')",
+    "errorClass": "期望: 无错误; 当前: 静默 0 课(手输)或 throw '协议 pku 暂不支持'(清单选校)",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "null — cf/pku/bnuz 三协议 URL 层无可靠指纹(路径重写形态连 host 信号都被 hex 吞掉), 判定必须由 T6 detectProtocolFromHtml 在 onHtmlCaptured 二次判型接管",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "当前手输: null -> tryAllParsers; JwUrpParser L20 找 class='displayTag' 精确匹配, PKU 是 class='datagrid' -> 不中; 其他候选 0 课 -> 总 0 课。从清单进(北大 type=pku): parseHtml L105 -> throw '协议 pku 暂不支持'。要点: /http/<hex>/ 形态把 host 判型信号完全抹掉, pku 这类'只靠 host 可判'的协议在 WebVPN 路径重写下必须由 detectProtocolFromHtml 接管(T6 第二判定时机), 这是本组对抗样本的核心结论。elective2008 之后的课表 action 具体路径本次未取证(uncertain), 样本只锚定 webapp 前缀。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "pku-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/3a7c50/elective2008/",
+  "sampleKind": "webvpn-url"
+}

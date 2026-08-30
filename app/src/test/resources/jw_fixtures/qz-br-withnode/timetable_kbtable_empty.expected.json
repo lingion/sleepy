@@ -1,0 +1,15 @@
+{
+  "fixture": "timetable_kbtable_empty.html",
+  "protocol": "qz_br/qz_with_node 共用",
+  "parser": "JwQzBrParser / JwQzWithNodeParser",
+  "description": "边界样本 1: kbtable 结构完整但本学期零课, 全部课程格为 &nbsp; 占位 (text() 为 U+00A0, isBlank==true 跳过)。两个 parser 均应返回空 List 不抛异常。下游须区分 'verified_empty' (协议正确但零课, 提示确认学期) 与 'error' (协议选错/页面异常)",
+  "result": "verified_empty",
+  "courseCount": 0,
+  "courses": [],
+  "assertions": [
+    "QzBrParser.generateCourseList: div.kbcontent.text().isBlank() → continue, 返回空 List",
+    "QzWithNodeParser.generateCourseList: 同上 (继承基础版 generateCourseList)",
+    "不抛异常, 不产生半解析记录",
+    "tryAllParsers 集成时: 本 fixture 的 qz_br/qz_with_node 候选均得 0 课程, 不得据此判协议错误; UI 应引导用户检查学期选择"
+  ]
+}

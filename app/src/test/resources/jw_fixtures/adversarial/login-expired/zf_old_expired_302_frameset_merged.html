@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<!-- SAMPLE: 老正方(zf) 会话过期: xskbcx.aspx 302 回 default2.aspx 登录框架页.
+     模拟 sleepy WebView capture JS (JwWebViewLoginScreen.kt L182-201) 的拼接输出:
+     document.documentElement.outerHTML + iframe/frame contentDocument.outerHTML
+     顶层=登录框架, frame 内容=也是登录页(不是含 Table1 的课表).
+     依据 /tmp/jw_research.json: "xskbcx.aspx 未登录 302 跳登录(ASP.NET 1.1)" -->
+<html><head><meta charset="utf-8"><title>欢迎使用正方教务管理系统！请登录</title>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312"></head>
+<body>
+<form name="form1" method="post" action="default2.aspx" id="form1">
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="truncated_viewstate_placeholder" />
+<div class="login_box">
+用户名:<input name="txtUserName" id="txtUserName" type="text" maxlength="12">
+密码:<input name="TextBox2" id="TextBox2" type="password" maxlength="18">
+验证码:<input name="txtSecretCode" id="txtSecretCode" type="text" maxlength="4" size="4">
+<img id="icode" src="CheckCode.aspx">
+选择身份:<select name="RadioButtonList1" id="RadioButtonList1">
+<option selected="selected" value="学生">学生</option><option value="教师">教师</option></select>
+<input type="submit" name="Button1" value=" 登 录 " id="Button1">
+</div>
+</form>
+<!-- 拼接进来的子 frame (xskbcx.aspx 302 后同样是登录页) -->
+<frame name="ContentFrame" src="default2.aspx"><html><head><title>欢迎使用正方教务管理系统！请登录</title></head>
+<body>会话已超时,请重新登录</body></html></frame>
+</body></html>

@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表 - 列表视图空</title>
+</head>
+<body>
+<!-- 新版正方 list 视图 (#kblist_table) 空学期边界:
+     容器存在但仅显示表头(thead), tbody 内为占位 '暂无数据' 提示行.
+     jw_research.json T4/T6 covers 该视图, 但当前 JwNewZfParser 仅识别 kbtable/kbgrid/el-table/.kbcapi-table 容器,
+     没有 #kblist_table 选择器, 因此容器存在但找不到课程单元.
+-->
+<table id="kblist_table" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <th>课程名</th>
+      <th>教师</th>
+      <th>上课时间</th>
+      <th>上课地点</th>
+      <th>周次</th>
+      <th>节次</th>
+      <th>星期</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td colspan="7" align="Center">暂无数据</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

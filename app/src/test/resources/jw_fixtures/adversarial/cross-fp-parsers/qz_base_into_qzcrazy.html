@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>个人课表</title></head>
+<body>
+<!-- ADVERSARIAL: 强智基础页面 (div class=kbcontent) 喂 JwQzCrazyParser
+     JwQzCrazyParser 仅 override tableName='kbcontent1',
+     上游 ChangleUniversity QzCrazyParser 是 HEU 专属(div class=kbcontent1)
+     基础页面用 class='kbcontent' → JwQzCrazyParser 找不到 div → 0 课程 -->
+<table id="kbtable" border="1">
+  <tr>
+    <td>节次</td><td>星期一</td><td>星期二</td><td>星期三</td>
+    <td>星期四</td><td>星期五</td><td>星期六</td><td>星期日</td>
+  </tr>
+  <tr>
+    <td>第一节<br>08:00</td>
+    <td></td>
+    <td>
+      <div class="kbcontent">
+        高等数学<br>
+        <font title="老师">张老师</font><br>
+        <font title="教室">A101</font><br>
+        <font title="周次(节次)">1-16(周)</font>
+      </div>
+    </td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+</table>
+</body>
+</html>

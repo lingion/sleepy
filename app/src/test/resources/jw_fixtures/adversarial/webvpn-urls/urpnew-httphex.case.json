@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的新 URP courseSelect 指纹 — 当前两种前缀形态行为分叉",
+  "expected": {
+    "protocol": "urp_new (TYPE_URP_NEW)",
+    "protocolBasis": "jw_plan T6 URL 规则: courseSelect|thisSemesterCurriculum -> URP_NEW; 本形态全 URL 不含 'urp' 子串(/http/<hex>/ 段为十六进制, 内层只有 student/courseSelect/...), 当前实现 L156 不会命中 — 这正是 T6 要求补 courseSelect|thisSemesterCurriculum 指纹的原因",
+    "courseCount": "1 (dateList[0].selectCourseList[0].timeAndPlaceList 单时段样本)",
+    "errorClass": "期望: 无错误; 当前: 判型 null -> tryAllParsers 兜底侥幸解析成功(见 parserImpact), 兜底掩盖判型缺口",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "urp_new",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "当前: detect 返回 null(无 urp 子串且无 courseSelect 指纹) -> parseHtml L88-91 走 tryAllParsers; 候选第 2 位 JwNewUrpParser(JwImportViewModel.kt L123) 的 extractJsonFromHtml 用 'dateList' marker + 括号配对抠 JSON(JwNewUrpParser.kt L114-143), WebView 抓到的 JSON 渲染页里 dateList 是纯文本, indexOf 可命中 -> 侥幸产出 1 门课。风险: 兜底顺序在 NewZf 之前无页面级判型, 若页面脚本同时含 kbxx 等 marker 会竞争; 且'判型正确'与'兜底碰对'在诊断上不可区分(T9 要求记录命中特征)。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "urpnew-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/5e9a83/student/courseSelect/thisSemesterCurriculum/ajaxStudentSchedule/callback",
+  "sampleKind": "webvpn-url"
+}

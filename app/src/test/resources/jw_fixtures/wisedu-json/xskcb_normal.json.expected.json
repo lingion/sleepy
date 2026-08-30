@@ -1,0 +1,96 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp /jwapp/sys/wdkb/modules/xskcb/xskcb.do",
+    "fixture_purpose": "标准 4 课程样本：连续周次 / 双周压缩(type=2) / 双连续段拆分 / 跨节次起止(9-11节)",
+    "parser": "JwWiseduParser",
+    "skzc_semantics": "bitmap 字符串，索引 i 对应周次 (i+1)；字符 '1' 表示该周上课",
+    "field_aliases": {
+      "KCM": "name (课程名)",
+      "SKJS": "teacher (上课教师)",
+      "JASMC": "room (教室名称)",
+      "SKXQ": "day (1=周一 .. 7=周日)",
+      "KSJC": "startNode (开始节次)",
+      "JSJC": "endNode (结束节次)",
+      "SKZC": "周次 bitmap, 经 weekRuns 拆为 (startWeek,endWeek,type)"
+    },
+    "type_semantics": "0=每周(连续段) / 1=单周(整体奇数步进) / 2=双周(整体偶数步进)",
+    "parser_run_logic": "1) 单 run → (start,end,0); 2) 多 week 整体 step=2 → 压缩 (first,last,1/2); 3) 其他 → 按连续段拆,每段 type=0",
+    "evidence": [
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L82-112 weekRuns 实现)",
+      "/tmp/fixtures/myleafy/README.md (跨平台契约-课程数组字段语义参考)",
+      "/tmp/yibinu_01.js (宜宾学院 wisedu 适配器,字段命名一致,但其用 ZCMC 而非 SKZC)",
+      "/tmp/whut_01.js (武汉理工 wisedu 适配器,parseWeeksFromSkzc 与 sleepy weekRuns 等价)",
+      "/tmp/jlu.js (吉林大学 wisedu 适配器,确认 dqxnxq.rows[*].{DM,MC,SFDQ} 字段)"
+    ]
+  },
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101",
+      "_raw_skzc_weeks": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16],
+      "_raw_kbid": "kb-001"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "李老师",
+      "room": "外语楼308",
+      "_raw_skzc_weeks": [2,4,6,8,10,12,14,16],
+      "_raw_kbid": "kb-002",
+      "_rationale": "整体 step=2,first=2(偶) → type=2 双周;parser L107-110 压缩为单段"
+    },
+    {
+      "name": "数据结构",
+      "day": 5,
+      "startNode": 6,
+      "endNode": 7,
+      "startWeek": 1,
+      "endWeek": 8,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "实验楼205",
+      "_raw_skzc_weeks": [1,2,3,4,5,6,7,8,11,12,13,14,15,16,17,18],
+      "_raw_kbid": "kb-003",
+      "_rationale": "SKZC 索引 0-7='1' → 周 1-8;索引 10-17='1' → 周 11-18;双连续段 runs.size>1 且非整体 step=2 → 按段拆 type=0,产生 2 条 JwCourse"
+    },
+    {
+      "name": "数据结构",
+      "day": 5,
+      "startNode": 6,
+      "endNode": 7,
+      "startWeek": 11,
+      "endWeek": 18,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "实验楼205",
+      "_raw_kbid": "kb-003",
+      "_rationale": "数据结构拆出的第二条连续段"
+    },
+    {
+      "name": "大学物理",
+      "day": 2,
+      "startNode": 9,
+      "endNode": 11,
+      "startWeek": 1,
+      "endWeek": 20,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "教学楼B202",
+      "_raw_skzc_weeks": [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20],
+      "_raw_kbid": "kb-004",
+      "_rationale": "跨节次 9-11(连续 3 节) 边界测试;KSJC<JSJC 且 KSJC>=1 才产出课程"
+    }
+  ]
+}

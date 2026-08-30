@@ -1,0 +1,15 @@
+{
+  "input": "cf_kbxx_into_newzf2.html",
+  "expected": {
+    "protocol_adjudication": "cf",
+    "correct_parser": "JwChengFangParser(T3 待实现): startNode=jcdm2[0], endNode=jcdm2.last, zcs 逐周枚举归并",
+    "courses_count": 2,
+    "per_course_expectation": [
+      {"name": "软件工程", "day": 2, "node": "3-4", "week": "1-16", "teacher": "孙老师", "room": "工训楼505"},
+      {"name": "数据库原理", "day": 4, "node": "5-6", "week": "1-15单", "teacher": "钱老师", "room": "实验楼305"}
+    ],
+    "current_behaviour_measured": "JwNewZfParser.parseEmbeddedJson 的 marker 'kbxx' (L42) 命中 CF 页面, extractBalanced 抠出数组, parseCourseJsonArray 逐条: name=kcmc 命中 (L117), teacher=teaxms 不在别名表 → 空 (L120), room=jxcdmcs 不在别名表 → 空 (L121), day: firstInt('kcxq','xq','xqj',...) — CF 的星期字段名就是 'xq'! L124 的候选第二位就是 'xq', day=2/4 命中; 节次: jcdm2='3,4' 不是纯数字 → toIntOrNull()=null → L127 return → 整门课静默丢弃。parseEmbeddedJson 返回空, 落到 parseHtmlTable: [id*=kb] 无命中 → parseHtmlTableFromQz → JwQzParser → 无 kbtable → 0 课。实测全 parser 0 课。",
+    "error_classification": "silent_zero_courses_marker_hijack",
+    "notes": "JwNewZfParser L42 markers 含 'kbxx' (CF/青果的字段) — T4 要求 'CF 的 kbxx 不得被该 parser 抢先' 即指此。真实 CF 页面里 kcmc/xq 命中、jcdm2 不命中, 造成'半吃': 标记被认领但字段体系不匹配 → 0 课, tryAllParsers 里 NewZf 已产出(空)但不清空 best, 后续 OldZf/Qz 也救不了。此样本证明: marker 级互斥 (T8) 必须做字段白名单校验, 只认 marker 不认字段会静默吞页。"
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp /jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do",
+    "fixture_purpose": "空学期列表边界:datas.dqxnxq.rows=[]",
+    "parser": "无独立 Kotlin parser — 由 WISEDU_FETCH_JS 消费",
+    "consumption_logic": "rows = d.datas.dqxnxq.rows || []; 无页面 select/active/data-elem 且无 current 行时 xnxq 保持空串;代码 L445 throw '无法识别当前选中的学期，请先在教务页面选择学期后再点导入'",
+    "evidence": [
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L395-445",
+      "/tmp/jlu.js L178-183: rows[0] 不存在时 fetchCurrentSemester 返回 null"
+    ]
+  },
+  "expected_xnxqdm": null,
+  "expected_semester_row": null,
+  "expected_behavior": {
+    "fetch_layer": "不发送 xskcb.do 请求(没有合法 XNXQDM)",
+    "bridge_result": "{ok:false, err:'无法识别当前选中的学期，请先在教务页面选择学期后再点导入'}",
+    "downstream": "不调用 JwWiseduParser"
+  }
+}

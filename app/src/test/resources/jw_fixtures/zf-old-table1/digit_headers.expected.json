@@ -1,0 +1,39 @@
+{
+  "_note": "数字行头变体('第1节'~'第8节' 纯数字)+中午组头。'中午' 不在 OTHER_HEADER(上游同缺), 会 fall-through 到 countDay++ 被当课程格: 其 td.text()='&nbsp;'→空格计数, 不产课程, 无实际影响(与研究结论一致)。属性行命中 '通识必修'/'体育必'(上游 47 词表, sleepy 现 24 词表缺这 2 项 — T1 修复点)。",
+  "_note_about_split": "'通识必修'/'体育必' 走 5 行属性行分支: [名,属性,时间,老师,教室] → timeInfo=split[2], teacher=split[3], room=split[4]。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 5,
+      "endNode": 5,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "张老师",
+      "room": "语音楼C301"
+    },
+    {
+      "name": "体育",
+      "day": 1,
+      "startNode": 7,
+      "endNode": 7,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "陈老师",
+      "room": "体育馆"
+    }
+  ]
+}

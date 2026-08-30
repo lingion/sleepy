@@ -1,0 +1,28 @@
+{
+  "_note": "URP 备用表格变体 (UrpParser 第二路径 class='table table-striped table-bordered'): 7 列裁剪版, headSize=7, weekIdx=2, nameIdx=0/teacherIdx=1/dayIdx=3/nodeIdx=4/stepIdx=5/roomIdx=6/buildingIdx=-1(教学楼列缺失). wholeFlag=(tds.size=7 > 7-2=5)=true 走 wholeFlag 路径. room 拼接: tds[buildingIdx=-1]+tds[roomIdx=6] → tds[-1] 抛 ArrayIndexOutOfBoundsException → catch → room='' (整段 room 赋值被吞). 关键:weekday 列也必须用数字, 因上游 `if (kbtable.text().contains('星期一')) return@forEach` 会跳过整张表.",
+  "_fixture": "urp_striped_table_trimmed_cols.html",
+  "courses": [
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": ""
+    },
+    {
+      "name": "操作系统",
+      "day": 4,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 14,
+      "type": 1,
+      "teacher": "李老师",
+      "room": ""
+    }
+  ]
+}

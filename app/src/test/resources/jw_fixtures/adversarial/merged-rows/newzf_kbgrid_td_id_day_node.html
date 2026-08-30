@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>学生个人课表</title>
+</head>
+<body>
+<!--
+  新正方 kbgrid_table_0 真实 DOM 形态: 课程格 td 携带 id="day-node" (day-起始节次)。
+
+  源码证据 (research fixture 挖矿组 + GitHub 交叉):
+    ① shiguang_warehouse zhengfang_01.js L14 与 XZIT/xzit_01.js L28:
+         const day = parseInt($(td).attr('id').split('-')[0])
+       证明现行新正方 grid td 有 id, day 从 id 首段取, 不靠位置.
+    ② Kozmosa/MySCUT importScutHtml.ts L270-281:
+         tableRoot.querySelectorAll('td.td_wrap[id]')
+         idText.match(/^(\d+)-(\d+)$/)   → id 形如 "3-5" (day=3, 起始节 5)
+         rowSpan = parseInt(cell.getAttribute('rowspan') ?? '1')
+       证明 id 第二段 = fallbackNode (起始节次), rowspan = 连堂节数.
+    ③ MySCUT parseNodeRange L124-141: 优先从格内 '(N-M节)' 文本取节次,
+       缺失时 fallbackNode/fallbackSpan 兜底 — 即 rowspan 是次级证据.
+
+  本 fixture 覆盖的对抗点:
+    ① td id 与位置冲突: 课程格以 id 真实定 day/节, 位置序号不可信
+       (第 1 行 课程格 id="4-5" → day=4, 但按 td 序号会判 day=2);
+    ② rowspan=3 连堂 (id="2-1" 周一 1-3 节) + 后续行该列无 td;
+    ③ 一个格叠 2 门课 (.timetable_con x2, MySCUT L288 blocks 循环);
+    ④ 节/周文本 '(1-3节){第1-16周}' 与 id 冲突时文本优先 (MySCUT parseNodeRange 语义).
+
+  sleepy 现版 JwNewZfParser.parseHtmlTable L245-250 选择器链不含 #kbgrid_table_0,
+  也不读 td id — [id*=kb] 通配会命中 div#kbgrid_table_0, 但 getElementsByClass('kbcontent')
+  在 .timetable_con 结构 0 命中 → 全 continue → result 空 → parseHtmlTableFromQz()
+  → JwQzParser 无 #kbtable → 0 课.
+-->
+<div id="kbgrid_table_0" class="el-table__body-wrapper">
+  <table class="el-table__body">
+    <thead>
+      <tr>
+        <th>节次</th>
+        <th><div>星期一</div></th><th><div>星期二</div></th>
+        <th><div>星期三</div></th><th><div>星期四</div></th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第1节</div></td>
+        <td class="td_wrap" id="1-1" rowspan="3">
+          <div class="timetable_con text-left">
+            <div class="title"><font>高等数学</font></div>
+            <p><font _ooo="x">(1-3节){第1-16周}</font><font>张三</font></p>
+            <p><font>一教101</font></p>
+            <p><font>张三</font></p>
+          </div>
+        </td>
+        <td class="td_wrap" id="2-1">
+          <div class="timetable_con text-left">
+            <div class="title"><font>大学英语</font></div>
+            <p><font _ooo="x">(1-2节){第2-16周}</font><font>李四</font></p>
+            <p><font>外语楼308</font></p>
+            <p><font>李四</font></p>
+          </div>
+        </td>
+        <td class="td_wrap" id="4-5">
+          <div class="timetable_con text-left">
+            <div class="title"><font>数据结构</font></div>
+            <p><font _ooo="x">(5-6节){第1-16周}</font><font>王五</font></p>
+            <p><font>二教205</font></p>
+            <p><font>王五</font></p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第2节</div></td>
+        <td class="td_wrap" id="2-3" rowspan="2">
+          <div class="timetable_con text-left">
+            <div class="title"><font>体育</font></div>
+            <p><font _ooo="x">(3-4节){第1-16周}</font><font>赵六</font></p>
+            <p><font>体育馆</font></p>
+            <p><font>赵六</font></p>
+          </div>
+          <div class="timetable_con text-left">
+            <div class="title"><font>形势与政策</font></div>
+            <p><font _ooo="x">(3节){第9-9周}</font><font>钱七</font></p>
+            <p><font>三教301</font></p>
+            <p><font>钱七</font></p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第3节</div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

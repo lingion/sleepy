@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "protocol": "pku",
+    "fixture": "pku_missing_fields.html",
+    "scenario": "缺字段边界: 行1 只有 9 个 td(被 >=11 守卫跳过); 行2 时段只有 1 段(size<2 跳过); 行3 时段无第 3 token(括号兜底取教室); 行4 状态不含'未'字正常解析",
+    "parser": "JwPekingParser (移植自 dIT8Zv/WakeupSchedule_BUPT PekingParser.kt)",
+    "expected_behavior": "行1/行2 产出 0; 行3 产出 1 门(room=实验楼201 括号内); 行4 产出 1 门 正常",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"]
+  },
+  "courses": [
+    {
+      "name": "大学物理",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "物理老师",
+      "room": "实验楼201"
+    },
+    {
+      "name": "大学英语(二)",
+      "day": 5,
+      "startNode": 7,
+      "endNode": 8,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "英语老师",
+      "room": "教305"
+    }
+  ]
+}

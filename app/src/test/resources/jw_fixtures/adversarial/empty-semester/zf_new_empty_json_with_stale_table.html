@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 新版正方 对抗样本: 页面同时含 (a) <script> var kbList = [];  当前学期空
+     (b) 服务端预渲染的 table#kbtable 上一学期课程(缓存未刷新).
+     语义上当前学期无课, 但页面残留旧数据.
+     JwNewZfParser.parseEmbeddedJson 的 markers 列表不含 'kbList' (只有 kbxx/tmp_list/xskbcx),
+     因此 parseEmbeddedJson 不命中 kbList=[] 的 script 块, 掉到 parseHtmlTable, 把旧学期数据当当前学期导入.
+     这是对抗语义陷阱: '0 课' 与 '错课' 之间应优先 'kbList=[] 是当前学期权威'。
+-->
+<script>
+var kbList = [];
+</script>
+<table id="kbtable" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <td>节次\星期</td>
+      <td>星期一</td>
+      <td>星期二</td>
+      <td>星期三</td>
+      <td>星期四</td>
+      <td>星期五</td>
+      <td>星期六</td>
+      <td>星期日</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>第一节</td>
+      <td>
+        <div class="kbcontent">
+          大学英语(残留学期数据)
+          <font title="老师">李四</font>
+          <font title="周次(节次)">1-16周(周)</font>
+          <font title="教室">外语楼-201</font>
+        </div>
+      </td>
+      <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

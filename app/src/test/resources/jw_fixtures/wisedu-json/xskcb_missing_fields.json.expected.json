@@ -1,0 +1,82 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp /jwapp/sys/wdkb/modules/xskcb/xskcb.do",
+    "fixture_purpose": "字段缺失/全零边界:验证 parser 对每个缺失字段的容错行为(skip/continue 语义)",
+    "parser": "JwWiseduParser",
+    "parser_drop_reasons": {
+      "KCM_blank": "name.isBlank() → continue (L48-49)",
+      "SKXQ_missing": "int('SKXQ') ?: continue (L52)",
+      "KSJC_missing": "int('KSJC') ?: continue (L53)",
+      "SKZC_all_zero": "weeks.isEmpty() → return emptyList() (L86)",
+      "SKZC_missing": "str('SKZC') 返回空串 → weeks.isEmpty() → return emptyList()",
+      "SKJS_missing": "str('SKJS') 返回空串 → teacher='',但课程仍产出 (parser 不强制教师非空)",
+      "JASMC_missing": "str('JASMC') 返回空串 → room='',但课程仍产出 (parser 不强制教室非空)"
+    },
+    "evidence": [
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L42-72: 字段处理顺序与空值兜底)"
+    ]
+  },
+  "courses": [
+    {
+      "name": "操作系统",
+      "day": 4,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "钱老师",
+      "room": "教学楼C303",
+      "_raw_kbid": "kb-101",
+      "_rationale": "完整字段,正常解析"
+    },
+    {
+      "name": "缺教师课",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "",
+      "room": "教学楼D404",
+      "_raw_kbid": "kb-103",
+      "_rationale": "SKJS 缺失 → str() 兜底为空串,课程仍产出,teacher 为空;后续 importAsNewTable 不强制校验教师"
+    },
+    {
+      "name": "缺教室课",
+      "day": 3,
+      "startNode": 7,
+      "endNode": 8,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "孙老师",
+      "room": "",
+      "_raw_kbid": "kb-104",
+      "_rationale": "JASMC 缺失 → str() 兜底为空串,课程仍产出,room 为空"
+    }
+  ],
+  "dropped_rows": [
+    {
+      "_raw_kbid": "kb-102",
+      "reason": "KCM='' → name.isBlank() → continue (parser L48-49)"
+    },
+    {
+      "_raw_kbid": "kb-105",
+      "reason": "SKXQ 缺失 → int('SKXQ') 为 null → continue (parser L52)"
+    },
+    {
+      "_raw_kbid": "kb-106",
+      "reason": "SKZC 字段缺失 → weeks.isEmpty() → 该条被丢弃,后续无 weekRuns 结果"
+    },
+    {
+      "_raw_kbid": "kb-107",
+      "reason": "KSJC 缺失 → int('KSJC') 为 null → continue (parser L53);注:JSJC 缺失时 endNode 会回退为 startNode,但 KSJC 缺失则整条 drop"
+    },
+    {
+      "_raw_kbid": "kb-108",
+      "reason": "SKZC 全部 '0' → weeks.isEmpty() → return emptyList() (parser L86)"
+    }
+  ]
+}

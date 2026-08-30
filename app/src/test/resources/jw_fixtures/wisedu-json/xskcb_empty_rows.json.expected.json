@@ -1,0 +1,16 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp /jwapp/sys/wdkb/modules/xskcb/xskcb.do",
+    "fixture_purpose": "空课表样本：rows=[] 边界,parser 应返回空 List,触发上游'课程列表为空'错误",
+    "parser": "JwWiseduParser",
+    "parser_behavior": "rows.mapIndexed { ... } 在空数组上自然终止 → 返回 emptyList()",
+    "evidence": [
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L36-40: rows 空则 return emptyList())"
+    ]
+  },
+  "courses": [],
+  "downstream_behavior": {
+    "jw_import_state": "Error('课程列表为空，请确认已到达课表页面')",
+    "note": "W2 测试期望:JwWiseduParser(source).generateCourseList() == []"
+  }
+}

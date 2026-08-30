@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>个人课表</title></head>
+<body>
+<!-- ADVERSARIAL (字段别名陷阱): kbList 行同时带 sleepy JwNewZfParser 旧别名与真实 zf_new 字段,
+     验证 T4 要求的 '字段优先级使用 cdmc(不要把 jasmc 当教室)、xm/jsxm、xqj/xqjmc、jcs/jc'。
+     本样本 room 字段同时有 cdmc(真实教室)+jasmc(老别名, 值是误用的教学班号),
+     教师同时有 xm(真实)+jsmc(会与教室别名 jsmc 撞名)。
+     JwNewZfParser.parseCourseJsonArray:
+       room: firstStr('jasmc','jsmc',...) L121 — jasmc 排第一 → 取到 '教学楼A-001' (错! 真教室是 cdmc)
+       teacher: firstStr('jsxm','jsmc',...) L120 — jsmc 排第二 → 若 jsmc='张三' 会当教师 (撞名)
+       节次: jc='1-2' 是字符串 '1-2', firstInt('ksjcsd','ksjc','jc',...) L127 → '1-2'.toIntOrNull()=null → return 丢课!
+     本页面 JwNewZfParser 应解析 0 课 (jc 串 bug), T4 修复后应 2 课 -->
+<script>
+var data = {"kbList":[
+  {"kcmc":"高等数学","xqj":1,"jcs":"1-2","jc":"1-2","zcd":"1-16周",
+   "cdmc":"教一101","jasmc":"教学楼A-001","xm":"张三","jsmc":"张三"},
+  {"kcmc":"大学英语","xqj":3,"jcs":"3-4","jc":"3-4","zcd":"2-8周(单)",
+   "cdmc":"外语楼308","jasmc":"外语楼B-002","xm":"李四","jsmc":"李四"}
+]};
+</script>
+</body></html>

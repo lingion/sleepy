@@ -1,0 +1,22 @@
+{
+  "Msg": "success~",
+  "code": "1",
+  "data": [
+    {
+      "date": [
+        { "xqmc": "一", "mxrq": "", "zc": "all", "xqid": 1 },
+        { "xqmc": "二", "mxrq": "", "zc": "all", "xqid": 2 }
+      ],
+      "kbList": [
+        {
+          "kcmc": "机器学习",
+          "xqj": "3",
+          "cdmc": "信息楼434",
+          "xm": "丁振",
+          "zcd": "1-18周",
+          "jc": "3-4"
+        }
+      ]
+    }
+  ]
+}

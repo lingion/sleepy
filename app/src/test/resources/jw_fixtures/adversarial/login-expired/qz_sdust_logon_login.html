@@ -1,0 +1,346 @@
+
+
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+	<head>
+		<base target="_self" />
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<meta property="qc:admins" content="truncated_qc_admins_placeholder" />
+		<title>山东科技大学综合教务管理系统-强智科技</title>
+		<meta http-equiv="keywords" content="教务管理 数字校园 综合教务管理 教学管理 中职数字校园 强智科技 高校教务 迎新 学工系统 收费系统 人事管理 科研管理 课程资源 网站群 在线支付管理" />
+		<meta http-equiv="description" content="湖南强智科技发展有限公司（www.qzdatasoft.com）是中国数字化校园软件专业提供商。十多年来，强智科技一直致力于中国教育信息化平台的研发与推广；强智新一代综合教学管理平台将教、学、管理、服务与决策完美结合的设计理念，众多高校的成功实施，必将成为行业的标杆，永载史册。" />
+	
+		<style type="text/css">
+			body,div,dl,dt,p,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,blockquote,th,td { 
+				padding:0; 
+				margin:0 auto; font-family:"微软雅黑"
+			} 
+			a{
+				color:#999;
+				text-decoration: none;
+			}
+			.wapbg{ background:url(/framework/images/index/tpbg.gif); height:446px;}
+			.wap{ margin:0 auto; width:955px;}
+			.top{ height:150px; padding-left:85px;}
+			.middle{ height:296px;background:url(/framework/images/index/bgtp.gif) no-repeat; height:296px;position:relative; width:955px;}
+			.dl{width:312px;height:230px;position:absolute;right:60px;top:10px}
+			.logintitle{font-size:24px;color:#333;padding-bottom: 20px;}
+			.dlmi{ float:left; width:312px; line-height:45px;font-size:17px;color:#333;position:absolute;top:70px;}
+			.input {  height:28px;border:1px solid #DDDDDD;padding-left: 3px;}
+			.dlj{ color:#666;position:absolute;top:180px;left:77px;width: 113px;}
+			.inputSmt{height:45px;width:45px;font-size:16px; cursor: pointer;}
+			.dlau a{ background:url(/framework/images/index/dlau.gif) no-repeat; display:block; width:45px; height:45px;}
+			.dlau1{height:45px;width:45px;font-size:16px;}
+			.dlau1 a{ background:url(/framework/images/index/dlau1.gif) no-repeat; display:block; width:45px; height:45px;}
+			.end{position:absolute;font-size:15px;color:#999;width:809px;left: 85px;top: 304px;}
+			.end .leftclass{float:left;display: block;}
+			.end .right{float:right;display: block;} 
+			.copyright{color:#999;text-decoration:none;}
+			.trclass{height:40px;text-align:right;padding-right: 5px;}
+			
+			.button{ 
+				height:36px; 
+				line-height:22px;  
+				width:128px;
+				color:#FFF; 
+				background-color:#2F88EE; 
+				border:0;
+				padding-left:5px;
+				padding-right:5px; 
+				cursor: pointer;
+				font-size:16px; 
+			}
+			.buttonover{ 
+				height:36px; 
+				line-height:22px;  
+				width:128px;
+				color:#FFF; 
+				background-color:#ABCAE9; 
+				border:0;
+				padding-left:5px;
+				padding-right:5px; 
+				cursor: pointer; 
+				font-size:16px;
+			}
+			
+			.dlti{
+				font-size:20px;
+				color:#333;
+				position:absolute;
+				top:5px;
+				width: 312px;
+			}
+			.dl_box2 div{padding-top:100px;text-align:center}
+			.dlti li{ float:left;list-style:none; text-align:center;width:50%; } 
+			.dlti li a{display:block;}
+			.dlti .act{border-bottom:2px solid #1A4F80;color:#1A4F80; float:left;}
+			.dlti .ks{float:right;}
+			.dl_hidden{height:300px}
+			
+	 	</style>
+	 
+	<script type="text/javascript" src="/js/jspublic.js"></script>
+	<script type="text/javascript" src="/framework/commonJs/jquery.min.js"></script>
+	<script>
+		function ReShowCode(){
+			var SafeCodeImg = document.getElementById('SafeCodeImg');
+			var url="/verifycode.servlet?t="+Math.random();
+			SafeCodeImg.src = url; 
+		}
+		
+		$(function(){
+			var height = $(window).height();
+			var width = $(window).width();
+			
+			if(parseInt(height)<750){
+				$("#view").val("1");
+			}else{
+				$("#view").val("0");
+			} 
+		}); 
+		
+	</script>
+	
+</head>
+<body>
+	<iframe style="display: none" name="frmIframe"></iframe>
+	<form name="frm" id="frm" method=post action="/Logon.do?method=logon" onsubmit="return onSubmint();">									
+	<div class="wapbg">
+	<div class="wap">
+	<div class="top">
+		<img style="padding-top:80px" src="/framework/images/index_02.png" width="474px" height="61px" />
+	</div>
+	<div class="middle">
+	<div class="dl"> 
+		 
+			<div class="logintitle">用户登录</div>
+		
+		
+		<div class="dl_hidden dl_box1">
+			
+			<table border="0" width="380px">
+				<tr>
+					<td class="trclass">用户名:</td>
+					<td>
+						<input  type="text" id="userAccount"  maxlength="32" value="" style=" width:255px;" class="input"/>
+						<input type="hidden" id="view" name="view"/>
+					</td>
+				</tr>
+		
+				<tr>
+					<td class="trclass">密码:</td>
+					<td>
+						<input type="password"  id="userPassword" value="" maxlength="32" style="width:255px;" class="input"/> 
+						<input name="useDogCode" id="useDogCode" type="hidden"/>
+						<input name="encoded" id="encoded" type="hidden" />
+					</td>
+				</tr>
+				
+				
+				<tr>
+					<td class="trclass" >验证码:</td>
+					<td style="">
+						<input type="text" name="RANDOMCODE" id="RANDOMCODE" maxlength="6" class="input"  style="width:70px;display:block;float: left;" />
+						<img  src="/verifycode.servlet" id="SafeCodeImg"  onclick="ReShowCode()" width="65" height="28px" style="display:block;float: right;padding-right:100px;" /> 
+					</td>
+				</tr>
+				
+				
+				<tr>
+					<td align="left"  style="padding-top: 10px;">						
+					</td>
+					<td  align="left"  style="padding-top: 10px;">
+						<input type="button" id="GJsxsd" class="button" onclick="goJsxsd()" onmouseover="$(this).attr('class','buttonover')" onmouseout='$(this).attr("class","button")'  title="点击前往教师学生端" value="前往教师学生端"/>
+						<input type="submit" id="btnSubmit" class="button" onmouseover="$(this).attr('class','buttonover')" onmouseout='$(this).attr("class","button")'  title="点击登录" value="登  录"/>
+					</td>
+				</tr>
+				
+				<tr>
+				<td colspan="2">
+					<font size="2">*教师、学生登录时，请点击“前往教师学生端”按钮，打<br/>
+					开登录页面</font>
+				</td>
+				</tr>
+			</table>
+			<font color="red"></font> 
+		</div>
+		<div class="dl_hidden dl_box2" style="display:none">
+			<div>
+				<a href="http://www.qzdatasoft.com/qqjw/login4qq.do?method=loginIndex">
+					<img src="/framework/images/new/qqdl.gif" style="border:0px;"/>	
+				</a>
+			</div>
+		</div> 
+		
+	</div>
+
+	<div class="end" style="display: block;">
+		<table border="0" width="100%">
+		<tr>
+		<td align="left"><a  target="_blank" href="http://www.qzdatasoft.com" class="copyright" title="湖南强智科技发展有限公司">湖南强智科技发展有限公司</a>版权所有  <!-- @2000-2013 -->
+		
+		
+		
+		</td>
+		<td align="right"><a href="#" class="copyright" >在线用户数：6人</a></td>
+		</tr>
+		</table>
+	</div>
+</div>
+</div>
+</div>
+</form>
+					
+</body>
+</html>
+
+
+
+<script language="javascript">
+ 
+$(".dlti a").click(function(){
+	$(".dlti li a").removeClass("act");
+	$(this).addClass("act");
+	if($(this).attr("id")=="dl_tab1"){
+		$(".dl_box2").hide();
+		$(".dl_box1").show();
+	}else{
+		$(".dl_box1").hide();
+		$(".dl_box2").show();
+	}
+}); 
+
+
+var useraccount=null;
+var p="window";
+var pt="";
+
+if(window.parent!=window || eval(p+".dialogArguments")!=undefined){
+	for(var i=0;i<20;i++){
+		try{
+			if(eval(p+pt+".dialogArguments")==undefined){
+				pt+=".parent";
+				useraccount=eval(p+pt+".getUseraccount()");
+			}else{
+				pt+=".dialogArguments";
+				useraccount=eval(p+pt+".getUseraccount()");
+			}
+			break;
+		}catch(e){}
+	}
+}
+function goJsxsd(){
+	window.location.href="http://jwgl.sdust.edu.cn/jsxsd/";
+}
+function onSubmint(){  
+	
+	
+	var strUrl="/Logon.do?method=logon&flag=sess";
+	$.ajax( {    
+		url:strUrl,   
+  		type:"post",    
+  		cache:false,    
+		dataType:"text", 
+		success:function(dataStr) {  
+			if(dataStr=="no"){
+				return false;
+	 		}else{
+	 			var scode=dataStr.split("#")[0];
+		     	var sxh=dataStr.split("#")[1];
+		     	var code=document.getElementById("userAccount").value+"%%%"+document.getElementById("userPassword").value;
+			 	var encoded="";
+				for(var i=0;i<code.length;i++){
+					if(i<20){
+						encoded=encoded+code.substring(i,i+1)+scode.substring(0,parseInt(sxh.substring(i,i+1)));
+					    scode = scode.substring(parseInt(sxh.substring(i,i+1)),scode.length);
+					}else{
+					    encoded=encoded+code.substring(i,code.length);
+					    i=code.length; 
+					}
+				} 
+				document.getElementById("encoded").value=encoded; 
+				document.getElementById("frm").submit();
+	 		}	
+		},    
+		error:function() {       
+	 		alert("计算异常！");    
+		}         
+  	});  
+	
+	return false;
+	
+/*	if(useraccount!=null){
+		document.frm.target="frmIframe";
+	}	
+	if(useraccount!=null && useraccount!=document.frm.USERNAME.value){
+		if(window.confirm("系统检查到您两次登录的账号不一致，是否确定用新账号登录？")){
+			var ppt=p+pt;
+			while(ppt.lastIndexOf('.')!=-1){
+				ppt=ppt.substring(0,ppt.lastIndexOf('.'));
+				eval(ppt+".close()");
+			}
+			eval(p+pt+".reloadmian()");
+		}else{
+			document.frm.reset();
+		}
+		return false;
+	}*/
+	
+	//判断是否启用进入选课系统
+/*	var xkxt_sel = document.getElementById("xkxt_sel");
+	if(!xkxt_sel.checked){
+		return true;
+	}
+	document.frm.action = selectServer(document.frm.USERNAME.value);
+	return true;*/
+}
+
+	window.onload = function(){
+		document.getElementById('userAccount').focus();
+	}
+	
+
+
+//根据用户帐号选择登录服务器
+function selectServer(uName){
+	var enableServers = true;//是否启用多服务器 true/false
+	var serversArray = new Array();//服务器列表
+
+
+		serversArray[0] = "http://192.168.113.131:80/jsxsd/";
+
+		serversArray[1] = "http://192.168.113.132:80/jsxsd/";
+
+		serversArray[2] = "http://192.168.113.137:80/jsxsd/";
+
+		serversArray[3] = "http://192.168.113.133:80/jsxsd/";
+
+		serversArray[4] = "http://192.168.113.134:80/jsxsd/";
+
+		serversArray[5] = "http://192.168.113.138:80/jsxsd/";
+
+		serversArray[6] = "http://192.168.113.135:80/jsxsd/";
+
+		serversArray[7] = "http://192.168.113.136:80/jsxsd/";
+
+
+var loginUrl = "xk/LoginToXk";
+if(enableServers == true){
+	if(!isNaN(uName)){//必须为数字
+		var modVal = eval(uName % serversArray.length);
+		loginUrl = serversArray[modVal] + loginUrl;
+	}else{
+		loginUrl = serversArray[0] + loginUrl;
+	}
+}else{
+	loginUrl = ""+ loginUrl;
+}
+return loginUrl;
+}
+
+</script>

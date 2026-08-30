@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>我的课表</title>
+</head>
+<body>
+<!-- 协议未知 + 0 课的对抗: URL 无指纹, HTML 无任何协议特征, 但页面文字明确说 '本学期没有课程记录'.
+     走 tryAllParsersImpl 全部候选 → 全部 0 课 → best=emptyList().
+     语义=可信空学期(有服务端明示文本), 不是解析失败, 也不是协议识别失败.
+     这是 JwImportViewModel 行 87 protocolType.isBlank() 分支的对抗样本.
+-->
+<div class="notice">尊敬的同学: 本学期尚未产生课表数据, 请在选课结束后再次查询。</div>
+</body>
+</html>

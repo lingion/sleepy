@@ -1,0 +1,12 @@
+{
+  "input": "zf_new_fetch_expired_returns_login.html",
+  "expected": "判定: 会话过期(响应非 JSON 且含登录页特征 login_slogin/csrftoken/请输入密码)。课程数=0, 错误分类=SESSION_EXPIRED(提示重新登录, 不是'格式错误'也不是'0 门课')。依据调研: NJUPT 接口文档 '会话过期时接口返回的是 HTML 登录页(或 3xx)而非 JSON, JSON.parse 抛异常=未登录/会话过期'; JwNewZfParser 现 markers 不含 kbList 故不会产生错课, 但修复后加 kbList marker 时此样本必须仍判过期而非解析",
+  "protocol": "zf_new (新版正方 jwglxt, fetch 管线)",
+  "page": "WebView fetch POST xskbcx_cxXsgrkb.html 会话过期返回的登录页 HTML(200 而非 JSON), T5 计划的 fetch 模板对抗样本",
+  "assert_markers": [
+    "login_slogin",
+    "csrftoken",
+    "请输入密码",
+    "zftal-ui-v5"
+  ]
+}

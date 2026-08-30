@@ -1,0 +1,29 @@
+<!--
+Fixture: PKU (北京大学) 未登录被挡到 iaaa 统一认证 — 边界用例
+协议: TYPE_PKU = "pku"
+真实场景: 用户未登录或会话过期, 访问 elective.pku.edu.cn 被 302 跳转到 iaaa.pku.edu.cn 统一认证
+上游 PekingParser 行为:
+  - doc.select("table[class=datagrid]").first() 返回 null
+  - kbtable!!.getElementsByTag("tbody").first() → NPE
+期望: parser 应当优雅处理 — 实际 upstream 会 NPE, sleepy 移植版应 catch 或前置 null check
+        此 fixture 用作"缺失 datagrid" 回归测试, 期望 courses: []
+        若 parser 抛 NPE 则测试用例标记 @Test(expected = NullPointerException::class) 或在 parser 加 null guard
+注:
+  - 此 fixture 来自真实未登录响应, 脱敏为最小化版本(全 1230 字节, 真实页约 45KB)
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>北京大学统一身份认证网关</title>
+</head>
+<body>
+<form id="loginForm" action="/iaaa/oauth.jsp" method="post">
+  <input type="text" name="appID" value="syllabus"/>
+  <input type="text" name="userName" placeholder="学号"/>
+  <input type="password" name="password" placeholder="密码"/>
+  <button type="submit">登录</button>
+</form>
+<p>请使用北京大学统一身份认证账号登录</p>
+</body>
+</html>

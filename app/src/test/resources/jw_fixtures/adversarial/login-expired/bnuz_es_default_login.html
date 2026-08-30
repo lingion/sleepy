@@ -1,0 +1,227 @@
+
+    <!DOCTYPE html>
+    <html>
+
+    <head>
+        <title>登录</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<script type="text/javascript" src="eam/Scripts/jquery-2.1.3.min.js"></script>
+		<script type="text/javascript" src="eam/Scripts/bootstrap.min.js"></script>
+		<link href="/eam/Content/bootstrap.min.css" rel="stylesheet" />
+		<link href="css/main.css" type="text/css" rel="stylesheet">
+          
+        <style >
+
+            body{
+                background:#cfcfcf;
+            }
+            .fangshua {
+                color: red;
+                font-size: 14px;
+                font-weight: bold;
+            }
+            .form-group{
+                margin:0 20px;
+            }
+            .table>tbody >tr>td{
+                vertical-align: bottom;
+            }
+            .table{
+                width:95%;
+                margin-bottom:0;
+            }
+
+            @media (max-width: 768px){
+                
+                .btn,
+                input,
+                 a,label
+                {
+                    font-size:24px;
+                }
+                .col-xs-12 .title{
+                    
+                    width:50%;
+                }
+                .label{
+                    font-size:18px;
+                }
+                .col-xs-12 #code{
+                    height:32px;
+                }
+            }
+            @media (min-width: 768px){   
+
+                .btn,
+                input,
+                 a,label
+                {
+                    font-size:18px;
+                }
+                .col-xs-12 #code{
+                    height:32px;
+                    margin-left:3px;
+                    vertical-align:bottom;
+                }
+            }
+        </style>
+        <script >
+            function openMain() {
+                /* url是main窗口的路径 */
+                var url = "http://jwc.bnuz.edu.cn";
+                /* winparms是打开窗口的一些相关属性设置 */
+                var winparms = "height=0,";
+                winparms += "width=0,";
+                winparms += "left=0,";
+                winparms += "top=0,";
+                winparms += "status=no,toolbar=no,menubar=no,location=no,resizable=no,scrollbars=no,";
+                /* oModal是用来监测是否被IE阻止了弹出窗口的 */
+                var oModal = window.open(url, "_blank", winparms);
+                //当oModal==undefined时，说明IE弹出窗口被阻止 
+                //猜想：IE阻止的原理应该是发现有打开窗口，则立即关闭打开的窗口，所以oModal为undefined 
+                if (oModal != undefined) {
+                    //成功打开，则关闭登陆窗口，使opener为null，调用close时不提示是否关闭窗口的信息 
+                    oModal.opener = null;
+                    oModal.close();
+                } else {
+                    alert("您的IE阻止了弹出窗口。为了能够正常使用系统，请允许本站点的弹出窗口！谢谢！");
+                }
+            }
+
+            (function(w){if(!("WebSocket"in w&&2===w.WebSocket.CLOSING))
+            {var d=document.createElement("div");
+            d.className="browsehappy";
+            d.innerHTML='<div style="width:100%;height:100px;font-size:20px;line-height:100px;text-align:center;background-color:#E90D24;color:#fff;margin-bottom:40px;">你的浏览器版本太低，将不能正常使用本网站的部分功能，请<a target="_blank" href="http://jwc.bnuz.edu.cn/info/1051/1481.htm" style="background-color:#31b0d5;border-color: #269abc;text-decoration: none;padding: 6px 12px;background-image: none;border: 1px solid transparent;border-radius: 4px;color:#FFEB3B;">尽快升级</a></div>';
+            var f=function()
+            {var s=document.getElementsByTagName("body")[0];
+            if("undefined"==typeof(s)){setTimeout(f,10)}
+            else{s.insertBefore(d,s.firstChild)}};f()}}(window));
+
+            function RetLogin(id) {
+
+                if (window.top == window.self) {
+                    //    alert('页面不是在框架中打开的');
+                } else {
+                    window.top.location.href = "default.aspx"
+                    //   alert('页面是在框架中打开的');
+                }
+
+            }
+        </script>
+    </head>
+
+    <body  onload="Javascript: RetLogin(this);">
+        <form name="form1" method="post" action="default.aspx" id="form1">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="truncated_viewstate_placeholder" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['form1'];
+if (!theForm) {
+    theForm = document.form1;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<script src="/WebResource.axd?d=azIIxPuv1QOa5sGLrcWi23UZS5TA1h2_bW7_Qx6QU1t-rhvR5WEA5ELo7i34We-v0AiVQM3V4s76mBFf3X3ylLVtC2Y1&amp;t=truncated_timestamp_placeholder" type="text/javascript"></script>
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="CA0B0334" />
+	<input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+	<input type="hidden" name="__PREVIOUSPAGE" id="__PREVIOUSPAGE" value="truncated_previouspage_placeholder" />
+	<input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="truncated_eventvalidation_placeholder" />
+</div>
+            <div class="jumbotron col-lg-8 col-lg-offset-2 col-md-10 col-md-offset-1 col-sm-12 col-xs-12" style="box-shadow: 10px 10px 10px #333333;margin-top:3px;border-radius: 10px;">
+                <h3><img src="images/bnuz.png" class="title" style="height:auto;max-width:40%;margin-left:40px;" />
+                <span  style="margin-left:20px;    word-spacing: 3px;"><strong>教 务 管 理 系 统</strong></span></h3>
+                <div class="row">
+                    <div class="col-lg-7 col-md-7 col-sm-7 col-xs-12" >
+                        <img src="images/index_bg.png" alt="..." class="img-rounded" style="width:100%">
+                    </div>
+                    <div class="col-lg-5 col-md-5 col-sm-5 col-xs-12" style="vertical-align:middle;" >
+                        <table class="table" >
+                            <tr><td><label for="TextBox1">用户名</label></td><td> <input name="TextBox1" type="text" id="TextBox1" tabindex="1" class="form-control" autocomplete="off" placeholder="帐号不能多点同时登录！" style="color:#669999;" /></td></tr>
+                            <tr><td>
+                                    <label for="TextBox2" style="width:3em;word-spacing:0.5em;">密 码</label></td><td>
+                                    <input name="TextBox2" type="password" id="TextBox2" tabindex="2" class="form-control" /> 
+                                    <div style="color:#f0ad4e;padding-left:130px;margin-top:-20px;  display:none;" id="capital">大写已锁定</div>  </td></tr>
+                            <tr><td>
+                                    <label for="code">验证码</label></td><td class="text-left">
+                                    <div class="form-inline">
+                                    <div class="form-group " style="margin-left:0">
+                                    <img src="CheckCode.aspx" id="code" alt="看不清楚?请点击刷新" onclick="this.src='checkcode.aspx?'+ Math.random()" class="pull-right" style="cursor : pointer;vertical-align: middle;" />
+                                    <input name="TextBox3" type="text" id="TextBox3" tabindex="2" class="form-control" autocomplete="off" style="width:45%" />
+                                        </div></div></td></tr>
+                            <tr><td colspan="2" class="text-right">
+                                
+                                <a id="link_user" class="btn btn-link" href="javascript:WebForm_DoPostBackWithOptions(new WebForm_PostBackOptions(&quot;link_user&quot;, &quot;&quot;, false, &quot;&quot;, &quot;jwgl/email_yz.aspx&quot;, false, true))">忘记密码</a></div>
+                                
+                                
+                                
+                                
+                            </td></tr>
+                            <tr><td colspan="2"><input type="submit" name="Button4_test" value="登 录" id="Button4_test" class="btn btn-primary btn-lg" style="width:100%;word-spacing:2em;" /></td></tr>
+                        </table>
+                <div class="row" >
+                         
+                </div>
+                    </div>
+                </div> 
+            </div>    
+        </form>
+           
+
+    </body>
+    <script type="text/javascript">  
+        (function(){   
+        var inputPWD = document.getElementById('TextBox2');   
+        var capital = false;   
+        var capitalTip = {   
+        elem:document.getElementById('capital'),   
+        toggle:function(s){   
+        var sy = this.elem.style;   
+        var d = sy.display;   
+        if(s){   
+        sy.display = s;   
+        }else{   
+        sy.display = d =='none' ? '' : 'none';   
+        }   
+        }   
+        }   
+        
+        var detectCapsLock = function(event){   
+        // if(capital){return};   
+        var e = event||window.event;   
+        var keyCode = e.keyCode||e.which; // 按键的keyCode   
+        var isShift = e.shiftKey ||(keyCode == 16 ) || false ; // shift键是否按住   
+        if (   
+        ((keyCode >= 65 && keyCode <= 90 ) && !isShift) // Caps Lock 打开，且没有按住shift键   
+        || ((keyCode >= 97 && keyCode <= 122 ) && isShift)// Caps Lock 打开，且按住shift键   
+        ){capitalTip.toggle('block');capital=true}   
+        else{capitalTip.toggle('none');}   
+        }   
+        inputPWD.onkeypress = detectCapsLock;   
+        inputPWD.onkeyup=function(event){   
+        var e = event||window.event;   
+        if(e.keyCode == 20 && capital){   
+        capitalTip.toggle();   
+        return false;   
+        }   
+        }   
+        })()   
+        </script>  
+    </html>

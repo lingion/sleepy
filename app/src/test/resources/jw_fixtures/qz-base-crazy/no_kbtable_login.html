@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>学生登录 - 综合教务管理系统</title>
+<style>
+  body { font-family: SimSun, sans-serif; }
+  .login-form { width: 320px; margin: 80px auto; }
+</style>
+</head>
+<body>
+<div class="login-form">
+  <h2>综合教务管理系统</h2>
+  <form id="loginForm" action="/jsxsd/xk/LoginToXk" method="post">
+    <input type="hidden" name="encoded" value="">
+    <label for="userAccount">用户名：</label>
+    <input type="text" id="userAccount" name="userAccount" value="">
+    <br>
+    <label for="userPassword">密&nbsp;&nbsp;码：</label>
+    <input type="password" id="userPassword" name="userPassword" value="">
+    <br>
+    <label for="RANDOMCODE">验证码：</label>
+    <input type="text" id="RANDOMCODE" name="RANDOMCODE" value="">
+    <img src="/jsxsd/verifycode.servlet" alt="验证码">
+    <br>
+    <input type="radio" name="userType" value="student" checked>学生
+    <input type="radio" name="userType" value="teacher">老师
+    <br>
+    <input type="submit" value="登 录">
+  </form>
+  <div class="tips">请使用学号登录, 初始密码为身份证后六位。</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,38 @@
+{
+  "_note": "老正方 Table1 type=0 复合变体 fixture (按 upstream dIT8Zv/WakeupSchedule_BUPT 语义): (a) 课程属性行 通识必修 → split=5 行触发 COURSE_PROPERTY 5行分支 (b) 课程属性行 体育必 → split=4 行触发 4行分支无老师 (c) 同格双课 <br><br> 分隔 (d) (01-02节) NODE_PATTERN 覆盖 startNode (e) 大学英语带 |单周 → type=1。注: sleepy JwOldZfParser.COURSE_PROPERTY 当前只 24 项缺 '通识必修/体育必', 此 fixture 验证 T1 修复后的语义; 修复前 split[1] 不在词表会走 else 分支(timeInfo='通识必修' 错乱)。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "体育",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "",
+      "room": "操场"
+    },
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "教学楼B202"
+    }
+  ]
+}

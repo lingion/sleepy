@@ -292,6 +292,13 @@
     <!-- JW Import -->
     <string name="jw_no_url">該學校暫未配置教務 URL</string>
     <string name="jw_parse_empty">解析結果為空，請確認已到達「個人課表」頁（而非首頁/登入頁）</string>
+    <!-- T7 — frame 抓取/渲染时序错误分类 -->
+    <string name="jw_err_cross_domain_iframe">偵測到跨域內嵌框架，無法讀取課表（%1$s）。請在校園網/VPN 環境下直接開啟課表頁後再試</string>
+    <string name="jw_err_container_empty_after_delay">課表區域已找到但內容尚未載入完成，請等待頁面完整顯示課表後再次點「匯入此頁」</string>
+    <string name="jw_err_iframe_nav_pending">課表框架尚未開始載入，請等待頁面完整顯示課表後再點「匯入此頁」</string>
+    <string name="jw_err_wrong_page">目前頁面不是課表頁，請先登入並進入「個人課表」頁面</string>
+    <string name="jw_err_session_expired">登入已逾期，請在頁面中重新登入後再點「匯入此頁」</string>
+    <string name="jw_err_empty_semester">本學期暫無課程，請確認已選擇正確學期；若課表為圖片形式將無法匯入</string>
     <string name="jw_import_success">成功匯入 %1$d 門課程</string>
     <string name="jw_parse_failed">解析失敗：%1$s</string>
     <string name="jw_parse_failed_hint">\n\n提示：HEU 需在瀏覽器中登入後導航到『個人課表』頁面再點匯入</string>

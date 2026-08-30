@@ -1,0 +1,50 @@
+{
+  "_note": "URP displayTag 变体 (variant 1): UrpParser.kt 走的 wholeFlag 路径(8 列全版, tds.size=headSize=8, wholeFlag=(8 > 8-7)=true). 列顺序:课程名0/教师1/教学楼2/教室3/星期4/节次5/节数6/周次7. room=tds[2]+tds[3], teacher=tds[1], courseName=tds[0], day=getDay(tds[4]), startNode=tds[5].substringBefore('-').toInt(), step=tds[6].toInt(), endNode=startNode+step-1. 周次 '1-16周(单)' → type=1; '1-16周' → type=0; '2,4,6,8,10周'(逗号无 -)走 weekIntList2WeekBeanList 归并, start 偶数 → type=2 双周, 合并为 [2,10]; '3-12周(双)' → type=2. 关键:上游有 bug `if (kbtable.text().contains('星期一')) return@forEach` 跳过整个表, 所以星期列必须用数字(1/3/5/2)而不是中文(星期一/三/五/二), 否则上游整表跳过.",
+  "_fixture": "urp_displayTag_table.html",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "主楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "文科楼B202"
+    },
+    {
+      "name": "计算机基础",
+      "day": 5,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 2,
+      "endWeek": 10,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "信息楼C303"
+    },
+    {
+      "name": "大学物理",
+      "day": 2,
+      "startNode": 7,
+      "endNode": 8,
+      "startWeek": 3,
+      "endWeek": 12,
+      "type": 2,
+      "teacher": "赵老师",
+      "room": "实验楼D404"
+    }
+  ]
+}

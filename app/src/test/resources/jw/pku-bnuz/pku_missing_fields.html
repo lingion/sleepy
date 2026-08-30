@@ -1,0 +1,90 @@
+<!--
+Fixture: PKU (北京大学) 缺字段课表行 — 边界用例
+协议: TYPE_PKU = "pku"
+真实场景:
+  - 行 1: tds 只有 8 个 (<tds.size>=11 守卫失败, 行被静默跳过)
+  - 行 2: 11 个 td 但 tds[7] 时段文本只有 1 段 (size<2 → 无课程产出)
+  - 行 3: 11 个 td, tds[7] 分 2 段但第 2 段缺教室 (size=2, 走 else 分支取括号内为 room)
+  - 行 4: 11 个 td 但 tds[8] 状态为 "退课申请中" (不含 '未' → 不跳过, 正常解析)
+上游 PekingParser 行为:
+  - tds.size < 11 → continue (不产出)
+  - timeInfo.size < 2 → continue (不产出)
+  - size==2 时 room = timeInfo[1].substringAfter('(').substringBefore(')')
+期望:
+  - 行 1 跳过 (0 门)
+  - 行 2 跳过 (0 门)
+  - 行 3 产出 1 门, room=括号内
+  - 行 4 产出 1 门 正常解析
+共 2 门
+注:
+  - 已脱敏: 课程名改为 体育/军事理论, 教师改为 体育馆老师/军训老师
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>已选课程</title>
+</head>
+<body>
+<table class="datagrid">
+  <thead>
+    <tr>
+      <th>课程名</th><th>课号</th><th>学分</th><th>类别</th><th>教师</th>
+      <th>班号</th><th>起止周</th><th>时段</th><th>选课状态</th><th>备注</th><th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>体育</td>
+      <td>PE1001</td>
+      <td>1</td>
+      <td>必修</td>
+      <td>体育馆老师</td>
+      <td>001</td>
+      <td>1~16</td>
+      <td>1~16周 周四3~4节 体育馆</td>
+      <td>已选</td>
+    </tr>
+    <tr>
+      <td>军事理论</td>
+      <td>MIL1001</td>
+      <td>2</td>
+      <td>必修</td>
+      <td>军训老师</td>
+      <td>001</td>
+      <td>1~8</td>
+      <td>1~8周<br></td>
+      <td>已选</td>
+      <td></td>
+      <td>退选</td>
+    </tr>
+    <tr>
+      <td>大学物理</td>
+      <td>PHY2001</td>
+      <td>3</td>
+      <td>必修</td>
+      <td>物理老师</td>
+      <td>001</td>
+      <td>1~16</td>
+      <td>1~16周 周二5~6节(实验楼201)</td>
+      <td>已选</td>
+      <td></td>
+      <td>退选</td>
+    </tr>
+    <tr>
+      <td>大学英语(二)</td>
+      <td>ENG3001</td>
+      <td>2</td>
+      <td>必修</td>
+      <td>英语老师</td>
+      <td>001</td>
+      <td>1~16</td>
+      <td>1~16周 周五7~8节 教305</td>
+      <td>退课申请中</td>
+      <td></td>
+      <td>退选</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

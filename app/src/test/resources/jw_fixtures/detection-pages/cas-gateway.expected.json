@@ -1,0 +1,17 @@
+{
+  "_note": "CAS 统一身份认证网关页样本(参照 cas.dlufl.edu.cn 等通用 CAS 部署,form action 含 /cas/login?service=<业务系统回调>)。本 fixture 是登录网关,不含课表结构 — 所有 parser 都应解析为空课程。协议判定语义:cas/login 仅为登录入口,不能单独判定课表协议(上游大连外国语 cas→qz, 湖南城市学院 zfca→zf);detectProtocolFromHtml 不应把 CAS 单独判为某协议,判定延迟到登录跳转回业务系统(抓到 HTML 时)再做。",
+  "_fingerprint": {
+    "urlMarkers": ["/cas/login", "service="],
+    "htmlMarkers": [
+      "/cas/login",
+      "service=http",
+      "execution=e1s1",
+      "_eventId=submit"
+    ],
+    "expectedProtocol": "unknown",
+    "expectedConfidence": 0,
+    "expectedParseResult": "empty",
+    "warning": "CAS 页面不应作为协议指纹;service= 参数指向的回跳业务系统才是真正要判型的对象。本 fixture 的 service 参数指向 jsxsd/framework/main_index.jsp 即强智,但 fixture 本身不定型,由登录后页面判定。"
+  },
+  "courses": []
+}

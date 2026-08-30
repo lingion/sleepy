@@ -1,0 +1,26 @@
+{
+  "input": "zf_new_empty_semester_with_stale_table1.html",
+  "protocol": "zf_new",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "对抗样本 — 页面声称 zf_new(有隐藏 kbtable 占位 div)但 DOM 里残留上学期的 Table1 数据",
+    "diagnosis": "导入会拿到 1 门陈旧课程,语义上应判'未选对学期',不是'本学期有课'",
+    "semantic": "某些 zf_new 部署在 xnm/xqm 无效时回退渲染上学期的 HTML 缓存 — 用户以为导了新学期,实际是旧学期数据"
+  },
+  "detectionPoints": [
+    "存在 display:none 的 <div id='kbtable'> 占位(真实 zf_new Vue 容器,无数据)",
+    "同时存在 <table id='Table1'> 含 1 门课(上学期残留,老正方结构)",
+    "脚本注释提示本学期无课",
+    "单独看 Table1 会被 JwOldZfParser 解出 1 门课;单独看 kbtable 占位则 0 门"
+  ],
+  "parserImpact": {
+    "detectProtocolFromUrl 判 zf_new 后 → JwNewZfParser": "parseEmbeddedJson: markers 全无命中(trim().startsWith('<'))→ 空 → parseHtmlTable: L245 getElementById('kbtable') 命中(div!) → trs 空(无 tr) → result 空 → L284 走 parseHtmlTableFromQz() → JwQzParser L90 getElementById('kbtable') 命中同一 div → div.getElementsByTag('tr') 空 → 返回 0 课。**结果: 0 课**。残留的 Table1 完全不被 JwNewZfParser 关注 — 表面'正确'(未把旧学期误当新学期),但 UI 报'课程列表为空,请确认已到达课表页面'误导用户。",
+    "tryAllParsers 兜底(若 URL 直连判型失败)": "JwOldZfParser L24 getElementById('Table1') 命中 → 第一节行 → td A101 含 <a> 高等数学 → parseImportBean 拆 <br><br> 无匹配,split='<a href=...>高等数学<br>周一第1,2节{第1-16周}<br>张老师<br>A101</a>' 按 <br> 得 4 段 → name=高等数学, timeInfo=周一第1,2节{第1-16周}, teacher=张老师, room=A101 → **导入 1 门课,但这是上学期残留数据**。tryAllParsers 取 max → JwOldZfParser 胜出,返回 1 门课,无任何警告。",
+    "风险": "用户从列表选 zf_new 学校 → parseHtml 走 JwNewZfParser → 0 课;用户手输 URL 判不出 → tryAllParsers → **静默导入上学期 1 门课**。两种路径产出不同结果,且都无学期语义提示。正确诊断应为: '检测到本学期课表为空,页面还包含另一学期的数据,请确认所选学期'。",
+    "实测验证(JVM 跑真实 parser)": "tryAllParsersForTest 返回 1 门: name=高等数学 day=1 startNode=1 **endNode=0**(startNode>endNode 数据非法) w1-16 t0 — 产生自 JwOldZfParser.parseTime 对 '周一第1,2节{第1-16周}' 的 step 计算,本格只有一门课无第二节课次信息 → endNode 保留初值 0。JwImportViewModel.toCourseEntities L166 step=(endNode-startNode+1).coerceAtLeast(1)=1 但 endNode 直接丢弃,step=1 实际上是 1 节而非 2 节 — **连堂课数据被压缩**。per-parser: NewZf=0, OldZf=1, OldZf1=1, Qz=0 — OldZf/OldZf1 都产出同样错误数据。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=1 门(高等数学 d1 n1-0 w1-16 t0) — endNode=0 < startNode=1 数据非法; per-parser: OldZf=1 OldZf1=1 NewZf=0 其余 0 — 唯一一个会产出'错课'而非'空'的空学期样本",
+    "verified": "yes"
+  }
+}

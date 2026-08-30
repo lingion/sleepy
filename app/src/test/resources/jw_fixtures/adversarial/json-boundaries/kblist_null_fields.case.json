@@ -1,0 +1,30 @@
+{
+  "input": "kblist_null_fields.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_partial_with_null_skip",
+    "courseCount": 1,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "大学英语",
+        "day": 3,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "",
+        "room": ""
+      }
+    ],
+    "skippedCourses": [
+      { "name": "kcmc=null 的记录", "reason": "课程名为 JSON null — L118 firstStr 返回 '' → isBlank → continue" },
+      { "name": "数据结构 (xqj=null)", "reason": "星期字段为 JSON null — L124 firstInt 全 miss → continue, 但 xqjmc 文本字段可以兜底, 这是修复缺口(见 kblist_xqjmc_text_variant)" },
+      { "name": "物理学 (jc=null+zcd=null)", "reason": "节次字段为 JSON null — L127 firstInt miss → continue; zcd=null 时 L175 parseWeekStr('') 本可以走 Triple(1,16,0) 兜底, 但 jc null 直接 continue, 无法触发" }
+    ],
+    "userMessage": "成功导入 1 门课; 3 条记录因关键字段(null)被跳过(可选诊断, 不打断)"
+  },
+  "rationale": "①kcmc=null: JwNewZfParser.kt L118 firstStr 返回 '' (JVM json:20231013, 已 javap 核实: optString(k,fallback) 在 JSONObject.NULL.equals(value) 时返回 fallback) → L118 isBlank → continue 丢课, 合理降级不崩; Android 真机 org.json 的 optString 返回 'null' 字面串 → L118 通过 → 产出 name='null' 的脏课, 是 org.json 双实现差异造成的真实风险。②xm=null + cdmc=null(课2): firstStr 空串 → teacher='' room='' → JwCourse 默认值, 课保留(唯一产出)。③xqj=null(课3): L124 firstInt 返回 null → continue 丢课, 不崩但语义上应回退 xqjmc 文本(修复项, 见 kblist_xqjmc_text_variant)。④jc=null + zcd=null(课4): L127 firstInt null → continue 丢课; 单独 zcd=null 时 L175 parseWeekStr('') 会走 Triple(1,16,0) 兜底(整学期每周)。",
+  "currentBehavior": "JwNewZfParser.kt L113-155 parseCourseJsonArray: 课1 kcmc null → continue; 课2 完整(除 xm/cdmc null) → 保留(teacher/room 空); 课3 xqj null → L124 continue; 课4 jc null → L127 continue; 最终 [大学英语] 1 门课。tryAllParsers 取 size 最大 → 仍是 [大学英语]。不崩, 无脏数据, 但 'xqj=null 可以由 xqjmc 兜底' 的语义缺失。"
+}

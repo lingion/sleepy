@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的青果(CF)课表页",
+  "expected": {
+    "protocol": "cf (TYPE_CF)",
+    "protocolBasis": "同上, 仅 HTML 级判定(host jxfw.* 是广工真实入口形态, 但 sleepy 无 host 指纹)",
+    "courseCount": "1",
+    "errorClass": "同 cf-httphex",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "null — cf/pku/bnuz 三协议 URL 层无可靠指纹(路径重写形态连 host 信号都被 hex 吞掉), 判定必须由 T6 detectProtocolFromHtml 在 onHtmlCaptured 二次判型接管",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "同 cf-httphex。补充: 若未来给 detect 补 cf 指纹, 不能用裸 'jxfw'/'cf' 子串('cf' 会撞任何含 cf 的串), 应按 host 段边界正则或干脆交给 detectProtocolFromHtml 的 kbxx+字段白名单(kcmc/teaxms/jxcdmcs 同时存在才判 CF) — jw_plan T3/T8 的字段白名单互斥要求。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "cf-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/jxfw.example.edu.cn/xsgrkbcx!xsAllKbList.action",
+  "sampleKind": "webvpn-url"
+}

@@ -1,0 +1,11 @@
+{
+  "_note": "全角空格 U+3000 分隔的 zf_1 型单元格(ASP 老站常见全角排版, 同学校真实存在半角/全角混用)。Jsoup 1.18.1 实测: text() 保留 U+3000(U+5927 U+5B66 U+82F1 U+8BED U+3000 U+0042…), trim() 只剥首尾空白。JwOldZfParser L110 split(' '.toRegex()) 只切半角空格 → 全格 1 个 token; L114 contains('{')&&contains('}') 命中 i=0; L115 preIndex==-1 为 false(此时 preIndex 尚未赋值, 初值 -1, 走 L131 else preIndex=i=0); 循环继续 i=0 是末位 token → L134 i==split.size-1 分支再次处理: L136 split[preIndex-1]=split[-1] → Kotlin 抛 ArrayIndexOutOfBoundsException → 显式 TYPE_ZF_1 分发路径(JwImportViewModel L103)整次解析失败; tryAllParsers 路径被 L136 try/catch 吞掉静默失效。注: 半角空格版正常时 preIndex>=1 恒成立(课程名 token 在时间 token 前), 只有 U+3000 让时间 token 成为 token[0] 才触发负索引。",
+  "input": "fullwidth_space_type1.html",
+  "expected": {
+    "protocol": "zf_1 (TYPE_ZF_1 → JwOldZfParser(html,1) 显式分发)",
+    "courses": [],
+    "courseCount": 0,
+    "errorClass": "crash_IndexOutOfBounds — JwImportViewModel L103 直接分发路径: parseImportBean1 L136 split[preIndex-1] preIndex=0 → IndexOutOfBoundsException → 被 JwImportActivity L261 catch → jw_parse_failed '解析失败'提示; tryAllParsers 路径静默失效(异常被吞)。修复: L131 分支 preIndex=i 前若 i==0 跳过该 token 或 L136 加 preIndex>=1 卫语句",
+    "type0_parallel": "同一格走 TYPE_ZF(type=0) 路径时: td.html() 无 <br> → split 后 fields<3 → skip → 0 课不崩(实测 JsoupProbe: 无 <br> 的 <a> 格 fields=1 SKIPPED)"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "input": "xtgl-no-slash.html",
+  "id": "fp-url-confusion.xtgl-no-slash",
+  "title": "/xtgl 无尾斜杠（典型登录页入口）不被识别为新正方",
+  "inputUrl": "https://jwgl.example.edu.cn/xtgl",
+  "htmlFile": "xtgl-no-slash.html",
+  "expected": {
+    "detectProtocolFromUrl": "null (走兜底)",
+    "routeByType": "protocolType 空 → parseHtml L90 走 tryAllParsers(html)",
+    "parserBehavior": "JwWiseduParser/JwNewUrpParser/JwNewZfParser/JwOldZfParser/JwOldZfParser(1)/JwQzParser/JwQzCrazyParser/JwUrpParser 依次尝试；本 HTML 既无 kbtable 也无 Table1 也无 td[id=周_节] → 全部 0 课",
+    "courseCount": 0,
+    "userVisibleResult": "URL 实际上是新正方登录页，但因 /xtgl 缺尾斜杠，协议判空 → 登录页抓取兜底 0 课 → '请确认已到达课表页面'"
+  },
+  "parserImpact": "detectProtocolFromUrl L149 `u.contains(\"/xtgl/\")` 强制要求尾斜杠；用户书签 /xtgl（学校官方常见写法）或浏览器自动去掉尾斜杠重定向到 /xtgl/login_slogin.html 都可能短暂停在 /xtgl 这个无斜杠形态。对应 T6 任务修复点。JwImportActivity.onHtmlCaptured 用 URL+HTML 双层判型正好能补救：HTML 含'统一身份认证登录'+csrftoken → 即使 URL 是 /xtgl 也能二次判定 zf_new。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:149 u.contains(\"/xtgl/\") 要求尾斜杠",
+    "jw_research.json T6 recommendations '修复无尾斜杠 /xtgl'",
+    "jw_research.json T7 抓取 frame 与渲染时序"
+  ]
+}

@@ -1,0 +1,123 @@
+<!--
+Fixture: BNUZ (北京师范大学珠海分校) 正常课表页
+协议: TYPE_BNUZ = "bnuz"
+来源模拟: http://es.bnuz.edu.cn/ 登录后"个人课表"页 (ASP.NET WebForm)
+真实页面元素:
+  - 一张 <table id="table1">  7 日期列 × N 节次行
+  - 表头第 1 行 td: 时间 / 星期一 / 星期二 / ... / 星期日 (被 otherHeader 跳过)
+  - 每个节次行 td 1 是节次数字("1","2","3","4","5","6","7","8"), 触发 node=toInt() + countFlag=true
+  - 课程 td 内部 html 结构(按 BNUZParser substringAfter("</span>") + substringBeforeLast("<br>") + split("<br>") 解析):
+      <span>&nbsp;</span>courseName<br>teacher{weekList}<br>room(step节)<br>[more sections]
+    例如: <span>&nbsp;</span>高等数学<br>张老师{1-16周}<br>教101(2节)<br>&nbsp;
+    解析后 infos = ["高等数学", "张老师{1-16周}", "教101(2节)"]
+    infos[0]="高等数学" 为课程名; i=1 取 teacher+week="张老师{1-16周}", room="教101(2节)", step=2
+    然后 startNode=node(行首), endNode=node+step-1
+注:
+  - 已脱敏: 课程名改为 高等数学/大学英语/体育/化学实验, 教师改为 张老师/李老师, 教室改为通用号
+  - 含 4 门课:
+    1) 高等数学(周一, node=1 step=2, 教101, 1-16周每周)   - 单时段单周次
+    2) 大学英语(周三, node=3 step=2, 教202, 1-8周单周+9-16周双周) - 单时段分段周次 (单/双混合)
+    3) 体育(周五, node=5 step=2, 体育馆, 1-16周每周)      - 单时段单周次
+    4) 化学实验(周二, node=7 step=2, 教401张老师+教402李老师, 1-16周每周) - 多教师多教室
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>个人课表</title>
+</head>
+<body>
+<table id="table1">
+  <tr>
+    <td>时间</td>
+    <td>星期一</td>
+    <td>星期二</td>
+    <td>星期三</td>
+    <td>星期四</td>
+    <td>星期五</td>
+    <td>星期六</td>
+    <td>星期日</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td><span>&nbsp;</span>高等数学<br>张老师{1-16周}<br>教101(2节)<br>&nbsp;</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td></td>
+    <td></td>
+    <td><span>&nbsp;</span>大学英语<br>李老师{1-8周单周,9-16周双周}<br>教202(2节)<br>&nbsp;</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td><span>&nbsp;</span>体育<br>张老师{1-16周}<br>体育馆(2节)<br>&nbsp;</td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td></td>
+    <td><span>&nbsp;</span>化学实验<br>张老师{1-16周}<br>教401(2节)<br>李老师{1-16周}<br>教402(2节)<br>&nbsp;</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>8</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+</body>
+</html>

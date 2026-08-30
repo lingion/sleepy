@@ -1,0 +1,9 @@
+{
+  "input": "urp_old_blank.html",
+  "expected": {
+    "protocol": "urp",
+    "courseCount": 0,
+    "errorCategory": "可信空课表",
+    "rationale": "JwUrpParser.generateCourseList(JwUrpParser.kt:26-101): table.class='displayTag' 命中, text() 含 '星期一'? 否(仅 th 文案, 不含 '星期一') → 不 continue → thead ths.eachText() 成功枚举 → 索引 mapping(nameIdx/teacherIdx/weekIdx/dayIdx/nodeIdx) 全部到位 → tbody.firstOrNull()=null → JwUrpParser.kt:58 continue 跳过该表 → result 空。tryAllParsers 候选表里 JwUrpParser 返回空, 其他 parser 对此 HTML 也均空(无 Table1/kbtable/el-table/kbgrid 容器), best.size=0。不崩, 触发 importAsNewTable 抛 IllegalArgumentException('课程列表为空')。属于可信空课表, 错误分类应区分于'图片课表'与'页面无容器'。"
+  }
+}

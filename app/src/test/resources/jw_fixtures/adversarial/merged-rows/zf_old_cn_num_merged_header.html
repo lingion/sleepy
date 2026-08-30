@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!--
+  老正方 Table1 type=0 + 中文数字区间合并节次行头("第一节~二节" / "上午 第一节—第二节" / "第一-二节")。
+
+  research finding: getNodeStr() 覆盖到十六, CN_NUM 到二十, HEADER_NODE_PATTERN.matches
+  对 "第一-二节" 命中 → nodeStr="一-二" → CN_NUM["一-二"]=null → toIntOrNull()=null → 返回 -1.
+
+  本 fixture 覆盖两个变体 (上/下午) 都用中文区间, 验证 parseHeaderNodeString 需要
+  按"首段 CN_NUM"解析而非按整串.
+
+  对应真实学校: 部分老正方部署(聊城大学东昌学院/枣庄学院)用全中文行头以兼容 GB2312 字体.
+
+  parser 验证点:
+    - 现版: 两行均返回 -1 → 两行课程均被当课程格, countDay++ 错位
+      (实际 day=2/3 都被解析为 day=3/4, 大英 day=5 错位)
+    - 修复: 第一节-第二节 → node=1 startNode=1 endNode=2, 第三节-第四节 → node=3
+-->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第一节-第二节</td>
+    <td><a href="#">高等数学<br>周一第1,2节{第1-16周}<br>张老师<br>教学楼A101</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">下午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节-第四节</td>
+    <td>&nbsp;</td>
+    <td><a href="#">大学物理<br>周二第3,4节{第3-12周|单周}<br>李老师<br>实验楼D205</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">晚上</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第五节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td><a href="#">大学英语<br>周四第5节{第1-16周}<br>王老师<br>外语楼308</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

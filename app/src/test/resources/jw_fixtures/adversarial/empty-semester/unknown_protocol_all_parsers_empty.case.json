@@ -1,0 +1,15 @@
+{
+  "input": "unknown_protocol_all_parsers_empty.html",
+  "protocol": "",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程(教务系统已确认)"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: tryAllParsersForTest 0 课, 不抛异常"
+  },
+  "rationale": "未知协议 + 显式无课文案: JwImportViewModel.parseHtml 行 88-91 protocolType.isBlank() → tryAllParsersImpl: 行 121-130 八个候选(Wisedu/NewUrp/NewZf/OldZf x2/Qz/QzCrazy/Urp)全跑, 行 134-136 result.size > best.size 全不成立(全 0) → best 空 → 行 138 静默返回 []。不抛 '协议暂不支持'(那只发生在行 105 已知 type 不在 when 里)。上层 importAsNewTable 行 196 只见 courses.isEmpty() 统一抛 '课程列表为空, 请确认已到达课表页面' — 对本样本误导: 页面明示 '本学期尚未产生课表数据', 用户确实在正确页面。页面文本 '尚未产生课表数据' 是 EMPTY_SEMESTER 的可抓取证据, T9 诊断应检索此类文案给出确定性分类。"
+}

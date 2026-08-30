@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gb2312">
+<title>统一身份认证登录</title>
+</head>
+<body>
+<form id="loginForm" action="/jwglxt/xtgl/login_slogin.html" method="post">
+  <input type="hidden" name="csrftoken" value="abc123" />
+  <label>用户名: <input type="text" name="yhm" /></label>
+  <label>密码: <input type="password" name="mm" /></label>
+  <label>验证码: <input type="text" name="yzm" /><img src="/CheckCode.aspx" /></label>
+  <button type="submit">登录</button>
+</form>
+</body>
+</html>

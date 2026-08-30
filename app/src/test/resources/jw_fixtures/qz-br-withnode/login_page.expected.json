@@ -1,0 +1,17 @@
+{
+  "fixture": "login_page.html",
+  "protocol": "qz_br/qz_with_node 共用",
+  "parser": "JwQzBrParser / JwQzWithNodeParser",
+  "description": "边界样本 2: 强智登录页 (会话失效或未登录时 WebView 抓到的页)。无 table#kbtable, 有 /jsxsd/xk/LoginToXk 表单与 verifycode.servlet 验证码图。上游 QzParser.generateCourseList 里 getElementById('kbtable') 返回 null → kbtable.getElementsByTag('tr') NPE (上游忠实语义); sleepy JwQzParser L90 已改为 '?: return courseList' 静默空表, T8 建议改成 IllegalArgumentException 让 UI 区分 '协议选错' 与 '课表页为空'",
+  "result": "error",
+  "error": "kbtable_not_found",
+  "courseCount": 0,
+  "courses": [],
+  "assertions": [
+    "上游 QzParser.kt L63-64: doc.getElementById('kbtable') 为 null 时, 后续 getElementsByTag('tr') 抛 Kotlin NPE (忠实移植语义)",
+    "sleepy 当前行为 (JwQzParser.kt L90): ?: return courseList → 静默返回空 List — 不崩但丢失 '协议选错' 信号",
+    "sleepy 改进目标: 抛 IllegalArgumentException('页面缺少强智课表 table#kbtable, 可能选错教务类型或不在课表页')",
+    "登录页指纹: form action 含 '/jsxsd/xk/LoginToXk' + img src 含 'verifycode.servlet' + 无 kbtable",
+    "无论哪种实现, expected 的 courses 均为空数组; JwParserFixtureTest 按实现选择的错误语义断言 (error/kbtable_not_found 或 verified_empty)"
+  ]
+}

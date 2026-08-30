@@ -1,0 +1,22 @@
+{
+  "_note": "新正方移动端'标准版'(Vant SPA /dist/#/new/tableIndex)深层包装变体: 顶层是 {Msg, code, data: [{date: [...], kbList: [...]}]} 形式, 与 FlowCourse 真实抓包样本完全一致(行 466-470 引用证据)。当前 sleepy JwNewZfParser.parseEmbeddedJson 走 markers 路径 → 找 'kbxx'/'tmp_list'/'xskbcx'/'xskbcx_json' 全部不命中 → 走 trim().startsWith('{') 分支 → JSON.parse → 找 '第一个 JSONArray 属性' → obj.keys() 顺序 JSON 解析依赖(在本机 org.json.JSONObject 上是插入顺序, 即 date → kbList, 但 date 内含嵌套对象非数组, 所以会先找到 kbList 数组 ✓)。本 fixture 校验 parser 在移动端深层包装下是否能正确穿透到 kbList。",
+  "_uncertain": [
+    "org.json.JSONObject.keys() 迭代顺序在不同 Android 版本/库版本上是否稳定: AOSP 文档未明确保证, 但实际实现按插入序; 本 fixture 假设插入序即 date → kbList, kbList 之前没有数组属性(嵌套 date 是对象), '找第一个数组属性' 自然命中 kbList。",
+    "若部署用别的 JSON 库(如 Moshi/Gson) keys() 顺序可能不同 — 但 sleepy 当前 JwNewZfParser 明确用 org.json.JSONArray(JSONObject, 见 parseCourseJsonArray 头部), 按本 fixture 解析应正确。",
+    "xqj='3' 字符串而非数字: firstInt('xqj') 接受字符串, coerceIn(1,7) 不变。",
+    "jc:'3-4' 范围串修复后才能产出 startNode=3 endNode=4; 当前 buggy parser 会丢课 → empty。"
+  ],
+  "courses": [
+    {
+      "name": "机器学习",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 18,
+      "type": 0,
+      "teacher": "丁振",
+      "room": "信息楼434"
+    }
+  ]
+}

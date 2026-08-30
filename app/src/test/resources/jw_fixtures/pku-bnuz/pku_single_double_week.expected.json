@@ -1,0 +1,34 @@
+{
+  "_meta": {
+    "protocol": "pku",
+    "fixture": "pku_single_double_week.html",
+    "scenario": "单周/双周课程, timeInfo[1] 含'单'或'双'字符触发 type=1/type=2",
+    "parser": "JwPekingParser (移植自 dIT8Zv/WakeupSchedule_BUPT PekingParser.kt)",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"],
+    "_parsing_trace": "type=1: timeInfo[1]='周一1~2节(单)'  contains('单')=true; type=2: timeInfo[1]='周四5~6节(双)' contains('双')=true"
+  },
+  "courses": [
+    {
+      "name": "大学物理",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "物理老师",
+      "room": "实验楼101"
+    },
+    {
+      "name": "化学实验",
+      "day": 4,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "化学老师",
+      "room": "实验楼202"
+    }
+  ]
+}

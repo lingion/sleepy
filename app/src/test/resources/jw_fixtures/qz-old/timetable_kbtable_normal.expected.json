@@ -1,0 +1,69 @@
+{
+  "fixture": "timetable_kbtable_normal.html",
+  "protocol": "qz_old",
+  "description": "qz_old 正常样本: 5 行节次 × 7 列星期, 周一到周日 各放置 1-2 门课, 含合并单周跨天+第9-10节晚课+周日课程, 验证 OldQzParser.day 计数 (节次 td=day 0, 周一=day 1 ... 周日=day 7)",
+  "courseCount": 5,
+  "courses": [
+    {
+      "name": "高等数学",
+      "teacher": "张老师",
+      "room": "教一101",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0
+    },
+    {
+      "name": "大学英语",
+      "teacher": "王老师",
+      "room": "外语楼302",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 0
+    },
+    {
+      "name": "线性代数",
+      "teacher": "李老师",
+      "room": "教二205",
+      "day": 4,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 3,
+      "endWeek": 15,
+      "type": 0
+    },
+    {
+      "name": "数据结构",
+      "teacher": "赵老师",
+      "room": "实验楼303",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 5,
+      "endWeek": 12,
+      "type": 0
+    },
+    {
+      "name": "大学物理实验",
+      "teacher": "孙老师",
+      "room": "物理实验楼201",
+      "day": 7,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 10,
+      "endWeek": 17,
+      "type": 0
+    }
+  ],
+  "sourceAssertions": [
+    "OldQzParser.kt L25: day 初始 -1, 每个 td day++, 故节次列=day 0(无 div 处理), 周一..周日=day 1..7",
+    "OldQzParser.kt L36-37: split[0] 课名 split[preIndex-1] 教师 split[preIndex] 时间 split[preIndex+1] 教室",
+    "OldQzParser.kt L41-47: split('周[') 后 timeInfo[0]='1-16' 拆 start/endWeek; timeInfo[1]='1-2节]' 拆 start/endNode",
+    "OldQzParser.kt L57: type 恒为 0, 不识别单/双周"
+  ]
+}

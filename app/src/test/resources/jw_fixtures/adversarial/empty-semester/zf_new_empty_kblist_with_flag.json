@@ -1,0 +1,12 @@
+{
+  "_note": "新版正方 API 显式标记空学期: totalRecord=0/空 kbList + 提示信息字段 + 响应头 200。",
+  "_uncertain": [
+    "msg/msgCode 字段是否新正方官方字段: 调研 covers 不同校 jwglxt 返回的键名差异较大, 此处把 msg/msgCode 当作结构化提示的合理猜测, 未在 wakeup 上游源码中确证; 标记 uncertain, 不写断言。",
+    "部分校返回 {kbList: [], xskbcx: null} 而非空对象, 这里用最常见 null 字段兜底。"
+  ],
+  "totalRecord": 0,
+  "kbList": [],
+  "msg": "未查询到课表数据",
+  "msgCode": "EMPTY_RESULT",
+  "xskbcx": null
+}

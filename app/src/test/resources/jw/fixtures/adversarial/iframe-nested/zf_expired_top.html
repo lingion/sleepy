@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="gb2312"><title>个人课表查询 - 会话失效变体</title></head>
+<!--
+  陷阱:iframe 正常加载完成(src 是 xskbcx.aspx 且非跨域),但服务端会话已过期,
+  ASP.NET 把 iframe 内容 302 到 /login.aspx(或 default2.aspx 重登录页)。
+  iframe 的 contentDocument 里没有 Table1,只有登录表单 __VIEWSTATE + txtUserName。
+  当前实现:抓取正常(无异常),Table1 找不到 → 0 课 → 用户看到'课表为空'而非'请重新登录'。
+  这是'抓到了 frame 但抓错了页面'的高频真实场景(会话超时/多次登录踢下线)。
+-->
+<body>
+<iframe name="main" src="../common/login_redirect.html" width="100%" height="600"></iframe>
+</body>
+</html>

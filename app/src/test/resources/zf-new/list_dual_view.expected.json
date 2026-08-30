@@ -1,0 +1,38 @@
+{
+  "_note": "新正方 list 视图(#kblist_table), 对照 shiguang parserList(): day = tbody 索引(index 0 跳过, 1-7 = 周一~周日), sections 从 td:first-child 文本 parserSections('N-M'), name 从 td:nth-child(2) 内 .title div, 其后 font[0]=周数(含 '周数：' 前缀), font[1]=上课地点(含 '上课地点：'), font[2]=教师(含 '教师　：', '　' 为 U+3000 全角空格, 与真实适配器正则 /教师 ：/g 严格匹配)。注意 .title 必须是 <div> 非 <p>, 否则 jQuery find('p font') 会把 title 内 font 也计入, 字段全错位。周次语义按 upstream NewZFParser: '2-8周(单)' → startWeek=2, endWeek=8, type=1(单周), 与 sleepy JwNewZfParser.parseWeekStr 对齐。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "线性代数",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "教学楼B202"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 2,
+      "endWeek": 8,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "外语楼308"
+    }
+  ]
+}

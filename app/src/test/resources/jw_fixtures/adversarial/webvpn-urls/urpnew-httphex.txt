@@ -1,0 +1,1 @@
+https://webvpn.example.edu.cn/http/5e9a83/student/courseSelect/thisSemesterCurriculum/ajaxStudentSchedule/callback

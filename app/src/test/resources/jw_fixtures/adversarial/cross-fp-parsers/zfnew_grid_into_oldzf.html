@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<title>学生个人课表</title></head>
+<body>
+<!-- ADVERSARIAL: 新正方 grid 视图 (shiguang zhengfang_01.js 真实结构)
+     #kbgrid_table_0 + .timetable_con .title (font 课程名) + p>font (周数/地点/教师)
+     喂 JwOldZfParser: ① getElementById("Table1") 返回 null → emptyList()
+     ② JwOldZfParser 没有任何 select 兜底(不像 JwNewZfParser 那样 [id*=kb])
+     ③ 走 parseImportBean 时直接 countDay++ 在空 td 上递增 → 0 课程
+     结论: 老正方 parser 对新正方 grid 100% 静默 0 课(无报错) -->
+<button id="shcPDF" data-type="grid" title="导出PDF">导出</button>
+<table id="kbgrid_table_0" border="0" cellspacing="0" cellpadding="0">
+  <thead><tr>
+    <td align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+  </tr></thead>
+  <tbody>
+    <tr>
+      <td>第一节</td>
+      <td id="1-1" class="td_wrap"></td>
+      <td id="2-1" class="td_wrap">
+        <div class="timetable_con text-left">
+          <div class="title"><font>高等数学</font></div>
+          <p><font>节/周</font><font>(1-2节)1-16周</font></p>
+          <p><font>教学楼A101</font></p>
+          <p><font>张老师</font></p>
+        </div>
+      </td>
+      <td id="3-1" class="td_wrap">
+        <div class="timetable_con text-left">
+          <div class="title"><font>大学英语</font></div>
+          <p><font>节/周</font><font>(1-2节)2-8周(单)</font></p>
+          <p><font>外语楼308</font></p>
+          <p><font>李老师</font></p>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

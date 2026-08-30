@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>个人课表</title>
+</head>
+<body>
+<h3>个人课表</h3>
+<!--
+  强智 qz_with_node 变体 · 独立 title 分支 (title="周次" 与 title="节次"
+  分挂在两个元素上, 页面无 title="周次(节次)" 元素)。
+
+  判别特征: getElementsByAttributeValue("title","周次(节次)") 为空 →
+  .text() isBlank, 走 QzWithNodeParser 第二分支:
+      weekStr  = getElementsByAttributeValue("title","周次").text()
+      nodeList = getElementsByAttributeValue("title","节次").text()
+                 .substringAfter(')')  .removeSurrounding("[","]")  .split('-')
+
+  【节次文本格式约束 — 从上游源码反推】
+  substringAfter(')') 只在文本里确实有 ')' 且其后还跟着节次段时才有意义:
+      "第1-2节(上午)1-2节"  → substringAfter(')') = "1-2节"  → 1-2 ✓
+      "1-2节"              → 无 ')', Kotlin substringAfter 缺省返回原串 → 1-2 ✓
+      "第1-2节[1-2节]"     → 无 ')' → removeSurrounding 落空 →
+                             split('-')=["第1","2节[1","2节]"],
+                             first().substringBefore('节')="第1".toInt() 抛异常 ✗
+      "第1-2节(第1-2节)"    → ')' 是最后一个字符, after 为空串 ✗
+  本 fixture 用 "第N-M节(说明)X-Y节" 形态 (真实页面常见: 括号内是星期/
+  大节说明, 括号后紧跟节次数字段), 同时覆盖 "1-2节" 裸形态。
+
+  周次文本 "N-M(周)" 格式说明见 timetable_qzbr_withnode_space.html 头注释
+  ("周"字会砸坏上游 endWeek 的 toInt())。
+  title 元素用 <font> 而非 <span> 的原因 (课名提取怪癖) 同
+  timetable_qzbr_withnode_space.html 头注释。
+-->
+<table id="kbtable" border="1">
+  <tbody>
+    <!-- 星期表头行 -->
+    <tr>
+      <th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th>
+      <th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th>
+    </tr>
+    <!-- 第1-2节: nodeCount=1; title=节次 与所在大格一致 -->
+    <tr>
+      <th>第1-2节<br>08:30-10:00</th>
+      <td>
+        <div class="kbcontent">大学英语<br>
+          <font title="老师">王老师</font><br>
+          <font title="教室">外语楼302</font><br>
+          <font title="周次">1-16(周)</font><br>
+          <font title="节次">第1-2节(周一)1-2节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">高等数学<br>
+          <font title="老师">张老师</font><br>
+          <font title="教室">教一101</font><br>
+          <font title="周次">3-15(单周)</font><br>
+          <font title="节次">第1-2节(周三)1-2节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第3-4节: nodeCount=2; 裸 "3-4节" 形态 (无括号说明) -->
+    <tr>
+      <th>第3-4节<br>10:20-11:50</th>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td>
+        <div class="kbcontent">数据结构<br>
+          <font title="老师">李老师</font><br>
+          <font title="教室">教二205</font><br>
+          <font title="周次">1-16(周)</font><br>
+          <font title="节次">3-4节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+    <!-- 第5-6节: nodeCount=3; 多段周次 5-15,17 + 跨说明括号 -->
+    <tr>
+      <th>第5-6节<br>14:00-15:30</th>
+      <td>
+        <div class="kbcontent">大学物理<br>
+          <font title="老师">周老师</font><br>
+          <font title="教室">物理楼501</font><br>
+          <font title="周次">5-15,17(周)</font><br>
+          <font title="节次">第5-6节(单周班)5-6节</font>
+        </div>
+      </td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+      <td><div class="kbcontent">&nbsp;</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

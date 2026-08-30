@@ -1,0 +1,9 @@
+{
+  "input": "blank_no_table.html",
+  "expected": {
+    "protocol": "unknown",
+    "courseCount": 0,
+    "errorCategory": "页面无课表容器",
+    "rationale": "tryAllParsers 跑全 8 个 parser: JwOldZfParser.getElementById('Table1')=null → return emptyList()。JwNewZfParser.parseEmbeddedJson 全文无 marker → parseHtmlTable 容器选择链全 null → parseHtmlTableFromQz 兜底 → JwQzParser.getElementById('kbtable')=null → return emptyList()。JwNewUrpParser.extractJsonFromHtml: 'dateList' 不存在 → return null → 空 result。JwUrpParser.getElementsByAttributeValue('class','displayTag')=空 → 空 result。JwWiseduParser.json.parseToJsonElement 抛异常被 try/catch(tryAllParsers catch)。所有 parser 返回空列表, best.size=0, tryAllParsers 返回 emptyList()。不崩, 触发 importAsNewTable 抛 '课程列表为空'。错误分类应是 '页面无课表容器/抓取时序问题/可能需要等待课表加载'。"
+  }
+}

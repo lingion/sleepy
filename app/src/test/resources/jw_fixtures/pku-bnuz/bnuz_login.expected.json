@@ -1,0 +1,13 @@
+{
+  "_meta": {
+    "protocol": "bnuz",
+    "fixture": "bnuz_login.html",
+    "scenario": "未登录被挡到 es.bnuz.edu.cn 登录页, 无 #table1",
+    "parser": "JwBnuzParser (移植自 dIT8Zv/WakeupSchedule_BUPT BNUZParser.kt)",
+    "expected_behavior": "doc.getElementById('table1') 返回 null; upstream 会 NPE; sleepy 移植版应当加 null guard 返回 []",
+    "test_assertion": "courses 数组长度 == 0 (或测试用例标记 expected=NullPointerException 直到 parser 加防御)",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"]
+  },
+  "courses": [],
+  "_notes": "建议 W2 阶段 parser 实现时: 在 table1=null 时直接 return@generateCourseList emptyList()"
+}

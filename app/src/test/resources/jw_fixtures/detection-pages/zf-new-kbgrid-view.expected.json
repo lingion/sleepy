@@ -1,0 +1,44 @@
+{
+  "_note": "新正方 jwglxt 课表页 kbgrid 视图(grid 模式)样本 — 结构对照 shiguang_warehouse zhengfang_generic.js 解析脚本: #shcPDF data-type='grid' 时选 #kbgrid_table_0 → td.td_wrap 内 .timetable_con.text-left 块,拆 .title font 取课程名、p[0] font[1] 取'节/周'信息(p[0] 第一个 font 是 .hidden 标签 + 文字)、p[1] 取地点、p[2] 取教师。day 从 td id 取(本 fixture 用 '1-2'/'1-4'/'2-3' 格式,前半是星期 1-7)。信息字符串格式'(N-M节)周次串',正则 \\\\((\\\\d+-\\\\d+节)\\\\) 抽节次,余下作周次串。",
+  "_uncertain": [
+    "本 fixture 使用 td id '1-2'/'1-4'/'2-3' 这种 day-section 格式,而 shiguang 通用适配脚本用 '1-2' 前段作 day;若上游 parser 期望 id 是纯数字(1/2/3)标记星期,则本 fixture 不能解析 — 但 JwNewZfParser 现版本只尝试 kbtable/kbgrid/el-table__body/kbcapi-table/[id*=kb] 选择器,均不命中 kbgrid_table_0 即报错;本 fixture 主要测试的是 detectProtocolFromHtml 命中 zf_new(zftal-ui 引用 + V-8.0.0 版权),parsers 端的解析待 W2 阶段补 kbgrid_table_0 选择器后回归。",
+    "本 fixture 期望解析路径: shiguang 通用适配器逻辑(zhufang_01.js),非 sleepy JwNewZfParser。expected 的 courses 字段给的是按 shiguang 适配器语义应得的解析结果,W2 阶段 sleepy 补 kbgrid 选择器后应能直接对照。",
+    "(1-2节)1-16周 → sections=[1,2], weeks='1-16' → startWeek=1,endWeek=16,type=0。",
+    "(3-4节)2-16周(单) → sections=[3,4], weeks='2-16', type=1。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "王老师",
+      "room": "外语楼308"
+    },
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "信息楼B205"
+    }
+  ]
+}

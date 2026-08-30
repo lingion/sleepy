@@ -1,0 +1,15 @@
+{
+  "input": "zf_new_grid_empty.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程, 请确认是否选对学期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测 (Probe3): JwNewZfParser 与 tryAllParsersForTest 均 0 课, 期望与现状一致"
+  },
+  "rationale": "新正方 grid 视图(#kbgrid_table_0)空课表: parseEmbeddedJson 四个 marker 均不命中。parseHtmlTable 行 245-249 五个选择器: #kbtable/#kbgrid/el-table__body/.kbcapi-table 均不存在, 但行 249 doc.selectFirst('[id*=kb]') 子串匹配命中 id='kbgrid_table_0' → 进入遍历; 表头行 firstCellText='节次\\\\星期' 含 '节' 且无 kbcontent → isSectionHeader 跳过; 数据行全部 td 为空 td_wrap, cells.isEmpty() → result 空 → 行 284 result.isEmpty() → parseHtmlTableFromQz → JwQzParser 行 90 getElementById('kbtable') 为 null → return []。最终 0 课, 语义正确。本样本锁定: [id*=kb] 宽选择器使 grid 变体空表不致崩, 且 T4 给 JwNewZfParser 补 #kbgrid_table_0 显式选择器时不得让此样本从 0 课变为异常。"
+}

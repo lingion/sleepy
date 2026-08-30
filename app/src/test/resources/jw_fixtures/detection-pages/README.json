@@ -1,0 +1,74 @@
+{
+  "说明": "detection-pages fixture 组索引:8 协议族的登录页+课表页最小可判定 HTML 脱敏样本。每个 .html 配同名 .expected.json。expected 的 courses 字段是 W2 阶段 JwParserFixtureTest 的断言依据(JwCourse 字段语义),_fingerprint 字段是 detectProtocolFromUrl/detectProtocolFromHtml 的断言依据(仅登录页/边界页配置)。所有数据为手写脱敏样本,课程名/教师/教室均为通用词,无真实姓名学号。",
+  "协议族覆盖": {
+    "zf_new (新版正方 jwglxt)": [
+      "zf-new-login.html — 登录页(zftal-ui-v5 引用 + 教学管理信息服务平台标题 + 正方软件版权 V-8.0.0 + csrftoken + 统一身份认证登录)",
+      "zf-new-xskbcx-kblist.html — 课表页含 inline kbList JSON(jc='1-2'/'3-4'/'0102' 三形态,zcd='1-16周'/'2-16周(单)' 两形态)",
+      "zf-new-xskbcx-missing-fields.html — 边界:kbList 字段缺失(zcd/cdmc/xm 缺,kcmc 空)",
+      "zf-new-kbgrid-view.html — 课表页 kbgrid 视图(shiguang zhengfang_generic.js 语义:#shcPDF[data-type=grid] + #kbgrid_table_0 + td.td_wrap + .timetable_con.text-left + .title font + p[0-2])"
+    ],
+    "zf_old (老版正方 default2.aspx)": [
+      "zf-old-login.html — 登录页(GBK charset + __VIEWSTATE + 欢迎使用正方教务管理系统 + CheckCode.aspx)",
+      "zf-old-xskbcx-courses.html — 课表页 type=0 标准变体(table#Table1 + <a>课程名<br>{第N-M周}<br>老师<br>教室</a> + class=Center)",
+      "zf-old-xskbcx-empty.html — 边界:Table1 渲染但课程格全 &nbsp;(可信空表/图片课表)",
+      "zf-old-xskbcx-blacktab.html — 边界:class=blacktab 变体(kechengbiao 实证)+ zafu 注释真实片段'文化地理（网络课程）周日第10节{第17-17周}' + 周日/单周/空教室"
+    ],
+    "qz (强智)": [
+      "qz-base-login.html — 登录页(Logon.do + verifycode.servlet + /framework/ + qzdatasoft.com + 强智科技 title)",
+      "qz-base-xskb-courses.html — 课表页基础版(#kbtable + div.kbcontent + font[title=老师/周次(节次)/教室],课名在第一个 font 之前)",
+      "注:qz_crazy(kbcontent1)/qz_br(<br> 无 font)/qz_with_node(title 含 [N-M节] 段)/qz_old([周][节] 文本格式) 四个变体的专项 fixture 在 qz-base-crazy/ qz-old/ 目录(本次 detection-pages 不展开,只覆盖协议族级判型样本)"
+    ],
+    "wisedu (金智 jwapp)": [
+      "wisedu-login.html — 登录页(CAS authserver/login + /jwapp/sys/wdkb/ CSS 路径)",
+      "wisedu-xskcb-empty.html — 边界:datas.xskcb.rows=[] 前端渲染前空响应"
+    ],
+    "urp_new (URPNova)": [
+      "urp-new-login.html — 登录页(title=登录 + /js/sm3/* SM3 加密 + /js/login/login.js + URPNova)",
+      "urp-new-schedule-courses.html — 课表页(dateList[0].selectCourseList[].timeAndPlaceList[] 结构,classWeek 20 位 0/1 bitmap 三种形态)"
+    ],
+    "urp_old (URP/TeachRA)": [
+      "urp-old-login.html — 登录页(xkAction.do?actionType=6 + zjh/mm/checkCode)"
+    ],
+    "cf (青果/乘方)": [
+      "cf-chengfang-login.html — 登录页(meta keywords 乘方教务/乘方科技)",
+      "cf-chengfang-kbxx-empty.html — 边界:var kbxx = [] 空数组(青果部署 + table#kbtable + 乘方科技 footer)"
+    ],
+    "pku (北大 elective)": [
+      "pku-elective-login.html — 登录网关页(iaaa.pku.edu.cn oauth.jsp appID=syllabus)",
+      "pku-elective-datagrid.html — 课表页(table.datagrid 11 列,tds[8] 含'未'跳过,时间'1~16周 周一 1~2节 教一101' 空格分段)"
+    ],
+    "bnuz (北师珠 es)": [
+      "bnuz-es-login.html — 登录页(form action=default.aspx + __VIEWSTATE,与老正方指纹冲突须按域名/es.bnuz 区分)",
+      "bnuz-es-table1.html — 课表页(#table1 + <span></span>占位 + 课程名 + 教师{周次}<br>教室(N节) 结构)"
+    ],
+    "CAS 通用网关 (非协议,仅作负样本)": [
+      "cas-gateway.html — CAS 统一身份认证页(/cas/login?service=<业务回调>),expectedProtocol=unknown,判定延迟到登录跳转回业务系统后"
+    ]
+  },
+  "样本统计": {
+    "html_files": 22,
+    "expected_files": 22,
+    "normal_samples": 13,
+    "boundary_samples": 9,
+    "total_course_assertions": 32
+  },
+  "测试用途": {
+    "JwProtocolDetectionTest": "喂每个 .html 跑 detectProtocolFromHtml 断言 _fingerprint.expectedProtocol;对 URL 指纹字段跑 detectProtocolFromUrl 断言同样结果(CAS 页 expectedProtocol=unknown 表示应返回 null)",
+    "JwParserFixtureTest": "喂含课表的 .html 到对应 parser,断言 courses 数组与 expected.courses 完全相等(name/day/startNode/endNode/startWeek/endWeek/type/teacher/room 九字段)"
+  },
+  "来源参照": [
+    "jw.usts.edu.cn/default2.aspx — 老正方登录页活体",
+    "jwgl.sjzc.edu.cn/jwglxt/xtgl/login_slogin.html — 新正方登录页活体",
+    "jwgl.sdust.edu.cn — 强智登录页活体",
+    "jwxt.imu.edu.cn/login — URP 新版登录页活体",
+    "iaaa.pku.edu.cn — 北大统一认证活体",
+    "es.bnuz.edu.cn — 北师珠登录页活体",
+    "zhjw.smu.edu.cn — 乘方教务活体",
+    "lizhangqu/zafu_jwc — 老正方 type=0 单元格逐字片段",
+    "IAMouMeng/kechengbiao — 老正方 blacktab 变体",
+    "dIT8Zv/WakeupSchedule_BUPT — 上游 ZhengFangParser/NewZFParser/PekingParser/BNUZParser/QzParser/NewUrpParser",
+    "XingHeYuZhuan/shiguang_warehouse — zhengfang_generic.js/SDJTU/HUEL/CSUFT 适配脚本",
+    "IsaacHuo/MyLeafy — contracts/jwxt fixtures 结构(仅参照结构,未直接复制文件)",
+    "w1ndys/easy-qfnu-skill — 强智 xskb_list.do 参数/页面特征"
+  ]
+}

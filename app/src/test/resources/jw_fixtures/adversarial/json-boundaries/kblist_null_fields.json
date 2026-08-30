@@ -1,0 +1,47 @@
+{
+  "_note": "对抗样本: kbList 字段为 JSON null。真实来源: 新正方部分版本未排教室/教师时回 null 而非缺失键(SHUFEZJ/zfn_api 均 optString 防御)。覆盖 4 类: ①kcmc=null(必修字段为 null) ②cdmc=null+xm=null(可选字段 null) ③xqj=null(星期 null) ④jc=null+zcd=null(节次周次双 null)。",
+  "_org_json_semantics": {
+    "jvm_test_classpath": "org.json:json:20231013 (build.gradle.kts L147) 的 optString(key, fallback) 在值为 JSONObject.NULL 时返回 fallback 本身(已 javap 反编译确认: NULL.equals(object) → aload_2 fallback)。即 firstStr 返回 '' → isBlank 命中。",
+    "android_runtime_classpath": "Android frameworks org.json 的 optString(key, fallback) 走 JSON.toString(object), JSONObject.NULL.toString()='null' 字面串 → firstStr 返回 'null' (4 字符非空串) → isBlank 为 false。",
+    "consequence": "同一 fixture 在 JVM 单测与 Android 真机行为不同: JVM 路径丢课(silent skip), Android 路径可能产出 name='null' 的脏课。这是 org.json 双实现的已知差异, fixture 断言按 JVM 测试口径写, 注释 Android 偏差供 T4 修复时参考(正确做法: o.isNull(k) 先判)。"
+  },
+  "totalRecord": 4,
+  "kbList": [
+    {
+      "kcmc": null,
+      "kch_id": "NULL101",
+      "xm": "张老师",
+      "xqj": 1,
+      "jc": "1-2",
+      "zcd": "1-16周",
+      "cdmc": "教一101"
+    },
+    {
+      "kcmc": "大学英语",
+      "kch_id": "ENG202",
+      "xm": null,
+      "xqj": 3,
+      "jc": "3-4",
+      "zcd": "1-16周",
+      "cdmc": null
+    },
+    {
+      "kcmc": "数据结构",
+      "kch_id": "CS305",
+      "xm": "李老师",
+      "xqj": null,
+      "jc": "5-6",
+      "zcd": "1-16周",
+      "cdmc": "信息楼B205"
+    },
+    {
+      "kcmc": "物理学",
+      "kch_id": "PHY201",
+      "xm": null,
+      "xqj": 2,
+      "jc": null,
+      "zcd": null,
+      "cdmc": null
+    }
+  ]
+}

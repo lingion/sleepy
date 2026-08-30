@@ -1,0 +1,11 @@
+{
+  "input": "urp_new_imu_login_login.html",
+  "expected": "判定: 未登录(title=登录 + action=/jw_point_j_spring_security_check 形态的 Spring Security 表单 + /js/sm3/* 加密资源)。课程数=0, 错误分类=NEED_LOGIN。注意: title 只有'登录'两字, 不能用 title 判协议; HTML 特征是 /js/login/login.js + /js/sm3/",
+  "protocol": "urp_new (新 URP/URPNova)",
+  "page": "登录页 /login(内蒙古大学活体, 2026-08 实抓): j_spring_security_check + j_username/j_password/j_captcha + SM3 加密脚本 · 已脱敏: __VIEWSTATE 等超长隐藏域值截断为占位符(字段名/表单结构保留), 站点 meta 令牌替换",
+  "assert_markers": [
+    "j_spring_security_check",
+    "/js/sm3/",
+    "/js/login/login.js"
+  ]
+}

@@ -17,10 +17,18 @@ data class JwSchoolInfo(
     val type: String? = null,
     val status: String = STATUS_SUPPORTED,
     val aliases: List<String> = emptyList(),
-    val sortKeyFull: String = ""
+    val sortKeyFull: String = "",
+    /** T11 新增:该校是否启用 WebView 内 fetch 模式。默认 false 避免给未验证学校强行 fetch 出 0 课。 */
+    val enableFetch: Boolean = false,
 ) {
     val isSupported: Boolean get() = status == STATUS_SUPPORTED || status == STATUS_GRAD_SUPPORTED
     val isGrad: Boolean get() = status == STATUS_GRAD_SUPPORTED || status == STATUS_GRAD_PENDING
+
+    /** T13: pending/grad_pending 状态 — 待适配(点行弹申请适配弹窗, 不进 WebView) */
+    val isPending: Boolean get() = status == STATUS_PENDING || status == STATUS_GRAD_PENDING
+
+    /** T13: 是否配置了可打开的教务 URL */
+    val hasUrl: Boolean get() = url.isNotBlank()
 
     companion object {
         const val STATUS_SUPPORTED = "supported"

@@ -1,0 +1,107 @@
+{
+  "fixture": "timetable_qzbr_normal.html",
+  "protocol": "qz_br",
+  "parser": "JwQzBrParser",
+  "description": "qz_br 正常样本: span 携带 title (课名行后无 font 直接 br), 覆盖单周/双周标记、5-15,17 逗号多段 (拆 2 条)、同格 '-----' 双课、占位空行不丢节次锚点; startNode/endNode 来自 nodeCount*2-1 连堂公式, 非 title 文本",
+  "courseCount": 8,
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "外语楼302"
+    },
+    {
+      "name": "线性代数",
+      "day": 1,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "教二205"
+    },
+    {
+      "name": "思政",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 5,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "综合楼401"
+    },
+    {
+      "name": "数据结构实验",
+      "day": 4,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 10,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "孙老师",
+      "room": "实验楼303"
+    },
+    {
+      "name": "大学物理",
+      "day": 1,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "周老师",
+      "room": "物理楼501"
+    },
+    {
+      "name": "计算机网络",
+      "day": 1,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 5,
+      "endWeek": 15,
+      "type": 0,
+      "teacher": "吴老师",
+      "room": "信息楼201"
+    },
+    {
+      "note": "计算机网络 的周次 5-15,17 逗号多段: 上游 weekList.forEach 为每段各 add 一条 Course, 因此该课会产生第二条 startWeek=17,endWeek=17 的记录; JwParserFixtureTest 若按课程数组精确断言应包含它, 若按去重后断言则过滤",
+      "name": "计算机网络",
+      "day": 1,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 17,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "吴老师",
+      "room": "信息楼201"
+    }
+  ],
+  "sourceAssertions": [
+    "QzBrParser.parseCourseName: infoStr.substringBefore('<br>').trim() — 课名为裸文本 (span 不参与, Jsoup 不再解析)",
+    "QzParser.generateCourseList: 纯 th 行 tds.isEmpty → nodeCount 不增; 每个 td day++ 故周一=1..周日=7",
+    "QzParser.convert L17: node = nodeCount*2-1; L52-53: startNode=node, endNode=node+1 (title 节次文本被无视, 这是 qz_br 与 with_node 的本质差异)",
+    "QzParser.convert L25: weekStr = title'周次(节次)'.text().substringBefore('(周)') — 故 '5-15,17(周)' → '5-15,17' → split(',') 得 ['5-15','17'] 两条",
+    "QzParser.convert L37-42: weeks[1] 含 '单'/'双' 才设 type; 本 fixture 全部 N-M(周) 无单双标记, type 恒 0",
+    "教师取 title='老师'; 教室取 title='教室' + title='分组' 拼接",
+    "Jsoup 1.18.1 实测对照: 基础 QzParser.parseCourseName('substringBefore(\"<font\")') 在本 fixture (span 结构) 上得 '高等数学 张老师 教一101 1-16(周)' 整串污染; QzBrParser 的 'substringBefore(\"<br>\")' 得干净 '高等数学' — 本 fixture 是区分 br 变体的判别样本"
+  ]
+}

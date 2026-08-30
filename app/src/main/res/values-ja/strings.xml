@@ -292,6 +292,13 @@
     <!-- JW Import -->
     <string name="jw_no_url">教務URLが設定されていません</string>
     <string name="jw_parse_empty">解析結果が空です。「個人時間割」ページに移動しているかご確認ください（トップ/ログインページではない）</string>
+    <!-- T7 — frame 抓取/渲染时序错误分类 -->
+    <string name="jw_err_cross_domain_iframe">クロスオリジンのフレームを検出したため時間割を読み込めません（%1$s）。キャンパス網/VPN で直接時間割ページを開いてから再試行してください</string>
+    <string name="jw_err_container_empty_after_delay">時間割領域は見つかりましたが、まだ読み込み中です。時間割が完全に表示されてから「このページをインポート」をもう一度タップしてください</string>
+    <string name="jw_err_iframe_nav_pending">時間割フレームがまだ読み込みを開始していません。時間割が完全に表示されてから「このページをインポート」をもう一度タップしてください</string>
+    <string name="jw_err_wrong_page">このページは時間割ページではありません。ログインして個人時間割を開いてください</string>
+    <string name="jw_err_session_expired">セッションが期限切れです。ページで再度ログインしてから「このページをインポート」をタップしてください</string>
+    <string name="jw_err_empty_semester">今学期の授業はありません。正しい学期を選択したか確認してください。画像形式の時間割はインポートできません</string>
     <string name="jw_import_success">%1$d 件の授業をインポートしました</string>
     <string name="jw_parse_failed">解析失敗：%1$s</string>
     <string name="jw_parse_failed_hint">\n\nヒント：HEUの場合、ブラウザでログイン後「個人時間割」ページに移動してからインポートしてください</string>

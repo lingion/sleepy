@@ -1,0 +1,15 @@
+{
+  "_note": "老 URP(URP/TeachRA 系)登录页样本。识别标记:form action 含 /xkAction.do?actionType=6 + 隐藏域 zjh/mm/checkCode + /js/xkAction.js 资源。本 fixture 是登录页,JwUrpParser 应解析为空课程。",
+  "_fingerprint": {
+    "urlMarkers": ["xkAction.do", "actionType=6"],
+    "htmlMarkers": [
+      "zjh",
+      "/checkCode",
+      "/js/xkAction.js"
+    ],
+    "expectedProtocol": "urp",
+    "expectedConfidence": 80,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}

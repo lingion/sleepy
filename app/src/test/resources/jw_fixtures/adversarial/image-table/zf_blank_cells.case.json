@@ -1,0 +1,9 @@
+{
+  "input": "zf_blank_cells.html",
+  "expected": {
+    "protocol": "zf",
+    "courseCount": 0,
+    "errorCategory": "可信空课表",
+    "rationale": "JwOldZfParser.generateCourseList: 行头 '第一节'~'第四节' 依次置 node=1..4 且 countFlag=true; 其余格 td.text() 为 NBSP(\\u00a0), Kotlin trim() 不剥 NBSP(Character.isWhitespace(0x00A0)=false), 长度 1 → length<=1 → countDay++ → continue。无课程格, importBeanList 空 → 空列表, 不崩。注意与图片课表的区分手段: 本样本 Table1 内无 <img> 节点, 图片样本有 — 诊断层应用 doc.getElementById(\"Table1\").select(\"img\").size 区分'可信空课表'与'图片课表不支持', 两者不能共用一条文案。"
+  }
+}

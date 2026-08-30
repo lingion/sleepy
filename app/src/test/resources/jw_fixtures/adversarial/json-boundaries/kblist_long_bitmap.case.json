@@ -1,0 +1,79 @@
+{
+  "input": "kblist_long_bitmap.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_with_bitmap_boundary_semantics",
+    "courseCount": 4,
+    "errorClassification": "NONE_WITH_WARNINGS",
+    "courses": [
+      {
+        "name": "9位临界",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 25,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教一101",
+        "_semanticNote": "9 位串 '101010101' 表示第 1,3,5,7,9 周。修复后: parseWeekStr 的 bitmap 触发条件应去掉 length>=10 下限(改为 length>=2 且全 0/1), 9 位也能解出 5 个不连续周。当前实现走 toIntOrNull 产出 startWeek=endWeek=101010101 荒谬值。expected 按'修复后正确语义'写, 若按 currentBehavior 应是 101010101"
+      },
+      {
+        "name": "10位临界",
+        "day": 2,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 9,
+        "type": 1,
+        "teacher": "李老师",
+        "room": "教二205"
+      },
+      {
+        "name": "URP位图形态",
+        "day": 3,
+        "startNode": 5,
+        "endNode": 6,
+        "startWeek": 1,
+        "endWeek": 20,
+        "type": 0,
+        "teacher": "王老师",
+        "room": "教三305",
+        "_semanticNote": "20 位 URP classWeek 形态, 前 20 位全 1 + 5 位全 0 = 第 1-20 周连续。URP 数据进 NewZf parser 时必须能解, 因为 tryAllParsers 兜底会把 URP 数据喂给所有 parser"
+      },
+      {
+        "name": "单字符周",
+        "day": 5,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 1,
+        "type": 0,
+        "teacher": "钱老师",
+        "room": "教五501",
+        "_semanticNote": "zcd='1' 长度 1, 不是 bitmap, 走 range 分支 filter{isDigit}='1' → Triple(1,1,0) 单周"
+      }
+    ],
+    "skippedCourses": [
+      {
+        "name": "全零位图",
+        "reason": "zcd 全 0 位图 = 该课整学期不排课, 应判定为'无效记录'跳过, 而不是用 (1,16,0) 兜底产出假课",
+        "currentBug": "parseWeekStr L179 不触发 bitmap(length 20 但全 0 也是 bitmap 形态), 走 else 分支 filter{isDigit} 把 '00000000000000000000' 全保留 → toIntOrNull=0(注: Kotlin '0'.toLong OK, 20 个 0 = 0) → Triple(0,0,0) → toCourseEntities L177 startWeek.coerceAtLeast(1)=1, endWeek.coerceAtLeast(startWeek)=1 → 产出 startWeek=endWeek=1 的假课。修复方向: parseWeekStr 识别全 0 串返回 emptyList 且 outer 不走 (1,16,0) 兜底"
+      },
+      {
+        "name": "64位混合",
+        "reason": "64 位超过学期最大周数 25, 应判定为非法数据跳过或告警",
+        "currentBug": "parseWeekStr 触发 bitmap(length 64, 全 0/1), bitsToRanges 把 64 位的所有 1 位展开成若干连续段 → 产出一堆 30+ 周的假课"
+      }
+    ],
+    "userMessage": "导入 4 门课, 2 条记录因周次数据非法被跳过(全零位图/64 位混合), 建议在预览界面列出被跳过记录供人工确认; 1 条记录的周次值落在非 bitmap 分支产生荒谬值(9 位临界), 需修复 bitmap 触发阈值"
+  },
+  "rationale": "JwNewZfParser.kt L179 bitmap 分支 s.length>=10 全 0/1 触发, L202 result.isEmpty() → Triple(1,16,0) 兜底 — 两个机制组合造成: ①9 位临界串进 else → toIntOrNull=101010101 荒谬值; ②全 0 串进 bitmap → weeks=[] → 兜底 Triple(1,16,0) 假课; ③64 位混合进 bitmap → 全展开; ④URP 位图形态(20 位+5 位 0)能正确解出 (1,20,0), 因为 bitsToRanges 的连续段合并正确。修复方向: bitmap 判定去 length 下限到 length>=2; 全 0 bitmap 判为 skip; 周值 > 30 判为非法; parseWeekStr 的 (1,16,0) 兜底只应用于 zcd 完全缺失(为空串)的场景, 不应应用于解析出 0 段的场景。",
+  "currentBehavior": {
+    "courseCount": 0,
+    "reasoning": "本 fixture 6 条记录的 jc 全是 '1-2'/'3-4'/'5-6' 范围串形态 — JwNewZfParser.kt L127 firstInt toIntOrNull 对范围串返回 null → outer ?: continue → 6 条全部丢课。parseWeekStr 的 bitmap 边界问题(L179 length>=10 触发阈值, L202 全 0 → (1,16,0) 兜底假课)在 jc 修复前到不了, 只能在 jc 修复后验证。",
+    "parseWeekStrFindings": "parseWeekStr 层面独立验证(Jc 修复后才生效): ①'101010101'(9位) → 走 else 分支 → filter{isDigit}='101010101' → toIntOrNull=101010101 → Triple(101010101,101010101,0) 荒谬值; ②'1010101010'(10位) → bitmap → Triple(1,9,1) 正确; ③20位+5位0 → bitmap → Triple(1,20,0) 正确; ④全 0 → bitmap → weeks=[] → bitsToRanges 空 → L202 isEmpty 兜底 Triple(1,16,0) → 假课; ⑤'1' → else → Triple(1,1,0) 正确; ⑥64位 → bitmap → bitsToRanges 展开多个 30+ 周假段。",
+    "expectedDelta": "expected.courseCount=4 (修复后, 2 条被 skipped), currentBehavior.courseCount=0 (修复前) — 差异来自 jc 范围串丢课 + bitmap 边界"
+  },
+  "diagnosticHint": "对全零位图和 64 位混合, 建议导入预览界面显示'该课程周次数据异常已跳过'而非静默丢弃"
+}

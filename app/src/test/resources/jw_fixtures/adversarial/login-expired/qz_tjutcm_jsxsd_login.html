@@ -1,0 +1,150 @@
+
+
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>天津中医药大学综合教务管理系统-强智科技</title> 
+<script type="text/javascript" src="/jsxsd/js/conwork.js"></script>
+<style>
+body,div,dl,dt,p,dd,ul,ol,li,h1,h2,h3,h4,h5,h6,pre,form,fieldset,input,textarea,blockquote,th,td { 
+padding:0; 
+margin:0 auto; font-family:"微软雅黑"}
+.wapbg{ background:url(/jsxsd/framework/images/index/tpbg.gif); height:446px;}
+.wap{ margin:0 auto; width:955px;}
+.top{ height:150px; padding-left:85px;}
+.middle{ height:296px;background:url(/jsxsd/framework/images/index/bgtp.gif) no-repeat; height:296px;position:relative; width:955px;}
+.dl{width:330px;height:230px;position:absolute;right:60px;top:30px}
+.dlti{font-size:24px;color:#333;position:absolute;top:5px;
+}
+.dlmi{ float:left; width:312px; line-height:45px;font-size:17px;color:#333;position:absolute;top:70px;}
+.dlmi input{ float:right; height:28px; width:228px; border:1px solid #DDDDDD;position:absolute;left:77px;}
+.dlj{ color:#666;position:absolute;top:180px;left:77px;width: 113px;}
+.dlau{position:absolute;left:205px;top:171px;height:45px;width:45px;font-size:16px;
+}
+.dlau a{ background:url(/jsxsd/framework/images/index/dlau.gif) no-repeat; display:block; width:45px; height:45px;}
+.dlau1{position:absolute;left:263px;top:171px;height:45px;width:45px;font-size:16px;}
+.dlau1 a{ background:url(/jsxsd/framework/images/index/dlau1.gif) no-repeat; display:block; width:45px; height:45px;}
+.end{position:absolute;font-size:15px;color:#999;float:left;width:809px;left: 85px;top: 304px;
+}
+.end span{float:right;}
+.end span a{ color:#999; text-decoration:none;}
+ </style>
+</head>
+<body>
+<form action="/jsxsd/xk/LoginToXk" method="post" id="Form1" name="Form1" onsubmit="return submitForm1();">
+<div class="wapbg">
+<div class="wap">
+<div class="top"><img style="padding-top:80px" src="/jsxsd/framework/images/index/index_02.png" width="474px" height="61px" /></div>
+<div class="middle">
+<div class="dl"><div class="dlti">用户登录</div>
+<div class="dlmi">
+	<p>用户名:</p>
+	<input type="text" id="userAccount" value="" style="position:absolute; top:7px;"/>
+	<p>密码:</p>
+	<input type="password" id="userPassword" value="" style="position:absolute; top:54px;"/>
+	<input type="hidden" id="encoded" name="encoded" />
+	
+		<p>验证码:
+		<input type="text" name="RANDOMCODE" id="RANDOMCODE" maxlength="6"  style="position:absolute; top:100px;width:70px;display:block;float: left;" />
+		<img src="/jsxsd/verifycode.servlet" id="SafeCodeImg"  onclick="ReShowCode()" width="60px" height="28px"  style="position:absolute;top:100px;margin-left:100px"/></p>
+	
+	<font style="display: inline;white-space:nowrap;" color="red"></font>
+ </div>
+<div class="dlj" style="display:none;"><input style="margin-right:5px;" name="jzmmid" id="jzmmid" type="checkbox" value="1"  />记住用户名</div>
+
+
+<input type="submit" id="btnSubmit" class="dlau"  title="点击登录" value="" style="border: 0px;background: url(/jsxsd/framework/images/index/dlau.gif) no-repeat;margin-left:35px"/> 
+
+<div class="dlau1" style="margin-left:35px"><a href="#">
+</div>
+
+
+<div width="200" style="margin-top: 235px"><a target="_blank"  href="changpattern.jsp" style="text-decoration:none"><font size="3" color="red">建议使用360极速模式（点击查看如何设置）</a></font></div>
+
+
+
+
+</div><div class="end">湖南强智科技发展有限公司 版权所有
+
+<span><a href="#">隐私声明</a>|<a href="#">设为首页</a></span>
+</div>
+</div></div></div>
+</form>
+
+</body>
+<script language="javascript">
+	//init();//0001571
+	/*
+	function init(){
+		String login_username = getCookie("login_username");
+		if(login_username != ""){
+			document.getElementById("Form1").USERNAME.value = login_username;
+		}		
+	}*/
+	
+	function ReShowCode(){
+		var SafeCodeImg = document.getElementById('SafeCodeImg');
+		var url="/jsxsd/verifycode.servlet?t="+Math.random();
+		SafeCodeImg.src = url; 
+	}
+	
+	function submitForm1(){  
+		try{
+			var xh = document.getElementById("userAccount").value;
+			var pwd = document.getElementById("userPassword").value; 
+			if(xh==""){
+				alert("用户名不能为空！");
+				return false;
+			}
+			if(pwd==""){
+				alert("密码不能为空！");
+				return false;
+			} 
+			var account = encodeInp(xh);
+			var passwd = encodeInp(pwd);
+			var encoded = account+"%%%"+passwd;
+			document.getElementById("encoded").value = encoded;
+			var jzmmid = document.getElementById("Form1").jzmmid;  
+			return true;			
+		}catch(e){
+			alert(e.Message);
+			return false;
+		}
+	}
+	
+	//根据用户帐号选择登录服务器
+	function selectServer(uName){
+		var enableServers = true;//是否启用多服务器 true/false
+		var serversArray = new Array();//服务器列表
+
+		
+			serversArray[0] = "http://219.243.22.105:8081/jsxsd/";
+		
+			serversArray[1] = "http://219.243.22.104:8081/jsxsd/";
+		
+			serversArray[2] = "http://219.243.22.106:8081/jsxsd/";
+		
+			serversArray[3] = "http://219.243.22.115:8081/jsxsd/";
+		
+			serversArray[4] = "http://219.243.22.116:8081/jsxsd/";
+		
+			serversArray[5] = "http://219.243.22.119:8081/jsxsd/";
+		
+	
+		var loginUrl = "xk/LoginToXk";
+		if(enableServers == true){
+			if(!/[^\d]/.test(uName)){//必须为数字
+				var modVal = eval(uName % serversArray.length);
+				loginUrl = serversArray[modVal] + loginUrl;
+			}else{
+				loginUrl = serversArray[0] + loginUrl;
+			}
+		}else{
+			loginUrl = "/jsxsd"+ loginUrl;
+		}
+		return loginUrl;
+	}	
+</script>
+</html>

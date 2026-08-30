@@ -1,0 +1,11 @@
+{
+  "input": "zf_old_table1_into_newzf.html",
+  "expected": {
+    "protocol_adjudication": "zf",
+    "correct_parser": "JwOldZfParser (Table1 + <a href> 课程格 + <br><br> 同格多课)",
+    "courses_count": 2,
+    "current_behaviour_measured": "实测: NewZf=0 课 (markers 全 miss + parseHtmlTable 五级容器 miss + Qz 兜底 0)。OldZf0/OldZf1 各 2 课, 但实测字段暴露 JwOldZfParser.parseTime 真 bug: 高等数学 day=2 正确, startNode=1 而 endNode=0 (周二第1,2节 → step 应为 2, 实为 endNode=startNode+time[1]-1=1+0-1=0); 大学英语 startNode=3, endNode=2。根因: JwOldZfParser.kt parseTime 计算的局部 var step 从未写回 result[1] (L199-232 计算完后没有任何 result[1]=step 语句), 而 importList2CourseList L164 用 time[1] 当 step — 上游 ZhengFangParser.kt L214 有 result[1] = step, sleepy 移植时漏掉。实测走 '周二第1,2节' 含逗号分支 step=2 已算对, 但结果被丢弃。tryAllParsers: OldZf0 以 2 课胜出 (正确 parser 胜出), 落库时 toCourseEntities 的 step=(endNode-startNode+1).coerceAtLeast(1) 把负值洗成 1 → 每门课时长 1 节, 静默错数据。",
+    "error_classification": "silent_wrong_endnodes_result1_never_assigned",
+    "notes": "老正方 xskbcx.aspx 标准 type=0 变体 (4 行: 名/时间/老师/教室)"
+  }
+}

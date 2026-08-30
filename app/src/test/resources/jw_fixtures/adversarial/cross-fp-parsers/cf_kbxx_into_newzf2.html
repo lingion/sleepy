@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8">
+<title>我的课表 - 广东工业大学</title></head>
+<body>
+<h2>学生个人课表</h2>
+<!-- ADVERSARIAL (可执行版): CF 的 jcdm2/zcs 字段名与 JwNewZfParser 的
+     firstInt 候选表重合, 用于验证青果 kbxx 被 NewZf JSON 分支误吃后的具体产物。
+     上游 ChengFangParser: startNode=jcdm2.split(',')[0].toInt(),
+     endNode=jcdm2.split(',').last().toInt(), zcs 逗号串逐周枚举。
+     JwNewZfParser.parseCourseJsonArray L117-134:
+       name: kcmc ✓ (撞上)
+       teacher: teaxms 不在 [jsxm,jsmc,teacher,attendClassTeacher,skjs] → 空
+       room: jxcdmcs 不在 [jasmc,jsmc,classroomName,jxlh,jasdm] → 空
+       day: xq 不在 [kcxq,xq,xqj,classDay,skxq] → xq 缺, xqj 缺 → return, 整门课丢
+     结局: parseEmbeddedJson 返回空 → parseHtmlTable 兜底 → 0 课 -->
+<script type="text/javascript">
+var kbxx = [
+    {"kcmc":"软件工程","teaxms":"孙老师","jxcdmcs":"工训楼505","xq":"2","jcdm2":"3,4","zcs":"1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"},
+    {"kcmc":"数据库原理","teaxms":"钱老师","jxcdmcs":"实验楼305","xq":"4","jcdm2":"5,6","zcs":"1,3,5,7,9,11,13,15"}
+];
+</script>
+</body>
+</html>

@@ -292,6 +292,13 @@
     <!-- JW Import -->
     <string name="jw_no_url">URL de registro no configurada para esta escuela</string>
     <string name="jw_parse_empty">Resultado de análisis vacío. Asegúrate de estar en la página "Mi horario" (no inicio de sesión)</string>
+    <!-- T7 — frame 抓取/渲染时序错误分类 -->
+    <string name="jw_err_cross_domain_iframe">Se detectó un marco de origen cruzado; no se puede leer el horario (%1$s). Abra la página del horario directamente en la red campus/VPN e inténtelo de nuevo</string>
+    <string name="jw_err_container_empty_after_delay">Se encontró el área del horario pero aún no está cargada. Espere a que se muestre completamente y vuelva a tocar «Importar esta página»</string>
+    <string name="jw_err_iframe_nav_pending">El marco del horario aún no ha comenzado a cargar. Espere a que se muestre completamente y vuelva a tocar «Importar esta página»</string>
+    <string name="jw_err_wrong_page">Esta página no es la página del horario. Inicie sesión y abra su horario personal primero</string>
+    <string name="jw_err_session_expired">Sesión caducada. Inicie sesión de nuevo en la página y vuelva a tocar «Importar esta página»</string>
+    <string name="jw_err_empty_semester">No hay cursos este semestre. Confirme que seleccionó el semestre correcto; los horarios en imagen no se pueden importar</string>
     <string name="jw_import_success">%1$d cursos importados exitosamente</string>
     <string name="jw_parse_failed">Error de análisis: %1$s</string>
     <string name="jw_parse_failed_hint">\n\nSugerencia: Para HEU, inicia sesión en el navegador y navega a "Mi horario" antes de importar</string>

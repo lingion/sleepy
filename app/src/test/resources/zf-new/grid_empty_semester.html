@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<button id="shcPDF" data-type="grid" title="导出PDF">导出</button>
+
+<!-- 边界 1: grid 视图但本学期无任何课程(空 .timetable_con 单元格, td 全占位) -->
+<table id="kbgrid_table_0" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <td align="Center">节次\星期</td>
+      <td align="Center">星期一</td>
+      <td align="Center">星期二</td>
+      <td align="Center">星期三</td>
+      <td align="Center">星期四</td>
+      <td align="Center">星期五</td>
+      <td align="Center">星期六</td>
+      <td align="Center">星期日</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>第一节</td>
+      <td id="1-1" class="td_wrap"></td>
+      <td id="2-1" class="td_wrap"></td>
+      <td id="3-1" class="td_wrap"></td>
+      <td id="4-1" class="td_wrap"></td>
+      <td id="5-1" class="td_wrap"></td>
+      <td id="6-1" class="td_wrap"></td>
+      <td id="7-1" class="td_wrap"></td>
+    </tr>
+    <tr>
+      <td>第二节</td>
+      <td id="1-2" class="td_wrap"></td>
+      <td id="2-2" class="td_wrap"></td>
+      <td id="3-2" class="td_wrap"></td>
+      <td id="4-2" class="td_wrap"></td>
+      <td id="5-2" class="td_wrap"></td>
+      <td id="6-2" class="td_wrap"></td>
+      <td id="7-2" class="td_wrap"></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

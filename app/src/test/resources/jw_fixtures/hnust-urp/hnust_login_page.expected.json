@@ -1,0 +1,5 @@
+{
+  "_note": "HNUST 边界: 未登录的登录页 HTML, 整个文档无 id='kbtable' 元素. 上游 HNUSTParser 第 1 行 doc.getElementById('kbtable') 在 Jsoup 里若找不到会抛 NullPointerException; 实际部署需在 parser 入口对 kbtable==null 兜底返回空数组. 此 fixture 验证 parser 不崩且输出空 courses.",
+  "_fixture": "hnust_login_page.html",
+  "courses": []
+}

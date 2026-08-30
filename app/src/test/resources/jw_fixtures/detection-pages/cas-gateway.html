@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>统一身份认证平台</title>
+<link rel="stylesheet" href="/cas/css/cas.css">
+</head>
+<body class="cas-body">
+<div class="cas-wrapper">
+  <h1>统一身份认证</h1>
+  <form id="casLoginForm" method="post" action="https://cas.dluf1.edu.cn/cas/login?service=http%3A%2F%2Fjwxt.dluf1.edu.cn%2Fjsxsd%2Fframework%2Fmain_index.jsp">
+    <input type="hidden" name="lt" value="LT-12345-cas01">
+    <input type="hidden" name="execution" value="e1s1">
+    <input type="hidden" name="_eventId" value="submit">
+    <div class="form-row"><label>用户名</label><input type="text" name="username" id="username"></div>
+    <div class="form-row"><label>密码</label><input type="password" name="password" id="password"></div>
+    <div class="form-row"><label>验证码</label>
+      <input type="text" name="captchaCode" id="captchaCode" maxlength="4">
+      <img src="/cas/captcha" alt="验证码">
+    </div>
+    <button type="submit">登录</button>
+  </form>
+  <p class="footer-tip">登录成功后将跳转回业务系统</p>
+</div>
+</body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "input": "zf_old_table1_empty.html",
+  "protocol": "zf",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程, 请确认是否选对学期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwOldZfParser(html,0) 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "老正方 Table1 全空(&nbsp;): JwOldZfParser.generateCourseList 行 24 getElementById('Table1') 命中 → 行 33 td.text() 把 &nbsp; 解成普通空格 trim 后空串, length<=1 → 行 35-38 countFlag 未置前 continue。节次行 '第一节' 等命中 parseHeaderNodeString 返回 N, 置 countFlag; 后续空格 td 全走 countDay++。全表无一个非空课程 td → importBeanList 空 → return []。0 课正确; 该学期无课/课表为图片时常见。注意与本组 wrong_semester 反例对照: 同一 Table1 容器, 空格内容=无课, 有 <a> 内容=有课, 判定边界在 td.text().length<=1。"
+}

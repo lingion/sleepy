@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "protocol": "bnuz",
+    "fixture": "bnuz_missing_fields.html",
+    "scenario": "缺字段边界: 节次行1 课程 td 缺 <span> 前缀(substringAfter 找不到返回空串 → 0 门); 行3 教师段缺 {周次} 花括号(跳过 section → 0 门); 行5 教室缺 (N节) 步数后缀(upstream toInt 抛异常); 行7 正常",
+    "parser": "JwBnuzParser (移植自 dIT8Zv/WakeupSchedule_BUPT BNUZParser.kt)",
+    "expected_behavior": "行1/行3 产出 0; 行5 抛 NumberFormatException → sleepy 移植版应 try-catch 丢弃该行; 行7 产出 1 门",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"]
+  },
+  "courses": [
+    {
+      "name": "艺术史",
+      "day": 4,
+      "startNode": 7,
+      "endNode": 8,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "艺术老师",
+      "room": "艺术楼201"
+    }
+  ],
+  "_notes": "行5(哲学导论)在 upstream 会因 toInt() 抛异常; sleepy 移植版建议把每行课程 td 的解析包在 runCatching 中, 丢弃该行继续往下; 此 fixture 是 parser 防御性回退的回归测试"
+}

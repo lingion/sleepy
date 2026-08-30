@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表 - 空</title>
+</head>
+<body>
+<!-- 新版正方 grid 视图 (#kbgrid_table_0) 空学期边界:
+     容器存在, 表头完整, 但 td 内无 .kbcontent 课程单元.
+     jw_research.json zf_new_html 域调研已指出 .timetable_con / #kbgrid_table_0 / #kblist_table 三种 grid 视图.
+     此 fixture 模拟该学期未排课 (寒暑假 + 课表待发布) 场景.
+-->
+<button id="shcPDF" data-type="grid" title="导出PDF">导出</button>
+
+<table id="kbgrid_table_0" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <td align="Center">节次\星期</td>
+      <td align="Center">星期一</td>
+      <td align="Center">星期二</td>
+      <td align="Center">星期三</td>
+      <td align="Center">星期四</td>
+      <td align="Center">星期五</td>
+      <td align="Center">星期六</td>
+      <td align="Center">星期日</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>第一节</td>
+      <td id="1-1" class="td_wrap"></td>
+      <td id="2-1" class="td_wrap"></td>
+      <td id="3-1" class="td_wrap"></td>
+      <td id="4-1" class="td_wrap"></td>
+      <td id="5-1" class="td_wrap"></td>
+      <td id="6-1" class="td_wrap"></td>
+      <td id="7-1" class="td_wrap"></td>
+    </tr>
+    <tr>
+      <td>第二节</td>
+      <td id="1-2" class="td_wrap"></td>
+      <td id="2-2" class="td_wrap"></td>
+      <td id="3-2" class="td_wrap"></td>
+      <td id="4-2" class="td_wrap"></td>
+      <td id="5-2" class="td_wrap"></td>
+      <td id="6-2" class="td_wrap"></td>
+      <td id="7-2" class="td_wrap"></td>
+    </tr>
+    <tr>
+      <td>第三节</td>
+      <td id="1-3" class="td_wrap"></td>
+      <td id="2-3" class="td_wrap"></td>
+      <td id="3-3" class="td_wrap"></td>
+      <td id="4-3" class="td_wrap"></td>
+      <td id="5-3" class="td_wrap"></td>
+      <td id="6-3" class="td_wrap"></td>
+      <td id="7-3" class="td_wrap"></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

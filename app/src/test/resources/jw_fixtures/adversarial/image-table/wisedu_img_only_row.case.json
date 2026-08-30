@@ -1,0 +1,24 @@
+{
+  "input": "wisedu_img_only_row.json",
+  "expected": {
+    "protocol": "wisedu",
+    "courseCount": 1,
+    "courses": [
+      {
+        "name": "<img src='/img/kcm.png' alt='大学物理' />",
+        "teacher": "<img src='/img/js.png' alt='赵老师' />",
+        "room": "物理楼201",
+        "day": 2,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0
+      }
+    ],
+    "errorCategory": "图片课表(金智字段级HTML注入, 脏数据)",
+    "rationale": "极端对抗: 金智 API 理论不该出现 <img>, 但部分学校后端会把 HTML 富文本直塞 KCM/SKJS 字段。JwWiseduParser L48-55: str(k) 只做 trim 不剥 HTML, KCM 非空白 → name 拿到完整 <img> 字面量; SKXQ='2'.toIntOrNull()=2 命中; KSJC='3'→startNode=3, JSJC='4'→endNode=4; SKZC bitmap 前 16 位为 1 → weekRuns 单段 → (1,16,0)。结果: 1 门课入库但 name/teacher 字段是 HTML 片段 — 下游 CourseEntity.courseName 显示为标签文字, UI 脏。修复方向: str(k) 后增加 Android Html.fromHtml 或正则 strip '<[^>]+>' 并提取 alt 属性优先。",
+    "actualCurrentBehavior": "JwWiseduParser 原样透传 <img> 字面量为课程名/教师; toCourseEntities(JwImportViewModel.kt:171) courseName.ifBlank{'未命名'} 不触发(非空) → 数据库里 courseName = '<img ...>' 原样。属真实可触发的脏数据路径。",
+    "verdict": "解析不崩, 但产物脏; 错误分类应标 '字段级图片HTML注入' 以便诊断。"
+  }
+}

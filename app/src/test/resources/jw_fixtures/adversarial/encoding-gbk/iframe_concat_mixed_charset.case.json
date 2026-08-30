@@ -1,0 +1,22 @@
+{
+  "_note": "JwWebViewLoginScreen L196 html+iframeContent+frameContent 字符串直接拼接的真实形态样本: 主文档 gb2312(菜单页) + 内容 iframe utf-8(课表页), 两份 outerHTML 各自已在 DOM 层解码为正确中文, 拼接串含两个 <!DOCTYPE html> 头。Jsoup.parse 对双 DOCTYPE 容忍(Jsoup 自动包 wrapper, getElementById 全文搜索命中第二段的 Table1)。目的: 验证拼接本身不引入乱码, 也不阻断 Table1 查找 — 编码层在 outerHTML 捕获时已被 Chromium 统一为 UTF-16 Java String。day 取自 timeInfo '周二' 前缀(L159 CHINESE_WEEK 命中 → day=2), 与列计数无关。",
+  "input": "iframe_concat_mixed_charset.html",
+  "expected": {
+    "protocol": "zf (TYPE_ZF → JwOldZfParser type=0)",
+    "courses": [
+      {
+        "name": "高等数学",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教学楼A101"
+      }
+    ],
+    "courseCount": 1,
+    "errorClass": "none — 拼接语义对编码安全(各 frame 独立解码), 本样本为 T7 递归 frame 抓取的编码侧对照基线"
+  }
+}

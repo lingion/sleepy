@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>个人课表 - 广东工业大学</title>
+<script type="text/javascript">
+// 教务系统前端渲染占位
+window.__INIT_STATE__ = { ready: true };
+</script>
+</head>
+<body>
+<div class="kb-container">
+  <h2>2025-2026学年第一学期 个人课表</h2>
+  <div id="semester-select-wrap"></div>
+  <table class="kb">
+    <thead><tr><th>星期</th><th>节次</th><th>课程</th></tr></thead>
+    <tbody id="kb-body"><!-- 由 renderKb() 注入 --></tbody>
+  </table>
+</div>
+<script type="text/javascript">
+var kbxx = [
+    {
+        "kcmc": "高等数学",
+        "teaxms": "张老师",
+        "jxcdmcs": "A101",
+        "xq": "1",
+        "jcdm2": "1,2",
+        "zcs": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
+    },
+    {
+        "kcmc": "大学英语",
+        "teaxms": "王老师",
+        "jxcdmcs": "B202",
+        "xq": "3",
+        "jcdm2": "3,4",
+        "zcs": "1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"
+    }
+];
+// 后续渲染逻辑占位
+if (typeof renderKb === 'function') { renderKb(kbxx); }
+</script>
+</body>
+</html>

@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的老正方 xskbcx.aspx 指纹(对照组)",
+  "expected": {
+    "protocol": "zf (TYPE_ZF)",
+    "protocolBasis": "同上, L152 命中; 注意 /webvpn/jw.example.edu.cn/default.aspx (北师珠 ASP.NET 登录页形态) 因 'default.aspx' 不含 'default2.aspx' 不会被 L152 误吸成老正方",
+    "courseCount": "1",
+    "errorClass": "无错误",
+    "detectProtocolFromUrlNow": "zf",
+    "detectProtocolFromUrlAfterT6": "zf",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "同 zfold-httphex: L152 'xskbcx.aspx' 命中 -> JwOldZfParser, 最小 Table1 样本解析 1 门课; 唯一形态差异是 hostname 变为 webvpn.example.edu.cn — 对解析链无影响(sleepy 全链无 hostname 白名单, 唯一硬编码域名的 WISEDU_FETCH_JS 仅在 TYPE_WISEDU 分支注入, 本协议不走)。本组是全套样本的阴性对照, 证明老正方在两种 WebVPN 形态下 URL 指纹均幸存; 若与 bnuz-webhost(default.aspx, ASP.NET 登录页)混淆会判错, 'default.aspx' 不含 'default2.aspx' 子串故 L152 不会误吸, 已在 expected.protocolBasis 注明。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "zfold-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/jw.example.edu.cn/xskbcx.aspx",
+  "sampleKind": "webvpn-url"
+}
