@@ -353,13 +353,14 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
  *  4) 抓页面 DOM 中节次时间（"08:00~08:45" 格式），前提是"是否显示节次时间"已勾选
  *  5) 通过 __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
  *
- * 必须在 jwgl.hrbeu.edu.cn 域执行（同域 fetch 自动带 _WEU cookie）。
+ * 路径指纹判定（/jwapp/ 在路径中即可，不锁定单一 hostname — T5/T11 拆雷）。
  */
 private const val WISEDU_FETCH_JS = """
 (function(){
   try {
-    if (location.hostname.indexOf('jwgl.hrbeu.edu.cn') < 0) {
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入教务系统(jwgl.hrbeu.edu.cn)再点导入'}));
+    var pathOk = location.pathname.indexOf('/jwapp/') >= 0;
+    if (!pathOk) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入教务系统后再点导入'}));
       return;
     }
     // 0. 先 GET 我的课表(wdkb)微应用入口，初始化 app 会话；否则 module API 返回 403
