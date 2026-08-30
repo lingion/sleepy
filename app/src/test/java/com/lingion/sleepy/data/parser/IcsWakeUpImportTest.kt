@@ -134,21 +134,24 @@ class IcsWakeUpImportTest {
             VERSION:2.0
             PRODID:-//YZune//WakeUpSchedule//EN
             BEGIN:VEVENT
-            SUMMARY:管理心理学DTSTART;TZID=Asia/Shanghai:20240507T190000
+            SUMMARY:管理心理学★
+            DTSTART;TZID=Asia/Shanghai:20240507T190000
             DTEND;TZID=Asia/Shanghai:20240507T203500
             RRULE:FREQ=WEEKLY;UNTIL=20240507T160000Z;INTERVAL=1
             LOCATION:博1-A102 段鑫星
             DESCRIPTION:第9 - 10节\n博1-A102\n段鑫星
             END:VEVENT
             BEGIN:VEVENT
-            SUMMARY:管理心理学DTSTART;TZID=Asia/Shanghai:20240514T190000
+            SUMMARY:管理心理学★
+            DTSTART;TZID=Asia/Shanghai:20240514T190000
             DTEND;TZID=Asia/Shanghai:20240514T203500
             RRULE:FREQ=WEEKLY;UNTIL=20240514T160000Z;INTERVAL=1
             LOCATION:博5-BC区线上教室 段鑫星
             DESCRIPTION:第9 - 10节\n博5-BC区线上教室\n段鑫星
             END:VEVENT
             BEGIN:VEVENT
-            SUMMARY:管理心理学DTSTART;TZID=Asia/Shanghai:20240521T190000
+            SUMMARY:管理心理学★
+            DTSTART;TZID=Asia/Shanghai:20240521T190000
             DTEND;TZID=Asia/Shanghai:20240521T203500
             RRULE:FREQ=WEEKLY;UNTIL=20240521T160000Z;INTERVAL=1
             LOCATION:博1-A102 段鑫星
