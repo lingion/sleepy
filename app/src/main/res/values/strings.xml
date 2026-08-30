@@ -391,6 +391,16 @@
     <string name="jw_err_wrong_page">当前页面不是课表页，请先登录并进入「个人课表」页面</string>
     <string name="jw_err_session_expired">登录已过期，请在页面中重新登录后再点「导入此页」</string>
     <string name="jw_err_empty_semester">本学期暂无课程，请确认已选择正确学期；若课表为图片形式将无法导入</string>
+    <!-- T9 导入失败诊断文案 -->
+    <string name="jw_diag_session_expired">%1$s 的会话已过期或未登录。请重新登录后停留到「个人课表」页再点抓取</string>
+    <string name="jw_diag_no_container">%1$s 的页面未找到课表容器。可能原因：①抓取时机过早课表未加载；②页面为图片课表或跨域 iframe；③教务系统已升级，请反馈开发者</string>
+    <string name="jw_diag_header_no_node">%1$s 的课表缺少逐节行头。可能原因：①图片课表（请用文件/手动导入）；②组头被合并（如“第一节-第二节”），请反馈开发者</string>
+    <string name="jw_diag_image_cells">%1$s 的课表单元格为图片，无法识别。请改用 HTML/CSV 文件导入或手动添加课程</string>
+    <string name="jw_diag_empty_semester">%1$s 的页面声明本学期暂无课程。请确认已选对学期，或下学期开学后再导入</string>
+    <string name="jw_diag_wrong_protocol">%1$s 的学校标注协议与实际页面不一致。可能原因：①学校已切换教务系统；②抓取协议选择有误。请反馈开发者</string>
+    <string name="jw_diag_unknown_empty">%1$s 解析结果为空，未找到明确原因。请重试或反馈开发者。诊断特征：%2$s</string>
+    <string name="jw_diag_campus_vpn_hint">该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试</string>
+    <string name="jw_diag_qz_vpn_hint">若强智教务长时间无法加载，多为会话被踢或校外网络限制，请重新登录或换网络</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>
     <string name="jw_parse_failed_hint">\n\n提示：HEU 需在浏览器中登录后导航到『个人课表』页面再点导入</string>

@@ -76,13 +76,27 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
      */
     suspend fun parseHtml(html: String, protocolType: String): List<JwCourse> = withContext(Dispatchers.IO) {
         if (protocolType.isBlank()) {
-            return@withContext tryAllParsers(html, declaredType = null)
+            val (result, attempts) = JwParserRegistry.selectBest(html, declaredType = null)
+            lastAttempts = attempts
+            lastDiagAttempts = attempts.map {
+                JwParseDiagnostics.ParserAttempt(it.parserName, it.courseCount, it.exception)
+            }
+            return@withContext result
         }
         // 显式分发（含已知 type 的 JwParseException 包装）
         val (result, attempts) = parseHtmlStatic(html, protocolType)
         lastAttempts = attempts
+        lastDiagAttempts = attempts.map {
+            JwParseDiagnostics.ParserAttempt(it.parserName, it.courseCount, it.exception)
+        }
         result
     }
+
+    /**
+     * T9: 最近一次 parseHtml 的尝试快照（诊断分类消费）。
+     */
+    var lastDiagAttempts: List<JwParseDiagnostics.ParserAttempt> = emptyList()
+        private set
 
     /**
      * T8 重写：type 已知或未声明时跑 Registry 选 best。
