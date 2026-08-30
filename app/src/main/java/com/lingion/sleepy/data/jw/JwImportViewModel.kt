@@ -92,9 +92,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         val parser: JwParser = when (protocolType) {
             JwProtocol.TYPE_QZ -> JwQzParser(html)
             JwProtocol.TYPE_QZ_CRAZY -> JwQzCrazyParser(html)
-            JwProtocol.TYPE_QZ_BR -> JwQzParser(html)
-            JwProtocol.TYPE_QZ_WITH_NODE -> JwQzParser(html)
-            JwProtocol.TYPE_QZ_OLD -> JwQzParser(html)
+            JwProtocol.TYPE_QZ_BR -> JwQzBrParser(html)
+            JwProtocol.TYPE_QZ_WITH_NODE -> JwQzWithNodeParser(html)
+            JwProtocol.TYPE_QZ_OLD -> JwOldQzParser(html)
             JwProtocol.TYPE_URP -> JwUrpParser(html)
             JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
             JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
@@ -383,7 +383,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 JwOldZfParser(html),
                 JwOldZfParser(html, 1),
                 JwQzParser(html),
+                JwQzBrParser(html),         // T2 新增
+                JwQzWithNodeParser(html),   // T2 新增
                 JwQzCrazyParser(html),
+                JwOldQzParser(html),        // T2 新增
                 JwUrpParser(html)
             )
             var best = emptyList<JwCourse>()

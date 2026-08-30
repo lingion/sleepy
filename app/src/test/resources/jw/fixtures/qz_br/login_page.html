@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>学生个人课表查询</title>
+</head>
+<body>
+<!--
+  qz_br / qz_with_node 共用的边界样本: 强智登录页 (会话失效时抓到的页)。
+  强智新式登录页 (UTF-8), form action=/jsxsd/xk/LoginToXk, 无 table#kbtable。
+  上游 QzParser.generateCourseList 里 doc.getElementById("kbtable") 返回 null
+  → kbtable.getElementsByTag("tr") 在 null 上调用 → Kotlin NPE (上游忠实语义);
+  sleepy JwQzParser 已改为 ?: return courseList 静默空表 (L90),
+  但按 T8 建议应改成抛 IllegalArgumentException, 让 UI 能区分:
+    - "协议选错"    页面缺 kbtable (本 fixture 属此类)
+    - "课表页为空"  kbtable 存在但零课 (见 timetable_kbtable_empty.html)
+-->
+<h2>用户登录</h2>
+<form action="/jsxsd/xk/LoginToXk" method="post">
+  <label>学号: <input type="text" name="userAccount" id="userAccount"></label><br>
+  <label>密码: <input type="password" name="userPassword" id="userPassword"></label><br>
+  <label>验证码: <input type="text" name="randVerificationCode" id="randVerificationCode">
+  <img src="jsxsd/verifycode.servlet" alt="验证码"></label><br>
+  <input type="submit" value="登录">
+</form>
+<!-- 指纹: /jsxsd/ 路径 + verifycode.servlet + LoginToXk = 强智登录页三要素 -->
+</body>
+</html>

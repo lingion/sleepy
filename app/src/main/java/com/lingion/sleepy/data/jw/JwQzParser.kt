@@ -34,7 +34,13 @@ open class JwQzParser(source: String) : JwParser(source) {
         val node = nodeCount * 2 - 1
         val courseHtml = Jsoup.parse(infoStr)
         val courseName = parseCourseName(infoStr)
+        // T2 修复：上游 wakeup QzParser.kt 只认 "老师"，但 JSNU/UPC/CSUFT 等学校
+        // 使用 "教师" 属性名（fixture: edge_teacher_attr.html 已锁现状）。fallback
+        // 顺序：老师 → 教师。仅当两者都空才返回空串，不修改 Jsoup 大小写行为。
         val teacher = courseHtml.getElementsByAttributeValue("title", "老师").text().trim()
+            .ifEmpty {
+                courseHtml.getElementsByAttributeValue("title", "教师").text().trim()
+            }
         val room = courseHtml.getElementsByAttributeValue("title", "教室").text().trim() +
             courseHtml.getElementsByAttributeValue("title", "分组").text().trim()
         val weekStr = courseHtml.getElementsByAttributeValue("title", "周次(节次)")
