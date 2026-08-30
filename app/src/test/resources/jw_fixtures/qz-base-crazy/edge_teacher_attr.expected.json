@@ -1,5 +1,5 @@
 {
-  "_doc": "fixture=qz-base-crazy/edge_teacher_attr.html 适用 parser=JwQzCrazyParser。边界样本：属性名跨校漂移 — 部分学校(JSNU/UPC/CSUFT)打印 font[title='教师'] 而非 font[title='老师']。shiguang_warehouse 多个 adapter 都做了 getElementsByAttributeValue('title','老师')||'教师' 兜底；upstream QzParser.kt 严格只查'老师'。sleepy JwQzParser.kt L37 同样严格。expected 锁现状：'教师' 标签的课程 teacher 字段为 **空串**。这是已知缺口 — 修复路径：在 sleepy JwQzParser.convert() 把 teacher 提取改为 fallback '老师' → '教师'，并在 expect.json 同步更新。",
+  "_doc": "fixture=qz-base-crazy/edge_teacher_attr.html 适用 parser=JwQzCrazyParser。边界样本：属性名跨校漂移 — 部分学校(JSNU/UPC/CSUFT)打印 font[title='教师'] 而非 font[title='老师']。shiguang_warehouse 多个 adapter 都做了 getElementsByAttributeValue('title','老师')||'教师' 兜底；upstream QzParser.kt 严格只查'老师'。sleepy JwQzParser.kt L37 同样严格。expected 锁现状：'教师' 标签的课程 teacher 字段为 **空串**。这是已知缺口 — 修复路径：在 sleepy JwQzParser.convert() 把 teacher 提取改为 fallback '老师' → '教师'，并在 expect.json 同步更新。 [T2 更新: JwQzParser.convert 已加 老师→教师 fallback, 教师路径 teacher=李老师]",
   "_open_uncertainty": "本 fixture 同时验证：(1) '老师' 路径正常解析 teacher='张老师' (2) '教师' 路径得到 teacher=''(空)，证明 upstream 算法未做属性名漂移兜底。若 W2 阶段决定补 fallback, 把 '教师' 路径的 teacher 改为 '李老师' 并删除本 expected 中对应 entry。",
   "courses": [
     {
@@ -21,7 +21,7 @@
       "startWeek": 1,
       "endWeek": 8,
       "type": 1,
-      "teacher": "",
+      "teacher": "李老师",
       "room": "B202"
     }
   ]

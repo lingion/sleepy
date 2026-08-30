@@ -44,7 +44,7 @@ open class JwQzParser(source: String) : JwParser(source) {
         val room = courseHtml.getElementsByAttributeValue("title", "教室").text().trim() +
             courseHtml.getElementsByAttributeValue("title", "分组").text().trim()
         val weekStr = courseHtml.getElementsByAttributeValue("title", "周次(节次)")
-            .text().substringBefore("(周)")
+            .text().substringBefore("(周)").trim()
         val weekList = weekStr.split(',')
 
         var startWeek = 0
@@ -66,11 +66,20 @@ open class JwQzParser(source: String) : JwParser(source) {
                         .replace("周", "")
                         .replace("(", "")
                         .replace(")", "")
+                        .replace("单", "")
+                        .replace("双", "")
                         .trim()
+                        .filter { it.isDigit() }
                         .toIntOrNull() ?: startWeek
                 }
             } else {
-                val v = weekItem.replace("周", "").substringBefore('(').toIntOrNull() ?: 1
+                type = when {
+                    weekItem.contains('单') -> 1
+                    weekItem.contains('双') -> 2
+                    else -> 0
+                }
+                val v = weekItem.replace("周", "").replace("单", "").replace("双", "")
+                    .substringBefore('(').trim().filter { it.isDigit() }.toIntOrNull() ?: 1
                 startWeek = v
                 endWeek = v
             }
