@@ -1,0 +1,31 @@
+{
+  "_note": "新正方 kbList 单/双周边界: zcd 带'第'字前缀 + 半角括号 + 单/双字 + 范围。parseWeekStr 当前实现: cleaned = part.replace('周','').replace('(','').replace(')','').trim() → '第1-16单' → split('-') → ['第1', '16单'] → filter isDigit → parts[0].filter='1' parts[1].filter='16' → Triple(1,16,type=1 from '单' prefix match)。本 fixture 校验 parser 对 '第' 字前缀的兼容性(注: SHUFEZJ.js 注释明确处理 '{第1-16周}' 应先 strip '{' 与 '第', sleepy parseWeekStr 当前不 strip '第' 字但 parts[0].filter{isDigit}='1' 恰好能过 — 脆但能跑; jw_research.json T4 recommendation 14 建议显式 strip '第' 字)。jc 仍为 '1-2'/'3-4' 范围串, 修复后产出对应节次。",
+  "_uncertain": [
+    "'第1-16周(单)' 的 '单' 字位于 ')前'(部)还是 ')' 后? 本 fixture 用 '(单)' 在 ')' 内, parseWeekStr part.contains('单') → type=1 ✓。若实际报文是 '第1-16周单'(无括号), 同样 contains('单') 命中 ✓。",
+    "若报文用 '单周'/'双周'(双字)而非 '单'/'双'(单字), 当前 contains('单') 命中 '单周', contains('双') 命中 '双周' ✓。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "外语楼201"
+    }
+  ]
+}

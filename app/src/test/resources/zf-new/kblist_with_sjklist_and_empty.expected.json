@@ -1,0 +1,32 @@
+{
+  "_note": "新正方 kbList + sjkList 并列结构: kbList 是主课表, sjkList 是'实践课/课外课'等次要数据(调研 jw_research.json L181 明确指出 'sjkList(其他课程)'), 主解析器只解 kbList 忽略 sjkList。 qtkcgs 是顶层数字统计字段(调研未给第一手定义, 推测 '全天课程个数', 不参与解析)。 xsxx 是学生信息对象, 大写键(XH/XM/XNM/XQMMC), 不参与课程解析。本样本含 1 个多周次范围 1-2(高数) + 1 个 type=2 双周(大学英语 3-12周双), sjkList 两条应被丢弃。",
+  "_uncertain": [
+    "qtkcgs 字段在调研 JSON 里仅作为'totalRecord'类似的总数字段出现, 具体含义'(全天课程个数)'是 WebSearch 推断, 无上游源码或第一手报文佐证; 标 uncertain。",
+    "sjkList 是否应被解析: 调研 jw_research.json 提到 'kbList(课程数组)+xsxx+ sjkList(其他课程)', 但未指出 parser 是否应解 sjkList; 鉴于 JwNewZfParser 当前实现 '找第一个 JSONArray 属性' 写法, 若 kbList 排在 sjkList 前面则仅解 kbList 是确定的, 若 sjkList 排在前面则会拿到错误字段。本 fixture 故意把 kbList 放在 sjkList 前面以隔离:主解析器目标仍是 kbList。",
+    "xsxx 大写键在 sleepy 当前 firstStr/firstInt 的 keys 列表里没匹配(XH/XM/XNM/XQMMC 都未列入),自然被忽略。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 4,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 3,
+      "endWeek": 12,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "外语楼201"
+    }
+  ]
+}
