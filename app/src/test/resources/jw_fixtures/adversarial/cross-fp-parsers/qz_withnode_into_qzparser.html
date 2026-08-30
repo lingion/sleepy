@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>个人课表</title></head>
+<body>
+<!-- ADVERSARIAL: 强智 qz_with_node 变体页面 (北邮/广外用):
+     节次写在 title="周次(节次)" 文本里, 用空格分隔: "1-16周(周) 3-4节"
+     喂 JwQzParser: weekStr=substringBefore("(周)") → "1-16周", " 3-4节" 被丢弃
+     → startNode 退化为 nodeCount*2-1 (行号推算), 3-4节 的课被钉到 1-2 节
+     喂 JwNewZfParser: 同一套 title 提取逻辑, 同样丢弃节次 → 同错
+     两者课程数相等 → tryAllParsers 按候选顺序判给 NewZf, 节次错误无法被数量裁决发现 -->
+<table id="kbtable" border="1">
+  <tr>
+    <th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th>
+    <th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th>
+  </tr>
+  <tr>
+    <td class="nodeCol">第一节</td>
+    <td>
+      <div class="kbcontent">
+        数据挖掘<br>
+        <font title="老师">钱老师</font><br>
+        <font title="教室">机房401</font><br>
+        <font title="周次(节次)">1-16周(周) 3-4节</font>
+      </div>
+    </td>
+    <td>
+      <div class="kbcontent">
+        计算机网络<br>
+        <font title="老师">周老师</font><br>
+        <font title="教室">主楼D305</font><br>
+        <font title="周次(节次)">2-16周(单) 5-6节</font>
+      </div>
+    </td>
+    <td></td><td></td><td></td><td></td><td></td>
+  </tr>
+</table>
+</body>
+</html>

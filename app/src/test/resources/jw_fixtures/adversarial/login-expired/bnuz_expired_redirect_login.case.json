@@ -1,0 +1,11 @@
+{
+  "input": "bnuz_expired_redirect_login.html",
+  "expected": "判定: 会话过期(同 bnuz 登录页特征, 无 table1)。课程数=0, 错误分类=SESSION_EXPIRED",
+  "protocol": "bnuz (北师珠)",
+  "page": "课表页会话过期回跳登录 WebForm(结构按活体对齐手写)",
+  "assert_markers": [
+    "__VIEWSTATE",
+    "TextBox1",
+    "location.href = \"default.aspx\""
+  ]
+}

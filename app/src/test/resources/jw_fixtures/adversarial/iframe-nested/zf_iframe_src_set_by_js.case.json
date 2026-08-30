@@ -1,0 +1,19 @@
+{
+  "input": "zf_iframe_src_set_by_js.html (iframe src 由 JS 延迟 800ms 设置, 目标 xskbcx_delayed_target.html 含 Table1)",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (default2.aspx 上下文)",
+    "frameStrategy": "iframe 就绪判定必须是三条件与:(1)src 不是 about:blank/javascript:void/空串;(2)contentDocument 至少有一个非空 body 子元素;(3)body 含锚点(#Table1/blacktab/星期一/kbtable/kbList)或判定为'课表页仍加载'。三条件任一不满足时延迟 1-2s 重抓,重试上限 3 次(总等待≤4s),每次重抓都重新走完整递归遍历(防止 src 刚换完 document 还是旧的)",
+    "courseCount": 2,
+    "expectedCourses": [
+      {"name": "概率论", "day": 1, "startNode": 1, "endNode": 1, "teacher": "郑老师", "room": "理学院301", "weeks": "1-16"},
+      {"name": "大学物理", "day": 3, "startNode": 2, "endNode": 2, "teacher": "冯老师", "room": "物理楼110", "weeks": "2-16"}
+    ],
+    "errorClass": "none(重试后命中) / IFRAME_NAV_PENDING(重试耗尽)",
+    "diagnosticHint": "重试耗尽时报 IFRAME_NAV_PENDING,携带 observed_iframe_src=about:blank 与重试次数,提示'课表框架还在加载,请等页面完全显示课表后再点导入';禁止与'真无课'共用同一错误文案"
+  },
+  "currentBehavior": {
+    "capturedLayers": "顶层 outerHTML + about:blank iframe 的空壳 outerHTML('<html><head></head><body></body></html>')",
+    "result": "0 门课。JwWebViewLoginScreen.kt L188 的 try{contentDocument...}catch(e){} 不抛异常(about:blank 同源可读),iframeContent 拼入的是空壳;JwOldZfParser.kt L24 getElementById('Table1') null → emptyList → JwImportActivity 'jw_parse_empty'。关键缺陷: 抓取 JS 没有任何'iframe 未就绪'判别,空壳拼进 html 后 len 统计正常增大,连 len 异常检测的线索都消除了",
+    "reason": "该样本与 zf_delayed_kbcontainer 的区别: 前者是容器 DOM 在、内容后注入;本样本是 iframe 导航本身未发生,outerHTML 是合法空文档,try/catch 捕不到任何信号。必须以 iframe 就绪三条件+重试解决,单靠'容器空'检测无法覆盖"
+  }
+}

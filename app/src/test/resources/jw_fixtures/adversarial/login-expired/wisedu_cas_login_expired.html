@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<!-- SAMPLE: 金智 jwapp 会话失效: fetch /jwapp/sys/wdkb/modules/xskcb/xskcb.do 被重定向到 CAS 登录页 HTML.
+     依据 /tmp/jw_research.json: "登录通常走学校统一身份认证(cas/authserver)后回调";
+     sleepy WISEDU_FETCH_JS(JwWebViewLoginScreen.kt L394 r.json())拿到 HTML 会抛 JSON 异常 -->
+<html><head><meta charset="utf-8"><title>统一身份认证</title>
+<link href="/cas/authserver/css/login.css" rel="stylesheet"></head>
+<body>
+<div id="cas_login"><form id="casLoginForm" method="post" action="/cas/authserver/login?service=https%3A%2F%2Fjwgl.example.edu.cn%2Fjwapp%2Fcas%2Flogin%3Fservice%3D%2Fjwapp%2Fsys%2Fwdkb%2F*default%2Findex.do">
+<input type="hidden" name="lt" value="LT-123456-cas-placeholder">
+<input type="hidden" name="execution" value="e1s1-placeholder">
+<input type="hidden" name="_eventId" value="submit">
+<input id="username" name="username" placeholder="请输入账号">
+<input id="password" name="password" type="password" placeholder="请输入密码">
+<img id="captchaImg" src="/cas/authserver/captcha">
+<input id="captchaResponse" name="captchaResponse" placeholder="请输入验证码">
+<button type="submit">登 录</button>
+</form></div>
+</body></html>

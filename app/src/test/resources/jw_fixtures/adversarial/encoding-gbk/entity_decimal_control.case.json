@@ -1,0 +1,33 @@
+{
+  "_note": "数字HTML实体(十进制 &#NNNNN;)承载全部中文字段。解码点在 WebView DOM: outerHTML 已把实体替换为原字符, 解析层(JwOldZfParser L23 Jsoup.parse)无感。Jsoup 1.18.1 实测: parse('<td>&#39640;…</td>') td.text()='高等数学', html() 序列化也是原字符。本样本为正常路径对照。补充平面实体(&#128512; 等 >0xFFFF)WebView 同样解码, Jsoup text() 保留代理对, 解析层不按 char 索引中文, 无额外风险。",
+  "input": "entity_decimal_control.html",
+  "expected": {
+    "protocol": "zf (TYPE_ZF → JwOldZfParser type=0)",
+    "courses": [
+      {
+        "name": "高等数学",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教学楼A101"
+      },
+      {
+        "name": "大学英语",
+        "day": 3,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 2,
+        "endWeek": 8,
+        "type": 1,
+        "teacher": "李老师",
+        "room": "B202"
+      }
+    ],
+    "courseCount": 2,
+    "errorClass": "none — 实体在 DOM 层已解码, 解析层零感知"
+  }
+}

@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>个人课表</title>
+</head>
+<body>
+<!-- 强智 qz_with_node 变体: title='周次(节次)' 含空格 '1-16周(周) 1-2节', 但 div.kbcontent 内是 <img>
+     qz_with_node 专用解析器在 sleepy 不存在(JwImportViewModel.kt:96 仍映射 JwQzParser),
+     本样本验证基础 JwQzParser 对该变体图片格的行为 -->
+<table id="kbtable">
+  <tr>
+    <td>
+      <div class="kbcontent">
+        <img src="/img/mon12.png" alt="周一1-2节" />
+      </div>
+    </td>
+    <td>
+      <div class="kbcontent" title="1-16周(周) 3-4节">
+        <span title="老师">钱老师</span>
+        <span title="教室">物理楼301</span>
+        <span title="周次(节次)">1-16周(周) 3-4节</span>
+      </div>
+    </td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

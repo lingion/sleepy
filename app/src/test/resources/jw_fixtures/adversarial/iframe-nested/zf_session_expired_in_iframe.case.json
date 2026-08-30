@@ -1,0 +1,16 @@
+{
+  "input": "zf_session_expired_in_iframe.html + zf_session_expired_login_inner.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (顶层 default2.aspx 指纹;内层是登录页不属于课表协议)",
+    "frameStrategy": "iframe 内容抓到后必须先做'登录页指纹'检查再交 parser: 任一命中 (1)含 __VIEWSTATE 且含 type=password (2)title/文本含'登录'/'请重新登录'/'用户名'+'密码' (3)含 CheckCode/验证码 img (4)URL 以 login/logon/default2.aspx 登录态入口结尾——即判 SESSION_EXPIRED,直接终止解析,不产出 0 课",
+    "courseCount": 0,
+    "expectedCourses": [],
+    "errorClass": "SESSION_EXPIRED_IN_IFRAME",
+    "diagnosticHint": "报 SESSION_EXPIRED_IN_IFRAME,携带 frame_name=main、inner_url=../common/login_redirect.html、命中指纹='__VIEWSTATE+password';文案'登录已过期,内层页面已跳转到登录页,请在 WebView 里重新登录后再点导入'。禁止文案含学号/Cookie/HTML 原文(隐私红线)"
+  },
+  "currentBehavior": {
+    "capturedLayers": "顶层 default2 壳 + main iframe 的登录页 outerHTML(同源可读,无异常)",
+    "result": "0 门课 + 通用'jw_parse_empty'文案。JwWebViewLoginScreen.kt L188/L196 把登录页 HTML 拼进 html 一并回传;JwImportViewModel.parseHtml 走 tryAllParsers(拼入的 __VIEWSTATE 长串还可能让 JwNewZfParser.parseEmbeddedJson 或 JwWiseduParser 误触发一轮无谓解析);最终 JwImportActivity.kt L237 courses.isEmpty() → '请确认已到达课表页面'——用户实际已登录过,看到该文案会反复刷新而不是重新登录",
+    "reason": "现有抓取 JS 和解析分发都没有'登录页指纹'检测层。会话过期是教务系统常态(ASP.NET Session 20 分钟超时),该场景必须与'抓错 frame'/'真无课'三分,否则用户永远无法自诊断。注意本样本与 login-expired 组的分工: 那组测顶层整页跳登录,本样本测顶层正常、iframe 内层静默跳登录——后者用户在 WebView 里看到的还是熟悉的课表框架 UI,更难察觉"
+  }
+}

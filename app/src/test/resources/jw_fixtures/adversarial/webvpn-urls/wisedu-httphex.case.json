@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的金智 jwapp 课表 API — URL 判型幸存但 fetch 层拒绝(实锤 HRBEU WebVPN 全废)",
+  "expected": {
+    "protocol": "wisedu (TYPE_WISEDU)",
+    "protocolBasis": "L148 contains(\"/jwapp/\") 命中; 期望 fetch 层按路径指纹放行(T11: location.pathname 含 /jwapp/ 即放行)",
+    "courseCount": "1+ (xskcb.do JSON rows[{KCM,SKJS,JASMC,SKXQ,KSJC,JSJC,SKZC}]; sleepy 已有 xskcb_heu.json 46 课段的真实基线)",
+    "errorClass": "期望: 无错误; 当前: fetch 层拒绝 -> snackbar '请先登录并进入教务系统(jwgl.hrbeu.edu.cn)再点导入' — 错误分类应为 '抓取层域名白名单拒绝' 而非 '解析失败'",
+    "detectProtocolFromUrlNow": "wisedu",
+    "detectProtocolFromUrlAfterT6": "wisedu",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "URL 判型正确(L148), parseHtml 分发 TYPE_WISEDU -> JwWiseduParser(L100) 对 JSON 解析无问题; 但点抓取按钮时 JwWebViewLoginScreen.kt L177-179 因 school.type==TYPE_WISEDU 走 WISEDU_FETCH_JS, 其 L381 `if (location.hostname.indexOf('jwgl.hrbeu.edu.cn') < 0)` 在 WebVPN 下 hostname 是 webvpn.*.edu.cn -> 判负 -> L382 直接回 ok:false 拒绝, 一个 fetch 都不发。真实 HRBEU WebVPN 用户(hostname=webvpn.hrbeu.edu.cn, 同样不含 'jwgl.hrbeu.edu.cn')100% 被拒 — jw_research domain[4] 将此列为 P0 '推广 fetch 前必须先拆的雷'。修复: 检查 location.pathname 含 '/jwapp/', fetch 用 location.origin+'/jwapp/...' 相对路径并保留 /http/<hex>/ 前缀。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "wisedu-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/9c1b2d/jwapp/sys/wdkb/modules/xskcb/xskcb.do",
+  "sampleKind": "webvpn-url"
+}

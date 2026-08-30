@@ -1,0 +1,33 @@
+{
+  "_note": "真实 GBK 字节 + 正确 gb2312 meta 声明(苏州科技大学 default2.aspx 活体同构)。文件本身是 GBK 编码字节 — 用 UTF-8 读它直接 UnicodeDecodeError(实测: 'utf-8' codec can't decode byte 0xc9)。这正是 T5/T11 若走 CookieManager+OkHttp 或任何绕过 WebView 的直连 fetch 路径的死亡样本: OkHttp 默认按响应头/UTF-8 解码, GBK body 解不动或解错。WebView 路径无害(Chromium 按声明 gb2312 解码正常, DOM 中文完好, outerHTML 已转 UTF-8 Java String)。 sleepy 现状(L177 仅 TYPE_WISEDU 分支进 fetch, 其余走 evaluateJavascript outerHTML)不受影响 — 本样本是'别引入直连 fetch'的护栏。",
+  "input": "raw_gbk_correct_charset.html",
+  "expected": {
+    "protocol": "zf (TYPE_ZF → JwOldZfParser type=0, WebView 抓取路径)",
+    "courses": [
+      {
+        "name": "高等数学",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教学楼A101"
+      },
+      {
+        "name": "体育",
+        "day": 4,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "王老师",
+        "room": "体育馆"
+      }
+    ],
+    "courseCount": 2,
+    "errorClass": "none via WebView; hard_decode_error via raw-byte fetch — UTF-8 强解 GBK 字节抛异常, 宽松模式则全 U+FFFD。任何 fetch 化改造必须先处理 GBK(读 meta charset 或响应头 gb2312 → GBK 解码)"
+  }
+}

@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写 /http/<hex>/ 下的新正方课表 API URL 指纹",
+  "expected": {
+    "protocol": "zf_new (TYPE_ZF_NEW)",
+    "protocolBasis": "detectProtocolFromUrl L149 contains(\"jwglxt\") 命中内层路径 /jwglxt/; /http/7f3a9c/ 前缀字母表为 0-9a-f, 不可能含 q/z 等指纹字母, 不产生干扰",
+    "courseCount": "修复后(T4+T5): 1 (对最小 kbList 单课报文); 当前: 0",
+    "errorClass": "期望: 无错误; 当前: 静默 0 课 -> '课程列表为空'",
+    "detectProtocolFromUrlNow": "zf_new",
+    "detectProtocolFromUrlAfterT6": "zf_new",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "URL 判型本身正确(L149 jwglxt 子串在前缀后仍命中) -> TYPE_ZF_NEW -> JwNewZfParser。但两层解析缺口使课程仍为 0: (1) 若 WebView 抓的是 API 响应渲染页, source 是 <html>... 包裹的 JSON, JwNewZfParser.kt L59-60 的纯 JSON 分支要求 trim 后以 '{' 开头, 被包裹后永不成立; (2) 即便走 L42 markers, 列表 [\"kbxx\",\"tmp_list\",\"xskbcx\",\"xskbcx_json\"] 缺真实新正方标准键 \"kbList\"; (3) 即使拿到 kbList 数组, L127 firstInt(o,'ksjcsd','ksjc','jc',...) 把范围串 jc='1-2' 喂 toIntOrNull -> null -> continue 全部丢课。T5 的 ZF_NEW_FETCH_JS 必须用 location.origin+保留 /http/7f3a9c/ 前缀拼相对路径(UJS buildApiUrl 先例), 否则 WebVPN 下 fetch 变跨域。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "zfnew-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/7f3a9c/jwglxt/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151",
+  "sampleKind": "webvpn-url"
+}

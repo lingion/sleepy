@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 视图开关:grid 视图(shiguang zhengfang_01.js 真实结构) -->
+<button id="shcPDF" data-type="grid" title="导出PDF">导出</button>
+
+<!-- 新正方点击查询后渲染的网格视图
+     对照 shiguang parserTbale():
+       day       = td.attr('id').split('-')[0]
+       name      = .title font
+       infoStr   = p[0] font[1]  → 必须含 "(N-M节)" + 周次串, 如 "(1-2节)1-16周"
+       position  = p[1] font
+       teacher   = p[2] font
+     注意: .title 必须不是 <p>, 否则会占掉 p[0] 导致 infoStr 取空 -->
+<table id="kbgrid_table_0" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <td align="Center">节次\星期</td>
+      <td align="Center">星期一</td>
+      <td align="Center">星期二</td>
+      <td align="Center">星期三</td>
+      <td align="Center">星期四</td>
+      <td align="Center">星期五</td>
+      <td align="Center">星期六</td>
+      <td align="Center">星期日</td>
+    </tr>
+  </thead>
+  <tbody>
+    <!-- 大节 1-2 行: 周二 高等数学, 周三 大学英语(单周) -->
+    <tr>
+      <td>第一节</td>
+      <td id="1-1" class="td_wrap"></td>
+      <td id="2-1" class="td_wrap">
+        <div class="timetable_con text-left">
+          <div class="title"><font>高等数学</font></div>
+          <p><font>节/周</font><font>(1-2节)1-16周</font></p>
+          <p><font>教学楼A101</font></p>
+          <p><font>张老师</font></p>
+        </div>
+      </td>
+      <td id="3-1" class="td_wrap">
+        <div class="timetable_con text-left">
+          <div class="title"><font>大学英语</font></div>
+          <p><font>节/周</font><font>(1-2节)2-8周(单)</font></p>
+          <p><font>外语楼308</font></p>
+          <p><font>李老师</font></p>
+        </div>
+      </td>
+      <td id="4-1" class="td_wrap"></td>
+      <td id="5-1" class="td_wrap"></td>
+      <td id="6-1" class="td_wrap"></td>
+      <td id="7-1" class="td_wrap"></td>
+    </tr>
+    <!-- 大节 3-4 行: 周二 线性代数 -->
+    <tr>
+      <td>第二节</td>
+      <td id="1-2" class="td_wrap"></td>
+      <td id="2-2" class="td_wrap">
+        <div class="timetable_con text-left">
+          <div class="title"><font>线性代数</font></div>
+          <p><font>节/周</font><font>(3-4节)1-16周</font></p>
+          <p><font>教学楼B202</font></p>
+          <p><font>王老师</font></p>
+        </div>
+      </td>
+      <td id="3-2" class="td_wrap"></td>
+      <td id="4-2" class="td_wrap"></td>
+      <td id="5-2" class="td_wrap"></td>
+      <td id="6-2" class="td_wrap"></td>
+      <td id="7-2" class="td_wrap"></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

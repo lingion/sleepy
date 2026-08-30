@@ -1,0 +1,17 @@
+{
+  "_note": "新 URP 对抗: selectCourseList 有条目但 timeAndPlaceList=[] (选了课但教务还没排时间地点, 学期初常见). 表面上 '1 门选课', 实际 0 门可排课. 用户看到的是空课表.",
+  "_uncertain": [
+    "真实 URP 是否返回空 timeAndPlaceList 还是整个 course 条目缺该字段: 未确证; JwNewUrpParser 行 66 optJSONArray ?: continue 同时处理了 null 与缺失。"
+  ],
+  "dateList": [
+    {
+      "selectCourseList": [
+        {
+          "courseName": "军事理论",
+          "attendClassTeacher": "待定",
+          "timeAndPlaceList": []
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写 /webvpn/<host>/ 下的新正方课表 API URL 指纹",
+  "expected": {
+    "protocol": "zf_new (TYPE_ZF_NEW)",
+    "protocolBasis": "同 zfnew-httphex, L149 contains(\"jwglxt\") 命中; 域名重写形态下 hostname 是 webvpn.example.edu.cn, 任何按教务域名做 hostname 白名单的逻辑都会误杀",
+    "courseCount": "修复后(T4+T5): 1; 当前: 0",
+    "errorClass": "期望: 无错误; 当前: 静默 0 课",
+    "detectProtocolFromUrlNow": "zf_new",
+    "detectProtocolFromUrlAfterT6": "zf_new",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "URL 判型正确; 解析层缺口同 zfnew-httphex(kbList marker 缺失 + jc 范围串丢课)。额外风险: 若按 T5 造 fetch 模板时抄了 WISEDU_FETCH_JS 的 hostname 白名单写法(JwWebViewLoginScreen.kt L381 location.hostname.indexOf(...)), 该形态下 hostname=webvpn.example.edu.cn 必然不等于教务域名, fetch 直接拒绝 — 域名重写是硬编码域名模板的天敌(jw_research domain[4] finding '硬编码域名是 WebVPN 天敌')。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "zfnew-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/jwgl.example.edu.cn/jwglxt/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=N2151",
+  "sampleKind": "webvpn-url"
+}

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="gb2312">
+<title>个人课表查询</title>
+<!-- 老正方 xskbcx.aspx，但课表由前端 JS 异步填充：
+     容器 <div id='Table1Wrap'> 立刻存在，但内部 table#Table1 要等 1.5s 后 setTimeout 注入。
+     用户点'导入此页'时容器存在但 Table1 不存在——parser 立即返回空列表。 -->
+<script>
+window.addEventListener('DOMContentLoaded', function() {
+  var wrap = document.getElementById('Table1Wrap');
+  setTimeout(function() {
+    wrap.innerHTML = '<table id="Table1" border="1">' +
+      '<tr><td>时间</td><td>星期一</td></tr>' +
+      '<tr><td>第一节</td>' +
+      '<td><a href=\"#\">软件工程<br>{第1-16周}<br>周老师<br>软件楼501</a></td>' +
+      '</tr></table>';
+  }, 1500);
+});
+</script>
+</head>
+<body>
+<h3>个人课表查询</h3>
+<div id="Table1Wrap">
+  <!-- 这里应该有 table#Table1，但 JS 1.5s 后才注入 -->
+  <p style="color:#999">课表加载中…</p>
+</div>
+</body>
+</html>

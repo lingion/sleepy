@@ -1,0 +1,25 @@
+{
+  "input": "wisedu_xskcb_rows_empty.json",
+  "protocol": "wisedu",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "可信空课表(WISEDU xskcb.do 返回 200 + code=0 + rows=[])",
+    "diagnosis": "当前学期无课或未选对学期",
+    "semantic": "金智微应用 /jwapp/sys/wdkb/modules/xskcb/xskcb.do 在当前 XNXQDM=当前学期 下返回空 rows = 学生该学期无选课"
+  },
+  "detectionPoints": [
+    "顶层 code='0'(字符串,与金智约定一致),",
+    "datas.xskcb.rows 是空数组(无元素但数组本身存在),",
+    "total=0 与 rows=[] 互相印证,非渲染失败;",
+    "message='success' 证明服务端成功处理了请求"
+  ],
+  "parserImpact": {
+    "JwWiseduParser.generateCourseList(L35-40)": "root['datas']['xskcb']['rows'] 路径完整解析,rows.jsonArray 为空 → ?: return emptyList() → 静默返回 []。**好消息**: 这里没有 jc 范围串解析坑(FlowCourse 已修),**坏消息**: 与其他 parser 一样,UI 端无法区分'该学期 0 门'与'协议选错'。",
+    "JwWebViewLoginScreen WISEDU_FETCH_JS 回调链": "fetch 成功 + JSON.parse 成功 + kbList/rows 为空 → 当前实现走成功回调(onWiseduResult 收到 {ok:true, data:txt}) → JwImportViewModel.parseHtml(JSON, TYPE_WISEDU) → [] → 弹 '课程列表为空,请确认已到达课表页面'。**未实现的语义三分**(调研建议 P1): ①JSON.parse 成功+rows 空='当前学期无课'; ②JSON.parse 异常='会话过期'; ③HTTP 非 2xx='教务不可用'。当前统统归类为'格式错误'。",
+    "qfnu_jwxt.py 交叉印证": "曲阜师大强智脚本的'会话失效判定串'包含'请输入账号/请输入密码/请输入验证码'等关键字——这是会话过期特征,与本样本(message='success' + rows=[])严格不同。后端层面两者不应被同一种'空课表'文案掩盖。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=0 课; per-parser: Wisedu=0 其余全 0 — 静默空,不抛异常",
+    "verified": "yes"
+  }
+}

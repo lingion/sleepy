@@ -1,0 +1,15 @@
+{
+  "input": "zf_new_xskbcx_empty_tmpList.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程(学期 2025-2026-1)"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewZfParser 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "老式 zf_new 嵌入 var xskbcx_json = {tmp_list: []}: parseEmbeddedJson 行 42 marker 'tmp_list' 命中 → 行 49-50 arrStart 跳过冒号空格找到 '[' → 行 53 extractBalanced 得 '[]' → 行 54 parseCourseJsonArray('[]'): 行 98 jsonStr[0]=='[' → JSONArray('[]') 空数组 → 行 113 for 0 次 → 行 154 return emptyList() → 行 55 if(courses.isNotEmpty()) false → 后续 marker 不命中 → 行 60 trimmed 不以 {/[ 开头 → parseEmbeddedJson 返回空 → generateCourseList 走 parseHtmlTable → 无 table(只有 div#main) → parseHtmlTableFromQz → JwQzParser 行 90 无 #kbtable → []。最终 0 课正确。对抗点: 'tmp_list 存在但为空' 本身就是 EMPTY_SEMESTER 的结构性证据(marker 命中), 当前实现把该信号丢弃继续 fallback, 上层无法区分 '协议命中但空' 与 '协议未命中' — T8 需要 parser 返回命中特征而非裸 List。"
+}

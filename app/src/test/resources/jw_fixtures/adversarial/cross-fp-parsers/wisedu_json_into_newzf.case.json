@@ -1,0 +1,11 @@
+{
+  "input": "wisedu_json_into_newzf.json",
+  "expected": {
+    "protocol_adjudication": "wisedu",
+    "correct_parser": "JwWiseduParser (KCM/SKJS/JASMC/SKXQ/KSJC/JSJC/SKZC bitmap)",
+    "courses_count": 2,
+    "current_behaviour_measured": "实测 JwWiseduParser=2 课 (完全正确, SKZC 位图 16 位 → 1-16 周每周), 其余 7 parser 全 0。反向风险: 此 JSON 若作为 HTML 字符串喂 JwNewUrpParser 的 extractJsonFromHtml, marker='dateList' 不命中 → 0 课; 喂 JwNewZfParser parseEmbeddedJson, trimmed 以 '{' 开头 → parseCourseJsonArray 直接解析根对象, JSONObject.keys() 迭代顺序下第一个 JSONArray 属性若不是 datas 就 0 课 (本样本 datas 嵌套两层, JSONObject 只扫顶层 keys → 顶层无数组属性 → 0 课)。三套 JSON 协议 (wisedu rows / zf_new kbList / urp_new dateList) 字段名互斥度尚可, 但 sleepy 的 parseCourseJsonArray '找第一个 JSONArray 属性' 启发式无协议约束, 换一种嵌套深度即可互吃。附加发现: JwWiseduParser 抛 kotlinx.serialization.JsonDecodingException 的概率 8/8 (非 JSON 输入) — 但 tryAllParsersImpl catch Exception 吞掉, 不产生任何诊断, T9 要求错误分类必须能区分 'JSON 输入但协议不对' 与 'HTML 输入但协议不对'。",
+    "error_classification": "no_false_positive_json_protocols_mutually_exclusive_by_depth",
+    "notes": "金智 WISEDU 典型 JSON 响应 ({code:0,datas:{xskcb:{rows:[...]}}})"
+  }
+}

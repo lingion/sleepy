@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>强智 maintab.jsp 中间层</title></head>
+<body>
+<div id="tabs">
+  <ul><li class="selected">我的课表</li><li>我的成绩</li></ul>
+  <!-- 关键陷阱：这里有一个不含课表的"诱饵" iframe(公告/菜单)，还有一个真正含课表的 iframe -->
+  <iframe name="noticeFrame" src="/jsxsd/framework/main/notice.jsp">
+    <html><body><div class="notice">放假通知：2026-10-01 放假 7 天</div></body></html>
+  </iframe>
+  <iframe name="kbFrame" src="/jsxsd/framework/xskb/xskb_list_dk.jsp"></iframe>
+</div>
+</body>
+</html>

@@ -56,7 +56,7 @@ class JwProtocolT3DispatchTest {
     fun protocol_hnust_常量与显示名() {
         assertEquals("hnust", JwProtocol.TYPE_HNUST)
         assertEquals("湖南科大教务", JwProtocol.displayName(JwProtocol.TYPE_HNUST))
-        assertEquals("other", JwProtocol.category(JwProtocol.TYPE_HNUST))
+        assertEquals("hnust", JwProtocol.category(JwProtocol.TYPE_HNUST))
         // 原有三协议显示名不被 T3 破坏
         assertEquals("青果教务", JwProtocol.displayName(JwProtocol.TYPE_CF))
         assertEquals("北京大学", JwProtocol.displayName(JwProtocol.TYPE_PKU))

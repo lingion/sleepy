@@ -1,0 +1,8 @@
+{
+  "_note": "新正方登录页 HTML 边界样本: <form action='/jwglxt/xtgl/login_slogin.html'> + csrftoken 隐藏域 + 用户名/密码/验证码三个 input 是 jwglxt 标准登录页指纹(jw_research.json L262)。parseEmbeddedJson 找 markers('kbxx'/'tmp_list'/'xskbcx'/'xskbcx_json') 全部不命中,trim 后不以 {/[ 开头 → 返回空; parseHtmlTable 找 #kbtable/#kbgrid/el-table/.kbcapi-table/[id*=kb] 都不存在 → 走 parseHtmlTableFromQz 走 JwQzParser(source) → 同样找不到 #kbtable → 返回空列表(目前 sleepy JwQzParser 静默 return emptyList, jw_research.json T6 建议改成抛异常)。本 fixture 当前期望行为:返回空列表(0 门课),UI 应给出'请先到达课表页'诊断提示。",
+  "_uncertain": [
+    "返回 0 门课 vs 抛 IllegalArgumentException: 当前 sleepy JwQzParser 静默 return emptyList, T6 推荐改成 throw 但尚未改; 本 fixture 按 '当前行为' 写 expected = 空数组, 标记 W2 parser 修好后会改 expected 为 expectThrows。",
+    "sessionExpired 是 jw_research.json T7 的另一种边界:API 响应其实是登录页 HTML(状态 200 但 body 含 '登录'/'密码'),本 fixture 模拟了这种登录页 HTML 场景; fetch JS 层应在 callbacks 里识别这种情况弹 toast。"
+  ],
+  "courses": []
+}

@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>统一身份认证</title>
+</head>
+<body>
+  <div class="login-container">
+    <h2>欢迎使用综合教务平台</h2>
+    <form id="login-form" method="post" action="/jwapp/sys/lgn/login.do">
+      <div class="form-item">
+        <label>用户名</label>
+        <input type="text" name="username" id="username" />
+      </div>
+      <div class="form-item">
+        <label>密码</label>
+        <input type="password" name="password" id="password" />
+      </div>
+      <div class="form-item captcha">
+        <label>验证码</label>
+        <input type="text" name="captcha" id="captcha" />
+        <img src="/jwapp/sys/lgn/code.do" alt="验证码" />
+      </div>
+      <button type="submit">登录</button>
+    </form>
+  </div>
+</body>
+</html>

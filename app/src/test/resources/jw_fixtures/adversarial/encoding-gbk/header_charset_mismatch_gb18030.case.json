@@ -1,0 +1,22 @@
+{
+  "_note": "charset 三方不一致: meta=gb2312 + (若走 fetch 则响应头也写 gbk) + 实际字节=GB18030 四字节扩展字符('𠀀' U+20000, 编码 95 32 82 36, 老站教师姓名/古字课程名可见)。三个解码路径实测: (A)WHATWG 编码标准把 gb2312/gbk/gb18030 全映射到同一张 gb18030 解码表(含四字节扩展) — Chromium WebView 按 meta gb2312 解 → '𠀀' 正确还原, outerHTML 捕获到的是合法 Java String, JwOldZfParser L23 Jsoup.parse / L33 td.text() 无感 → 1 门课 name='语言文字𠀀理论课' 全字段正确; (B)JDK Charset.forName('GB2312'/'GBK') 是真正不含四字节扩展的表 — T5/T11 若引入 CookieManager+OkHttp 直连 fetch, OkHttp 按响应头 charset=GBK 解 → '语言文字�2�6理论课' 2 个 U+FFFD + 2 个游离 ASCII '2''6' 入库; (C)JDK Charset.forName('gb2312') 严格模式直接抛 CharacterCodingException。结论: WebView 路径此样本零成本通过, fetch 化直连路径必炸 — 是 raw_gbk_correct_charset 的加强版: 那个样本错在'字符全乱', 这个样本错在'字符个别丢但语法层仍像正常中文', 更难被诊断锚点(name 比例阈值)抓到。",
+  "input": "header_charset_mismatch_gb18030.html",
+  "expected": {
+    "protocol": "zf (TYPE_ZF → JwOldZfParser type=0, WebView 抓取路径)",
+    "courses": [
+      {
+        "name": "语言文字𠀀理论课",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "A101"
+      }
+    ],
+    "courseCount": 1,
+    "errorClass": "none via WebView(WHATWG gb2312→gb18030 单表映射); charset_loss via JDK-GBK fetch('𠀀'→'�2�6', 2 U+FFFD + 2 游离 ASCII 入库) — 任何 fetch 化改造必须用 Charset.forName('gb18030') 或把响应体交给 WebView 解码, 禁用 GBK/GB2312 JDK 字符集"
+  }
+}

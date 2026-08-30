@@ -1,0 +1,11 @@
+{
+  "_note": "zf_new 家族: <script>var kbList = {\"kbList\":[…]}</script>, kbList 内中文全部 &#NNNNN; 数字实体(JSON 合法 — JSON 不解码 HTML 实体)。JwNewZfParser.parseEmbeddedJson(JwNewZfParser.kt L44) markers=[\\\"kbxx\\\",\\\"tmp_list\\\",\\\"xskbcx\\\",xskbcx_json] 不含 \\\"kbList\\\" (JsoupProbe7 实测四个 marker indexOf 全 -1) → 走 trimmed.startsWith('{') 分支 → source 是完整 HTML 页不以 { 开头 → 返回 emptyList → parseHtmlTable → kbtable/kbgrid/el-table__body/kbcapi-table/[id*=kb] 全 null(实测) → parseHtmlTableFromQz → 页面无 kbtable → 0 课。即使补 kbList marker, org.json.JSONObject 也不会解码 &#NNNNN; → name 仍为字面实体串。",
+  "input": "entity_in_script_kblist.html",
+  "expected": {
+    "protocol": "无协议命中 — 页面无 URL 场景下 tryAllParsers 八个候选全 0 课",
+    "courses": [],
+    "courseCount": 0,
+    "errorClass": "zero_courses_undetected — JwImportActivity L237 isEmpty → jw_parse_empty 提示; 真因 = marker 缺 kbList + JSON 内 HTML 实体无解码方",
+    "fixAnchor": "parseEmbeddedJson markers 增 '\"kbList\"'; parseCourseJsonArray 的 firstStr 结果 contains(\"&#\") 时用 org.jsoup.parser.Parser.unescapeEntities(v,false) 解码"
+  }
+}

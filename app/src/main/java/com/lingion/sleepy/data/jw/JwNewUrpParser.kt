@@ -190,4 +190,24 @@ class JwNewUrpParser(source: String) : JwParser(source) {
         }
         return result
     }
+
+    /** T8: dateList+selectCourseList+timeAndPlaceList = 100; dateList+selectCourseList = 80; 仅 dateList = 50 */
+    override fun confidence(): Int {
+        val hasDate = source.contains("dateList")
+        val hasSelect = source.contains("selectCourseList")
+        val hasTime = source.contains("timeAndPlaceList")
+        return when {
+            hasDate && hasSelect && hasTime -> 100
+            hasDate && hasSelect -> 80
+            hasDate -> 50
+            else -> 0
+        }
+    }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("dateList")) add("dateList")
+        if (source.contains("selectCourseList")) add("selectCourseList")
+        if (source.contains("timeAndPlaceList")) add("timeAndPlaceList")
+        if (source.contains("classWeek")) add("classWeek")
+    }
 }

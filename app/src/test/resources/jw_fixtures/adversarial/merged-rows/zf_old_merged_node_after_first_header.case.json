@@ -1,0 +1,19 @@
+{
+  "input": "zf_old_merged_node_after_first_header.html",
+  "expected": {
+    "scenario": "merged-rows/老正方数字合并节次行头('第3-4节') 出现在 countFlag 已激活之后",
+    "diagnosis": "T1 修复目标 — JwOldZfParser.parseHeaderNodeString (JwOldZfParser.kt L306-313): HEADER_NODE_PATTERN=第.*节 matches '第3-4节' → nodeStr='3-4' → toIntOrNull()=null → CN_NUM['3-4']=null → 返回 -1 → 主循环 L44-50 当课程格处理 countDay++, 整行课程 day 整体 +1. python 逐 token 模拟证实. 上游 WakeupSchedule_BUPT ZhengFangParser.kt L30-36 同病. research (调研 finding '第N-M节 合并节次行头是盲区, 会导致整天错位一列') 明确点名.",
+    "expectedBehavior": "T1 修复后 3 门课 — 高等数学 day=2/startNode=1/endNode=2 (timeInfo '第1,2节' 逗号规则 step=2), 大学英语 day=3/startNode=3/endNode=4 (从合并行头 '3-4' 解析首段 3, timeInfo '周三' 前缀 + '|双周' type=2), 大学物理 day=5/startNode=5/endNode=5.",
+    "pre_fix_actual_behavior": "python 逐 token 重放 (JwOldZfParser type=0 语义, 2026-08-30 坐实) 实测 3 门课: 高等数学 day=2 startNode=1 endNode=0 (第 1 行 '第一节' 行头正确解析 node=1, cDay=2 — 注意不是 1: 表头行 '节次\\\\星期' 本身 len>1 不在 OTHER_HEADER 且 parse 返回 -1 → 表头行也被 countDay++, 第 1 行的空格格都 countDay 递增); 大学英语 day=3 startNode=1 endNode=0 (cDay=3 被 '第3-4节' 合并行头在它前面推进的 countDay 抵消成恰好对, startNode 拿 stale node=1 而非 3, 应 3-4 节); 大学物理 day=5 startNode=5 endNode=4. day 表面全对 (timeInfo 带周X 前缀走串取 + 巧合抵消), 但 startNode 除大学物理外全错; endNode 全 = startNode - 1 — 因为 parseTime 缺失 result[1] = step 赋值 (上游 L214 有, JwOldZfParser.kt L199-232 无), time[1] 恒 0. toCourseEntities (JwImportViewModel.kt L166-175) coerceAtLeast(1) 把所有 step 压成 1 → 连堂节次信息全丢. 本 fixture 与 zf_old_cn_num_merged_header 的区别: 合并行头出现在 countFlag=true 之后, 其 -1 返回值使该行不被识别为行头也不 continue, 推进 countDay 影响后续所有行 — 若课程 timeInfo 无 '周X' 前缀 (如只有 '第3,4节{第2-16周|双周}'), cDay 错位会直接落成错天.",
+    "courseCount": 3,
+    "keyInvariants": [
+      "合并行头 '第3-4节' 必须被识别为 node=3 的节次锚点, 不当课程格",
+      "countDay 不应在合并行头行上递增",
+      "合并行头之后的课程 startNode 应取行头首段 (3) 而非沿用上一行的 node (1)",
+      "timeInfo 以 '周X' 前缀开头的课程 day 走串取, cDay 错位被掩盖 — 修复不能只测 timeInfo 带 '周X' 的样本"
+    ],
+    "protocol": "zf",
+    "errorCategory": "合并节次行头不识别 + countDay 错位 + parseTime 缺 result[1]=step 移植缺失"
+  },
+  "protocol": "zf"
+}

@@ -1,0 +1,49 @@
+{
+  "_doc": "fixture=qz-base-crazy/normal_grid_no_header.html 适用 parser=JwQzCrazyParser。与 normal_grid.html 同理但首行即节次数据行(无 星期 表头行)，nodeCount=1 → startNode=1/endNode=2。td[0]=节次标签(day=1 无 kbcontent1)，td[1..7]=星期一..星期日(day=2..8)。内嵌 '(单)'/'(双)' 后缀测试: weeks[1] 含 '单' → type=1，含 '双' → type=2 — 覆盖单/双周 type 两种值。expected 已用 jsoup 1.18.1 + Sim.java 双模式模拟器在 upstream 模式下逐字段验证一致。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 5,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 8,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "B202"
+    },
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "C303"
+    },
+    {
+      "name": "大学物理",
+      "day": 6,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "实验楼D205"
+    }
+  ]
+}

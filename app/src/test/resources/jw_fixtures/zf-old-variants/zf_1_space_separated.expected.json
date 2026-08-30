@@ -1,0 +1,38 @@
+{
+  "_note": "老正方 type=1 (zf_1) 变体 (按 T1 修复后 upstream 语义). (a) 单元格无 <a>, 纯文本空格分隔 token 流 (现存学校: 福建农林大学/茂名职院/浙江万里学院). (b) cell1 同格两门课, 第一门带课程属性 token '通识必修' → preIndex-2 取名; hasTypeFlag 须在每门课后复位否则第二门 name 错取 '教学楼A101' (upstream 同病, T1 修复点). (c) cell2 时间 token 是最后带{}的 token → 走 i==split.size-1 末尾分支, 而非双 {} 双课分支. (d) day 全部来自 cDay 网格计数 (timeInfo 无 '周X' 前缀) — 第一节行 td2 → cDay=1, 第三节行 td5 → cDay=5. (e) step: timeInfo 无 '节/' 无 ',' 也不含 '第1节'(startNode=1 的情况) → step=0 → NODE_PATTERN 不命中 → fallback step=1 → endNode=startNode.\n\n解析流程(cell1, split = ['高等数学','通识必修','{第1-16周}','张老师','教学楼A101','大学英语','{第2-16周|单周}','李老师','教学楼B202']):\n- i=2 '{}'命中, preIndex 从 -1 → 2\n- i=6 '{}'命中, preIndex!=1 → split[preIndex-1]=split[1]='通识必修' ∈ COURSE_PROPERTY → hasTypeFlag=true → name=split[0]='高等数学'; (i-preIndex-2)==(6-2-2)=2 ≠1 → teacher=split[3]='张老师', room=split[4]='教学楼A101'. hasTypeFlag 复位. preIndex=6.\n- i=8 是末尾 → 再处理: split[preIndex-1]=split[5]='大学英语' 不在 COURSE_PROPERTY → name=split[preIndex-1]='大学英语'; (i-preIndex)==2 → teacher=split[7]='李老师', room=split[8]='教学楼B202'.\n\n注: 修复前(未复位)第二门 name 会错取 '教学楼A101'(split[preIndex-2]); 修复前若时间 token 为最后一个 token, (i-preIndex)==0 分支会取 split[preIndex+1] 越界 — 本 fixture 让 cell1 末尾有多 token 避免触发该 bug, 但 cell2 的末尾分支也被覆盖(非越界路径).",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "教学楼B202"
+    },
+    {
+      "name": "体育",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 3,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "操场"
+    }
+  ]
+}

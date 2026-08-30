@@ -1,0 +1,33 @@
+{
+  "input": "kblist_pure_response_with_sjklist.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_preferring_kbList_field",
+    "courseCount": 1,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "真课-本学期",
+        "day": 2,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "主讲教师",
+        "room": "主楼302"
+      }
+    ],
+    "skippedFields": [
+      {
+        "field": "sjkList",
+        "reason": "'其他课程'(上级学校共享课/公共选修) 不属于本学期个人课表, 不应被导入为常规课",
+        "currentBug": "parseCourseJsonArray L104-108 for(key in obj.keys()) 用 JSONObject.keys() 迭代, 找第一个非空 JSONArray — JSON 键序由后端序列化决定, 本 fixture 中 sjkList 排在 kbList 之前 → 误取 sjkList → 产出'其他课程-不应被导入'的假课"
+      }
+    ],
+    "userMessage": "1 门课导入成功"
+  },
+  "rationale": "JwNewZfParser.kt L104-108: for(key in obj.keys()) { val v = obj.optJSONArray(key); if (v != null && v.length() > 0) { found = v; break } } — 这段逻辑把'第一个非空 JSONArray'当 kbList, 完全依赖 JSON 键序。org.json 的 JSONObject.keys() 底层是 HashMap.keySet().iterator(), HashMap 键序由 hash 决定 — 即使后端发送顺序固定, Android 端解析后 keys() 顺序也会被打乱(不可预测)。这是真正的 bug: 必须显式 optJSONArray(\"kbList\") 优先, miss 时再降级到'第一个非空 JSONArray'+字段白名单(首项必须含 kcmc)。",
+  "currentBehavior": "JwNewZfParser.kt L40-66 parseEmbeddedJson: markers 全 miss(无 '\"kbxx\"'/'\"tmp_list\"'/'\"xskbcx\"'/'xskbcx_json') — 注意本 fixture 的键名是 'xskbcx_data' 而非 'xskbcx_json', 且没有引号, marker miss。L60 trimmed.startsWith('{') 命中(纯 JSON)→ L99 '{' 分支 → L104 找第一个非空 JSONArray: JSONObject.keys() 顺序 = hash 顺序, 在 JVM 上对这几个短键名 sjkList/kbList/totalRecord/xsxx 的顺序不确定 — 若 sjkList 先被迭代到, 产出 1 门'其他课程-不应被导入'(字段完全合法, 无法拒绝); 若 kbList 先被迭代到, 产出正确的 1 门'真课-本学期'。修复: 显式 optJSONArray(\"kbList\") 优先, 再 fallback 到字段白名单启发式。",
+  "diagnosticHint": "修复后的 parseCourseJsonArray 首选必须显式 optJSONArray(\"kbList\"), '第一个非空 JSONArray' 启发式只能作为 fallback 且必须配字段白名单(首项含 kcmc 才接受)"
+}

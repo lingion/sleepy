@@ -1,0 +1,9 @@
+{
+  "input": "zf_image_cell.html",
+  "expected": {
+    "protocol": "zf",
+    "courseCount": 0,
+    "errorCategory": "图片课表不支持",
+    "rationale": "Table1 全部课程格为 <img>, td.text() 对每个课程格返回空串, length<=1 走空格格分支(countDay++ 但因 countFlag=true 只在第一节起效后才对齐节次; 后续全部继续 continue), 最终 importBeanList 为空 → generateCourseList 返回空列表。tryAllParsers 中 JwOldZfParser 抛不出异常, 但 0 课程, 触发 JwImportViewModel.importAsNewTable 抛 IllegalArgumentException(\"课程列表为空, 请确认已到达课表页面\")。这是合理降级, 但当前 strings.xml 仅有通用 jw_parse_empty 文案, 没有专门区分'图片课表'这一类 — 应在错误分类里给 '图片课表不支持' 标签以便上游诊断改进。"
+  }
+}

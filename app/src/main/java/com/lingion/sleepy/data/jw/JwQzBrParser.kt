@@ -29,4 +29,8 @@ class JwQzBrParser(source: String) : JwQzParser(source) {
     override fun parseCourseName(infoStr: String): String {
         return infoStr.substringBefore("<br>").trim()
     }
+
+    /** T8 §2.5: 继承 kbtable 锚点 + br-not-font 特征 */
+    override fun matchedFeatures(): List<String> =
+        super.matchedFeatures() + listOf("br-not-font")
 }

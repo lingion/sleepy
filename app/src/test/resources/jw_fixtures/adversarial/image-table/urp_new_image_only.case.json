@@ -1,0 +1,9 @@
+{
+  "input": "urp_new_image_only.html",
+  "expected": {
+    "protocol": "urp_new",
+    "courseCount": 0,
+    "errorCategory": "图片课表不支持",
+    "rationale": "JwNewUrpParser.extractJsonFromHtml(JwNewUrpParser.kt:114): marker 'dateList' 命中 pageData 对象字面量 → 从 'dateList' 往前找最近 '{' → extractBalanced 截得 '{\"dateList\":[]}' → JSONObject 解析成功 → dateList.length()==0 → 第57行 return result(空)。不走 selectCourseList 分支, 不崩。tryAllParsers 其余 parser 全部 0 课: JwNewZfParser 无 marker 且无 [id*=kb] 容器 → parseHtmlTableFromQz → JwQzParser 无 kbtable → 空。错误分类应给'图片课表/前端未渲染数据'而非泛化'请确认已到达课表页面'。注意: 若脚本写成 'var dateList = [];'(对象字面量外无 '{'), extractJsonFromHtml 往前找不到 '{' 会直接返回 null, 同样空手而归 — 两种写法都应归入本分类。"
+  }
+}

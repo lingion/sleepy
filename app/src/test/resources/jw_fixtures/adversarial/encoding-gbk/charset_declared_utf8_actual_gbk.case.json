@@ -1,0 +1,33 @@
+{
+  "_note": "反向失配: 声明 utf-8, 字节是 GBK → WebView 按 UTF-8 解码, GBK 高位双字节多非法 → U+FFFD 替换(实测 118 个), 恰好合法的序列产出汉字错字。花括号/ASCII 结构存活(GBK 兼容 ASCII 单字节, 位置不漂移), 但 '{' 后的 '第'→'ＦＦ' 双 FFFD。后果同 sample4(表头/行头识别灭 → node 恒 -1 → 第1节塌缩; WEEK_PATTERN 不中 → 1-20; step=1; day=cDay=2), 差别: U+FFFD 不可逆(GBK mojibake 理论可 re-encode 恢复, U+FFFD 永久丢字节)。",
+  "input": "charset_declared_utf8_actual_gbk.html",
+  "expected": {
+    "protocol": "zf 结构可判, 中文指纹失效(同 sample4)",
+    "courses": [
+      {
+        "name": "�ߵ���ѧ",
+        "day": 2,
+        "startNode": -1,
+        "endNode": 0,
+        "startWeek": 1,
+        "endWeek": 20,
+        "type": 0,
+        "teacher": "���ʦ",
+        "room": "��ѧ¥A101"
+      },
+      {
+        "name": "��ѧӢ��",
+        "day": 2,
+        "startNode": -1,
+        "endNode": 0,
+        "startWeek": 1,
+        "endWeek": 20,
+        "type": 0,
+        "teacher": "���ʦ",
+        "room": "B202"
+      }
+    ],
+    "courseCount": 2,
+    "errorClass": "silent_corruption_worst_case(U+FFFD 不可逆变体) — 字段全错结构完整; 检测锚点: name.contains('\\uFFFD') 比例阈值, 比 GBK-mojibake 字集检测更可靠"
+  }
+}

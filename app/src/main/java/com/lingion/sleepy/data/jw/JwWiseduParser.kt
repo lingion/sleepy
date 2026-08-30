@@ -110,4 +110,18 @@ class JwWiseduParser(source: String) : JwParser(source) {
         }
         return runs.map { Triple(it.first, it.second, 0) }
     }
+
+    /** T8: /jwapp/sys/wdkb/ = 100; xskcb.do = 90; datas.xskcb = 80 */
+    override fun confidence(): Int = when {
+        source.contains("/jwapp/sys/wdkb/") -> 100
+        source.contains("xskcb.do") -> 90
+        source.contains("datas.xskcb") -> 80
+        else -> 0
+    }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("/jwapp/sys/wdkb/")) add("jwapp/sys/wdkb")
+        if (source.contains("xskcb.do")) add("xskcb.do")
+        if (source.contains("datas.xskcb")) add("datas.xskcb.rows")
+    }
 }

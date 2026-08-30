@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 上游 NewZFParser.kt (dIT8Zv) 期望结构
+     getElementById("table1")
+     + tr.getElementsByClass("festival").text() → 节次(每 tr 一个数字)
+     + td.getElementsByTag("div") 内含 .title(课程名) 与 <p title="教师/上课地点/节/周">
+     + td.attr("id")[0] → 星期 (id 首字符)
+     + 节/周 文本 "(N-M节)周次" → nodePattern 提取起止节
+     注意: .title 和 <p> 必须包在同一个 wrapper <div> 内,
+     否则上游在 div.title 层级 getElementsByTag("p") 得空, teacher/room/weekList 都拿不到 -->
+<table id="table1" border="0" cellspacing="0" cellpadding="0">
+  <tr>
+    <td align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+  </tr>
+  <tr>
+    <td colspan="2" class="festival">1</td>
+    <td id="1-1"></td>
+    <td id="2-1">
+      <div>
+        <div class="title">高等数学</div>
+        <p title="教师">张老师</p>
+        <p title="上课地点">教学楼A101</p>
+        <p title="节/周">(1-2节)1-16周</p>
+      </div>
+    </td>
+    <td id="3-1">
+      <div>
+        <div class="title">大学英语</div>
+        <p title="教师">李老师</p>
+        <p title="上课地点">外语楼308</p>
+        <p title="节/周">(1-2节)2-8周(单)</p>
+      </div>
+    </td>
+    <td id="4-1"></td>
+    <td id="5-1"></td>
+  </tr>
+  <tr>
+    <td colspan="2" class="festival">2</td>
+    <td id="1-2"></td>
+    <td id="2-2">
+      <div>
+        <div class="title">线性代数</div>
+        <p title="教师">王老师</p>
+        <p title="上课地点">教学楼B202</p>
+        <p title="节/周">(3-4节)1-16周</p>
+      </div>
+    </td>
+    <td id="3-2"></td>
+    <td id="4-2"></td>
+    <td id="5-2"></td>
+  </tr>
+</table>
+</body>
+</html>

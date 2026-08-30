@@ -1,0 +1,11 @@
+{
+  "input": "zfnew_grid_into_oldzf.html",
+  "expected": {
+    "protocol_adjudication": "zf_new",
+    "correct_parser": "JwNewZfParser(ZF_NEW_FETCH_JS 待实现) — 当前 outerHTML 路径不可解 AJAX",
+    "courses_count": 2,
+    "current_behaviour_measured": "实测 8 parser 全 0 课: JwOldZfParser 只认大写 id='Table1' (本页是 kbgrid_table_0 → null), JwNewZfParser [id*=kb] 命中 kbgrid_table_0 但容器内 getElementsByClass('kbcontent') 空 → parseHtmlTableFromQz 兜底也 0 课; Qz/Crazy 同 0。T4 要求的 '#kbgrid_table_0 + .timetable_con 双视图' 即本样本结构 — 修复后 NewZf 应产出 2 课, 节次从 '(1-2节)1-16周' 提取而非行号推算。",
+    "error_classification": "silent_zero_courses_timetable_con_variant_missing",
+    "notes": "新正方 grid 视图 (#kbgrid_table_0 + .timetable_con .title + p>font)"
+  }
+}

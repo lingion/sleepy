@@ -1,0 +1,11 @@
+{
+  "input": "cf_qingguo_authserver_login.html",
+  "expected": "判定: 未登录(authserver CAS 表单: /authserver/login + lt/execution/_eventId + 请输入账号/密码/验证码)。课程数=0, 错误分类=NEED_LOGIN。防串台关键样本: 该页绝不能被将来的 JwChengFangParser 当作 var kbxx 数据页; cf 协议判型只认 var kbxx+kcmc/jcdm2/zcs 字段, 登录页两者皆无",
+  "protocol": "cf (青果/乘方)",
+  "page": "未登录访问 /xsgrkbcx!xsAllKbList.action 被 302 到 authserver CAS 登录页(按调研 gdut 实测特征手写)",
+  "assert_markers": [
+    "/authserver/login",
+    "请输入账号",
+    "请输入密码"
+  ]
+}

@@ -1,0 +1,15 @@
+{
+  "input": "zf_old_table1_no_tbody.html",
+  "protocol": "zf",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程, 课表已发布但学期内无排课"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwOldZfParser(html,0) 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "老正方 Table1 仅表头行(节次行全缺, 学期未开始/课表未发布): 唯一 tr 的 td 全是 '节次\\\\星期'/'星期一'...'星期日', 前者不匹配 HEADER_NODE_PATTERN(Regex '第.*节' 需整串匹配, '节次\\\\星期' 不是), 后者命中 OTHER_HEADER continue → importBeanList 空 → []。0 课正确。与 Table1 整个缺失(=页面/协议不对)应区分: 本样本 Table1 存在=协议命中+学期空; 无 Table1=可能没到课表页。T9 分类依赖此差异。"
+}

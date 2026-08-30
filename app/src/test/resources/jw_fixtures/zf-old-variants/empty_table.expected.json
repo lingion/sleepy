@@ -1,0 +1,4 @@
+{
+  "_note": "老正方 边界: Table1 完整但无课程. 所有 td.text().trim().length<=1 → 全部走空格格 countDay 跳过 (countFlag=false 时甚至不增 countDay). 最终 importBeanList 为空 → 空列表返回. parser 自身不抛异常, JwImportViewModel 层应提示'课程列表为空'. T9 建议明确区分: 该 fixture 属'有表有行头但 0 课'分支 (可能图片课表/学期无课).",
+  "courses": []
+}

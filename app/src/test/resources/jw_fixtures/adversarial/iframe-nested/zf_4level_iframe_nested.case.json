@@ -1,0 +1,19 @@
+{
+  "input": "zf_4level_iframe_nested.html + zf_4level_L2_xsmain.html + zf_4level_L3_xskbcx_main.html + zf_4level_L4_xskbcx_with_table.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (default2.aspx 指纹)",
+    "frameStrategy": "递归遍历不得设固定深度上限:以'锚点链(#Table1→table.blacktab→含星期一文本的table)全miss'为继续下钻条件,而非遍历层数。每层 frame/iframe 的 contentDocument 都要进 DFS 栈;命中锚点即解析并验证课程数>0,>0 才停;全部层 miss 时报 FRAME_DEPTH_EXHAUSTED 并报告已下钻最大深度与每层 frame name/src 链",
+    "courseCount": 2,
+    "expectedCourses": [
+      {"name": "高等数学", "day": 1, "startNode": 1, "endNode": 1, "teacher": "张老师", "room": "教一101", "weeks": "1-16"},
+      {"name": "大学英语", "day": 2, "startNode": 2, "endNode": 2, "teacher": "李老师", "room": "外语楼202", "weeks": "1-16(单)"}
+    ],
+    "errorClass": "none",
+    "diagnosticHint": "若只下钻到 L3:报 PARTIAL_FRAME_CAPTURE depth=3 missing=L4_kb,提示用户在 WebView 手动点进最内层课表页再导入;禁止把 L2/L3 的'当前位置'导航表格文本喂给 parser 当解析源"
+  },
+  "currentBehavior": {
+    "capturedLayers": "L1(顶层 outerHTML)+L2(顶层 getElementsByTagName('iframe') 一层)。L3/L4 不会被读取",
+    "result": "0 门课。L1+L2 拼接 HTML 无 Table1,JwOldZfParser.kt L24 getElementById('Table1') 返回 null → emptyList;JwImportActivity.kt L237 courses.isEmpty() → 'jw_parse_empty' 一刀切错误",
+    "reason": "JwWebViewLoginScreen.kt L185-194 的抓取 JS 是'只遍历顶层 document 的 iframe/frame 各一层'的浅遍历:ifrs/frs 两个 for 循环读 L2 的 contentDocument 就拼进 iframeContent 结束,不会在 L2 的 document 上再调 getElementsByTagName。4 层嵌套是真实存在的正方部署形态(菜单壳→xs_main→tab 容器→xskbcx),当前实现对该形态必 0 课,且错误文案无法区分'层数不够'和'页面真没课'"
+  }
+}

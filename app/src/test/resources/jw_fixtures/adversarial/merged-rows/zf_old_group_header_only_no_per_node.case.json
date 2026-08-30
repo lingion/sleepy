@@ -1,0 +1,20 @@
+{
+  "input": "zf_old_group_header_only_no_per_node.html",
+  "parserProtocol": "zf",
+  "expected": {
+    "protocol": "zf",
+    "courseCount": 5,
+    "errorCategory": "结构性节次丢失(组头页无逐节行头)",
+    "scenario": "merged-rows/老正方纯组头行变体(早晨/上午/下午/晚上) — 无任何 第N节 逐节行头 (icharle/jwxt 广东白云学院 Getkebian() 结构, research 交叉对比三)",
+    "diagnosis": "三缺口叠加 — (1) JwOldZfParser.kt L31 var countFlag=false 是行级变量, 组头词命中 OTHER_HEADER(L40-43) 走 continue 且不置 countFlag; 本页无 '第N节' 行头 → countFlag 全程 false → L34-38 空格 td (len<=1) 全部不递增 countDay → 每行首格课程 cDay 恒=1; (2) node 永远不被赋值保持 -1 → parseImportBean 全部 startNode=-1; (3) JwOldZfParser.kt L199-232 parseTime 计算 step 后【缺失 result[1]=step 赋值】(上游 ZhengFangParser.kt L214 有 result[1] = step, sleepy 忠实移植时漏掉此行) → time[1] 恒 0 → importList2CourseList L164 endNode = startNode + time[1] - 1 = -2. plan T1 的 detail 只点名 nodes[0] 死代码和 hasTypeFlag 不复位, 未捕获 result[1]=step 缺失 — 本 fixture 首次坐实此移植缺失.",
+    "expectedBehavior": "T1 修复后 5 门课 — 高等数学 day=1 startNode=1 endNode=2 (timeInfo '周一第1,2节' 逗号 step=2), 大学物理 day=2 startNode=1 endNode=1, 大学英语 day=3 startNode=3 endNode=4, 数据结构 day=4 startNode=5 endNode=6, 体育 day=6 startNode=9 endNode=10. 修复需两件事: ① 补 result[1] = step (L232 之后) 使 endNode 恢复 startNode+step-1; ② 组头页无逐节行头时应给出明确错误分类(如'该课表只有上午/下午组头, 缺少节次行头, 节次不可还原')而不是静默塌缩 — 参照 icharle/jwxt 的 上午→1 下午→5 晚上→9 校专属换算不可硬编码进通用 parser, 只能作为诊断提示.",
+    "pre_fix_actual_behavior": "python 逐 token 重放 (JwOldZfParser type=0 语义) 实测 5 门课的 cDay: 高等数学=1 / 大学物理=2 / 大学英语=3 (row2 上午行内递增), 数据结构=1 (row3 下午行 countDay 行级重置又从 0 起), 体育=1 (row4 晚上行同理); startNode 全=-1, endNode 全=-2 (result[1]=0 缺失所致). day 表面正确是因为 timeInfo 都带 '周一'~'周六' 前缀, importList2CourseList L159 (timeInfo.substring(0,2) in CHINESE_WEEK_LIST) 从串取 day — 数据结构/体育 的 cDay=1 被串取掩盖. toCourseEntities (JwImportViewModel.kt L166-175): step=(endNode-startNode+1).coerceAtLeast(1)=(-2-(-1)+1)=0→1, startNode.coerceAtLeast(1)=1 → 全部课程被压成 day=X startNode=1 step=1 单节, 5 门课节次全部塌缩到第 1 节, 连堂 2 节信息全丢. 若 timeInfo 无 '周X' 前缀(如打印版只有 '第1,2节'), cDay=1 会让 5 门课全落周一 — 调研 finding 9 描述的'塌缩'情形.",
+    "keyInvariants": [
+      "countFlag 是行级变量, 只有 '第N节' 行头能置 true; 组头词(早晨/上午/下午/晚上)命中 OTHER_HEADER 走 continue 不置位 → 无逐节行头页面 countDay 全程 0",
+      "sleepy JwOldZfParser.parseTime (L199-232) 缺失 result[1] = step 赋值 — 上游 ZhengFangParser.kt L214 明确有该行; time[1] 恒 0 → endNode = startNode - 1, 这是 T1 未列出的移植缺失",
+      "toCourseEntities 的 coerceAtLeast(1) 会把 startNode=-1/endNode=-2 静默压成 startNode=1/step=1 — 解析层应在 startNode<1 时报错或标记不可信而非静默塌缩",
+      "组头页应有独立错误分类提示'缺少节次行头', 不应伪装导入成功",
+      "时间串带 '周X' 前缀时会掩盖 cDay 错位 — 修复不能只测带 周X 的样本"
+    ]
+  }
+}

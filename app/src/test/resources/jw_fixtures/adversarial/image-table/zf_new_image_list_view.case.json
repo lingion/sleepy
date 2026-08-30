@@ -1,0 +1,9 @@
+{
+  "input": "zf_new_image_list_view.html",
+  "expected": {
+    "protocol": "zf_new",
+    "courseCount": 0,
+    "errorCategory": "图片课表不支持(zf_new el-table__body 变体)",
+    "rationale": "JwNewZfParser.generateCourseList(JwNewZfParser.kt:21-27): parseEmbeddedJson 无 'kbxx'/'tmp_list'/'xskbcx'/'xskbcx_json' marker → 返回空; source.trim() 以 '<' 开头非 '{'/'[' → 跳过纯 JSON 分支。parseHtmlTable(JwNewZfParser.kt:241-285): 容器选择链 getElementById('kbtable')=null, getElementById('kbgrid')=null(本样本 id 是 kbgrid_table_0 不是 kbgrid), selectFirst('table.el-table__body') 命中! → container = 该 table。tr 遍历: nodeCount 起始 0; tr1 的 tds.firstOrNull().text()='' → firstCellText='' 不含'节' → isSectionHeader=false → nodeCount=1; td.getElementsByClass('kbcontent') 空 → cells.isEmpty() continue → 无课程产生; tr2 同理。result 空 → return parseHtmlTableFromQz() (JwNewZfParser.kt:284) → JwQzParser.getElementById('kbtable')=null → 空。最终 0 课不崩。注意: container 命中 el-table__body 是 JwNewZfParser 的真实支持路径, 说明若该页面 td_wrap 内有 kbcontent 结构是能解析的 — 但 jwglxt 真实 DOM 用 td_wrap 而非 kbcontent, 这是 T4 的深层缺口; 图片变体下更无从谈起。错误分类应明确'图片课表'。"
+  }
+}

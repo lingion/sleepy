@@ -1,0 +1,22 @@
+{
+  "input": "zf_default2_xsmain_xskbcx_3layer.html + zf_xsmain_middle.html + zf_xskbcx_inner_with_table.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (default2.aspx 指纹)",
+    "frameStrategy": "递归遍历所有同源 frame/iframe，深度≥3 必须穿透到最深一层 Table1。WebView JS 在顶层 document.frames + contentDocument 路径被同源策略阻断时，应改走深度优先递归 + 把每个 frame 的 documentElement.outerHTML 拼接回传，并在拼接时记录 frame 路径便于诊断。命中含 'Table1' / 'blacktab' / 'kbtable' / 'kbgrid' / 'kbList' 任一锚点的最深 frame 即停止递归，单独解析该 frame 内容",
+    "courseCount": 6,
+    "expectedCourses": [
+      {"name": "高等数学", "day": 1, "startNode": 1, "endNode": 1, "teacher": "张老师", "room": "教一101", "weeks": "1-16"},
+      {"name": "线性代数", "day": 2, "startNode": 2, "endNode": 2, "teacher": "王老师", "room": "教二202", "weeks": "2-16(双)"},
+      {"name": "数据结构", "day": 3, "startNode": 3, "endNode": 3, "teacher": "赵老师", "room": "教三404", "weeks": "3-16"},
+      {"name": "大学英语", "day": 4, "startNode": 1, "endNode": 1, "teacher": "李老师", "room": "外语楼201", "weeks": "1-16(单)"},
+      {"name": "程序设计", "day": 5, "startNode": 2, "endNode": 2, "teacher": "陈老师", "room": "实验楼303", "weeks": "1-16"}
+    ],
+    "errorClass": "none",
+    "diagnosticHint": "若 frame 抓不到：返回 frame_path=menu/main/content、frame_depth=3、captured_layers=['default2.aspx(top)','xs_main.aspx']，提示用户到内层 URL(xskbcx.aspx)再点导入；当前实现 0 课直接吞，错误分类不分明"
+  },
+  "currentBehavior": {
+    "capturedLayers": "仅顶层 default2.aspx + 一层 xs_main.aspx(getElementsByTagName('iframe') 走的是顶层 document)",
+    "result": "0 门课(getElementById('Table1') 命中空，JwOldZfParser L24 直接返回 emptyList)",
+    "reason": "JwWebViewLoginScreen.kt L185-194 的 JS 只遍历顶层 document 的 ifrs/frs 各一层，没递归 menu → main → content 三层；顶层 documentElement.outerHTML 不含 Table1；用户视觉上已在课表页但导入结果为空——这是 SUDA/suda.js 适配显式说明的'两层 iframe 递归'陷阱，与临沂大学 issue #5 症状一致"
+  }
+}

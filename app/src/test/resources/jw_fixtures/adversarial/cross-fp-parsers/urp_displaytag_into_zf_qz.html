@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html><head><meta charset="UTF-8"><title>学生课表</title></head>
+<body>
+<!-- ADVERSARIAL: 老 URP (displayTag 表格) 喂 ZF/QZ 系。
+     JwOldZfParser: getElementById("Table1")=null → 0 课 (无兜底)
+     JwQzParser: getElementById("kbtable")=null → 0 课
+     JwNewZfParser: [id*=kb] 无命中 → Qz 兜底 0 课
+     只有 JwUrpParser 认 class="displayTag" — 但 tryAllParsersImpl 候选序里
+     Urp 排最后, 只要前面任何一个 parser 意外产出课程就会被压掉。
+     此样本同时验证 displayTag 表格 '跳过第一行含星期一的信息表' 逻辑 -->
+<table class="displayTag" border="1">
+  <thead>
+    <tr><th>课程名</th><th>教师</th><th>周次</th><th>星期</th><th>节次</th><th>教学楼</th><th>教室</th><th>节数</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Java程序设计</td><td>郭老师</td>
+      <td>1-16周</td><td>星期一</td><td>1-2节</td>
+      <td>一教</td><td>1205</td><td>2</td>
+    </tr>
+    <tr>
+      <td>&nbsp;</td><td>&nbsp;</td>
+      <td>3-4周</td><td>星期三</td><td>3-4节</td>
+      <td>&nbsp;</td><td>3204</td><td>2</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,11 @@
+{
+  "_meta": {
+    "protocol": "bnuz",
+    "fixture": "bnuz_empty.html",
+    "scenario": "学生无选课, table#table1 仅表头行 + 全空节次行",
+    "parser": "JwBnuzParser (移植自 dIT8Zv/WakeupSchedule_BUPT BNUZParser.kt)",
+    "expected_behavior": "header tr 全 otherHeader 跳过; 空节次行 td 1=数字设置 node+countFlag, 后续 td 空 → countDay 推进, 0 course.add",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"]
+  },
+  "courses": []
+}

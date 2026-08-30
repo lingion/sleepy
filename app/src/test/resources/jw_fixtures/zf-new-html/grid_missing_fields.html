@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<button id="shcPDF" data-type="grid" title="导出PDF">导出</button>
+
+<!-- 边界 3: grid 视图存在但课程块字段缺失(.timetable_con 内只有 .title, 无 p[0..2] font) -->
+<table id="kbgrid_table_0" border="0" cellspacing="0" cellpadding="0">
+  <thead>
+    <tr>
+      <td align="Center">节次\星期</td>
+      <td align="Center">星期一</td>
+      <td align="Center">星期二</td>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>第一节</td>
+      <td id="1-1" class="td_wrap">
+        <!-- title 在但无 p[0..2] font: 上游 shiguang parserTbale 直接拿不到 infoStr.match(/\\((\\d+-\\d+节)\\)/), 短路 false 不 push -->
+        <div class="timetable_con text-left">
+          <p class="title"><font>体育课</font></p>
+        </div>
+      </td>
+      <td id="2-1" class="td_wrap">
+        <!-- p 全在但只有 p[0]=周次, p[1]/p[2] 缺失(教师和地点都空) -->
+        <div class="timetable_con text-left">
+          <p class="title"><font>高等数学</font></p>
+          <p><font>(1-2节)</font><font>1-16周</font></p>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

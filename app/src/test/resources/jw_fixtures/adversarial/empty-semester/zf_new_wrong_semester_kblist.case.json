@@ -1,0 +1,24 @@
+{
+  "input": "zf_new_wrong_semester_kblist.json",
+  "protocol": "zf_new",
+  "expected": {
+    "courseCount": 2,
+    "behavior": "非空但属于错误学期 — fetch 模式返回 200 且 kbList 有 2 条",
+    "diagnosis": "应弹学期选择确认,不应静默导入",
+    "semantic": "xsxx.XQMMC='2024-2025学年秋学期' 与 requestedXqm=3 一致 — 说明接口确实按请求学期返回了数据。空学期样本的另一面: 若用户实际想导 2025 春学期但 xqm 传了 3(秋),就会拿到上一学期的 2 门课,导入成功但数据陈旧"
+  },
+  "detectionPoints": [
+    "kbList 非空(2 条)",
+    "xsxx.XQMMC 字段显式标注学期名称,可与用户当前 WebView 页面 select#xqm 显示值比对",
+    "requestedXqm/actualXqm 字段在本 fixture 中相等,模拟'接口忠实返回所请求学期'"
+  ],
+  "parserImpact": {
+    "JwNewZfParser.parseCourseJsonArray": "L104-108: 对 {kbList:[...],xsxx:{...}} 按 obj.keys() 顺序找第一个非空 JSONArray — 若 kbList 恰好是第一个数组属性则命中拿到 2 条课程;若 xsxx 在前(org.json keys 顺序不保证)则 found=null → return emptyList → 走 parseHtmlTable 兜底 → 0 课。**键序依赖 bug**: 同一 kbList 样本可能因 JSON 键序不同而得到 2 课或 0 课两种结果。",
+    "JwNewZfParser jc 字段(L127)": "firstInt(o,'ksjcsd','ksjc','jc',...) — 本样本 jc='1-2'/'6-7' 是范围串,toIntOrNull() 返回 null → continue **丢课** → 2 条 kbList 只产出 0 门课程,表象与'空学期'完全一样!这是调研 T4 明确指出的必修 bug: jc 必须按字符串 split('-') 解析。",
+    "语义结论": "kbList 非空但解析结果为 0 → 当前实现会误判为'空学期',根因是 jc 范围串解析缺陷。空学期诊断必须在 jc 修复之后才可信。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=0 课(非 2!) — jc='1-2' 范围串 toIntOrNull 返回 null → L127 firstInt ?: continue 丢课,per-parser: NewZf=0 其余全 0 — kbList 非空但解析产出 0 门,表象与真·空学期完全一致",
+    "verified": "yes"
+  }
+}

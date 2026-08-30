@@ -1,0 +1,4 @@
+{
+  "_note": "老正方 边界: 登录页 (default2.aspx 风格 GB2312+__VIEWSTATE+验证码). 无 Table1/blacktab → generateCourseList 立即返回 emptyList() (上游/sleepy 行为一致). T9 建议 JwImportViewModel 区分登录页/课表为空: 此 fixture 应被识别为 '登录页' 而非 '课表为空'. 提示文案应引导用户先在 WebView 完成登录.",
+  "courses": []
+}

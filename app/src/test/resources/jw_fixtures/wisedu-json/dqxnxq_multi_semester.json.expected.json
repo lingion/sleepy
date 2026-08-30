@@ -1,0 +1,24 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp /jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do",
+    "fixture_purpose": "多学期列表+SFDQ 类型混用边界:最后一行 SFDQ 为数字 1 而非字符串 '1',MC 为数字而非字符串",
+    "parser": "无独立 Kotlin parser — 由 WISEDU_FETCH_JS 消费",
+    "consumption_logic": "JS 兜底 rows.find(r => r.SFDQ === '1' || r.SFDQ === 1) 同时兼容字符串与数字;rows[0] 不一定是当前学期 — 禁止无条件取 rows[0](jw_plan T11 明确要求)",
+    "evidence": [
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L441: return row.SFDQ === '1' || row.SFDQ === 1 || row.CURRENT === '1' || row.current === true",
+      "/tmp/jw_plan.json T11 details: '保留现有页面学期选择优先级,不无条件取 rows[0]'",
+      "/tmp/jlu.js L155: labels = rows.map(r => r.MC || r.DM) — MC 缺失时用 DM"
+    ]
+  },
+  "expected_xnxqdm": "2025-2026-2",
+  "expected_row_index": 5,
+  "resolution_path": "step5 (SFDQ 兜底,数字形态): rows[5].SFDQ === 1 命中 (严格 ===  '1' 不匹配数字 1,第二个条件才命中)",
+  "mc_type_anomaly": {
+    "note": "rows[5].MC 是数字 2025 而非字符串 '2025-2026学年2学期' — 真实部署中 MC 偶有类型漂移;JLU adapter 的 r.MC || r.DM 兜底在此场景产出 '2025' 这个无意义标签,真实标签应回退 DM '2025-2026-2'",
+    "uncertainty": "MC 为数字是否真实存在未在公开样本中见到,此处为防御性边界构造,W2 测试若严格断言 MC 为字符串可跳过此 fixture 的 MC 断言"
+  },
+  "anti_pattern_guard": {
+    "forbidden": "取 rows[0].DM 作为 XNXQDM",
+    "reason": "rows[0] 是 2023-2024-1 (SFDQ=0),取它会把 4 个学期前的旧学期课程当当前学期导入"
+  }
+}

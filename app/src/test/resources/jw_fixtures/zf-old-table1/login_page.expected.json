@@ -1,0 +1,4 @@
+{
+  "_note": "登录页边界: 整页无 id=Table1 元素 → doc.getElementById('Table1') 为 null → generateCourseList 直接返回 emptyList()。上层 JwProtocolDetector 应识别为 TYPE_LOGIN, 不再尝试解析。",
+  "courses": []
+}

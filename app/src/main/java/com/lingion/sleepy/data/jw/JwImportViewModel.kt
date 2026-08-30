@@ -84,17 +84,38 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
     /**
      * 解析 HTML 源码，返回课程列表（不入库）
      */
+    /**
+     * T8 新增：最近一次 parseHtml / tryAllParsers 的尝试快照。
+     * T9 通过 jwViewModel.lastAttempts 取走喂给 JwParseDiagnostics.classify。
+     */
+    var lastAttempts: List<JwParserRegistry.ParserAttempt> = emptyList()
+        private set
+
+    /**
+     * T8 重写：parseHtml 分发表与 tryAllParsers 候选都走 JwParserRegistry。
+     * 保留原签名 suspend fun parseHtml(html, protocolType): List<JwCourse> 不变（T9 依赖）。
+     */
     suspend fun parseHtml(html: String, protocolType: String): List<JwCourse> = withContext(Dispatchers.IO) {
         if (protocolType.isBlank()) {
-            // 未知协议（URL 直接登录）：尝试所有 parser，取课程数最多的结果
-            return@withContext tryAllParsers(html)
+            return@withContext tryAllParsers(html, declaredType = null)
         }
-        dispatchParser(html, protocolType).generateCourseList()
+        // 显式分发（含已知 type 的 JwParseException 包装）
+        val (result, attempts) = parseHtmlStatic(html, protocolType)
+        lastAttempts = attempts
+        result
+    }
+
+    /**
+     * T8 重写：type 已知或未声明时跑 Registry 选 best。
+     * 返回 List<JwCourse>（与现行兼容），attempt 快照写入 lastAttempts。
+     */
+    private fun tryAllParsers(html: String, declaredType: String?): List<JwCourse> {
+        val (best, attempts) = JwParserRegistry.selectBest(html, declaredType)
+        lastAttempts = attempts
+        return best
     }
 
     /** 未知协议时，尝试所有 parser，取课程数最多的结果 */
-    private fun tryAllParsers(html: String): List<JwCourse> = tryAllParsersImpl(html)
-
     /**
      * 从 URL 自动检测教务协议类型（T6: 大小写归一 + 空值保护，判型逻辑在 [detectProtocolFromUrlImpl]）
      */
@@ -122,34 +143,86 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
     companion object {
         /**
-         * 协议 → parser 实例。T3 抽为静态以便纯 JVM 单测验证分发覆盖面
-         * （schools.json 里 cf/pku/bnuz/hnust 学校选完后不再抛"协议 xx 暂不支持"）。
+         * T3 保留：协议 → parser 实例（T8 起委托 JwParserRegistry 单一工厂表）。
+         * 纯 JVM 单测验证分发覆盖面用。
          */
-        internal fun dispatchParser(html: String, protocolType: String): JwParser = when (protocolType) {
-            JwProtocol.TYPE_QZ -> JwQzParser(html)
-            JwProtocol.TYPE_QZ_CRAZY -> JwQzCrazyParser(html)
-            JwProtocol.TYPE_QZ_BR -> JwQzBrParser(html)
-            JwProtocol.TYPE_QZ_WITH_NODE -> JwQzWithNodeParser(html)
-            JwProtocol.TYPE_QZ_OLD -> JwOldQzParser(html)
-            JwProtocol.TYPE_URP -> JwUrpParser(html)
-            JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
-            JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
-            // zf / zf_1 = 老版正方（default2.aspx 时代），上游 wakeup 里 TYPE_ZF → ZhengFangParser
-            JwProtocol.TYPE_ZF -> JwOldZfParser(html)
-            JwProtocol.TYPE_ZF_1 -> JwOldZfParser(html, 1)
-            JwProtocol.TYPE_ZF_NEW -> JwNewZfParser(html)
-            JwProtocol.TYPE_CF -> JwChengFangParser(html)
-            JwProtocol.TYPE_PKU -> JwPekingParser(html)
-            JwProtocol.TYPE_BNUZ -> JwBnuzParser(html)
-            JwProtocol.TYPE_HNUST -> JwHnustParser(html)
-            else -> throw IllegalArgumentException("协议 $protocolType 暂不支持")
-        }
+        internal fun dispatchParser(html: String, protocolType: String): JwParser =
+            JwParserRegistry.parserFor(protocolType, html)
 
         /**
-         * 兜底解析的实现，static 以便纯 JVM 单测直接验证兜底覆盖面
-         * （issue #5 回归：老版正方页面必须能被 tryAllParsers 解析出来）。
+         * T8 保留：纯 JVM 单测静态入口（与 JwParserTest 等回归套件兼容）
          */
-        fun tryAllParsersForTest(html: String): List<JwCourse> = tryAllParsersImpl(html)
+        @JvmStatic
+        fun tryAllParsersForTest(html: String): List<JwCourse> =
+            JwParserRegistry.selectBest(html, declaredType = null).first
+
+        /** T8 新增：JVM 单测直接拿 attempts 快照 */
+        @JvmStatic
+        fun tryAllParsersForTestWithAttempts(html: String): Pair<List<JwCourse>, List<JwParserRegistry.ParserAttempt>> =
+            JwParserRegistry.selectBest(html, declaredType = null)
+
+        /** T8 新增：schools.json type 能否被 JwParserRegistry 路由（SchoolsJsonConsistencyTest 用） */
+        @JvmStatic
+        fun isRoutable(type: String): Boolean = try {
+            JwParserRegistry.parserFor(type, "<html></html>")
+            true
+        } catch (e: IllegalArgumentException) { false }
+
+        /**
+         * T8 核心：显式分发的纯函数形式（不依赖 Android Context / Room）。
+         */
+        internal fun parseHtmlStatic(
+            html: String,
+            protocolType: String,
+        ): Pair<List<JwCourse>, List<JwParserRegistry.ParserAttempt>> {
+            val parser = try {
+                JwParserRegistry.parserFor(protocolType, html)
+            } catch (e: IllegalArgumentException) {
+                // 已知 type 不在 FACTORIES 表：包装 JwParseException 给 T9 分类
+                throw JwParseException(
+                    "协议 $protocolType 暂不支持",
+                    attempts = listOf(
+                        JwParserRegistry.ParserAttempt(
+                            parserName = "<none>",
+                            type = protocolType,
+                            courseCount = 0,
+                            confidence = 0,
+                            matchedFeatures = emptyList(),
+                            exception = e::class.simpleName,
+                        )
+                    ),
+                )
+            }
+            return try {
+                val r = parser.generateCourseList()
+                r to listOf(
+                    JwParserRegistry.ParserAttempt(
+                        parserName = parser.nameForDiag(),
+                        type = protocolType,
+                        courseCount = r.size,
+                        confidence = parser.confidence(),
+                        matchedFeatures = parser.matchedFeatures(),
+                        exception = null,
+                    )
+                )
+            } catch (e: JwParseException) {
+                throw e  // JwQzParser 找不到 #kbtable 的情况 — attempts 已带 NO_TABLE_CONTAINER_MARKER，直接冒泡
+            } catch (e: Exception) {
+                throw JwParseException(
+                    "parser 解析异常: ${e::class.simpleName}: ${e.message?.take(60)}",
+                    attempts = listOf(
+                        JwParserRegistry.ParserAttempt(
+                            parserName = parser.nameForDiag(),
+                            type = protocolType,
+                            courseCount = 0,
+                            confidence = parser.confidence(),
+                            matchedFeatures = parser.matchedFeatures(),
+                            exception = "${e::class.simpleName}: ${e.message?.take(60)}",
+                        )
+                    ),
+                )
+            }
+        }
 
         // T6 新增：纯 JVM 测试入口（与 tryAllParsersForTest 同模式，无 Android Context 依赖）
         @JvmStatic fun detectProtocolFromUrlForTest(url: String): String? =
@@ -384,33 +457,6 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             return hits
         }
 
-        private fun tryAllParsersImpl(html: String): List<JwCourse> {
-            val candidates = listOf(
-                JwChengFangParser(html),     // T3 新增，置顶：防止 JwNewZfParser 的 "kbxx" marker 误吃 CF 页面
-                JwWiseduParser(html),
-                JwNewUrpParser(html),
-                JwNewZfParser(html),
-                JwOldZfParser(html),
-                JwOldZfParser(html, 1),
-                JwQzParser(html),
-                JwQzBrParser(html),         // T2 新增
-                JwQzWithNodeParser(html),   // T2 新增
-                JwQzCrazyParser(html),
-                JwOldQzParser(html),        // T2 新增
-                JwUrpParser(html),
-                JwPekingParser(html),        // T3 新增
-                JwBnuzParser(html),          // T3 新增
-                JwHnustParser(html)          // T3 新增
-            )
-            var best = emptyList<JwCourse>()
-            for (p in candidates) {
-                try {
-                    val result = p.generateCourseList()
-                    if (result.size > best.size) best = result
-                } catch (e: Exception) { continue }
-            }
-            return best
-        }
     }
 
     /**

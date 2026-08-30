@@ -1,0 +1,24 @@
+[
+  {
+    "name": "毛泽东思想和中国特色社会主义理论体系概论",
+    "day": 4,
+    "startNode": 1,
+    "endNode": 2,
+    "startWeek": 1,
+    "endWeek": 16,
+    "type": 0,
+    "teacher": "周老师 / 课程组",
+    "room": "主教学楼 \"304\" 室"
+  },
+  {
+    "name": "C++程序设计（实验）",
+    "day": 1,
+    "startNode": 9,
+    "endNode": 11,
+    "startWeek": 2,
+    "endWeek": 9,
+    "type": 0,
+    "teacher": "吴老师",
+    "room": "实验楼 B-205"
+  }
+]

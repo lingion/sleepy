@@ -1,0 +1,21 @@
+{
+  "input": "newzf_kbgrid_td_id_day_node.html",
+  "parserProtocol": "zf_new",
+  "expected": {
+    "protocol": "zf_new",
+    "courseCount": 5,
+    "errorCategory": "rowspan+td id 双锚点缺失(现版 0 课)",
+    "scenario": "merged-rows/新版正方 kbgrid_table_0 真实 DOM — td 携带 id='day-起始节' + rowspan 连堂 + 同格叠 2 门 (.timetable_con x2) + id 与位置冲突 (第 1 行 id='4-5' 格按 td 序号会误判 day=2)",
+    "diagnosis": "三缺口叠加 — (1) JwNewZfParser.parseHtmlTable L245-250 选择器链 getElementById('kbtable')/'kbgrid'→selectFirst('table.el-table__body')→'.kbcapi-table'→'[id*=kb]': 本页 div#kbgrid_table_0 命中 '[id*=kb]' 通配, 但容器是 div 不是 table, getElementsByTag('tr') 会拿到内层 tr — 或者命中内层 table.el-table__body (第 3 选择器); 无论哪个, (2) 解析层 L269 getElementsByClass('kbcontent') 在 .timetable_con 结构 0 命中 (python 实测), 所有格 continue → result 空 → L284 parseHtmlTableFromQz(); (3) JwQzParser.kt L90 getElementById('kbtable') 0 命中 → return emptyList → 0 课. 更深层: 现版不读 td.attr('id') — 上游生态两个适配器 (shiguang zhengfang_01.js L14 / XZIT xzit_01.js L28: parseInt($(td).attr('id').split('-')[0]); Kozmosa/MySCUT importScutHtml.ts L273 idMatch=/^(\\d+)-(\\d+)$/) 都证明真实新正方 grid 的 td 有 id='day-起始节' 双锚点, day 与节次均从 id 取, 位置计数仅是兜底.",
+    "expectedBehavior": "T4 修复后 5 门课 (同格叠 2 门算 2 门) — 高等数学 day=1 startNode=1 endNode=3 (rowspan=3 或文本 '(1-3节)' 双证据), 大学英语 day=2 startNode=1 endNode=2, 数据结构 day=4 startNode=5 endNode=6 (id='4-5' 定 day=4 起节 5 — 位置序号会误判 day=2), 体育 day=2 startNode=3 endNode=4, 形势与政策 day=2 startNode=3 endNode=3 ('(3节)' 文本优先, rowspan=2 只是兜底). 修复要点: ① 选择器显式补 div#kbgrid_table_0 / td.td_wrap[id] / .timetable_con; ② 优先从 td.attr('id') 正则 ^(\\d+)-(\\d+)$ 取 day 与 fallbackNode (MySCUT L270-283 契约); ③ rowspan 属性作 fallbackSpan, 节/周文本 '(N-M节)' 优先于 rowspan (MySCUT parseNodeRange L124-141 语义); ④ 同格多个 .timetable_con 块逐块解析 (每块一门课).",
+    "pre_fix_actual_behavior": "python 实测 (JwNewZfParser.parseHtmlTable 语义重放): 容器命中 table.el-table__body (第 3 选择器), trs=4: thead tr 0 td → continue; tr1 4 td: firstCellText='第1节' 含 '节' 且无 .kbcontent → isSectionHeader → 整行 continue (丢高等数学/大学英语/数据结构 3 门); tr2 3 td: firstCellText='第2节' 含 '节' 无 kbcontent → continue (丢体育+形势与政策 2 门); tr3 1 td: continue. result 空 → parseHtmlTableFromQz → JwQzParser 0 → importAsNewTable (JwImportViewModel.kt L196) 抛 '课程列表为空, 请确认已到达课表页面'. 用户视角: 学校 (schools.json 53 所 zf_new 中采用现行 kbgrid 双视图的部署) 课表页明明显示 5 门课, 导入报 0 课 — 与 newzf_kbgrid_rowspan_cell.html / newzf_kbgrid_rowspan3_liantang.html 同根, 但本样本是 td id='day-node' 形态, 证明现版连 day/节次的真实锚点都不认识.",
+    "keyInvariants": [
+      "真实新正方 kbgrid 课程格 td 带 id='day-起始节' — day 与节次双锚点从 id 取, 位置计数仅兜底 (shiguang zhengfang_01.js L14 + MySCUT L273 正则佐证)",
+      "rowspan 属性 = fallbackSpan, 节/周文本 '(N-M节)' 优先于 rowspan (MySCUT parseNodeRange L124-141)",
+      "同格叠多门课 = 多个 .timetable_con 块, 须逐块解析 — 现版把整个 td 当单格处理",
+      "isSectionHeader 判定 (firstCellText 含 '节' 且行内无 kbcontent) 会把 .timetable_con 行整行 continue — 须覆盖新版格形态",
+      "div#kbgrid_table_0 会被 [id*=kb] 通配误命中 — 选择器升级须用精确 id, 避免误吞其他 kb* 容器",
+      "本样本与 newzf_kbgrid_rowspan_cell.html 同属 kbgrid 形态, 但 td id 是独立缺口 — 修复须覆盖两种形态"
+    ]
+  }
+}

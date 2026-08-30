@@ -1,0 +1,5 @@
+{
+  "_note": "URP 网格变体边界: 空 td[id=day_node] 网格, 所有 td 内均为 &nbsp;, 无 div.class_div. 期望 courses=[].",
+  "_fixture": "urp_grid_empty.html",
+  "courses": []
+}

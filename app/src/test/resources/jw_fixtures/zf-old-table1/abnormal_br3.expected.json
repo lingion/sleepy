@@ -1,0 +1,27 @@
+{
+  "_note": "老正方 type=0 异常变体(abnormal): 同格两门课以 <br><br><br>(三连 br)分隔, 每段仅 3 行[课程名,时间,老师] 无教室行。parseImportBean 检测到 '<br><br><br>' → isAbnormal=true → split.size==3 时走 teacher=split[2], room='' 分支(与正常 3 行的 room=split[2] 语义不同)。",
+  "courses": [
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 6,
+      "endNode": 7,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": ""
+    },
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 6,
+      "endNode": 7,
+      "startWeek": 3,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "李老师",
+      "room": ""
+    }
+  ]
+}

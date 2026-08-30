@@ -1,0 +1,15 @@
+{
+  "input": "zf_old_blacktab_into_parsers.html",
+  "expected": {
+    "protocol_adjudication": "zf (页面级指纹: GB2312 title '欢迎使用正方教务管理系统' + table.blacktab + 花括号周次 '{第N-M周}')",
+    "correct_parser": "JwOldZfParser — 但需先扩展容器选择器 (Speas-y 模式: #Table1 → #table1 → 遍历所有 table 取 text 含 '星期一' 的)",
+    "courses_count": 2,
+    "per_course_expectation": [
+      {"name": "高等数学", "day": 2, "node": "1-2", "week": "1-16", "teacher": "张老师", "room": "教学楼A101"},
+      {"name": "大学英语", "day": 1, "node": "3-4", "week": "2-16单", "teacher": "李老师", "room": "外语楼308"}
+    ],
+    "current_behaviour_measured": "OldZf0/OldZf1 均 0 课 (getElementById('Table1') 在 JwOldZfParser.kt L24 返回 null), NewZf 走 [id*=kb] 无命中后 parseHtmlTableFromQz 也 0 课。tryAllParsers 全候选 0 课 → '解析结果为空' 误导性提示, 实际是'解析器容器选择器漏变体'。",
+    "error_classification": "silent_zero_courses_selector_gap",
+    "notes": "调研[0] 'blacktab 变体' 实证: kechengbiao 用 soup.select('table.blacktab'), Speas-y 提供 '#Table1 → #table1 → 含星期一任意table' 兜底序。此样本验证 T1/T8 的扩展点: JwOldZfParser 容器选择器必须从 id='Table1' 扩展为多级, 否则 blacktab 学校全部 0 课。同时也验证 error_classification 体系: 需区分 '0课因为页面不对' 与 '0课因为选择器漏变体'。"
+  }
+}

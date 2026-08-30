@@ -1,0 +1,19 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp 会话过期时 xskcb.do 返回的 HTML 登录页 (非 JSON)",
+    "fixture_purpose": "会话过期/未登录边界:POST xskcb.do 返回 302 重定向到登录页,fetch 的 r.text() 拿到 HTML,JSON.parse 抛异常",
+    "parser": "JwWiseduParser(不适用) — 该 HTML 不应被 JwWiseduParser 解析",
+    "upstream_evidence": "UJS adapter / NJUPT 接口文档:会话过期时接口返回 HTML 登录页而非 JSON,zfn_api.py 和 UJS 用 JSON.parse 抛异常识别未登录/会话过期,对应 toast '可能是您未成功登录或会话已过期'",
+    "evidence": [
+      "/tmp/jw_research.json domain[4] finding CSRF: '唯一坑: 会话过期时接口返回的是 HTML 登录页 (或 3xx) 而非 JSON'",
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt (WISEDU_FETCH_JS L394: .then(r => r.json()) 会 reject)"
+    ]
+  },
+  "courses": null,
+  "expected_behavior": {
+    "fetch_layer": "r.json() 抛 SyntaxError → fetch promise reject → __sleepyBridge.onWiseduResult({ok:false, err:'未登录或会话已过期,请重新登录后重试'})",
+    "parser_layer": "不应调用 JwWiseduParser — 该 HTML 不含 datas.xskcb 结构",
+    "robustness_check": "若误将此 HTML 喂给 JwWiseduParser,kotlinx.serialization 会抛 SerializationException (HTML 非 JSON);tryAllParsers 的 try/catch 会吞掉此异常使该 parser 静默失效"
+  },
+  "login_page_markers": ["登录", "密码", "username", "password", "captcha", "统一身份认证"]
+}

@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的北师珠(BNUZ) — 路径仅剩通用 default.aspx, URL 层零信号且不与老正方冲突",
+  "expected": {
+    "protocol": "bnuz (TYPE_BNUZ)",
+    "protocolBasis": "北师珠登录/课表站点是 es.bnuz.edu.cn(ASP.NET WebForm, form action=default.aspx), 路径重写后 host 入 hex, 路径 default.aspx 是通用词 — L152 contains(\"default2.aspx\") 不命中('default.aspx' 与 'default2.aspx' 是不同串, 无误吸), detect 返回 null; 判型只能靠 HTML: #table1 + td 内 <span>课程名</span>...教师{1-16周}<br>教室(2节) 结构",
+    "courseCount": "1 (table1 单格样本)",
+    "errorClass": "期望: 无错误; 当前: 静默 0 课(手输)或 throw '协议 bnuz 暂不支持'(清单选校)",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "null — cf/pku/bnuz 三协议 URL 层无可靠指纹(路径重写形态连 host 信号都被 hex 吞掉), 判定必须由 T6 detectProtocolFromHtml 在 onHtmlCaptured 二次判型接管",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "当前手输: null -> tryAllParsers; JwNewZfParser.parseHtmlTable L245-249 依次找 kbtable/kbgrid/el-table__body/kbcapi-table/[id*=kb] — 'table1' 不含 'kb' 子串, 全不中 -> L250 parseHtmlTableFromQz -> JwQzParser L90 找 #kbtable -> null -> 空; JwOldZfParser L24 找 #Table1 — 大小写敏感吗? Jsoup getElementById 按精确 id 匹配, 'table1'≠'Table1' -> 空; 其余候选 0 课 -> 总 0 课。从清单进(北师珠 type=bnuz): L105 -> throw '协议 bnuz 暂不支持'。T3 移植 JwBnuzParser(#table1 + span/教师{周次}/教室(节数)) 是唯一解; 同时证明 detectProtocolFromHtml 需要 BNUZ 页面级指纹(es.bnuz 版权串或 #table1+span 组合)。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "bnuz-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/6f0d84/default.aspx",
+  "sampleKind": "webvpn-url"
+}

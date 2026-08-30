@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>正方新协议页面 — 却带了 kbxx marker</title>
+</head>
+<body>
+<!-- 对抗样本: 新正方页面里同时出现 "kbxx" (CF/青果的 marker) 和 "kbList" (新正方标准 marker)。
+     真实来源: 部分学校部署把青果/CF 历史接口和新正方 jwglxt 混合, 页面残留旧接口的 var kbxx 声明(空数组或残余数据),
+     而真实课表在 kbList。也覆盖 jw_research.json T4 提到的"CF 的 kbxx 不得被该 parser 抢先"的反向场景 -->
+<script>
+// 旧接口残留: 空的 kbxx (CF/青果标记, 但这里无数据)
+var kbxx = [];
+</script>
+<script>
+// 真实数据: 新正方 kbList
+var xskbcx_data = {"totalRecord":2,"kbList":[
+  {"kcmc":"离散数学","xqj":2,"jc":"3-4","zcd":"1-16周","cdmc":"A203","xm":"陈老师"},
+  {"kcmc":"操作系统","xqj":4,"jc":"5-6","zcd":"1-16周","cdmc":"B305","xm":"刘老师"}
+]};
+</script>
+</body>
+</html>

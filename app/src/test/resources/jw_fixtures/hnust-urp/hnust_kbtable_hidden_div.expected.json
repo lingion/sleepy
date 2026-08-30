@@ -1,0 +1,72 @@
+{
+  "_note": "HNUST (湖南科技大学) kbtable + hidden div(style=display:none) + div id 前段节次 (oldQzType=0 模式); upstream HNUSTParser.split html by <br> 找含 '\\d{1,2}周' 行做 preIndex, courseName=split[0], teacher=split[preIndex-1], room=split[preIndex+1], startNode=id.split('-')[0]*2-1, endNode=startNode+1, day 从 0 起每行每个 td 自增(行首 td=节次标签, day=0; tds[1]星期一日=1; ...), 周次 string split(','); type 恒 0.",
+  "_fixture": "hnust_kbtable_hidden_div.html",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "主楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 15,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "文科楼B202"
+    },
+    {
+      "name": "大学英语",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 17,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "文科楼B202"
+    },
+    {
+      "name": "线性代数",
+      "day": 3,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 3,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "理科楼C303"
+    },
+    {
+      "name": "大学物理",
+      "day": 4,
+      "startNode": 7,
+      "endNode": 8,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "实验楼D404"
+    },
+    {
+      "name": "计算机基础",
+      "day": 5,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 5,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "陈老师",
+      "room": "信息楼E505"
+    }
+  ]
+}

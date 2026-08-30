@@ -1,0 +1,12 @@
+{
+  "_note": "新 URP (urp_new) fetch 空学期边界: JwNewUrpParser 注释行 13-36 声明的真实结构 root.dateList[0].selectCourseList=[]. 空学期=selectCourseList 空 或 timeAndPlaceList 空 两种形态.",
+  "_uncertain": [
+    "dateList 本身是否可能为空数组: JwNewUrpParser 行 57 if (dateList.length() == 0) return result 表明上游认为可能; 此 fixture 只覆盖 dateList 长度 1 + selectCourseList 空。",
+    "selectCourseList 条目存在但 timeAndPlaceList=[] 的变体在另一个 fixture (urp_new_course_without_timeAndPlace.json)。"
+  ],
+  "dateList": [
+    {
+      "selectCourseList": []
+    }
+  ]
+}

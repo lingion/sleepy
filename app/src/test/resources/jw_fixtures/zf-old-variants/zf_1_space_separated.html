@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 老正方 type=1 (zf_1) 变体(福建农林/茂名职院/浙江万里学院): 单元格无 <a> 标签,
+     纯文本以空格分隔, 时间 token 含 {第N-M周}.
+     parseImportBean1: source.split(' ') → token 流, 找含'{'+'}的 token 当 preIndex;
+     name = split[preIndex-1] (若上一 token 是 courseProperty 则前推一格).
+     (i-preIndex-2)==1 时 teacher=split[preIndex+1], 否则 teacher=split[preIndex+1] room=split[preIndex+2].
+     末位 token(i==split.size-1)单独再添加一次.
+     本 fixture 覆盖: (a) 同格两门课, (b) 第一门带 课程属性 token (模拟'通识必修'放最前),
+     (c) 时间 token 是末位 token, 触发 (i==split.size-1) 分支.
+     注: parseImportBean1 现版 hasTypeFlag 不会每门课后复位 → 同格第二门课的 name 仍可能取错; 这是
+     upstream 同病的 bug, T1 修复后才正确. -->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第一节</td>
+    <td>高等数学 通识必修 {第1-16周} 张老师 教学楼A101 大学英语 {第2-16周|单周} 李老师 教学楼B202</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第二节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">下午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>体育 体育必 {第1-16周} 张老师 操场</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第四节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

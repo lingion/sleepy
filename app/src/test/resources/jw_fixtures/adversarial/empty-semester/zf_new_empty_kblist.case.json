@@ -1,0 +1,15 @@
+{
+  "input": "zf_new_empty_kblist.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程, 请确认是否选对学期或当前是否为假期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewZfParser 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "新版正方 fetch 200 + totalRecord=0 + kbList=[] → API 正常返回仅数据空, 语义=当前学期无课或未选对学期, 不是解析失败。当前 JwNewZfParser.parseEmbeddedJson 行 42 markers 不含 'kbList'(只有 kbxx/tmp_list/xskbcx/xskbcx_json), 走行 59-63 trimmed 以 '{' 开头 → parseCourseJsonArray: 行 98-109 对象分支找第一个非空 JSONArray 属性, kbList=[] 长度 0 被行 106 v.length()>0 过滤, found=null → 行 108 return emptyList() → generateCourseList 行 26 parseHtmlTable → 无 table → parseHtmlTableFromQz → []。结果 0 课正确, 但 0 课与 '解析未命中' 在 ViewModel 层不可区分: importAsNewTable 行 196 courses.isEmpty() 统一抛 '课程列表为空, 请确认已到达课表页面', 对空学期用户是误导。这是 T4(marker 收紧含 kbList)+T9(错误分类 EMPTY_SEMESTER vs PARSE_FAILED vs WRONG_PAGE)的锚点样本。"
+}

@@ -1,0 +1,31 @@
+{
+  "input": "kblist_zcd_mixed_segments.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_with_complex_week_ranges",
+    "courseCount": 12,
+    "errorClassification": "NONE",
+    "courses": [
+      { "name": "混合多段单双", "day": 1, "startNode": 1, "endNode": 2, "startWeek": 1, "endWeek": 3, "type": 0, "teacher": "张老师", "room": "A101" },
+      { "name": "混合多段单双", "day": 1, "startNode": 1, "endNode": 2, "startWeek": 5, "endWeek": 5, "type": 0, "teacher": "张老师", "room": "A101" },
+      { "name": "混合多段单双", "day": 1, "startNode": 1, "endNode": 2, "startWeek": 7, "endWeek": 9, "type": 1, "teacher": "张老师", "room": "A101" },
+      { "name": "单周后缀带周字", "day": 2, "startNode": 3, "endNode": 4, "startWeek": 2, "endWeek": 16, "type": 1, "teacher": "李老师", "room": "A102" },
+      { "name": "双周后缀带周字", "day": 3, "startNode": 5, "endNode": 6, "startWeek": 1, "endWeek": 16, "type": 2, "teacher": "王老师", "room": "A103" },
+      { "name": "花括号包壳", "day": 4, "startNode": 1, "endNode": 2, "startWeek": 1, "endWeek": 16, "type": 0, "teacher": "赵老师", "room": "A104", "_semanticNote": "'{第1-16周}' 需先剥 '{'/'}' 与 '第' 前缀; 当前 parseWeekStr 不处理'{'或'第', cleaned='第1-16'.split('-')[0].filter{isDigit}='1', [1]='16' → (1,16,0) 恰好正确但路径脆" },
+      { "name": "纯数字多段", "day": 5, "startNode": 3, "endNode": 4, "startWeek": 1, "endWeek": 8, "type": 0, "teacher": "钱老师", "room": "A105" },
+      { "name": "纯数字多段", "day": 5, "startNode": 3, "endNode": 4, "startWeek": 11, "endWeek": 16, "type": 0, "teacher": "钱老师", "room": "A105" },
+      { "name": "带第字前缀", "day": 6, "startNode": 5, "endNode": 6, "startWeek": 1, "endWeek": 16, "type": 0, "teacher": "孙老师", "room": "A106" },
+      { "name": "空白段夹杂", "day": 7, "startNode": 1, "endNode": 2, "startWeek": 1, "endWeek": 8, "type": 0, "teacher": "周老师", "room": "A107" },
+      { "name": "空白段夹杂", "day": 7, "startNode": 1, "endNode": 2, "startWeek": 11, "endWeek": 16, "type": 0, "teacher": "周老师", "room": "A107" },
+      { "name": "全空格", "day": 1, "startNode": 3, "endNode": 4, "startWeek": 1, "endWeek": 16, "type": 0, "teacher": "吴老师", "room": "A108", "_semanticNote": "zcd='   ' 空白, parseWeekStr L175 isBlank → Triple(1,16,0) 整学期兜底, 合理降级" }
+    ],
+    "userMessage": "12 门课导入; 复合周次表达式按段展开"
+  },
+  "rationale": "本 fixture 专项压测 JwNewZfParser.kt L174-203 parseWeekStr 的复合形态: ①'1-3周,5周,7-9周(单)' 按逗号拆 3 段, 第 3 段 contains('单') → type=1; 注意 '7-9周(单)' 语义是'第 7/9 周'(单周子集) 而不是'第 7-9 周每周', 修复后应展开 7,9 两项或输出 (7,9,1) 压缩形态, 本 expected 采用 (7,9,1) 压缩语义与 JwCourse.type 字段定义一致。②'2-16周(单周)' — currentBehavior L187 part.contains('单') 命中(因为'(单周)'含'单'), 但这会错误匹配 '(单周)' — 修复时必须显式枚举四后缀 '(单)'/'(单周)'/'(双)'/'(双周)'。③'(双周)' 同理。④'{第1-16周}' 花括号+第字 — cleaned 后 '第1-16' filter{isDigit}='1'/'16' 恰好通过, 但若出现 '{第10-16周}' → parts[0]='第10'.filter{isDigit}='10', 仍能通过; 若出现 '{第1-16周(单)}' → 段内 (单) 在 filter 时被吞, type 判断 part.contains('单') 恰好命中 — 均能通过但路径脆。⑤'1-8,,11-16' 中间空段 → split 产生 ['1-8周','','11-16周'], 空段 filter{isDigit}='' → toIntOrNull=null → return@forEach 跳过, 前后两段正常。",
+  "currentBehavior": {
+    "courseCount": 0,
+    "reasoning": "本 fixture 所有 8 条记录的 jc 都是 '1-2'/'3-4'/'5-6' 范围串形态 — JwNewZfParser.kt L127 firstInt 的 toIntOrNull 对 '1-2' 返回 null → outer ?: continue → 全部丢课。parseWeekStr 修复点(L174-203: ①'1-3周,5周,7-9周(单)' 的段内单双 type; ②'(单周)'/'(双周)' 后缀命中但脆; ③'{第1-16周}' 花括号; ④空白段; ⑤全空格兜底)在 jc 修复前根本到不了, 所以本 fixture 的 parseWeekStr 修复点只有在 jc 修复后才能验证。",
+    "expectedDelta": "expected.courseCount=12 (修复后), currentBehavior.courseCount=0 (修复前) — 全部差异来自 jc 范围串丢课, 这是 T4 修复 jc bug 的直接证据"
+  },
+  "diagnosticHint": "复合多段展开条数应等于段数, 若 UI 预览只显示 1 条说明 ranges.first() 回归"
+}

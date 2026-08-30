@@ -1,0 +1,12 @@
+{
+  "fixture": "timetable_kbtable_empty.expected.json",
+  "protocol": "qz_old",
+  "description": "边界样本 2: kbtable 存在但本学期无任何课程, 全部课程格为 &nbsp; 占位; OldQzParser 应返回空 List(courses=[]); 与 tryAllParsers 集成时区分'协议正确但零课'与'协议选错'(零课需 UI 提示用户确认学期选择, 不应伪装为成功)",
+  "courseCount": 0,
+  "courses": [],
+  "assertions": [
+    "OldQzParser 返回空 List, 不抛异常",
+    "下游 JwParserFixtureTest 应区分 'verified_empty'(零课但页面是合法课表页) 与 'error'(页面异常)",
+    "不应把 'verified_empty' 当 'parser 失败', 与 tryAllParsers '数量最多胜出' 规则不冲突"
+  ]
+}

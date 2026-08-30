@@ -1,0 +1,37 @@
+{
+  "input": "kblist_kbxx_conflict_cf.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_preferring_kbList_over_empty_kbxx",
+    "courseCount": 2,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "离散数学",
+        "day": 2,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "陈老师",
+        "room": "A203"
+      },
+      {
+        "name": "操作系统",
+        "day": 4,
+        "startNode": 5,
+        "endNode": 6,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "刘老师",
+        "room": "B305"
+      }
+    ],
+    "userMessage": "2 门课导入成功"
+  },
+  "rationale": "对抗设计: 页面同时有 '\"kbxx\"'(CF/青果 marker, 空数组)和 '\"kbList\"'(新正方标准 marker, 有数据)。JwNewZfParser.kt L42-56 for 循环顺序: markers 第一个是 '\"kbxx\"' → L45 indexOf 命中(位置在第一个 script)→ L49 arrStart 移到 '[' → extractBalanced 抽出 '[]' → parseCourseJsonArray('[]') L99 JSONArray('[]') length=0 → 循环不执行 → result=[] → L55 isNotEmpty false → 继续 marker 循环。问题: 第 2/3/4 个 marker ('\"tmp_list\"','\"xskbcx\"','xskbcx_json') 也不含 '\"kbList\"' → 循环结束仍 miss → 走 HTML 兜底 → 0 门课。修复方向: ①markers 加 '\"kbList\"' 到列表末尾(保留 CF 优先级) — 但该顺序错: 空数组 kbxx 先返回 emptyList 后循环继续, 最终命中的是 fallback trimmed.startsWith('{') 也 miss。正确做法是把 kbList 放在 kbxx 之前, 或在循环里记录最大 result 而不是第一个非空。②parseCourseJsonArray 对 '{' 场景找第一个非空 JSONArray 属性, 该 fixture 中 xskbcx_data 对象的第一个数组属性恰好是 kbList — 这条路径能走通, 但需要 marker 先命中。",
+  "currentBehavior": "JwNewZfParser.kt L44-56 marker 循环: '\"kbxx\"' 命中 → extractBalanced 抽出 '[]' → parseCourseJsonArray 返回 [] → L55 isNotEmpty false → continue 到下一个 marker; '\"tmp_list\"','\"xskbcx\"','xskbcx_json' 都 miss; L60 trimmed.startsWith('{') miss(HTML 开头); L66 return emptyList → parseHtmlTable → '[id*=kb]' miss(该 HTML 无 id 含 kb 元素) → parseHtmlTableFromQz → JwQzParser miss → 0 门课。",
+  "diagnosticHint": "修复时建议: markers 顺序改为 ['\"kbList\"', '\"kbxx\"', '\"tmp_list\"', 'xskbcx_json'] — kbList 是新正方最标准的 key, 且 parseCourseJsonArray 对数组型 wrapper({kbList:[...]}) 的第一个非空 JSONArray 属性就是 kbList。若担心 kbList 误命中 CF 数据, 加字段白名单: 首项必须含 kcmc 才接受。"
+}

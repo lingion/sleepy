@@ -93,7 +93,22 @@ open class JwQzParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val courseList = arrayListOf<JwCourse>()
         val doc = Jsoup.parse(source)
-        val kbTable = doc.getElementById("kbtable") ?: return courseList
+        // T8: 找不到 #kbtable 抛 JwParseException(NO_TABLE_CONTAINER_MARKER)
+        //   而不是静默 return courseList. 让 T9 区分"协议选错"和"课表页为空".
+        val kbTable = doc.getElementById("kbtable")
+            ?: throw JwParseException(
+                "页面缺少 #kbtable，可能未到达课表页/选错教务类型",
+                attempts = listOf(
+                    JwParserRegistry.ParserAttempt(
+                        parserName = "JwQzParser",
+                        type = JwProtocol.TYPE_QZ,
+                        courseCount = 0,
+                        confidence = confidence(),
+                        matchedFeatures = matchedFeatures(),
+                        exception = "NO_TABLE_CONTAINER_MARKER",
+                    )
+                ),
+            )
         val trs = kbTable.getElementsByTag("tr")
 
         var nodeCount = 0
@@ -130,4 +145,37 @@ open class JwQzParser(source: String) : JwParser(source) {
         }
         return courseList
     }
+
+    /**
+     * T8 新增：confidence 评分。
+     * 命中 #kbtable 与 font[title=老师/教室/周次(节次)] 三件套 = 100；
+     * 仅命中 kbtable+kbcontent = 70；仅命中 kbtable = 30。
+     */
+    override fun confidence(): Int {
+        return try {
+            val doc = Jsoup.parse(source)
+            val kbtable = doc.getElementById("kbtable") ?: return 0
+            val fontCount = doc.getElementsByAttributeValue("title", "老师").size +
+                doc.getElementsByAttributeValue("title", "教师").size +
+                doc.getElementsByAttributeValue("title", "教室").size +
+                doc.getElementsByAttributeValue("title", "周次(节次)").size
+            when {
+                fontCount >= 3 -> 100
+                kbtable.getElementsByClass(tableName).isNotEmpty() -> 70
+                else -> 30
+            }
+        } catch (e: Exception) { 0 }
+    }
+
+    override fun matchedFeatures(): List<String> = try {
+        val doc = Jsoup.parse(source)
+        buildList {
+            if (doc.getElementById("kbtable") != null) add("id=kbtable")
+            if (doc.getElementsByClass(tableName).isNotEmpty()) add("class=$tableName")
+            if (doc.getElementsByAttributeValue("title", "老师").isNotEmpty()) add("title=老师")
+            if (doc.getElementsByAttributeValue("title", "教师").isNotEmpty()) add("title=教师")
+            if (doc.getElementsByAttributeValue("title", "教室").isNotEmpty()) add("title=教室")
+            if (doc.getElementsByAttributeValue("title", "周次(节次)").isNotEmpty()) add("title=周次(节次)")
+        }
+    } catch (e: Exception) { emptyList() }
 }

@@ -1,0 +1,65 @@
+{
+  "input": "kblist_field_priority_cdmc.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_with_correct_field_priority",
+    "courseCount": 6,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "甲上课",
+        "day": 1, "startNode": 1, "endNode": 2,
+        "startWeek": 1, "endWeek": 16, "type": 0,
+        "teacher": "主讲甲",
+        "room": "正解楼101",
+        "_semanticNote": "room 必须取 cdmc='正解楼101' 而不是 jasmc='甲上' — jasmc 是甲上/甲下教学班场地字段, 不是教室 (jw_research finding 2)"
+      },
+      {
+        "name": "只有jsmc",
+        "day": 2, "startNode": 3, "endNode": 4,
+        "startWeek": 1, "endWeek": 16, "type": 0,
+        "teacher": "艺名教师",
+        "room": "教艺楼205",
+        "_semanticNote": "teacher 取 jsxm='艺名教师' (xm 为空时 jsxm 是合法别名); room 取 jsmc='教艺楼205' — jsmc 作为教室字段是可接受的降级"
+      },
+      {
+        "name": "只有cdmc",
+        "day": 3, "startNode": 5, "endNode": 6,
+        "startWeek": 1, "endWeek": 16, "type": 0,
+        "teacher": "纯cdmc教师",
+        "room": "纯楼301"
+      },
+      {
+        "name": "只有xm",
+        "day": 4, "startNode": 1, "endNode": 2,
+        "startWeek": 1, "endWeek": 16, "type": 0,
+        "teacher": "纯xm教师",
+        "room": "纯楼302",
+        "_semanticNote": "xm 是主流教师字段, 优先于 jsxm (jw_research finding 2: xm 是主流, jsxm 是变体)"
+      },
+      {
+        "name": "只有jsxm",
+        "day": 5, "startNode": 3, "endNode": 4,
+        "startWeek": 1, "endWeek": 16, "type": 0,
+        "teacher": "jsxm教师",
+        "room": "",
+        "_semanticNote": "xm 缺失时 jsxm 是合法回退, 教师字段不为空"
+      },
+      {
+        "name": "全空字段",
+        "day": 6, "startNode": 5, "endNode": 6,
+        "startWeek": 1, "endWeek": 16, "type": 0,
+        "teacher": "",
+        "room": ""
+      }
+    ],
+    "userMessage": "6 门课导入; 部分课程教室/教师字段为空, 建议在预览界面给出'未排教师'/'未排教室'占位提示"
+  },
+  "rationale": "JwNewZfParser.kt L120-121: teacher = firstStr(o, 'jsxm','jsmc','teacher','attendClassTeacher','skjs'); room = firstStr(o, 'jasmc','jsmc','classroomName','jxlh','jasdm') — ①room 首位 'jasmc' 是 jw_research finding 2 明确指出的错误(甲上/甲下字段, 不是教室), 修复时首位应为 'cdmc'。②jsmc 同时被 teacher 和 room 引用 — 字段语义混乱, jsmc 是教学场地不是教师, 修复时从 teacher 别名中删除 jsmc。③xm 是主流教师字段, sleepy L120 首位是 'jsxm', xm 不在别名列表 — 修复时 teacher 应为 ['xm','jsxm'] 或 ['xm','jsxm','teacher']。本 fixture 的 expected 反映修复后的正确语义。",
+  "currentBehavior": {
+    "courseCount": 0,
+    "reasoning": "本 fixture 6 条记录的 jc 全是范围串形态 — L127 firstInt toIntOrNull 对 '1-2'/'3-4'/'5-6' 全返回 null → continue → 0 门课。字段别名优先级的 bug(L120 teacher 缺 xm / L121 room 首位 jasmc 而非 cdmc)在 jc 修复前到不了。修复后才能验证: ①room 首位 jasmc='甲上'(错误语义, 应为 cdmc='正解楼101') ②teacher 别名缺 xm(课1 xm='主讲甲' 应该能取到, current 取不到) ③jsmc 同时被 teacher 和 room 引用语义混乱。",
+    "expectedDelta": "expected.courseCount=6 (修复后), currentBehavior.courseCount=0 (修复前) — 全部差异来自 jc 范围串丢课"
+  },
+  "diagnosticHint": "本 fixture 的修复必须与 T4 (JwNewZfParser 字段与页面变体) 的 recommendations 一致: 教室优先 cdmc, 教师增加 xm 首位与 jsxm 别名, 删除 jasmc 与 jsmc 从 teacher 别名"
+}

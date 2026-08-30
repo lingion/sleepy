@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>正方教务管理系统登录</title>
+</head>
+<body>
+<!-- 老正方 边界: 登录页(http://jw.usts.edu.cn/default2.aspx 风格, GB2312+__VIEWSTATE+验证码).
+     关键特征: 无 table id='Table1' / class='blacktab', 仅含登录表单.
+     generateCourseList 第一行 getElementById('Table1') 返回 null → return emptyList().
+     JwImportViewModel 应识别 '登录页' 而非'课表为空' (按 T9: 区分 502/登录页/无容器/有表无行头). -->
+<form name="Form1" method="post" action="default2.aspx" id="Form1">
+<input type="hidden" name="__VIEWSTATE" value="xxxxx" />
+<table border="0" cellspacing="0" cellpadding="0" style="width:400px">
+  <tr>
+    <td>用户名:</td>
+    <td><input name="txtUserName" type="text" /></td>
+  </tr>
+  <tr>
+    <td>密码:</td>
+    <td><input name="TextBox2" type="password" /></td>
+  </tr>
+  <tr>
+    <td>验证码:</td>
+    <td><input name="txtSecretCode" type="text" /><img src="CheckCode.aspx" /></td>
+  </tr>
+  <tr>
+    <td>身份:</td>
+    <td>
+      <input id="RadioButtonList1_0" type="radio" name="RadioButtonList1" value="学生" checked="checked" /><label for="RadioButtonList1_0">学生</label>
+      <input id="RadioButtonList1_1" type="radio" name="RadioButtonList1" value="教师" /><label for="RadioButtonList1_1">教师</label>
+    </td>
+  </tr>
+  <tr>
+    <td colspan="2"><input type="submit" value="登录" /></td>
+  </tr>
+</table>
+</form>
+</body>
+</html>

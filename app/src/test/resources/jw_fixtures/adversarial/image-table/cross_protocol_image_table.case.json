@@ -1,0 +1,9 @@
+{
+  "input": "cross_protocol_image_table.html",
+  "expected": {
+    "protocol": "zf+qz 混合, 协议判定不确定",
+    "courseCount": 0,
+    "errorCategory": "图片课表不支持(跨协议混合)",
+    "rationale": "tryAllParsers(JwImportViewModel.kt:120-139) 把同一 HTML 喂给 8 个候选 parser。JwOldZfParser: doc.getElementById('Table1') 命中第一个表; tr 遍历: 第 1 行 td.text()='时间 星期一 星期二', 每个 td 单独看: '时间'/'星期一'/'星期二' 均 in OTHER_HEADER → continue; 第 2 行 '第一节' 命中 HEADER_NODE_PATTERN → node=1 countFlag=true; '<img>' 格 td.text()='' → length<=1 countDay++ continue; '&nbsp;' 格 → NBSP trim 后仍长度 1 → continue。importBeanList 空 → 空列表。JwQzParser: getElementById('kbtable') 命中第二个表; div.kbcontent 的 courseElements.text() 空串 → isBlank continue → 空列表。JwQzCrazyParser(tableName='kbcontent1'): 找不到 class=kbcontent1 → 空。其余 6 parser 对这两个容器都不命中 → 全部 0 课。best.size=0 → tryAllParsers 返回空列表, 不崩。本样本证明: 协议判定发生在 tryAllParsers 层但判定能力=0 — 页面同时呈现两协议容器时 detectProtocolFromUrl/detectProtocolFromHtml 均无能为力, 只能靠容器+图片占比诊断。真实触发场景: 用户手输 URL 落到学校门户聚合页/教务首页(同时嵌入两系统卡片) 而非课表页。"
+  }
+}

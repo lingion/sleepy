@@ -1,0 +1,31 @@
+<!--
+Fixture: PKU (北京大学) 空课表(已选 0 门) — 边界用例
+协议: TYPE_PKU = "pku"
+真实场景: 学生登录后还未选课, 页面 datagrid 内只有 thead 一行, 无 tbody 数据行
+上游 PekingParser 行为:
+  - table[class=datagrid] 命中
+  - tbody 取到(即使空)
+  - 遍历 tr: 只迭代到 thead 行? 不, tbody.getElementsByTag("tr") 只取 tbody 内 tr
+  - thead 在 tbody 外, 不会被 getElementsByTag("tr") 跨范围取到 (Jsoup 默认 getElementsByTag 递归)
+  - 实际: 选 tbody first, tbody 内无 tr → for 循环 0 次 → 返回 []
+期望: courses: []
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>已选课程</title>
+</head>
+<body>
+<table class="datagrid">
+  <thead>
+    <tr>
+      <th>课程名</th><th>课号</th><th>学分</th><th>类别</th><th>教师</th>
+      <th>班号</th><th>起止周</th><th>时段</th><th>选课状态</th><th>备注</th><th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+  </tbody>
+</table>
+</body>
+</html>

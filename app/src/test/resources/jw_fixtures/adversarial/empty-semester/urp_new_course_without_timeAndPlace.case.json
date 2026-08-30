@@ -1,0 +1,15 @@
+{
+  "input": "urp_new_course_without_timeAndPlace.json",
+  "protocol": "urp_new",
+  "expected": {
+    "verdict": "no_schedulable_courses",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "已选 1 门课但暂无上课时间, 请稍后再导入或确认学期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewUrpParser 0 课 — courseName='军事理论' 被 timeAndPlaceList=[] 吞掉, 用户不知道有这门选课记录"
+  },
+  "rationale": "对抗: selectCourseList 有 1 条(courseName='军事理论', teacher='待定')但 timeAndPlaceList=[] — 学期初教务常见 '已选课未排时间'。JwNewUrpParser 行 63-65 name/teacher 取到, 行 66 timeAndPlaceList = 空数组非 null(通过 ?: continue), 行 68 for 0 次 → 0 门。语义上与 '完全没选课'(selectCourseList=[])不同: 有选课记录说明学期正确、只是排课未完成, 应提示 '稍后再试'; 当前实现两种情况输出完全一致, 用户无从判断。T9 三级语义(EMPTY_SEMESTER / SELECTED_NOT_SCHEDULED / PARSE_FAILED)以此对为锚点。"
+}

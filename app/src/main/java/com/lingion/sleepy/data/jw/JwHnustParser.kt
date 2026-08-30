@@ -18,7 +18,7 @@ import org.jsoup.Jsoup
  * 对上游偏离：kbtable null 返回空；style 比较去空格+小写（兼容 "display:none;" 与 "display: none;"）；
  * split 越界保护；周次/id 数字解析 toIntOrNull 防崩。
  */
-class JwHnustParser(source: String, private val oldQzType: Int = 0) : JwParser(source) {
+class JwHnustParser(source: String, internal val oldQzType: Int = 0) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
         val courseList = arrayListOf<JwCourse>()
@@ -102,5 +102,24 @@ class JwHnustParser(source: String, private val oldQzType: Int = 0) : JwParser(s
     companion object {
         /** 上游 Common.weekPattern2 原文，不可改字符 */
         private val WEEK_PATTERN2 = Regex("""\d{1,2}周""")
+    }
+
+    /** T8: kbtable + div(style) + div id 前段数字 = 100; 仅 kbtable = 60 */
+    override fun confidence(): Int = try {
+        val doc = org.jsoup.Jsoup.parse(source)
+        val kbtable = doc.getElementById("kbtable") ?: return 0
+        val hiddenDivs = doc.getElementsByAttribute("style")
+        val hasIdDiv = doc.select("div[id]").isNotEmpty()
+        when {
+            hiddenDivs.isNotEmpty() && hasIdDiv -> 100
+            hiddenDivs.isNotEmpty() -> 80
+            else -> 60
+        }
+    } catch (e: Exception) { 0 }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("kbtable")) add("id=kbtable")
+        if (source.contains("display:none") || source.contains("display: none")) add("div[style=display:none]")
+        if (Regex("""div[^>]+id="\d+-\d+"""").containsMatchIn(source)) add("div id=N-M")
     }
 }

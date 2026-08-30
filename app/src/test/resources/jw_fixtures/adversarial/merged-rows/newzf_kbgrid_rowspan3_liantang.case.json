@@ -1,0 +1,21 @@
+{
+  "input": "newzf_kbgrid_rowspan3_liantang.html",
+  "parserProtocol": "zf_new",
+  "expected": {
+    "protocol": "zf_new",
+    "courseCount": 5,
+    "errorCategory": "rowspan 连堂与跨行 day 位移(现版解析器不支持 rowspan 语义)",
+    "scenario": "merged-rows/新版正方 kbgrid rowspan=3 三连节 + 混入一格 QZ 形态 div.kbcontent + rowspan 到期行恢复 td 数",
+    "diagnosis": "与 newzf_kbgrid_rowspan_cell.html 同根的三缺口, 额外验证 >2 节连排与 rowspan 到期恢复 — (1) 选择器: JwNewZfParser.kt L245-250 选择器链 getElementById('kbtable')→'kbgrid'→selectFirst('table.el-table__body')→'.kbcapi-table'→'[id*=kb]'; 本页外层 div#kbgrid_table_0 会命中 '[id*=kb]' 通配 (id 含 'kb'), 内层 table.el-table__body 也命中第 3 选择器 — 无论命中哪个, (2) 解析层 L269 getElementsByClass('kbcontent') 只能命中第 2 行混入的强智形态格 (1 个), 4 个 .timetable_con 形态格全部 0 命中 continue; (3) 混入格被解析出 '体育' 一门, day 按 td 次序计数 = 2, node = nodeCount*2-1; 但 nodeCount 的推进依赖 isSectionHeader 判定 (L260-263: firstCellText 含 '节' 且 无 kbcontent), 本页只有第 2 行因含 kbcontent 逃过 continue, 其余行全 continue → nodeCount 只 +1 → 体育 startNode=1 endNode=2 (真实 2-2节 应 startNode=2). day=2 是 td 次序 (td_wrap 节次格占 day=1, kbcontent 格 day=2) 碰对, 纯属巧合.",
+    "expectedBehavior": "T4 修复后 5 门课 — 高等数学 day=1 startNode=1 endNode=1, 大学物理实验 day=2 startNode=1 endNode=3 (rowspan=3 → 3 连节, 参照 FlowCourse parseSysuPcTableHtml 语义 durationSections=rowspan), 大学英语 day=3 startNode=1 endNode=1, 体育 day=2 startNode=2 endNode=2 (QZ 形态格须由 title='周次(节次)' 文本 '2-2节' 取真实节次, 或至少不因 rowspan 占位而 day 错列), 信号与系统 day=3 startNode=3 endNode=4 (rowspan=2, 且必须跳过第 2 行大学物理实验占据的周二列), 计算机网络 day=1 startNode=4 endNode=4 (第 4 行 rowspan 到期恢复 3 td, 计数须重排). 修复要点: ① 选择器须显式补 #kbgrid_table_0/td.td_wrap/.timetable_con 而非靠 [id*=kb] 通配; ② 解析器必须读 td.attr('rowspan') 还原连堂节数; ③ 后续行的 day 计数必须用 rowspan 占位表 (per-column remaining-span) 而非 td 序号.",
+    "pre_fix_actual_behavior": "python 实测 (JwNewZfParser.parseHtmlTable L241-323 语义重放): 选择器命中 table.el-table__body → 遍历 4 tr: thead tr 0 td → continue; tr1 3 td (td_wrap 节次格 + 高数 + 大学物理实验[3连] + 大学英语): firstCellText='第1节' 含 '节' 且无 .kbcontent → isSectionHeader=true → 整行 continue (丢 3 门课); tr2 2 td: firstCellText='第2节' 含 '节', 但第 2 个 td 含 .kbcontent → isSectionHeader=false → nodeCount=1 → 体育格 day=2 startNode=1 endNode=2; tr3 1+1 td: firstCellText='第3节' 无 kbcontent → continue (丢信号与系统); tr4 3 td: firstCellText='第4节' 无 kbcontent → continue (丢计算机网络). 最终 result 只含体育 1 门 (day=2 startNode=1 endNode=2, 真实 2-2节 应 startNode=2 endNode=2), 非 5 门; 非空 → 不走 parseHtmlTableFromQz. 用户视角: 5 门课只剩 1 门, 且节次错 1 节 — 静默数据残缺, 无报错.",
+    "keyInvariants": [
+      "[id*=kb] 通配会误命中 div#kbgrid_table_0 — 选择器升级须用精确 id/class, 且 .timetable_con 与 .kbcontent 两套单元格结构须并行识别",
+      "isSectionHeader 判定 (firstCellText 含 '节' 且行内无 kbcontent) 在混排页上会把纯 .timetable_con 行整行 continue — 判定条件必须覆盖新版格",
+      "rowspan=N 必须映射 endNode=startNode+N-1 (FlowCourse parseSysuPcTableHtml L311-343 断言 durationSections=rowspan)",
+      "后续行 day 计数须按 per-column rowspan 占位表跳过被占据列, 否则右侧课程整体偏左",
+      "rowspan 到期行 (本页第 4 行) td 数恢复 — day 计数须用列号回填而非递增序号",
+      "混入的 QZ 形态 .kbcontent 格节次须从 title='周次(节次)' 文本取, 不按位置推算"
+    ]
+  }
+}

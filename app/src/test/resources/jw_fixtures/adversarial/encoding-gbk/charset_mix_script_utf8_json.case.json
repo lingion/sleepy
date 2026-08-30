@@ -1,0 +1,10 @@
+{
+  "_note": "混合部署中间态(真实 jwglxt 迁移期可见): 外层声明 gb2312 + body 骨架中文(标题/菜单)按 GBK 编码正常, 但 <script> 内联的课表 JSON 是 UTF-8 字节(服务端模板拼接了 UTF-8 API 响应)。WebView 统一按 gb2312 解码 → 页面骨架中文正常 + script 内课程名 mojibake(实测 高等数学→楂Ｆ绛ＦＦＦ板ＦＦ)。乱码仅毁中文, JSON 语法字符(引号/逗号/冒号/方括号全 ASCII)完好 → 若 marker 补上 kbList, JSONObject 语法层解析成功, 但 name/cdmc/xm 值是 mojibake; zcd 的 '周'字也乱 → 若 JwNewZfParser 未来按 '周' 字清洗周次会失配(现 parseWeekStr replace(\"周\",\"\") 拿到 mojibake 串时 replace 无效果, 数字段 filter{isDigit} 仍能提取 1-16)。",
+  "input": "charset_mix_script_utf8_json.html",
+  "expected": {
+    "protocol": "页面含 id=kbgrid_table_0 → [id*=kb] 兜底选择器命中 → JwNewZfParser.parseHtmlTable 走到该 div, 无 tr/td → nodeCount 循环空 → result 空 → parseHtmlTableFromQz → 无 kbtable → 0 课",
+    "courses": [],
+    "courseCount": 0,
+    "errorClass": "zero_courses_undetected — 与 sample3 同症状但根因叠加: marker 缺失 + [id*=kb] 误命中空容器 + JSON 值 mojibake。修复须三件同做: kbList marker / 收紧 [id*=kb] / 值层实体或编码检测"
+  }
+}

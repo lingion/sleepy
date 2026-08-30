@@ -1,0 +1,9 @@
+{
+  "input": "wisedu_empty_rows.json",
+  "expected": {
+    "protocol": "wisedu",
+    "courseCount": 0,
+    "errorCategory": "可信空课表(金智JSON协议, 图片课表语义不适用)",
+    "rationale": "JwWiseduParser(JwWiseduParser.kt:35-72) 输入是 WebView fetch 到的金智 jwapp JSON, 根本不存在'图片课表'形态 — 课表数据以字段形式到达(KCM/SKJS/JASMC/SKXQ/KSJC/JSJC/SKZC)。rows=[] 时 root.datas.xskcb.rows 命中空 jsonArray → for 循环 0 次 → result 空。返回 emptyList() 不崩(注意: 若 datas.xskcb 或 rows 键缺失会走 ?: return emptyList(), 也安全; 但若整个 JSON 非 object, kotlinx.serialization json.jsonObject L36 会抛 IllegalArgumentException — tryAllParsers 的 try/catch 吞掉后其他 parser 均 0 课, 最终仍 0)。归属'可信空课表'。诊断层对 wisedu 应直接以 rows.length 判空, 不需要 HTML img 探测。"
+  }
+}

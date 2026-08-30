@@ -1,0 +1,25 @@
+{
+  "input": "urp_new_datelist_empty.json",
+  "protocol": "urp_new",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "可信空课表(dateList 顶层就是空数组,无日期条目)",
+    "diagnosis": "当前学期无课或未选对学期",
+    "semantic": "URP 新版 thisSemesterCurriculum 返回 dateList=[],比 selectCourseList=[] 更激进 — 服务端直接告知当前学期没有任何日期维度可生成,通常发生在开学前/选课未开始"
+  },
+  "detectionPoints": [
+    "顶层有 dateList 字段但长度为 0",
+    "code=0 + msg=success 仍是成功响应",
+    "与 urp_new_empty_selectCourseList.json(dateList 长度=1 但 selectCourseList 空)的区别是更早的拦截点"
+  ],
+  "parserImpact": {
+    "JwNewUrpParser.generateCourseList(L56-57)": "root.optJSONArray('dateList') 命中但 dateList.length()==0 → return result(空数组) → 0 课,静默。这是上游已有保护的拦截点。",
+    "URP 新版 URL 指纹边界": "detectProtocolFromUrl L156 u.contains('urp') → TYPE_URP_NEW(调研已警告: urp host 可能是老 URP)。但本 fixture 是 fetch 模式直得 JSON,不经 URL 指纹 — 走 parseHtml(TYPE_URP_NEW) → JwNewUrpParser。",
+    "UI 提示与 zf_new/zf_old/qz/wisedu 一致": "'课程列表为空,请确认已到达课表页面' — 当前无任何 protocol 区分能力。空课表样本家族统一建议: 全部 fetch 200 + 数据为空的样本,UI 应给统一的'本学期暂无课程,可选切换学期'操作入口,而不是笼统'没到课表页'。",
+    "未来扩展点": "JwImportViewModel.parseHtml 返回 List<JwCourse> 应升级为 Result<List<JwCourse>, ImportDiagnostic> 形式,携带 reason(code=success/empty_semester/protocol_mismatch/session_expired) — 调研 T9 已建议该模型。"
+  },
+  "verified": {
+    "jvm_test": "实测 tryAllParsersForTest=0 课; per-parser: NewUrp=0 其余全 0 — 静默空",
+    "verified": "yes"
+  }
+}

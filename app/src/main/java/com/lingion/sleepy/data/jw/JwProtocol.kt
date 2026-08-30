@@ -43,6 +43,9 @@ object JwProtocol {
      */
     const val TYPE_HNUST = "hnust"
 
+    /** T8 新加：upstream Common.kt 历史常量，暂未启用；T13 启用 */
+    const val TYPE_HNIU = "hniu"
+
     /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
      *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
@@ -50,6 +53,18 @@ object JwProtocol {
      *  LOW = 弱锚点（仅 host 子串）
      */
     enum class DetectConfidence { HIGH, PAGE_HIGH, LOW }
+
+    /**
+     * T8 新增：所有协议族常量的有序列表（用于 Registry 兜底遍历顺序）。
+     * 顺序按 TYPE_PRIORITY 优先级：wisedu > pku > bnuz > cf > hnust > hniu >
+     *                            zf > zf_1 > urp > urp_new > zf_new >
+     *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
+     */
+    val ALL_TYPES: List<String> = listOf(
+        TYPE_WISEDU, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
+        TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
+        TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
+    )
 
     /**
      * 协议显示名（用于 UI 提示）
@@ -63,6 +78,7 @@ object JwProtocol {
         TYPE_BNUZ -> "北师珠"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_HNUST -> "湖南科大教务"
+        TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -77,7 +93,9 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_WISEDU -> "wisedu"
-        TYPE_CF, TYPE_PKU, TYPE_BNUZ, TYPE_HNUST -> "other"
+        TYPE_HNUST, TYPE_HNIU -> "hnust"
+        TYPE_CF -> "cf"
+        TYPE_PKU, TYPE_BNUZ -> "other"
         else -> "other"
     }
 }

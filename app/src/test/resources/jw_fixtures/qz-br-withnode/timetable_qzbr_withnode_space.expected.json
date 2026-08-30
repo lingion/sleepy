@@ -1,0 +1,83 @@
+{
+  "fixture": "timetable_qzbr_withnode_space.html",
+  "protocol": "qz_with_node",
+  "parser": "JwQzWithNodeParser",
+  "description": "qz_with_node 空格分支: title='周次(节次)' text='N-M(周) X-Y节' 同时携带周次与节次, 空格分隔; QzWithNodeParser 第一分支取 split(' ')[0] 为周次, split(' ')[1] 去 [ ] 后按 '-' 拆为起止节次 — 节次来自 title 文本而非行位置 (这是 with_node 与 br/基础版的本质差异, 跨节连排不再错节)。6 门课全在 courses 数组中",
+  "courseCount": 6,
+  "courses": [
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "外语楼302"
+    },
+    {
+      "name": "高等数学",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 3,
+      "endWeek": 15,
+      "type": 1,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "数据结构",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "教二205"
+    },
+    {
+      "name": "体育",
+      "day": 5,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "孙老师",
+      "room": "体育馆"
+    },
+    {
+      "name": "大学物理实验",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 5,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "实验楼303"
+    },
+    {
+      "name": "计算机网络",
+      "day": 1,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "吴老师",
+      "room": "信息楼201"
+    }
+  ],
+  "sourceAssertions": [
+    "QzWithNodeParser.convert L146: tempStr.contains(' ') → weekStr = text.split(' ')[0] = '1-16(周)' (不经 substringBefore('(周)') 预处理)",
+    "QzWithNodeParser.convert L151-154: nodeList = text.split(' ')[1].removeSurrounding('[',']').split('-') — '1-2节' 拆 ['1','2节']",
+    "QzWithNodeParser.convert L190-191: startNode = nodeList.first().substringBefore('节').toInt(); endNode = nodeList.last().substringBefore('节').toInt()",
+    "周次段 '3-15(单周)': weekList 每段 split('-') 后 weeks[1]='15(单周)' 含 '单' → type=1, endWeek='15'.toInt()=15",
+    "若写成 '1-16周(周) 1-2节' (周次数字后带'周'字), 上游 weeks[1]='16周(周)'.substringBefore('(')='16周' .toInt() 抛 NumberFormatException — fixture 严格用真实格式 'N-M(周)'",
+    "第7-8节全空占位行使 nodeCount=4, 计算机网络在 nodeCount=5 行 (默认 node=9), title 节次 '9-10节' 与行位置一致, 验证非跨大节时的正确性"
+  ]
+}

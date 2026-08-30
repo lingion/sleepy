@@ -1,0 +1,51 @@
+{
+  "input": "kblist_script_close_escape.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_with_script_escape_semantics",
+    "courseCount": 3,
+    "errorClassification": "NONE",
+    "courses": [
+      {
+        "name": "HTML基础</script>入门",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "机房101",
+        "_semanticNote": "'<\\/script>' 是 JSON 合法转义 (\\/=\/), JSONObject 解析后还原为 '</script>' 字面串"
+      },
+      {
+        "name": "JavaScript编程</script>进阶",
+        "day": 3,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "李老师",
+        "room": "机房205",
+        "_semanticNote": "未转义 '</script>' 在真实浏览器里会截断 script 标签, 该课程名不会真实出现; 但 WebView evalJs 拿到的是 JS 解析后的 DOM (已经 JSON.parse 过), 该形态作为 parser 防御性样本 — extractBalanced 必须 in_str 跳过 '}' 等字符, 不能在字符串内部错误闭合"
+      },
+      {
+        "name": "Web安全</script>防护",
+        "day": 5,
+        "startNode": 5,
+        "endNode": 6,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "王老师",
+        "room": "实验室301",
+        "_semanticNote": "'\\u003c/script\\u003e' 是 unicode escape, JSONObject 解析为 '</script>' 字面串"
+      }
+    ],
+    "userMessage": "3 门课导入成功"
+  },
+  "rationale": "JwNewZfParser.kt L40-66 parseEmbeddedJson 的 4 个 markers ('\"kbxx\"','\"tmp_list\"','\"xskbcx\"','xskbcx_json') 都不含 'kbList' — marker 循环 miss, 走到 L60 trimmed.startsWith('{') 也 miss(开头是 '<!DOCTYPE')。最终 L66 return emptyList()。然后 generateCourseList L26 走 parseHtmlTable: L245 getElementById('kbtable') miss → L246 getElementById('kbgrid') miss → L247 table.el-table__body miss → L248 .kbcapi-table miss → L249 [id*=kb] 命中 div#kbgrid_table_0 → getElementsByClass('kbcontent') 空 → parseHtmlTable L284 result.isEmpty() → parseHtmlTableFromQz() → JwQzParser(html) → JwQzParser 的 kbtable miss → 空。最终 0 门课。修复方向: ①markers 加 '\"kbList\"'; ②或在 parseHtmlTable 的 fallback 链里加'全文 JSON 嗅探': 在 <script> 内容里找 '\"kbList\"' marker 再 extractBalanced; ③extractBalanced 的 in_str 处理已正确, 能吃 '\\u003c' 与 '<\\/' 转义, 缺的只是 marker 触发。",
+  "currentBehavior": "JwNewZfParser.kt L42 markers 循环: '\"kbxx\"','\"tmp_list\"','\"xskbcx\"','xskbcx_json' 都在 source 中找不到('\"xskbcx\"' 会命中 'xskbcx' 吗? 注意 marker 有双引号包裹, 只匹配 '\"xskbcx\"' 完整串, 该 HTML 里没有) — 循环结束返回 emptyList。L60 trimmed.startsWith('{') 为 false(HTML 开头)。L66 return emptyList → parseHtmlTable L249 '[id*=kb]' 命中 div#kbgrid_table_0 但 getElementsByClass('kbcontent') 空 → L284 result.isEmpty() → parseHtmlTableFromQz() → JwQzParser L21 getElementById('kbtable') null → 空。最终 0 门课, ViewModel 报'课程列表为空, 请确认已到达课表页面'。",
+  "diagnosticHint": "该场景的最小修复是把 markers 加 '\"kbList\"' — parseCourseJsonArray 的 '{' → 找第一个 JSONArray 属性已能正确处理 {totalRecord:3, kbList:[...]} — totalRecord 是 Int 不是数组, 第一个非空 JSONArray 恰好是 kbList"
+}

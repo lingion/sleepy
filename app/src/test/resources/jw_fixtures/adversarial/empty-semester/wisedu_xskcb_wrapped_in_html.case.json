@@ -1,0 +1,24 @@
+{
+  "input": "wisedu_xskcb_wrapped_in_html.html",
+  "protocol": "wisedu",
+  "expected": {
+    "courseCount": 0,
+    "behavior": "可信空课表(WISEDU JSON 被 SPA shell 包成 HTML — outerHTML 抓取路径常见形态)",
+    "diagnosis": "当前学期无课或未选对学期",
+    "semantic": "金智 ehall 微应用通常以 Vue/React 渲染,window.__INITIAL_DATA__ 注入 JSON。rows=[] 与 message='success' 同时出现 = 当前学期 0 门课,非渲染中"
+  },
+  "detectionPoints": [
+    "html 内嵌 <script>window.__INITIAL_DATA__={...}</script>,rows=[] 数组存在但长度为 0",
+    "code='0' + message='success' 双信号证明非网络/会话问题",
+    "页面 title='哈工程微应用 ehall' 与 jwapp 路径指纹一致(sleepy detectProtocolFromUrl 的 /jwapp/ 条件会命中)"
+  ],
+  "parserImpact": {
+    "JwWiseduParser.generateCourseList(L35-40)": "L36 json.parseToJsonElement(source).jsonObject — 对整段 HTML 用 kotlinx.serialization Json{isLenient=true}(L33) 解析,实测(本地 JVM 验证, kotlinx-serialization-json 1.9.0)抛 JsonDecodingException: 'Unexpected JSON token at offset 11: Expected EOF after parsing, but had h' — 因为 <!doctype html> 不是 JSON。L36 无 try/catch 直接冒泡 → JwImportViewModel.parseHtml 走不到 tryAllParsers 也不 catch → 异常冒泡到 JwImportActivity UI 报'解析失败'类错误,与真实'rows=[] 空学期'完全不同。**fetch 模式(REST xskcb.do 直接返回 JSON)无此问题,outerHTML 抓取模式必踩**。",
+    "WISEDU_FETCH_JS 抓取路径(JwWebViewLoginScreen.kt L378-470)": "fetch 后 JSON.stringify({ok:true,data:txt}) 回调,Kotlin 端收纯 JSON 字符串 → JwWiseduParser 解析路径无 HTML 噪声,**正确行为**: rows=[] → 0 课 → 当前 UI 抛通用空提示。**应改进**: 回调处检测 rows.length==0 时直接返回 ImportState.Parsed(emptyList()) 并加 reason='empty_semester',UI 弹'本学期暂无课程,请切换学期重试'而非'请确认已到课表页'。",
+    "tryAllParsers 兜底链(仅当协议 type 为空时才走)": "注意: 当 protocolType=TYPE_WISEDU 时 parseHtml L100 直接 new JwWiseduParser(html).generateCourseList(),JsonDecodingException 不被 parseHtml 内的 try/catch 包裹,直接冒泡。tryAllParsersImpl 的 try/catch(L136)只在 protocolType 为空时生效,会吃掉异常: JwWiseduParser 抛异常→catch continue;其余 7 个 parser 全 0 课;best 仍 emptyList → 0 课。**两条路径行为不同**: 显式 wisedu 协议 = 异常报错;未知协议 = 静默 0 课。"
+  },
+  "verified": {
+    "jvm_test": "实测 per-parser: Wisedu 抛 JsonDecodingException('Unexpected JSON token at offset 11: Expected EOF after parsing, but had h') — type=wisedu 显式分发时异常冒泡到 UI;type 为空时 tryAllParsersImpl 的 try/catch 吃掉异常返回 0 课",
+    "verified": "yes"
+  }
+}

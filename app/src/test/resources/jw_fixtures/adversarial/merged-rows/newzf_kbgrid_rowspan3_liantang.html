@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>学生个人课表</title>
+</head>
+<body>
+<!--
+  新正方 jwglxt kbgrid HTML + rowspan=3 三连节连堂格 + 跨行 day 计数位移。
+
+  research finding (新正方变体):
+    真实新正方课表页 DOM = #kbgrid_table_0 + td.td_wrap + .timetable_con(.title/.p font)
+    (shiguang_warehouse/SHUFEZJ/zjut_01.js 佐证). FlowCourse parseSysuPcTableHtml 的
+    正确语义: "课程格 rowspan=连堂节数" → durationSections=rowspan, 且次日 row 的
+    day 计数要跳过被 rowspan 占据的列 (FlowCourse test L311-343 断言: 3 门课各自
+    startSection/durationSections 与 dayOfWeek 全部正确).
+
+  本 fixture 与 newzf_kbgrid_rowspan_cell.html 的差异:
+    ① 连堂节数=3 (rowspan=3, 大学物理实验), 触发 >2 节连排;
+    ② 第 2/3 行该列物理无 td → 第 3 行的 信号与系统 必须落 day=3 而非 day=2;
+    ③ 第 4 行两个 rowspan 同时到期, 该行恢复 3 个 td → 计算机网络 day=1 正确落位;
+    ④ 含一个 div.kbcontent (强智形态格) 混入 — 验证选择器升级后不误吞 QZ 格.
+
+  关键对抗点: JwNewZfParser.parseHtmlTable L267-281 的 day++ 只按 td 出现次序计数,
+  不读 rowspan 属性 → 第 3 行 信号与系统 会被计 day=2 (应 3); 连堂节数按
+  parseCell L302 node = nodeCount*2-1 + L312 endNode = node+1 硬编码 2 节,
+  无法还原 3 连节.
+-->
+<div id="kbgrid_table_0" class="el-table__body-wrapper">
+  <table class="el-table__body">
+    <thead>
+      <tr><th>节次</th><th><div>星期一</div></th><th><div>星期二</div></th><th><div>星期三</div></th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第1节</div></td>
+        <td class="td_wrap">
+          <div class="timetable_con">
+            <div class="title">高等数学</div>
+            <p><font title="教师">张三</font></p>
+            <p><font title="上课地点">一教-101</font></p>
+            <p><font title="节/周">(1节){第1-16周}</font></p>
+          </div>
+        </td>
+        <td class="td_wrap" rowspan="3">
+          <div class="timetable_con">
+            <div class="title">大学物理实验</div>
+            <p><font title="教师">李四</font></p>
+            <p><font title="上课地点">实验楼-302</font></p>
+            <p><font title="节/周">(1-3节){第3-14周}</font></p>
+          </div>
+        </td>
+        <td class="td_wrap">
+          <div class="timetable_con">
+            <div class="title">大学英语</div>
+            <p><font title="教师">王五</font></p>
+            <p><font title="上课地点">外语楼-308</font></p>
+            <p><font title="节/周">(1节){第1-16周}</font></p>
+          </div>
+        </td>
+      </tr>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第2节</div></td>
+        <td class="td_wrap"><div class="kbcontent">体育<br><font title="老师">赵六</font><br><font title="教室">体育馆</font><br><font title="周次(节次)">1-16周(周) 2-2节</font></div></td>
+      </tr>
+      <tr>
+        <!-- 周二列被大学物理实验 rowspan=3 吃掉, 本行只有 周一/周三 两个课程位 -->
+        <td class="td_wrap"><div class="section-label">第3节</div></td>
+        <td class="td_wrap" rowspan="2">
+          <div class="timetable_con">
+            <div class="title">信号与系统</div>
+            <p><font title="教师">陈七</font></p>
+            <p><font title="上课地点">五教-201</font></p>
+            <p><font title="节/周">(3-4节){第2-9周|单周}</font></p>
+          </div>
+        </td>
+        <td class="td_wrap"><div class="section-label">&nbsp;</div></td>
+      </tr>
+      <tr>
+        <td class="td_wrap"><div class="section-label">第4节</div></td>
+        <td class="td_wrap">
+          <div class="timetable_con">
+            <div class="title">计算机网络</div>
+            <p><font title="教师">孙八</font></p>
+            <p><font title="上课地点">二教-105</font></p>
+            <p><font title="节/周">(4节){第1-16周}</font></p>
+          </div>
+        </td>
+        <td class="td_wrap"><div class="section-label">&nbsp;</div></td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

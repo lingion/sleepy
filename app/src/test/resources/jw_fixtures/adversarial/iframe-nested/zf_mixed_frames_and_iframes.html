@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="gb2312"><title>老正方 default2.aspx - 混合 frame+iframe 单层嵌套(对照组)</title></head>
+<!--
+  对照样本:验证当课表在单层 iframe 内时当前实现行为。
+  顶层 frameset:menu frame + 右侧内容区域(内容区是 iframe)。
+  iframe src=lastProgress_kbcx.html,内含 Table1。
+  当前实现的浅遍历刚好能命中——本样本应解析出 3 门课。
+  同时也是'正对照':与 4 层嵌套样本配对,定位浅遍历够/不够的边界。
+-->
+</head>
+<frameset cols="200,*">
+<frame name="menuFrame" src="menu_side.html" scrolling="auto">
+<iframe name="lastProgress" src="lastProgress_kbcx.html" width="100%" height="700" frameborder="0"></iframe>
+</frameset>
+</html>

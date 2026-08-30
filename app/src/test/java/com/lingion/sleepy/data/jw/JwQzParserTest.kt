@@ -77,9 +77,14 @@ class JwQzParserTest {
     }
 
     @Test
-    fun `JwQzParser returns empty when kbtable missing`() {
-        // 保留 L90 的 ?: return courseList 静默语义，T8 才会改成抛异常
-        val result = JwQzParser("<html><body>无 kbtable</body></html>").generateCourseList()
-        assertEquals(0, result.size)
+    fun `JwQzParser throws when kbtable missing`() {
+        // T8 契约: 缺 #kbtable 抛 JwParseException(不再静默空表)
+        try {
+            JwQzParser("<html><body>无 kbtable</body></html>").generateCourseList()
+            org.junit.Assert.fail("应抛 JwParseException")
+        } catch (e: JwParseException) {
+            org.junit.Assert.assertTrue("attempts 非空", e.attempts.isNotEmpty())
+            org.junit.Assert.assertEquals("NO_TABLE_CONTAINER_MARKER", e.attempts[0].exception)
+        }
     }
 }

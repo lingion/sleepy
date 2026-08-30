@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的金智 jwapp 课表 API",
+  "expected": {
+    "protocol": "wisedu (TYPE_WISEDU)",
+    "protocolBasis": "L148 contains(\"/jwapp/\") 命中",
+    "courseCount": "1+ (同上)",
+    "errorClass": "期望: 无错误; 当前: 同 wisedu-httphex, fetch 层域名白名单拒绝",
+    "detectProtocolFromUrlNow": "wisedu",
+    "detectProtocolFromUrlAfterT6": "wisedu",
+    "verification": "URL 层判型可直接断言; HTML 层判型需配套最小课表 HTML 运行对应 parser 断言课程数"
+  },
+  "parserImpact": "同 wisedu-httphex。本形态下即使 hostname 白名单侥幸放行(不会), fetch('/jwapp/...') 相对路径也天然落在 webvpn origin 下可用 — 反证白名单唯一作用就是误杀; L386/L388 现有 fetch 已用相对路径, 只需移除/替换 L381 的 hostname 检查即可让两种 WebVPN 形态都通过。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "wisedu-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/jwgl.example.edu.cn/jwapp/sys/wdkb/modules/xskcb/xskcb.do",
+  "sampleKind": "webvpn-url"
+}

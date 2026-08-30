@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 老正方 Table1 标准变体 type=0 复合 fixture, 4 个变体同表覆盖:
+     (1) 课程属性行 通识必修 → split=5 行[名,属性,时间,老师,教室] 触发 COURSE_PROPERTY 5行分支
+     (2) 课程属性行 体育必   → split=4 行[名,属性,时间,教室] 触发 COURSE_PROPERTY 4行分支(无老师)
+     (3) 同一格双课 <br><br> 分隔, 两门课各自属性行
+     (4) 单元格时间串 尾随 (01-02节) → parseTime.step 仍为 0(因 '第2节' 不含 '第1节'),
+         走 NODE_PATTERN \(\d{1,2}[-]*\d*节 → nodes=[01,02], importBean.startNode=1, step=2,
+         endNode = 1 + 2 - 1 = 2. 这正是 sleepy 现版 let{} 死代码的修复验证点(节点覆盖)。
+     (5) 大学英语带 |单周 → time.contains('单周') → result[4]=1
+     (6) 第二节行头无课 + 第三节 row header 解析 → 验证 countDay 跨行不停计数. -->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第一节</td>
+    <td><a href="#">高等数学<br>通识必修<br>周一第2节(01-02节){第1-16周}<br>张老师<br>教学楼A101</a><br><br><a href="#">体育<br>体育必<br>周一第2节{第1-16周}<br>操场</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第二节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">下午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节</td>
+    <td>&nbsp;</td>
+    <td><a href="#">大学英语<br>周一第5,6节{第2-16周|单周}<br>李老师<br>教学楼B202</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第四节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">晚上</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第五节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第六节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

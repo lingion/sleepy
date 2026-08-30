@@ -1,0 +1,71 @@
+{
+  "input": "kblist_numeric_as_string.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "parse_with_mixed_shapes_after_fix",
+    "courseCount": 4,
+    "errorClassification": "NONE",
+    "note": "本 fixture 的 expected 反映修复后的正确语义(4 门全部解析), currentBehavior 反映修复前的真实产出(1 门, 3 门被 jc 范围串 toIntOrNull 短路丢课) — 两者刻意不一致, 修复验证时以 expected 为准",
+    "courses": [
+      {
+        "name": "高等数学",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教一101",
+        "_fixNote": "jc='1-2' 范围串, 修复后 firstStr + split('-') 解出 1-2; currentBehavior: firstInt toIntOrNull=null → continue 丢课"
+      },
+      {
+        "name": "大学英语",
+        "day": 3,
+        "startNode": 6,
+        "endNode": 7,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "王老师",
+        "room": "外语楼308",
+        "_fixNote": "xqj 是字符串 '3' 但 optString 会转字符串再 toIntOrNull, 数字/字符串两种形态等价解析 — currentBehavior 这条也能正确解出 day=3"
+      },
+      {
+        "name": "异常节次数字",
+        "day": 4,
+        "startNode": 102,
+        "endNode": 102,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "赵老师",
+        "room": "教二205",
+        "_semanticWarning": "jc=102 数字不可解释 — 真实语义可能是 '10-2节'(数据错)或 '第10节连2节'的变体压缩。修复后 parser 应: 数字 < 100 时视为单节(1-99), 数字 >= 100 且偶数位视为压缩节次串(102 → 10-2 无效, 0102 → 1-2 有效); 本 fixture 断言 parser 不崩, 数值按 102 落库即视为 currentBehavior 的 bug 证据"
+      },
+      {
+        "name": "异常周次数字",
+        "day": 5,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 16,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "钱老师",
+        "room": "教三301",
+        "_fixNote": "zcd=16 数字形态, firstStr optString 返回 '16', parseWeekStr 走单周分支产出 (16,16,0) — 合理降级但不等于真实语义 '1-16周', 应告警; currentBehavior jc='3-4' 丢课所以这条整体不产出"
+      }
+    ],
+    "userMessage": "4 门课导入成功; '异常节次数字' 的节次值 102 异常, 建议在导入预览界面标红供用户校对; '异常周次数字' 的周次表达式 '16' 疑似缺失范围符号, 建议同样标红"
+  },
+  "rationale": "①xqj 数字1 vs 字符串'3': JwNewZfParser.kt L124 firstInt 走 optString(k,\"\").toIntOrNull() — optString 对 Int/Long 返回字符串化形态, '1'.toIntOrNull()=1, '3'.toIntOrNull()=3, 两种形态等价解析, 不崩。②jc=102(数字): L127 firstInt('ksjcsd','ksjc','jc',...) 对 jc=102 optString 返回 '102' → toIntOrNull=102 → startNode=102, endNode L129-131 缺 jsjc 默认 startNode → endNode=102。coerceAtLeast(1) 在 toCourseEntities 才执行, 102 原样落库。这是 firstInt 短路语义的 bug 证据: 数字 >= 100 的 jc 应判为非法而不是原样入库。③zcd=16(数字): L134 firstStr optString 返回 '16' → parseWeekStr('16') → L198 filter{isDigit}='16' → Triple(16,16,0) 单周。合理降级但不等于真实语义 '1-16周', 应告警。",
+  "currentBehavior": {
+    "courseCount": 1,
+    "courses": [
+      { "name": "异常节次数字", "day": 4, "startNode": 102, "endNode": 102, "startWeek": 1, "endWeek": 16, "type": 0, "teacher": "赵老师", "room": "教二205" }
+    ],
+    "reasoning": "JwNewZfParser.kt L127 firstInt 短路在第一个非 blank 字段: 高等数学 jc='1-2' → '1-2'.toIntOrNull()=null → 返回 null → outer ?: continue 丢课; 大学英语 jc='6-7' → null → 丢课; 异常节次数字 jc=102 → 102 → 保留(错误值入库); 异常周次数字 jc='3-4' → null → 丢课。最终只产 1 门'异常节次数字', startNode=102 是错的。",
+    "expectedDelta": "expected.courseCount=4 (修复后), currentBehavior.courseCount=1 (修复前) — 差异 3 门课全部来自 jc 范围串的 toIntOrNull 短路, 这是 T4 修复 jc bug 的直接证据"
+  },
+  "diagnosticHint": "修复验证时: 先断言 currentBehavior 是 1 门且 startNode=102 (证明 jc bug 存在), 修复后断言 4 门且除'异常节次数字'外节次正确"
+}

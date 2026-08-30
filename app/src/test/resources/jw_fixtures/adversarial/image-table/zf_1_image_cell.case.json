@@ -1,0 +1,9 @@
+{
+  "input": "zf_1_image_cell.html",
+  "expected": {
+    "protocol": "zf_1",
+    "courseCount": 0,
+    "errorCategory": "图片课表不支持",
+    "rationale": "JwOldZfParser(source, type=1).generateCourseList: <img> 格 td.text() 为空串 → courseSource.length<=1 → countFlag 已在 '第一节' 行头处置 true, 故每个图片格/nbsp 格执行 countDay++ 后 continue; 图片格永不进入 parseImportBean1(else 分支只对 length>1 的非表头格触发)。全表无任何可解析格, importBeanList 空 → importList2CourseList 返回空列表, 不崩。与 type=0 同为 0 课, 但走 type=1 分发路径(parseHtml: TYPE_ZF_1 → JwOldZfParser(html, 1)), 错误分类同标'图片课表不支持'。"
+  }
+}

@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>2025学年度第二学期课程表</title>
+</head>
+<body>
+<!--
+  中山大学 SysU 电脑版课表 (research fixture: FlowCourse parseSysuPcTableHtml 样本复刻)
+  <table id="table-bot" class="com-table class-schedule-table2">
+  thead 各天 colspan 可变 — 列→星期必须从表头 colspan 推导, 不能按列序号直读.
+
+  本 fixture 与上游样本的差异 (对抗点):
+    ① 周一 colspan=3 (3 小格), 周二 colspan=2 (2 小格), 周三 colspan=1 (1 小格);
+       列序号 1..6 对应星期应为 1,1,1,2,2,3 — 而非按 td 序号直读 day=td序号.
+    ② 格内打包串字段序: 周次频率 / 修读类别+课程名 / 教师 / 地点 / 人数, 以 '/' 分段.
+    ③ rowspan=2 的连堂格 (量子力学, 信号与系统) + rowspan=1 单节格 (大学物理实验B).
+    ④ 次日 row 因 rowspan 占位仅剩节次格 — FlowCourse 断言此行不应产生课程.
+
+  FlowCourse 正确语义 (test L311-343):
+    parseSysuPcTableHtml → 3 门课, dayOfWeek 从表头 colspan 推导, durationSections=rowspan.
+    量子力学 dayOfWeek=1 startSection=1 durationSections=2 teacher=贺彦章
+    大学物理实验B dayOfWeek=1 startSection=1 durationSections=1 teacher=王五,赵六
+    信号与系统 dayOfWeek=2 startSection=1 durationSections=2 rawWeeksText='2-9周(单)'
+   weeks[0]=3 weeks[3]=9 (单周展开后 3,5,7,9).
+
+  parser 验证点:
+    - sleepy 无 SysU parser, JwNewZfParser.parseHtmlTable [id*=kb] / el-table__body /
+      kbcapi-table 均不命中 table-bot → parseHtmlTableFromQz → JwQzParser 无 #kbtable → 0 课.
+    - 期望: 协议识别层应给出"该页不属现有 8 协议"诊断, 而非 0 课静默.
+-->
+<h1>2025学年度第二学期课程表</h1>
+<table id="table-th" class="com-table class-schedule-table2"></table>
+<table id="table-bot" class="com-table class-schedule-table2">
+  <thead>
+    <tr>
+      <th class="th2">节次名称</th>
+      <th colspan="3" style="width: 450px;"><div>星期一</div></th>
+      <th colspan="2" style="width: 300px;"><div>星期二</div></th>
+      <th colspan="1" style="width: 150px;"><div>星期三</div></th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td class="td2-1"><div>第1节</div><div>08:00~08:45</div></td>
+      <td class="td2-td" colspan="1" rowspan="2">
+        <span style="display: inline;">1-16每周/</span>
+        <span style="display: inline;">本(专必)量子力学/</span>
+        <span style="display: inline;">贺彦章/</span>
+        <span style="display: inline;">南校园-第二教学楼-2216(87座)/</span>
+        <span style="display: inline;">59人</span>
+      </td>
+      <td class="td2-td" colspan="1" rowspan="1">
+        <span style="display: inline;">15-15每周/</span>
+        <span style="display: inline;">大学物理实验B/</span>
+        <span style="display: inline;">王五,赵六/</span>
+        <span style="display: inline;">/</span>
+        <span style="display: inline;">30人</span>
+      </td>
+      <td class="11111" colspan="1" rowspan="1"></td>
+      <td class="td2-td" colspan="1" rowspan="2">
+        <span style="display: inline;">2-9单周/</span>
+        <span style="display: inline;">本(专选)信号与系统/</span>
+        <span style="display: inline;">陈瑞/</span>
+        <span style="display: inline;">南校园-第五教学楼(逸夫楼)-逸201(185座)/</span>
+        <span style="display: inline;">96人</span>
+      </td>
+    </tr>
+    <tr>
+      <td class="td2-1"><div>第2节</div><div>08:55~09:40</div></td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

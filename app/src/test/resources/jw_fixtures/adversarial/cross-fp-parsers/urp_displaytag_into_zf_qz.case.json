@@ -1,0 +1,16 @@
+{
+  "input": "urp_displaytag_into_zf_qz.html",
+  "expected": {
+    "protocol_adjudication": "urp (页面级指纹: class='displayTag' + 表头 课程名/教师/周次/星期/节次/教学楼/教室/节数)",
+    "correct_parser": "JwUrpParser (wholeFlag 跨行合并: 第二行 tds.size(8) == headSize(8), 无课程名列 → wholeFlag=false, 沿用上行课名)",
+    "courses_count": 2,
+    "per_course_expectation": [
+      {"name": "Java程序设计", "day": 1, "node": "1-2", "week": "1-16", "teacher": "郭老师", "room": "一教1205"},
+      {"name": "Java程序设计", "day": 3, "node": "3-4", "week": "3-4", "teacher": "郭老师", "room": "3204"}
+    ],
+    "current_behaviour_measured": "实测 JwUrpParser=0 课 — 真发现一个 sleepy 自身 bug: JwUrpParser.kt L28 的过滤条件 `if (table.text().contains('星期一')) continue` 把表头 th 含 '星期一' 的正常 displayTag 课表也整表跳过 (上游 wakeup UrpParser 的本意是跳过含'星期一'的顶部信息行, 但 table.text() 连表头一起算)。老 URP 课表只要表头用中文星期, JwUrpParser 就 100% 静默 0 课; 其余 7 parser 也 0 课。同时反向验证 tryAllParsersImpl 候选序风险: Urp 排最后 (JwImportViewModel.kt L121-130), 一旦 URP 页面同时含 'kb' 前缀 id 元素, NewZf 的 [id*=kb] 会抢先生成垃圾行, '课程数最多' 裁决直接翻车。",
+    "error_classification": "silent_zero_courses_parser_self_bug_table_filter",
+    "pre_existing_bug": "JwUrpParser.kt L28 table.text().contains('星期一') 连自己的表头一起过滤 — 上游 wakeup UrpParser 同位置过滤的是'信息表', 表头词表在 wakeup Common.otherHeader 不含星期一, 该过滤只应作用于额外信息表; 修复时需将过滤改为只对 thead 外的 tbody 首行判断, 或要求整表无 th 才跳过。",
+    "notes": "调研[3]/[7] 确认 sleepy JwUrpParser 是 wakeup 老学术系统 displayTag 变体, 与 URPU 真页面 (td id='星期_节次' + .class_div) 并存不同校。此样本用于回归 Urp 跨行合并, 同时作为 T8 候选序证据: 裁决机制若继续用'数量最多', 候选序本身就是隐式裁决器。"
+  }
+}

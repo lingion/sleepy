@@ -1,0 +1,58 @@
+{
+  "input": "zf_mixed_image_and_text.html",
+  "expected": {
+    "protocol": "zf",
+    "courseCount": 2,
+    "courses": [
+      {
+        "name": "高等数学",
+        "teacher": "王老师",
+        "room": "教一101",
+        "startNode": 2,
+        "endNode": 1,
+        "day": 1,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0
+      },
+      {
+        "name": "大学英语",
+        "teacher": "李老师",
+        "room": "外语楼205",
+        "startNode": 3,
+        "endNode": 2,
+        "day": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 1
+      }
+    ],
+    "expectedAfterFix": [
+      {
+        "name": "高等数学",
+        "teacher": "王老师",
+        "room": "教一101",
+        "startNode": 2,
+        "endNode": 2,
+        "day": 1,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0
+      },
+      {
+        "name": "大学英语",
+        "teacher": "李老师",
+        "room": "外语楼205",
+        "startNode": 3,
+        "endNode": 3,
+        "day": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 1
+      }
+    ],
+    "errorCategory": "图片课表(部分图片格静默丢弃 + 连上节数移植 bug 叠加)",
+    "rationale": "图片格 td.text() 为空串走 length<=1 分支只做 countDay++ 计数, 不进 parseImportBean, 故两门文本课应被解析, 图片格静默跳过。day 推导(已用真实 Jsoup 1.18.1 跑通): 第二节行 [第二节,nbsp,高等数学,img,nbsp,nbsp], 高等数学 cDay=1, timeInfo='第1-16周' 不以'周'开头 → 走 countStr(source,'Center') 反推=1 → day=1; 第三节行 [第三节,nbsp,img,nbsp,大学英语,nbsp], 大学英语 cDay=4 → day=4。{第1-16周|单周} → startWeek=1,endWeek=16,type=1。",
+    "actualCurrentBehavior": "JwOldZfParser 实跑(Sim.java zf 模式, 忠实于 JwOldZfParser.kt:175-267)输出 startNode=2 endNode=1 与 startNode=3 endNode=2 — endNode = startNode - 1, 每门课都比起始节少一节! 根因: JwOldZfParser.kt parseTime 算完 step 后从未执行 result[1] = step(上游 ZhengFangParser.kt L214 有 result[1] = step, 移植时丢失), IntArray(5) 默认 0 → importList2CourseList L164 endNode = startNode + time[1] - 1 = startNode - 1。下游 JwImportViewModel.toCourseEntities L166 step = (endNode - startNode + 1).coerceAtLeast(1) 把负值钳回 1, 即老正方所有课(含连堂)一律按 1 节入库。现有 JwOldZfParserTest 只断言 startNode 从不断言 endNode, 该移植偏差零覆盖。修复点: parseTime 补 result[1] = step, 修复后 endNode 恢复 = startNode(单节课)。本样本约定: expected.courses=当前真实行为(供 _verify.py 比对), expectedAfterFix=修复 parseTime 后的契约。"
+  }
+}

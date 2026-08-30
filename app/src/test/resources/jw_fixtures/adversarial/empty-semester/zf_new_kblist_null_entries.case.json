@@ -1,0 +1,15 @@
+{
+  "input": "zf_new_kblist_null_entries.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程或课程数据不完整, 请确认学期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewZfParser 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "kbList 存在但条目全 null/空对象/空串字段(选课占位行, 学期末清空常见): parseCourseJsonArray 行 104-107 对象分支找第一个非空 JSONArray — kbList 有 3 条 length=3>0, found=kbList; 行 113 循环: 条目 null → optJSONObject 返回 null → 行 114 continue; 空对象/空串条目 → 行 117 name=firstStr(...)='' isBlank → 行 118 continue → result 空。行 55 if(courses.isNotEmpty()) 不命中 → 继续扫下一个 marker → 全失败 → parseHtmlTable 无 table → []。0 课正确。totalRecord=2 与有效条目 0 的不一致提醒: 课程数应以解析后有效条目为准, 不能拿 totalRecord 当 UI 显示值。"
+}

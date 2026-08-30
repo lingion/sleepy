@@ -29,7 +29,7 @@ package com.lingion.sleepy.data.jw
  *   G8  OTHER_HEADER 补"中午"（sleepy 扩展，上游无）
  *   G12 parseTime 补 result[1]=step（上游 L214, sleepy 移植漏行 — 缺此行 endNode 恒 startNode-1）
  */
-class JwOldZfParser(source: String, private val type: Int = 0) : JwParser(source) {
+class JwOldZfParser(source: String, internal val type: Int = 0) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
         val doc = org.jsoup.Jsoup.parse(source)
@@ -421,4 +421,28 @@ class JwOldZfParser(source: String, private val type: Int = 0) : JwParser(source
             return t
         }
     }
+
+    /** T8: #Table1 + 花括号周次 = 100; blacktab = 90; 仅 Table1 = 70 */
+    override fun confidence(): Int = try {
+        val doc = org.jsoup.Jsoup.parse(source)
+        val table1 = doc.getElementById("Table1")
+        val blacktab = doc.select("table.blacktab").firstOrNull()
+        val hasWeek = WEEK_PATTERN.containsMatchIn(source)
+        when {
+            (table1 != null || blacktab != null) && hasWeek -> 100
+            blacktab != null -> 90
+            table1 != null -> 70
+            else -> 0
+        }
+    } catch (e: Exception) { 0 }
+
+    override fun matchedFeatures(): List<String> = try {
+        val doc = org.jsoup.Jsoup.parse(source)
+        buildList {
+            if (doc.getElementById("Table1") != null) add("id=Table1")
+            if (doc.select("table.blacktab").firstOrNull() != null) add("class=blacktab")
+            if (source.contains("<a")) add("<a>课程链接")
+            if (WEEK_PATTERN.containsMatchIn(source)) add("{第N-M周}")
+        }
+    } catch (e: Exception) { emptyList() }
 }

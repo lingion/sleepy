@@ -1,0 +1,21 @@
+{
+  "input": "newzf_tablebot_sysu_colspan_header.html",
+  "parserProtocol": "unknown",
+  "expected": {
+    "protocol": "unknown(中山大学 SysU PC 版, 不属 sleepy 现有 8 协议)",
+    "courseCount": 0,
+    "errorCategory": "协议不识别(非 0 课伪装, 应报'该页不属已支持协议')",
+    "scenario": "merged-rows/中山大学 SysU 电脑版 table#table-bot + thead colspan 可变 + rowspan=2 连堂格 + '/' 分段打包串 — research fixture 挖矿组(FlowCourse parseSysuPcTableHtml 样本)的结构复刻",
+    "diagnosis": "协议外样本 — (1) sleepy 无 SysU/中大专用 parser (JwImportViewModel.kt L92-106 只有 qz/qz_crazy/qz_br/qz_with_node/qz_old/urp/urp_new/wisedu/zf/zf_1/zf_new 11 分支); (2) JwNewZfParser.parseHtmlTable L245-250 选择器链 getElementById('kbtable')→'kbgrid'→selectFirst('table.el-table__body')→'.kbcapi-table'→selectFirst('[id*=kb]') 对 <table id='table-bot' class='com-table class-schedule-table2'> 全部 0 命中 (id 不含 'kb') → parseHtmlTableFromQz(); (3) JwQzParser.kt L90 getElementById('kbtable') 也 0 命中 → return emptyList; (4) tryAllParsersImpl (L120-139) 8 候选逐一跑: JwOldZfParser 找 Table1 无, JwWisedu/NewUrp/UrP 找各自 marker 无 → 全 0. 结构对抗点: 即便补一个新正方/通用 parser, 本页 day 须从表头 colspan (3/2/1) 推导列→星期映射, 而非 td 序号 — 按序号会把 周三列 信号与系统 判 day=2.",
+    "expectedBehavior": "期望分两层 — 协议层: detectProtocolFromHtml 应返回 unknown/明确的 'SysU PC 课表' 分类, UI 报'该页不属已支持协议, 请申请适配'而非 0 课伪装成功; 若未来补 JwSysuParser, 语义参照 FlowCourse parseSysuPcTableHtml test L311-343 断言: 3 门课 — 量子力学 day=1 startNode=1 endNode=2 (rowspan=2) teacher=贺彦章 room=南校园-第二教学楼-2216(87座) 周 1-16; 大学物理实验B day=1 startNode=1 endNode=1 teacher='王五,赵六' room='' (地点段为空 '/') 周 15-15; 信号与系统 day=2 startNode=1 endNode=2 (rowspan=2) type=1(单周) 周 3,5,7,9 (2-9 单周展开) — day 必须从 thead colspan=3/2/1 推导, 次日 row (仅剩节次格) 不得产生课程.",
+    "pre_fix_actual_behavior": "python 实测 (8 候选重放): 全部 0 课 → importAsNewTable (JwImportViewModel.kt L196) 抛 '课程列表为空, 请确认已到达课表页面' — 用户视角是'页面明明显示了课表却导入失败', 无从得知是不被支持的协议. T9 的诊断分类要求把 '有 table-bot/com-table 结构特征' 与 '真的到了空白页' 区分开, 现版只有一句话错误提示, 无法定位.",
+    "keyInvariants": [
+      "table#table-bot + class com-table class-schedule-table2 是 SysU PC 课表独有指纹, 应进 detectProtocolFromHtml 的协议指纹表, 不落入 [id*=kb] 之类宽匹配",
+      "thead 各天 colspan 可变 — 列→星期必须从表头 colspan 前缀和推导, 不能按 td 序号直读 day",
+      "课程格 rowspan=连堂节数 (durationSections=rowspan), 次日 row 因 rowspan 占位仅剩节次格, 不得产生课程",
+      "格内打包串以 '/' 分段: 周次频率/修读类别+课程名/教师/地点/人数 — 课程名段含修读类别前缀 '本(专必)/本(专选)' 须剥离",
+      "'2-9单周' 展开为 3,5,7,9 — 周次频率段与 '15-15每周' 的 '每周' 后缀须归一化",
+      "sleepy 现有 8 协议不含 SysU — 本样本期望产出是协议识别错误分类, 不是解析出 0 或错数据"
+    ]
+  }
+}

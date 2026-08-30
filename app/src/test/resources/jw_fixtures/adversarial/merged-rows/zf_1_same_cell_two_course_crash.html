@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!--
+  老正方 zf_1 (type=1, 空格+花括号变体) + 合并节次行头 '第1-2节' + 同格双课末课无师/教室。
+
+  research finding 6 (type=1 同格多课) + plan T1 detail:
+    parseImportBean1 (JwOldZfParser.kt L108-152) 的空格流双课格式:
+    '课A {周A} 师A 室A 课B {周B} 师B 室B'
+    分支结构: 遇到第 2 个 {} 时产出 课A (preIndex 前移到第 2 个 {}), 然后
+    i==split.size-1 末尾分支产出 课B — 前提是 课B 后面还有 token.
+    若 课B 是 '课名 {周}' 形态 (时间 token 就是最后 token):
+      i 抵达 size-1 时 preIndex 已是第 2 个 {} 位置, (i-preIndex)==0
+      → L142-147 走 else 分支取 split[preIndex+1] → IndexOutOfBoundsException.
+    即: 双课格的第二门课若无师/教室, 整格解析崩溃.
+
+  本 fixture 布局:
+    row0  表头 (节次\星期 + 星期一~六)
+    row1  '第1-2节' 合并行头 (HEADER_NODE_PATTERN 命中, nodeStr='1-2' → -1 → 被当课程格 countDay++)
+          周一格: '大学英语 {第1-16周} 张老师 A101 大学物理 {第2-16周}'
+                  → 课A 产出后, i 抵达末尾时 preIndex 已移到第 2 个 {}, 越界崩溃.
+    row2  '第三节' 正常行头 + 周二格: '体育 {第1-16周} 必修 钱老师 体育馆'
+          (属性 token 在时间后 → teacher 取到 '必修', room 取到 '钱老师' — 字段错位)
+
+  对抗组合: 合并行头 bug (countDay 错位) + parseImportBean1 末尾越界 + 属性行字段错位
+  三者叠加. 已用 python 逐 token 重放证实 (见 .case.json pre_fix_actual_behavior).
+-->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第1-2节</td>
+    <td>大学英语 {第1-16周} 张老师 A101 大学物理 {第2-16周}</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节</td>
+    <td>&nbsp;</td>
+    <td>体育 {第1-16周} 必修 钱老师 体育馆</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

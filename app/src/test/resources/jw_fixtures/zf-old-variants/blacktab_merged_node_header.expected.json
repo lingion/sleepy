@@ -1,0 +1,39 @@
+{
+  "_note": "老正方 blacktab+合并行头变体 (T1 修复后目标语义). 结构覆盖: (a) 表格标识 class='blacktab' 而非 id='Table1' — 要求 generateCourseList 兜底链 getElementById('Table1') → select('table.blacktab') → 遍历 tables 取含'星期一' (research 推荐项); sleepy 现版只查 #Table1, 对本 fixture 返回 emptyList. (b) 行头 '第1-2节'/'第3-4节'/'第5-6节' 合并节次 — T1 推荐 parseHeaderNodeString 按 node=N 处理并跳过 countDay++; 上游/sleepy 现版此返回 -1 → 行头被误当课程格 countDay++ → 整行 day +1 错位. (c) 高等数学 split=3[名,时间,教室] 无老师路径; 大学英语 timeInfo 含 '周三' 前缀 (day 从串里取=3) 与 '|双周' (type=2); 大学物理 timeInfo='第1-16周' 无花括号 → WEEK_PATTERN 不匹配 → startWeek=1 endWeek=20 上游默认值. (d) 本 fixture 在 T1 修复前不可通过 — 断言目的就是防修复后回归.",
+  "_pre_fix_behavior": "sleepy 现版: getElementById('Table1')==null → 返回 []; 修复 blacktab 兜底但仍未修合并行头时: 高等数学 day=2 (行头'第1-2节'被当课程格 countDay++ 错位), 大学英语 day=3 (被周三前缀救回), 大学物理 day=5.",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "教学楼B202"
+    },
+    {
+      "name": "大学物理",
+      "day": 4,
+      "startNode": 5,
+      "endNode": 5,
+      "startWeek": 1,
+      "endWeek": 20,
+      "type": 0,
+      "teacher": "",
+      "room": "教学楼C303"
+    }
+  ]
+}

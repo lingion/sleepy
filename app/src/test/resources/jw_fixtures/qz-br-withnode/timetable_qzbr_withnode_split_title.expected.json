@@ -1,0 +1,74 @@
+{
+  "fixture": "timetable_qzbr_withnode_split_title.html",
+  "protocol": "qz_with_node",
+  "parser": "JwQzWithNodeParser",
+  "description": "qz_with_node 独立 title 分支: 页面无 title='周次(节次)' 元素, 改用 title='周次' + title='节次' 两个独立元素; QzWithNodeParser 第二分支 (tempStr.isBlank) 分别读两 title; 节次文本 '第N-M节(说明)X-Y节' 经 substringAfter(')') 剥说明段, 裸 'X-Y节' 形态 substringAfter 缺省返回原串同样可拆",
+  "courseCount": 5,
+  "courses": [
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "外语楼302"
+    },
+    {
+      "name": "高等数学",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 3,
+      "endWeek": 15,
+      "type": 1,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "数据结构",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "教二205"
+    },
+    {
+      "name": "大学物理",
+      "day": 1,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 5,
+      "endWeek": 15,
+      "type": 0,
+      "teacher": "周老师",
+      "room": "物理楼501"
+    },
+    {
+      "note": "大学物理 周次 5-15,17 逗号多段: 上游 weekList.forEach 每段各 add 一条, 会产生第二条 startWeek=17,endWeek=17 记录; JwParserFixtureTest 若逐条精确断言须包含",
+      "name": "大学物理",
+      "day": 1,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 17,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "周老师",
+      "room": "物理楼501"
+    }
+  ],
+  "sourceAssertions": [
+    "QzWithNodeParser.convert L144: tempStr = getElementsByAttributeValue('title','周次(节次)').text() = '' (元素不存在)",
+    "QzWithNodeParser.convert L147: tempStr.isBlank → weekStr = getElementsByAttributeValue('title','周次').text() = '1-16(周)' 等",
+    "QzWithNodeParser.convert L155-158: nodeList = getElementsByAttributeValue('title','节次').text().substringAfter(')').removeSurrounding('[',']').split('-')",
+    "节次 '第1-2节(周一)1-2节': substringAfter(')') = '1-2节' → ['1','2节'] → 1-2",
+    "节次 '3-4节': 无 ')' — Kotlin substringAfter 缺省返回原串 '3-4节' → ['3','4节'] → 3-4 (Python 的 split 语义与此不同, 语义核对须按 Kotlin)",
+    "节次 '第5-6节(单周班)5-6节': substringAfter(')') = '5-6节' → 5-6",
+    "反例 (fixture 故意不用): '第1-2节[1-2节]' 无 ')' → removeSurrounding 落空 → split=['第1','2节[1','2节]'] → first().substringBefore('节')='第1' .toInt() 抛异常"
+  ]
+}

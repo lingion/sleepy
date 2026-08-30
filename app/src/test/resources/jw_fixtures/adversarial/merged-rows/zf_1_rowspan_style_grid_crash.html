@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!--
+  老正方 zf_1 变体(type=1, 福建农林大学/茂名职院/浙江万里学院) + 合并节次行头 '第1,2节'
+  + 同格末尾 token 即时间 token 的对抗组合。
+
+  research finding("type=1 同格多课分隔"):
+    parseImportBean1 (JwOldZfParser.kt L108-152, 与上游一致):
+    (1) 时间 token 是最后一个 token 时, (i-preIndex)==0 分支走 else 取 split[preIndex+1]
+        → IndexOutOfBoundsException → TYPE_ZF_1 显式分发路径直接抛异常
+        (tryAllParsers 里被 catch 吃掉则该 parser 静默失效, 分发路径则冒泡).
+    (2) hasTypeFlag 置 true 后从不复位 — 同格第二门课无属性 token 时,
+        name=split[preIndex-2] 会错取前一门的教室.
+    (3) 合并行头 '第1,2节' HEADER_NODE_PATTERN(第.*节) 命中, nodeStr='1,2',
+        toIntOrNull()=null → CN_NUM=null → -1 → 被当课程格 countDay++.
+
+  本 fixture 触发 (1)+(3) 组合:
+    行1 '第1,2节' 合并行头 + 单元格 '高等数学 {第1-16周}' 时间 token 为末尾
+    (即 split.size-1 位置) → 末尾分支 i==split.size-1, preIndex=i →
+    (i-preIndex)==0 走 else → split[preIndex+1] 越界 (python 模拟已证实).
+    行2 '第三节' 正常行头 + 单元格 '大学英语 {第2-16周} 张老师 B-205' 正常
+    token 布局 (名, 时间, 老师, 教室) — 但 cDay 因 (3) 错算为 2 而非 1.
+
+  现版行为的两个候选结局:
+    A. type=1 显式分发 (JwProtocol.TYPE_ZF_1→JwOldZfParser(html,1)): 直接抛 IOOBE.
+    B. 未知协议 tryAllParsers: JwOldZfParser(html,1) 被 catch 吃掉,
+       JwOldZfParser(html,0) 对 type=1 页面 split 以 '<br>' 为界只能得 1 段
+       → split.size<3 continue → 0 课; 其他 7 个候选也 0 课
+       → "课程列表为空" 错误.
+-->
+<table id="Table1" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第1,2节</td>
+    <td>高等数学 {第1-16周}</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第三节</td>
+    <td>&nbsp;</td>
+    <td>大学英语 {第2-16周} 张老师 B-205</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

@@ -47,10 +47,15 @@ class JwQzBrParserTest {
     }
 
     @Test
-    fun `parses qz_br login page without exception`() {
+    fun `parses qz_br login page throws JwParseException`() {
+        // T8 契约: QzBr 继承 JwQzParser, 缺 #kbtable 抛 JwParseException
         val html = loadFixture("login_page.html")
-        val courses = JwQzBrParser(html).generateCourseList()
-        assertEquals(0, courses.size)
+        try {
+            JwQzBrParser(html).generateCourseList()
+            org.junit.Assert.fail("应抛 JwParseException")
+        } catch (e: JwParseException) {
+            org.junit.Assert.assertEquals("NO_TABLE_CONTAINER_MARKER", e.attempts[0].exception)
+        }
     }
 
     @Test

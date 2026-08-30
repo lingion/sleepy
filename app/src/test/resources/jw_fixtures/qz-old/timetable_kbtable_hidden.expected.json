@@ -1,0 +1,24 @@
+{
+  "fixture": "timetable_kbtable_hidden.html",
+  "protocol": "qz_old",
+  "description": "边界样本 1: display:none 隐藏 div 混入 + 整格空白 div, 验证 OldQzParser L29 'style=display:none' 与 'div.text().isBlank()' 双过滤逻辑; 不应出现任何课程 (整张表唯一显示课程是周一第1-2节的高等数学, 隐藏 div 应被过滤)",
+  "courseCount": 1,
+  "courses": [
+    {
+      "name": "高等数学",
+      "teacher": "张老师",
+      "room": "教一101",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0
+    }
+  ],
+  "assertions": [
+    "显示 div 被解析为 1 门课: 高等数学 / 张老师 / 教一101 / day=1 / 第1-2节 / 1-16周",
+    "display: none; 与 display:none; 两种写法都被 OldQzParser L29 跳过",
+    "&nbsp; 整格 div 因 div.text().isBlank() 被跳过, 不产课"
+  ]
+}

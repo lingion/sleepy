@@ -1,0 +1,20 @@
+{
+  "input": "zf_1_same_cell_two_course_crash.html",
+  "parserProtocol": "zf_1",
+  "expected": {
+    "protocol": "zf_1",
+    "courseCount": 3,
+    "errorCategory": "同格末课无师/教室触发 IndexOutOfBoundsException (越界崩溃类)",
+    "scenario": "merged-rows/zf_1 空格流同格双课 + 第 2 门课无师/教室 + 合并行头 '第1-2节' + 属性行字段错位 — 三缺口叠加",
+    "diagnosis": "三缺口叠加 — (1) parseImportBean1 (JwOldZfParser.kt L142-147) 末尾分支: 双课格 '课A {周A} 师A 室A 课B {周B}' 在 i 抵达 size-1 时 preIndex 已被 curly 分支 (L129 preIndex = i) 前移到第 2 个 {}, (i-preIndex)==0 不等于 1 → 走 else 取 split[preIndex+1] → IndexOutOfBoundsException; (2) 合并行头 '第1-2节' 被 parseHeaderNodeString (L306-313) HEADER_NODE_PATTERN=第.*节 命中 → nodeStr='1-2' → toIntOrNull()=null → CN_NUM 无 → 返回 -1 → 被当课程格 countDay++, 第三节行的 cDay 被推为 2 而非 1; (3) 属性行 '体育 {第1-16周} 必修 钱老师 体育馆' 的属性 token 在时间之后, L136 split[preIndex-1]=split[0]='体育' 不在 COURSE_PROPERTY → hasTypeFlag=false, (i-preIndex)=3 → teacher=split[2]='必修' room=split[3]='钱老师' — 字段错位, 真实应为 teacher=钱老师 room=体育馆.",
+    "expectedBehavior": "T1 修复后 3 门课 — 大学英语 day=1 startNode=1 endNode=2 (合并行头 '第1-2节' 首段 node=1 + timeInfo '{第1-16周}' 无逗号/节次段 → step=1, 或由合并行头区间推 endNode=2), 大学物理 day=1 startNode=1 endNode=1 (时间 token 为末 token 时跳过 teacher/room 提取, 不越界), 体育 day=2 startNode=3 endNode=3 teacher=钱老师 room=体育馆. 修复要点: ① L142-147 末尾分支须检查 (i-preIndex) 是否还有剩余 token, 无则跳过 teacher/room; ② 属性 token 判定须覆盖 '属性在时间后' 布局 (比较 split[preIndex+1] 是否在 COURSE_PROPERTY); ③ '第1-2节' 合并行头按首段 node=1 解析且不递增 countDay.",
+    "pre_fix_actual_behavior": "python 逐 token 重放 (parseImportBean1 语义) 实测: 周一格 split=['大学英语','{第1-16周}','张老师','A101','大学物理','{第2-16周}'] (size=6) — i=1 curly 首见 preIndex=1; i=5 curly 再见 → 产出课A (name=大学英语, time={第1-16周}, teacher=张老师, room=A101, cDay=1), preIndex=5; 同一 i=5 也是 size-1 → 落入末尾分支, (i-preIndex)=0 != 1 → 取 split[6] → IndexError. 路径结局: (A) schools.json 显式分发 zf_1 (JwImportViewModel.kt L103 JwOldZfParser(html,1)) → 异常从 generateCourseList 冒泡 → UI 报解析失败; (B) 未知协议 tryAllParsersImpl (L120-139) → 异常被 L136 catch 吃掉, JwOldZfParser(html,0) 对本 fixture 走 parseImportBean, td.text() 是空格流单串, split('<br><br>') 1 段 size<3 → continue → 0 课; 其余 7 候选全 0 → '课程列表为空'. 第三节行 '体育 {第1-16周} 必修 钱老师 体育馆' 在 (A) 路径若先解析到会产出 name=体育 timeInfo={第1-16周} teacher=必修 room=钱老师 cDay=2 ('第1-2节' 行头 countDay++ 所致) — 字段错位且 day 错 1 列.",
+    "keyInvariants": [
+      "parseImportBean1 末尾分支 (i==split.size-1) 必须检查 preIndex 后剩余 token 数, 时间 token 即末 token 时不得访问 split[preIndex+1] — 与 zf_1_rowspan_style_grid_crash.html 的单课末 token 场景同根, 但本样本是双课格触发, 修复须同时覆盖",
+      "同格双课的课B 若无师/教室, (i-preIndex)==0 分支不应读 split[preIndex+2]",
+      "属性行在时间 token 之后的布局 ('课 {周} 属性 师 室') 当前实现会字段错位 — hasTypeFlag 判定只看 split[preIndex-1], 未考虑属性可出现在 split[preIndex+1]",
+      "'第1-2节' 逗号/连字合并行头按首段 node=1 解析, 不当课程格, 不递增 countDay",
+      "异常路径(A) 与 tryAllParsers 静默路径(B) 应给出可区分的诊断 (T9 错误语义目标)"
+    ]
+  }
+}

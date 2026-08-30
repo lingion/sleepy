@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 域名重写下的老 URP 指纹 — host 无 urp 子串的真实部署形态(湖南理工 bkjw 型)",
+  "expected": {
+    "protocol": "urp (TYPE_URP)",
+    "protocolBasis": "xkAction.do 指纹(T6); host bkjw.* 不含 'urp'(上游湖南理工学院 bkjw.hnist.cn type=urp 实例), L156 不会命中",
+    "courseCount": "1",
+    "errorClass": "期望: 无错误; 当前: null -> 兜底侥幸",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "urp",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "同 urpold-httphex 的兜底侥幸路径。本组与 urpnew-webhost 构成对抗对: 两校 host 形态相同(bkjw/urpjw), 仅凭 L156 裸 'urp' 会把老 URP 判成新 URP 或把新 URP 判不出来 — 判型必须落在路径/页面特征(courseSelect、xkAction.do、displayTag vs dateList)而非 host 命名。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "urpold-webhost.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/webvpn/bkjw.example.edu.cn/xkAction.do?actionType=6",
+  "sampleKind": "webvpn-url"
+}

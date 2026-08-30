@@ -1,0 +1,11 @@
+{
+  "_meta": {
+    "protocol": "pku",
+    "fixture": "pku_empty.html",
+    "scenario": "已选 0 门课程, datagrid 仅 thead 无 tbody 数据行",
+    "parser": "JwPekingParser (移植自 dIT8Zv/WakeupSchedule_BUPT PekingParser.kt)",
+    "expected_behavior": "遍历 tbody 内 tr 0 次, 返回空列表",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"]
+  },
+  "courses": []
+}

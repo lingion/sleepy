@@ -1,0 +1,42 @@
+{
+  "_note": "新正方 kbList 32 位 0/1 bitmap 周次边界: 每字符位表示第 N 周是否开课, sleepy JwNewZfParser.parseWeekStr 在 s.length>=10 且全 0/1 时触发 bitmap 分支, 走 bitsToRanges 归并连续/单双区间。①全 1(32 位) → weeks 1..32 连续 → (1,32,0);②0101...01(32 位, 偶数位为 1) → weeks 2,4..32 → 单双周模式归并 → start%2==0 → (2,32,2);③前 28 位 0 + 末 4 位 1 → weeks 29..32 连续 → (29,32,0)。xqj=7 校验周日不越界。jc 仍为 '1-2'/'3-4'/'9-10' 范围串, parser 应先解节次再解周次, 两条解析互不影响。",
+  "_uncertain": [
+    "32 位 bitmap 是否真实存在于新正方 kbList: jw_research.json 明确 'zcd 周次格式=1-16周/2-8周(单)/1-8,11-16 逗号分段, 不是 32位 0/1 位图'(新正方条目 finding 3), bitmap 是 URP classWeek(20 位)的形态; 32 位 bitmap 进 sleepy parseWeekStr 的 s.length>=10 分支能正确解出, 但真实新正方报文未见过此形态。本 fixture 定位为 parseWeekStr bitmap 分支的单元回归样本, 不作为新正方端到端契约。",
+    "jc:'1-2' 在当前(未修)JwNewZfParser 下 firstInt→null→continue 丢课, 3 门全丢返回空; 修复后才能得到本 expected。"
+  ],
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 32,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教一101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 2,
+      "endWeek": 32,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "外语楼308"
+    },
+    {
+      "name": "计算机网络",
+      "day": 7,
+      "startNode": 9,
+      "endNode": 10,
+      "startWeek": 29,
+      "endWeek": 32,
+      "type": 0,
+      "teacher": "刘老师",
+      "room": "信息楼A501"
+    }
+  ]
+}

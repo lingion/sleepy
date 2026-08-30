@@ -1,0 +1,16 @@
+{
+  "input": "bnuz_table1_id_collision.html",
+  "expected": {
+    "protocol_adjudication": "bnuz (页面级指纹: title/es.bnuz.edu.cn 域 + div 内 '<span>课名</span>教师{N-M周}' + '(N节)' step 标记)",
+    "correct_parser": "JwBnuzParser (T3 待实现): substringAfter('</span>').substringBeforeLast('<br>') 拆 [教师{周},教室(节)] 对",
+    "courses_count": 3,
+    "per_course_expectation": [
+      {"name": "高等数学", "day": 1, "node": "1-2", "week": "1-16", "teacher": "张老师", "room": "教学楼A101"},
+      {"name": "大学英语", "day": 2, "node": "1-2", "week": "2-8", "teacher": "李老师", "room": "外语楼B202"},
+      {"name": "数据结构", "day": 1, "node": "3-4", "week": "1-16单", "teacher": "王老师", "room": "机房301"}
+    ],
+    "current_behaviour_measured": "8 parser 全 0 课: JwOldZfParser L24 只认大写 id='Table1' (BNUZ 是小写 table1 → null); JwNewZfParser parseHtmlTable 五级容器全 miss, [id*=kb] 也不命中 ('table1' 无 'kb' 子串); JwQzParser 只认 id='kbtable'。若未来 T4 给 JwNewZfParser 补上游 NewZFParser 的 table#table1 支持, 该 parser 将以 [div.title] 找不到 → 0 课 抢先认领本页, '数量最多' 裁决无法发现差异; 反向场景 (真 NewZF 的 table#table1 页面被 BNUZParser 处理) 同样空转。id='table1' 是 BNUZ 与上游 NewZF 的硬 ID 冲突。",
+    "error_classification": "silent_zero_courses_id_collision_between_bnuz_and_zfnew",
+    "notes": "上游 BNUZParser.kt L23 getElementById('table1') 与上游 NewZFParser.kt L12 getElementById('table1') 完全同 ID 不同结构 — 这是 T8 裁决机制必须做'结构锚点评分'而非'容器 ID 单点判断'的直接证据。BNUZ 的 '(2节)' 标记是 step 来源 (JwBnuzParser 用教室字段括号数字算连堂), 该字段 NewZF 结构里不存在, 可作为结构级判别锚点。"
+  }
+}

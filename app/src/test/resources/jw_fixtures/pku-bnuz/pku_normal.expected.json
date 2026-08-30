@@ -1,0 +1,45 @@
+{
+  "_meta": {
+    "protocol": "pku",
+    "fixture": "pku_normal.html",
+    "source": "http://elective.pku.edu.cn/ 已选课程页脱敏手写 (未登录页只有登录框, datagrid 表格结构按上游 PekingParser.kt 反推)",
+    "parser": "JwPekingParser (移植自 dIT8Zv/WakeupSchedule_BUPT PekingParser.kt)",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"],
+    "_parsing_trace": "timeInfo 顺序: [周次, 星期+节次粘合, 教室, ...]; type 来自 timeInfo[1].contains(单/双); day 来自 timeInfo[1].contains(周一..周日); 节次来自 nodePattern1.find(timeInfo[1]); room=timeInfo[2]"
+  },
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "教202"
+    },
+    {
+      "name": "大学英语",
+      "day": 5,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "教303"
+    }
+  ]
+}

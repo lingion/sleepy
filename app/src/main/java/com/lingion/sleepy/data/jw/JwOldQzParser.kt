@@ -92,4 +92,18 @@ class JwOldQzParser(source: String) : JwParser(source) {
         }
         return courseList
     }
+
+    /** T8: kbtable + 单元格含[周][节]四要素 = 100; 仅 kbtable = 50 */
+    override fun confidence(): Int {
+        val doc = org.jsoup.Jsoup.parse(source)
+        val kbtable = doc.getElementById("kbtable") ?: return 0
+        val hasTimeToken = source.contains("[") && source.contains("]") &&
+            source.contains("周") && source.contains("节")
+        return if (hasTimeToken) 100 else 50
+    }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("kbtable")) add("id=kbtable")
+        if (source.contains("[") && source.contains("周") && source.contains("节")) add("单元格含[周][节]")
+    }
 }

@@ -1,0 +1,15 @@
+{
+  "input": "zf_new_empty_kblist_with_flag.json",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "未查询到课表数据, 请确认是否选对学期或当前是否为假期"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewZfParser 与 tryAllParsersForTest 均 0 课; msg/msgCode 字段被完全丢弃"
+  },
+  "rationale": "带显式 msg='未查询到课表数据'/msgCode='EMPTY_RESULT' 的空学期响应: 解析路径同 zf_new_empty_kblist(parseEmbeddedJson 行 108 找不到非空数组 → emptyList)。差异在诊断面: 响应体已给出权威空学期原因, 上层本可直接展示 msg, 当前实现把 source 当纯 HTML 扔给 Jsoup/JSON 扫, msg 字段无人读取, 用户只能看到笼统 '课程列表为空'。_uncertain: msg/msgCode 键名是否 jwglxt 官方字段未在 wakeup 上游确证, 调研只证实不同校键名有差异; 断言只锁 0 课, msg 透传是 T9 的增强项不是现有行为。"
+}

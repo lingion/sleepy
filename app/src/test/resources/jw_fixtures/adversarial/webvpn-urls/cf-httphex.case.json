@@ -1,0 +1,23 @@
+{
+  "title": "WebVPN 路径重写下的青果(CF)课表页 — 无 URL 指纹, kbxx 页面会被新正方 marker 误碰后全丢",
+  "expected": {
+    "protocol": "cf (TYPE_CF)",
+    "protocolBasis": "青果无 URL 路径指纹(jw_research domain[6]: detectProtocolFromUrl 缺 bnuz/cf/hnust/pku 指纹), 本形态判型只能靠 HTML: 页面含 var kbxx = [ChengFangInfo...] + 字段 kcmc/teaxms/jxcdmcs/xq/jcdm2/zcs",
+    "courseCount": "1 (kbxx 单元素数组: kcmc/teaxms/jxcdmcs/xq/jcdm2/zcs 齐全)",
+    "errorClass": "期望: 无错误; 当前手输 URL: 静默 0 课; 当前从清单选校: throw '协议 cf 暂不支持'",
+    "detectProtocolFromUrlNow": "null (无命中 -> parseHtml L90 tryAllParsers 兜底)",
+    "detectProtocolFromUrlAfterT6": "null — cf/pku/bnuz 三协议 URL 层无可靠指纹(路径重写形态连 host 信号都被 hex 吞掉), 判定必须由 T6 detectProtocolFromHtml 在 onHtmlCaptured 二次判型接管",
+    "verification": "URL 层断言 detectProtocolFromUrl 返回 null 即通过; 协议判定断言落在 HTML 层"
+  },
+  "parserImpact": "当前手输 URL: detect 返回 null(无 cf 指纹) -> tryAllParsers(候选表 L121-129 无 CF parser); JwNewZfParser L42 marker \"kbxx\" 命中青果页面的 var kbxx -> extractBalanced 抠出数组 -> parseCourseJsonArray: 课名 kcmc 命中(L117), 星期 xq 命中(L124 'xq'), 但节次字段 teaxms/jxcdmcs 都不在 firstInt 键表(L127-128) -> null -> continue, 每行全丢 -> 空列表; 其余候选也 0 课 -> 总结果 0 课 + '课程列表为空'。jw_research domain[3] 担心的'更糟产出乱数据'实测推演为静默丢课(缺节次字段在先)。当前从学校清单进入(广工等 4 校 type=cf): parseHtml L105 else -> throw IllegalArgumentException('协议 cf 暂不支持') -> 显示解析失败+HEU 专属提示。两条路径死法不同, T3 移植 JwChengFangParser 后按 kcmc/teaxms/jxcdmcs/xq/jcdm2/zcs 解出 1 门课。",
+  "sourceRefs": [
+    "JwImportViewModel.kt:145-159 detectProtocolFromUrl (lowercase+contains 有序链, 不剥离 WebVPN 前缀)",
+    "JwImportViewModel.kt:92-106 parseHtml 分发表; :105 else -> throw 协议暂不支持",
+    "JwImportViewModel.kt:120-139 tryAllParsersImpl 候选表(8 parser, 无 cf/pku/bnuz)",
+    "jw_research.json domain[4] pageVariants 'WebVPN 路径重写变体 /http/<hex>/' 与 '域名重写变体 webvpn.<school>/<path>'",
+    "jw_plan.json T6 (URL/HTML 双层识别) / T5+T11 (fetch 相对路径必须保留 /http/<hex>/ 前缀)"
+  ],
+  "input": "cf-httphex.txt",
+  "inputUrl": "https://webvpn.example.edu.cn/http/e55b19/xsgrkbcx!xsAllKbList.action",
+  "sampleKind": "webvpn-url"
+}

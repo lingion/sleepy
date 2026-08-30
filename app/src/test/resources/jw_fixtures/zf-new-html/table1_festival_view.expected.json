@@ -1,0 +1,38 @@
+{
+  "_note": "上游 NewZFParser.kt (dIT8Zv) 真实期望结构: getElementById('table1') + tr.festival 文本转节次数字 + td.id[0] 取星期(取首字符) + p[title='教师']/p[title='上课地点']/p[title='节/周'] 三属性取字段; 周次串解析算法: 先用 nodeRegex 剥 '(N-M节)' 前缀, 剩余按 ',' 拆段; 段含 '-' 按 '-' 拆 startWeek/endWeek; 段含 '单' type=1, '双' type=2。注: 上游 NewZFParser 对每个 div 内多 <p> 的 teacher/room 是 last-wins 赋值策略, 本 fixture 每 div 仅一个 p 故安全。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 2,
+      "endWeek": 8,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "外语楼308"
+    },
+    {
+      "name": "线性代数",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "教学楼B202"
+    }
+  ]
+}

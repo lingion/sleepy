@@ -1,0 +1,5 @@
+{
+  "_note": "HNUST 边界: 空 kbtable (所有 td 都 &nbsp;, 无 display:none div 含课信息). HNUSTParser 循环 tr 时 divs 为空, preIndex 永远 -1, 不 toCourse(). 期望 courses 为空数组.",
+  "_fixture": "hnust_empty_kbtable.html",
+  "courses": []
+}

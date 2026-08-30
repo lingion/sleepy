@@ -104,4 +104,23 @@ class JwBnuzParser(source: String) : JwParser(source) {
             "早晨", "上午", "下午", "晚上"
         )
     }
+
+    /** T8: #table1 + span 结构 = 100; es.bnuz = 90 */
+    override fun confidence(): Int = try {
+        val doc = org.jsoup.Jsoup.parse(source)
+        val table1 = doc.getElementById("table1")
+        when {
+            table1 != null && source.contains("</span>") -> 100
+            source.contains("es.bnuz") -> 90
+            table1 != null -> 70
+            else -> 0
+        }
+    } catch (e: Exception) { 0 }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("table1")) add("id=table1")
+        if (source.contains("</span>")) add("<span>课程名</span>")
+        if (source.contains("es.bnuz")) add("URL=es.bnuz")
+        if (source.contains("{") && source.contains("周")) add("{N-M周}")
+    }
 }

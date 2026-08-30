@@ -1,0 +1,19 @@
+{
+  "input": "zf_top_has_fake_table1_frame_has_real.html + zf_top_has_fake_table1_frame_has_real_inner.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF",
+    "frameStrategy": "递归遍历后命中含 #Table1 的 frame 时，不能只拿第一个命中就完事——若顶层命中但解析得 0 门课，必须继续尝试其他含锚点的 frame(候选回退)。推荐锚点命中按'解析课程数>0'验证，而非只按锚点存在性",
+    "courseCount": 2,
+    "expectedCourses": [
+      {"name": "操作系统", "day": 1, "startNode": 1, "endNode": 1, "teacher": "冯老师", "room": "计算中心201", "weeks": "1-16"},
+      {"name": "计算机组成原理", "day": 2, "startNode": 2, "endNode": 2, "teacher": "顾老师", "room": "计算中心202", "weeks": "1-16"}
+    ],
+    "errorClass": "none",
+    "diagnosticHint": "解析顶层空壳 Table1 时禁止产出'0 课'静默结果——若顶层命中锚点但解析为空且其他 frame 也含锚点，必须继续尝试；全部失败时报告 frame 名列表供用户反馈"
+  },
+  "currentBehavior": {
+    "capturedLayers": "顶层 HTML + 一层 iframe 内容拼接进同一个 html 字符串",
+    "result": "0 门课：拼接后的 html 有两个 <table id=Table1>，Jsoup.getElementById('Table1') 取文档序第一个=顶层空壳，其中 6 个 td 全是'当前周次/2025-2026-1'文本，走的都是 countDay++ 但 split.size<3 continue → importBeanList 空 → emptyList",
+    "reason": "JwWebViewLoginScreen.kt L196 html:html+iframeContent+frameContent 的拼接语义使锚点歧义;JwOldZfParser.kt L24 getElementById 命中第一个 Table1 就 return。这是拼接方案的固有陷阱——上游 wakeup 同样有此问题。修复应改为：递归找锚点 → 逐 frame 独立解析 → 取非空结果，而不是字符串拼接后单次解析"
+  }
+}

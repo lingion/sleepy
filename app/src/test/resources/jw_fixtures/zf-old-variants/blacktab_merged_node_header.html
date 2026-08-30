@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=gb2312" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 老正方 blacktab 变体(kechengbiao/IAMouMeng 佐证): 表格标识是 class='blacktab' 而非 id='Table1'.
+     合并行头变体(research '第N-M节' 合并节次行头): 行头是 '第1-2节' 数字区间而非 '第一节'.
+     上游 HEADER_NODE_PATTERN=第.*节 matches → nodeStr='1-2' → toIntOrNull()=null → CN_NUM=null → -1
+     → 上游/sleepy 现版均不当行头处理 → countFlag 保持 false → 该行后续空格 td 不增 countDay.
+     真实风险(research finding): 若前面已有行头(countFlag=true), '第3-4节' 行会走 countDay++ →
+     整行课程 day 错位+1. 本 fixture 特意让 '第1-2节' 行是第一个出现的行头(countFlag 之前为 false),
+     验证修复后按 node=N(=1) 处理且不破坏后续行的 day 推进。
+     课程时间串不含 '周X' 前缀, day 走 countStr(...,'Center') 兜底路径. -->
+<table class="blacktab" border="1" cellspacing="0" cellpadding="0">
+  <tr>
+    <td colspan="2" align="Center">节次\星期</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+    <td align="Center">星期三</td>
+    <td align="Center">星期四</td>
+    <td align="Center">星期五</td>
+    <td align="Center">星期六</td>
+    <td align="Center">星期日</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">上午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第1-2节</td>
+    <td><a href="#">高等数学<br>{第1-16周}<br>教学楼A101</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第3-4节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td><a href="#">大学英语<br>周三第3,4节{第2-16周|双周}<br>王老师<br>教学楼B202</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">下午</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">第5-6节</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td><a href="#">大学物理<br>第1-16周<br>教学楼C303</a></td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+  <tr>
+    <td colspan="2" align="Center">晚上</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

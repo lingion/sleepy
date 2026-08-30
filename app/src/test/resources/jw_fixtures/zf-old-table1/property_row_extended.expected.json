@@ -1,0 +1,51 @@
+{
+  "_note": "T1 重点修复: 上游 Common.kt 47 项 COURSE_PROPERTY 中, sleepy JwOldZfParser 缺 '通识必修/专业必修/学科必修/体育必' 等 23 项。本 fixture 命中这 4 项属性词, 全部走属性行分支 [名,属性,时间,老师,教室]=5 字段切分。",
+  "_note_about_split": "5 行 split: [0]=名, [1]=属性词, [2]=时间, [3]=老师, [4]=教室 → 走 else 分支(split.size==5 不在 4 分支), room=split[4], teacher=split[3]。",
+  "_note_about_assertion": "在 COURSE_PROPERTY 补齐前, sleepy 会把这些当成非属性 4 行分支, 把 '通识必修' 当 timeInfo 喂给 parseTime, 最终 weekPattern 不匹配 → startWeek=1/endWeek=20 默认值, day 走 countStr 兜底。补齐后预期如本文件。",
+  "courses": [
+    {
+      "name": "大学英语",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼B203"
+    },
+    {
+      "name": "程序设计",
+      "day": 3,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 2,
+      "endWeek": 18,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "实验楼D202"
+    },
+    {
+      "name": "高等数学",
+      "day": 4,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 3,
+      "endWeek": 15,
+      "type": 1,
+      "teacher": "王老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "体育",
+      "day": 5,
+      "startNode": 1,
+      "endNode": 1,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "陈老师",
+      "room": "体育馆"
+    }
+  ]
+}

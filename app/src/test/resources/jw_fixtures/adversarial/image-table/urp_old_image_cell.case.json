@@ -1,0 +1,59 @@
+{
+  "input": "urp_old_image_cell.html",
+  "expected": {
+    "protocol": "urp",
+    "courseCount": 2,
+    "courses": [
+      {
+        "name": "",
+        "teacher": "",
+        "room": "教一",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0
+      },
+      {
+        "name": "",
+        "teacher": "",
+        "room": "外语楼",
+        "day": 3,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 1,
+        "type": 1
+      }
+    ],
+    "expectedAfterFix": [
+      {
+        "name": "高等数学",
+        "teacher": "王老师",
+        "room": "教一101",
+        "day": 1,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0
+      },
+      {
+        "name": "大学英语",
+        "teacher": "李老师",
+        "room": "外语楼205",
+        "day": 3,
+        "startNode": 3,
+        "endNode": 4,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 1
+      }
+    ],
+    "errorCategory": "图片课表(产生未命名脏课, 静默假成功)",
+    "rationale": "已用真实 Jsoup 1.18.1 实跑验证(Sim.java urp 模式)。关键事实: Jsoup td.text() 不聚合 <img alt> 的 alt — 课程名列 tds[nameIdx].text()='' (alt='高等数学' 不进文本节点), 教师列同理 → courseName/teacher 全空。JwUrpParser.kt:64-71 wholeFlag 分支: acDayIdx 列文本 '1' 非空白 → courseName=tds[0].text()='' → 照常 add。第二条课 weekStr='1-16周(单)': weekStrToRanges(JwUrpParser.kt:133-149) cleaned='1-16单', parts[1]='16单'.toIntOrNull()=null → e=s=1 → endWeek 塌缩为 1(第二个独立 bug, 与图片无关但被本样本暴露)。room 列 td 含 <img alt='101'> → text()='' → room='教一'+''='教一'。下游 toCourseEntities(JwImportViewModel.kt:171) courseName.ifBlank{'未命名'} → 2 门'未命名'课静默入库。tryAllParsers 场景: 其余 7 个候选全 0 课, JwUrpParser 2 门胜出 → 用户拿到'2 门未命名课'的假成功。",
+    "actualCurrentBehavior": "实跑输出即上述 courses 字段: 2 门课 name/teacher 空串, 第二门 endWeek=1。错误分类应标 '图片课表(字段级不可解析, 产生未命名脏课)' 而非 0 课 — 这是本组中唯一一个图片课表样本会产出非空课程列表的协议。",
+    "verdict": "图片课表不支持(Urp 变体的脏课形态); 修复: td 含 <img> 且 text() 为空时跳过该行并计数进'图片格诊断', 同时 weekStrToRanges 先 strip 单/双再 toIntOrNull。"
+  }
+}

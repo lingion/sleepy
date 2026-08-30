@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>学生个人课表</title>
+</head>
+<body>
+<!-- 视图开关:list 视图 -->
+<button id="shcPDF" data-type="list" title="导出PDF">导出</button>
+
+<!-- 新正方点击查询后渲染的列表视图
+     对照 shiguang parserList():
+       day      = tbody 在 #kblist_table 里的索引 (0 跳过, 1-7 = 周一~周日)
+       sections = tr 内 td[0].text() (须为 "N-M" 纯数字段)
+       name     = td[1] .title font
+       font[0]  = 周数串, font[1] = 上课地点, font[2] = 教师 (教师 后必须跟 U+3000 全角空格)
+     tbody[1] 只有表头无课程; tbody[2]/[3] 分别承载周二/周三课程 -->
+<table id="kblist_table" border="0" cellspacing="0" cellpadding="0">
+  <tbody>
+    <tr><th colspan="2">视图控制</th></tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">星期一</th></tr>
+    <!-- 星期一无课, 仅表头 -->
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">星期二</th></tr>
+    <tr>
+      <td>1-2</td>
+      <td class="td_wrap">
+        <div>
+          <div class="title"><font>高等数学</font></div>
+          <p><font>周数：1-16周</font></p>
+          <p><font>上课地点：教学楼A101</font></p>
+          <p><font>教师　：张老师</font></p>
+        </div>
+      </td>
+    </tr>
+    <tr>
+      <td>3-4</td>
+      <td class="td_wrap">
+        <div>
+          <div class="title"><font>线性代数</font></div>
+          <p><font>周数：1-16周</font></p>
+          <p><font>上课地点：教学楼B202</font></p>
+          <p><font>教师　：王老师</font></p>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+  <tbody>
+    <tr><th colspan="2">星期三</th></tr>
+    <tr>
+      <td>1-2</td>
+      <td class="td_wrap">
+        <div>
+          <div class="title"><font>大学英语</font></div>
+          <p><font>周数：2-8周(单)</font></p>
+          <p><font>上课地点：外语楼308</font></p>
+          <p><font>教师　：李老师</font></p>
+        </div>
+      </td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

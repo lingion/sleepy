@@ -1,0 +1,13 @@
+{
+  "_meta": {
+    "protocol": "pku",
+    "fixture": "pku_login.html",
+    "scenario": "未登录被挡到 iaaa 统一认证页, 无 datagrid 表格",
+    "parser": "JwPekingParser (移植自 dIT8Zv/WakeupSchedule_BUPT PekingParser.kt)",
+    "expected_behavior": "select('table[class=datagrid]').first() 返回 null; upstream 会 NPE; sleepy 移植版应当加 null guard 返回 []",
+    "test_assertion": "courses 数组长度 == 0 (或测试用例标记 expected=NullPointerException 直到 parser 加防御)",
+    "fields": ["name", "day", "startNode", "endNode", "startWeek", "endWeek", "type", "teacher", "room"]
+  },
+  "courses": [],
+  "_notes": "建议 W2 阶段 parser 实现时: 在 kbtable=null 时直接 return@generateCourseList emptyList()"
+}

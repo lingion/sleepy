@@ -1,0 +1,106 @@
+{
+  "_doc": "fixture=qz-base-crazy/edge_comma_weeks.html 适用 parser=JwQzCrazyParser。聚焦周次 split(',') 多段路径与 '(单)/(双)' 后缀：(a) '5-15,17(周)' 逗号分段 → (5-15)+(17-17) 两条 type=0 (b) '1-8,10,12-16(双)' — 外层 '(双)' 被 substringBefore('(周)') 整体剥离, 但末段 '12-16' 恰好因段内 weeks[1]='16' 不含 单/双 而 type=0? 不 — upstream 里 `type` 声明在 forEach 外, 跨段泄漏：末段 '12-16' 进入 '-' 分支会重新计算 type=0, 但前面段们 type=0 已经 — 本 fixture 用 jsoup 模拟器 upstream 模式实测 type: 末段=2。原因: '(双)' 剥离前 weekStr='1-8,10,12-16(双)' → substringBefore('(周)') 只削 '(周)' 不削 '(双)', 所以 '(双)' 留在串里 → split(',') 最后段='12-16(双)' → weeks[1]='16(双)' 含 '双' → type=2 (c) '9(周)' 单点无 '-' 分支 → 9-9 (d) '3-7,11-15(周)' 两段都是区间且段间 type 不漏 (e) '4-14(双)' 单段 '(双)' 命中 type=2。",
+  "_algo_quirk": "upstream QzParser 中 `type` 声明在 forEach 外, 同一单元格内逗号分段之间会跨段泄漏 type 值：若前段 type=1 而后段是 '纯数字无单双', 后段 type 保持 1。本 fixture 所有分段都因段尾显式'(单)/(双)'或 'type 初值 0' 而无泄漏歧义, 可安全锁值。若新增分段样本, 必须每段显式带/不带单双, 避免 expected 依赖泄漏语义。",
+  "_nodeCount": "首行=星期表头(nodeCount=1), 第一节数据行 nodeCount=2 → startNode=3/endNode=4; 第二节 nodeCount=3 → 5-6。同 normal_grid.html 偏移。",
+  "courses": [
+    {
+      "name": "多段单周课",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 5,
+      "endWeek": 15,
+      "type": 0,
+      "teacher": "钱老师",
+      "room": "D101"
+    },
+    {
+      "name": "多段单周课",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 17,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "钱老师",
+      "room": "D101"
+    },
+    {
+      "name": "双周混合段",
+      "day": 4,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 1,
+      "endWeek": 8,
+      "type": 0,
+      "teacher": "周老师",
+      "room": "E202"
+    },
+    {
+      "name": "双周混合段",
+      "day": 4,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 10,
+      "endWeek": 10,
+      "type": 0,
+      "teacher": "周老师",
+      "room": "E202"
+    },
+    {
+      "name": "双周混合段",
+      "day": 4,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 12,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "周老师",
+      "room": "E202"
+    },
+    {
+      "name": "单周单点",
+      "day": 6,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 9,
+      "endWeek": 9,
+      "type": 0,
+      "teacher": "吴老师",
+      "room": "F303"
+    },
+    {
+      "name": "多段单周-同格双课",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 3,
+      "endWeek": 7,
+      "type": 0,
+      "teacher": "郑老师",
+      "room": "G404"
+    },
+    {
+      "name": "多段单周-同格双课",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 11,
+      "endWeek": 15,
+      "type": 0,
+      "teacher": "郑老师",
+      "room": "G404"
+    },
+    {
+      "name": "双周单段",
+      "day": 2,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 4,
+      "endWeek": 14,
+      "type": 2,
+      "teacher": "王老师",
+      "room": "H505"
+    }
+  ]
+}

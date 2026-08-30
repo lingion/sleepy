@@ -1,0 +1,9 @@
+{
+  "input": "zf_new_image_kbgrid.html",
+  "expected": {
+    "protocol": "zf_new",
+    "courseCount": 0,
+    "errorCategory": "图片课表不支持",
+    "rationale": "JwNewZfParser.parseEmbeddedJson: 全文无 'kbxx'/'tmp_list'/'xskbcx'/'xskbcx_json' marker → 进入 HTML 兜底。parseHtmlTable: 容器选择链 getElementById('kbtable')=null, 'kbgrid'=null, 'table.el-table__body'=null, '.kbcapi-table'=null, '[id*=kb]' 命中 kblist_table (含 kb 字串)。tr/td 遍历 → td.getElementsByClass('kbcontent') 为空 → cells.isEmpty() continue → courseList 始终空。最终 parseHtmlTableFromQz() 兜底: JwQzParser(this.source).generateCourseList() → getElementById('kbtable')=null → return courseList (空)。generateCourseList 返回空, 不崩。这是合理降级, 但选择器 '[id*=kb]' 命中 kblist_table 触发了空遍历, 与真正 zf_new kbgrid 选择器命中后空遍历的代码路径相同 — 错误分类应明确'图片课表'。"
+  }
+}

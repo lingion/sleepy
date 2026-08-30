@@ -57,6 +57,13 @@ class JwNewZfParser(source: String) : JwParser(source) {
             val courses = parseCourseJsonArray(jsonStr)
             if (courses.isNotEmpty()) return courses
         }
+        // T8 补充: JS 变量赋值形态 `var kbList = [...]` / `var kbxx=[...]`（无引号键名）
+        for (name in listOf("kbList", "xskbcx_json", "kbxx")) {
+            val idx = findJsonVarIndex(source, name) ?: continue
+            val jsonStr = extractBalanced(source, idx) ?: continue
+            val courses = parseCourseJsonArray(jsonStr)
+            if (courses.isNotEmpty()) return courses
+        }
 
         // 尝试纯 JSON 页面（API 响应被 WebView 直接渲染, 或移动端深层包装）
         val trimmed = source.trim()
@@ -86,11 +93,37 @@ class JwNewZfParser(source: String) : JwParser(source) {
             // 跳过空白
             var p = after
             while (p < s.length && s[p].isWhitespace()) p++
+            // JSON 键形态 "kbList": [ 允许单个冒号
+            if (p < s.length && s[p] == ':') {
+                p++
+                while (p < s.length && s[p].isWhitespace()) p++
+            }
             if (p >= s.length) { from = idx + 1; continue }
             when (s[p]) {
                 '{', '[' -> return p
                 else -> { from = idx + 1; continue }
             }
+        }
+    }
+
+    /**
+     * T8: JS 变量赋值形态的严格搜索 — `var kbList = [...]`。
+     * marker 后必须跳过空白与单个 '=', 后续非空字符为 { 或 [。
+     */
+    private fun findJsonVarIndex(s: String, name: String): Int? {
+        val marker = "var $name"
+        var from = 0
+        while (true) {
+            val idx = s.indexOf(marker, from)
+            if (idx < 0) return null
+            var p = idx + marker.length
+            while (p < s.length && s[p].isWhitespace()) p++
+            if (p < s.length && s[p] == '=') {
+                p++
+                while (p < s.length && s[p].isWhitespace()) p++
+                if (p < s.length && (s[p] == '{' || s[p] == '[')) return p
+            }
+            from = idx + 1
         }
     }
 
@@ -696,8 +729,32 @@ class JwNewZfParser(source: String) : JwParser(source) {
         }
     }
 
-    /** 完全 fallback 到 QZ 解析逻辑 */
+    /** 完全 fallback 到 QZ 解析逻辑（T8: QZ 缺表抛 JwParseException, 兜底处吸收为空列表） */
     private fun parseHtmlTableFromQz(): List<JwCourse> {
-        return JwQzParser(source).generateCourseList()
+        return try {
+            JwQzParser(source).generateCourseList()
+        } catch (e: JwParseException) {
+            emptyList()
+        }
+    }
+
+    /** T8: zftal-ui-/kbList = 100; kblist_table = 80; kbtable/kbgrid = 70; CF 页 = 0..49 */
+    override fun confidence(): Int {
+        val lower = source.lowercase()
+        return when {
+            lower.contains("zftal-ui-") || lower.contains("\"kblist\"") -> 100
+            lower.contains("kblist_table") -> 80
+            lower.contains("kbtable") || lower.contains("kbgrid") -> 70
+            else -> 0
+        }
+    }
+
+    override fun matchedFeatures(): List<String> {
+        val lower = source.lowercase()
+        return buildList {
+            if (lower.contains("\"kblist\"")) add("kbList")
+            if (lower.contains("kbgrid_table_0")) add("kbgrid_table_0")
+            if (lower.contains("kblist_table")) add("kblist_table")
+        }
     }
 }

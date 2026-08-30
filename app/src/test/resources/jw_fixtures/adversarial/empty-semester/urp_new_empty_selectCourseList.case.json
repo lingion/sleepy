@@ -1,0 +1,15 @@
+{
+  "input": "urp_new_empty_selectCourseList.json",
+  "protocol": "urp_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewUrpParser 0 课, tryAllParsersForTest 也 0 课(纯 JSON 无 HTML 表格, 其他 parser 全不命中)"
+  },
+  "rationale": "新 URP 空选课列表: JwNewUrpParser 行 48 extractJsonFromHtml 在纯 JSON 里 indexOf('dateList') 命中 → 行 121-123 往前找 '{' 找到根对象 → 括号配对取整个 JSON → 行 56 dateList 长度 1 非空 → 行 60 selectCourseList = 空数组 → 行 62 for 0 次 → return emptyList()。0 课正确。dateList=[{selectCourseList:[]}] 与 dateList=[](行 57 直接 return)与 dateList 缺失(行 56 return)输出一致, 三态合并 — 空学期与结构错乱不可分, T8/T9 需要区分。"
+}

@@ -1,0 +1,60 @@
+{
+  "_note": "老正方 Table1 标准变体 type=0 多场景: 跨节连堂 1-2 节; 同格两门课 <br><br> 分隔(周一第五节); 单/双周 |单周 |双周; 周次边界 17-17 单周(走默认 startWeek=1/endWeek=20, weekPattern 才覆盖); 末节课 跨列到 周日 列。",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 2,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 1,
+      "teacher": "张老师",
+      "room": "语音楼C301"
+    },
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 2,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "李老师",
+      "room": "教学楼A101"
+    },
+    {
+      "name": "程序设计",
+      "day": 3,
+      "startNode": 5,
+      "endNode": 6,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 2,
+      "teacher": "赵老师",
+      "room": "实验楼D202"
+    },
+    {
+      "name": "文化地理",
+      "day": 7,
+      "startNode": 10,
+      "endNode": 10,
+      "startWeek": 17,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "李老师",
+      "room": "逸夫楼E110"
+    }
+  ]
+}

@@ -84,4 +84,19 @@ class JwPekingParser(source: String) : JwParser(source) {
         private val NODE_PATTERN1 = Regex("""\d{1,2}[~]*\d*节""")
         private val CHINESE_WEEK_LIST = arrayOf("", "周一", "周二", "周三", "周四", "周五", "周六", "周日")
     }
+
+    /** T8: table[class=datagrid] = 100; elective.pku = 90 */
+    override fun confidence(): Int = try {
+        val doc = org.jsoup.Jsoup.parse(source)
+        when {
+            doc.selectFirst("table[class=datagrid]") != null -> 100
+            source.contains("elective.pku") -> 90
+            else -> 0
+        }
+    } catch (e: Exception) { 0 }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("datagrid")) add("class=datagrid")
+        if (source.contains("elective.pku")) add("URL=elective.pku")
+    }
 }

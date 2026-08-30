@@ -1,0 +1,63 @@
+<!--
+Fixture: BNUZ (北京师范大学珠海分校) 空课表 — 边界用例
+协议: TYPE_BNUZ = "bnuz"
+真实场景: 学生无选课数据, table#table1 仅表头行, 所有节次行都是空 td
+上游 BNUZParser 行为:
+  - table1 存在, trs = [header tr, ...empty trs]
+  - header tr 所有 td 都匹配 otherHeader → 全部 continue
+  - empty tr: td 1="1"(节次数字)→ node=1, countFlag=true; 后续 td 都空 → countDay 推进; 0 courses added
+  - 多个空行遍历无课程添加
+  - 最终返回 []
+期望: courses: []
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>个人课表</title>
+</head>
+<body>
+<table id="table1">
+  <tr>
+    <td>时间</td>
+    <td>星期一</td>
+    <td>星期二</td>
+    <td>星期三</td>
+    <td>星期四</td>
+    <td>星期五</td>
+    <td>星期六</td>
+    <td>星期日</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+</body>
+</html>

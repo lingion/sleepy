@@ -149,4 +149,16 @@ class JwUrpParser(source: String) : JwParser(source) {
         }
         return result
     }
+
+    /** T8: displayTag = 100; table-striped = 90 */
+    override fun confidence(): Int = when {
+        source.contains("displayTag") -> 100
+        source.contains("table-striped") -> 90
+        else -> 0
+    }
+
+    override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("displayTag")) add("class=displayTag")
+        if (source.contains("table-striped")) add("class=table table-striped table-bordered")
+    }
 }

@@ -1,0 +1,13 @@
+{
+  "_note": "金智 WISEDU jwapp 真实 fetch 空学期边界: /jwapp/sys/wdkb/modules/xskcb/xskcb.do 返回 rows=[]. 这是 JwWiseduParser 注释行 17 声明的实际结构 datas.xskcb.rows, 不是 data.kbList.",
+  "_uncertain": [
+    "xskcb.do 空学期时 rows=[] 还是 datas.xskcb 整个为 null: 调研/上游源码未确证, 两种都可能; 上游 harbin 工程适配通常返回 rows=[]。",
+    "code 字段空学期时是 '0' 还是别的: 未确证, 此处按最常见的 '0' 写。"
+  ],
+  "code": "0",
+  "datas": {
+    "xskcb": {
+      "rows": []
+    }
+  }
+}

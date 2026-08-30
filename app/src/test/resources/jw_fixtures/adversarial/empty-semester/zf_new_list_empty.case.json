@@ -1,0 +1,15 @@
+{
+  "input": "zf_new_list_empty.html",
+  "protocol": "zf_new",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwNewZfParser 与 tryAllParsersForTest 均 0 课"
+  },
+  "rationale": "新正方 list 视图(#kblist_table)空: parseHtmlTable 行 249 '[id*=kb]' 命中 id='kblist_table' → trs: thead 行 tds.isEmpty()(th 非 td) continue; tbody 行 colspan=7 '暂无数据' 无 .kbcontent → cells 空 → result 空 → parseHtmlTableFromQz → JwQzParser 无 #kbtable → []。0 课正确。语义上页面明示 '暂无数据' 是 EMPTY_SEMESTER 证据, T9 诊断可抓该文本给用户确定性提示而非 '解析失败'。"
+}

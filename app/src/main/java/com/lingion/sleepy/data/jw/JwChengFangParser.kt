@@ -126,4 +126,23 @@ class JwChengFangParser(source: String) : JwParser(source) {
             return list
         }
     }
+
+    /** T8: var kbxx + CF 字段四件套 = 100; 仅 var kbxx = 70 */
+    override fun confidence(): Int {
+        if (!source.contains("var kbxx")) return 0
+        val hasFields = source.contains("kcmc") && (source.contains("teaxms") ||
+            source.contains("jxcdmcs") || source.contains("jcdm2"))
+        return if (hasFields) 100 else 70
+    }
+
+    override fun matchedFeatures(): List<String> {
+        if (!source.contains("var kbxx")) return emptyList()
+        return buildList {
+            add("var kbxx")
+            if (source.contains("kcmc")) add("字段=kcmc")
+            if (source.contains("teaxms")) add("字段=teaxms")
+            if (source.contains("jxcdmcs")) add("字段=jxcdmcs")
+            if (source.contains("jcdm2")) add("字段=jcdm2")
+        }
+    }
 }

@@ -83,4 +83,16 @@ class JwQzWithNodeParser(source: String) : JwQzParser(source) {
             )
         }
     }
+
+    /** T8 §2.5: 继承 + title=周次(节次) 含空格 / 独立 title=周次+节次 特征 */
+    override fun matchedFeatures(): List<String> {
+        val base = super.matchedFeatures()
+        val jsoup = org.jsoup.Jsoup.parse(source)
+        val withNode = jsoup.getElementsByAttributeValue("title", "周次(节次)")
+        return base + when {
+            withNode.any { it.text().contains(' ') } -> listOf("title=周次(节次)空格")
+            jsoup.getElementsByAttributeValue("title", "周次").isNotEmpty() -> listOf("title=周次独立", "title=节次独立")
+            else -> emptyList()
+        }
+    }
 }

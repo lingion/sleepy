@@ -1,0 +1,79 @@
+{
+  "_group": "json-boundaries",
+  "_purpose": "对抗样本组: kbList JSON 边界 — null 字段/数字变字符串/jc 0102 vs 102/zcd 超长位图/JSON 内含 script 闭合标签转义 — 各 parser 不崩且语义正确。",
+  "_codeRefs": {
+    "parser": "app/src/main/java/com/lingion/sleepy/data/jw/JwNewZfParser.kt",
+    "keyLines": {
+      "L42 markers": "parseEmbeddedJson markers = ['\"kbxx\"','\"tmp_list\"','\"xskbcx\"','xskbcx_json'] — 不含新正方标准 '\"kbList\"'",
+      "L44-56 marker loop": "循环内 extractBalanced 命中第一个非空 result 后返回, 顺序依赖 marker 顺序",
+      "L60 trimmed.startsWith('{')": "纯 JSON fallback, HTML 包裹的 var 声明不命中",
+      "L104-108 find first JSONArray": "parseCourseJsonArray '{' 分支用 obj.keys() 找第一个非空 JSONArray — org.json keys() 是 HashMap 键序, 不可预测, 若 sjkList 在前会误取'其他课程'",
+      "L120 teacher firstStr": "firstStr('jsxm','jsmc','teacher','attendClassTeacher','skjs') — jsmc 是教学场地不是教师, xm(主流字段)完全不在别名列表",
+      "L121 room firstStr": "firstStr('jasmc','jsmc','classroomName','jxlh','jasdm') — jasmc 是甲上/甲下字段不是教室(cdmc 才是), 首位错误; cdmc 完全不在别名列表",
+      "L124 day firstInt": "firstInt('kcxq','xq','xqj','classDay','skxq') ?: continue — 只认数字, xqjmc 文本字段完全不消费",
+      "L127 startNode firstInt": "firstInt('ksjcsd','ksjc','jc','classSessions','ksjcd') ?: continue — toIntOrNull 短路在第一个非 blank 字段, jc='1-2' → null → 丢课; jc='0102' → 102(前导零被丢) → 错课",
+      "L134 zcd firstStr": "firstStr('zcd','kkzc','zc','classWeek','skzc') — 数字形态 zcd 会走 parseWeekStr 的 filter{isDigit}",
+      "L142 day.coerceIn(1,7)": "xqj=8 越界时被压成 7(周日) 而不是回退 xqjmc 文本",
+      "L174-203 parseWeekStr": "bitmap 分支 s.length>=10 且全 0/1; result.isEmpty() → Triple(1,16,0) 兜底 — 全 0 bitmap 会产出假课 1-16 周"
+    }
+  },
+  "_samples": [
+    {
+      "input": "kblist_null_fields.json",
+      "theme": "kbList 字段为 JSON null",
+      "keyFinding": "org.json:json:20231013 (JVM 测试) optString 返回 fallback ''(已 javap 核实), Android 真机 org.json 返回 'null' 字面串 — 双实现行为不同, 同一 fixture 在两环境下产出不同"
+    },
+    {
+      "input": "kblist_numeric_as_string.json",
+      "theme": "数字字段以字符串形态返回",
+      "keyFinding": "xqj 数字/字符串等价解析; jc=102 数字原样入库 startNode=102; zcd=16 数字被 filter{isDigit} 解成单周 16-16 而不是 1-16"
+    },
+    {
+      "input": "kblist_jc_0102_vs_102.json",
+      "theme": "jc '0102' vs '102' 语义分歧",
+      "keyFinding": "Kotlin '0102'.toIntOrNull()=102 前导零被丢, '0102' 与 '102' 的 toInt 结果相同无法事后区分 — 必须在 toInt 前判偶数位纯数字形态; '102' 奇数位无真实来源, 预期保守降级"
+    },
+    {
+      "input": "kblist_long_bitmap.json",
+      "theme": "zcd 超长位图边界",
+      "keyFinding": "9 位临界(<'10')串走 else 分支产出 101010101 荒谬周值; 全 0 bitmap 产出假课 (1,16,0); 64 位混合全展开; URP 20 位形态能正确解出 (1,20,0)"
+    },
+    {
+      "input": "kblist_script_close_escape.html",
+      "theme": "JSON 内含 </script> 字符串",
+      "keyFinding": "extractBalanced 的 in_str/esc 处理已正确(可吃 \\u003c 和 <\\/ 两种转义); 真正卡点是 parseEmbeddedJson 的 markers 不含 '\"kbList\"', HTML 包裹的 var 声明完全不命中, 最终 0 门课"
+    },
+    {
+      "input": "kblist_js_var_assignment.html",
+      "theme": "var 声明 + 数组内夹 null/字符串项",
+      "keyFinding": "修复 marker 后 parseCourseJsonArray L114 optJSONObject(i) 对 null/字符串返回 null → continue → 跳过残缺项, 剩余 3 条正常"
+    },
+    {
+      "input": "kblist_kbxx_conflict_cf.html",
+      "theme": "页面同时有 kbxx(CF marker) 和 kbList(新正方 marker)",
+      "keyFinding": "marker 循环命中空数组 kbxx 后继续循环, 但后续 marker 都 miss, 也不含 '\"kbList\"' → 0 门课; 修复方向是把 '\"kbList\"' 放 markers 首位"
+    },
+    {
+      "input": "kblist_pure_response_with_sjklist.json",
+      "theme": "顶层多数组字段 (kbList + sjkList + xsxx)",
+      "keyFinding": "obj.keys() 顺序不可预测(HashMap), 若 sjkList 先被迭代到会产出'其他课程'的假课; 必须显式 optJSONArray(\"kbList\") 优先"
+    },
+    {
+      "input": "kblist_field_priority_cdmc.json",
+      "theme": "字段别名优先级 (jasmc vs cdmc, xm vs jsxm, jsmc)",
+      "keyFinding": "room 首位 jasmc 是错的(cdmc 才是); teacher 别名缺 xm; jsmc 同时被 teacher 和 room 引用语义混乱"
+    },
+    {
+      "input": "kblist_xqjmc_text_variant.json",
+      "theme": "xqj 缺失时 xqjmc 文本回退",
+      "keyFinding": "xqjmc 完全不被消费; xqj 越界(8) 被 L142 coerceIn 压成 7 造成星期错, 应该走 xqjmc 文本解析而不是 coerceIn"
+    },
+    {
+      "input": "kblist_zcd_mixed_segments.json",
+      "theme": "zcd 复合多段含单双/花括号/第字/空段",
+      "keyFinding": "'(单周)'/'(双周)' 后缀恰好 contains('单')/'contains('双')' 命中但脆; '{第1-16周}' 花括号路径脆但能通过; 中间空段被 return@forEach 跳过; 全空格 → (1,16,0) 兜底"
+    }
+  ],
+  "_parserImpact": "当前 JwNewZfParser.kt 跑这些样本的总体表现: 3/11 样本能部分解析(0 门课或错课), 其余 8/11 样本产 0 门课。根因集中在 L42 markers 不含 '\"kbList\"' 和 L127 jc 的 toIntOrNull 短路丢课。修复优先级: ①markers 加 '\"kbList\"' + parseCourseJsonArray 显式 optJSONArray(\"kbList\") 优先(救 4 个样本) ②jc/jcs firstStr 偶数位补零解析 + 范围串 split('-') (救 2 个样本) ③room 首位改 cdmc / teacher 加 xm 首位(救 2 个字段错课样本) ④parseWeekStr 的 bitmap length 下限调整到 >=2, 全 0 bitmap 返回 emptyList 且 outer 不走 (1,16,0) 兜底 ⑤xqjmc 文本回退与 xqj 越界 fallback",
+  "_relatedTasks": ["T4 (JwNewZfParser 字段与页面变体)", "T8 (统一解析分发与兜底裁决)", "T10 (契约 fixture 与全量测试)"]
+}

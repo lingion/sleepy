@@ -1,0 +1,4 @@
+{
+  "_doc": "fixture=qz-base-crazy/no_kbtable_login.html 适用 parser=JwQzCrazyParser。边界样本：未登录或登录页 — 文档内根本不存在 #kbtable。JwQzCrazyParser.generateCourseList() 第一行 `doc.getElementById(\"kbtable\") ?: return courseList` 应立即返回空列表。这与 '空 kbtable' 是不同诊断: 此处为 '页面未到课表页/未登录'，上层 UI 应提示'请确认已登录并到达课表页面'而非'课表为空'。",
+  "courses": []
+}

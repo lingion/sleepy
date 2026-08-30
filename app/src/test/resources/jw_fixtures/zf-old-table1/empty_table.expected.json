@@ -1,0 +1,4 @@
+{
+  "_note": "空课表(全部 &nbsp;)边界: 表头/组头/行头都正常解析, 但所有课程格 length<=1 → 走空格格计数 → 不产课程。generateCourseList 返回空列表, JwImportViewModel 抛'课程列表为空'。",
+  "courses": []
+}

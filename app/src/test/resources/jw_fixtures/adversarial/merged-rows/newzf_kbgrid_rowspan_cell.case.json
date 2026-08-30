@@ -1,0 +1,20 @@
+{
+  "input": "newzf_kbgrid_rowspan_cell.html",
+  "expected": {
+    "scenario": "merged-rows/新版正方 kbgrid 真 rowspan 连堂格 (浏览器渲染后 DOM)",
+    "diagnosis": "双缺口叠加 — (1) 选择器: JwNewZfParser.parseHtmlTable (JwNewZfParser.kt L245-250) 选择器链 getElementById('kbtable')→getElementById('kbgrid')→table.el-table__body→.kbcapi-table→[id*=kb]. 本 fixture 实测命中 table.el-table__body (内层 table), 但随后 (2) 解析: L269 td.getElementsByClass('kbcontent') 在 .timetable_con 结构里 0 命中 (python 实测 .kbcontent 0 hits) → 所有 cell continue → result 空 → L284 fallback parseHtmlTableFromQz() → JwQzParser.kt L90 getElementById('kbtable') 也 0 命中 → return emptyList. 且 sleepy 全部 HTML parser 均无 rowspan 感知, 连堂节次按 nodeCount*2-1 硬编码 (JwQzParser.kt L34 / JwNewZfParser.kt L302), 丢失 'rowspan=N = N 连节' 语义. 真实新正方 DOM 参照 (research SHUFEZJ/zjut_01.js): #kbgrid_table_0 + td.td_wrap + .timetable_con(.title/.p font) — 三者均不在选择器链内.",
+    "expectedBehavior": "3 门课 — 量子力学 day=1 startNode=1/endNode=2 (rowspan=2 → 连堂 2 节), 大学物理实验B day=1 startNode=1/endNode=1 (第 2 个 td, 第 1 节), 信号与系统 day=2 startNode=2/endNode=3 (第 2 行首个非占位 td, rowspan=2 → 2 连节). 信号与系统必须落 day=2 — 语义要求按 rowspan 占位重排列计数, 参照上游 FlowCourse parseSysuPcTableHtml (fixture /tmp/fixtures/flowcourse_EduSystemParsers.test.ets L274-343): '课程格 rowspan=连堂节数; 第1行并排三格...次日 row 仅剩节次格', 量子力学 durationSections=2 从 rowspan 读出.",
+    "pre_fix_actual_behavior": "python 实测 (JwNewZfParser.parseHtmlTable 语义重放, 2026-08-30 坐实): 容器命中 table.el-table__body (第 3 选择器) → 遍历 3 tr: tr0 thead 0 td → continue; tr1 3 td firstCellText='第1节' 含 '节' 且无 .kbcontent → isSectionHeader → 整行 continue (丢量子力学+大学物理实验B); tr2 2 td firstCellText='第2节' 无 kbcontent → continue (丢信号与系统); tr3 1 td → continue. result 空 → parseHtmlTableFromQz → JwQzParser L90 getElementById('kbtable') 0 命中 → emptyList → importAsNewTable (JwImportViewModel.kt L196) 抛 '课程列表为空, 请确认已到达课表页面'. 即使升级选择器命中本容器, day 计数 (L267-281) 也只按 td 出现序号推进, 不读 rowspan — 量子力学 rowspan=2 会把信号与系统挤成 day=2; 且 parseCell L302-313 node=nodeCount*2-1 / endNode=node+1 硬编码 2 节, 无法还原连堂节数. 用户视角: schools.json 53 所 zf_new 学校只要 WebView 渲染后抓取此形态页面, 必然 0 课报错而非错课.",
+    "courseCount": 0,
+    "keyInvariants": [
+      "选择器链必须补 #kbgrid_table_0 / td.td_wrap / .timetable_con (research SHUFEZJ + zjut_01.js 佐证)",
+      "解析器必须读 td.attr('rowspan') 还原连堂节数: endNode = startNode + rowspan - 1",
+      "rowspan 占位列在后续行必须跳过 day 计数, 否则右侧所有课程 day 偏左",
+      "上游 NewZFParser.kt L52-54 的三 title 锚点 (教师/上课地点/节/周) 是新正方 kbgrid 单元格的语义来源 — sleepy parseCell L296-299 的三 title (老师/教室/周次(节次)) 是 QZ 的属性名, 新正方要另用一套",
+      "rowspan 真实表达仅出现在新正方/QZ 的 div 网格里 (research 调研 finding: 老正方 Table1 不用 rowspan 表达连堂, 靠空格格计数+Center 样式计数补偿) — 本 fixture 不适用于 JwOldZfParser"
+    ],
+    "protocol": "zf_new",
+    "errorCategory": "kbgrid 选择器/解析器双缺口 + rowspan 不识别(现版 0 课)"
+  },
+  "protocol": "zf_new"
+}

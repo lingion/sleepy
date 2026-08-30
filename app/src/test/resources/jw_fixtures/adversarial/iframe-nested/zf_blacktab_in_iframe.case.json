@@ -1,0 +1,19 @@
+{
+  "input": "zf_blacktab_in_iframe.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (xskbcx.aspx / default2.aspx 上下文)",
+    "frameStrategy": "先按锚点链 #Table1 → table.blacktab → 含'星期一'文本的第一个 table 依次匹配(Speas-y 兜底模式)；iframe 层同样按此锚点链选择目标 frame",
+    "courseCount": 2,
+    "expectedCourses": [
+      {"name": "思想道德与法治", "day": 1, "startNode": 1, "endNode": 1, "teacher": "钱老师", "room": "一教101", "weeks": "1-16"},
+      {"name": "中国近现代史纲要", "day": 2, "startNode": 2, "endNode": 2, "teacher": "吴老师", "room": "一教102", "weeks": "1-16"}
+    ],
+    "errorClass": "none",
+    "diagnosticHint": "blacktab 变体命中时正常解析,无需特殊提示"
+  },
+  "currentBehavior": {
+    "capturedLayers": "顶层 HTML(blacktab 表格直接在顶层，iframe 嵌套在本 case 中不触发)",
+    "result": "0 门课(JwOldZfParser.kt L24 只找 getElementById('Table1')，table.blacktab 命不中 → emptyList)",
+    "reason": "blacktab 是与 iframe 正交的表格标识变体，但同类症状：'到了课表页拿不到课表'。JwWebViewLoginScreen 的 frame 递归修复必须同时把 JwOldZfParser 的表格选择器升级为 Table1/blacktab/含星期一兜底三链，否则递归修好了 blacktab 学校依旧 0 课"
+  }
+}

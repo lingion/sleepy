@@ -1,0 +1,27 @@
+{
+  "_meta": {
+    "source": "金智 WISEDU jwapp /jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do (空 body POST)",
+    "fixture_purpose": "当前学期查询正常样本:单行 SFDQ=1",
+    "parser": "无独立 Kotlin parser — 由 WISEDU_FETCH_JS 消费 (JwWebViewLoginScreen.kt L388-445)",
+    "consumption_logic": {
+      "step1": "rows = d.datas.dqxnxq.rows || []",
+      "step2": "优先从页面 select/option 已选值匹配 DM (正则 /20\\d{2}-20\\d{2}-[12]/)",
+      "step3": "其次匹配 .selected/.active/[aria-selected=true] 节点文本",
+      "step4": "再其次匹配 [data-elem=XNXQMC] 的文本 (如 '2025-2026学年2学期' → '2025-2026-2')",
+      "step5": "兜底: rows.find(r => r.SFDQ === '1' || r.SFDQ === 1 || r.CURRENT === '1' || r.current === true)",
+      "step6": "最终 XNXQDM 用于 POST /jwapp/sys/wdkb/modules/xskcb/xskcb.do body=XNXQDM=..."
+    },
+    "evidence": [
+      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L397-444",
+      "/tmp/jlu.js L180: res?.datas?.dqxnxq?.rows?.[0], r.DM / r.MC 字段命名交叉确认",
+      "/tmp/jw_fixtures/wisedu-json/dqxnxq_multi_semester.json.expected.json (SFDQ 字符串与数字两种形态)"
+    ]
+  },
+  "expected_xnxqdm": "2025-2026-2",
+  "expected_semester_row": {
+    "DM": "2025-2026-2",
+    "MC": "2025-2026学年2学期",
+    "SFDQ": "1"
+  },
+  "resolution_path": "step5 (SFDQ 兜底): 无页面学期控件时直接采用 rows[SFDQ='1'] 的 DM"
+}

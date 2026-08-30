@@ -1,0 +1,24 @@
+{
+  "_note": "全十六进制 HTML 实体(&#xNNNN;)课程样本 — 揭示 outerHTML 已解码前提下残留的最后一类实体乱码源: Jsoup html() 序列化往返双重转义。链路实测: (1)WebView/Jsoup 词法层解码 &#x6570;→数 &#x636E;→据 &#x7ED3;→结 &#x6784;→构 &amp;→& &#x5B9E;→实 &#x9A8C;→验, DOM text()='数据结构&实验' 正确; (2)JwOldZfParser L52 parseImportBean(countDay, td.html(), node) 取的是 Jsoup 序列化产物, Jsoup Entities.escape 按 HTML 规范把 text node 里的 '&' 再转回 '&amp;' → 序列化串里课程名='数据结构&amp;实验'; (3)L72 substringAfter(\"\\\">\\\"\") + L73 split(\"<br>\") + stripAnchorTag(L338) 只剥 <a 前缀, 无任何实体解码调用 → 课程名以字面 '数据结构&amp;实验'(12 字符)入库; (4)时间行 &#21608;&#20108;&#31532;1,2&#33410;{&#31532;1-16&#21608;} 解码后='周二第1,2节{第1-16周}' 是合法中文, parseTime(L175) 的 WEEK_PATTERN/NODE_PATTERN 在 timeInfo(已是解码后文本, parseImportBean L73 map trim 后)上正常命中 → day=2 step=2 startWeek=1 endWeek=16 全对。对比 entity_double_escaped_name(源头是页面本身双重转义): 本样本源头是 sleepy 解析管道自己的 td.html() 序列化, 修法不同 — 页面双重转义须解析前手动unescape, 管道双重转义须 parseImportBean 改走 td.text() 或对结果再 Html.unescape/Jsoup.parse(...).text()。",
+  "input": "hex_entity_named_mix.html",
+  "expected": {
+    "protocol": "zf (TYPE_ZF → JwOldZfParser type=0)",
+    "courses": [
+      {
+        "name": "数据结构&amp;实验",
+        "nameExpected": "数据结构&实验",
+        "day": 2,
+        "startNode": 1,
+        "endNode": 2,
+        "startWeek": 1,
+        "endWeek": 16,
+        "type": 0,
+        "teacher": "张老师",
+        "room": "教学楼B205"
+      }
+    ],
+    "courseCount": 1,
+    "errorClass": "silent_corruption_name_only — 课程名字面带 &amp; 尾巴入库(widget/课表格显示原样), 其余字段(day/step/week/teacher/room)全对; 检测锚点: courseName.matches('.*&amp;(amp|lt|gt|quot|#\\d+;).*') 命中即报'实体未二次解码'; 修复: parseImportBean 里对 split 结果逐字段做一次 Html.unescape(或 Jsoup.parse(field).text())",
+    "rootCause": "JwOldZfParser L52 td.html() — Jsoup 序列化按 HTML 规范把 text node 的 & 再转义为 &amp;, 而后续 L72-L73 / L338 stripAnchorTag 无任何实体解码 — 这是'outerHTML 已正确解码'前提下仍会漏到 UI 的唯一实体乱码路径"
+  }
+}

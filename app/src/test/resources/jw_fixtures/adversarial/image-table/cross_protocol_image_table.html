@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>个人课表</title>
+</head>
+<body>
+<!-- 跨协议混合: 同一页面同时含 Table1(老正方) 和 kbtable(强智) 且两者全部课程格都是 <img>,
+     tryAllParsers 会把同一 HTML 喂给全部 8 个 parser, 老 ZF 与 QZ 都返回 0 课 -->
+<table id="Table1" border="1">
+  <tr>
+    <td align="Center">时间</td>
+    <td align="Center">星期一</td>
+    <td align="Center">星期二</td>
+  </tr>
+  <tr>
+    <td align="Center">第一节</td>
+    <td><img src="/img/zf_mon1.png" alt="高数" /></td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+<table id="kbtable" border="0">
+  <tr>
+    <td>
+      <div class="kbcontent">
+        <img src="/img/qz_mon1.png" alt="英语" />
+      </div>
+    </td>
+    <td>&nbsp;</td>
+    <td>&nbsp;</td>
+  </tr>
+</table>
+</body>
+</html>

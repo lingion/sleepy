@@ -1,0 +1,16 @@
+{
+  "_note": "对抗样本: xqj 缺失但有 xqjmc 文本。真实来源 jw_research finding 2: 'xqjmc 星期文本如星期一' 是 kbList 标准字段之一, sleepy L124 firstInt('kcxq','xq','xqj',...) 只认数字形态, xqjmc 是合法回退。覆盖: ①xqj 缺失+xqjmc='星期一' ②xqj=null+xqjmc='星期日' ③xqjmc='周一'(缩写变体) ④xqj=7(数字直接可用) ⑤xqjmc='周日' ⑥xqj 越界(0 或 8)+xqjmc 兜底。",
+  "_uncertain": [
+    "xqjmc 的具体写法跨校差异: '星期一' vs '周一' vs '礼拜一' 均可能, jw_research 只提到 '星期一', 本 fixture 覆盖'星期X'与'周X'两种主流形态, '礼拜X' 未覆盖。",
+    "xqj 越界是否真实出现: jw_research 未提, 本 fixture 把 xqj=0 与 xqj=8 作为防御性样本, 预期 parser 走 xqjmc 兜底。"
+  ],
+  "totalRecord": 6,
+  "kbList": [
+    { "kcmc": "xqj缺失文本兜底", "xm": "张老师", "xqjmc": "星期一", "jc": "1-2", "zcd": "1-16周", "cdmc": "A101" },
+    { "kcmc": "xqj为null", "xm": "李老师", "xqj": null, "xqjmc": "星期日", "jc": "3-4", "zcd": "1-16周", "cdmc": "A102" },
+    { "kcmc": "缩写形态", "xm": "王老师", "xqjmc": "周三", "jc": "5-6", "zcd": "1-16周", "cdmc": "A103" },
+    { "kcmc": "数字可用", "xm": "赵老师", "xqj": 4, "xqjmc": "星期四", "jc": "1-2", "zcd": "1-16周", "cdmc": "A104" },
+    { "kcmc": "周日缩写", "xm": "钱老师", "xqjmc": "周日", "jc": "3-4", "zcd": "1-16周", "cdmc": "A105" },
+    { "kcmc": "xqj越界", "xm": "孙老师", "xqj": 8, "xqjmc": "星期五", "jc": "5-6", "zcd": "1-16周", "cdmc": "A106" }
+  ]
+}

@@ -1,0 +1,72 @@
+{
+  "_note": "URP 网格变体 (variant 2, 真实结构来自 XingHeYuZhuan/shiguang_warehouse resources/urp_jiaowu/urp_01.js): td[id='<day>_<node>'] 定位 (day 从 id 前段, 1-7), th[id^='0_'] 是节次/时间表头, td 内 div.class_div 含 >=5 个 <p>: p[0]=课名, p[1]=星号占位, p[2]=教师, p[3]=周次串, p[4]=节次串, p[5]=教室(可选). 周次串解析: 去掉'周', 按 ,/，/;/； 切段, 段含'单'→type=1 奇数, 含'双'→type=2 偶数, 'N-M' 展开过滤, 归并成 (start,end,type). 节次串 'N-M节' 直接得 startNode/endNode. '2-14周单周' → 3,5,..,13 → 合并为 (3,13,type=1); '1-8,10-17周' → 两段 (1,8,0)+(10,17,0) = 2 门课; '3-12周双周' → (4,12,type=2). 此结构 sleepy 现有 JwUrpParser 不识别(它只认 class=displayTag 或 table-striped), 需新增 URP_GRID 解析逻辑.",
+  "_fixture": "urp_grid_day_node_td_id.html",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": "主楼A101"
+    },
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 2,
+      "endNode": 2,
+      "startWeek": 3,
+      "endWeek": 13,
+      "type": 1,
+      "teacher": "李老师",
+      "room": "文科楼B202"
+    },
+    {
+      "name": "线性代数",
+      "day": 2,
+      "startNode": 2,
+      "endNode": 3,
+      "startWeek": 1,
+      "endWeek": 8,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "理科楼C303"
+    },
+    {
+      "name": "线性代数",
+      "day": 2,
+      "startNode": 2,
+      "endNode": 3,
+      "startWeek": 10,
+      "endWeek": 17,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "理科楼C303"
+    },
+    {
+      "name": "大学物理",
+      "day": 3,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 4,
+      "endWeek": 12,
+      "type": 2,
+      "teacher": "赵老师",
+      "room": "实验楼D404"
+    },
+    {
+      "name": "计算机基础",
+      "day": 4,
+      "startNode": 4,
+      "endNode": 5,
+      "startWeek": 5,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "陈老师",
+      "room": "信息楼E505"
+    }
+  ]
+}

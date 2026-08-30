@@ -1,0 +1,15 @@
+{
+  "input": "wisedu_empty_rows.json",
+  "protocol": "wisedu",
+  "expected": {
+    "verdict": "no_courses_this_semester",
+    "courseCount": 0,
+    "errorClassification": "EMPTY_SEMESTER",
+    "userMessage": "本学期暂无课程, 请确认是否选对学期(金智 fetch 默认学期可能不正确)"
+  },
+  "actualCurrentBehavior": {
+    "courseCount": 0,
+    "note": "2026-08-30 JVM+jsoup1.18.1 实测: JwWiseduParser 0 课, tryAllParsersForTest 对该 JSON 也 0 课"
+  },
+  "rationale": "金智真实空学期: JwWiseduParser.generateCourseList 行 36-40 root['datas']['xskcb']['rows'] 命中空 JSONArray → for 0 次 → return emptyList()。语义=当前学期无课。对抗点: 行 40 的 '?: return emptyList()' 把三种失败合并成同一输出 — (a)rows=[] 真空学期 (b)datas.xskcb 路径不存在(接口路径/学校配错) (c)JSON 损坏(json.parseToJsonElement 会抛, 但被上层吞)。三种情况用户看到完全一样的 '空课表', 无法知道是没课还是配置错。T9/T11 需要 WiseduParser 区分 'rows 空' 与 '路径缺失' 两种返回。"
+}

@@ -1,0 +1,19 @@
+{
+  "input": "zf_1_rowspan_style_grid_crash.html",
+  "expected": {
+    "scenario": "merged-rows/zf_1 type=1 空格流 + 逗号合并行头 + 时间 token 为末尾 token (越界/崩溃类对抗样本)",
+    "diagnosis": "三缺口叠加 — (1) JwOldZfParser.parseImportBean1 (JwOldZfParser.kt L142-147): 时间 token 是最后 token 时 (i-preIndex)==0 走 else 分支取 split[preIndex+1], 对 '高等数学 {第1-16周}' (split.size=2, preIndex=i=1) 越界 → IndexOutOfBoundsException; (2) hasTypeFlag (L119/L139) 跨课不复位, 同格第二门课名错取; (3) 合并行头 '第1,2节' 被 parseHeaderNodeString(L306-313) HEADER_NODE_PATTERN=第.*节 匹配成功, nodeStr='1,2' toIntOrNull()=null CN_NUM 无 → 返回 -1 → 被当课程格 countDay++, 该行/后续行 day 整体偏移. 三点均被上游 WakeupSchedule_BUPT ZhengFangParser.kt 忠实继承, T1 明确列为'有意偏离 upstream 的 bug fix'. 另注意: 即使 token 布局不触发越界, parseTime 缺失 result[1]=step 赋值 (见 zf_old_cn_num_merged_header case) 也会让 type=1 课的 endNode=startNode-1 — zf_1 的节次信息实际上被双重破坏.",
+    "expectedBehavior": "T1 修复后 2 门课 — 高等数学 day=1 startNode=1 endNode=1 (末尾时间 token 时跳过 teacher/room 提取不越界), 大学英语 day=2 startNode=3 endNode=3 teacher=张老师 room=B-205. '第1,2节' 逗号合并行头须按首段 node=1 解析且不递增 countDay.",
+    "pre_fix_actual_behavior": "python 逐 token 重放 (parseImportBean1 语义, 2026-08-30 坐实) 证实两条路径都失败: (A) schools.json 显式分发 zf_1 (JwImportViewModel.kt L103 JwOldZfParser(html,1)): 行1 '第1,2节' 合并行头 parseHeaderNodeString 返回 -1 → countDay++ → 周一格 '高等数学 {第1-16周}' split=['高等数学','{第1-16周}'] (size=2), i=1 curly 首见 preIndex=1, 同一 i 也是 size-1 → 末尾分支 split[preIndex-1]=split[0]='高等数学' 不在 COURSE_PROPERTY → (i-preIndex)=0 不等于 1 → 取 split[preIndex+1]=split[2] → IndexOutOfBoundsException → parseHtml 抛出, UI 报'解析失败'; (B) 未知协议 tryAllParsersImpl (L120-139): JwOldZfParser(html,1) 的 IOOBE 被 L136 catch 吃掉, JwOldZfParser(html,0) 对本 fixture 走 parseImportBean, '高等数学 {第1-16周}' split('<br><br>') 1 段 size<3 → continue → 0 课; 其余 7 候选也 0 → '课程列表为空'. 行2 '第三节' 行头 node=3 正确, '大学英语 {第2-16周} 张老师 B-205' split=['大学英语','{第2-16周}','张老师','B-205'] size=4 — i=1 curly 首见 preIndex=1; i=3 是 size-1 → (i-preIndex)=2 → teacher=split[2]='张老师' room=split[3]='B-205' 正常产出, 但 cDay=2 ('第1,2节' 行头推进 countDay 所致, 应为 1). 两种结局用户都拿不到课.",
+    "courseCount": 2,
+    "keyInvariants": [
+      "type=1 时间 token 为末尾 token 时必须跳过 teacher/room 提取, 禁止 split[preIndex+1] 越界 (T1 明确 bug fix)",
+      "hasTypeFlag 必须在每门课构造完成后复位 (T1 明确 bug fix, 上游同病)",
+      "'第1,2节' 逗号合并行头按 node=1 (首段) 解析, 不当课程格",
+      "异常冒泡路径(A)与 tryAllParsers 静默路径(B)应给出可区分的诊断分类 (T9 错误语义目标)"
+    ],
+    "protocol": "zf_1",
+    "errorCategory": "parseImportBean1 末尾 token 越界(IndexOutOfBoundsException 崩溃类)"
+  },
+  "protocol": "zf_1"
+}

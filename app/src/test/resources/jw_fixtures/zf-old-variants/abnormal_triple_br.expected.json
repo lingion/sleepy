@@ -1,0 +1,49 @@
+{
+  "_note": "老正方 type=0 <br><br><br> 异常分隔 (按 upstream 语义): (a) cell1 第一节 星期一 用 <br><br><br> 分隔两门课, 每段 3 行[名,时间,老师] 无教室 → ImportBean(room='', teacher=split[2]). (b) cell2 第三节 星期二 用 normal <br><br> 双课每段 4 行[名,时间,老师,教室]. (c) 同一表格混用 abnormal/normal 验证分流 isAbnormal 仅按单 cell html 是否含 '<br><br><br>' 决定. parseTime 单节 '第1,2节' 含逗号 → step=2.",
+  "courses": [
+    {
+      "name": "高等数学",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "张老师",
+      "room": ""
+    },
+    {
+      "name": "大学英语",
+      "day": 1,
+      "startNode": 1,
+      "endNode": 2,
+      "startWeek": 1,
+      "endWeek": 16,
+      "type": 0,
+      "teacher": "李老师",
+      "room": ""
+    },
+    {
+      "name": "线性代数",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 3,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "王老师",
+      "room": "教学楼C303"
+    },
+    {
+      "name": "概率论",
+      "day": 2,
+      "startNode": 3,
+      "endNode": 4,
+      "startWeek": 3,
+      "endWeek": 12,
+      "type": 0,
+      "teacher": "赵老师",
+      "room": "教学楼C304"
+    }
+  ]
+}

@@ -1,0 +1,16 @@
+{
+  "input": "zf_crossorigin_iframe.html",
+  "expected": {
+    "protocolDetection": "TYPE_ZF (default2.aspx 指纹)",
+    "frameStrategy": "保留主文档顶层内容；跨域 frame 在 try/catch 里跳过但要在诊断日志记录 frame_name + src 域，便于事后提示用户切到内层 URL。绝不能因为跨域异常整体放弃——若顶层含 #Table1 仍按顶层解析；若顶层是框架页且跨域 frame 才含课表，必须把'跨域阻断'作为错误分类告知用户，建议复制内层 URL 直接登录",
+    "courseCount": 0,
+    "expectedCourses": [],
+    "errorClass": "CROSS_DOMAIN_IFRAME_BLOCKED",
+    "diagnosticHint": "诊断字段应记录 frame_name=main、frame_src=jw-vpn.campus.edu.cn/http/.../xskbcx.aspx、reason=SecurityError on contentDocument；用户文案提示'检测到跨域 iframe，WebView 受同源策略限制无法访问内层文档，请在浏览器中手动打开内层 URL 后再点导入'"
+  },
+  "currentBehavior": {
+    "capturedLayers": "仅顶层 default2.aspx 框架集 HTML",
+    "result": "0 门课 + 错误分类='empty'(被 catch-all 错误文案吞掉)",
+    "reason": "JwWebViewLoginScreen.kt L188/L193 的 try { iframe.contentDocument... } catch(e) {} 把跨域 SecurityError 静默吞了；用户看到的仍是'请确认已到达课表页面'，根本不知道是被跨域 iframe 阻挡。issue #5 临沂大学 jwgl.lyu.edu.cn 走校内/VPN 时也是类似现象——主页面可能 OK 但被某个跨域跳转 iframe 卡住"
+  }
+}
