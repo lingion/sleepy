@@ -187,6 +187,37 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         } catch (e: IllegalArgumentException) { false }
 
         /**
+         * T5 新增: 解析 ZF_NEW_FETCH_JS 的回调 raw。
+         *
+         * 返回 Triple(ok, payload, kind):
+         *   - ok=true  → payload 是喂 JwNewZfParser 的源 (kbList 纯 JSON 字符串)
+         *   - ok=false → kind ∈ {SESSION_EXPIRED, EMPTY_SEMESTER, FORMAT_ERROR, NOT_ON_TIMETABLE, OTHER}
+         * 任何 JSON 解析异常都返回 ok=false, kind=FORMAT_ERROR (不抛)。
+         */
+        @JvmStatic
+        fun parseZfNewBridgeResult(raw: String): Triple<Boolean, String, String> {
+            return try {
+                val obj = org.json.JSONObject(raw)
+                if (obj.optBoolean("ok", false)) {
+                    val data = obj.optString("data", "")
+                    if (obj.optString("format", "") != "zf_new") {
+                        Triple(false, "", "OTHER")
+                    } else if (data.isBlank()) {
+                        Triple(false, "", "FORMAT_ERROR")
+                    } else {
+                        Triple(true, data, "")
+                    }
+                } else {
+                    val kind = obj.optString("kind", "OTHER")
+                    val err = obj.optString("err", "")
+                    Triple(false, err, kind)
+                }
+            } catch (e: Exception) {
+                Triple(false, e.message ?: "parse failed", "FORMAT_ERROR")
+            }
+        }
+
+        /**
          * T8 核心：显式分发的纯函数形式（不依赖 Android Context / Room）。
          */
         internal fun parseHtmlStatic(

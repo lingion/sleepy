@@ -179,6 +179,16 @@ fun JwWebViewLoginScreen(
                         wv.evaluateJavascript(WISEDU_FETCH_JS, null)
                         return@CaptureBar
                     }
+                    // T5: 新版正方 jwglxt — WebView 内 fetch kbList JSON
+                    // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/, 或 WebVPN /http/<hex>/ 重写形态
+                    val currentUrl = wv.url ?: ""
+                    val isZfNew = school.type == JwProtocol.TYPE_ZF_NEW ||
+                        currentUrl.contains("/jwglxt/", ignoreCase = true) ||
+                        Regex("/http/[0-9a-f]{4,8}/").containsMatchIn(currentUrl)
+                    if (isZfNew) {
+                        wv.evaluateJavascript(ZF_NEW_FETCH_JS, null)
+                        return@CaptureBar
+                    }
                     // T7: DFS frame 抓取 + ready 重试, 决策在 JVM 层(可测可日志)
                     captureWithRetry(wv, 0) { r ->
                         Log.d("JwWebView", "captured frame=${r.selectedFramePath} anchors=${r.matchedAnchors} status=${r.status}")
