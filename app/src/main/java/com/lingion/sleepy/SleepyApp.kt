@@ -34,7 +34,7 @@ class SleepyApp : Application() {
         instance = this
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
-        // ★ app 回前台时检测：若当前在某节课的课前窗口内，补起流体云（状态兜底）
+        // app 回前台时检测：若当前在某节课的课前窗口内，补起流体云（状态兜底）
         androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(
             object : androidx.lifecycle.DefaultLifecycleObserver {
                 override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
@@ -54,7 +54,7 @@ class SleepyApp : Application() {
     }
 
     /**
-     * ★ 系统【运行时】切换深/浅色模式时联动刷新小组件。
+     * 系统【运行时】切换深/浅色模式时联动刷新小组件。
      *
      * Android 原生行为:configuration change 会让系统重发 APPWIDGET_UPDATE 给所有 widget。
      * 历史上 OPPO ColorOS 上 Glance 版 widget(Today/WeekList/TwoDay)因

@@ -56,7 +56,7 @@ class CourseNotificationScheduler(private val context: Context) {
 
     fun scheduleAll() {
         createChannels()
-        // ★ 整段放入 IO 协程：cancelAll 现为 suspend，需在协程内先取消再重排，
+        // 整段放入 IO 协程：cancelAll 现为 suspend，需在协程内先取消再重排，
         //   保证「先取消后重排」的顺序不被打散（避免取消与重排的竞态），
         //   同时把查库挪出主线程，消除 runBlocking 导致的 ANR 风险。
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
@@ -70,7 +70,7 @@ class CourseNotificationScheduler(private val context: Context) {
             }
             if (AppPrefs.isBeforeClassEnabled(prefs)) {
                 scheduleBeforeClassDaily()
-                // ★ 状态兜底：排 alarm 的同时立即检测是否已在某节课窗口内（补起流体云）
+                // 状态兜底：排 alarm 的同时立即检测是否已在某节课窗口内（补起流体云）
                 ensureActiveFluidCloud()
             }
         }
@@ -87,7 +87,7 @@ class CourseNotificationScheduler(private val context: Context) {
 
         // 课前提醒的 request code 用 RC_BEFORE_CLASS_BASE + course.id（稳定唯一）。
         // 取消时遍历数据库里所有课程 id，逐个 cancel，不再依赖写死的 50 上限。
-        // ★ 改为 suspend + withContext(IO) 查库，不再在主线程 runBlocking 阻塞导致 ANR。
+        // 改为 suspend + withContext(IO) 查库，不再在主线程 runBlocking 阻塞导致 ANR。
         val courseIds = withContext(Dispatchers.IO) {
             runCatching {
                 SleepyApp.get().repository.let { repo ->
@@ -99,7 +99,7 @@ class CourseNotificationScheduler(private val context: Context) {
     }
 
     /**
-     * ★ 取消指定课程 id 的课前闹钟（PendingIntent 语义：extras 不参与匹配）。
+     * 取消指定课程 id 的课前闹钟（PendingIntent 语义：extras 不参与匹配）。
      * 调用方：ScheduleRepository.deleteTable —— 删表靠外键 CASCADE 级联删课程，
      * 删除后这些课程 id 已查不到，cancelAll 的"现存课程"枚举覆盖不到，
      * 故删除前捕获 id 列表、删除后调这里显式清理孤儿闹钟。
@@ -239,7 +239,7 @@ class CourseNotificationScheduler(private val context: Context) {
     }
 
     /**
-     * ★ 状态驱动的流体云兜底：只要"现在"落在任一节课的 [classStart-minutes, classStart] 窗口内，
+     * 状态驱动的流体云兜底：只要"现在"落在任一节课的 [classStart-minutes, classStart] 窗口内，
      * 就确保 FluidCloudService 在跑、流体云在显示。不依赖"正好提前N分钟那一秒"的 alarm。
      *
      * 调用时机：app 回前台、app 启动、课程数据变更、WorkManager 周期兜底。
@@ -401,7 +401,7 @@ class DailyNotifyReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        // ★ Lint MissingPermission + 运行时兜底: onReceive 里虽已校验, 但本函数在 IO 协程执行,
+        // Lint MissingPermission + 运行时兜底: onReceive 里虽已校验, 但本函数在 IO 协程执行,
         //   协程窗口期内权限可能被用户撤销 → post 前内联 checkSelfPermission 再兜底一次
         //   (lint 只识别 ContextCompat.checkSelfPermission 标准模式, 不穿透自定义 helper)
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
@@ -466,7 +466,7 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
         }
 
         // == 流体云 / Live Update ==
-        // ★ 所有 SDK>=26 统一走 FluidCloudService：service 的 Handler 每 15s 循环
+        // 所有 SDK>=26 统一走 FluidCloudService：service 的 Handler 每 15s 循环
         //   re-post ProgressStyle 通知推进 progress，进度条才会持续动。
         //   旧代码在 SDK>=36 单独静态 post 一次就 return，导致进度条停在 0 不更新。
 
@@ -500,7 +500,7 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
             .setAutoCancel(true)
             .build()
 
-        // ★ Lint MissingPermission + 运行时兜底: 同 DailyNotifyReceiver,
+        // Lint MissingPermission + 运行时兜底: 同 DailyNotifyReceiver,
         //   onReceive 校验后到此处之间权限可能被撤销 → 内联 checkSelfPermission 再查一次
         if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
             == PackageManager.PERMISSION_GRANTED

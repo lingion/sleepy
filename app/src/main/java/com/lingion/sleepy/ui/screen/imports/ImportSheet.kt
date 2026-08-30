@@ -904,7 +904,7 @@ private fun ImportPreviewDialog(
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
                     }
-                    // ★ 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
+                    // 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
                     //   errorContainer 色块底 + onErrorContainer 文字
                     Button(
                         onClick = { onApply(ImportApplyMode.ReplaceCurrent) },

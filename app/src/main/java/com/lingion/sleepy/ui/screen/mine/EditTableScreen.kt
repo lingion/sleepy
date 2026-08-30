@@ -178,7 +178,7 @@ fun EditTableScreen(
                             shape = SleepyTheme.fieldShape,
                             colors = fieldColors
                         )
-                        // ★ 学期开始日期: 手输 + 日历图标弹原生 DatePicker(与导入确认弹窗同款组件)。
+                        // 学期开始日期: 手输 + 日历图标弹原生 DatePicker(与导入确认弹窗同款组件)。
                         //   之前是裸 TextField 只能输数字, 用户没法直观改日期。
                         DatePickerField(
                             value = startDate,

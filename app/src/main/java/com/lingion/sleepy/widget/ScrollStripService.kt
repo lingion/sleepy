@@ -10,7 +10,7 @@ import com.lingion.sleepy.R
 import kotlin.math.ceil
 
 /**
- * ★ 可滚动小组件条带工厂 (v1.0.36 第二次实现, 2026-08-25)。
+ * 可滚动小组件条带工厂 (v1.0.36 第二次实现, 2026-08-25)。
  *
  * 第一次实现(已回滚)重写了一套逐行渲染函数 → 视觉与主分支完全不像, 三个组件全废。
  * 本次原则: **零新渲染逻辑** — 完全调用主分支原渲染函数
@@ -48,7 +48,7 @@ class ScrollStripService : RemoteViewsService() {
         override fun onCreate() {}
 
         override fun onDestroy() {
-            // ★ 条带经 createBitmap(src,…) 与源图共享像素缓冲, 严禁 recycle
+            // 条带经 createBitmap(src,…) 与源图共享像素缓冲, 严禁 recycle
             //   (回收源图缓冲会连带撕碎全部条带), 交 GC 统一回收。
         }
 

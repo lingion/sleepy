@@ -167,7 +167,7 @@ object AppPrefs {
 
     fun setBeforeClassFluidPrimary(ctx: Context, value: String) {
         require(value == "name" || value == "time" || value == "room")
-        // ★ 只写 PRIMARY；不再覆盖 FIELDS（多选字段集），否则用户配置的多字段组合被冲掉。
+        // 只写 PRIMARY；不再覆盖 FIELDS（多选字段集），否则用户配置的多字段组合被冲掉。
         sp(ctx).edit().putString(KEY_BEFORE_CLASS_FLUID_PRIMARY, value).apply()
     }
 

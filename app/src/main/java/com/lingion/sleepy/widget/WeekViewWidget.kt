@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 
 /**
- * ★ 桌面 WeekView 小组件 — 本周课表(周视图), 同步 RemoteViews + Canvas。
+ * 桌面 WeekView 小组件 — 本周课表(周视图), 同步 RemoteViews + Canvas。
  * 与 WeekListWidget 布局完全一致(7 列竖排胶囊), 但课程胶囊无彩色填充
  * (surfaceVariant 背景 + onSurfaceVariant 文字), 纯主题色方案。
  */
@@ -81,7 +81,7 @@ class WeekViewWidgetReceiver : AppWidgetProvider() {
                     } else {
                         val week = DateUtils.currentWeek(table.startDate, today)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
-                        // ★ 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
+                        // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
                             val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
                             val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)

@@ -254,7 +254,7 @@ private fun TopBar(
         WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
 
         // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
-        // ★ 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
+        // 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
         Box {
             val statusRes = when (semesterStatus) {
                 DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started

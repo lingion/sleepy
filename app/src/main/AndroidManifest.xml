@@ -205,7 +205,7 @@
             android:exported="false"
             android:foregroundServiceType="specialUse" />
 
-        <!-- ★ 可滚动 widget (v1.0.36): 条带 RemoteViewsService, Launcher 绑定拉行 -->
+        <!-- 可滚动 widget (v1.0.36): 条带 RemoteViewsService, Launcher 绑定拉行 -->
         <service
             android:name=".widget.ScrollStripService"
             android:exported="true"

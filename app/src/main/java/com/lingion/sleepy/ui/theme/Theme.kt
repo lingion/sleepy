@@ -349,7 +349,7 @@ object SleepyTheme {
     }
 
     /** 统一输入框配色 — 全 app 输入框唯一入口, 各屏禁止手搓 TextFieldDefaults.colors
-     *  ★ filled 色块风格 (2026-08-25 用户指令: 全 app 统一色块, 禁描线):
+     *  filled 色块风格 (2026-08-25 用户指令: 全 app 统一色块, 禁描线):
      *    组件换 TextField (原 OutlinedTextField), 底色 surfaceContainerHighest 色块,
      *    指示线透明化 → 无任何描线。
      *  disabled 系列与正常态同色: 点击穿透式字段(TimePickerField/下拉)用 enabled=false
@@ -397,7 +397,7 @@ fun SleepyThemeProvider(
         ThemePresets.byKey(themeKey)
     }
 
-    // ★ 合并两个分支（preset vs dynamic）到同一个 content() 调用位置，
+    // 合并两个分支（preset vs dynamic）到同一个 content() 调用位置，
     //   防止 Compose 因 if/else 树结构变化而丢失 AppRoot 的 remember 状态。
     //   之前 preset==null 走 early return → content() 在不同树位置 → 切换时状态丢失。
     val (wakeColors, palette, m3Scheme) = if (preset == null) {

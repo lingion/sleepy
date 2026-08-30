@@ -70,7 +70,7 @@ class JwImportActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // ★ 跟随 app 主题设置(此前硬编码 default+只跟系统深色,选春绿/海蓝后此页不跟随)
+            // 跟随 app 主题设置(此前硬编码 default+只跟系统深色,选春绿/海蓝后此页不跟随)
             val systemDark = isSystemInDarkTheme()
             val dark = remember(systemDark) {
                 AppPrefs.isDarkMode(this@JwImportActivity, systemDark)

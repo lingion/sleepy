@@ -15,7 +15,7 @@ import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 
 /**
- * ★ 桌面 WeekList 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+ * 桌面 WeekList 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
  * 原因见 [TodayWidgetReceiver] 注释。
  *
  * v1.0.36: 内容装得下走静态 renderAndPush; 超出走 pushScrollable(壳图+条带)。
@@ -91,7 +91,7 @@ class WeekListWidgetReceiver : AppWidgetProvider() {
                     } else {
                         val week = DateUtils.currentWeek(table.startDate, today)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
-                        // ★ 学期前: 钳制周=1, 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
+                        // 学期前: 钳制周=1, 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
                             val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
                             val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)

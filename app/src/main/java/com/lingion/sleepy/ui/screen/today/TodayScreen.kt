@@ -59,7 +59,7 @@ fun TodayScreen(
     val today = LocalDate.now()
     val dayOfWeek = DateUtils.todayDayOfWeek(today)
     val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
-    // ★ 学期外感知: BEFORE_START/AFTER_END 时今日课不按周过滤展示
+    // 学期外感知: BEFORE_START/AFTER_END 时今日课不按周过滤展示
     val semesterStatus = state.currentTable?.let {
         DateUtils.semesterStatus(it.startDate, it.maxWeek, today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
@@ -145,7 +145,7 @@ private fun TodayHeader(date: LocalDate, week: Int, count: Int, semesterStatus: 
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ★ 学期外: 周次 chip 换学期状态, 不再显示误导性的"第 1 周"
+            // 学期外: 周次 chip 换学期状态, 不再显示误导性的"第 1 周"
             when (semesterStatus) {
                 DateUtils.SemesterStatus.BEFORE_START ->
                     Stat(label = stringResource(R.string.semester_not_started), bg = colors.secondaryContainer, fg = colors.onSecondaryContainer)

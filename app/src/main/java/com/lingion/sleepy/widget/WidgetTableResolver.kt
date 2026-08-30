@@ -11,7 +11,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
  * 2. 否则任意有课的表（按课程数最多）
  * 3. 否则 null（widget 显示"请先创建课表"）
  *
- * ★ 修复：旧逻辑"优先选非默认表中课程数最多的"，导致只要存在任何非默认表
+ * 修复：旧逻辑"优先选非默认表中课程数最多的"，导致只要存在任何非默认表
  *   （如测试/导入副表），widget 就脱离用户在 App 里设的默认表，App 与 widget 不同步。
  */
 object WidgetTableResolver {

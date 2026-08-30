@@ -560,12 +560,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
         if (courses.isEmpty()) throw IllegalArgumentException("课程列表为空，请确认已到达课表页面")
 
         val db = AppDatabase.get(getApplication())
-        // ★ 整个建表 + 落库包在单一事务里：中途失败回滚，避免留下空课表。
+        // 整个建表 + 落库包在单一事务里：中途失败回滚，避免留下空课表。
         val newId = db.withTransaction {
             val tableDao = db.timeTableDao()
             val courseDao = db.courseDao()
 
-            // ★ 用 autoGenerate (id=0) 让 Room 分配真实主键，避免手动 max(id)+1 撞旧 ID 覆盖既有课表。
+            // 用 autoGenerate (id=0) 让 Room 分配真实主键，避免手动 max(id)+1 撞旧 ID 覆盖既有课表。
             val resolvedStartDate = startDate?.takeIf { it.isNotBlank() }
                 ?: computeCurrentSemesterStart()
             val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }

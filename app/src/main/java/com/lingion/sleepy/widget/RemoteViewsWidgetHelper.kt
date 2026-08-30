@@ -34,7 +34,7 @@ object RemoteViewsWidgetHelper {
         var wDp = 0
         var hDp = 0
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            // ★ 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
+            // 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
             //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java
@@ -92,7 +92,7 @@ object RemoteViewsWidgetHelper {
     }
 
     /**
-     * ★ 可滚动推送 (v1.0.36 第二次实现) — 内容超出容器时启用。
+     * 可滚动推送 (v1.0.36 第二次实现) — 内容超出容器时启用。
      *
      * 结构: 壳图(原渲染器按容器尺寸画 = 圆角背景+首屏内容, 与主分支静态渲染同一次调用)
      * + ListView(ScrollStripService 条带, 原渲染器按全展开高度画长图后横切)。

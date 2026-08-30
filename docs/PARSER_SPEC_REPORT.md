@@ -8,10 +8,10 @@
 
 ## 0. 关键发现（先读这段）
 
-1. **sleepy 现状=假实现** ✗：`JwImportViewModel.parseHtml()`（L80–92）对 `zf/zf_new/zf_1/qz_br/qz_with_node/qz_old` 全部 fallback→`JwQzParser(html)`，注释"先 fallback，后续补"。ZF + 强智带节次变体用 QZ 基础解析器→解析失败/数据错乱。**=本次真实缺口**。
-2. **sleepy 基类=`JwParser`**（输出 `List<JwCourse>`），✗非 WakeUp `Parser`（输出 `List<Course>`→转 bean）。`JwCourse` 字段↔WakeUp `Course` 一一对应，已存在。新 parser 全部 `extends JwParser` 即可。
-3. **Jsoup 已是 sleepy 依赖** ✅（`JwQzParser` 已 `import org.jsoup.Jsoup`）→无需新增依赖。
-4. **`Common` 工具类 sleepy 没有** ✗：WakeUp parser 大量依赖 `Common.nodePattern/weekPattern/chineseWeekList/otherHeader/courseProperty/parseHeaderNodeString/getWeekFromChinese/countStr/getNodeStr/weekIntList2WeekBeanList`。sleepy 需新建等价工具对象（建议 `JwCommon`）或内联。**=隐性前置工作**。
+1. **sleepy 现状=假实现** ：`JwImportViewModel.parseHtml()`（L80–92）对 `zf/zf_new/zf_1/qz_br/qz_with_node/qz_old` 全部 fallback→`JwQzParser(html)`，注释"先 fallback，后续补"。ZF + 强智带节次变体用 QZ 基础解析器→解析失败/数据错乱。**=本次真实缺口**。
+2. **sleepy 基类=`JwParser`**（输出 `List<JwCourse>`），非 WakeUp `Parser`（输出 `List<Course>`→转 bean）。`JwCourse` 字段↔WakeUp `Course` 一一对应，已存在。新 parser 全部 `extends JwParser` 即可。
+3. **Jsoup 已是 sleepy 依赖** （`JwQzParser` 已 `import org.jsoup.Jsoup`）→无需新增依赖。
+4. **`Common` 工具类 sleepy 没有** ：WakeUp parser 大量依赖 `Common.nodePattern/weekPattern/chineseWeekList/otherHeader/courseProperty/parseHeaderNodeString/getWeekFromChinese/countStr/getNodeStr/weekIntList2WeekBeanList`。sleepy 需新建等价工具对象（建议 `JwCommon`）或内联。**=隐性前置工作**。
 5. sleepy `schools.json` 当前仅 30 所 → **bnuz/qz_old/hniu 在 sleepy 中 0 校使用**（WakeUp 主仓库有）→实现优先级最低。
 
 ---
@@ -20,16 +20,16 @@
 
 | # | type 常量 | 教务系统 | 中文描述 | 输入格式 | 复杂度 | sleepy 使用校数 | 实现优先级 |
 |---|-----------|----------|----------|----------|--------|----------------|-----------|
-| 1 | `zf` (+`zf_1`) | 正方教务（旧版） | 传统 Table1 网格课表 | HTML `<table id="Table1">` | **复杂** | zf=3, zf_1=1（共4）| 🔴 高 |
-| 2 | `zf_new` | 正方教务（新版） | div + festival 节次 + title 属性 | HTML `<table id="table1">` | 中等 | 5 | 🔴 高 |
-| 3 | `pku` | 北京大学 | PKU 自有系统 elective | HTML `<table class="datagrid">` | 中等 | 1 | 🟡 中 |
-| 4 | `cf` | 青果教务（程坊） | 内嵌 JS 变量 `var kbxx` | JSON（JS 变量提取）| 简单 | 1 | 🟡 中 |
-| 5 | `bnuz` | 北师大珠海分校 | BNUZ 自有 | HTML `<table id="table1">` | 中等 | 0 | 🟢 低 |
-| 6 | `hnust` | 湖南科技大学 / 东北石油 | kbtable + div + `<br>` 拆分 | HTML `<table id="kbtable">` | 中等 | 1 (东北石油) | 🟡 中 |
-| 7 | `qz_br` | 强智（`<br>` 课程名变体） | 仅改课程名提取 | 继承 QzParser | **极简** | 4 | 🟢 低（但量大）|
-| 8 | `qz_with_node` | 强智（带节次） | override convert 提取节点 | 继承 QzParser | 中等 | 5 | 🔴 高 |
-| 9 | `qz_old` | 强智旧版 | `[周][节]` 文本解析 | HTML `<table id="kbtable">` | 中等 | 0 | 🟢 低 |
-| 10 | `hniu` | 湖南信息职院 | bordercolordark 表格 | HTML 表格 | 中等 | 0 | 🟢 低 |
+| 1 | `zf` (+`zf_1`) | 正方教务（旧版） | 传统 Table1 网格课表 | HTML `<table id="Table1">` | **复杂** | zf=3, zf_1=1（共4）| 高 |
+| 2 | `zf_new` | 正方教务（新版） | div + festival 节次 + title 属性 | HTML `<table id="table1">` | 中等 | 5 | 高 |
+| 3 | `pku` | 北京大学 | PKU 自有系统 elective | HTML `<table class="datagrid">` | 中等 | 1 | 中 |
+| 4 | `cf` | 青果教务（程坊） | 内嵌 JS 变量 `var kbxx` | JSON（JS 变量提取）| 简单 | 1 | 中 |
+| 5 | `bnuz` | 北师大珠海分校 | BNUZ 自有 | HTML `<table id="table1">` | 中等 | 0 | 低 |
+| 6 | `hnust` | 湖南科技大学 / 东北石油 | kbtable + div + `<br>` 拆分 | HTML `<table id="kbtable">` | 中等 | 1 (东北石油) | 中 |
+| 7 | `qz_br` | 强智（`<br>` 课程名变体） | 仅改课程名提取 | 继承 QzParser | **极简** | 4 | 低（但量大）|
+| 8 | `qz_with_node` | 强智（带节次） | override convert 提取节点 | 继承 QzParser | 中等 | 5 | 高 |
+| 9 | `qz_old` | 强智旧版 | `[周][节]` 文本解析 | HTML `<table id="kbtable">` | 中等 | 0 | 低 |
+| 10 | `hniu` | 湖南信息职院 | bordercolordark 表格 | HTML 表格 | 中等 | 0 | 低 |
 
 > **优先级依据**：sleepy 使用校数 + fallback 失效程度。`zf*`/`qz_with_node`/`qz_br` 合计覆盖 15 所（占 sleepy 50%）→全走错误 fallback→必须最先补。
 
@@ -69,7 +69,7 @@ object JwCommon {
 
 ---
 
-### 3.1 ZhengFangParser（type=`zf`，subtype `zf_1`=type1）🔴 高优先
+### 3.1 ZhengFangParser（type=`zf`，subtype `zf_1`=type1）高优先
 
 **教务系统**：正方教务管理系统（旧版/经典版）。
 **sleepy 学校**：`zf`=3（北京信息科技大学、华南农业大学、杭州电子科技大学）+ `zf_1`=1（福建农林大学）= **4 所**。
@@ -126,15 +126,15 @@ result = [day, step, startWeek, endWeek, type]
 # 周数：weekPattern 匹配 {第2-16周 -> startWeek/endWeek
 # 单双周：含"单周"->1, "双周"->2
 ```
-> ⚠️ **day 回溯逻辑**（`source.indexOf(">第N节")` → 数 "Center"）非常 hacky，是对 colspan 合并格的补偿。建议移植时保留原逻辑。
+> ️ **day 回溯逻辑**（`source.indexOf(">第N节")` → 数 "Center"）非常 hacky，是对 colspan 合并格的补偿。建议移植时保留原逻辑。
 
 **辅助依赖**：`JwCommon` 全套（parseHeaderNodeString/otherHeader/courseProperty/getWeekFromChinese/countStr/getNodeStr/nodePattern/weekPattern/chineseWeekList）。需自定义 `ImportBean` 中间结构（6 字段）。
 
-**复杂度**：🔴 **复杂**（249 行，2 套分支 + 时间 hack + 列回溯）=10 个里最难。
+**复杂度**：**复杂**（249 行，2 套分支 + 时间 hack + 列回溯）=10 个里最难。
 
 ---
 
-### 3.2 NewZFParser（type=`zf_new`）🔴 高优先
+### 3.2 NewZFParser（type=`zf_new`）高优先
 
 **教务系统**：正方教务新版（modern UI）。
 **sleepy 学校**：**5 所**（安徽信息工程学院、北京化工大学、福建工程学院、华中农业大学、华中师范大学）。
@@ -181,11 +181,11 @@ for tr in trs:
 ```
 
 **辅助依赖**：`JwCommon.nodePattern`。**比 ZF 简单很多**（结构化 div+p，无需列回溯）。
-**复杂度**：🟡 **中等**（117 行）。建议作为 ZF 系列第一个实现。
+**复杂度**：**中等**（117 行）。建议作为 ZF 系列第一个实现。
 
 ---
 
-### 3.3 PekingParser（type=`pku`）🟡 中
+### 3.3 PekingParser（type=`pku`）中
 
 **教务系统**：北京大学 elective 选课系统。
 **sleepy 学校**：**1 所**（北京大学）。
@@ -223,11 +223,11 @@ for tr in tbody.所有tr:
 ```
 
 **辅助依赖**：`JwCommon.chineseWeekList / nodePattern1`。
-**复杂度**：🟡 **中等**（75 行）。固定列索引，逻辑清晰。
+**复杂度**：**中等**（75 行）。固定列索引，逻辑清晰。
 
 ---
 
-### 3.4 ChengFangParser（type=`cf`）🟡 中
+### 3.4 ChengFangParser（type=`cf`）中
 
 **教务系统**：青果教务 / 程坊科技（广工等）。
 **sleepy 学校**：**1 所**（广东工业大学）。
@@ -265,11 +265,11 @@ for it in list:
 - `JwCommon.weekIntList2WeekBeanList`（离散周数→连续区间+单双周，**必须移植**，约 45 行）。
 - `WeekBean(start,end,type)` 数据类。
 - JSON 解析：sleepy 用 `kotlinx.serialization`（已有），无需 Gson。定义 `@Serializable data class ChengFangInfo(...)`。
-**复杂度**：🟢 **简单**（40 行主体），难点全在 `weekIntList2WeekBeanList`。
+**复杂度**：**简单**（40 行主体），难点全在 `weekIntList2WeekBeanList`。
 
 ---
 
-### 3.5 BNUZParser（type=`bnuz`）🟢 低
+### 3.5 BNUZParser（type=`bnuz`）低
 
 **教务系统**：北京师范大学珠海分校。
 **sleepy 学校**：**0 所**（sleepy 暂无此校）。
@@ -301,11 +301,11 @@ for tr in trs:
 ```
 
 **辅助依赖**：`JwCommon.otherHeader`。两个 `Pattern`（weekRange/单周）。
-**复杂度**：🟡 中等（98 行）。sleepy 0 校使用→可最后做。
+**复杂度**：中等（98 行）。sleepy 0 校使用→可最后做。
 
 ---
 
-### 3.6 HNUSTParser（type=`hnust`）🟡 中
+### 3.6 HNUSTParser（type=`hnust`）中
 
 **教务系统**：湖南科技大学 / 东北石油大学 / 湖南科大潇湘学院。
 **sleepy 学校**：**1 所**（东北石油大学）。
@@ -338,11 +338,11 @@ for tr in trs:
 ```
 
 **辅助依赖**：`JwCommon.weekPattern2`。构造参数 `oldQzType: Int`。
-**复杂度**：🟡 中等（79 行）。需注意 `oldQzType` 控制显隐方向。
+**复杂度**：中等（79 行）。需注意 `oldQzType` 控制显隐方向。
 
 ---
 
-### 3.7 QzBrParser（type=`qz_br`）🟢 低（极简）
+### 3.7 QzBrParser（type=`qz_br`）低（极简）
 
 **教务系统**：强智教务（`<br>` 课程名变体，如北京林业大学）。
 **sleepy 学校**：**4 所**（北京林业、长春大学、长沙理工、广东金融）。
@@ -356,17 +356,17 @@ class JwQzBrParser(source: String) : JwQzParser(source) {
 ```
 原版 `JwQzParser.parseCourseName` 取 `substringBefore("<font")`；此变体课程名后跟 `<br>` 而非 `<font>`→只改这一处。
 
-**复杂度**：🟢 **极简**。sleepy 当前 fallback→JwQzParser（课程名提取错）→只需新建此 8 行类+改 dispatch。
+**复杂度**：**极简**。sleepy 当前 fallback→JwQzParser（课程名提取错）→只需新建此 8 行类+改 dispatch。
 **注意**：sleepy `JwQzParser.parseCourseName` 已是 `open`→可直接继承。
 
 ---
 
-### 3.8 QzWithNodeParser（type=`qz_with_node`）🔴 高
+### 3.8 QzWithNodeParser（type=`qz_with_node`）高
 
 **教务系统**：强智教务（带节次信息变体，如北邮、北理工、广外、海南大学）。
 **sleepy 学校**：**5 所**（北京邮电、北京理工、长沙医学院、广外、海南大学）。
 
-**与 QzParser 差异**：override `convert()`，**节点✗固定为 `nodeCount*2-1`，→从页面 `title="周次(节次)"` 提取真实节次**。课程名提取也更复杂（多 font/span）。
+**与 QzParser 差异**：override `convert()`，**节点固定为 `nodeCount*2-1`，→从页面 `title="周次(节次)"` 提取真实节次**。课程名提取也更复杂（多 font/span）。
 
 **核心逻辑（convert override）**：
 ```
@@ -388,14 +388,14 @@ else:
 for w in weekList: add Course(startNode, endNode, ...)
 ```
 
-**关键差异点**：`startNode/endNode 来自 nodeList`（✗非 Qz 固定双节）→可正确处理跨节课。
+**关键差异点**：`startNode/endNode 来自 nodeList`（非 Qz 固定双节）→可正确处理跨节课。
 
 **辅助依赖**：无额外（复用 JwQzParser 的 generateCourseList/tableName）。
-**复杂度**：🟡 中等（71 行 convert）。但解析分支多、容错复杂。sleepy 当前 fallback 节点全错（都按 `nodeCount*2-1`）→**必须修**。
+**复杂度**：中等（71 行 convert）。但解析分支多、容错复杂。sleepy 当前 fallback 节点全错（都按 `nodeCount*2-1`）→**必须修**。
 
 ---
 
-### 3.9 OldQzParser（type=`qz_old`）🟢 低
+### 3.9 OldQzParser（type=`qz_old`）低
 
 **教务系统**：强智教务旧版。
 **sleepy 学校**：**0 所**。
@@ -408,13 +408,13 @@ for w in weekList: add Course(startNode, endNode, ...)
 **核心逻辑**：与 HNUST 几乎同构（kbtable + br + preIndex 探测），区别：
 - 探测条件=`[`+`]`+`周`+`节`（HNUST 用 `weekPattern2`）。
 - 节次直接从时间串 `[1-2节]` 取（HNUST 从 div.id 算）。
-- ✗不涉及 display:none 显隐。
+- 不涉及 display:none 显隐。
 
-**复杂度**：🟡 中等（73 行）。sleepy 0 校→优先级最低。
+**复杂度**：中等（73 行）。sleepy 0 校→优先级最低。
 
 ---
 
-### 3.10 HNIUParser（type=`hniu`）🟢 低
+### 3.10 HNIUParser（type=`hniu`）低
 
 **教务系统**：湖南信息职业技术学院。
 **sleepy 学校**：**0 所**。
@@ -441,7 +441,7 @@ for w in weekList: 含'-'取区间 else 单周; add Course(type=0)
 ```
 
 **辅助依赖**：无（纯字符串处理）。
-**复杂度**：🟡 中等（101 行）。sleepy 0 校→最低优先级。
+**复杂度**：中等（101 行）。sleepy 0 校→最低优先级。
 
 ---
 
@@ -468,8 +468,8 @@ for w in weekList: 含'-'取区间 else 单周; add Course(type=0)
 
 | WakeUp | sleepy | 说明 |
 |--------|--------|------|
-| `Course` | `JwCourse` | ✅ 字段完全一致（name/room/teacher/day/startNode/endNode/startWeek/endWeek/type）|
-| `Parser`（abstract）| `JwParser`（abstract）| ✅ `generateCourseList()` 签名一致，输出类型换 JwCourse |
+| `Course` | `JwCourse` | 字段完全一致（name/room/teacher/day/startNode/endNode/startWeek/endWeek/type）|
+| `Parser`（abstract）| `JwParser`（abstract）| `generateCourseList()` 签名一致，输出类型换 JwCourse |
 | `ImportBean`（ZF 内部）| 需在 ZF parser 内部定义 | 6 字段中间结构 |
 | `WeekBean`（CF 用）| 需在 JwCommon 或 CF parser 内定义 | start/end/type |
 | `ChengFangInfo` | 用 `@Serializable data class` | 6 字段，kotlinx.serialization |
@@ -478,7 +478,7 @@ for w in weekList: 含'-'取区间 else 单周; add Course(type=0)
 
 ## 6. 风险与注意事项
 
-1. **ZhengFangParser day 回溯 hack**：`source.indexOf(">第N节")` + `countStr("Center")` 依赖原始 HTML colspan 结构→移植后必须用真实正方课表 HTML 验证，✗否则星期会错。
+1. **ZhengFangParser day 回溯 hack**：`source.indexOf(">第N节")` + `countStr("Center")` 依赖原始 HTML colspan 结构→移植后必须用真实正方课表 HTML 验证，否则星期会错。
 2. **ChengFang `var kbxx =` 提取**：用 `substringAfter/substringBefore`→若学校 JS 变量名/格式微调会断。建议加正则兜底。
 3. **QzWithNode 三分支**（tempStr 含空格/为空/含括号）覆盖不同强智版本→缺一→部分学校解析空。需分别测试。
 4. **Jsoup `.first()` 空指针**：WakeUp 原版多处 `.first()` 未判空（PKU/CF/HNIU）→sleepy 移植时应加 `?: return emptyList()` 防御。

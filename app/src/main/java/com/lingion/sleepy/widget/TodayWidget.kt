@@ -16,7 +16,7 @@ import kotlinx.coroutines.runBlocking
 import java.time.LocalDate
 
 /**
- * ★ 桌面 Today 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+ * 桌面 Today 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
  *
  * 之前是 GlanceAppWidgetReceiver → provideGlance 异步 SessionWorker → OPPO OplusHansManager
  * 冻结进程 → RemoteViews 从不生成 → 卡在 widget_loading 紫色布局 → 不跟随主题。
@@ -103,7 +103,7 @@ class TodayWidgetReceiver : AppWidgetProvider() {
                         val week = DateUtils.currentWeek(table.startDate, today)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
                         val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
-                        // ★ 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
+                        // 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
                         val visible = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
                             all.filter { it.inWeek(week) }.sortedBy { it.startNode }
                         WidgetData(date = today, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status)
