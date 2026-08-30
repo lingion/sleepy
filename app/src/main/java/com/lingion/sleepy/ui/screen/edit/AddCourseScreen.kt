@@ -146,13 +146,10 @@ fun AddCourseScreen(
             val tid = state.selectedTableId ?: return@LaunchedEffect
             val groupCourses = SleepyApp.get().repository.getGroupCourses(tid, eg.groupId)
             if (groupCourses.isNotEmpty()) {
-                // 按 (startNode, step, startTime, endTime) 分组
-                val slots = groupCourses.groupBy { c ->
-                    Triple(c.ownTime, c.startNode, c.step)
-                }
+                val slots = groupSlotsForEdit(groupCourses)
                 meetingBlocks.clear()
                 var bid = 1
-                for ((_, courses) in slots) {
+                for (courses in slots) {
                     val first = courses.first()
                     meetingBlocks.add(MeetingBlockDraft(
                         id = bid++,
@@ -503,6 +500,13 @@ fun AddCourseScreen(
 }
 
 
+
+/** 编辑回填：按完整时段特征分组。周次/单双周参与分组，
+ *  保证「同节次不同周次」回填成两个 block 而不是被错误合并。 */
+internal fun groupSlotsForEdit(courses: List<CourseEntity>): List<List<CourseEntity>> =
+    courses.groupBy { c ->
+        "${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}"
+    }.values.toList()
 
 private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     if (course == null) {
