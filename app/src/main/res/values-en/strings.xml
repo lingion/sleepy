@@ -209,6 +209,7 @@
     <string name="meeting_slots_sub">A course can have any number of time slots; each can select multiple days</string>
     <string name="slot_n">Slot %1$d</string>
     <string name="slot_week_range">Weeks</string>
+    <string name="slot_week_order">Slot %1$d start week cannot be after its end week</string>
     <string name="apply_to_all_slots">Apply to all slots</string>
     <string name="week_every">Weekly</string>
     <string name="week_odd">Odd weeks</string>

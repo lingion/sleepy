@@ -208,6 +208,7 @@
     <string name="meeting_slots_sub">Un curso puede tener cualquier número de horarios; cada uno puede seleccionar varios días</string>
     <string name="slot_n">Horario %1$d</string>
     <string name="slot_week_range">Semanas</string>
+    <string name="slot_week_order">La semana de inicio de la franja %1$d no puede ser posterior a la de fin</string>
     <string name="apply_to_all_slots">Aplicar a todas las franjas</string>
     <string name="week_every">Todas las semanas</string>
     <string name="week_odd">Semanas impares</string>

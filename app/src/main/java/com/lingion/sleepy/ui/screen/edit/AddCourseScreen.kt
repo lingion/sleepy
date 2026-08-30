@@ -598,6 +598,7 @@ private fun validateCourseDraft(
         if (block.days.isEmpty()) {
             issues += ValidationIssue(block.id, context.getString(R.string.slot_at_least_one_day, index + 1))
         }
+        if (block.startWeek > block.endWeek) issues += ValidationIssue(block.id, context.getString(R.string.slot_week_order, index + 1))
         when (block.mode) {
             MeetingInputMode.ByNode -> {
                 if (block.startNode <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_start_node_positive, index + 1))

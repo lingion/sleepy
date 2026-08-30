@@ -14,7 +14,7 @@ fun weekRangesOverlap(
         2 -> week % 2 == 0
         else -> true
     }
-    // 两个 type 在任一公共周同时命中即相交；步进 2 已覆盖全部奇偶组合
+    // 任一公共周同时命中两类课即相交
     for (week in lo..hi) {
         if (hits(week, aType) && hits(week, bType)) return true
     }

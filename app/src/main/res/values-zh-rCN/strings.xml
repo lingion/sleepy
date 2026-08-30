@@ -217,6 +217,7 @@
     <string name="meeting_slots_sub">一个课程可有任意多个时段；每个时段都可多选星期，并可按节次或按时间录入</string>
     <string name="slot_n">时段 %1$d</string>
     <string name="slot_week_range">周次</string>
+    <string name="slot_week_order">时段 %1$d 的起始周不能晚于结束周</string>
     <string name="apply_to_all_slots">应用到所有时段</string>
     <string name="week_every">每周</string>
     <string name="week_odd">单周</string>

@@ -208,6 +208,7 @@
     <string name="meeting_slots_sub">任意の数の時限を追加できます。各時限で複数の曜日を選択可能</string>
     <string name="slot_n">時限 %1$d</string>
     <string name="slot_week_range">週範囲</string>
+    <string name="slot_week_order">コマ %1$d の開始週は終了週より後にはできません</string>
     <string name="apply_to_all_slots">すべてのコマに適用</string>
     <string name="week_every">毎週</string>
     <string name="week_odd">奇数週</string>
