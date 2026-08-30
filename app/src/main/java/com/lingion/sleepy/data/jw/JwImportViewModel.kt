@@ -15,6 +15,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONArray
+import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
 import java.time.DayOfWeek
@@ -567,6 +568,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
             // 用 autoGenerate (id=0) 让 Room 分配真实主键，避免手动 max(id)+1 撞旧 ID 覆盖既有课表。
             val resolvedStartDate = startDate?.takeIf { it.isNotBlank() }
+                ?.let { DateUtils.normalizeStartDate(it) }
                 ?: computeCurrentSemesterStart()
             val maxNode = if (nodesPerDay > 0) nodesPerDay else courses.maxOf { maxOf(it.startNode, it.endNode) }
             val newTable = TimeTableEntity(

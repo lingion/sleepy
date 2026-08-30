@@ -410,7 +410,7 @@ fun ImportSheet(
                         applyImportPreview(
                             preview = currentPreview,
                             mode = mode,
-                            confirmedStartDate = confirmedStartDate,
+                            confirmedStartDateRaw = confirmedStartDate,
                             confirmedTableName = confirmedTableName,
                             confirmedTimeJson = confirmedTimeJson,
                             context = context,
@@ -1104,7 +1104,7 @@ private suspend fun buildImportPreview(
 private suspend fun applyImportPreview(
     preview: ImportPreview,
     mode: ImportApplyMode,
-    confirmedStartDate: String,
+    confirmedStartDateRaw: String,
     confirmedTableName: String,
     confirmedTimeJson: String,
     context: android.content.Context,
@@ -1112,6 +1112,8 @@ private suspend fun applyImportPreview(
     onError: (String) -> Unit
 ) {
     val repo = SleepyApp.get().repository
+    // 应用约定 startDate=周一；用户在确认框可能手填非周一日期，落库前归一（issue #5）
+    val confirmedStartDate = DateUtils.normalizeStartDate(confirmedStartDateRaw)
     when (mode) {
         ImportApplyMode.ReplaceCurrent -> {
             val existing = repo.getTable(preview.targetTableId)

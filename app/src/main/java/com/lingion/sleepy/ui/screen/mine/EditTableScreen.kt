@@ -57,6 +57,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
@@ -285,7 +286,7 @@ fun EditTableScreen(
                         }
                         val updated = table.copy(
                             name = name.ifBlank { table.name },
-                            startDate = startDate,
+                            startDate = DateUtils.normalizeStartDate(startDate),
                             maxWeek = maxWeek,
                             timeJson = TimeTableUtils.buildTimeJsonFromRows(slotRows.toList()),
                             smartConfigJson = smartConfigJson

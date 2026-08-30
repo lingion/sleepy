@@ -31,7 +31,7 @@ object DateUtils {
     /** 计算当前是学期第几周（1-based）；学期外统一钳制到可浏览范围。 */
     fun currentWeek(startDate: String, today: LocalDate = LocalDate.now()): Int {
         return try {
-            val start = LocalDate.parse(startDate, dateFormat)
+            val start = mondayOf(LocalDate.parse(startDate, dateFormat))
             val days = ChronoUnit.DAYS.between(start, today)
             maxOf(1, (days / 7).toInt() + 1)
         } catch (e: Exception) {
@@ -45,9 +45,25 @@ object DateUtils {
         return today.dayOfWeek.value
     }
 
+    /**
+     * 归一到该日期所在周的周一。
+     * 应用约定 startDate 必须是周一（day=1 对应周一），但历史数据/用户手填可能是任意日期，
+     * 直接使用会导致整周日期偏移（issue #5: 2026-09-01 周二被当周一）。
+     */
+    fun mondayOf(date: LocalDate): LocalDate =
+        date.with(java.time.temporal.TemporalAdjusters.previousOrSame(DayOfWeek.MONDAY))
+
+    /** 归一 yyyy-MM-dd 字符串到其所在周周一；解析失败原样返回。写库前统一走这里。 */
+    fun normalizeStartDate(startDate: String): String =
+        try {
+            fullDate(mondayOf(LocalDate.parse(startDate, dateFormat)))
+        } catch (_: Exception) {
+            startDate
+        }
+
     /** 从周数和星期几得到具体日期 */
     fun dateOfWeek(startDate: String, week: Int, dayOfWeek: Int): LocalDate {
-        val start = LocalDate.parse(startDate, dateFormat)
+        val start = mondayOf(LocalDate.parse(startDate, dateFormat))
         return start.plusWeeks((week - 1).toLong()).plusDays((dayOfWeek - 1).toLong())
     }
 
