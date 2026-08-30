@@ -1,0 +1,32 @@
+<!--
+Fixture: BNUZ (北京师范大学珠海分校) 未登录页 — 边界用例
+协议: TYPE_BNUZ = "bnuz"
+真实场景: 用户未登录访问 es.bnuz.edu.cn, 返回登录页 (ASP.NET WebForm <form action="default.aspx">)
+上游 BNUZParser 行为:
+  - doc.getElementById("table1") 返回 null (登录页没有 #table1)
+  - table1!!.getElementsByTag("tr") → NPE
+  - upstream buggy, sleepy 移植版应当加 null guard
+期望: parser 应当优雅处理 — courses: []
+注: 此 fixture 来自真实未登录响应 (es.bnuz.edu.cn), 已脱敏为最小化版本
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>登录</title>
+</head>
+<body>
+<form id="form1" action="default.aspx" method="post">
+  <div class="form-group">
+    <label for="username">学号</label>
+    <input type="text" id="username" name="username"/>
+  </div>
+  <div class="form-group">
+    <label for="password">密码</label>
+    <input type="password" id="password" name="password"/>
+  </div>
+  <button type="submit">登录</button>
+</form>
+<p>欢迎使用北师珠教务管理系统</p>
+</body>
+</html>

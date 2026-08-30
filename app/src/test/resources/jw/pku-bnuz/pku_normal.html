@@ -1,0 +1,77 @@
+<!--
+Fixture: PKU (北京大学) 正常已选课程页面
+协议: TYPE_PKU = "pku"
+来源模拟: http://elective.pku.edu.cn/ 登录后"已选课程"页(elective.pku.edu.cn 实跳 iaaa.pku.edu.cn 统一认证后回到该域)
+真实页面元素:
+  - 一张 <table class="datagrid">  包裹 tbody
+  - 每行 ≥11 个 td: 0=课名, 1=课号, 2=学分, 3=类别, 4=教师, 5=班号, 6=起止周, 7=时段 HTML(<br> 分隔多时段),
+    8=状态(选课状态,含"未"=未选中要跳过), 9=备注, 10=操作
+  - tds[7].html() 用 <br> 分隔多个时段, 每个时段块 4 段空格分隔的文本:
+      "1~16周 周一1~2节 教101 教101" (节次与星期粘合, 教室单独)
+      上游 PekingParser 解析逻辑要求 timeInfo 顺序为:
+        timeInfo[0] = 周次 ("1~16周")     ← 提供 startWeek/endWeek (substringBefore('~').toInt() + substringAfter('~').substringBefore('周').toInt())
+        timeInfo[1] = 星期+节次 ("周一1~2节") ← 提供 day (timeInfo[1].contains("周一")) + startNode/endNode (nodePattern1.find(timeInfo[1]))
+        timeInfo[2] = 教室 ("教101")         ← 提供 room (timeInfo[2])
+        timeInfo[3] = 教室重复/备注           ← 多余字段被忽略
+注:
+  - 已脱敏: 课程名改为 高等数学/大学英语, 教师改为 张老师/李老师, 教室改为通用号
+  - 含 3 行: 1 门单时段(高等数学) + 1 门多时段(大学英语, 2 个 <br> 拆出 2 个时段) + 1 门被 "未" 状态跳过(线性代数)
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>已选课程</title>
+</head>
+<body>
+<table class="datagrid">
+  <thead>
+    <tr>
+      <th>课程名</th><th>课号</th><th>学分</th><th>类别</th><th>教师</th>
+      <th>班号</th><th>起止周</th><th>时段</th><th>选课状态</th><th>备注</th><th>操作</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>高等数学</td>
+      <td>MATH1001</td>
+      <td>4</td>
+      <td>必修</td>
+      <td>张老师</td>
+      <td>001</td>
+      <td>1~16</td>
+      <td>1~16周<br>1~16周 周一1~2节 教101 教101</td>
+      <td>已选</td>
+      <td></td>
+      <td>退选</td>
+    </tr>
+    <tr>
+      <td>大学英语</td>
+      <td>ENG2002</td>
+      <td>2</td>
+      <td>必修</td>
+      <td>李老师</td>
+      <td>002</td>
+      <td>1~16</td>
+      <td>1~16周 周三3~4节 教202 教202<br>1~16周 周五5~6节 教303 教303</td>
+      <td>已选</td>
+      <td></td>
+      <td>退选</td>
+    </tr>
+    <tr>
+      <td>线性代数</td>
+      <td>MATH1002</td>
+      <td>3</td>
+      <td>选修</td>
+      <td>王老师</td>
+      <td>003</td>
+      <td>1~16</td>
+      <td>1~16周 周二7~8节 教404 教404</td>
+      <td>未选</td>
+      <td></td>
+      <td>选课</td>
+    </tr>
+  </tbody>
+</table>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<title>统一身份认证 - 乘方教务</title>
+<script type="text/javascript" src="/authserver/login.js"></script>
+</head>
+<body>
+<form id="login-form" action="/authserver/login" method="post">
+  <div class="logo"><img src="/static/images/logo.png" alt="乘方教务" /></div>
+  <h2>用户登录</h2>
+  <input type="text" name="username" placeholder="学号 / 工号" autocomplete="off" required />
+  <input type="password" name="password" placeholder="密码" required />
+  <input type="text" name="captcha" placeholder="验证码" maxlength="4" />
+  <img id="captcha-img" src="/authserver/captcha" alt="captcha" />
+  <label><input type="checkbox" name="rememberMe" />记住我</label>
+  <button type="submit" id="login-submit">登录</button>
+  <div class="links">
+    <a href="/authserver/forgot">忘记密码？</a>
+    <a href="/authserver/help">登录帮助</a>
+  </div>
+  <p class="vendor-tip">乘方教务管理系统 v8.0</p>
+</form>
+<script>
+// 登录页无 var kbxx; 用户未登录
+window.location.hash = '#login';
+</script>
+</body>
+</html>

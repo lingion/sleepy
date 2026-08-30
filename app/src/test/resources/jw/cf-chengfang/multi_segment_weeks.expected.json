@@ -1,0 +1,46 @@
+[
+  {
+    "name": "线性代数",
+    "day": 2,
+    "startNode": 5,
+    "endNode": 6,
+    "startWeek": 1,
+    "endWeek": 8,
+    "type": 0,
+    "teacher": "赵老师",
+    "room": "C301"
+  },
+  {
+    "name": "线性代数",
+    "day": 2,
+    "startNode": 5,
+    "endNode": 6,
+    "startWeek": 10,
+    "endWeek": 16,
+    "type": 0,
+    "teacher": "赵老师",
+    "room": "C301"
+  },
+  {
+    "name": "思政课",
+    "day": 4,
+    "startNode": 11,
+    "endNode": 11,
+    "startWeek": 5,
+    "endWeek": 15,
+    "type": 1,
+    "teacher": "刘老师",
+    "room": "D102"
+  },
+  {
+    "name": "工程制图",
+    "day": 7,
+    "startNode": 1,
+    "endNode": 3,
+    "startWeek": 1,
+    "endWeek": 12,
+    "type": 0,
+    "teacher": "孙老师",
+    "room": "E405"
+  }
+]

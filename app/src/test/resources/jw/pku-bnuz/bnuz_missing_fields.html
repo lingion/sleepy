@@ -1,0 +1,113 @@
+<!--
+Fixture: BNUZ (北京师范大学珠海分校) 缺字段课表 — 边界用例
+协议: TYPE_BNUZ = "bnuz"
+真实场景:
+  - 节次行 1: 课程单元格缺 <span> 前缀 (substringAfter('</span>') 未命中返回 '' → infos=[''] → 0 课程)
+  - 节次行 3: 教师段缺 {周次} 花括号 (跳过此 section, 0 课程产出)
+  - 节次行 5: 教室缺 (N节) 步数后缀 → step=toInt() 抛 NumberFormatException (upstream bug)
+  - 节次行 7: 正常课程, 且尾部有 <br>&nbsp; (substringBeforeLast('<br>') 需要
+    最后一段非教室的占位符保住教室段; 无尾部 <br> 时教室段会被截掉 → 0 课程)
+上游 BNUZParser 行为:
+  - html.substringAfter('</span>') 未命中返回 '' (Kotlin 默认 default null 时返回 '')
+  - infos[i] 不含 '{' 或 '}' → continue (不产出)
+  - room.substringAfterLast('(').substringBeforeLast('节').toInt() 在无括号时会抛异常
+期望:
+  - 行 1: 0 门
+  - 行 3: 0 门
+  - 行 5: 抛 NumberFormatException → sleepy 移植版应 try-catch 该 section, 丢弃继续
+  - 行 7: 1 门 正常解析
+共 1 门
+注:
+  - 已脱敏: 课程名改为 音乐鉴赏/书法/哲学导论/艺术史, 教师改为 音乐老师/书法老师
+-->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8"/>
+  <title>个人课表</title>
+</head>
+<body>
+<table id="table1">
+  <tr>
+    <td>时间</td>
+    <td>星期一</td>
+    <td>星期二</td>
+    <td>星期三</td>
+    <td>星期四</td>
+    <td>星期五</td>
+    <td>星期六</td>
+    <td>星期日</td>
+  </tr>
+  <tr>
+    <td>1</td>
+    <td>音乐鉴赏<br>音乐老师{1-16周}<br>艺术楼301(2节)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>2</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>3</td>
+    <td></td>
+    <td><span>&nbsp;</span>书法<br>书法老师1-16周<br>艺术楼401(2节)</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>4</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>5</td>
+    <td></td>
+    <td></td>
+    <td><span>&nbsp;</span>哲学导论<br>哲学老师{1-16周}<br>文科楼101</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>6</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+  <tr>
+    <td>7</td>
+    <td></td>
+    <td></td>
+    <td></td>
+    <td><span>&nbsp;</span>艺术史<br>艺术老师{1-16周}<br>艺术楼201(2节)<br>&nbsp;</td>
+    <td></td>
+    <td></td>
+    <td></td>
+  </tr>
+</table>
+</body>
+</html>

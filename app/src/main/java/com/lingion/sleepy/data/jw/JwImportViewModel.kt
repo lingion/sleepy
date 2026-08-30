@@ -89,22 +89,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // 未知协议（URL 直接登录）：尝试所有 parser，取课程数最多的结果
             return@withContext tryAllParsers(html)
         }
-        val parser: JwParser = when (protocolType) {
-            JwProtocol.TYPE_QZ -> JwQzParser(html)
-            JwProtocol.TYPE_QZ_CRAZY -> JwQzCrazyParser(html)
-            JwProtocol.TYPE_QZ_BR -> JwQzBrParser(html)
-            JwProtocol.TYPE_QZ_WITH_NODE -> JwQzWithNodeParser(html)
-            JwProtocol.TYPE_QZ_OLD -> JwOldQzParser(html)
-            JwProtocol.TYPE_URP -> JwUrpParser(html)
-            JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
-            JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
-            // zf / zf_1 = 老版正方（default2.aspx 时代），上游 wakeup 里 TYPE_ZF → ZhengFangParser
-            JwProtocol.TYPE_ZF -> JwOldZfParser(html)
-            JwProtocol.TYPE_ZF_1 -> JwOldZfParser(html, 1)
-            JwProtocol.TYPE_ZF_NEW -> JwNewZfParser(html)
-            else -> throw IllegalArgumentException("协议 $protocolType 暂不支持")
-        }
-        parser.generateCourseList()
+        dispatchParser(html, protocolType).generateCourseList()
     }
 
     /** 未知协议时，尝试所有 parser，取课程数最多的结果 */
@@ -136,6 +121,30 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
     }
 
     companion object {
+        /**
+         * 协议 → parser 实例。T3 抽为静态以便纯 JVM 单测验证分发覆盖面
+         * （schools.json 里 cf/pku/bnuz/hnust 学校选完后不再抛"协议 xx 暂不支持"）。
+         */
+        internal fun dispatchParser(html: String, protocolType: String): JwParser = when (protocolType) {
+            JwProtocol.TYPE_QZ -> JwQzParser(html)
+            JwProtocol.TYPE_QZ_CRAZY -> JwQzCrazyParser(html)
+            JwProtocol.TYPE_QZ_BR -> JwQzBrParser(html)
+            JwProtocol.TYPE_QZ_WITH_NODE -> JwQzWithNodeParser(html)
+            JwProtocol.TYPE_QZ_OLD -> JwOldQzParser(html)
+            JwProtocol.TYPE_URP -> JwUrpParser(html)
+            JwProtocol.TYPE_URP_NEW -> JwNewUrpParser(html)
+            JwProtocol.TYPE_WISEDU -> JwWiseduParser(html)
+            // zf / zf_1 = 老版正方（default2.aspx 时代），上游 wakeup 里 TYPE_ZF → ZhengFangParser
+            JwProtocol.TYPE_ZF -> JwOldZfParser(html)
+            JwProtocol.TYPE_ZF_1 -> JwOldZfParser(html, 1)
+            JwProtocol.TYPE_ZF_NEW -> JwNewZfParser(html)
+            JwProtocol.TYPE_CF -> JwChengFangParser(html)
+            JwProtocol.TYPE_PKU -> JwPekingParser(html)
+            JwProtocol.TYPE_BNUZ -> JwBnuzParser(html)
+            JwProtocol.TYPE_HNUST -> JwHnustParser(html)
+            else -> throw IllegalArgumentException("协议 $protocolType 暂不支持")
+        }
+
         /**
          * 兜底解析的实现，static 以便纯 JVM 单测直接验证兜底覆盖面
          * （issue #5 回归：老版正方页面必须能被 tryAllParsers 解析出来）。
@@ -377,6 +386,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
         private fun tryAllParsersImpl(html: String): List<JwCourse> {
             val candidates = listOf(
+                JwChengFangParser(html),     // T3 新增，置顶：防止 JwNewZfParser 的 "kbxx" marker 误吃 CF 页面
                 JwWiseduParser(html),
                 JwNewUrpParser(html),
                 JwNewZfParser(html),
@@ -387,7 +397,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 JwQzWithNodeParser(html),   // T2 新增
                 JwQzCrazyParser(html),
                 JwOldQzParser(html),        // T2 新增
-                JwUrpParser(html)
+                JwUrpParser(html),
+                JwPekingParser(html),        // T3 新增
+                JwBnuzParser(html),          // T3 新增
+                JwHnustParser(html)          // T3 新增
             )
             var best = emptyList<JwCourse>()
             for (p in candidates) {

@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<!-- SAMPLE: 北京大学(PKU) 未登录访问 elective.pku.edu.cn 重定向到 iaaa 统一认证页.
+     依据 /tmp/jw_research.json domain 3: "实跳 iaaa.pku.edu.cn 统一认证 appID=syllabus, 标题'统一认证'";
+     登录后跳回 elective.pku.edu.cn 才有 table[class=datagrid] 课表 -->
+<html><head><meta charset="utf-8"><title>统一认证</title>
+<link href="/iaaa/css/iaaa.css" rel="stylesheet"></head>
+<body>
+<div id="iaaa_login"><form id="logintoggleform" method="post" action="/iaaa/oauth.jsp?appID=syllabus&appName=校内门户&redirectUrl=https%3A%2F%2Felective.example.edu.cn%2F">
+<input type="hidden" name="oauth" value="1">
+<input id="user_name" name="user_name" placeholder="用户名/学号">
+<input id="user_password" name="user_password" type="password" placeholder="密码">
+<button type="submit" id="site_login">登 录</button>
+</form></div>
+</body></html>
