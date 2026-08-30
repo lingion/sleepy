@@ -401,6 +401,11 @@
     <string name="jw_diag_unknown_empty">%1$s 解析结果为空，未找到明确原因。请重试或反馈开发者。诊断特征：%2$s</string>
     <string name="jw_diag_campus_vpn_hint">该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试</string>
     <string name="jw_diag_qz_vpn_hint">若强智教务长时间无法加载，多为会话被踢或校外网络限制，请重新登录或换网络</string>
+    <!-- T11 fetch 错误四分文案 -->
+    <string name="jw_fetch_session_expired">会话已过期，请重新登录后再点导入</string>
+    <string name="jw_fetch_parse_failed">已获取数据但未能解析出课程，请确认已到达「个人课表」页</string>
+    <string name="jw_fetch_network">网络异常，请检查网络连接后重试</string>
+    <string name="jw_fetch_empty">本学期暂无课程，请确认是否选对学期</string>
     <string name="jw_import_success">成功导入 %1$d 门课程</string>
     <string name="jw_parse_failed">解析失败：%1$s</string>
     <string name="jw_parse_failed_hint">\n\n提示：HEU 需在浏览器中登录后导航到『个人课表』页面再点导入</string>
