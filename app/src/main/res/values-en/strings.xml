@@ -125,7 +125,7 @@
     </string-array>
     <string name="format_wakeup_json_example" formatted="false">{\n  "name": "My table",\n  "startDate": "2026-09-07",\n  "courses": [\n    {"name":"Calculus","teacher":"John","position":"A101","day":1,"startNode":1,"step":2,"startWeek":1,"endWeek":16,"type":0}\n  ]\n}</string>
 
-    <string name="format_ics_when">Calendar files (.ics) exported from your school system or WakeUp. Pick the file via "Import from file", or open it in a text editor and paste everything.</string>
+    <string name="format_ics_when">Calendar files (.ics) exported from your school system or WakeUp. Pick the file via "Import from file", tap it in your file manager and choose Sleepy, or open it in a text editor and paste everything.</string>
     <string-array name="format_ics_spec">
         <item>Text must start with BEGIN:VCALENDAR — dropping the first line breaks recognition</item>
         <item>Each class is one event: SUMMARY = course name, LOCATION = room; teacher is read from the description</item>
@@ -147,7 +147,7 @@
     </string-array>
     <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type\nCalculus,John,A101,Monday,1-2,1-16,weekly\nEnglish,Mary,B202,3,3-4,1-16,odd</string>
 
-    <string name="format_html_when">Timetable web pages saved as .html, or copied table source.</string>
+    <string name="format_html_when">Timetable web pages saved as .html, copied table source, or tap the .html file in your file manager and choose Sleepy.</string>
     <string-array name="format_html_spec">
         <item>Text must start with a tag like &lt;!DOCTYPE, &lt;html, or &lt;table — any plain text before it breaks detection, delete it first</item>
         <item>The page must contain a table whose header row includes "course"</item>

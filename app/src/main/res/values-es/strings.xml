@@ -125,7 +125,7 @@
     </string-array>
     <string name="format_wakeup_json_example" formatted="false">{\n  "name": "Mi horario",\n  "startDate": "2026-09-07",\n  "courses": [\n    {"name":"Cálculo","teacher":"Juan","position":"A101","day":1,"startNode":1,"step":2,"startWeek":1,"endWeek":16,"type":0}\n  ]\n}</string>
 
-    <string name="format_ics_when">Archivos de calendario (.ics) exportados del sistema escolar o WakeUp. Selecciónalo con "Importar desde archivo", o ábrelo en un editor de texto y pega todo.</string>
+    <string name="format_ics_when">Archivos de calendario (.ics) exportados del sistema escolar o WakeUp. Selecciónalo con "Importar desde archivo", tócalo en tu gestor de archivos y elige Sleepy, o ábrelo en un editor de texto y pega todo.</string>
     <string-array name="format_ics_spec">
         <item>El texto debe empezar con BEGIN:VCALENDAR — si falta la primera línea no se reconoce</item>
         <item>Cada clase es un evento: SUMMARY = curso, LOCATION = aula; el profesor se lee de la descripción</item>
@@ -147,7 +147,7 @@
     </string-array>
     <string name="format_csv_example" formatted="false">curso,profesor,aula,día,periodo,semanas,tipo\nCálculo,Juan,A101,lunes,1-2,1-16,semanal\nInglés,María,B202,3,3-4,1-16,impar</string>
 
-    <string name="format_html_when">Páginas de horario guardadas como .html, o código fuente de tablas copiado.</string>
+    <string name="format_html_when">Páginas de horario guardadas como .html, código fuente de tablas copiado, o toca el archivo .html en tu gestor de archivos y elige Sleepy.</string>
     <string-array name="format_html_spec">
         <item>El texto debe empezar con una etiqueta como &lt;!DOCTYPE, &lt;html o &lt;table — cualquier texto normal antes rompe la detección, bórralo primero</item>
         <item>La página debe contener una tabla cuya cabecera incluya la asignatura</item>

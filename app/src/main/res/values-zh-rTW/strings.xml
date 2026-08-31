@@ -125,7 +125,7 @@
     </string-array>
     <string name="format_wakeup_json_example" formatted="false">{\n  "name": "我的課表",\n  "startDate": "2026-09-07",\n  "courses": [\n    {"name":"高等數學","teacher":"張三","position":"A101","day":1,"startNode":1,"step":2,"startWeek":1,"endWeek":16,"type":0}\n  ]\n}</string>
 
-    <string name="format_ics_when">學校教務系統或 WakeUp 匯出的日曆檔案（.ics）。用「從檔案匯入」選它，或用文字編輯器開啟後複製全部內容貼上。</string>
+    <string name="format_ics_when">學校教務系統或 WakeUp 匯出的日曆檔案（.ics）。用「從檔案匯入」選它、在檔案管理員裡點檔案選 Sleepy 開啟，或用文字編輯器開啟後複製全部內容貼上。</string>
     <string-array name="format_ics_spec">
         <item>文字必須以 BEGIN:VCALENDAR 開頭 —— 複製時漏掉第一行就識別不了</item>
         <item>每節課是一條事件：SUMMARY 是課名、LOCATION 是教室，老師從描述裡自動識別</item>
@@ -147,7 +147,7 @@
     </string-array>
     <string name="format_csv_example" formatted="false">課程名,教師,教室,星期,節次,週次,類型\n高等數學,張三,A101,週一,1-2,1-16,每週\n大學英語,李四,B202,3,3-4,1-16,單週</string>
 
-    <string name="format_html_when">教務網頁課表：瀏覽器「另存為網頁」得到的 .html 檔案，或複製的表格原始碼。</string>
+    <string name="format_html_when">教務網頁課表：瀏覽器「另存為網頁」得到的 .html 檔案、複製的表格原始碼，或在檔案管理員裡點 .html 檔案選 Sleepy 開啟。</string>
     <string-array name="format_html_spec">
         <item>文字必須以 &lt;!DOCTYPE、&lt;html、&lt;table 之類的標籤開頭 —— 前面帶一段普通文字就識別不了，刪掉再貼</item>
         <item>頁面裡要有表格，且表頭行裡能找到「課程」字樣</item>

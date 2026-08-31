@@ -125,7 +125,7 @@
     </string-array>
     <string name="format_wakeup_json_example" formatted="false">{\n  "name": "My table",\n  "startDate": "2026-09-07",\n  "courses": [\n    {"name":"Calculus","teacher":"John","position":"A101","day":1,"startNode":1,"step":2,"startWeek":1,"endWeek":16,"type":0}\n  ]\n}</string>
 
-    <string name="format_ics_when">学校システムや WakeUp がエクスポートしたカレンダーファイル（.ics）。「ファイルからインポート」で選ぶか、テキストエディタで開いて全て貼り付け。</string>
+    <string name="format_ics_when">学校システムや WakeUp がエクスポートしたカレンダーファイル（.ics）。「ファイルからインポート」で選ぶか、ファイルマネージャーでタップして Sleepy を選択、またはテキストエディタで開いて全て貼り付け。</string>
     <string-array name="format_ics_spec">
         <item>テキストは BEGIN:VCALENDAR で始まること —— 1行目を落とすと識別できない</item>
         <item>各授業は1イベント：SUMMARY=科目名、LOCATION=教室、教員は説明から自動識別</item>
@@ -147,7 +147,7 @@
     </string-array>
     <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type\nCalculus,John,A101,Monday,1-2,1-16,weekly\nEnglish,Mary,B202,3,3-4,1-16,odd</string>
 
-    <string name="format_html_when">時間割ページを .html として保存したもの、またはコピーしたテーブルのソース。</string>
+    <string name="format_html_when">時間割ページを .html として保存したもの、コピーしたテーブルのソース、またはファイルマネージャーで .html をタップして Sleepy を選択。</string>
     <string-array name="format_html_spec">
         <item>テキストは &lt;!DOCTYPE、&lt;html、&lt;table などのタグで始まる必要がある —— 前に普通の文章があると認識されない、削除して貼る</item>
         <item>ページ内にテーブルがあり、ヘッダー行に「科目」(course) を含むこと</item>
