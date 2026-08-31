@@ -1,9 +1,12 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
@@ -15,11 +18,15 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
-import dev.jeziellago.compose.markdowntext.MarkdownText
+import com.lingion.sleepy.util.MarkdownBlocks
 
 sealed class UpdateUiState {
     object Idle : UpdateUiState()
@@ -106,14 +113,13 @@ fun UpdateChangelogDialog(
                             Spacer(Modifier.height(8.dp))
                         }
                         if (changelog.isNotBlank()) {
-                            // MarkdownText 渲染 release body 的 ## 标题 / 列表 / 加粗 / 链接
-                            MarkdownText(
+                            // 确定性 Markdown 渲染: MarkdownBlocks 解析出块结构,
+                            // 这里显式排版 — 标题层级/列表缩进/粗体/链接都有确定的视觉结果。
+                            // 之前用 MarkdownText(Markwon) 黑盒, 真机上标题列表与正文无视觉差异。
+                            MarkdownChangelog(
                                 markdown = changelog,
-                                modifier = Modifier.fillMaxWidth(),
-                                style = MaterialTheme.typography.bodySmall.copy(
-                                    color = colors.onSurfaceVariant
-                                ),
-                                linkColor = colors.primary,
+                                textColor = colors.onSurfaceVariant,
+                                accentColor = colors.primary
                             )
                         }
                     }
@@ -150,3 +156,73 @@ fun UpdateChangelogDialog(
         else -> { /* Idle/Checking/NoUpdate 不弹窗 */ }
     }
 }
+
+/**
+ * 更新日志的确定性 Markdown 排版。
+ * 块级: ## 标题(层级字号) / - 列表(圆点+缩进) / 普通段落。
+ * 行内: **粗体** / `代码` / [链接]。
+ * 排版完全由本函数决定, 无第三方渲染依赖。
+ */
+@Composable
+private fun MarkdownChangelog(markdown: String, textColor: androidx.compose.ui.graphics.Color, accentColor: androidx.compose.ui.graphics.Color) {
+    val body = MaterialTheme.typography.bodySmall
+    Column {
+        for (block in MarkdownBlocks.parse(markdown)) {
+            when (block) {
+                is MarkdownBlocks.Block.Heading -> Text(
+                    text = block.text,
+                    style = when (block.level) {
+                        1 -> MaterialTheme.typography.titleLarge
+                        2 -> MaterialTheme.typography.titleMedium
+                        3 -> MaterialTheme.typography.titleSmall
+                        else -> MaterialTheme.typography.titleSmall
+                    }.copy(fontWeight = FontWeight.Bold, color = textColor),
+                    modifier = Modifier.padding(top = 10.dp, bottom = 2.dp)
+                )
+                is MarkdownBlocks.Block.Bullet -> Column {
+                    for (item in block.items) {
+                        Row(modifier = Modifier.padding(start = 6.dp, top = 2.dp, bottom = 2.dp)) {
+                            Text("•", style = body.copy(color = accentColor))
+                            Spacer(Modifier.width(8.dp))
+                            Text(
+                                inlineAnnotated(item, textColor, accentColor),
+                                style = body.copy(color = textColor),
+                                modifier = Modifier.weight(1f)
+                            )
+                        }
+                    }
+                }
+                is MarkdownBlocks.Block.Paragraph -> Text(
+                    text = inlineAnnotated(block.text, textColor, accentColor),
+                    style = body.copy(color = textColor),
+                    modifier = Modifier.padding(top = 2.dp, bottom = 2.dp)
+                )
+            }
+        }
+    }
+}
+
+/** 行内粗体/代码/链接 → AnnotatedString span */
+private fun inlineAnnotated(text: String, textColor: androidx.compose.ui.graphics.Color, accentColor: androidx.compose.ui.graphics.Color) =
+    buildAnnotatedString {
+        for (span in MarkdownBlocks.parseInline(text)) {
+            when (span) {
+                is MarkdownBlocks.Inline.Text -> append(span.text)
+                is MarkdownBlocks.Inline.Bold -> {
+                    val start = length
+                    append(span.text)
+                    addStyle(SpanStyle(fontWeight = FontWeight.Bold, color = textColor), start, length)
+                }
+                is MarkdownBlocks.Inline.Code -> {
+                    val start = length
+                    append(span.text)
+                    addStyle(SpanStyle(fontFamily = FontFamily.Monospace, color = textColor), start, length)
+                }
+                is MarkdownBlocks.Inline.Link -> {
+                    val start = length
+                    append(span.text)
+                    addStyle(SpanStyle(color = accentColor, textDecoration = TextDecoration.Underline), start, length)
+                }
+            }
+        }
+    }

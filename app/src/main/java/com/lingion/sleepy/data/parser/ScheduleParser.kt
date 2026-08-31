@@ -107,6 +107,9 @@ object ScheduleParser {
 
         return runCatching {
             when {
+                // Excel "另存为网页" 的 Frameset HTML (issue #6): 顶层只有 <frame> 引用,
+                // 真课表在 xxx.files/sheet001.html 附属文件里, OpenDocument 拿不到 → 给出明确指引
+                isExcelFrameset(trimmed) -> throw IllegalArgumentException(excelFramesetError(trimmed))
                 body.contains("\"courseDetailJson\"") -> parseWakeUpShareText(body, defaultTableId)
                 body.startsWith("{") && (body.contains("\"courses\"") || body.contains("\"tableInfo\"")) -> parseWakeUpJson(body, defaultTableId, defaultColor)
                 body.startsWith("BEGIN:VCALENDAR") || body.startsWith("BEGIN:VEVENT") -> parseIcs(body, defaultTableId, defaultColor)
@@ -124,6 +127,33 @@ object ScheduleParser {
         val t = s.trim().lowercase()
         if (t.startsWith("<!doctype") || t.startsWith("<?xml")) return true
         return tags.any { tag -> t.startsWith("<$tag") }
+    }
+
+    /**
+     * 识别 Excel "另存为网页" 导出的 Frameset HTML (issue #6)。
+     * 判据: <frameset> 存在 且 (Excel Workbook Frameset meta 或 .files/sheet00N.html 引用)。
+     * 只认 frameset 不认 meta: 普通 HTML 页也可能带 Office meta 但内容可解析。
+     */
+    fun isExcelFrameset(html: String): Boolean {
+        val lower = html.lowercase()
+        if (!lower.contains("<frameset")) return false
+        return lower.contains("excel workbook frameset") ||
+            Regex("""\.files/sheet\d+\.html""").containsMatchIn(lower)
+    }
+
+    /** 提取 frameset 里 <link id="shLink"> / <frame src> 指向的 sheet 文件引用; 无 → 空串 */
+    fun excelSheetRef(html: String): String {
+        val shLink = Regex("""(?i)<link[^>]*id\s*=\s*"?shLink"?[^>]*>""").find(html) ?: Regex("""(?i)<frame[^>]*src\s*=\s*"?([^">]*)"?"?[^>]*>""").find(html)
+        val m = shLink?.value?.let { Regex("""(?i)href\s*=\s*"?([^">\s]+)"?""").find(it) }
+            ?: shLink?.value?.let { Regex("""(?i)src\s*=\s*"?([^">\s]+)"?""").find(it) }
+        return m?.groupValues?.get(1)?.trim().orEmpty()
+    }
+
+    /** Frameset 识别后的用户指引报错 — 点名 Excel 结构和可行出路, 不用泛泛的"未找到表格" */
+    private fun excelFramesetError(html: String): String {
+        val ref = excelSheetRef(html)
+        val extra = if (ref.isNotBlank()) "（课表在附属文件 $ref 里，本应用无法读取）" else ""
+        return "这是 Excel 导出的网页$extra，无法直接解析。请在 Excel 中另存为 CSV 文件或普通网页（不要选「单个文件网页/网页-筛选」格式）后重新导入"
     }
 
     /**
