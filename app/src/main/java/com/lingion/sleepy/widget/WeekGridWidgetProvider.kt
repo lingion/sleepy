@@ -40,9 +40,12 @@ import kotlin.math.roundToInt
  *
  * 视觉复刻 CourseTableView: 圆角卡片 + gap + today 高亮 + 课程名居中
  */
-class WeekGridWidgetProvider : AppWidgetProvider() {
+open class WeekGridWidgetProvider : AppWidgetProvider() {
 
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** 小组件排版档位 — 基类默认 REGULAR(现有变体); 「本周课表（网格）· 小」子类覆写为 SMALL */
+    open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     /**
      * ANR 修复: onUpdate/onAppWidgetOptionsChanged 在主线程回调,
@@ -76,7 +79,7 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
     }
 
     private fun renderWidget(context: Context, awm: AppWidgetManager, widgetId: Int) {
-        val data = loadWeekData(context)
+        var data = loadWeekData(context)
         val opts = awm.getAppWidgetOptions(widgetId)
         val density = context.resources.displayMetrics.density
 
@@ -115,6 +118,21 @@ class WeekGridWidgetProvider : AppWidgetProvider() {
         val h = (hDp * density).toInt().coerceAtLeast((250 * density).toInt())
         Log.d(TAG, "renderWidget: opts MAX=${optMaxW}x${optMaxH}dp MIN=${optMinW}x${optMinH}dp " +
             "SIZES_wDp=${wDp}x${hDp}dp → bitmap=${w}x${h}px ratio=%.2f (density=$density)".format(w.toFloat()/h))
+
+        // SMALL 变体 + 容器 <150dp → 紧凑档: 列收缩为 weekGridCompactDays(单列, 网格自动放大)。
+        // 渲染入口数据侧换列(visibleDays 是 renderBitmap 的列事实来源), renderBitmap 函数体零改动;
+        // 过滤 days 而非 visibleDays 会把今天无课误判成"去创建课表"空态, 故只收 visibleDays。
+        // REGULAR 或容器被拖大 ≥150dp → 全量排版(行为与改动前逐字节一致)。
+        val variant = variantHint
+        if (variant == WidgetVariant.SMALL && wDp < 150f) {
+            val todayDow = LocalDate.now().dayOfWeek.value
+            // 可选池先按用户"显示星期"设置收窄(与 renderWeekViewCompact 决策 D5-12 同读法),
+            // 避免选出的列与 Regular 档实际渲染交集为空
+            val visiblePool = if (data.visibleDays.isEmpty()) (1..7).toList() else data.visibleDays.sorted()
+            val compactDows = WidgetBitmapRenderers.weekGridCompactDays(visiblePool, todayDow, maxDays = 1)
+            data = data.copy(visibleDays = compactDows.toSet())
+            Log.d(TAG, "vSmall compact: todayDow=$todayDow visiblePool=$visiblePool → compactDows=$compactDows")
+        }
 
         val bmp = renderBitmap(context, data, w, h)
         val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)

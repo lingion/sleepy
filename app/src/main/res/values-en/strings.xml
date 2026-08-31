@@ -5,6 +5,7 @@
     <string name="widget_week_list_label">This Week (List)</string>
     <string name="widget_week_list_small_label">This Week (List) · Small</string>
     <string name="widget_week_grid_label">This Week (Grid)</string>
+    <string name="widget_week_grid_small_label">This Week (Grid) · Small</string>
     <string name="widget_twoday_label">Next Two Days</string>
     <string name="widget_twoday_small_label">Next Two Days · Small</string>
     <string name="widget_week_view_label">This Week (View)</string>

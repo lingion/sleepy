@@ -690,6 +690,22 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * WeekGrid 紧凑档列选取(与 weekViewCompactColumns 同构, 纯数字版 — WeekGrid 渲染
+     * 在 WeekGridWidgetProvider 内, 这里作为纯函数单测单一事实来源)。
+     * 有课的日子优先成池(空则回退全量池); 今天必保(无课也追加进池, 锚点语义);
+     * 按"与今天的距离"取最近 maxDays 天, 最终按星期升序输出(从左到右绘制顺序)。
+     * 纯函数零 LocalDate.now() — todayDow/allDays 由调用方注入。
+     *
+     * 注意"今天优先于空邻日"语义: 今天无课时仍被追加进池, maxDays=1 时距离 0 恒胜出
+     * (单列网格锚在今天, 即使今天没课 — 与任务 5 先例一致)。
+     */
+    fun weekGridCompactDays(allDays: List<Int>, todayDow: Int, maxDays: Int = 1): List<Int> {
+        val pool = allDays.toMutableList()
+        if (todayDow !in pool) pool.add(todayDow)
+        return pool.sortedBy { kotlin.math.abs(it - todayDow) }.take(maxDays).sorted()
+    }
+
+    /**
      * WeekView widget 渲染 — 7 列日列, 复刻 DaySummaryCell (CourseTableView.kt L559-L642)
      * SMALL 变体 + 容器 <150dp → 走紧凑档(复用 Regular 渲染器, shownDays 换成 compact 列);
      * REGULAR 或容器被拖大 ≥150dp → 全量排版

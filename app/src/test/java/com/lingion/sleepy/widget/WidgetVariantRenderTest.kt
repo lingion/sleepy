@@ -332,6 +332,32 @@ class WidgetVariantRenderTest {
         assertEquals(WidgetVariant.SMALL, WeekViewSmallWidgetReceiver().variantHint)
         assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekViewWidgetReceiver().variantHint)
     }
+
+    @Test
+    fun `weekGrid compact single-day selection follows today`() {
+        // 全周都有课, 今天周三(3) → 距离最近 1 列 = 周三
+        assertEquals(
+            listOf(3),
+            WidgetBitmapRenderers.weekGridCompactDays(allDays = (1..7).toList(), todayDow = 3, maxDays = 1)
+        )
+    }
+
+    @Test
+    fun `weekGrid compact selection today wins over empty neighbor`() {
+        // 只有周四(4)有课; 池=有课{4}, 今天(3)无课仍必保(锚点语义, 同 weekViewCompactColumns 任务5先例:
+        // 今天无课也追加进池) → 候选{3,4} 按距离取 1 → 周三(距离0)胜出 → [3]
+        // 即"今天优先于空邻日": 单列网格锚在今天, 即使今天没课
+        assertEquals(
+            listOf(3),
+            WidgetBitmapRenderers.weekGridCompactDays(allDays = listOf(4), todayDow = 3, maxDays = 1)
+        )
+    }
+
+    @Test
+    fun `weekGrid small provider declares SMALL variant`() {
+        assertEquals(WidgetVariant.SMALL, WeekGridSmallWidgetProvider().variantHint)
+        assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekGridWidgetProvider().variantHint)
+    }
 }
 
 /** 测试用最小 CourseEntity — 字段以实体真实定义为准(参照 CourseColorUtilTest 同款 fixture) */
