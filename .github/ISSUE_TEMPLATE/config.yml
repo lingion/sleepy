@@ -1,0 +1,8 @@
+# Sleepy Issue 模板配置
+# 空白 Issue 默认关闭,用户必须选一个模板才能提交。
+# 参考 https://docs.github.com/en/communities/using-templates-to-encourage-useful-issues-and-pull-requests/configuring-issue-templates-for-your-repository
+blank_issues_enabled: false
+contact_links:
+  - name: Email the author
+    url: mailto:lingion@hrbeu.edu.cn
+    about: Use this for private feedback, security reports, or anything you don't want to publish publicly.

@@ -400,6 +400,13 @@
     <string name="about_license_title">Declaración de código abierto</string>
     <string name="about_source">Código fuente</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_feedback">Comentarios y sugerencias</string>
+    <string name="about_feedback_detail">Reporta errores o comparte ideas mediante un Issue de GitHub, o contacta al autor por correo</string>
+    <string name="about_feedback_github">Issue de GitHub</string>
+    <string name="about_feedback_email">Correo</string>
+    <string name="about_feedback_email_subject">[Sleepy Comentario]</string>
+    <string name="about_feedback_email_body">Por favor describe el problema o la idea:\n\n— Entorno —\n(opcional)\n</string>
+    <string name="about_feedback_no_mail_app">No se encontró ninguna app de correo. Usa un Issue de GitHub.</string>
     <string name="about_title">Acerca de</string>
     <string name="about_update">Buscar actualizaciones</string>
     <string name="about_update_checking">Comprobando actualizaciones…</string>

@@ -536,6 +536,13 @@
     <string name="about_author_name">Lingion</string>
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_feedback">反馈与建议</string>
+    <string name="about_feedback_detail">提交 Bug 或新想法到 GitHub Issue，或通过邮件联系作者</string>
+    <string name="about_feedback_github">GitHub Issue</string>
+    <string name="about_feedback_email">邮件反馈</string>
+    <string name="about_feedback_email_subject">[Sleepy 反馈]</string>
+    <string name="about_feedback_email_body">请描述你遇到的问题或建议：\n\n— 环境 —\n（选填）\n</string>
+    <string name="about_feedback_no_mail_app">未找到可用的邮件应用，请改用 GitHub Issue</string>
     <string name="about_license_title">开源声明</string>
     <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
     <string name="theme_name_default">默认淡紫</string>

@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.mine
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build as AndroidBuild
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -19,8 +20,10 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
+import androidx.compose.material.icons.outlined.BugReport
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Download
+import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material3.Button
@@ -53,6 +56,7 @@ import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.BuildConfig
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.FeedbackComposer
 import com.lingion.sleepy.util.UpdateInfo
 import com.lingion.sleepy.util.UpdateManager
 import kotlinx.coroutines.Job
@@ -67,6 +71,40 @@ fun AboutScreen(onBack: () -> Unit) {
     var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
     var downloadJob by remember { mutableStateOf<Job?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
+
+    fun diagnostic() = FeedbackComposer.Diagnostic(
+        versionName = BuildConfig.VERSION_NAME,
+        versionCode = BuildConfig.VERSION_CODE,
+        androidVersion = AndroidBuild.VERSION.RELEASE ?: AndroidBuild.VERSION.SDK_INT.toString(),
+        brand = AndroidBuild.BRAND,
+        model = AndroidBuild.MODEL,
+        resolution = "${context.resources.displayMetrics.widthPixels}x${context.resources.displayMetrics.heightPixels}",
+        locale = context.resources.configuration.locales[0].toLanguageTag(),
+        isDebug = BuildConfig.DEBUG,
+    )
+
+    fun openGitHubFeedback() {
+        val uri = FeedbackComposer.githubIssueUrl(
+            title = "[Sleepy] ",
+            body = "请描述你遇到的问题或建议：",
+            diag = diagnostic(),
+            template = "bug_report.yml",
+        )
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(uri)))
+    }
+
+    fun openEmailFeedback() {
+        val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(FeedbackComposer.mailtoUri(
+            subject = context.getString(R.string.about_feedback_email_subject),
+            body = context.getString(R.string.about_feedback_email_body),
+            diag = diagnostic(),
+        )))
+        if (intent.resolveActivity(context.packageManager) != null) {
+            context.startActivity(intent)
+        } else {
+            scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.about_feedback_no_mail_app)) }
+        }
+    }
 
     fun checkUpdate() {
         if (uiState is UpdateUiState.Checking) return
@@ -308,6 +346,49 @@ fun AboutScreen(onBack: () -> Unit) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
                             contentDescription = null,
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            // Feedback card
+            InfoCard {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(
+                        imageVector = Icons.Outlined.BugReport,
+                        contentDescription = null,
+                        tint = colors.primary,
+                        modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(modifier = Modifier.width(12.dp))
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.about_feedback),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.about_feedback_detail),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    IconButton(onClick = { openGitHubFeedback() }) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                            contentDescription = stringResource(R.string.about_feedback_github),
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
+                    IconButton(onClick = { openEmailFeedback() }) {
+                        Icon(
+                            imageVector = Icons.Outlined.Email,
+                            contentDescription = stringResource(R.string.about_feedback_email),
                             tint = colors.primary,
                             modifier = Modifier.size(20.dp)
                         )

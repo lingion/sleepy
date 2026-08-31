@@ -400,6 +400,13 @@
     <string name="about_license_title">オープンソース宣言</string>
     <string name="about_source">ソースコード</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_feedback">フィードバックと提案</string>
+    <string name="about_feedback_detail">GitHub Issue でバグやアイデアを報告するか、メールで作者に連絡できます</string>
+    <string name="about_feedback_github">GitHub Issue</string>
+    <string name="about_feedback_email">メール</string>
+    <string name="about_feedback_email_subject">[Sleepy フィードバック]</string>
+    <string name="about_feedback_email_body">問題やアイデアを説明してください：\n\n— 環境 —\n（任意）\n</string>
+    <string name="about_feedback_no_mail_app">メールアプリが見つかりません。GitHub Issue を使用してください。</string>
     <string name="about_title">について</string>
     <string name="about_update">更新を確認</string>
     <string name="about_update_checking">更新を確認中…</string>

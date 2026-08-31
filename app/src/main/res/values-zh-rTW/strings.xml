@@ -400,6 +400,13 @@
     <string name="about_license_title">開源聲明</string>
     <string name="about_source">開源網址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_feedback">回饋與建議</string>
+    <string name="about_feedback_detail">透過 GitHub Issue 回報問題或提出想法，或以電子郵件聯絡作者</string>
+    <string name="about_feedback_github">GitHub Issue</string>
+    <string name="about_feedback_email">電子郵件</string>
+    <string name="about_feedback_email_subject">[Sleepy 回饋]</string>
+    <string name="about_feedback_email_body">請描述你遇到的問題或建議：\n\n— 環境 —\n（選填）\n</string>
+    <string name="about_feedback_no_mail_app">找不到可用的電子郵件應用，請改用 GitHub Issue</string>
     <string name="about_title">關於</string>
     <string name="about_update">取得更新</string>
     <string name="about_update_checking">正在檢查更新…</string>

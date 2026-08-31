@@ -401,6 +401,13 @@
     <string name="about_license_title">Open Source License</string>
     <string name="about_source">Source Code</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
+    <string name="about_feedback">Feedback &amp; Suggestions</string>
+    <string name="about_feedback_detail">Report bugs or share ideas via GitHub Issue, or contact the author by email</string>
+    <string name="about_feedback_github">GitHub Issue</string>
+    <string name="about_feedback_email">Email</string>
+    <string name="about_feedback_email_subject">[Sleepy Feedback]</string>
+    <string name="about_feedback_email_body">Please describe the issue or idea:\n\n— Environment —\n(optional)\n</string>
+    <string name="about_feedback_no_mail_app">No email app found. Please use GitHub Issue instead.</string>
     <string name="about_title">About</string>
     <string name="about_update">Check for Updates</string>
     <string name="about_update_checking">Checking for updates…</string>
