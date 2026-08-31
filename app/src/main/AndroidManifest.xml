@@ -54,11 +54,17 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
-        <!-- 外部 app (文件管理器、邮件附件、其他课表 app) 通过 ACTION_VIEW application/json 时:
+        <!-- 外部 app (文件管理器、邮件附件、其他课表 app) 通过 ACTION_VIEW 打开课表文件时:
              1. OpenJsonAlias (alias of ImportReceiverActivity) 接收 intent
              2. ImportReceiverActivity 读取文件内容并透传到 MainActivity
              3. MainActivity 解析后挂到 companion.pendingImportText, ImportSheet 自动弹预览
-             单独拆分避免 MainActivity 既有 LAUNCHER 又有 VIEW 时的 launchMode/singleTask 边界问题 -->
+             单独拆分避免 MainActivity 既有 LAUNCHER 又有 VIEW 时的 launchMode/singleTask 边界问题
+             MIME 覆盖 ScheduleParser 全部内容嗅探分派格式 (issue #6): 文件管理器把
+             .html/.ics/.csv 报成对应 MIME 时 Sleepy 才会出现在"打开方式"候选里;
+             parse() 按内容分派与 MIME 无关, 这里只需保证文件进得来。
+             🚫禁注册二进制类型 (octet-stream/pdf/zip/image...): readText() 读二进制
+             会 OOM, 且 content:// 的 pathPattern 匹配不到文件名 — 垃圾 intent 收益为零。
+             ManifestExternalOpenFilterTest 锁定此注册面。 -->
         <activity
             android:name=".ui.screen.imports.ImportReceiverActivity"
             android:exported="true"
@@ -76,8 +82,22 @@
                 <category android:name="android.intent.category.BROWSABLE" />
                 <data android:scheme="content" />
                 <data android:scheme="file" />
+                <!-- WakeUp JSON 导出 -->
                 <data android:mimeType="application/json" />
+                <!-- WakeUp 分享文本 / 纯文本课表 -->
                 <data android:mimeType="text/plain" />
+                <!-- 教务系统 HTML 表格 (issue #6 主诉) -->
+                <data android:mimeType="text/html" />
+                <data android:mimeType="application/xhtml+xml" />
+                <!-- ICS 日历课表 (Sleepy 自身导出 .ics 就是 text/calendar) -->
+                <data android:mimeType="text/calendar" />
+                <data android:mimeType="text/x-vcalendar" />
+                <!-- CSV 课表 (部分 ROM 报 legacy 别名) -->
+                <data android:mimeType="text/csv" />
+                <data android:mimeType="text/comma-separated-values" />
+                <!-- XML 起头页面走 parse() 的 <?xml / <!doctype 分支 -->
+                <data android:mimeType="text/xml" />
+                <data android:mimeType="application/xml" />
             </intent-filter>
         </activity-alias>
 
