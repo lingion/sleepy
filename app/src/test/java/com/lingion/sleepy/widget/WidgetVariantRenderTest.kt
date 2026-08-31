@@ -226,6 +226,49 @@ class WidgetVariantRenderTest {
     }
 
     @Test
+    fun `weekList compact sunday anchor keeps today first`() {
+        // 周日(2026-09-06)锚点: 今天=周日(7), 明天=周一(ISO 1, 周循环回绕)
+        // 回归: 旧实现按 ISO 星期排序 → 周一(明天)排到周日(今天)前面
+        val sundayWeek = weekData.copy(
+            days = listOf(
+                DayData(
+                    date = LocalDate.of(2026, 9, 6),
+                    dayOfWeek = 7,
+                    courses = listOf(testCourse(name = "周日体育", startNode = 1)),
+                    timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+                ),
+                DayData(
+                    date = LocalDate.of(2026, 9, 7),
+                    dayOfWeek = 1,
+                    courses = listOf(testCourse(name = "周一高数", startNode = 1)),
+                    timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+                )
+            )
+        )
+        val texts = WidgetBitmapRenderers.weekListCompactTexts(
+            ::resolve, ::dayLabel, LocalDate.of(2026, 9, 6), sundayWeek
+        )
+        assertEquals(2, texts.size)
+        assertEquals("周日 周日体育", texts[0])   // 今天恒为第 1 行
+        assertEquals("周一 周一高数", texts[1])   // 明天第 2 行
+    }
+
+    @Test
+    fun `weekList compact only today has courses yields single row`() {
+        // 只有今天(周三)有课, 明天(周四)无课 → 只回 1 行
+        val todayOnly = weekData.copy(
+            days = weekData.days.map {
+                if (it.dayOfWeek == 3) it else it.copy(courses = emptyList())
+            }
+        )
+        val texts = WidgetBitmapRenderers.weekListCompactTexts(
+            ::resolve, ::dayLabel, LocalDate.of(2026, 9, 2), todayOnly
+        )
+        assertEquals(1, texts.size)
+        assertEquals("周三 高等数学", texts[0])
+    }
+
+    @Test
     fun `weekList small receiver declares SMALL variant`() {
         assertEquals(WidgetVariant.SMALL, WeekListSmallWidgetReceiver().variantHint)
         assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekListWidgetReceiver().variantHint)

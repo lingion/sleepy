@@ -483,7 +483,9 @@ object WidgetBitmapRenderers {
         val todayDow = today.dayOfWeek.value
         val targetDows = listOf(todayDow, todayDow % 7 + 1)   // 今天 + 明天(周循环)
         val lines = data.days.filter { it.dayOfWeek in targetDows && it.courses.isNotEmpty() }
-            .sortedBy { it.dayOfWeek }
+            // 按今天→明天的目标顺序排, 禁按 ISO 星期排: 周日锚点(tomorrow=周一)时
+            // ISO 排序会把"明天"排到"今天"前面
+            .sortedBy { targetDows.indexOf(it.dayOfWeek) }
             .take(2)
             .map { "${dayName(it.dayOfWeek)} ${it.courses.first().courseName}" }
         return lines.ifEmpty { listOf(resolve(R.string.no_course)) }
