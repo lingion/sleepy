@@ -1,0 +1,29 @@
+name: Diag Gitee upload
+on: workflow_dispatch
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: probe
+        timeout-minutes: 15
+        run: |
+          set -x
+          # 1) Gitee API 连通+延迟
+          time curl -s --max-time 30 -o /dev/null -w "api GET: %{http_code} %{time_total}s\n" \
+            "https://gitee.com/api/v5/repos/lingion/sleepy?access_token=${GITEE_TOKEN}"
+          # 2) 造一个 1MB 测试文件
+          dd if=/dev/urandom of=/tmp/test1m.bin bs=1M count=1 2>/dev/null
+          # 3) 找 v1.0.0 的 release id
+          RID=$(curl -s --max-time 30 "https://gitee.com/api/v5/repos/lingion/sleepy/releases/tags/v1.0.0?access_token=${GITEE_TOKEN}" | jq -r .id)
+          echo "release id: $RID"
+          # 4) 上传 1MB 计时
+          time curl -s --max-time 300 -X POST \
+            "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files" \
+            -F "access_token=${GITEE_TOKEN}" \
+            -F "file=@/tmp/test1m.bin" | jq '{name, id: .id}' || echo UPLOAD_FAILED
+          # 5) 查它落地没,拿到附件 id 就删掉
+          ATT=$(curl -s --max-time 30 "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files?access_token=${GITEE_TOKEN}" | jq -r '.[] | select(.name=="test1m.bin") | .name' | head -1)
+          echo "landed: $ATT"
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
