@@ -1,4 +1,4 @@
-name: Final 22 APK sync with quota rollover
+name: Final sync all missing APKs
 on:
   workflow_dispatch:
 jobs:
@@ -6,7 +6,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 170
     steps:
-      - name: rollover-and-upload
+      - name: upload-missing
         timeout-minutes: 165
         run: |
           python3 -u <<'PYEOF'
@@ -24,31 +24,6 @@ jobs:
               with urllib.request.urlopen(req, timeout=120) as r:
                   return json.loads(r.read())
 
-          def gitee_releases():
-              out, page = [], 1
-              while True:
-                  o = subprocess.run(["curl","-s","--max-time","120",
-                      f"{GE}/repos/lingion/sleepy/releases?page={page}&per_page=100&access_token={GITEE_TOKEN}"],
-                      capture_output=True, text=True)
-                  try: d = json.loads(o.stdout)
-                  except Exception: d = []
-                  if not d: break
-                  out += d
-                  if len(d) < 100: break
-                  page += 1
-              return out
-
-          def gitee_form(method, path, fields):
-              data = "&".join(f"{k}={urllib.parse.quote(str(v), safe='')}" for k, v in fields.items()).encode()
-              req = urllib.request.Request(f"{GE}{path}", data=data, method=method)
-              try:
-                  with urllib.request.urlopen(req, timeout=120) as r:
-                      return json.loads(r.read())
-              except Exception as e:
-                  body = getattr(e, "read", lambda: b"")()
-                  print(f"    form err {method} {path.split('?')[0]}: {body[:150]}")
-                  return None
-
           def gitee_atts(rid):
               o = subprocess.run(["curl","-s","--max-time","120",
                   f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files?access_token={GITEE_TOKEN}"],
@@ -57,11 +32,27 @@ jobs:
               except Exception: return []
               return d if isinstance(d, list) else []
 
-          def gitee_delete(rid, aid):
-              o = subprocess.run(["curl","-s","-X","DELETE","--max-time","120","-w","%{http_code}",
-                  f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files/{aid}?access_token={GITEE_TOKEN}"],
+          def gitee_rid(tag):
+              o = subprocess.run(["curl","-s","--max-time","120",
+                  f"{GE}/repos/lingion/sleepy/releases/tags/{tag}?access_token={GITEE_TOKEN}"],
                   capture_output=True, text=True)
-              return o.stdout
+              try: return json.loads(o.stdout).get("id")
+              except Exception: return None
+
+          def gitee_create(rel):
+              data = urllib.parse.urlencode({
+                  "access_token": GITEE_TOKEN, "tag_name": rel["tag_name"],
+                  "target_commitish": "main",
+                  "name": rel.get("name") or rel["tag_name"],
+                  "prerelease": "true" if rel.get("prerelease") else "false",
+                  "body": rel.get("body") or ""}).encode()
+              req = urllib.request.Request(f"{GE}/repos/lingion/sleepy/releases", data=data, method="POST")
+              try:
+                  with urllib.request.urlopen(req, timeout=120) as r:
+                      return json.loads(r.read())
+              except Exception as e:
+                  print(f"    create err: {e}")
+                  return None
 
           def gh_download(asset_id, dest):
               for attempt in (1,2,3):
@@ -75,114 +66,74 @@ jobs:
                   time.sleep(8)
               raise RuntimeError(f"download failed {asset_id}")
 
-          def gitee_upload(rid, filepath):
+          def gitee_upload(rid, filepath, orig_name):
               for attempt in (1,2,3):
                   o = subprocess.run(["curl","-s","--max-time","900","-X","POST",
                       f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files",
                       "-F",f"access_token={GITEE_TOKEN}",
-                      "-F",f"file=@{filepath}"], capture_output=True, text=True)
+                      "-F",f"file=@{filepath};filename={orig_name}"], capture_output=True, text=True)
                   try: d = json.loads(o.stdout)
                   except Exception: d = None
                   if isinstance(d, dict) and d.get("id"):
-                      print(f"    uploaded id={d['id']} size={d.get('size')}")
+                      print(f"    uploaded id={d['id']} name={d.get('name')} size={d.get('size')}", flush=True)
                       return True
-                  print(f"    att{attempt} resp={o.stdout[:120]!r}")
+                  print(f"    att{attempt} resp={o.stdout[:120]!r}", flush=True)
                   time.sleep(25*attempt)
               return False
 
-          # ---- Phase A: free quota by removing pool assets (they will be re-uploaded in Phase C)
-          POOL = [("v1.0.2","app-arm64-v8a-debug.apk"),
-                  ("v1.0.16","sleepy-v1.0.16-2-arm64-v8a.apk")]
-          rels_g = gitee_releases()
-          relmap = {r["tag_name"]: r["id"] for r in rels_g}
-          for tag, aname in POOL:
-              rid = relmap[tag]
-              for a in gitee_atts(rid):
-                  if re.sub(r"^(sleepy|asset)_\d+_", "", a.get("name","")) == aname:
-                      code = gitee_delete(rid, a["id"])
-                      print(f"A: freed {tag}/{aname} (aid={a['id']}, {a.get('size',0)/1048576:.1f}MB) -> {code}")
-          time.sleep(15)
-
-          # ---- Phase B: upload all missing (oldest tag first keeps Gitee page order newest-top)
           rels_gh = gh_req("/repos/lingion/sleepy/releases?per_page=100&page=1")
           rels_gh.sort(key=lambda r: r.get("created_at") or "")
           ok = fail = 0
           for rel in rels_gh:
               tag = rel["tag_name"]
-              cur = gitee_form("GET", f"/repos/lingion/sleepy/releases/tags/{tag}", {"access_token": GITEE_TOKEN}) \
-                    if False else None
-              o = subprocess.run(["curl","-s","--max-time","120",
-                  f"{GE}/repos/lingion/sleepy/releases/tags/{tag}?access_token={GITEE_TOKEN}"],
-                  capture_output=True, text=True)
-              try: cur = json.loads(o.stdout)
-              except Exception: cur = None
-              rid = cur.get("id") if isinstance(cur, dict) else None
+              rid = gitee_rid(tag)
               if not rid:
-                  created = gitee_form("POST","/repos/lingion/sleepy/releases",{
-                      "access_token":GITEE_TOKEN,"tag_name":tag,"target_commitish":"main",
-                      "name": rel.get("name") or tag,
-                      "prerelease":"true" if rel.get("prerelease") else "false",
-                      "body": rel.get("body") or ""})
-                  rid = created.get("id") if isinstance(created,dict) else None
+                  c = gitee_create(rel)
+                  rid = c.get("id") if isinstance(c, dict) else None
                   if not rid:
-                      print(f"!! {tag}: cannot create"); fail+=1; continue
-              have = {re.sub(r"^(sleepy|asset)_\d+_(.*)", r"\2", a.get("name","")) for a in gitee_atts(rid)}
+                      print(f"!! {tag}: cannot create", flush=True); fail += 1; continue
+              have = {re.sub(r"^(sleepy|asset)_\d+_", "", a.get("name","")) for a in gitee_atts(rid)}
               for a in rel.get("assets", []):
                   an = a["name"]
                   if an.endswith(("-source.zip","-source.tar.gz",".source.zip")): continue
                   if an in have: continue
-                  print(f"B: {tag} <- {an} ({a['size']/1048576:.1f}MB)")
-                  dest = f"/tmp/a_{a['id']}"
+                  print(f"{tag} <- {an} ({a['size']/1048576:.1f}MB)", flush=True)
+                  dest = f"/tmp/asset_{a['id']}_{an}"
                   try:
                       gh_download(a["id"], dest)
-                      if gitee_upload(rid, dest): ok += 1
-                      else: fail += 1; print(f"  !! upload failed {tag}/{an}")
+                      if gitee_upload(rid, dest, an): ok += 1
+                      else: fail += 1; print(f"  !! upload failed {tag}/{an}", flush=True)
                   except Exception as e:
-                      fail += 1; print(f"  !! {e}")
+                      fail += 1; print(f"  !! {e}", flush=True)
                   finally:
                       if os.path.exists(dest): os.remove(dest)
                   time.sleep(8)
 
-          # ---- Phase C: re-upload pool assets
-          for tag, aname in POOL:
-              rel = next(r for r in rels_gh if r["tag_name"]==tag)
-              a = next(x for x in rel["assets"] if x["name"]==aname)
+          # final verify
+          have = set()
+          page = 1
+          while True:
               o = subprocess.run(["curl","-s","--max-time","120",
-                  f"{GE}/repos/lingion/sleepy/releases/tags/{tag}?access_token={GITEE_TOKEN}"],
+                  f"{GE}/repos/lingion/sleepy/releases?page={page}&per_page=100&access_token={GITEE_TOKEN}"],
                   capture_output=True, text=True)
-              rid = json.loads(o.stdout)["id"]
-              have = {re.sub(r"^(sleepy|asset)_\d+_(.*)", r"\2", x.get("name","")) for x in gitee_atts(rid)}
-              if aname in have:
-                  print(f"C: {tag}/{aname} already present"); continue
-              print(f"C: re-upload {tag}/{aname} ({a['size']/1048576:.1f}MB)")
-              dest = f"/tmp/c_{a['id']}"
-              try:
-                  gh_download(a["id"], dest)
-                  if gitee_upload(rid, dest): ok += 1
-                  else: fail += 1; print(f"  !! pool re-upload failed")
-              except Exception as e:
-                  fail += 1; print(f"  !! {e}")
-              finally:
-                  if os.path.exists(dest): os.remove(dest)
-              time.sleep(8)
-
-          # ---- Phase D: final verification, every GH asset must exist on Gitee by name
-          rels_g = gitee_releases()
-          gitee_have = set()
-          for r in rels_g:
-              for a in r.get("assets") or []:
-                  n = re.sub(r"^(sleepy|asset)_\d+_", "", a.get("name",""))
-                  if not (n == f"{r['tag_name']}.zip" or n == f"{r['tag_name']}.tar.gz"):
-                      gitee_have.add(f"{r['tag_name']}|{n}")
+              try: d = json.loads(o.stdout)
+              except Exception: d = []
+              if not d: break
+              for r in d:
+                  for a in r.get("assets") or []:
+                      if "/download/" in a.get("browser_download_url",""):
+                          have.add(f"{r['tag_name']}|{re.sub(r'^(sleepy|asset)_\d+_', '', a['name'])}")
+              if len(d) < 100: break
+              page += 1
           missing = []
           for rel in rels_gh:
               for a in rel.get("assets", []):
                   an = a["name"]
                   if an.endswith(("-source.zip","-source.tar.gz",".source.zip")): continue
-                  if f"{rel['tag_name']}|{an}" not in gitee_have:
+                  if f"{rel['tag_name']}|{an}" not in have:
                       missing.append(f"{rel['tag_name']}|{an}")
-          print(f"D: verification -> ok={ok} fail={fail} missing={len(missing)}")
-          for m in missing: print(f"   MISSING {m}")
+          print(f"VERIFY: ok={ok} fail={fail} missing={len(missing)}", flush=True)
+          for m in missing: print(f"   MISSING {m}", flush=True)
           sys.exit(1 if (fail or missing) else 0)
           PYEOF
         env:
