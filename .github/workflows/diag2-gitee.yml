@@ -1,0 +1,30 @@
+name: Diag Gitee upload v2
+on: workflow_dispatch
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: probe2
+        timeout-minutes: 15
+        run: |
+          set -x
+          dd if=/dev/urandom of=/tmp/t.bin bs=1M count=1 2>/dev/null
+          RID=981622
+          # A) 加 UA + 禁 Expect
+          time curl -s --max-time 300 -A "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36" \
+            -H "Expect:" -X POST \
+            "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files" \
+            -F "access_token=${GITEE_TOKEN}" \
+            -F "file=@/tmp/t.bin;type=application/octet-stream" -w "\nHTTP:%{http_code}\n" | tail -5
+          # B) 查落地?
+          curl -s --max-time 30 "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files?access_token=${GITEE_TOKEN}" \
+            | jq -c '[.[] | select(.name=="t.bin")] | length'
+          # C) 清理
+          AID=$(curl -s --max-time 30 "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files?access_token=${GITEE_TOKEN}" | jq -r '.[] | select(.name=="t.bin") | .name' | head -1 | grep -oE '[0-9]+' | head -1)
+          if [ -n "$AID" ]; then
+            curl -s -X DELETE -w "del:%{http_code}\n" \
+              "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files/$AID?access_token=${GITEE_TOKEN}"
+          fi
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
