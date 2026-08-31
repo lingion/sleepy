@@ -1,6 +1,7 @@
 <resources>
     <string name="app_name">Sleepy Schedule</string>
     <string name="widget_today_label">Today\'s Classes</string>
+    <string name="widget_today_small_label">Today\'s Classes · Small</string>
     <string name="widget_week_list_label">This Week (List)</string>
     <string name="widget_week_grid_label">This Week (Grid)</string>
     <string name="widget_twoday_label">Next Two Days</string>

@@ -28,24 +28,32 @@ import java.time.LocalDate
  *
  * Glance 版 TodayWidget 类已删除(决策 D5-11); loadDataSync 自 Glance companion 迁入本类。
  */
-class TodayWidgetReceiver : AppWidgetProvider() {
+open class TodayWidgetReceiver : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** 小组件排版档位 — 基类默认 REGULAR(现有变体); 「今日课程 · 小」子类覆写为 SMALL */
+    open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
         val data = loadDataSync(context)
         val opts = awm.getAppWidgetOptions(id)
         val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
         val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
+        // SMALL 变体: compact 分支内部还有 150dp 升档闸, 这里直接传 variant
+        val variant = variantHint
         if (contentH <= hDp) {
-            // 内容装得下 — 原静态路径, 与主分支逐字节一致
+            // 内容装得下 — 原静态路径, 与主分支逐字节一致(REGULAR 时 variant 默认值等价旧调用)
             RemoteViewsWidgetHelper.renderAndPush(
                 context, awm, id, TAG,
                 loadData = { data },
-                renderBitmap = { d, w, h -> WidgetBitmapRenderers.renderToday(context, d, w, h) }
+                renderBitmap = { d, w, h ->
+                    WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
+                }
             )
         } else {
             // 超出 — 可滚动: 壳图 = 原渲染器按容器尺寸画(圆角背景+首屏)
-            val shell = WidgetBitmapRenderers.renderToday(context, data, wDp.toFloat(), hDp.toFloat())
+            // SMALL 档内容只有 1-2 行, 永远装得下; 兜底仍走原 scrollable
+            val shell = WidgetBitmapRenderers.renderToday(context, data, wDp.toFloat(), hDp.toFloat(), variant)
             RemoteViewsWidgetHelper.pushScrollable(
                 context, awm, id, TAG,
                 layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,

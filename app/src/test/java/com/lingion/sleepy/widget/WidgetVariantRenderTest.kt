@@ -85,6 +85,12 @@ class WidgetVariantRenderTest {
             WidgetVariant.values().toList()
         )
     }
+
+    @Test
+    fun `small receiver declares SMALL variant`() {
+        assertEquals(WidgetVariant.SMALL, TodaySmallWidgetReceiver().variantHint)
+        assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.TodayWidgetReceiver().variantHint)
+    }
 }
 
 /** 测试用最小 CourseEntity — 字段以实体真实定义为准(参照 CourseColorUtilTest 同款 fixture) */
