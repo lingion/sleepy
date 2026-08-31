@@ -146,8 +146,95 @@ object WidgetBitmapRenderers {
 
     /**
      * Today widget 渲染 — 今日课程列表
+     * SMALL 变体 + 容器 <150dp → 走紧凑档(纯文本); REGULAR 或容器被拖大 ≥150dp → 全量排版
+     * (默认参数 REGULAR → 全部现有调用点零改动; 大档路径 renderTodayRegular 函数体逐字节不变)
      */
-    fun renderToday(context: Context, data: WidgetData, wDp: Float, hDp: Float): Bitmap {
+    fun renderToday(
+        context: Context, data: WidgetData, wDp: Float, hDp: Float,
+        variant: WidgetVariant = WidgetVariant.REGULAR
+    ): Bitmap {
+        if (variant == WidgetVariant.SMALL && wDp < 150f) {
+            return renderTodayCompact(context, data, wDp, hDp)
+        }
+        // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
+        return renderTodayRegular(context, data, wDp, hDp)
+    }
+
+    /**
+     * 小档纯文本行(渲染与单测共用单一事实来源)。空课表/学期外也各有对应一行。
+     * resolver 抽象掉 Context 资源访问 → 核心选取逻辑可在纯 JVM 单测断言(仓库无 Robolectric)。
+     */
+    fun todayCompactTexts(context: Context, data: WidgetData): List<String> =
+        todayCompactTexts({ resId -> context.getString(resId) }, data)
+
+    /** 同上 — resolver 注入版(纯 JVM 单测入口) */
+    fun todayCompactTexts(resolve: (Int) -> String, data: WidgetData): List<String> {
+        if (!data.hasTable) return listOf(resolve(R.string.widget_create_schedule))
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+            val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                R.string.semester_not_started else R.string.semester_ended
+            return listOf(resolve(statusRes))
+        }
+        if (data.courses.isEmpty()) return listOf(resolve(R.string.today_no_course))
+        return data.courses.take(1).map { it.courseName }
+    }
+
+    /**
+     * Today 紧凑档 — 日期小字(顶) + 状态/首课程名(居中), 纯文本无课程胶囊。
+     * 布局常量: compact 档不参与 todayContentHeightDp 滚动条带估算(固定 size 变体), 无需镜像。
+     */
+    private fun renderTodayCompact(context: Context, data: WidgetData, wDp: Float, hDp: Float): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val w = (wDp * density).toInt()
+        val h = (hDp * density).toInt()
+        val s = scheme(context, data.themeKey, data.isDark)
+        val ctx = SleepyApp.get()
+
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(c)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        // 背景圆角
+        p.color = s.bg
+        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
+            20f * density, 20f * density, p)
+
+        val pad = 10f * density
+        val lines = todayCompactTexts(ctx, data)
+
+        // 日期行(顶部小字)
+        p.color = s.onSurfaceVariant
+        p.textSize = 11f * density
+        p.typeface = Typeface.DEFAULT
+        val dateStr = "${data.date.monthValue}/${data.date.dayOfMonth}"
+        canvas.drawText(dateStr, pad, pad + 11f * density, p)
+
+        // 状态/首课程名 — 居中大字
+        p.color = s.onSurface
+        p.textSize = 15f * density
+        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        var y = h / 2f
+        for (line in lines.take(2)) {
+            canvas.drawText(ellipsize(p, line, w - pad * 2), pad, y, p)
+            y += 20f * density
+        }
+
+        return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+    }
+
+    /** 按可用宽度截断文本(字符级贪心, 与 [[sleepy-vert-text-overflow-fix]] 同思路) */
+    private fun ellipsize(p: Paint, text: String, maxW: Float): String {
+        if (p.measureText(text) <= maxW) return text
+        var t = text
+        while (t.isNotEmpty() && p.measureText("$t…") > maxW) t = t.dropLast(1)
+        return "$t…"
+    }
+
+    /**
+     * Today 全量排版 — 原 renderToday 函数体原样改名迁入(REGULAR 档逐字节不变保证)
+     */
+    private fun renderTodayRegular(context: Context, data: WidgetData, wDp: Float, hDp: Float): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
