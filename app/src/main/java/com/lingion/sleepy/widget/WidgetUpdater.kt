@@ -16,8 +16,8 @@ import java.util.concurrent.TimeUnit
 /**
  * Widget 主动更新调度器：
  * — 数据变更时调用 [notifyDataChanged]
- * — 对全部 4 个已注册 receiver 广播 APPWIDGET_UPDATE(系统级刷新)
- *   全部 4 个都是同步 RemoteViews AppWidgetProvider → 秒刷,不受 OPPO 冻结影响
+ * — 对全部 10 个已注册 receiver 广播 APPWIDGET_UPDATE(系统级刷新)
+ *   普通和小尺寸变体都是同步 RemoteViews AppWidgetProvider → 秒刷,不受 OPPO 冻结影响
  * — WorkManager 每 15 分钟兜底刷新
  */
 object WidgetUpdater {
@@ -26,6 +26,19 @@ object WidgetUpdater {
     private const val WORK_NAME = "sleepy_widget_update"
     private const val REPEAT_MINUTES = 15L
 
+    /** All widget providers receiving the synchronous refresh broadcast. */
+    internal val remoteViewsReceiverClasses = listOf(
+        WeekGridWidgetProvider::class.java,
+        TodayWidgetReceiver::class.java,
+        WeekListWidgetReceiver::class.java,
+        WeekViewWidgetReceiver::class.java,
+        TwoDayWidgetReceiver::class.java,
+        TodaySmallWidgetReceiver::class.java,
+        TwoDaySmallWidgetReceiver::class.java,
+        WeekListSmallWidgetReceiver::class.java,
+        WeekViewSmallWidgetReceiver::class.java,
+        WeekGridSmallWidgetProvider::class.java
+    )
     /** 注册定期刷新（幂等） */
     fun schedule(context: Context) {
         val request = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
@@ -44,7 +57,7 @@ object WidgetUpdater {
     /**
      * 立即刷新所有已放置的小组件。
      *
-     * - 全部 4 个 widget (RemoteViews): 同步广播 APPWIDGET_UPDATE → AppWidgetProvider.onUpdate
+     * - 全部 10 个 widget (RemoteViews): 同步广播 APPWIDGET_UPDATE → AppWidgetProvider.onUpdate
      *   同步调 awm.updateAppWidget(id, views) → 在 OPPO 冻结窗口前推送 → 秒刷,不受冻结影响。
      * - WorkManager 每 15 分钟兜底刷新 (schedule)。
      *
@@ -54,17 +67,12 @@ object WidgetUpdater {
         withContext(Dispatchers.IO) {
             val awm = AppWidgetManager.getInstance(context)
 
-            // ── 全部 4 个小组件 (RemoteViews): 同步广播,秒刷 ──
+            // ── 全部 10 个小组件 (RemoteViews): 同步广播,秒刷 ──
+
             // v1.0.29: Today/WeekList/TwoDay 已从 Glance 移植为同步 RemoteViews AppWidgetProvider,
             // 与 WeekGrid 同路径 — 普通 AppWidgetProvider.onUpdate 同步调 awm.updateAppWidget(id, views),
             // 在 OPPO 冻结窗口(5s)前就完成推送 → 永远可靠,不再卡 widget_loading。
-            val remoteViewsReceivers = listOf(
-                WeekGridWidgetProvider::class.java,
-                TodayWidgetReceiver::class.java,
-                WeekListWidgetReceiver::class.java,
-                WeekViewWidgetReceiver::class.java,
-                TwoDayWidgetReceiver::class.java
-            )
+            val remoteViewsReceivers = remoteViewsReceiverClasses
             for (receiver in remoteViewsReceivers) {
                 try {
                     val component = ComponentName(context, receiver)

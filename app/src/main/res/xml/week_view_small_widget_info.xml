@@ -9,6 +9,7 @@
     android:updatePeriodMillis="0"
     android:initialLayout="@layout/widget_bitmap_container"
     android:previewLayout="@layout/widget_bitmap_container"
+    android:previewImage="@drawable/widget_preview_weekview_small"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:description="@string/widget_week_view_small_label" />
