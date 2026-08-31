@@ -1,0 +1,28 @@
+name: Diag Gitee quota threshold
+on: workflow_dispatch
+jobs:
+  diag:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: probe3
+        timeout-minutes: 12
+        run: |
+          RID=981622
+          # 1KB 探针
+          head -c 1024 /dev/urandom > /tmp/tiny.bin
+          echo "--- 1KB 上传 ---"
+          curl -s --max-time 120 -X POST \
+            "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files" \
+            -F "access_token=${GITEE_TOKEN}" \
+            -F "file=@/tmp/tiny.bin" -w "\nHTTP:%{http_code} time:%{time_total}s\n"
+          # 立刻删掉(找到 id)
+          LIST=$(curl -s "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files?access_token=${GITEE_TOKEN}")
+          echo "$LIST" | jq -r '.[] | .name' | grep tiny && NEED_CLEAN=1 || NEED_CLEAN=0
+          if [ "$NEED_CLEAN" = "1" ]; then
+            # attach_files 列表无 id;用 try-delete 常见 id 不行——改用整 release 附件 URL 无法删。
+            # Gitee 删附件要 aid;从列表 api 拿不到就先留着,本地直接再 DELETE 试 name 无法。
+            echo "tiny.bin 落地,需手动删"
+          fi
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
