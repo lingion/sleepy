@@ -38,7 +38,7 @@ object UpdateManager {
             val json = readText(GITHUB_API)
             return@withContext parseReleaseJson(json, BuildConfig.VERSION_NAME, abi)
         }
-        // 镜像回退:正则取 tag,body 取不到
+        // 镜像回退:正则取 tag,changelog 从页面 markdown-body 块提取
         val page = readText(MIRROR_RELEASE)
         val tag = Regex("/lingion/sleepy/releases/tag/(v[0-9A-Za-z.+_-]+)").find(page)
             ?.groupValues?.get(1)
@@ -46,7 +46,7 @@ object UpdateManager {
         val version = tag.removePrefix("v")
         val url = "$MIRROR_PREFIX$tag/$abiAsset"
         val isUpdate = VersionUtils.compare(version, BuildConfig.VERSION_NAME) > 0
-        UpdateInfo(version, "", url, isUpdate)
+        UpdateInfo(version, parseMirrorPage(page, tag), url, isUpdate)
     }
 
     /** 下载 APK 到 cacheDir,带进度回调(0-100)。协程 cancel 时删半截文件。 */

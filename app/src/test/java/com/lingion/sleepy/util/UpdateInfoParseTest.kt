@@ -45,4 +45,75 @@ class UpdateInfoParseTest {
         val info = parseReleaseJson(noX86, "1.0.0", "x86_64")
         assertEquals("", info.downloadUrl)
     }
+
+    // ─── 镜像页 changelog 提取 ───────────────────────────────────────────
+
+    private val mirrorPage = """
+        <html><head><title>Release v1.0.39</title></head><body>
+        <div data-pjax="true" data-test-selector="body-content" data-view-component="true" class="markdown-body tmp-my-3"><h2>v1.0.39</h2>
+        <p>Two changes: bug reported in <a class="issue-link" href="https://github.com/lingion/sleepy/issues/5">#5</a> is fixed.</p>
+        <h3>New</h3>
+        <p><strong>Each time slot keeps its own week range</strong></p>
+        <ul>
+        <li>Every time slot carries its own start week.</li>
+        <li>Slots that share a day stay separate.</li>
+        </ul>
+        <h3>Fixes</h3>
+        <ul>
+        <li><strong>Weekday header wrong date</strong> is fixed.</li>
+        </ul>
+        </div>
+        </body></html>
+    """.trimIndent()
+
+    @Test
+    fun mirrorPage_extracts_markdown_body_block() {
+        val md = parseMirrorPage(mirrorPage, "v1.0.39")
+        assertTrue(md.contains("Each time slot keeps its own week range"))
+        assertTrue(md.contains("start week"))
+    }
+
+    @Test
+    fun mirrorPage_converts_headings_lists_bold_links() {
+        val md = parseMirrorPage(mirrorPage, "v1.0.39")
+        assertTrue(md.contains("## v1.0.39"))
+        assertTrue(md.contains("### New"))
+        assertTrue(md.contains("### Fixes"))
+        assertTrue(md.contains("- Every time slot carries its own start week."))
+        assertTrue(md.contains("**Each time slot keeps its own week range**"))
+        assertTrue(md.contains("[#5](https://github.com/lingion/sleepy/issues/5)"))
+    }
+
+    @Test
+    fun mirrorPage_strips_unsafe_tags_and_keeps_text() {
+        val md = parseMirrorPage(mirrorPage, "v1.0.39")
+        assertFalse(md.contains("<div"))
+        assertFalse(md.contains("class="))
+        assertFalse(md.contains("data-pjax"))
+    }
+
+    @Test
+    fun mirrorPage_no_markdown_body_returns_empty() {
+        assertEquals("", parseMirrorPage("<html><body>404</body></html>", "v1.0.39"))
+    }
+
+    @Test
+    fun mirrorPage_multiple_markdown_bodies_uses_first() {
+        val two = mirrorPage.replace(
+            "</body>", """
+            <div class="markdown-body"><h2>comment</h2></div></body>
+        """.trimIndent()
+        )
+        val md = parseMirrorPage(two, "v1.0.39")
+        assertTrue(md.contains("Each time slot keeps its own week range"))
+        assertFalse(md.contains("comment"))
+    }
+
+    @Test
+    fun mirrorPage_handles_multiline_div_without_regex_greed() {
+        // .*? 非贪婪在多 markdown-body 时必须停在第一个闭合 div,而不是吞掉后半页
+        val md = parseMirrorPage(mirrorPage, "v1.0.39")
+        assertFalse(md.contains("</body>"))
+        assertFalse(md.contains("</html>"))
+    }
 }

@@ -113,6 +113,9 @@ dependencies {
     // Navigation
     implementation("androidx.navigation:navigation-compose:2.8.3")
 
+    // Markdown 渲染(更新日志对话框用),JitPack
+    implementation("com.github.jeziellago:compose-markdown:0.7.2")
+
     // DataStore (preferences)
     implementation("androidx.datastore:datastore-preferences:1.1.1")
 

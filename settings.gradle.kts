@@ -22,6 +22,8 @@ dependencyResolutionManagement {
         maven { url = uri("https://maven.aliyun.com/repository/public") }
         google()
         mavenCentral()
+        // compose-markdown (com.github.jeziellago) 只在 JitPack 发布
+        maven { url = uri("https://jitpack.io") }
     }
 }
 

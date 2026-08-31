@@ -19,6 +19,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import dev.jeziellago.compose.markdowntext.MarkdownText
 
 sealed class UpdateUiState {
     object Idle : UpdateUiState()
@@ -105,10 +106,14 @@ fun UpdateChangelogDialog(
                             Spacer(Modifier.height(8.dp))
                         }
                         if (changelog.isNotBlank()) {
-                            Text(
-                                changelog,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant
+                            // MarkdownText 渲染 release body 的 ## 标题 / 列表 / 加粗 / 链接
+                            MarkdownText(
+                                markdown = changelog,
+                                modifier = Modifier.fillMaxWidth(),
+                                style = MaterialTheme.typography.bodySmall.copy(
+                                    color = colors.onSurfaceVariant
+                                ),
+                                linkColor = colors.primary,
                             )
                         }
                     }
