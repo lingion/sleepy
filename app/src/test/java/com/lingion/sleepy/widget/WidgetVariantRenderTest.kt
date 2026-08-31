@@ -152,6 +152,84 @@ class WidgetVariantRenderTest {
         assertEquals(WidgetVariant.SMALL, TwoDaySmallWidgetReceiver().variantHint)
         assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.TwoDayWidgetReceiver().variantHint)
     }
+
+    /** WeekData fixture — 字段以 WidgetContent.kt 真实定义为准(days: List<DayData>) */
+    private val weekData = WeekData(
+        days = listOf(
+            DayData(
+                date = LocalDate.of(2026, 9, 2),
+                dayOfWeek = 3,
+                courses = listOf(
+                    testCourse(name = "高等数学", startNode = 1),
+                    testCourse(name = "数据结构", startNode = 3)
+                ),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            ),
+            DayData(
+                date = LocalDate.of(2026, 9, 3),
+                dayOfWeek = 4,
+                courses = listOf(testCourse(name = "大学英语", startNode = 1)),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            ),
+            DayData(
+                date = LocalDate.of(2026, 9, 4),
+                dayOfWeek = 5,
+                courses = emptyList(),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            )
+        ),
+        hasTable = true
+    )
+
+    /** 星期名 fake — 模拟 DateUtils.localizedDay 的 R.array.day_names 输出(周一…周日) */
+    private fun dayLabel(dow: Int): String =
+        listOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")[dow - 1]
+
+    @Test
+    fun `weekList compact texts show today and tomorrow first courses`() {
+        // 2026-09-02 = 周三(锚点), 明天 09-03 = 周四; 周五无课跳过
+        val texts = WidgetBitmapRenderers.weekListCompactTexts(
+            ::resolve, ::dayLabel, LocalDate.of(2026, 9, 2), weekData
+        )
+        assertEquals(2, texts.size)
+        // 每天只取首课(courses 已按 startNode 排序): 周三取 高等数学 非第 2 门 数据结构
+        assertEquals("周三 高等数学", texts[0])
+        assertEquals("周四 大学英语", texts[1])
+    }
+
+    @Test
+    fun `weekList compact texts cover no-table out-of-semester and empty states`() {
+        val noTable = weekData.copy(hasTable = false)
+        assertEquals(
+            listOf("widget_create_schedule"),
+            WidgetBitmapRenderers.weekListCompactTexts(::resolve, ::dayLabel, LocalDate.of(2026, 9, 2), noTable)
+        )
+
+        val beforeStart = weekData.copy(semesterStatus = DateUtils.SemesterStatus.BEFORE_START)
+        assertEquals(
+            listOf("semester_not_started"),
+            WidgetBitmapRenderers.weekListCompactTexts(::resolve, ::dayLabel, LocalDate.of(2026, 9, 2), beforeStart)
+        )
+
+        val afterEnd = weekData.copy(semesterStatus = DateUtils.SemesterStatus.AFTER_END)
+        assertEquals(
+            listOf("semester_ended"),
+            WidgetBitmapRenderers.weekListCompactTexts(::resolve, ::dayLabel, LocalDate.of(2026, 9, 2), afterEnd)
+        )
+
+        // 今明两天全无课 → no_course 一行
+        val empty = weekData.copy(days = weekData.days.map { it.copy(courses = emptyList()) })
+        assertEquals(
+            listOf("no_course"),
+            WidgetBitmapRenderers.weekListCompactTexts(::resolve, ::dayLabel, LocalDate.of(2026, 9, 2), empty)
+        )
+    }
+
+    @Test
+    fun `weekList small receiver declares SMALL variant`() {
+        assertEquals(WidgetVariant.SMALL, WeekListSmallWidgetReceiver().variantHint)
+        assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekListWidgetReceiver().variantHint)
+    }
 }
 
 /** 测试用最小 CourseEntity — 字段以实体真实定义为准(参照 CourseColorUtilTest 同款 fixture) */
