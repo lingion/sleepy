@@ -676,11 +676,58 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * WeekView widget 渲染 — 7 列日列, 复刻 DaySummaryCell (CourseTableView.kt L559-L642)
-     * 列卡片: primaryContainer(今天) / surfaceContainer(其他), 14dp 圆角
-     * 课程列表: 纯文本无胶囊背景, take(5), onSurfaceVariant 色, 2dp 间距
+     * WeekView 小档列选取(渲染与单测共用单一事实来源):
+     * 有课的日子优先成池; 今天必保(无课也追加进池, 锚点语义);
+     * 按"与今天的距离"取最近 maxColumns 列, 最终按星期升序输出(从左到右绘制顺序)。
+     * 纯函数零 LocalDate.now() — todayDow 由调用方注入。
      */
-    fun renderWeekView(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
+    fun weekViewCompactColumns(data: WeekData, todayDow: Int, maxColumns: Int = 3): List<Int> {
+        val pool = data.days.filter { it.courses.isNotEmpty() }.map { it.dayOfWeek }
+            .ifEmpty { data.days.map { it.dayOfWeek } }
+            .toMutableList()
+        if (todayDow !in pool) pool.add(todayDow)
+        return pool.sortedBy { kotlin.math.abs(it - todayDow) }.take(maxColumns).sorted()
+    }
+
+    /**
+     * WeekView widget 渲染 — 7 列日列, 复刻 DaySummaryCell (CourseTableView.kt L559-L642)
+     * SMALL 变体 + 容器 <150dp → 走紧凑档(复用 Regular 渲染器, shownDays 换成 compact 列);
+     * REGULAR 或容器被拖大 ≥150dp → 全量排版
+     * (默认参数 REGULAR → 全部现有调用点零改动; 大档路径 renderWeekViewRegular 函数体逐字节不变)
+     */
+    fun renderWeekView(
+        context: Context, data: WeekData, wDp: Float, hDp: Float,
+        variant: WidgetVariant = WidgetVariant.REGULAR
+    ): Bitmap {
+        if (variant == WidgetVariant.SMALL && wDp < 150f) {
+            return renderWeekViewCompact(context, data, wDp, hDp)
+        }
+        // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
+        return renderWeekViewRegular(context, data, wDp, hDp)
+    }
+
+    /**
+     * WeekView 紧凑档 — 复用 Regular 渲染器的列绘制(字号不变, 列少了每列自然变宽)。
+     * Regular 函数体零改动, compact 走数据侧换列: 先按用户"显示星期"设置收窄可选池
+     * (避免 Regular 内 shownDays 交集为空落到"去创建课表"兜底文案), 再选 compact 列。
+     */
+    private fun renderWeekViewCompact(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
+        val todayDow = LocalDate.now().dayOfWeek.value
+        // visibleDays 同 Regular 档读法(决策 D5-12): 用户设置决定可选列池, 空集回退全周防御
+        val visibleDays = AppPrefs.getVisibleDays(context)
+        val poolDays = if (visibleDays.isEmpty()) data.days
+            else data.days.filter { it.dayOfWeek in visibleDays }
+        val compactDows = weekViewCompactColumns(data.copy(days = poolDays), todayDow)
+        val compactData = data.copy(
+            days = data.days.filter { it.dayOfWeek in compactDows }.sortedBy { it.dayOfWeek }
+        )
+        return renderWeekViewRegular(context, compactData, wDp, hDp)
+    }
+
+    /**
+     * WeekView 全量排版 — 原 renderWeekView 函数体原样改名迁入(REGULAR 档逐字节不变保证)
+     */
+    private fun renderWeekViewRegular(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()

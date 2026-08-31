@@ -5,6 +5,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
 
@@ -272,6 +273,64 @@ class WidgetVariantRenderTest {
     fun `weekList small receiver declares SMALL variant`() {
         assertEquals(WidgetVariant.SMALL, WeekListSmallWidgetReceiver().variantHint)
         assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekListWidgetReceiver().variantHint)
+    }
+
+    /** 周视图 compact 列选取 fixture — 全 7 天都有课 */
+    private fun weekDataAllDays(): WeekData = WeekData(
+        days = (1..7).map { dow ->
+            DayData(
+                date = LocalDate.of(2026, 8, 31).plusDays(dow.toLong() - 1),
+                dayOfWeek = dow,
+                courses = listOf(testCourse(name = "day$dow 课", startNode = 1)),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            )
+        },
+        hasTable = true
+    )
+
+    /** 周视图 compact 列选取 fixture — 只有周四有课 */
+    private fun weekDataOnlyThursday(): WeekData = WeekData(
+        days = (1..7).map { dow ->
+            DayData(
+                date = LocalDate.of(2026, 8, 31).plusDays(dow.toLong() - 1),
+                dayOfWeek = dow,
+                courses = if (dow == 4) listOf(testCourse(name = "周四课", startNode = 1)) else emptyList(),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            )
+        },
+        hasTable = true
+    )
+
+    @Test
+    fun `weekView compact columns center on today`() {
+        // 周三(3)为中心 → 与今天距离最近 3 列 = 周二三四
+        assertEquals(
+            listOf(2, 3, 4),
+            WidgetBitmapRenderers.weekViewCompactColumns(weekDataAllDays(), todayDow = 3, maxColumns = 3)
+        )
+    }
+
+    @Test
+    fun `weekView compact columns skip empty days`() {
+        // 只有周四(4)有课 → 池里只剩周四; 今天(周三)无课不在有课池中
+        assertEquals(
+            listOf(3, 4),
+            WidgetBitmapRenderers.weekViewCompactColumns(weekDataOnlyThursday(), todayDow = 3, maxColumns = 3)
+        )
+    }
+
+    @Test
+    fun `weekView compact columns include today even if empty`() {
+        // 今天(周三)无课也必须出现在结果中(锚点语义) — 且不挤掉唯一有课的周四
+        val cols = WidgetBitmapRenderers.weekViewCompactColumns(weekDataOnlyThursday(), todayDow = 3, maxColumns = 3)
+        assertTrue("today(3) must appear in $cols", 3 in cols)
+        assertTrue("thursday(4) must appear in $cols", 4 in cols)
+    }
+
+    @Test
+    fun `weekView small receiver declares SMALL variant`() {
+        assertEquals(WidgetVariant.SMALL, WeekViewSmallWidgetReceiver().variantHint)
+        assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekViewWidgetReceiver().variantHint)
     }
 }
 

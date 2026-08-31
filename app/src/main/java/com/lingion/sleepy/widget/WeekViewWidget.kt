@@ -19,23 +19,31 @@ import java.time.LocalDate
  * 与 WeekListWidget 布局完全一致(7 列竖排胶囊), 但课程胶囊无彩色填充
  * (surfaceVariant 背景 + onSurfaceVariant 文字), 纯主题色方案。
  */
-class WeekViewWidgetReceiver : AppWidgetProvider() {
+open class WeekViewWidgetReceiver : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** 小组件排版档位 — 基类默认 REGULAR(现有变体); 「本周课表（周视图）· 小」子类覆写为 SMALL */
+    open val variantHint: WidgetVariant = WidgetVariant.REGULAR
+
+    private fun push(context: Context, awm: AppWidgetManager, id: Int) {
+        // SMALL 变体: compact 分支内部还有 150dp 升档闸, 这里直接传 variant
+        val variant = variantHint
+        RemoteViewsWidgetHelper.renderAndPush(
+            context, awm, id, TAG,
+            loadData = { loadDataSync(context) },
+            renderBitmap = { data, wDp, hDp ->
+                WidgetBitmapRenderers.renderWeekView(context, data, wDp, hDp, variant)
+            }
+        )
+    }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
         val pending = goAsync()
         ioScope.launch {
             try {
                 for (id in ids) {
-                    try {
-                        RemoteViewsWidgetHelper.renderAndPush(
-                            context, awm, id, TAG,
-                            loadData = { loadDataSync(context) },
-                            renderBitmap = { data, wDp, hDp ->
-                                WidgetBitmapRenderers.renderWeekView(context, data, wDp, hDp)
-                            }
-                        )
-                    } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                    try { push(context, awm, id) }
+                    catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
                 }
             } finally { pending.finish() }
         }
@@ -46,15 +54,8 @@ class WeekViewWidgetReceiver : AppWidgetProvider() {
     ) {
         val pending = goAsync()
         ioScope.launch {
-            try {
-                RemoteViewsWidgetHelper.renderAndPush(
-                    context, awm, id, TAG,
-                    loadData = { loadDataSync(context) },
-                    renderBitmap = { data, wDp, hDp ->
-                        WidgetBitmapRenderers.renderWeekView(context, data, wDp, hDp)
-                    }
-                )
-            } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+            try { push(context, awm, id) }
+            catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
             finally { pending.finish() }
         }
     }

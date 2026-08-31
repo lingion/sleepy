@@ -163,6 +163,18 @@
         </receiver>
 
         <receiver
+            android:name=".widget.WeekViewSmallWidgetReceiver"
+            android:exported="true"
+            android:label="@string/widget_week_view_small_label">
+            <intent-filter>
+                <action android:name="android.appwidget.action.APPWIDGET_UPDATE" />
+            </intent-filter>
+            <meta-data
+                android:name="android.appwidget.provider"
+                android:resource="@xml/week_view_small_widget_info" />
+        </receiver>
+
+        <receiver
             android:name=".widget.WeekGridWidgetProvider"
             android:exported="true"
             android:label="@string/widget_week_grid_label">

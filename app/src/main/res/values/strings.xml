@@ -8,6 +8,7 @@
     <string name="widget_twoday_label">最近两天</string>
     <string name="widget_twoday_small_label">最近两天 · 小</string>
     <string name="widget_week_view_label">本周课表（周视图）</string>
+    <string name="widget_week_view_small_label">本周课表（周视图）· 小</string>
 
     <!-- Tabs -->
     <string name="tab_schedule">课表</string>
