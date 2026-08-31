@@ -39,7 +39,8 @@ class WidgetVariantRenderTest {
         R.string.widget_create_schedule to "widget_create_schedule",
         R.string.semester_not_started to "semester_not_started",
         R.string.semester_ended to "semester_ended",
-        R.string.today_no_course to "today_no_course"
+        R.string.today_no_course to "today_no_course",
+        R.string.no_course to "no_course"
     )
 
     private fun resolve(resId: Int): String = resNames.getValue(resId)
@@ -90,6 +91,66 @@ class WidgetVariantRenderTest {
     fun `small receiver declares SMALL variant`() {
         assertEquals(WidgetVariant.SMALL, TodaySmallWidgetReceiver().variantHint)
         assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.TodayWidgetReceiver().variantHint)
+    }
+
+    /** TwoDayData fixture — 字段以 WidgetContent.kt 真实定义为准(days: List<DayData>) */
+    private val twoDayData = TwoDayData(
+        days = listOf(
+            DayData(
+                date = LocalDate.of(2026, 9, 1),
+                dayOfWeek = 2,
+                courses = listOf(testCourse(name = "高等数学", startNode = 1)),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            ),
+            DayData(
+                date = LocalDate.of(2026, 9, 2),
+                dayOfWeek = 3,
+                courses = emptyList(),
+                timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+            )
+        ),
+        hasTable = true
+    )
+
+    @Test
+    fun `twoDay compact texts keep only today first course`() {
+        val texts = WidgetBitmapRenderers.twoDayCompactTexts(::resolve, twoDayData)
+        assertEquals(1, texts.size)
+        assertEquals("高等数学", texts[0])
+    }
+
+    @Test
+    fun `twoDay compact texts cover no-table out-of-semester and empty states`() {
+        val noTable = twoDayData.copy(hasTable = false)
+        assertEquals(
+            listOf("widget_create_schedule"),
+            WidgetBitmapRenderers.twoDayCompactTexts(::resolve, noTable)
+        )
+
+        val beforeStart = twoDayData.copy(semesterStatus = DateUtils.SemesterStatus.BEFORE_START)
+        assertEquals(
+            listOf("semester_not_started"),
+            WidgetBitmapRenderers.twoDayCompactTexts(::resolve, beforeStart)
+        )
+
+        val afterEnd = twoDayData.copy(semesterStatus = DateUtils.SemesterStatus.AFTER_END)
+        assertEquals(
+            listOf("semester_ended"),
+            WidgetBitmapRenderers.twoDayCompactTexts(::resolve, afterEnd)
+        )
+
+        // 无课: 今日栏为空 → no_course 一行(与 regular TwoDay 渲染空列同资源)
+        val empty = twoDayData.copy(days = twoDayData.days.map { it.copy(courses = emptyList()) })
+        assertEquals(
+            listOf("no_course"),
+            WidgetBitmapRenderers.twoDayCompactTexts(::resolve, empty)
+        )
+    }
+
+    @Test
+    fun `twoDay small receiver declares SMALL variant`() {
+        assertEquals(WidgetVariant.SMALL, TwoDaySmallWidgetReceiver().variantHint)
+        assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.TwoDayWidgetReceiver().variantHint)
     }
 }
 

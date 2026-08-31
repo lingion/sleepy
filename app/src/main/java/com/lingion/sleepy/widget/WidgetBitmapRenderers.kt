@@ -345,6 +345,73 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * TwoDay 小档纯文本行(渲染与单测共用单一事实来源)。
+     * 状态资源与 renderTwoDayRegular 各分支逐一对应:
+     *   无课表→widget_create_schedule · 学期外→semester_not_started/semester_ended
+     *   今日无课→no_course(regular 两栏空列同资源) · 有课→今日首课名单行
+     * resolver 抽象掉 Context 资源访问 → 核心选取逻辑可在纯 JVM 单测断言(仓库无 Robolectric)。
+     */
+    fun twoDayCompactTexts(context: Context, data: TwoDayData): List<String> =
+        twoDayCompactTexts({ resId -> context.getString(resId) }, data)
+
+    /** 同上 — resolver 注入版(纯 JVM 单测入口) */
+    fun twoDayCompactTexts(resolve: (Int) -> String, data: TwoDayData): List<String> {
+        if (!data.hasTable || data.days.isEmpty()) return listOf(resolve(R.string.widget_create_schedule))
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
+            val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
+                R.string.semester_not_started else R.string.semester_ended
+            return listOf(resolve(statusRes))
+        }
+        val today = data.days.first()
+        if (today.courses.isEmpty()) return listOf(resolve(R.string.no_course))
+        return listOf(today.courses.first().courseName)
+    }
+
+    /**
+     * TwoDay 紧凑档 — 日期小字(顶) + 状态/今日首课名(居中), 纯文本无两栏课程胶囊。
+     * 布局常量: compact 档不参与 twoDayContentHeightDp 滚动条带估算(固定 size 变体), 无需镜像。
+     */
+    private fun renderTwoDayCompact(context: Context, data: TwoDayData, wDp: Float, hDp: Float): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val w = (wDp * density).toInt()
+        val h = (hDp * density).toInt()
+        val s = scheme(context, data.themeKey, data.isDark)
+        val ctx = SleepyApp.get()
+
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(c)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        // 背景圆角
+        p.color = s.bg
+        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
+            20f * density, 20f * density, p)
+
+        val pad = 10f * density
+        val lines = twoDayCompactTexts(ctx, data)
+
+        // 日期行(顶部小字) — 今日日期
+        p.color = s.onSurfaceVariant
+        p.textSize = 11f * density
+        p.typeface = Typeface.DEFAULT
+        val dateStr = data.days.firstOrNull()?.let { "${it.date.monthValue}/${it.date.dayOfMonth}" } ?: ""
+        canvas.drawText(dateStr, pad, pad + 11f * density, p)
+
+        // 状态/今日首课名 — 居中大字
+        p.color = s.onSurface
+        p.textSize = 15f * density
+        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        var y = h / 2f
+        for (line in lines.take(2)) {
+            canvas.drawText(ellipsize(p, line, w - pad * 2), pad, y, p)
+            y += 20f * density
+        }
+
+        return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+    }
+
+    /**
      * TwoDay 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderTwoDay。
      */
     fun twoDayContentHeightDp(data: TwoDayData): Float {
@@ -662,8 +729,24 @@ object WidgetBitmapRenderers {
     /**
      * TwoDay widget 渲染 — 今天 + 明天 (左右两栏竖排)
      * 用户反馈: 不要把第二天堆在底下 → 改成左列今天 / 右列明天 并排
+     * SMALL 变体 + 容器 <150dp → 走紧凑档(纯文本); REGULAR 或容器被拖大 ≥150dp → 全量排版
+     * (默认参数 REGULAR → 全部现有调用点零改动; 大档路径 renderTwoDayRegular 函数体逐字节不变)
      */
-    fun renderTwoDay(context: Context, data: TwoDayData, wDp: Float, hDp: Float): Bitmap {
+    fun renderTwoDay(
+        context: Context, data: TwoDayData, wDp: Float, hDp: Float,
+        variant: WidgetVariant = WidgetVariant.REGULAR
+    ): Bitmap {
+        if (variant == WidgetVariant.SMALL && wDp < 150f) {
+            return renderTwoDayCompact(context, data, wDp, hDp)
+        }
+        // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
+        return renderTwoDayRegular(context, data, wDp, hDp)
+    }
+
+    /**
+     * TwoDay 全量排版 — 原 renderTwoDay 函数体原样改名迁入(REGULAR 档逐字节不变保证)
+     */
+    private fun renderTwoDayRegular(context: Context, data: TwoDayData, wDp: Float, hDp: Float): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()

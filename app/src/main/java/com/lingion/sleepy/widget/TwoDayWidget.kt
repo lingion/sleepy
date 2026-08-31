@@ -22,22 +22,29 @@ import java.time.LocalDate
  *
  * Glance 版 TwoDayWidget 类已删除(决策 D5-11); loadDataSync 自 Glance companion 迁入本类。
  */
-class TwoDayWidgetReceiver : AppWidgetProvider() {
+open class TwoDayWidgetReceiver : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+
+    /** 小组件排版档位 — 基类默认 REGULAR(现有变体); 「最近两天 · 小」子类覆写为 SMALL */
+    open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
         val data = loadDataSync(context)
         val opts = awm.getAppWidgetOptions(id)
         val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
         val contentH = WidgetBitmapRenderers.twoDayContentHeightDp(data)
+        // SMALL 变体: compact 分支内部还有 150dp 升档闸, 这里直接传 variant
+        val variant = variantHint
         if (contentH <= hDp) {
             RemoteViewsWidgetHelper.renderAndPush(
                 context, awm, id, TAG,
                 loadData = { data },
-                renderBitmap = { d, w, h -> WidgetBitmapRenderers.renderTwoDay(context, d, w, h) }
+                renderBitmap = { d, w, h ->
+                    WidgetBitmapRenderers.renderTwoDay(context, d, w, h, variant)
+                }
             )
         } else {
-            val shell = WidgetBitmapRenderers.renderTwoDay(context, data, wDp.toFloat(), hDp.toFloat())
+            val shell = WidgetBitmapRenderers.renderTwoDay(context, data, wDp.toFloat(), hDp.toFloat(), variant)
             RemoteViewsWidgetHelper.pushScrollable(
                 context, awm, id, TAG,
                 layoutRes = com.lingion.sleepy.R.layout.widget_scroll_twoday,
