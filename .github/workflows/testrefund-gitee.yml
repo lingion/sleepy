@@ -1,0 +1,28 @@
+name: Test quota refund
+on: workflow_dispatch
+jobs:
+  t:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: t
+        timeout-minutes: 18
+        run: |
+          set -e
+          # GitHub asset id for v1.0.34 app-x86_64-release.apk
+          AID=$(curl -s -H "Authorization: Bearer $GH_TOKEN" \
+            "https://api.github.com/repos/lingion/sleepy/releases/tags/v1.0.34" | jq -r '.assets[] | select(.name=="app-x86_64-release.apk") | .id')
+          echo "gh asset: $AID"
+          curl -sfL --retry 3 --max-time 600 \
+            -H "Authorization: Bearer $GH_TOKEN" \
+            -H "Accept: application/octet-stream" \
+            -o /tmp/apk "https://api.github.com/repos/lingion/sleepy/releases/assets/$AID"
+          ls -l /tmp/apk
+          RID=$(curl -s "https://gitee.com/api/v5/repos/lingion/sleepy/releases/tags/v1.0.34?access_token=${GITEE_TOKEN}" | jq -r .id)
+          time curl -s --max-time 600 -X POST \
+            "https://gitee.com/api/v5/repos/lingion/sleepy/releases/$RID/attach_files" \
+            -F "access_token=${GITEE_TOKEN}" \
+            -F "file=@/tmp/apk" -w "\nHTTP:%{http_code}\n" | tail -3
+        env:
+          GITEE_TOKEN: ${{ secrets.GITEE_TOKEN }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
