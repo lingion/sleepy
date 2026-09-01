@@ -255,7 +255,7 @@
     <string name="settings_start_view">起動時の表示</string>
     <string name="settings_start_view_full">週表示</string>
     <string name="settings_start_view_cards">グリッド</string>
-    <string name="settings_start_view_sub">起動時に表示されるビューの設定です。課表ページ上部でいつでも切り替えできます</string>
+    <string name="settings_start_view_sub">起動時に表示されるビューの設定です。時間割ページ上部でいつでも切り替えできます</string>
     <string name="settings_grid_sub_info">グリッドカードの補足情報</string>
     <string name="settings_grid_sub_room">教室</string>
     <string name="settings_grid_sub_room_sub">授業名の下に教室を表示（未設定なら非表示）</string>
