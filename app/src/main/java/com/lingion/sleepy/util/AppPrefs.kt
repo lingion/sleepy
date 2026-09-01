@@ -28,7 +28,7 @@ object AppPrefs {
     const val KEY_LANG = "language"
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
     const val KEY_GRID_SUB_INFO = "grid_sub_info" // "room" / "teacher" / "none" — 网格卡片副信息（周视图网格卡课程名下方那行；左栏已有节次，故此处不再显示节次/时间）
-    const val KEY_START_VIEW = "start_view" // "full" / "cards" — 启动默认视图（记住上次手动切换的课表视图）
+    const val KEY_START_VIEW = "start_view" // "full" / "cards" — 启动默认视图（仅通用设置里设置；手动切换课表顶部视图不写入）
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
     const val KEY_VERT_PUNCT_REPLACE = "vert_punct_replace" // bool default false (方案B开关)
