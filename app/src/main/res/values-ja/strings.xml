@@ -230,6 +230,7 @@
     <string name="slot_at_least_one_day">スロット %1$d は最低1日必要です</string>
     <string name="slot_start_node_positive">スロット %1$d の開始時限は0より大きくなければなりません</string>
     <string name="slot_step_positive">スロット %1$d の連続時限数は0より大きくなければなりません</string>
+    <string name="slot_step_exceeds_max">スロット %1$d の %2$d-%3$d 時限は時間割の最大時限（%4$d）を超えています</string>
     <string name="slot_time_format">スロット %1$d の開始/終了時間はHH:mm形式である必要があります</string>
     <string name="slot_time_order">スロット %1$d の開始時間は終了時間より前である必要があります</string>
     <string name="slot_time_overlap">スロット %1$d とスロット %2$d が %3$s で重複しています</string>

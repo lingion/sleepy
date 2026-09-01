@@ -244,6 +244,7 @@
     <string name="slot_at_least_one_day">时段 %1$d 至少选择一天</string>
     <string name="slot_start_node_positive">时段 %1$d 的开始节必须大于 0</string>
     <string name="slot_step_positive">时段 %1$d 的连上节数必须大于 0</string>
+    <string name="slot_step_exceeds_max">时段 %1$d 第 %2$d-%3$d 节已超出课表最大节次（%4$d 节）</string>
     <string name="slot_time_format">时段 %1$d 的开始/结束时间格式应为 HH:mm</string>
     <string name="slot_time_order">时段 %1$d 的开始时间必须早于结束时间</string>
     <string name="slot_time_overlap">时段 %1$d 与时段 %2$d 在 %3$s 存在时间重叠</string>

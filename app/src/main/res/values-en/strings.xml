@@ -236,6 +236,7 @@
     <string name="slot_at_least_one_day">Slot %1$d must have at least one day</string>
     <string name="slot_start_node_positive">Slot %1$d start period must be greater than 0</string>
     <string name="slot_step_positive">Slot %1$d consecutive periods must be greater than 0</string>
+    <string name="slot_step_exceeds_max">Slot %1$d periods %2$d–%3$d exceed the timetable\'s max period (%4$d)</string>
     <string name="slot_time_format">Slot %1$d start/end time should be HH:mm format</string>
     <string name="slot_time_order">Slot %1$d start time must be before end time</string>
     <string name="slot_time_overlap">Slot %1$d and slot %2$d overlap on %3$s</string>

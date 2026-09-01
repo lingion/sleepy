@@ -230,6 +230,7 @@
     <string name="slot_at_least_one_day">El horario %1$d debe tener al menos un día</string>
     <string name="slot_start_node_positive">El período de inicio del horario %1$d debe ser mayor que 0</string>
     <string name="slot_step_positive">Los períodos consecutivos del horario %1$d deben ser mayores que 0</string>
+    <string name="slot_step_exceeds_max">El horario %1$d ocupa los períodos %2$d–%3$d y supera el máximo del horario (%4$d)</string>
     <string name="slot_time_format">El formato de hora inicio/fin del horario %1$d debe ser HH:mm</string>
     <string name="slot_time_order">La hora de inicio del horario %1$d debe ser anterior a la hora de fin</string>
     <string name="slot_time_overlap">El horario %1$d y el horario %2$d se superponen en %3$s</string>

@@ -230,6 +230,7 @@
     <string name="slot_at_least_one_day">時段 %1$d 至少選擇一天</string>
     <string name="slot_start_node_positive">時段 %1$d 的開始節必須大於 0</string>
     <string name="slot_step_positive">時段 %1$d 的連上節數必須大於 0</string>
+    <string name="slot_step_exceeds_max">時段 %1$d 第 %2$d-%3$d 節已超出課表最大節次（%4$d 節）</string>
     <string name="slot_time_format">時段 %1$d 的開始/結束時間格式應為 HH:mm</string>
     <string name="slot_time_order">時段 %1$d 的開始時間必須早於結束時間</string>
     <string name="slot_time_overlap">時段 %1$d 與時段 %2$d 在 %3$s 存在時間重疊</string>
