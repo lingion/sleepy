@@ -37,6 +37,7 @@ object AppPrefs {
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
     const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格课表整体缩放(字号/行高/间距/圆角联动, issue#8)
     const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
+    const val KEY_GRID_TWO_COLUMN = "grid_two_column" // bool default false — 网格两栏(1-6节左栏/7节起右栏, issue#8)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -285,6 +286,16 @@ object AppPrefs {
 
     fun setGridCornerRatio(ctx: Context, v: Float) {
         sp(ctx).edit().putFloat(KEY_GRID_CORNER_RATIO, v.coerceIn(0f, 2f)).apply()
+    }
+
+    // ===== 网格两栏(issue#8) — 默认 false =====
+    // 开启后网格拆左右两栏: 左栏 1~splitAt 节, 右栏 splitAt+1 节起, 各带时间栏; 表头只在左栏外共用一次
+
+    fun isGridTwoColumn(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_GRID_TWO_COLUMN, false)
+
+    fun setGridTwoColumn(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_GRID_TWO_COLUMN, v).apply()
     }
 
     // ===== 节假日灰显 =====

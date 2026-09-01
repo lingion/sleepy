@@ -83,6 +83,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
     var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
     var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
+    var gridTwoColumn by remember { mutableStateOf(AppPrefs.isGridTwoColumn(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -171,10 +172,11 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 }
             }
 
-            // 网格卡片大小(issue#8): 70%~130% 整体缩放 — 字号/胶囊行高/间距/圆角联动
+            // 主页胶囊大小与圆角(issue#8): 缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 两栏开关
             item {
-                SettingsCard(title = stringResource(R.string.settings_grid_scale), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
-                    Text(text = stringResource(R.string.settings_grid_scale_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
+                    Text(text = stringResource(R.string.settings_pill_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                    Text(text = stringResource(R.string.settings_pill_scale_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = "${(gridScale * 100).roundToInt()}%",
@@ -184,12 +186,13 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         )
                         Slider(
                             value = gridScale,
-                            onValueChange = { gridScale = it },
+                            onValueChange = {
+                                gridScale = (it * 20).roundToInt() / 20f
+                            },
                             onValueChangeFinished = {
                                 AppPrefs.setGridScale(context, gridScale)
                             },
                             valueRange = 0.7f..1.3f,
-                            steps = 11,
                             colors = SliderDefaults.colors(
                                 thumbColor = colors.primary,
                                 activeTrackColor = colors.primary,
@@ -198,8 +201,8 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         )
                     }
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Text(text = stringResource(R.string.settings_grid_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                    Text(text = stringResource(R.string.settings_grid_corner_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = stringResource(R.string.settings_pill_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                    Text(text = stringResource(R.string.settings_pill_corner_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = "${(gridCorner * 100).roundToInt()}%",
@@ -209,7 +212,9 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         )
                         Slider(
                             value = gridCorner,
-                            onValueChange = { gridCorner = it },
+                            onValueChange = {
+                                gridCorner = (it * 20).roundToInt() / 20f
+                            },
                             onValueChangeFinished = {
                                 AppPrefs.setGridCornerRatio(context, gridCorner)
                             },
@@ -221,6 +226,13 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                             )
                         )
                     }
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_pill_two_column),
+                        subtitle = stringResource(R.string.settings_pill_two_column_sub),
+                        checked = gridTwoColumn,
+                        onCheckedChange = { gridTwoColumn = it; AppPrefs.setGridTwoColumn(context, it) }
+                    )
                 }
             }
 

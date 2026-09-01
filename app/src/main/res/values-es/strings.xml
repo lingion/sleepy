@@ -263,10 +263,13 @@
     <string name="settings_grid_sub_teacher_sub">Mostrar profesor bajo el nombre (oculto si está vacío)</string>
     <string name="settings_grid_sub_none">Ninguno</string>
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
-    <string name="settings_grid_scale">Tamaño de tarjeta de cuadrícula</string>
-    <string name="settings_grid_scale_sub">Escala toda la cuadrícula: fuente, altura de tarjeta y espaciado juntos (70%–130%). Más pequeño cabe más clases en pantalla.</string>
-    <string name="settings_grid_corner">Radio de esquinas</string>
-    <string name="settings_grid_corner_sub">Radio de esquinas de tarjetas y píldoras (0% cuadrado – 200% muy redondeado), por defecto 100%</string>
+    <string name="settings_pill">Tamaño y esquinas de píldoras</string>
+    <string name="settings_pill_scale">Tamaño de píldora</string>
+    <string name="settings_pill_scale_sub">Escala toda la cuadrícula: fuente, altura y espaciado juntos (70%–130%). Más pequeño cabe más clases en pantalla.</string>
+    <string name="settings_pill_corner">Radio de esquinas</string>
+    <string name="settings_pill_corner_sub">Radio de esquinas de tarjetas y píldoras (0% cuadrado – 200% muy redondeado), por defecto 100%</string>
+    <string name="settings_pill_two_column">Dos columnas</string>
+    <string name="settings_pill_two_column_sub">Divide la cuadrícula en dos columnas lado a lado (primeras franjas a la izquierda, resto a la derecha). Útil para horarios largos; sin efecto con menos de 8 franjas.</string>
     <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>

@@ -102,8 +102,81 @@ fun CardsGridView(
 
     // issue#8 网格整体缩放: 0.7~1.3, 字号/行高/间距/圆角/内边距等比联动
     // (12节连堂课表缩到 0.7 可一屏放下; 只影响本 Cards 视图, 小组件与列表视图不受影响)
-    val scale = AppPrefs.getGridScale(androidx.compose.ui.platform.LocalContext.current)
-    val cornerRatio = AppPrefs.getGridCornerRatio(androidx.compose.ui.platform.LocalContext.current)
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scale = AppPrefs.getGridScale(context)
+    val cornerRatio = AppPrefs.getGridCornerRatio(context)
+    val twoColumn = AppPrefs.isGridTwoColumn(context) && maxNode >= 8
+    val d = { v: Float -> (v * scale).dp }
+
+    val gridBgShape = SleepyTheme.shapes.large
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .background(colors.surfaceContainerHigh, gridBgShape)
+            .padding(d(8f))
+    ) {
+        if (twoColumn) {
+            // 两栏: 左栏 1~splitNode 节, 右栏 splitNode+1~maxNode 节, 左右并排各带时间栏
+            val splitNode = (maxNode + 1) / 2
+            Row(modifier = Modifier.fillMaxSize(), horizontalArrangement = Arrangement.spacedBy(d(6f))) {
+                GridSection(
+                    courses = courses.filter { it.startNode <= splitNode },
+                    timeSlots = timeSlots.filter { it.nodeEnd <= splitNode },
+                    maxNode = splitNode,
+                    sortedDays = sortedDays, visibleDays = visibleDays, showDate = showDate,
+                    startDate = startDate, currentWeek = currentWeek, today = today,
+                    onCourseClick = onCourseClick, greyDays = greyDays,
+                    scale = scale, cornerRatio = cornerRatio,
+                    modifier = Modifier.weight(1f)
+                )
+                GridSection(
+                    courses = courses.filter { it.startNode > splitNode },
+                    timeSlots = timeSlots.filter { it.nodeStart > splitNode },
+                    maxNode = maxNode - splitNode,
+                    sortedDays = sortedDays, visibleDays = visibleDays, showDate = false,
+                    startDate = startDate, currentWeek = currentWeek, today = today,
+                    onCourseClick = onCourseClick, greyDays = greyDays,
+                    scale = scale, cornerRatio = cornerRatio,
+                    modifier = Modifier.weight(1f)
+                )
+            }
+        } else {
+            GridSection(
+                courses = courses, timeSlots = timeSlots, maxNode = maxNode,
+                sortedDays = sortedDays, visibleDays = visibleDays, showDate = showDate,
+                startDate = startDate, currentWeek = currentWeek, today = today,
+                onCourseClick = onCourseClick, greyDays = greyDays,
+                scale = scale, cornerRatio = cornerRatio,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+/**
+ * 单栏网格(表头+时间栏+课程卡) — 单栏/两栏两模式共用。
+ * maxNode 为本栏最大节数, timeSlots 已由调用方过滤为本栏节次; offset 计算全部用「栏内相对节次」。
+ */
+@Composable
+private fun GridSection(
+    courses: List<CourseEntity>,
+    timeSlots: List<TimeSlot>,
+    maxNode: Int,
+    sortedDays: List<Int>,
+    visibleDays: Set<Int>,
+    showDate: Boolean,
+    startDate: String,
+    currentWeek: Int,
+    today: Int,
+    onCourseClick: (CourseEntity) -> Unit,
+    greyDays: Set<Int>,
+    scale: Float,
+    cornerRatio: Float,
+    modifier: Modifier = Modifier
+) {
+    val colors = SleepyTheme.colors
+    val dayCount = sortedDays.size
     val d = { v: Float -> (v * scale).dp }
 
     // 布局常量（全 dp, 乘 scale）
@@ -114,103 +187,97 @@ fun CardsGridView(
     val gapW = d(5f)
     val rowH = slotH + gapH
 
-    val gridBgShape = SleepyTheme.shapes.large
+    BoxWithConstraints(modifier = modifier) {
+        // 算出每列宽度 (dp)
+        val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
+        val gridH = rowH * maxNode   // grid 内容区固定高度
 
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(colors.surfaceContainerHigh, gridBgShape)
-            .padding(d(8f))
-    ) {
-        BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
-            // 算出每列宽度 (dp)
-            val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
-            val gridH = rowH * maxNode   // grid 内容区固定高度
+        val scrollState = rememberScrollState()
 
-            val scrollState = rememberScrollState()
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .verticalScroll(scrollState)
+        ) {
+            // ---- 表头：自然 Compose Row ----
+            Row(
+                modifier = Modifier.fillMaxWidth().height(headH),
+                horizontalArrangement = Arrangement.spacedBy(gapW),
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                // ---- 表头：自然 Compose Row ----
-                Row(
-                    modifier = Modifier.fillMaxWidth().height(headH),
-                    horizontalArrangement = Arrangement.spacedBy(gapW),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Spacer(modifier = Modifier.width(timeW))
-                    for (day in sortedDays) {
-                        val dateStr = if (showDate && startDate.isNotBlank()) {
-                            try {
-                                val ds = DateUtils.dateOfWeek(startDate, currentWeek, day)
-                                DateUtils.shortDate(ds)
-                            } catch (_: Exception) { null }
-                        } else null
-                        DayHeadCell(
-                            day = day,
-                            isToday = day == today,
-                            isGrey = day in greyDays,
-                            courseCount = courses.count { it.day == day },
-                            dateStr = dateStr,
-                            scale = scale,
-                            cornerRatio = cornerRatio,
-                            modifier = Modifier.width(colW).fillMaxHeight()
-                        )
-                    }
+                Spacer(modifier = Modifier.width(timeW))
+                for (day in sortedDays) {
+                    val dateStr = if (showDate && startDate.isNotBlank()) {
+                        try {
+                            val ds = DateUtils.dateOfWeek(startDate, currentWeek, day)
+                            DateUtils.shortDate(ds)
+                        } catch (_: Exception) { null }
+                    } else null
+                    DayHeadCell(
+                        day = day,
+                        isToday = day == today,
+                        isGrey = day in greyDays,
+                        courseCount = courses.count { it.day == day },
+                        dateStr = dateStr,
+                        scale = scale,
+                        cornerRatio = cornerRatio,
+                        modifier = Modifier.width(colW).fillMaxHeight()
+                    )
                 }
+            }
 
-                Spacer(modifier = Modifier.height(gapH))
+            Spacer(modifier = Modifier.height(gapH))
 
-                // ---- Grid 主体：固定高度 Box，内部全用 Modifier.offset 绝对定位 ----
-                Box(modifier = Modifier.fillMaxWidth().height(gridH)) {
-                    // 时间栏：每个节次一个 Row，用 offset 定位到正确 y
-                    for ((i, slot) in timeSlots.withIndex()) {
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .height(slotH)
-                                .offset(y = rowH * i),
-                            horizontalArrangement = Arrangement.spacedBy(gapW),
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            SingleTimeHeadCell(
-                                slot = slot,
-                                scale = scale,
-                                modifier = Modifier.width(timeW).fillMaxHeight(),
-                                cornerRatio = cornerRatio
-                            )
-                            // 透明占位：保证行宽和表头一致
-                            for (day in sortedDays) {
-                                Spacer(modifier = Modifier.width(colW).fillMaxHeight())
-                            }
-                        }
-                    }
-
-                    // 课程卡片：用 offset 绝对定位
-                    for (course in courses) {
-                        if (course.day !in visibleDays) continue
-                        if (course.startNode !in 1..maxNode) continue
-                        val dayIdx = sortedDays.indexOf(course.day)
-                        val steps = course.step.coerceAtLeast(1)
-                            .coerceAtMost(maxNode - course.startNode + 1)
-                        val cardX = timeW + gapW + (colW + gapW) * dayIdx
-                        val cardY = rowH * (course.startNode - 1)
-                        val cardH = rowH * steps - gapH
-
-                        CourseOverlayCard(
-                            course = course,
-                            onClick = { onCourseClick(course) },
-                            modifier = Modifier
-                                .offset(x = cardX, y = cardY)
-                                .width(colW)
-                                .height(cardH),
-                            isGrey = course.day in greyDays,
+            // ---- Grid 主体：固定高度 Box，内部全用 Modifier.offset 绝对定位 ----
+            Box(modifier = Modifier.fillMaxWidth().height(gridH)) {
+                // 时间栏：每个节次一个 Row，用 offset 定位到正确 y
+                var relIdx = 0
+                for (slot in timeSlots) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(slotH)
+                            .offset(y = rowH * relIdx),
+                        horizontalArrangement = Arrangement.spacedBy(gapW),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        SingleTimeHeadCell(
+                            slot = slot,
                             scale = scale,
+                            modifier = Modifier.width(timeW).fillMaxHeight(),
                             cornerRatio = cornerRatio
                         )
+                        // 透明占位：保证行宽和表头一致
+                        for (day in sortedDays) {
+                            Spacer(modifier = Modifier.width(colW).fillMaxHeight())
+                        }
                     }
+                    relIdx++
+                }
+
+                // 课程卡片：用 offset 绝对定位(栏内相对节次 = startNode - 本栏起始节偏移)
+                val nodeOffset = (timeSlots.firstOrNull()?.nodeStart ?: 1) - 1
+                for (course in courses) {
+                    if (course.day !in visibleDays) continue
+                    if (course.startNode !in (nodeOffset + 1)..(nodeOffset + maxNode)) continue
+                    val dayIdx = sortedDays.indexOf(course.day)
+                    val steps = course.step.coerceAtLeast(1)
+                        .coerceAtMost(nodeOffset + maxNode - course.startNode + 1)
+                    val cardX = timeW + gapW + (colW + gapW) * dayIdx
+                    val cardY = rowH * (course.startNode - nodeOffset - 1)
+                    val cardH = rowH * steps - gapH
+
+                    CourseOverlayCard(
+                        course = course,
+                        onClick = { onCourseClick(course) },
+                        modifier = Modifier
+                            .offset(x = cardX, y = cardY)
+                            .width(colW)
+                            .height(cardH),
+                        isGrey = course.day in greyDays,
+                        scale = scale,
+                        cornerRatio = cornerRatio
+                    )
                 }
             }
         }

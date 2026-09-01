@@ -263,10 +263,13 @@
     <string name="settings_grid_sub_teacher_sub">授業名の下に教員を表示（未設定なら非表示）</string>
     <string name="settings_grid_sub_none">なし</string>
     <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
-    <string name="settings_grid_scale">グリッドカードサイズ</string>
-    <string name="settings_grid_scale_sub">時間割グリッド全体を拡大縮小：フォント・カードの高さ・間隔を連動（70%–130%）。小さくすると1画面に多くのコマが入ります。</string>
-    <string name="settings_grid_corner">グリッド角丸</string>
-    <string name="settings_grid_corner_sub">グリッドカードと週ビューの角丸を調整（0% 角 – 200% 大きく丸い）、デフォルト 100%</string>
+    <string name="settings_pill">ホームカプセルのサイズと角丸</string>
+    <string name="settings_pill_scale">カプセルサイズ</string>
+    <string name="settings_pill_scale_sub">時間割グリッド全体を拡大縮小：フォント・カードの高さ・間隔を連動（70%–130%）。小さくすると1画面に多くのコマが入ります。</string>
+    <string name="settings_pill_corner">角丸</string>
+    <string name="settings_pill_corner_sub">グリッドカードと週ビューの角丸を調整（0% 角 – 200% 大きく丸い）、デフォルト 100%</string>
+    <string name="settings_pill_two_column">2カラム表示</string>
+    <string name="settings_pill_two_column_sub">グリッドを左右2カラムに分割（前半のコマは左、残りは右）。コマ数が多い時間割向け。8コマ未満では無効。</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>

@@ -269,10 +269,13 @@
     <string name="settings_grid_sub_teacher_sub">Show teacher under course name (hidden if empty)</string>
     <string name="settings_grid_sub_none">None</string>
     <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
-    <string name="settings_grid_scale">Grid card size</string>
-    <string name="settings_grid_scale_sub">Scales the whole timetable grid: font, card height and spacing together (70%–130%). Smaller fits more periods on one screen.</string>
-    <string name="settings_grid_corner">Grid corner radius</string>
-    <string name="settings_grid_corner_sub">Corner radius of grid cards and week view pills (0% square – 200% extra round), default 100%</string>
+    <string name="settings_pill">Home pill size &amp; corner</string>
+    <string name="settings_pill_scale">Pill size</string>
+    <string name="settings_pill_scale_sub">Scales the whole timetable grid: font, card height and spacing together (70%–130%). Smaller fits more periods on one screen.</string>
+    <string name="settings_pill_corner">Corner radius</string>
+    <string name="settings_pill_corner_sub">Corner radius of grid cards and week view pills (0% square – 200% extra round), default 100%</string>
+    <string name="settings_pill_two_column">Two columns</string>
+    <string name="settings_pill_two_column_sub">Split the grid into two side-by-side columns (first half of periods left, rest right). Good for long schedules; no effect under 8 periods.</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>
