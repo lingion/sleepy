@@ -1,7 +1,9 @@
 package com.lingion.sleepy.util
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.ui.component.CourseDrawItem
 import com.lingion.sleepy.ui.component.layoutFor
+import com.lingion.sleepy.ui.component.overlayMarkOrder
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
@@ -399,5 +401,59 @@ class ConflictLayoutEngineTest {
         }
         assertEquals(ConflictVariant.RAIL, byStyle("rail"))
         assertEquals(ConflictVariant.FOLD, byStyle("fold"))
+    }
+
+    // ============================ overlayMarkOrder (Task 4 fix round 1) ============================
+    //
+    // 变体标记必须在顶层卡之后绘制(overlay 层)——hidden 课被顶层完全覆盖,
+    // 标记画在它自己层会被顶层卡背景盖住,永不可见(评审 Critical)。
+    // 断言用「类型@课id」字符串序列,与 variant 具体值解耦(变体值已有 Task 2 测试覆盖)。
+
+    /** CourseDrawItem 序列 → 可读断言形式: "Card:2" / "Mark:3" */
+    private fun drawOrderIds(items: List<CourseDrawItem>): List<String> = items.map {
+        when (it) {
+            is CourseDrawItem.Card -> "Card:${it.laid.course.id}"
+            is CourseDrawItem.Mark -> "Mark:${it.hiddenCourseId}"
+        }
+    }
+
+    @Test
+    fun overlayMarkOrder_marks_come_after_top_card_in_draw_order() {
+        // 完全重叠两课: 绘制序 = 非顶层课卡(id=2) → 顶层课卡(id=1) → overlay 标记(hiddenId=2)
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val order = overlayMarkOrder(layoutFor(listOf(a, b), "stack", null))
+        assertEquals(listOf("Card:2", "Card:1", "Mark:2"), drawOrderIds(order))
+    }
+
+    @Test
+    fun overlayMarkOrder_all_hidden_marks_appended_and_pickable() {
+        // N=3 全重叠: 两个 hidden 课(2,3)各出一个 overlay 标记(zRank 升序),均可点
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 3)
+        val order = overlayMarkOrder(layoutFor(listOf(a, b, c), "rail", null))
+        assertEquals(listOf("Card:3", "Card:2", "Card:1", "Mark:2", "Mark:3"), drawOrderIds(order))
+    }
+
+    @Test
+    fun overlayMarkOrder_no_hidden_only_cards_and_top_last() {
+        // 梯形 1-3/2-4/3-5: 全部有露出,无 hidden → 无 overlay 标记;
+        // 绘制序 = zRank 降序(3-5 → 2-4 → 1-3 顶层最后)
+        val a13 = course(id = 1, day = 3, startNode = 1, step = 2)
+        val b24 = course(id = 2, day = 3, startNode = 2, step = 2)
+        val c35 = course(id = 3, day = 3, startNode = 3, step = 2)
+        val order = overlayMarkOrder(layoutFor(listOf(a13, b24, c35), "stack", null))
+        assertEquals(listOf("Card:3", "Card:2", "Card:1"), drawOrderIds(order))
+    }
+
+    @Test
+    fun overlayMarkOrder_override_moves_hidden_mark_with_course() {
+        // override 翻转后 hidden 归属重算: 完全重叠两课 override=id2 → id1 变 hidden,
+        // 标记跟课走(Mark:1),id2 升顶层
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val order = overlayMarkOrder(layoutFor(listOf(a, b), "fold", topOverrideId = 2L))
+        assertEquals(listOf("Card:1", "Card:2", "Mark:1"), drawOrderIds(order))
     }
 }

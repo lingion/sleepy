@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -22,11 +23,13 @@ import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -64,6 +67,36 @@ fun layoutFor(
     ConflictLayoutEngine.findClusters(courses).flatMap { cluster ->
         ConflictLayoutEngine.layoutCluster(cluster, style, topOverrideId)
     }
+
+/**
+ * 簇内绘制项 — Card(课卡)或 Mark(hidden 课的变体标记)。
+ * Mark 携带 hidden 课 id: overlay 标记区域自己接 clickable → onPickTop(该 id)。
+ */
+sealed class CourseDrawItem {
+    data class Card(val laid: LaidOutCourse) : CourseDrawItem()
+    data class Mark(val hiddenCourseId: Long, val variant: ConflictVariant) : CourseDrawItem()
+}
+
+/**
+ * 簇内绘制序计算(纯 JVM 可测) — 评审 Critical 的核心修复:
+ *
+ * hidden 课的定义 = 被更高层课完全覆盖。若变体标记画在 hidden 课自己的层,
+ * 更高层课其后绘制、背景完整盖住标记 → 标记永不可见。故标记必须挂在
+ * **顶层卡之后的 overlay 层**: 绘制序 = 非顶层课卡(zRank 降序,先画被盖住的)
+ * → 顶层卡(zRank 0 最后画,保证完整真卡在最上) → 全部 hidden 课的变体标记
+ * (按 zRank 升序,叠在一切卡之上)。标记区域自己接 clickable = hidden 课的
+ * tap 入口(点标记 = 把该 hidden 课换到顶层)。
+ *
+ * N=2 完全重叠场景由此获得唯一视觉存在(overlay 标记)与唯一 tap 入口。
+ */
+fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
+    val top = laid.firstOrNull { it.zRank == 0 } ?: return emptyList()
+    val others = laid.filter { it.zRank != 0 }.sortedByDescending { it.zRank }
+    val marks = laid.filter { it.hidden }.sortedBy { it.zRank }
+        .map { CourseDrawItem.Mark(it.course.id, it.variant) }
+    return others.map { CourseDrawItem.Card(it) } +
+        listOf(CourseDrawItem.Card(top)) + marks
+}
 
 /**
  * ConflictClusterCard — 整簇一张,内部自绘各课(Task 4 渲染层)。
@@ -110,23 +143,43 @@ fun ConflictClusterCard(
     // (startNode > maxNode,如 11-13 节课链到 13-14 节)原循环本就跳过,此处同样剔除,
     // 避免 steps clamp 到 0 产生负高度。出界课只覆盖出界节次,不影响界内课的 hidden 判定。
     val drawList = laid.filter { it.course.startNode in 1..maxNode }
+    if (drawList.isEmpty()) return
     val hiddenCount = drawList.count { it.hidden }
 
-    // N 徽标可见性: N≥3 且存在 hidden 课(N=2 下层课由变体色块承载可见性,不弹窗)
+    // N 徽标可见性: N≥3 且存在 hidden 课(N=2 时 hidden 课的可见性/tap 入口由 overlay 标记承载)
     val showBadge = drawList.size >= 3 && hiddenCount > 0
-    var showPicker by remember { mutableStateOf(false) }
+    var showPicker by rememberSaveable { mutableStateOf(false) }
 
-    // 绘制集首位(zRank 最小)= 界内可见顶层,点击走 onCourseClick;其余全部走 onPickTop
-    val topItem = drawList.firstOrNull() ?: return
-    val others = drawList.drop(1).sortedByDescending { it.zRank }
+    // 绘制序(评审 Critical 修复): 非顶层卡(zRank 降序) → 顶层卡 → hidden 课变体标记(overlay 层)。
+    // hidden 课被顶层完全覆盖,标记画在它自己层会被顶层卡背景盖住 → 必须挂 overlay。
+    val drawOrder = overlayMarkOrder(drawList)
+
+    // 课色缓存(hidden 标记取色用,含 isGrey 灰显,与卡渲染取同一色)
+    fun courseColorOf(course: CourseEntity): Color {
+        val bg = CourseColorUtil.pickCourseColorCompose(
+            course = course,
+            isDark = CourseColorUtil.isPaletteDark(palette),
+            neutralColor = colors.surfaceVariant,
+            colorless = AppPrefs.isCourseColorless(context)
+        )
+        return if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg
+    }
+    val courseById = drawList.associateBy { it.course.id }
 
     // 簇几何: 整簇基点 = 主课判定序首位课(调用方以它定位,override 不改变该锚点——
     // 交换置顶时簇不跳动);簇顶 minStart ≤ 基点恒成立。y/h 公式与 CardsGridView 原循环体一致。
+    // maxEnd 用 clamp 后的 steps(与卡片实际渲染高度同源,Minor ③)。
     val baseNode = cluster.courses.first().startNode
     val minStart = drawList.minOf { it.course.startNode }
-    val maxEnd = drawList.maxOf { it.course.startNode + it.course.step.coerceAtLeast(1) } - 1
+    val clampedSteps = drawList.associate {
+        it.course.id to it.course.step.coerceAtLeast(1).coerceAtMost(maxNode - it.course.startNode + 1)
+    }
+    val maxEnd = drawList.maxOf { it.course.startNode + (clampedSteps[it.course.id] ?: 1) } - 1
     val clusterH = rowH * (maxEnd - minStart + 1) - gapH
     val clusterYOffset = rowH * (minStart - baseNode)
+
+    fun cardYOf(startNode: Int) = rowH * (startNode - minStart)
+    fun cardHOf(courseId: Long) = rowH * (clampedSteps[courseId] ?: 1) - gapH
 
     Box(
         modifier = modifier
@@ -134,63 +187,59 @@ fun ConflictClusterCard(
             .height(clusterH)
             .offset(y = clusterYOffset)
     ) {
-        // 先画非顶层(zRank 降序),顶层最后画——后画的接住未遮挡 tap(露出区域点击=点非顶层课)
-        others.forEach { item ->
-            val course = item.course
-            val steps = course.step.coerceAtLeast(1).coerceAtMost(maxNode - course.startNode + 1)
-            val cardY = rowH * (course.startNode - minStart)
-            val cardH = rowH * steps - gapH
-
-            // ---- 非顶层课: 完整真卡垫底,露出区域自然可点;hidden 课可见部分画变体色块 ----
-            Box(
-                modifier = Modifier
-                    .offset(y = cardY)
-                    .width(colW)
-                    .height(cardH)
-                    .noRippleClickable { onPickTop(course.id) }
-            ) {
-                if (item.hidden) {
-                    // 零露出 → 画占位级变体色块(颜色=该课课色),保证可见可达(Task 5 精修)
+        // 按绘制序消费: 先非顶层卡(露出区域点击=点非顶层课) → 顶层卡(点击=onCourseClick)
+        drawOrder.forEach { item ->
+            when (item) {
+                is CourseDrawItem.Card -> {
+                    val course = item.laid.course
+                    if (item.laid.zRank == 0) {
+                        // ---- 顶层课: 完整真卡,点击=onCourseClick(与原单卡行为一致,不多一步) ----
+                        ConflictCourseCard(
+                            course = course,
+                            onClick = { onCourseClick(course) },
+                            modifier = Modifier
+                                .offset(y = cardYOf(course.startNode))
+                                .width(colW)
+                                .height(cardHOf(course.id)),
+                            isGrey = isGrey
+                        )
+                    } else {
+                        // ---- 非顶层课: 完整真卡垫底,露出区域自然可点(tap 落在此卡 = 换到顶层) ----
+                        Box(
+                            modifier = Modifier
+                                .offset(y = cardYOf(course.startNode))
+                                .width(colW)
+                                .height(cardHOf(course.id))
+                                .noRippleClickable { onPickTop(course.id) }
+                        ) {
+                            ConflictCourseCard(
+                                course = course,
+                                onClick = { onPickTop(course.id) },
+                                modifier = Modifier.fillMaxSize(),
+                                isGrey = isGrey
+                            )
+                        }
+                    }
+                }
+                is CourseDrawItem.Mark -> {
+                    // ---- overlay 变体标记(hidden 课唯一视觉存在 + 唯一 tap 入口) ----
+                    // 锚定在顶层卡的对应区域(几何精修归 Task 5),自己接 clickable → onPickTop(hidden 课)
+                    val hiddenCourse = courseById[item.hiddenCourseId]?.course ?: return@forEach
+                    val topCourse = drawList.first().course
                     HiddenVariantMark(
                         variant = item.variant,
-                        courseColor = CourseColorUtil.pickCourseColorCompose(
-                            course = course,
-                            isDark = CourseColorUtil.isPaletteDark(palette),
-                            neutralColor = colors.surfaceVariant,
-                            colorless = AppPrefs.isCourseColorless(context)
-                        ),
-                        modifier = Modifier.fillMaxSize()
-                    )
-                } else {
-                    // 有露出 → 完整真卡露出(tap 落在此卡 = 换到顶层)
-                    ConflictCourseCard(
-                        course = course,
-                        onClick = { onPickTop(course.id) },
-                        modifier = Modifier.fillMaxSize(),
-                        isGrey = isGrey
+                        courseColor = courseColorOf(hiddenCourse),
+                        modifier = Modifier
+                            .offset(y = cardYOf(topCourse.startNode))
+                            .width(colW)
+                            .height(cardHOf(topCourse.id))
+                            .noRippleClickable { onPickTop(item.hiddenCourseId) }
                     )
                 }
             }
         }
 
-        // ---- 顶层课: 完整真卡,点击=onCourseClick(与原单卡行为一致,不多一步) ----
-        run {
-            val course = topItem.course
-            val steps = course.step.coerceAtLeast(1).coerceAtMost(maxNode - course.startNode + 1)
-            val cardY = rowH * (course.startNode - minStart)
-            val cardH = rowH * steps - gapH
-            ConflictCourseCard(
-                course = course,
-                onClick = { onCourseClick(course) },
-                modifier = Modifier
-                    .offset(y = cardY)
-                    .width(colW)
-                    .height(cardH),
-                isGrey = isGrey
-            )
-        }
-
-        // ---- N 徽标(N≥3 且 hidden 课存在): 锚定簇右上,点击弹课名点选 ----
+        // ---- N 徽标(N≥3 且 hidden 课存在): overlay 层锚定簇右上,点击弹课名点选 ----
         if (showBadge) {
             ConflictBadge(
                 count = drawList.size,
@@ -302,13 +351,14 @@ private fun ConflictCourseCard(
 }
 
 /**
- * hidden 课变体色块 — Task 4 占位级(纯色块示意),几何精修/竖排课名归 Task 5。
+ * hidden 课变体标记(overlay 层) — Task 4 占位级(纯色块示意),几何精修归 Task 5。
  *   STACK = 右下露边色块 | FOLD = 右上角三角色块 | RAIL = 右侧竖条色块
- * 内部自建满幅 Box 以获得 BoxScope 做角部对齐;调用方传 fillMaxSize 即可。
+ * 调用方已把 modifier 锚定到顶层卡区域并接 clickable(= hidden 课 tap 入口);
+ * 内部铺满该区域后自建 Box 获得 BoxScope 做角部对齐。
  */
 @Composable
-private fun HiddenVariantMark(variant: ConflictVariant, courseColor: androidx.compose.ui.graphics.Color, modifier: Modifier = Modifier) {
-    Box(modifier = modifier.fillMaxSize()) {
+private fun HiddenVariantMark(variant: ConflictVariant, courseColor: Color, modifier: Modifier = Modifier) {
+    Box(modifier = modifier) {
         when (variant) {
             ConflictVariant.STACK -> {
                 // 右下露边色块
@@ -323,12 +373,12 @@ private fun HiddenVariantMark(variant: ConflictVariant, courseColor: androidx.co
             }
             ConflictVariant.FOLD -> {
                 // 右上角三角色块(直角三角形: 右上-右下-左上)
-                androidx.compose.foundation.Canvas(
+                Canvas(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
                         .size(14.dp)
                 ) {
-                    val path = androidx.compose.ui.graphics.Path().apply {
+                    val path = Path().apply {
                         moveTo(size.width, 0f)
                         lineTo(size.width, size.height)
                         lineTo(0f, 0f)
