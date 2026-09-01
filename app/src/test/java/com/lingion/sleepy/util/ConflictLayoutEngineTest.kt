@@ -5,14 +5,23 @@ import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * ConflictLayoutEngine 纯 JVM 单测（Task 1：聚簇 + 主课判定）。
+ * ConflictLayoutEngine 纯 JVM 单测（Task 1：聚簇 + 主课判定；Task 2：零露出 + 标记归属 + 变体分配）。
  *
- * 覆盖五块:
+ * Task 1 覆盖五块:
  *   1. 聚簇传递闭包 — 同天共享节次即归一簇,链式相邻亦传播
  *   2. 不相交不聚簇 — 同天不重叠 / 跨天皆不成簇
  *   3. 单课不成簇 — size<2 的簇不返回
  *   4. 输出顺序 — 簇间 day 升序
  *   5. 主课判定 — step 降 > startNode 升 > id 升 三分量 tie-break
+ *
+ * Task 2 覆盖七场景（layoutCluster）:
+ *   1. 完全重叠两课 — hidden=true,variant 按 style 出 STACK/FOLD/RAIL
+ *   2. 同起不同止 — 短课区间必含于长课区间 → 零露出 hidden=true(语义推导见测试注释)
+ *   3. 完全包含 — 1-5 内嵌 2-3,内嵌课 hidden=true
+ *   4. 梯形 1-3/2-4/3-5 — 全部有独占节次,hidden=false,variant=NONE
+ *   5. topOverrideId — 翻转 z 序并重算 hidden;未命中回落主课判定序
+ *   6. N≥3 stack→FOLD 合流
+ *   7. RAIL 变体值与簇大小无关 — N=2 单轨 / N≥3 分段是 UI 职责
  *
  * fixture 与 CourseColorUtilTest.course(...) 同款:纯 JVM,无 Robolectric。
  * 判定仅消费 day / startNode / step / id,其余字段填默认值。
@@ -143,5 +152,178 @@ class ConflictLayoutEngineTest {
             listOf(idSmall, idBig, startLate),
             ConflictLayoutEngine.primaryOrder(listOf(startLate, idBig, idSmall))
         )
+    }
+
+    // ============================ layoutCluster (Task 2) ============================
+    //
+    // 露出定义: 课 X 的节点区间减去所有 z 序高于 X 的课覆盖区间并集后的剩余节点集。
+    // hidden = 露出集为空;顶层课(zRank 0)永不为 hidden。
+    // zRank: 0=顶层=主课判定序第一位,除非 topOverrideId 命中某课 id。
+    // 变体: 隐藏课统一按 style 分配(stack+2课=STACK,stack+N≥3=FOLD,fold/rail 直配);
+    //       非隐藏课(含顶层)一律 NONE。
+
+    private fun layoutById(
+        courses: List<CourseEntity>,
+        style: String,
+        topOverrideId: Long? = null
+    ): Map<Long, LaidOutCourse> =
+        ConflictLayoutEngine.layoutCluster(
+            ConflictCluster(day = courses.first().day, courses = courses),
+            style,
+            topOverrideId
+        ).associateBy { it.course.id }
+
+    @Test
+    fun layout_fully_overlapping_pair_hidden_true_variants_per_style() {
+        // 完全重叠两课: 1-3 与 1-3(step 降 > id 升 → id=1 顶层)
+        // 短判长: 次课区间 ⊆ 顶层覆盖 → 零露出 hidden=true
+        val top = course(id = 1, day = 1, startNode = 1, step = 3)
+        val under = course(id = 2, day = 1, startNode = 1, step = 3)
+        val cluster = ConflictCluster(1, listOf(top, under))
+
+        assertEquals(ConflictVariant.STACK, layoutById(listOf(top, under), "stack").getValue(2L).variant)
+        assertEquals(ConflictVariant.FOLD, layoutById(listOf(top, under), "fold").getValue(2L).variant)
+        assertEquals(ConflictVariant.RAIL, layoutById(listOf(top, under), "rail").getValue(2L).variant)
+
+        // 三种 style 下,顶层的 zRank/hidden/variant 一致;次课 zRank=1 且 hidden
+        for (style in listOf("stack", "fold", "rail")) {
+            val byId = layoutById(listOf(top, under), style)
+            assertEquals(LaidOutCourse(top, 0, false, ConflictVariant.NONE), byId.getValue(1L))
+            assertEquals(LaidOutCourse(under, 1, true, variantFor(style, n = 2)), byId.getValue(2L))
+        }
+    }
+
+    @Test
+    fun layout_same_start_different_end_short_course_zero_exposure_hidden() {
+        // 同起不同止: 1-4 与 1-3。同起必包含(1-3 ⊆ 1-4),主课判定序 step 降 → 1-4 顶层,
+        // 短课露出集 = {1,2,3} − {1,2,3,4} = ∅ → hidden=true(非 brief 注释里的 false;
+        // 以语义精确定义为准,短课拿变体标记才能保持可见可达,符合设计文档 §2.3/§9.1)
+        val long1to4 = course(id = 1, day = 1, startNode = 1, step = 4)
+        val short1to3 = course(id = 2, day = 1, startNode = 1, step = 3)
+        val byId = layoutById(listOf(long1to4, short1to3), "rail")
+        assertEquals(0, byId.getValue(1L).zRank)
+        assertEquals(false, byId.getValue(1L).hidden)
+        assertEquals(1, byId.getValue(2L).zRank)
+        assertEquals(true, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.RAIL, byId.getValue(2L).variant)
+        assertEquals(ConflictVariant.NONE, byId.getValue(1L).variant)
+    }
+
+    @Test
+    fun layout_fully_contained_inner_course_hidden() {
+        // 完全包含: 1-5(step5) 内嵌 2-3(step2)。主课判定序 step 降 → 1-5 顶层,
+        // 2-3 露出集 = {2,3} − {1..5} = ∅ → hidden=true
+        val outer = course(id = 1, day = 2, startNode = 1, step = 5)
+        val inner = course(id = 2, day = 2, startNode = 2, step = 2)
+        val byId = layoutById(listOf(outer, inner), "fold")
+        assertEquals(LaidOutCourse(outer, 0, false, ConflictVariant.NONE), byId.getValue(1L))
+        assertEquals(LaidOutCourse(inner, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
+    }
+
+    @Test
+    fun layout_trapezoid_all_courses_have_exposure() {
+        // 梯形 1-3 / 2-4 / 3-5(step 全 2,startNode 1/2/3):
+        // 主课判定序 = startNode 升 → 1-3 顶层,2-4 次层,3-5 底层。
+        //   2-4 露出集 = {2,3,4} − {1,2,3} = {4} 非空
+        //   3-5 露出集 = {3,4,5} − ({1,2,3} ∪ {2,3,4}) = {5} 非空
+        // → 三课全部 hidden=false,variant=NONE
+        val a13 = course(id = 1, day = 3, startNode = 1, step = 2)
+        val b24 = course(id = 2, day = 3, startNode = 2, step = 2)
+        val c35 = course(id = 3, day = 3, startNode = 3, step = 2)
+        val laid = ConflictLayoutEngine.layoutCluster(ConflictCluster(3, listOf(a13, b24, c35)), "stack")
+        assertEquals(
+            listOf(
+                LaidOutCourse(a13, 0, false, ConflictVariant.NONE),
+                LaidOutCourse(b24, 1, false, ConflictVariant.NONE),
+                LaidOutCourse(c35, 2, false, ConflictVariant.NONE)
+            ),
+            laid
+        )
+    }
+
+    @Test
+    fun layout_topOverrideId_flips_z_order_and_recomputes_hidden() {
+        // topOverrideId 翻转: 1-5(step5,默认顶层)与 2-6(step5,startNode 大,id 大)。
+        // override=2 → id=2 升顶层,id=1 降为底层;
+        //   id=1 露出集 = {1..5} − {2..6} = {1} 仍非空(部分重叠互不包含)
+        // 同段完全重叠翻转: 1-3 与 1-3,override=id2 → id1 变 hidden=true,variant 出 STACK
+        val a = course(id = 1, day = 1, startNode = 1, step = 5)
+        val b = course(id = 2, day = 1, startNode = 2, step = 5)
+        val flipped = layoutById(listOf(a, b), "stack", topOverrideId = 2L)
+        assertEquals(0, flipped.getValue(2L).zRank)
+        assertEquals(false, flipped.getValue(2L).hidden)
+        assertEquals(1, flipped.getValue(1L).zRank)
+        assertEquals(false, flipped.getValue(1L).hidden) // 独占节 1 仍露出
+
+        val t = course(id = 1, day = 2, startNode = 1, step = 3)
+        val u = course(id = 2, day = 2, startNode = 1, step = 3)
+        val sameRangeFlipped = layoutById(listOf(t, u), "stack", topOverrideId = 2L)
+        assertEquals(0, sameRangeFlipped.getValue(2L).zRank)
+        assertEquals(1, sameRangeFlipped.getValue(1L).zRank)
+        assertEquals(true, sameRangeFlipped.getValue(1L).hidden) // 被压下后零露出
+        assertEquals(ConflictVariant.STACK, sameRangeFlipped.getValue(1L).variant)
+        assertEquals(ConflictVariant.NONE, sameRangeFlipped.getValue(2L).variant)
+    }
+
+    @Test
+    fun layout_topOverrideId_miss_falls_back_to_primary_order() {
+        // override id 不在簇内 → 回落主课判定序,行为与不传相同
+        val top = course(id = 1, day = 1, startNode = 1, step = 3)
+        val under = course(id = 2, day = 1, startNode = 1, step = 3)
+        val byId = layoutById(listOf(top, under), "rail", topOverrideId = 999L)
+        assertEquals(0, byId.getValue(1L).zRank)
+        assertEquals(true, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.RAIL, byId.getValue(2L).variant)
+    }
+
+    @Test
+    fun layout_three_courses_stack_converges_to_fold() {
+        // N≥3 stack → FOLD 合流(A 合流): 1-3 与 1-3 与 1-3(step 降 > id 升)
+        //   id=2 露出集 = {1,2,3} − {1,2,3}(id=1 覆盖) = ∅ → hidden
+        //   id=3 露出集 = {1,2,3} − ({1,2,3} ∪ {1,2,3}) = ∅ → hidden
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 3)
+        val byId = layoutById(listOf(a, b, c), "stack")
+        assertEquals(LaidOutCourse(a, 0, false, ConflictVariant.NONE), byId.getValue(1L))
+        assertEquals(LaidOutCourse(b, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
+        assertEquals(LaidOutCourse(c, 2, true, ConflictVariant.FOLD), byId.getValue(3L))
+    }
+
+    @Test
+    fun layout_rail_variant_independent_of_cluster_size() {
+        // N=2 RAIL 单轨 / N≥3 RAIL 分段 —— 分段数由 UI 读簇大小,引擎层 variant 值恒为 RAIL
+        val two = listOf(
+            course(id = 1, day = 1, startNode = 1, step = 3),
+            course(id = 2, day = 1, startNode = 1, step = 3)
+        )
+        assertEquals(ConflictVariant.RAIL, layoutById(two, "rail").getValue(2L).variant)
+
+        val three = two + course(id = 3, day = 1, startNode = 1, step = 3)
+        assertEquals(ConflictVariant.RAIL, layoutById(three, "rail").getValue(2L).variant)
+        assertEquals(ConflictVariant.RAIL, layoutById(three, "rail").getValue(3L).variant)
+    }
+
+    @Test
+    fun layout_output_preserves_primary_order_with_override_last() {
+        // 输出顺序: 簇内主课判定序;topOverrideId 命中时该课提到 zRank 0,其余保持相对顺序
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 3)
+        // 默认: a(顶层) > b > c
+        assertEquals(listOf(a, b, c), ConflictLayoutEngine.layoutCluster(ConflictCluster(1, listOf(c, a, b)), "rail").map { it.course })
+        // override=c: c 提顶,a/b 保相对顺序
+        assertEquals(
+            listOf(c, a, b),
+            ConflictLayoutEngine.layoutCluster(ConflictCluster(1, listOf(c, a, b)), "rail", topOverrideId = 3L).map { it.course }
+        )
+    }
+
+    /** stack 变体在 N=2/N≥3 下的期望值(测试内共享的小映射,避免魔数散落)。 */
+    private fun variantFor(style: String, n: Int): ConflictVariant = when {
+        style == "fold" -> ConflictVariant.FOLD
+        style == "rail" -> ConflictVariant.RAIL
+        n >= 3 -> ConflictVariant.FOLD
+        else -> ConflictVariant.STACK
     }
 }
