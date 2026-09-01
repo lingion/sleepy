@@ -736,7 +736,7 @@ object ScheduleParser {
             val (startWeek, endWeek) = parseRange(parts[5])?.let { sortRange(it) } ?: run {
                 dropped += line.take(40); continue
             }
-            val type = parts.getOrNull(6)?.let { parseType(it) } ?: 0
+            val type = parts.getOrNull(6)?.let { parseType(it) } ?: 3
 
             courses += CourseEntity(
                 id = 0,
@@ -988,13 +988,19 @@ object ScheduleParser {
         return null
     }
 
-    /** 解析 "类型" 列：0=每周 1=单周 2=双周 */
+    /**
+     * 解析 "类型" 列：0=每周 1=单周 2=双周 3=按周次列实际指定的周
+     * 空串/未知 → 3（不再回退到 0=每周，避免把"周次=6 单次实验"误标成"每周都上"）
+     */
     private fun parseType(s: String): Int {
         val t = s.trim().lowercase()
-        if (t.isEmpty()) return 0
+        if (t.isEmpty()) return 3
+        if (t == "0" || t == "每周" || t == "每周都上") return 0
         if (t.contains("单") || t == "1" || t == "odd") return 1
         if (t.contains("双") || t == "2" || t == "even") return 2
-        return 0
+        if (t == "3" || t.contains("自定义") || t.contains("按周次")) return 3
+        // 未知值（包含负数、4+ 等）按"按周次"处理而非"每周"，保护用户数据
+        return 3
     }
 
     /** 解析 "节次" 列：支持 "1-2" "第1-2节" "1,2" "1\u00a01" */

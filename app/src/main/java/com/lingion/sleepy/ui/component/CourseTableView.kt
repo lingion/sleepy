@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -27,6 +28,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -52,6 +54,7 @@ import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
 
 /**
@@ -102,6 +105,14 @@ fun CardsGridView(
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
     val sortedDays = visibleDays.sorted()
     val dayCount = sortedDays.size
+
+    // 设置页改 scale / cornerRatio 后强制 recompose
+    var prefVersion by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        AppPrefs.changeBus.filter {
+            it == AppPrefs.KEY_GRID_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO
+        }.collect { prefVersion++ }
+    }
 
     // issue#8 网格整体缩放: 0.7~1.3, 字号/行高/间距/圆角/内边距等比联动
     // (12节连堂课表缩到 0.7 可一屏放下; 只影响本 Cards 视图, 小组件与列表视图不受影响)
@@ -485,7 +496,16 @@ fun FullWeekView(
     greyDays: Set<Int> = emptySet()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    val scale = AppPrefs.getGridScale(context)
+    // 设置页改 weekScale/cornerRatio/twoColumn/hideEmptyDays 后强制 recompose
+    var prefVersion by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        AppPrefs.changeBus.filter {
+            it == AppPrefs.KEY_WEEK_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO ||
+            it == AppPrefs.KEY_WEEK_TWO_COLUMN || it == AppPrefs.KEY_WEEK_TWO_COLUMN_MODE ||
+            it == AppPrefs.KEY_WEEK_HIDE_EMPTY_DAYS
+        }.collect { prefVersion++ }
+    }
+    val scale = AppPrefs.getWeekScale(context)
     val cornerRatio = AppPrefs.getGridCornerRatio(context)
     val twoColumn = AppPrefs.isWeekTwoColumn(context)
     val twoColumnMode = AppPrefs.getWeekTwoColumnMode(context)

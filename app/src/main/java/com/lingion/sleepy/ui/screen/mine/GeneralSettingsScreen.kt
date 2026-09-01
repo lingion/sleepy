@@ -82,6 +82,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
     var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
+    var weekScale by remember { mutableStateOf(AppPrefs.getWeekScale(context)) }
     var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
@@ -175,7 +176,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 }
             }
 
-            // 主页胶囊大小与圆角(issue#8): 缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
+            // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
             item {
                 SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
                     Text(text = stringResource(R.string.settings_pill_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
@@ -194,6 +195,32 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                             },
                             onValueChangeFinished = {
                                 AppPrefs.setGridScale(context, gridScale)
+                            },
+                            valueRange = 0.7f..1.3f,
+                            colors = SliderDefaults.colors(
+                                thumbColor = colors.primary,
+                                activeTrackColor = colors.primary,
+                                inactiveTrackColor = colors.surfaceVariant
+                            )
+                        )
+                    }
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    Text(text = stringResource(R.string.settings_pill_week_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                    Text(text = stringResource(R.string.settings_pill_week_scale_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "${(weekScale * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = colors.primary,
+                            modifier = Modifier.widthIn(min = 52.dp)
+                        )
+                        Slider(
+                            value = weekScale,
+                            onValueChange = {
+                                weekScale = (it * 20).roundToInt() / 20f
+                            },
+                            onValueChangeFinished = {
+                                AppPrefs.setWeekScale(context, weekScale)
                             },
                             valueRange = 0.7f..1.3f,
                             colors = SliderDefaults.colors(

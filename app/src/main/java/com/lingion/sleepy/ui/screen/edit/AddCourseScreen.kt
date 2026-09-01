@@ -99,6 +99,9 @@ private class MeetingBlockDraft(
     var startWeek by mutableStateOf(startWeek)
     var endWeek by mutableStateOf(endWeek)
     var weekType by mutableStateOf(weekType)
+    // issue#9 延伸: NumberField 把超界输入静默夹紧时, 置 true → 编辑器顶红块提示
+    // 用户感知到"我输 100 被改成了 2", 而不是无报错地接受了错值
+    var clamped by mutableStateOf(false)
 }
 
 private data class ValidationIssue(
@@ -121,6 +124,16 @@ fun AddCourseScreen(
     val currentTable = state.currentTable
     val fieldShape = SleepyTheme.fieldShape
     val fieldColors = SleepyTheme.fieldColors()
+
+    // issue#9: 之前 startNode/step 硬编码 max=12/8, 12 节连排时仍允许 step=8 → startNode=12, step=8
+    // 会显示成 12-19 越过实际节数。改为从当前 timeJson 解析实际节点数, 默认 12。
+    val maxNode = remember(currentTable?.id, currentTable?.timeJson) {
+        try {
+            val arr = JSONArray(currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON)
+            (0 until arr.length()).mapNotNull { arr.getJSONObject(it).optInt("node", 0) }
+                .takeIf { it.isNotEmpty() }?.max() ?: 12
+        } catch (_: Exception) { 12 }
+    }
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
     var teacher by remember(editingCourse?.id) { mutableStateOf(editingCourse?.teacher ?: "") }
@@ -357,6 +370,7 @@ fun AddCourseScreen(
                     issues = blockIssues,
                     fieldShape = fieldShape,
                     fieldColors = fieldColors,
+                    maxNode = maxNode,
                     onRemove = { meetingBlocks.remove(block) }
                 )
             }
@@ -593,6 +607,12 @@ private fun validateCourseDraft(
     val issues = mutableListOf<ValidationIssue>()
     if (courseName.isBlank()) issues += ValidationIssue(null, context.getString(R.string.course_name_empty))
     if (startWeek <= 0 || endWeek <= 0) issues += ValidationIssue(null, context.getString(R.string.week_must_be_positive))
+    // issue#9: 该课表最大节次(从 timeJson 解析), 用于判断 startNode+step-1 是否越界
+    val maxNode = try {
+        val arr = JSONArray(table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON)
+        (0 until arr.length()).mapNotNull { arr.getJSONObject(it).optInt("node", 0) }
+            .takeIf { it.isNotEmpty() }?.max() ?: 12
+    } catch (_: Exception) { 12 }
 
     blocks.forEachIndexed { index, block ->
         if (block.days.isEmpty()) {
@@ -603,6 +623,14 @@ private fun validateCourseDraft(
             MeetingInputMode.ByNode -> {
                 if (block.startNode <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_start_node_positive, index + 1))
                 if (block.step <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_step_positive, index + 1))
+                // issue#9: startNode+step-1 越过该课表实际最大节次时拒绝保存
+                val endNode = block.startNode + block.step - 1
+                if (endNode > maxNode) {
+                    issues += ValidationIssue(
+                        block.id,
+                        context.getString(R.string.slot_step_exceeds_max, index + 1, block.startNode, endNode, maxNode)
+                    )
+                }
             }
             MeetingInputMode.ByClock -> {
                 val start = parseHm(block.startTime)
@@ -752,6 +780,7 @@ private fun MeetingBlockEditor(
     issues: List<String>,
     fieldShape: CornerBasedShape,
     fieldColors: androidx.compose.material3.TextFieldColors,
+    maxNode: Int,
     onRemove: () -> Unit
 ) {
     val colors = SleepyTheme.colors
@@ -761,10 +790,25 @@ private fun MeetingBlockEditor(
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             // 错误态: errorContainer 色块底替代 error 描边 (2026-08-25 色块统一)
-            .background(if (issues.isNotEmpty()) colors.errorContainer else colors.surfaceContainerHigh)
+            // issue#9 延伸: NumberField 被夹紧时 block.clamped=true 也走 errorContainer,
+            // 提示用户"输入超界被改值"
+            .background(if (issues.isNotEmpty() || block.clamped) colors.errorContainer else colors.surfaceContainerHigh)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // issue#9 延伸: 用户输了超出 maxNode 的数字时显示提示, 并提供去课表管理的快捷入口
+        if (block.clamped) {
+            Text(
+                text = stringResource(
+                    R.string.slot_step_clamped_hint,
+                    block.startNode,
+                    block.startNode + block.step - 1,
+                    maxNode
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onErrorContainer
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -804,16 +848,27 @@ private fun MeetingBlockEditor(
                         label = stringResource(R.string.start_node),
                         value = block.startNode,
                         min = 1,
-                        max = 12,
-                        modifier = Modifier.weight(1f)
-                    , shape = fieldShape, colors = fieldColors) { block.startNode = it }
+                        max = maxNode,
+                        modifier = Modifier.weight(1f),
+                        shape = fieldShape,
+                        colors = fieldColors,
+                        onClamp = { block.clamped = true }
+                    ) { v ->
+                        block.startNode = v
+                        // startNode 上调 → step 上限缩到 (maxNode - startNode + 1), 防止越界
+                        val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
+                        if (block.step > stepCap) block.step = stepCap
+                    }
                     NumberField(
                         label = stringResource(R.string.step_count),
                         value = block.step,
                         min = 1,
-                        max = 8,
-                        modifier = Modifier.weight(1f)
-                    , shape = fieldShape, colors = fieldColors) { block.step = it }
+                        max = (maxNode - block.startNode + 1).coerceAtLeast(1),
+                        modifier = Modifier.weight(1f),
+                        shape = fieldShape,
+                        colors = fieldColors,
+                        onClamp = { block.clamped = true }
+                    ) { v -> block.step = v }
                 }
             }
             MeetingInputMode.ByClock -> {
@@ -861,12 +916,14 @@ private fun MeetingBlockEditor(
                 colors = fieldColors
             ) { block.endWeek = it }
         }
-        // 单双周三态 — 项目统一 SegmentedSwitcher（色块选中，禁描边规则）
+        // 单双周 + 按周次 — 4 态 SegmentedSwitcher
+        // 0=每周 1=单周 2=双周 3=按周次列实际指定的周（导入 type=3 单次实验课时出现）
         SegmentedSwitcher(
             options = listOf(
                 0 to stringResource(R.string.week_every),
                 1 to stringResource(R.string.week_odd),
-                2 to stringResource(R.string.week_even)
+                2 to stringResource(R.string.week_even),
+                3 to stringResource(R.string.week_custom)
             ),
             selected = block.weekType,
             onSelect = { block.weekType = it },
@@ -951,6 +1008,9 @@ private fun NumberField(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape,
     colors: androidx.compose.material3.TextFieldColors,
+    // issue#9 延伸: 输入超界 → 被 coerce 改值时回调, 让父级置 block.clamped=true
+    // 必须放在 onChange 之前, 否则 trailing lambda 会自动绑给 onClamp 而漏 onChange
+    onClamp: (() -> Unit)? = null,
     onChange: (Int) -> Unit
 ) {
     var text by remember { mutableStateOf(value.toString()) }
@@ -973,7 +1033,9 @@ private fun NumberField(
             } else {
                 val v = txt.toIntOrNull()
                 if (v != null) {
-                    onChange(v.coerceIn(min, max))
+                    val coerced = v.coerceIn(min, max)
+                    if (coerced != v) onClamp?.invoke()
+                    onChange(coerced)
                 }
                 // 非数字字符不回调，但保留 text 让用户继续编辑
             }

@@ -73,6 +73,7 @@
     <string name="import_append_only">僅附加無衝突</string>
     <string name="import_as_new">匯入為新課表</string>
     <string name="import_overwrite">⚠ 覆蓋目前（謹慎）</string>
+    <string name="import_append_as_new">合併為新課表</string>
     <string name="import_confirm_title">匯入前確認</string>
     <string name="import_confirm_body">先確認學期開始日期和每節時間，不然目前週次會一直不準。</string>
     <string name="import_week_start">第一週從哪天開始</string>
@@ -213,6 +214,7 @@
     <string name="week_every">每週</string>
     <string name="week_odd">單週</string>
     <string name="week_even">雙週</string>
+    <string name="week_custom">按週次</string>
     <string name="add_slot">新增一個上課時段</string>
     <string name="save_course">儲存課程</string>
     <string name="delete_course">刪除課程</string>
@@ -230,6 +232,8 @@
     <string name="slot_at_least_one_day">時段 %1$d 至少選擇一天</string>
     <string name="slot_start_node_positive">時段 %1$d 的開始節必須大於 0</string>
     <string name="slot_step_positive">時段 %1$d 的連上節數必須大於 0</string>
+    <string name="slot_step_exceeds_max">時段 %1$d 第 %2$d-%3$d 節已超出課表最大節次（%4$d 節）</string>
+    <string name="slot_step_clamped_hint">輸入已超出最大節次（當前課表共 %3$d 節），如需更多節次請到課表管理頁面編輯當前課表的節數</string>
     <string name="slot_time_format">時段 %1$d 的開始/結束時間格式應為 HH:mm</string>
     <string name="slot_time_order">時段 %1$d 的開始時間必須早於結束時間</string>
     <string name="slot_time_overlap">時段 %1$d 與時段 %2$d 在 %3$s 存在時間重疊</string>
@@ -264,8 +268,10 @@
     <string name="settings_grid_sub_none">無</string>
     <string name="settings_grid_sub_none_sub">網格卡片只顯示課程名</string>
     <string name="settings_pill">主頁顯示設定</string>
-    <string name="settings_pill_scale">網格縮放</string>
-    <string name="settings_pill_scale_sub">整體縮放網格課表：字號、卡片高度、間距等比調節（70%–130%），調小可一屏顯示更多節課</string>
+    <string name="settings_pill_scale">網格檢視縮放</string>
+    <string name="settings_pill_scale_sub">整體縮放網格檢視：字號、卡片高度、間距等比調節（70%–130%），調小可一屏顯示更多節課</string>
+    <string name="settings_pill_week_scale">週檢視縮放</string>
+    <string name="settings_pill_week_scale_sub">整體縮放週檢視，與網格檢視互相獨立（70%–130%）</string>
     <string name="settings_pill_corner">卡片圓角</string>
     <string name="settings_pill_corner_sub">調整網格卡片與週檢視卡片的圓角（0% 直角 – 200% 超圓），預設 100%</string>
     <string name="settings_week_two_column">週視圖兩欄顯示</string>
@@ -421,6 +427,9 @@
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
     <string name="about_license_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。</string>
+    <string name="about_update_check">自動檢查更新</string>
+    <string name="about_update_check_detail">啟動時自動檢查 GitHub Releases, 發現新版本會在「關於」頁頂部提示</string>
+    <string name="about_update_available">新版 %1$s 可用,點此查看</string>
     <string name="about_license_title">開源聲明</string>
     <string name="about_source">開源網址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
@@ -456,7 +465,8 @@
     <string name="export_title">匯出課表</string>
     <string name="import_new_table_hint">（將作為新課表建立）</string>
     <string name="jw_config_confirm">確認匯入</string>
-    <string name="jw_config_title">確認課表節次</string>
+    <string name="jw_config_title">導入前確認</string>
+    <string name="jw_table_name_label">課表名稱</string>
     <string name="jw_pending_apply">申請適配</string>
     <string name="jw_pending_close">關閉</string>
     <string name="jw_pending_grad">研究生</string>

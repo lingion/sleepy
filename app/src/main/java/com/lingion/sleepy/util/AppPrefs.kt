@@ -3,8 +3,11 @@ package com.lingion.sleepy.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -14,6 +17,17 @@ import kotlinx.coroutines.flow.distinctUntilChanged
  */
 object AppPrefs {
     private const val FILE = "sleepy_prefs"
+
+    /**
+     * 全局 prefs key 变化广播 — UI 用它主动 recompose 而非依赖 SharedPreferences 监听器
+     * (主视图在 Compose 里读 prefs, 没显式订阅者就感知不到 change)
+     */
+    private val _changeBus = MutableSharedFlow<String>(
+        replay = 1,
+        extraBufferCapacity = 16,
+        onBufferOverflow = BufferOverflow.DROP_OLDEST
+    )
+    val changeBus: Flow<String> = _changeBus.asSharedFlow()
     const val KEY_DARK = "dark_mode"
     const val KEY_REMINDER = "reminder_master"      // master toggle (default false)
     const val KEY_DAILY_ENABLED = "daily_reminder"   // daily sub-toggle (default true)
@@ -36,11 +50,13 @@ object AppPrefs {
     const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
     const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
-    const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格课表整体缩放(字号/行高/间距/圆角联动, issue#8)
+    const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格视图整体缩放(字号/行高/间距/圆角联动, issue#8)
+    const val KEY_WEEK_SCALE = "week_scale" // float 0.7~1.3 default 1.0 — 周视图整体缩放(与网格视图互相独立, issue#8)
     const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
     const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
     const val KEY_WEEK_TWO_COLUMN_MODE = "week_two_column_mode" // "days"=按天对半分 / "balance"=按课程数动态平衡, issue#8
     const val KEY_WEEK_HIDE_EMPTY_DAYS = "week_hide_empty_days" // bool default false — 周视图隐藏无课日(仅两栏下生效, issue#8)
+    const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled" // bool default true — 启动检查 GitHub releases latest
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -281,14 +297,24 @@ object AppPrefs {
         sp(ctx).edit().putBoolean(KEY_WIDGET_SEPARATOR, v).apply()
     }
 
-    // ===== 网格课表整体缩放(issue#8) — 0.7~1.3, 默认 1.0 =====
-    // 联动项: 胶囊行高/字号/间距/圆角/内边距; 只影响 App 内网格课表(Cards), 不影响小组件与列表视图
+    // ===== 视图整体缩放(issue#8) — 0.7~1.3, 默认 1.0 =====
+    // 网格视图与周视图各一个系数, 互相独立(用户: 两边最优缩放不一样)
+    // 联动项: 字号/行高/间距/圆角/内边距; 不影响小组件与列表视图
 
     fun getGridScale(ctx: Context): Float =
         sp(ctx).getFloat(KEY_GRID_SCALE, 1.0f).coerceIn(0.7f, 1.3f)
 
     fun setGridScale(ctx: Context, v: Float) {
         sp(ctx).edit().putFloat(KEY_GRID_SCALE, v.coerceIn(0.7f, 1.3f)).apply()
+        _changeBus.tryEmit(KEY_GRID_SCALE)
+    }
+
+    fun getWeekScale(ctx: Context): Float =
+        sp(ctx).getFloat(KEY_WEEK_SCALE, 1.0f).coerceIn(0.7f, 1.3f)
+
+    fun setWeekScale(ctx: Context, v: Float) {
+        sp(ctx).edit().putFloat(KEY_WEEK_SCALE, v.coerceIn(0.7f, 1.3f)).apply()
+        _changeBus.tryEmit(KEY_WEEK_SCALE)
     }
 
     // ===== 网格/周视图圆角比例(issue#8) — 0.0~2.0, 默认 1.0 =====
@@ -299,6 +325,7 @@ object AppPrefs {
 
     fun setGridCornerRatio(ctx: Context, v: Float) {
         sp(ctx).edit().putFloat(KEY_GRID_CORNER_RATIO, v.coerceIn(0f, 2f)).apply()
+        _changeBus.tryEmit(KEY_GRID_CORNER_RATIO)
     }
 
     // ===== 周视图两栏(issue#8) — 默认关 =====
@@ -311,6 +338,7 @@ object AppPrefs {
 
     fun setWeekTwoColumn(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WEEK_TWO_COLUMN, v).apply()
+        _changeBus.tryEmit(KEY_WEEK_TWO_COLUMN)
     }
 
     fun getWeekTwoColumnMode(ctx: Context): String =
@@ -318,6 +346,7 @@ object AppPrefs {
 
     fun setWeekTwoColumnMode(ctx: Context, v: String) {
         sp(ctx).edit().putString(KEY_WEEK_TWO_COLUMN_MODE, if (v == "balance") "balance" else "days").apply()
+        _changeBus.tryEmit(KEY_WEEK_TWO_COLUMN_MODE)
     }
 
     fun isWeekHideEmptyDays(ctx: Context): Boolean =
@@ -325,6 +354,7 @@ object AppPrefs {
 
     fun setWeekHideEmptyDays(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WEEK_HIDE_EMPTY_DAYS, v).apply()
+        _changeBus.tryEmit(KEY_WEEK_HIDE_EMPTY_DAYS)
     }
 
     // ===== 节假日灰显 =====
@@ -370,5 +400,14 @@ object AppPrefs {
 
     fun setHolidayRanges(ctx: Context, ranges: List<com.lingion.sleepy.util.HolidayRange>) {
         sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
+    }
+
+    // ===== 启动检查更新开关 =====
+
+    fun isUpdateCheckEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_UPDATE_CHECK_ENABLED, true)
+
+    fun setUpdateCheckEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_UPDATE_CHECK_ENABLED, v).apply()
     }
 }

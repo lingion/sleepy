@@ -59,7 +59,9 @@ data class CourseEntity(
     @ColumnInfo(name = "endWeek") val endWeek: Int,
 
     /**
-     * 周次类型: 0=每周, 1=单周, 2=双周
+     * 周次类型: 0=每周, 1=单周(第1/3/5周), 2=双周(第2/4/6周), 3=按周次列实际指定的周
+     * (用于"只在某一两周上"的单次实验课; 解析器在类型列缺失/不明时默认填 3 而非 0,
+     * 避免把"周次=6 单次实验"误标成"每周都上")
      */
     @ColumnInfo(name = "type") val type: Int = 0,
 
@@ -91,7 +93,8 @@ data class CourseEntity(
             0 -> true  // 每周
             1 -> week % 2 == 1  // 单周
             2 -> week % 2 == 0  // 双周
-            else -> true
+            3 -> true  // 按周次列实际指定的周; 上面已限定 [startWeek, endWeek] 区间
+            else -> true  // 防御性: 旧数据可能存了非法 type, 不丢失
         }
     }
 

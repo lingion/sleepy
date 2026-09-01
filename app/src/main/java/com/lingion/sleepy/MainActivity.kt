@@ -87,6 +87,8 @@ class MainActivity : ComponentActivity() {
         com.lingion.sleepy.util.UpdateManager.cleanOldApk(this)
         enableEdgeToEdge()
         handleDeepLinkIntent(intent)
+        // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
+        com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
         setContent {
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             var themeMode by remember { mutableStateOf(AppPrefs.getThemeMode(this@MainActivity)) }

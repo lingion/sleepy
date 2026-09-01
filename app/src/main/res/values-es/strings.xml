@@ -73,6 +73,7 @@
     <string name="import_append_only">Añadir sin conflictos</string>
     <string name="import_as_new">Importar como nuevo horario</string>
     <string name="import_overwrite">⚠ Sobrescribir actual (precaución)</string>
+    <string name="import_append_as_new">Fusionar en horario nuevo</string>
     <string name="import_confirm_title">Confirmar antes de importar</string>
     <string name="import_confirm_body">Verifica la fecha de inicio y los horarios — de lo contrario la semana actual será incorrecta.</string>
     <string name="import_week_start">La primera semana empieza el</string>
@@ -213,6 +214,7 @@
     <string name="week_every">Todas las semanas</string>
     <string name="week_odd">Semanas impares</string>
     <string name="week_even">Semanas pares</string>
+    <string name="week_custom">Por semanas</string>
     <string name="add_slot">Añadir horario</string>
     <string name="save_course">Guardar curso</string>
     <string name="delete_course">Eliminar curso</string>
@@ -230,6 +232,8 @@
     <string name="slot_at_least_one_day">El horario %1$d debe tener al menos un día</string>
     <string name="slot_start_node_positive">El período de inicio del horario %1$d debe ser mayor que 0</string>
     <string name="slot_step_positive">Los períodos consecutivos del horario %1$d deben ser mayores que 0</string>
+    <string name="slot_step_exceeds_max">El horario %1$d ocupa los períodos %2$d–%3$d y supera el máximo del horario (%4$d)</string>
+    <string name="slot_step_clamped_hint">La entrada supera el máximo de períodos (el horario actual tiene %3$d). Para añadir más períodos, ve a Gestión de horarios y edita el número de períodos del horario actual</string>
     <string name="slot_time_format">El formato de hora inicio/fin del horario %1$d debe ser HH:mm</string>
     <string name="slot_time_order">La hora de inicio del horario %1$d debe ser anterior a la hora de fin</string>
     <string name="slot_time_overlap">El horario %1$d y el horario %2$d se superponen en %3$s</string>
@@ -264,8 +268,10 @@
     <string name="settings_grid_sub_none">Ninguno</string>
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
     <string name="settings_pill">Ajustes de pantalla de inicio</string>
-    <string name="settings_pill_scale">Zoom de la cuadrícula</string>
-    <string name="settings_pill_scale_sub">Escala toda la cuadrícula por igual: fuente, altura de tarjeta y espaciado (70%–130%); más pequeño, más franjas por pantalla</string>
+    <string name="settings_pill_scale">Zoom de la vista de cuadrícula</string>
+    <string name="settings_pill_scale_sub">Escala toda la vista de cuadrícula por igual: fuente, altura de tarjeta y espaciado (70%–130%); más pequeño, más franjas por pantalla</string>
+    <string name="settings_pill_week_scale">Zoom de la vista semanal</string>
+    <string name="settings_pill_week_scale_sub">Escala toda la vista semanal, de forma independiente a la vista de cuadrícula (70%–130%)</string>
     <string name="settings_pill_corner">Esquinas de tarjetas</string>
     <string name="settings_pill_corner_sub">Radio de las esquinas de tarjetas de cuadrícula y vista semanal (0% rectas – 200% extra redondas), por defecto 100%</string>
     <string name="settings_week_two_column">Vista semanal en dos columnas</string>
@@ -421,6 +427,9 @@
     <string name="about_author">Autor</string>
     <string name="about_author_name">Lingion</string>
     <string name="about_license_body">Sleepy es una aplicación de horario escolar inteligente de código abierto. El código fuente se publica bajo la licencia GNU General Public License v3.0. Cualquiera puede usar, modificar y distribuir este software libremente. Las contribuciones a través de GitHub son bienvenidas.</string>
+    <string name="about_update_check">Buscar actualizaciones automáticamente</string>
+    <string name="about_update_check_detail">Comprueba GitHub Releases al iniciar; aparecerá un aviso en la página Acerca cuando haya una versión nueva</string>
+    <string name="about_update_available">Versión %1$s disponible — toca para ver</string>
     <string name="about_license_title">Declaración de código abierto</string>
     <string name="about_source">Código fuente</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
@@ -456,7 +465,8 @@
     <string name="export_title">Exportar horario</string>
     <string name="import_new_table_hint">(se creará como un horario nuevo)</string>
     <string name="jw_config_confirm">Confirmar importación</string>
-    <string name="jw_config_title">Confirmar períodos del horario</string>
+    <string name="jw_config_title">Confirmar antes de importar</string>
+    <string name="jw_table_name_label">Nombre del horario</string>
     <string name="jw_pending_apply">Solicitar soporte</string>
     <string name="jw_pending_close">Cerrar</string>
     <string name="jw_pending_grad">Posgrado</string>

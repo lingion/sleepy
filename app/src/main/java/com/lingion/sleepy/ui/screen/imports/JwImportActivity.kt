@@ -25,6 +25,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
@@ -93,6 +94,12 @@ class JwImportActivity : ComponentActivity() {
                 var configStartDate by remember { mutableStateOf("") }
                 var configTimeJson by remember { mutableStateOf("") }
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
+                // 用户可改的导入课表名; 初值 = "教务导入 - {学校名}"; 留空 = 沿用初值
+                var configTableName by remember(parsedSchool) {
+                    mutableStateOf(
+                        parsedSchool?.let { getString(R.string.jw_import_title, it.name) } ?: ""
+                    )
+                }
 
                 when {
                     importFinished -> {
@@ -138,6 +145,16 @@ class JwImportActivity : ComponentActivity() {
                                         modifier = Modifier.fillMaxWidth(),
                                         isError = confirmError != null
                                     )
+                                    // 用户可改的导入课表名 — 教务直连此前无任何命名入口,
+                                    // 硬编码成 "教务导入 - {学校名}" 后用户改名要进课表管理.
+                                    // 此次把命名入口放到导入前, 落库前最后一次修改机会.
+                                    TextField(
+                                        value = configTableName,
+                                        onValueChange = { configTableName = it },
+                                        label = { Text(getString(R.string.jw_table_name_label)) },
+                                        singleLine = true,
+                                        modifier = Modifier.fillMaxWidth()
+                                    )
                                     if (confirmError != null) {
                                         Text(text = confirmError!!, color = colors.error, style = MaterialTheme.typography.bodySmall)
                                     }
@@ -177,7 +194,9 @@ class JwImportActivity : ComponentActivity() {
                                             val maxNode = configRows.maxOfOrNull { it.node } ?: 0
                                             val tableId = jwViewModel.importAsNewTable(
                                                 courses = parsedCourses,
-                                                tableName = getString(R.string.jw_import_title, school.name),
+                                                tableName = configTableName.ifBlank {
+                                                    getString(R.string.jw_import_title, school.name)
+                                                },
                                                 startDate = configStartDate,
                                                 timeJson = configTimeJson,
                                                 nodesPerDay = maxNode

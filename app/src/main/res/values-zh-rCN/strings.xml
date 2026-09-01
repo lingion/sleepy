@@ -77,6 +77,7 @@
     <string name="import_append_only">仅追加无冲突</string>
     <string name="import_as_new">导入为新课表</string>
     <string name="import_overwrite">⚠ 覆盖当前（谨慎）</string>
+    <string name="import_append_as_new">追加为新课表</string>
     <string name="import_confirm_title">导入前确认</string>
     <string name="import_confirm_body">先确认学期开始日期和每节时间，不然当前周次会一直不准。</string>
     <string name="import_week_start">第一周从哪天开始</string>
@@ -109,7 +110,7 @@
     <string name="copied">已复制</string>
     <string name="ai_prompt_title">让 AI 帮你转换截图</string>
     <string name="ai_prompt_hint">把下面的 Prompt 复制给豆包、ChatGPT 等 AI，发送课表截图，AI 的输出直接粘贴回上方输入框即可导入。</string>
-    <string name="ai_prompt_text">任务：把接下来发给你的课表截图，按下面的格式转成纯文本输出。不要写任何解释、不要用 Markdown 代码块、不要输出任何规定之外的字符。\n\n输出整体由四个块组成，按这个顺序出现：\n块A：单行标记 &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;（输出第一行）\n块B：作息表行（如果截图中能看到每节课的起止时间，才有这块；如果看不到作息时间，整块B连同它的两个时间标记一起省略——参见下面省略作息表的规则）\n块C：课程行\n块D：单行标记 &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;（输出最后一行）\n\n块B和块C本身都不允许空行。块A和块B之间、块B和块C之间、块C和块D之间都可以有或没有空行（建议都不要空行，按示例来）。\n\n========== 块B：作息表 ==========\n\n作息表描述的是每天第N节课从几点到几点，适用于周一到周日全部相同的情况。如果每周不一样，按省略作息表的规则处理。\n\n作息表的标记：\n  &lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;\n  （作息行，每行一条）\n  &lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;\n（三个标记必须都出现或都不出现；不能只出现BEGIN或只出现END）\n\n作息行格式（两种写法都可以，按截图中实际形式选最贴合的）：\n  写法1：第N节 HH:MM-HH:MM\n    示例：第1节 08:00-09:35\n    说明：第N节表示第N节课，数字是节次编号，N从1开始；时间是该节课的起止时间。\n    如果截图中作息表是每节课单独一行的样式，用这种。\n  写法2：a-b HH:MM-HH:MM\n    示例：1-2 08:20-10:00\n    说明：a-b表示从第a节到第b节连续上同一时段；这里a和b之间的每一节（a、a+1、...、b）都使用同一段时间。\n    1-2 表示第1节和第2节都上08:20-10:00。\n    5 表示5 是 第5节单独 的简写，和 5-5 等价。\n    如果截图中作息表是连排多节共用同一时段的样式，用这种。\n\n作息行要求：\n  · 节次必须从 1 开始，按从小到大顺序排列\n  · 写法1和写法2不能混用——一份作息表只用其中一种\n  · 不能有空行\n  · 时间之间用一个空格分隔节次和起止时间\n  · HH:MM 是 24 小时制，HH 是 00-23，MM 是 00-59\n  · 不要在行首加 时间表  作息  课程表 等任何前缀\n\n省略作息表（块B）的规则——以下任意一种情况出现就完全省略块B及其三个标记行：\n  · 截图中完全没有看到任何起止时间\n  · 截图中每周每天的作息不一样（不能用一个作息表概括）\n  · 截图中能看到时间但你拿不准某节课具体几点\n\n========== 块C：课程行 ==========\n\n每个上课时段占一行，用 Tab（制表符，不是空格也不是逗号）分隔成 7 列。列的顺序和含义固定：\n  列1 课程名\n  列2 老师\n  列3 教室\n  列4 星期\n  列5 节次\n  列6 周次\n  列7 类型\n\n每一列的填写规则：\n  列1 课程名：截图中写的完整课程名，不删字不加字，不能包含 Tab 字符；如果同一门课在不同的时间上课，每个时段各占一行。\n  列2 老师：截图中有就写截图中写的全名；没有就写 -，绝不猜测。\n  列3 教室：截图中有就写截图中写的全名；没有就写 -，绝不猜测。\n  列4 星期：只能写数字 1 到 7，含义：1=周一，2=周二，3=周三，4=周四，5=周五，6=周六，7=周日。绝不能写周一 Monday 等。\n  列5 节次：写课程占用的连续节次。1-2 表示第1节和第2节都上这节课；3 表示只上第3节；3-5 表示第3、4、5节都上。必须是连续区间，不能写1,3,5。如果截图中两节不连续（比如第1节和第3节但第2节空着），按截图实际写1和3两条课程行，分别对应不同时间/周次。\n  列6 周次：\n    · 连续多周：用 a-b 表示从第a周到第b周，如 1-16 表示第1周至第16周连续上\n    · 不连续多周：用英文逗号分隔多个单周或区间，如 1,3,5 表示第1、第3、第5周；1-8,10,12-16 表示前8周加第10周加后5周\n    · 必须是数字 1-30 之间；超过30周视为学期安排异常，省略该课程行\n  列7 类型：只能写数字：0=每周都上；1=单周上（第1、3、5...周）；2=双周上（第2、4、6...周）。截图写单周/双周/每周也要转成数字。绝不能写 3 或其他数字。\n\n课程行的放弃规则——以下任意一种情况出现就完全省略该课程行（不输出）：\n  · 列4 星期 拿不准\n  · 列5 节次 拿不准\n  · 列6 周次 拿不准\n  · 列7 类型 拿不准（除上述映射外的情况）\n  · 列2 老师 或 列3 教室 缺失时填 -，不要因为它们缺失就放弃整行\n\n课程行内不能有空行。两个课程行之间也不要插空行。\n\n========== 标记行的写法 ==========\n\n所有标记行必须原样输出&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;，不能用反引号包起来（不能写 ```&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;```），也不能改成 [SLEEPY-BEGIN] 这种方括号形式。\n标记行和内容之间用换行符隔开。标记行必须是字面字符，不能加空格（&lt;&lt;&lt;和SLEEPY之间不能加空格）。\n\n========== 完整示例（请只学习格式，不要复制内容）==========\n\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2节 09:55-11:30\n第3节 13:30-15:05\n&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;\n高等数学	张三	A101	1	1-2	1-16	0\n大学英语	李四	B202	1	3-4	1-16	1\n体育	-	-	5	3	1-16	2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="ai_prompt_text">任务：把接下来发给你的课表截图，按下面的格式转成纯文本输出。不要写任何解释、不要用 Markdown 代码块、不要输出任何规定之外的字符。\n\n输出整体由四个块组成，按这个顺序出现：\n块A：单行标记 &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;（输出第一行）\n块B：作息表行（如果截图中能看到每节课的起止时间，才有这块；如果看不到作息时间，整块B连同它的两个时间标记一起省略——参见下面省略作息表的规则）\n块C：课程行\n块D：单行标记 &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;（输出最后一行）\n\n块B和块C本身都不允许空行。块A和块B之间、块B和块C之间、块C和块D之间都可以有或没有空行（建议都不要空行，按示例来）。\n\n========== 块B：作息表 ==========\n\n作息表描述的是每天第N节课从几点到几点，适用于周一到周日全部相同的情况。如果每周不一样，按省略作息表的规则处理。\n\n作息表的标记：\n  &lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;\n  （作息行，每行一条）\n  &lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;\n（三个标记必须都出现或都不出现；不能只出现BEGIN或只出现END）\n\n作息行格式（两种写法都可以，按截图中实际形式选最贴合的）：\n  写法1：第N节 HH:MM-HH:MM\n    示例：第1节 08:00-09:35\n    说明：第N节表示第N节课，数字是节次编号，N从1开始；时间是该节课的起止时间。\n    如果截图中作息表是每节课单独一行的样式，用这种。\n  写法2：a-b HH:MM-HH:MM\n    示例：1-2 08:20-10:00\n    说明：a-b表示从第a节到第b节连续上同一时段；这里a和b之间的每一节（a、a+1、...、b）都使用同一段时间。\n    1-2 表示第1节和第2节都上08:20-10:00。\n    5 表示5 是 第5节单独 的简写，和 5-5 等价。\n    如果截图中作息表是连排多节共用同一时段的样式，用这种。\n\n作息行要求：\n  · 节次必须从 1 开始，按从小到大顺序排列\n  · 写法1和写法2不能混用——一份作息表只用其中一种\n  · 不能有空行\n  · 时间之间用一个空格分隔节次和起止时间\n  · HH:MM 是 24 小时制，HH 是 00-23，MM 是 00-59\n  · 不要在行首加 时间表  作息  课程表 等任何前缀\n\n省略作息表（块B）的规则——以下任意一种情况出现就完全省略块B及其三个标记行：\n  · 截图中完全没有看到任何起止时间\n  · 截图中每周每天的作息不一样（不能用一个作息表概括）\n  · 截图中能看到时间但你拿不准某节课具体几点\n\n========== 块C：课程行 ==========\n\n每个上课时段占一行，用 Tab（制表符，不是空格也不是逗号）分隔成 7 列。列的顺序和含义固定：\n  列1 课程名\n  列2 老师\n  列3 教室\n  列4 星期\n  列5 节次\n  列6 周次\n  列7 类型\n\n每一列的填写规则：\n  列1 课程名：截图中"实验项目"那一截，不要把教室/学时/编号混进来。如果截图中课程名和教室/学时粘在同一格（例："迈克尔逊-11#2003-3"，三段拼一起），按 "-" 拆开后：列1=最前面"实验项目"那截（"迈克尔逊"），列3=中间像教室的那截（"11#2003"，含"#" / "楼" / "字母+数字"），末段的学时/编号（"-3"）舍弃。绝不能把整串原样塞进列1。\n    · 课程名不能包含 Tab 字符；\n    · 课程名至少要写"实验项目"或"课程"那一截，不能空着；\n    · 实在判断不出哪部分是课程名/教室时，整串保留到列1，列3写 -（宁可信息冗余也不丢行）。\n  列2 老师：截图中有就写截图中写的全名；没有就写 -，绝不猜测。\n  列3 教室：截图中有就写截图中写的全名；没有就写 -，绝不猜测。如果按上述规则从课程名里抽出了教室片段（例："11#2003"/"11#2007/3006"/"逸夫楼110"/"11#3001"），把它填到列3，列1保留剩余部分。\n  列4 星期：只能写数字 1 到 7，含义：1=周一，2=周二，3=周三，4=周四，5=周五，6=周六，7=周日。绝不能写周一 Monday 等。\n  列5 节次：写课程占用的连续节次。1-2 表示第1节和第2节都上这节课；3 表示只上第3节；3-5 表示第3、4、5节都上。必须是连续区间，不能写1,3,5。如果截图中两节不连续（比如第1节和第3节但第2节空着），按截图实际写1和3两条课程行，分别对应不同时间/周次。\n  列6 周次：\n    · 连续多周：用 a-b 表示从第a周到第b周，如 1-16 表示第1周至第16周连续上\n    · 不连续多周：用英文逗号分隔多个单周或区间，如 1,3,5 表示第1、第3、第5周；1-8,10,12-16 表示前8周加第10周加后5周\n    · 单次课（只在某一两周上）：用 a-b 表示从第a周到第b周连续上，a==b 表示只上一周，如 6 表示只在第6周上、11-13 表示第11周到第13周连续上\n    · 必须是数字 1-30 之间；超过30周视为学期安排异常，省略该课程行\n  列7 类型：只能写数字：0=每周都上；1=单周上（第1、3、5...周）；2=双周上（第2、4、6...周）；3=按周次列实际指定的周上（即只在列6的周次范围内上，范围外不上）。截图写"按周次"或周次跨度内不重复也选 3。绝不能写 4 或其他数字。\n    · 关键选择规则：如果该课只在某一两周或某个不重复的周次区间上（实验课、临时补课、专题讲座等），列7 必须写 3，不要因为"看起来不是每周"就强行写 0 每周或 1/2 单双周。\n    · 截图中能明确写出"每周"/"单周"/"双周"字样 → 转成 0/1/2。\n    · 截图无类型信息 / 拿不准 / 单次课 / 不连续非奇偶 → 写 3。\n\n课程行的放弃规则——以下任意一种情况出现就完全省略该课程行（不输出）：\n  · 列4 星期 拿不准\n  · 列5 节次 拿不准\n  · 列6 周次 拿不准\n  · 列7 类型 拿不准（按上面 0/1/2/3 四个值都能映射的都不算"拿不准"）\n  · 列2 老师 或 列3 教室 缺失时填 -，不要因为它们缺失就放弃整行\n\n课程行内不能有空行。两个课程行之间也不要插空行。\n\n========== 标记行的写法 ==========\n\n所有标记行必须原样输出&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;、&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;，不能用反引号包起来（不能写 ```&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;```），也不能改成 [SLEEPY-BEGIN] 这种方括号形式。\n标记行和内容之间用换行符隔开。标记行必须是字面字符，不能加空格（&lt;&lt;&lt;和SLEEPY之间不能加空格）。\n\n========== 完整示例（请只学习格式，不要复制内容）==========\n\n&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n&lt;&lt;&lt;SLEEPY-TIME-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2节 09:55-11:30\n第3节 13:30-15:05\n&lt;&lt;&lt;SLEEPY-TIME-END&gt;&gt;&gt;\n高等数学	张三	A101	1	1-2	1-16	0\n大学英语	李四	B202	1	3-4	1-16	1\n体育	-	-	5	3	1-16	2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
 
     <string name="format_wakeup_share_when">从 WakeUp 课程表 app 整体搬家。在 WakeUp 里点「分享课程」生成的整段文字，原样粘贴即可。</string>
     <string-array name="format_wakeup_share_spec">
@@ -181,7 +182,8 @@
     <string name="start_date_format">日期格式应为YYYY-MM-DD</string>
     <string name="slot_time_required">第 %1$d 节时间不能为空</string>
     <string name="slot_time_invalid">第 %1$d 节时间无效（开始须早于结束）</string>
-    <string name="jw_config_title">确认课表节次</string>
+    <string name="jw_config_title">导入前确认</string>
+    <string name="jw_table_name_label">课表名称</string>
     <string name="jw_config_confirm">确认导入</string>
     <string name="expand">点击展开</string>
     <string name="collapse">点击收起</string>
@@ -222,6 +224,7 @@
     <string name="week_every">每周</string>
     <string name="week_odd">单周</string>
     <string name="week_even">双周</string>
+    <string name="week_custom">按周次</string>
     <string name="add_slot">新增一个上课时段</string>
     <string name="save_course">保存课程</string>
     <string name="delete_course">删除课程</string>
@@ -239,6 +242,8 @@
     <string name="slot_at_least_one_day">时段 %1$d 至少选择一天</string>
     <string name="slot_start_node_positive">时段 %1$d 的开始节必须大于 0</string>
     <string name="slot_step_positive">时段 %1$d 的连上节数必须大于 0</string>
+    <string name="slot_step_exceeds_max">时段 %1$d 第 %2$d-%3$d 节已超出课表最大节次（%4$d 节）</string>
+    <string name="slot_step_clamped_hint">输入已超出最大节次（当前课表共 %3$d 节），如需更多节数请到课表管理页面编辑当前课表的节数</string>
     <string name="slot_time_format">时段 %1$d 的开始/结束时间格式应为 HH:mm</string>
     <string name="slot_time_order">时段 %1$d 的开始时间必须早于结束时间</string>
     <string name="slot_time_overlap">时段 %1$d 与时段 %2$d 在 %3$s 存在时间重叠</string>
@@ -292,8 +297,10 @@
     <string name="settings_grid_sub_none">无</string>
     <string name="settings_grid_sub_none_sub">网格卡片只显示课程名</string>
     <string name="settings_pill">主页显示设置</string>
-    <string name="settings_pill_scale">网格缩放</string>
-    <string name="settings_pill_scale_sub">整体缩放网格课表：字号、卡片高度、间距等比调节（70%–130%），调小可一屏显示更多节课</string>
+    <string name="settings_pill_scale">网格视图缩放</string>
+    <string name="settings_pill_scale_sub">整体缩放网格视图：字号、卡片高度、间距等比调节（70%–130%），调小可一屏显示更多节课</string>
+    <string name="settings_pill_week_scale">周视图缩放</string>
+    <string name="settings_pill_week_scale_sub">整体缩放周视图，与网格视图互相独立（70%–130%）</string>
     <string name="settings_pill_corner">卡片圆角</string>
     <string name="settings_pill_corner_sub">调整网格卡片与周视图卡片的圆角（0% 直角 – 200% 超圆），默认 100%</string>
     <string name="settings_week_two_column">周视图两栏显示</string>
@@ -547,6 +554,9 @@
     <string name="about_source_url">github.com/lingion/sleepy</string>
     <string name="about_license_title">开源声明</string>
     <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
+    <string name="about_update_check">自动检查更新</string>
+    <string name="about_update_check_detail">启动时自动检查 GitHub Releases, 发现新版本会在「关于」页顶部提示</string>
+    <string name="about_update_available">新版 %1$s 可用,点此查看</string>
     <string name="theme_name_default">默认淡紫</string>
     <string name="theme_name_spring">春绿</string>
     <string name="theme_name_ocean">海蓝</string>
