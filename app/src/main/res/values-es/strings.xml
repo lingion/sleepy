@@ -252,6 +252,10 @@
     <string name="settings_display_node_sub">Todos los cursos muestran \"Período N\"</string>
     <string name="settings_display_time">Mostrar como horas</string>
     <string name="settings_display_time_sub">Todos los cursos muestran \"HH:mm–HH:mm\"</string>
+    <string name="settings_start_view">Vista al iniciar</string>
+    <string name="settings_start_view_full">Vista semanal</string>
+    <string name="settings_start_view_cards">Cuadrícula</string>
+    <string name="settings_start_view_sub">Solo afecta la vista al abrir la app; se puede cambiar en la barra superior del horario</string>
     <string name="settings_grid_sub_info">Sub-info de la tarjeta</string>
     <string name="settings_grid_sub_room">Aula</string>
     <string name="settings_grid_sub_room_sub">Mostrar aula bajo el nombre (oculto si está vacío)</string>

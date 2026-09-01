@@ -253,6 +253,10 @@
     <string name="settings_display_node_sub">All courses show as \"Period N\"</string>
     <string name="settings_display_time">Show as times</string>
     <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
+    <string name="settings_start_view">Default view on launch</string>
+    <string name="settings_start_view_full">Week view</string>
+    <string name="settings_start_view_cards">Grid</string>
+    <string name="settings_start_view_sub">Only affects the view shown at launch; switch anytime from the schedule top bar</string>
     <string name="settings_grid_sub_info">Grid card sub-info</string>
     <string name="settings_grid_sub_room">Room</string>
     <string name="settings_grid_sub_room_sub">Show room under course name (hidden if empty)</string>

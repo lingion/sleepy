@@ -252,6 +252,10 @@
     <string name="settings_display_node_sub">所有課程顯示為「第N節」</string>
     <string name="settings_display_time">統一顯示時間</string>
     <string name="settings_display_time_sub">所有課程顯示為「HH:mm–HH:mm」</string>
+    <string name="settings_start_view">啟動預設頁</string>
+    <string name="settings_start_view_full">週檢視</string>
+    <string name="settings_start_view_cards">網格</string>
+    <string name="settings_start_view_sub">僅影響啟動時進入的檢視，可隨時在課表頁頂部切換</string>
     <string name="settings_grid_sub_info">網格卡片副資訊</string>
     <string name="settings_grid_sub_room">教室</string>
     <string name="settings_grid_sub_room_sub">課程名下方顯示上課地點（無教室則不顯示）</string>
