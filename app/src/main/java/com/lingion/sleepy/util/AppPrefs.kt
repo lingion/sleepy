@@ -28,6 +28,7 @@ object AppPrefs {
     const val KEY_LANG = "language"
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
     const val KEY_GRID_SUB_INFO = "grid_sub_info" // "room" / "teacher" / "none" — 网格卡片副信息（周视图网格卡课程名下方那行；左栏已有节次，故此处不再显示节次/时间）
+    const val KEY_CONFLICT_STYLE = "conflict_style" // "stack" / "fold" / "rail" — 冲突课程显示样式（网格视图同格冲突时；stack=叠层偏移, fold=折角揭示, rail=侧边竖轨, 默认 "rail"）
     const val KEY_START_VIEW = "start_view" // "full" / "cards" — 启动默认视图（仅通用设置里设置；手动切换课表顶部视图不写入）
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
@@ -202,6 +203,16 @@ object AppPrefs {
     fun setGridSubInfo(ctx: Context, value: String) {
         require(value == "room" || value == "teacher" || value == "none")
         sp(ctx).edit().putString(KEY_GRID_SUB_INFO, value).apply()
+    }
+
+    // ===== 冲突课程显示样式：叠层 / 折角 / 竖轨 =====
+
+    fun getConflictStyle(ctx: Context): String =
+        sp(ctx).getString(KEY_CONFLICT_STYLE, "rail") ?: "rail"
+
+    fun setConflictStyle(ctx: Context, value: String) {
+        require(value == "stack" || value == "fold" || value == "rail")
+        sp(ctx).edit().putString(KEY_CONFLICT_STYLE, value).apply()
     }
 
     // ===== 启动默认视图：完整 / 卡片 =====
