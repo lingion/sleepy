@@ -270,6 +270,10 @@
     <string name="settings_pill_corner_sub">Radio de esquinas de tarjetas y píldoras (0% cuadrado – 200% muy redondeado), por defecto 100%</string>
     <string name="settings_week_two_column">Vista semanal en dos columnas</string>
     <string name="settings_week_two_column_sub">Divide la lista de cursos de la vista semanal en dos columnas (primera mitad de la semana a la izquierda, segunda mitad a la derecha) para reducir el desplazamiento vertical</string>
+    <string name="settings_week_two_column_days">Reparto fijo de días</string>
+    <string name="settings_week_two_column_days_sub">Primera mitad de la semana a la izquierda, segunda mitad a la derecha — los días mantienen su posición</string>
+    <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
+    <string name="settings_week_two_column_balance_sub">Cada día va a la columna con menos cursos, manteniendo ambas partes parejas — la posición varía según el horario</string>
     <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>

@@ -270,6 +270,10 @@
     <string name="settings_pill_corner_sub">グリッドカードと週ビューの角丸を調整（0% 角 – 200% 大きく丸い）、デフォルト 100%</string>
     <string name="settings_week_two_column">週ビュー2列表示</string>
     <string name="settings_week_two_column_sub">週ビューの授業リストを左右2列に分割します（前半週は左、後半週は右）。縦スクロールを減らせます</string>
+    <string name="settings_week_two_column_days">日数で半分ずつ</string>
+    <string name="settings_week_two_column_days_sub">前半週は左、後半週は右。曜日の位置は固定です</string>
+    <string name="settings_week_two_column_balance">コマ数でバランス</string>
+    <string name="settings_week_two_column_balance_sub">授業が少ない列に曜日を振り分け、左右の高さを均す。曜日の位置は時間割により変動します</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>

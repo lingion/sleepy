@@ -37,7 +37,8 @@ object AppPrefs {
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
     const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格课表整体缩放(字号/行高/间距/圆角联动, issue#8)
     const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
-    const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏(周一~周X左栏/其余右栏, issue#8)
+    const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
+    const val KEY_WEEK_TWO_COLUMN_MODE = "week_two_column_mode" // "days"=按天对半分 / "balance"=按课程数动态平衡, issue#8
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -288,14 +289,23 @@ object AppPrefs {
         sp(ctx).edit().putFloat(KEY_GRID_CORNER_RATIO, v.coerceIn(0f, 2f)).apply()
     }
 
-    // ===== 周视图两栏(issue#8) — 默认 false =====
-    // 开启后周视图 7 天课程列表拆左右两栏: 前半周左栏, 后半周右栏, 省纵向滚动
+    // ===== 周视图两栏(issue#8) — 默认关 =====
+    // 开启后周视图课程列表拆左右两栏, 省纵向滚动; 分栏标准二选一:
+    //   days    = 按天对半分(前半周左/后半周右, 天数固定)
+    //   balance = 按当天课程数动态平衡(逐天放进课少的栏, 两栏高度接近; 天位置不固定)
 
     fun isWeekTwoColumn(ctx: Context): Boolean =
         sp(ctx).getBoolean(KEY_WEEK_TWO_COLUMN, false)
 
     fun setWeekTwoColumn(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WEEK_TWO_COLUMN, v).apply()
+    }
+
+    fun getWeekTwoColumnMode(ctx: Context): String =
+        sp(ctx).getString(KEY_WEEK_TWO_COLUMN_MODE, "days") ?: "days"
+
+    fun setWeekTwoColumnMode(ctx: Context, v: String) {
+        sp(ctx).edit().putString(KEY_WEEK_TWO_COLUMN_MODE, if (v == "balance") "balance" else "days").apply()
     }
 
     // ===== 节假日灰显 =====

@@ -84,6 +84,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
     var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
+    var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -233,6 +234,23 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         checked = weekTwoColumn,
                         onCheckedChange = { weekTwoColumn = it; AppPrefs.setWeekTwoColumn(context, it) }
                     )
+                    // 分栏标准 — 两栏开启时才需要选
+                    if (weekTwoColumn) {
+                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        DisplayModeOption(
+                            label = stringResource(R.string.settings_week_two_column_days),
+                            subtitle = stringResource(R.string.settings_week_two_column_days_sub),
+                            selected = weekTwoColumnMode == "days",
+                            onClick = { weekTwoColumnMode = "days"; AppPrefs.setWeekTwoColumnMode(context, "days") }
+                        )
+                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        DisplayModeOption(
+                            label = stringResource(R.string.settings_week_two_column_balance),
+                            subtitle = stringResource(R.string.settings_week_two_column_balance_sub),
+                            selected = weekTwoColumnMode == "balance",
+                            onClick = { weekTwoColumnMode = "balance"; AppPrefs.setWeekTwoColumnMode(context, "balance") }
+                        )
+                    }
                 }
             }
 

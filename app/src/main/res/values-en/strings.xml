@@ -276,6 +276,10 @@
     <string name="settings_pill_corner_sub">Corner radius of grid cards and week view pills (0% square – 200% extra round), default 100%</string>
     <string name="settings_week_two_column">Two-column week view</string>
     <string name="settings_week_two_column_sub">Split the week view course list into two columns (first half of the week left, second half right) to reduce vertical scrolling</string>
+    <string name="settings_week_two_column_days">Split days evenly</string>
+    <string name="settings_week_two_column_days_sub">First half of the week on the left, second half on the right — days stay in a fixed position</string>
+    <string name="settings_week_two_column_balance">Balance by course count</string>
+    <string name="settings_week_two_column_balance_sub">Each day goes to the shorter column, keeping both sides even — day positions vary with your schedule</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>

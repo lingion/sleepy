@@ -434,6 +434,7 @@ fun FullWeekView(
     val scale = AppPrefs.getGridScale(context)
     val cornerRatio = AppPrefs.getGridCornerRatio(context)
     val twoColumn = AppPrefs.isWeekTwoColumn(context)
+    val twoColumnMode = AppPrefs.getWeekTwoColumnMode(context)
     val byDay = courses.groupBy { it.day }
 
     Column(
@@ -461,7 +462,8 @@ fun FullWeekView(
             greyDays = greyDays,
             scale = scale,
             cornerRatio = cornerRatio,
-            twoColumn = twoColumn
+            twoColumn = twoColumn,
+            twoColumnMode = twoColumnMode
         )
     }
 }
@@ -597,17 +599,30 @@ private fun DetailPanel(
     greyDays: Set<Int> = emptySet(),
     scale: Float = 1f,
     cornerRatio: Float = 1f,
-    twoColumn: Boolean = false
+    twoColumn: Boolean = false,
+    twoColumnMode: String = "days"
 ) {
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
     val sortedDays = visibleDays.sorted()
 
-    // issue#8 周视图两栏: 7 天拆左右两栏(前半周左/后半周右), 省纵向滚动; 只有一颗开关管
+    // issue#8 周视图两栏, 省纵向滚动; 分栏标准由设置选择:
+    //   days    = 按天对半分 — 前半周左/后半周右, 天数固定
+    //   balance = 按课程数动态平衡 — 逐天放进当天卡片(约)更矮的栏, 两栏高度接近
     if (twoColumn && sortedDays.size >= 4) {
-        val splitIdx = (sortedDays.size + 1) / 2
-        val leftDays = sortedDays.subList(0, splitIdx)
-        val rightDays = sortedDays.subList(splitIdx, sortedDays.size)
+        val split: Pair<List<Int>, List<Int>> = if (twoColumnMode == "balance") {
+            // 贪心: 按天序遍历, 每天记权重 = 课程数(权重按 DetailDayCard 高度近似, 空天也有卡头所以记 1)
+            var l = 0; var r = 0
+            val left = mutableListOf<Int>(); val right = mutableListOf<Int>()
+            for (day in sortedDays) {
+                val w = (byDay[day].orEmpty().size).coerceAtLeast(1)
+                if (l <= r) { left.add(day); l += w } else { right.add(day); r += w }
+            }
+            left to right
+        } else {
+            val splitIdx = (sortedDays.size + 1) / 2
+            sortedDays.subList(0, splitIdx) to sortedDays.subList(splitIdx, sortedDays.size)
+        }
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -616,15 +631,15 @@ private fun DetailPanel(
             verticalAlignment = Alignment.Top
         ) {
             DayColumn(
-                days = leftDays,
+                days = split.first,
                 byDay = byDay, today = today, displayMode = displayMode, timeJson = timeJson,
                 onCourseClick = onCourseClick, greyDays = greyDays,
                 scale = scale, cornerRatio = cornerRatio,
                 modifier = Modifier.weight(1f)
             )
-            if (rightDays.isNotEmpty()) {
+            if (split.second.isNotEmpty()) {
                 DayColumn(
-                    days = rightDays,
+                    days = split.second,
                     byDay = byDay, today = today, displayMode = displayMode, timeJson = timeJson,
                     onCourseClick = onCourseClick, greyDays = greyDays,
                     scale = scale, cornerRatio = cornerRatio,

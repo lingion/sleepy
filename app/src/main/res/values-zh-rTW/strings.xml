@@ -270,6 +270,10 @@
     <string name="settings_pill_corner_sub">調整網格卡片與週視圖膠囊的圓角大小（0% 直角 – 200% 超圓），預設 100%</string>
     <string name="settings_week_two_column">週視圖兩欄顯示</string>
     <string name="settings_week_two_column_sub">週視圖課程列表拆為左右兩欄（前半週在左、後半週在右），減少縱向捲動</string>
+    <string name="settings_week_two_column_days">按天對半分</string>
+    <string name="settings_week_two_column_days_sub">前半週在左欄、後半週在右欄，星期位置固定不變</string>
+    <string name="settings_week_two_column_balance">按課程數平衡</string>
+    <string name="settings_week_two_column_balance_sub">星期放進課較少的一欄，兩欄高度接近；星期位置隨課表變化</string>
     <string name="settings_show_date">課表顯示日期</string>
     <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>
     <string name="settings_visible_days">顯示星期</string>
