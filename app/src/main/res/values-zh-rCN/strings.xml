@@ -296,8 +296,8 @@
     <string name="settings_pill_scale_sub">整体缩放网格课表：字号、胶囊高度、间距等比调节（70%–130%），调小可让更多节课一屏放下</string>
     <string name="settings_pill_corner">圆角</string>
     <string name="settings_pill_corner_sub">调整网格卡片与周视图胶囊的圆角大小（0% 直角 – 200% 超圆），默认 100%</string>
-    <string name="settings_pill_two_column">两栏显示</string>
-    <string name="settings_pill_two_column_sub">网格课表拆为左右两栏（前半节次在左、后半节次在右），适合节数多的课表；8 节以下不生效</string>
+    <string name="settings_week_two_column">周视图两栏显示</string>
+    <string name="settings_week_two_column_sub">周视图课程列表拆为左右两栏（前半周在左、后半周在右），减少纵向滚动</string>
     <string name="settings_show_date">课表显示日期</string>
     <string name="settings_show_date_sub">在每列表头显示具体日期（月/日）</string>
     <string name="settings_visible_days">显示星期</string>
@@ -554,7 +554,7 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d-%2$d节</string>
     <string name="section_single">第%1$d 节</string>
-    <string name="mine_appearance">外观与显示</string>
+    <string name="mine_appearance">外观与主题</string>
     <string name="mine_general">通用</string>
     <string name="theme_appearance">外观</string>
     <!-- 深浅色模式的"跟随系统",与主题取色的 theme_system(跟随系统)区分 -->

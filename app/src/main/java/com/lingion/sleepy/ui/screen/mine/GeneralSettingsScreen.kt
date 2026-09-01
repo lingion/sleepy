@@ -83,7 +83,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
     var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
     var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
-    var gridTwoColumn by remember { mutableStateOf(AppPrefs.isGridTwoColumn(context)) }
+    var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -172,7 +172,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 }
             }
 
-            // 主页胶囊大小与圆角(issue#8): 缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 两栏开关
+            // 主页胶囊大小与圆角(issue#8): 缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
             item {
                 SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
                     Text(text = stringResource(R.string.settings_pill_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
@@ -228,10 +228,10 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                     }
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
-                        label = stringResource(R.string.settings_pill_two_column),
-                        subtitle = stringResource(R.string.settings_pill_two_column_sub),
-                        checked = gridTwoColumn,
-                        onCheckedChange = { gridTwoColumn = it; AppPrefs.setGridTwoColumn(context, it) }
+                        label = stringResource(R.string.settings_week_two_column),
+                        subtitle = stringResource(R.string.settings_week_two_column_sub),
+                        checked = weekTwoColumn,
+                        onCheckedChange = { weekTwoColumn = it; AppPrefs.setWeekTwoColumn(context, it) }
                     )
                 }
             }

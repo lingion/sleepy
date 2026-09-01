@@ -268,8 +268,8 @@
     <string name="settings_pill_scale_sub">時間割グリッド全体を拡大縮小：フォント・カードの高さ・間隔を連動（70%–130%）。小さくすると1画面に多くのコマが入ります。</string>
     <string name="settings_pill_corner">角丸</string>
     <string name="settings_pill_corner_sub">グリッドカードと週ビューの角丸を調整（0% 角 – 200% 大きく丸い）、デフォルト 100%</string>
-    <string name="settings_pill_two_column">2カラム表示</string>
-    <string name="settings_pill_two_column_sub">グリッドを左右2カラムに分割（前半のコマは左、残りは右）。コマ数が多い時間割向け。8コマ未満では無効。</string>
+    <string name="settings_week_two_column">週ビュー2列表示</string>
+    <string name="settings_week_two_column_sub">週ビューの授業リストを左右2列に分割します（前半週は左、後半週は右）。縦スクロールを減らせます</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>
@@ -388,7 +388,7 @@
     <string name="day_short_7">日</string>
     <string name="section_node_format">第%1$d–%2$d限</string>
     <string name="section_single">第%1$d限</string>
-    <string name="mine_appearance">外観と表示</string>
+    <string name="mine_appearance">外観とテーマ</string>
     <string name="mine_general">一般</string>
     <string name="theme_appearance">外観</string>
     <string name="theme_mode_system">明暗はシステムに従う</string>
