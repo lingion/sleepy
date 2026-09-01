@@ -296,7 +296,7 @@
     <string name="settings_grid_sub_teacher_sub">课程名下方显示授课教师（无教师则不显示）</string>
     <string name="settings_grid_sub_none">无</string>
     <string name="settings_grid_sub_none_sub">网格卡片只显示课程名</string>
-    <string name="settings_pill">主页胶囊大小与圆角</string>
+    <string name="settings_pill">主页显示设置</string>
     <string name="settings_pill_scale">胶囊大小</string>
     <string name="settings_pill_scale_sub">整体缩放网格课表：字号、胶囊高度、间距等比调节（70%–130%），调小可让更多节课一屏放下</string>
     <string name="settings_pill_corner">圆角</string>
@@ -308,7 +308,7 @@
     <string name="settings_week_two_column_balance">按课程数平衡</string>
     <string name="settings_week_two_column_balance_sub">星期放进课较少的一栏，两栏高度接近；星期位置随课表变化</string>
     <string name="settings_week_hide_empty">周视图隐藏无课日</string>
-    <string name="settings_week_hide_empty_sub">周视图不显示没有课程的星期，剩余天数左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）；仅两栏显示时生效</string>
+    <string name="settings_week_hide_empty_sub">周视图不显示没有课程的星期，剩余天数在两栏下左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）</string>
     <string name="settings_show_date">课表显示日期</string>
     <string name="settings_show_date_sub">在每列表头显示具体日期（月/日）</string>
     <string name="settings_visible_days">显示星期</string>

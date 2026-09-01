@@ -263,7 +263,7 @@
     <string name="settings_grid_sub_teacher_sub">Mostrar profesor bajo el nombre (oculto si está vacío)</string>
     <string name="settings_grid_sub_none">Ninguno</string>
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
-    <string name="settings_pill">Tamaño y esquinas de píldoras</string>
+    <string name="settings_pill">Ajustes de pantalla de inicio</string>
     <string name="settings_pill_scale">Tamaño de píldora</string>
     <string name="settings_pill_scale_sub">Escala toda la cuadrícula: fuente, altura y espaciado juntos (70%–130%). Más pequeño cabe más clases en pantalla.</string>
     <string name="settings_pill_corner">Radio de esquinas</string>
@@ -275,7 +275,7 @@
     <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
     <string name="settings_week_two_column_balance_sub">Cada día va a la columna con menos cursos, manteniendo ambas partes parejas — la posición varía según el horario</string>
     <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
-    <string name="settings_week_hide_empty_sub">Los días sin cursos se quitan de la vista semanal y los restantes se reparten en partes iguales (p. ej. 4 días = 2+2, 6 días = 3+3); solo con dos columnas</string>
+    <string name="settings_week_hide_empty_sub">Los días sin cursos se quitan de la vista semanal; con dos columnas los restantes se reparten en partes iguales (p. ej. 4 días = 2+2, 6 días = 3+3)</string>
     <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>

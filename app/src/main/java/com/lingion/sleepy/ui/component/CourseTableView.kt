@@ -607,9 +607,9 @@ private fun DetailPanel(
 ) {
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
-    // issue#8 隐藏无课日: 仅两栏模式下生效(单栏用户完整看 7 天列表不受影响)
+    // issue#8 隐藏无课日 — 单栏/两栏都生效
     val sortedDays = visibleDays.sorted().let {
-        if (twoColumn && hideEmptyDays) it.filter { d -> byDay[d].orEmpty().isNotEmpty() } else it
+        if (hideEmptyDays) it.filter { d -> byDay[d].orEmpty().isNotEmpty() } else it
     }
 
     // issue#8 周视图两栏, 省纵向滚动; 分栏标准由设置选择:
@@ -655,7 +655,7 @@ private fun DetailPanel(
             }
         }
     } else {
-        // 单栏(或两栏下过滤后不足 2 天) — 显示全部所选星期, 不吃掉无课日
+        // 单栏(或两栏下过滤后不足 2 天) — 显示剩余星期(全空周时=全部所选星期, 不吃掉无课日)
         Column(
             modifier = Modifier
                 .fillMaxWidth()

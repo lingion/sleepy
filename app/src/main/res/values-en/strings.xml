@@ -269,7 +269,7 @@
     <string name="settings_grid_sub_teacher_sub">Show teacher under course name (hidden if empty)</string>
     <string name="settings_grid_sub_none">None</string>
     <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
-    <string name="settings_pill">Home pill size &amp; corner</string>
+    <string name="settings_pill">Home display</string>
     <string name="settings_pill_scale">Pill size</string>
     <string name="settings_pill_scale_sub">Scales the whole timetable grid: font, card height and spacing together (70%–130%). Smaller fits more periods on one screen.</string>
     <string name="settings_pill_corner">Corner radius</string>
@@ -281,7 +281,7 @@
     <string name="settings_week_two_column_balance">Balance by course count</string>
     <string name="settings_week_two_column_balance_sub">Each day goes to the shorter column, keeping both sides even — day positions vary with your schedule</string>
     <string name="settings_week_hide_empty">Hide empty days in week view</string>
-    <string name="settings_week_hide_empty_sub">Days without courses are removed from the week view and the remaining days split evenly (e.g. 4 left = 2+2, 6 left = 3+3); only applies with two columns</string>
+    <string name="settings_week_hide_empty_sub">Days without courses are removed from the week view; with two columns the remaining days split evenly (e.g. 4 left = 2+2, 6 left = 3+3)</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>

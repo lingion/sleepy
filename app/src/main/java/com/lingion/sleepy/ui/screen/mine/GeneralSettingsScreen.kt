@@ -251,14 +251,15 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                             selected = weekTwoColumnMode == "balance",
                             onClick = { weekTwoColumnMode = "balance"; AppPrefs.setWeekTwoColumnMode(context, "balance") }
                         )
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        SettingToggleRow(
-                            label = stringResource(R.string.settings_week_hide_empty),
-                            subtitle = stringResource(R.string.settings_week_hide_empty_sub),
-                            checked = weekHideEmptyDays,
-                            onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
-                        )
                     }
+                    // 隐藏无课日 — 与两栏无关, 单栏/两栏都生效
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_week_hide_empty),
+                        subtitle = stringResource(R.string.settings_week_hide_empty_sub),
+                        checked = weekHideEmptyDays,
+                        onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
+                    )
                 }
             }
 
