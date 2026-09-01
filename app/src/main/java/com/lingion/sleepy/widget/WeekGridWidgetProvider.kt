@@ -120,23 +120,15 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             "SIZES_wDp=${wDp}x${hDp}dp → bitmap=${w}x${h}px ratio=%.2f (density=$density)".format(w.toFloat()/h))
 
         // SMALL 变体 + 容器 <150dp → 最小档: 不再"折叠成单列的网格脸"(用户反馈: 2×2 比例奇怪),
-        // 直接复用今日课程·小的渲染器 renderToday(SMALL) — 同一渲染器同一张脸。
+        // 直接走今日课程·小的完整推送管线 pushTodayData(静态闸+可滚动条带同源) —
+        // 同一渲染器+同一滚动条带工厂, 像素级同一张脸。
         // 数据侧 weekGridMinimumTodayData(WeekData→今日 WidgetData), 纯函数单测单一事实来源。
         // REGULAR 或容器被拖大 ≥150dp → 全量网格排版(行为与改动前逐字节一致)。
         val variant = variantHint
         if (variant == WidgetVariant.SMALL && wDp < 150f) {
             val todayData = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.now())
             Log.d(TAG, "vSmall minimum → today face: courses=${todayData.courses.size}")
-            val bmp = WidgetBitmapRenderers.renderToday(context, todayData, wDp.toFloat(), hDp.toFloat(), WidgetVariant.SMALL)
-            val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
-            views.setImageViewBitmap(R.id.widget_bitmap, bmp)
-            val pi = PendingIntent.getActivity(context, widgetId,
-                Intent(context, MainActivity::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
-            views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
-            awm.updateAppWidget(widgetId, views)
-            bmp.recycle()
+            TodayWidgetReceiver.pushTodayData(context, awm, widgetId, WidgetVariant.SMALL, todayData)
             return
         }
 

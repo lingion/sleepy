@@ -35,32 +35,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
     open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
-        val data = loadDataSync(context)
-        val opts = awm.getAppWidgetOptions(id)
-        val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
-        val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
-        // SMALL 变体: compact 分支内部还有 150dp 升档闸, 这里直接传 variant
-        val variant = variantHint
-        if (contentH <= hDp) {
-            // 内容装得下 — 原静态路径, 与主分支逐字节一致(REGULAR 时 variant 默认值等价旧调用)
-            RemoteViewsWidgetHelper.renderAndPush(
-                context, awm, id, TAG,
-                loadData = { data },
-                renderBitmap = { d, w, h ->
-                    WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
-                }
-            )
-        } else {
-            // 超出 — 可滚动: 壳图 = 原渲染器按容器尺寸画(圆角背景+首屏)
-            // SMALL 档内容只有 1-2 行, 永远装得下; 兜底仍走原 scrollable
-            val shell = WidgetBitmapRenderers.renderToday(context, data, wDp.toFloat(), hDp.toFloat(), variant)
-            RemoteViewsWidgetHelper.pushScrollable(
-                context, awm, id, TAG,
-                layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
-                shellBitmap = shell,
-                scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY
-            )
-        }
+        pushTodayData(context, awm, id, variantHint, loadDataSync(context))
     }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
@@ -88,6 +63,37 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
 
     companion object {
         private const val TAG = "TodayWidgetRV"
+
+        /**
+         * 今日课程推送管线(静态/可滚动闸门) — 网格小最小档与今日课程·小共用,
+         * 保证"变成今日课程那个小组件的样子"像素级同源(同一渲染器+同一滚动条带工厂)。
+         * 注意 Today 小变体在这里等效直通(REGULAR 也走这条闸), 与改动前行为一致。
+         */
+        fun pushTodayData(
+            context: Context, awm: AppWidgetManager, id: Int,
+            variant: WidgetVariant, data: WidgetData
+        ) {
+            val opts = awm.getAppWidgetOptions(id)
+            val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
+            val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
+            if (contentH <= hDp) {
+                RemoteViewsWidgetHelper.renderAndPush(
+                    context, awm, id, TAG,
+                    loadData = { data },
+                    renderBitmap = { d, w, h ->
+                        WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
+                    }
+                )
+            } else {
+                val shell = WidgetBitmapRenderers.renderToday(context, data, wDp.toFloat(), hDp.toFloat(), variant)
+                RemoteViewsWidgetHelper.pushScrollable(
+                    context, awm, id, TAG,
+                    layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
+                    shellBitmap = shell,
+                    scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY
+                )
+            }
+        }
 
         /**
          * 同步版数据加载 (runBlocking DB 读) — 供 RemoteViews Receiver 使用。
