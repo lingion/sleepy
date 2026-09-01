@@ -73,6 +73,7 @@
     <string name="import_append_only">競合なしのみ追加</string>
     <string name="import_as_new">新規時間割として追加</string>
     <string name="import_overwrite">⚠ 現在のものを上書き（注意）</string>
+    <string name="import_append_as_new">新規時間割に統合</string>
     <string name="import_confirm_title">インポート前の確認</string>
     <string name="import_confirm_body">学期開始日と時限時間を確認してください。現在の週が不正確になります。</string>
     <string name="import_week_start">第1週の開始日</string>
@@ -213,6 +214,7 @@
     <string name="week_every">毎週</string>
     <string name="week_odd">奇数週</string>
     <string name="week_even">偶数週</string>
+    <string name="week_custom">週指定</string>
     <string name="add_slot">時限を追加</string>
     <string name="save_course">保存</string>
     <string name="delete_course">授業を削除</string>
@@ -231,6 +233,7 @@
     <string name="slot_start_node_positive">スロット %1$d の開始時限は0より大きくなければなりません</string>
     <string name="slot_step_positive">スロット %1$d の連続時限数は0より大きくなければなりません</string>
     <string name="slot_step_exceeds_max">スロット %1$d の %2$d-%3$d 時限は時間割の最大時限（%4$d）を超えています</string>
+    <string name="slot_step_clamped_hint">入力が最大時限を超えています（現在の時間割は %3$d 時限まで）。時限数を増やすには、時間割管理画面で現在の時間割を編集してください</string>
     <string name="slot_time_format">スロット %1$d の開始/終了時間はHH:mm形式である必要があります</string>
     <string name="slot_time_order">スロット %1$d の開始時間は終了時間より前である必要があります</string>
     <string name="slot_time_overlap">スロット %1$d とスロット %2$d が %3$s で重複しています</string>
@@ -265,8 +268,10 @@
     <string name="settings_grid_sub_none">なし</string>
     <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
     <string name="settings_pill">ホーム表示設定</string>
-    <string name="settings_pill_scale">グリッドの拡大率</string>
-    <string name="settings_pill_scale_sub">グリッド全体を均等に拡大縮小：文字サイズ・カードの高さ・間隔（70%–130%）。小さくすると1画面に多くのコマが入ります</string>
+    <string name="settings_pill_scale">グリッド表示の拡大率</string>
+    <string name="settings_pill_scale_sub">グリッド表示全体を均等に拡大縮小：文字サイズ・カードの高さ・間隔（70%–130%）。小さくすると1画面に多くのコマが入ります</string>
+    <string name="settings_pill_week_scale">週表示の拡大率</string>
+    <string name="settings_pill_week_scale_sub">週表示全体を拡大縮小します。グリッド表示とは独立しています（70%–130%）</string>
     <string name="settings_pill_corner">カードの角丸</string>
     <string name="settings_pill_corner_sub">グリッドカードと週ビューカードの角丸（0% 直角 – 200% 超丸）、デフォルト 100%</string>
     <string name="settings_week_two_column">週ビュー2列表示</string>
@@ -453,7 +458,8 @@
     <string name="export_title">時間割をエクスポート</string>
     <string name="import_new_table_hint">（新しい時間割として作成されます）</string>
     <string name="jw_config_confirm">インポートを確認</string>
-    <string name="jw_config_title">時間割の曜日・時限を確認</string>
+    <string name="jw_config_title">インポート前の確認</string>
+    <string name="jw_table_name_label">時間割名</string>
     <string name="jw_pending_apply">対応をリクエスト</string>
     <string name="jw_pending_close">閉じる</string>
     <string name="jw_pending_grad">大学院</string>
