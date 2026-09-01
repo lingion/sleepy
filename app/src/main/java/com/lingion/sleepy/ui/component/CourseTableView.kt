@@ -435,6 +435,7 @@ fun FullWeekView(
     val cornerRatio = AppPrefs.getGridCornerRatio(context)
     val twoColumn = AppPrefs.isWeekTwoColumn(context)
     val twoColumnMode = AppPrefs.getWeekTwoColumnMode(context)
+    val hideEmptyDays = AppPrefs.isWeekHideEmptyDays(context)
     val byDay = courses.groupBy { it.day }
 
     Column(
@@ -463,7 +464,8 @@ fun FullWeekView(
             scale = scale,
             cornerRatio = cornerRatio,
             twoColumn = twoColumn,
-            twoColumnMode = twoColumnMode
+            twoColumnMode = twoColumnMode,
+            hideEmptyDays = hideEmptyDays
         )
     }
 }
@@ -600,16 +602,21 @@ private fun DetailPanel(
     scale: Float = 1f,
     cornerRatio: Float = 1f,
     twoColumn: Boolean = false,
-    twoColumnMode: String = "days"
+    twoColumnMode: String = "days",
+    hideEmptyDays: Boolean = false
 ) {
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
-    val sortedDays = visibleDays.sorted()
+    // issue#8 隐藏无课日: 仅两栏模式下生效(单栏用户完整看 7 天列表不受影响)
+    val sortedDays = visibleDays.sorted().let {
+        if (twoColumn && hideEmptyDays) it.filter { d -> byDay[d].orEmpty().isNotEmpty() } else it
+    }
 
     // issue#8 周视图两栏, 省纵向滚动; 分栏标准由设置选择:
     //   days    = 按天对半分 — 前半周左/后半周右, 天数固定
     //   balance = 按课程数动态平衡 — 逐天放进当天卡片(约)更矮的栏, 两栏高度接近
-    if (twoColumn && sortedDays.size >= 4) {
+    // 隐藏无课日后按剩余天数平分: 6 天=3+3, 4 天=2+2; 奇数天多的一天落左栏
+    if (twoColumn && sortedDays.size >= 2) {
         val split: Pair<List<Int>, List<Int>> = if (twoColumnMode == "balance") {
             // 贪心: 按天序遍历, 每天记权重 = 课程数(权重按 DetailDayCard 高度近似, 空天也有卡头所以记 1)
             var l = 0; var r = 0
@@ -648,6 +655,7 @@ private fun DetailPanel(
             }
         }
     } else {
+        // 单栏(或两栏下过滤后不足 2 天) — 显示全部所选星期, 不吃掉无课日
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -656,7 +664,7 @@ private fun DetailPanel(
                 .padding(sd(12f)),
             verticalArrangement = Arrangement.spacedBy(sd(10f))
         ) {
-            for (day in sortedDays) {
+            for (day in visibleDays.sorted()) {
                 val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
                 DetailDayCard(
                     day = day,

@@ -274,6 +274,8 @@
     <string name="settings_week_two_column_days_sub">前半週は左、後半週は右。曜日の位置は固定です</string>
     <string name="settings_week_two_column_balance">コマ数でバランス</string>
     <string name="settings_week_two_column_balance_sub">授業が少ない列に曜日を振り分け、左右の高さを均す。曜日の位置は時間割により変動します</string>
+    <string name="settings_week_hide_empty">空きコマの曜日を隠す</string>
+    <string name="settings_week_hide_empty_sub">授業がない曜日を週ビューから除外し、残りを左右に均等分割（例: 4日=左2右2、6日=左3右3）。2列表示時のみ有効</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>

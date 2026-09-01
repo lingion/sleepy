@@ -302,6 +302,8 @@
     <string name="settings_week_two_column_days_sub">前半周在左栏、后半周在右栏，星期位置固定不变</string>
     <string name="settings_week_two_column_balance">按课程数平衡</string>
     <string name="settings_week_two_column_balance_sub">星期放进课较少的一栏，两栏高度接近；星期位置随课表变化</string>
+    <string name="settings_week_hide_empty">隐藏无课日</string>
+    <string name="settings_week_hide_empty_sub">周视图不显示没有课程的星期，剩余天数左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）；仅两栏显示时生效</string>
     <string name="settings_show_date">课表显示日期</string>
     <string name="settings_show_date_sub">在每列表头显示具体日期（月/日）</string>
     <string name="settings_visible_days">显示星期</string>

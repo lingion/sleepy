@@ -39,6 +39,7 @@ object AppPrefs {
     const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
     const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
     const val KEY_WEEK_TWO_COLUMN_MODE = "week_two_column_mode" // "days"=按天对半分 / "balance"=按课程数动态平衡, issue#8
+    const val KEY_WEEK_HIDE_EMPTY_DAYS = "week_hide_empty_days" // bool default false — 周视图隐藏无课日(仅两栏下生效, issue#8)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -306,6 +307,13 @@ object AppPrefs {
 
     fun setWeekTwoColumnMode(ctx: Context, v: String) {
         sp(ctx).edit().putString(KEY_WEEK_TWO_COLUMN_MODE, if (v == "balance") "balance" else "days").apply()
+    }
+
+    fun isWeekHideEmptyDays(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_WEEK_HIDE_EMPTY_DAYS, false)
+
+    fun setWeekHideEmptyDays(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_WEEK_HIDE_EMPTY_DAYS, v).apply()
     }
 
     // ===== 节假日灰显 =====
