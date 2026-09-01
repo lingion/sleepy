@@ -390,29 +390,24 @@ fun ImportSheet(
     }
 
     if (preview != null && pendingMode != null) {
-        ImportConfirmDialog(
-            startDate = confirmedStartDate,
-            tableName = confirmedTableName,
-            timeJson = confirmedTimeJson,
-            onTableNameChange = { confirmedTableName = it },
-            onStartDateChange = { confirmedStartDate = it },
-            onTimeJsonChange = { confirmedTimeJson = it },
-            onDismiss = { pendingMode = null },
-            onConfirm = {
-                val mode = pendingMode ?: return@ImportConfirmDialog
-                val currentPreview = preview ?: return@ImportConfirmDialog
+        // 追加模式: 追加到已存在的课表, 命名由目标课表自带, 不需要再问用户
+        // 直接走 applyImportPreview, 跳过 ImportConfirmDialog
+        val pending = pendingMode!!
+        if (pending == ImportApplyMode.AppendNonConflict) {
+            LaunchedEffect(Unit) {
                 scope.launch {
                     isLoading = true
                     try {
-                        // 「确认导入」= 唯一写库点, 点下即落库。
-                        // 之后不再跳编辑课表页 — 那个页面有「保存」按钮, 会造成
-                        // "没点保存数据也在"的假保存闸误导(用户以为还有反悔机会, 实际已提交)。
                         applyImportPreview(
-                            preview = currentPreview,
-                            mode = mode,
-                            confirmedStartDateRaw = confirmedStartDate,
-                            confirmedTableName = confirmedTableName,
-                            confirmedTimeJson = confirmedTimeJson,
+                            preview = preview!!,
+                            mode = pending,
+                            confirmedStartDateRaw = preview!!.parseResult.startDate.ifBlank {
+                                state.currentTable?.startDate ?: java.time.LocalDate.now().toString()
+                            },
+                            confirmedTableName = state.currentTable?.name ?: "",
+                            confirmedTimeJson = preview!!.parseResult.timeJson.ifBlank {
+                                state.currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+                            },
                             context = context,
                             onImported = onImported
                         ) { msg -> errorMsg = msg }
@@ -424,7 +419,45 @@ fun ImportSheet(
                     }
                 }
             }
-        )
+        } else {
+            ImportConfirmDialog(
+                startDate = confirmedStartDate,
+                tableName = confirmedTableName,
+                timeJson = confirmedTimeJson,
+                // 仅"创建新课表"或"追加为新课表"需要命名; 覆盖课表用户已在用同一个, 不强制重命名
+                showTableName = pending == ImportApplyMode.ImportAsNew || pending == ImportApplyMode.AppendAsNew,
+                onTableNameChange = { confirmedTableName = it },
+                onStartDateChange = { confirmedStartDate = it },
+                onTimeJsonChange = { confirmedTimeJson = it },
+                onDismiss = { pendingMode = null },
+                onConfirm = {
+                    val mode = pendingMode ?: return@ImportConfirmDialog
+                    val currentPreview = preview ?: return@ImportConfirmDialog
+                    scope.launch {
+                        isLoading = true
+                        try {
+                            // 「确认导入」= 唯一写库点, 点下即落库。
+                            // 之后不再跳编辑课表页 — 那个页面有「保存」按钮, 会造成
+                            // "没点保存数据也在"的假保存闸误导(用户以为还有反悔机会, 实际已提交)。
+                            applyImportPreview(
+                                preview = currentPreview,
+                                mode = mode,
+                                confirmedStartDateRaw = confirmedStartDate,
+                                confirmedTableName = confirmedTableName,
+                                confirmedTimeJson = confirmedTimeJson,
+                                context = context,
+                                onImported = onImported
+                            ) { msg -> errorMsg = msg }
+                            preview = null
+                            pendingMode = null
+                            importJustApplied = true
+                        } finally {
+                            isLoading = false
+                        }
+                    }
+                }
+            )
+        }
     }
 }
 
@@ -702,7 +735,9 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
 private enum class ImportApplyMode {
     ReplaceCurrent,
     ImportAsNew,
-    AppendNonConflict
+    AppendNonConflict,
+    /** 当前课表 + 导入数据合并, 创建新课表保存, 用户命名 */
+    AppendAsNew
 }
 
 private data class CourseConflict(
@@ -904,6 +939,14 @@ private fun ImportPreviewDialog(
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
                     }
+                    Button(
+                        onClick = { onApply(ImportApplyMode.AppendAsNew) },
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SleepyTheme.shapes.medium,
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                    ) {
+                        Text(stringResource(R.string.import_append_as_new), maxLines = 1)
+                    }
                     // 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
                     //   errorContainer 色块底 + onErrorContainer 文字
                     Button(
@@ -961,6 +1004,7 @@ private fun ImportConfirmDialog(
     startDate: String,
     tableName: String,
     timeJson: String,
+    showTableName: Boolean,
     onTableNameChange: (String) -> Unit,
     onStartDateChange: (String) -> Unit,
     onTimeJsonChange: (String) -> Unit,
@@ -984,15 +1028,17 @@ private fun ImportConfirmDialog(
                     style = MaterialTheme.typography.bodyMedium,
                     color = colors.onSurfaceVariant
                 )
-                TextField(
-                    value = tableName,
-                    onValueChange = onTableNameChange,
-                    label = { Text(stringResource(R.string.import_table_name)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth(),
-                    shape = SleepyTheme.fieldShape,
-                    colors = fieldColors
-                )
+                if (showTableName) {
+                    TextField(
+                        value = tableName,
+                        onValueChange = onTableNameChange,
+                        label = { Text(stringResource(R.string.import_table_name)) },
+                        singleLine = true,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = SleepyTheme.fieldShape,
+                        colors = fieldColors
+                    )
+                }
                 DatePickerField(
                     value = startDate,
                     onValueChange = onStartDateChange,
@@ -1156,6 +1202,46 @@ private suspend fun applyImportPreview(
                 return
             }
             repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            // 用户反馈: 追加课程时, 若导入数据节次超过课表, 课表应自动延伸
+            // (课表仍只有 10 节 → 11-13 节课程入库但渲染期看不到, 等于静默丢)
+            val existingTable = repo.getTable(preview.targetTableId)
+            if (existingTable != null && preview.parseResult.timeJson.isNotBlank()) {
+                val extended = TimeTableUtils.extendTimeJsonWith(existingTable.timeJson, preview.parseResult.timeJson)
+                if (extended != existingTable.timeJson) {
+                    val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
+                    repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
+                }
+            }
+            onImported()
+        }
+        ImportApplyMode.AppendAsNew -> {
+            // 当前课表 + 导入数据合并 → 新课表(用户命名)
+            val base = repo.getTable(preview.targetTableId)
+            val incoming = preview.parseResult
+            val mergedTimeJson = TimeTableUtils.extendTimeJsonWith(
+                base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
+                incoming.timeJson.ifBlank { base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON }
+            )
+            val mergedRows = TimeTableUtils.parseTimeSlotRows(mergedTimeJson)
+            val newTableId = repo.insertTable(
+                TimeTableEntity(
+                    name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
+                    startDate = confirmedStartDate,
+                    maxWeek = base?.maxWeek ?: 20,
+                    nodesPerDay = mergedRows.size,
+                    timeJson = mergedTimeJson,
+                    color = base?.color ?: "#FF6750A4",
+                    isDefault = false
+                )
+            )
+            // 当前课表原课 + 导入课程合并导入新课表(跳过与原课冲突的)
+            val cleanIncoming = incoming.courses.filterNot { inc ->
+                preview.existingCourses.any { existing -> coursesConflict(inc, existing) }
+            }
+            val oldCourses = base?.let { repo.getCourses(it.id) } ?: emptyList()
+            val allCourses = oldCourses + cleanIncoming
+            repo.insertCourses(allCourses.map { it.copy(id = 0, tableId = newTableId) })
+            repo.setDefault(newTableId)
             onImported()
         }
     }

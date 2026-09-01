@@ -179,6 +179,22 @@ object TimeTableUtils {
             .mapIndexed { idx, r -> r.copy(node = idx + 1) }
 
     /**
+     * 追加导入扩展 timeJson — 把 incomingJson 中 node > currentMaxNode 的节次复制进来,
+     * 时间从 incoming 拿, node 重新连续编号避免冲突。
+     * 用于"追加课程时, 课表自动延伸到新最大节次"场景。
+     */
+    fun extendTimeJsonWith(currentJson: String, incomingJson: String): String {
+        val currentRows = parseTimeSlotRows(currentJson)
+        val incomingRows = parseTimeSlotRows(incomingJson)
+        val currentMaxNode = currentRows.maxOfOrNull { it.node } ?: 0
+        val newRows = incomingRows.filter { it.node > currentMaxNode }
+        if (newRows.isEmpty()) return currentJson
+        // node 重新连续编号(避免原 incoming 跳号, 保持 1..N 连续)
+        val merged = currentRows + newRows.mapIndexed { idx, r -> r.copy(node = currentMaxNode + idx + 1) }
+        return buildTimeJsonFromRows(merged)
+    }
+
+    /**
      * 追加一节 (node = maxOfOrNull + 1)，时间留空让用户填。
      */
     fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {
