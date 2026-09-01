@@ -119,19 +119,25 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         Log.d(TAG, "renderWidget: opts MAX=${optMaxW}x${optMaxH}dp MIN=${optMinW}x${optMinH}dp " +
             "SIZES_wDp=${wDp}x${hDp}dp → bitmap=${w}x${h}px ratio=%.2f (density=$density)".format(w.toFloat()/h))
 
-        // SMALL 变体 + 容器 <150dp → 紧凑档: 列收缩为 weekGridCompactDays(单列, 网格自动放大)。
-        // 渲染入口数据侧换列(visibleDays 是 renderBitmap 的列事实来源), renderBitmap 函数体零改动;
-        // 过滤 days 而非 visibleDays 会把今天无课误判成"去创建课表"空态, 故只收 visibleDays。
-        // REGULAR 或容器被拖大 ≥150dp → 全量排版(行为与改动前逐字节一致)。
+        // SMALL 变体 + 容器 <150dp → 最小档: 不再"折叠成单列的网格脸"(用户反馈: 2×2 比例奇怪),
+        // 直接复用今日课程·小的渲染器 renderToday(SMALL) — 同一渲染器同一张脸。
+        // 数据侧 weekGridMinimumTodayData(WeekData→今日 WidgetData), 纯函数单测单一事实来源。
+        // REGULAR 或容器被拖大 ≥150dp → 全量网格排版(行为与改动前逐字节一致)。
         val variant = variantHint
         if (variant == WidgetVariant.SMALL && wDp < 150f) {
-            val todayDow = LocalDate.now().dayOfWeek.value
-            // 可选池先按用户"显示星期"设置收窄(与 renderWeekViewCompact 决策 D5-12 同读法),
-            // 避免选出的列与 Regular 档实际渲染交集为空
-            val visiblePool = if (data.visibleDays.isEmpty()) (1..7).toList() else data.visibleDays.sorted()
-            val compactDows = WidgetBitmapRenderers.weekGridCompactDays(visiblePool, todayDow, maxDays = 1)
-            data = data.copy(visibleDays = compactDows.toSet())
-            Log.d(TAG, "vSmall compact: todayDow=$todayDow visiblePool=$visiblePool → compactDows=$compactDows")
+            val todayData = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.now())
+            Log.d(TAG, "vSmall minimum → today face: courses=${todayData.courses.size}")
+            val bmp = WidgetBitmapRenderers.renderToday(context, todayData, wDp.toFloat(), hDp.toFloat(), WidgetVariant.SMALL)
+            val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
+            views.setImageViewBitmap(R.id.widget_bitmap, bmp)
+            val pi = PendingIntent.getActivity(context, widgetId,
+                Intent(context, MainActivity::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+            views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
+            awm.updateAppWidget(widgetId, views)
+            bmp.recycle()
+            return
         }
 
         val bmp = renderBitmap(context, data, w, h)

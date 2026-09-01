@@ -96,13 +96,24 @@ object WidgetBitmapRenderers {
         } else {
             course.shortNodeString(SleepyApp.get())
         }
-        val meta = if (course.room.isNotBlank()) "$timeStr · ${course.room}" else timeStr
-        val hasMeta = meta.isNotBlank()
+        val hasMeta = timeStr.isNotBlank() || course.room.isNotBlank()
 
         // 字号
         val nameSize = fontSizeSp * density
         val metaSize = (fontSizeSp - 2f) * density
         val lineGap = 2f * density
+
+        // meta 行拆分(用户反馈: 宽度不够时时间+地点拼一行必溢出卡片边框)
+        // metaSize 字号下行宽可容纳 → 单行(旧行为); 放不下 → 时间一行/地点一行, 每行省略号兜底
+        p.textSize = metaSize
+        val metaLines = if (hasMeta) {
+            courseMetaLines(
+                measure = { t -> p.measureText(t) },
+                maxWidth = w - pad * 2,
+                timeStr = timeStr,
+                room = course.room
+            )
+        } else emptyList()
 
         // 用 FontMetrics 算真实行高 → 垂直居中两行文字块
         p.textSize = nameSize
@@ -113,13 +124,15 @@ object WidgetBitmapRenderers {
 
         var metaH = 0f
         var fmMeta: Paint.FontMetrics? = null
-        if (hasMeta) {
+        if (metaLines.isNotEmpty()) {
             p.textSize = metaSize
             fmMeta = p.fontMetrics
             metaH = fmMeta!!.descent - fmMeta.ascent
         }
+        val metaLineCount = metaLines.size
+        val metaBlockH = if (metaLineCount > 0) (metaLineCount - 1) * (metaH + lineGap) + metaH else 0f
 
-        val totalH = nameH + (if (hasMeta) lineGap + metaH else 0f)
+        val totalH = nameH + (if (metaLineCount > 0) lineGap + metaBlockH else 0f)
         val blockTop = y + (h - totalH) / 2f
 
         // 课程名 — 亮度自适应文字色 (决策 D5-13)
@@ -135,12 +148,16 @@ object WidgetBitmapRenderers {
         } else name
         c.drawText(displayName, x + pad, blockTop - fmName.ascent, p)
 
-        // 时间 + 地点 — 亮度自适应文字色 (决策 D5-13), 非 onSurfaceVariant(灰)
-        if (hasMeta) {
+        // 时间/地点 — 拆行后逐行绘制, 每行省略号兜底
+        if (metaLines.isNotEmpty()) {
             p.textSize = metaSize
             p.typeface = Typeface.DEFAULT
             p.color = textColor
-            c.drawText(meta, x + pad, blockTop + nameH + lineGap - fmMeta!!.ascent, p)
+            var my = blockTop + nameH + lineGap
+            for (line in metaLines) {
+                c.drawText(ellipsize(p, line, maxWidth), x + pad, my - fmMeta!!.ascent, p)
+                my += metaH + lineGap
+            }
         }
     }
 
@@ -690,19 +707,39 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * WeekGrid 紧凑档列选取(与 weekViewCompactColumns 同构, 纯数字版 — WeekGrid 渲染
-     * 在 WeekGridWidgetProvider 内, 这里作为纯函数单测单一事实来源)。
-     * 有课的日子优先成池(空则回退全量池); 今天必保(无课也追加进池, 锚点语义);
-     * 按"与今天的距离"取最近 maxDays 天, 最终按星期升序输出(从左到右绘制顺序)。
-     * 纯函数零 LocalDate.now() — todayDow/allDays 由调用方注入。
-     *
-     * 注意"今天优先于空邻日"语义: 今天无课时仍被追加进池, maxDays=1 时距离 0 恒胜出
-     * (单列网格锚在今天, 即使今天没课 — 与任务 5 先例一致)。
+     * WeekGrid 最小档数据映射 — WeekData → 今日 WidgetData。
+     * 最小档(1×1 列)不再"折叠成单列的网格脸", 直接复用今日课程·小的渲染器:
+     * 宿主只换数据, 渲染走 renderToday(SMALL) → 与今日课程·小像素同源同一张脸。
+     * 纯函数零 LocalDate.now() — today 由调用方注入。
      */
-    fun weekGridCompactDays(allDays: List<Int>, todayDow: Int, maxDays: Int = 1): List<Int> {
-        val pool = allDays.toMutableList()
-        if (todayDow !in pool) pool.add(todayDow)
-        return pool.sortedBy { kotlin.math.abs(it - todayDow) }.take(maxDays).sorted()
+    fun weekGridMinimumTodayData(data: WeekData, today: LocalDate): WidgetData {
+        val timeJson = data.days.firstOrNull()?.timeJson ?: ""
+        val todayDay = data.days.firstOrNull { it.dayOfWeek == today.dayOfWeek.value }
+        return WidgetData(
+            date = today,
+            courses = todayDay?.courses ?: emptyList(),
+            timeJson = timeJson,
+            hasTable = data.hasTable,
+            isDark = data.isDark,
+            themeKey = data.themeKey,
+            semesterStatus = data.semesterStatus
+        )
+    }
+
+    /**
+     * drawCourse meta 行拆分 — 拼行("时间 · 地点")放不下时拆两行(时间一行/地点一行)。
+     * 文本宽度可加(拼行宽恒 ≥ 两行之和), 拆行永不更差 → 无需收益判定;
+     * 拆开后单行仍超宽的极端场景由渲染端逐行省略号兜底。纯函数 — measure 由调用方注入。
+     */
+    fun courseMetaLines(
+        measure: (String) -> Float,
+        maxWidth: Float,
+        timeStr: String,
+        room: String
+    ): List<String> {
+        if (room.isBlank()) return listOf(timeStr)
+        val combined = "$timeStr · $room"
+        return if (measure(combined) <= maxWidth) listOf(combined) else listOf(timeStr, room)
     }
 
     /**

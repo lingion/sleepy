@@ -5,6 +5,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
@@ -334,29 +335,97 @@ class WidgetVariantRenderTest {
     }
 
     @Test
-    fun `weekGrid compact single-day selection follows today`() {
-        // 全周都有课, 今天周三(3) → 距离最近 1 列 = 周三
-        assertEquals(
-            listOf(3),
-            WidgetBitmapRenderers.weekGridCompactDays(allDays = (1..7).toList(), todayDow = 3, maxDays = 1)
-        )
-    }
-
-    @Test
-    fun `weekGrid compact selection today wins over empty neighbor`() {
-        // 只有周四(4)有课; 池=有课{4}, 今天(3)无课仍必保(锚点语义, 同 weekViewCompactColumns 任务5先例:
-        // 今天无课也追加进池) → 候选{3,4} 按距离取 1 → 周三(距离0)胜出 → [3]
-        // 即"今天优先于空邻日": 单列网格锚在今天, 即使今天没课
-        assertEquals(
-            listOf(3),
-            WidgetBitmapRenderers.weekGridCompactDays(allDays = listOf(4), todayDow = 3, maxDays = 1)
-        )
-    }
-
-    @Test
     fun `weekGrid small provider declares SMALL variant`() {
         assertEquals(WidgetVariant.SMALL, WeekGridSmallWidgetProvider().variantHint)
         assertEquals(WidgetVariant.REGULAR, com.lingion.sleepy.widget.WeekGridWidgetProvider().variantHint)
+    }
+
+    // ── weekGrid 最小档: 今日数据映射(渲染走 renderToday(SMALL), 与今日课程·小同一张脸) ──
+
+    /** 全周 DayData fixture(带课) — 2026-08-31 起的周一…周日 */
+    private fun fullWeekWithCourses(): WeekData {
+        val timeJson = TimeTableUtils.DEFAULT_TIME_JSON
+        return WeekData(
+            days = (1..7).map { dow ->
+                DayData(
+                    date = LocalDate.of(2026, 8, 31).plusDays(dow.toLong() - 1),
+                    dayOfWeek = dow,
+                    courses = listOf(testCourse(name = "周$dow 课", startNode = 1)),
+                    timeJson = timeJson
+                )
+            },
+            hasTable = true
+        )
+    }
+
+    @Test
+    fun `weekGrid minimum maps today day to WidgetData`() {
+        // 周三(3)锚点: 取周三的 DayData → WidgetData(date=周三, courses=周三课程)
+        val wd = fullWeekWithCourses()
+        val today = LocalDate.of(2026, 9, 2)  // 周三
+        val mapped = WidgetBitmapRenderers.weekGridMinimumTodayData(wd, today)
+        assertEquals(today, mapped.date)
+        assertEquals(listOf("周3 课"), mapped.courses.map { it.courseName })
+        assertEquals(wd.days[2].timeJson, mapped.timeJson)
+        assertTrue(mapped.hasTable)
+        assertEquals(wd.themeKey, mapped.themeKey)
+        assertEquals(wd.isDark, mapped.isDark)
+        assertEquals(wd.semesterStatus, mapped.semesterStatus)
+    }
+
+    @Test
+    fun `weekGrid minimum maps missing today to empty courses not no-table`() {
+        // 今天无课: courses 为空但 hasTable 仍为 true(映射 days.first 失败时的回退分支)
+        val emptyDays = fullWeekWithCourses().copy(
+            days = fullWeekWithCourses().days.map { it.copy(courses = emptyList()) }
+        )
+        val mapped = WidgetBitmapRenderers.weekGridMinimumTodayData(emptyDays, LocalDate.of(2026, 9, 2))
+        assertTrue(mapped.hasTable)
+        assertTrue(mapped.courses.isEmpty())
+    }
+
+    @Test
+    fun `weekGrid minimum no-table passes through`() {
+        val noTable = fullWeekWithCourses().copy(hasTable = false)
+        val mapped = WidgetBitmapRenderers.weekGridMinimumTodayData(noTable, LocalDate.of(2026, 9, 2))
+        assertFalse(mapped.hasTable)
+    }
+
+    // ── drawCourse meta 行拆分: 时间一行/地点一行(宽度不够时) ──
+
+    @Test
+    fun `courseMetaLines single line fits time and location`() {
+        // 宽度足够 → 保持旧行为: "3-4节 · 教3-101" 一行
+        val lines = WidgetBitmapRenderers.courseMetaLines(
+            measure = { _ -> 10f },
+            maxWidth = 100f,
+            timeStr = "3-4节",
+            room = "教3-101"
+        )
+        assertEquals(listOf("3-4节 · 教3-101"), lines)
+    }
+
+    @Test
+    fun `courseMetaLines splits into time line and room line when overflow`() {
+        // 拼行放不下 → 拆两行: 时间/地点
+        val lines = WidgetBitmapRenderers.courseMetaLines(
+            measure = { t -> t.length * 10f },
+            maxWidth = 50f,
+            timeStr = "3-4节",
+            room = "教3-101"
+        )
+        assertEquals(listOf("3-4节", "教3-101"), lines)
+    }
+
+    @Test
+    fun `courseMetaLines no room returns time only`() {
+        val lines = WidgetBitmapRenderers.courseMetaLines(
+            measure = { _ -> 10f },
+            maxWidth = 100f,
+            timeStr = "3-4节",
+            room = ""
+        )
+        assertEquals(listOf("3-4节"), lines)
     }
 }
 
