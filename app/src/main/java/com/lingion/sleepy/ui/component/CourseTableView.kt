@@ -103,6 +103,7 @@ fun CardsGridView(
     // issue#8 网格整体缩放: 0.7~1.3, 字号/行高/间距/圆角/内边距等比联动
     // (12节连堂课表缩到 0.7 可一屏放下; 只影响本 Cards 视图, 小组件与列表视图不受影响)
     val scale = AppPrefs.getGridScale(androidx.compose.ui.platform.LocalContext.current)
+    val cornerRatio = AppPrefs.getGridCornerRatio(androidx.compose.ui.platform.LocalContext.current)
     val d = { v: Float -> (v * scale).dp }
 
     // 布局常量（全 dp, 乘 scale）
@@ -154,6 +155,7 @@ fun CardsGridView(
                             courseCount = courses.count { it.day == day },
                             dateStr = dateStr,
                             scale = scale,
+                            cornerRatio = cornerRatio,
                             modifier = Modifier.width(colW).fillMaxHeight()
                         )
                     }
@@ -176,7 +178,8 @@ fun CardsGridView(
                             SingleTimeHeadCell(
                                 slot = slot,
                                 scale = scale,
-                                modifier = Modifier.width(timeW).fillMaxHeight()
+                                modifier = Modifier.width(timeW).fillMaxHeight(),
+                                cornerRatio = cornerRatio
                             )
                             // 透明占位：保证行宽和表头一致
                             for (day in sortedDays) {
@@ -204,7 +207,8 @@ fun CardsGridView(
                                 .width(colW)
                                 .height(cardH),
                             isGrey = course.day in greyDays,
-                            scale = scale
+                            scale = scale,
+                            cornerRatio = cornerRatio
                         )
                     }
                 }
@@ -214,10 +218,10 @@ fun CardsGridView(
 }
 
 @Composable
-private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier) {
+private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier, cornerRatio: Float = 1f) {
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
-    val shape = RoundedCornerShape(sd(12f))
+    val shape = RoundedCornerShape(sd(12f * cornerRatio))
     Box(
         modifier = modifier.padding(sd(2f)),
         contentAlignment = Alignment.Center
@@ -259,7 +263,8 @@ private fun CourseOverlayCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isGrey: Boolean = false,
-    scale: Float = 1f
+    scale: Float = 1f,
+    cornerRatio: Float = 1f
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
@@ -273,7 +278,7 @@ private fun CourseOverlayCard(
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
-    val shape = RoundedCornerShape((12 * scale).dp)
+    val shape = RoundedCornerShape((12 * scale * cornerRatio).dp)
     val sd = { v: Float -> (v * scale).dp }
     // 副信息（教室/教师/无）— 左栏 SingleTimeHeadCell 已有节次+时间，卡片 y 位置本身编码节次，
     // 故卡内不再显示节次/时间，改由 grid_sub_info 设置决定
@@ -355,7 +360,7 @@ private fun CourseOverlayCard(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.localizedDay(day, androidx.compose.ui.platform.LocalContext.current), modifier: Modifier = Modifier, scale: Float = 1f) {
+private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.localizedDay(day, androidx.compose.ui.platform.LocalContext.current), modifier: Modifier = Modifier, scale: Float = 1f, cornerRatio: Float = 1f) {
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
     val bg = if (isToday) colors.primaryContainer else colors.surface
@@ -365,7 +370,7 @@ private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, cou
     Box(
         modifier = modifier
             .height(if (dateStr != null) sd(56f) else sd(52f))
-            .clip(SleepyTheme.shapes.large)
+            .clip(RoundedCornerShape((16 * scale * cornerRatio).dp))
             .background(bg)
             .padding(vertical = sd(6f)),
         contentAlignment = Alignment.Center
@@ -425,6 +430,9 @@ fun FullWeekView(
     modifier: Modifier = Modifier,
     greyDays: Set<Int> = emptySet()
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
+    val scale = AppPrefs.getGridScale(context)
+    val cornerRatio = AppPrefs.getGridCornerRatio(context)
     val byDay = courses.groupBy { it.day }
 
     Column(
@@ -438,6 +446,8 @@ fun FullWeekView(
             visibleDays = visibleDays,
             today = today,
             greyDays = greyDays,
+            scale = scale,
+            cornerRatio = cornerRatio,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
         )
         DetailPanel(
@@ -447,7 +457,9 @@ fun FullWeekView(
             timeJson = timeJson,
             today = today,
             onCourseClick = onCourseClick,
-            greyDays = greyDays
+            greyDays = greyDays,
+            scale = scale,
+            cornerRatio = cornerRatio
         )
     }
 }
@@ -458,11 +470,14 @@ private fun WeekStrip(
     today: Int,
     visibleDays: Set<Int>,
     greyDays: Set<Int> = emptySet(),
+    scale: Float = 1f,
+    cornerRatio: Float = 1f,
     modifier: Modifier = Modifier
 ) {
+    val sd = { v: Float -> (v * scale).dp }
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(6.dp)
+        horizontalArrangement = Arrangement.spacedBy(sd(6f))
     ) {
         for (day in visibleDays.sorted()) {
             val dayCourses = byDay[day].orEmpty()
@@ -472,6 +487,8 @@ private fun WeekStrip(
                 courses = dayCourses,
                 isToday = isToday,
                 isGrey = day in greyDays,
+                scale = scale,
+                cornerRatio = cornerRatio,
                 modifier = Modifier.weight(1f)
             )
         }
@@ -484,10 +501,13 @@ private fun DaySummaryCell(
     courses: List<CourseEntity>,
     isToday: Boolean,
     isGrey: Boolean = false,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    scale: Float = 1f,
+    cornerRatio: Float = 1f
 ) {
     val colors = SleepyTheme.colors
     val context = androidx.compose.ui.platform.LocalContext.current
+    val sd = { v: Float -> (v * scale).dp }
     val bg = if (isToday) colors.primaryContainer else colors.surfaceContainer
     val fg = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else if (isToday) colors.onPrimaryContainer else colors.onSurface
     // Chip: solid surfaceVariant with full alpha for dark mode readability
@@ -496,31 +516,31 @@ private fun DaySummaryCell(
 
     Column(
         modifier = modifier
-            .height(132.dp)
-            .clip(SleepyTheme.shapes.medium)
+            .height((132 * scale).dp)
+            .clip(RoundedCornerShape((12 * scale * cornerRatio).dp))
             .background(bg)
-            .padding(horizontal = 6.dp, vertical = 8.dp)
+            .padding(horizontal = sd(6f), vertical = sd(8f))
     ) {
         // 日期
         Text(
             text = DateUtils.localizedDay(day, context),
-            style = SleepyTextStyle.dayLabel(),
+            style = SleepyTextStyle.dayLabel().copy(fontSize = (13 * scale).sp, lineHeight = (18 * scale).sp),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
         )
 
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(sd(6f)))
 
         // Chip: 课程数 — 完整文字在列宽内换行就退化为纯数字，胶囊自动缩到数字宽度
         if (courses.isEmpty()) {
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(sd(14f)))
         } else {
             val fullText = stringResource(R.string.course_count_format, courses.size)
             val numberText = courses.size.toString()
-            val chipStyle = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold)
+            val chipStyle = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp)
             val textMeasurer = rememberTextMeasurer()
             BoxWithConstraints(modifier = Modifier.align(Alignment.CenterHorizontally)) {
-                val chipPaddingPx = with(LocalDensity.current) { 14.dp.toPx() }.toInt()
+                val chipPaddingPx = with(LocalDensity.current) { sd(14f).toPx() }.toInt()
                 val availablePx = with(LocalDensity.current) { maxWidth.toPx() }.toInt()
                 val layoutResult = textMeasurer.measure(
                     text = fullText,
@@ -532,7 +552,7 @@ private fun DaySummaryCell(
                     modifier = Modifier
                         .clip(RoundedCornerShape(50))
                         .background(chipBg)
-                        .padding(horizontal = 7.dp, vertical = 2.dp)
+                        .padding(horizontal = sd(7f), vertical = sd(2f))
                 ) {
                     Text(
                         text = if (showNumberOnly) numberText else fullText,
@@ -544,17 +564,17 @@ private fun DaySummaryCell(
             }
         }
 
-        Spacer(modifier = Modifier.height(4.dp))
+        Spacer(modifier = Modifier.height(sd(4f)))
 
         // Mini-list: 前 5 门课名（改掉 take(3)，空间够就全显示）
         Column(
             modifier = Modifier.fillMaxWidth(),
-            verticalArrangement = Arrangement.spacedBy(2.dp)
+            verticalArrangement = Arrangement.spacedBy(sd(2f))
         ) {
             courses.take(5).forEach { c ->
                 Text(
                     text = c.courseName,
-                    style = SleepyTextStyle.micro(),
+                    style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
                     color = if (isToday) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant,
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
@@ -572,17 +592,20 @@ private fun DetailPanel(
     displayMode: String,
     timeJson: String,
     onCourseClick: (CourseEntity) -> Unit,
-    greyDays: Set<Int> = emptySet()
+    greyDays: Set<Int> = emptySet(),
+    scale: Float = 1f,
+    cornerRatio: Float = 1f
 ) {
     val colors = SleepyTheme.colors
+    val sd = { v: Float -> (v * scale).dp }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(SleepyTheme.shapes.large)
+            .clip(RoundedCornerShape((16 * scale * cornerRatio).dp))
             .background(colors.surfaceContainerHigh)
-            .padding(12.dp),
-        verticalArrangement = Arrangement.spacedBy(10.dp)
+            .padding(sd(12f)),
+        verticalArrangement = Arrangement.spacedBy(sd(10f))
     ) {
         for (day in visibleDays.sorted()) {
             val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
@@ -593,7 +616,9 @@ private fun DetailPanel(
                 displayMode = displayMode,
                 timeJson = timeJson,
                 onCourseClick = onCourseClick,
-                isGrey = day in greyDays
+                isGrey = day in greyDays,
+                scale = scale,
+                cornerRatio = cornerRatio
             )
         }
     }
@@ -607,18 +632,21 @@ private fun DetailDayCard(
     isGrey: Boolean = false,
     displayMode: String = "node",
     timeJson: String = "",
-    onCourseClick: (CourseEntity) -> Unit
+    onCourseClick: (CourseEntity) -> Unit,
+    scale: Float = 1f,
+    cornerRatio: Float = 1f
 ) {
     val colors = SleepyTheme.colors
     val context = androidx.compose.ui.platform.LocalContext.current
+    val sd = { v: Float -> (v * scale).dp }
 
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(SleepyTheme.shapes.medium)
+            .clip(RoundedCornerShape((12 * scale * cornerRatio).dp))
             .background(if (courses.isEmpty()) colors.surfaceContainerLow else colors.surface)
-            .padding(10.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(sd(10f)),
+        verticalArrangement = Arrangement.spacedBy(sd(8f))
     ) {
         // 头部：星期 + 今天标记
         Row(
@@ -635,13 +663,13 @@ private fun DetailDayCard(
         if (courses.isEmpty()) {
             Text(
                 text = DateUtils.localizedDay(day, context) + stringResource(R.string.no_course_today),
-                style = SleepyTextStyle.smallMeta().copy(fontSize = 12.sp, lineHeight = 16.sp),
+                style = SleepyTextStyle.smallMeta().copy(fontSize = (12 * scale).sp, lineHeight = (16 * scale).sp),
                 color = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else colors.onSurfaceVariant
             )
         } else {
-            Column(verticalArrangement = Arrangement.spacedBy(7.dp)) {
+            Column(verticalArrangement = Arrangement.spacedBy(sd(7f))) {
                 courses.forEach { c ->
-                    LessonRow(course = c, displayMode = displayMode, timeJson = timeJson, onClick = { onCourseClick(c) }, isGrey = isGrey)
+                    LessonRow(course = c, displayMode = displayMode, timeJson = timeJson, onClick = { onCourseClick(c) }, isGrey = isGrey, scale = scale, cornerRatio = cornerRatio)
                 }
             }
         }
@@ -649,10 +677,11 @@ private fun DetailDayCard(
 }
 
 @Composable
-private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit, isGrey: Boolean = false) {
+private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit, isGrey: Boolean = false, scale: Float = 1f, cornerRatio: Float = 1f) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
+    val sd = { v: Float -> (v * scale).dp }
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     val bg = CourseColorUtil.pickCourseColorCompose(
         course = course,
@@ -676,15 +705,15 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .clip(SleepyTheme.shapes.medium)
+            .clip(RoundedCornerShape(sd(12f * cornerRatio)))
             .background(effectiveBg)
             .noRippleClickable(onClick)
-            .padding(9.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(sd(9f)),
+        horizontalArrangement = Arrangement.spacedBy(sd(8f))
     ) {
         val sideStyle = SleepyTextStyle.smallMeta().copy(
-            fontSize = 12.sp,
-            lineHeight = 16.sp,
+            fontSize = (12 * scale).sp,
+            lineHeight = (16 * scale).sp,
             fontWeight = FontWeight.SemiBold,
             textDecoration = textDecoration
         )
@@ -693,14 +722,14 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                 text = "${timeParts.first}-\n${timeParts.second}",
                 style = sideStyle,
                 color = effectiveFg,
-                modifier = Modifier.width(42.dp)
+                modifier = Modifier.width(sd(42f))
             )
         } else {
             Text(
                 text = nodeLabel,
                 style = sideStyle,
                 color = effectiveFg,
-                modifier = Modifier.width(42.dp),
+                modifier = Modifier.width(sd(42f)),
                 maxLines = 1
             )
         }

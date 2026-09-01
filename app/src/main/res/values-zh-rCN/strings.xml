@@ -293,6 +293,8 @@
     <string name="settings_grid_sub_none_sub">网格卡片只显示课程名</string>
     <string name="settings_grid_scale">网格卡片大小</string>
     <string name="settings_grid_scale_sub">整体缩放课表网格：字号、胶囊高度、间距等比调节（70%–130%），调小可让更多节课一屏放下</string>
+    <string name="settings_grid_corner">网格圆角</string>
+    <string name="settings_grid_corner_sub">调整网格卡片与周视图胶囊的圆角大小（0% 直角 – 200% 超圆），默认 100%</string>
     <string name="settings_show_date">课表显示日期</string>
     <string name="settings_show_date_sub">在每列表头显示具体日期（月/日）</string>
     <string name="settings_visible_days">显示星期</string>

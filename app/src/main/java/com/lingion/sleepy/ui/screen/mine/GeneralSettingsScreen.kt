@@ -82,6 +82,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
     var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
+    var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -189,6 +190,30 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                             },
                             valueRange = 0.7f..1.3f,
                             steps = 11,
+                            colors = SliderDefaults.colors(
+                                thumbColor = colors.primary,
+                                activeTrackColor = colors.primary,
+                                inactiveTrackColor = colors.surfaceVariant
+                            )
+                        )
+                    }
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    Text(text = stringResource(R.string.settings_grid_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                    Text(text = stringResource(R.string.settings_grid_corner_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "${(gridCorner * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = colors.primary,
+                            modifier = Modifier.widthIn(min = 52.dp)
+                        )
+                        Slider(
+                            value = gridCorner,
+                            onValueChange = { gridCorner = it },
+                            onValueChangeFinished = {
+                                AppPrefs.setGridCornerRatio(context, gridCorner)
+                            },
+                            valueRange = 0f..2f,
                             colors = SliderDefaults.colors(
                                 thumbColor = colors.primary,
                                 activeTrackColor = colors.primary,

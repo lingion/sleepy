@@ -36,6 +36,7 @@ object AppPrefs {
     const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
     const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格课表整体缩放(字号/行高/间距/圆角联动, issue#8)
+    const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -274,6 +275,16 @@ object AppPrefs {
 
     fun setGridScale(ctx: Context, v: Float) {
         sp(ctx).edit().putFloat(KEY_GRID_SCALE, v.coerceIn(0.7f, 1.3f)).apply()
+    }
+
+    // ===== 网格/周视图圆角比例(issue#8) — 0.0~2.0, 默认 1.0 =====
+    // 系数乘基准圆角(网格卡 12dp/列表外框 16dp): 0=直角, 1=默认, 2=超圆。两视图共用一个值。
+
+    fun getGridCornerRatio(ctx: Context): Float =
+        sp(ctx).getFloat(KEY_GRID_CORNER_RATIO, 1.0f).coerceIn(0f, 2f)
+
+    fun setGridCornerRatio(ctx: Context, v: Float) {
+        sp(ctx).edit().putFloat(KEY_GRID_CORNER_RATIO, v.coerceIn(0f, 2f)).apply()
     }
 
     // ===== 节假日灰显 =====

@@ -265,6 +265,8 @@
     <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
     <string name="settings_grid_scale">グリッドカードサイズ</string>
     <string name="settings_grid_scale_sub">時間割グリッド全体を拡大縮小：フォント・カードの高さ・間隔を連動（70%–130%）。小さくすると1画面に多くのコマが入ります。</string>
+    <string name="settings_grid_corner">グリッド角丸</string>
+    <string name="settings_grid_corner_sub">グリッドカードと週ビューの角丸を調整（0% 角 – 200% 大きく丸い）、デフォルト 100%</string>
     <string name="settings_show_date">時間割に日付を表示</string>
     <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
     <string name="settings_visible_days">表示曜日</string>
