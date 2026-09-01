@@ -77,6 +77,47 @@ sealed class CourseDrawItem {
     data class Mark(val hiddenCourseId: Long, val variant: ConflictVariant) : CourseDrawItem()
 }
 
+/** 标记视觉锚位 — 命中区/视觉区共用的角部语义(占位级;精修归 Task 5)。 */
+enum class MarkHitShape { BOTTOM_END, TOP_END, CENTER_END_STRIP }
+
+/** 标记视觉区尺寸(dp): STACK/FOLD=14dp 见方块,RAIL=6dp 宽竖条(高纵贯顶层卡)。 */
+private const val MARK_SQUARE_DP = 14f
+private const val MARK_RAIL_W_DP = 6f
+
+/** 命中区在视觉区基础上的总内延(dp,单边) — 手指命中容差。 */
+private const val MARK_HIT_PAD_DP = 12f
+
+/**
+ * 标记命中区尺寸计算(纯 JVM 可测,单位与调用方约定一致) — 评审 Important-1:
+ *
+ * 命中区 = 标记视觉区 + MARK_HIT_PAD 总内延(约一指宽容差),**绝不铺满整卡**——
+ * hidden 存在时若 overlay 可点区铺满顶层卡,「点主体=编辑最上层」(设计 §4)全域不可达。
+ * 主体其余区域留给顶层卡自己的 onCourseClick。结果 coerce 到卡尺寸内(小卡裁剪内延)。
+ *
+ * 返回 (w, h),调用方按 shape 锚到顶层卡对应角/边。NONE 无标记 → (0, 0) 不可点。
+ */
+fun markHitArea(variant: ConflictVariant, cardWidth: Float, cardHeight: Float): Pair<Float, Float> = when (variant) {
+    ConflictVariant.STACK, ConflictVariant.FOLD -> {
+        // 右下/右上 14dp 方块 + 12dp 总内延 → 26dp 见方
+        val side = (MARK_SQUARE_DP + MARK_HIT_PAD_DP)
+            .coerceAtMost(cardWidth).coerceAtMost(cardHeight)
+        side to side
+    }
+    ConflictVariant.RAIL -> {
+        // 右侧 6dp 竖条 + 12dp 总内延 → 宽 18dp,高=整卡高(纵贯)
+        (MARK_RAIL_W_DP + MARK_HIT_PAD_DP).coerceAtMost(cardWidth) to cardHeight
+    }
+    ConflictVariant.NONE -> 0f to 0f
+}
+
+/** 命中区锚位 — 标记在顶层卡上的对齐角/边。 */
+private fun markHitShape(variant: ConflictVariant): MarkHitShape = when (variant) {
+    ConflictVariant.STACK -> MarkHitShape.BOTTOM_END
+    ConflictVariant.FOLD -> MarkHitShape.TOP_END
+    ConflictVariant.RAIL -> MarkHitShape.CENTER_END_STRIP
+    ConflictVariant.NONE -> MarkHitShape.TOP_END
+}
+
 /**
  * 簇内绘制序计算(纯 JVM 可测) — 评审 Critical 的核心修复:
  *
@@ -88,10 +129,15 @@ sealed class CourseDrawItem {
  * tap 入口(点标记 = 把该 hidden 课换到顶层)。
  *
  * N=2 完全重叠场景由此获得唯一视觉存在(overlay 标记)与唯一 tap 入口。
+ *
+ * 顶层判定兜底(评审 Important-2): 簇主课可能出界(startNode > maxNode)被调用方
+ * 过滤,过滤后列表无 zRank 0——此时取列表首位当顶层(zRank 升序首位=界内最上层),
+ * 保证任何情况下界内课有渲染有点击;输入为空(全出界)才返回空,调用方整簇跳过。
  */
 fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
-    val top = laid.firstOrNull { it.zRank == 0 } ?: return emptyList()
-    val others = laid.filter { it.zRank != 0 }.sortedByDescending { it.zRank }
+    if (laid.isEmpty()) return emptyList()
+    val top = laid.firstOrNull { it.zRank == 0 } ?: laid.first()
+    val others = laid.filter { it !== top }.sortedByDescending { it.zRank }
     val marks = laid.filter { it.hidden }.sortedBy { it.zRank }
         .map { CourseDrawItem.Mark(it.course.id, it.variant) }
     return others.map { CourseDrawItem.Card(it) } +
@@ -223,18 +269,39 @@ fun ConflictClusterCard(
                 }
                 is CourseDrawItem.Mark -> {
                     // ---- overlay 变体标记(hidden 课唯一视觉存在 + 唯一 tap 入口) ----
-                    // 锚定在顶层卡的对应区域(几何精修归 Task 5),自己接 clickable → onPickTop(hidden 课)
+                    // 命中区=视觉区+12dp 内延(markHitArea,评审 Important-1),绝不铺满整卡——
+                    // 主体其余区域留给顶层卡自己的 onCourseClick(设计 §4 点主体=编辑最上层)。
+                    // 视觉色块锚定在命中区内对应角/边,几何随 markHitArea 常量同源。
                     val hiddenCourse = courseById[item.hiddenCourseId]?.course ?: return@forEach
                     val topCourse = drawList.first().course
-                    HiddenVariantMark(
-                        variant = item.variant,
-                        courseColor = courseColorOf(hiddenCourse),
+                    val shape = markHitShape(item.variant)
+                    val hitW = markHitArea(item.variant, colW.value, cardHOf(topCourse.id).value).first
+                        .dp.coerceAtMost(colW)
+                    val hitH = markHitArea(item.variant, colW.value, cardHOf(topCourse.id).value).second
+                        .dp.coerceAtMost(cardHOf(topCourse.id))
+                    if (item.variant == ConflictVariant.NONE) return@forEach
+                    Box(
                         modifier = Modifier
-                            .offset(y = cardYOf(topCourse.startNode))
-                            .width(colW)
-                            .height(cardHOf(topCourse.id))
+                            .offset(
+                                x = when (shape) {
+                                    MarkHitShape.BOTTOM_END, MarkHitShape.TOP_END, MarkHitShape.CENTER_END_STRIP -> colW - hitW
+                                },
+                                y = cardYOf(topCourse.startNode) + when (shape) {
+                                    MarkHitShape.TOP_END -> 0.dp
+                                    MarkHitShape.BOTTOM_END -> cardHOf(topCourse.id) - hitH
+                                    MarkHitShape.CENTER_END_STRIP -> 0.dp
+                                }
+                            )
+                            .width(hitW)
+                            .height(hitH)
                             .noRippleClickable { onPickTop(item.hiddenCourseId) }
-                    )
+                    ) {
+                        HiddenVariantMark(
+                            variant = item.variant,
+                            courseColor = courseColorOf(hiddenCourse),
+                            modifier = Modifier.matchParentSize()
+                        )
+                    }
                 }
             }
         }
@@ -351,32 +418,31 @@ private fun ConflictCourseCard(
 }
 
 /**
- * hidden 课变体标记(overlay 层) — Task 4 占位级(纯色块示意),几何精修归 Task 5。
+ * hidden 课变体标记视觉(overlay 层) — Task 4 占位级(纯色块示意),几何精修归 Task 5。
  *   STACK = 右下露边色块 | FOLD = 右上角三角色块 | RAIL = 右侧竖条色块
- * 调用方已把 modifier 锚定到顶层卡区域并接 clickable(= hidden 课 tap 入口);
- * 内部铺满该区域后自建 Box 获得 BoxScope 做角部对齐。
+ * 调用方已把 modifier 收缩为命中区(视觉区+内延)并接 clickable(= hidden 课 tap 入口);
+ * 内部铺满命中区,视觉色块按锚位对齐——贴命中区内侧对应角/边(内延朝外自然形成)。
  */
 @Composable
 private fun HiddenVariantMark(variant: ConflictVariant, courseColor: Color, modifier: Modifier = Modifier) {
     Box(modifier = modifier) {
         when (variant) {
             ConflictVariant.STACK -> {
-                // 右下露边色块
+                // 右下露边色块(贴命中区右下 → 内延边距自然留出)
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(2.dp)
-                        .size(14.dp)
+                        .size(MARK_SQUARE_DP.dp)
                         .clip(RoundedCornerShape(topStart = 6.dp))
                         .background(courseColor)
                 )
             }
             ConflictVariant.FOLD -> {
-                // 右上角三角色块(直角三角形: 右上-右下-左上)
+                // 右上角三角色块(直角三角形: 右上-右下-左上;贴命中区右上)
                 Canvas(
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .size(14.dp)
+                        .size(MARK_SQUARE_DP.dp)
                 ) {
                     val path = Path().apply {
                         moveTo(size.width, 0f)
@@ -388,12 +454,11 @@ private fun HiddenVariantMark(variant: ConflictVariant, courseColor: Color, modi
                 }
             }
             ConflictVariant.RAIL -> {
-                // 右侧竖条色块
+                // 右侧竖条色块(贴命中区右缘纵贯;命中区高=卡高,条高=卡高减内延留白)
                 Box(
                     modifier = Modifier
                         .align(Alignment.CenterEnd)
-                        .padding(end = 2.dp)
-                        .size(width = 6.dp, height = 40.dp)
+                        .size(width = MARK_RAIL_W_DP.dp, height = 40.dp)
                         .clip(RoundedCornerShape(3.dp))
                         .background(courseColor)
                 )

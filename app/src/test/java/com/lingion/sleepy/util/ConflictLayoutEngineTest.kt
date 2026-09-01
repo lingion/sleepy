@@ -3,8 +3,10 @@ package com.lingion.sleepy.util
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.CourseDrawItem
 import com.lingion.sleepy.ui.component.layoutFor
+import com.lingion.sleepy.ui.component.markHitArea
 import com.lingion.sleepy.ui.component.overlayMarkOrder
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
@@ -455,5 +457,73 @@ class ConflictLayoutEngineTest {
         val b = course(id = 2, day = 1, startNode = 1, step = 3)
         val order = overlayMarkOrder(layoutFor(listOf(a, b), "fold", topOverrideId = 2L))
         assertEquals(listOf("Card:1", "Card:2", "Mark:1"), drawOrderIds(order))
+    }
+
+    @Test
+    fun overlayMarkOrder_out_of_grid_top_falls_back_to_first_visible() {
+        // Important-2 回归: 簇内 zRank 0 课是出界课(startNode > maxNode)被 UI 过滤后,
+        // 输入列表无 zRank 0 → 不再 return emptyList,兜底取列表首位(first)保渲染保点击。
+        // 模拟过滤: 手工构造无 zRank 0 的 laid 列表(id=9 出界主课不在其中)
+        val visible = listOf(
+            LaidOutCourse(course(id = 2, day = 1, startNode = 1, step = 2), 1, false, ConflictVariant.NONE),
+            LaidOutCourse(course(id = 3, day = 1, startNode = 2, step = 2), 2, false, ConflictVariant.NONE)
+        )
+        val order = overlayMarkOrder(visible)
+        // 兜底: 首位(id=2)当顶层卡渲染,zRank 降序不变
+        assertEquals(listOf("Card:3", "Card:2"), drawOrderIds(order))
+    }
+
+    @Test
+    fun overlayMarkOrder_empty_input_returns_empty() {
+        // 空输入(全出界被过滤到零) → 空输出,调用方据此整簇跳过
+        assertEquals(emptyList<CourseDrawItem>(), overlayMarkOrder(emptyList()))
+    }
+
+    // ============================ markHitArea (Task 4 fix round 2) ============================
+    //
+    // Important-1: 标记命中区必须收缩到「标记视觉区 + 12dp 内延」,不能铺满整张顶层卡,
+    // 否则 hidden 存在时顶层卡 onCourseClick 全域不可达(点主体=编辑最上层,设计 §4)。
+
+    /** Dp 二维断言辅助 */
+    private fun assertRect(
+        actual: Pair<Float, Float>,
+        w: Float,
+        h: Float,
+        message: String
+    ) {
+        assertEquals(message, w, actual.first, 0.001f)
+        assertEquals(message, h, actual.second, 0.001f)
+    }
+
+    @Test
+    fun markHitArea_stack_is_bottom_edge_strip_not_full_card() {
+        // STACK: 视觉区=右下 14dp 方块 + 12dp 内延 → 右下 26dp 见方,绝不等于整卡
+        val (w, h) = markHitArea(ConflictVariant.STACK, cardWidth = 60f, cardHeight = 120f)
+        assertRect(w to h, 26f, 26f, "STACK hit area")
+    }
+
+    @Test
+    fun markHitArea_fold_is_top_corner_triangle_zone_not_full_card() {
+        // FOLD: 右上 14dp 三角 + 12dp 内延 → 右上 26dp 见方
+        val (w, h) = markHitArea(ConflictVariant.FOLD, cardWidth = 60f, cardHeight = 120f)
+        assertRect(w to h, 26f, 26f, "FOLD hit area")
+    }
+
+    @Test
+    fun markHitArea_rail_is_right_stripe_not_full_card() {
+        // RAIL: 右侧 6dp 竖条 + 12dp 内延 → 宽 18dp,高=整卡高(竖条纵贯)
+        val (w, h) = markHitArea(ConflictVariant.RAIL, cardWidth = 60f, cardHeight = 120f)
+        assertRect(w to h, 18f, 120f, "RAIL hit area")
+    }
+
+    @Test
+    fun markHitArea_never_exceeds_card_bounds_and_never_fills_card() {
+        // 命中区任何变体都 < 整卡面积(小卡片时内延会被裁剪,但恒 ≤ 卡宽/卡高)
+        for (variant in listOf(ConflictVariant.STACK, ConflictVariant.FOLD)) {
+            val (w, h) = markHitArea(variant, cardWidth = 20f, cardHeight = 30f)
+            assertTrue("w<=cardW", w <= 20f)
+            assertTrue("h<=cardH", h <= 30f)
+            assertTrue("not full card", w * h < 20f * 30f)
+        }
     }
 }
