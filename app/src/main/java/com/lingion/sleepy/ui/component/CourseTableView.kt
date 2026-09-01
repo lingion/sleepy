@@ -20,6 +20,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -30,6 +31,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
@@ -46,6 +48,7 @@ import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
@@ -188,10 +191,61 @@ fun CardsGridView(
                         }
                     }
 
-                    // 课程卡片：用 offset 绝对定位
+                    // 课程卡片：用 offset 绝对定位 — 冲突簇整簇走 ConflictClusterCard,
+                    // 非簇课保持原 CourseOverlayCard 单卡路径(回归保护)
+                    val context = LocalContext.current
+                    val conflictStyle = AppPrefs.getConflictStyle(context)
+                    // 交换置顶状态: 簇键 "day:startNode:step" → 顶层课 id。
+                    // rememberSaveable 只收 Bundle 类型——LinkedHashMap 实现 Serializable 可存,
+                    // mutableStateListOf 不行,故用 map 手工存取。
+                    var topOverrides by rememberSaveable { mutableStateOf(mapOf<String, Long>()) }
+                    fun setTopOverride(key: String, courseId: Long?) {
+                        topOverrides = if (courseId == null) {
+                            topOverrides - key
+                        } else {
+                            topOverrides + (key to courseId)
+                        }
+                    }
+
+                    // 引擎聚簇: 同天区间相交(含链式)课程归簇,簇键=主课判定序首课三元组
+                    // (override 不改变首课——findClusters 输出固定,键稳定)
+                    val clusters = ConflictLayoutEngine.findClusters(courses)
+                    val clusteredIds = clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
+
+                    for (cluster in clusters) {
+                        // 簇内课若因 visibleDays/maxNode 过滤全出界则整簇跳过
+                        if (cluster.day !in visibleDays) continue
+                        val inGrid = cluster.courses.filter {
+                            it.startNode in 1..maxNode
+                        }
+                        if (inGrid.isEmpty()) continue
+                        val anchor = cluster.courses.first() // 主课判定序首位,决定簇基点
+                        val dayIdx = sortedDays.indexOf(cluster.day)
+                        val cardX = timeW + gapW + (colW + gapW) * dayIdx
+                        val cardY = rowH * (anchor.startNode - 1)
+                        val clusterKey = "${cluster.day}:${anchor.startNode}:${anchor.step}"
+
+                        ConflictClusterCard(
+                            cluster = cluster,
+                            style = conflictStyle,
+                            topOverrideId = topOverrides[clusterKey],
+                            onPickTop = { id -> setTopOverride(clusterKey, id) },
+                            onCourseClick = onCourseClick,
+                            colW = colW,
+                            rowH = rowH,
+                            maxNode = maxNode,
+                            timeW = timeW,
+                            gapW = gapW,
+                            gapH = gapH,
+                            isGrey = cluster.day in greyDays,
+                            modifier = Modifier.offset(x = cardX, y = cardY)
+                        )
+                    }
+
                     for (course in courses) {
                         if (course.day !in visibleDays) continue
                         if (course.startNode !in 1..maxNode) continue
+                        if (course.id in clusteredIds) continue // 簇内课已由 ConflictClusterCard 绘制
                         val dayIdx = sortedDays.indexOf(course.day)
                         val steps = course.step.coerceAtLeast(1)
                             .coerceAtMost(maxNode - course.startNode + 1)

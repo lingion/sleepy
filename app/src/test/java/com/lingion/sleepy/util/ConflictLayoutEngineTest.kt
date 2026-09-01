@@ -1,11 +1,13 @@
 package com.lingion.sleepy.util
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.ui.component.layoutFor
 import org.junit.Assert.assertEquals
 import org.junit.Test
 
 /**
- * ConflictLayoutEngine 纯 JVM 单测（Task 1：聚簇 + 主课判定；Task 2：零露出 + 标记归属 + 变体分配）。
+ * ConflictLayoutEngine 纯 JVM 单测（Task 1：聚簇 + 主课判定；Task 2：零露出 + 标记归属 + 变体分配；
+ * Task 4：layoutFor 引擎封装——UI 渲染层的唯一入口）。
  *
  * Task 1 覆盖五块:
  *   1. 聚簇传递闭包 — 同天共享节次即归一簇,链式相邻亦传播
@@ -325,5 +327,77 @@ class ConflictLayoutEngineTest {
         style == "rail" -> ConflictVariant.RAIL
         n >= 3 -> ConflictVariant.FOLD
         else -> ConflictVariant.STACK
+    }
+
+    // ============================ layoutFor (Task 4) ============================
+    //
+    // layoutFor = UI 层唯一入口: findClusters(仅 size≥2)后逐簇 layoutCluster 展开,
+    // 返回展平的 List<LaidOutCourse>(只含簇内课,不含单课/无冲突课)。
+
+    @Test
+    fun layoutFor_multi_cluster_input_flattens_all_cluster_courses() {
+        // 两天各一簇(2 课 + 3 课) → 展平输出 5 门课,单日无关课不出现
+        val d1a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val d1b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val d3a = course(id = 3, day = 3, startNode = 1, step = 3)
+        val d3b = course(id = 4, day = 3, startNode = 1, step = 3)
+        val d3c = course(id = 5, day = 3, startNode = 1, step = 3)
+        val solo = course(id = 9, day = 2, startNode = 1, step = 2) // 无冲突,不参与
+        val laid = layoutFor(listOf(d1a, d1b, d3a, d3b, d3c, solo), "stack", null)
+
+        assertEquals(listOf(1L, 2L, 3L, 4L, 5L), laid.map { it.course.id })
+        // 簇间 day 升序: day1 簇在前,day3 簇在后;簇内主课判定序
+        assertEquals(listOf(d1a, d1b, d3a, d3b, d3c), laid.map { it.course })
+    }
+
+    @Test
+    fun layoutFor_zRank_restarts_from_zero_per_cluster() {
+        // zRank 按簇独立: day1 簇 0..1,day3 簇重新从 0 起(展平后不连续,但簇内连续)
+        val d1a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val d1b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val d3a = course(id = 3, day = 3, startNode = 1, step = 3)
+        val d3b = course(id = 4, day = 3, startNode = 1, step = 3)
+        val laid = layoutFor(listOf(d1a, d1b, d3a, d3b), "stack", null)
+        assertEquals(listOf(0, 1, 0, 1), laid.map { it.zRank })
+    }
+
+    @Test
+    fun layoutFor_topOverrideId_applies_to_target_cluster_only() {
+        // override=id4 → 仅 day3 簇翻转(id4 升顶层),day1 簇不受影响
+        val d1a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val d1b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val d3a = course(id = 3, day = 3, startNode = 1, step = 3)
+        val d3b = course(id = 4, day = 3, startNode = 1, step = 3)
+        val laid = layoutFor(listOf(d1a, d1b, d3a, d3b), "stack", topOverrideId = 4L)
+        // day1 簇保持主课判定序
+        assertEquals(listOf(d1a, d1b), laid.take(2).map { it.course })
+        assertEquals(listOf(0, 1), laid.take(2).map { it.zRank })
+        // day3 簇翻转: id4 顶层,id3 降底层且被完全覆盖 → hidden
+        assertEquals(listOf(d3b, d3a), laid.drop(2).map { it.course })
+        assertEquals(listOf(0, 1), laid.drop(2).map { it.zRank })
+        assertEquals(false, laid[2].hidden)
+        assertEquals(true, laid[3].hidden)
+        assertEquals(ConflictVariant.STACK, laid[3].variant)
+    }
+
+    @Test
+    fun layoutFor_no_conflicts_returns_empty() {
+        // 无冲突输入(单课/不相交/空表) → 空输出
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 3, step = 2)
+        assertEquals(emptyList<LaidOutCourse>(), layoutFor(listOf(a, b), "rail", null))
+        assertEquals(emptyList<LaidOutCourse>(), layoutFor(emptyList(), "rail", null))
+    }
+
+    @Test
+    fun layoutFor_style_propagates_to_hidden_variants() {
+        // style 直通 layoutCluster: rail 下 hidden 课拿 RAIL,fold 下拿 FOLD
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val byStyle: (String) -> ConflictVariant = { style ->
+            layoutFor(listOf(a, b), style, null).first { it.course.id == 2L }.variant
+        }
+        assertEquals(ConflictVariant.RAIL, byStyle("rail"))
+        assertEquals(ConflictVariant.FOLD, byStyle("fold"))
     }
 }
