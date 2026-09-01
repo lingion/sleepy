@@ -256,18 +256,18 @@
     <string name="settings_start_view_full">Vista semanal</string>
     <string name="settings_start_view_cards">Cuadrícula</string>
     <string name="settings_start_view_sub">Solo afecta la vista al abrir la app; se puede cambiar en la barra superior del horario</string>
-    <string name="settings_grid_sub_info">Sub-info de la tarjeta</string>
+    <string name="settings_grid_sub_info">Detalles de la tarjeta</string>
     <string name="settings_grid_sub_room">Aula</string>
-    <string name="settings_grid_sub_room_sub">Mostrar aula bajo el nombre (oculto si está vacío)</string>
+    <string name="settings_grid_sub_room_sub">Muestra el aula bajo el nombre del curso (oculta si no hay)</string>
     <string name="settings_grid_sub_teacher">Profesor</string>
-    <string name="settings_grid_sub_teacher_sub">Mostrar profesor bajo el nombre (oculto si está vacío)</string>
+    <string name="settings_grid_sub_teacher_sub">Muestra el profesor bajo el nombre del curso (oculto si no hay)</string>
     <string name="settings_grid_sub_none">Ninguno</string>
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
     <string name="settings_pill">Ajustes de pantalla de inicio</string>
-    <string name="settings_pill_scale">Tamaño de píldora</string>
-    <string name="settings_pill_scale_sub">Escala toda la cuadrícula: fuente, altura y espaciado juntos (70%–130%). Más pequeño cabe más clases en pantalla.</string>
-    <string name="settings_pill_corner">Radio de esquinas</string>
-    <string name="settings_pill_corner_sub">Radio de esquinas de tarjetas y píldoras (0% cuadrado – 200% muy redondeado), por defecto 100%</string>
+    <string name="settings_pill_scale">Zoom de la cuadrícula</string>
+    <string name="settings_pill_scale_sub">Escala toda la cuadrícula por igual: fuente, altura de tarjeta y espaciado (70%–130%); más pequeño, más franjas por pantalla</string>
+    <string name="settings_pill_corner">Esquinas de tarjetas</string>
+    <string name="settings_pill_corner_sub">Radio de las esquinas de tarjetas de cuadrícula y vista semanal (0% rectas – 200% extra redondas), por defecto 100%</string>
     <string name="settings_week_two_column">Vista semanal en dos columnas</string>
     <string name="settings_week_two_column_sub">Divide la lista de cursos de la vista semanal en dos columnas (primera mitad de la semana a la izquierda, segunda mitad a la derecha) para reducir el desplazamiento vertical</string>
     <string name="settings_week_two_column_days">Reparto fijo de días</string>
@@ -276,10 +276,10 @@
     <string name="settings_week_two_column_balance_sub">Cada día va a la columna con menos cursos, manteniendo ambas partes parejas — la posición varía según el horario</string>
     <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
     <string name="settings_week_hide_empty_sub">Los días sin cursos se quitan de la vista semanal; con dos columnas los restantes se reparten en partes iguales (p. ej. 4 días = 2+2, 6 días = 3+3)</string>
-    <string name="settings_show_date">Mostrar fechas en el horario</string>
-    <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
+    <string name="settings_show_date">Fechas en la tabla del horario</string>
+    <string name="settings_show_date_sub">Muestra la fecha (D/M) junto a cada encabezado de columna en la vista de cuadrícula; los encabezados de los widgets también la siguen</string>
     <string name="settings_visible_days">Días visibles</string>
-    <string name="settings_visible_days_sub">Los días desmarcados se ocultan en todas las vistas</string>
+    <string name="settings_visible_days_sub">Los días desmarcados se ocultan en la página del horario y en los widgets</string>
 
     <string name="theme_system">Seguir sistema</string>
     <string name="theme_system_desc">Material You color dinámico (Android 12+)</string>
@@ -510,14 +510,14 @@
     <string name="semester_ended">El semestre terminó</string>
     <string name="schedule_week_prefix">Semana %1$d</string>
     <string name="today_semester_out_hint">Fuera del rango del semestre: las clases son solo de referencia</string>
-    <string name="settings_vert_punct">Optimización de puntuación vertical</string>
-    <string name="settings_vert_punct_sub">En el widget de cuadrícula, reemplazar signos de puntuación horizontales como （）《》 con signos verticales dedicados cuando los nombres de cursos se muestran verticalmente (experimental)</string>
+    <string name="settings_vert_punct">Puntuación vertical en widgets</string>
+    <string name="settings_vert_punct_sub">Cuando los nombres se muestren en vertical en los widgets, cambia ( ) 《 》 por sus formas verticales (experimental)</string>
     <string name="settings_widget">Ajustes del widget</string>
     <string name="settings_widget_colorless">Colores uniformes de cursos en widgets</string>
-    <string name="settings_widget_colorless_sub">Solo los cursos con fondo en los widgets usan un gris neutro; la vista semanal de texto no se ve afectada y los cursos con color personalizado no se ven afectados</string>
+    <string name="settings_widget_colorless_sub">Neutraliza solo los colores de fondo en widgets; no afecta a la app ni colores personalizados</string>
     <string name="settings_course_colorless">Colores uniformes de cápsulas de cursos</string>
-    <string name="settings_course_colorless_sub">Solo las cápsulas de cursos en la app usan un gris neutro; los ajustes de widgets no se ven afectados y los cursos con color personalizado no se ven afectados</string>
-    <string name="settings_widget_separator">Separador vista semanal</string>
+    <string name="settings_course_colorless_sub">Neutraliza solo los colores de las cápsulas en la app; no afecta a widgets ni colores personalizados</string>
+    <string name="settings_widget_separator">Separador del widget semanal</string>
     <string name="settings_holiday_holiday">Atenuar festivos oficiales</string>
     <string name="settings_holiday_holiday_sub">Los cursos en festivos oficiales (p. ej., Día Nacional, Año Nuevo Chino) se muestran en gris</string>
     <string name="settings_holiday_entry_sub">Configurar reglas de atenuación y ver datos de festivos y días de recuperación</string>
@@ -554,7 +554,7 @@
     <string name="holiday_custom_badge">Personalizado</string>
     <string name="holiday_add_entry">Añadir fechas personalizadas</string>
     <string name="settings_holiday_style_sub">Elige el aspecto de los cursos atenuados</string>
-    <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
+    <string name="settings_widget_separator_sub">Mostrar líneas entre los nombres de curso en el widget de lista semanal</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>
     <string name="edit_period_duration_label">Duración por período</string>

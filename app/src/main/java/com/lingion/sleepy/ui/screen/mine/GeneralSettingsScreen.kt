@@ -260,6 +260,14 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         checked = weekHideEmptyDays,
                         onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
                     )
+                    // 表头日期 — 网格视图列头 + 小组件列头共用的开关
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_show_date),
+                        subtitle = stringResource(R.string.settings_show_date_sub),
+                        checked = showDate,
+                        onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
+                    )
                 }
             }
 
@@ -285,18 +293,6 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         }
                         if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     }
-                }
-            }
-
-            // 课表显示日期: 开关
-            item {
-                SettingsCard(title = stringResource(R.string.settings_show_date), expanded = "showDate" in expandedSections, onToggle = { toggleSection("showDate") }) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_show_date),
-                        subtitle = stringResource(R.string.settings_show_date_sub),
-                        checked = showDate,
-                        onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
-                    )
                 }
             }
 

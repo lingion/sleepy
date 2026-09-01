@@ -258,16 +258,16 @@
     <string name="settings_start_view_sub">起動時に表示されるビューの設定です。時間割ページ上部でいつでも切り替えできます</string>
     <string name="settings_grid_sub_info">グリッドカードの補足情報</string>
     <string name="settings_grid_sub_room">教室</string>
-    <string name="settings_grid_sub_room_sub">授業名の下に教室を表示（未設定なら非表示）</string>
+    <string name="settings_grid_sub_room_sub">コマ名の下に教室を表示（未設定なら非表示）</string>
     <string name="settings_grid_sub_teacher">教員</string>
-    <string name="settings_grid_sub_teacher_sub">授業名の下に教員を表示（未設定なら非表示）</string>
+    <string name="settings_grid_sub_teacher_sub">コマ名の下に担当教員を表示（未設定なら非表示）</string>
     <string name="settings_grid_sub_none">なし</string>
     <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
     <string name="settings_pill">ホーム表示設定</string>
-    <string name="settings_pill_scale">カプセルサイズ</string>
-    <string name="settings_pill_scale_sub">時間割グリッド全体を拡大縮小：フォント・カードの高さ・間隔を連動（70%–130%）。小さくすると1画面に多くのコマが入ります。</string>
-    <string name="settings_pill_corner">角丸</string>
-    <string name="settings_pill_corner_sub">グリッドカードと週ビューの角丸を調整（0% 角 – 200% 大きく丸い）、デフォルト 100%</string>
+    <string name="settings_pill_scale">グリッドの拡大率</string>
+    <string name="settings_pill_scale_sub">グリッド全体を均等に拡大縮小：文字サイズ・カードの高さ・間隔（70%–130%）。小さくすると1画面に多くのコマが入ります</string>
+    <string name="settings_pill_corner">カードの角丸</string>
+    <string name="settings_pill_corner_sub">グリッドカードと週ビューカードの角丸（0% 直角 – 200% 超丸）、デフォルト 100%</string>
     <string name="settings_week_two_column">週ビュー2列表示</string>
     <string name="settings_week_two_column_sub">週ビューの授業リストを左右2列に分割します（前半週は左、後半週は右）。縦スクロールを減らせます</string>
     <string name="settings_week_two_column_days">日数で半分ずつ</string>
@@ -276,10 +276,10 @@
     <string name="settings_week_two_column_balance_sub">授業が少ない列に曜日を振り分け、左右の高さを均す。曜日の位置は時間割により変動します</string>
     <string name="settings_week_hide_empty">週ビューで空き日を隠す</string>
     <string name="settings_week_hide_empty_sub">授業がない曜日を週ビューから除外。2列表示時は残りを左右に均等分割（例: 4日=左2右2、6日=左3右3）</string>
-    <string name="settings_show_date">時間割に日付を表示</string>
-    <string name="settings_show_date_sub">各列のヘッダーに日付（M/D）を表示</string>
+    <string name="settings_show_date">時間割テーブルの日付</string>
+    <string name="settings_show_date_sub">グリッドビューの各列ヘッダーに日付（M/D）を表示。ウィジェットの列ヘッダーも連動します</string>
     <string name="settings_visible_days">表示曜日</string>
-    <string name="settings_visible_days_sub">チェックを外した曜日はすべてのビューで非表示になります</string>
+    <string name="settings_visible_days_sub">チェックを外した曜日は時間割ページとウィジェットで非表示になります</string>
 
     <string name="theme_system">システムに従う</string>
     <string name="theme_system_desc">Material You ダイナミックカラー (Android 12+)</string>
@@ -510,14 +510,14 @@
     <string name="semester_ended">学期は終了しました</string>
     <string name="schedule_week_prefix">第 %1$d 週</string>
     <string name="today_semester_out_hint">学期範囲外のため、授業は参考です</string>
-    <string name="settings_vert_punct">縦書き記号の最適化</string>
-    <string name="settings_vert_punct_sub">グリッドウィジェットで授業名を縦書き表示する際に、（）《》などの横書き記号を専用の縦書き記号に置き換えます（実験的機能）</string>
+    <string name="settings_vert_punct">ウィジェット縦書き記号</string>
+    <string name="settings_vert_punct_sub">ウィジェットでコマ名を縦書き表示する際、（）《》などを縦書き用の字形に置き換えます（実験的機能）</string>
     <string name="settings_widget">ウィジェット設定</string>
     <string name="settings_widget_colorless">ウィジェットの授業色を統一</string>
-    <string name="settings_widget_colorless_sub">ウィジェットの背景色付き授業のみをニュートラルグレーに統一します。テキストのみの週表示には影響せず、色をカスタマイズした授業には適用されません</string>
+    <string name="settings_widget_colorless_sub">ウィジェットのコマ背景色だけを中立色に統一。アプリ内やカスタム色には影響しません</string>
     <string name="settings_course_colorless">アプリ内授業カプセルの色を統一</string>
-    <string name="settings_course_colorless_sub">アプリ内の授業カプセルのみをニュートラルグレーに統一します。ウィジェット設定には影響せず、色をカスタマイズした授業には適用されません</string>
-    <string name="settings_widget_separator">週表示の区切り線</string>
+    <string name="settings_course_colorless_sub">アプリ内のコマカプセル色だけを中立色に統一。ウィジェットやカスタム色には影響しません</string>
+    <string name="settings_widget_separator">週ウィジェットの区切り線</string>
     <string name="settings_holiday_holiday">祝日の授業をグレー表示</string>
     <string name="settings_holiday_holiday_sub">祝日（国民の祝日など）の授業をグレーで表示します</string>
     <string name="settings_holiday_entry_sub">グレー表示のルールを設定し、祝日・振替出勤日のデータを表示</string>
@@ -554,7 +554,7 @@
     <string name="holiday_custom_badge">カスタム</string>
     <string name="holiday_add_entry">カスタム日付を追加</string>
     <string name="settings_holiday_style_sub">グレー表示した授業の見た目を選択</string>
-    <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
+    <string name="settings_widget_separator_sub">週リストウィジェットでコマ名の間に区切り線を表示するかどうか</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">入力</string>
     <string name="edit_period_duration_label">1時限の時間</string>

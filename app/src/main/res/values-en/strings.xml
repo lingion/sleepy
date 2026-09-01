@@ -262,18 +262,18 @@
     <string name="settings_start_view_full">Week view</string>
     <string name="settings_start_view_cards">Grid</string>
     <string name="settings_start_view_sub">Only affects the view shown at launch; switch anytime from the schedule top bar</string>
-    <string name="settings_grid_sub_info">Grid card sub-info</string>
+    <string name="settings_grid_sub_info">Grid card details</string>
     <string name="settings_grid_sub_room">Room</string>
-    <string name="settings_grid_sub_room_sub">Show room under course name (hidden if empty)</string>
+    <string name="settings_grid_sub_room_sub">Show the room under the course name (hidden if none)</string>
     <string name="settings_grid_sub_teacher">Teacher</string>
-    <string name="settings_grid_sub_teacher_sub">Show teacher under course name (hidden if empty)</string>
+    <string name="settings_grid_sub_teacher_sub">Show the teacher under the course name (hidden if none)</string>
     <string name="settings_grid_sub_none">None</string>
     <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
     <string name="settings_pill">Home display</string>
-    <string name="settings_pill_scale">Pill size</string>
-    <string name="settings_pill_scale_sub">Scales the whole timetable grid: font, card height and spacing together (70%–130%). Smaller fits more periods on one screen.</string>
-    <string name="settings_pill_corner">Corner radius</string>
-    <string name="settings_pill_corner_sub">Corner radius of grid cards and week view pills (0% square – 200% extra round), default 100%</string>
+    <string name="settings_pill_scale">Grid zoom</string>
+    <string name="settings_pill_scale_sub">Scale the whole grid uniformly: font, card height and spacing (70%–130%); smaller fits more periods per screen</string>
+    <string name="settings_pill_corner">Card corners</string>
+    <string name="settings_pill_corner_sub">Corner radius of grid and week-view cards (0% square – 200% extra round), default 100%</string>
     <string name="settings_week_two_column">Two-column week view</string>
     <string name="settings_week_two_column_sub">Split the week view course list into two columns (first half of the week left, second half right) to reduce vertical scrolling</string>
     <string name="settings_week_two_column_days">Split days evenly</string>
@@ -282,10 +282,10 @@
     <string name="settings_week_two_column_balance_sub">Each day goes to the shorter column, keeping both sides even — day positions vary with your schedule</string>
     <string name="settings_week_hide_empty">Hide empty days in week view</string>
     <string name="settings_week_hide_empty_sub">Days without courses are removed from the week view; with two columns the remaining days split evenly (e.g. 4 left = 2+2, 6 left = 3+3)</string>
-    <string name="settings_show_date">Show dates on schedule</string>
-    <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
+    <string name="settings_show_date">Schedule table dates</string>
+    <string name="settings_show_date_sub">Show the date (M/D) next to each column header in the grid view; widget column headers follow this too</string>
     <string name="settings_visible_days">Visible Days</string>
-    <string name="settings_visible_days_sub">Unchecked days are hidden in all views</string>
+    <string name="settings_visible_days_sub">Unchecked days are hidden on the schedule page and in widgets</string>
 
     <string name="theme_system">Follow System</string>
     <string name="theme_system_desc">Material You dynamic color (Android 12+)</string>
@@ -516,14 +516,14 @@
     <string name="semester_ended">Semester is over</string>
     <string name="schedule_week_prefix">Week %1$d</string>
     <string name="today_semester_out_hint">Outside the semester range — classes shown for reference</string>
-    <string name="settings_vert_punct">Vertical Punctuation Optimization</string>
-    <string name="settings_vert_punct_sub">In the grid widget, replace horizontal punctuation marks like （）《》 with dedicated vertical ones when course names are displayed vertically (experimental)</string>
+    <string name="settings_vert_punct">Widget vertical punctuation</string>
+    <string name="settings_vert_punct_sub">When course names render vertically in widgets, swap ( ) 《 》 for vertical forms (experimental)</string>
     <string name="settings_widget">Widget settings</string>
     <string name="settings_widget_colorless">Uniform widget course colors</string>
-    <string name="settings_widget_colorless_sub">Only courses with backgrounds in widgets use a neutral gray; pure-text week view is unaffected, and courses with custom colors are unaffected</string>
+    <string name="settings_widget_colorless_sub">Neutralize only widget course colors; in-app and custom colors are not affected</string>
     <string name="settings_course_colorless">Uniform course-pill colors</string>
-    <string name="settings_course_colorless_sub">Only course pills in the app use a neutral gray; widget settings are unaffected, and courses with custom colors are unaffected</string>
-    <string name="settings_widget_separator">Week view separator</string>
+    <string name="settings_course_colorless_sub">Neutralize only in-app course pill colors; widget and custom colors are not affected</string>
+    <string name="settings_widget_separator">Week-widget separator</string>
     <string name="settings_holiday_holiday">Gray out public holidays</string>
     <string name="settings_holiday_holiday_sub">Courses on public holidays (e.g. National Day, Spring Festival) appear gray</string>
     <string name="settings_holiday_entry_sub">Configure dimming rules and view holiday and make-up day data</string>
@@ -560,7 +560,7 @@
     <string name="holiday_custom_badge">Custom</string>
     <string name="holiday_add_entry">Add custom dates</string>
     <string name="settings_holiday_style_sub">Choose how dimmed courses look</string>
-    <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
+    <string name="settings_widget_separator_sub">Show dividers between course names in the week-list widget</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Input</string>
     <string name="edit_period_duration_label">Per-period duration</string>

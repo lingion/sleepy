@@ -258,16 +258,16 @@
     <string name="settings_start_view_sub">僅影響啟動時進入的檢視，可隨時在課表頁頂部切換</string>
     <string name="settings_grid_sub_info">網格卡片副資訊</string>
     <string name="settings_grid_sub_room">教室</string>
-    <string name="settings_grid_sub_room_sub">課程名下方顯示上課地點（無教室則不顯示）</string>
+    <string name="settings_grid_sub_room_sub">課程名下方顯示上課地點（無則不顯示）</string>
     <string name="settings_grid_sub_teacher">教師</string>
-    <string name="settings_grid_sub_teacher_sub">課程名下方顯示授課教師（無教師則不顯示）</string>
+    <string name="settings_grid_sub_teacher_sub">課程名下方顯示授課教師（無則不顯示）</string>
     <string name="settings_grid_sub_none">無</string>
     <string name="settings_grid_sub_none_sub">網格卡片只顯示課程名</string>
     <string name="settings_pill">主頁顯示設定</string>
-    <string name="settings_pill_scale">膠囊大小</string>
-    <string name="settings_pill_scale_sub">整體縮放網格課表：字號、膠囊高度、間距等比調節（70%–130%），調小可讓更多節課一屏放下</string>
-    <string name="settings_pill_corner">圓角</string>
-    <string name="settings_pill_corner_sub">調整網格卡片與週視圖膠囊的圓角大小（0% 直角 – 200% 超圓），預設 100%</string>
+    <string name="settings_pill_scale">網格縮放</string>
+    <string name="settings_pill_scale_sub">整體縮放網格課表：字號、卡片高度、間距等比調節（70%–130%），調小可一屏顯示更多節課</string>
+    <string name="settings_pill_corner">卡片圓角</string>
+    <string name="settings_pill_corner_sub">調整網格卡片與週檢視卡片的圓角（0% 直角 – 200% 超圓），預設 100%</string>
     <string name="settings_week_two_column">週視圖兩欄顯示</string>
     <string name="settings_week_two_column_sub">週視圖課程列表拆為左右兩欄（前半週在左、後半週在右），減少縱向捲動</string>
     <string name="settings_week_two_column_days">按天對半分</string>
@@ -276,10 +276,10 @@
     <string name="settings_week_two_column_balance_sub">星期放進課較少的一欄，兩欄高度接近；星期位置隨課表變化</string>
     <string name="settings_week_hide_empty">週視圖隱藏無課日</string>
     <string name="settings_week_hide_empty_sub">週視圖不顯示沒有課程的星期，剩餘天數在兩欄下左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）</string>
-    <string name="settings_show_date">課表顯示日期</string>
-    <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>
+    <string name="settings_show_date">課表頁表格日期</string>
+    <string name="settings_show_date_sub">在網格檢視每列表頭顯示具體日期（月/日）；小工具的列頭日期也隨此開關</string>
     <string name="settings_visible_days">顯示星期</string>
-    <string name="settings_visible_days_sub">取消勾選的星期將在所有檢視中隱藏</string>
+    <string name="settings_visible_days_sub">取消勾選的星期將在課表頁和小工具中隱藏</string>
 
     <string name="theme_system">跟隨系統</string>
     <string name="theme_system_desc">Material You 動態取色（Android 12+）</string>
@@ -510,14 +510,14 @@
     <string name="semester_ended">學期已結束</string>
     <string name="schedule_week_prefix">第 %1$d 週</string>
     <string name="today_semester_out_hint">學期範圍外，課程僅供參考</string>
-    <string name="settings_vert_punct">直排標點最佳化</string>
-    <string name="settings_vert_punct_sub">網格小工具課名直排時將（）《》等橫排符號替換為專用直排符號（實驗功能）</string>
+    <string name="settings_vert_punct">小工具直排標點最佳化</string>
+    <string name="settings_vert_punct_sub">小工具課名直排時，將（）《》等橫排符號替換為直排形態（實驗功能）</string>
     <string name="settings_widget">小工具設定</string>
     <string name="settings_widget_colorless">小工具統一課程底色</string>
-    <string name="settings_widget_colorless_sub">僅將帶課程背景的小工具課程統一為中性底色；純文字週檢視不受影響，自訂顏色課程不受影響</string>
+    <string name="settings_widget_colorless_sub">僅將小工具課程底色統一為中性底色，不影響 App 內和自訂顏色課程</string>
     <string name="settings_course_colorless">課程膠囊統一底色</string>
-    <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色；小工具設定不受影響，自訂顏色課程不受影響</string>
-    <string name="settings_widget_separator">週檢視分隔線</string>
+    <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色，不影響小工具和自訂顏色課程</string>
+    <string name="settings_widget_separator">週檢視小工具分隔線</string>
     <string name="settings_holiday_holiday">法定假日課程灰顯</string>
     <string name="settings_holiday_holiday_sub">法定假日（如國慶、春節）當天的課程顯示為灰色</string>
     <string name="settings_holiday_entry_sub">設定灰顯規則，查看假日和補班日資料</string>
@@ -554,7 +554,7 @@
     <string name="holiday_custom_badge">自訂</string>
     <string name="holiday_add_entry">新增自訂日期</string>
     <string name="settings_holiday_style_sub">選擇灰顯課程的樣式</string>
-    <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
+    <string name="settings_widget_separator_sub">週檢視小工具中課程名之間是否顯示分隔線</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">輸入</string>
     <string name="edit_period_duration_label">每節時長</string>
