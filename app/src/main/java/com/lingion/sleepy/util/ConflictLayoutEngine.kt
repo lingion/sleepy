@@ -26,7 +26,8 @@ data class LaidOutCourse(
  * 主课判定序(primaryOrder): step 降 > startNode 升 > id 升。
  *
  * 零露出(hidden): 课 X 的节点区间减去所有 z 序高于 X 的课覆盖区间并集后的剩余节点集
- * 为空。顶层课(zRank 0)永不为 hidden。hidden 状态每次调用现算,不缓存。
+ * 为空。顶层课(zRank 0)永不为 hidden——除非其区间在裁剪空间内为空(整课出界,fix wave
+ * 1b)。hidden 状态每次调用现算,不缓存。
  *
  * 变体分配: hidden 课按 style 直配(stack+N=2=STACK,stack+N≥3=FOLD 合流,fold/rail 直配),
  * 非 hidden 课(含顶层)一律 NONE。简化裁定: 变体按「簇内是否存在 hidden 课」整体决定,
@@ -92,13 +93,18 @@ object ConflictLayoutEngine {
         // clamp 后为空(整课出界)→ 空区间,露出集恒空 → hidden(UI 本就不渲染该课)。
         fun nodesOf(course: CourseEntity): IntRange {
             if (maxNode == null) return course.startNode until course.startNode + course.step
-            val start = course.startNode.coerceIn(1, maxNode)
+            val start = maxOf(course.startNode, 1)
             val endIncl = (course.startNode + course.step - 1).coerceAtMost(maxNode)
             return if (start > endIncl) IntRange.EMPTY else start..endIncl
         }
 
         return zOrdered.mapIndexed { rank, course ->
-            val hidden = if (rank == 0) {
+            val ownNodes = nodesOf(course)
+            val hidden = if (ownNodes.isEmpty()) {
+                // 裁剪空间内区间为空(如尾向整课出界)→ 界内零可见露出,无论 zRank 一律 hidden
+                // (UI 对 startNode>maxNode 的课本就不渲染,标记派生自 drawList 无锚定风险)
+                true
+            } else if (rank == 0) {
                 false // 顶层课永不为 hidden
             } else {
                 // 本课区间减去所有更高层(zRank 更小)课的覆盖并集 → 露出集;
@@ -106,7 +112,7 @@ object ConflictLayoutEngine {
                 val covered = zOrdered.take(rank)
                     .flatMap { nodesOf(it) }
                     .toSet()
-                nodesOf(course).all { it in covered }
+                ownNodes.all { it in covered }
             }
             LaidOutCourse(
                 course = course,

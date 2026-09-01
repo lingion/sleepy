@@ -376,6 +376,22 @@ class ConflictLayoutEngineTest {
         assertEquals(LaidOutCourse(b2, 3, true, ConflictVariant.FOLD), byId.getValue(4L))
     }
 
+    @Test
+    fun layoutCluster_maxNode_tail_out_of_grid_course_produces_no_phantom_coverage() {
+        // fix wave 1b: 尾向整课出界(startNode>maxNode)的课必须 clamp 为空区间——
+        // coerceIn(1,maxNode) 会把它钳成 [maxNode,maxNode] 幻影区间,给界内课制造伪覆盖:
+        // maxNode=12, 簇 {Z=13-15(step3), C=12-13(step2)}。主课判定序 step 降 → Z 顶层。
+        // 幻影 bug 下: Z 钳成 [12,12] → C 露出集={12}−{12}=∅ → C 伪 hidden=true(UI 渲染 C
+        // 却多一枚伪标记,onPickTop 后标记凭空消失)。交集语义下: Z=EMPTY 不产生覆盖,
+        // Z 自身区间空 → Z hidden=true(出界课不渲染,标记派生自 drawList 无锚定风险);
+        // C 露出集={12} 非空 → hidden=false。
+        val z = course(id = 1, day = 1, startNode = 13, step = 3)
+        val c = course(id = 2, day = 1, startNode = 12, step = 2)
+        val byId = layoutById(listOf(z, c), "rail", maxNode = 12)
+        assertEquals(true, byId.getValue(1L).hidden)
+        assertEquals(false, byId.getValue(2L).hidden)
+    }
+
     // ============================ layoutFor (Task 4) ============================
     //
     // layoutFor = UI 层唯一入口: findClusters(仅 size≥2)后逐簇 layoutCluster 展开,
