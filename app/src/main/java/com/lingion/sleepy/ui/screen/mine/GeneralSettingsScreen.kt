@@ -78,6 +78,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
+    var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
@@ -197,6 +198,26 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         subtitle = stringResource(R.string.settings_show_date_sub),
                         checked = showDate,
                         onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
+                    )
+                }
+            }
+
+            // 启动默认页: full / cards(仅 App 内偏好, 不涉及小组件, 无需 refreshWidgets)
+            item {
+                SettingsCard(title = stringResource(R.string.settings_start_view), expanded = "startView" in expandedSections, onToggle = { toggleSection("startView") }) {
+                    Text(text = stringResource(R.string.settings_start_view_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    DisplayModeOption(
+                        label = stringResource(R.string.settings_start_view_full),
+                        subtitle = stringResource(R.string.view_full),
+                        selected = startView == "full",
+                        onClick = { startView = "full"; AppPrefs.setStartView(context, "full") }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    DisplayModeOption(
+                        label = stringResource(R.string.settings_start_view_cards),
+                        subtitle = stringResource(R.string.view_cards),
+                        selected = startView == "cards",
+                        onClick = { startView = "cards"; AppPrefs.setStartView(context, "cards") }
                     )
                 }
             }

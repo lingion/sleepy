@@ -285,6 +285,10 @@
     <string name="settings_display_node_sub">所有课程显示为「第N节」</string>
     <string name="settings_display_time">统一显示时间</string>
     <string name="settings_display_time_sub">所有课程显示为「HH:mm–HH:mm」</string>
+    <string name="settings_start_view">启动默认页</string>
+    <string name="settings_start_view_full">周视图</string>
+    <string name="settings_start_view_cards">网格</string>
+    <string name="settings_start_view_sub">仅影响启动时进入的视图，随时可在课表页顶部切换</string>
     <string name="settings_grid_sub_info">网格卡片副信息</string>
     <string name="settings_grid_sub_room">教室</string>
     <string name="settings_grid_sub_room_sub">课程名下方显示上课地点（无教室则不显示）</string>

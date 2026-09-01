@@ -149,6 +149,11 @@ jobs:
                               if n:
                                   have.add(n)
                       for a in rel.get("assets", []):
+                          # skip source archives: Gitee release page auto-generates them, save quota
+                          aname = a["name"]
+                          if aname.endswith(("-source.zip", "-source.tar.gz", ".source.zip")):
+                              print(f"  - {tag}: skip source archive {aname}")
+                              continue
                           fname = a["name"]
                           if fname in have:
                               print(f"  = {tag}: asset {fname} already present")
