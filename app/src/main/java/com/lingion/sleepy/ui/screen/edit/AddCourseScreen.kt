@@ -99,6 +99,9 @@ private class MeetingBlockDraft(
     var startWeek by mutableStateOf(startWeek)
     var endWeek by mutableStateOf(endWeek)
     var weekType by mutableStateOf(weekType)
+    // issue#9 延伸: NumberField 把超界输入静默夹紧时, 置 true → 编辑器顶红块提示
+    // 用户感知到"我输 100 被改成了 2", 而不是无报错地接受了错值
+    var clamped by mutableStateOf(false)
 }
 
 private data class ValidationIssue(
@@ -787,10 +790,25 @@ private fun MeetingBlockEditor(
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             // 错误态: errorContainer 色块底替代 error 描边 (2026-08-25 色块统一)
-            .background(if (issues.isNotEmpty()) colors.errorContainer else colors.surfaceContainerHigh)
+            // issue#9 延伸: NumberField 被夹紧时 block.clamped=true 也走 errorContainer,
+            // 提示用户"输入超界被改值"
+            .background(if (issues.isNotEmpty() || block.clamped) colors.errorContainer else colors.surfaceContainerHigh)
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
+        // issue#9 延伸: 用户输了超出 maxNode 的数字时显示提示, 并提供去课表管理的快捷入口
+        if (block.clamped) {
+            Text(
+                text = stringResource(
+                    R.string.slot_step_clamped_hint,
+                    block.startNode,
+                    block.startNode + block.step - 1,
+                    maxNode
+                ),
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onErrorContainer
+            )
+        }
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
@@ -831,9 +849,12 @@ private fun MeetingBlockEditor(
                         value = block.startNode,
                         min = 1,
                         max = maxNode,
-                        modifier = Modifier.weight(1f)
-                    , shape = fieldShape, colors = fieldColors) {
-                        block.startNode = it
+                        modifier = Modifier.weight(1f),
+                        shape = fieldShape,
+                        colors = fieldColors,
+                        onClamp = { block.clamped = true }
+                    ) { v ->
+                        block.startNode = v
                         // startNode 上调 → step 上限缩到 (maxNode - startNode + 1), 防止越界
                         val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
                         if (block.step > stepCap) block.step = stepCap
@@ -843,8 +864,11 @@ private fun MeetingBlockEditor(
                         value = block.step,
                         min = 1,
                         max = (maxNode - block.startNode + 1).coerceAtLeast(1),
-                        modifier = Modifier.weight(1f)
-                    , shape = fieldShape, colors = fieldColors) { block.step = it }
+                        modifier = Modifier.weight(1f),
+                        shape = fieldShape,
+                        colors = fieldColors,
+                        onClamp = { block.clamped = true }
+                    ) { v -> block.step = v }
                 }
             }
             MeetingInputMode.ByClock -> {
@@ -892,12 +916,14 @@ private fun MeetingBlockEditor(
                 colors = fieldColors
             ) { block.endWeek = it }
         }
-        // 单双周三态 — 项目统一 SegmentedSwitcher（色块选中，禁描边规则）
+        // 单双周 + 按周次 — 4 态 SegmentedSwitcher
+        // 0=每周 1=单周 2=双周 3=按周次列实际指定的周（导入 type=3 单次实验课时出现）
         SegmentedSwitcher(
             options = listOf(
                 0 to stringResource(R.string.week_every),
                 1 to stringResource(R.string.week_odd),
-                2 to stringResource(R.string.week_even)
+                2 to stringResource(R.string.week_even),
+                3 to stringResource(R.string.week_custom)
             ),
             selected = block.weekType,
             onSelect = { block.weekType = it },
@@ -982,6 +1008,9 @@ private fun NumberField(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape,
     colors: androidx.compose.material3.TextFieldColors,
+    // issue#9 延伸: 输入超界 → 被 coerce 改值时回调, 让父级置 block.clamped=true
+    // 必须放在 onChange 之前, 否则 trailing lambda 会自动绑给 onClamp 而漏 onChange
+    onClamp: (() -> Unit)? = null,
     onChange: (Int) -> Unit
 ) {
     var text by remember { mutableStateOf(value.toString()) }
@@ -1004,7 +1033,9 @@ private fun NumberField(
             } else {
                 val v = txt.toIntOrNull()
                 if (v != null) {
-                    onChange(v.coerceIn(min, max))
+                    val coerced = v.coerceIn(min, max)
+                    if (coerced != v) onClamp?.invoke()
+                    onChange(coerced)
                 }
                 // 非数字字符不回调，但保留 text 让用户继续编辑
             }
