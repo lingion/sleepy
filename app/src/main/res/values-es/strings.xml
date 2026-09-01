@@ -415,6 +415,9 @@
     <string name="about_author">Autor</string>
     <string name="about_author_name">Lingion</string>
     <string name="about_license_body">Sleepy es una aplicación de horario escolar inteligente de código abierto. El código fuente se publica bajo la licencia GNU General Public License v3.0. Cualquiera puede usar, modificar y distribuir este software libremente. Las contribuciones a través de GitHub son bienvenidas.</string>
+    <string name="about_update_check">Buscar actualizaciones automáticamente</string>
+    <string name="about_update_check_detail">Comprueba GitHub Releases al iniciar; aparecerá un aviso en la página Acerca cuando haya una versión nueva</string>
+    <string name="about_update_available">Versión %1$s disponible — toca para ver</string>
     <string name="about_license_title">Declaración de código abierto</string>
     <string name="about_source">Código fuente</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>

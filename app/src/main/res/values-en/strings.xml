@@ -421,6 +421,9 @@
     <string name="about_author">Author</string>
     <string name="about_author_name">Lingion</string>
     <string name="about_license_body">Sleepy is an open-source smart class schedule app. The source code is released under the GNU General Public License v3.0. Anyone is free to use, modify, and distribute this software. Contributions via GitHub are welcome.</string>
+    <string name="about_update_check">Check for updates automatically</string>
+    <string name="about_update_check_detail">Checks GitHub Releases on app start; a banner appears on the About page when a new version is found</string>
+    <string name="about_update_available">Version %1$s is available — tap to view</string>
     <string name="about_license_title">Open Source License</string>
     <string name="about_source">Source Code</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>

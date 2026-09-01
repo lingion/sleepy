@@ -568,6 +568,9 @@
     <string name="about_feedback_no_mail_app">未找到可用的邮件应用，请改用 GitHub Issue</string>
     <string name="about_license_title">开源声明</string>
     <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。</string>
+    <string name="about_update_check">自动检查更新</string>
+    <string name="about_update_check_detail">启动时自动检查 GitHub Releases, 发现新版本会在「关于」页顶部提示</string>
+    <string name="about_update_available">新版 %1$s 可用,点此查看</string>
     <string name="theme_name_default">默认淡紫</string>
     <string name="theme_name_spring">春绿</string>
     <string name="theme_name_ocean">海蓝</string>

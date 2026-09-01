@@ -40,6 +40,7 @@ object AppPrefs {
     const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
     const val KEY_WEEK_TWO_COLUMN_MODE = "week_two_column_mode" // "days"=按天对半分 / "balance"=按课程数动态平衡, issue#8
     const val KEY_WEEK_HIDE_EMPTY_DAYS = "week_hide_empty_days" // bool default false — 周视图隐藏无课日(仅两栏下生效, issue#8)
+    const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled" // bool default true — 启动检查 GitHub releases latest
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -359,5 +360,14 @@ object AppPrefs {
 
     fun setHolidayRanges(ctx: Context, ranges: List<com.lingion.sleepy.util.HolidayRange>) {
         sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
+    }
+
+    // ===== 启动检查更新开关 =====
+
+    fun isUpdateCheckEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_UPDATE_CHECK_ENABLED, true)
+
+    fun setUpdateCheckEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_UPDATE_CHECK_ENABLED, v).apply()
     }
 }
