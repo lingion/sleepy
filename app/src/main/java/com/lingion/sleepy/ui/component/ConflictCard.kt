@@ -217,8 +217,10 @@ fun ConflictClusterCard(
     val colors = SleepyTheme.colors
     val context = LocalContext.current
 
-    // 布局现算(引擎零缓存承诺)——override 变化即重排
-    val laid = ConflictLayoutEngine.layoutCluster(cluster, style, topOverrideId)
+    // 布局现算(引擎零缓存承诺)——override 变化即重排。maxNode 传入引擎:
+    // hidden 计算与下方渲染同一裁剪空间(startNode ∈ 1..maxNode + step 截界),
+    // 否则界外尾部独占节次会让课漏拿标记 → UI 裁剪后零视觉零 tap(不可达课)。
+    val laid = ConflictLayoutEngine.layoutCluster(cluster, style, topOverrideId, maxNode)
 
     // 绘制集: 与原单卡循环同一过滤(startNode ∈ [1, maxNode])——链式跨界的出界课
     // (startNode > maxNode,如 11-13 节课链到 13-14 节)原循环本就跳过,此处同样剔除,

@@ -30,9 +30,9 @@ data class LaidOutCourse(
  *
  * 变体分配: hidden 课按 style 直配(stack+N=2=STACK,stack+N≥3=FOLD 合流,fold/rail 直配),
  * 非 hidden 课(含顶层)一律 NONE。简化裁定: 变体按「簇内是否存在 hidden 课」整体决定,
- * hidden 课统一拿该 style 对应的 variant 值。B 折角仅限完全重叠的语义,由「短课露出集
- * 非空 → 非 hidden → NONE」天然满足(同起不同止时短课必被完全覆盖 → hidden → 标记;
- * 不完全覆盖的露出课 → NONE → 不画折角),无需额外判定。
+ * hidden 课统一拿该 style 对应的 variant 值。同起不同止的短课按完全包含路径判 hidden=true
+ * 拿标记(短课的「长段」在被覆盖语义下仍归零露出,标记保证其可见可达,与设计 §2.3/§9.1
+ * 一致);只有存在独占节次的课(露出集非空)才非 hidden → NONE → 不画标记。
  */
 object ConflictLayoutEngine {
 
@@ -66,11 +66,18 @@ object ConflictLayoutEngine {
      *
      * style ∈ "stack"/"fold"/"rail";stack 在 N≥3 时合流为 FOLD(4dp 边承载不了三层语义,
      * 见设计文档 §3)。
+     *
+     * maxNode(可空,final fix wave Important): UI 渲染把每课区间 clamp 进 [1, maxNode]
+     * (startNode > maxNode 的课整课不画,step 截到不越界)。hidden 必须在同一裁剪空间算,
+     * 否则「界外尾部节次独占」的课(如 maxNode=12 时 X=11-13 被 Y=10-12 压住,仅节 13 界外)
+     * 会被判非 hidden 拿不到标记,UI 裁剪后却零视觉零 tap——不可达课。非 null 时先 clamp
+     * 再算露出(全被 clamp 出区间 → 露出集空 → hidden);null 时行为与不裁剪完全一致。
      */
     fun layoutCluster(
         cluster: ConflictCluster,
         style: String,
-        topOverrideId: Long? = null
+        topOverrideId: Long? = null,
+        maxNode: Int? = null
     ): List<LaidOutCourse> {
         val ordered = primaryOrder(cluster.courses)
         val n = ordered.size
@@ -81,6 +88,15 @@ object ConflictLayoutEngine {
             else -> ordered.filter { it.id == topOverrideId } + ordered.filter { it.id != topOverrideId }
         }
 
+        // 露出计算区间: maxNode 非 null 时先 clamp 进 [1, maxNode](与 UI 裁剪空间一致);
+        // clamp 后为空(整课出界)→ 空区间,露出集恒空 → hidden(UI 本就不渲染该课)。
+        fun nodesOf(course: CourseEntity): IntRange {
+            if (maxNode == null) return course.startNode until course.startNode + course.step
+            val start = course.startNode.coerceIn(1, maxNode)
+            val endIncl = (course.startNode + course.step - 1).coerceAtMost(maxNode)
+            return if (start > endIncl) IntRange.EMPTY else start..endIncl
+        }
+
         return zOrdered.mapIndexed { rank, course ->
             val hidden = if (rank == 0) {
                 false // 顶层课永不为 hidden
@@ -88,9 +104,9 @@ object ConflictLayoutEngine {
                 // 本课区间减去所有更高层(zRank 更小)课的覆盖并集 → 露出集;
                 // 区间内所有节点都已被覆盖 → 零露出
                 val covered = zOrdered.take(rank)
-                    .flatMap { it.startNode until it.startNode + it.step }
+                    .flatMap { nodesOf(it) }
                     .toSet()
-                (course.startNode until course.startNode + course.step).all { it in covered }
+                nodesOf(course).all { it in covered }
             }
             LaidOutCourse(
                 course = course,

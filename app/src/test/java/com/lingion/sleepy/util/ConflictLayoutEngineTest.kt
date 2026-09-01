@@ -171,12 +171,14 @@ class ConflictLayoutEngineTest {
     private fun layoutById(
         courses: List<CourseEntity>,
         style: String,
-        topOverrideId: Long? = null
+        topOverrideId: Long? = null,
+        maxNode: Int? = null
     ): Map<Long, LaidOutCourse> =
         ConflictLayoutEngine.layoutCluster(
             ConflictCluster(day = courses.first().day, courses = courses),
             style,
-            topOverrideId
+            topOverrideId,
+            maxNode
         ).associateBy { it.course.id }
 
     @Test
@@ -331,6 +333,47 @@ class ConflictLayoutEngineTest {
         style == "rail" -> ConflictVariant.RAIL
         n >= 3 -> ConflictVariant.FOLD
         else -> ConflictVariant.STACK
+    }
+
+    // ============================ layoutCluster maxNode 裁剪 (final fix wave) ============================
+    //
+    // Important 修复: hidden 必须与 UI 的 maxNode 裁剪空间一致。UI 渲染前把每课区间
+    // clamp 进 [1, maxNode](startNode ∈ 1..maxNode,step 截到不越界),引擎若在未裁剪
+    // 节点空间算露出,会出现「引擎判非 hidden(界外节 13 独占)但 UI 裁剪后零视觉零
+    // tap 无标记」的不可达课(复现 issue#10 形态)。maxNode=null 时行为与不裁剪完全一致。
+
+    @Test
+    fun layoutCluster_maxNode_clamps_exposure_space_out_of_grid_tail_hidden() {
+        // 复现场景: maxNode=12 的表,课 Y=10-12(step3)、课 X=11-13(step3)。
+        // 主课判定序 step 降 → startNode 升 → Y 顶层(zRank0)。
+        // 未裁剪空间: X 露出集 = {11,12,13} − {10,11,12} = {13} 非空 → 旧逻辑 hidden=false(缺标记)。
+        // 裁剪空间 [1,12]: X 裁为 11-12,X 露出集 = {11,12} − {10,11,12} = ∅ → hidden=true,拿标记。
+        val y = course(id = 1, day = 1, startNode = 10, step = 3)
+        val x = course(id = 2, day = 1, startNode = 11, step = 3)
+        val byId = layoutById(listOf(y, x), "rail", maxNode = 12)
+        assertEquals(0, byId.getValue(1L).zRank)
+        assertEquals(false, byId.getValue(1L).hidden)
+        assertEquals(true, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.RAIL, byId.getValue(2L).variant)
+    }
+
+    @Test
+    fun layoutCluster_maxNode_mixed_groups_in_one_cluster() {
+        // spec §7「同簇多组混合」: 同天一簇内两个完全同段组——1-2 与 1-2 与 3-4 与 3-4。
+        // 主课判定序: step 同 → startNode 升 → id 升 → 顶层=id1(1-2),z 序 1,2,3,4。
+        //   id=2 露出集 = {1,2} − {1,2} = ∅ → hidden
+        //   id=3(3-4) 露出集 = {3,4} − {1,2} = {3,4} 非空 → 非 hidden(第二组顶层)
+        //   id=4 露出集 = {3,4} − ({1,2} ∪ {3,4}) = ∅ → hidden
+        // variant: stack 样式但簇 N=4 ≥3 → 按既有合流规则 hidden 课一律 FOLD(spec §3)
+        val a1 = course(id = 1, day = 1, startNode = 1, step = 2)
+        val a2 = course(id = 2, day = 1, startNode = 1, step = 2)
+        val b1 = course(id = 3, day = 1, startNode = 3, step = 2)
+        val b2 = course(id = 4, day = 1, startNode = 3, step = 2)
+        val byId = layoutById(listOf(a1, a2, b1, b2), "stack")
+        assertEquals(LaidOutCourse(a1, 0, false, ConflictVariant.NONE), byId.getValue(1L))
+        assertEquals(LaidOutCourse(a2, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
+        assertEquals(LaidOutCourse(b1, 2, false, ConflictVariant.NONE), byId.getValue(3L))
+        assertEquals(LaidOutCourse(b2, 3, true, ConflictVariant.FOLD), byId.getValue(4L))
     }
 
     // ============================ layoutFor (Task 4) ============================
