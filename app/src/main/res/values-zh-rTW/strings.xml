@@ -278,6 +278,13 @@
     <string name="settings_week_hide_empty_sub">週視圖不顯示沒有課程的星期，剩餘天數在兩欄下左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）</string>
     <string name="settings_show_date">課表頁表格日期</string>
     <string name="settings_show_date_sub">在網格檢視每列表頭顯示具體日期（月/日）；小工具的列頭日期也隨此開關</string>
+    <string name="settings_conflict_style">衝突課程樣式</string>
+    <string name="settings_conflict_stack">疊層偏移</string>
+    <string name="settings_conflict_stack_sub">衝突課程層疊錯位，下層課程露出邊角</string>
+    <string name="settings_conflict_fold">摺角揭示</string>
+    <string name="settings_conflict_fold_sub">卡片右上摺角，提示該格還有下層課程</string>
+    <string name="settings_conflict_rail">側邊豎軌</string>
+    <string name="settings_conflict_rail_sub">右側色軌並排展示衝突課程，課名豎排</string>
     <string name="settings_visible_days">顯示星期</string>
     <string name="settings_visible_days_sub">取消勾選的星期將在課表頁和小工具中隱藏</string>
 

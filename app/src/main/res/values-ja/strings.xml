@@ -278,6 +278,13 @@
     <string name="settings_week_hide_empty_sub">授業がない曜日を週ビューから除外。2列表示時は残りを左右に均等分割（例: 4日=左2右2、6日=左3右3）</string>
     <string name="settings_show_date">時間割テーブルの日付</string>
     <string name="settings_show_date_sub">グリッドビューの各列ヘッダーに日付（M/D）を表示。ウィジェットの列ヘッダーも連動します</string>
+    <string name="settings_conflict_style">コマの重なり表示</string>
+    <string name="settings_conflict_stack">重ねてずらして表示</string>
+    <string name="settings_conflict_stack_sub">コマを重ねてずらし、下のコマの端を見せる</string>
+    <string name="settings_conflict_fold">折り返しマーク</string>
+    <string name="settings_conflict_fold_sub">カード右上に折り返しを付け、下にコマがあることを示す</string>
+    <string name="settings_conflict_rail">サイドレール</string>
+    <string name="settings_conflict_rail_sub">右端のカラーレールに並べ、授業名は縦書きで表示</string>
     <string name="settings_visible_days">表示曜日</string>
     <string name="settings_visible_days_sub">チェックを外した曜日は時間割ページとウィジェットで非表示になります</string>
 

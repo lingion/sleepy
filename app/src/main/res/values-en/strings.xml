@@ -284,6 +284,13 @@
     <string name="settings_week_hide_empty_sub">Days without courses are removed from the week view; with two columns the remaining days split evenly (e.g. 4 left = 2+2, 6 left = 3+3)</string>
     <string name="settings_show_date">Schedule table dates</string>
     <string name="settings_show_date_sub">Show the date (M/D) next to each column header in the grid view; widget column headers follow this too</string>
+    <string name="settings_conflict_style">Conflicting course style</string>
+    <string name="settings_conflict_stack">Stacked offset</string>
+    <string name="settings_conflict_stack_sub">Overlapping courses with the lower one peeking out at the edge</string>
+    <string name="settings_conflict_fold">Folded corner</string>
+    <string name="settings_conflict_fold_sub">A folded corner marks cards that hide more courses beneath</string>
+    <string name="settings_conflict_rail">Side rail</string>
+    <string name="settings_conflict_rail_sub">A color rail on the right lists conflicting courses with vertical names</string>
     <string name="settings_visible_days">Visible Days</string>
     <string name="settings_visible_days_sub">Unchecked days are hidden on the schedule page and in widgets</string>
 

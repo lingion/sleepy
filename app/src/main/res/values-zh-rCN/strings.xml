@@ -306,6 +306,13 @@
     <string name="settings_week_hide_empty_sub">周视图不显示没有课程的星期，剩余天数在两栏下左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）</string>
     <string name="settings_show_date">课表页表格日期</string>
     <string name="settings_show_date_sub">在网格视图每列表头显示具体日期（月/日）；小组件的列头日期也随此开关</string>
+    <string name="settings_conflict_style">冲突课程样式</string>
+    <string name="settings_conflict_stack">叠层偏移</string>
+    <string name="settings_conflict_stack_sub">冲突课程层叠错位，下层课程露出边角</string>
+    <string name="settings_conflict_fold">折角揭示</string>
+    <string name="settings_conflict_fold_sub">卡片右上折角，提示该格还有下层课程</string>
+    <string name="settings_conflict_rail">侧边竖轨</string>
+    <string name="settings_conflict_rail_sub">右侧色轨并排展示冲突课程，课名竖排</string>
     <string name="settings_visible_days">显示星期</string>
     <string name="settings_visible_days_sub">取消勾选的星期将在课表页和小组件中隐藏</string>
     <string name="settings_vert_punct">小组件竖排标点优化</string>

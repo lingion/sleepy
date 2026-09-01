@@ -278,6 +278,13 @@
     <string name="settings_week_hide_empty_sub">Los días sin cursos se quitan de la vista semanal; con dos columnas los restantes se reparten en partes iguales (p. ej. 4 días = 2+2, 6 días = 3+3)</string>
     <string name="settings_show_date">Fechas en la tabla del horario</string>
     <string name="settings_show_date_sub">Muestra la fecha (D/M) junto a cada encabezado de columna en la vista de cuadrícula; los encabezados de los widgets también la siguen</string>
+    <string name="settings_conflict_style">Estilo de clases en conflicto</string>
+    <string name="settings_conflict_stack">Apilado con desplazamiento</string>
+    <string name="settings_conflict_stack_sub">Las clases se apilan desplazadas y la inferior asoma por el borde</string>
+    <string name="settings_conflict_fold">Esquina doblada</string>
+    <string name="settings_conflict_fold_sub">Una esquina doblada en la tarjeta indica que hay más clases debajo</string>
+    <string name="settings_conflict_rail">Raíl lateral</string>
+    <string name="settings_conflict_rail_sub">Una barra de color a la derecha lista las clases con nombre vertical</string>
     <string name="settings_visible_days">Días visibles</string>
     <string name="settings_visible_days_sub">Los días desmarcados se ocultan en la página del horario y en los widgets</string>
 
