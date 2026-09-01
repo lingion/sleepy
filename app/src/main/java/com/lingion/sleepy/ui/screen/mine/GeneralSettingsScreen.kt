@@ -86,6 +86,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
     var weekHideEmptyDays by remember { mutableStateOf(AppPrefs.isWeekHideEmptyDays(context)) }
+    var conflictStyle by remember { mutableStateOf(AppPrefs.getConflictStyle(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -267,6 +268,32 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         subtitle = stringResource(R.string.settings_show_date_sub),
                         checked = showDate,
                         onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
+                    )
+                }
+            }
+
+            // 冲突课程样式: 叠层 / 折角 / 竖轨（仅 App 内网格视图, 不涉及小组件, 无需 refreshWidgets）
+            item {
+                SettingsCard(title = stringResource(R.string.settings_conflict_style), expanded = "conflictStyle" in expandedSections, onToggle = { toggleSection("conflictStyle") }) {
+                    DisplayModeOption(
+                        label = stringResource(R.string.settings_conflict_stack),
+                        subtitle = stringResource(R.string.settings_conflict_stack_sub),
+                        selected = conflictStyle == "stack",
+                        onClick = { conflictStyle = "stack"; AppPrefs.setConflictStyle(context, "stack") }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    DisplayModeOption(
+                        label = stringResource(R.string.settings_conflict_fold),
+                        subtitle = stringResource(R.string.settings_conflict_fold_sub),
+                        selected = conflictStyle == "fold",
+                        onClick = { conflictStyle = "fold"; AppPrefs.setConflictStyle(context, "fold") }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    DisplayModeOption(
+                        label = stringResource(R.string.settings_conflict_rail),
+                        subtitle = stringResource(R.string.settings_conflict_rail_sub),
+                        selected = conflictStyle == "rail",
+                        onClick = { conflictStyle = "rail"; AppPrefs.setConflictStyle(context, "rail") }
                     )
                 }
             }
