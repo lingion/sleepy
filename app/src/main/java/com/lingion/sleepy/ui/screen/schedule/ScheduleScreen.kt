@@ -76,9 +76,9 @@ fun ScheduleScreen(
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    var viewMode by remember { mutableStateOf(ViewMode.Full) }
-    var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
     val context = androidx.compose.ui.platform.LocalContext.current
+    var viewMode by remember { mutableStateOf(if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full) }
+    var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
     val displayMode = remember { AppPrefs.getDisplayMode(context) }
     val showDate = remember { AppPrefs.isShowDate(context) }
     val visibleDays = remember { AppPrefs.getVisibleDays(context) }
