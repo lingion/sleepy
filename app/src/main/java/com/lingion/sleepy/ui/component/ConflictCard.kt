@@ -382,7 +382,13 @@ fun ConflictClusterCard(
                         ConflictVariant.RAIL -> {
                             // RAIL 竖轨: N=2 单轨 6dp;N≥3 加宽 14dp 纵切 N-1 段,每段=对应
                             // hidden 课课色+竖排课名。每段命中区=段视觉区+12dp 内延(点击=该段课置顶)。
+                            // 整轨只渲染一次(评审遗留 Minor①): 每个 hidden 课的 Mark 都会进入本分支,
+                            // 整条轨(单轨或全部段)只挂在首个 hidden 的 Mark 上渲染,其余 Mark 跳过——
+                            // STACK/FOLD 每 Mark 各画各的标记,不在此列。
                             val hiddenCourses = drawList.filter { it.hidden }
+                            if (hiddenCourses.firstOrNull()?.course?.id != item.hiddenCourseId) {
+                                return@forEach
+                            }
                             val multi = hiddenCourses.size >= 2 // N=hidden+顶层≥3 → 多段轨
                             val railW = (if (multi) MARK_RAIL_W_MULTI_DP else MARK_RAIL_W_DP).dp
                             if (!multi) {
