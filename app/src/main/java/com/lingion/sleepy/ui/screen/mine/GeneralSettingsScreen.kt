@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
@@ -19,6 +20,8 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Slider
+import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -49,6 +52,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlin.math.roundToInt
 
 /**
  * 通用设置页(决策 D1 L1 ⑤): 课程显示 / 小组件 / 语言 三组。
@@ -77,6 +81,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     }
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
+    var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -162,6 +167,35 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         selected = gridSubInfo == "none",
                         onClick = { gridSubInfo = "none"; AppPrefs.setGridSubInfo(context, "none"); refreshWidgets() }
                     )
+                }
+            }
+
+            // 网格卡片大小(issue#8): 70%~130% 整体缩放 — 字号/胶囊行高/间距/圆角联动
+            item {
+                SettingsCard(title = stringResource(R.string.settings_grid_scale), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
+                    Text(text = stringResource(R.string.settings_grid_scale_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "${(gridScale * 100).roundToInt()}%",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = colors.primary,
+                            modifier = Modifier.widthIn(min = 52.dp)
+                        )
+                        Slider(
+                            value = gridScale,
+                            onValueChange = { gridScale = it },
+                            onValueChangeFinished = {
+                                AppPrefs.setGridScale(context, gridScale)
+                            },
+                            valueRange = 0.7f..1.3f,
+                            steps = 11,
+                            colors = SliderDefaults.colors(
+                                thumbColor = colors.primary,
+                                activeTrackColor = colors.primary,
+                                inactiveTrackColor = colors.surfaceVariant
+                            )
+                        )
+                    }
                 }
             }
 

@@ -35,6 +35,7 @@ object AppPrefs {
     const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
     const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
+    const val KEY_GRID_SCALE = "grid_scale" // float 0.7~1.3 default 1.0 — 网格课表整体缩放(字号/行高/间距/圆角联动, issue#8)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -263,6 +264,16 @@ object AppPrefs {
 
     fun setWidgetSeparator(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WIDGET_SEPARATOR, v).apply()
+    }
+
+    // ===== 网格课表整体缩放(issue#8) — 0.7~1.3, 默认 1.0 =====
+    // 联动项: 胶囊行高/字号/间距/圆角/内边距; 只影响 App 内网格课表(Cards), 不影响小组件与列表视图
+
+    fun getGridScale(ctx: Context): Float =
+        sp(ctx).getFloat(KEY_GRID_SCALE, 1.0f).coerceIn(0.7f, 1.3f)
+
+    fun setGridScale(ctx: Context, v: Float) {
+        sp(ctx).edit().putFloat(KEY_GRID_SCALE, v.coerceIn(0.7f, 1.3f)).apply()
     }
 
     // ===== 节假日灰显 =====

@@ -269,6 +269,8 @@
     <string name="settings_grid_sub_teacher_sub">Show teacher under course name (hidden if empty)</string>
     <string name="settings_grid_sub_none">None</string>
     <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
+    <string name="settings_grid_scale">Grid card size</string>
+    <string name="settings_grid_scale_sub">Scales the whole timetable grid: font, card height and spacing together (70%–130%). Smaller fits more periods on one screen.</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
     <string name="settings_visible_days">Visible Days</string>

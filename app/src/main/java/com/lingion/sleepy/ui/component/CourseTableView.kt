@@ -100,19 +100,26 @@ fun CardsGridView(
     val sortedDays = visibleDays.sorted()
     val dayCount = sortedDays.size
 
-    // 布局常量（全 dp）
-    val headH = 52.dp
-    val timeW = 68.dp
-    val slotH = 52.dp
-    val gapH = 4.dp
-    val gapW = 5.dp
-    val rowH = slotH + gapH   // 56dp
+    // issue#8 网格整体缩放: 0.7~1.3, 字号/行高/间距/圆角/内边距等比联动
+    // (12节连堂课表缩到 0.7 可一屏放下; 只影响本 Cards 视图, 小组件与列表视图不受影响)
+    val scale = AppPrefs.getGridScale(androidx.compose.ui.platform.LocalContext.current)
+    val d = { v: Float -> (v * scale).dp }
+
+    // 布局常量（全 dp, 乘 scale）
+    val headH = d(52f)
+    val timeW = d(68f)
+    val slotH = d(52f)
+    val gapH = d(4f)
+    val gapW = d(5f)
+    val rowH = slotH + gapH
+
+    val gridBgShape = SleepyTheme.shapes.large
 
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(colors.surfaceContainerHigh, SleepyTheme.shapes.large)
-            .padding(8.dp)
+            .background(colors.surfaceContainerHigh, gridBgShape)
+            .padding(d(8f))
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 算出每列宽度 (dp)
@@ -136,8 +143,8 @@ fun CardsGridView(
                     for (day in sortedDays) {
                         val dateStr = if (showDate && startDate.isNotBlank()) {
                             try {
-                                val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
-                                DateUtils.shortDate(d)
+                                val ds = DateUtils.dateOfWeek(startDate, currentWeek, day)
+                                DateUtils.shortDate(ds)
                             } catch (_: Exception) { null }
                         } else null
                         DayHeadCell(
@@ -146,6 +153,7 @@ fun CardsGridView(
                             isGrey = day in greyDays,
                             courseCount = courses.count { it.day == day },
                             dateStr = dateStr,
+                            scale = scale,
                             modifier = Modifier.width(colW).fillMaxHeight()
                         )
                     }
@@ -167,6 +175,7 @@ fun CardsGridView(
                         ) {
                             SingleTimeHeadCell(
                                 slot = slot,
+                                scale = scale,
                                 modifier = Modifier.width(timeW).fillMaxHeight()
                             )
                             // 透明占位：保证行宽和表头一致
@@ -194,7 +203,8 @@ fun CardsGridView(
                                 .offset(x = cardX, y = cardY)
                                 .width(colW)
                                 .height(cardH),
-                            isGrey = course.day in greyDays
+                            isGrey = course.day in greyDays,
+                            scale = scale
                         )
                     }
                 }
@@ -204,11 +214,12 @@ fun CardsGridView(
 }
 
 @Composable
-private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
+private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
-    val shape = SleepyTheme.shapes.medium
+    val sd = { v: Float -> (v * scale).dp }
+    val shape = RoundedCornerShape(sd(12f))
     Box(
-        modifier = modifier.padding(2.dp),
+        modifier = modifier.padding(sd(2f)),
         contentAlignment = Alignment.Center
     ) {
         Box(
@@ -217,20 +228,20 @@ private fun SingleTimeHeadCell(slot: TimeSlot, modifier: Modifier = Modifier) {
                 .fillMaxHeight()
                 .clip(shape)
                 .background(colors.surfaceContainerLow)
-                .padding(4.dp),
+                .padding(sd(4f)),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(
                     text = stringResource(R.string.period_format_node, slot.label),
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold),
+                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp),
                     color = colors.onSurface,
                     maxLines = 1
                 )
-                Spacer(modifier = Modifier.height(1.dp))
+                Spacer(modifier = Modifier.height(sd(1f)))
                 Text(
                     text = slot.timeString,
-                    style = SleepyTextStyle.micro(),
+                    style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
                     color = colors.onSurfaceVariant,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis
@@ -247,7 +258,8 @@ private fun CourseOverlayCard(
     course: CourseEntity,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    isGrey: Boolean = false
+    isGrey: Boolean = false,
+    scale: Float = 1f
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
@@ -261,7 +273,8 @@ private fun CourseOverlayCard(
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)
-    val shape = SleepyTheme.shapes.medium
+    val shape = RoundedCornerShape((12 * scale).dp)
+    val sd = { v: Float -> (v * scale).dp }
     // 副信息（教室/教师/无）— 左栏 SingleTimeHeadCell 已有节次+时间，卡片 y 位置本身编码节次，
     // 故卡内不再显示节次/时间，改由 grid_sub_info 设置决定
     val subInfo = AppPrefs.getGridSubInfo(context)
@@ -281,11 +294,11 @@ private fun CourseOverlayCard(
 
     Box(
         modifier = modifier
-            .padding(2.dp)
+            .padding(sd(2f))
             .clip(shape)
             .background(effectiveBg)
             .noRippleClickable(onClick)
-            .padding(4.dp)
+            .padding(sd(4f))
     ) {
         if (subText.isBlank()) {
             // 无副信息: 课程名整体居中(原行为)
@@ -293,8 +306,8 @@ private fun CourseOverlayCard(
                 text = course.courseName,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.SemiBold,
-                    fontSize = 10.sp,
-                    lineHeight = 13.sp,
+                    fontSize = (10 * scale).sp,
+                    lineHeight = (13 * scale).sp,
                     textDecoration = textDecoration
                 ),
                 color = effectiveFg,
@@ -315,8 +328,8 @@ private fun CourseOverlayCard(
                         text = course.courseName,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.SemiBold,
-                            fontSize = 10.sp,
-                            lineHeight = 13.sp,
+                            fontSize = (10 * scale).sp,
+                            lineHeight = (13 * scale).sp,
                             textDecoration = textDecoration
                         ),
                         color = effectiveFg,
@@ -326,7 +339,11 @@ private fun CourseOverlayCard(
                 }
                 Text(
                     text = subText,
-                    style = SleepyTextStyle.micro().copy(textDecoration = textDecoration),
+                    style = SleepyTextStyle.micro().copy(
+                        fontSize = (9 * scale).sp,
+                        lineHeight = (11 * scale).sp,
+                        textDecoration = textDecoration
+                    ),
                     color = effectiveFg.copy(alpha = SleepyTheme.Alpha.highContent),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis,
@@ -338,41 +355,46 @@ private fun CourseOverlayCard(
 }
 
 @Composable
-private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.localizedDay(day, androidx.compose.ui.platform.LocalContext.current), modifier: Modifier = Modifier) {
+private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.localizedDay(day, androidx.compose.ui.platform.LocalContext.current), modifier: Modifier = Modifier, scale: Float = 1f) {
     val colors = SleepyTheme.colors
+    val sd = { v: Float -> (v * scale).dp }
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else if (isToday) colors.onPrimaryContainer else colors.onSurface
     val subFg = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else if (isToday) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant
 
     Box(
         modifier = modifier
-            .height(if (dateStr != null) 56.dp else 52.dp)
+            .height(if (dateStr != null) sd(56f) else sd(52f))
             .clip(SleepyTheme.shapes.large)
             .background(bg)
-            .padding(vertical = 6.dp),
+            .padding(vertical = sd(6f)),
         contentAlignment = Alignment.Center
     ) {
         Column(
             horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.spacedBy(1.dp)
+            verticalArrangement = Arrangement.spacedBy(sd(1f))
         ) {
             Text(
                 text = dayLabel,
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                style = MaterialTheme.typography.labelLarge.copy(
+                    fontWeight = FontWeight.SemiBold,
+                    fontSize = (14 * scale).sp,
+                    lineHeight = (20 * scale).sp
+                ),
                 color = fg,
                 maxLines = 1
             )
             if (dateStr != null) {
                 Text(
                     text = dateStr,
-                    style = SleepyTextStyle.micro().copy(fontSize = 10.sp),
+                    style = SleepyTextStyle.micro().copy(fontSize = (10 * scale).sp, lineHeight = (11 * scale).sp),
                     color = subFg,
                     maxLines = 1
                 )
             } else {
                 Text(
                     text = if (courseCount == 0) stringResource(R.string.no_course) else stringResource(R.string.course_count_format, courseCount),
-                    style = SleepyTextStyle.micro(),
+                    style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
                     color = subFg,
                     maxLines = 1
                 )

@@ -263,6 +263,8 @@
     <string name="settings_grid_sub_teacher_sub">Mostrar profesor bajo el nombre (oculto si está vacío)</string>
     <string name="settings_grid_sub_none">Ninguno</string>
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
+    <string name="settings_grid_scale">Tamaño de tarjeta de cuadrícula</string>
+    <string name="settings_grid_scale_sub">Escala toda la cuadrícula: fuente, altura de tarjeta y espaciado juntos (70%–130%). Más pequeño cabe más clases en pantalla.</string>
     <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>
     <string name="settings_visible_days">Días visibles</string>
