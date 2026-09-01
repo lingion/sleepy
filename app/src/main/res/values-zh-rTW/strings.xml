@@ -274,7 +274,7 @@
     <string name="settings_week_two_column_days_sub">前半週在左欄、後半週在右欄，星期位置固定不變</string>
     <string name="settings_week_two_column_balance">按課程數平衡</string>
     <string name="settings_week_two_column_balance_sub">星期放進課較少的一欄，兩欄高度接近；星期位置隨課表變化</string>
-    <string name="settings_week_hide_empty">隱藏無課日</string>
+    <string name="settings_week_hide_empty">週視圖隱藏無課日</string>
     <string name="settings_week_hide_empty_sub">週視圖不顯示沒有課程的星期，剩餘天數左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）；僅兩欄顯示時生效</string>
     <string name="settings_show_date">課表顯示日期</string>
     <string name="settings_show_date_sub">在每列表頭顯示具體日期（月/日）</string>

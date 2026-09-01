@@ -274,7 +274,7 @@
     <string name="settings_week_two_column_days_sub">Primera mitad de la semana a la izquierda, segunda mitad a la derecha — los días mantienen su posición</string>
     <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
     <string name="settings_week_two_column_balance_sub">Cada día va a la columna con menos cursos, manteniendo ambas partes parejas — la posición varía según el horario</string>
-    <string name="settings_week_hide_empty">Ocultar días sin cursos</string>
+    <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
     <string name="settings_week_hide_empty_sub">Los días sin cursos se quitan de la vista semanal y los restantes se reparten en partes iguales (p. ej. 4 días = 2+2, 6 días = 3+3); solo con dos columnas</string>
     <string name="settings_show_date">Mostrar fechas en el horario</string>
     <string name="settings_show_date_sub">Mostrar fecha específica (M/D) en cada encabezado</string>

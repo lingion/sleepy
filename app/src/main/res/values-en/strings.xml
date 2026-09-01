@@ -280,7 +280,7 @@
     <string name="settings_week_two_column_days_sub">First half of the week on the left, second half on the right — days stay in a fixed position</string>
     <string name="settings_week_two_column_balance">Balance by course count</string>
     <string name="settings_week_two_column_balance_sub">Each day goes to the shorter column, keeping both sides even — day positions vary with your schedule</string>
-    <string name="settings_week_hide_empty">Hide days with no courses</string>
+    <string name="settings_week_hide_empty">Hide empty days in week view</string>
     <string name="settings_week_hide_empty_sub">Days without courses are removed from the week view and the remaining days split evenly (e.g. 4 left = 2+2, 6 left = 3+3); only applies with two columns</string>
     <string name="settings_show_date">Show dates on schedule</string>
     <string name="settings_show_date_sub">Display specific date (M/D) in each column header</string>
