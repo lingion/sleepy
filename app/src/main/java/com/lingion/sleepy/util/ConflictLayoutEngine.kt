@@ -85,28 +85,42 @@ object ConflictLayoutEngine {
         val ordered = primaryOrder(cluster.courses)
         val n = ordered.size
 
-        // v7.2 链式默认态: 有链组(多课组)且无 override 时,链组整组置前(组内按
-        // startNode 升序拼条),其余课(重叠者/单课组)按主课判定序垫后。
-        // 用户实测缺陷: 原默认 z 序按 step 降把重叠长课排最前,链组被遮——
-        // 视觉呈现为「长课和尾部露出的短课拼一起」,分组形同虚设。
-        // 有 override 时维持单课置顶语义(点击链组课 = 组代表置顶,链组自然随代表前置)。
+        // v7.2/v7.3 链式分层: 分组决定 z 序——
+        //   默认态(无 override): 链组(多课组)整组置前(组内 startNode 升序拼条),
+        //     其余课(重叠者/单课组)按主课判定序垫后。
+        //     用户实测缺陷修复: 原默认 z 序按 step 降把重叠长课排最前,链组被遮。
+        //   override 命中(v7.3): 命中链组任一成员 → 该链组整组前置(拼接序保持),
+        //     其余课垫后——【组是一个整体切换单元】,组内课不能单独置顶
+        //     (否则组代表置顶、其他成员留底层 = 用户看到的"4-6 永远切不上来")。
+        //   override 命中单课组/非链成员: 该课置顶,其余按序垫后(经典单课语义)。
         val chainGroupsOfCluster = chainGroups(cluster.courses)
+        val groupOfId: Map<Long, List<CourseEntity>> =
+            chainGroupsOfCluster.flatMap { g -> g.map { it.id to g } }.toMap()
         val multiGroupIds: Set<Long> = chainGroupsOfCluster
             .filter { it.size >= 2 }
             .flatMap { g -> g.map { it.id } }
             .toSet()
+        val overrideGroup = topOverrideId?.let { groupOfId[it] }
         val zOrdered = when {
+            topOverrideId != null && overrideGroup != null && overrideGroup.size >= 2 ->
+                overrideGroup.sortedBy { it.startNode } +
+                    ordered.filter { it.id !in overrideGroup.map { c -> c.id }.toSet() }
             topOverrideId != null ->
                 ordered.filter { it.id == topOverrideId } + ordered.filter { it.id != topOverrideId }
             multiGroupIds.isNotEmpty() ->
-                // 链组置前: 组内按 startNode 升序(拼接条自然序);其余课垫后按主课判定序
                 chainGroupsOfCluster.filter { it.size >= 2 }
                     .flatMap { g -> g.sortedBy { it.startNode } } +
                     ordered.filter { it.id !in multiGroupIds }
             else -> ordered
         }
-        // 链前置标记: 无 override 且该课属于多课组(渲染层据此全尺寸拼条)
-        val chainFrontActive = topOverrideId == null && multiGroupIds.isNotEmpty()
+        // 链前置标记: 当前置顶单元是链组(默认态或 override 命中链组)时,组员全部标 chainFront
+        val frontGroupIds: Set<Long>? = when {
+            topOverrideId != null && overrideGroup != null && overrideGroup.size >= 2 ->
+                overrideGroup.map { it.id }.toSet()
+            topOverrideId == null && multiGroupIds.isNotEmpty() -> multiGroupIds
+            else -> null
+        }
+        val chainFrontActive = frontGroupIds != null
 
         // 露出计算区间: maxNode 非 null 时先 clamp 进 [1, maxNode](与 UI 裁剪空间一致);
         // clamp 后为空(整课出界)→ 空区间,露出集恒空 → hidden(UI 本就不渲染该课)。
@@ -143,7 +157,7 @@ object ConflictLayoutEngine {
                     sameStartWithAbove(rank, zOrdered, ::nodesOf),
                     chainMode = chainGroupsOfCluster.any { it.size >= 2 } || multiGroupIds.isNotEmpty()
                 ),
-                chainFront = chainFrontActive && course.id in multiGroupIds
+                chainFront = chainFrontActive && frontGroupIds.orEmpty().contains(course.id)
             )
         }
     }
