@@ -796,4 +796,48 @@ class ConflictLayoutEngineTest {
         assertTrue(ids.contains(setOf(1L, 2L)))
         assertTrue(ids.contains(setOf(3L)))
     }
+
+    // ==================== v7.3 用户实测缺陷: 点击链组成员必须整组前置 ====================
+
+    @Test
+    fun chainOverride_member_toggles_whole_group_front() {
+        // 用户场景: 默认态链组 [1-3,4-6] 已在前。点击 4-6(组内第二课)→
+        // 整组再次前置且保持拼接序(1-3 z0, 4-6 z1), 1-4 垫后全遮 hidden。
+        // v7.2 缺陷: override=组代表(1-3) → 只 1-3 提顶,4-6 留在 z2 — 等于没切。
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+        val byId = layoutById(listOf(head, tail, big), "stack", topOverrideId = 2L)
+        assertEquals(0, byId.getValue(1L).zRank)      // 组内拼接序保持
+        assertEquals(1, byId.getValue(2L).zRank)      // 4-6 跟组一起前置!
+        assertEquals(2, byId.getValue(3L).zRank)      // 1-4 垫后
+        assertEquals(true, byId.getValue(3L).hidden)  // 1-4 被 1..6 全覆盖
+        assertEquals(false, byId.getValue(2L).hidden)
+        assertEquals(true, byId.getValue(1L).chainFront)
+        assertEquals(true, byId.getValue(2L).chainFront)
+        assertEquals(false, byId.getValue(3L).chainFront)
+    }
+
+    @Test
+    fun chainOverride_flips_between_group_and_singleton_repeatedly() {
+        // 多次往返: 点 1-4(单课组)→ 1-4 前;再点 4-6(链组成员)→ 链组整体回来。
+        // 两次点击后链组必须完整前置(不漂移、不丢 4-6)。
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+
+        // 第一次: 点单课组 1-4
+        val flip1 = layoutById(listOf(head, tail, big), "stack", topOverrideId = 3L)
+        assertEquals(0, flip1.getValue(3L).zRank)
+        assertEquals(true, flip1.getValue(1L).hidden)  // 1-3 被 1-4 全遮
+        assertEquals(false, flip1.getValue(2L).hidden) // 4-6 露 5-6
+
+        // 第二次: 点链组成员 4-6 → 整组回前
+        val flip2 = layoutById(listOf(head, tail, big), "stack", topOverrideId = 2L)
+        assertEquals(0, flip2.getValue(1L).zRank)
+        assertEquals(1, flip2.getValue(2L).zRank)
+        assertEquals(2, flip2.getValue(3L).zRank)
+        assertEquals(true, flip2.getValue(3L).hidden)
+        assertEquals(true, flip2.getValue(2L).chainFront)
+    }
 }
