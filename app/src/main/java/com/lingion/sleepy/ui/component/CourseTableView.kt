@@ -29,6 +29,8 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -218,6 +220,12 @@ fun CardsGridView(
                         }
                     }
 
+                    // v7.9 默认置顶:跨会话持久化偏好,由详情弹窗 radio 写入。
+                    // 与 topOverrides 同簇键,作 topOverrideId fallback — 当次切换仍由 topOverrides 主导。
+                    val defaultTopMap by AppPrefs.conflictDefaultTopFlow(context).collectAsState(
+                        initial = AppPrefs.getConflictDefaultTop(context)
+                    )
+
                     // 引擎聚簇: 同天区间相交(含链式)课程归簇,簇键=主课判定序首课三元组
                     // (override 不改变首课——findClusters 输出固定,键稳定)
                     val clusters = ConflictLayoutEngine.findClusters(courses)
@@ -239,7 +247,7 @@ fun CardsGridView(
                         ConflictClusterCard(
                             cluster = cluster,
                             style = conflictStyle,
-                            topOverrideId = topOverrides[clusterKey],
+                            topOverrideId = topOverrides[clusterKey] ?: defaultTopMap[clusterKey],
                             onPickTop = { id -> setTopOverride(clusterKey, id) },
                             onCourseClick = onCourseClick,
                             colW = colW,

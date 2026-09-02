@@ -199,6 +199,7 @@
     <string name="course_detail_edit">编辑</string>
     <string name="course_detail_delete">删除</string>
     <string name="course_detail_edit_course">编辑这节课</string>
+    <string name="conflict_default_top_title">选择默认置顶课程</string>
     <string name="course_field_name">课程</string>
     <string name="course_field_teacher">老师</string>
     <string name="course_field_room">地点</string>

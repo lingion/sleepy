@@ -215,6 +215,7 @@ fun ScheduleScreen(
         CourseDetailSheet(
             course = selectedCourse,
             timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
+            allCourses = state.courses,
             onDismiss = { selectedCourse = null },
             onEdit = { course ->
                 selectedCourse = null
