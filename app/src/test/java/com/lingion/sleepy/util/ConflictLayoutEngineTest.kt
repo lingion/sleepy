@@ -1132,4 +1132,126 @@ class ConflictLayoutEngineTest {
         assertEquals(false, byId.getValue(1L).hidden)
         assertEquals(false, byId.getValue(2L).hidden)
     }
+
+    // =====================================================================================
+    // v7.10 Feature 2 — 周视图局部栏位分割(weekLaneSegments)
+    // 用户 2026-09-02 权威语义:「分栏只适用于周视图 跟网格视图无关」。
+    // 1-2 / 2-3 / 3-4 三课: 2-3 与两头都冲突 → 连通冲突区域 = 节1..4;
+    // 1-2 与 3-4 零重叠同栏, 2-3 独占另一栏(用户手绘: AC 一列、B 一列)。
+    // =====================================================================================
+
+    @Test
+    fun v710_lane_two_courses_same_slot_split_into_two_lanes() {
+        // 两门课都是 1-2 节 → 局部分栏, 各占一栏
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, b))
+        assertEquals(2, lanes.size)
+        assertEquals(setOf(0, 1), lanes.map { it.lane }.toSet())
+        assertEquals(2, lanes[0].laneCount)
+        assertEquals(2, lanes[1].laneCount)
+    }
+
+    @Test
+    fun v710_lane_chain_123_23_34_ac_share_lane_b_own_lane() {
+        // 用户手绘场景: A=1-2 / B=2-3 / C=3-4。连通冲突区域 = 节1..4。
+        // A 与 C 零重叠 → 同栏; B 与两者重叠 → 独占另一栏。
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val c = course(id = 3, day = 1, startNode = 3, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, b, c))
+        assertEquals(3, lanes.size)
+        val byId = lanes.associateBy { it.course.id }
+        // A、C 同栏(B 挪走后复用), B 另一栏
+        assertEquals(byId.getValue(1L).lane, byId.getValue(3L).lane)
+        assertTrue(byId.getValue(1L).lane != byId.getValue(2L).lane)
+        // 全区域都是两栏
+        assertEquals(2, byId.getValue(1L).laneCount)
+        assertEquals(2, byId.getValue(2L).laneCount)
+        assertEquals(2, byId.getValue(3L).laneCount)
+    }
+
+    @Test
+    fun v710_lane_continuity_course_keeps_same_lane_whole_span() {
+        // 连续占两节空间的课(2-3 夹在 1-2 与 3-4 之间)必须整段同栏, 不许中间换栏
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val c = course(id = 3, day = 1, startNode = 3, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, b, c))
+        // 每课只有一条 segment(整课一个 lane), 不拆节
+        assertEquals(listOf(1L, 2L, 3L), lanes.map { it.course.id }.sorted())
+        assertEquals(3, lanes.map { it.course.id }.toSet().size)
+    }
+
+    @Test
+    fun v710_lane_connected_region_is_transitive_span() {
+        // 1-2 / 2-3 / 3-4: 虽然节1只有 A、节4只有 C, 但传递连通 → 全区域 1..4 都按两栏渲染
+        // (laneCount 覆盖整段, A 与 C 的空档不回退全宽)
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val c = course(id = 3, day = 1, startNode = 3, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, b, c))
+        val byId = lanes.associateBy { it.course.id }
+        assertEquals(2, byId.getValue(1L).laneCount) // A 在节1也要半宽(区域连通)
+        assertEquals(2, byId.getValue(3L).laneCount)
+    }
+
+    @Test
+    fun v710_lane_non_conflict_course_full_width_lane_count_1() {
+        // 无冲突课(与任何课不重叠)→ laneCount=1 = 全宽, lane=0
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val solo = course(id = 9, day = 1, startNode = 5, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, solo))
+        val byId = lanes.associateBy { it.course.id }
+        assertEquals(1, byId.getValue(9L).laneCount)
+        assertEquals(0, byId.getValue(9L).lane)
+    }
+
+    @Test
+    fun v710_lane_zero_conflict_returns_empty_for_cluster() {
+        // 单课无冲突: 不产生任何分栏 segment
+        val solo = course(id = 1, day = 1, startNode = 1, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(solo))
+        assertEquals(1, lanes.size)
+        assertEquals(1, lanes[0].laneCount)
+    }
+
+    @Test
+    fun v710_lane_day_scope_isolation() {
+        // 跨天永不串扰: day1 的冲突不影响 day2 的课
+        val a1 = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b1 = course(id = 2, day = 1, startNode = 1, step = 2)
+        val solo2 = course(id = 9, day = 2, startNode = 1, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a1, b1, solo2))
+        val byId = lanes.associateBy { it.course.id }
+        assertEquals(2, byId.getValue(1L).laneCount)
+        assertEquals(1, byId.getValue(9L).laneCount)
+    }
+
+    @Test
+    fun v710_lane_disjoint_conflict_regions_independent_lanes() {
+        // 同天两个独立冲突区域(节1-2 区 + 节7-8 区)互不共享 laneCount
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 2)
+        val x = course(id = 3, day = 1, startNode = 7, step = 2)
+        val y = course(id = 4, day = 1, startNode = 7, step = 2)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, b, x, y))
+        val byId = lanes.associateBy { it.course.id }
+        // 两区域各自两栏; lane index 各自从 0 起
+        assertEquals(2, byId.getValue(1L).laneCount)
+        assertEquals(2, byId.getValue(3L).laneCount)
+        assertEquals(byId.getValue(1L).lane, byId.getValue(3L).lane) // 各区域 lane0
+    }
+
+    @Test
+    fun v710_lane_three_courses_two_groups_two_lanes_not_three_rows() {
+        // 用户分组规则: 3 课分 2 组 = 2 栏(不是 3 栏)。{A+C} 组 + B 单 = 2 lanes
+        // 三课全叠(1-3/1-3/1-3) → 各自一组 = 3 lanes
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 3)
+        val lanes = ConflictLayoutEngine.weekLaneSegments(listOf(a, b, c))
+        assertEquals(3, lanes.map { it.lane }.toSet().size)
+        assertEquals(3, lanes[0].laneCount)
+    }
 }
