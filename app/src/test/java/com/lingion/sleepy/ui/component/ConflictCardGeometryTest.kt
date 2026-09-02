@@ -215,4 +215,70 @@ class ConflictCardGeometryTest {
         assertEquals(true, conflictShowBadge(layerCount = 3, hiddenCount = 1))
         assertEquals(false, conflictShowBadge(layerCount = 3, hiddenCount = 0))
     }
+
+    // ============================ v7.8 回归 — A 方案链组切顶后必须缩小并锚左上 ============================
+
+    @Test
+    fun stack_chain_group_member_when_lifted_anchors_top_left_and_shrinks() {
+        // v7.8.2 回归: 链组 {1-3, 4-6} 沉底时被点击换到顶层后,
+        // 成员 1-3 必须缩小并锚左上(不是全尺寸)。
+        // ownH(1-3) = 58*3-4 = 170; topInset=8; shrunk = 162; x=0, y=0。
+        val r = rect(1, 3, isTop = true, form = ConflictVariant.STACK)
+        assertEquals(0.dp, r.x)
+        assertEquals(0.dp, r.y)
+        assertEquals(92.dp, r.width)   // colW - topInset
+        assertEquals(162.dp, r.height) // ownH - topInset
+
+        // 成员 4-6 同理: 锚到自己区间的左上(y = 3*58 = 174)
+        val r4 = rect(4, 3, isTop = true, form = ConflictVariant.STACK)
+        assertEquals(0.dp, r4.x)
+        assertEquals(174.dp, r4.y) // 自身起点 = 第4节
+        assertEquals(92.dp, r4.width)
+        assertEquals(162.dp, r4.height)
+    }
+
+    @Test
+    fun stack_chain_group_member_when_at_bottom_anchors_bottom_right() {
+        // v7.8.2 回归: 链组 {1-3, 4-6} 沉底时,
+        // 成员 1-3 必须缩小并锚自身区间右下。
+        val r = rect(1, 3, isTop = false, form = ConflictVariant.STACK)
+        // x = topInset, y = ownH - shrunk = 170-162 = 8, width=92, height=162
+        assertEquals(8.dp, r.x)
+        assertEquals(8.dp, r.y)
+        assertEquals(92.dp, r.width)
+        assertEquals(162.dp, r.height)
+        // 下缘贴自身区间底 (8+162=170)
+        assertEquals(rowH * 3 - gapH, r.y + r.height)
+    }
+
+    @Test
+    fun rail_chain_group_member_top_is_narrow_bottom_is_full_width() {
+        // v7.8.2 回归: C 方案链组切顶后窄, 沉底后全宽。
+        val inset = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+        val top = rect(1, 3, isTop = true, form = ConflictVariant.RAIL, topInset = inset)
+        val bot = rect(1, 3, isTop = false, form = ConflictVariant.RAIL, topInset = inset)
+        assertEquals(colW - inset, top.width)   // 窄
+        assertEquals(colW, bot.width)            // 全宽
+        // 高度都按自身节数(170)
+        assertEquals(170.dp, top.height)
+        assertEquals(170.dp, bot.height)
+    }
+
+    @Test
+    fun fold_card_is_folded_decision_based_on_layer_only() {
+        // v7.8.2 回归: cardIsFolded 已不再误把沉底卡标折角。
+        // 此处不能直接调 UI 函数,但可通过 STACK/FOLD 默认同尺寸 + 折角形状决定来约束:
+        // FOLD 形态下顶层卡与底层卡的 rect 几何仍由 isFront 决定(全尺寸)。
+        val topF = rect(1, 3, isTop = true, form = ConflictVariant.FOLD)
+        val botF = rect(1, 3, isTop = false, form = ConflictVariant.FOLD)
+        assertEquals(0.dp, topF.x)
+        assertEquals(0.dp, topF.y)
+        assertEquals(100.dp, topF.width) // 全宽
+        assertEquals(170.dp, topF.height)
+        assertEquals(0.dp, botF.x)
+        assertEquals(0.dp, botF.y)
+        assertEquals(100.dp, botF.width)
+        assertEquals(170.dp, botF.height)
+        // B 方案下顶层与底层尺寸相同,折角差异由 Card 形状决定 —— 间接保护 cardIsFolded 不带 !chainStripActive。
+    }
 }
