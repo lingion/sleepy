@@ -176,6 +176,32 @@ jobs:
                   print(f"  evicted {tag}: {len(atts)} files ~{sum(a.get('size') or 0 for a in atts)/1048576:.1f} MB for newer versions", flush=True)
               return freed
 
+          # --- rolling retention window: newest-first until quota budget is used up ---
+          QUOTA_BUDGET = 980 * 1048576   # leave headroom under the 1 GB Gitee cap
+          all_gh_rels = []
+          pg = 1
+          while True:
+              chunk = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={pg}")
+              if not chunk:
+                  break
+              all_gh_rels.extend(chunk)
+              if len(chunk) < 100:
+                  break
+              pg += 1
+          all_gh_rels.sort(key=lambda r: vkey(r.get("tag_name")), reverse=True)
+          keep_tags = set()
+          budget = QUOTA_BUDGET
+          for r in all_gh_rels:
+              need = sum(a.get("size", 0) for a in r.get("assets", [])
+                         if not a["name"].endswith(("-source.zip","-source.tar.gz",".source.zip")))
+              if need <= budget:
+                  keep_tags.add(r["tag_name"])
+                  budget -= need
+              # releases with no attachments always stay in the window
+              if need == 0:
+                  keep_tags.add(r["tag_name"])
+          print(f"retention window keeps {len(keep_tags)}/{len(all_gh_rels)} releases within {QUOTA_BUDGET//1048576} MB budget", flush=True)
+
           default_branch = gh_req(f"/repos/{GITHUB_REPO}")["default_branch"]
           synced = failed = deferred = 0
           page = 1
@@ -215,6 +241,10 @@ jobs:
                               n = a.get("name") or (a.get("browser_download_url") or "").rstrip("/").split("/")[-1]
                               if n:
                                   have.add(n)
+                      if tag not in keep_tags:
+                          print(f"  ~ {tag}: outside retention window (evicted for newer versions)", flush=True)
+                          synced += 1
+                          continue
                       for a in rel.get("assets", []):
                           # skip source archives: Gitee release page auto-generates them, save quota
                           aname = a["name"]
