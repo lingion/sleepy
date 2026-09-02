@@ -1254,4 +1254,74 @@ class ConflictLayoutEngineTest {
         assertEquals(3, lanes.map { it.lane }.toSet().size)
         assertEquals(3, lanes[0].laneCount)
     }
+
+    // ==================== v7.10.6 周视图行分组(用户真实课表 bug 修复) ====================
+    // 用户 2026-09-02 报障(默认3 表): 周一 9-11 课消失 / 周二 2-4 课渲染两次。
+    // 根因 = UI 层行分组用直接重叠判区域(非传递闭包) + firstOrNull 每栏只留一门课。
+    // weekLaneRows 把行分组下沉引擎: mergeOverlapping 区域本身就是划分(每课恰属一区域),
+    // 每行携带 laneOf 映射,栏内多门课由 UI 纵向堆叠。
+
+    /** 用户「默认3」表 day1 七课: 1-4 / 1-3 / 4-6 / 5-7 / 7-8 / 8-9 / 9-11 — 全连通一区域。 */
+    private fun userDay1() = listOf(
+        course(id = 1, day = 1, startNode = 1, step = 4, courseName = "工科数学分析"),
+        course(id = 2, day = 1, startNode = 1, step = 3, courseName = "大学英语"),
+        course(id = 3, day = 1, startNode = 4, step = 3, courseName = "课3"),
+        course(id = 4, day = 1, startNode = 5, step = 3, courseName = "课4"),
+        course(id = 5, day = 1, startNode = 7, step = 2, courseName = "课5"),
+        course(id = 6, day = 1, startNode = 8, step = 2, courseName = "课6"),
+        course(id = 7, day = 1, startNode = 9, step = 3, courseName = "课7")
+    )
+
+    /** 用户「默认3」表 day2 三课: 1-3 / 2-4 / 4-3(step=3 → 节4..6)。 */
+    private fun userDay2() = listOf(
+        course(id = 8, day = 2, startNode = 1, step = 3, courseName = "课8"),
+        course(id = 9, day = 2, startNode = 2, step = 3, courseName = "课9"),
+        course(id = 10, day = 2, startNode = 4, step = 3, courseName = "课10")
+    )
+
+    @Test
+    fun v7106_rows_day1_chain7_every_course_exactly_once() {
+        // 七课链式全连通 → 恰好 1 行;每课恰出现一次(id7=9-11 不得丢失)
+        val rows = ConflictLayoutEngine.weekLaneRows(userDay1())
+        assertEquals(1, rows.size)
+        val row = rows[0]
+        assertEquals(7, row.courses.size)
+        assertEquals((1L..7L).toSet(), row.courses.map { it.id }.toSet())
+        assertEquals(7, row.laneOf.size)
+    }
+
+    @Test
+    fun v7106_rows_day1_lane_assignment_matches_weekLaneSegments() {
+        // 行内 laneOf 与 weekLaneSegments 一致: lane0={2,3,5,7} lane1={1,4,6}
+        val rows = ConflictLayoutEngine.weekLaneRows(userDay1())
+        val laneOf = rows[0].laneOf
+        assertEquals(setOf(2L, 3L, 5L, 7L), laneOf.filterValues { it == 0 }.keys)
+        assertEquals(setOf(1L, 4L, 6L), laneOf.filterValues { it == 1 }.keys)
+        assertEquals(2, rows[0].laneCount)
+    }
+
+    @Test
+    fun v7106_rows_day2_single_region_no_duplicate() {
+        // 1-3 / 2-4 / 4-6 三课链式全连通 → 1 行 3 课;2-4(课9)恰出现一次
+        val rows = ConflictLayoutEngine.weekLaneRows(userDay2())
+        assertEquals(1, rows.size)
+        val ids = rows[0].courses.map { it.id }
+        assertEquals(listOf(8L, 9L, 10L).toSet(), ids.toSet())
+        assertEquals(3, ids.size)
+    }
+
+    @Test
+    fun v7106_rows_solo_course_own_row_preserves_order() {
+        // 无冲突课独占行、按 startNode 升序;与冲突行穿插时按行首节点排
+        val solo = course(id = 20, day = 1, startNode = 12, step = 1, courseName = "独行课")
+        val rows = ConflictLayoutEngine.weekLaneRows(userDay1() + solo)
+        assertEquals(2, rows.size)
+        assertEquals(listOf(20L), rows[1].courses.map { it.id })
+        assertEquals(1, rows[1].laneCount)
+    }
+
+    @Test
+    fun v7106_rows_empty_input() {
+        assertTrue(ConflictLayoutEngine.weekLaneRows(emptyList()).isEmpty())
+    }
 }
