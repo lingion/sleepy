@@ -204,7 +204,7 @@ fun markHitArea(
 
 /**
  * 簇级形态(纯 JVM 可测,v5) — hidden 课 variant 优先;交换置顶后可能无 hidden 课
- * (长课置顶、原顶课露出尾部独占节次 → hidden 集空),形态不能塌缩成 NONE——
+ * (长课置顶、原顶课露出尾独占节次 → hidden 集空),形态不能塌缩成 NONE——
  * 几何跟用户设置走: rail 恒 RAIL(窄卡形态与 hidden 无关);
  * fold 样式回落看 foldEligible(首个非顶课与紧邻上层同起点,与引擎闸门同规);
  * 其余回落 STACK。
@@ -323,6 +323,9 @@ internal fun conflictMarkRect(
  * 顶层判定兜底(评审 Important-2): 簇主课可能出界(startNode > maxNode)被调用方
  * 过滤,过滤后列表无 zRank 0——此时取列表首位当顶层,保证任何情况下界内课有渲染有点击;
  * 输入为空(全出界)才返回空,调用方整簇跳过。
+ *
+ * v7.8 链组态: hidden 课为空 → Mark 列表也空,绘制序退化为非顶层卡(zRank 降序)+ 顶层卡。
+ * 沉底链组成员以 Card 形态自然露出,与 v7.4 之前由 groupRep 引导的 chainFront 卡合并为同一绘制序。
  */
 fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
     if (laid.isEmpty()) return emptyList()
@@ -352,10 +355,15 @@ fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
  *
  * 边框: 每张真卡各一层 1dp 细描边(用户: 边框要细),色由各自课色自派生。
  *
- * 点击语义(设计 §4,不变):
- *   点顶卡 → onCourseClick(顶层课)
- *   点露出带/标记 → onPickTop(该课 id)
- *   N 徽标(图层 N≥3,v7.6 链组整组算一层) → AlertDialog 列簇内全部课课名点选 → onPickTop(id)
+ * 点击语义(设计 §4,v7.8 改写):
+ *   点顶卡/置顶链组成员 → onCourseClick(该课)
+ *   点露出带/沉底课程卡(沉底层整组) → onPickTop(沉底层代表 id)
+ *   沉底层代表 = 该层内的最前课程 id(zRank 升序首位);引擎收到 id 后把整层提到顶层。
+ *   N 徽标(图层 N≥3) → AlertDialog 列簇内全部课课名点选 → onPickTop(id)
+ *
+ * v7.8 图层语义: 引擎已按 chainGroups 分图层, 每图层要么整组置顶要么整组垫底。
+ * 本组件不需再做组代表判定——拿到任意沉底层成员 id, 引擎的 topOverrideId 语义会
+ * 把整层提到顶层(见 layoutCluster 的 orderedLayers)。
  */
 @Composable
 fun ConflictClusterCard(
@@ -401,7 +409,7 @@ fun ConflictClusterCard(
     // 绘制序(评审 Critical 修复): 非顶卡(zRank 降序) → 顶卡 → hidden 课 Mark 命中区(overlay 层)。
     val drawOrder = overlayMarkOrder(drawList)
 
-    // 顶层判定(与 overlayMarkOrder 兜底同源)
+    // 顶层判定(与 overlayMarkOrder 兜底同源): zRank 0 即可, v7.8 单课顶层与多课链组顶层都属同一判定。
     val topLaid = drawList.firstOrNull { it.zRank == 0 } ?: drawList.first()
     val topCourse = topLaid.course
     val hiddenItems = drawList.filter { it.hidden }
@@ -444,23 +452,22 @@ fun ConflictClusterCard(
     // v6: 顶卡收窄量 = 用户设置(A 偏移 d / C 右缘让宽共用),滑杆 4..20dp
     val topInset = AppPrefs.getConflictTopInset(context).dp
 
-    // v7 链式分组: 簇内可无缝拼接的课归同组(组内拼成一条互不覆盖的链)。
-    // 顶层课所在组 = 顶层链(整条在前);其余组各为一条,按叠层/竖轨语义垫在后面。
-    // 点击任一非顶层组的课 = 整组提到顶层(组内相对顺序保持)。
-    // (chainGroups 计算已上移到 drawList 之后——v7.6 图层徽标与下方消费共用同一份。)
-    val courseIdToGroup: Map<Long, Int> = remember(chainGroups) {
+    // v7.8 图层语义: 引擎 layerOfId 即每课对应图层; 该层的「整层代表 id」=
+    // 该层内 zRank 最小的成员(引擎 zOrdered 已按图层拼接序排序, 同层内按 startNode 升序)。
+    // 沉底层任何成员点击 = onPickTop(沉底层代表 id), 引擎收到 id 后整层上移。
+    val layerOfId: Map<Long, Int> = remember(chainGroups) {
         chainGroups.flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
     }
+    val layerRepId: Map<Int, Long> = remember(chainGroups) {
+        chainGroups.mapIndexed { gi, g -> gi to g.first().id }.toMap()
+    }
+    fun layerRepOf(courseId: Long): Long? =
+        layerOfId[courseId]?.let { gi -> layerRepId[gi] }
 
-    // 组置顶语义(v7): 点击任一组的课 = 该组整组到前(组代表=组内主课判定序首课作为
-    // override 传给引擎)。组内其余成员各自全宽渲染自己区间,拼成一条。
-    fun groupRepOf(courseId: Long): Long? =
-        courseIdToGroup[courseId]?.let { gi -> chainGroups.getOrNull(gi)?.first()?.id }
-
-    // v7.4 链式拼条态: 顶卡属于多课链组时,顶卡不缩(chainFront 成员全尺寸,顶卡也
-    // 全尺寸才能拼条对齐——F1)且 fold 折角画在链组每个成员上(F3 用户定版「A/C 都折角」)。
-    val chainStripActive = drawList.any { it.chainFront && !it.hidden } &&
-        courseIdToGroup[topCourse.id]?.let { gi -> (chainGroups.getOrNull(gi)?.size ?: 0) >= 2 } == true
+    // v7.8 拼条态: 顶层图层中存在多课成员时(任何 chainFront=true)→ 拼条态激活,
+    // 顶卡不缩(STACK/RAIL 都让顶卡按真卡尺寸铺), 顶卡形态 FOLD 时仍画 flap。
+    // 与 v7.4 chainStripActive 判据同义: 顶层课所在层 size>=2 且该层有 chainFront 成员。
+    val chainStripActive = topLaid.chainFront
 
     /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。
      *  链式拼条态顶卡不缩(与 chainFront 成员同宽拼条对齐,fullWidth=true 跳过收窄分支)。 */
@@ -488,14 +495,23 @@ fun ConflictClusterCard(
             when (item) {
                 is CourseDrawItem.Card -> {
                     val course = item.laid.course
-                    // v7.4(F3): fold 拼条态下链组每个成员都折角(用户定版「A/C 都折角」)
+                    // v7.8: 顶层链组成员(chainFront=true) → 顶卡形态(STACK 缩小左上 /
+                    // RAIL 收窄 / FOLD 折角), 点击 = onCourseClick(course)。
+                    // 沉底链组成员(chainFront=false 且 hidden=false) → 底卡形态,
+                    // 点击 = onPickTop(layerRepOf)。
+                    // 单课层顶层(zRank=0, chainFront=false) → 顶卡形态;单课层垫底 →
+                    // 底卡形态。
+                    val isFrontCard = item.laid.chainFront || item.laid.zRank == 0
+                    // v7.4(F3): fold 拼条态下链组每个可见成员都折角(用户定版「A/C 都折角」)
                     val cardIsFolded = form == ConflictVariant.FOLD &&
                         (!chainStripActive || item.laid.chainFront || item.laid.zRank == 0)
                     val memberShape = if (cardIsFolded && item.laid.hidden.not()) {
                         remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
                     } else cardShape
-                    if (item.laid.zRank == 0) {
-                        // ---- 顶卡: 形态只改宽窄(STACK 同缩/RAIL 收窄;链式拼条态不缩),矩形=自身区间几何 ----
+
+                    if (isFrontCard) {
+                        // ---- 顶卡 / 顶层链组成员: 形态只改宽窄(STACK 同缩/RAIL 收窄;
+                        // 链式拼条态不缩), 矩形=自身区间几何。点击 = onCourseClick(course)
                         val topRect = rectOf(course, isTop = true)
                         ConflictCourseCard(
                             course = course,
@@ -507,42 +523,23 @@ fun ConflictClusterCard(
                             isGrey = isGrey,
                             shape = memberShape
                         )
-                    } else if (item.laid.chainFront && !item.laid.hidden) {
-                        // ---- 链前置非顶成员(v7.2): 链组的其他课与顶卡同组拼条——
-                        // 全尺寸、自身区间、无边框层级差;点击=组点击语义同下。
-                        // v7.4(F2): hidden 课绝不走此分支——hidden=零露出,渲染归 Mark,
-                        // 画全尺寸真卡会造成引擎判定遮死、视觉却露边的矛盾。 ----
-                        val r = ConflictRect(0.dp, cardYOf(course.startNode), colW, cardHOf(course.id))
-                        Box(
-                            modifier = Modifier
-                                .offset(x = r.x, y = r.y)
-                                .width(r.width)
-                                .height(r.height)
-                                .noRippleClickable { onPickTop(groupRepOf(course.id) ?: course.id) }
-                        ) {
-                            ConflictCourseCard(
-                                course = course,
-                                onClick = { onPickTop(groupRepOf(course.id) ?: course.id) },
-                                modifier = Modifier.fillMaxSize(),
-                                isGrey = isGrey,
-                                shape = memberShape
-                            )
-                        }
                     } else {
-                        // ---- 非顶卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
-                        // 切换只换层级,多次往返几何不变。STACK 右下锚自身区间,RAIL 全宽。
-                        // 点击(v7) = 该课所在组整组置顶(组代表作为 override)。 ----
+                        // ---- 沉底卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
+                        // 切换只换层级, 多次往返几何不变。STACK 右下锚自身区间, RAIL 全宽。
+                        // 点击(v7.8) = 该课所在层整层上移(层代表 id 作为 override)。
                         val r = rectOf(course, isTop = false)
                         Box(
                             modifier = Modifier
                                 .offset(x = r.x, y = r.y)
                                 .width(r.width)
                                 .height(r.height)
-                                .noRippleClickable { onPickTop(groupRepOf(course.id) ?: course.id) }
+                                .noRippleClickable {
+                                    onPickTop(layerRepOf(course.id) ?: course.id)
+                                }
                         ) {
                             ConflictCourseCard(
                                 course = course,
-                                onClick = { onPickTop(groupRepOf(course.id) ?: course.id) },
+                                onClick = { onPickTop(layerRepOf(course.id) ?: course.id) },
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
                                 shape = cardShape
@@ -553,6 +550,7 @@ fun ConflictClusterCard(
                 is CourseDrawItem.Mark -> {
                     // ---- Mark = hidden 课的命中区(视觉本体已在底卡/竖轨/折角层) ----
                     // v5: 命中区锚**自身区间**(v4 锚簇格位是错的——短课命中区伸进它不占的节次)。
+                    // v7.8: 点击 = onPickTop(layerRepOf) 让整层上移。
                     val hiddenCourse = courseById[item.hiddenCourseId]?.course ?: return@forEach
                     if (item.variant == ConflictVariant.NONE) return@forEach
                     when (item.variant) {
@@ -571,7 +569,9 @@ fun ConflictClusterCard(
                                     .offset(x = hit.x, y = hit.y)
                                     .width(hit.width)
                                     .height(hit.height)
-                                    .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
+                                    .noRippleClickable {
+                                        onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                    }
                             )
                         }
                         ConflictVariant.FOLD -> {
@@ -585,7 +585,9 @@ fun ConflictClusterCard(
                                     .offset(x = colW - hit.first, y = cardYOf(topCourse.startNode))
                                     .width(hit.first)
                                     .height(hit.second)
-                                    .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
+                                    .noRippleClickable {
+                                        onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                    }
                             )
                         }
                         ConflictVariant.RAIL -> {
@@ -607,7 +609,9 @@ fun ConflictClusterCard(
                                         .offset(x = hit.x, y = hit.y)
                                         .width(hit.width)
                                         .height(hit.height)
-                                        .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
+                                        .noRippleClickable {
+                                            onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                        }
                                 )
                             } else if (!multi) {
                                 val hit = conflictMarkRect(
@@ -622,7 +626,9 @@ fun ConflictClusterCard(
                                         .offset(x = hit.x, y = hit.y)
                                         .width(hit.width)
                                         .height(hit.height)
-                                        .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
+                                        .noRippleClickable {
+                                            onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                        }
                                 )
                             } else {
                                 val segCount = railOthers.size
@@ -645,7 +651,9 @@ fun ConflictClusterCard(
                                         .offset(x = colW - hit.first, y = segTop)
                                         .width(hit.first)
                                         .height(hit.second)
-                                        .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
+                                        .noRippleClickable {
+                                            onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                        }
                                 )
                             }
                         }
