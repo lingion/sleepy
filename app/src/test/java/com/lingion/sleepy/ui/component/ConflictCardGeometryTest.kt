@@ -140,17 +140,15 @@ class ConflictCardGeometryTest {
 
     @Test
     fun rail_mark_bounded_to_own_interval() {
-        // hidden 1-2: RAIL 命中区宽=默认收窄量(10)+内延20=30?否——默认 topInset 已统一为
-        // AppPrefs.CONFLICT_TOP_INSET_DEFAULT=10,宽=10+20=30 是 v5 值;v6 默认同源后
-        // 宽=10+20=30。但 STACK_OFFSET(8) 不再是 RAIL 默认——此处断言跟随单一真值。
+        // v7.8.4 修订: RAIL 不再有侧边竖轨结构, 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
+        // hidden 1-2: 命中区 36dp 见方, 右下角=自身区间右下(112)。
         val m = conflictMarkRect(
             1, 2, ConflictVariant.RAIL, colW, rowH, gapH, minStart = 1, clusterH = rowH * 3 - gapH
         )
-        assertEquals(AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp + 20.dp, m.width)
-        assertEquals(132.dp, m.height)
-        assertEquals(0.dp, m.y)
-        // y + h = 132 ≤ 自身区间底 112 + 内延 20 = 可接受的容差上界
-        assertTrue(m.y + m.height <= rowH * 2 - gapH + 20.dp)
+        assertEquals(36.dp, m.width)
+        assertEquals(36.dp, m.height)
+        assertEquals(rowH * 2 - gapH, m.y + m.height) // 下缘贴自身区间底
+        assertEquals(colW, m.x + m.width)              // 右缘贴格位右
     }
 
     @Test
