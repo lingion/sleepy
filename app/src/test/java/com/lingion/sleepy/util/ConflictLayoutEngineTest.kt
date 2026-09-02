@@ -640,4 +640,64 @@ class ConflictLayoutEngineTest {
         assertEquals(false, byId.getValue(2L).hidden)
         assertEquals(ConflictVariant.NONE, byId.getValue(2L).variant)
     }
+
+    // ==================== 链式冲突分层(v7): 端点衔接课拼成一条,包夹课单独一条 ====================
+
+    @Test
+    fun chainGroups_end_to_end_courses_share_group() {
+        // A=1-2 / B=2-3 / C=3-4: A 与 C 端点衔接(1..2 与 3..4 不相交但 3=2+1),
+        // 应同组;B 与两者都重叠,单独一组。期望两组: [A,C] / [B]
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val c = course(id = 3, day = 1, startNode = 3, step = 2)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(a, b, c))
+        assertEquals(2, groups.size)
+        val ids = groups.map { g -> g.map { it.id }.toSet() }
+        assertTrue(ids.contains(setOf(1L, 3L))) // A+C 拼接
+        assertTrue(ids.contains(setOf(2L)))     // B 独立
+    }
+
+    @Test
+    fun chainGroups_no_chain_when_all_disjoint() {
+        // 1-2 / 4-5: 隔 1 节,无法无缝衔接 → 两组
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 4, step = 2)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(a, b))
+        assertEquals(2, groups.size)
+    }
+
+    @Test
+    fun chainGroups_full_overlap_separate_groups() {
+        // 1-3 与 1-3 完全重叠: 同位课无法拼成一条(拼=互不覆盖),各占一组
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(a, b))
+        assertEquals(2, groups.size)
+    }
+
+    @Test
+    fun chainGroups_hard_case_123_23_24() {
+        // 硬案例 1-3 / 2-3 / 2-4: 两两直接重叠,无课能互拼 → 每课一组(N≥3 讨论分支)
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val c = course(id = 3, day = 1, startNode = 2, step = 3)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(a, b, c))
+        assertEquals(3, groups.size)
+    }
+
+    @Test
+    fun chainLayering_b_group_top_shows_ac_chained() {
+        // 分层验证: A=1-2 / B=2-3 / C=3-4, B 置顶 → 分组链 [A,C] 在后、[B] 在前;
+        // 分组层: B 层 z=0, AC 层 z=1;层内 A、C 都可见(各自占位,衔接成一条)
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)
+        val c = course(id = 3, day = 1, startNode = 3, step = 2)
+        val byId = layoutById(listOf(a, b, c), "stack", topOverrideId = 2L)
+        assertEquals(0, byId.getValue(2L).zRank)
+        assertEquals(1, byId.getValue(1L).zRank)
+        assertEquals(2, byId.getValue(3L).zRank)
+        // 分组语义下 AC 都不该判 hidden(链式层里它们各自露出自己区间)
+        assertEquals(false, byId.getValue(1L).hidden)
+        assertEquals(false, byId.getValue(3L).hidden)
+    }
 }

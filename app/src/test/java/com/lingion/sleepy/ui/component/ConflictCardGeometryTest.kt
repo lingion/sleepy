@@ -26,6 +26,8 @@ class ConflictCardGeometryTest {
         topInset: Dp = STACK_OFFSET_DP.dp // STACK 基线用 8dp(v4 定版偏移);RAIL 测试自行传默认
     ) = conflictCardRect(startNode, ownRows, isTop, form, colW, rowH, gapH, minStart, topInset)
 
+    private fun ownH(rows: Int): Dp = rowH * rows - gapH
+
     // ============================ 规则 1: 右下 = 自身区间右下 ============================
 
     @Test
@@ -39,12 +41,12 @@ class ConflictCardGeometryTest {
         // 下缘 8+104=112 = 节2底(2*58-4),严格在自身区间内
         assertEquals(rowH * 2 - gapH, r.y + r.height)
 
-        // 滑杆默认值(10dp)下同样不越自身区间: y=112-102=10
+        // 滑杆默认值下同样不越自身区间: y = ownH - (ownH - default)
         val d = conflictCardRect(
             1, 2, false, ConflictVariant.STACK, colW, rowH, gapH, 1,
             topInset = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
         )
-        assertEquals(10.dp, d.y)
+        assertEquals(ownH(2) - (ownH(2) - AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp), d.y)
         assertEquals(rowH * 2 - gapH, d.y + d.height)
     }
 
