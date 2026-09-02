@@ -263,18 +263,16 @@ internal fun conflictCardRect(
 ): ConflictRect {
     val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
     val y = rowH * (startNode - minStart)
-    // 链式拼条态(v7.8): 前置多课层时全尺寸, 不收缩。topInset 用 Dp.Unspecified 传入表示。
-    val shrink = if (topInset == Dp.Unspecified) 0.dp else topInset
     return when {
         isTop && form == ConflictVariant.STACK ->
-            ConflictRect(0.dp, y, colW - shrink, ownH - shrink)
+            ConflictRect(0.dp, y, colW - topInset, ownH - topInset)
         isTop && form == ConflictVariant.RAIL ->
-            ConflictRect(0.dp, y, colW - shrink, ownH)
+            ConflictRect(0.dp, y, colW - topInset, ownH)
         !isTop && form == ConflictVariant.STACK -> {
             // 锚自身区间右下: 右缘贴格位右边,下缘贴自己区间的底——hidden 与否同待遇,
             // 部分重叠课(长课被短课压顶)也缩 d 锚右下,露出的边就是它自己的真实长度
-            val h = ownH - shrink
-            ConflictRect(shrink, y + ownH - h, colW - shrink, h)
+            val h = ownH - topInset
+            ConflictRect(topInset, y + ownH - h, colW - topInset, h)
         }
         else -> ConflictRect(0.dp, y, colW, ownH)
     }
@@ -466,31 +464,24 @@ fun ConflictClusterCard(
     fun layerRepOf(courseId: Long): Long? =
         layerOfId[courseId]?.let { gi -> layerRepId[gi] }
 
-    // v7.8 拼条态: 顶层图层中存在多课成员时(任何 chainFront=true)→ 拼条态激活,
-    // 前置多课层全尺寸不收缩(STACK/RAIL/FOLD 都按真卡尺寸铺); FOLD 时仍画 flap。
-    // 拼条态不改变层的「前后」语义, 只影响前置层成员的「收窄与否」——前后仍按图层判定。
+    // v7.8: 拼条态(chainStripActive)仅用于 FOLD flap 绘制,不影响 rect 几何。
+    // 链组内每张成员卡严格按所在图层走 conflictCardRect 的标准顶/底分支:
+    //  - 顶层图层(STACK→缩小左上 / RAIL→收窄 / FOLD→全尺寸折角)
+    //  - 底层图层(STACK→缩小右下 / RAIL→全宽胶囊 / FOLD→全尺寸无折角)
+    // A/B/C 三方案无差别, 不存在「链组走全尺寸」的特殊分支。
     val chainStripActive = topLaid.chainFront
 
     /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。
-     *  v7.8 关键修复: isFront 仅由「该课程是否属于顶层图层」决定, 不能再被 chainStripActive
-     *  吞掉——否则底层切上来时仍是 isFront=false 锚右下, 不会变成顶卡应有的锚左上。
-     *  isFront = true 时走 conflictCardRect 的 isTop 分支(STACK 锚左上收窄 / RAIL 收窄)。
-     *  链组态下的"前置层全尺寸"由 chainStripActive 单独影响: 当 front 是多课层时,
-     *  让该层成员不走收窄(走全尺寸 else 分支)而保留 STACK/FOLD 锚左上语义。 */
-    fun rectOf(course: CourseEntity, isFront: Boolean): ConflictRect {
-        val effectiveTopInset = if (isFront && chainStripActive) {
-            // 前置多课层: 全尺寸, 不走顶卡收窄——保持拼条对齐
-            Dp.Unspecified
-        } else topInset
-        return conflictCardRect(
-            startNode = course.startNode,
-            ownRows = clampedSteps[course.id] ?: 1,
-            isTop = isFront,
-            form = form,
-            colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
-            topInset = effectiveTopInset
-        )
-    }
+     *  isFront = 该课程是否属于顶层图层, 直接驱动 conflictCardRect 的 isTop 分支。
+     *  链组态不影响 rect: 顶层链组成员按顶层标准收窄, 底层链组成员按底层标准收窄。 */
+    fun rectOf(course: CourseEntity, isFront: Boolean): ConflictRect = conflictCardRect(
+        startNode = course.startNode,
+        ownRows = clampedSteps[course.id] ?: 1,
+        isTop = isFront,
+        form = form,
+        colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
+        topInset = topInset
+    )
 
     // 簇格位高 = minStart..maxEnd 全区间(STACK 的右下锚定参照——不能用顶课区间:
     // 短课置顶时,底部长课仍要按自己的尺寸锚在簇位右下)。
@@ -733,62 +724,34 @@ fun ConflictClusterCard(
         // v7.4(F4): 链式拼条态下段位跟课的真实节位走(成员区间内均分),
         // 不再纵贯全簇均分——4-6 的名字必须落在 4-6 那几节的右缘。
         if (form == ConflictVariant.RAIL && railOthers.size >= 2) {
-            if (chainStripActive) {
-                val stripMembers = railOthers.filter { it.chainFront && !it.hidden }
-                val perMember: Map<Long, List<LaidOutCourse>> =
-                    stripMembers.groupBy { it.course.id }
-                perMember.forEach { (_, members) ->
-                    val first = members.first()
-                    val segTop = cardYOf(first.course.startNode)
-                    val segHeight = cardHOf(first.course.id)
-                    val segColor = courseColorOf(first.course)
-                    Box(
-                        modifier = Modifier
-                            .offset(x = colW - RAIL_INSET_DP.dp, y = segTop)
-                            .width(RAIL_INSET_DP.dp)
-                            .height(segHeight)
-                            .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
-                            .background(segColor),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        VerticalRailName(
-                            name = first.course.courseName,
-                            segmentHeight = segHeight,
-                            color = CourseColorUtil.textColorOn(
-                                segColor,
-                                CourseColorUtil.isPaletteDark(palette),
-                                colors.onSurface
-                            )
+            // railOthers = zRank != 0 的全部课。当顶层是多课链组时, 这些课就是底层链组
+            // 成员; 当顶层是单课时, 就是非顶课(hidden 或可见)。它们的命名段永远画在
+            // 自身节位上(用户原话: "4-6 的名字必须落在 4-6 那几节的右缘")。
+            val perMember: Map<Long, List<LaidOutCourse>> =
+                railOthers.groupBy { it.course.id }
+            perMember.forEach { (_, members) ->
+                val first = members.first()
+                val segTop = cardYOf(first.course.startNode)
+                val segHeight = cardHOf(first.course.id)
+                val segColor = courseColorOf(first.course)
+                Box(
+                    modifier = Modifier
+                        .offset(x = colW - RAIL_INSET_DP.dp, y = segTop)
+                        .width(RAIL_INSET_DP.dp)
+                        .height(segHeight)
+                        .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
+                        .background(segColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    VerticalRailName(
+                        name = first.course.courseName,
+                        segmentHeight = segHeight,
+                        color = CourseColorUtil.textColorOn(
+                            segColor,
+                            CourseColorUtil.isPaletteDark(palette),
+                            colors.onSurface
                         )
-                    }
-                }
-            } else {
-                val segCount = railOthers.size
-                val segH = ((cellH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount).coerceAtLeast(0.dp)
-                railOthers.forEachIndexed { idx, hid ->
-                    val segColor = courseColorOf(hid.course)
-                    Box(
-                        modifier = Modifier
-                            .offset(
-                                x = colW - RAIL_INSET_DP.dp,
-                                y = (segH + RAIL_SEG_GAP_DP.dp) * idx
-                            )
-                            .width(RAIL_INSET_DP.dp)
-                            .height(segH)
-                            .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
-                            .background(segColor),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        VerticalRailName(
-                            name = hid.course.courseName,
-                            segmentHeight = segH,
-                            color = CourseColorUtil.textColorOn(
-                                segColor,
-                                CourseColorUtil.isPaletteDark(palette),
-                                colors.onSurface
-                            )
-                        )
-                    }
+                    )
                 }
             }
         }
