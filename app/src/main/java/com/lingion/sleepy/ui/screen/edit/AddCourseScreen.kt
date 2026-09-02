@@ -442,6 +442,24 @@ fun AddCourseScreen(
                                 ?: viewModel.createEmptyTable()
                             // 用真实 tableId 修正 drafts
                             val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
+                            // v7.10.9 冲突第三层禁止 — 合并已存库课 + 新草稿检查每区域栏数,
+                            // 超 2 栏拒绝保存(编辑时排除本组旧记录, 换成新草稿参与判定)
+                            val editingGid = editingCourse?.groupId
+                            val existing = tableId.let { tid ->
+                                (1..7).flatMap { repo.getCoursesByDayOnce(tid, it) }
+                            }.filter { it.groupId != editingGid }
+                            val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
+                                .daysExceedingTwoLanes(existing + fixedDrafts)
+                            if (badDays.isNotEmpty()) {
+                                val dayText = badDays.sorted()
+                                    .joinToString(" / ") { com.lingion.sleepy.util.DateUtils.localizedDay(it, context) }
+                                android.widget.Toast.makeText(
+                                    context,
+                                    context.getString(com.lingion.sleepy.R.string.conflict_three_layers_rejected, dayText),
+                                    android.widget.Toast.LENGTH_LONG
+                                ).show()
+                                return@launch
+                            }
                             if (editingCourse != null) {
                                 // 编辑：删同 groupId 全部记录，插入所有新草稿
                                 val gid = editingCourse.groupId
