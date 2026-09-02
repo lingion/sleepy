@@ -43,6 +43,7 @@ import androidx.compose.ui.text.style.LineHeightStyle
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Constraints
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
@@ -101,7 +102,9 @@ fun CardsGridView(
     today: Int = DateUtils.todayDayOfWeek(),
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier,
-    greyDays: Set<Int> = emptySet()  // 本周应灰显的星期几 (1-7)
+    greyDays: Set<Int> = emptySet(),  // 本周应灰显的星期几 (1-7)
+    topOverrides: Map<String, Long> = emptyMap(),           // v7.10.5: 会话级置顶 override,上提到 ScheduleScreen(radio 瞬时更新写入同一真相源)
+    onSetTopOverride: (String, Long?) -> Unit = { _, _ -> } // (clusterKey, layerRepId|null)
 ) {
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
@@ -208,17 +211,10 @@ fun CardsGridView(
                     // 非簇课保持原 CourseOverlayCard 单卡路径(回归保护)
                     val context = LocalContext.current
                     val conflictStyle = AppPrefs.getConflictStyle(context)
-                    // 交换置顶状态: 簇键 "day:startNode:step" → 顶层课 id。
-                    // rememberSaveable 只收 Bundle 类型——LinkedHashMap 实现 Serializable 可存,
-                    // mutableStateListOf 不行,故用 map 手工存取。
-                    var topOverrides by rememberSaveable { mutableStateOf(mapOf<String, Long>()) }
-                    fun setTopOverride(key: String, courseId: Long?) {
-                        topOverrides = if (courseId == null) {
-                            topOverrides - key
-                        } else {
-                            topOverrides + (key to courseId)
-                        }
-                    }
+                    // v7.10.5: 交换置顶状态上提到 ScheduleScreen — 详情弹窗 radio 点击
+                    // 与网格 onPickTop 写同一真相源,radio 勾选瞬间网格同帧换层。
+                    // (此前 radio 只写持久化 defaultTopMap,被会话级 topOverrides 遮蔽 → 看似不生效)
+                    fun setTopOverride(key: String, courseId: Long?) = onSetTopOverride(key, courseId)
 
                     // v7.9 默认置顶:跨会话持久化偏好,由详情弹窗 radio 写入。
                     // 与 topOverrides 同簇键,作 topOverrideId fallback — 当次切换仍由 topOverrides 主导。
@@ -892,25 +888,33 @@ private fun DetailDayCard(
                             scale = scale, cornerRatio = cornerRatio
                         )
                     } else {
-                        // 冲突行组: 按 lane 并排,每列 weight 均分(laneCount 列)
+                        // 冲突行组: 按 lane 并排,每列 weight 均分(laneCount 列)。
+                        // v7.10.4: BoxWithConstraints 拿 lane 实宽 → 字体/间距按比例压缩
+                        // (两栏模式下 lane 半宽,不缩则字全挤在一起——用户 2026-09-02)
                         val segs = rowCourses.mapNotNull { segByCourseId[it.id] }
                         val laneCount = segs.maxOf { it.laneCount }
                         val laneOf = segs.associate { it.course.id to it.lane }
-                        // 均分列 + gapW 缝,列序 = lane 序;空 lane 占位 Spacer
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(sd(6f))
-                        ) {
-                            repeat(laneCount) { li ->
-                                val laneCourse = segs.firstOrNull { laneOf[it.course.id] == li }?.course
-                                Box(modifier = Modifier.weight(1f)) {
-                                    if (laneCourse != null) {
-                                        LessonRow(
-                                            course = laneCourse, displayMode = displayMode,
-                                            timeJson = timeJson,
-                                            onClick = { onCourseClick(laneCourse) },
-                                            isGrey = isGrey, scale = scale, cornerRatio = cornerRatio
-                                        )
+                        BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
+                            val laneGap = sd(6f)
+                            val laneW = (maxWidth - laneGap * (laneCount - 1)) / laneCount
+                            val laneScale = weekLaneFontScale(laneW)
+                            val hideSide = weekLaneHideSideLabel(laneW)
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(laneGap)
+                            ) {
+                                repeat(laneCount) { li ->
+                                    val laneCourse = segs.firstOrNull { laneOf[it.course.id] == li }?.course
+                                    Box(modifier = Modifier.weight(1f)) {
+                                        if (laneCourse != null) {
+                                            LessonRow(
+                                                course = laneCourse, displayMode = displayMode,
+                                                timeJson = timeJson,
+                                                onClick = { onCourseClick(laneCourse) },
+                                                isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
+                                                laneScale = laneScale, hideSideLabel = hideSide
+                                            )
+                                        }
                                     }
                                 }
                             }
@@ -935,12 +939,46 @@ private fun connectedCourses(a: CourseEntity, b: CourseEntity): Boolean {
     return a.directlyOverlaps(b)
 }
 
+// =====================================================================================
+// v7.10.4 冲突栏字号/间距压缩 — 用户 2026-09-02: 两栏模式下分栏字全挤到一起,
+// 需按 lane 实宽调画面比例。
+// =====================================================================================
+
+/** lane 宽压缩基准: 单栏半宽量级(用户实测"比较好"的现状),低于它开始线性缩。 */
+internal val WEEK_LANE_SCALE_BASE = 150f
+
+/** 压缩下限 — 再窄也不无限缩,可读性由隐藏侧栏标签/副信息兜底。 */
+internal const val WEEK_LANE_SCALE_FLOOR = 0.6f
+
+/**
+ * 冲突栏内 LessonRow 的缩放比(纯函数可测):
+ *   laneW ≥ 150dp → 1.0(保现状);以下线性压缩;0.6 封底。
+ */
+internal fun weekLaneFontScale(laneW: Dp): Float =
+    if (laneW >= WEEK_LANE_SCALE_BASE.dp) 1f
+    else (laneW.value / WEEK_LANE_SCALE_BASE).coerceAtLeast(WEEK_LANE_SCALE_FLOOR)
+
+/** 极窄 lane 判定: 侧栏节次/时间标签(42dp+8dp 间距)挤占正文 → 隐藏它。 */
+internal fun weekLaneHideSideLabel(laneW: Dp): Boolean = laneW < 110.dp
+
 @Composable
-private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: String, onClick: () -> Unit, isGrey: Boolean = false, scale: Float = 1f, cornerRatio: Float = 1f) {
+private fun LessonRow(
+    course: CourseEntity,
+    displayMode: String,
+    timeJson: String,
+    onClick: () -> Unit,
+    isGrey: Boolean = false,
+    scale: Float = 1f,
+    cornerRatio: Float = 1f,
+    laneScale: Float = 1f,
+    hideSideLabel: Boolean = false
+) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
-    val sd = { v: Float -> (v * scale).dp }
+    // 双层缩放: scale=全局周视图缩放(issue#8), laneScale=v7.10.4 冲突栏按实宽压缩
+    val effScale = scale * laneScale
+    val sd = { v: Float -> (v * effScale).dp }
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     val bg = CourseColorUtil.pickCourseColorCompose(
         course = course,
@@ -971,32 +1009,37 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
         horizontalArrangement = Arrangement.spacedBy(sd(8f))
     ) {
         val sideStyle = SleepyTextStyle.smallMeta().copy(
-            fontSize = (12 * scale).sp,
-            lineHeight = (16 * scale).sp,
+            fontSize = (12 * effScale).sp,
+            lineHeight = (16 * effScale).sp,
             fontWeight = FontWeight.SemiBold,
             textDecoration = textDecoration
         )
-        if (timeParts != null) {
-            Text(
-                text = "${timeParts.first}-\n${timeParts.second}",
-                style = sideStyle,
-                color = effectiveFg,
-                modifier = Modifier.width(sd(42f))
-            )
-        } else {
-            Text(
-                text = nodeLabel,
-                style = sideStyle,
-                color = effectiveFg,
-                modifier = Modifier.width(sd(42f)),
-                maxLines = 1
-            )
+        // 极窄 lane: 侧栏标签(42dp+8dp)挤占正文 → 隐藏,节次信息由卡片纵向位置表达
+        if (!hideSideLabel) {
+            if (timeParts != null) {
+                Text(
+                    text = "${timeParts.first}-\n${timeParts.second}",
+                    style = sideStyle,
+                    color = effectiveFg,
+                    modifier = Modifier.width(sd(42f))
+                )
+            } else {
+                Text(
+                    text = nodeLabel,
+                    style = sideStyle,
+                    color = effectiveFg,
+                    modifier = Modifier.width(sd(42f)),
+                    maxLines = 1
+                )
+            }
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
                 text = course.courseName,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.SemiBold,
+                    fontSize = (12 * effScale).sp,
+                    lineHeight = (16 * effScale).sp,
                     lineHeightStyle = LineHeightStyle(
                         alignment = LineHeightStyle.Alignment.Top,
                         trim = LineHeightStyle.Trim.FirstLineTop
@@ -1014,10 +1057,15 @@ private fun LessonRow(course: CourseEntity, displayMode: String, timeJson: Strin
                     append(course.room)
                 }
             }
-            if (meta.isNotEmpty()) {
+            // 极窄 lane 下副信息(教师/教室)也让位给课名
+            if (meta.isNotEmpty() && !hideSideLabel) {
                 Text(
                     text = meta,
-                    style = SleepyTextStyle.smallMeta().copy(textDecoration = textDecoration),
+                    style = SleepyTextStyle.smallMeta().copy(
+                        fontSize = (11 * effScale).sp,
+                        lineHeight = (14 * effScale).sp,
+                        textDecoration = textDecoration
+                    ),
                     color = effectiveFg.copy(alpha = SleepyTheme.Alpha.highContent),
                     maxLines = 2,
                     overflow = TextOverflow.Ellipsis
