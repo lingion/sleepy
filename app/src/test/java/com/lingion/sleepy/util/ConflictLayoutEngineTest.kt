@@ -645,30 +645,52 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun chainGroups_end_to_end_courses_share_group() {
-        // A=1-2 / B=2-3 / C=3-4: A 与 C 端点衔接(1..2 与 3..4 不相交但 3=2+1),
-        // 应同组;B 与两者都重叠,单独一组。期望两组: [A,C] / [B]
+        // 用户定版分组判据(v7.1): 同组 = 两课**零重叠**(有洞也行)。
+        // A=1-2 / B=2-3 / C=3-4: A 与 C 零重叠 → 同组;B 与两者重叠 → 独立。
         val a = course(id = 1, day = 1, startNode = 1, step = 2)
         val b = course(id = 2, day = 1, startNode = 2, step = 2)
         val c = course(id = 3, day = 1, startNode = 3, step = 2)
         val groups = ConflictLayoutEngine.chainGroups(listOf(a, b, c))
         assertEquals(2, groups.size)
         val ids = groups.map { g -> g.map { it.id }.toSet() }
-        assertTrue(ids.contains(setOf(1L, 3L))) // A+C 拼接
+        assertTrue(ids.contains(setOf(1L, 3L))) // A+C 零重叠拼接
         assertTrue(ids.contains(setOf(2L)))     // B 独立
     }
 
     @Test
-    fun chainGroups_no_chain_when_all_disjoint() {
-        // 1-2 / 4-5: 隔 1 节,无法无缝衔接 → 两组
-        val a = course(id = 1, day = 1, startNode = 1, step = 2)
-        val b = course(id = 2, day = 1, startNode = 4, step = 2)
+    fun chainGroups_gap_between_courses_still_one_group() {
+        // 1-3 与 5-9: 零重叠且中间有洞(第4节空)→ 用户明确: 同组
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 5, step = 5)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(a, b))
+        assertEquals(1, groups.size)
+    }
+
+    @Test
+    fun chainGroups_one_overlapper_two_disjoint_form_group() {
+        // 用户案例: 1-9 / 1-3 / 5-9 → 1-3 与 5-9 零重叠同组,1-9 独立一组
+        val big = course(id = 1, day = 1, startNode = 1, step = 9)
+        val head = course(id = 2, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 3, day = 1, startNode = 5, step = 5)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(big, head, tail))
+        assertEquals(2, groups.size)
+        val ids = groups.map { g -> g.map { it.id }.toSet() }
+        assertTrue(ids.contains(setOf(2L, 3L))) // head+tail 一组
+        assertTrue(ids.contains(setOf(1L)))     // big 独立
+    }
+
+    @Test
+    fun chainGroups_overlap_never_same_group() {
+        // 1-3 与 3-5: 共享第3节 = 有重叠 → 用户明确: 拼不到一起,各自一组
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 3, step = 3)
         val groups = ConflictLayoutEngine.chainGroups(listOf(a, b))
         assertEquals(2, groups.size)
     }
 
     @Test
     fun chainGroups_full_overlap_separate_groups() {
-        // 1-3 与 1-3 完全重叠: 同位课无法拼成一条(拼=互不覆盖),各占一组
+        // 1-3 与 1-3 完全重叠 → 各占一组
         val a = course(id = 1, day = 1, startNode = 1, step = 3)
         val b = course(id = 2, day = 1, startNode = 1, step = 3)
         val groups = ConflictLayoutEngine.chainGroups(listOf(a, b))
@@ -677,7 +699,7 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun chainGroups_hard_case_123_23_24() {
-        // 硬案例 1-3 / 2-3 / 2-4: 两两直接重叠,无课能互拼 → 每课一组(N≥3 讨论分支)
+        // 硬案例 1-3 / 2-3 / 2-4: 两两直接重叠 → 每课一组(N≥3 讨论分支)
         val a = course(id = 1, day = 1, startNode = 1, step = 3)
         val b = course(id = 2, day = 1, startNode = 2, step = 2)
         val c = course(id = 3, day = 1, startNode = 2, step = 3)
