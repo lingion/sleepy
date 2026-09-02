@@ -151,6 +151,42 @@ object ConflictLayoutEngine {
         return nodesOf(above).first == nodesOf(zOrdered[rank]).first
     }
 
+    /**
+     * 链式分组(v7, 纯函数可测) — 把簇内课程按「能否拼接成一条互不覆盖的链」分层:
+     *
+     * 两课可同组 = 区间**互不重叠**(直接分离或端点衔接,拼起来无断裂无覆盖)。
+     * 贪心拼接: 按 startNode 升序扫,当前课与组内已收课两两不重叠才能入组,否则开新组。
+     * 组间按 startNode 升序;组内按 startNode 升序(拼接链的自然顺序)。
+     *
+     * 例: A=1-2 / B=2-3 / C=3-4 → A+C 互不重叠同组(拼成 1..4 一条),B 与两者重叠
+     * 单独一组 → 簇内两层: AC 一条 + B 一条,点击 B = B 提到整簇顶层。
+     * 硬案例 1-3/2-3/2-4: 两两直接重叠 → 每课一组(N≥3 特殊讨论)。
+     * 完全重叠 1-3/1-3 → 两组(每课自占一条,拼接不成立——同位课只能叠放)。
+     *
+     * 注意: 端点衔接(相邻不重叠)单独不成簇——本函数只处理已聚簇课程,簇的进出
+     * 仍由 findClusters 的「区间相交+传递闭包」把守,链式相邻(1-2/2-3/3-4)天然同簇。
+     */
+    fun chainGroups(courses: List<CourseEntity>): List<List<CourseEntity>> {
+        if (courses.isEmpty()) return emptyList()
+        val sorted = courses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+        val groups = mutableListOf<MutableList<CourseEntity>>()
+        val groupEnds = mutableListOf<Int>() // 各组已拼链的当前末端
+        for (c in sorted) {
+            val end = c.startNode + c.step - 1
+            // 找第一个「末端 +1 == 本课起点」的组(无缝衔接,拼起来才是完整一条;
+            // 隔洞不拼——视觉上是断的)。同组内保持互不重叠由衔接条件天然保证。
+            val idx = groupEnds.indexOfFirst { it + 1 == c.startNode }
+            if (idx >= 0) {
+                groups[idx].add(c)
+                groupEnds[idx] = end
+            } else {
+                groups.add(mutableListOf(c))
+                groupEnds.add(end)
+            }
+        }
+        return groups
+    }
+
     /** 主课三分量比较器,供聚簇输出与 primaryOrder 共用。 */
     private val primaryComparator =
         compareByDescending<CourseEntity> { it.step }
