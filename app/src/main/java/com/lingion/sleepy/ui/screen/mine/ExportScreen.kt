@@ -203,8 +203,9 @@ fun ExportScreen(
     }
 }
 
+/** internal: 顶栏分享底部弹窗(ShareScheduleSheet)复用同款条目视觉 */
 @Composable
-private fun ExportItem(
+internal fun ExportItem(
     icon: ImageVector,
     title: String,
     subtitle: String,
@@ -251,12 +252,13 @@ private fun Divider(color: Color) {
     )
 }
 
-private fun stamp(): String =
+internal fun stamp(): String =
     SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(Date())
 
 /** 用 MediaStore API 写到公共 Downloads 目录（无需存储权限，Android 10+），然后触发分享。
- *  API 26-28 无 MediaStore.Downloads → 回退写到应用 cache 目录经 FileProvider 分享 */
-private suspend fun exportAndShare(
+ *  API 26-28 无 MediaStore.Downloads → 回退写到应用 cache 目录经 FileProvider 分享
+ *  internal: 顶栏分享底部弹窗(ShareScheduleSheet)复用 */
+internal suspend fun exportAndShare(
     ctx: android.content.Context,
     fileName: String,
     mime: String,
@@ -340,8 +342,8 @@ private fun writeToCacheViaFileProvider(
     }
 }
 
-/** 直接分享文本 */
-private suspend fun shareText(
+/** 直接分享文本 (internal: 顶栏分享底部弹窗复用) */
+internal suspend fun shareText(
     ctx: android.content.Context,
     content: String,
     subject: String,
