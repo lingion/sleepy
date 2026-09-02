@@ -263,16 +263,18 @@ internal fun conflictCardRect(
 ): ConflictRect {
     val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
     val y = rowH * (startNode - minStart)
+    // 链式拼条态(v7.8): 前置多课层时全尺寸, 不收缩。topInset 用 Dp.Unspecified 传入表示。
+    val shrink = if (topInset == Dp.Unspecified) 0.dp else topInset
     return when {
         isTop && form == ConflictVariant.STACK ->
-            ConflictRect(0.dp, y, colW - topInset, ownH - topInset)
+            ConflictRect(0.dp, y, colW - shrink, ownH - shrink)
         isTop && form == ConflictVariant.RAIL ->
-            ConflictRect(0.dp, y, colW - topInset, ownH)
+            ConflictRect(0.dp, y, colW - shrink, ownH)
         !isTop && form == ConflictVariant.STACK -> {
             // 锚自身区间右下: 右缘贴格位右边,下缘贴自己区间的底——hidden 与否同待遇,
             // 部分重叠课(长课被短课压顶)也缩 d 锚右下,露出的边就是它自己的真实长度
-            val h = ownH - topInset
-            ConflictRect(topInset, y + ownH - h, colW - topInset, h)
+            val h = ownH - shrink
+            ConflictRect(shrink, y + ownH - h, colW - shrink, h)
         }
         else -> ConflictRect(0.dp, y, colW, ownH)
     }
@@ -465,20 +467,30 @@ fun ConflictClusterCard(
         layerOfId[courseId]?.let { gi -> layerRepId[gi] }
 
     // v7.8 拼条态: 顶层图层中存在多课成员时(任何 chainFront=true)→ 拼条态激活,
-    // 顶卡不缩(STACK/RAIL 都让顶卡按真卡尺寸铺), 顶卡形态 FOLD 时仍画 flap。
-    // 与 v7.4 chainStripActive 判据同义: 顶层课所在层 size>=2 且该层有 chainFront 成员。
+    // 前置多课层全尺寸不收缩(STACK/RAIL/FOLD 都按真卡尺寸铺); FOLD 时仍画 flap。
+    // 拼条态不改变层的「前后」语义, 只影响前置层成员的「收窄与否」——前后仍按图层判定。
     val chainStripActive = topLaid.chainFront
 
     /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。
-     *  链式拼条态顶卡不缩(与 chainFront 成员同宽拼条对齐,fullWidth=true 跳过收窄分支)。 */
-    fun rectOf(course: CourseEntity, isTop: Boolean): ConflictRect = conflictCardRect(
-        startNode = course.startNode,
-        ownRows = clampedSteps[course.id] ?: 1,
-        isTop = isTop && !chainStripActive,
-        form = form,
-        colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
-        topInset = topInset
-    )
+     *  v7.8 关键修复: isFront 仅由「该课程是否属于顶层图层」决定, 不能再被 chainStripActive
+     *  吞掉——否则底层切上来时仍是 isFront=false 锚右下, 不会变成顶卡应有的锚左上。
+     *  isFront = true 时走 conflictCardRect 的 isTop 分支(STACK 锚左上收窄 / RAIL 收窄)。
+     *  链组态下的"前置层全尺寸"由 chainStripActive 单独影响: 当 front 是多课层时,
+     *  让该层成员不走收窄(走全尺寸 else 分支)而保留 STACK/FOLD 锚左上语义。 */
+    fun rectOf(course: CourseEntity, isFront: Boolean): ConflictRect {
+        val effectiveTopInset = if (isFront && chainStripActive) {
+            // 前置多课层: 全尺寸, 不走顶卡收窄——保持拼条对齐
+            Dp.Unspecified
+        } else topInset
+        return conflictCardRect(
+            startNode = course.startNode,
+            ownRows = clampedSteps[course.id] ?: 1,
+            isTop = isFront,
+            form = form,
+            colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
+            topInset = effectiveTopInset
+        )
+    }
 
     // 簇格位高 = minStart..maxEnd 全区间(STACK 的右下锚定参照——不能用顶课区间:
     // 短课置顶时,底部长课仍要按自己的尺寸锚在簇位右下)。
@@ -512,7 +524,7 @@ fun ConflictClusterCard(
                     if (isFrontCard) {
                         // ---- 顶卡 / 顶层链组成员: 形态只改宽窄(STACK 同缩/RAIL 收窄;
                         // 链式拼条态不缩), 矩形=自身区间几何。点击 = onCourseClick(course)
-                        val topRect = rectOf(course, isTop = true)
+                        val topRect = rectOf(course, isFront = true)
                         ConflictCourseCard(
                             course = course,
                             onClick = { onCourseClick(course) },
@@ -527,7 +539,7 @@ fun ConflictClusterCard(
                         // ---- 沉底卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
                         // 切换只换层级, 多次往返几何不变。STACK 右下锚自身区间, RAIL 全宽。
                         // 点击(v7.8) = 该课所在层整层上移(层代表 id 作为 override)。
-                        val r = rectOf(course, isTop = false)
+                        val r = rectOf(course, isFront = false)
                         Box(
                             modifier = Modifier
                                 .offset(x = r.x, y = r.y)
