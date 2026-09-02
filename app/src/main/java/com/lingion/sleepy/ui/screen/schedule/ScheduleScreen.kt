@@ -21,8 +21,10 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.IosShare
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -56,6 +58,7 @@ import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.FullWeekView
 import com.lingion.sleepy.ui.component.SectionHead
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
+import com.lingion.sleepy.ui.component.ShareScheduleSheet
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
@@ -122,6 +125,8 @@ fun ScheduleScreen(
                 )
             }
         } else {
+            // v7.10.7 顶栏分享 → 底部弹窗(格式选择)
+            var showShareSheet by remember { mutableStateOf(false) }
             TopBar(
                 currentWeek = state.selectedWeek,
                 maxWeek = state.currentTable?.maxWeek ?: 20,
@@ -132,8 +137,20 @@ fun ScheduleScreen(
                     val start = state.currentTable?.startDate ?: return@TopBar
                     viewModel.changeWeek(DateUtils.currentWeek(start))
                 },
-                onSelectWeek = { week -> viewModel.changeWeek(week) }
+                onSelectWeek = { week -> viewModel.changeWeek(week) },
+                onAddCourse = onManualAdd,
+                onShare = { showShareSheet = true }
             )
+
+            if (showShareSheet) {
+                state.currentTable?.let { table ->
+                    ShareScheduleSheet(
+                        table = table,
+                        courses = state.courses,
+                        onDismiss = { showShareSheet = false }
+                    )
+                }
+            }
 
             // Segmented Switcher
             SegmentedSwitcher(
@@ -246,7 +263,9 @@ private fun TopBar(
     onPrevWeek: () -> Unit,
     onNextWeek: () -> Unit,
     onJumpToActual: () -> Unit,
-    onSelectWeek: (Int) -> Unit
+    onSelectWeek: (Int) -> Unit,
+    onAddCourse: () -> Unit,
+    onShare: () -> Unit
 ) {
     val colors = SleepyTheme.colors
     // 实时计算当前实际周（不依赖 state.currentWeek — 用户可能切到了别的周）
@@ -261,100 +280,125 @@ private fun TopBar(
         modifier = Modifier
             .fillMaxWidth()
             .background(colors.surface)
-            .padding(horizontal = 16.dp, vertical = 6.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
+            .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
+        // v7.10.7: 翻页三件套(箭头+胶囊+箭头)整体居中、箭头紧贴胶囊 —
+        // 加课/分享提到顶栏引导(用户 2026-09-02: 添加课表太没引导性)
+        Row(
+            modifier = Modifier.weight(1f),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
 
-        // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
-        // 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
-        Box {
-            val statusRes = when (semesterStatus) {
-                DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
-                DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
-                else -> 0
-            }
-            Text(
-                text = if (statusRes == 0)
-                    stringResource(R.string.schedule_current_week, currentWeek)
-                else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
-                style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
-                color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
-                modifier = Modifier
-                    .clip(SleepyTheme.shapes.medium)
-                    .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive))
-                    .noRippleClickable {
-                        if (isOnActual) {
-                            // 在当前实际周 → 弹下拉菜单
-                            menuOpen = true
-                        } else {
-                            // 不在当前实际周 → 一键跳回
-                            onJumpToActual()
+            Spacer(modifier = Modifier.width(8.dp))
+
+            // 第 N 周 标签 — 点击行为根据是否在当前实际周而不同
+            // 学期外: 标签带上周数(学期未开始 · 第 3 周), 翻周时数字跟着变, 用户才知道自己看到第几周
+            Box {
+                val statusRes = when (semesterStatus) {
+                    DateUtils.SemesterStatus.BEFORE_START -> R.string.semester_not_started
+                    DateUtils.SemesterStatus.AFTER_END -> R.string.semester_ended
+                    else -> 0
+                }
+                Text(
+                    text = if (statusRes == 0)
+                        stringResource(R.string.schedule_current_week, currentWeek)
+                    else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
+                    style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
+                    color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
+                    modifier = Modifier
+                        .clip(SleepyTheme.shapes.medium)
+                        .background(if (isOnActual) colors.primaryContainer else colors.primaryContainer.copy(alpha = SleepyTheme.Alpha.inactive))
+                        .noRippleClickable {
+                            if (isOnActual) {
+                                // 在当前实际周 → 弹下拉菜单
+                                menuOpen = true
+                            } else {
+                                // 不在当前实际周 → 一键跳回
+                                onJumpToActual()
+                            }
                         }
-                    }
-                    .padding(horizontal = 14.dp, vertical = 4.dp)
-            )
+                        .padding(horizontal = 14.dp, vertical = 4.dp)
+                )
 
-            // Material3 DropdownMenu — FlowRow 标签式选周
-            @OptIn(ExperimentalLayoutApi::class)
-            DropdownMenu(
-                expanded = menuOpen,
-                onDismissRequest = { menuOpen = false },
-                modifier = Modifier.width(280.dp),
-                // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
-                containerColor = colors.surfaceContainerHighest
-            ) {
-                Column(modifier = Modifier.padding(12.dp)) {
-                    Text(
-                        text = stringResource(R.string.schedule_jump_week),
-                        style = MaterialTheme.typography.labelMedium,
-                        color = colors.onSurfaceVariant,
-                        modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
-                    )
-                    FlowRow(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
-                        verticalArrangement = Arrangement.spacedBy(8.dp),
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        (1..maxWeek).forEach { w ->
-                            val isCurrent = w == currentWeek
-                            Box(
-                                modifier = Modifier
-                                    .size(40.dp)
-                                    .clip(CircleShape)
-                                    .background(
-                                        if (isCurrent) colors.primary
-                                        else colors.surfaceContainerHigh
+                // Material3 DropdownMenu — FlowRow 标签式选周
+                @OptIn(ExperimentalLayoutApi::class)
+                DropdownMenu(
+                    expanded = menuOpen,
+                    onDismissRequest = { menuOpen = false },
+                    modifier = Modifier.width(280.dp),
+                    // 菜单浮在 surfaceContainer 背景上, 用 Highest 拉开对比(默认 High 与背景几乎同色=隐形)
+                    containerColor = colors.surfaceContainerHighest
+                ) {
+                    Column(modifier = Modifier.padding(12.dp)) {
+                        Text(
+                            text = stringResource(R.string.schedule_jump_week),
+                            style = MaterialTheme.typography.labelMedium,
+                            color = colors.onSurfaceVariant,
+                            modifier = Modifier.padding(start = 4.dp, bottom = 8.dp)
+                        )
+                        FlowRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            (1..maxWeek).forEach { w ->
+                                val isCurrent = w == currentWeek
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(
+                                            if (isCurrent) colors.primary
+                                            else colors.surfaceContainerHigh
+                                        )
+                                        .noRippleClickable {
+                                            onSelectWeek(w)
+                                            menuOpen = false
+                                        },
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Text(
+                                        text = w.toString(),
+                                        style = MaterialTheme.typography.labelLarge.copy(
+                                            fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
+                                        ),
+                                        color = if (isCurrent) colors.onPrimary else colors.onSurface
                                     )
-                                    .noRippleClickable {
-                                        onSelectWeek(w)
-                                        menuOpen = false
-                                    },
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Text(
-                                    text = w.toString(),
-                                    style = MaterialTheme.typography.labelLarge.copy(
-                                        fontWeight = if (isCurrent) FontWeight.Bold else FontWeight.Normal
-                                    ),
-                                    color = if (isCurrent) colors.onPrimary else colors.onSurface
-                                )
+                                }
                             }
                         }
                     }
                 }
             }
+
+            Spacer(modifier = Modifier.width(8.dp))
+
+            WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
         }
 
-        WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
+        // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底
+        WeekNavButton(
+            icon = Icons.Outlined.Add,
+            contentDescriptionRes = R.string.schedule_add_course,
+            onClick = onAddCourse
+        )
+        Spacer(modifier = Modifier.width(6.dp))
+        WeekNavButton(
+            icon = Icons.Outlined.IosShare,
+            contentDescriptionRes = R.string.schedule_share_table,
+            onClick = onShare
+        )
     }
 }
 
 @Composable
 private fun WeekNavButton(
     icon: androidx.compose.ui.graphics.vector.ImageVector,
-    onClick: () -> Unit
+    onClick: () -> Unit,
+    contentDescriptionRes: Int? = null
 ) {
     val colors = SleepyTheme.colors
     Box(
@@ -368,7 +412,7 @@ private fun WeekNavButton(
     ) {
         Icon(
             imageVector = icon,
-            contentDescription = null,
+            contentDescription = contentDescriptionRes?.let { stringResource(it) },
             tint = colors.onSurfaceVariant
         )
     }
