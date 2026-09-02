@@ -218,10 +218,15 @@ private fun AppRoot(
     }
 
     // v7.10.8 主页面双击返回退出 — 第一次按 Toast 提示, 2 秒内再按才真退。
-    // enabled 条件与上面互斥: 栈空且无编辑会话时才接管(即主 Tab 页面)。
+    // enabled 条件与上面互斥: 栈空且无编辑会话时才接管。
+    // v7.10.9: 课表页 = 首页 — 其他 Tab(今日/管理/我的)按返回先回课表页,
+    // 只有课表页本身才触发双击退出(用户 2026-09-02)。
     val ctxForExit = LocalContext.current
     var lastBackAt by remember { mutableStateOf(0L) }
-    BackHandler(enabled = !hasOverlay() && editingCourse == null) {
+    BackHandler(enabled = !hasOverlay() && editingCourse == null && currentTab != Tab.Schedule) {
+        currentTab = Tab.Schedule
+    }
+    BackHandler(enabled = !hasOverlay() && editingCourse == null && currentTab == Tab.Schedule) {
         val now = android.os.SystemClock.elapsedRealtime()
         if (now - lastBackAt < 2000L) {
             (ctxForExit as? android.app.Activity)?.finish()
