@@ -1380,4 +1380,53 @@ class ConflictLayoutEngineTest {
         assertEquals(0.5f, byId.getValue(1L).laneWidthFraction, 0.001f)
         assertEquals(0.5f, byId.getValue(2L).laneWidthFraction, 0.001f)
     }
+
+    // ==================== v7.10.9 冲突第三层禁止 ====================
+
+    @Test
+    fun v7109_gate_two_lanes_allowed() {
+        // 双层冲突(1-3 / 1-4) = 2 栏 → 合法
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 4)
+        assertTrue(ConflictLayoutEngine.daysExceedingTwoLanes(listOf(a, b)).isEmpty())
+    }
+
+    @Test
+    fun v7109_gate_three_full_overlap_rejected() {
+        // 三课全叠 = 3 栏 → 违规, 报 day 1
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 3)
+        assertEquals(setOf(1), ConflictLayoutEngine.daysExceedingTwoLanes(listOf(a, b, c)))
+    }
+
+    @Test
+    fun v7109_gate_chain_case_two_lanes_ok_three_rejected() {
+        // 用户真实表 day1 七课链 = 2 栏 → 合法; 再加一课塞进同区域空隙失败 → 3 栏拒绝
+        val base = userDay1()
+        assertTrue(ConflictLayoutEngine.daysExceedingTwoLanes(base).isEmpty())
+        // 节 9-10 与 9-11 完全叠 → chainGroups 三轮无法并进现有 2 栏 → 3 栏
+        val intruder = course(id = 99, day = 1, startNode = 9, step = 2)
+        assertEquals(setOf(1), ConflictLayoutEngine.daysExceedingTwoLanes(base + intruder))
+    }
+
+    @Test
+    fun v7109_gate_day_scope_isolated() {
+        // day1 三层违规不影响 day2 合法: 只报 day1
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 2)
+        val c = course(id = 3, day = 1, startNode = 1, step = 2)
+        val ok = course(id = 4, day = 2, startNode = 1, step = 2)
+        assertEquals(setOf(1), ConflictLayoutEngine.daysExceedingTwoLanes(listOf(a, b, c, ok)))
+    }
+
+    @Test
+    fun v7109_gate_disjoint_regions_counted_independently() {
+        // 同日两个独立区域各 2 栏 → 合法(每区域独立数栏)
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 2)
+        val c = course(id = 3, day = 1, startNode = 5, step = 2)
+        val d = course(id = 4, day = 1, startNode = 5, step = 2)
+        assertTrue(ConflictLayoutEngine.daysExceedingTwoLanes(listOf(a, b, c, d)).isEmpty())
+    }
 }
