@@ -88,6 +88,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
     var weekHideEmptyDays by remember { mutableStateOf(AppPrefs.isWeekHideEmptyDays(context)) }
     var conflictStyle by remember { mutableStateOf(AppPrefs.getConflictStyle(context)) }
+    var conflictTopInset by remember { mutableStateOf(AppPrefs.getConflictTopInset(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
@@ -322,6 +323,31 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                         selected = conflictStyle == "rail",
                         onClick = { conflictStyle = "rail"; AppPrefs.setConflictStyle(context, "rail") }
                     )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    // 顶卡收窄量滑杆(v6): A 方案=右/下偏移量, C 方案=右缘让宽, 同一设置值
+                    Text(text = stringResource(R.string.settings_conflict_top_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                    Text(text = stringResource(R.string.settings_conflict_top_inset_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Text(
+                            text = "${conflictTopInset.roundToInt()}dp",
+                            style = MaterialTheme.typography.labelLarge,
+                            color = colors.primary,
+                            modifier = Modifier.widthIn(min = 52.dp)
+                        )
+                        Slider(
+                            value = conflictTopInset,
+                            onValueChange = { conflictTopInset = it.roundToInt().toFloat() },
+                            onValueChangeFinished = {
+                                AppPrefs.setConflictTopInset(context, conflictTopInset)
+                            },
+                            valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
+                            colors = SliderDefaults.colors(
+                                thumbColor = colors.primary,
+                                activeTrackColor = colors.primary,
+                                inactiveTrackColor = colors.surfaceVariant
+                            )
+                        )
+                    }
                 }
             }
 
