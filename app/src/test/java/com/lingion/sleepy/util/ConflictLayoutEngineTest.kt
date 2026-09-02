@@ -221,11 +221,12 @@ class ConflictLayoutEngineTest {
     fun layout_fully_contained_inner_course_hidden() {
         // 完全包含: 1-5(step5) 内嵌 2-3(step2)。主课判定序 step 降 → 1-5 顶层,
         // 2-3 露出集 = {2,3} − {1..5} = ∅ → hidden=true
+        // 视觉修订 v3: FOLD 同起点闸门 — 内嵌课起点(2)≠上层起点(1)→ 回落 STACK
         val outer = course(id = 1, day = 2, startNode = 1, step = 5)
         val inner = course(id = 2, day = 2, startNode = 2, step = 2)
         val byId = layoutById(listOf(outer, inner), "fold")
         assertEquals(LaidOutCourse(outer, 0, false, ConflictVariant.NONE), byId.getValue(1L))
-        assertEquals(LaidOutCourse(inner, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
+        assertEquals(LaidOutCourse(inner, 1, true, ConflictVariant.STACK), byId.getValue(2L))
     }
 
     @Test
@@ -571,9 +572,9 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun markHitArea_rail_is_right_stripe_not_full_card() {
-        // RAIL: 右侧 8dp 竖条 + 20dp 内延 → 宽 28dp,高=整卡高(竖条纵贯)
+        // RAIL: 右缘露出带(RAIL_INSET 14dp)+ 20dp 内延 → 宽 34dp,高=整格高(纵贯)
         val (w, h) = markHitArea(ConflictVariant.RAIL, cardWidth = 60f, cardHeight = 120f)
-        assertRect(w to h, 28f, 120f, "RAIL hit area")
+        assertRect(w to h, 34f, 120f, "RAIL hit area")
     }
 
     @Test
@@ -585,5 +586,58 @@ class ConflictLayoutEngineTest {
             assertTrue("h<=cardH", h <= 30f)
             assertTrue("not full card", w * h < 20f * 30f)
         }
+    }
+
+    // ============================ FOLD 同起点闸门(视觉修订 v3) ============================
+
+    @Test
+    fun foldGate_same_start_keeps_fold() {
+        // 同起点(1-3 与 1-3)→ FOLD 保留
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        assertEquals(ConflictVariant.FOLD, layoutById(listOf(a, b), "fold").getValue(2L).variant)
+    }
+
+    @Test
+    fun foldGate_different_start_falls_back_to_stack() {
+        // 起点错位 + hidden: 顶层 2-4(step3),底层 2-4(step3, id 更大)@maxNode=3
+        // → 底层界内 2..3 全被 2..3 覆盖 → hidden;若起点同(2=2)则 FOLD。
+        // 再叠加 maxNode=2 裁剪: 界内两课均 2..2,同起点仍 FOLD。
+        // 真正的错位构造: 顶层 2-4 与底层 3-4(id 更大),maxNode=3:
+        //   primaryOrder: step 同 3 → startNode 升 → 顶层=2-4(id1),底层=3-4(id2)
+        //   底层 clamp 后 3..3 ⊆ 顶层 2..3 → hidden,起点 3≠2 → STACK
+        val top = course(id = 1, day = 1, startNode = 2, step = 3)
+        val under = course(id = 2, day = 1, startNode = 3, step = 2)
+        val byId = layoutById(listOf(top, under), "fold", maxNode = 3)
+        assertEquals(0, byId.getValue(1L).zRank)
+        assertEquals(true, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.STACK, byId.getValue(2L).variant)
+        // 对照组: 同段完全重叠(1-3 与 1-3)同起点 → FOLD 不回落
+        val sameA = course(id = 3, day = 2, startNode = 1, step = 3)
+        val sameB = course(id = 4, day = 2, startNode = 1, step = 3)
+        val byIdSame = layoutById(listOf(sameA, sameB), "fold")
+        assertEquals(ConflictVariant.FOLD, byIdSame.getValue(4L).variant)
+    }
+
+    @Test
+    fun foldGate_chain_middle_course_compares_to_immediate_above() {
+        // 链式三课 1-4/1-3/1-2: id2(1-3) 同起点 → FOLD;
+        // id3(1-2) 与紧邻上层 id2(1-3) 同起点 1 → 也 FOLD(紧邻比较,非与顶层)
+        val a = course(id = 1, day = 1, startNode = 1, step = 4)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 2)
+        val byId = layoutById(listOf(a, b, c), "fold")
+        assertEquals(ConflictVariant.FOLD, byId.getValue(2L).variant)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(3L).variant)
+    }
+
+    @Test
+    fun foldGate_trapezoid_partial_overlap_not_hidden_so_no_variant() {
+        // 梯形 1-3/2-4: 底层有露出 → 非 hidden → 无变体(闸门只作用于 hidden 课)
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 2, step = 3)
+        val byId = layoutById(listOf(a, b), "fold")
+        assertEquals(false, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.NONE, byId.getValue(2L).variant)
     }
 }
