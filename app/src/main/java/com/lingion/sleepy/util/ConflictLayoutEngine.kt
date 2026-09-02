@@ -5,11 +5,26 @@ import com.lingion.sleepy.data.entity.CourseEntity
 /** 同一天的冲突簇 — 簇内课程节点区间两两经传递闭包相连(直接或间接共享节次)。 */
 data class ConflictCluster(val day: Int, val courses: List<CourseEntity>)
 
+/**
+ * 图层间排序键 — 与 primaryComparator(step desc, startNode asc, id asc)对齐。
+ * a = -step(反转使 desc 变 asc), b = startNode, c = id。
+ */
+private data class LayerSortKey(val a: Int, val b: Int, val c: Long) : Comparable<LayerSortKey> {
+    override fun compareTo(other: LayerSortKey): Int {
+        val x = a.compareTo(other.a); if (x != 0) return x
+        val y = b.compareTo(other.b); if (y != 0) return y
+        return c.compareTo(other.c)
+    }
+}
+
 /** 变体标记类型 — NONE=无标记(真卡自然露出),STACK/FOLD/RAIL 见设计文档 §3。 */
 enum class ConflictVariant { NONE, STACK, FOLD, RAIL }
 
-/** 单课布局结果 — zRank 0=顶层;hidden=零露出;variant 仅 hidden 课非 NONE。
- *  chainFront(v7.2)= 该课属于链式多课组且该组当前在顶层链(全尺寸拼条渲染依据)。 */
+/**
+ * 单课布局结果 — zRank=0 即该课所在图层为顶层;hidden=零露出;variant 仅 hidden 课非 NONE。
+ * chainFront(v7.4 保留语义, v7.8 重定义为): 该课属于链式多课层且该层当前为顶层
+ * (层内每门成员都拿顶层视觉与编辑交互)。
+ */
 data class LaidOutCourse(
     val course: CourseEntity,
     val zRank: Int,
@@ -62,7 +77,7 @@ object ConflictLayoutEngine {
 
     /**
      * 布局一簇: 返回全簇课,输出顺序 = zRank 升序(主课判定序;topOverrideId 命中时该课
-     * 提到 zRank 0,其余保持主课判定序相对顺序)。
+     * 所在图层整体提到 zRank 0,其余保持图层间相对顺序,层内按 startNode 升序拼接)。
      *
      * 对每门课算「节点区间减去 z 序更高课的覆盖并集」得露出集;露出空 = hidden。
      * 顶层课(zRank 0)永不为 hidden。
@@ -75,6 +90,18 @@ object ConflictLayoutEngine {
      * 否则「界外尾部节次独占」的课(如 maxNode=12 时 X=11-13 被 Y=10-12 压住,仅节 13 界外)
      * 会被判非 hidden 拿不到标记,UI 裁剪后却零视觉零 tap——不可达课。非 null 时先 clamp
      * 再算露出(全被 clamp 出区间 → 露出集空 → hidden);null 时行为与不裁剪完全一致。
+     *
+     * v7.8 图层语义(用户 2026-09-02 权威版):
+     *   layers = chainGroups(courses) — 反复从剩余课中提取最大互不重叠集合,
+     *     层内课零重叠可并排成一条链, 每层尽量多合并。
+     *   z 序: 图层是整体切换单元。
+     *   默认态: 全局主序最高课(step降>start升>id升)所在图层置顶, 其余层按
+     *     【层首课主序】垫后(1-3/1-4/4-6 → 1-4 顶层, {1-3,4-6} 垫底)。
+     *   override: 被点课所在图层整体置顶, 层内拼接序(startNode 升序)保持,
+     *     其余层按默认序垫后。
+     *   v7.8 关键: 链组态(存在多课层)下所有课 hidden=false——沉底层渲染真卡
+     *     (A=缩小右下/B=全尺寸/C=全宽胶囊), 不再藏成 Mark; 置顶层成员全员
+     *     置顶形态(A=缩小左上/B=折角/C=缩窄)。经典无链组(全叠)行为不变。
      */
     fun layoutCluster(
         cluster: ConflictCluster,
@@ -84,47 +111,38 @@ object ConflictLayoutEngine {
     ): List<LaidOutCourse> {
         val ordered = primaryOrder(cluster.courses)
 
-        // v7.2/v7.3 链式分层: 分组决定 z 序——
-        //   默认态(无 override): 链组(多课组)整组置前(组内 startNode 升序拼条),
-        //     其余课(重叠者/单课组)按主课判定序垫后。
-        //     用户实测缺陷修复: 原默认 z 序按 step 降把重叠长课排最前,链组被遮。
-        //   override 命中(v7.3): 命中链组任一成员 → 该链组整组前置(拼接序保持),
-        //     其余课垫后——【组是一个整体切换单元】,组内课不能单独置顶
-        //     (否则组代表置顶、其他成员留底层 = 用户看到的"4-6 永远切不上来")。
-        //   override 命中单课组/非链成员: 该课置顶,其余按序垫后(经典单课语义)。
-        val chainGroupsOfCluster = chainGroups(cluster.courses)
-        val groupOfId: Map<Long, List<CourseEntity>> =
-            chainGroupsOfCluster.flatMap { g -> g.map { it.id to g } }.toMap()
-        val multiGroupIds: Set<Long> = chainGroupsOfCluster
-            .filter { it.size >= 2 }
-            .flatMap { g -> g.map { it.id } }
-            .toSet()
-        val overrideGroup = topOverrideId?.let { groupOfId[it] }
-        val zOrdered = when {
-            topOverrideId != null && overrideGroup != null && overrideGroup.size >= 2 ->
-                overrideGroup.sortedBy { it.startNode } +
-                    ordered.filter { it.id !in overrideGroup.map { c -> c.id }.toSet() }
-            topOverrideId != null ->
-                ordered.filter { it.id == topOverrideId } + ordered.filter { it.id != topOverrideId }
-            multiGroupIds.isNotEmpty() ->
-                chainGroupsOfCluster.filter { it.size >= 2 }
-                    .flatMap { g -> g.sortedBy { it.startNode } } +
-                    ordered.filter { it.id !in multiGroupIds }
-            else -> ordered
-        }
-        // 链前置标记: 当前置顶单元是链组(默认态或 override 命中链组)时,组员全部标 chainFront
-        val frontGroupIds: Set<Long>? = when {
-            topOverrideId != null && overrideGroup != null && overrideGroup.size >= 2 ->
-                overrideGroup.map { it.id }.toSet()
-            topOverrideId == null && multiGroupIds.isNotEmpty() -> multiGroupIds
-            else -> null
-        }
-        val chainFrontActive = frontGroupIds != null
+        // === v7.8 图层构建 ===
+        val layers = chainGroups(cluster.courses)
+        val layerOfId: Map<Long, List<CourseEntity>> =
+            layers.flatMap { g -> g.map { it.id to g } }.toMap()
+        val hasChainLayer = layers.any { it.size >= 2 }
 
+        // 层间默认序: 与 primaryComparator 对齐(asc 升序), 主序最高者的层排最前 —
+// LayerSortKey = (-step, startNode, id) — step 反转后升序 ≡ primaryComparator 的 step desc;
+// 例 1-3/1-4/4-6: 层 {1-3,4-6} 的 top = 1-3 → key(-3, 1, 1);
+//                层 {1-4} 的 top = 1-4 → key(-4, 1, 3)。
+// 升序排: (-4, 1, 3) < (-3, 1, 1) → {1-4} 先 → zRank 0 = 1-4 ✓
+// 例 1-3/1-3 完全重叠: 两层各一层, top key 都 = (-3, 1, id)。
+// 升序排: id=1 (-3,1,1) < id=2 (-3,1,2) → {id=1} 先 → zRank 0 = id=1 ✓
+        val defaultLayerOrder: List<List<CourseEntity>> = layers.sortedBy { g: List<CourseEntity> ->
+            val top: CourseEntity = g.maxWith(primaryComparator)
+            LayerSortKey(-top.step, top.startNode, top.id)
+        }
+        // z 序构造: override 命中则该层整体前移, 否则按默认序
+        val orderedLayers: List<List<CourseEntity>> = when {
+            topOverrideId != null && layerOfId.containsKey(topOverrideId) -> {
+                val front = layerOfId.getValue(topOverrideId)
+                listOf(front) + defaultLayerOrder.filter { it !== front }
+            }
+            else -> defaultLayerOrder
+        }
+        val zOrdered: List<CourseEntity> = orderedLayers.flatMap { g -> g.sortedBy { it.startNode } }
+
+        // === 露出区间工具 ===
         // 露出计算区间: maxNode 非 null 时先 clamp 进 [1, maxNode](与 UI 裁剪空间一致);
         // clamp 后为空(整课出界)→ 空区间,露出集恒空 → hidden(UI 本就不渲染该课)。
         fun nodesOf(course: CourseEntity): IntRange {
-            if (maxNode == null) return course.startNode until course.startNode + course.step
+            if (maxNode == null) return course.startNode..(course.startNode + course.step - 1)
             val start = maxOf(course.startNode, 1)
             val endIncl = (course.startNode + course.step - 1).coerceAtMost(maxNode)
             return if (start > endIncl) IntRange.EMPTY else start..endIncl
@@ -132,7 +150,12 @@ object ConflictLayoutEngine {
 
         return zOrdered.mapIndexed { rank, course ->
             val ownNodes = nodesOf(course)
-            val hidden = if (ownNodes.isEmpty()) {
+            // v7.8: 链组态(存在多课层)→ 所有课 hidden=false, 沉底方渲染真卡。
+            // 经典无链组(全叠)→ 原 hidden 判定原样保留。
+            val hidden = if (hasChainLayer) {
+                // 裁剪出界(整课不可见)仍标 hidden(UI 不渲染它)
+                ownNodes.isEmpty()
+            } else if (ownNodes.isEmpty()) {
                 // 裁剪空间内区间为空(如尾向整课出界)→ 界内零可见露出,无论 zRank 一律 hidden
                 // (UI 对 startNode>maxNode 的课本就不渲染,标记派生自 drawList 无锚定风险)
                 true
@@ -146,10 +169,13 @@ object ConflictLayoutEngine {
                     .toSet()
                 ownNodes.all { it in covered }
             }
-            // v7.6 图层语义: N≥3 合流的「N」按图层数——链组整组算 1 层(用户 2026-09-02:
-            // 「分组之后这两节就绑定在一个图层了」),不是裸课数。链式模式下层语义由
-            // chainMode 分支直接接管(组态决定形态,N≥3 合流不适用);无组时图层数=课数。
-            val layerCount = chainGroupsOfCluster.size
+            // chainFront(v7.8 重定义): 该课所在层是多课层且该层当前为顶层 → 全员置顶形态
+            val ownLayer: List<CourseEntity>? = layerOfId[course.id]
+            val isFrontLayer = ownLayer != null && orderedLayers.firstOrNull() === ownLayer
+            val chainFront = hasChainLayer && ownLayer!!.size >= 2 && isFrontLayer
+
+            // v7.6 图层语义: N≥3 合流的「N」按图层数——层算 1 层,不是裸课数。
+            val layerCount = layers.size
             LaidOutCourse(
                 course = course,
                 zRank = rank,
@@ -158,9 +184,9 @@ object ConflictLayoutEngine {
                 else variantFor(
                     style, layerCount,
                     sameStartWithAbove(rank, zOrdered, ::nodesOf),
-                    chainMode = multiGroupIds.isNotEmpty()
+                    chainMode = hasChainLayer && ownLayer!!.size >= 2
                 ),
-                chainFront = chainFrontActive && frontGroupIds.orEmpty().contains(course.id)
+                chainFront = chainFront
             )
         }
     }
@@ -205,61 +231,51 @@ object ConflictLayoutEngine {
     }
 
     /**
-     * 链式分组(v7.1 定版 / v7.5 判据修正, 纯函数可测) —
-     * 用户原话(2026-09-01/02 两次定版): 「有一节课与剩下两节课重叠,并且那两节课之间
-     * 没有重叠部分,这样那两节课可以作为一个分组」。
+     * 图层划分(v7.8 定版, 纯函数可测) ——
+     * 反复从剩余课中提取最大互不重叠集合: 每轮按 startNode 升序排列剩余课,
+     * 用区间图最大独立集经典算法(按右端点贪心)挑出能并排的最多门课作为一个图层,
+     * 剩余课继续处理。
      *
-     * 判据: p、q 同组 ⇔ 存在共同重叠者 o(o 与 p 重叠 且 o 与 q 重叠)且 p、q 互不重叠。
-     * v7.1 的「纯零重叠贪心装箱」是过度推广——它把毫无关系的跨区零重叠课也收进同组
-     * (上半 1-3/4-6 与下半 7-9/10-12 并存时,7-9 被误收进上半组),导致上下半切换
-     * 逻辑串组。v7.5 改为字面实现用户定义: 零重叠只是必要条件,**共同重叠者**才是
-     * 成组的充分条件。
+     * 输入: 簇内课程(已由 findClusters 保证两两经传递闭包相关, 必有至少一对重叠)。
+     * 输出: 多图层列表, 顺序按「每图层内 startNode 升序合并」的全局主序拼接后升序,
+     * 层内按 startNode 升序拼接。
      *
-     * 典型形态: 1-9 / 1-3 / 5-9 → [1-3,5-9](共同重叠者 1-9) + [1-9] 独立;
-     * 两个冲突区并存各成一组互不干扰(1-3,4-6|1-4 + 7-9,10-12|7-12 → 4 组)。
-     * 硬案例 1-3/2-3/2-4: 两两直接重叠,无零重叠对 → 每课一组(N≥3 特殊讨论)。
-     * 同段双课 1-2/1-2 + 3-4/3-4: 无任何课跨段重叠 → 不成组,退化为经典叠放。
-     *
-     * 传递歧义: 一课已入组不再加入后续组(先到先得,按主课判定序枚举)。
-     *
-     * 注意: 纯零重叠(相邻/隔洞)不成簇——本函数只处理已聚簇课程,簇的进出仍由
-     * findClusters 的「区间相交+传递闭包」把守。
+     * 经典形态(用户 2026-09-02 案例):
+     *   - {1-3, 1-4, 4-6}: 1-3/4-6 零重叠可并排 → 图层1 = {1-3,4-6}, 1-4 自成图层2。
+     *   - {1-3, 4-6, 7-9, 2-4, 5-8}: 第一轮 1-3/4-6/7-9 三课可并排 → 图层1,
+     *     剩余 2-4/5-8 零重叠 → 图层2。
+     *   - 三课完全重叠(1-3/1-3/1-3 或 1-3/2-4/3-5 部分重叠无零重叠对):
+     *     每轮最多取 1 课 → 退化为多图层单课。
      */
     fun chainGroups(courses: List<CourseEntity>): List<List<CourseEntity>> {
         if (courses.isEmpty()) return emptyList()
-        val sorted = courses.sortedWith(primaryComparator)
-        val spans = sorted.associate { c ->
-            c.id to c.startNode..(c.startNode + c.step - 1)
-        }
-        fun overlaps(p: CourseEntity, q: CourseEntity): Boolean {
-            val a = spans.getValue(p.id); val b = spans.getValue(q.id)
-            return a.first <= b.last && b.first <= a.last
-        }
-        val groupOf = mutableMapOf<Long, MutableList<CourseEntity>>()
-        // 枚举共同重叠者 o 的每一对被挤课(p,q): p,q 互不重叠且都未定组 → {p,q} 成组
-        for (o in sorted) {
-            for (p in sorted) {
-                if (p.id == o.id || !overlaps(o, p)) continue
-                for (q in sorted) {
-                    if (q.id <= p.id) continue
-                    if (q.id == o.id || !overlaps(o, q)) continue
-                    if (overlaps(p, q)) continue
-                    if (p.id in groupOf || q.id in groupOf) continue
-                    val g = mutableListOf(p, q)
-                    groupOf[p.id] = g
-                    groupOf[q.id] = g
+
+        val remaining = courses.toMutableList()
+        val layers = mutableListOf<List<CourseEntity>>()
+
+        while (remaining.isNotEmpty()) {
+            // 按 startNode 升序排列剩余课
+            val sorted = remaining.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+            // 区间图最大独立集 — 按右端点贪心
+            val layer = mutableListOf<CourseEntity>()
+            var currentEnd = -1
+            for (c in sorted) {
+                val start = c.startNode
+                val inclEnd = c.startNode + c.step - 1
+                if (start > currentEnd) {
+                    layer.add(c)
+                    currentEnd = inclEnd
                 }
             }
+            if (layer.isEmpty()) {
+                // 兜底: 极端情况(不应发生, 仅防御)→ 把第一门课作为单课图层, 防死循环
+                layer.add(sorted.first())
+            }
+            layers.add(layer.sortedBy { it.startNode })
+            remaining.removeAll { c -> layer.any { it.id == c.id } }
         }
-        // 输出: 已定组按组(组内主序),未定组课各自单课组;整体按各首课主序位置排列
-        val emitted = mutableSetOf<MutableList<CourseEntity>>()
-        val result = mutableListOf<List<CourseEntity>>()
-        for (c in sorted) {
-            val g = groupOf[c.id]
-            if (g == null) result.add(listOf(c))
-            else if (emitted.add(g)) result.add(g.sortedWith(primaryComparator))
-        }
-        return result
+
+        return layers
     }
 
     /** 主课三分量比较器,供聚簇输出与 primaryOrder 共用。 */
