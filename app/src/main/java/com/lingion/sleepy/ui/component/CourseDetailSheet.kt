@@ -11,17 +11,26 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.selection.selectable
+import androidx.compose.foundation.selection.selectableGroup
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
@@ -29,6 +38,9 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
 import com.lingion.sleepy.ui.theme.SleepyTheme
+import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.ConflictCluster
+import com.lingion.sleepy.util.ConflictLayoutEngine
 
 /**
  * 课程详情 Bottom Sheet — 仿 switchable.html .modal-backdrop
@@ -41,18 +53,33 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
  * │ 课程  高数                 │
  * │ 老师  张三                 │
  * │ 地点  21B4115中            │
+ * │ ─── 选择默认置顶课程 ─── │ ← 仅当 course ∈ 冲突簇时显示
+ * │ ( ) 工科数学分析          │
+ * │ (•) 电路与电子            │
+ * │ [   编辑课程   ]          │
  * └────────────────────────────┘
  */
 @Composable
 fun CourseDetailSheet(
     course: CourseEntity?,
     timeString: String? = null,
+    allCourses: List<CourseEntity> = emptyList(),
     onDismiss: () -> Unit,
     onEdit: ((CourseEntity) -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     if (course != null) {
+        // 找出 course 所在冲突簇(仅当 day 下 ≥2 课区间相交才有)。
+        // findClusters 按 day 分桶, 簇键 = "${day}:${anchor.startNode}:${anchor.step}",
+        // 与 ConflictClusterCard / topOverrides 用同一公式。
+        val clusterInfo: ConflictCluster? = remember(course, allCourses) {
+            val sameDay = allCourses.filter { it.day == course.day }
+            ConflictLayoutEngine.findClusters(sameDay)
+                .firstOrNull { it.courses.any { c -> c.id == course.id } }
+                ?.takeIf { it.courses.size >= 2 }
+        }
+
         ModalBottomSheet(
             onDismissRequest = onDismiss,
             sheetState = sheetState,
@@ -87,6 +114,14 @@ fun CourseDetailSheet(
                         DetailRow(key = stringResource(R.string.course_field_note), value = course.note)
                     }
 
+                    // 默认置顶选择区 — 仅冲突簇显示
+                    if (clusterInfo != null) {
+                        DefaultTopPickerSection(
+                            cluster = clusterInfo,
+                            selectedCourseId = course.id
+                        )
+                    }
+
                     if (onEdit != null) {
                         Button(
                             onClick = { onEdit(course) },
@@ -98,6 +133,93 @@ fun CourseDetailSheet(
                         }
                     }
                 }
+            }
+        }
+    }
+}
+
+/**
+ * 默认置顶选择区 — v7.9 设计:
+ * - 按图层(链式分组)一行;每行 = 单选 + 该图层全部课程名(顿号分隔)
+ * - 默认无勾选(系统按 primaryComparator 自动)
+ * - 选中 → 写入 AppPrefs.KEY_CONFLICT_DEFAULT_TOP, 持久化
+ * - 行名过长 → 省略号
+ */
+@Composable
+private fun DefaultTopPickerSection(
+    cluster: ConflictCluster,
+    selectedCourseId: Long
+) {
+    val context = LocalContext.current
+    val colors = SleepyTheme.colors
+
+    // 簇键:与 ConflictClusterCard / topOverrides 同公式
+    val anchor = cluster.courses.first()
+    val clusterKey = "${cluster.day}:${anchor.startNode}:${anchor.step}"
+
+    // 图层列表(链式分组后的层)
+    val layers = remember(cluster) { ConflictLayoutEngine.chainGroups(cluster.courses) }
+
+    // 监听 prefs 变化:用户在其他入口改了也要同步刷新选中态
+    val defaultTopMap by AppPrefs.conflictDefaultTopFlow(context).collectAsState(initial = AppPrefs.getConflictDefaultTop(context))
+    val savedRepId: Long? = defaultTopMap[clusterKey]
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .selectableGroup(),
+        verticalArrangement = Arrangement.spacedBy(2.dp)
+    ) {
+        // 标题行
+        Text(
+            text = stringResource(R.string.conflict_default_top_title),
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.onSurface,
+            modifier = Modifier.padding(top = 4.dp, bottom = 4.dp)
+        )
+
+        for (layer in layers) {
+            val layerRepId = layer.first().id
+            // 行文本 = 该图层全部课程名("工科数学分析、大学物理")
+            val label = layer.joinToString("、") { it.courseName.ifBlank { "—" } }
+            // 当前是否已存:已存 = 该 repId 即上次所选;未存 = 系统默认 = 无勾选
+            val selected = savedRepId == layerRepId
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .selectable(
+                        selected = selected,
+                        onClick = {
+                            // 再点同一项 = 取消勾选(回退系统默认)
+                            AppPrefs.putConflictDefaultTop(
+                                context,
+                                clusterKey,
+                                if (selected) null else layerRepId
+                            )
+                        },
+                        role = Role.RadioButton
+                    )
+                    .padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                RadioButton(
+                    selected = selected,
+                    onClick = null, // 整行 selectable 处理
+                    colors = RadioButtonDefaults.colors(
+                        selectedColor = colors.primary,
+                        unselectedColor = colors.onSurfaceVariant
+                    )
+                )
+                Text(
+                    text = label,
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
             }
         }
     }
