@@ -355,4 +355,51 @@ object ConflictLayoutEngine {
         }
         return out
     }
+
+    /**
+     * 周视图行分组结果 — 一行 = 一个渲染行。冲突区域整区域一行(横向分 laneCount 栏,
+     * 同栏多门课纵向堆叠);无冲突课一行一门(全宽)。
+     */
+    data class WeekLaneRow(
+        val courses: List<CourseEntity>,   // 行内全部课,按 startNode 升序
+        val laneOf: Map<Long, Int>,        // courseId → 栏位序号(仅冲突行非空)
+        val laneCount: Int                 // 冲突行 = 栏数;无冲突行 = 1
+    )
+
+    /**
+     * 周视图渲染行分组(v7.10.6, 纯函数可测) — 修复用户 2026-09-02 报障:
+     * UI 层旧实现用直接重叠收集行成员(非传递闭包) + 每栏 firstOrNull 只留一门课,
+     * 导致七课链式区域里 9-11 课被丢、独立区域课被渲染两次。
+     *
+     * 正确性来自结构本身: mergeOverlapping 区域是**划分**(每课恰属一个区域,
+     * 传递闭包保证链式连通课同区域),行成员 = 区域全体,每课恰渲染一次——
+     * 丢课与重复在结构上不可能发生。
+     *
+     * 行序: 各行按行首课 startNode 升序穿插(冲突行行首 = 区域最早课)。
+     * 栏位几何复用 weekLaneSegments 的算法(chainGroups 贪心独立集),与 segments 输出
+     * 严格一致。
+     */
+    fun weekLaneRows(courses: List<CourseEntity>): List<WeekLaneRow> {
+        if (courses.isEmpty()) return emptyList()
+        val rows = mutableListOf<WeekLaneRow>()
+
+        for ((day, dayCourses) in courses.groupBy { it.day }) {
+            val sorted = dayCourses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+            val regions = mergeOverlapping(sorted)
+            for (region in regions) {
+                if (region.size < 2) {
+                    for (c in region) rows.add(WeekLaneRow(listOf(c), emptyMap(), 1))
+                    continue
+                }
+                val lanes = chainGroups(region)
+                val laneOf = HashMap<Long, Int>(region.size)
+                for ((laneIdx, lane) in lanes.withIndex()) {
+                    for (c in lane) laneOf[c.id] = laneIdx
+                }
+                rows.add(WeekLaneRow(region.sortedBy { it.startNode }, laneOf, lanes.size))
+            }
+        }
+        // 跨天区域自然隔离;同天内区域已按 mergeOverlapping 的扫描序(行首节点升序)输出
+        return rows.sortedBy { it.courses.first().startNode }
+    }
 }
