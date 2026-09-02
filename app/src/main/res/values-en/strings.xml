@@ -297,6 +297,8 @@
     <string name="settings_conflict_fold_sub">A folded corner marks cards that hide more courses beneath</string>
     <string name="settings_conflict_rail">Side rail</string>
     <string name="settings_conflict_rail_sub">A color rail on the right lists conflicting courses with vertical names</string>
+    <string name="settings_conflict_top_inset">Top card inset</string>
+    <string name="settings_conflict_top_inset_sub">How much narrower the top card is than its slot: stack = offset distance, rail = right-edge reveal</string>
     <string name="settings_visible_days">Visible Days</string>
     <string name="settings_visible_days_sub">Unchecked days are hidden on the schedule page and in widgets</string>
 

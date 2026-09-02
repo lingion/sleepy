@@ -291,6 +291,8 @@
     <string name="settings_conflict_fold_sub">カード右上に折り返しを付け、下にコマがあることを示す</string>
     <string name="settings_conflict_rail">サイドレール</string>
     <string name="settings_conflict_rail_sub">右端のカラーレールに並べ、授業名は縦書きで表示</string>
+    <string name="settings_conflict_top_inset">上カードの幅狭め</string>
+    <string name="settings_conflict_top_inset_sub">上カードがマスより狭くなる量：重ね表示=ずらし幅、横レール=右端の余白</string>
     <string name="settings_visible_days">表示曜日</string>
     <string name="settings_visible_days_sub">チェックを外した曜日は時間割ページとウィジェットで非表示になります</string>
 
