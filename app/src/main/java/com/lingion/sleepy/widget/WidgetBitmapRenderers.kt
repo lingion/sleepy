@@ -330,15 +330,50 @@ object WidgetBitmapRenderers {
         }
 
         // 课程列表（全部渲染，不再截断）
+        // v7.10.11: 冲突分栏 — 与 App 今日页/周视图同一引擎(weekLaneRows),
+        // 冲突区域一行内并排(栏间浅细竖线), 同栏课纵向堆叠, 无冲突课整宽。
+        // 栏内多课时该行实际高度由最高栏决定(各栏 y 游标独立推进后再取 max 对齐)。
         val rowH = 38f * density
         val rowGap = 10f * density  // 课程胶囊间距放大(用户反馈太紧凑)
         val rowW = w - pad * 2
 
-        data.courses.forEachIndexed { idx, course ->
-            drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density,
-                fontSizeSp = 12f, colorless = colorless, displayMode = displayMode)
-            y += rowH
-            if (idx < data.courses.size - 1) y += rowGap
+        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
+        val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
+        laneRows.forEach { row ->
+            if (row.laneCount == 1) {
+                drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
+                    fontSizeSp = 12f, colorless = colorless, displayMode = displayMode)
+                y += rowH + rowGap
+            } else {
+                val laneGap = 5f * density
+                val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
+                val stackGap = 3f * density
+                // 行高 = 最高栏(栏内课数最多)的总高 — 各栏共享行起点,行尾对齐
+                val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
+                    .maxOf { it.size }.coerceAtLeast(1)
+                val laneRowTotalH = maxStack * rowH + (maxStack - 1) * stackGap
+                repeat(row.laneCount) { li ->
+                    val laneX = pad + li * (laneW + laneGap)
+                    // 栏间浅细竖线(与 App 分栏同语义)
+                    if (li > 0) {
+                        val sepX = laneX - laneGap / 2f
+                        val keepColor = p.color
+                        p.color = sepColor
+                        canvas.drawRect(sepX - 0.5f * density, y, sepX + 0.5f * density,
+                            y + laneRowTotalH, p)
+                        p.color = keepColor
+                    }
+                    val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
+                    var ly = y
+                    laneCourses.forEachIndexed { ci, laneCourse ->
+                        drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
+                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
+                        ly += rowH
+                        if (ci < laneCourses.size - 1) ly += stackGap
+                    }
+                }
+                y += laneRowTotalH + rowGap
+            }
         }
 
         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
@@ -347,6 +382,7 @@ object WidgetBitmapRenderers {
     /**
      * Today 内容全展开高度(dp) — 可滚动条带渲染用。
      * 纯计算零绘制; 布局常量逐一镜像 renderToday (改那边必须同步这边)。
+     * v7.10.11: 冲突分栏行高按最高栏堆叠数算(与 renderToday 分栏镜像)。
      */
     fun todayContentHeightDp(data: WidgetData): Float {
         // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24
@@ -356,7 +392,17 @@ object WidgetBitmapRenderers {
         if (data.courses.isEmpty()) return h + 22f + 14f  // 无课标题 + 休息副行
         val rowH = 38f
         val rowGap = 10f
-        h += data.courses.size * rowH + (data.courses.size - 1) * rowGap
+        val stackGap = 3f
+        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
+        for (row in laneRows) {
+            if (row.laneCount == 1) {
+                h += rowH + rowGap
+            } else {
+                val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
+                    .maxOf { it.size }.coerceAtLeast(1)
+                h += maxStack * rowH + (maxStack - 1) * stackGap + rowGap
+            }
+        }
         h += 14f                                    // 底部 pad
         return h
     }
@@ -430,15 +476,27 @@ object WidgetBitmapRenderers {
 
     /**
      * TwoDay 内容全展开高度(dp) — 可滚动条带渲染用。常量镜像 renderTwoDay。
+     * v7.10.11: 冲突分栏行高按最高栏堆叠数算(与 renderTwoDayRegular 分栏镜像)。
      */
     fun twoDayContentHeightDp(data: TwoDayData): Float {
         var h = 12f + 22f                           // pad + 顶部标签行
         if (!data.hasTable || data.days.isEmpty()) return h + 20f
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 状态 + 提示
-        // 最高一列决定整体高度; 每列: 列头(20) + 课程(44+8)*n / "无课程"一行
+        // 最高一列决定整体高度; 每列: 列头(20) + 冲突分行课程 / "无课程"一行
         val colH = data.days.maxOf { day ->
-            if (day.courses.isEmpty()) 20f + 16f
-            else 20f + day.courses.size * 44f + (day.courses.size - 1) * 8f
+            if (day.courses.isEmpty()) return@maxOf 20f + 16f
+            var cy = 20f
+            val rows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(day.courses)
+            rows.forEach { row ->
+                if (row.laneCount == 1) {
+                    cy += 44f + 8f
+                } else {
+                    val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
+                        .maxOf { it.size }.coerceAtLeast(1)
+                    cy += maxStack * 44f + (maxStack - 1) * 3f + 8f
+                }
+            }
+            cy
         }
         h += colH + 12f                             // 底部 pad
         return h
@@ -1032,12 +1090,44 @@ object WidgetBitmapRenderers {
                 canvas.drawText(ctx.getString(R.string.no_course), colX, cy + 11f * density, p)
             } else {
                 // 胶囊固定最大高度 44dp, 不再撑满整个列
+                // v7.10.11: 冲突分栏 — 同引擎, 冲突课并排半栏(栏间浅细竖线), 同栏堆叠
                 val rowGap = 8f * density
                 val maxRowH = 44f * density
-                day.courses.forEach { course ->
-                    drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density,
-                        fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
-                    cy += maxRowH + rowGap
+                val stackGap = 3f * density
+                val laneGap = 5f * density
+                val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000
+                val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(day.courses)
+                laneRows.forEach { row ->
+                    if (row.laneCount == 1) {
+                        drawCourse(canvas, p, row.courses[0], day.timeJson, colX, cy, colW, maxRowH, s, density,
+                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
+                        cy += maxRowH + rowGap
+                    } else {
+                        val laneW = (colW - laneGap * (row.laneCount - 1)) / row.laneCount
+                        val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
+                            .maxOf { it.size }.coerceAtLeast(1)
+                        val laneRowTotalH = maxStack * maxRowH + (maxStack - 1) * stackGap
+                        repeat(row.laneCount) { li ->
+                            val laneX = colX + li * (laneW + laneGap)
+                            if (li > 0) {
+                                val sepX = laneX - laneGap / 2f
+                                val keepColor = p.color
+                                p.color = sepColor
+                                canvas.drawRect(sepX - 0.5f * density, cy, sepX + 0.5f * density,
+                                    cy + laneRowTotalH, p)
+                                p.color = keepColor
+                            }
+                            val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
+                            var ly = cy
+                            laneCourses.forEach { laneCourse ->
+                                drawCourse(canvas, p, laneCourse, day.timeJson, laneX, ly, laneW, maxRowH, s, density,
+                                    fontSizeSp = 9f, colorless = colorless, displayMode = displayMode)
+                                ly += maxRowH
+                                if (ly < cy + laneRowTotalH) ly += stackGap
+                            }
+                        }
+                        cy += laneRowTotalH + rowGap
+                    }
                 }
             }
 
