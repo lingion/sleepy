@@ -382,14 +382,21 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
 
                 // 课程卡片
-                val sortedCourses = dayData.courses.sortedBy { it.startNode }
-                for (course in sortedCourses) {
+                // v7.10.8: 冲突课分栏 — 与 App 周视图同一引擎(ConflictLayoutEngine.gridDayLanes),
+                // 冲突区域内的课并排各占 1/N 列宽, 无冲突课整列宽。旧实现所有课画满整列宽,
+                // 同节次课互相覆盖(后画盖先画), 小组件上冲突课信息丢失。
+                val laneRects = com.lingion.sleepy.util.ConflictLayoutEngine.gridDayLanes(dayData.courses)
+                for (laneRect in laneRects) {
+                    val course = laneRect.course
                     val startIdx = (course.startNode - 1).coerceAtLeast(0)
                     val step = course.step.coerceAtLeast(1)
                         .coerceAtMost(maxNode - startIdx)
                     val cardTop = bodyTop + gapH + startIdx * (slotH + gapH)
                     val cardH = slotH * step + gapH * (step - 1)
-                    val cardRect = RectF(colX, cardTop, colX + dayW, cardTop + cardH)
+                    // 分栏: 横向按引擎给的起点/宽度比例收缩列宽
+                    val laneX = colX + dayW * laneRect.laneStartFraction
+                    val laneW = dayW * laneRect.laneWidthFraction
+                    val cardRect = RectF(laneX, cardTop, laneX + laneW, cardTop + cardH)
 
                     // 卡片背景色 (v19e: 对齐 CourseTableView palette) — 统一入口 CourseColorUtil (决策 D3)
                     // colorless 灰底传 gridLine(即 surfaceVariant 的 Int), 与原实现一致
