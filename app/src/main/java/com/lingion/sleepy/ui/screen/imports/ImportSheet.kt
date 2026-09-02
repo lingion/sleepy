@@ -1174,6 +1174,12 @@ private suspend fun applyImportPreview(
                 )
             }
             repo.replaceCourses(preview.targetTableId, preview.parseResult.courses)
+            // v7.10.12: 整表替换不过闸门(换的是整张表, 拦截太武断), 但超层时提示
+            val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
+                .daysExceedingTwoLanes(preview.parseResult.courses)
+            if (badDays.isNotEmpty()) {
+                onError(context.getString(R.string.import_three_layers_kept, dayNames(badDays, context)))
+            }
             onImported()
         }
         ImportApplyMode.ImportAsNew -> {
@@ -1191,6 +1197,12 @@ private suspend fun applyImportPreview(
             )
             repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
             repo.setDefault(newTableId)
+            // v7.10.12: 整表新建不过闸门, 超层时提示(同 ReplaceCurrent 策略)
+            val badDaysNew = com.lingion.sleepy.util.ConflictLayoutEngine
+                .daysExceedingTwoLanes(preview.parseResult.courses)
+            if (badDaysNew.isNotEmpty()) {
+                onError(context.getString(R.string.import_three_layers_kept, dayNames(badDaysNew, context)))
+            }
             onImported()
         }
         ImportApplyMode.AppendNonConflict -> {
@@ -1201,7 +1213,18 @@ private suspend fun applyImportPreview(
                 onError(context.getString(R.string.import_all_conflict))
                 return
             }
-            repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            // v7.10.12 三层闸门(追加模式) — 合并现有课+新课后按区域数栏, 超 2 栏的课剔除;
+            // 全被剔除则报错, 部分剔除则提示跳过了哪些天的课
+            val survivors = dropThreeLayerCourses(preview.existingCourses, cleanCourses)
+            if (survivors.isEmpty()) {
+                onError(context.getString(R.string.import_all_conflict))
+                return
+            }
+            if (survivors.size < cleanCourses.size) {
+                val droppedDays = conflictDaysBetween(cleanCourses, survivors)
+                onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
+            }
+            repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
             // 用户反馈: 追加课程时, 若导入数据节次超过课表, 课表应自动延伸
             // (课表仍只有 10 节 → 11-13 节课程入库但渲染期看不到, 等于静默丢)
             val existingTable = repo.getTable(preview.targetTableId)
@@ -1235,17 +1258,50 @@ private suspend fun applyImportPreview(
                 )
             )
             // 当前课表原课 + 导入课程合并导入新课表(跳过与原课冲突的)
+            // v7.10.12: 合并后同样过三层闸门
             val cleanIncoming = incoming.courses.filterNot { inc ->
                 preview.existingCourses.any { existing -> coursesConflict(inc, existing) }
             }
             val oldCourses = base?.let { repo.getCourses(it.id) } ?: emptyList()
             val allCourses = oldCourses + cleanIncoming
-            repo.insertCourses(allCourses.map { it.copy(id = 0, tableId = newTableId) })
+            val gated = dropThreeLayerCourses(oldCourses, cleanIncoming)
+            if (gated.size < allCourses.size) {
+                val droppedDays = conflictDaysBetween(allCourses, gated)
+                onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
+            }
+            repo.insertCourses(gated.map { it.copy(id = 0, tableId = newTableId) })
             repo.setDefault(newTableId)
             onImported()
         }
     }
 }
+
+/**
+ * v7.10.12 三层冲突闸门(导入路径) — keepers 保持不变, 候选逐门试探:
+ * 加入后若使其所在 day 的 chainGroups 分组数 > 2 则剔除该候选。
+ * 策略: 导入数据服从闸门(超层课不入库), 现有课永不动。
+ */
+private fun dropThreeLayerCourses(
+    keepers: List<com.lingion.sleepy.data.entity.CourseEntity>,
+    candidates: List<com.lingion.sleepy.data.entity.CourseEntity>
+): List<com.lingion.sleepy.data.entity.CourseEntity> {
+    val out = keepers.toMutableList()
+    return candidates.filter { cand ->
+        val trial = out + cand
+        com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(trial).isEmpty().also { ok ->
+            if (ok) out.add(cand)
+        }
+    }
+}
+
+/** 被剔除课所在的 day 集合(用于提示文案)。 */
+private fun conflictDaysBetween(
+    before: List<com.lingion.sleepy.data.entity.CourseEntity>,
+    after: List<com.lingion.sleepy.data.entity.CourseEntity>
+): Set<Int> = (before.toSet() - after.toSet()).map { it.day }.toSet()
+
+private fun dayNames(days: Set<Int>, context: android.content.Context): String =
+    days.sorted().joinToString(" / ") { com.lingion.sleepy.util.DateUtils.localizedDay(it, context) }
 
 private fun coursesConflict(a: CourseEntity, b: CourseEntity): Boolean {
     if (a.day != b.day) return false
