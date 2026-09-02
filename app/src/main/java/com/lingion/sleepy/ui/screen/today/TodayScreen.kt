@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -68,6 +69,13 @@ fun TodayScreen(
         it.day == dayOfWeek && it.inWeek(actualWeek)
     }.sortedBy { it.startNode }
 
+    // v7.10.10 今日页冲突分栏 — 与周视图同一引擎同一分组(weekLaneRows):
+    // 冲突区域一行内并排分栏(栏间浅细竖线), 无冲突课整宽单行。
+    // 分组在 LazyColumn 外 remember(LazyListScope 非 composable 上下文)。
+    val laneRows = remember(todayCourses) {
+        com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(todayCourses)
+    }
+
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
     LazyColumn(
@@ -85,12 +93,52 @@ fun TodayScreen(
             item {
                 SectionHead(title = stringResource(R.string.widget_today_label), action = stringResource(R.string.n_periods, todayCourses.size))
             }
-            items(todayCourses, key = { it.id }) { course ->
-                TodayCourseCard(
-                    course = course,
-                    timeJson = state.currentTable?.timeJson,
-                    onClick = { selectedCourse = course }
-                )
+            // v7.10.10 今日页冲突分栏 — 分组已提至 LazyColumn 外
+            laneRows.forEach { row ->
+                if (row.laneCount == 1) {
+                    item(key = row.courses[0].id) {
+                        TodayCourseCard(
+                            course = row.courses[0],
+                            timeJson = state.currentTable?.timeJson,
+                            onClick = { selectedCourse = row.courses[0] }
+                        )
+                    }
+                } else {
+                    item(key = "conflict-${row.courses.first().id}") {
+                        val laneGap = 6.dp
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(laneGap)
+                        ) {
+                            repeat(row.laneCount) { li ->
+                                if (li > 0) {
+                                    // 栏间浅细竖线 — 与周视图分栏同款
+                                    Box(
+                                        modifier = Modifier
+                                            .width(0.5.dp)
+                                            .fillMaxHeight()
+                                            .background(
+                                                SleepyTheme.colors.onSurface.copy(alpha = SleepyTheme.Alpha.hairline)
+                                            )
+                                    )
+                                }
+                                val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
+                                Column(
+                                    modifier = Modifier.weight(1f),
+                                    verticalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    laneCourses.forEach { laneCourse ->
+                                        TodayCourseCard(
+                                            course = laneCourse,
+                                            timeJson = state.currentTable?.timeJson,
+                                            onClick = { selectedCourse = laneCourse }
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
