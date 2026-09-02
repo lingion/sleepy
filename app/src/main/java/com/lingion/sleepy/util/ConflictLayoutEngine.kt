@@ -118,16 +118,37 @@ object ConflictLayoutEngine {
                 course = course,
                 zRank = rank,
                 hidden = hidden,
-                variant = if (!hidden) ConflictVariant.NONE else variantFor(style, n)
+                variant = if (!hidden) ConflictVariant.NONE
+                else variantFor(style, n, sameStartWithAbove(rank, zOrdered, ::nodesOf))
             )
         }
     }
 
-    /** hidden 课的 variant 映射: fold/rail 直配;stack 在 N=2 出 STACK,N≥3 合流 FOLD。 */
-    private fun variantFor(style: String, clusterSize: Int): ConflictVariant = when (style) {
-        "fold" -> ConflictVariant.FOLD
-        "rail" -> ConflictVariant.RAIL
-        else -> if (clusterSize >= 3) ConflictVariant.FOLD else ConflictVariant.STACK
+    /**
+     * hidden 课的 variant 映射(视觉修订 v3,用户 2026-09-01 定版):
+     * rail 直配(A/C 全场景通用);FOLD 仅当与 z 序紧邻上层课**同起点**可用
+     * (起点对不齐 → 缺角处露不出对齐的角,只有 A/C 能用)→ 否则回落 STACK;
+     * stack 样式 N≥3 合流 FOLD 的规则保留,但同样受同起点闸门约束。
+     */
+    private fun variantFor(
+        style: String,
+        clusterSize: Int,
+        sameStartWithAbove: Boolean
+    ): ConflictVariant = when {
+        style == "rail" -> ConflictVariant.RAIL
+        style == "fold" -> if (sameStartWithAbove) ConflictVariant.FOLD else ConflictVariant.STACK
+        clusterSize >= 3 -> if (sameStartWithAbove) ConflictVariant.FOLD else ConflictVariant.STACK
+        else -> ConflictVariant.STACK
+    }
+
+    /** hidden 课与其 z 序紧邻上层课起点是否一致(clamp 后;无上层课 → false)。 */
+    private fun sameStartWithAbove(
+        rank: Int,
+        zOrdered: List<CourseEntity>,
+        nodesOf: (CourseEntity) -> IntRange
+    ): Boolean {
+        val above = zOrdered.getOrNull(rank - 1) ?: return false
+        return nodesOf(above).first == nodesOf(zOrdered[rank]).first
     }
 
     /** 主课三分量比较器,供聚簇输出与 primaryOrder 共用。 */
