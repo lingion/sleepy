@@ -8,12 +8,14 @@ data class ConflictCluster(val day: Int, val courses: List<CourseEntity>)
 /** 变体标记类型 — NONE=无标记(真卡自然露出),STACK/FOLD/RAIL 见设计文档 §3。 */
 enum class ConflictVariant { NONE, STACK, FOLD, RAIL }
 
-/** 单课布局结果 — zRank 0=顶层;hidden=零露出;variant 仅 hidden 课非 NONE。 */
+/** 单课布局结果 — zRank 0=顶层;hidden=零露出;variant 仅 hidden 课非 NONE。
+ *  chainFront(v7.2)= 该课属于链式多课组且该组当前在顶层链(全尺寸拼条渲染依据)。 */
 data class LaidOutCourse(
     val course: CourseEntity,
     val zRank: Int,
     val hidden: Boolean,
-    val variant: ConflictVariant
+    val variant: ConflictVariant,
+    val chainFront: Boolean = false
 )
 
 /**
@@ -83,11 +85,28 @@ object ConflictLayoutEngine {
         val ordered = primaryOrder(cluster.courses)
         val n = ordered.size
 
-        // zRank 0 = 顶层。override 命中 → 该课提前,其余保持主课判定序相对顺序。
-        val zOrdered = when (topOverrideId) {
-            null -> ordered
-            else -> ordered.filter { it.id == topOverrideId } + ordered.filter { it.id != topOverrideId }
+        // v7.2 链式默认态: 有链组(多课组)且无 override 时,链组整组置前(组内按
+        // startNode 升序拼条),其余课(重叠者/单课组)按主课判定序垫后。
+        // 用户实测缺陷: 原默认 z 序按 step 降把重叠长课排最前,链组被遮——
+        // 视觉呈现为「长课和尾部露出的短课拼一起」,分组形同虚设。
+        // 有 override 时维持单课置顶语义(点击链组课 = 组代表置顶,链组自然随代表前置)。
+        val chainGroupsOfCluster = chainGroups(cluster.courses)
+        val multiGroupIds: Set<Long> = chainGroupsOfCluster
+            .filter { it.size >= 2 }
+            .flatMap { g -> g.map { it.id } }
+            .toSet()
+        val zOrdered = when {
+            topOverrideId != null ->
+                ordered.filter { it.id == topOverrideId } + ordered.filter { it.id != topOverrideId }
+            multiGroupIds.isNotEmpty() ->
+                // 链组置前: 组内按 startNode 升序(拼接条自然序);其余课垫后按主课判定序
+                chainGroupsOfCluster.filter { it.size >= 2 }
+                    .flatMap { g -> g.sortedBy { it.startNode } } +
+                    ordered.filter { it.id !in multiGroupIds }
+            else -> ordered
         }
+        // 链前置标记: 无 override 且该课属于多课组(渲染层据此全尺寸拼条)
+        val chainFrontActive = topOverrideId == null && multiGroupIds.isNotEmpty()
 
         // 露出计算区间: maxNode 非 null 时先 clamp 进 [1, maxNode](与 UI 裁剪空间一致);
         // clamp 后为空(整课出界)→ 空区间,露出集恒空 → hidden(UI 本就不渲染该课)。
@@ -119,23 +138,35 @@ object ConflictLayoutEngine {
                 zRank = rank,
                 hidden = hidden,
                 variant = if (!hidden) ConflictVariant.NONE
-                else variantFor(style, n, sameStartWithAbove(rank, zOrdered, ::nodesOf))
+                else variantFor(
+                    style, n,
+                    sameStartWithAbove(rank, zOrdered, ::nodesOf),
+                    chainMode = chainGroupsOfCluster.any { it.size >= 2 } || multiGroupIds.isNotEmpty()
+                ),
+                chainFront = chainFrontActive && course.id in multiGroupIds
             )
         }
     }
 
     /**
-     * hidden 课的 variant 映射(视觉修订 v3,用户 2026-09-01 定版):
+     * hidden 课的 variant 映射(视觉修订 v3,用户 2026-09-01 定版;v7.2 链式分支):
      * rail 直配(A/C 全场景通用);FOLD 仅当与 z 序紧邻上层课**同起点**可用
      * (起点对不齐 → 缺角处露不出对齐的角,只有 A/C 能用)→ 否则回落 STACK;
      * stack 样式 N≥3 合流 FOLD 的规则保留,但同样受同起点闸门约束。
+     * 链式模式(chainMode=true): hidden 课是被链组全遮的重叠者,与用户 2026-09-01
+     * 链式折角定版一致——「哪怕 AC 连起来 B 待在后面,A/C 都折角,B 折角点击切换」,
+     * 折角不再要求同起点(fold 样式与 N≥3 合流均直配 FOLD)。
      */
     private fun variantFor(
         style: String,
         clusterSize: Int,
-        sameStartWithAbove: Boolean
+        sameStartWithAbove: Boolean,
+        chainMode: Boolean = false
     ): ConflictVariant = when {
         style == "rail" -> ConflictVariant.RAIL
+        // 链式模式: hidden 课=被链组全遮的重叠者,直接按样式走(stack→STACK 条带,
+        // fold→FOLD),不做 N≥3 合流、不看同起点——链式形态由链组决定
+        chainMode -> if (style == "fold") ConflictVariant.FOLD else ConflictVariant.STACK
         style == "fold" -> if (sameStartWithAbove) ConflictVariant.FOLD else ConflictVariant.STACK
         clusterSize >= 3 -> if (sameStartWithAbove) ConflictVariant.FOLD else ConflictVariant.STACK
         else -> ConflictVariant.STACK
