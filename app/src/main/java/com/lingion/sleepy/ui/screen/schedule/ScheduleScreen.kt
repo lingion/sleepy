@@ -283,13 +283,15 @@ private fun TopBar(
             .padding(horizontal = 12.dp, vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-        // v7.10.7: 翻页三件套(箭头+胶囊+箭头)整体居中、箭头紧贴胶囊 —
-        // 加课/分享提到顶栏引导(用户 2026-09-02: 添加课表太没引导性)
-        Row(
-            modifier = Modifier.weight(1f),
-            horizontalArrangement = Arrangement.Center,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
+        // v7.10.12: 三件套改 Box 叠加实现屏幕正中 —
+        // 旧 weight(1f)+Center 是在"扣除右侧按钮后的剩余空间"里居中, 视觉偏左;
+        // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
+        Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            // 翻页三件套(箭头+胶囊+箭头) — 箭头紧贴胶囊
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
             WeekNavButton(icon = Icons.Outlined.ChevronLeft, onClick = onPrevWeek)
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -379,18 +381,24 @@ private fun TopBar(
             WeekNavButton(icon = Icons.Outlined.ChevronRight, onClick = onNextWeek)
         }
 
-        // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底
-        WeekNavButton(
-            icon = Icons.Outlined.Add,
-            contentDescriptionRes = R.string.schedule_add_course,
-            onClick = onAddCourse
-        )
-        Spacer(modifier = Modifier.width(6.dp))
-        WeekNavButton(
-            icon = Icons.Outlined.IosShare,
-            contentDescriptionRes = R.string.schedule_share_table,
-            onClick = onShare
-        )
+            // 右侧操作区: 加课 + 分享 — 与翻页箭头同款圆形底, Box 右缘绝对定位
+            Row(
+                modifier = Modifier.align(Alignment.CenterEnd),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                WeekNavButton(
+                    icon = Icons.Outlined.Add,
+                    contentDescriptionRes = R.string.schedule_add_course,
+                    onClick = onAddCourse
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                WeekNavButton(
+                    icon = Icons.Outlined.IosShare,
+                    contentDescriptionRes = R.string.schedule_share_table,
+                    onClick = onShare
+                )
+            }
+        }
     }
 }
 
