@@ -864,6 +864,7 @@ private fun DetailDayCard(
                         // (栏内课互不重叠——chainGroups 独立集保证,堆叠即正确时序)。
                         // v7.10.4: BoxWithConstraints 拿 lane 实宽 → 字体/间距按比例压缩
                         // (两栏模式下 lane 半宽,不缩则字全挤在一起——用户 2026-09-02)
+                        // v7.10.10: 栏间画浅细竖分隔线(用户 2026-09-02)
                         val laneCount = row.laneCount
                         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                             val laneGap = sd(6f)
@@ -875,6 +876,17 @@ private fun DetailDayCard(
                                 horizontalArrangement = Arrangement.spacedBy(laneGap)
                             ) {
                                 repeat(laneCount) { li ->
+                                    if (li > 0) {
+                                        // 栏间浅细竖线: 0.5dp 宽, onSurface 0.3 透明度, 高度随行
+                                        Box(
+                                            modifier = Modifier
+                                                .width(0.5.dp)
+                                                .fillMaxHeight()
+                                                .background(
+                                                    colors.onSurface.copy(alpha = SleepyTheme.Alpha.hairline)
+                                                )
+                                        )
+                                    }
                                     val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
                                     Box(modifier = Modifier.weight(1f)) {
                                         Column(verticalArrangement = Arrangement.spacedBy(sd(5f))) {
