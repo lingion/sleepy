@@ -25,6 +25,7 @@
     <string name="schedule_add_course">添加课程</string>
     <string name="schedule_share_table">分享课表</string>
     <string name="exit_press_back_again">再按一次返回退出</string>
+    <string name="conflict_three_layers_rejected">同一时段最多两层课程重叠，%1$s 的冲突超过两层，请调整时间</string>
     <string name="schedule_current_week">第 %1$d 周</string>
     <string name="schedule_no_course_today">今天没有课哦</string>
 
