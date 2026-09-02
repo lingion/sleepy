@@ -152,36 +152,39 @@ object ConflictLayoutEngine {
     }
 
     /**
-     * 链式分组(v7, 纯函数可测) — 把簇内课程按「能否拼接成一条互不覆盖的链」分层:
+     * 链式分组(v7.1, 纯函数可测,用户 2026-09-01 定版判据) —
+     * 同组 = 两课**零重叠**(中间隔洞也算同组: 1-3 与 5-9 可拼;
+     * 共享任何一节即重叠: 1-3 与 3-5 不可拼)。
      *
-     * 两课可同组 = 区间**互不重叠**(直接分离或端点衔接,拼起来无断裂无覆盖)。
-     * 贪心拼接: 按 startNode 升序扫,当前课与组内已收课两两不重叠才能入组,否则开新组。
-     * 组间按 startNode 升序;组内按 startNode 升序(拼接链的自然顺序)。
+     * 典型形态: 一课与两课都重叠、那两课彼此零重叠 → 那两课归一组,
+     * 重叠者独立一组(1-9 / 1-3 / 5-9 → [1-3,5-9] + [1-9])。
      *
-     * 例: A=1-2 / B=2-3 / C=3-4 → A+C 互不重叠同组(拼成 1..4 一条),B 与两者重叠
-     * 单独一组 → 簇内两层: AC 一条 + B 一条,点击 B = B 提到整簇顶层。
+     * 实现: 按主课判定序排序后贪心装箱——每课放入「与组内已有课全部零重叠」的第一组,
+     * 放不下则开新组。组内按 startNode 升序(拼接链自然序),组间按首课 startNode 升序。
+     *
      * 硬案例 1-3/2-3/2-4: 两两直接重叠 → 每课一组(N≥3 特殊讨论)。
-     * 完全重叠 1-3/1-3 → 两组(每课自占一条,拼接不成立——同位课只能叠放)。
+     * 完全重叠 1-3/1-3 → 两组(同位课只能叠放)。
      *
-     * 注意: 端点衔接(相邻不重叠)单独不成簇——本函数只处理已聚簇课程,簇的进出
-     * 仍由 findClusters 的「区间相交+传递闭包」把守,链式相邻(1-2/2-3/3-4)天然同簇。
+     * 注意: 零重叠(相邻/隔洞)单独不成簇——本函数只处理已聚簇课程,簇的进出
+     * 仍由 findClusters 的「区间相交+传递闭包」把守。
      */
     fun chainGroups(courses: List<CourseEntity>): List<List<CourseEntity>> {
         if (courses.isEmpty()) return emptyList()
-        val sorted = courses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+        val sorted = courses.sortedWith(primaryComparator)
         val groups = mutableListOf<MutableList<CourseEntity>>()
-        val groupEnds = mutableListOf<Int>() // 各组已拼链的当前末端
+        val groupSpans = mutableListOf<MutableList<IntRange>>() // 各组已收课的区间表
         for (c in sorted) {
-            val end = c.startNode + c.step - 1
-            // 找第一个「末端 +1 == 本课起点」的组(无缝衔接,拼起来才是完整一条;
-            // 隔洞不拼——视觉上是断的)。同组内保持互不重叠由衔接条件天然保证。
-            val idx = groupEnds.indexOfFirst { it + 1 == c.startNode }
+            val r = c.startNode..(c.startNode + c.step - 1)
+            // 找第一个与本课零重叠的组(组内任一区间与 r 都不相交)
+            val idx = groupSpans.indexOfFirst { spans ->
+                spans.none { s -> r.first <= s.last && s.first <= r.last }
+            }
             if (idx >= 0) {
                 groups[idx].add(c)
-                groupEnds[idx] = end
+                groupSpans[idx].add(r)
             } else {
                 groups.add(mutableListOf(c))
-                groupEnds.add(end)
+                groupSpans.add(mutableListOf(r))
             }
         }
         return groups
