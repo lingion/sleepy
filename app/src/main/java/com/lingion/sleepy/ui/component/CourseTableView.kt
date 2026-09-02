@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
@@ -872,12 +873,13 @@ private fun DetailDayCard(
                             val laneScale = weekLaneFontScale(laneW)
                             val hideSide = weekLaneHideSideLabel(laneW)
                             Row(
-                                modifier = Modifier.fillMaxWidth(),
+                                modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
                                 horizontalArrangement = Arrangement.spacedBy(laneGap)
                             ) {
                                 repeat(laneCount) { li ->
                                     if (li > 0) {
                                         // 栏间浅细竖线: 0.5dp 宽, onSurface 0.3 透明度, 高度随行
+                                        // (Row IntrinsicSize.Min → fillMaxHeight 有界, 随最高栏撑满)
                                         Box(
                                             modifier = Modifier
                                                 .width(0.5.dp)
