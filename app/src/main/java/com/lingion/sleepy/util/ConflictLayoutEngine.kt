@@ -402,4 +402,42 @@ object ConflictLayoutEngine {
         // 跨天区域自然隔离;同天内区域已按 mergeOverlapping 的扫描序(行首节点升序)输出
         return rows.sortedBy { it.courses.first().startNode }
     }
+
+    // =====================================================================================
+    // v7.10.8 WeekGrid 网格小组件冲突分栏 — 与 App 周视图同一引擎,一份真相源
+    // =====================================================================================
+
+    /**
+     * 网格小组件单日冲突分栏结果(纯函数可测) — 每课一段: 横向起点比例与宽度比例。
+     * 冲突课并排各占半栏(1/lanesCount 宽), 无冲突课独占整列宽(fractionStart=0, widthFraction=1)。
+     * 与 App 周视图同算法(mergeOverlapping 分区 + chainGroups 分栏)。
+     */
+    data class GridLaneRect(
+        val course: CourseEntity,
+        val laneStartFraction: Float,   // 横向起点占列宽比例 0..1
+        val laneWidthFraction: Float    // 横向宽度占列宽比例 0..1
+    )
+
+    /**
+     * 网格小组件单日分栏(纯函数) — WeekGrid 渲染器对每天的课调一次。
+     * 输入无须预排序;输出按 startNode 升序。laneGap 由渲染器自行扣除
+     * (本函数只给比例,像素几何归渲染器)。
+     */
+    fun gridDayLanes(courses: List<CourseEntity>): List<GridLaneRect> {
+        if (courses.isEmpty()) return emptyList()
+        val out = mutableListOf<GridLaneRect>()
+        val sorted = courses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+        for (region in mergeOverlapping(sorted)) {
+            if (region.size < 2) {
+                for (c in region) out.add(GridLaneRect(c, 0f, 1f))
+                continue
+            }
+            val lanes = chainGroups(region)
+            val w = 1f / lanes.size
+            for ((laneIdx, lane) in lanes.withIndex()) {
+                for (c in lane) out.add(GridLaneRect(c, laneIdx * w, w))
+            }
+        }
+        return out.sortedBy { it.course.startNode }
+    }
 }
