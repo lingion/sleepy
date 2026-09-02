@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictVariant
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
@@ -20,8 +22,9 @@ class ConflictCardGeometryTest {
     private val gapH = 4.dp
 
     private fun rect(
-        startNode: Int, ownRows: Int, isTop: Boolean, form: ConflictVariant, minStart: Int = 1
-    ) = conflictCardRect(startNode, ownRows, isTop, form, colW, rowH, gapH, minStart)
+        startNode: Int, ownRows: Int, isTop: Boolean, form: ConflictVariant, minStart: Int = 1,
+        topInset: Dp = STACK_OFFSET_DP.dp // STACK 基线用 8dp(v4 定版偏移);RAIL 测试自行传默认
+    ) = conflictCardRect(startNode, ownRows, isTop, form, colW, rowH, gapH, minStart, topInset)
 
     // ============================ 规则 1: 右下 = 自身区间右下 ============================
 
@@ -35,6 +38,14 @@ class ConflictCardGeometryTest {
         assertEquals(104.dp, r.height) // ownH - 8
         // 下缘 8+104=112 = 节2底(2*58-4),严格在自身区间内
         assertEquals(rowH * 2 - gapH, r.y + r.height)
+
+        // 滑杆默认值(10dp)下同样不越自身区间: y=112-102=10
+        val d = conflictCardRect(
+            1, 2, false, ConflictVariant.STACK, colW, rowH, gapH, 1,
+            topInset = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+        )
+        assertEquals(10.dp, d.y)
+        assertEquals(rowH * 2 - gapH, d.y + d.height)
     }
 
     @Test
@@ -81,22 +92,27 @@ class ConflictCardGeometryTest {
 
     @Test
     fun rail_narrow_top_follows_top_course_and_sizes_invariant() {
-        // C 方案: 谁在顶谁窄。短(2行)顶→宽90高112;切换后长(3行)顶→宽90高170,短变全宽底卡。
-        val shortAsTop = rect(1, 2, isTop = true, form = ConflictVariant.RAIL)
-        val longAsBottom = rect(1, 3, isTop = false, form = ConflictVariant.RAIL)
-        assertEquals(90.dp, shortAsTop.width)   // colW - RAIL_INSET 10
+        // C 方案: 谁在顶谁窄。RAIL 用滑杆默认 topInset=10 → 窄卡宽 90。
+        val inset = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+        val shortAsTop = rect(1, 2, isTop = true, form = ConflictVariant.RAIL, topInset = inset)
+        val longAsBottom = rect(1, 3, isTop = false, form = ConflictVariant.RAIL, topInset = inset)
+        assertEquals(colW - inset, shortAsTop.width)
         assertEquals(112.dp, shortAsTop.height) // 自身节数,不是簇高
 
-        val longAsTop = rect(1, 3, isTop = true, form = ConflictVariant.RAIL)
-        val shortAsBottom = rect(1, 2, isTop = false, form = ConflictVariant.RAIL)
-        assertEquals(90.dp, longAsTop.width)    // 窄卡跟顶课走
+        val longAsTop = rect(1, 3, isTop = true, form = ConflictVariant.RAIL, topInset = inset)
+        val shortAsBottom = rect(1, 2, isTop = false, form = ConflictVariant.RAIL, topInset = inset)
+        assertEquals(colW - inset, longAsTop.width)
         assertEquals(170.dp, longAsTop.height)
         assertEquals(100.dp, shortAsBottom.width) // 全宽
         assertEquals(112.dp, shortAsBottom.height) // 底卡仍按自己节数
 
         // 往返不漂移
-        assertEquals(shortAsTop, rect(1, 2, isTop = true, form = ConflictVariant.RAIL))
-        assertEquals(longAsTop, rect(1, 3, isTop = true, form = ConflictVariant.RAIL))
+        assertEquals(shortAsTop, rect(1, 2, isTop = true, form = ConflictVariant.RAIL, topInset = inset))
+        assertEquals(longAsTop, rect(1, 3, isTop = true, form = ConflictVariant.RAIL, topInset = inset))
+
+        // 滑杆任意值下窄卡跟随: topInset=16 → 宽 84;尺寸恒等规则对任意 inset 成立
+        val at16 = conflictCardRect(1, 2, true, ConflictVariant.RAIL, colW, rowH, gapH, 1, topInset = 16.dp)
+        assertEquals(84.dp, at16.width)
     }
 
     @Test
@@ -122,12 +138,13 @@ class ConflictCardGeometryTest {
 
     @Test
     fun rail_mark_bounded_to_own_interval() {
-        // hidden 1-2: RAIL 命中区高=自身节数+内延20=132,但向下不越自身区间底过多——
-        // 实现取 min(ownH+20, clusterH-y);此处 clusterH 是 3 节簇(170),故 132。
+        // hidden 1-2: RAIL 命中区宽=默认收窄量(10)+内延20=30?否——默认 topInset 已统一为
+        // AppPrefs.CONFLICT_TOP_INSET_DEFAULT=10,宽=10+20=30 是 v5 值;v6 默认同源后
+        // 宽=10+20=30。但 STACK_OFFSET(8) 不再是 RAIL 默认——此处断言跟随单一真值。
         val m = conflictMarkRect(
             1, 2, ConflictVariant.RAIL, colW, rowH, gapH, minStart = 1, clusterH = rowH * 3 - gapH
         )
-        assertEquals(30.dp, m.width)  // 10 + 20
+        assertEquals(AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp + 20.dp, m.width)
         assertEquals(132.dp, m.height)
         assertEquals(0.dp, m.y)
         // y + h = 132 ≤ 自身区间底 112 + 内延 20 = 可接受的容差上界
