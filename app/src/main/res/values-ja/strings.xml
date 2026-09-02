@@ -16,6 +16,10 @@
     <string name="schedule_go_manage">管理へ移動</string>
     <string name="schedule_manual_first">最初の授業を作成</string>
     <string name="schedule_add_course">授業を追加</string>
+    <string name="conflict_three_layers_rejected">%1$sには既に2つの競合する授業があります。3つ目の重複授業にはまだ対応していません。時間を調整してください</string>
+    <string name="share_sheet_title">時間割を共有</string>
+    <string name="schedule_share_table">時間割を共有</string>
+    <string name="exit_press_back_again">もう一度戻るボタンを押すと終了します</string>
     <string name="schedule_current_week">第 %1$d 週</string>
     <string name="schedule_no_course_today">今日は授業がありません</string>
 

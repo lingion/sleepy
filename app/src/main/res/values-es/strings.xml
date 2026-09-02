@@ -16,6 +16,10 @@
     <string name="schedule_go_manage">Ir a Gestionar</string>
     <string name="schedule_manual_first">Crear primer curso</string>
     <string name="schedule_add_course">Añadir curso</string>
+    <string name="conflict_three_layers_rejected">%1$s ya tiene dos cursos en conflicto. Todavía no se admite un tercer curso superpuesto; ajusta el horario</string>
+    <string name="share_sheet_title">Compartir horario</string>
+    <string name="schedule_share_table">Compartir horario</string>
+    <string name="exit_press_back_again">Pulsa atrás de nuevo para salir</string>
     <string name="schedule_current_week">Semana %1$d</string>
     <string name="schedule_no_course_today">No hay clases hoy</string>
 
