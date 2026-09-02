@@ -225,6 +225,19 @@ internal fun clusterForm(
 internal data class ConflictRect(val x: Dp, val y: Dp, val width: Dp, val height: Dp)
 
 /**
+ * v7.6 图层语义(纯 JVM 可测) — N 徽标的「N」按**图层数**,不按裸课数。
+ * 用户 2026-09-02: 「分组之后这两节就绑定在一个图层了」——多课链组整组是一层,
+ * 单课是一层。{1-3,4-6} 组 + 1-6 重叠者 = 2 图层(裸课数 3),徽标不该按 3 出。
+ * 防御: 组切分与课数对不上(输入源漂移)→ 回落裸课数,不显示错数。
+ */
+internal fun conflictBadgeLayerCount(groupSizes: List<Int>, rawCount: Int): Int =
+    if (groupSizes.sum() == rawCount) groupSizes.size else rawCount
+
+/** N 徽标可见性 = 图层 N≥3 且存在 hidden 课(N≥3 的逃生门语义,单位是图层)。 */
+internal fun conflictShowBadge(layerCount: Int, hiddenCount: Int): Boolean =
+    layerCount >= 3 && hiddenCount > 0
+
+/**
  * 簇内单卡放置矩形(纯 JVM 可测,v5)。
  *
  * 锚点规则(用户 2026-09-01 定版): 一切锚定都是**相对该课自身区间**的方位,不是簇格位的——
@@ -342,7 +355,7 @@ fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
  * 点击语义(设计 §4,不变):
  *   点顶卡 → onCourseClick(顶层课)
  *   点露出带/标记 → onPickTop(该课 id)
- *   N 徽标(N≥3) → AlertDialog 列簇内全部课课名点选 → onPickTop(id)
+ *   N 徽标(图层 N≥3,v7.6 链组整组算一层) → AlertDialog 列簇内全部课课名点选 → onPickTop(id)
  */
 @Composable
 fun ConflictClusterCard(
@@ -374,8 +387,15 @@ fun ConflictClusterCard(
     if (drawList.isEmpty()) return
     val hiddenCount = drawList.count { it.hidden }
 
-    // N 徽标可见性: N≥3 且存在 hidden 课
-    val showBadge = drawList.size >= 3 && hiddenCount > 0
+    // N 徽标可见性: 图层 N≥3 且存在 hidden 课(v7.6: N 按图层数——链组整组是一层)
+    val chainGroups = remember(cluster) {
+        ConflictLayoutEngine.chainGroups(drawList.map { it.course })
+    }
+    val layerCount = conflictBadgeLayerCount(
+        groupSizes = chainGroups.map { it.size },
+        rawCount = drawList.size
+    )
+    val showBadge = conflictShowBadge(layerCount, hiddenCount)
     var showPicker by rememberSaveable { mutableStateOf(false) }
 
     // 绘制序(评审 Critical 修复): 非顶卡(zRank 降序) → 顶卡 → hidden 课 Mark 命中区(overlay 层)。
@@ -427,9 +447,7 @@ fun ConflictClusterCard(
     // v7 链式分组: 簇内可无缝拼接的课归同组(组内拼成一条互不覆盖的链)。
     // 顶层课所在组 = 顶层链(整条在前);其余组各为一条,按叠层/竖轨语义垫在后面。
     // 点击任一非顶层组的课 = 整组提到顶层(组内相对顺序保持)。
-    val chainGroups = remember(cluster) {
-        ConflictLayoutEngine.chainGroups(drawList.map { it.course })
-    }
+    // (chainGroups 计算已上移到 drawList 之后——v7.6 图层徽标与下方消费共用同一份。)
     val courseIdToGroup: Map<Long, Int> = remember(chainGroups) {
         chainGroups.flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
     }
@@ -755,11 +773,11 @@ fun ConflictClusterCard(
             }
         }
 
-        // ---- N 徽标(N≥3 且 hidden 课存在): overlay 层右上,点击弹课名点选 ----
+        // ---- N 徽标(图层 N≥3 且 hidden 课存在): overlay 层右上,点击弹课名点选 ----
         if (showBadge) {
             val styleIsFold = form == ConflictVariant.FOLD
             ConflictBadge(
-                count = drawList.size,
+                count = layerCount,
                 onClick = { showPicker = true },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
