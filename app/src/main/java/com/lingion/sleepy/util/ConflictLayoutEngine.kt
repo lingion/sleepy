@@ -440,4 +440,19 @@ object ConflictLayoutEngine {
         }
         return out.sortedBy { it.course.startNode }
     }
+
+    /**
+     * 冲突深度闸门(v7.10.9, 纯函数可测) — 软件约束: 同一天同一冲突区域最多 2 栏,
+     * 第三层禁止存在。返回超出 2 栏的 day 集合(空集 = 合法)。
+     * 检查的是「合并后的全量课」(已存库 + 新草稿),候选层语义: 区域内 chainGroups
+     * 分组数 > 2 即违规。
+     */
+    fun daysExceedingTwoLanes(courses: List<CourseEntity>): Set<Int> {
+        return courses.groupBy { it.day }.mapNotNull { (day, dayCourses) ->
+            val maxLanes = mergeOverlapping(
+                dayCourses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+            ).maxOf { region -> chainGroups(region).size }
+            if (maxLanes > 2) day else null
+        }.toSet()
+    }
 }
