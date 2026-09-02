@@ -83,7 +83,6 @@ object ConflictLayoutEngine {
         maxNode: Int? = null
     ): List<LaidOutCourse> {
         val ordered = primaryOrder(cluster.courses)
-        val n = ordered.size
 
         // v7.2/v7.3 链式分层: 分组决定 z 序——
         //   默认态(无 override): 链组(多课组)整组置前(组内 startNode 升序拼条),
@@ -147,15 +146,19 @@ object ConflictLayoutEngine {
                     .toSet()
                 ownNodes.all { it in covered }
             }
+            // v7.6 图层语义: N≥3 合流的「N」按图层数——链组整组算 1 层(用户 2026-09-02:
+            // 「分组之后这两节就绑定在一个图层了」),不是裸课数。链式模式下层语义由
+            // chainMode 分支直接接管(组态决定形态,N≥3 合流不适用);无组时图层数=课数。
+            val layerCount = chainGroupsOfCluster.size
             LaidOutCourse(
                 course = course,
                 zRank = rank,
                 hidden = hidden,
                 variant = if (!hidden) ConflictVariant.NONE
                 else variantFor(
-                    style, n,
+                    style, layerCount,
                     sameStartWithAbove(rank, zOrdered, ::nodesOf),
-                    chainMode = chainGroupsOfCluster.any { it.size >= 2 } || multiGroupIds.isNotEmpty()
+                    chainMode = multiGroupIds.isNotEmpty()
                 ),
                 chainFront = chainFrontActive && frontGroupIds.orEmpty().contains(course.id)
             )
@@ -170,6 +173,11 @@ object ConflictLayoutEngine {
      * 链式模式(chainMode=true): hidden 课是被链组全遮的重叠者,与用户 2026-09-01
      * 链式折角定版一致——「哪怕 AC 连起来 B 待在后面,A/C 都折角,B 折角点击切换」,
      * 折角不再要求同起点(fold 样式与 N≥3 合流均直配 FOLD)。
+     *
+     * v7.6 图层语义: clusterSize 形参 = **图层数**(链组整组算 1 层,单课算 1 层),
+     * 不是裸课数——「分组之后这两节就绑定在一个图层了」(用户 2026-09-02)。
+     * {1-3,4-6} 组 + 1-6 重叠者 = 2 图层 → N≥3 合流不触发;链式分支优先级本身
+     * 也已把组态课与 N≥3 合流隔离(形态由链组决定,不由课数决定)。
      */
     private fun variantFor(
         style: String,
