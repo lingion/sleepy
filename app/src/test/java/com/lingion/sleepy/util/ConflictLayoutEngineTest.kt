@@ -361,23 +361,20 @@ class ConflictLayoutEngineTest {
     @Test
     fun layoutCluster_maxNode_mixed_groups_in_one_cluster() {
         // spec §7「同簇多组混合」: 同天一簇内两个完全同段组——1-2 与 1-2 与 3-4 与 3-4。
-        // v7.2 链式语义: 贪心装箱 → 组0=[id1(1-2), id3(3-4)](零重叠拼条),
-        // 组1=[id2(1-2), id4(3-4)](同理拼条)。两组皆多课组,组0 先建在前。
-        // z 序: id1(0), id3(1), id2(2), id4(3);全部 chainFront。
-        //   id2 = {1,2} − {1,2}(id1) ∪ {3,4}(id3) = ∅ → hidden
-        //   id4 = {3,4} − {1,2} ∪ {3,4} = ∅ → hidden
-        // variant: hidden 课与紧邻上层同起点判定——id2 上层 id3 起点不同 → STACK;
-        //   id4 上层 id2 起点不同 → STACK(v7.2 链式下 N≥4 但同起点闸门不满足)
+        // v7.5 判据: 1-2 与 3-4 零重叠但**无共同重叠者**(id2 只与 id1 重叠,id4 只与 id3)
+        // → 不成组,退化为经典两两叠放: 主序 step 同 → startNode 升 → z=[id1,id2,id3,id4]。
+        //   id2 = {1,2} − {1,2}(id1) = ∅ → hidden;N=4 ≥3 合流 + 与上层 id1 同起点 → FOLD
+        //   id3 = {3,4} − {1,2} ∪ {1,2} = {3,4} → 露出 → NONE
+        //   id4 = {3,4} − ({1,2} ∪ {1,2} ∪ {3,4}) = ∅ → hidden;与上层 id3 同起点 → FOLD
         val a1 = course(id = 1, day = 1, startNode = 1, step = 2)
         val a2 = course(id = 2, day = 1, startNode = 1, step = 2)
         val b1 = course(id = 3, day = 1, startNode = 3, step = 2)
         val b2 = course(id = 4, day = 1, startNode = 3, step = 2)
         val byId = layoutById(listOf(a1, a2, b1, b2), "stack")
-        assertEquals(LaidOutCourse(a1, 0, false, ConflictVariant.NONE, chainFront = true), byId.getValue(1L))
-        assertEquals(LaidOutCourse(b1, 1, false, ConflictVariant.NONE, chainFront = true), byId.getValue(3L))
-        // 组1(id2+id4)也是多课拼条 → 同为链前置成员;层叠靠 z 序
-        assertEquals(LaidOutCourse(a2, 2, true, ConflictVariant.STACK, chainFront = true), byId.getValue(2L))
-        assertEquals(LaidOutCourse(b2, 3, true, ConflictVariant.STACK, chainFront = true), byId.getValue(4L))
+        assertEquals(LaidOutCourse(a1, 0, false, ConflictVariant.NONE), byId.getValue(1L))
+        assertEquals(LaidOutCourse(b1, 2, false, ConflictVariant.NONE), byId.getValue(3L))
+        assertEquals(LaidOutCourse(a2, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
+        assertEquals(LaidOutCourse(b2, 3, true, ConflictVariant.FOLD), byId.getValue(4L))
     }
 
     @Test
@@ -662,11 +659,48 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun chainGroups_gap_between_courses_still_one_group() {
-        // 1-3 与 5-9: 零重叠且中间有洞(第4节空)→ 用户明确: 同组
+        // 用户 v7.1 原话场景: 1-9 / 1-3 / 5-9 —— 1-3 与 5-9 零重叠且中间有洞(第4节空)→ 同组
+        // (共同重叠者 1-9 在场;纯 1-3/5-9 无重叠者根本不聚簇,不会进本函数)
+        val big = course(id = 3, day = 1, startNode = 1, step = 9)
         val a = course(id = 1, day = 1, startNode = 1, step = 3)
         val b = course(id = 2, day = 1, startNode = 5, step = 5)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(big, a, b))
+        assertEquals(2, groups.size)
+        val ids = groups.map { g -> g.map { it.id }.toSet() }
+        assertTrue(ids.contains(setOf(1L, 2L))) // 1-3 + 5-9 隔洞同组
+        assertTrue(ids.contains(setOf(3L)))     // 1-9 独立
+    }
+
+    @Test
+    fun chainGroups_cross_region_courses_never_share_group() {
+        // v7.5 用户实测缺陷: 两个冲突区并存时,贪心装箱把「互不相关的零重叠课」跨区乱收
+        // 一组 → 上半组的切换逻辑串到下半。新判据: 两课同组必须有**共同重叠者**。
+        // 场景: 上半 1-3/4-6 被挤(重叠者 1-4),下半 7-9/10-12 被挤(重叠者 7-12)。
+        // 1-3 与 7-9 零重叠但毫无关系 → 各归各组,上下半互不串扰。
+        val h1 = course(id = 1, day = 1, startNode = 1, step = 3)
+        val t1 = course(id = 2, day = 1, startNode = 4, step = 3)
+        val o1 = course(id = 3, day = 1, startNode = 1, step = 4)
+        val h2 = course(id = 4, day = 1, startNode = 7, step = 3)
+        val t2 = course(id = 5, day = 1, startNode = 10, step = 3)
+        val o2 = course(id = 6, day = 1, startNode = 7, step = 6)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(h1, t1, o1, h2, t2, o2))
+        val ids = groups.map { g -> g.map { it.id }.toSet() }
+        assertEquals(4, groups.size)
+        assertTrue(ids.contains(setOf(1L, 2L))) // 上半组
+        assertTrue(ids.contains(setOf(4L, 5L))) // 下半组(独立!)
+        assertTrue(ids.contains(setOf(3L)))     // 1-4 独立
+        assertTrue(ids.contains(setOf(6L)))     // 7-12 独立
+    }
+
+    @Test
+    fun chainGroups_unrelated_zero_overlap_pair_not_grouped() {
+        // 两门课零重叠但不存在共同重叠者 → 不成组(各管各,不产生跨区切换语义)。
+        // 场景: 1-3 与 7-9 同天同簇外零重叠——仅共同重叠者(如 1-9)在场才成组。
+        // 直接给一个不可聚簇输入也应安全返回单课组(防御: chainGroups 不依赖聚簇前提)。
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 7, step = 3)
         val groups = ConflictLayoutEngine.chainGroups(listOf(a, b))
-        assertEquals(1, groups.size)
+        assertEquals(2, groups.size)
     }
 
     @Test
