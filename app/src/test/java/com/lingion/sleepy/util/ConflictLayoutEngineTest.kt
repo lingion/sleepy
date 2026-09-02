@@ -572,9 +572,9 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun markHitArea_rail_is_right_stripe_not_full_card() {
-        // RAIL: 右缘露出带(RAIL_INSET 14dp)+ 20dp 内延 → 宽 34dp,高=整格高(纵贯)
+        // RAIL: 右缘露出带(RAIL_INSET 10dp)+ 20dp 内延 → 宽 30dp,高=整格高(纵贯)
         val (w, h) = markHitArea(ConflictVariant.RAIL, cardWidth = 60f, cardHeight = 120f)
-        assertRect(w to h, 34f, 120f, "RAIL hit area")
+        assertRect(w to h, 30f, 120f, "RAIL hit area")
     }
 
     @Test
