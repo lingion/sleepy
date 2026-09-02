@@ -18,13 +18,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.AlertDialog
-
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -83,70 +83,68 @@ fun layoutFor(
 /**
  * 簇内绘制项 — Card(课卡)或 Mark(hidden 课的命中区)。
  * Mark 携带 hidden 课 id: 命中区自己接 clickable → onPickTop(该 id)。
- * 视觉本体(hidden 课的外层胶囊/竖轨/折角缺角)不挂在 Mark 上——统一结构下
- * 胶囊画在最底层、竖轨属于胶囊、折角 flap 紧跟顶层卡,Mark 只承载 tap 入口。
+ * 视觉本体(缩小的底卡/竖轨/折角缺角)挂在各自 Card 上,Mark 只承载 tap 入口。
  */
 sealed class CourseDrawItem {
     data class Card(val laid: LaidOutCourse) : CourseDrawItem()
     data class Mark(val hiddenCourseId: Long, val variant: ConflictVariant) : CourseDrawItem()
 }
 
-// ============================ 视觉常量(视觉修订 v2: 统一胶囊结构,用户实测反馈定版) ============================
+// ============================ 视觉常量(视觉修订 v3: 等比缩小叠卡,用户 2026-09-01 定版) ============================
 
 /** STACK/FOLD 命中区视觉基准边(dp): 16 + 内延 20 = 36dp 见方。 */
 private const val MARK_SQUARE_DP = 16f
 
-/** 命中区在视觉区基础上的总内延(dp,单边) — 手指命中容差(用户反馈: 三种面积都过小,放大)。 */
+/** 命中区在视觉区基础上的总内延(dp,单边) — 手指命中容差。 */
 private const val MARK_HIT_PAD_DP = 20f
 
-/** STACK 叠层错位 d(dp) — 顶层课收窄量 = 右/下露出带宽度(用户反馈: 错位加大 4→8)。 */
+/**
+ * STACK 叠卡收缩量 d(dp) — 用户定版效果: 底卡与顶卡**同比例**向右下各缩 d,
+ * 双卡对角错开叠放;整体仍占满原一节课的格位(顶卡右上角 = 格位右上角,
+ * 底卡左下角 = 格位左下角,右/下各露 d 露出带)。
+ */
 private const val STACK_OFFSET_DP = 8f
 
-/** FOLD 折痕直角边长 f(dp) — 右上缺角/翻折 flap 尺寸(用户反馈: 折角加大 12→16)。 */
+/** FOLD 折痕直角边长 f(dp) — 右上缺角/翻折 flap 尺寸。 */
 private const val FOLD_SIZE_DP = 16f
 
-/** FOLD flap 内折角圆角(dp) — 翻进来的角保留了原圆角矩形的圆角意象。 */
+/** FOLD flap 内折角圆角(dp) — 翻进来的角保留原圆角意象。 */
 private const val FOLD_FLAP_CORNER_DP = 6f
 
-/** RAIL 轨宽(dp): N=2 单轨 / N≥3 加宽(容纳竖排课名)。用户反馈: 侧边面积加大 6→8 / 14→16。 */
-private const val MARK_RAIL_W_DP = 8f
-private const val MARK_RAIL_W_MULTI_DP = 16f
-
-/** RAIL N≥3 纵切段间缝(dp)。 */
-private const val RAIL_SEG_GAP_DP = 1f
+/** RAIL 顶卡右侧收窄量(dp) — 用户定版: 顶卡永远是窄卡,底卡保持全宽全高。 */
+private const val RAIL_INSET_DP = 14f
 
 /** RAIL 竖排课名字号(sp): 8sp 起步,段高不够降到 6sp,再不够只显示首字。 */
 private const val RAIL_NAME_SP = 8
 private const val RAIL_NAME_MIN_SP = 6
 
+/** RAIL N≥3 轨内纵切段间缝(dp)。 */
+private const val RAIL_SEG_GAP_DP = 1f
+
 /** N 徽标直径(dp)/字号(sp)。 */
 private const val BADGE_SIZE_DP = 14f
 private const val BADGE_FONT_SP = 8
 
-/** 课程卡圆角(dp) — 与 SleepyTheme.shapes.medium(12dp)同源,胶囊与内套课同圆角幅度。 */
+/** 课程卡圆角(dp) — 与 SleepyTheme.shapes.medium(12dp)同源。 */
 private const val CARD_CORNER_DP = 12f
 
-/** 冲突簇外层胶囊描边宽(dp) — 用户明确要求(2026-09-01): 重叠课程必须有边框,
- *  本簇内放开「UI 纯色块禁描边」规则(仅限冲突簇,其余 UI 不变)。 */
-private const val CAPSULE_BORDER_DP = 1.5f
-
-/** 簇内单课卡描边宽(dp) — 同上,课卡边界在重叠色块间保持可辨。 */
-private const val CARD_BORDER_DP = 1f
+/** 冲突卡描边宽(dp) — 用户 2026-09-01: 重叠课程必须有边框;每张真卡各**一层**
+ *  描边(顶卡一层+底卡一层=用户说的"上面一层边框下面一层边框"),除此之外不加任何层。 */
+private const val CARD_BORDER_DP = 1.5f
 
 /**
- * 冲突簇描边色 — 由课色自派生: 亮色压暗/暗色提亮,保证与自身填充、网格底、
- * 相邻课色三个方向都有对比(课色任意,固定中性色不可靠)。
+ * 冲突卡描边色 — 由课色自派生: 亮色压暗/暗色提亮,与自身填充、网格底、相邻课色都有对比。
  */
 internal fun conflictBorderColor(base: Color): Color =
     if (base.luminance() > 0.5f) lerp(base, Color.Black, 0.35f)
     else lerp(base, Color.White, 0.45f)
 
-/** flap 色 = 顶层课色压暗(翻面朝里的物理意象),与缺角处露出的胶囊色形成明度差。 */
+/** flap 色 = 顶层课色压暗(翻面朝里的物理意象),与缺角处露出的底卡色形成明度差。 */
 private fun foldFlapColor(topColor: Color): Color = lerp(topColor, Color.Black, 0.28f)
 
 /**
- * 顶层课卡「折角剪裁形」— 圆角矩形挖掉右上角三角(折痕从顶边 (w-f,0) 到右边 (w,f)),
- * 缺角处露出外层胶囊(hidden 课色 + 它自己的圆角)。纯 Shape,尺寸在 createOutline 按密度换算。
+ * 顶卡「折角剪裁形」— 圆角矩形挖掉右上角三角(折痕从顶边 (w-f,0) 到右边 (w,f)),
+ * 缺角处露出底卡(含它自己的圆角)。纯 Shape,尺寸在 createOutline 按密度换算。
  */
 private class FoldCutShape(
     private val fold: Dp,
@@ -176,21 +174,17 @@ private class FoldCutShape(
 /**
  * 标记命中区尺寸计算(纯 JVM 可测,单位与调用方约定一致):
  *
- * 命中区 = 标记视觉区 + MARK_HIT_PAD 总内延(约两指宽容差,视觉修订 v2 放大),**绝不铺满整卡**——
- * hidden 存在时若 overlay 可点区铺满顶层卡,「点主体=编辑最上层」(设计 §4)全域不可达。
- * 主体其余区域留给顶层卡自己的 onCourseClick。结果 coerce 到卡尺寸内(小卡裁剪内延)。
+ * 命中区 = 标记视觉区 + MARK_HIT_PAD 总内延(约两指宽容差),**绝不铺满整卡**——
+ * hidden 存在时若 overlay 可点区铺满顶卡,「点主体=编辑最上层」(设计 §4)全域不可达。
  *
- * 返回 (w, h),调用方按变体锚到顶层卡对应角/边。NONE 无标记 → (0, 0) 不可点。
- *
- * RAIL: 命中区=竖轨视觉区+20dp 内延——
- * N=2 单轨(默认参) → 宽 8+20=28dp × 顶层卡高(轨视觉区纵贯卡高,高度随卡);
- * N≥3 → 调用方传 railWidth=16 与段高,得 36dp × (段高+20dp 内延) 的段级命中区。
+ * 返回 (w, h),调用方按变体锚到对应角/边。NONE 无标记 → (0, 0) 不可点。
+ * RAIL: 命中区=右缘露出带视觉宽(RAIL_INSET)+内延;段级命中区传 railSegmentHeight。
  */
 fun markHitArea(
     variant: ConflictVariant,
     cardWidth: Float,
     cardHeight: Float,
-    railWidth: Float = MARK_RAIL_W_DP,
+    railWidth: Float = RAIL_INSET_DP,
     railSegmentHeight: Float = cardHeight
 ): Pair<Float, Float> = when (variant) {
     ConflictVariant.STACK, ConflictVariant.FOLD -> {
@@ -200,7 +194,7 @@ fun markHitArea(
         side to side
     }
     ConflictVariant.RAIL -> {
-        // 轨视觉宽/轨段视觉高 + 20dp 总内延,coerce 进顶层卡
+        // 右缘露出带视觉宽/段视觉高 + 20dp 总内延,coerce 进格位
         (railWidth + MARK_HIT_PAD_DP).coerceAtMost(cardWidth) to
             (railSegmentHeight + MARK_HIT_PAD_DP).coerceAtMost(cardHeight)
     }
@@ -211,15 +205,12 @@ fun markHitArea(
  * 簇内绘制序计算(纯 JVM 可测) — 评审 Critical 的核心修复:
  *
  * hidden 课的定义 = 被更高层课完全覆盖。故绘制序 = 非顶层课卡(zRank 降序,先画被盖住的)
- * → 顶层卡(zRank 0 最后画,保证完整真卡在最上) → 全部 hidden 课的 Mark 命中区
- * (按 zRank 升序,叠在一切卡之上)。Mark 区域自己接 clickable = hidden 课的
- * tap 入口(点标记 = 把该 hidden 课换到顶层)。
- *
- * N=2 完全重叠场景由此获得唯一视觉存在(外层胶囊)与唯一 tap 入口(Mark 命中区)。
+ * → 顶卡(zRank 0 最后画) → 全部 hidden 课的 Mark 命中区(按 zRank 升序,叠在一切卡之上)。
+ * Mark 区域自己接 clickable = hidden 课的 tap 入口(点 = 把该 hidden 课换到顶层)。
  *
  * 顶层判定兜底(评审 Important-2): 簇主课可能出界(startNode > maxNode)被调用方
- * 过滤,过滤后列表无 zRank 0——此时取列表首位当顶层(zRank 升序首位=界内最上层),
- * 保证任何情况下界内课有渲染有点击;输入为空(全出界)才返回空,调用方整簇跳过。
+ * 过滤,过滤后列表无 zRank 0——此时取列表首位当顶层,保证任何情况下界内课有渲染有点击;
+ * 输入为空(全出界)才返回空,调用方整簇跳过。
  */
 fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
     if (laid.isEmpty()) return emptyList()
@@ -232,26 +223,24 @@ fun overlayMarkOrder(laid: List<LaidOutCourse>): List<CourseDrawItem> {
 }
 
 /**
- * ConflictClusterCard — 整簇一张,内部自绘各课(渲染层,视觉修订 v2)。
+ * ConflictClusterCard — 整簇一张,内部自绘各课(渲染层,视觉修订 v3)。
  *
- * 统一结构(用户定版): 整个冲突格 = 一张**完整圆角矩形胶囊**(= 被 hidden 课的本体,
- * 课色填充+描边),里面**套一张高一样、宽小一些、圆角幅度一样的顶层课卡**;
- * 露出的胶囊带 = 底下那节课的可见部分,也是换置顶的 tap 区(Mark)。
+ * 核心结构(用户 2026-09-01 定版): 两张卡**都以同样比例稍微缩小一点点**、对角错开叠放,
+ * 整体仍占满原格位 —
+ *   STACK: 底卡锚格位左上、向右下各缩 d;顶卡锚格位右下、同尺寸。右/下各露 d 带 = 底卡。
+ *          等价意象: 两张原尺寸卡对角错开叠完,再把组合外接框缩回一节课格位大小。
+ *   RAIL:  顶卡右缘收窄 railInset(高不变),底卡保持完整原尺寸 —
+ *          「窄窄的顶卡叠在正常宽度的底卡上」;换置顶后宽窄随课互换(谁在顶谁窄)。
+ *   FOLD:  顶卡原尺寸、右上角沿折痕内折(f 见方,flap=顶卡色压暗);缺角露底卡角(含圆角)。
+ *          FOLD 仅在 hidden 课与上层课**同起点**时出现(引擎闸门),错位起点回落 STACK。
  *
- * 变体差异只在那条露出带的位置与形态:
- *   STACK = 顶层课向锚点收窄 d=8dp(右+下露出 L 形带,经典叠纸错位)
- *   FOLD  = 顶层课右上角沿折痕内折(f=16dp): 缺角露胶囊,flap=顶层课色压暗翻进卡内
- *   RAIL  = 右缘竖轨带: N=2 单轨 8dp(纯色带)/ N≥3 加宽 16dp 纵切 N-1 段,
- *           每段=对应 hidden 课课色+竖排课名(8sp→6sp→首字三级降级)
- *   N 徽标(N≥3) = 右上 14dp 圆标(surface 底+onSurface 文字),FOLD 时避开 flap。
+ * 边框(用户 2026-09-01): 冲突卡内放开「纯色块禁描边」——每张真卡**各一层** 1.5dp
+ * 描边(顶卡一层+底卡一层),色由各自课色自派生;除此之外不再叠任何边框层。
  *
  * 点击语义(设计 §4,不变):
- *   点顶层课卡 → onCourseClick(顶层课)——与原单卡行为一致,不多一步
+ *   点顶卡 → onCourseClick(顶层课)——与原单卡行为一致,不多一步
  *   点露出带/标记 → onPickTop(该课 id)——把该课提到顶层
- *   N 徽标 → AlertDialog 列簇内全部课课名点选 → onPickTop(id)
- *
- * 边框(用户 2026-09-01 明确要求): 冲突簇内放开「纯色块禁描边」——胶囊 1.5dp、
- * 簇内每张课卡 1dp,色均由各自课色自派生(亮压暗/暗提亮)。
+ *   N 徽标(N≥3) → AlertDialog 列簇内全部课课名点选 → onPickTop(id)
  */
 @Composable
 fun ConflictClusterCard(
@@ -275,37 +264,30 @@ fun ConflictClusterCard(
     val cardShape = SleepyTheme.shapes.medium
 
     // 布局现算(引擎零缓存承诺)——override 变化即重排。maxNode 传入引擎:
-    // hidden 计算与下方渲染同一裁剪空间(startNode ∈ 1..maxNode + step 截界),
-    // 否则界外尾部独占节次会让课漏拿标记 → UI 裁剪后零视觉零 tap(不可达课)。
+    // hidden 计算与渲染同一裁剪空间(startNode ∈ 1..maxNode + step 截界)。
     val laid = ConflictLayoutEngine.layoutCluster(cluster, style, topOverrideId, maxNode)
 
-    // 绘制集: 与原单卡循环同一过滤(startNode ∈ [1, maxNode])——链式跨界的出界课
-    // (startNode > maxNode,如 11-13 节课链到 13-14 节)原循环本就跳过,此处同样剔除,
-    // 避免 steps clamp 到 0 产生负高度。出界课只覆盖出界节次,不影响界内课的 hidden 判定。
+    // 绘制集: 与原单卡循环同一过滤(startNode ∈ [1, maxNode])——出界课原循环本就跳过。
     val drawList = laid.filter { it.course.startNode in 1..maxNode }
     if (drawList.isEmpty()) return
     val hiddenCount = drawList.count { it.hidden }
 
-    // N 徽标可见性: N≥3 且存在 hidden 课(N=2 时 hidden 课的可见性/tap 入口由露出带承载)
+    // N 徽标可见性: N≥3 且存在 hidden 课
     val showBadge = drawList.size >= 3 && hiddenCount > 0
     var showPicker by rememberSaveable { mutableStateOf(false) }
 
-    // 绘制序(评审 Critical 修复): 非顶层卡(zRank 降序) → 顶层卡 → hidden 课 Mark 命中区(overlay 层)。
+    // 绘制序(评审 Critical 修复): 非顶卡(zRank 降序) → 顶卡 → hidden 课 Mark 命中区(overlay 层)。
     val drawOrder = overlayMarkOrder(drawList)
 
     // 顶层判定(与 overlayMarkOrder 兜底同源)
     val topLaid = drawList.firstOrNull { it.zRank == 0 } ?: drawList.first()
     val topCourse = topLaid.course
-    val topH = rowH * (topCourse.step.coerceAtLeast(1)
-        .coerceAtMost(maxNode - topCourse.startNode + 1)) - gapH
-
-    // 簇级变体形态 = hidden 课的 variant(hiddenCount=0 → NONE,整簇退化为普通叠卡+边框)
     val hiddenItems = drawList.filter { it.hidden }
-    val form = hiddenItems.firstOrNull()?.variant ?: ConflictVariant.NONE
-    val hasHidden = hiddenItems.isNotEmpty()
-    val railWdp = (if (hiddenItems.size >= 2) MARK_RAIL_W_MULTI_DP else MARK_RAIL_W_DP).dp
 
-    // 课色缓存(hidden 胶囊/flap 取色用,含 isGrey 灰显,与卡渲染取同一色)
+    // 簇级形态 = 首 hidden 课的 variant(hiddenCount=0 → NONE)
+    val form = hiddenItems.firstOrNull()?.variant ?: ConflictVariant.NONE
+
+    // 课色(hidden 缩小底卡/flap 取色,含 isGrey 灰显,与卡渲染取同一色)
     fun courseColorOf(course: CourseEntity): Color {
         val bg = CourseColorUtil.pickCourseColorCompose(
             course = course,
@@ -319,7 +301,6 @@ fun ConflictClusterCard(
 
     // 簇几何: 整簇基点 = 主课判定序首位课(调用方以它定位,override 不改变该锚点——
     // 交换置顶时簇不跳动);簇顶 minStart ≤ 基点恒成立。y/h 公式与 CardsGridView 原循环体一致。
-    // maxEnd 用 clamp 后的 steps(与卡片实际渲染高度同源,Minor ③)。
     val baseNode = cluster.courses.first().startNode
     val minStart = drawList.minOf { it.course.startNode }
     val clampedSteps = drawList.associate {
@@ -332,94 +313,47 @@ fun ConflictClusterCard(
     fun cardYOf(startNode: Int) = rowH * (startNode - minStart)
     fun cardHOf(courseId: Long) = rowH * (clampedSteps[courseId] ?: 1) - gapH
 
+    // 簇格位(= 主课区间): 所有变体的「原尺寸」参照。顶卡/底卡的缩小错位都在这框内。
+    val cellY = cardYOf(topCourse.startNode)
+    val cellH = cardHOf(topCourse.id)
+
     Box(
         modifier = modifier
             .width(colW)
             .height(clusterH)
             .offset(y = clusterYOffset)
     ) {
-        // ---- 外层胶囊(统一结构): 完整圆角矩形 = hidden 课本体,课色填充+自派生描边 ----
-        // 顶层课收窄后露出的带就是它;FOLD 缺角处露出的也是它(含它自己的圆角)。
-        if (hasHidden) {
-            val capsuleColor = courseColorOf(hiddenItems.first().course)
-            Box(
-                modifier = Modifier
-                    .offset(y = cardYOf(topCourse.startNode))
-                    .width(colW)
-                    .height(topH)
-                    .clip(cardShape)
-                    .background(capsuleColor)
-                    .border(
-                        CAPSULE_BORDER_DP.dp,
-                        conflictBorderColor(capsuleColor),
-                        cardShape
-                    )
-            ) {
-                if (form == ConflictVariant.RAIL && hiddenItems.size >= 2) {
-                    // N≥3 分段竖轨贴右缘纵贯: 段=各 hidden 课色+竖排课名;
-                    // 外层 clip(cardShape) 已把轨道右缘裁成胶囊圆角,段本身直角即可。
-                    val segCount = hiddenItems.size
-                    val segH = ((topH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount)
-                        .coerceAtLeast(0.dp)
-                    Column(
-                        modifier = Modifier
-                            .align(Alignment.CenterEnd)
-                            .width(railWdp)
-                            .height(topH),
-                        verticalArrangement = Arrangement.spacedBy(RAIL_SEG_GAP_DP.dp)
-                    ) {
-                        hiddenItems.forEach { hid ->
-                            val segColor = courseColorOf(hid.course)
-                            Box(
-                                modifier = Modifier
-                                    .width(railWdp)
-                                    .height(segH)
-                                    .background(segColor),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                VerticalRailName(
-                                    name = hid.course.courseName,
-                                    segmentHeight = segH,
-                                    color = CourseColorUtil.textColorOn(
-                                        segColor,
-                                        CourseColorUtil.isPaletteDark(palette),
-                                        colors.onSurface
-                                    )
-                                )
-                            }
-                        }
-                    }
-                }
-            }
-        }
-
-        // 按绘制序消费: 先非顶层卡(露出区域点击=点非顶层课) → 顶层卡(点击=onCourseClick) → Mark
+        // 按绘制序消费: 先非顶卡(露出区域点击=点非顶层课) → 顶卡(点击=onCourseClick) → Mark
         drawOrder.forEach { item ->
             when (item) {
                 is CourseDrawItem.Card -> {
                     val course = item.laid.course
                     if (item.laid.zRank == 0) {
-                        // ---- 顶层课: 按变体收窄(统一结构: 高一样/宽小一些/同圆角),点击=onCourseClick ----
+                        // ---- 顶卡: 按变体形态缩窄/剪角,点击=onCourseClick(与原单卡一致) ----
                         when (form) {
                             ConflictVariant.STACK -> ConflictCourseCard(
                                 course = course,
                                 onClick = { onCourseClick(course) },
+                                // 锚格位右下: 右/下贴齐,左/上各缩 d → 底卡右/下露 d 带
                                 modifier = Modifier
-                                    .offset(y = cardYOf(course.startNode))
+                                    .offset(
+                                        x = STACK_OFFSET_DP.dp,
+                                        y = cellY + STACK_OFFSET_DP.dp
+                                    )
                                     .width(colW - STACK_OFFSET_DP.dp)
-                                    .height(topH - STACK_OFFSET_DP.dp),
+                                    .height(cellH - STACK_OFFSET_DP.dp),
                                 isGrey = isGrey,
                                 shape = cardShape
                             )
                             ConflictVariant.FOLD -> {
-                                val foldShape = rememberFoldCutShape()
+                                val foldShape = remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
                                 ConflictCourseCard(
                                     course = course,
                                     onClick = { onCourseClick(course) },
                                     modifier = Modifier
-                                        .offset(y = cardYOf(course.startNode))
+                                        .offset(y = cellY)
                                         .width(colW)
-                                        .height(topH),
+                                        .height(cellH),
                                     isGrey = isGrey,
                                     shape = foldShape
                                 )
@@ -427,10 +361,11 @@ fun ConflictClusterCard(
                             ConflictVariant.RAIL -> ConflictCourseCard(
                                 course = course,
                                 onClick = { onCourseClick(course) },
+                                // 顶卡永远窄卡: 右缘收窄 railInset(高不变)
                                 modifier = Modifier
-                                    .offset(y = cardYOf(course.startNode))
-                                    .width(colW - railWdp)
-                                    .height(topH),
+                                    .offset(y = cellY)
+                                    .width(colW - RAIL_INSET_DP.dp)
+                                    .height(cellH),
                                 isGrey = isGrey,
                                 shape = cardShape
                             )
@@ -438,20 +373,26 @@ fun ConflictClusterCard(
                                 course = course,
                                 onClick = { onCourseClick(course) },
                                 modifier = Modifier
-                                    .offset(y = cardYOf(course.startNode))
+                                    .offset(y = cellY)
                                     .width(colW)
-                                    .height(topH),
+                                    .height(cellH),
                                 isGrey = isGrey,
                                 shape = cardShape
                             )
                         }
                     } else {
-                        // ---- 非顶层可见课: 完整真卡垫底,露出区域自然可点(tap 落在此卡 = 换到顶层) ----
+                        // ---- 非顶卡(可见可见课或 hidden 底卡): 完整真卡垫底。
+                        // RAIL/STACK 的 hidden 底卡 = 原尺寸真卡锚格位左上(被顶卡盖住的部分
+                        // 自然不可见),露出带 = 底卡区域;可见非顶课(梯形部分重叠)保持
+                        // 自己 y/h 原样铺。露出区域 tap = 换到顶层。
+                        val isHiddenBottomCard = item.laid.hidden
+                        val y = if (isHiddenBottomCard) cellY else cardYOf(course.startNode)
+                        val h = if (isHiddenBottomCard) cellH else cardHOf(course.id)
                         Box(
                             modifier = Modifier
-                                .offset(y = cardYOf(course.startNode))
+                                .offset(y = y)
                                 .width(colW)
-                                .height(cardHOf(course.id))
+                                .height(h)
                                 .noRippleClickable { onPickTop(course.id) }
                         ) {
                             ConflictCourseCard(
@@ -465,22 +406,22 @@ fun ConflictClusterCard(
                     }
                 }
                 is CourseDrawItem.Mark -> {
-                    // ---- Mark = hidden 课的命中区(视觉本体已在胶囊/折角层) ----
+                    // ---- Mark = hidden 课的命中区(视觉本体已在缩小底卡/竖轨/折角层) ----
                     // 命中区=视觉带+20dp 内延(markHitArea),绝不铺满整卡——
-                    // 主体其余区域留给顶层卡自己的 onCourseClick(设计 §4 点主体=编辑最上层)。
+                    // 顶卡主体留给 onCourseClick(设计 §4 点主体=编辑最上层)。
                     val hiddenCourse = courseById[item.hiddenCourseId]?.course ?: return@forEach
                     if (item.variant == ConflictVariant.NONE) return@forEach
                     when (item.variant) {
                         ConflictVariant.STACK -> {
-                            // hit: 右下 36dp 见方盲区,点击=该 hidden 课置顶
+                            // hit: 右下 36dp 见方盲区(= 露出带+内延),点击=该 hidden 课置顶
                             val hit = markHitArea(
-                                ConflictVariant.STACK, colW.value, topH.value
-                            ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(topH) }
+                                ConflictVariant.STACK, colW.value, cellH.value
+                            ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
                             Box(
                                 modifier = Modifier
                                     .offset(
                                         x = colW - hit.first,
-                                        y = cardYOf(topCourse.startNode) + topH - hit.second
+                                        y = cellY + cellH - hit.second
                                     )
                                     .width(hit.first)
                                     .height(hit.second)
@@ -488,14 +429,14 @@ fun ConflictClusterCard(
                             )
                         }
                         ConflictVariant.FOLD -> {
-                            // flap 视觉: 顶层卡右上角沿折痕内折——flap=顶层课色压暗(翻面),
-                            // 圆角折进来;缺角处露出胶囊(hidden 课色+它的圆角)。
-                            // 锚点须补偿卡自身 2dp 外边距,与折角剪裁形对齐。
+                            // flap 视觉: 顶卡右上角沿折痕内折——flap=顶卡色压暗(翻面),
+                            // 圆角折进来;缺角处露出底卡(含它自己的圆角)。
+                            // 锚点补偿卡自身 2dp 外边距,与折角剪裁形对齐。
                             Canvas(
                                 modifier = Modifier
                                     .offset(
                                         x = colW - FOLD_SIZE_DP.dp - 2.dp,
-                                        y = cardYOf(topCourse.startNode) + 2.dp
+                                        y = cellY + 2.dp
                                     )
                                     .size(FOLD_SIZE_DP.dp)
                             ) {
@@ -512,13 +453,13 @@ fun ConflictClusterCard(
                             }
                             // hit: 右上 36dp 见方盲区(缺角+flap+内延),点击=该 hidden 课置顶
                             val hit = markHitArea(
-                                ConflictVariant.FOLD, colW.value, topH.value
-                            ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(topH) }
+                                ConflictVariant.FOLD, colW.value, cellH.value
+                            ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
                             Box(
                                 modifier = Modifier
                                     .offset(
                                         x = colW - hit.first,
-                                        y = cardYOf(topCourse.startNode)
+                                        y = cellY
                                     )
                                     .width(hit.first)
                                     .height(hit.second)
@@ -526,35 +467,55 @@ fun ConflictClusterCard(
                             )
                         }
                         ConflictVariant.RAIL -> {
-                            // hit: 每段 hidden 课各一段命中区(轨视觉宽+20dp 内延),点击=该课置顶。
-                            // N=2 单轨 → 一段纵贯整卡高;N≥3 → 段高与胶囊内的视觉段一一对齐。
-                            val segIdx = hiddenItems.indexOfFirst { it.course.id == item.hiddenCourseId }
+                            // hit: 右缘露出带(RAIL_INSET 宽)+20dp 内延;N≥3 hidden>1 时
+                            // 按段命中(段高与竖排课名段一一对齐),点击=该段课置顶。
                             val multi = hiddenItems.size >= 2
-                            val segH = if (multi) {
-                                ((topH - RAIL_SEG_GAP_DP.dp * (hiddenItems.size - 1)) / hiddenItems.size)
+                            if (!multi) {
+                                val hit = markHitArea(
+                                    ConflictVariant.RAIL, colW.value, cellH.value
+                                ).let { (w, h) ->
+                                    w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .offset(
+                                            x = colW - hit.first,
+                                            y = cellY
+                                        )
+                                        .width(hit.first)
+                                        .height(hit.second)
+                                        .noRippleClickable { onPickTop(item.hiddenCourseId) }
+                                )
+                            } else {
+                                // N≥3: 段数=hidden 数,段高均分(扣缝)纵贯格位高
+                                val segCount = hiddenItems.size
+                                val segH = ((cellH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount)
                                     .coerceAtLeast(0.dp)
-                            } else topH
-                            val segTop = if (multi) (segH + RAIL_SEG_GAP_DP.dp) * segIdx else 0.dp
-                            // 段视觉高+20dp 内延;高度再 coerce 到「段顶→卡底」,末段不越出卡外抢下一行 tap
-                            val hit = markHitArea(
-                                ConflictVariant.RAIL,
-                                colW.value,
-                                topH.value,
-                                railWidth = railWdp.value,
-                                railSegmentHeight = segH.value
-                            ).let { (w, h) ->
-                                w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(topH - segTop)
+                                val segIdx = hiddenItems.indexOfFirst {
+                                    it.course.id == item.hiddenCourseId
+                                }
+                                val segTop = (segH + RAIL_SEG_GAP_DP.dp) * segIdx
+                                // 段视觉高+20dp 内延;高度 coerce 到「段顶→格位底」,末段不越界
+                                val hit = markHitArea(
+                                    ConflictVariant.RAIL,
+                                    colW.value,
+                                    cellH.value,
+                                    railSegmentHeight = segH.value
+                                ).let { (w, h) ->
+                                    w.dp.coerceAtMost(colW) to
+                                        h.dp.coerceAtMost(cellH - segTop)
+                                }
+                                Box(
+                                    modifier = Modifier
+                                        .offset(
+                                            x = colW - hit.first,
+                                            y = cellY + segTop
+                                        )
+                                        .width(hit.first)
+                                        .height(hit.second)
+                                        .noRippleClickable { onPickTop(item.hiddenCourseId) }
+                                )
                             }
-                            Box(
-                                modifier = Modifier
-                                    .offset(
-                                        x = colW - hit.first,
-                                        y = cardYOf(topCourse.startNode) + segTop
-                                    )
-                                    .width(hit.first)
-                                    .height(hit.second)
-                                    .noRippleClickable { onPickTop(item.hiddenCourseId) }
-                            )
                         }
                         ConflictVariant.NONE -> Unit
                     }
@@ -562,12 +523,42 @@ fun ConflictClusterCard(
             }
         }
 
+        // ---- RAIL N≥3 竖排课名: 画在露出带上(overlay 层,每 hidden 课一段) ----
+        // 底卡全宽、顶卡窄卡 — 名字竖排在顶卡右缘让出的露带里,段色=该 hidden 课课色。
+        if (form == ConflictVariant.RAIL && hiddenItems.size >= 2) {
+            val segCount = hiddenItems.size
+            val segH = ((cellH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount).coerceAtLeast(0.dp)
+            hiddenItems.forEachIndexed { idx, hid ->
+                val segColor = courseColorOf(hid.course)
+                Box(
+                    modifier = Modifier
+                        .offset(
+                            x = colW - RAIL_INSET_DP.dp,
+                            y = cellY + (segH + RAIL_SEG_GAP_DP.dp) * idx
+                        )
+                        .width(RAIL_INSET_DP.dp)
+                        .height(segH)
+                        .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
+                        .background(segColor),
+                    contentAlignment = Alignment.Center
+                ) {
+                    VerticalRailName(
+                        name = hid.course.courseName,
+                        segmentHeight = segH,
+                        color = CourseColorUtil.textColorOn(
+                            segColor,
+                            CourseColorUtil.isPaletteDark(palette),
+                            colors.onSurface
+                        )
+                    )
+                }
+            }
+        }
+
         // ---- N 徽标(N≥3 且 hidden 课存在): overlay 层右上,点击弹课名点选 ----
-        // 位置避开 FOLD flap(设计文档 §3): flap 占右上 16dp 角 → 徽标沿 flap 左侧
-        // (右缘内缩 16dp+4dp 间隙);非 FOLD 变体贴右上 2dp 内边距。
+        // 位置避开 FOLD flap: flap 占右上 16dp 角 → 徽标沿 flap 左侧内缩;非 FOLD 贴右上 2dp。
         if (showBadge) {
-            val styleIsFold = style == "fold" ||
-                (style == "stack" && drawList.size >= 3) // stack N≥3 合流 FOLD
+            val styleIsFold = form == ConflictVariant.FOLD
             ConflictBadge(
                 count = drawList.size,
                 onClick = { showPicker = true },
@@ -593,15 +584,11 @@ fun ConflictClusterCard(
     }
 }
 
-/** FoldCutShape 常量参数,remember 避免每帧重建 Path。 */
-@Composable
-private fun rememberFoldCutShape(): FoldCutShape =
-    androidx.compose.runtime.remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
-
 /**
  * 簇内单课真卡 — 复用原 CourseOverlayCard 的取色/灰显/文案逻辑(渲染结构对齐,
  * 保持视觉一致;若后续收敛可让 CourseOverlayCard 改为转发到这里)。
- * 视觉修订 v2: shape 可注入(FOLD 折角剪裁形),自派生 1dp 描边(用户要求重叠课有边框)。
+ * 视觉修订 v3: shape 可注入(FOLD 折角剪裁形);自派生 1.5dp 描边(每张真卡各一层,
+ * 用户 2026-09-01 要求重叠课程有边框)。
  */
 @Composable
 private fun ConflictCourseCard(
@@ -689,7 +676,7 @@ private fun ConflictCourseCard(
 }
 
 /**
- * RAIL 竖排课名(胶囊轨段内) — 字符级竖排,三级降级防溢出
+ * RAIL 竖排课名(overlay 露带段内) — 字符级竖排,三级降级防溢出
  * (字符级贪心思路与 widget/WeekGridWidgetProvider 竖排同源):
  *   段高装得下 8sp 全名 → 8sp;装不下 → 6sp;再装不下 → 只显示首字。
  * 逐字符换行 = Text("\n".join(chars)),TextAlign 居中 + auto maxLines 按段高自然裁。
