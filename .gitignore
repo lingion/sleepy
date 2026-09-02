@@ -23,3 +23,4 @@ captures/
 q*.json
 *.tmp
 *.bak
+.claude/
