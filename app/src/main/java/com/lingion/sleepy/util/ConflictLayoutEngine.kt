@@ -197,42 +197,61 @@ object ConflictLayoutEngine {
     }
 
     /**
-     * 链式分组(v7.1, 纯函数可测,用户 2026-09-01 定版判据) —
-     * 同组 = 两课**零重叠**(中间隔洞也算同组: 1-3 与 5-9 可拼;
-     * 共享任何一节即重叠: 1-3 与 3-5 不可拼)。
+     * 链式分组(v7.1 定版 / v7.5 判据修正, 纯函数可测) —
+     * 用户原话(2026-09-01/02 两次定版): 「有一节课与剩下两节课重叠,并且那两节课之间
+     * 没有重叠部分,这样那两节课可以作为一个分组」。
      *
-     * 典型形态: 一课与两课都重叠、那两课彼此零重叠 → 那两课归一组,
-     * 重叠者独立一组(1-9 / 1-3 / 5-9 → [1-3,5-9] + [1-9])。
+     * 判据: p、q 同组 ⇔ 存在共同重叠者 o(o 与 p 重叠 且 o 与 q 重叠)且 p、q 互不重叠。
+     * v7.1 的「纯零重叠贪心装箱」是过度推广——它把毫无关系的跨区零重叠课也收进同组
+     * (上半 1-3/4-6 与下半 7-9/10-12 并存时,7-9 被误收进上半组),导致上下半切换
+     * 逻辑串组。v7.5 改为字面实现用户定义: 零重叠只是必要条件,**共同重叠者**才是
+     * 成组的充分条件。
      *
-     * 实现: 按主课判定序排序后贪心装箱——每课放入「与组内已有课全部零重叠」的第一组,
-     * 放不下则开新组。组内按 startNode 升序(拼接链自然序),组间按首课 startNode 升序。
+     * 典型形态: 1-9 / 1-3 / 5-9 → [1-3,5-9](共同重叠者 1-9) + [1-9] 独立;
+     * 两个冲突区并存各成一组互不干扰(1-3,4-6|1-4 + 7-9,10-12|7-12 → 4 组)。
+     * 硬案例 1-3/2-3/2-4: 两两直接重叠,无零重叠对 → 每课一组(N≥3 特殊讨论)。
+     * 同段双课 1-2/1-2 + 3-4/3-4: 无任何课跨段重叠 → 不成组,退化为经典叠放。
      *
-     * 硬案例 1-3/2-3/2-4: 两两直接重叠 → 每课一组(N≥3 特殊讨论)。
-     * 完全重叠 1-3/1-3 → 两组(同位课只能叠放)。
+     * 传递歧义: 一课已入组不再加入后续组(先到先得,按主课判定序枚举)。
      *
-     * 注意: 零重叠(相邻/隔洞)单独不成簇——本函数只处理已聚簇课程,簇的进出
-     * 仍由 findClusters 的「区间相交+传递闭包」把守。
+     * 注意: 纯零重叠(相邻/隔洞)不成簇——本函数只处理已聚簇课程,簇的进出仍由
+     * findClusters 的「区间相交+传递闭包」把守。
      */
     fun chainGroups(courses: List<CourseEntity>): List<List<CourseEntity>> {
         if (courses.isEmpty()) return emptyList()
         val sorted = courses.sortedWith(primaryComparator)
-        val groups = mutableListOf<MutableList<CourseEntity>>()
-        val groupSpans = mutableListOf<MutableList<IntRange>>() // 各组已收课的区间表
-        for (c in sorted) {
-            val r = c.startNode..(c.startNode + c.step - 1)
-            // 找第一个与本课零重叠的组(组内任一区间与 r 都不相交)
-            val idx = groupSpans.indexOfFirst { spans ->
-                spans.none { s -> r.first <= s.last && s.first <= r.last }
-            }
-            if (idx >= 0) {
-                groups[idx].add(c)
-                groupSpans[idx].add(r)
-            } else {
-                groups.add(mutableListOf(c))
-                groupSpans.add(mutableListOf(r))
+        val spans = sorted.associate { c ->
+            c.id to c.startNode..(c.startNode + c.step - 1)
+        }
+        fun overlaps(p: CourseEntity, q: CourseEntity): Boolean {
+            val a = spans.getValue(p.id); val b = spans.getValue(q.id)
+            return a.first <= b.last && b.first <= a.last
+        }
+        val groupOf = mutableMapOf<Long, MutableList<CourseEntity>>()
+        // 枚举共同重叠者 o 的每一对被挤课(p,q): p,q 互不重叠且都未定组 → {p,q} 成组
+        for (o in sorted) {
+            for (p in sorted) {
+                if (p.id == o.id || !overlaps(o, p)) continue
+                for (q in sorted) {
+                    if (q.id <= p.id) continue
+                    if (q.id == o.id || !overlaps(o, q)) continue
+                    if (overlaps(p, q)) continue
+                    if (p.id in groupOf || q.id in groupOf) continue
+                    val g = mutableListOf(p, q)
+                    groupOf[p.id] = g
+                    groupOf[q.id] = g
+                }
             }
         }
-        return groups
+        // 输出: 已定组按组(组内主序),未定组课各自单课组;整体按各首课主序位置排列
+        val emitted = mutableSetOf<MutableList<CourseEntity>>()
+        val result = mutableListOf<List<CourseEntity>>()
+        for (c in sorted) {
+            val g = groupOf[c.id]
+            if (g == null) result.add(listOf(c))
+            else if (emitted.add(g)) result.add(g.sortedWith(primaryComparator))
+        }
+        return result
     }
 
     /** 主课三分量比较器,供聚簇输出与 primaryOrder 共用。 */
