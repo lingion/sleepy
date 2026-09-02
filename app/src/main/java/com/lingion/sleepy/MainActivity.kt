@@ -20,6 +20,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.Saver
@@ -29,6 +30,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import android.widget.Toast
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
@@ -168,16 +170,25 @@ private fun AppRoot(
 ) {
     var currentTab by remember { mutableStateOf(Tab.Schedule) }
     var editingCourse by remember { mutableStateOf<CourseEntity?>(null) }
-    // 语言切换触发 Activity.recreate() 后, 用 rememberSaveable 保留 overlayScreen 导航状态,
-    //   否则用户切语言后会丢失设置页上下文、退回主 Tab(决策 D2 重排修复)。
-    // editingCourse(CourseEntity)无法 Bundle 化: 编辑课程会话中不保存 overlayScreen,
+    // v7.10.8 返回键分层修复: overlayScreen 从单变量改成导航栈 —
+    // 旧实现一个 BackHandler 把整摞 overlay 一次清空(通用设置→假期设置 按一次返回
+    // 直接退两级); 栈化后每层只弹自己(通用→假期 返回 只回通用)。
+    // 栈顶 = 当前显示页。pushOverlay 进页, popOverlay 退页。
+    // 语言切换触发 Activity.recreate() 后仍需保留栈(旧注释决策 D2 同理),
+    // editingCourse(CourseEntity)无法 Bundle 化: 编辑课程会话中不保存栈,
     //   旋转/进程恢复后退回主 Tab(丢弃编辑但安全), 避免恢复成"新增课程"空表单造成重复加课。
-    var overlayScreen by rememberSaveable(
-        stateSaver = Saver<OverlayScreen?, OverlayScreen>(
-            save = { if (editingCourse == null) it else null },
+    val overlayScreenState = rememberSaveable(
+        stateSaver = Saver<List<OverlayScreen>, List<OverlayScreen>>(
+            save = { stack -> if (editingCourse == null) stack else emptyList() },
             restore = { it }
         )
-    ) { mutableStateOf<OverlayScreen?>(null) }
+    ) { mutableStateOf<List<OverlayScreen>>(emptyList()) }
+    var overlayStack by overlayScreenState
+    fun topOverlay(): OverlayScreen? = overlayStack.lastOrNull()
+    fun pushOverlay(s: OverlayScreen) { overlayStack = overlayStack + s }
+    fun popOverlay() { overlayStack = overlayStack.dropLast(1) }
+    fun popToRoot() { overlayStack = emptyList() }
+    fun hasOverlay(): Boolean = overlayStack.isNotEmpty()
     // overlayScreen 的伴生导航参数必须同步持久化, 否则旋转恢复后 overlay 存活但参数归 null:
     //   EditTable 的 tableId=null 语义为"编辑当前课表", 会静默改错表; pendingNewTableId 丢失
     //   会让新建空表遗留在 DB 且误显示删除按钮。三者均可 Bundle 化(Long?), 一并 rememberSaveable。
@@ -195,59 +206,77 @@ private fun AppRoot(
         if (!autoImportTriggered && pendingImportText != null) { autoImportTriggered = true; currentTab = Tab.Manage }
     }
 
-    BackHandler(enabled = overlayScreen != null || editingCourse != null) {
+    // 返回键: 只处理"有 overlay 在栈上"或"编辑课程"两种拦截; 主页面留给双击退出
+    // (下方 exitBackHandler — enabled 互斥, 栈空时才接管)。
+    BackHandler(enabled = hasOverlay() || editingCourse != null) {
         if (pendingNewTableId != null) {
             val discardId = pendingNewTableId!!; val fallback = previousDefaultTableId
             pendingNewTableId = null; previousDefaultTableId = null
             mainVm.discardNewTable(discardId, fallback)
-            overlayScreen = null; editTableId = null
-        } else { overlayScreen = null; editingCourse = null; editTableId = null }
+            popToRoot(); editTableId = null
+        } else { editingCourse = null; editTableId = null; popOverlay() }
     }
 
-    if (overlayScreen == OverlayScreen.AddCourse || editingCourse != null) {
-        AddCourseScreen(onBack = { overlayScreen = null; editingCourse = null }, onSaved = { overlayScreen = null; editingCourse = null; currentTab = Tab.Schedule }, editingCourse = editingCourse)
+    // v7.10.8 主页面双击返回退出 — 第一次按 Toast 提示, 2 秒内再按才真退。
+    // enabled 条件与上面互斥: 栈空且无编辑会话时才接管(即主 Tab 页面)。
+    val ctxForExit = LocalContext.current
+    var lastBackAt by remember { mutableStateOf(0L) }
+    BackHandler(enabled = !hasOverlay() && editingCourse == null) {
+        val now = android.os.SystemClock.elapsedRealtime()
+        if (now - lastBackAt < 2000L) {
+            (ctxForExit as? android.app.Activity)?.finish()
+        } else {
+            lastBackAt = now
+            android.widget.Toast.makeText(
+                ctxForExit, R.string.exit_press_back_again, Toast.LENGTH_SHORT
+            ).show()
+        }
+    }
+
+    if (topOverlay() == OverlayScreen.AddCourse || editingCourse != null) {
+        AddCourseScreen(onBack = { popOverlay(); editingCourse = null }, onSaved = { popOverlay(); editingCourse = null; currentTab = Tab.Schedule }, editingCourse = editingCourse)
         return
     }
-    if (overlayScreen == OverlayScreen.AllTables) {
-        AllTablesScreen(onBack = { overlayScreen = null }, onCreateNewTable = {
+    if (topOverlay() == OverlayScreen.AllTables) {
+        AllTablesScreen(onBack = { popOverlay() }, onCreateNewTable = {
             mainScope.launch {
                 val previousId = mainVm.state.value.currentTable?.id
                 val newId = mainVm.createEmptyTable(commitSelection = false)
-                previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; overlayScreen = OverlayScreen.EditTable
+                previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; pushOverlay(OverlayScreen.EditTable)
             }
-        }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable })
+        }, onOpenEditTable = { tableId -> editTableId = tableId; pendingNewTableId = null; pushOverlay(OverlayScreen.EditTable) })
         return
     }
-    if (overlayScreen == OverlayScreen.EditTable) {
-        EditTableScreen(tableId = editTableId, pendingNewTableId = pendingNewTableId, onBack = { overlayScreen = null; editTableId = null; pendingNewTableId = null; previousDefaultTableId = null }, onDiscardPending = {
+    if (topOverlay() == OverlayScreen.EditTable) {
+        EditTableScreen(tableId = editTableId, pendingNewTableId = pendingNewTableId, onBack = { popOverlay(); editTableId = null; pendingNewTableId = null; previousDefaultTableId = null }, onDiscardPending = {
             val discardId = pendingNewTableId; val fallback = previousDefaultTableId; pendingNewTableId = null; previousDefaultTableId = null
             if (discardId != null) mainVm.discardNewTable(discardId, fallback)
-            overlayScreen = null; editTableId = null
-        }, onSaved = { overlayScreen = null; editTableId = null; pendingNewTableId = null; previousDefaultTableId = null }, onDeleted = { overlayScreen = null; editTableId = null; currentTab = Tab.Schedule })
+            popOverlay(); editTableId = null
+        }, onSaved = { popOverlay(); editTableId = null; pendingNewTableId = null; previousDefaultTableId = null }, onDeleted = { popOverlay(); editTableId = null; currentTab = Tab.Schedule })
         return
     }
-    if (overlayScreen == OverlayScreen.Theme) {
-        AppearanceScreen(onBack = { overlayScreen = null }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
+    if (topOverlay() == OverlayScreen.Theme) {
+        AppearanceScreen(onBack = { popOverlay() }, themeMode = themeMode, onThemeModeChange = onThemeModeChange)
         return
     }
-    if (overlayScreen == OverlayScreen.General) {
-        GeneralSettingsScreen(onBack = { overlayScreen = null }, onOpenHoliday = { overlayScreen = OverlayScreen.Holiday })
+    if (topOverlay() == OverlayScreen.General) {
+        GeneralSettingsScreen(onBack = { popOverlay() }, onOpenHoliday = { pushOverlay(OverlayScreen.Holiday) })
         return
     }
-    if (overlayScreen == OverlayScreen.Holiday) {
-        HolidaySettingsScreen(onBack = { overlayScreen = null })
+    if (topOverlay() == OverlayScreen.Holiday) {
+        HolidaySettingsScreen(onBack = { popOverlay() })
         return
     }
-    if (overlayScreen == OverlayScreen.Export) {
-        ExportScreen(onBack = { overlayScreen = null })
+    if (topOverlay() == OverlayScreen.Export) {
+        ExportScreen(onBack = { popOverlay() })
         return
     }
-    if (overlayScreen == OverlayScreen.Reminder) {
-        ReminderScreen(onBack = { overlayScreen = null })
+    if (topOverlay() == OverlayScreen.Reminder) {
+        ReminderScreen(onBack = { popOverlay() })
         return
     }
-    if (overlayScreen == OverlayScreen.About) {
-        AboutScreen(onBack = { overlayScreen = null })
+    if (topOverlay() == OverlayScreen.About) {
+        AboutScreen(onBack = { popOverlay() })
         return
     }
 
@@ -264,7 +293,7 @@ private fun AppRoot(
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
             when (currentTab) {
-                Tab.Schedule -> ScheduleScreen(onGoImport = { currentTab = Tab.Manage }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCourse = { course -> editingCourse = course })
+                Tab.Schedule -> ScheduleScreen(onGoImport = { currentTab = Tab.Manage }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCourse = { course -> editingCourse = course })
                 Tab.Today -> TodayScreen(onEditCourse = { course -> editingCourse = course })
                 Tab.Manage -> {
                     val ctx = LocalContext.current
@@ -272,17 +301,17 @@ private fun AppRoot(
                         mainScope.launch {
                             val previousId = mainVm.state.value.currentTable?.id
                             val newId = mainVm.createEmptyTable(commitSelection = false)
-                            previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; overlayScreen = OverlayScreen.EditTable
+                            previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; pushOverlay(OverlayScreen.EditTable)
                         }
-                    }, onManualAdd = { overlayScreen = OverlayScreen.AddCourse }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; overlayScreen = OverlayScreen.EditTable }, onImported = { currentTab = Tab.Schedule })
+                    }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; pushOverlay(OverlayScreen.EditTable) }, onImported = { currentTab = Tab.Schedule })
                 }
                 Tab.Mine -> MineScreen(
-                    onOpenAllTables = { overlayScreen = OverlayScreen.AllTables },
-                    onOpenAppearance = { overlayScreen = OverlayScreen.Theme },
-                    onOpenGeneral = { overlayScreen = OverlayScreen.General },
-                    onOpenExport = { overlayScreen = OverlayScreen.Export },
-                    onOpenReminder = { overlayScreen = OverlayScreen.Reminder },
-                    onOpenAbout = { overlayScreen = OverlayScreen.About })
+                    onOpenAllTables = { pushOverlay(OverlayScreen.AllTables) },
+                    onOpenAppearance = { pushOverlay(OverlayScreen.Theme) },
+                    onOpenGeneral = { pushOverlay(OverlayScreen.General) },
+                    onOpenExport = { pushOverlay(OverlayScreen.Export) },
+                    onOpenReminder = { pushOverlay(OverlayScreen.Reminder) },
+                    onOpenAbout = { pushOverlay(OverlayScreen.About) })
             }
         }
     }
