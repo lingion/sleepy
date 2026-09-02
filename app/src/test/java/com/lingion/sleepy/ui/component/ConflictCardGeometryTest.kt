@@ -180,4 +180,39 @@ class ConflictCardGeometryTest {
         assertEquals(ConflictVariant.FOLD, clusterForm("fold", ConflictVariant.FOLD))
         assertEquals(ConflictVariant.STACK, clusterForm("fold", ConflictVariant.STACK))
     }
+
+    // ============================ v7.6 图层语义: 徽标按图层数,不按裸课数 ============================
+
+    @Test
+    fun conflictBadgeLayerCount_group_of_two_counts_as_one_layer() {
+        // {1-3,4-6} 组 + 1-6 重叠者: 3 门课 2 个图层 → 徽标不该按 3 出
+        assertEquals(2, conflictBadgeLayerCount(groupSizes = listOf(2, 1), rawCount = 3))
+    }
+
+    @Test
+    fun conflictBadgeLayerCount_dual_region_six_courses_four_layers() {
+        // 六课双区: 上下各一组 + 各一重叠者 = 4 图层(裸课数 6)
+        assertEquals(4, conflictBadgeLayerCount(groupSizes = listOf(2, 1, 2, 1), rawCount = 6))
+    }
+
+    @Test
+    fun conflictBadgeLayerCount_no_groups_falls_back_to_raw_count() {
+        // 经典无组叠放: 图层数 = 裸课数(N≥3 徽标语义不变)
+        assertEquals(3, conflictBadgeLayerCount(groupSizes = listOf(1, 1, 1), rawCount = 3))
+        assertEquals(2, conflictBadgeLayerCount(groupSizes = emptyList(), rawCount = 2))
+    }
+
+    @Test
+    fun conflictBadgeLayerCount_sum_mismatch_falls_back_to_raw() {
+        // 防御: 组切分与课数对不上(输入源漂移)→ 回落裸课数,不显示错数
+        assertEquals(3, conflictBadgeLayerCount(groupSizes = listOf(2), rawCount = 3))
+    }
+
+    @Test
+    fun conflictShowBadge_two_layers_never_shows_badge_even_with_hidden() {
+        // 2 图层(组+重叠者)hidden 重叠者存在 → 无徽标(徽标=图层≥3 的逃生门)
+        assertEquals(false, conflictShowBadge(layerCount = 2, hiddenCount = 1))
+        assertEquals(true, conflictShowBadge(layerCount = 3, hiddenCount = 1))
+        assertEquals(false, conflictShowBadge(layerCount = 3, hiddenCount = 0))
+    }
 }
