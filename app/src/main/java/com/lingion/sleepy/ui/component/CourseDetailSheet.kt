@@ -65,7 +65,8 @@ fun CourseDetailSheet(
     timeString: String? = null,
     allCourses: List<CourseEntity> = emptyList(),
     onDismiss: () -> Unit,
-    onEdit: ((CourseEntity) -> Unit)? = null
+    onEdit: ((CourseEntity) -> Unit)? = null,
+    onDefaultTopChanged: ((clusterKey: String, layerRepId: Long?) -> Unit)? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -117,7 +118,8 @@ fun CourseDetailSheet(
                     // 默认置顶选择区 — 仅冲突簇显示
                     if (clusterInfo != null) {
                         DefaultTopPickerSection(
-                            cluster = clusterInfo
+                            cluster = clusterInfo,
+                            onDefaultTopChanged = onDefaultTopChanged
                         )
                     }
 
@@ -146,7 +148,8 @@ fun CourseDetailSheet(
  */
 @Composable
 private fun DefaultTopPickerSection(
-    cluster: ConflictCluster
+    cluster: ConflictCluster,
+    onDefaultTopChanged: ((clusterKey: String, layerRepId: Long?) -> Unit)?
 ) {
     val context = LocalContext.current
     val colors = SleepyTheme.colors
@@ -189,12 +192,14 @@ private fun DefaultTopPickerSection(
                     .selectable(
                         selected = selected,
                         onClick = {
-                            // 再点同一项 = 取消勾选(回退系统默认)
-                            AppPrefs.putConflictDefaultTop(
-                                context,
-                                clusterKey,
-                                if (selected) null else layerRepId
-                            )
+                            val rep = if (selected) null else layerRepId
+                            // v7.10.5: 回调优先 — 同帧驱动网格换层(会话级 override);
+                            // 无回调宿主(小组件等)时退回纯持久化路径
+                            if (onDefaultTopChanged != null) {
+                                onDefaultTopChanged(clusterKey, rep)
+                            } else {
+                                AppPrefs.putConflictDefaultTop(context, clusterKey, rep)
+                            }
                         },
                         role = Role.RadioButton
                     )

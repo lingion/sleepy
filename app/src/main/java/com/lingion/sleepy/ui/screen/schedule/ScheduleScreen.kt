@@ -79,6 +79,12 @@ fun ScheduleScreen(
     val context = androidx.compose.ui.platform.LocalContext.current
     var viewMode by remember { mutableStateOf(if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full) }
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
+    // v7.10.5 会话级置顶 override — 网格 onPickTop 与详情弹窗 radio 共用真相源。
+    // radio 点击 → 这里瞬时换层(同帧) + AppPrefs 持久化(跨会话),两条通道一次写齐。
+    var topOverrides by remember { mutableStateOf(mapOf<String, Long>()) }
+    fun setTopOverride(key: String, courseId: Long?) {
+        topOverrides = if (courseId == null) topOverrides - key else topOverrides + (key to courseId)
+    }
     val displayMode = remember { AppPrefs.getDisplayMode(context) }
     val showDate = remember { AppPrefs.isShowDate(context) }
     val visibleDays = remember { AppPrefs.getVisibleDays(context) }
@@ -205,7 +211,9 @@ fun ScheduleScreen(
                         startDate = state.currentTable?.startDate ?: "",
                         currentWeek = page + 1,
                         onCourseClick = { selectedCourse = it },
-                        greyDays = greyDays
+                        greyDays = greyDays,
+                        topOverrides = topOverrides,
+                        onSetTopOverride = ::setTopOverride
                     )
                 }
             }
@@ -220,6 +228,11 @@ fun ScheduleScreen(
             onEdit = { course ->
                 selectedCourse = null
                 onEditCourse(course)
+            },
+            onDefaultTopChanged = { clusterKey, repId ->
+                // 勾选瞬间: 会话级换层(网格同帧刷新) + 持久化(跨会话默认)
+                setTopOverride(clusterKey, repId)
+                AppPrefs.putConflictDefaultTop(context, clusterKey, repId)
             }
         )
     }
