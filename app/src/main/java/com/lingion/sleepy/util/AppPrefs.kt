@@ -71,6 +71,7 @@ object AppPrefs {
     const val KEY_HOLIDAY_STYLE = "holiday_style"                  // "grey" / "strikethrough" default "grey"
     const val KEY_HOLIDAY_IGNORE_WORKDAY = "holiday_ignore_workday" // bool default true (补班日忽略)
     const val KEY_HOLIDAY_OVERRIDES = "holiday_overrides"           // JSON — 用户范围化覆盖(编辑/新增/删除节日段)
+    const val KEY_CONFLICT_DEFAULT_TOP = "conflict_default_top"      // JSON {"day:startNode:step": layerRepId} — 冲突簇默认置顶图层; 默认空 = 全由 primaryComparator 决
 
     private fun sp(ctx: Context): SharedPreferences =
         ctx.applicationContext.getSharedPreferences(FILE, Context.MODE_PRIVATE)
@@ -242,6 +243,58 @@ object AppPrefs {
     fun setConflictTopInset(ctx: Context, value: Float) {
         require(value in CONFLICT_TOP_INSET_RANGE)
         sp(ctx).edit().putFloat(KEY_CONFLICT_TOP_INSET, value).apply()
+    }
+
+    // ===== 冲突簇默认置顶图层 =====
+    // JSON Map<clusterKey, layerRepId>: clusterKey = "${day}:${startNode}:${step}",
+    // layerRepId = 该簇某图层的 representative course id(选 layer = 整图层置顶,保持图层原子性)。
+    // 写入空串视为清空(unset 单值);整个 map 用 JSON 编码,简易 org.json 实现,避免引第三方。
+
+    fun getConflictDefaultTop(ctx: Context): Map<String, Long> =
+        decodeDefaultTopMap(sp(ctx).getString(KEY_CONFLICT_DEFAULT_TOP, "{}") ?: "{}")
+
+    fun setConflictDefaultTop(ctx: Context, map: Map<String, Long>) {
+        sp(ctx).edit().putString(KEY_CONFLICT_DEFAULT_TOP, encodeDefaultTopMap(map)).apply()
+        _changeBus.tryEmit(KEY_CONFLICT_DEFAULT_TOP)
+    }
+
+    /** 修改单个 clusterKey;传 null = 删除该键(回退系统默认)。 */
+    fun putConflictDefaultTop(ctx: Context, clusterKey: String, layerRepId: Long?) {
+        val current = getConflictDefaultTop(ctx).toMutableMap()
+        if (layerRepId == null) current.remove(clusterKey) else current[clusterKey] = layerRepId
+        setConflictDefaultTop(ctx, current)
+    }
+
+    fun conflictDefaultTopFlow(ctx: Context): Flow<Map<String, Long>> = callbackFlow {
+        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
+            if (k == KEY_CONFLICT_DEFAULT_TOP) {
+                trySend(decodeDefaultTopMap(sp.getString(KEY_CONFLICT_DEFAULT_TOP, "{}") ?: "{}"))
+            }
+        }
+        val sp = sp(ctx)
+        sp.registerOnSharedPreferenceChangeListener(listener)
+        trySend(getConflictDefaultTop(ctx))
+        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
+
+    private fun encodeDefaultTopMap(map: Map<String, Long>): String {
+        val obj = org.json.JSONObject()
+        for ((k, v) in map) obj.put(k, v)
+        return obj.toString()
+    }
+
+    private fun decodeDefaultTopMap(json: String): Map<String, Long> {
+        if (json.isBlank()) return emptyMap()
+        return try {
+            val obj = org.json.JSONObject(json)
+            val out = mutableMapOf<String, Long>()
+            val it = obj.keys()
+            while (it.hasNext()) {
+                val k = it.next()
+                out[k] = obj.optLong(k, Long.MIN_VALUE).takeIf { it != Long.MIN_VALUE } ?: continue
+            }
+            out
+        } catch (_: Exception) { emptyMap() }
     }
 
     // ===== 启动默认视图：完整 / 卡片 =====
