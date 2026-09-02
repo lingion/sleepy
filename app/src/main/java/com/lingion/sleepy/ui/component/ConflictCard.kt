@@ -481,6 +481,25 @@ fun ConflictClusterCard(
                             isGrey = isGrey,
                             shape = topShape
                         )
+                    } else if (item.laid.chainFront) {
+                        // ---- 链前置非顶成员(v7.2): 链组的其他课与顶卡同组拼条——
+                        // 全尺寸、自身区间、无边框层级差;点击=组点击语义同下 ----
+                        val r = ConflictRect(0.dp, cardYOf(course.startNode), colW, cardHOf(course.id))
+                        Box(
+                            modifier = Modifier
+                                .offset(x = r.x, y = r.y)
+                                .width(r.width)
+                                .height(r.height)
+                                .noRippleClickable { onPickTop(groupRepOf(course.id) ?: course.id) }
+                        ) {
+                            ConflictCourseCard(
+                                course = course,
+                                onClick = { onPickTop(groupRepOf(course.id) ?: course.id) },
+                                modifier = Modifier.fillMaxSize(),
+                                isGrey = isGrey,
+                                shape = cardShape
+                            )
+                        }
                     } else {
                         // ---- 非顶卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
                         // 切换只换层级,多次往返几何不变。STACK 右下锚自身区间,RAIL 全宽。
