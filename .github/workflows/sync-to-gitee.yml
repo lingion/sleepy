@@ -24,7 +24,12 @@ jobs:
           cd repo.git
           git for-each-ref --format='delete %(refname)' refs/pull | git update-ref --stdin || true
           REPO_NAME="${GITHUB_REPOSITORY##*/}"
-          git push --mirror "https://oauth2:${GITEE_TOKEN}@gitee.com/lingion/${REPO_NAME}.git"
+          # concurrent mirror pushes can race on Gitee (CAS on refs); retry settles it
+          for i in 1 2 3; do
+            git push --mirror "https://oauth2:${GITEE_TOKEN}@gitee.com/lingion/${REPO_NAME}.git" && break
+            echo "mirror push attempt $i failed; retrying in 15s"
+            sleep 15
+          done
 
   sync-release:
     runs-on: ubuntu-latest
@@ -38,7 +43,7 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           python3 - <<'PYEOF'
-          import json, os, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
+          import json, os, re, subprocess, sys, time, urllib.error, urllib.parse, urllib.request
 
           GITEE_TOKEN = os.environ["GITEE_TOKEN"]
           GH_TOKEN = os.environ["GH_TOKEN"]
@@ -47,6 +52,11 @@ jobs:
           OWNER = "lingion"
           GH = "https://api.github.com"
           GE = "https://gitee.com/api/v5"
+
+          # Gitee attachment quota is 1 GB per repo. When full, evict assets of the
+          # oldest releases (rolling window) — newest versions always win. Eviction
+          # is attempted at most once per run; freed quota reconciles on Gitee's
+          # side with a delay, so leftovers are picked up by the healer cron.
 
           def gh_req(path):
               req = urllib.request.Request(f"{GH}{path}", headers={
@@ -61,6 +71,10 @@ jobs:
                   return json.loads(out.stdout)
               except Exception:
                   return None
+
+          def curl_text(args):
+              out = subprocess.run(args, capture_output=True, text=True)
+              return out.stdout or ""
 
           def gitee_get(path):
               sep = "&" if "?" in path else "?"
@@ -92,25 +106,78 @@ jobs:
                                       "-H", f"Authorization: Bearer {GH_TOKEN}",
                                       "-H", "Accept: application/octet-stream",
                                       "-o", dest, f"{GH}/repos/{GITHUB_REPO}/releases/assets/{asset_id}"])
-                  if r.returncode == 0:
-                      return
+                  if r.returncode == 0 and os.path.exists(dest) and os.path.getsize(dest) > 0:
+                      return True
                   time.sleep(5)
-              raise RuntimeError(f"download failed for asset {asset_id}")
+              return False
 
-          def gitee_upload(rel_id, filepath):
-              last = None
-              for attempt in (1, 2):
-                  last = curl_json(["curl", "-s", "--max-time", "1800", "-X", "POST",
-                                    f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files",
-                                    "-F", f"access_token={GITEE_TOKEN}",
-                                    "-F", f"file=@{filepath}"])
-                  if isinstance(last, dict) and (last.get("id") or last.get("name") or last.get("browser_download_url")):
-                      return
-                  time.sleep(5)
-              raise RuntimeError(f"upload failed: {json.dumps(last)[:150] if last else 'no response'}")
+          def gitee_upload(rel_id, filepath, orig_name):
+              # returns "ok" | "quota" | "fail"
+              out = curl_text(["curl", "-s", "--max-time", "1800", "-X", "POST",
+                               f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files",
+                               "-F", f"access_token={GITEE_TOKEN}",
+                               "-F", f"file=@{filepath};filename={orig_name}"])
+              d = None
+              try:
+                  d = json.loads(out)
+              except Exception:
+                  pass
+              if isinstance(d, dict) and d.get("id"):
+                  return "ok"
+              print(f"    upload resp={out[:110]!r}", flush=True)
+              return "quota" if ("配额" in out) else "fail"
+
+          def gitee_delete_att(rel_id, aid):
+              curl_text(["curl", "-s", "--max-time", "120", "-X", "DELETE",
+                         f"{GE}/repos/{OWNER}/{REPO}/releases/{rel_id}/attach_files/{aid}?access_token={GITEE_TOKEN}"])
+
+          def vkey(tag):
+              m = re.findall(r"\d+", tag or "")
+              return tuple(int(x) for x in m) if m else (0,)
+
+          evict_used = [False]
+
+          def evict_until(need_bytes, protect_tags):
+              # delete attachments of oldest unprotected releases until >= need freed
+              if evict_used[0]:
+                  return 0
+              evict_used[0] = True
+              rels, page = [], 1
+              while True:
+                  d = gitee_get(f"/repos/{OWNER}/{REPO}/releases?page={page}&per_page=100")
+                  if not isinstance(d, list) or not d:
+                      break
+                  rels.extend(d)
+                  if len(d) < 100:
+                      break
+                  page += 1
+              rels.sort(key=lambda r: vkey(r.get("tag_name")))
+              # if every release holding attachments is protected, sacrifice the oldest
+              # protected one (its own missing asset needs the space anyway — net update)
+              sacrificial = [r for r in rels if r.get("tag_name") not in protect_tags]
+              if not sacrificial:
+                  protected_with_atts = [r for r in rels if r.get("tag_name") in protect_tags]
+                  if protected_with_atts:
+                      protect_tags = protect_tags - {protected_with_atts[0].get("tag_name")}
+              freed = 0
+              for r in rels:
+                  if freed >= need_bytes:
+                      break
+                  tag = r.get("tag_name")
+                  if tag in protect_tags:
+                      continue
+                  atts = gitee_get(f"/repos/{OWNER}/{REPO}/releases/{r.get('id')}/attach_files")
+                  if not isinstance(atts, list) or not atts:
+                      continue
+                  for a in atts:
+                      gitee_delete_att(r.get("id"), a.get("id"))
+                      freed += a.get("size") or 0
+                      time.sleep(1)
+                  print(f"  evicted {tag}: {len(atts)} files ~{sum(a.get('size') or 0 for a in atts)/1048576:.1f} MB for newer versions", flush=True)
+              return freed
 
           default_branch = gh_req(f"/repos/{GITHUB_REPO}")["default_branch"]
-          synced = failed = 0
+          synced = failed = deferred = 0
           page = 1
           while True:
               rels = gh_req(f"/repos/{GITHUB_REPO}/releases?per_page=100&page={page}")
@@ -159,10 +226,29 @@ jobs:
                               print(f"  = {tag}: asset {fname} already present")
                               continue
                           dest = f"/tmp/asset_{a['id']}_{fname}"
-                          gh_download(a["id"], dest)
-                          gitee_upload(rel_id, dest)
+                          if not gh_download(a["id"], dest):
+                              deferred += 1
+                              print(f"  ! {tag}: download failed for {fname}; healer will retry")
+                              continue
+                          st = gitee_upload(rel_id, dest, fname)
+                          if st == "quota":
+                              need = os.path.getsize(dest)
+                              protect = {r["tag_name"] for r in rels
+                                         if vkey(r["tag_name"]) >= vkey(tag)}
+                              if evict_until(need, protect) > 0:
+                                  st = gitee_upload(rel_id, dest, fname)
+                          if st == "ok":
+                              synced += 1
+                              print(f"  + {tag}: uploaded {fname}")
+                          elif st == "quota":
+                              deferred += 1
+                              print(f"  ~ {tag}: quota still full; {fname} deferred to healer")
+                              os.remove(dest)
+                              continue
+                          else:
+                              deferred += 1
+                              print(f"  ! {tag}: upload failed for {fname}; healer will retry")
                           os.remove(dest)
-                          print(f"  + {tag}: uploaded {fname}")
                       synced += 1
                       print(f"  ok {tag} ({len(rel.get('assets', []))} assets)")
                   except Exception as e:
@@ -172,6 +258,7 @@ jobs:
               if len(rels) < 100:
                   break
               page += 1
-          print(f"DONE releases synced={synced} failed={failed}")
+          print(f"DONE releases synced={synced} deferred={deferred} failed={failed}")
+          # deferred items converge via the healer cron; only hard errors fail this run
           sys.exit(1 if failed else 0)
           PYEOF
