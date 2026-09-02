@@ -538,10 +538,11 @@ class ConflictLayoutEngineTest {
         assertEquals(emptyList<CourseDrawItem>(), overlayMarkOrder(emptyList()))
     }
 
-    // ============================ markHitArea (Task 4 fix round 2) ============================
+    // ============================ markHitArea (Task 4 fix round 2; 视觉修订 v2 放大) ============================
     //
-    // Important-1: 标记命中区必须收缩到「标记视觉区 + 12dp 内延」,不能铺满整张顶层卡,
+    // Important-1: 标记命中区必须收缩到「标记视觉区 + 内延」,不能铺满整张顶层卡,
     // 否则 hidden 存在时顶层卡 onCourseClick 全域不可达(点主体=编辑最上层,设计 §4)。
+    // 视觉修订 v2(用户实测: 三种面积都过小): 视觉基准 14→16dp,内延 12→20dp。
 
     /** Dp 二维断言辅助 */
     private fun assertRect(
@@ -556,23 +557,23 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun markHitArea_stack_is_bottom_edge_strip_not_full_card() {
-        // STACK: 视觉区=右下 14dp 方块 + 12dp 内延 → 右下 26dp 见方,绝不等于整卡
+        // STACK: 视觉区=右下 16dp 方块 + 20dp 内延 → 右下 36dp 见方,绝不等于整卡
         val (w, h) = markHitArea(ConflictVariant.STACK, cardWidth = 60f, cardHeight = 120f)
-        assertRect(w to h, 26f, 26f, "STACK hit area")
+        assertRect(w to h, 36f, 36f, "STACK hit area")
     }
 
     @Test
     fun markHitArea_fold_is_top_corner_triangle_zone_not_full_card() {
-        // FOLD: 右上 14dp 三角 + 12dp 内延 → 右上 26dp 见方
+        // FOLD: 右上 16dp 角 + 20dp 内延 → 右上 36dp 见方
         val (w, h) = markHitArea(ConflictVariant.FOLD, cardWidth = 60f, cardHeight = 120f)
-        assertRect(w to h, 26f, 26f, "FOLD hit area")
+        assertRect(w to h, 36f, 36f, "FOLD hit area")
     }
 
     @Test
     fun markHitArea_rail_is_right_stripe_not_full_card() {
-        // RAIL: 右侧 6dp 竖条 + 12dp 内延 → 宽 18dp,高=整卡高(竖条纵贯)
+        // RAIL: 右侧 8dp 竖条 + 20dp 内延 → 宽 28dp,高=整卡高(竖条纵贯)
         val (w, h) = markHitArea(ConflictVariant.RAIL, cardWidth = 60f, cardHeight = 120f)
-        assertRect(w to h, 18f, 120f, "RAIL hit area")
+        assertRect(w to h, 28f, 120f, "RAIL hit area")
     }
 
     @Test
