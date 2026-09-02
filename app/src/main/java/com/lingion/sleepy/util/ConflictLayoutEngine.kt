@@ -304,4 +304,55 @@ object ConflictLayoutEngine {
         }
         return clusters
     }
+
+    // =====================================================================================
+    // v7.10 Feature 2 — 周视图局部栏位分割
+    // =====================================================================================
+
+    /** 周视图栏位布局结果 — 每课一段;无冲突课 laneCount=1(全宽)。 */
+    data class WeekLaneSegment(
+        val course: CourseEntity,
+        val lane: Int,        // 0 起的栏位序号
+        val laneCount: Int    // 所在连通冲突区域的总栏数;无冲突 = 1
+    )
+
+    /**
+     * 周视图局部栏位分割(纯函数,可测) — 用户 2026-09-02 权威语义:
+     * 「分栏只适用于周视图 跟网格视图无关」。
+     *
+     * 算法三步:
+     *   1. 按 day 分桶,桶内用 mergeOverlapping 求传递闭包 → 连通冲突区域
+     *      (1-2/2-3/3-4 链式相邻 → 整段 节1..4 是一个区域,虽然节1节4 无直接冲突)。
+     *   2. 区域内跑 chainGroups(贪心最大独立集,按右端点) = 栏位分组:
+     *      零重叠课同栏(1-2 与 3-4 同栏),重叠课异栏(2-3 独占一栏)。
+     *      栏数 = 分组数(3 课分 2 组 = 2 栏,不是 3 栏——用户 2026-09-02「50 节课分
+     *      两组还是两行」的同构规则)。
+     *   3. 区域外课 laneCount=1 = 全宽,不参与分栏。
+     *
+     * 整课一个 lane 不拆节(连续占两节空间的课整段同栏);课高由调用方按自身节数算,
+     * 本函数只给横向栏位几何。每课输出一条 segment,顺序 = 输入顺序无关、按 day+lane 排。
+     */
+    fun weekLaneSegments(courses: List<CourseEntity>): List<WeekLaneSegment> {
+        if (courses.isEmpty()) return emptyList()
+        val out = mutableListOf<WeekLaneSegment>()
+
+        for ((day, dayCourses) in courses.groupBy { it.day }) {
+            val sorted = dayCourses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+            // 传递闭包分区域 — 区域 = 直接或经链式相邻共享节次的极大课程集
+            val regions = mergeOverlapping(sorted)
+            for (region in regions) {
+                if (region.size < 2) {
+                    // 无冲突: 全宽
+                    for (c in region) out.add(WeekLaneSegment(c, 0, 1))
+                    continue
+                }
+                // 区域内分栏: chainGroups 贪心独立集即栏位分组(lane ≡ 图层)
+                val lanes = chainGroups(region)
+                for ((laneIdx, lane) in lanes.withIndex()) {
+                    for (c in lane) out.add(WeekLaneSegment(c, laneIdx, lanes.size))
+                }
+            }
+        }
+        return out
+    }
 }
