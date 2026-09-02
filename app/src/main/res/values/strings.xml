@@ -23,6 +23,7 @@
     <string name="schedule_go_manage">前往课表管理</string>
     <string name="schedule_manual_first">手动创建第一门课</string>
     <string name="schedule_add_course">添加课程</string>
+    <string name="schedule_share_table">分享课表</string>
     <string name="schedule_current_week">第 %1$d 周</string>
     <string name="schedule_no_course_today">今天没有课哦</string>
 
@@ -267,8 +268,8 @@
     <string name="mine_export">导出课表</string>
     <!-- Export -->
     <string name="export_title">导出课表</string>
-    <string name="export_no_table">暂无可导出的课表</string>
-    <string name="export_course_count">%1$d 门课程</string>
+    <string name="share_sheet_title">分享课表</string>
+    <string name="export_no_table">暂无可导出的课表</string>    <string name="export_course_count">%1$d 门课程</string>
     <string name="export_start_date">开学 %1$s</string>
     <string name="export_json_title">WakeUp 兼容 JSON</string>
     <string name="export_json_subtitle">完整课表结构，可被 WakeUp 课表等同类 App 直接导入</string>
