@@ -604,16 +604,17 @@ class ConflictLayoutEngineTest {
     }
 
     @Test
-    fun markHitArea_rail_is_right_stripe_not_full_card() {
-        // RAIL: 右缘露出带(RAIL_INSET 10dp)+ 20dp 内延 → 宽 30dp,高=整格高(纵贯)
+    fun markHitArea_rail_is_same_as_stack_not_right_stripe() {
+        // v7.8.4 修订: RAIL 不再有侧边竖轨结构, 命中区复用 STACK 风格 —— 36dp 见方。
         val (w, h) = markHitArea(ConflictVariant.RAIL, cardWidth = 60f, cardHeight = 120f)
-        assertRect(w to h, 30f, 120f, "RAIL hit area")
+        assertRect(w to h, 36f, 36f, "RAIL hit area (v7.8.4 = STACK style)")
     }
 
     @Test
     fun markHitArea_never_exceeds_card_bounds_and_never_fills_card() {
         // 命中区任何变体都 < 整卡面积(小卡片时内延会被裁剪,但恒 ≤ 卡宽/卡高)
-        for (variant in listOf(ConflictVariant.STACK, ConflictVariant.FOLD)) {
+        // v7.8.4: RAIL 与 STACK/FOLD 走同一命中区计算 —— 36dp 见方。
+        for (variant in listOf(ConflictVariant.STACK, ConflictVariant.FOLD, ConflictVariant.RAIL)) {
             val (w, h) = markHitArea(variant, cardWidth = 20f, cardHeight = 30f)
             assertTrue("w<=cardW", w <= 20f)
             assertTrue("h<=cardH", h <= 30f)
