@@ -100,11 +100,8 @@ private const val MARK_SQUARE_DP = 16f
 /** 命中区在视觉区基础上的总内延(dp,单边) — 手指命中容差。 */
 private const val MARK_HIT_PAD_DP = 20f
 
-/**
- * STACK 叠卡收缩量 d(dp) — 用户定版: 顶卡/底卡**大小完全相同**(各为自身原尺寸缩 d),
- * 顶卡锚簇格位左上、底卡锚右下,对角错开;右/下各露 d 带 = 底卡露出边。
- */
-private const val STACK_OFFSET_DP = 8f
+/** STACK 叠卡收缩量 d(dp) — v6 起由设置滑杆传入(AppPrefs.getConflictTopInset),此值为几何测试基线。 */
+internal const val STACK_OFFSET_DP = 8f
 
 /** FOLD 折痕直角边长 f(dp) — 右上缺角/翻折 flap 尺寸。 */
 private const val FOLD_SIZE_DP = 16f
@@ -112,8 +109,8 @@ private const val FOLD_SIZE_DP = 16f
 /** FOLD flap 内折角圆角(dp) — 翻进来的角保留原圆角意象。 */
 private const val FOLD_FLAP_CORNER_DP = 6f
 
-/** RAIL 顶卡右侧收窄量(dp) — 顶卡是窄卡,底卡全宽;用户反馈 14dp 太窄,10dp 让顶卡更宽。 */
-private const val RAIL_INSET_DP = 10f
+/** RAIL 顶卡右侧收窄量(dp) — v6 起由设置滑杆传入,与 STACK_OFFSET 共用同一设置值;此值为测试基线。 */
+internal const val RAIL_INSET_DP = 10f
 
 /** RAIL 竖排课名字号(sp): 8sp 起步,段高不够降到 6sp,再不够只显示首字。 */
 private const val RAIL_NAME_SP = 8
@@ -234,8 +231,11 @@ internal data class ConflictRect(val x: Dp, val y: Dp, val width: Dp, val height
  * a=1-2 的「右下」落在 1-2 节范围内,不落到 2-3 节去。
  *   STACK: 顶卡 = 自身尺寸缩 d,锚自身区间左上;非顶卡 = 同样缩 d,锚自身区间右下。
  *          每张卡尺寸只跟课走 ⇒ 无论怎么切换(多次往返)大小恒定,切换只换层级。
- *   RAIL:  顶卡 = 右缘收窄 railInset 的窄卡;非顶卡全宽。都按自身真实节位/节数铺。
+ *   RAIL:  顶卡 = 右缘收窄 topInset 的窄卡;非顶卡全宽。都按自身真实节位/节数铺。
  *   FOLD/NONE: 全尺寸,自身节位(FOLD 的缺角由 Shape 叠加,不改变矩形)。
+ *
+ * v6: topInset = 顶卡收窄量(dp),STACK 的偏移 d 与 RAIL 的右缘让宽共用同一设置值
+ * (AppPrefs.getConflictTopInset 滑杆,4..20dp);默认取 STACK_OFFSET_DP(测试基线)。
  */
 internal fun conflictCardRect(
     startNode: Int,
@@ -245,20 +245,21 @@ internal fun conflictCardRect(
     colW: Dp,
     rowH: Dp,
     gapH: Dp,
-    minStart: Int
+    minStart: Int,
+    topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
 ): ConflictRect {
     val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
     val y = rowH * (startNode - minStart)
     return when {
         isTop && form == ConflictVariant.STACK ->
-            ConflictRect(0.dp, y, colW - STACK_OFFSET_DP.dp, ownH - STACK_OFFSET_DP.dp)
+            ConflictRect(0.dp, y, colW - topInset, ownH - topInset)
         isTop && form == ConflictVariant.RAIL ->
-            ConflictRect(0.dp, y, colW - RAIL_INSET_DP.dp, ownH)
+            ConflictRect(0.dp, y, colW - topInset, ownH)
         !isTop && form == ConflictVariant.STACK -> {
             // 锚自身区间右下: 右缘贴格位右边,下缘贴自己区间的底——hidden 与否同待遇,
             // 部分重叠课(长课被短课压顶)也缩 d 锚右下,露出的边就是它自己的真实长度
-            val h = ownH - STACK_OFFSET_DP.dp
-            ConflictRect(STACK_OFFSET_DP.dp, y + ownH - h, colW - STACK_OFFSET_DP.dp, h)
+            val h = ownH - topInset
+            ConflictRect(topInset, y + ownH - h, colW - topInset, h)
         }
         else -> ConflictRect(0.dp, y, colW, ownH)
     }
@@ -277,7 +278,8 @@ internal fun conflictMarkRect(
     rowH: Dp,
     gapH: Dp,
     minStart: Int,
-    clusterH: Dp
+    clusterH: Dp,
+    topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
 ): ConflictRect {
     val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
     val y = rowH * (startNode - minStart)
@@ -290,7 +292,7 @@ internal fun conflictMarkRect(
         }
         ConflictVariant.RAIL -> {
             // 右缘露出带宽 + 内延,高=自身节数+内延,向下不越簇底
-            val w = (RAIL_INSET_DP.dp + MARK_HIT_PAD_DP.dp).coerceAtMost(colW)
+            val w = (topInset + MARK_HIT_PAD_DP.dp).coerceAtMost(colW)
             val h = (ownH + MARK_HIT_PAD_DP.dp).coerceAtMost(clusterH - y)
             ConflictRect(colW - w, y, w, h)
         }
@@ -419,13 +421,17 @@ fun ConflictClusterCard(
     fun cardYOf(startNode: Int) = rowH * (startNode - minStart)
     fun cardHOf(courseId: Long) = rowH * (clampedSteps[courseId] ?: 1) - gapH
 
+    // v6: 顶卡收窄量 = 用户设置(A 偏移 d / C 右缘让宽共用),滑杆 4..20dp
+    val topInset = AppPrefs.getConflictTopInset(context).dp
+
     /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。 */
     fun rectOf(course: CourseEntity, isTop: Boolean): ConflictRect = conflictCardRect(
         startNode = course.startNode,
         ownRows = clampedSteps[course.id] ?: 1,
         isTop = isTop,
         form = form,
-        colW = colW, rowH = rowH, gapH = gapH, minStart = minStart
+        colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
+        topInset = topInset
     )
 
     // 簇格位高 = minStart..maxEnd 全区间(STACK 的右下锚定参照——不能用顶课区间:
@@ -493,7 +499,8 @@ fun ConflictClusterCard(
                                 ownRows = clampedSteps[hiddenCourse.id] ?: 1,
                                 form = ConflictVariant.STACK,
                                 colW = colW, rowH = rowH, gapH = gapH,
-                                minStart = minStart, clusterH = cellH
+                                minStart = minStart, clusterH = cellH,
+                                topInset = topInset
                             )
                             Box(
                                 modifier = Modifier
@@ -504,29 +511,8 @@ fun ConflictClusterCard(
                             )
                         }
                         ConflictVariant.FOLD -> {
-                            // flap 视觉: 顶卡右上角沿折痕内折——flap=顶卡色压暗(翻面),
-                            // 圆角折进来;缺角处露出底卡(含它自己的圆角)。
-                            // 锚点补偿卡自身 2dp 外边距,与折角剪裁形对齐。
-                            Canvas(
-                                modifier = Modifier
-                                    .offset(
-                                        x = colW - FOLD_SIZE_DP.dp - 2.dp,
-                                        y = cardYOf(topCourse.startNode) + 2.dp
-                                    )
-                                    .size(FOLD_SIZE_DP.dp)
-                            ) {
-                                val f = size.width
-                                val c = FOLD_FLAP_CORNER_DP.dp.toPx()
-                                val flap = Path().apply {
-                                    moveTo(0f, 0f)              // 折痕上端(卡顶边)
-                                    lineTo(f, f)                // 折痕下端(卡右边)
-                                    lineTo(c, f)
-                                    quadraticTo(0f, f, 0f, f - c) // 内折角保留圆角意象
-                                    close()
-                                }
-                                drawPath(flap, foldFlapColor(courseColorOf(topCourse)))
-                            }
                             // hit: 顶卡右上 36dp 见方盲区(跟顶课走,与 flap 同锚),点击=该 hidden 课置顶
+                            // (flap 视觉已提升到簇级——切换后 hidden 集空它也必须在)
                             val hit = markHitArea(
                                 ConflictVariant.FOLD, colW.value, cellH.value
                             ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
@@ -585,6 +571,32 @@ fun ConflictClusterCard(
                         ConflictVariant.NONE -> Unit
                     }
                 }
+            }
+        }
+
+        // ---- FOLD flap 视觉(v6 簇级): 顶卡右上角沿折痕内折——flap=顶卡色压暗(翻面),
+        // 圆角折进来;缺角处露出底卡(含它自己的圆角)。挂在簇级而非 hidden Mark:
+        // 切换置顶后 hidden 集空,「折角的切换也得是折角」——形态跟设置走,flap 必须常在。
+        // 锚点补偿卡自身 2dp 外边距,与折角剪裁形对齐。
+        if (form == ConflictVariant.FOLD) {
+            Canvas(
+                modifier = Modifier
+                    .offset(
+                        x = colW - FOLD_SIZE_DP.dp - 2.dp,
+                        y = cardYOf(topCourse.startNode) + 2.dp
+                    )
+                    .size(FOLD_SIZE_DP.dp)
+            ) {
+                val f = size.width
+                val c = FOLD_FLAP_CORNER_DP.dp.toPx()
+                val flap = Path().apply {
+                    moveTo(0f, 0f)              // 折痕上端(卡顶边)
+                    lineTo(f, f)                // 折痕下端(卡右边)
+                    lineTo(c, f)
+                    quadraticTo(0f, f, 0f, f - c) // 内折角保留圆角意象
+                    close()
+                }
+                drawPath(flap, foldFlapColor(courseColorOf(topCourse)))
             }
         }
 
