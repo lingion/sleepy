@@ -1324,4 +1324,60 @@ class ConflictLayoutEngineTest {
     fun v7106_rows_empty_input() {
         assertTrue(ConflictLayoutEngine.weekLaneRows(emptyList()).isEmpty())
     }
+
+    // ==================== v7.10.8 WeekGrid 小组件冲突分栏 ====================
+
+    @Test
+    fun v7108_grid_two_overlap_split_half_width() {
+        // 两课全叠 → 各占半栏: (0, 0.5) + (0.5, 0.5)
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 2)
+        val rects = ConflictLayoutEngine.gridDayLanes(listOf(a, b))
+        val ra = rects.first { it.course.id == 1L }
+        val rb = rects.first { it.course.id == 2L }
+        assertEquals(0f, ra.laneStartFraction, 0.001f)
+        assertEquals(0.5f, ra.laneWidthFraction, 0.001f)
+        assertEquals(0.5f, rb.laneStartFraction, 0.001f)
+        assertEquals(0.5f, rb.laneWidthFraction, 0.001f)
+    }
+
+    @Test
+    fun v7108_grid_solo_course_full_width() {
+        // 无冲突课独占整列宽
+        val solo = course(id = 5, day = 1, startNode = 3, step = 2)
+        val rects = ConflictLayoutEngine.gridDayLanes(listOf(solo))
+        assertEquals(0f, rects[0].laneStartFraction, 0.001f)
+        assertEquals(1f, rects[0].laneWidthFraction, 0.001f)
+    }
+
+    @Test
+    fun v7108_grid_chain7_user_real_data_two_lanes() {
+        // 用户真实课表 day1 七课链式区域 → 2 栏各半宽; 栏内课同 lane 同 x 同宽(纵向堆叠语义
+        // 在网格上=上下不重叠的卡各自画自己区域, 网格天然按节次定位不需要堆叠)
+        val rects = ConflictLayoutEngine.gridDayLanes(userDay1())
+        assertEquals(7, rects.size)
+        val byId = rects.associateBy { it.course.id }
+        // lane0 = {2,3,5,7}, lane1 = {1,4,6}
+        for (id in listOf(2L, 3L, 5L, 7L)) {
+            assertEquals(0f, byId.getValue(id).laneStartFraction, 0.001f)
+            assertEquals(0.5f, byId.getValue(id).laneWidthFraction, 0.001f)
+        }
+        for (id in listOf(1L, 4L, 6L)) {
+            assertEquals(0.5f, byId.getValue(id).laneStartFraction, 0.001f)
+            assertEquals(0.5f, byId.getValue(id).laneWidthFraction, 0.001f)
+        }
+    }
+
+    @Test
+    fun v7108_grid_mixed_conflict_and_solo() {
+        // 同日: 冲突对(1-2 两门) + 独行课(节5) — 独行课整宽, 冲突课各半
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 2)
+        val solo = course(id = 3, day = 1, startNode = 5, step = 1)
+        val rects = ConflictLayoutEngine.gridDayLanes(listOf(a, b, solo))
+        val byId = rects.associateBy { it.course.id }
+        assertEquals(1f, byId.getValue(3L).laneWidthFraction, 0.001f)
+        assertEquals(0.5f, byId.getValue(1L).laneWidthFraction, 0.001f)
+        assertEquals(0.5f, byId.getValue(2L).laneWidthFraction, 0.001f)
+    }
 }
