@@ -313,6 +313,38 @@ class ConflictLayoutEngineTest {
         assertEquals(ConflictVariant.RAIL, layoutById(three, "rail").getValue(3L).variant)
     }
 
+    // ============================ v7.6 图层语义 ============================
+
+    @Test
+    fun chainGroups_layer_count_group_counts_as_single_layer() {
+        // {1-3,4-6} 组 + 1-6 重叠者: 3 门课 2 个图层(组=1 层,单课=1 层)
+        // 用户 2026-09-02: 「分组之后这两节就绑定在一个图层了」——n≥3 判定必须数图层
+        val courses = listOf(
+            course(id = 1, day = 1, startNode = 1, step = 3),
+            course(id = 2, day = 1, startNode = 4, step = 3),
+            course(id = 3, day = 1, startNode = 1, step = 6)
+        )
+        val groups = ConflictLayoutEngine.chainGroups(courses)
+        // 输出序 = 各首课主序位置: id3(step6) 主序最先 → 单课组在前,链组在后
+        assertEquals(listOf(1, 2), groups.map { it.size })
+    }
+
+    @Test
+    fun layout_grouped_overlapper_hidden_variant_not_driven_by_raw_course_count() {
+        // 链组 + 重叠者结构下 hidden 重叠者的 variant 不走 N≥3 合流:
+        // 1-3/4-6 组 + 1-6 重叠者(stack 样式,无 override): 重叠者垫后被全遮 → hidden。
+        // 图层数=2 <3 → STACK 条带语义,不是 FOLD 合流。
+        val courses = listOf(
+            course(id = 1, day = 1, startNode = 1, step = 3),
+            course(id = 2, day = 1, startNode = 4, step = 3),
+            course(id = 3, day = 1, startNode = 1, step = 6)
+        )
+        val byId = layoutById(courses, "stack")
+        assertEquals(true, byId.getValue(3L).hidden)
+        assertEquals(ConflictVariant.STACK, byId.getValue(3L).variant)
+    }
+
+
     @Test
     fun layout_output_preserves_primary_order_with_override_last() {
         // 输出顺序: 簇内主课判定序;topOverrideId 命中时该课提到 zRank 0,其余保持相对顺序
