@@ -844,56 +844,27 @@ private fun DetailDayCard(
                 color = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else colors.onSurfaceVariant
             )
         } else {
-            // v7.10 Feature 2 局部栏位分割: 冲突区域内的课按 lane 并排(同栏课共处一行),
-            // 无冲突课保持全宽单行。布局次序: 有冲突的"行组"按区域顶部节次排,
-            // 区域外课按 startNode 原序穿插。
-            val laneSegs = remember(courses) {
-                ConflictLayoutEngine.weekLaneSegments(courses)
-            }
-            val segByCourseId = laneSegs.associateBy { it.course.id }
-
-            // 分组: 连续冲突课(laneCount>1 且同区域)合成"行组" — 同区域所有课同渲染行,
-            // 区域内各 lane 一列; laneCount=1 的课独占一行。
-            // 区域身份 = (minStart..maxEnd) 区间; 用 seg 引用同一性判区域成员。
-            val rows = remember(courses, laneSegs) {
-                buildList {
-                    val consumed = mutableSetOf<Long>()
-                    val ordered = courses.sortedBy { it.startNode }
-                    for (c in ordered) {
-                        if (c.id in consumed) continue
-                        val seg = segByCourseId[c.id] ?: continue
-                        if (seg.laneCount == 1) {
-                            add(listOf(c))
-                            consumed.add(c.id)
-                        } else {
-                            // 同区域全体成员(laneCount 相同且区间交叠群) → 收齐整区域再排
-                            // 区域判定: 与本课传递连通的其余课 = weekLaneSegments 同区域输出。
-                            // 用并查集轻量替代: 直接收 laneCount>1 且与本课区间传递连通的课。
-                            val region = laneSegs.filter { s ->
-                                s.laneCount > 1 && connectedCourses(s.course, c)
-                            }.map { it.course }
-                            region.forEach { consumed.add(it.id) }
-                            add(region.sortedBy { it.startNode })
-                        }
-                    }
-                }
+            // v7.10.6 行分组下沉引擎: mergeOverlapping 区域是划分(每课恰属一区域),
+            // 冲突区域整区域一行(横向 laneCount 栏,同栏多门课纵向堆叠),
+            // 无冲突课一行一门全宽。结构上保证不丢课、不重复(用户 2026-09-02 报障修复)。
+            val rows = remember(courses) {
+                ConflictLayoutEngine.weekLaneRows(courses)
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(sd(7f))) {
-                rows.forEach { rowCourses ->
-                    if (rowCourses.size == 1) {
+                rows.forEach { row ->
+                    if (row.laneCount == 1) {
                         LessonRow(
-                            course = rowCourses[0], displayMode = displayMode, timeJson = timeJson,
-                            onClick = { onCourseClick(rowCourses[0]) }, isGrey = isGrey,
+                            course = row.courses[0], displayMode = displayMode, timeJson = timeJson,
+                            onClick = { onCourseClick(row.courses[0]) }, isGrey = isGrey,
                             scale = scale, cornerRatio = cornerRatio
                         )
                     } else {
-                        // 冲突行组: 按 lane 并排,每列 weight 均分(laneCount 列)。
+                        // 冲突行: 按 lane 并排,每列 weight 均分,同栏课程纵向堆叠
+                        // (栏内课互不重叠——chainGroups 独立集保证,堆叠即正确时序)。
                         // v7.10.4: BoxWithConstraints 拿 lane 实宽 → 字体/间距按比例压缩
                         // (两栏模式下 lane 半宽,不缩则字全挤在一起——用户 2026-09-02)
-                        val segs = rowCourses.mapNotNull { segByCourseId[it.id] }
-                        val laneCount = segs.maxOf { it.laneCount }
-                        val laneOf = segs.associate { it.course.id to it.lane }
+                        val laneCount = row.laneCount
                         BoxWithConstraints(modifier = Modifier.fillMaxWidth()) {
                             val laneGap = sd(6f)
                             val laneW = (maxWidth - laneGap * (laneCount - 1)) / laneCount
@@ -904,16 +875,18 @@ private fun DetailDayCard(
                                 horizontalArrangement = Arrangement.spacedBy(laneGap)
                             ) {
                                 repeat(laneCount) { li ->
-                                    val laneCourse = segs.firstOrNull { laneOf[it.course.id] == li }?.course
+                                    val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
                                     Box(modifier = Modifier.weight(1f)) {
-                                        if (laneCourse != null) {
-                                            LessonRow(
-                                                course = laneCourse, displayMode = displayMode,
-                                                timeJson = timeJson,
-                                                onClick = { onCourseClick(laneCourse) },
-                                                isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
-                                                laneScale = laneScale, hideSideLabel = hideSide
-                                            )
+                                        Column(verticalArrangement = Arrangement.spacedBy(sd(5f))) {
+                                            laneCourses.forEach { laneCourse ->
+                                                LessonRow(
+                                                    course = laneCourse, displayMode = displayMode,
+                                                    timeJson = timeJson,
+                                                    onClick = { onCourseClick(laneCourse) },
+                                                    isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
+                                                    laneScale = laneScale, hideSideLabel = hideSide
+                                                )
+                                            }
                                         }
                                     }
                                 }
@@ -924,19 +897,6 @@ private fun DetailDayCard(
             }
         }
     }
-}
-
-/** 两课节点区间是否直接相交(闭区间;周视图 lane 连通区域成员判定的边)。 */
-private fun CourseEntity.directlyOverlaps(other: CourseEntity): Boolean =
-    day == other.day &&
-        startNode <= other.startNode + other.step - 1 &&
-        other.startNode <= startNode + step - 1
-
-/** 传递闭包连通判定(小区间图 BFS;周视图每天课数少,开销可忽略)。 */
-private fun connectedCourses(a: CourseEntity, b: CourseEntity): Boolean {
-    // 由调用方保证 a、b 同属一个 laneCount>1 区域;这里沿重叠边做 BFS 到达性
-    // (area 成员互相可达 = 同一连通分量)。
-    return a.directlyOverlaps(b)
 }
 
 // =====================================================================================
