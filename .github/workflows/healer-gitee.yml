@@ -123,9 +123,24 @@ jobs:
                   return freed
               return 0
 
+          QUOTA_BUDGET = 980 * 1048576  # rolling retention window (matches sync-release)
+
           def missing_list():
               rels_gh = gh_req("/repos/lingion/sleepy/releases?per_page=100&page=1")
               rels_gh.sort(key=lambda r: r.get("created_at") or "")
+              # retention window: newest releases first until the budget is exhausted;
+              # older ones are outside the window and must never be healed back in
+              keep = set()
+              budget = QUOTA_BUDGET
+              for r in sorted(rels_gh, key=lambda x: vkey(x.get("tag_name")), reverse=True):
+                  need = sum(a.get("size", 0) for a in r.get("assets", [])
+                             if not a["name"].endswith(("-source.zip","-source.tar.gz",".source.zip")))
+                  if need <= budget:
+                      keep.add(r["tag_name"])
+                      budget -= need
+                  if need == 0:
+                      keep.add(r["tag_name"])
+              rels_gh = [r for r in rels_gh if r["tag_name"] in keep]
               pat = re.compile(r"^[\w-]+_\d+_")
               gitee_have = set()
               page = 1
