@@ -112,13 +112,6 @@ private const val FOLD_FLAP_CORNER_DP = 6f
 /** RAIL 顶卡右侧收窄量(dp) — v6 起由设置滑杆传入,与 STACK_OFFSET 共用同一设置值;此值为测试基线。 */
 internal const val RAIL_INSET_DP = 10f
 
-/** RAIL 竖排课名字号(sp): 8sp 起步,段高不够降到 6sp,再不够只显示首字。 */
-private const val RAIL_NAME_SP = 8
-private const val RAIL_NAME_MIN_SP = 6
-
-/** RAIL N≥3 名字段间缝(dp)。 */
-private const val RAIL_SEG_GAP_DP = 1f
-
 /** N 徽标直径(dp)/字号(sp)。 */
 private const val BADGE_SIZE_DP = 14f
 private const val BADGE_FONT_SP = 8
@@ -179,7 +172,7 @@ private class FoldCutShape(
  * hidden 存在时若 overlay 可点区铺满顶卡,「点主体=编辑最上层」(设计 §4)全域不可达。
  *
  * 返回 (w, h),调用方按变体锚到对应角/边。NONE 无标记 → (0, 0) 不可点。
- * RAIL: 命中区=右缘露出带视觉宽(RAIL_INSET)+内延;段级命中区传 railSegmentHeight。
+ * v7.8.4 修订: RAIL 不再有侧边竖轨, 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
  */
 fun markHitArea(
     variant: ConflictVariant,
@@ -188,16 +181,11 @@ fun markHitArea(
     railWidth: Float = RAIL_INSET_DP,
     railSegmentHeight: Float = cardHeight
 ): Pair<Float, Float> = when (variant) {
-    ConflictVariant.STACK, ConflictVariant.FOLD -> {
+    ConflictVariant.STACK, ConflictVariant.FOLD, ConflictVariant.RAIL -> {
         // 右下/右上 16dp 视觉基准 + 20dp 总内延 → 36dp 见方
         val side = (MARK_SQUARE_DP + MARK_HIT_PAD_DP)
             .coerceAtMost(cardWidth).coerceAtMost(cardHeight)
         side to side
-    }
-    ConflictVariant.RAIL -> {
-        // 右缘露出带视觉宽/段视觉高 + 20dp 总内延,coerce 进格位
-        (railWidth + MARK_HIT_PAD_DP).coerceAtMost(cardWidth) to
-            (railSegmentHeight + MARK_HIT_PAD_DP).coerceAtMost(cardHeight)
     }
     ConflictVariant.NONE -> 0f to 0f
 }
@@ -297,17 +285,12 @@ internal fun conflictMarkRect(
     val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
     val y = rowH * (startNode - minStart)
     return when (form) {
-        ConflictVariant.STACK -> {
-            // 自身区间右下 36dp 见方(side 超课高时压回课高,不越过自己区间顶部)
+        ConflictVariant.STACK, ConflictVariant.RAIL -> {
+            // v7.8.4 修订: RAIL 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
+            // (side 超课高时压回课高,不越过自己区间顶部)
             val side = (MARK_SQUARE_DP.dp + MARK_HIT_PAD_DP.dp)
                 .coerceAtMost(colW).coerceAtMost(ownH)
             ConflictRect(colW - side, y + ownH - side, side, side)
-        }
-        ConflictVariant.RAIL -> {
-            // 右缘露出带宽 + 内延,高=自身节数+内延,向下不越簇底
-            val w = (topInset + MARK_HIT_PAD_DP.dp).coerceAtMost(colW)
-            val h = (ownH + MARK_HIT_PAD_DP.dp).coerceAtMost(clusterH - y)
-            ConflictRect(colW - w, y, w, h)
         }
         else -> ConflictRect(0.dp, 0.dp, 0.dp, 0.dp)
     }
@@ -597,71 +580,25 @@ fun ConflictClusterCard(
                             )
                         }
                         ConflictVariant.RAIL -> {
-                            // hit: 自身区间右缘带+内延。N=2 → 单带命中;N≥3 → 按段均分命中。
-                            // 分段集合 = 全部非顶课(与名字段同一集合,切换不缺段)。
-                            // v7.4(F4): 链式拼条态下命中区跟课的真实节位走(名字段同锚)。
-                            val multi = railOthers.size >= 2
-                            if (chainStripActive) {
-                                val hit = conflictMarkRect(
-                                    startNode = hiddenCourse.startNode,
-                                    ownRows = clampedSteps[hiddenCourse.id] ?: 1,
-                                    form = ConflictVariant.RAIL,
-                                    colW = colW, rowH = rowH, gapH = gapH,
-                                    minStart = minStart, clusterH = cellH,
-                                    topInset = topInset
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .offset(x = hit.x, y = hit.y)
-                                        .width(hit.width)
-                                        .height(hit.height)
-                                        .noRippleClickable {
-                                            onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
-                                        }
-                                )
-                            } else if (!multi) {
-                                val hit = conflictMarkRect(
-                                    startNode = hiddenCourse.startNode,
-                                    ownRows = clampedSteps[hiddenCourse.id] ?: 1,
-                                    form = ConflictVariant.RAIL,
-                                    colW = colW, rowH = rowH, gapH = gapH,
-                                    minStart = minStart, clusterH = cellH
-                                )
-                                Box(
-                                    modifier = Modifier
-                                        .offset(x = hit.x, y = hit.y)
-                                        .width(hit.width)
-                                        .height(hit.height)
-                                        .noRippleClickable {
-                                            onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
-                                        }
-                                )
-                            } else {
-                                val segCount = railOthers.size
-                                val segH = ((cellH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount)
-                                    .coerceAtLeast(0.dp)
-                                val segIdx = railOthers.indexOfFirst {
-                                    it.course.id == item.hiddenCourseId
-                                }
-                                val segTop = (segH + RAIL_SEG_GAP_DP.dp) * segIdx
-                                val hit = markHitArea(
-                                    ConflictVariant.RAIL,
-                                    colW.value,
-                                    cellH.value,
-                                    railSegmentHeight = segH.value
-                                ).let { (w, h) ->
-                                    w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH - segTop)
-                                }
-                                Box(
-                                    modifier = Modifier
-                                        .offset(x = colW - hit.first, y = segTop)
-                                        .width(hit.first)
-                                        .height(hit.second)
-                                        .noRippleClickable {
-                                            onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
-                                        }
-                                )
-                            }
+                            // v7.8.4 修订: RAIL 不再有侧边竖轨结构, 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
+                            // 链组态下 hidden 课为空, 不会走到这里; 经典完全重叠 RAIL hit 走 STACK 同一矩形函数。
+                            val hit = conflictMarkRect(
+                                startNode = hiddenCourse.startNode,
+                                ownRows = clampedSteps[hiddenCourse.id] ?: 1,
+                                form = ConflictVariant.STACK,
+                                colW = colW, rowH = rowH, gapH = gapH,
+                                minStart = minStart, clusterH = cellH,
+                                topInset = topInset
+                            )
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = hit.x, y = hit.y)
+                                    .width(hit.width)
+                                    .height(hit.height)
+                                    .noRippleClickable {
+                                        onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                    }
+                            )
                         }
                         ConflictVariant.NONE -> Unit
                     }
@@ -722,42 +659,11 @@ fun ConflictClusterCard(
             }
         }
 
-        // ---- RAIL N≥3 竖排课名: 右缘带纵贯簇高均分字段(竖排课名特性) ----
-        // 分段集合 = 全部非顶课(v5): hidden 集随切换缩,名字段不缺段。
-        // v7.4(F4): 链式拼条态下段位跟课的真实节位走(成员区间内均分),
-        // 不再纵贯全簇均分——4-6 的名字必须落在 4-6 那几节的右缘。
-        if (form == ConflictVariant.RAIL && railOthers.size >= 2) {
-            // railOthers = zRank != 0 的全部课。当顶层是多课链组时, 这些课就是底层链组
-            // 成员; 当顶层是单课时, 就是非顶课(hidden 或可见)。它们的命名段永远画在
-            // 自身节位上(用户原话: "4-6 的名字必须落在 4-6 那几节的右缘")。
-            val perMember: Map<Long, List<LaidOutCourse>> =
-                railOthers.groupBy { it.course.id }
-            perMember.forEach { (_, members) ->
-                val first = members.first()
-                val segTop = cardYOf(first.course.startNode)
-                val segHeight = cardHOf(first.course.id)
-                val segColor = courseColorOf(first.course)
-                Box(
-                    modifier = Modifier
-                        .offset(x = colW - RAIL_INSET_DP.dp, y = segTop)
-                        .width(RAIL_INSET_DP.dp)
-                        .height(segHeight)
-                        .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
-                        .background(segColor),
-                    contentAlignment = Alignment.Center
-                ) {
-                    VerticalRailName(
-                        name = first.course.courseName,
-                        segmentHeight = segHeight,
-                        color = CourseColorUtil.textColorOn(
-                            segColor,
-                            CourseColorUtil.isPaletteDark(palette),
-                            colors.onSurface
-                        )
-                    )
-                }
-            }
-        }
+        // ---- RAIL 名字段: 用户 C 方案原话只描述胶囊大小, 不要求侧边竖轨/竖排汉字 ----
+        // v7.8.4 修订: 删除 RAIL 右缘彩色带 + 竖排汉字。
+        // 顶胶囊宽度收窄(RAIL_INSET), 底胶囊全宽 —— 课名都在胶囊上横排, 没有额外的右缘带。
+        // 命中区复用 STACK 右下 36dp 见方语义(见下方 Mark 分支, 已统一)。
+        // railOthers 字段仅作为 Mark 命中区命中集合使用, 此处不再渲染。
 
         // ---- N 徽标(图层 N≥3 且 hidden 课存在): overlay 层右上,点击弹课名点选 ----
         if (showBadge) {
@@ -903,42 +809,10 @@ private fun ConflictCourseCard(
 }
 
 /**
- * RAIL 竖排课名(N≥3 名字段内) — 字符级竖排,三级降级防溢出
- * (字符级贪心思路与 widget/WeekGridWidgetProvider 竖排同源):
- *   段高装得下 8sp 全名 → 8sp;装不下 → 6sp;再装不下 → 只显示首字。
+ * v7.8.4 修订: VerticalRailName 已删除。
+ * RAIL 不再有侧边竖轨 + 竖排汉字, 所有课名都画在胶囊内部横排(由 ConflictCourseCard 负责)。
+ * 函数彻底移除, 防止未来误用。
  */
-@Composable
-private fun VerticalRailName(
-    name: String,
-    segmentHeight: Dp,
-    color: Color,
-    modifier: Modifier = Modifier
-) {
-    if (name.isBlank()) return
-    val charCount = name.length
-    val fitsAt8 = charCount * RAIL_NAME_SP * 1.2f <= segmentHeight.value
-    val fitsAt6 = charCount * RAIL_NAME_MIN_SP * 1.2f <= segmentHeight.value
-    val fontSize = when {
-        fitsAt8 -> RAIL_NAME_SP
-        fitsAt6 -> RAIL_NAME_MIN_SP
-        else -> RAIL_NAME_MIN_SP
-    }
-    val showFullName = fitsAt8 || fitsAt6
-    val maxLines = if (showFullName) charCount else 1
-    val text = if (showFullName) name.chunked(1).joinToString("\n") else name.take(1)
-    Text(
-        text = text,
-        style = MaterialTheme.typography.labelSmall.copy(
-            fontSize = fontSize.sp,
-            lineHeight = (fontSize * 1.2f).sp
-        ),
-        color = color,
-        textAlign = TextAlign.Center,
-        maxLines = maxLines,
-        overflow = TextOverflow.Clip,
-        modifier = modifier
-    )
-}
 
 /**
  * N 徽标(N≥3) — 右上角 14dp 小圆标,bg-elevated 类底色(surface token)+onSurface 文字,
