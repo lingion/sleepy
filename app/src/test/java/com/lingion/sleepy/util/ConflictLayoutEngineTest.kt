@@ -231,20 +231,20 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun layout_trapezoid_all_courses_have_exposure() {
-        // 梯形 1-3 / 2-4 / 3-5(step 全 2,startNode 1/2/3):
-        // 主课判定序 = startNode 升 → 1-3 顶层,2-4 次层,3-5 底层。
-        //   2-4 露出集 = {2,3,4} − {1,2,3} = {4} 非空
-        //   3-5 露出集 = {3,4,5} − ({1,2,3} ∪ {2,3,4}) = {5} 非空
-        // → 三课全部 hidden=false,variant=NONE
+        // 梯形 1-3 / 2-4 / 3-5(step 全 2,startNode 1/2/3) — v7.2 链式语义更新:
+        // 1-3(1..2) 与 3-5(3..4) 零重叠 → 链组;2-4(2..3) 与两者重叠 → 独立。
+        // 链组默认置前: z 序 [1-3(z0), 3-5(z1), 2-4(z2)]。
+        //   2-4 露出集 = {2,3} − {1,2} ∪ {3,4} = ∅ → hidden(FOLD? stack 样式 N=3 同起点闸门:
+        //   2-4 与紧邻上层 3-5 起点不同 → STACK)
         val a13 = course(id = 1, day = 3, startNode = 1, step = 2)
         val b24 = course(id = 2, day = 3, startNode = 2, step = 2)
         val c35 = course(id = 3, day = 3, startNode = 3, step = 2)
         val laid = ConflictLayoutEngine.layoutCluster(ConflictCluster(3, listOf(a13, b24, c35)), "stack")
         assertEquals(
             listOf(
-                LaidOutCourse(a13, 0, false, ConflictVariant.NONE),
-                LaidOutCourse(b24, 1, false, ConflictVariant.NONE),
-                LaidOutCourse(c35, 2, false, ConflictVariant.NONE)
+                LaidOutCourse(a13, 0, false, ConflictVariant.NONE, chainFront = true),
+                LaidOutCourse(c35, 1, false, ConflictVariant.NONE, chainFront = true),
+                LaidOutCourse(b24, 2, true, ConflictVariant.STACK)
             ),
             laid
         )
@@ -361,20 +361,23 @@ class ConflictLayoutEngineTest {
     @Test
     fun layoutCluster_maxNode_mixed_groups_in_one_cluster() {
         // spec §7「同簇多组混合」: 同天一簇内两个完全同段组——1-2 与 1-2 与 3-4 与 3-4。
-        // 主课判定序: step 同 → startNode 升 → id 升 → 顶层=id1(1-2),z 序 1,2,3,4。
-        //   id=2 露出集 = {1,2} − {1,2} = ∅ → hidden
-        //   id=3(3-4) 露出集 = {3,4} − {1,2} = {3,4} 非空 → 非 hidden(第二组顶层)
-        //   id=4 露出集 = {3,4} − ({1,2} ∪ {3,4}) = ∅ → hidden
-        // variant: stack 样式但簇 N=4 ≥3 → 按既有合流规则 hidden 课一律 FOLD(spec §3)
+        // v7.2 链式语义: 贪心装箱 → 组0=[id1(1-2), id3(3-4)](零重叠拼条),
+        // 组1=[id2(1-2), id4(3-4)](同理拼条)。两组皆多课组,组0 先建在前。
+        // z 序: id1(0), id3(1), id2(2), id4(3);全部 chainFront。
+        //   id2 = {1,2} − {1,2}(id1) ∪ {3,4}(id3) = ∅ → hidden
+        //   id4 = {3,4} − {1,2} ∪ {3,4} = ∅ → hidden
+        // variant: hidden 课与紧邻上层同起点判定——id2 上层 id3 起点不同 → STACK;
+        //   id4 上层 id2 起点不同 → STACK(v7.2 链式下 N≥4 但同起点闸门不满足)
         val a1 = course(id = 1, day = 1, startNode = 1, step = 2)
         val a2 = course(id = 2, day = 1, startNode = 1, step = 2)
         val b1 = course(id = 3, day = 1, startNode = 3, step = 2)
         val b2 = course(id = 4, day = 1, startNode = 3, step = 2)
         val byId = layoutById(listOf(a1, a2, b1, b2), "stack")
-        assertEquals(LaidOutCourse(a1, 0, false, ConflictVariant.NONE), byId.getValue(1L))
-        assertEquals(LaidOutCourse(a2, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
-        assertEquals(LaidOutCourse(b1, 2, false, ConflictVariant.NONE), byId.getValue(3L))
-        assertEquals(LaidOutCourse(b2, 3, true, ConflictVariant.FOLD), byId.getValue(4L))
+        assertEquals(LaidOutCourse(a1, 0, false, ConflictVariant.NONE, chainFront = true), byId.getValue(1L))
+        assertEquals(LaidOutCourse(b1, 1, false, ConflictVariant.NONE, chainFront = true), byId.getValue(3L))
+        // 组1(id2+id4)也是多课拼条 → 同为链前置成员;层叠靠 z 序
+        assertEquals(LaidOutCourse(a2, 2, true, ConflictVariant.STACK, chainFront = true), byId.getValue(2L))
+        assertEquals(LaidOutCourse(b2, 3, true, ConflictVariant.STACK, chainFront = true), byId.getValue(4L))
     }
 
     @Test
@@ -500,13 +503,13 @@ class ConflictLayoutEngineTest {
 
     @Test
     fun overlayMarkOrder_no_hidden_only_cards_and_top_last() {
-        // 梯形 1-3/2-4/3-5: 全部有露出,无 hidden → 无 overlay 标记;
-        // 绘制序 = zRank 降序(3-5 → 2-4 → 1-3 顶层最后)
+        // v7.2 链式语义下的梯形 1-3/2-4/3-5: 1-3+3-5 链组置前,2-4 全遮 hidden。
+        // 绘制序 = 非顶卡 zRank 降序(Card:2 z2, Card:3 z1) → 顶卡 Card:1 → Mark:2
         val a13 = course(id = 1, day = 3, startNode = 1, step = 2)
         val b24 = course(id = 2, day = 3, startNode = 2, step = 2)
         val c35 = course(id = 3, day = 3, startNode = 3, step = 2)
         val order = overlayMarkOrder(layoutFor(listOf(a13, b24, c35), "stack", null))
-        assertEquals(listOf("Card:3", "Card:2", "Card:1"), drawOrderIds(order))
+        assertEquals(listOf("Card:2", "Card:3", "Card:1", "Mark:2"), drawOrderIds(order))
     }
 
     @Test
@@ -721,5 +724,76 @@ class ConflictLayoutEngineTest {
         // 分组语义下 AC 都不该判 hidden(链式层里它们各自露出自己区间)
         assertEquals(false, byId.getValue(1L).hidden)
         assertEquals(false, byId.getValue(3L).hidden)
+    }
+
+    // ==================== v7.2 用户实测缺陷: 默认 z 序必须走分组 ====================
+    // 场景 1-3 / 4-6 / 1-4: 分组=[[1-3,4-6],[1-4]],但默认 z 序仍按 step 降把 1-4 排最前,
+    // 视觉上 1-4 压顶 + 4-6 露出贴其下,1-3 全遮不可见 → 用户看到"1-4 和 4-6 拼一起"。
+    // 修复: 有链组(多课组)时整组置前为默认态。
+
+    @Test
+    fun chainDefaultZ_multi_course_group_front_by_default() {
+        // 1-3 / 4-6 / 1-4 无点击默认态: 链组 [1-3,4-6] 置前(z0/z1),1-4 垫后(z2)且全遮 hidden
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+        val byId = layoutById(listOf(head, tail, big), "stack")
+        assertEquals(0, byId.getValue(1L).zRank)          // 1-3 链组首
+        assertEquals(1, byId.getValue(2L).zRank)          // 4-6 链组尾
+        assertEquals(2, byId.getValue(3L).zRank)          // 1-4 垫后
+        assertEquals(false, byId.getValue(1L).hidden)
+        assertEquals(false, byId.getValue(2L).hidden)
+        assertEquals(true, byId.getValue(3L).hidden)      // 1-4 被 1..6 全覆盖
+        // 前组成员标记(UI 渲染全尺寸拼条的依据)
+        assertEquals(true, byId.getValue(1L).chainFront)
+        assertEquals(true, byId.getValue(2L).chainFront)
+        assertEquals(false, byId.getValue(3L).chainFront)
+    }
+
+    @Test
+    fun chainFoldStyle_overlapper_variant_fold_when_chained() {
+        // fold 样式 + 链组前置: 被全遮的 1-4 variant=FOLD(链式下折角不再要求同起点)
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+        val byId = layoutById(listOf(head, tail, big), "fold")
+        assertEquals(ConflictVariant.FOLD, byId.getValue(3L).variant)
+    }
+
+    @Test
+    fun chainStackStyle_overlapper_stays_stack_when_chained() {
+        // stack 样式 + 链组前置: 保持 STACK 条带语义,不合流折角
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+        val byId = layoutById(listOf(head, tail, big), "stack")
+        assertEquals(ConflictVariant.STACK, byId.getValue(3L).variant)
+    }
+
+    @Test
+    fun chainOverride_singleton_group_flips_front() {
+        // 点击 1-4(独立组)置顶: z0=1-4;1-3 全遮 hidden(fold 样式下与上层同起点→FOLD)
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+        val byId = layoutById(listOf(head, tail, big), "fold", topOverrideId = 3L)
+        assertEquals(0, byId.getValue(3L).zRank)
+        assertEquals(true, byId.getValue(1L).hidden)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(1L).variant) // 同起点(1==1)传统闸门
+        assertEquals(false, byId.getValue(2L).hidden)                 // 4-6 露出 5-6
+        assertEquals(false, byId.getValue(3L).chainFront)             // 单课组不算链前置
+    }
+
+    @Test
+    fun chainGroups_user_case_1346_14() {
+        // 用户实测场景分组本身: [1-3, 4-6] 一组, [1-4] 一组
+        val head = course(id = 1, day = 1, startNode = 1, step = 3)
+        val tail = course(id = 2, day = 1, startNode = 4, step = 3)
+        val big = course(id = 3, day = 1, startNode = 1, step = 4)
+        val groups = ConflictLayoutEngine.chainGroups(listOf(head, tail, big))
+        assertEquals(2, groups.size)
+        val ids = groups.map { g -> g.map { it.id }.toSet() }
+        assertTrue(ids.contains(setOf(1L, 2L)))
+        assertTrue(ids.contains(setOf(3L)))
     }
 }
