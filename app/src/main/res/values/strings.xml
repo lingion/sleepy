@@ -91,6 +91,8 @@
     <string name="import_week_start">第一周从哪天开始</string>
     <string name="import_confirm">确认导入</string>
     <string name="import_all_conflict">没有可追加课程，全部与现有课表冲突</string>
+    <string name="import_three_layers_dropped">以下日期存在超过两层的冲突课程，已跳过：%1$s</string>
+    <string name="import_three_layers_kept">提示：%1$s存在超过两层重叠的课程，已保留（课表暂不支持分栏展示）</string>
     <string name="import_content_empty">内容为空</string>
     <string name="import_select_table">请先选择课表</string>
     <string name="read_failed">读取失败: %1$s</string>
