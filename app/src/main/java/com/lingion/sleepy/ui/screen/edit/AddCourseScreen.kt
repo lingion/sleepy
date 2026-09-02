@@ -443,7 +443,8 @@ fun AddCourseScreen(
                             // 用真实 tableId 修正 drafts
                             val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
                             // v7.10.9 冲突第三层禁止 — 合并已存库课 + 新草稿检查每区域栏数,
-                            // 超 2 栏拒绝保存(编辑时排除本组旧记录, 换成新草稿参与判定)
+                            // 超 2 栏拒绝保存(编辑时排除本组旧记录, 换成新草稿参与判定)。
+                            // v7.10.10: 拒绝提示从 Toast 改表单顶部 ValidationCard 红字
                             val editingGid = editingCourse?.groupId
                             val existing = tableId.let { tid ->
                                 (1..7).flatMap { repo.getCoursesByDayOnce(tid, it) }
@@ -453,11 +454,14 @@ fun AddCourseScreen(
                             if (badDays.isNotEmpty()) {
                                 val dayText = badDays.sorted()
                                     .joinToString(" / ") { com.lingion.sleepy.util.DateUtils.localizedDay(it, context) }
-                                android.widget.Toast.makeText(
-                                    context,
-                                    context.getString(com.lingion.sleepy.R.string.conflict_three_layers_rejected, dayText),
-                                    android.widget.Toast.LENGTH_LONG
-                                ).show()
+                                validationIssues = listOf(
+                                    ValidationIssue(
+                                        null,
+                                        context.getString(
+                                            com.lingion.sleepy.R.string.conflict_three_layers_rejected, dayText
+                                        )
+                                    )
+                                )
                                 return@launch
                             }
                             if (editingCourse != null) {
