@@ -7,7 +7,10 @@ import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.flow.distinctUntilChanged
 
@@ -250,10 +253,15 @@ object AppPrefs {
     // layerRepId = 该簇某图层的 representative course id(选 layer = 整图层置顶,保持图层原子性)。
     // 写入空串视为清空(unset 单值);整个 map 用 JSON 编码,简易 org.json 实现,避免引第三方。
 
-    fun getConflictDefaultTop(ctx: Context): Map<String, Long> =
-        decodeDefaultTopMap(sp(ctx).getString(KEY_CONFLICT_DEFAULT_TOP, "{}") ?: "{}")
+    fun getConflictDefaultTop(ctx: Context): Map<String, Long> {
+        // 内存真相源优先:点击 → putConflictDefaultTop 同步更新 StateFlow → 订阅方
+        // 同帧 recompose(用户 2026-09-02:「勾选的那一瞬间课表就应该完成置顶更新」)。
+        // SharedPreferences 监听器回调不保证同帧(apply 异步落盘后才触发)。
+        _conflictDefaultTopState.value.let { return it }
+    }
 
     fun setConflictDefaultTop(ctx: Context, map: Map<String, Long>) {
+        _conflictDefaultTopState.value = map.toMap()   // 同步内存 → 瞬时驱动 UI
         sp(ctx).edit().putString(KEY_CONFLICT_DEFAULT_TOP, encodeDefaultTopMap(map)).apply()
         _changeBus.tryEmit(KEY_CONFLICT_DEFAULT_TOP)
     }
@@ -265,17 +273,27 @@ object AppPrefs {
         setConflictDefaultTop(ctx, current)
     }
 
-    fun conflictDefaultTopFlow(ctx: Context): Flow<Map<String, Long>> = callbackFlow {
-        val listener = SharedPreferences.OnSharedPreferenceChangeListener { sp, k ->
-            if (k == KEY_CONFLICT_DEFAULT_TOP) {
-                trySend(decodeDefaultTopMap(sp.getString(KEY_CONFLICT_DEFAULT_TOP, "{}") ?: "{}"))
-            }
-        }
-        val sp = sp(ctx)
-        sp.registerOnSharedPreferenceChangeListener(listener)
-        trySend(getConflictDefaultTop(ctx))
-        awaitClose { sp.unregisterOnSharedPreferenceChangeListener(listener) }
-    }.distinctUntilChanged()
+    /**
+     * 冷启动加载磁盘值进内存真相源 — 在 App 首个 Composable 订阅前调用一次即可,
+     * 幂等(磁盘值与内存一致时 StateFlow 不发射)。
+     */
+    fun primeConflictDefaultTop(ctx: Context) {
+        val disk = decodeDefaultTopMap(sp(ctx).getString(KEY_CONFLICT_DEFAULT_TOP, "{}") ?: "{}")
+        if (_conflictDefaultTopState.value != disk) _conflictDefaultTopState.value = disk
+    }
+
+    /**
+     * v7.10.2 瞬时更新通道 — StateFlow 调用 setValue 即同步换值,
+     * collectAsState 订阅方同一帧 recompose;替代原 callbackFlow+SharedPreferences
+     * 监听器路径(apply 异步 → 监听回调晚于点击帧,网格刷新滞后)。
+     */
+    private val _conflictDefaultTopState = MutableStateFlow<Map<String, Long>>(emptyMap())
+    val conflictDefaultTopState: StateFlow<Map<String, Long>> = _conflictDefaultTopState.asStateFlow()
+
+    fun conflictDefaultTopFlow(ctx: Context): Flow<Map<String, Long>> {
+        primeConflictDefaultTop(ctx)
+        return conflictDefaultTopState
+    }
 
     private fun encodeDefaultTopMap(map: Map<String, Long>): String {
         val obj = org.json.JSONObject()
