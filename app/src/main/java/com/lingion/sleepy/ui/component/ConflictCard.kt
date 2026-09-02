@@ -417,11 +417,13 @@ fun ConflictClusterCard(
     // 但竖轨字段要纵贯全簇不缺段——非顶可见课的段与它的露出带也该有名字。
     val railOthers = drawList.filter { it.zRank != 0 }
 
-    // 簇级形态(v5): hidden 课 variant 优先,无 hidden 时按设置回落。
-    // fold 回落资格 = 首个非顶课与紧邻上层同起点(与引擎 sameStart 闸门同规),
-    // 保证等长课切换后仍保持折角形态不跳变。
-    val foldEligible = drawList.getOrNull(0) != null &&
-        drawList.getOrNull(1)?.course?.startNode == drawList.getOrNull(0)?.course?.startNode
+    // 簇级形态(v5/v7.8): fold 回落资格 —— 由 chainGroups 第一图层尺寸判定。
+    //   - 单课顶层(N=1,经典完全重叠): 同起点 N=2 顶层 size=1 → 不进入 fold 路径, 维持原 style
+    //   - 单课冲突顶层 size>=2: 顶层单课 + 沉底一门课 → foldEligible=true (兼容经典双课等长场景)
+    //   - 链组顶层 size>=2: 顶层是 1-3/4-6 这类多课组合 → foldEligible=true (B 方案一起折角)
+    //   - 不再用 drawList[0]/drawList[1].startNode 是否相同判断 —— 链组 1-3/4-6 起点不同但应一起折角
+    val topLayer = chainGroups.firstOrNull() ?: emptyList()
+    val foldEligible = drawList.isNotEmpty() && topLayer.size >= 2
     val form = clusterForm(style, hiddenItems.firstOrNull()?.variant, foldEligible)
 
     // 课色(描边/虚线/flap 取色,含 isGrey 灰显,与卡渲染取同一色)
@@ -506,8 +508,9 @@ fun ConflictClusterCard(
                     // 底卡形态。
                     val isFrontCard = item.laid.chainFront || item.laid.zRank == 0
                     // v7.4(F3): fold 拼条态下链组每个可见成员都折角(用户定版「A/C 都折角」)
+                    // B 方案: 顶层(链组成员或单课顶层)折角, 底层不折角 —— 由图层归属判定。
                     val cardIsFolded = form == ConflictVariant.FOLD &&
-                        (!chainStripActive || item.laid.chainFront || item.laid.zRank == 0)
+                        (item.laid.chainFront || item.laid.zRank == 0)
                     val memberShape = if (cardIsFolded && item.laid.hidden.not()) {
                         remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
                     } else cardShape
