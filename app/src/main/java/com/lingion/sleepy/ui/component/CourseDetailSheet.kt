@@ -117,8 +117,7 @@ fun CourseDetailSheet(
                     // 默认置顶选择区 — 仅冲突簇显示
                     if (clusterInfo != null) {
                         DefaultTopPickerSection(
-                            cluster = clusterInfo,
-                            selectedCourseId = course.id
+                            cluster = clusterInfo
                         )
                     }
 
@@ -147,8 +146,7 @@ fun CourseDetailSheet(
  */
 @Composable
 private fun DefaultTopPickerSection(
-    cluster: ConflictCluster,
-    selectedCourseId: Long
+    cluster: ConflictCluster
 ) {
     val context = LocalContext.current
     val colors = SleepyTheme.colors

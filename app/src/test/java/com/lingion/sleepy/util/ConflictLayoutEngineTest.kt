@@ -314,6 +314,79 @@ class ConflictLayoutEngineTest {
         assertEquals(ConflictVariant.RAIL, layoutById(three, "rail").getValue(3L).variant)
     }
 
+    // ============================ v7.9 默认置顶偏好集成 ============================
+    //
+    // CourseTableView 把 defaultTopMap[clusterKey] 作 topOverrideId fallback ——
+    // 本节断言:把 default-top 当作 topOverrideId 喂入引擎后,引擎确实把目标图层整组提到顶层
+    // (保持图层原子性,而不是只提 representative 单课)。
+
+    @Test
+    fun v79_defaultTop_lifts_chain_layer_atomically() {
+        // chainGroups 划分: A=1-3, B=3-6, C=1-2 → Layer0 = {C, B}, Layer1 = {A}。
+        // 注:这是按"区间图最大独立集(贪心右端点)"分的层,与"链式衔接=同层"不是一回事。
+        val a = course(id = 1, day = 1, startNode = 1, step = 3, courseName = "A")
+        val b = course(id = 2, day = 1, startNode = 3, step = 4, courseName = "B")
+        val c = course(id = 3, day = 1, startNode = 1, step = 2, courseName = "C")
+
+        val cluster = ConflictCluster(1, listOf(a, b, c))
+        val groups = ConflictLayoutEngine.chainGroups(cluster.courses)
+        assertEquals(2, groups.size)
+        val cbLayer = groups.first { it.any { x -> x.id == 3L } && it.any { x -> x.id == 2L } }
+        val aLayer = groups.first { it.size == 1 && it.first().id == 1L }
+
+        // 默认序: 每图层 top = g.maxWith(primaryComparator); primaryComparator 是
+        //   compareByDescending { step }.thenBy { startNode }.thenBy { id }
+        // → "maxWith" = 主序最小者 = step 最小者。
+        //   cbLayer 选 C(step=2), aLayer 选 A(step=3)。
+        //   LayerSortKey = (-step, startNode, id): cbLayer (-2, 1, 3), aLayer (-3, 1, 1)。
+        //   升序: (-3) < (-2) → aLayer 先 → zOrdered = [A] ++ [C, B by startNode] = A, C, B。
+        val defaultLaid = layoutById(cluster.courses, "rail")
+        assertEquals(0, defaultLaid.getValue(1L).zRank) // A 默认顶层
+        assertEquals(1, defaultLaid.getValue(3L).zRank) // C 次
+        assertEquals(2, defaultLaid.getValue(2L).zRank) // B 末
+
+        // 用户保存默认置顶 = C。layerOfId[C] = cbLayer = {C, B}; 整组置顶。
+        // orderedLayers = [{C, B}, {A}]
+        // zOrdered = [C, B] sortedBy startNode = [C(1), B(3)] ++ [A] = C, B, A
+        val pickedLaid = layoutById(cluster.courses, "rail", topOverrideId = 3L)
+        assertEquals(0, pickedLaid.getValue(3L).zRank)
+        assertEquals(1, pickedLaid.getValue(2L).zRank)
+        assertEquals(2, pickedLaid.getValue(1L).zRank)
+    }
+
+    @Test
+    fun v79_defaultTop_lifts_singleton_layer() {
+        // 1-2 与 1-3 完全包含 → 两层各一课(经典叠放)。
+        val outer = course(id = 10, day = 1, startNode = 1, step = 3)
+        val inner = course(id = 20, day = 1, startNode = 1, step = 2)
+        // 默认: maxWith 取 step 最小者 = inner; 但 LayerSortKey 是 (-step, ...);
+        //   outer 顶层 = (-3, 1, 10), inner 顶层 = (-2, 1, 20)
+        //   升序: outer (-3) < inner (-2) → outer 顶层 zRank=0
+        val defaultLaid = layoutById(listOf(outer, inner), "rail")
+        assertEquals(0, defaultLaid.getValue(10L).zRank)
+        assertEquals(1, defaultLaid.getValue(20L).zRank)
+
+        // 用户保存默认置顶 = inner
+        val pickedLaid = layoutById(listOf(outer, inner), "rail", topOverrideId = 20L)
+        assertEquals(0, pickedLaid.getValue(20L).zRank)
+        assertEquals(1, pickedLaid.getValue(10L).zRank)
+    }
+
+    @Test
+    fun v79_defaultTop_chain_rep_same_as_member_lifts_whole_layer() {
+        // 用户保存的代表 id 落在图层 {C, B} 内的 B,引擎按 layerOfId 找整组提到前。
+        // 实际分组 Layer0 = {C, B}, Layer1 = {A}。
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)
+        val b = course(id = 2, day = 1, startNode = 3, step = 4) // Layer0
+        val c = course(id = 3, day = 1, startNode = 1, step = 2) // Layer0
+        // 用户选 B(id=2)作为代表 → Layer0 {C, B} 整组置顶。
+        // zOrdered = Layer0.sortedBy startNode = [C(1), B(3)] ++ [A] = C, B, A
+        val pickedLaid = layoutById(listOf(a, b, c), "rail", topOverrideId = 2L)
+        assertEquals(0, pickedLaid.getValue(3L).zRank) // C 顶层(startNode 小)
+        assertEquals(1, pickedLaid.getValue(2L).zRank) // B 次
+        assertEquals(2, pickedLaid.getValue(1L).zRank) // A 沉底
+    }
+
     // ============================ v7.6 图层语义 ============================
 
     @Test

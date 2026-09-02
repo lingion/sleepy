@@ -59,4 +59,13 @@ class AppPrefsIsolationTest {
         assertTrue(b.isNotEmpty())
         assertFalse("纯 JVM 编译断言占位:保证非空且不可合并", a == b)
     }
+
+    @Test
+    fun conflict_default_top_key_value_is_unchanged() {
+        // 旁证:v7.9.1 新增 key 字面量未漂移
+        assertTrue(
+            "KEY_CONFLICT_DEFAULT_TOP 必须保持 conflict_default_top",
+            AppPrefs.KEY_CONFLICT_DEFAULT_TOP == "conflict_default_top"
+        )
+    }
 }
