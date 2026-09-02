@@ -12,13 +12,19 @@ jobs:
         timeout-minutes: 55
         run: |
           python3 -u <<'PYEOF'
-          import json, os, re, subprocess, sys, time, urllib.request, urllib.parse
+          import json, os, re, subprocess, sys, time, urllib.request
 
           GITEE_TOKEN = os.environ["GITEE_TOKEN"]
           GH_TOKEN = os.environ["GH_TOKEN"]
           GE = "https://gitee.com/api/v5"
           GH = "https://api.github.com"
-          DEADLINE = time.time() + 50*60  # 50 min budget
+          T0 = time.time()
+          START_CUTOFF = T0 + 30*60   # never START a new download/upload after this point
+          HARD_END = T0 + 50*60       # always exit(0) well before the 55 min step timeout
+
+          def nap(seconds):
+              # sleep, but never past HARD_END so the step always ends exit 0
+              time.sleep(max(0.0, min(seconds, HARD_END - time.time())))
 
           def gh_req(path):
               req = urllib.request.Request(f"{GH}{path}", headers={
@@ -27,20 +33,24 @@ jobs:
               with urllib.request.urlopen(req, timeout=120) as r:
                   return json.loads(r.read())
 
+          def curl_json(args):
+              o = subprocess.run(args, capture_output=True, text=True)
+              try: return json.loads(o.stdout)
+              except Exception: return None
+
+          def curl_text(args):
+              o = subprocess.run(args, capture_output=True, text=True)
+              return o.stdout or ""
+
           def gitee_atts(rid):
-              o = subprocess.run(["curl","-s","--max-time","120",
-                  f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files?access_token={GITEE_TOKEN}"],
-                  capture_output=True, text=True)
-              try: d = json.loads(o.stdout)
-              except Exception: return []
+              d = curl_json(["curl","-s","--max-time","120",
+                  f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files?access_token={GITEE_TOKEN}"])
               return d if isinstance(d, list) else []
 
           def gitee_rid(tag):
-              o = subprocess.run(["curl","-s","--max-time","120",
-                  f"{GE}/repos/lingion/sleepy/releases/tags/{tag}?access_token={GITEE_TOKEN}"],
-                  capture_output=True, text=True)
-              try: return json.loads(o.stdout).get("id")
-              except Exception: return None
+              d = curl_json(["curl","-s","--max-time","120",
+                  f"{GE}/repos/lingion/sleepy/releases/tags/{tag}?access_token={GITEE_TOKEN}"])
+              return d.get("id") if isinstance(d, dict) else None
 
           def gh_download(asset_id, dest):
               for attempt in (1,2,3):
@@ -51,34 +61,84 @@ jobs:
                       f"{GH}/repos/lingion/sleepy/releases/assets/{asset_id}"])
                   if r.returncode == 0 and os.path.getsize(dest) > 0:
                       return True
-                  time.sleep(8)
+                  nap(8)
               return False
 
           def gitee_upload(rid, filepath, orig_name):
-              o = subprocess.run(["curl","-s","--max-time","600","-X","POST",
+              # returns "ok" | "quota" | "fail"
+              out = curl_text(["curl","-s","--max-time","600","-X","POST",
                   f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files",
                   "-F",f"access_token={GITEE_TOKEN}",
-                  "-F",f"file=@{filepath};filename={orig_name}"], capture_output=True, text=True)
-              try: d = json.loads(o.stdout)
-              except Exception: d = None
+                  "-F",f"file=@{filepath};filename={orig_name}"])
+              d = None
+              try: d = json.loads(out)
+              except Exception: pass
               if isinstance(d, dict) and d.get("id"):
                   print(f"    uploaded id={d['id']} name={d.get('name')}", flush=True)
-                  return True
-              print(f"    resp={o.stdout[:110]!r}", flush=True)
-              return False
+                  return "ok"
+              print(f"    resp={out[:110]!r}", flush=True)
+              return "quota" if ("配额" in out) else "fail"
+
+          def gitee_delete_att(rid, aid):
+              curl_text(["curl","-s","--max-time","120","-X","DELETE",
+                  f"{GE}/repos/lingion/sleepy/releases/{rid}/attach_files/{aid}?access_token={GITEE_TOKEN}"])
+
+          def vkey(tag):
+              m = re.findall(r"\d+", tag or "")
+              return tuple(int(x) for x in m) if m else (0,)
+
+          def evict_oldest(protect_tags, rels_gh, complete_tags):
+              # rolling window: delete every attachment of the oldest non-protected
+              # release to make room for newer versions. Returns freed bytes.
+              # Only releases whose Gitee assets already match GitHub (complete) are
+              # sacrificeable — never tear down an incomplete/old release for a newer one,
+              # and never chain-evict history because of an unfillable missing item.
+              rels, page = [], 1
+              while True:
+                  d = curl_json(["curl","-s","--max-time","120",
+                      f"{GE}/repos/lingion/sleepy/releases?page={page}&per_page=100&access_token={GITEE_TOKEN}"])
+                  if not isinstance(d, list) or not d: break
+                  rels.extend(d)
+                  if len(d) < 100: break
+                  page += 1
+              rels.sort(key=lambda r: vkey(r.get("tag_name")))
+              # if every release holding attachments is protected, sacrifice the oldest
+              # protected one (its own missing asset needs the space anyway)
+              if not [r for r in rels if r.get("tag_name") not in protect_tags]:
+                  protected = [r for r in rels if r.get("tag_name") in protect_tags]
+                  if protected:
+                      protect_tags = protect_tags - {protected[0].get("tag_name")}
+              for r in rels:
+                  tag = r.get("tag_name")
+                  if tag in protect_tags: continue
+                  if tag not in complete_tags: continue   # incomplete releases are not sacrificeable
+                  atts = gitee_atts(r.get("id"))
+                  if not atts: continue
+                  freed = 0
+                  for a in atts:
+                      gitee_delete_att(r.get("id"), a.get("id"))
+                      freed += a.get("size") or 0
+                      nap(2)
+                  print(f"  evicted {tag}: {len(atts)} files ~{freed/1048576:.1f} MB (Gitee reconciles freed quota with delay)", flush=True)
+                  return freed
+              return 0
 
           def missing_list():
               rels_gh = gh_req("/repos/lingion/sleepy/releases?per_page=100&page=1")
               rels_gh.sort(key=lambda r: r.get("created_at") or "")
-              pat = re.compile(r"^(sleepy|asset)_\d+_")
+              pat = re.compile(r"^[\w-]+_\d+_")
               gitee_have = set()
-              o = subprocess.run(["curl","-s","--max-time","120",
-                  f"{GE}/repos/lingion/sleepy/releases?page=1&per_page=100&access_token={GITEE_TOKEN}"],
-                  capture_output=True, text=True)
-              for r in json.loads(o.stdout):
-                  for a in r.get("assets") or []:
-                      if "/download/" in a.get("browser_download_url",""):
-                          gitee_have.add(r["tag_name"] + "|" + pat.sub("", a["name"]))
+              page = 1
+              while True:
+                  d = curl_json(["curl","-s","--max-time","120",
+                      f"{GE}/repos/lingion/sleepy/releases?page={page}&per_page=100&access_token={GITEE_TOKEN}"])
+                  if not isinstance(d, list) or not d: break
+                  for r in d:
+                      for a in r.get("assets") or []:
+                          if "/download/" in a.get("browser_download_url",""):
+                              gitee_have.add(r["tag_name"] + "|" + pat.sub("", a["name"]))
+                  if len(d) < 100: break
+                  page += 1
               miss = []
               for rel in rels_gh:
                   for a in rel.get("assets", []):
@@ -86,18 +146,46 @@ jobs:
                       if an.endswith(("-source.zip","-source.tar.gz",".source.zip")): continue
                       if rel["tag_name"] + "|" + an not in gitee_have:
                           miss.append((rel, a))
-              return rels_gh, miss
+              return rels_gh, miss, pat
+
+          def complete_tags(rels_gh, pat):
+              # tags whose Gitee attachment set exactly matches GitHub assets
+              gitee_counts = {}
+              page = 1
+              while True:
+                  d = curl_json(["curl","-s","--max-time","120",
+                      f"{GE}/repos/lingion/sleepy/releases?page={page}&per_page=100&access_token={GITEE_TOKEN}"])
+                  if not isinstance(d, list) or not d: break
+                  for r in d:
+                      cnt = 0
+                      for a in r.get("assets") or []:
+                          if "/download/" in a.get("browser_download_url",""):
+                              cnt += 1
+                      gitee_counts[r["tag_name"]] = cnt
+                  if len(d) < 100: break
+              out = set()
+              for rel in rels_gh:
+                  want = [a for a in rel.get("assets", [])
+                          if not a["name"].endswith(("-source.zip","-source.tar.gz",".source.zip"))]
+                  if want and gitee_counts.get(rel["tag_name"], 0) >= len(want):
+                      out.add(rel["tag_name"])
+              return out
 
           round_no = 0
-          while time.time() < DEADLINE:
+          while time.time() < START_CUTOFF:
               round_no += 1
-              rels_gh, miss = missing_list()
-              print(f"== round {round_no}: {len(miss)} missing", flush=True)
+              rels_gh, miss, pat = missing_list()
+              # newest first: the newest release must always win quota; older gaps
+              # wait so they can't starve the newest one of the round's time budget
+              miss.sort(key=lambda ra: vkey(ra[0]["tag_name"]), reverse=True)
+              print(f"== round {round_no}: {len(miss)} missing -> {[(rel['tag_name'], a['name']) for rel, a in miss]}", flush=True)
               if not miss:
                   print("ALL DONE", flush=True); sys.exit(0)
+              protect = {rel["tag_name"] for rel, _ in miss}
+              comp = complete_tags(rels_gh, pat)
               progress = False
               for rel, a in miss:
-                  if time.time() > DEADLINE: break
+                  if time.time() > START_CUTOFF: break
                   tag = rel["tag_name"]; an = a["name"]
                   rid = gitee_rid(tag)
                   if not rid: continue
@@ -105,17 +193,29 @@ jobs:
                   try:
                       if not gh_download(a["id"], dest):
                           print(f"!! dl {tag}/{an}", flush=True); continue
-                      if gitee_upload(rid, dest, an):
+                      st = gitee_upload(rid, dest, an)
+                      if st == "ok":
                           progress = True
+                      elif st == "quota":
+                          # quota full: roll off the oldest version, then retry once.
+                          # freed space reconciles with a delay; if it still fails the
+                          # next cron picks it up.
+                          freed = evict_oldest(protect, rels_gh, comp)
+                          if freed > 0:
+                              st = gitee_upload(rid, dest, an)
+                          if st != "ok":
+                              print("    quota still full after eviction; deferring rest of this round", flush=True)
+                              os.remove(dest)
+                              break   # remaining files are quota-blocked too
                       os.remove(dest)
                   except Exception as e:
                       print(f"!! {e}", flush=True)
                       if os.path.exists(dest): os.remove(dest)
-                  time.sleep(5)
+                  nap(5)
               if not progress:
-                  print("no progress this round; sleeping 8 min for Gitee quota reconciliation", flush=True)
-                  time.sleep(8*60)
-          print("deadline reached; will resume next run", flush=True)
+                  print("no progress this round; sleeping for Gitee quota reconciliation", flush=True)
+                  nap(8*60)
+          print("budget reached; remaining work resumes on next cron", flush=True)
           sys.exit(0)
           PYEOF
         env:
