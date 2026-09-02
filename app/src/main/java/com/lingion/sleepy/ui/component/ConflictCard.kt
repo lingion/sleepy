@@ -433,18 +433,23 @@ fun ConflictClusterCard(
     val courseIdToGroup: Map<Long, Int> = remember(chainGroups) {
         chainGroups.flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
     }
-    val topGroupId = courseIdToGroup[topCourse.id]
 
     // 组置顶语义(v7): 点击任一组的课 = 该组整组到前(组代表=组内主课判定序首课作为
     // override 传给引擎)。组内其余成员各自全宽渲染自己区间,拼成一条。
     fun groupRepOf(courseId: Long): Long? =
         courseIdToGroup[courseId]?.let { gi -> chainGroups.getOrNull(gi)?.first()?.id }
 
-    /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。 */
+    // v7.4 链式拼条态: 顶卡属于多课链组时,顶卡不缩(chainFront 成员全尺寸,顶卡也
+    // 全尺寸才能拼条对齐——F1)且 fold 折角画在链组每个成员上(F3 用户定版「A/C 都折角」)。
+    val chainStripActive = drawList.any { it.chainFront && !it.hidden } &&
+        courseIdToGroup[topCourse.id]?.let { gi -> (chainGroups.getOrNull(gi)?.size ?: 0) >= 2 } == true
+
+    /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。
+     *  链式拼条态顶卡不缩(与 chainFront 成员同宽拼条对齐,fullWidth=true 跳过收窄分支)。 */
     fun rectOf(course: CourseEntity, isTop: Boolean): ConflictRect = conflictCardRect(
         startNode = course.startNode,
         ownRows = clampedSteps[course.id] ?: 1,
-        isTop = isTop,
+        isTop = isTop && !chainStripActive,
         form = form,
         colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
         topInset = topInset
@@ -465,11 +470,14 @@ fun ConflictClusterCard(
             when (item) {
                 is CourseDrawItem.Card -> {
                     val course = item.laid.course
+                    // v7.4(F3): fold 拼条态下链组每个成员都折角(用户定版「A/C 都折角」)
+                    val cardIsFolded = form == ConflictVariant.FOLD &&
+                        (!chainStripActive || item.laid.chainFront || item.laid.zRank == 0)
+                    val memberShape = if (cardIsFolded && item.laid.hidden.not()) {
+                        remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
+                    } else cardShape
                     if (item.laid.zRank == 0) {
-                        // ---- 顶卡: 形态只改宽窄(STACK 同缩/RAIL 收窄),矩形=自身区间几何 ----
-                        val topShape = if (form == ConflictVariant.FOLD) {
-                            remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
-                        } else cardShape
+                        // ---- 顶卡: 形态只改宽窄(STACK 同缩/RAIL 收窄;链式拼条态不缩),矩形=自身区间几何 ----
                         val topRect = rectOf(course, isTop = true)
                         ConflictCourseCard(
                             course = course,
@@ -479,11 +487,13 @@ fun ConflictClusterCard(
                                 .width(topRect.width)
                                 .height(topRect.height),
                             isGrey = isGrey,
-                            shape = topShape
+                            shape = memberShape
                         )
-                    } else if (item.laid.chainFront) {
+                    } else if (item.laid.chainFront && !item.laid.hidden) {
                         // ---- 链前置非顶成员(v7.2): 链组的其他课与顶卡同组拼条——
-                        // 全尺寸、自身区间、无边框层级差;点击=组点击语义同下 ----
+                        // 全尺寸、自身区间、无边框层级差;点击=组点击语义同下。
+                        // v7.4(F2): hidden 课绝不走此分支——hidden=零露出,渲染归 Mark,
+                        // 画全尺寸真卡会造成引擎判定遮死、视觉却露边的矛盾。 ----
                         val r = ConflictRect(0.dp, cardYOf(course.startNode), colW, cardHOf(course.id))
                         Box(
                             modifier = Modifier
@@ -497,7 +507,7 @@ fun ConflictClusterCard(
                                 onClick = { onPickTop(groupRepOf(course.id) ?: course.id) },
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
-                                shape = cardShape
+                                shape = memberShape
                             )
                         }
                     } else {
@@ -563,8 +573,25 @@ fun ConflictClusterCard(
                         ConflictVariant.RAIL -> {
                             // hit: 自身区间右缘带+内延。N=2 → 单带命中;N≥3 → 按段均分命中。
                             // 分段集合 = 全部非顶课(与名字段同一集合,切换不缺段)。
+                            // v7.4(F4): 链式拼条态下命中区跟课的真实节位走(名字段同锚)。
                             val multi = railOthers.size >= 2
-                            if (!multi) {
+                            if (chainStripActive) {
+                                val hit = conflictMarkRect(
+                                    startNode = hiddenCourse.startNode,
+                                    ownRows = clampedSteps[hiddenCourse.id] ?: 1,
+                                    form = ConflictVariant.RAIL,
+                                    colW = colW, rowH = rowH, gapH = gapH,
+                                    minStart = minStart, clusterH = cellH,
+                                    topInset = topInset
+                                )
+                                Box(
+                                    modifier = Modifier
+                                        .offset(x = hit.x, y = hit.y)
+                                        .width(hit.width)
+                                        .height(hit.height)
+                                        .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
+                                )
+                            } else if (!multi) {
                                 val hit = conflictMarkRect(
                                     startNode = hiddenCourse.startNode,
                                     ownRows = clampedSteps[hiddenCourse.id] ?: 1,
@@ -610,29 +637,37 @@ fun ConflictClusterCard(
             }
         }
 
-        // ---- FOLD flap 视觉(v6 簇级): 顶卡右上角沿折痕内折——flap=顶卡色压暗(翻面),
-        // 圆角折进来;缺角处露出底卡(含它自己的圆角)。挂在簇级而非 hidden Mark:
+        // ---- FOLD flap 视觉(v6 簇级 / v7.4 逐成员): 右上角沿折痕内折——flap=该卡课色压暗
+        // (翻面),圆角折进来;缺角处露出底卡(含它自己的圆角)。挂在簇级而非 hidden Mark:
         // 切换置顶后 hidden 集空,「折角的切换也得是折角」——形态跟设置走,flap 必须常在。
+        // v7.4(F3): fold 拼条态下链组每个可见成员都各自带 flap(「A/C 都折角」),
+        // flap 色取各自课色;非拼条态维持单 flap(顶卡)。
         // 锚点补偿卡自身 2dp 外边距,与折角剪裁形对齐。
         if (form == ConflictVariant.FOLD) {
-            Canvas(
-                modifier = Modifier
-                    .offset(
-                        x = colW - FOLD_SIZE_DP.dp - 2.dp,
-                        y = cardYOf(topCourse.startNode) + 2.dp
-                    )
-                    .size(FOLD_SIZE_DP.dp)
-            ) {
-                val f = size.width
-                val c = FOLD_FLAP_CORNER_DP.dp.toPx()
-                val flap = Path().apply {
-                    moveTo(0f, 0f)              // 折痕上端(卡顶边)
-                    lineTo(f, f)                // 折痕下端(卡右边)
-                    lineTo(c, f)
-                    quadraticTo(0f, f, 0f, f - c) // 内折角保留圆角意象
-                    close()
+            val flapHosts: List<CourseEntity> = if (chainStripActive) {
+                // 拼条每个可见成员一行 flap(去重后按节位)
+                drawList.filter { it.chainFront && !it.hidden || it.zRank == 0 }.map { it.course }
+            } else listOf(topCourse)
+            flapHosts.forEach { host ->
+                Canvas(
+                    modifier = Modifier
+                        .offset(
+                            x = colW - FOLD_SIZE_DP.dp - 2.dp,
+                            y = cardYOf(host.startNode) + 2.dp
+                        )
+                        .size(FOLD_SIZE_DP.dp)
+                ) {
+                    val f = size.width
+                    val c = FOLD_FLAP_CORNER_DP.dp.toPx()
+                    val flap = Path().apply {
+                        moveTo(0f, 0f)              // 折痕上端(卡顶边)
+                        lineTo(f, f)                // 折痕下端(卡右边)
+                        lineTo(c, f)
+                        quadraticTo(0f, f, 0f, f - c) // 内折角保留圆角意象
+                        close()
+                    }
+                    drawPath(flap, foldFlapColor(courseColorOf(host)))
                 }
-                drawPath(flap, foldFlapColor(courseColorOf(topCourse)))
             }
         }
 
@@ -657,32 +692,65 @@ fun ConflictClusterCard(
 
         // ---- RAIL N≥3 竖排课名: 右缘带纵贯簇高均分字段(竖排课名特性) ----
         // 分段集合 = 全部非顶课(v5): hidden 集随切换缩,名字段不缺段。
+        // v7.4(F4): 链式拼条态下段位跟课的真实节位走(成员区间内均分),
+        // 不再纵贯全簇均分——4-6 的名字必须落在 4-6 那几节的右缘。
         if (form == ConflictVariant.RAIL && railOthers.size >= 2) {
-            val segCount = railOthers.size
-            val segH = ((cellH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount).coerceAtLeast(0.dp)
-            railOthers.forEachIndexed { idx, hid ->
-                val segColor = courseColorOf(hid.course)
-                Box(
-                    modifier = Modifier
-                        .offset(
-                            x = colW - RAIL_INSET_DP.dp,
-                            y = (segH + RAIL_SEG_GAP_DP.dp) * idx
+            if (chainStripActive) {
+                val stripMembers = railOthers.filter { it.chainFront && !it.hidden }
+                val perMember: Map<Long, List<LaidOutCourse>> =
+                    stripMembers.groupBy { it.course.id }
+                perMember.forEach { (_, members) ->
+                    val first = members.first()
+                    val segTop = cardYOf(first.course.startNode)
+                    val segHeight = cardHOf(first.course.id)
+                    val segColor = courseColorOf(first.course)
+                    Box(
+                        modifier = Modifier
+                            .offset(x = colW - RAIL_INSET_DP.dp, y = segTop)
+                            .width(RAIL_INSET_DP.dp)
+                            .height(segHeight)
+                            .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
+                            .background(segColor),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        VerticalRailName(
+                            name = first.course.courseName,
+                            segmentHeight = segHeight,
+                            color = CourseColorUtil.textColorOn(
+                                segColor,
+                                CourseColorUtil.isPaletteDark(palette),
+                                colors.onSurface
+                            )
                         )
-                        .width(RAIL_INSET_DP.dp)
-                        .height(segH)
-                        .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
-                        .background(segColor),
-                    contentAlignment = Alignment.Center
-                ) {
-                    VerticalRailName(
-                        name = hid.course.courseName,
-                        segmentHeight = segH,
-                        color = CourseColorUtil.textColorOn(
-                            segColor,
-                            CourseColorUtil.isPaletteDark(palette),
-                            colors.onSurface
+                    }
+                }
+            } else {
+                val segCount = railOthers.size
+                val segH = ((cellH - RAIL_SEG_GAP_DP.dp * (segCount - 1)) / segCount).coerceAtLeast(0.dp)
+                railOthers.forEachIndexed { idx, hid ->
+                    val segColor = courseColorOf(hid.course)
+                    Box(
+                        modifier = Modifier
+                            .offset(
+                                x = colW - RAIL_INSET_DP.dp,
+                                y = (segH + RAIL_SEG_GAP_DP.dp) * idx
+                            )
+                            .width(RAIL_INSET_DP.dp)
+                            .height(segH)
+                            .clip(RoundedCornerShape(topEnd = 6.dp, bottomEnd = 6.dp))
+                            .background(segColor),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        VerticalRailName(
+                            name = hid.course.courseName,
+                            segmentHeight = segH,
+                            color = CourseColorUtil.textColorOn(
+                                segColor,
+                                CourseColorUtil.isPaletteDark(palette),
+                                colors.onSurface
+                            )
                         )
-                    )
+                    }
                 }
             }
         }
