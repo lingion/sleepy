@@ -424,6 +424,22 @@ fun ConflictClusterCard(
     // v6: 顶卡收窄量 = 用户设置(A 偏移 d / C 右缘让宽共用),滑杆 4..20dp
     val topInset = AppPrefs.getConflictTopInset(context).dp
 
+    // v7 链式分组: 簇内可无缝拼接的课归同组(组内拼成一条互不覆盖的链)。
+    // 顶层课所在组 = 顶层链(整条在前);其余组各为一条,按叠层/竖轨语义垫在后面。
+    // 点击任一非顶层组的课 = 整组提到顶层(组内相对顺序保持)。
+    val chainGroups = remember(cluster) {
+        ConflictLayoutEngine.chainGroups(drawList.map { it.course })
+    }
+    val courseIdToGroup: Map<Long, Int> = remember(chainGroups) {
+        chainGroups.flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
+    }
+    val topGroupId = courseIdToGroup[topCourse.id]
+
+    // 组置顶语义(v7): 点击任一组的课 = 该组整组到前(组代表=组内主课判定序首课作为
+    // override 传给引擎)。组内其余成员各自全宽渲染自己区间,拼成一条。
+    fun groupRepOf(courseId: Long): Long? =
+        courseIdToGroup[courseId]?.let { gi -> chainGroups.getOrNull(gi)?.first()?.id }
+
     /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。 */
     fun rectOf(course: CourseEntity, isTop: Boolean): ConflictRect = conflictCardRect(
         startNode = course.startNode,
@@ -467,18 +483,19 @@ fun ConflictClusterCard(
                         )
                     } else {
                         // ---- 非顶卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
-                        // 切换只换层级,多次往返几何不变。STACK 右下锚自身区间,RAIL 全宽。 ----
+                        // 切换只换层级,多次往返几何不变。STACK 右下锚自身区间,RAIL 全宽。
+                        // 点击(v7) = 该课所在组整组置顶(组代表作为 override)。 ----
                         val r = rectOf(course, isTop = false)
                         Box(
                             modifier = Modifier
                                 .offset(x = r.x, y = r.y)
                                 .width(r.width)
                                 .height(r.height)
-                                .noRippleClickable { onPickTop(course.id) }
+                                .noRippleClickable { onPickTop(groupRepOf(course.id) ?: course.id) }
                         ) {
                             ConflictCourseCard(
                                 course = course,
-                                onClick = { onPickTop(course.id) },
+                                onClick = { onPickTop(groupRepOf(course.id) ?: course.id) },
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
                                 shape = cardShape
@@ -507,7 +524,7 @@ fun ConflictClusterCard(
                                     .offset(x = hit.x, y = hit.y)
                                     .width(hit.width)
                                     .height(hit.height)
-                                    .noRippleClickable { onPickTop(item.hiddenCourseId) }
+                                    .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
                             )
                         }
                         ConflictVariant.FOLD -> {
@@ -521,7 +538,7 @@ fun ConflictClusterCard(
                                     .offset(x = colW - hit.first, y = cardYOf(topCourse.startNode))
                                     .width(hit.first)
                                     .height(hit.second)
-                                    .noRippleClickable { onPickTop(item.hiddenCourseId) }
+                                    .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
                             )
                         }
                         ConflictVariant.RAIL -> {
@@ -541,7 +558,7 @@ fun ConflictClusterCard(
                                         .offset(x = hit.x, y = hit.y)
                                         .width(hit.width)
                                         .height(hit.height)
-                                        .noRippleClickable { onPickTop(item.hiddenCourseId) }
+                                        .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
                                 )
                             } else {
                                 val segCount = railOthers.size
@@ -564,7 +581,7 @@ fun ConflictClusterCard(
                                         .offset(x = colW - hit.first, y = segTop)
                                         .width(hit.first)
                                         .height(hit.second)
-                                        .noRippleClickable { onPickTop(item.hiddenCourseId) }
+                                        .noRippleClickable { onPickTop(groupRepOf(item.hiddenCourseId) ?: item.hiddenCourseId) }
                                 )
                             }
                         }
