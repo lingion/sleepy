@@ -43,8 +43,10 @@ class ScheduleRepository(private val db: AppDatabase) {
             db.withTransaction {
                 courseDao.deleteAll()
                 tableDao.deleteAll()
-                courseDao.insertAll(snap.courses)
+                // 先插 tables 再插 courses — courses.tableId 有外键指向 time_tables.id,
+                // 顺序颠倒(先课程后课表)会触发外键约束 SQLiteConstraintException 闪退
                 tableDao.insertAll(snap.tables)
+                courseDao.insertAll(snap.courses)
                 snap.defaultTableId?.let { tableDao.setDefault(it) }
             }
         } finally {
