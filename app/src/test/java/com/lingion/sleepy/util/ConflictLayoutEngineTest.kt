@@ -946,14 +946,18 @@ class ConflictLayoutEngineTest {
     @Test
     fun chainOverride_singleton_group_flips_front() {
         // v7.8 默认 1-4 已在顶(主序最高),点击 1-4 维持置顶。
-        // {1-3,4-6} 链组沉底层, 全员 hidden=false。
+        // v7.10.16m 语义修订(用户报障「折角切换一次又重叠错位」): FOLD 样式下沉底
+        // 链组成员 hidden=true(虚线占位,不再裸真卡) — 旧断言 hidden=false 正是错位碎片来源。
+        // STACK 样式沉底真卡语义不受影响(见 stackStyle_sunk_chain_members_stay_real_cards)。
         val head = course(id = 1, day = 1, startNode = 1, step = 3)
         val tail = course(id = 2, day = 1, startNode = 4, step = 3)
         val big = course(id = 3, day = 1, startNode = 1, step = 4)
         val byId = layoutById(listOf(head, tail, big), "fold", topOverrideId = 3L)
         assertEquals(0, byId.getValue(3L).zRank)
-        assertEquals(false, byId.getValue(1L).hidden)
-        assertEquals(false, byId.getValue(2L).hidden)
+        assertEquals(true, byId.getValue(1L).hidden)
+        assertEquals(true, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(1L).variant)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(2L).variant)
         assertEquals(false, byId.getValue(3L).hidden)
         assertEquals(false, byId.getValue(3L).chainFront)             // 单课组不算链前置
     }

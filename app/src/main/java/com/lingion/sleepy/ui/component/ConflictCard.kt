@@ -535,7 +535,22 @@ fun ConflictClusterCard(
                         // ---- 沉底卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
                         // 切换只换层级, 多次往返几何不变。STACK 右下锚自身区间, RAIL 全宽。
                         // 点击(v7.8) = 该课所在层整层上移(层代表 id 作为 override)。
+                        // v7.10.16m: FOLD 端态沉底(hidden=true)不渲染真卡 — 视觉本体收敛为
+                        // 虚线轮廓(见下方 DashOutline),此处只留透明命中区(点 = 该层置顶)。
+                        // 裸真卡尾巴(4-6 的 5-6 节)就是用户报的「重叠错位」。
                         val r = rectOf(course, isFront = false)
+                        if (form == ConflictVariant.FOLD && item.laid.hidden) {
+                            Box(
+                                modifier = Modifier
+                                    .offset(x = r.x, y = r.y)
+                                    .width(r.width)
+                                    .height(r.height)
+                                    .noRippleClickable {
+                                        onPickTop(layerRepOf(course.id) ?: course.id)
+                                    }
+                            )
+                            return@forEach
+                        }
                         Box(
                             modifier = Modifier
                                 .offset(x = r.x, y = r.y)
@@ -632,17 +647,22 @@ fun ConflictClusterCard(
         // flap 色取各自课色;非拼条态维持单 flap(顶卡)。
         // 锚点补偿卡自身 2dp 外边距,与折角剪裁形对齐。
         if (form == ConflictVariant.FOLD) {
+            // v7.10.16m: flap 宿主 = 顶层课(单课层置顶)或拼条层全体成员(链组层置顶)。
+            // 拼条成员判定改 chainFront(hidden=true 的沉底成员不算,端态不折角)。
             val flapHosts: List<CourseEntity> = if (chainStripActive) {
-                // 拼条每个可见成员一行 flap(去重后按节位)
-                drawList.filter { it.chainFront && !it.hidden || it.zRank == 0 }.map { it.course }
+                drawList.filter { (it.chainFront && !it.hidden) || it.zRank == 0 }.map { it.course }
             } else listOf(topCourse)
             // v7.10.16h 折角切换命中区(用户 2026-09-03): 拼条态(chainStripActive)下
             // hidden 集恒空 → 经典 FOLD Mark 不生成,点折角符号/缺角空白落到顶卡
             // clickable = 编辑课程,切换不可达。此处逐 flap 同锚叠命中区(每个折角成员
             // 各一个角,每个都能点),点击 = 次层整层置顶(onPickTop)。
-            // 经典态 Mark 已覆盖该区域,不重复叠。
+            // v7.10.16m(用户报障「折角切换一次又重叠错位」): 命中区改**双向挂载** —
+            //   切走后(chainStripActive=false)折角区域必须仍可点切回,否则再点 = 编辑,
+            //   且端态无任何切换入口。挂载条件只看 switchTarget 存在;经典双课态
+            //   (hidden Mark 在场)不重复叠 — Mark 已覆盖同区域且语义更准(点谁置顶谁)。
             val nextLayerIndex = layerRepId.keys.sorted().getOrNull(1)
             val switchTarget = nextLayerIndex?.let { layerRepId[it] }
+            val markPresent = hiddenItems.isNotEmpty()
             flapHosts.forEach { host ->
                 Canvas(
                     modifier = Modifier
@@ -663,7 +683,7 @@ fun ConflictClusterCard(
                     }
                     drawPath(flap, foldFlapColor(courseColorOf(host)))
                 }
-                if (chainStripActive && switchTarget != null) {
+                if (!markPresent && switchTarget != null) {
                     val hit = foldSwitchHitArea(
                         ConflictVariant.FOLD, colW.value, cellH.value
                     ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
@@ -683,20 +703,24 @@ fun ConflictClusterCard(
 
         // ---- FOLD 虚线轮廓: 顶课比 hidden 底课长 → 底课被全遮,按它真实占位画虚线(同长不画) ----
         // 用户 2026-09-01: 长顶短底时给底课画虚线;等长靠 flap 缺角示意即可。
+        // v7.10.16m: 虚线语义扩到**一切被遮/收敛的 FOLD hidden 课** — 端态(单课层置顶)
+        // 沉底链组成员不再裸真卡,统一虚线占位(部分露出的只画自己区间,错位碎片消失)。
         if (form == ConflictVariant.FOLD) {
             hiddenItems.forEach { hid ->
                 val hidH = cardHOf(hid.course.id)
-                if (hidH < cardHOf(topCourse.id)) {
-                    DashOutline(
-                        color = conflictBorderColor(courseColorOf(hid.course)),
-                        modifier = Modifier
-                            .offset(
-                                x = 2.dp,
-                                y = cardYOf(hid.course.startNode) + 2.dp
-                            )
-                            .size(width = colW - 4.dp, height = hidH - 4.dp)
-                    )
-                }
+                val topH = cardHOf(topCourse.id)
+                val fullyCovered = hidH <= topH &&
+                    hid.course.startNode >= topCourse.startNode
+                if (fullyCovered) return@forEach // 全遮且等长以下: flap 缺角已示意,不画
+                DashOutline(
+                    color = conflictBorderColor(courseColorOf(hid.course)),
+                    modifier = Modifier
+                        .offset(
+                            x = 2.dp,
+                            y = cardYOf(hid.course.startNode) + 2.dp
+                        )
+                        .size(width = colW - 4.dp, height = hidH - 4.dp)
+                )
             }
         }
 

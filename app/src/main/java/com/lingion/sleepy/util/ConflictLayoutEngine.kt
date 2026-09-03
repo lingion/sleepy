@@ -150,9 +150,22 @@ object ConflictLayoutEngine {
 
         return zOrdered.mapIndexed { rank, course ->
             val ownNodes = nodesOf(course)
-            // v7.8: 链组态(存在多课层)→ 所有课 hidden=false, 沉底方渲染真卡。
+            // chainFront(v7.8 重定义): 该课所在层是多课层且该层当前为顶层 → 全员置顶形态
+            // (v7.10.16m 上移声明: hidden 判定也要读图层归属)
+            val ownLayer: List<CourseEntity>? = layerOfId[course.id]
+            val isFrontLayer = ownLayer != null && orderedLayers.firstOrNull() === ownLayer
+            // v7.8: 链组态(存在多课层)→ 沉底方渲染真卡(STACK 缩小/RAIL 全宽)。
+            // v7.10.16m(用户 2026-09-03 报障「折角切换一次又重叠错位」): FOLD 样式例外 —
+            //   沉底链组成员若渲染真卡, 未被顶课遮住的节次会裸露成错位碎片(4-6 的 5-6 节);
+            //   被全遮者连虚线轮廓都拿不到(hidden=false 挡住 DashOutline)。
+            //   FOLD 沉底一律 hidden=true(回到经典 FOLD 虚线语言), 拼条态(顶层即链组层)
+            //   成员仍 hidden=false 保持并排真卡。
             // 经典无链组(全叠)→ 原 hidden 判定原样保留。
-            val hidden = if (hasChainLayer) {
+            val foldSinkToDash = style == "fold" && hasChainLayer &&
+                ownLayer != null && ownLayer.size >= 2 && !isFrontLayer
+            val hidden = if (foldSinkToDash) {
+                true
+            } else if (hasChainLayer) {
                 // 裁剪出界(整课不可见)仍标 hidden(UI 不渲染它)
                 ownNodes.isEmpty()
             } else if (ownNodes.isEmpty()) {
@@ -169,10 +182,7 @@ object ConflictLayoutEngine {
                     .toSet()
                 ownNodes.all { it in covered }
             }
-            // chainFront(v7.8 重定义): 该课所在层是多课层且该层当前为顶层 → 全员置顶形态
-            val ownLayer: List<CourseEntity>? = layerOfId[course.id]
-            val isFrontLayer = ownLayer != null && orderedLayers.firstOrNull() === ownLayer
-            val chainFront = hasChainLayer && ownLayer!!.size >= 2 && isFrontLayer
+            val chainFront = hasChainLayer && ownLayer != null && ownLayer.size >= 2 && isFrontLayer
 
             // v7.6 图层语义: N≥3 合流的「N」按图层数——层算 1 层,不是裸课数。
             val layerCount = layers.size
