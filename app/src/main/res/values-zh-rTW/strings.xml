@@ -440,7 +440,7 @@
     <string name="update_download_failed">下載失敗：%1$s</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。</string>
+    <string name="about_license_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。本應用部分教務匯入適配參考了 WakeUp 課程表 (Apache-2.0) 與時光課程表重慶大學適配器 (cqu.js) 的公開實現，在此致謝。</string>
     <string name="about_update_check">自動檢查更新</string>
     <string name="about_update_check_detail">啟動時自動檢查 GitHub Releases, 發現新版本會在「關於」頁頂部提示</string>
     <string name="about_update_available">新版 %1$s 可用,點此查看</string>

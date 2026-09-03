@@ -1,0 +1,76 @@
+{
+  "classTimetableVOList": [
+    {
+      "courseName": "高等数学Ⅰ-1",
+      "instructorName": "张三-数学与统计学院",
+      "position": "A区第一教学楼101",
+      "roomName": "A区第一教学楼101",
+      "weekDay": 1,
+      "periodFormat": "1-2",
+      "teachingWeek": "111111111111111110000000",
+      "wholeWeekOccupy": false,
+      "exprProjectName": null,
+      "selectedStuNum": 120
+    },
+    {
+      "courseName": "大学物理",
+      "instructorName": "李四-物理学院",
+      "position": "虎溪校区物理实验楼",
+      "roomName": "虎溪校区物理实验楼",
+      "weekDay": 3,
+      "periodFormat": "3-4",
+      "teachingWeek": "010101010101010100000000",
+      "wholeWeekOccupy": false,
+      "exprProjectName": null,
+      "selectedStuNum": 95
+    },
+    {
+      "courseName": "体育（三）",
+      "instructorName": "王五-体育学院",
+      "position": "篮球场",
+      "roomName": "篮球场",
+      "weekDay": 5,
+      "periodFormat": "6-7",
+      "teachingWeek": "000000111111111111111111",
+      "wholeWeekOccupy": false,
+      "exprProjectName": null,
+      "selectedStuNum": 40
+    },
+    {
+      "courseName": "军事理论",
+      "instructorName": null,
+      "position": null,
+      "roomName": null,
+      "weekDay": 2,
+      "periodFormat": "10-11",
+      "teachingWeek": "111110000000000000000000",
+      "wholeWeekOccupy": false,
+      "exprProjectName": null,
+      "selectedStuNum": 200
+    },
+    {
+      "courseName": "电路与电子Ⅱ",
+      "instructorName": "赵六-电气工程学院-教授",
+      "position": "A区主教206",
+      "roomName": "A区主教206",
+      "weekDay": 4,
+      "periodFormat": "3-4",
+      "teachingWeek": "111111111100000000000000",
+      "wholeWeekOccupy": false,
+      "exprProjectName": null,
+      "selectedStuNum": 60
+    },
+    {
+      "courseName": "金工实习",
+      "instructorName": "孙七-工程培训中心",
+      "position": "工程培训中心",
+      "roomName": "工程培训中心",
+      "weekDay": 1,
+      "periodFormat": "1",
+      "teachingWeek": "000000000000000011110000",
+      "wholeWeekOccupy": true,
+      "exprProjectName": "车工,钳工,铣工",
+      "selectedStuNum": 30
+    }
+  ]
+}

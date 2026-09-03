@@ -33,13 +33,17 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
  *
  * 容器: surface-container (M3), 圆角 14dp
  * 选中: secondary-container 色块（无描边，色块填充风格）
+ *
+ * containerColor: 默认跟随课表页(直接铺在页面 background 上用 surfaceContainer);
+ * 嵌进 surfaceContainer 卡片时同色会隐形, 调用方传 surfaceVariant 降一级保持对比。
  */
 @Composable
 fun <T> SegmentedSwitcher(
     options: List<Pair<T, String>>,
     selected: T,
     onSelect: (T) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    containerColor: Color? = null
 ) {
     val colors = SleepyTheme.colors
 
@@ -48,7 +52,7 @@ fun <T> SegmentedSwitcher(
             .fillMaxWidth()
             .height(42.dp)
             .clip(RoundedCornerShape(14.dp))
-            .background(colors.surfaceContainer)
+            .background(containerColor ?: colors.surfaceContainer)
             .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {

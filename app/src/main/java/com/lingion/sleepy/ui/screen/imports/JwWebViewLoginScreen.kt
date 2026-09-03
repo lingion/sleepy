@@ -179,6 +179,11 @@ fun JwWebViewLoginScreen(
                         wv.evaluateJavascript(WISEDU_FETCH_JS, null)
                         return@CaptureBar
                     }
+                    // CQU（重庆大学门户）：同走 JS 桥 fetch 四个 REST API，Bearer token 取自 localStorage
+                    if (school.type == JwProtocol.TYPE_CQU) {
+                        wv.evaluateJavascript(CQU_FETCH_JS, null)
+                        return@CaptureBar
+                    }
                     // T5: 新版正方 jwglxt — WebView 内 fetch kbList JSON
                     // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/, 或 WebVPN /http/<hex>/ 重写形态
                     val currentUrl = wv.url ?: ""
@@ -472,6 +477,91 @@ private const val WISEDU_FETCH_JS = """
         xnxq:o.xnxq,
         periods:periods
       }));
+    })
+    .catch(function(e){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+    });
+  } catch(err) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * CQU (重庆大学门户 my.cqu.edu.cn) 协议：在 WebView 内 fetch 课表 JSON + 抓节次时间。
+ *
+ * 前提：用户已在 WebView 里登录统一身份认证（2026-06 起含动态验证码双因素，人工输入即可）
+ * 并落到 my.cqu.edu.cn 域内（登录后任意页面均可，token 存在该域的 localStorage）。
+ *
+ * 流程（复用 __sleepyBridge.onWiseduResult 同一回调通道，payload 同为 {ok, data, periods}）：
+ *  1) localStorage['cqu_edu_ACCESS_TOKEN'] 取 Bearer token；取不到报"请先登录"
+ *  2) GET /api/resourceapi/session/info-detail → curSessionId（当前学期）
+ *  3) POST /api/timetable/class/timetable/student/my-table-detail?sessionId=… body=[学号]
+ *     学号从页面 .trigger-user-name 文本 "姓名 [2025xxxx]" 提取
+ *  4) GET /api/workspace/time-pattern/session-time-pattern → 节次时间（periodOrder/startTime/endTime）
+ *  5) 通过 __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
+ *
+ * 接口形状外部佐证：时光课程表 cqu.js（茵符草）、321CQU/pymycqu course/tools.py。
+ */
+private const val CQU_FETCH_JS = """
+(function(){
+  try {
+    if (location.hostname.indexOf('cqu.edu.cn') < 0) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入重庆大学门户后再点导入'}));
+      return;
+    }
+    var token = '';
+    try { token = (localStorage.getItem('cqu_edu_ACCESS_TOKEN') || '').replaceAll('\"', ''); } catch(e) {}
+    if (!token) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'未取到登录凭据，请先登录 my.cqu.edu.cn 再点导入'}));
+      return;
+    }
+    var studentId = '';
+    try {
+      var el = document.querySelector('.trigger-user-name');
+      var m = el ? (el.innerText || '').match(/\\[(.*?)\\]/) : null;
+      studentId = m ? m[1] : '';
+    } catch(e) {}
+    if (!studentId) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'页面上未找到学号，请确认已登录门户首页'}));
+      return;
+    }
+    var auth = {credentials:'include', headers:{'Content-Type':'application/json', 'Authorization':'Bearer ' + token}};
+    fetch('/api/resourceapi/session/info-detail', auth)
+    .then(function(r){
+      if (!r.ok) throw new Error('获取学期信息失败 HTTP ' + r.status);
+      return r.json();
+    })
+    .then(function(session){
+      var termId = session.curSessionId;
+      if (!termId) throw new Error('学期信息里没有 curSessionId');
+      var body = Object.assign({}, auth, {method:'POST', body: JSON.stringify([studentId])});
+      return fetch('/api/timetable/class/timetable/student/my-table-detail?sessionId=' + encodeURIComponent(termId), body);
+    })
+    .then(function(r){
+      if (!r.ok) throw new Error('获取课表失败 HTTP ' + r.status + '（登录态可能过期，请刷新重登）');
+      return r.text();
+    })
+    .then(function(txt){
+      // 节次时间：time-pattern 接口拿不到就置空（解析端允许无 periods）
+      var periods = [];
+      return fetch('/api/workspace/time-pattern/session-time-pattern', auth)
+      .then(function(r){ return r.ok ? r.json() : null; })
+      .then(function(tp){
+        try {
+          var vos = (tp && tp.data && tp.data.classPeriodVOS) || [];
+          for (var i = 0; i < vos.length; i++) {
+            var v = vos[i];
+            periods.push({
+              node: v.periodOrder || (i + 1),
+              start: v.startTime || '',
+              end: v.endTime || ''
+            });
+          }
+          periods.sort(function(a,b){ return a.node - b.node; });
+        } catch(e) { periods = []; }
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt, periods:periods}));
+      });
     })
     .catch(function(e){
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));

@@ -344,6 +344,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // ① WISEDU — 金智 jwapp 微应用，URL 唯一锚点，优先级最高
             u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
 
+            // ①b CQU — 重庆大学统一门户（host 锚点；自建 REST，非 jwapp）
+            u.matches(Regex("""https?://my\.cqu\.edu\.cn(/.*)?""")) -> JwProtocol.TYPE_CQU
+
             // ② ZF_NEW — 新版正方 jwglxt 全系锚点
             //   a) /jwglxt/ 全路径 b) /xtgl(/|$) 边界（B1） c) /kbcx/ 接口
             //   d) xskbcx_cx（API 名，与 .aspx 不冲突） e) /jwtottxuxsysb/（来源不明，保留）

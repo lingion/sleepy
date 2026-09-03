@@ -409,6 +409,11 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 [GPL-3.0](LICENSE)
 
+部分教务系统导入适配参考了以下开源实现的公开接口/解析逻辑，在此致谢：
+
+- [dIT8Zv/WakeupSchedule_BUPT](https://github.com/dIT8Zv/WakeupSchedule_BUPT)（Apache-2.0）— 正方/强智/URP 等解析器结构
+- 时光课程表重庆大学适配器（cqu.js，by 茵符草）— my.cqu.edu.cn REST API 形状佐证
+
 ---
 
 <p align="center">

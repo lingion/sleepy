@@ -446,7 +446,7 @@
     <string name="update_download_failed">Download failed: %1$s</string>
     <string name="about_author">Author</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">Sleepy is an open-source smart class schedule app. The source code is released under the GNU General Public License v3.0. Anyone is free to use, modify, and distribute this software. Contributions via GitHub are welcome.</string>
+    <string name="about_license_body">Sleepy is an open-source smart class schedule app. The source code is released under the GNU General Public License v3.0. Anyone is free to use, modify, and distribute this software. Contributions via GitHub are welcome. Parts of the academic-system import adapters reference public implementations from WakeUp Schedule (Apache-2.0) and the Shiguang timetable Chongqing University adapter (cqu.js), with thanks.</string>
     <string name="about_update_check">Check for updates automatically</string>
     <string name="about_update_check_detail">Checks GitHub Releases on app start; a banner appears on the About page when a new version is found</string>
     <string name="about_update_available">Version %1$s is available — tap to view</string>

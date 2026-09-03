@@ -30,9 +30,10 @@ class JwParserRegistryTest {
     }
 
     @Test
-    fun `ALL_TYPES contains 16 routable types in priority order`() {
-        assertEquals(16, JwProtocol.ALL_TYPES.size)
+    fun `ALL_TYPES contains 17 routable types in priority order`() {
+        assertEquals(17, JwProtocol.ALL_TYPES.size)
         assertEquals(JwProtocol.TYPE_WISEDU, JwProtocol.ALL_TYPES.first())
+        assertEquals(JwProtocol.TYPE_CQU, JwProtocol.ALL_TYPES[1])
         val qzIndices = JwProtocol.ALL_TYPES.mapIndexed { i, t -> i to t }.filter { it.second.startsWith("qz") }
         assertEquals(5, qzIndices.size)
         assertTrue("qz_old 必须在末位", qzIndices.last().second == JwProtocol.TYPE_QZ_OLD)

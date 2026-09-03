@@ -147,11 +147,12 @@ class JwNewSchoolsTest {
     }
 
     @Test
-    fun `real schools json runtime size is 146 original plus Linyi plus NBT`() {
+    fun `real schools json runtime size is 146 original plus Linyi plus NBT plus CQU`() {
         val parsed = parse(loadSchoolsJson())
-        assertEquals("原 146 条 + 1 条临沂 + 1 条浙大宁波理工 = 148(审计块被过滤)", 148, parsed.size)
+        assertEquals("原 146 条 + 1 条临沂 + 1 条浙大宁波理工 + 1 条重庆大学 = 149(审计块被过滤)", 149, parsed.size)
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
+        assertEquals(1, parsed.count { it.name == "重庆大学" })
     }
 
     // -------- 4. 排序约束 --------
@@ -179,7 +180,8 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_OLD, JwProtocol.TYPE_QZ_CRAZY,
             JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
             JwProtocol.TYPE_ZF, JwProtocol.TYPE_ZF_1, JwProtocol.TYPE_ZF_NEW,
-            JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_WISEDU
+            JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_WISEDU,
+            JwProtocol.TYPE_CQU
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",

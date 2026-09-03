@@ -37,6 +37,18 @@ object JwProtocol {
     const val TYPE_WISEDU = "wisedu"
 
     /**
+     * 重庆大学自建统一门户 my.cqu.edu.cn（REST API + Bearer token，非 HTML 解析）。
+     * WebView 登录统一身份认证（2026-06 起需动态验证码双因素，人工登录不受影响）后，
+     * 从 localStorage 取 cqu_edu_ACCESS_TOKEN，fetch 四个接口：
+     *   GET  /api/resourceapi/session/info-detail          当前学期
+     *   GET  /api/resourceapi/session/info/{termId}        学期起始日
+     *   GET  /api/workspace/time-pattern/session-time-pattern  节次时间
+     *   POST /api/timetable/class/timetable/student/my-table-detail?sessionId=…  课表
+     * 外部佐证：时光课程表 cqu.js 适配器（茵符草）、321CQU/pymycqu。
+     */
+    const val TYPE_CQU = "cqu"
+
+    /**
      * 湖南科大教务（正方青春版/强智混合自建，kdjw.hnust.cn / xxjw.hnust.cn）。
      * schools.json 已有 3 所 type="hnust" 的学校；T3 移植 HNUSTParser，T6 先补常量
      * 使 displayName/category 不落入 else 分支。
@@ -61,7 +73,7 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
+        TYPE_WISEDU, TYPE_CQU, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
     )
@@ -77,6 +89,7 @@ object JwProtocol {
         TYPE_PKU -> "北京大学"
         TYPE_BNUZ -> "北师珠"
         TYPE_WISEDU -> "金智教务（直连）"
+        TYPE_CQU -> "重庆大学门户"
         TYPE_HNUST -> "湖南科大教务"
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
@@ -93,6 +106,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_WISEDU -> "wisedu"
+        TYPE_CQU -> "cqu"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
         TYPE_CF -> "cf"
         TYPE_PKU, TYPE_BNUZ -> "other"

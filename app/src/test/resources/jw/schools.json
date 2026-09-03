@@ -123,6 +123,17 @@
   },
   {
     "sortKey": "C",
+    "name": "重庆大学",
+    "url": "https://my.cqu.edu.cn/",
+    "type": "cqu",
+    "aliases": [
+      "cqu",
+      "重大"
+    ],
+    "sortKeyFull": "chongqingdaxue"
+  },
+  {
+    "sortKey": "C",
     "name": "重庆交通大学",
     "url": "http://jwgl.cqjtu.edu.cn/jsxsd/",
     "type": "qz",
@@ -744,7 +755,9 @@
     "name": "青岛理工大学",
     "url": "https://jxgl.qut.edu.cn/jwglxt",
     "type": "zf_new",
-    "aliases": ["qut"],
+    "aliases": [
+      "qut"
+    ],
     "sortKeyFull": "qingdaoligongdaxue"
   },
   {

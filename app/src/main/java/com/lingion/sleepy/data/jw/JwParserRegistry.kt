@@ -27,6 +27,7 @@ object JwParserRegistry {
      */
     private val TYPE_PRIORITY: Map<String, Int> = linkedMapOf(
         JwProtocol.TYPE_WISEDU to 10,
+        JwProtocol.TYPE_CQU to 15,
         JwProtocol.TYPE_PKU to 20,
         JwProtocol.TYPE_BNUZ to 30,
         JwProtocol.TYPE_CF to 40,
@@ -50,6 +51,7 @@ object JwParserRegistry {
      */
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
         JwProtocol.TYPE_WISEDU to ::JwWiseduParser,
+        JwProtocol.TYPE_CQU to ::JwCquParser,
         JwProtocol.TYPE_URP_NEW to ::JwNewUrpParser,
         JwProtocol.TYPE_ZF_NEW to ::JwNewZfParser,
         JwProtocol.TYPE_ZF to { html -> JwOldZfParser(html, 0) },
