@@ -239,7 +239,7 @@ fun CardsGridView(
                         val dayIdx = sortedDays.indexOf(cluster.day)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
                         val cardY = rowH * (anchor.startNode - 1)
-                        val clusterKey = "${cluster.day}:${anchor.startNode}:${anchor.step}"
+                        val clusterKey = ConflictLayoutEngine.conflictClusterKey(cluster)
 
                         ConflictClusterCard(
                             cluster = cluster,

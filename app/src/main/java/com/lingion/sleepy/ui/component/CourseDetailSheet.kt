@@ -154,12 +154,14 @@ private fun DefaultTopPickerSection(
     val context = LocalContext.current
     val colors = SleepyTheme.colors
 
-    // 簇键:与 ConflictClusterCard / topOverrides 同公式
-    val anchor = cluster.courses.first()
-    val clusterKey = "${cluster.day}:${anchor.startNode}:${anchor.step}"
+    // 簇键:公式唯一真值在引擎(v7.10.16p) — 与 ConflictClusterCard / topOverrides 同源
+    val clusterKey = ConflictLayoutEngine.conflictClusterKey(cluster)
 
     // 图层列表(链式分组后的层)
+    // v7.10.16p: 单图层(全部课并排无真重叠,链组把它们串成一条链而已)没有"谁压谁",
+    // 选择置顶无意义 — 用户报障「没有冲突的课也弹默认置顶」。≥2 图层才显示本区。
     val layers = remember(cluster) { ConflictLayoutEngine.chainGroups(cluster.courses) }
+    if (layers.size < 2) return
 
     // 监听 prefs 变化:用户在其他入口改了也要同步刷新选中态
     val defaultTopMap by AppPrefs.conflictDefaultTopFlow(context).collectAsState(initial = AppPrefs.getConflictDefaultTop(context))

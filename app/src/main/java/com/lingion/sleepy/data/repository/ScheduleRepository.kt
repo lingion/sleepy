@@ -6,6 +6,8 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.SleepyApp
 import androidx.room.withTransaction
+import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.widget.WidgetUpdater
 import kotlinx.coroutines.flow.Flow
 
@@ -53,6 +55,7 @@ class ScheduleRepository(private val db: AppDatabase) {
             UndoManager.restoring = false
         }
         onDataChanged()
+        pruneDefaultTopPrefs()
         return true
     }
 
@@ -166,6 +169,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         captureForUndo()
         courseDao.deleteById(id)
         onDataChanged()
+        pruneDefaultTopPrefs()
     }
 
     /** 删除同 groupId 全部记录。防呆: 空 groupId 拒删(否则整表空组课程全没了) */
@@ -174,6 +178,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         if (groupId.isBlank()) return
         courseDao.deleteByGroupId(tableId, groupId)
         onDataChanged()
+        pruneDefaultTopPrefs()
     }
 
     suspend fun countCourses(tableId: Long): Int = courseDao.countByTable(tableId)
@@ -186,6 +191,23 @@ class ScheduleRepository(private val db: AppDatabase) {
         val withGroupIds = assignGroupIds(courses)
         courseDao.replaceAll(tableId, withGroupIds)
         onDataChanged()
+        pruneDefaultTopPrefs()
+    }
+
+    /**
+     * v7.10.16p: 课程集变化后清理指向已失效课程的置顶偏好 —
+     * repId 已删/键已不存在(锚课被删·簇解体)的条目静默失效还会画出幽灵图层选项,
+     * 这里按现存课全量校验删除。删课/删组/覆盖导入/撤销四条写路径都会走到。
+     */
+    private suspend fun pruneDefaultTopPrefs() {
+        val ctx = SleepyApp.get()
+        val stored = AppPrefs.getConflictDefaultTop(ctx)
+        if (stored.isEmpty()) return
+        val allCourses = courseDao.getAll()
+        val pruned = ConflictLayoutEngine.pruneConflictDefaultTop(stored, allCourses)
+        if (pruned.size != stored.size) {
+            AppPrefs.setConflictDefaultTop(ctx, pruned)
+        }
     }
 
     /**
