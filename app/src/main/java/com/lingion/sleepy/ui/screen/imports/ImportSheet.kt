@@ -393,7 +393,7 @@ fun ImportSheet(
         // 追加模式: 追加到已存在的课表, 命名由目标课表自带, 不需要再问用户
         // 直接走 applyImportPreview, 跳过 ImportConfirmDialog
         val pending = pendingMode!!
-        if (pending == ImportApplyMode.AppendNonConflict) {
+        if (pending == ImportApplyMode.AppendNonConflict || pending == ImportApplyMode.AppendAll) {
             LaunchedEffect(Unit) {
                 scope.launch {
                     isLoading = true
@@ -737,7 +737,9 @@ private enum class ImportApplyMode {
     ImportAsNew,
     AppendNonConflict,
     /** 当前课表 + 导入数据合并, 创建新课表保存, 用户命名 */
-    AppendAsNew
+    AppendAsNew,
+    /** 连冲突课一起追加进当前课表(红标: 会形成同格多层) */
+    AppendAll
 }
 
 private data class CourseConflict(
@@ -939,13 +941,30 @@ private fun ImportPreviewDialog(
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
                     }
-                    Button(
-                        onClick = { onApply(ImportApplyMode.AppendAsNew) },
+                    Row(
                         modifier = Modifier.fillMaxWidth(),
-                        shape = SleepyTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(stringResource(R.string.import_append_as_new), maxLines = 1)
+                        // 追加冲突课表 — 危险动作(同格多层), errorContainer 色块底, 与覆盖按钮同款
+                        Button(
+                            onClick = { onApply(ImportApplyMode.AppendAll) },
+                            modifier = Modifier.weight(1f),
+                            shape = SleepyTheme.shapes.medium,
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = colors.errorContainer,
+                                contentColor = colors.onErrorContainer
+                            )
+                        ) {
+                            Text(stringResource(R.string.import_append_conflict), maxLines = 1)
+                        }
+                        Button(
+                            onClick = { onApply(ImportApplyMode.AppendAsNew) },
+                            modifier = Modifier.weight(1f),
+                            shape = SleepyTheme.shapes.medium,
+                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                        ) {
+                            Text(stringResource(R.string.import_append_as_new), maxLines = 1)
+                        }
                     }
                     // 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
                     //   errorContainer 色块底 + onErrorContainer 文字
@@ -1271,6 +1290,34 @@ private suspend fun applyImportPreview(
             }
             repo.insertCourses(gated.map { it.copy(id = 0, tableId = newTableId) })
             repo.setDefault(newTableId)
+            onImported()
+        }
+        ImportApplyMode.AppendAll -> {
+            // 连冲突课一起追加进当前课表 — 不过冲突过滤, 仅保留三层提示(整表导入同策略)
+            val cleanCourses = preview.parseResult.courses
+            if (cleanCourses.isEmpty()) {
+                onError(context.getString(R.string.import_content_empty))
+                return
+            }
+            val survivors = dropThreeLayerCourses(preview.existingCourses, cleanCourses)
+            if (survivors.isEmpty()) {
+                onError(context.getString(R.string.import_all_conflict))
+                return
+            }
+            if (survivors.size < cleanCourses.size) {
+                val droppedDays = conflictDaysBetween(cleanCourses, survivors)
+                onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
+            }
+            repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            // 节次自动延伸 — 与 AppendNonConflict 同策略
+            val existingTable = repo.getTable(preview.targetTableId)
+            if (existingTable != null && preview.parseResult.timeJson.isNotBlank()) {
+                val extended = TimeTableUtils.extendTimeJsonWith(existingTable.timeJson, preview.parseResult.timeJson)
+                if (extended != existingTable.timeJson) {
+                    val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
+                    repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
+                }
+            }
             onImported()
         }
     }
