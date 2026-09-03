@@ -445,13 +445,20 @@ fun AddCourseScreen(
                             // v7.10.9 冲突第三层禁止 — 合并已存库课 + 新草稿检查每区域栏数,
                             // 超 2 栏拒绝保存(编辑时排除本组旧记录, 换成新草稿参与判定)。
                             // v7.10.10: 拒绝提示从 Toast 改表单顶部 ValidationCard 红字
+                            // v7.10.16e: 编辑不恶化即放行 — 存量冲突(整表导入进来的)不应锁死编辑。
+                            //   比较编辑前/后的超层天集合: 编辑后 ⊆ 编辑前 → 没让冲突变多 → 放行。
                             val editingGid = editingCourse?.groupId
-                            val existing = tableId.let { tid ->
+                            val allStored = tableId.let { tid ->
                                 (1..7).flatMap { repo.getCoursesByDayOnce(tid, it) }
-                            }.filter { it.groupId != editingGid }
+                            }
+                            val existing = allStored.filter { it.groupId != editingGid }
                             val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
                                 .daysExceedingTwoLanes(existing + fixedDrafts)
-                            if (badDays.isNotEmpty()) {
+                            val beforeDays = if (editingCourse != null)
+                                com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(allStored)
+                            else emptySet()
+                            val notWorse = editingCourse != null && badDays.all { it in beforeDays }
+                            if (badDays.isNotEmpty() && !notWorse) {
                                 val dayText = badDays.sorted()
                                     .joinToString(" / ") { com.lingion.sleepy.util.DateUtils.localizedDay(it, context) }
                                 validationIssues = listOf(
