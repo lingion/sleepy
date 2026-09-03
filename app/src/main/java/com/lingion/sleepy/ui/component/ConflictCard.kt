@@ -103,7 +103,7 @@ private const val MARK_HIT_PAD_DP = 20f
 /** STACK 叠卡收缩量 d(dp) — v6 起由设置滑杆传入(AppPrefs.getConflictTopInset),此值为几何测试基线。 */
 internal const val STACK_OFFSET_DP = 8f
 
-/** FOLD 折痕直角边长 f(dp) — 右上缺角/翻折 flap 尺寸。 */
+/** FOLD 折痕直角边长 f(dp) — 右上缺角/翻折 flap 尺寸的默认基线(实际值跟用户拖杆设置走,v7.10.16o)。 */
 private const val FOLD_SIZE_DP = 16f
 
 /** FOLD flap 内折角圆角(dp) — 翻进来的角保留原圆角意象。 */
@@ -192,17 +192,19 @@ fun markHitArea(
 
 /**
  * FOLD 折角切换命中区尺寸(纯 JVM 可测,v7.10.16h,用户 2026-09-03):
- * 用户原话——「折角符号本身和被折起来的那块空白区域」都要能点。折痕直角边 f=16dp,
- * flap 与缺角空白合占顶卡右上 16dp 见方;叠加 MARK_HIT_PAD 指腹容差 → 36dp 见方,
+ * 用户原话——「折角符号本身和被折起来的那块空白区域」都要能点。折痕直角边 f
+ * 跟用户拖杆设置走(v7.10.16o,foldSize 参数,默认旧值 16dp),flap 与缺角空白合占
+ * 顶卡右上 f 见方;叠加 MARK_HIT_PAD 指腹容差 → f+20dp 见方,
  * 与经典 FOLD Mark 命中区同锚同尺寸。NONE 无折角 → 不可点。
  */
 internal fun foldSwitchHitArea(
     variant: ConflictVariant,
     cardWidth: Float,
-    cardHeight: Float
+    cardHeight: Float,
+    foldSize: Float = FOLD_SIZE_DP
 ): Pair<Float, Float> = when (variant) {
     ConflictVariant.FOLD -> {
-        val side = (FOLD_SIZE_DP + MARK_HIT_PAD_DP)
+        val side = (foldSize + MARK_HIT_PAD_DP)
             .coerceAtMost(cardWidth).coerceAtMost(cardHeight)
         side to side
     }
@@ -455,6 +457,9 @@ fun ConflictClusterCard(
 
     // v6: 顶卡收窄量 = 用户设置(A 偏移 d / C 右缘让宽共用),滑杆 4..20dp
     val topInset = AppPrefs.getConflictTopInset(context).dp
+    // v7.10.16o: 折角幅度 = 用户拖杆设置(8..28dp),FoldCutShape 剪裁/flap 视觉/命中区共用同一真值
+    val foldSize = AppPrefs.getConflictFoldSize(context)
+    val foldSizeDp = foldSize.dp
 
     // v7.8 图层语义: 引擎 layerOfId 即每课对应图层; 该层的「整层代表 id」=
     // 该层内 zRank 最小的成员(引擎 zOrdered 已按图层拼接序排序, 同层内按 startNode 升序)。
@@ -514,7 +519,7 @@ fun ConflictClusterCard(
                     val cardIsFolded = form == ConflictVariant.FOLD &&
                         (item.laid.chainFront || item.laid.zRank == 0)
                     val memberShape = if (cardIsFolded && item.laid.hidden.not()) {
-                        remember { FoldCutShape(FOLD_SIZE_DP.dp, CARD_CORNER_DP.dp) }
+                        remember(foldSizeDp) { FoldCutShape(foldSizeDp, CARD_CORNER_DP.dp) }
                     } else cardShape
 
                     if (isFrontCard) {
@@ -598,10 +603,10 @@ fun ConflictClusterCard(
                             )
                         }
                         ConflictVariant.FOLD -> {
-                            // hit: 顶卡右上 36dp 见方盲区(跟顶课走,与 flap 同锚),点击=该 hidden 课置顶
+                            // hit: 顶卡右上盲区(跟顶课走,与 flap 同锚;幅度=用户拖杆设置),点击=该 hidden 课置顶
                             // (flap 视觉已提升到簇级——切换后 hidden 集空它也必须在)
-                            val hit = markHitArea(
-                                ConflictVariant.FOLD, colW.value, cellH.value
+                            val hit = foldSwitchHitArea(
+                                ConflictVariant.FOLD, colW.value, cellH.value, foldSize
                             ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
                             Box(
                                 modifier = Modifier
@@ -667,10 +672,10 @@ fun ConflictClusterCard(
                 Canvas(
                     modifier = Modifier
                         .offset(
-                            x = colW - FOLD_SIZE_DP.dp - 2.dp,
+                            x = colW - foldSizeDp - 2.dp,
                             y = cardYOf(host.startNode) + 2.dp
                         )
-                        .size(FOLD_SIZE_DP.dp)
+                        .size(foldSizeDp)
                 ) {
                     val f = size.width
                     val c = FOLD_FLAP_CORNER_DP.dp.toPx()
@@ -685,7 +690,7 @@ fun ConflictClusterCard(
                 }
                 if (!markPresent && switchTarget != null) {
                     val hit = foldSwitchHitArea(
-                        ConflictVariant.FOLD, colW.value, cellH.value
+                        ConflictVariant.FOLD, colW.value, cellH.value, foldSize
                     ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
                     Box(
                         modifier = Modifier
@@ -701,17 +706,16 @@ fun ConflictClusterCard(
             }
         }
 
-        // ---- FOLD 虚线轮廓: 顶课比 hidden 底课长 → 底课被全遮,按它真实占位画虚线(同长不画) ----
-        // 用户 2026-09-01: 长顶短底时给底课画虚线;等长靠 flap 缺角示意即可。
-        // v7.10.16m: 虚线语义扩到**一切被遮/收敛的 FOLD hidden 课** — 端态(单课层置顶)
-        // 沉底链组成员不再裸真卡,统一虚线占位(部分露出的只画自己区间,错位碎片消失)。
+        // ---- FOLD 虚线轮廓: hidden 课的视觉本体(v7.10.16n 全折角定案) ----
+        // 用户 2026-09-01: 长顶短底时给底课画虚线。
+        // v7.10.16m: 虚线语义扩到一切被遮/收敛的 FOLD hidden 课。
+        // v7.10.16o(用户 2026-09-03 报障「短课在底部时虚线没了」): 删除 16m 的
+        // fullyCovered 跳过例外 — 16n 把一切非置顶课收敛成虚线占位后,被全遮的短课
+        // 恰恰是唯一视觉(裸真卡已废),再跳过 = 课彻底隐身。虚线 = FOLD hidden 课的
+        // 唯一存在形式,全遮/部分遮一律画。
         if (form == ConflictVariant.FOLD) {
             hiddenItems.forEach { hid ->
                 val hidH = cardHOf(hid.course.id)
-                val topH = cardHOf(topCourse.id)
-                val fullyCovered = hidH <= topH &&
-                    hid.course.startNode >= topCourse.startNode
-                if (fullyCovered) return@forEach // 全遮且等长以下: flap 缺角已示意,不画
                 DashOutline(
                     color = conflictBorderColor(courseColorOf(hid.course)),
                     modifier = Modifier
@@ -739,7 +743,7 @@ fun ConflictClusterCard(
                 modifier = Modifier
                     .align(Alignment.TopEnd)
                     .offset(
-                        x = if (styleIsFold) -(FOLD_SIZE_DP.dp + 4.dp) else -2.dp,
+                        x = if (styleIsFold) -(foldSizeDp + 4.dp) else -2.dp,
                         y = 2.dp
                     )
             )

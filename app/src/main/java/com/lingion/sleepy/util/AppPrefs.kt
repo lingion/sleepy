@@ -49,6 +49,9 @@ object AppPrefs {
     const val KEY_CONFLICT_TOP_INSET = "conflict_top_inset" // Float dp — 冲突顶卡收窄量: A=右/下偏移 d, C=右缘让宽; 滑杆范围 CONFLICT_TOP_INSET_RANGE, 默认 7dp(用户 2026-09-01 实测定版)
     val CONFLICT_TOP_INSET_RANGE = 4f..20f        // 滑杆量程(dp)
     const val CONFLICT_TOP_INSET_DEFAULT = 7f     // 默认(dp) — 用户实测定版
+    const val KEY_CONFLICT_FOLD_SIZE = "conflict_fold_size" // Float dp — 折角幅度(fold 样式): 折痕直角边长, 视觉符号与命中区共用; 默认 16dp = 旧硬编码值
+    val CONFLICT_FOLD_SIZE_RANGE = 8f..28f        // 拖杆量程(dp)
+    const val CONFLICT_FOLD_SIZE_DEFAULT = 16f    // 默认(dp) — 沿用旧 FOLD_SIZE_DP 硬编码值
     const val KEY_START_VIEW = "start_view" // "full" / "cards" — 启动默认视图（仅通用设置里设置；手动切换课表顶部视图不写入）
     const val KEY_SHOW_DATE = "show_date"       // boolean
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
@@ -246,6 +249,17 @@ object AppPrefs {
     fun setConflictTopInset(ctx: Context, value: Float) {
         require(value in CONFLICT_TOP_INSET_RANGE)
         sp(ctx).edit().putFloat(KEY_CONFLICT_TOP_INSET, value).apply()
+    }
+
+    // ===== 冲突折角幅度(fold 样式专有,用户 2026-09-03 拖杆) =====
+    // 折痕直角边长 f(dp): 驱动 FoldCutShape 剪裁/flap 视觉/foldSwitchHitArea 命中区同一真值。
+
+    fun getConflictFoldSize(ctx: Context): Float =
+        sp(ctx).getFloat(KEY_CONFLICT_FOLD_SIZE, CONFLICT_FOLD_SIZE_DEFAULT)
+
+    fun setConflictFoldSize(ctx: Context, value: Float) {
+        require(value in CONFLICT_FOLD_SIZE_RANGE)
+        sp(ctx).edit().putFloat(KEY_CONFLICT_FOLD_SIZE, value).apply()
     }
 
     // ===== 冲突簇默认置顶图层 =====

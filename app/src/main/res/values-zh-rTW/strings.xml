@@ -303,6 +303,8 @@
     <string name="settings_conflict_rail_sub">右側色軌並排展示衝突課程，課名豎排</string>
     <string name="settings_conflict_top_inset">頂卡收窄量</string>
     <string name="settings_conflict_top_inset_sub">衝突頂卡比格位窄多少：疊層偏移=錯開的距離，側邊豎軌=右側讓寬</string>
+    <string name="settings_conflict_fold_size">摺角幅度</string>
+    <string name="settings_conflict_fold_size_sub">摺角符號的大小，拖動同步調整視覺與點按區域</string>
     <string name="settings_visible_days">顯示星期</string>
     <string name="settings_visible_days_sub">取消勾選的星期將在課表頁和小工具中隱藏</string>
 

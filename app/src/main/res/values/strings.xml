@@ -339,6 +339,8 @@
     <string name="settings_conflict_rail_sub">右侧色轨并排展示冲突课程，课名竖排</string>
     <string name="settings_conflict_top_inset">顶卡收窄量</string>
     <string name="settings_conflict_top_inset_sub">冲突顶卡比格位窄多少：叠层偏移=错开的距离，侧边竖轨=右侧让宽</string>
+    <string name="settings_conflict_fold_size">折角幅度</string>
+    <string name="settings_conflict_fold_size_sub">折角符号的大小，拖动同步调整视觉与点按区域</string>
     <string name="settings_visible_days">显示星期</string>
     <string name="settings_visible_days_sub">取消勾选的星期将在课表页和小组件中隐藏</string>
     <string name="settings_vert_punct">小组件竖排标点优化</string>

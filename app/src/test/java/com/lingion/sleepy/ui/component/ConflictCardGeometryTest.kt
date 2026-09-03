@@ -279,4 +279,36 @@ class ConflictCardGeometryTest {
         assertEquals(170.dp, botF.height)
         // B 方案下顶层与底层尺寸相同,折角差异由 Card 形状决定 —— 间接保护 cardIsFolded 不带 !chainStripActive。
     }
+
+    // ============================ v7.10.16o: 折角幅度拖杆(用户 2026-09-03) ============================
+    // 折角尺寸不再写死 16dp,跟用户设置走(fold_size, 8..28dp, 默认 16=旧值)。
+    // 视觉符号(FoldCutShape/flap)与命中区(foldSwitchHitArea)必须同步吃同一设置值。
+
+    @Test
+    fun foldSwitchHitArea_follows_user_fold_size_setting() {
+        // 默认 16dp → 36dp 见方(旧行为不变)
+        val byDefault = foldSwitchHitArea(ConflictVariant.FOLD, 100f, 170f)
+        assertEquals(36f, byDefault.first)
+        assertEquals(36f, byDefault.second)
+        // 拖到 28dp → 命中区 28+20=48dp(视觉与命中同涨)
+        val byLarge = foldSwitchHitArea(ConflictVariant.FOLD, 100f, 170f, foldSize = 28f)
+        assertEquals(48f, byLarge.first)
+        assertEquals(48f, byLarge.second)
+        // 拖到 8dp → 8+20=28dp(不小于 28, 指腹容差保底)
+        val bySmall = foldSwitchHitArea(ConflictVariant.FOLD, 100f, 170f, foldSize = 8f)
+        assertEquals(28f, bySmall.first)
+        // 窄卡钳制: 命中区不越过卡宽
+        val clamped = foldSwitchHitArea(ConflictVariant.FOLD, 30f, 170f, foldSize = 28f)
+        assertEquals(30f, clamped.first)
+        // 非 FOLD 无命中区
+        assertEquals(0f, foldSwitchHitArea(ConflictVariant.STACK, 100f, 170f, foldSize = 28f).first)
+    }
+
+    @Test
+    fun foldSize_pref_and_range_constants_exist() {
+        // 拖杆量程/默认值落点: 8..28dp, 默认 16dp(旧硬编码值), 键名独立于收窄量
+        assertEquals(8f, AppPrefs.CONFLICT_FOLD_SIZE_RANGE.start)
+        assertEquals(28f, AppPrefs.CONFLICT_FOLD_SIZE_RANGE.endInclusive)
+        assertEquals(16f, AppPrefs.CONFLICT_FOLD_SIZE_DEFAULT)
+    }
 }

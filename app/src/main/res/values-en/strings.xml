@@ -309,6 +309,8 @@
     <string name="settings_conflict_rail_sub">A color rail on the right lists conflicting courses with vertical names</string>
     <string name="settings_conflict_top_inset">Top card inset</string>
     <string name="settings_conflict_top_inset_sub">How much narrower the top card is than its slot: stack = offset distance, rail = right-edge reveal</string>
+    <string name="settings_conflict_fold_size">Fold corner size</string>
+    <string name="settings_conflict_fold_size_sub">Size of the folded-corner mark; adjusts both the visual and its tap area</string>
     <string name="settings_visible_days">Visible Days</string>
     <string name="settings_visible_days_sub">Unchecked days are hidden on the schedule page and in widgets</string>
 

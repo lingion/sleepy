@@ -303,6 +303,8 @@
     <string name="settings_conflict_rail_sub">Una barra de color a la derecha lista las clases con nombre vertical</string>
     <string name="settings_conflict_top_inset">Reducción de tarjeta superior</string>
     <string name="settings_conflict_top_inset_sub">Cuánto más estrecha es la tarjeta superior que su celda: apilado = distancia de desfase, riel = margen derecho</string>
+    <string name="settings_conflict_fold_size">Tamaño de la esquina doblada</string>
+    <string name="settings_conflict_fold_size_sub">Tamaño de la marca doblada; ajusta el aspecto y su zona táctil</string>
     <string name="settings_visible_days">Días visibles</string>
     <string name="settings_visible_days_sub">Los días desmarcados se ocultan en la página del horario y en los widgets</string>
 
