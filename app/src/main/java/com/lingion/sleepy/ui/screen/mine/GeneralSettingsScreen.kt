@@ -40,7 +40,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
-import com.lingion.sleepy.ui.component.ChipChoiceRow
 import com.lingion.sleepy.ui.component.DisplayModeOption
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingsFlatCard
@@ -135,45 +134,41 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 SectionHeader(title = stringResource(R.string.appearance_section_display))
             }
 
-            // 课程时间显示: 节次 / 时间 — 二选一纯选择, 平铺不折叠(用户 2026-09-03 指令)
+            // 课程时间显示: 节次 / 时间 — 二选一, 标题行右侧 tab 切换(用户 2026-09-03 指令)
             item {
-                SettingsFlatCard(title = stringResource(R.string.settings_display_mode)) {
-                    ChipChoiceRow(
-                        options = listOf(
-                            stringResource(R.string.settings_display_node) to {
-                                displayMode = "node"; AppPrefs.setDisplayMode(context, "node"); refreshWidgets()
-                            },
-                            stringResource(R.string.settings_display_time) to {
-                                displayMode = "time"; AppPrefs.setDisplayMode(context, "time"); refreshWidgets()
-                            }
-                        ),
-                        selectedKey = if (displayMode == "node") 0 else 1
-                    )
-                }
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_display_mode),
+                    options = listOf(
+                        stringResource(R.string.settings_display_node),
+                        stringResource(R.string.settings_display_time)
+                    ),
+                    selectedKey = if (displayMode == "node") 0 else 1,
+                    onSelect = { i ->
+                        val v = if (i == 0) "node" else "time"
+                        displayMode = v; AppPrefs.setDisplayMode(context, v); refreshWidgets()
+                    }
+                )
             }
 
-            // 网格卡片副信息: 教室 / 教师 / 无 — 三选一纯选择, 平铺不折叠(周视图网格卡课程名下方那行；节次信息左栏已有)
+            // 网格卡片副信息: 教室 / 教师 / 无 — 三选一, 标题行右侧 tab 切换(周视图网格卡课程名下方那行；节次信息左栏已有)
             item {
-                SettingsFlatCard(title = stringResource(R.string.settings_grid_sub_info)) {
-                    ChipChoiceRow(
-                        options = listOf(
-                            stringResource(R.string.settings_grid_sub_room) to {
-                                gridSubInfo = "room"; AppPrefs.setGridSubInfo(context, "room"); refreshWidgets()
-                            },
-                            stringResource(R.string.settings_grid_sub_teacher) to {
-                                gridSubInfo = "teacher"; AppPrefs.setGridSubInfo(context, "teacher"); refreshWidgets()
-                            },
-                            stringResource(R.string.settings_grid_sub_none) to {
-                                gridSubInfo = "none"; AppPrefs.setGridSubInfo(context, "none"); refreshWidgets()
-                            }
-                        ),
-                        selectedKey = when (gridSubInfo) {
-                            "room" -> 0
-                            "teacher" -> 1
-                            else -> 2
-                        }
-                    )
-                }
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_grid_sub_info),
+                    options = listOf(
+                        stringResource(R.string.settings_grid_sub_room),
+                        stringResource(R.string.settings_grid_sub_teacher),
+                        stringResource(R.string.settings_grid_sub_none)
+                    ),
+                    selectedKey = when (gridSubInfo) {
+                        "room" -> 0
+                        "teacher" -> 1
+                        else -> 2
+                    },
+                    onSelect = { i ->
+                        val v = listOf("room", "teacher", "none")[i]
+                        gridSubInfo = v; AppPrefs.setGridSubInfo(context, v); refreshWidgets()
+                    }
+                )
             }
 
             // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
@@ -405,22 +400,21 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 }
             }
 
-            // 启动默认页: full / cards — 二选一纯选择, 平铺不折叠(仅 App 内偏好, 不涉及小组件, 无需 refreshWidgets)
+            // 启动默认页: full / cards — 二选一, 标题行右侧 tab 切换(仅 App 内偏好, 不涉及小组件, 无需 refreshWidgets)
             item {
-                SettingsFlatCard(title = stringResource(R.string.settings_start_view)) {
-                    Text(text = stringResource(R.string.settings_start_view_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
-                    ChipChoiceRow(
-                        options = listOf(
-                            stringResource(R.string.settings_start_view_full) to {
-                                startView = "full"; AppPrefs.setStartView(context, "full")
-                            },
-                            stringResource(R.string.settings_start_view_cards) to {
-                                startView = "cards"; AppPrefs.setStartView(context, "cards")
-                            }
-                        ),
-                        selectedKey = if (startView == "full") 0 else 1
-                    )
-                }
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_start_view),
+                    subtitle = stringResource(R.string.settings_start_view_sub),
+                    options = listOf(
+                        stringResource(R.string.settings_start_view_full),
+                        stringResource(R.string.settings_start_view_cards)
+                    ),
+                    selectedKey = if (startView == "full") 0 else 1,
+                    onSelect = { i ->
+                        val v = if (i == 0) "full" else "cards"
+                        startView = v; AppPrefs.setStartView(context, v)
+                    }
+                )
             }
 
             // 课程胶囊统一底色: 单开关, 平铺直露不折叠(App 侧独立, 不刷新小组件)
