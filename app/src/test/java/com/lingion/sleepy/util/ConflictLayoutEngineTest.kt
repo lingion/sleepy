@@ -3,6 +3,7 @@ package com.lingion.sleepy.util
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.component.CourseDrawItem
 import com.lingion.sleepy.ui.component.layoutFor
+import com.lingion.sleepy.ui.component.foldSwitchHitArea
 import com.lingion.sleepy.ui.component.markHitArea
 import com.lingion.sleepy.ui.component.overlayMarkOrder
 import org.junit.Assert.assertEquals
@@ -681,6 +682,36 @@ class ConflictLayoutEngineTest {
         // v7.8.4 修订: RAIL 不再有侧边竖轨结构, 命中区复用 STACK 风格 —— 36dp 见方。
         val (w, h) = markHitArea(ConflictVariant.RAIL, cardWidth = 60f, cardHeight = 120f)
         assertRect(w to h, 36f, 36f, "RAIL hit area (v7.8.4 = STACK style)")
+    }
+
+    // ============================ foldSwitchHitArea (v7.10.16h, 用户 2026-09-03) ============================
+    //
+    // 用户原话: 折角符号本身 + 被折走后空出来的缺角空白都要能点。折角视觉 = 顶卡右上
+    // FOLD_SIZE(16dp)见方(flap 三角 + 缺角空白各占一半),加 MARK_HIT_PAD 指腹容差。
+
+    @Test
+    fun foldSwitchHitArea_fold_covers_flap_and_cutout_36dp() {
+        // 折角符号+缺角空白 = 右上 16dp 见方 + 20dp 内延 → 36dp 见方
+        val (w, h) = foldSwitchHitArea(ConflictVariant.FOLD, cardWidth = 60f, cardHeight = 120f)
+        assertRect(w to h, 36f, 36f, "FOLD switch hit = flap + cutout zone")
+    }
+
+    @Test
+    fun foldSwitchHitArea_non_fold_variants_are_not_tappable() {
+        // 该命中区只在折角形态存在;STACK/RAIL/NONE 不产生折角切换区
+        for (variant in listOf(ConflictVariant.STACK, ConflictVariant.RAIL, ConflictVariant.NONE)) {
+            assertRect(
+                foldSwitchHitArea(variant, cardWidth = 60f, cardHeight = 120f),
+                0f, 0f, "$variant must not produce fold-switch hit"
+            )
+        }
+    }
+
+    @Test
+    fun foldSwitchHitArea_clamped_to_card_bounds() {
+        // 极小卡片: 命中区不超卡(min 边 10dp → 36dp 被压到 10dp)
+        val (w, h) = foldSwitchHitArea(ConflictVariant.FOLD, cardWidth = 20f, cardHeight = 10f)
+        assertRect(w to h, 10f, 10f, "hit clamped to card bounds")
     }
 
     @Test

@@ -191,6 +191,25 @@ fun markHitArea(
 }
 
 /**
+ * FOLD 折角切换命中区尺寸(纯 JVM 可测,v7.10.16h,用户 2026-09-03):
+ * 用户原话——「折角符号本身和被折起来的那块空白区域」都要能点。折痕直角边 f=16dp,
+ * flap 与缺角空白合占顶卡右上 16dp 见方;叠加 MARK_HIT_PAD 指腹容差 → 36dp 见方,
+ * 与经典 FOLD Mark 命中区同锚同尺寸。NONE 无折角 → 不可点。
+ */
+internal fun foldSwitchHitArea(
+    variant: ConflictVariant,
+    cardWidth: Float,
+    cardHeight: Float
+): Pair<Float, Float> = when (variant) {
+    ConflictVariant.FOLD -> {
+        val side = (FOLD_SIZE_DP + MARK_HIT_PAD_DP)
+            .coerceAtMost(cardWidth).coerceAtMost(cardHeight)
+        side to side
+    }
+    else -> 0f to 0f
+}
+
+/**
  * 簇级形态(纯 JVM 可测,v5) — hidden 课 variant 优先;交换置顶后可能无 hidden 课
  * (长课置顶、原顶课露出尾独占节次 → hidden 集空),形态不能塌缩成 NONE——
  * 几何跟用户设置走: rail 恒 RAIL(窄卡形态与 hidden 无关);
@@ -617,6 +636,13 @@ fun ConflictClusterCard(
                 // 拼条每个可见成员一行 flap(去重后按节位)
                 drawList.filter { it.chainFront && !it.hidden || it.zRank == 0 }.map { it.course }
             } else listOf(topCourse)
+            // v7.10.16h 折角切换命中区(用户 2026-09-03): 拼条态(chainStripActive)下
+            // hidden 集恒空 → 经典 FOLD Mark 不生成,点折角符号/缺角空白落到顶卡
+            // clickable = 编辑课程,切换不可达。此处逐 flap 同锚叠命中区(每个折角成员
+            // 各一个角,每个都能点),点击 = 次层整层置顶(onPickTop)。
+            // 经典态 Mark 已覆盖该区域,不重复叠。
+            val nextLayerIndex = layerRepId.keys.sorted().getOrNull(1)
+            val switchTarget = nextLayerIndex?.let { layerRepId[it] }
             flapHosts.forEach { host ->
                 Canvas(
                     modifier = Modifier
@@ -636,6 +662,21 @@ fun ConflictClusterCard(
                         close()
                     }
                     drawPath(flap, foldFlapColor(courseColorOf(host)))
+                }
+                if (chainStripActive && switchTarget != null) {
+                    val hit = foldSwitchHitArea(
+                        ConflictVariant.FOLD, colW.value, cellH.value
+                    ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
+                    Box(
+                        modifier = Modifier
+                            .offset(
+                                x = colW - hit.first,
+                                y = cardYOf(host.startNode)
+                            )
+                            .width(hit.first)
+                            .height(hit.second)
+                            .noRippleClickable { onPickTop(switchTarget) }
+                    )
                 }
             }
         }
