@@ -42,6 +42,7 @@
     <string name="current_table_week">Current · Week %1$d</string>
     <string name="table_start_date">Start: %1$s</string>
     <string name="all_tables">All Schedules</string>
+    <string name="schedule_switch_table">Switch schedule</string>
     <string name="all_tables_new">New Schedule</string>
     <string name="edit_table_title">Edit Schedule</string>
     <string name="edit_table_basic_info">Basic Info</string>

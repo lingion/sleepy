@@ -37,6 +37,7 @@
     <string name="current_table_week">現在 · 第%1$d週</string>
     <string name="table_start_date">開始日: %1$s</string>
     <string name="all_tables">すべての時間割</string>
+    <string name="schedule_switch_table">時間割の切り替え</string>
     <string name="all_tables_new">新規作成</string>
     <string name="edit_table_title">時間割を編集</string>
     <string name="edit_table_basic_info">基本情報</string>

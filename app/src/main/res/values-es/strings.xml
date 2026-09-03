@@ -37,6 +37,7 @@
     <string name="current_table_week">Actual · Semana %1$d</string>
     <string name="table_start_date">Inicio: %1$s</string>
     <string name="all_tables">Todos los horarios</string>
+    <string name="schedule_switch_table">Cambiar horario</string>
     <string name="all_tables_new">Nuevo horario</string>
     <string name="edit_table_title">Editar horario</string>
     <string name="edit_table_basic_info">Información básica</string>

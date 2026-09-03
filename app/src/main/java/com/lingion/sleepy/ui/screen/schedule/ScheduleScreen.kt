@@ -22,9 +22,15 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
+import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.IosShare
+import androidx.compose.material3.AlertDialog
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.FloatingActionButton
@@ -53,6 +59,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.CardsGridView
 import com.lingion.sleepy.ui.component.CourseDetailSheet
 import com.lingion.sleepy.ui.component.FullWeekView
@@ -127,10 +134,13 @@ fun ScheduleScreen(
         } else {
             // v7.10.7 顶栏分享 → 底部弹窗(格式选择)
             var showShareSheet by remember { mutableStateOf(false) }
+            // v7.10.14 顶栏 logo → 课表切换弹窗
+            var showTableSwitcher by remember { mutableStateOf(false) }
             TopBar(
                 currentWeek = state.selectedWeek,
                 maxWeek = state.currentTable?.maxWeek ?: 20,
                 startDate = state.currentTable?.startDate ?: "",
+                onSwitchTable = { showTableSwitcher = true },
                 onPrevWeek = { viewModel.changeWeek(state.selectedWeek - 1) },
                 onNextWeek = { viewModel.changeWeek(state.selectedWeek + 1) },
                 onJumpToActual = {
@@ -150,6 +160,18 @@ fun ScheduleScreen(
                         onDismiss = { showShareSheet = false }
                     )
                 }
+            }
+
+            if (showTableSwitcher) {
+                TableSwitcherDialog(
+                    tables = state.tables,
+                    selectedTableId = state.selectedTableId,
+                    onSelect = { id ->
+                        viewModel.selectTable(id)
+                        showTableSwitcher = false
+                    },
+                    onDismiss = { showTableSwitcher = false }
+                )
             }
 
             // Segmented Switcher
@@ -255,11 +277,72 @@ fun ScheduleScreen(
     }
 }
 
+/**
+ * v7.10.14 顶栏 logo 点击弹出的课表切换弹窗 —
+ * 列出全部课表, 当前行 primaryContainer 高亮 + 对勾, 点击即切换。
+ */
+@Composable
+private fun TableSwitcherDialog(
+    tables: List<TimeTableEntity>,
+    selectedTableId: Long?,
+    onSelect: (Long) -> Unit,
+    onDismiss: () -> Unit
+) {
+    val colors = SleepyTheme.colors
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        titleContentColor = colors.onSurface,
+        textContentColor = colors.onSurfaceVariant,
+        title = { Text(stringResource(R.string.schedule_switch_table)) },
+        text = {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .heightIn(max = 360.dp)
+                    .verticalScroll(rememberScrollState()),
+                verticalArrangement = Arrangement.spacedBy(4.dp)
+            ) {
+                tables.forEach { table ->
+                    val isCurrent = table.id == selectedTableId
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SleepyTheme.shapes.small)
+                            .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
+                            .noRippleClickable { onSelect(table.id) }
+                            .padding(vertical = 10.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = table.name,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                            color = if (isCurrent) colors.onPrimaryContainer else colors.onSurface,
+                            maxLines = 2,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (isCurrent) {
+                            Icon(
+                                imageVector = Icons.Outlined.Check,
+                                contentDescription = null,
+                                tint = colors.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
+                }
+            }
+        },
+        confirmButton = {},
+        dismissButton = {}
+    )
+}
+
 @Composable
 private fun TopBar(
     currentWeek: Int,
     maxWeek: Int,
     startDate: String,
+    onSwitchTable: () -> Unit,
     onPrevWeek: () -> Unit,
     onNextWeek: () -> Unit,
     onJumpToActual: () -> Unit,
@@ -287,6 +370,17 @@ private fun TopBar(
         // 旧 weight(1f)+Center 是在"扣除右侧按钮后的剩余空间"里居中, 视觉偏左;
         // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+            // v7.10.14: 最左 logo — 点击弹课表切换弹窗, 右缘操作区(加课/分享)对称位
+            Row(
+                modifier = Modifier.align(Alignment.CenterStart),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                WeekNavButton(
+                    icon = Icons.Outlined.CalendarMonth,
+                    contentDescriptionRes = R.string.schedule_switch_table,
+                    onClick = onSwitchTable
+                )
+            }
             // 翻页三件套(箭头+胶囊+箭头) — 箭头紧贴胶囊
             Row(
                 verticalAlignment = Alignment.CenterVertically,

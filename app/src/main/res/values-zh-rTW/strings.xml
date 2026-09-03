@@ -37,6 +37,7 @@
     <string name="current_table_week">目前課表 · 第%1$d週</string>
     <string name="table_start_date">開始日期: %1$s</string>
     <string name="all_tables">所有課表</string>
+    <string name="schedule_switch_table">切換課表</string>
     <string name="all_tables_new">建立課表</string>
     <string name="edit_table_title">編輯課表</string>
     <string name="edit_table_basic_info">基本資訊</string>

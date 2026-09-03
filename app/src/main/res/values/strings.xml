@@ -44,6 +44,7 @@
     <string name="current_table_week">当前课表 · 第%1$d周</string>
     <string name="table_start_date">开始日期: %1$s</string>
     <string name="all_tables">所有课表</string>
+    <string name="schedule_switch_table">切换课表</string>
     <string name="all_tables_new">新建课表</string>
     <string name="edit_table_title">编辑课表</string>
     <string name="edit_table_basic_info">基础信息</string>
