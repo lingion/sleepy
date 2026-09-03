@@ -257,12 +257,30 @@ object ScheduleParser {
         // 节次时间表: Sleepy 自家导出把 timeJson 放在 tableInfo.time — 之前丢弃, 现在往返保真
         val (timeJson, nodesPerDay) = harvestTimeJsonFromTableInfo(root)
 
+        return lossless(name, startDate, courses, timeJson, nodesPerDay)
+    }
+
+    /**
+     * v7.10.16k 无损收尾 — 全格式路径统一: 节次数 = max(作息声明, 课程到达)。
+     * 用户 2026-09-03 实测 WakeUp 分享(补实验, startNode=11 step=3 → 13 节)
+     * 没带 tableInfo → 旧代码报 0 → 落库被老表钳成 10 = 丢节次。
+     * 没有时间 ≠ 没有节次; timeJson 原样保留(不伪造)。
+     */
+    private fun lossless(
+        tableName: String,
+        startDate: String,
+        courses: List<CourseEntity>,
+        timeJson: String,
+        declaredNodes: Int
+    ): ParseResult {
+        val courseReach = courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
         return ParseResult(
-            tableName = name,
+            tableName = tableName,
             startDate = startDate,
             courses = courses,
             timeJson = timeJson,
-            nodesPerDay = nodesPerDay
+            nodesPerDay = maxOf(declaredNodes, courseReach),
+            droppedLines = emptyList()
         )
     }
 
@@ -333,7 +351,7 @@ object ScheduleParser {
 
         // 节次时间表: tableInfo.time(Sleepy 导出) / timeList(WakeUp 原生)
         val (timeJson, nodesPerDay) = harvestTimeJsonFromTableInfo(root)
-        return ParseResult(name, startDate, courses, timeJson, nodesPerDay)
+        return lossless(name, startDate, courses, timeJson, nodesPerDay)
     }
 
     private fun parseCourseJsonArray(jsonStr: String, tableId: Long): List<CourseEntity> {
@@ -519,12 +537,12 @@ object ScheduleParser {
             }
         }
 
-        return ParseResult(
-            tableName = "导入的 ICS 课表",
-            startDate = anchor.toString(),
-            courses = courses,
-            timeJson = buildTimeJson(nodeTimes),
-            nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
+        return lossless(
+            "导入的 ICS 课表",
+            anchor.toString(),
+            courses,
+            buildTimeJson(nodeTimes),
+            if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
         )
     }
 
@@ -757,20 +775,15 @@ object ScheduleParser {
 
         if (courses.isEmpty()) throw IllegalArgumentException("未能解析任何课程")
 
-        return ParseResult(
-            tableName = "导入的课表",
-            startDate = java.time.LocalDate.now().toString(),
-            courses = courses,
-            timeJson = buildTimeJson(TreeMap(nodeTimes)),
-            // v7.10.16k 无损解析(用户 2026-09-03「导入导出无损」): 节次数 = max(作息声明, 课程到达)。
-            // 课程实际到 13 节时 nodesPerDay 必须承认 13 — 没有时间 ≠ 没有节次,
-            // 否则 13 节源数据被压成 10 节(timeJson 仍留空, 时间由合并层铺 smart 默认)。
-            nodesPerDay = maxOf(
-                if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey(),
-                courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
-            ),
-            droppedLines = dropped + timeBlockDropped
+        // v7.10.16k: 无损收尾走统一 lossless() — 节次数 = max(作息声明, 课程到达)
+        val result = lossless(
+            "导入的课表",
+            java.time.LocalDate.now().toString(),
+            courses,
+            buildTimeJson(TreeMap(nodeTimes)),
+            if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
         )
+        return result.copy(droppedLines = dropped + timeBlockDropped)
     }
 
     /** 区间反写(16-1)自动排序为 (1,16) */
@@ -915,12 +928,12 @@ object ScheduleParser {
 
         if (courses.isEmpty()) throw IllegalArgumentException("未能解析任何课程")
 
-        return ParseResult(
-            tableName = "导入的 CSV 课表",
-            startDate = java.time.LocalDate.now().toString(),
-            courses = courses,
-            timeJson = buildTimeJson(nodeTimes),
-            nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
+        return lossless(
+            "导入的 CSV 课表",
+            java.time.LocalDate.now().toString(),
+            courses,
+            buildTimeJson(nodeTimes),
+            if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
         )
     }
 
@@ -1046,11 +1059,7 @@ object ScheduleParser {
 
         if (courses.isEmpty()) throw IllegalArgumentException("HTML 中未能解析出任何课程")
 
-        return ParseResult(
-            tableName = "导入的 HTML 课表",
-            startDate = java.time.LocalDate.now().toString(),
-            courses = courses
-        )
+        return lossless("导入的 HTML 课表", java.time.LocalDate.now().toString(), courses, "", 0)
     }
 
     /** 抽取所有 <table>...</table> 转为 List<List<String>> (按 <td>/<th>) */
