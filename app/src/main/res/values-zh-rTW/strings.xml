@@ -38,6 +38,8 @@
     <string name="table_start_date">開始日期: %1$s</string>
     <string name="all_tables">所有課表</string>
     <string name="schedule_switch_table">切換課表</string>
+    <string name="schedule_undo">撤回</string>
+    <string name="schedule_undo_none">沒有可撤回的操作</string>
     <string name="all_tables_new">建立課表</string>
     <string name="all_tables_duplicate">建立副本</string>
     <string name="table_created_at">匯入於 %1$s</string>

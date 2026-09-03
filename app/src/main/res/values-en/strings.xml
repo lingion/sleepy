@@ -43,6 +43,8 @@
     <string name="table_start_date">Start: %1$s</string>
     <string name="all_tables">All Schedules</string>
     <string name="schedule_switch_table">Switch schedule</string>
+    <string name="schedule_undo">Undo</string>
+    <string name="schedule_undo_none">Nothing to undo</string>
     <string name="all_tables_new">New Schedule</string>
     <string name="all_tables_duplicate">Duplicate</string>
     <string name="table_created_at">Imported %1$s</string>

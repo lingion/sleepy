@@ -38,6 +38,8 @@
     <string name="table_start_date">開始日: %1$s</string>
     <string name="all_tables">すべての時間割</string>
     <string name="schedule_switch_table">時間割の切り替え</string>
+    <string name="schedule_undo">元に戻す</string>
+    <string name="schedule_undo_none">元に戻せる操作はありません</string>
     <string name="all_tables_new">新規作成</string>
     <string name="all_tables_duplicate">複製を作成</string>
     <string name="table_created_at">インポート日時 %1$s</string>

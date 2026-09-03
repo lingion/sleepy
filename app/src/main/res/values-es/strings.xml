@@ -38,6 +38,8 @@
     <string name="table_start_date">Inicio: %1$s</string>
     <string name="all_tables">Todos los horarios</string>
     <string name="schedule_switch_table">Cambiar horario</string>
+    <string name="schedule_undo">Deshacer</string>
+    <string name="schedule_undo_none">Nada que deshacer</string>
     <string name="all_tables_new">Nuevo horario</string>
     <string name="all_tables_duplicate">Duplicar</string>
     <string name="table_created_at">Importado %1$s</string>

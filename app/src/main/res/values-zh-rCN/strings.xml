@@ -41,6 +41,8 @@
     <string name="table_start_date">开始日期: %1$s</string>
     <string name="all_tables">所有课表</string>
     <string name="schedule_switch_table">切换课表</string>
+    <string name="schedule_undo">撤回</string>
+    <string name="schedule_undo_none">没有可撤回的操作</string>
     <string name="all_tables_new">新建课表</string>
     <string name="all_tables_duplicate">创建副本</string>
     <string name="table_created_at">导入于 %1$s</string>

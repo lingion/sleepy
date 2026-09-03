@@ -21,12 +21,14 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.IosShare
+import kotlinx.coroutines.launch
 import androidx.compose.material3.AlertDialog
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -136,11 +138,21 @@ fun ScheduleScreen(
             var showShareSheet by remember { mutableStateOf(false) }
             // v7.10.14 顶栏 logo → 课表切换弹窗
             var showTableSwitcher by remember { mutableStateOf(false) }
+            val undoScope = androidx.compose.runtime.rememberCoroutineScope()
             TopBar(
                 currentWeek = state.selectedWeek,
                 maxWeek = state.currentTable?.maxWeek ?: 20,
                 startDate = state.currentTable?.startDate ?: "",
                 onSwitchTable = { showTableSwitcher = true },
+                onUndo = {
+                    undoScope.launch {
+                        if (!viewModel.undoLastChange()) {
+                            android.widget.Toast.makeText(
+                                context, R.string.schedule_undo_none, android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
                 onPrevWeek = { viewModel.changeWeek(state.selectedWeek - 1) },
                 onNextWeek = { viewModel.changeWeek(state.selectedWeek + 1) },
                 onJumpToActual = {
@@ -343,6 +355,7 @@ private fun TopBar(
     maxWeek: Int,
     startDate: String,
     onSwitchTable: () -> Unit,
+    onUndo: () -> Unit,
     onPrevWeek: () -> Unit,
     onNextWeek: () -> Unit,
     onJumpToActual: () -> Unit,
@@ -371,6 +384,7 @@ private fun TopBar(
         // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             // v7.10.14: 最左 logo — 点击弹课表切换弹窗, 右缘操作区(加课/分享)对称位
+            // v7.10.16: logo 右边第二个按钮 = 撤回(任何课表数据改动可撤销一次)
             Row(
                 modifier = Modifier.align(Alignment.CenterStart),
                 verticalAlignment = Alignment.CenterVertically
@@ -379,6 +393,12 @@ private fun TopBar(
                     icon = Icons.Outlined.CalendarMonth,
                     contentDescriptionRes = R.string.schedule_switch_table,
                     onClick = onSwitchTable
+                )
+                Spacer(modifier = Modifier.width(6.dp))
+                WeekNavButton(
+                    icon = Icons.AutoMirrored.Outlined.Undo,
+                    contentDescriptionRes = R.string.schedule_undo,
+                    onClick = onUndo
                 )
             }
             // 翻页三件套(箭头+胶囊+箭头) — 箭头紧贴胶囊

@@ -223,6 +223,16 @@ class ScheduleViewModel : ViewModel() {
         _state.update { it.copy(selectedWeek = week) }
     }
 
+    /**
+     * v7.10.16 撤回最近一次数据改动(导入/加课/编辑/删课/删表/建表...)。
+     * 返回 false = 没有可撤回的操作(调用方 toast 提示)。
+     */
+    suspend fun undoLastChange(): Boolean {
+        val ok = repo.restoreLastSnapshot()
+        if (ok) manualSelectDone = false   // 恢复后选中态交回 default 表
+        return ok
+    }
+
     fun openCourse(id: Long) {
         _state.update { it.copy(selectedCourseId = id, showCourseDialog = true) }
     }
