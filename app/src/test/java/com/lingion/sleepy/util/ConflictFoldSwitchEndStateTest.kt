@@ -118,6 +118,64 @@ class ConflictFoldSwitchEndStateTest {
         assertFalse(byId.getValue(2L).hidden)
     }
 
+    // ---- v7.10.16n(用户 2026-09-03 拍板「全部是折角」): fold 样式下部分重叠也必须全折角 ----
+    // 用户报障本体: 两节课部分重叠(1-3 与 2-4), 有折角, 点折角切换完「又变成重叠」。
+    // 根因: 非链组态走经典露出计算 → 短课有独占节次 → hidden=false → 真卡重叠渲染。
+
+    @Test
+    fun fold_partialOverlap_pair_both_directions_hidden_with_real_switch_target() {
+        val a = course(20, 3, 1, 3, "物理")
+        val b = course(21, 3, 2, 4, "数据结构")
+        // 默认态: 2-4(step 4)主序高 → 顶层; 1-3 必须 hidden(全折角), 不得以真卡重叠露出
+        val default = ConflictLayoutEngine.layoutCluster(
+            ConflictCluster(3, listOf(a, b)), "fold", null, 12
+        ).associateBy { it.course.id }
+        assertFalse(default.getValue(21L).hidden)
+        assertTrue("partial-overlap 1-3 must be hidden in FOLD (user: 全部是折角)",
+            default.getValue(20L).hidden)
+        assertEquals(ConflictVariant.FOLD, default.getValue(20L).variant)
+        // 切换态: 1-3 置顶后 2-4 必须 hidden ——「点击折角切换完又变成重叠」的根
+        val switched = ConflictLayoutEngine.layoutCluster(
+            ConflictCluster(3, listOf(a, b)), "fold", 20L, 12
+        ).associateBy { it.course.id }
+        assertFalse(switched.getValue(20L).hidden)
+        assertTrue("partial-overlap 2-4 must be hidden after switch (bug: 又变成重叠)",
+            switched.getValue(21L).hidden)
+        assertEquals(ConflictVariant.FOLD, switched.getValue(21L).variant)
+        // 两个状态都有真实切换入口(Mark 跟 hidden 集生成, 点了能换层)
+        val marksDefault = overlayMarkOrder(
+            ConflictLayoutEngine.layoutCluster(ConflictCluster(3, listOf(a, b)), "fold", null, 12)
+        ).filterIsInstance<CourseDrawItem.Mark>()
+        assertEquals(listOf(20L), marksDefault.map { it.hiddenCourseId })
+        val marksSwitched = overlayMarkOrder(
+            ConflictLayoutEngine.layoutCluster(ConflictCluster(3, listOf(a, b)), "fold", 20L, 12)
+        ).filterIsInstance<CourseDrawItem.Mark>()
+        assertEquals(listOf(21L), marksSwitched.map { it.hiddenCourseId })
+    }
+
+    /** 三课链式部分重叠(1-3/2-4/3-5, 两两重叠无独立集)同规: 非置顶层全 hidden=FOLD。 */
+    @Test
+    fun fold_partialOverlap_chain_of_three_every_non_front_layer_hidden() {
+        val c1 = course(30, 4, 1, 3)
+        val c2 = course(31, 4, 2, 4)
+        val c3 = course(32, 4, 3, 5) // step 最大 → 默认顶层
+        val cluster = ConflictCluster(4, listOf(c1, c2, c3))
+        assertEquals(3, ConflictLayoutEngine.chainGroups(listOf(c1, c2, c3)).size)
+        val byId = ConflictLayoutEngine.layoutCluster(cluster, "fold", null, 12)
+            .associateBy { it.course.id }
+        assertFalse(byId.getValue(32L).hidden)
+        assertTrue(byId.getValue(30L).hidden)
+        assertTrue(byId.getValue(31L).hidden)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(30L).variant)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(31L).variant)
+        // 切到中层层(2-4)后: 前后两层都 hidden, 全折角语义不塌
+        val mid = ConflictLayoutEngine.layoutCluster(cluster, "fold", 31L, 12)
+            .associateBy { it.course.id }
+        assertFalse(mid.getValue(31L).hidden)
+        assertTrue(mid.getValue(30L).hidden)
+        assertTrue(mid.getValue(32L).hidden)
+    }
+
     // ---- 经典双课 FOLD(无链组)回归: hidden/Mark 语义原样 ----
 
     @Test

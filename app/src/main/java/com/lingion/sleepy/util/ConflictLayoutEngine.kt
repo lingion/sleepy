@@ -160,9 +160,13 @@ object ConflictLayoutEngine {
             //   被全遮者连虚线轮廓都拿不到(hidden=false 挡住 DashOutline)。
             //   FOLD 沉底一律 hidden=true(回到经典 FOLD 虚线语言), 拼条态(顶层即链组层)
             //   成员仍 hidden=false 保持并排真卡。
-            // 经典无链组(全叠)→ 原 hidden 判定原样保留。
-            val foldSinkToDash = style == "fold" && hasChainLayer &&
-                ownLayer != null && ownLayer.size >= 2 && !isFrontLayer
+            // v7.10.16n(用户 2026-09-03 拍板「全部是折角」): fold 样式下不再看链组与否 —
+            //   **一切非置顶图层的课一律 hidden=true**(虚线/折角语言), 部分重叠课
+            //   (如 1-3 与 2-4 各自独占节次)不再以真卡重叠露出。此前 16m 只救了链组成员,
+            //   单课层部分重叠(用户最简两课场景)仍走经典露出计算 → 真卡重叠 = 报障本体。
+            //   STACK/RAIL 沉底语义不动(v7.8 定版真卡)。
+            val foldSinkToDash = style == "fold" &&
+                ownLayer != null && !isFrontLayer
             val hidden = if (foldSinkToDash) {
                 true
             } else if (hasChainLayer) {
@@ -451,5 +455,41 @@ object ConflictLayoutEngine {
             ).maxOf { region -> chainGroups(region).size }
             if (maxLanes > 2) day else null
         }.toSet()
+    }
+
+    /**
+     * 簇键公式唯一真值(v7.10.16p) — "day:startNode:step"(锚课三元组)。
+     * 此前 CourseTableView / CourseDetailSheet 各自手写字符串模板,公式漂移会让
+     * 置顶偏好静默失联;删课清理也需要同一公式来推算孤儿键。
+     */
+    fun conflictClusterKey(anchor: CourseEntity): String =
+        "${anchor.day}:${anchor.startNode}:${anchor.step}"
+
+    fun conflictClusterKey(cluster: ConflictCluster): String =
+        conflictClusterKey(cluster.courses.first())
+
+    /**
+     * 清理指向已失效课程的置顶偏好(v7.10.16p, 用户 2026-09-03 报障「删课后冲突组不重算」):
+     *
+     * 删课后 Room Flow 会重放 courses → 网格簇立即按剩余课重算(渲染层无缓存);
+     * 真正的残留是 defaultTopMap: repId 指向已删课 → 引擎按 id 查不到图层 → 偏好
+     * 静默失效;详情弹窗还会把已删课画成幽灵图层选项。
+     *
+     * 规则(纯函数,对现存课全量验证):
+     *   1. repId 不在现存课里 → 删(课被删)
+     *   2. 键推算不出现存簇键集合 → 删(锚课被删/簇解体重排/课已不成簇)
+     *   3. 其余(键有效且 repId 属于该簇现存成员)→ 保留
+     *
+     * 调用时机: 删课/删组/覆盖导入/撤销等一切使课程集变化的写路径之后。
+     */
+    fun pruneConflictDefaultTop(
+        stored: Map<String, Long>,
+        currentCourses: List<CourseEntity>
+    ): Map<String, Long> {
+        if (stored.isEmpty() || currentCourses.isEmpty()) return emptyMap()
+        val liveIds = currentCourses.map { it.id }.toSet()
+        val liveKeys = findClusters(currentCourses).mapTo(mutableSetOf()) { conflictClusterKey(it) }
+        return stored.filterKeys { key -> key in liveKeys }
+            .filterValues { repId -> repId in liveIds }
     }
 }

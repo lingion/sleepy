@@ -707,6 +707,21 @@ class ConflictLayoutEngineTest {
         }
     }
 
+    // ---- v7.10.16o 折角幅度拖杆: 命中区跟用户 fold_size 走(视觉与命中同一真值) ----
+
+    @Test
+    fun foldSwitchHitArea_scales_with_user_fold_size() {
+        // 用户拖到 24dp: 视觉折角 24dp,命中区 24+20=44dp —— 命中区必须跟涨,不能还钉在 36
+        val (w, h) = foldSwitchHitArea(ConflictVariant.FOLD, 60f, 120f, foldSize = 24f)
+        assertRect(w to h, 44f, 44f, "hit area follows dragged fold size")
+        // 拖到最小 8dp: 8+20=28dp,仍保住指腹容差
+        val (w8, h8) = foldSwitchHitArea(ConflictVariant.FOLD, 60f, 120f, foldSize = 8f)
+        assertRect(w8 to h8, 28f, 28f, "minimum size still keeps finger tolerance")
+        // 缺省参数(不传 foldSize)= 旧默认 16dp → 36dp,存量行为不变
+        val (wDef, hDef) = foldSwitchHitArea(ConflictVariant.FOLD, 60f, 120f)
+        assertRect(wDef to hDef, 36f, 36f, "default keeps legacy 36dp")
+    }
+
     @Test
     fun foldSwitchHitArea_clamped_to_card_bounds() {
         // 极小卡片: 命中区不超卡(min 边 10dp → 36dp 被压到 10dp)
@@ -767,13 +782,14 @@ class ConflictLayoutEngineTest {
     }
 
     @Test
-    fun foldGate_trapezoid_partial_overlap_not_hidden_so_no_variant() {
-        // 梯形 1-3/2-4: 底层有露出 → 非 hidden → 无变体(闸门只作用于 hidden 课)
+    fun foldGate_trapezoid_partial_overlap_hidden_with_variant_v1616n() {
+        // v7.10.16n(用户拍板「全部是折角」)推翻旧闸门: 梯形 1-3/2-4 底层有露出也必须
+        // hidden 拿 FOLD 变体——fold 样式下部分重叠不再以真卡重叠露出
         val a = course(id = 1, day = 1, startNode = 1, step = 3)
         val b = course(id = 2, day = 1, startNode = 2, step = 3)
         val byId = layoutById(listOf(a, b), "fold")
-        assertEquals(false, byId.getValue(2L).hidden)
-        assertEquals(ConflictVariant.NONE, byId.getValue(2L).variant)
+        assertEquals(true, byId.getValue(2L).hidden)
+        assertEquals(ConflictVariant.FOLD, byId.getValue(2L).variant)
     }
 
     // ==================== 链式冲突分层(v7): 端点衔接课拼成一条,包夹课单独一条 ====================
