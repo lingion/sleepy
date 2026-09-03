@@ -384,7 +384,7 @@ private fun TopBar(
         // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             // v7.10.14: 最左 logo — 点击弹课表切换弹窗, 右缘操作区(加课/分享)对称位
-            // v7.10.16: logo 右边第二个按钮 = 撤回(任何课表数据改动可撤销一次)
+            // v7.10.16: logo 右边第二个按钮 = 撤回 — 仅有可撤回快照时才显示(用户 2026-09-03)
             Row(
                 modifier = Modifier.align(Alignment.CenterStart),
                 verticalAlignment = Alignment.CenterVertically
@@ -394,12 +394,14 @@ private fun TopBar(
                     contentDescriptionRes = R.string.schedule_switch_table,
                     onClick = onSwitchTable
                 )
-                Spacer(modifier = Modifier.width(6.dp))
-                WeekNavButton(
-                    icon = Icons.AutoMirrored.Outlined.Undo,
-                    contentDescriptionRes = R.string.schedule_undo,
-                    onClick = onUndo
-                )
+                if (com.lingion.sleepy.data.undo.UndoManager.hasSnapshot) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    WeekNavButton(
+                        icon = Icons.AutoMirrored.Outlined.Undo,
+                        contentDescriptionRes = R.string.schedule_undo,
+                        onClick = onUndo
+                    )
+                }
             }
             // 翻页三件套(箭头+胶囊+箭头) — 箭头紧贴胶囊
             Row(

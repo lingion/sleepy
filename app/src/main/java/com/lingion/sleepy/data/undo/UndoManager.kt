@@ -1,5 +1,7 @@
 package com.lingion.sleepy.data.undo
 
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 
@@ -23,7 +25,8 @@ data class UndoSnapshot(
  * [restoring] 抑制恢复动作自身的捕获, 防止 undo 生成新的 undo。
  */
 object UndoManager {
-    @Volatile private var slot: UndoSnapshot? = null
+    // mutableStateOf: Compose 读取 hasSnapshot 自动订阅, 撤回按钮随有无快照显隐(用户 2026-09-03)
+    private var slot by androidx.compose.runtime.mutableStateOf<UndoSnapshot?>(null)
     @Volatile private var batchDepth: Int = 0
     @Volatile var restoring: Boolean = false
 
