@@ -1293,22 +1293,19 @@ private suspend fun applyImportPreview(
             onImported()
         }
         ImportApplyMode.AppendAll -> {
-            // 连冲突课一起追加进当前课表 — 不过冲突过滤, 仅保留三层提示(整表导入同策略)
+            // 连冲突课一起追加进当前课表 — 冲突/闸门全部放行, 仅提示(与整表新建同策略)。
+            // 用户 2026-09-03: 该按钮的存在意义就是"冲突也要进来", 剔除即违背语义。
             val cleanCourses = preview.parseResult.courses
             if (cleanCourses.isEmpty()) {
                 onError(context.getString(R.string.import_content_empty))
                 return
             }
-            val survivors = dropThreeLayerCourses(preview.existingCourses, cleanCourses)
-            if (survivors.isEmpty()) {
-                onError(context.getString(R.string.import_all_conflict))
-                return
+            val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
+                .daysExceedingTwoLanes(preview.existingCourses + cleanCourses)
+            if (badDays.isNotEmpty()) {
+                onError(context.getString(R.string.import_three_layers_kept, dayNames(badDays, context)))
             }
-            if (survivors.size < cleanCourses.size) {
-                val droppedDays = conflictDaysBetween(cleanCourses, survivors)
-                onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
-            }
-            repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
             // 节次自动延伸 — 与 AppendNonConflict 同策略
             val existingTable = repo.getTable(preview.targetTableId)
             if (existingTable != null && preview.parseResult.timeJson.isNotBlank()) {
