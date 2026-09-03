@@ -147,10 +147,11 @@ class JwNewSchoolsTest {
     }
 
     @Test
-    fun `real schools json runtime size is 146 original plus Linyi`() {
+    fun `real schools json runtime size is 146 original plus Linyi plus NBT`() {
         val parsed = parse(loadSchoolsJson())
-        assertEquals("原 146 条 + 1 条临沂 = 147(审计块被过滤)", 147, parsed.size)
+        assertEquals("原 146 条 + 1 条临沂 + 1 条浙大宁波理工 = 148(审计块被过滤)", 148, parsed.size)
         assertEquals(1, parsed.count { it.name == "临沂大学" })
+        assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
     }
 
     // -------- 4. 排序约束 --------

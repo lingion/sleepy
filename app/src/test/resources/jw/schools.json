@@ -1061,6 +1061,17 @@
   },
   {
     "sortKey": "Z",
+    "name": "浙大宁波理工学院",
+    "url": "http://jwxt.nit.net.cn/default2.aspx",
+    "type": "zf",
+    "aliases": [
+      "nbt",
+      "宁波理工"
+    ],
+    "sortKeyFull": "zhedaningboligongxueyuan"
+  },
+  {
+    "sortKey": "Z",
     "name": "浙江财经大学",
     "url": "http://fzjh.zufe.edu.cn/jwglxt",
     "type": "zf_new",
