@@ -40,8 +40,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
+import com.lingion.sleepy.ui.component.ChipChoiceRow
 import com.lingion.sleepy.ui.component.DisplayModeOption
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.component.SettingsCard
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -133,47 +135,43 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 SectionHeader(title = stringResource(R.string.appearance_section_display))
             }
 
-            // 课程时间显示: 节次 / 时间
+            // 课程时间显示: 节次 / 时间 — 二选一纯选择, 平铺不折叠(用户 2026-09-03 指令)
             item {
-                SettingsCard(title = stringResource(R.string.settings_display_mode), expanded = "displayMode" in expandedSections, onToggle = { toggleSection("displayMode") }) {
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_display_node),
-                        subtitle = stringResource(R.string.settings_display_node_sub),
-                        selected = displayMode == "node",
-                        onClick = { displayMode = "node"; AppPrefs.setDisplayMode(context, "node"); refreshWidgets() }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_display_time),
-                        subtitle = stringResource(R.string.settings_display_time_sub),
-                        selected = displayMode == "time",
-                        onClick = { displayMode = "time"; AppPrefs.setDisplayMode(context, "time"); refreshWidgets() }
+                SettingsFlatCard(title = stringResource(R.string.settings_display_mode)) {
+                    ChipChoiceRow(
+                        options = listOf(
+                            stringResource(R.string.settings_display_node) to {
+                                displayMode = "node"; AppPrefs.setDisplayMode(context, "node"); refreshWidgets()
+                            },
+                            stringResource(R.string.settings_display_time) to {
+                                displayMode = "time"; AppPrefs.setDisplayMode(context, "time"); refreshWidgets()
+                            }
+                        ),
+                        selectedKey = if (displayMode == "node") 0 else 1
                     )
                 }
             }
 
-            // 网格卡片副信息: 教室 / 教师 / 无（周视图网格卡课程名下方那行；节次信息左栏已有）
+            // 网格卡片副信息: 教室 / 教师 / 无 — 三选一纯选择, 平铺不折叠(周视图网格卡课程名下方那行；节次信息左栏已有)
             item {
-                SettingsCard(title = stringResource(R.string.settings_grid_sub_info), expanded = "gridSubInfo" in expandedSections, onToggle = { toggleSection("gridSubInfo") }) {
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_grid_sub_room),
-                        subtitle = stringResource(R.string.settings_grid_sub_room_sub),
-                        selected = gridSubInfo == "room",
-                        onClick = { gridSubInfo = "room"; AppPrefs.setGridSubInfo(context, "room"); refreshWidgets() }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_grid_sub_teacher),
-                        subtitle = stringResource(R.string.settings_grid_sub_teacher_sub),
-                        selected = gridSubInfo == "teacher",
-                        onClick = { gridSubInfo = "teacher"; AppPrefs.setGridSubInfo(context, "teacher"); refreshWidgets() }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_grid_sub_none),
-                        subtitle = stringResource(R.string.settings_grid_sub_none_sub),
-                        selected = gridSubInfo == "none",
-                        onClick = { gridSubInfo = "none"; AppPrefs.setGridSubInfo(context, "none"); refreshWidgets() }
+                SettingsFlatCard(title = stringResource(R.string.settings_grid_sub_info)) {
+                    ChipChoiceRow(
+                        options = listOf(
+                            stringResource(R.string.settings_grid_sub_room) to {
+                                gridSubInfo = "room"; AppPrefs.setGridSubInfo(context, "room"); refreshWidgets()
+                            },
+                            stringResource(R.string.settings_grid_sub_teacher) to {
+                                gridSubInfo = "teacher"; AppPrefs.setGridSubInfo(context, "teacher"); refreshWidgets()
+                            },
+                            stringResource(R.string.settings_grid_sub_none) to {
+                                gridSubInfo = "none"; AppPrefs.setGridSubInfo(context, "none"); refreshWidgets()
+                            }
+                        ),
+                        selectedKey = when (gridSubInfo) {
+                            "room" -> 0
+                            "teacher" -> 1
+                            else -> 2
+                        }
                     )
                 }
             }
@@ -351,30 +349,33 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                             )
                         }
                     }
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    // 顶卡收窄量滑杆(v6): A 方案=右/下偏移量, C 方案=右缘让宽, 同一设置值
-                    Text(text = stringResource(R.string.settings_conflict_top_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                    Text(text = stringResource(R.string.settings_conflict_top_inset_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "${conflictTopInset.roundToInt()}dp",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colors.primary,
-                            modifier = Modifier.widthIn(min = 52.dp)
-                        )
-                        Slider(
-                            value = conflictTopInset,
-                            onValueChange = { conflictTopInset = it.roundToInt().toFloat() },
-                            onValueChangeFinished = {
-                                AppPrefs.setConflictTopInset(context, conflictTopInset)
-                            },
-                            valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
-                            colors = SliderDefaults.colors(
-                                thumbColor = colors.primary,
-                                activeTrackColor = colors.primary,
-                                inactiveTrackColor = colors.surfaceVariant
+                    // 顶卡收窄量滑杆(v6): 仅叠层偏移/侧边竖轨下显示(用户 2026-09-03 指令) —
+                    // STACK=右/下偏移量, RAIL=右缘让宽, 同一设置值; FOLD 没有顶卡收窄(它有专属折角幅度杆)
+                    if (conflictStyle == "stack" || conflictStyle == "rail") {
+                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        Text(text = stringResource(R.string.settings_conflict_top_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
+                        Text(text = stringResource(R.string.settings_conflict_top_inset_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "${conflictTopInset.roundToInt()}dp",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colors.primary,
+                                modifier = Modifier.widthIn(min = 52.dp)
                             )
-                        )
+                            Slider(
+                                value = conflictTopInset,
+                                onValueChange = { conflictTopInset = it.roundToInt().toFloat() },
+                                onValueChangeFinished = {
+                                    AppPrefs.setConflictTopInset(context, conflictTopInset)
+                                },
+                                valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = colors.primary,
+                                    activeTrackColor = colors.primary,
+                                    inactiveTrackColor = colors.surfaceVariant
+                                )
+                            )
+                        }
                     }
                 }
             }
@@ -404,29 +405,27 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 }
             }
 
-            // 启动默认页: full / cards(仅 App 内偏好, 不涉及小组件, 无需 refreshWidgets)
+            // 启动默认页: full / cards — 二选一纯选择, 平铺不折叠(仅 App 内偏好, 不涉及小组件, 无需 refreshWidgets)
             item {
-                SettingsCard(title = stringResource(R.string.settings_start_view), expanded = "startView" in expandedSections, onToggle = { toggleSection("startView") }) {
+                SettingsFlatCard(title = stringResource(R.string.settings_start_view)) {
                     Text(text = stringResource(R.string.settings_start_view_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_start_view_full),
-                        subtitle = stringResource(R.string.view_full),
-                        selected = startView == "full",
-                        onClick = { startView = "full"; AppPrefs.setStartView(context, "full") }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_start_view_cards),
-                        subtitle = stringResource(R.string.view_cards),
-                        selected = startView == "cards",
-                        onClick = { startView = "cards"; AppPrefs.setStartView(context, "cards") }
+                    ChipChoiceRow(
+                        options = listOf(
+                            stringResource(R.string.settings_start_view_full) to {
+                                startView = "full"; AppPrefs.setStartView(context, "full")
+                            },
+                            stringResource(R.string.settings_start_view_cards) to {
+                                startView = "cards"; AppPrefs.setStartView(context, "cards")
+                            }
+                        ),
+                        selectedKey = if (startView == "full") 0 else 1
                     )
                 }
             }
 
-            // 课程胶囊统一底色: 开关(App 侧独立, 不刷新小组件)
+            // 课程胶囊统一底色: 单开关, 平铺直露不折叠(App 侧独立, 不刷新小组件)
             item {
-                SettingsCard(title = stringResource(R.string.settings_course_colorless), expanded = "courseColorless" in expandedSections, onToggle = { toggleSection("courseColorless") }) {
+                SettingsFlatCard(title = stringResource(R.string.settings_course_colorless)) {
                     SettingToggleRow(
                         label = stringResource(R.string.settings_course_colorless),
                         subtitle = stringResource(R.string.settings_course_colorless_sub),

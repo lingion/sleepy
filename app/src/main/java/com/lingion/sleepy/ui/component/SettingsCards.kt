@@ -10,6 +10,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -39,6 +42,8 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 /**
  * 设置页公共卡片组件 — 自 AppearanceScreen 抽出(外观/通用两页共用):
  * SectionHeader 分组标题 / SettingsCard 折叠卡 / DisplayModeOption 单选项 / SettingToggleRow 开关行。
+ * SettingsFlatCard: 不折叠的平铺卡 — 内容只是简单选择或单个开关的设置项专用(用户 2026-09-03 指令:
+ * 双选/三选纯选择、单开关项禁折叠, 直接露出)。
  */
 
 @Composable
@@ -86,6 +91,33 @@ fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content
                 Spacer(modifier = Modifier.height(4.dp))
                 content()
             }
+        }
+    }
+}
+
+/**
+ * 平铺设置卡(不折叠) — 标题行 + 内容直接露出。
+ * 用于内容为纯选项选择或单个开关的设置项; 有滑杆/多段逻辑的仍用 SettingsCard 折叠。
+ */
+@Composable
+fun SettingsFlatCard(title: String, content: @Composable ColumnScope.() -> Unit) {
+    val colors = SleepyTheme.colors
+    Column(
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(text = title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+        content()
+    }
+}
+
+/** chip 选择行 — 平铺卡内的单选组, 复用 HolidayStyleChip 纯色块(禁描边规则)。 */
+@OptIn(ExperimentalLayoutApi::class)
+@Composable
+fun ChipChoiceRow(options: List<Pair<String, () -> Unit>>, selectedKey: Int) {
+    FlowRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        options.forEachIndexed { index, (label, onClick) ->
+            HolidayStyleChip(label = label, selected = index == selectedKey, onClick = onClick)
         }
     }
 }
