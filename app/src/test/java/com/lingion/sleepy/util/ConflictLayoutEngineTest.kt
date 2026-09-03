@@ -221,12 +221,12 @@ class ConflictLayoutEngineTest {
     fun layout_fully_contained_inner_course_hidden() {
         // 完全包含: 1-5(step5) 内嵌 2-3(step2)。主课判定序 step 降 → 1-5 顶层,
         // 2-3 露出集 = {2,3} − {1..5} = ∅ → hidden=true
-        // 视觉修订 v3: FOLD 同起点闸门 — 内嵌课起点(2)≠上层起点(1)→ 回落 STACK
+        // v7.10.16f: fold 永远折角(用户拍板) — 起点不齐不再回落 STACK
         val outer = course(id = 1, day = 2, startNode = 1, step = 5)
         val inner = course(id = 2, day = 2, startNode = 2, step = 2)
         val byId = layoutById(listOf(outer, inner), "fold")
         assertEquals(LaidOutCourse(outer, 0, false, ConflictVariant.NONE), byId.getValue(1L))
-        assertEquals(LaidOutCourse(inner, 1, true, ConflictVariant.STACK), byId.getValue(2L))
+        assertEquals(LaidOutCourse(inner, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
     }
 
     @Test
@@ -695,31 +695,28 @@ class ConflictLayoutEngineTest {
         }
     }
 
-    // ============================ FOLD 同起点闸门(视觉修订 v3) ============================
+    // ==================== FOLD 永远折角(v7.10.16f, 用户拍板) ====================
 
     @Test
     fun foldGate_same_start_keeps_fold() {
-        // 同起点(1-3 与 1-3)→ FOLD 保留
+        // 同起点(1-3 与 1-3)→ FOLD
         val a = course(id = 1, day = 1, startNode = 1, step = 3)
         val b = course(id = 2, day = 1, startNode = 1, step = 3)
         assertEquals(ConflictVariant.FOLD, layoutById(listOf(a, b), "fold").getValue(2L).variant)
     }
 
     @Test
-    fun foldGate_different_start_falls_back_to_stack() {
-        // 起点错位 + hidden: 顶层 2-4(step3),底层 2-4(step3, id 更大)@maxNode=3
-        // → 底层界内 2..3 全被 2..3 覆盖 → hidden;若起点同(2=2)则 FOLD。
-        // 再叠加 maxNode=2 裁剪: 界内两课均 2..2,同起点仍 FOLD。
-        // 真正的错位构造: 顶层 2-4 与底层 3-4(id 更大),maxNode=3:
-        //   primaryOrder: step 同 3 → startNode 升 → 顶层=2-4(id1),底层=3-4(id2)
-        //   底层 clamp 后 3..3 ⊆ 顶层 2..3 → hidden,起点 3≠2 → STACK
+    fun foldGate_different_start_still_folds() {
+        // v7.10.16f: 起点错位也 FOLD — 回落规则已删除。
+        // 构造: 顶层 2-4 与底层 3-4(id 更大),maxNode=3:
+        //   底层 clamp 后 3..3 ⊆ 顶层 2..3 → hidden,起点 3≠2 → 仍 FOLD
         val top = course(id = 1, day = 1, startNode = 2, step = 3)
         val under = course(id = 2, day = 1, startNode = 3, step = 2)
         val byId = layoutById(listOf(top, under), "fold", maxNode = 3)
         assertEquals(0, byId.getValue(1L).zRank)
         assertEquals(true, byId.getValue(2L).hidden)
-        assertEquals(ConflictVariant.STACK, byId.getValue(2L).variant)
-        // 对照组: 同段完全重叠(1-3 与 1-3)同起点 → FOLD 不回落
+        assertEquals(ConflictVariant.FOLD, byId.getValue(2L).variant)
+        // 对照组: 完全重叠 → 同样 FOLD
         val sameA = course(id = 3, day = 2, startNode = 1, step = 3)
         val sameB = course(id = 4, day = 2, startNode = 1, step = 3)
         val byIdSame = layoutById(listOf(sameA, sameB), "fold")

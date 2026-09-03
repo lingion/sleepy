@@ -183,7 +183,6 @@ object ConflictLayoutEngine {
                 variant = if (!hidden) ConflictVariant.NONE
                 else variantFor(
                     style, layerCount,
-                    sameStartWithAbove(rank, zOrdered, ::nodesOf),
                     chainMode = hasChainLayer && ownLayer!!.size >= 2
                 ),
                 chainFront = chainFront
@@ -192,13 +191,11 @@ object ConflictLayoutEngine {
     }
 
     /**
-     * hidden 课的 variant 映射(视觉修订 v3,用户 2026-09-01 定版;v7.2 链式分支):
-     * rail 直配(A/C 全场景通用);FOLD 仅当与 z 序紧邻上层课**同起点**可用
-     * (起点对不齐 → 缺角处露不出对齐的角,只有 A/C 能用)→ 否则回落 STACK;
-     * stack 样式 N≥3 合流 FOLD 的规则保留,但同样受同起点闸门约束。
-     * 链式模式(chainMode=true): hidden 课是被链组全遮的重叠者,与用户 2026-09-01
-     * 链式折角定版一致——「哪怕 AC 连起来 B 待在后面,A/C 都折角,B 折角点击切换」,
-     * 折角不再要求同起点(fold 样式与 N≥3 合流均直配 FOLD)。
+     * hidden 课的 variant 映射(v7.10.16f, 用户 2026-09-03 拍板):
+     * rail 直配;**fold 永远 FOLD** — 删除 v3 的同起点回落
+     * (「折角样式下肯定是永远折角的」;起点不齐的错位缺口是折角固有形态)。
+     * stack 样式 N≥3 图层合流 FOLD 保留(不再看同起点)。
+     * 链式模式(chainMode=true): hidden 课是被链组全遮的重叠者,按样式直配。
      *
      * v7.6 图层语义: clusterSize 形参 = **图层数**(链组整组算 1 层,单课算 1 层),
      * 不是裸课数——「分组之后这两节就绑定在一个图层了」(用户 2026-09-02)。
@@ -208,26 +205,16 @@ object ConflictLayoutEngine {
     private fun variantFor(
         style: String,
         clusterSize: Int,
-        sameStartWithAbove: Boolean,
         chainMode: Boolean = false
     ): ConflictVariant = when {
         style == "rail" -> ConflictVariant.RAIL
-        // 链式模式: hidden 课=被链组全遮的重叠者,直接按样式走(stack→STACK 条带,
-        // fold→FOLD),不做 N≥3 合流、不看同起点——链式形态由链组决定
+        // 链式模式: hidden 课=被链组全遮的重叠者,直接按样式走
         chainMode -> if (style == "fold") ConflictVariant.FOLD else ConflictVariant.STACK
-        style == "fold" -> if (sameStartWithAbove) ConflictVariant.FOLD else ConflictVariant.STACK
-        clusterSize >= 3 -> if (sameStartWithAbove) ConflictVariant.FOLD else ConflictVariant.STACK
+        // v7.10.16f(用户 2026-09-03): 折角样式永远折角 — 删除同起点回落
+        // (起点不齐时缺口处下层课错位是折角样式的固有形态, 用户拍板接受)
+        style == "fold" -> ConflictVariant.FOLD
+        clusterSize >= 3 -> ConflictVariant.FOLD
         else -> ConflictVariant.STACK
-    }
-
-    /** hidden 课与其 z 序紧邻上层课起点是否一致(clamp 后;无上层课 → false)。 */
-    private fun sameStartWithAbove(
-        rank: Int,
-        zOrdered: List<CourseEntity>,
-        nodesOf: (CourseEntity) -> IntRange
-    ): Boolean {
-        val above = zOrdered.getOrNull(rank - 1) ?: return false
-        return nodesOf(above).first == nodesOf(zOrdered[rank]).first
     }
 
     /**
