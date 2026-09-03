@@ -4,6 +4,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.intOrNull
 import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
@@ -291,13 +292,16 @@ object ScheduleParser {
      */
     private fun harvestTimeJsonFromTableInfo(root: kotlinx.serialization.json.JsonObject): Pair<String, Int> {
         val tableInfo = root["tableInfo"]?.jsonObject ?: return "" to 0
+        // 声明节次数(tableInfo.nodesPerDay): Sleepy 导出必带 — 作息行数可能少于声明
+        // (稀疏 timeJson 只存改动行), 导入不得把声明压掉(v7.10.16k 无损闭环)
+        val declared = tableInfo["nodesPerDay"]?.jsonPrimitive?.intOrNull ?: 0
         // Sleepy 自家格式: time 字段就是 timeJson
         tableInfo["time"]?.jsonPrimitive?.contentOrNull?.takeIf { it.isNotBlank() }?.let {
             val nodes = TimeTableUtils.parseNodes(it)
-            if (nodes.isNotEmpty()) return it to nodes.last().node
+            if (nodes.isNotEmpty()) return it to maxOf(nodes.last().node, declared)
         }
         // WakeUp 原生: timeList 数组
-        val timeList = tableInfo["timeList"]?.jsonArray ?: return "" to 0
+        val timeList = tableInfo["timeList"]?.jsonArray ?: return "" to declared
         val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
         for (el in timeList) {
             val o = el.jsonObject
@@ -306,8 +310,8 @@ object ScheduleParser {
             val et = o["endTime"]?.jsonPrimitive?.content?.let { parseHmLenient(it) } ?: continue
             if (node >= 1 && st.isBefore(et)) nodeTimes[node] = st to et
         }
-        if (nodeTimes.isEmpty()) return "" to 0
-        return buildTimeJson(nodeTimes) to nodeTimes.lastKey()
+        if (nodeTimes.isEmpty()) return "" to declared
+        return buildTimeJson(nodeTimes) to maxOf(nodeTimes.lastKey(), declared)
     }
 
     /** "08:00" / "8:00" / "0800" → LocalTime; 非法 null */

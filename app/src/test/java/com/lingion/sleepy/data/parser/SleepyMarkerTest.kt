@@ -234,7 +234,8 @@ class SleepyMarkerTest {
         val r = ScheduleParser.parse(exported, 0L).getOrThrow()
         assertEquals(1, r.courses.size)
         assertTrue(r.timeJson.isNotBlank())
-        assertEquals(2, r.nodesPerDay)
+        // v7.10.16k 无损: 声明 nodesPerDay=3 > time 行数 2 → 取声明 3(稀疏 timeJson 不丢声明)
+        assertEquals(3, r.nodesPerDay)
     }
 
     @Test

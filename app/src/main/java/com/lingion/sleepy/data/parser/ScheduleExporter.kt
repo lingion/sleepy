@@ -153,7 +153,14 @@ object ScheduleExporter {
             }
             sb.appendLine("SUMMARY:${escapeIcs(c.courseName)}")
             if (c.room.isNotBlank()) sb.appendLine("LOCATION:${escapeIcs(c.room)}")
-            if (c.teacher.isNotBlank()) sb.appendLine("DESCRIPTION:老师：${escapeIcs(c.teacher)}")
+            // v7.10.16k 无损闭环: DESCRIPTION 写"第X-Y节"(字面 \n 转义换行, 与 WakeUp 格式一致:
+            // 第X - Y节\n教室\n教师)。旧版只写"老师：X", 导入端读不到节次,
+            // 只能按钟点估算 → 11-13节被估成第1节。
+            val ownTimeLine = if (c.ownTime && c.startTime.isNotBlank() && c.endTime.isNotBlank())
+                "\\n${c.startTime}-${c.endTime}" else ""
+            sb.appendLine("DESCRIPTION:第${c.startNode} - ${c.startNode + c.step - 1}节" +
+                (if (c.room.isNotBlank()) "\\n${escapeIcs(c.room)}" else "") +
+                (if (c.teacher.isNotBlank()) "\\n${escapeIcs(c.teacher)}" else "") + ownTimeLine)
             sb.appendLine("END:VEVENT")
         }
         sb.appendLine("END:VCALENDAR")
