@@ -404,7 +404,6 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
             item {
                 SettingsFlatCard(
                     title = stringResource(R.string.settings_start_view),
-                    subtitle = stringResource(R.string.settings_start_view_sub),
                     options = listOf(
                         stringResource(R.string.settings_start_view_full),
                         stringResource(R.string.settings_start_view_cards)
@@ -417,12 +416,11 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 )
             }
 
-            // 课程胶囊统一底色: 单开关, 平铺直露不折叠(App 侧独立, 不刷新小组件)
+            // 课程胶囊统一底色: 仅标题 + 开关(用户 2026-09-03 指令: 说明文字去掉), App 侧独立不刷新小组件
             item {
                 SettingsFlatCard(title = stringResource(R.string.settings_course_colorless)) {
                     SettingToggleRow(
                         label = stringResource(R.string.settings_course_colorless),
-                        subtitle = stringResource(R.string.settings_course_colorless_sub),
                         checked = courseColorless,
                         onCheckedChange = { courseColorless = it; AppPrefs.setCourseColorless(context, it) }
                     )
@@ -441,15 +439,11 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
+                        // 仅标题(用户 2026-09-03 指令: 入口说明文字去掉)
                         Text(
                             text = stringResource(R.string.settings_holiday_title),
                             style = MaterialTheme.typography.titleSmall,
                             color = colors.onSurface
-                        )
-                        Text(
-                            text = stringResource(R.string.settings_holiday_entry_sub),
-                            style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
                         )
                     }
                     Icon(

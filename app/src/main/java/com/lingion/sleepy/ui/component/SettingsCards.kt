@@ -144,11 +144,10 @@ fun SettingsFlatCard(
 }
 
 /**
- * 设置页 tab 切换器 — 一整块圆角容器 + 色块在其上滑动(用户 2026-09-03 指令)。
- * 容器 surfaceContainerHigh 圆角胶囊; 滑块 primaryContainer 圆角胶囊, 位置 spring 动画平移。
- * 与 SegmentedSwitcher(主页等分撑满、逐项变色)不同: 色块是单个 thumb 从旧选中段滑到新选中段,
- * 且按内容收缩, 放设置卡标题行右侧。
- * 实现: 每段测宽(thumb 偏移 = 前段宽度和), thumb 画在文字层之下(z 序), 点击整段接 noRippleClickable。
+ * 设置页 tab 切换器 — 视觉规范与课表页 SegmentedSwitcher(周视图/网格切换)一致(用户 2026-09-03 指令):
+ * 同为 14dp 圆角容器 + secondaryContainer 滑块; 区别仅在布局: 段宽按内容收缩(非 weight 等分),
+ * 以便放进设置卡标题行右侧。滑块 = 单个 thumb spring 平移, 不是逐项变色。
+ * 实现: 各段 onSizeChanged 测宽(thumb 偏移 = 前段宽度和), thumb Box 在文字层之下。
  */
 @Composable
 fun SettingsTabSwitcher(options: List<String>, selectedKey: Int, onSelect: (Int) -> Unit) {
@@ -165,9 +164,9 @@ fun SettingsTabSwitcher(options: List<String>, selectedKey: Int, onSelect: (Int)
 
     Row(
         modifier = Modifier
-            .clip(RoundedCornerShape(percent = 50))
-            .background(colors.surfaceContainerHigh)
-            .padding(3.dp),
+            .clip(RoundedCornerShape(14.dp))
+            .background(colors.surfaceContainer)
+            .padding(4.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
@@ -175,8 +174,8 @@ fun SettingsTabSwitcher(options: List<String>, selectedKey: Int, onSelect: (Int)
                 .offset(x = thumbOffset)
                 .width(thumbWidth)
                 .height(IntrinsicSize.Min)
-                .clip(RoundedCornerShape(percent = 50))
-                .background(colors.primaryContainer)
+                .clip(RoundedCornerShape(10.dp))
+                .background(colors.secondaryContainer)
         )
         options.forEachIndexed { index, label ->
             val selected = index == selectedKey
@@ -184,13 +183,15 @@ fun SettingsTabSwitcher(options: List<String>, selectedKey: Int, onSelect: (Int)
                 modifier = Modifier
                     .onSizeChanged { size -> if (size.width != itemWidths[index]) itemWidths = itemWidths.copyOf().also { it[index] = size.width } }
                     .noRippleClickable { onSelect(index) }
-                    .padding(horizontal = 12.dp, vertical = 6.dp),
+                    .padding(horizontal = 16.dp, vertical = 11.dp),
                 contentAlignment = Alignment.Center
             ) {
                 Text(
                     text = label,
-                    style = MaterialTheme.typography.labelLarge,
-                    color = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+                    style = MaterialTheme.typography.labelLarge.copy(
+                        fontWeight = if (selected) FontWeight.SemiBold else FontWeight.Medium
+                    ),
+                    color = if (selected) colors.onSecondaryContainer else colors.onSurfaceVariant
                 )
             }
         }
@@ -210,12 +211,14 @@ fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClic
 }
 
 @Composable
-fun SettingToggleRow(label: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, subtitle: String? = null) {
     val colors = SleepyTheme.colors
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-            Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            if (subtitle != null) {
+                Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            }
         }
         Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
     }
