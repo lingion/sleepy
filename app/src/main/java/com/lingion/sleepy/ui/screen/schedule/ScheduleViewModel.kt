@@ -120,6 +120,30 @@ class ScheduleViewModel : ViewModel() {
         }
     }
 
+    /**
+     * v7.10.15 创建课表副本 — 全量复制表配置+课程, 新副本不接管默认表也不切选中,
+     * 命名沿用导入路径的去重规则(原名+"2"/"3"...)。
+     */
+    fun duplicateTable(id: Long) {
+        viewModelScope.launch {
+            val source = repo.getTable(id) ?: return@launch
+            val courses = repo.getCourses(id)
+            val existingNames = repo.getAllTables().map { it.name }
+            var index = 2
+            var name = "${source.name}2"
+            while (name in existingNames) { index++; name = "${source.name}$index" }
+            val newId = repo.insertTable(
+                source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis())
+            )
+            if (courses.isNotEmpty()) {
+                // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑
+                val groupMap = courses.associate { it.groupId to java.util.UUID.randomUUID().toString() }
+                repo.insertCourses(courses.map { it.copy(id = 0, groupId = groupMap[it.groupId] ?: it.groupId, tableId = newId) })
+            }
+            com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(com.lingion.sleepy.SleepyApp.get())
+        }
+    }
+
     /** Create a new empty table with auto-generated name.
      *  @param commitSelection if true (default), immediately switches the selected table
      *         to the new one. If false, the table is inserted but selection is not changed —

@@ -46,6 +46,8 @@
     <string name="all_tables">所有课表</string>
     <string name="schedule_switch_table">切换课表</string>
     <string name="all_tables_new">新建课表</string>
+    <string name="all_tables_duplicate">创建副本</string>
+    <string name="table_created_at">导入于 %1$s</string>
     <string name="edit_table_title">编辑课表</string>
     <string name="edit_table_basic_info">基础信息</string>
     <string name="edit_table_name">课表名称</string>

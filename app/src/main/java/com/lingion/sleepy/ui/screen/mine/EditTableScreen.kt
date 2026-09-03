@@ -305,8 +305,9 @@ fun EditTableScreen(
                 }
             }
 
-            // 删除（新建未保存的表不显示此按钮——退出即丢弃; 最后一张表禁删, 防呆)
-            if (pendingNewTableId == null && state.tables.size > 1) {
+            // 删除（新建未保存的表不显示此按钮——退出即丢弃; 用户 2026-09-03 指令: 允许删完,
+            // 最后一张表也可删 — ScheduleScreen 的真空态(EmptyState)兜底)
+            if (pendingNewTableId == null) {
                 item {
                     Button(
                         onClick = { showDeleteConfirm = true },

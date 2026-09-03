@@ -19,6 +19,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.ContentCopy
 import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -51,6 +52,7 @@ fun AllTablesScreen(
     onOpenEditTable: (Long) -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
+    val context = androidx.compose.ui.platform.LocalContext.current
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
 
@@ -128,6 +130,28 @@ fun AllTablesScreen(
                             text = if (isCurrent) stringResource(R.string.current_table_week, state.currentWeek) else stringResource(R.string.table_start_date, table.startDate),
                             style = MaterialTheme.typography.bodySmall,
                             color = subtitleColor
+                        )
+                        // v7.10.15 每表显示导入时间(年月日 时分秒) — 方便用户分辨多张课表
+                        if (table.createdAt > 0) {
+                            Text(
+                                text = stringResource(
+                                    R.string.table_created_at,
+                                    java.time.Instant.ofEpochMilli(table.createdAt)
+                                        .atZone(java.time.ZoneId.systemDefault())
+                                        .format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss"))
+                                ),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = subtitleColor
+                            )
+                        }
+                    }
+                    // v7.10.15 duplicate 图标 — 创建课表副本, 置于设置图标左边
+                    IconButton(onClick = { viewModel.duplicateTable(table.id) }) {
+                        Icon(
+                            Icons.Outlined.ContentCopy,
+                            contentDescription = stringResource(R.string.all_tables_duplicate),
+                            tint = colors.onSurfaceVariant,
+                            modifier = Modifier.size(20.dp)
                         )
                     }
                     IconButton(onClick = { onOpenEditTable(table.id) }) {

@@ -39,6 +39,8 @@
     <string name="all_tables">Todos los horarios</string>
     <string name="schedule_switch_table">Cambiar horario</string>
     <string name="all_tables_new">Nuevo horario</string>
+    <string name="all_tables_duplicate">Duplicar</string>
+    <string name="table_created_at">Importado %1$s</string>
     <string name="edit_table_title">Editar horario</string>
     <string name="edit_table_basic_info">Información básica</string>
     <string name="edit_table_name">Nombre del horario</string>

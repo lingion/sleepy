@@ -39,6 +39,8 @@
     <string name="all_tables">所有課表</string>
     <string name="schedule_switch_table">切換課表</string>
     <string name="all_tables_new">建立課表</string>
+    <string name="all_tables_duplicate">建立副本</string>
+    <string name="table_created_at">匯入於 %1$s</string>
     <string name="edit_table_title">編輯課表</string>
     <string name="edit_table_basic_info">基本資訊</string>
     <string name="edit_table_name">課表名稱</string>
