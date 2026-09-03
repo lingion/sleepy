@@ -271,10 +271,14 @@ fun ScheduleScreen(
         }
 
         // 详情 Bottom Sheet
+        // v7.10.16q: allCourses 必须与网格同周域(state.selectedWeek 过滤) —
+        // 此前传全周课程, ICS 往返/换教师拆出的周次不相交同行(如周四 8-10 的
+        // 周1-4 与 周6-13 两行)被当成同时存在 → 幽灵图层 → 误弹"选择默认置顶"。
+        // 网格一直传的是 inWeek 过滤后的 weekCourses, 弹窗对齐同一语义。
         CourseDetailSheet(
             course = selectedCourse,
             timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
-            allCourses = state.courses,
+            allCourses = state.courses.filter { it.inWeek(state.selectedWeek) },
             onDismiss = { selectedCourse = null },
             onEdit = { course ->
                 selectedCourse = null
