@@ -1282,17 +1282,21 @@ private suspend fun applyImportPreview(
             )
             // 当前课表原课 + 导入课程合并导入新课表(跳过与原课冲突的)
             // v7.10.12: 合并后同样过三层闸门
+            // v7.10.16i 修复(用户 2026-09-03「新课表是空的」): dropThreeLayerCourses 只返回
+            // candidates(导入课)幸存者, keepers(老课)不在返回值里 — 旧实现直接插 gated
+            // 导致老课一张不进新表; 全冲突导入时 cleanIncoming 为空 → 新表 0 门课。
+            // 语义: 新表 = 老课全量 + 导入课过闸幸存者。
             val cleanIncoming = incoming.courses.filterNot { inc ->
                 preview.existingCourses.any { existing -> coursesConflict(inc, existing) }
             }
             val oldCourses = base?.let { repo.getCourses(it.id) } ?: emptyList()
             val allCourses = oldCourses + cleanIncoming
             val gated = dropThreeLayerCourses(oldCourses, cleanIncoming)
-            if (gated.size < allCourses.size) {
-                val droppedDays = conflictDaysBetween(allCourses, gated)
+            if (gated.size < cleanIncoming.size) {
+                val droppedDays = conflictDaysBetween(cleanIncoming, gated)
                 onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
             }
-            repo.insertCourses(gated.map { it.copy(id = 0, tableId = newTableId) })
+            repo.insertCourses((oldCourses + gated).map { it.copy(id = 0, tableId = newTableId) })
             repo.setDefault(newTableId)
             onImported()
         }

@@ -98,7 +98,9 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun setDefault(id: Long) {
-        captureForUndo()
+        // v7.10.16i 不捕获快照: 切表(选择哪个表是当前表)是导航动作,不是课表数据改动 —
+        // 捕获会让撤回键亮起、点了把用户切回原表(用户 2026-09-03「撤回键不是返回键」)。
+        // 导入建新表路径的快照由同批内的 insertTable/insertCourses 捕获, 不受影响。
         tableDao.setDefault(id)
         onDataChanged()
     }
