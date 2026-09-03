@@ -3,7 +3,9 @@ package com.lingion.sleepy.data.repository
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.SleepyApp
+import androidx.room.withTransaction
 import com.lingion.sleepy.widget.WidgetUpdater
 import kotlinx.coroutines.flow.Flow
 
@@ -16,6 +18,41 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     private val courseDao = db.courseDao()
     private val tableDao = db.timeTableDao()
+
+    // ========== v7.10.16 单级撤回 ==========
+
+    val canUndo: Boolean get() = UndoManager.hasSnapshot
+
+    /**
+     * 公开写方法执行前调用 — 拍下改动前的全库状态。
+     * 复合动作(如导入)入口先 [UndoManager.beginBatch], 批内只保首个快照=动作前时点。
+     */
+    private suspend fun captureForUndo() {
+        UndoManager.capture(
+            tables = tableDao.getAll(),
+            courses = courseDao.getAll(),
+            defaultTableId = tableDao.getDefault()?.id
+        )
+    }
+
+    /** 撤回最近一次改动: 事务内清两表→重插快照→恢复 default → 刷 widget/通知。false = 无可撤回 */
+    suspend fun restoreLastSnapshot(): Boolean {
+        val snap = UndoManager.poll() ?: return false
+        UndoManager.restoring = true
+        try {
+            db.withTransaction {
+                courseDao.deleteAll()
+                tableDao.deleteAll()
+                courseDao.insertAll(snap.courses)
+                tableDao.insertAll(snap.tables)
+                snap.defaultTableId?.let { tableDao.setDefault(it) }
+            }
+        } finally {
+            UndoManager.restoring = false
+        }
+        onDataChanged()
+        return true
+    }
 
     // ========== TimeTable ==========
 
@@ -30,6 +67,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun getDefaultTable(): TimeTableEntity? = tableDao.getDefault()
 
     suspend fun insertTable(table: TimeTableEntity): Long {
+        captureForUndo()
         val id = tableDao.insert(table)
         if (table.isDefault || tableDao.count() == 1) {
             tableDao.setDefault(id)
@@ -38,11 +76,13 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun updateTable(table: TimeTableEntity) {
+        captureForUndo()
         tableDao.update(table)
         onDataChanged()
     }
 
     suspend fun deleteTable(id: Long) {
+        captureForUndo()
         // 删除前先取该表全部课程 id：tableDao.deleteById 靠外键 CASCADE 级联删课程，
         //   删完后这些 id 已不在库里，scheduleAll → cancelAll 按"现存课程"枚举 cancel 不到它们，
         //   当天已排的课程级课前闹钟（RC_BEFORE_CLASS_BASE+cid）会残留到点继续响。
@@ -56,6 +96,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun setDefault(id: Long) {
+        captureForUndo()
         tableDao.setDefault(id)
         onDataChanged()
     }
@@ -78,12 +119,14 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun getCourse(id: Long): CourseEntity? = courseDao.getById(id)
 
     suspend fun insertCourse(course: CourseEntity): Long {
+        captureForUndo()
         val id = courseDao.insert(course)
         onDataChanged()
         return id
     }
 
     suspend fun insertCourses(courses: List<CourseEntity>): List<Long> {
+        captureForUndo()
         // 导入时以规范化课程名为身份；时间、教师、教室只属于课程的一个时段。
         val withGroupIds = assignGroupIds(courses)
         val ids = courseDao.insertAll(withGroupIds)
@@ -92,6 +135,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun updateCourse(course: CourseEntity) {
+        captureForUndo()
         courseDao.update(course)
         onDataChanged()
     }
@@ -104,6 +148,7 @@ class ScheduleRepository(private val db: AppDatabase) {
      *  防呆: groupId 空串(早期版本导入的存量数据)禁止走组替换 — 否则 DELETE WHERE groupId=''
      *  会把该表全部空组课程一起删掉。空组时退化为逐条插入。 */
     suspend fun updateCourseGroup(tableId: Long, groupId: String, newCourses: List<CourseEntity>) {
+        captureForUndo()
         if (groupId.isBlank()) {
             courseDao.insertAll(newCourses)
             onDataChanged()
@@ -114,12 +159,14 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     suspend fun deleteCourse(id: Long) {
+        captureForUndo()
         courseDao.deleteById(id)
         onDataChanged()
     }
 
     /** 删除同 groupId 全部记录。防呆: 空 groupId 拒删(否则整表空组课程全没了) */
     suspend fun deleteCourseGroup(tableId: Long, groupId: String) {
+        captureForUndo()
         if (groupId.isBlank()) return
         courseDao.deleteByGroupId(tableId, groupId)
         onDataChanged()
@@ -131,6 +178,7 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     /** 覆盖式导入（先删后插） */
     suspend fun replaceCourses(tableId: Long, courses: List<CourseEntity>) {
+        captureForUndo()
         val withGroupIds = assignGroupIds(courses)
         courseDao.replaceAll(tableId, withGroupIds)
         onDataChanged()

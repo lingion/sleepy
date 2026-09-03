@@ -30,6 +30,14 @@ interface CourseDao {
     @Query("DELETE FROM courses WHERE tableId = :tableId AND groupId = :groupId")
     suspend fun deleteByGroupId(tableId: Long, groupId: String)
 
+    /** v7.10.16 撤回恢复用 — 清空全表 */
+    @Query("DELETE FROM courses")
+    suspend fun deleteAll()
+
+    /** v7.10.16 撤回快照用 — 全库课程 */
+    @Query("SELECT * FROM courses")
+    suspend fun getAll(): List<CourseEntity>
+
     @Query("SELECT * FROM courses WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): CourseEntity?
 

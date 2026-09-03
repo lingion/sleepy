@@ -1177,6 +1177,10 @@ private suspend fun applyImportPreview(
     onError: (String) -> Unit
 ) {
     val repo = SleepyApp.get().repository
+    // v7.10.16 撤回: 整个导入是一个动作 — 批内只保首快照, 撤回一次回退到导入前。
+    // try/finally 收口: 分支里的 early return 也要退出批边界。
+    com.lingion.sleepy.data.undo.UndoManager.beginBatch()
+    try {
     // 应用约定 startDate=周一；用户在确认框可能手填非周一日期，落库前归一（issue #5）
     val confirmedStartDate = DateUtils.normalizeStartDate(confirmedStartDateRaw)
     when (mode) {
@@ -1317,6 +1321,10 @@ private suspend fun applyImportPreview(
             }
             onImported()
         }
+    }
+    } finally {
+        // 批边界收口 — 无论哪个分支 return, 撤回批都到此结束
+        com.lingion.sleepy.data.undo.UndoManager.endBatch()
     }
 }
 

@@ -14,11 +14,19 @@ interface TimeTableDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insert(table: TimeTableEntity): Long
 
+    /** v7.10.16 撤回恢复用 — 整批重插 */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAll(tables: List<TimeTableEntity>)
+
     @Update
     suspend fun update(table: TimeTableEntity)
 
     @Query("DELETE FROM time_tables WHERE id = :id")
     suspend fun deleteById(id: Long)
+
+    /** v7.10.16 撤回恢复用 — 清空全表 */
+    @Query("DELETE FROM time_tables")
+    suspend fun deleteAll()
 
     @Query("SELECT * FROM time_tables WHERE id = :id LIMIT 1")
     suspend fun getById(id: Long): TimeTableEntity?
