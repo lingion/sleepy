@@ -1264,39 +1264,48 @@ private suspend fun applyImportPreview(
             // 当前课表 + 导入数据合并 → 新课表(用户命名)
             val base = repo.getTable(preview.targetTableId)
             val incoming = preview.parseResult
-            val mergedTimeJson = TimeTableUtils.extendTimeJsonWith(
-                base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
-                incoming.timeJson.ifBlank { base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON }
-            )
+            // v7.10.16j: 时间表 = 用户在确认框里编辑的 confirmedTimeJson 优先 —
+            // 用户拓到 13 节就是 13 节;确认框里没动则回落 merge(导入作息, 老表作息)。
+            // 旧实现只 merge(incoming.timeJson, base.timeJson), confirmedTimeJson 根本
+            // 没传进来 → 用户在确认框拓节次完全无效。
+            val mergedTimeJson = confirmedTimeJson.ifBlank {
+                TimeTableUtils.extendTimeJsonWith(
+                    base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
+                    incoming.timeJson.ifBlank { base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON }
+                )
+            }
             val mergedRows = TimeTableUtils.parseTimeSlotRows(mergedTimeJson)
             val newTableId = repo.insertTable(
                 TimeTableEntity(
                     name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
                     maxWeek = base?.maxWeek ?: 20,
-                    nodesPerDay = mergedRows.size,
+                    nodesPerDay = if (mergedRows.isNotEmpty()) mergedRows.size else base?.nodesPerDay ?: 12,
                     timeJson = mergedTimeJson,
                     color = base?.color ?: "#FF6750A4",
                     isDefault = false
                 )
             )
-            // 当前课表原课 + 导入课程合并导入新课表(跳过与原课冲突的)
-            // v7.10.12: 合并后同样过三层闸门
-            // v7.10.16i 修复(用户 2026-09-03「新课表是空的」): dropThreeLayerCourses 只返回
-            // candidates(导入课)幸存者, keepers(老课)不在返回值里 — 旧实现直接插 gated
-            // 导致老课一张不进新表; 全冲突导入时 cleanIncoming 为空 → 新表 0 门课。
-            // 语义: 新表 = 老课全量 + 导入课过闸幸存者。
+            // 当前课表原课 + 导入课程合并导入新课表
+            // v7.10.16i: 老课全量保留(dropThreeLayerCourses 只返回候选幸存者)。
+            // v7.10.16j(用户 2026-09-03「新课表=纯老表复制」): 三层闸门改为**只拦新增冲突** —
+            // 旧实现 trial=全部+候选, 原表某天已有 3 层(如先追加过冲突课表)时该天
+            // 所有导入课连完全不重叠的也被全灭。改为: 候选违规判定只看**新增候选本身
+            // 是否比原表多出新层**(before/after 对比, 与编辑课程校验同规)。
             val cleanIncoming = incoming.courses.filterNot { inc ->
                 preview.existingCourses.any { existing -> coursesConflict(inc, existing) }
             }
             val oldCourses = base?.let { repo.getCourses(it.id) } ?: emptyList()
-            val allCourses = oldCourses + cleanIncoming
-            val gated = dropThreeLayerCourses(oldCourses, cleanIncoming)
-            if (gated.size < cleanIncoming.size) {
-                val droppedDays = conflictDaysBetween(cleanIncoming, gated)
-                onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
+            val beforeDays = com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(oldCourses)
+            val afterDays = com.lingion.sleepy.util.ConflictLayoutEngine
+                .daysExceedingTwoLanes(oldCourses + cleanIncoming)
+            if (afterDays != beforeDays) {
+                val droppedDays = afterDays - beforeDays
+                onError(context.getString(R.string.import_three_layers_kept, dayNames(droppedDays, context)))
             }
-            repo.insertCourses((oldCourses + gated).map { it.copy(id = 0, tableId = newTableId) })
+            // 全量合并入库: 老课 + 全部非重复导入课(仅提示, 不再剔除 — 闸门只拦编辑恶化,
+            // 合并是新建课表, 用户明确要的就是并集)
+            repo.insertCourses((oldCourses + cleanIncoming).map { it.copy(id = 0, tableId = newTableId) })
             repo.setDefault(newTableId)
             onImported()
         }

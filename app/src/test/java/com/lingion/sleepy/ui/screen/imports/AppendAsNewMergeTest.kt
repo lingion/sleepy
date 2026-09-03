@@ -7,15 +7,16 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * v7.10.16i 回归 — 用户 2026-09-03: 「追加为新课表 → 新表是空的」。
+ * v7.10.16j 回归 — 用户 2026-09-03: 「追加为新课表 → 新表=纯老表复制, 导入课一张没进」。
  *
- * 根因: AppendAsNew 分支把 dropThreeLayerCourses(keepers=原课, candidates=导入课)的
- * 返回值直接当新表内容插入 — 该函数只返回 candidates 中幸存者, keepers(原课表老课)
- * 根本不在返回值里 → 老课一张不进新表; 导入课又与原课全冲突被闸门清空 → 新表 0 门课。
+ * 两轮根因:
+ * 16i 前: dropThreeLayerCourses 只返回候选幸存者, 老课不在返回值 → 老课不进新表。
+ * 16j 修: 闸门还把"原表已超层的天"的所有候选全灭(trial=全量+候选, 原表已 3 层
+ *         则任何候选都违规) — 用户原表先追加过冲突课表, 导入课全落那些天 → 全灭。
  *
- * 本类锁定合并语义: 新表 = 原课全量 + 导入课过三层闸门的幸存者。
- * 纯 JVM 可测部分 = dropThreeLayerCourses 的闸门行为 + 三层判定, 合并算式照实现里的
- * 表达式直接复现(不反射调私有 UI 函数, 以引擎公开 API 为真值源)。
+ * 最终语义(v7.10.16j): 追加为新课表 = **并集** — 新表 = 老课全量 + 全部非重复导入课,
+ * 三层闸门只做 before/after 对比出提示(不剔除), 与编辑课程的 not-worse 规则同规。
+ * 本类以引擎公开 API 为真值源锁定该语义。
  */
 class AppendAsNewMergeTest {
 
@@ -38,80 +39,68 @@ class AppendAsNewMergeTest {
         color = ""
     )
 
-    /** 与 ImportSheet.dropThreeLayerCourses 同一算法(逐候选试探, keepers 不动)。 */
-    private fun gate(
-        keepers: List<CourseEntity>,
-        candidates: List<CourseEntity>
-    ): List<CourseEntity> {
-        val out = keepers.toMutableList()
-        return candidates.filter { cand ->
-            val trial = out + cand
-            ConflictLayoutEngine.daysExceedingTwoLanes(trial).isEmpty().also { ok ->
-                if (ok) out.add(cand)
-            }
-        }
-    }
-
-    /** 与修复后 AppendAsNew 分支同一合并算式。 */
+    /** 与 v7.10.16j AppendAsNew 分支同一合并算式: 并集, 无剔除。 */
     private fun mergedNewTable(
         oldCourses: List<CourseEntity>,
-        gatedIncoming: List<CourseEntity>
-    ): List<CourseEntity> = oldCourses + gatedIncoming
+        cleanIncoming: List<CourseEntity>
+    ): List<CourseEntity> = oldCourses + cleanIncoming
+
+    /** 与 v7.10.16j 同一提示判定: before/after 超层天对比(不剔除, 只提示)。 */
+    private fun newlyExceededDays(
+        oldCourses: List<CourseEntity>,
+        cleanIncoming: List<CourseEntity>
+    ): Set<Int> = ConflictLayoutEngine.daysExceedingTwoLanes(oldCourses + cleanIncoming) -
+        ConflictLayoutEngine.daysExceedingTwoLanes(oldCourses)
 
     @Test
     fun `all_conflict_import - old courses still enter the new table`() {
-        // 真实 bug 链: 导入课与原课全部 coursesConflict 冲突 → cleanIncoming 过滤后为空
-        // → gate(old, 空) = 空。修复前实现直接把 gated 插入新表 → 新表 0 门课(「还是空的」)。
-        // 修复后: 新表 = oldCourses + gated, 老课全量保留。
+        // 真实 bug 链(16i 时代): 导入课与原课全冲突 → cleanIncoming 为空。
+        // 新表仍必须完整保留老课 — 合并语义下空导入不产生空表。
         val old = listOf(
             course(1, day = 1, startNode = 1, step = 2, courseName = "高数"),
             course(2, day = 2, startNode = 3, step = 2, courseName = "英语")
         )
         val cleanIncoming = emptyList<CourseEntity>() // 全冲突被前置过滤
-        val gated = gate(old, cleanIncoming)
-        assertTrue("全冲突导入无幸存候选", gated.isEmpty())
 
-        val newTable = mergedNewTable(old, gated)
+        val newTable = mergedNewTable(old, cleanIncoming)
         assertEquals(
-            "新表必须保留原课表全部老课 — 修复前这里等于 emptyList",
+            "新表必须保留原课表全部老课",
             old, newTable
         )
+        assertTrue("无新增候选 → 无新超层天", newlyExceededDays(old, cleanIncoming).isEmpty())
     }
 
     @Test
     fun `no_conflict_import - old plus incoming both land in new table`() {
         val old = listOf(course(1, day = 1, startNode = 1, step = 2, courseName = "高数"))
         val incoming = listOf(course(3, day = 3, startNode = 5, step = 2, courseName = "物理"))
-        val gated = gate(old, incoming)
-        val newTable = mergedNewTable(old, gated)
+        val newTable = mergedNewTable(old, incoming)
         assertEquals(2, newTable.size)
         assertTrue(newTable.containsAll(old))
     }
 
     @Test
-    fun `three_layer_gate_drops_only_worsening_incoming - old untouched`() {
-        // 原课 day1 已有完全重叠 2 层(A 1-3 / B 2-4); 导入 C(3-6) 把 day1 顶成 3 层
-        // → 只有 C 被剔, D(day2 无冲突) 留, 老课完整保留
+    fun `incoming_on_already_exceeded_day_still_lands - only warns`() {
+        // v7.10.16j 核心场景: 原表某天已 3 层(用户先追加过冲突课表), 导入课落同一天 —
+        // 旧闸门全灭, 新语义必须让课进来, 只把该天列为新增超层提示。
         val old = listOf(
-            course(1, day = 1, startNode = 1, step = 3, courseName = "A"),
-            course(2, day = 1, startNode = 2, step = 3, courseName = "B")
+            course(1, day = 1, startNode = 1, step = 4, courseName = "A"), // 1-4
+            course(2, day = 1, startNode = 2, step = 4, courseName = "B"), // 2-5 → 第 2 组
+            course(3, day = 1, startNode = 3, step = 4, courseName = "C")  // 3-6 → 第 3 组(实测引擎 3 组)
         )
-        val incoming = listOf(
-            course(3, day = 1, startNode = 3, step = 4, courseName = "C"),
-            course(4, day = 2, startNode = 1, step = 2, courseName = "D")
-        )
-        val gated = gate(old, incoming)
-        assertEquals("仅致 3 层的候选被剔", listOf(4L), gated.map { it.id })
+        assertEquals("前置: 原表周一已超层", setOf(1), ConflictLayoutEngine.daysExceedingTwoLanes(old))
 
-        val newTable = mergedNewTable(old, gated)
-        assertEquals(3, newTable.size)
-        assertEquals("老课在新表中一个不少", setOf(1L, 2L), newTable.map { it.id }.toSet() - setOf(4L))
+        val incoming = listOf(
+            course(4, day = 1, startNode = 10, step = 2, courseName = "D") // 11-12 节, 零重叠
+        )
+        val newTable = mergedNewTable(old, incoming)
+        assertEquals("导入课必须进新表 — 旧闸门在这里全灭", 4, newTable.size)
+        assertTrue(newTable.contains(incoming[0]))
     }
 
     @Test
     fun `empty_old_table - incoming all land`() {
-        val gated = gate(emptyList(), listOf(course(3, day = 3, startNode = 1, step = 2)))
-        val newTable = mergedNewTable(emptyList(), gated)
+        val newTable = mergedNewTable(emptyList(), listOf(course(3, day = 3, startNode = 1, step = 2)))
         assertEquals(1, newTable.size)
     }
 }
