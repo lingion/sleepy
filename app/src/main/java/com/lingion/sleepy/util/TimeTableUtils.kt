@@ -195,6 +195,38 @@ object TimeTableUtils {
     }
 
     /**
+     * v7.10.16k 无损合并 — "哪个大用哪个"(用户 2026-09-03):
+     * 双方作息逐节合并, 结果 = max(两边节次数, requiredNodeCount), 任何一方不得把另一方压小。
+     * 同一节次: 导入源非空时间优先(空串视为没声明), 否则原表, 都没有用 smart 默认。
+     * 超出双方声明的节次(requiredNodeCount=导入课程实际到达的最大节)用 smart 默认铺底,
+     * 保证课程到达 13 节时课表就是 13 节 — 源数据识别到多少节, 结果就多少节。
+     */
+    fun mergeMostComplete(currentJson: String, incomingJson: String, requiredNodeCount: Int = 0): String {
+        // 空串 = 没声明 — 不能进 parseTimeSlotRows(它会 catch 出 12 行 smart 伪声明,
+        // 反过来把有真实作息的一方当"缺省"盖掉)
+        val currentRows = currentJson.takeIf { it.isNotBlank() }?.let { parseTimeSlotRows(it) } ?: emptyList()
+        val incomingRows = incomingJson.takeIf { it.isNotBlank() }?.let { parseTimeSlotRows(it) } ?: emptyList()
+        val cur = currentRows.associateBy { it.node }
+        val inc = incomingRows.associateBy { it.node }
+        val declared = maxOf(
+            currentRows.maxOfOrNull { it.node } ?: 0,
+            incomingRows.maxOfOrNull { it.node } ?: 0
+        )
+        if (declared == 0 && requiredNodeCount <= 0) return DEFAULT_TIME_JSON
+        val count = maxOf(declared, requiredNodeCount).coerceAtLeast(1)
+        val rows = (1..count).map { node ->
+            val i = inc[node]
+            val c = cur[node]
+            TimeSlotRow(
+                node = node,
+                start = i?.start?.takeIf { it.isNotBlank() } ?: c?.start?.takeIf { it.isNotBlank() } ?: smartStartDefault(node),
+                end = i?.end?.takeIf { it.isNotBlank() } ?: c?.end?.takeIf { it.isNotBlank() } ?: smartEndDefault(node)
+            )
+        }
+        return buildTimeJsonFromRows(rows)
+    }
+
+    /**
      * 追加一节 (node = maxOfOrNull + 1)，时间留空让用户填。
      */
     fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {

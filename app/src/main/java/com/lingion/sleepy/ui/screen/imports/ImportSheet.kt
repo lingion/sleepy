@@ -380,10 +380,14 @@ fun ImportSheet(
                 confirmedTableName = currentPreview.parseResult.tableName.ifBlank {
                     existingTable?.name ?: context.getString(R.string.default_table_name)
                 }
-                // 时间表优先级: ICS 收割的全校作息 > 现有表 > 默认
-                confirmedTimeJson = currentPreview.parseResult.timeJson.ifBlank {
-                    existingTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-                }
+                // v7.10.16k 无损合并(用户 2026-09-03「哪个大用哪个, 最完整优先」):
+                // 不再 ifBlank 单选 — 老表作息与导入作息逐节合并, 节次数取双方最大,
+                // 并拓到导入课程实际到达的最大节。导入源 13 节绝不被老表 10 节压小。
+                confirmedTimeJson = TimeTableUtils.mergeMostComplete(
+                    currentJson = existingTable?.timeJson ?: "",
+                    incomingJson = currentPreview.parseResult.timeJson,
+                    requiredNodeCount = currentPreview.parseResult.nodesPerDay
+                )
                 pendingMode = mode
             }
         )
@@ -405,9 +409,12 @@ fun ImportSheet(
                                 state.currentTable?.startDate ?: java.time.LocalDate.now().toString()
                             },
                             confirmedTableName = state.currentTable?.name ?: "",
-                            confirmedTimeJson = preview!!.parseResult.timeJson.ifBlank {
-                                state.currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-                            },
+                            // v7.10.16k: 与确认框路径同一无损合并 — 老表∪导入, 节次取最大
+                            confirmedTimeJson = TimeTableUtils.mergeMostComplete(
+                                currentJson = state.currentTable?.timeJson ?: "",
+                                incomingJson = preview!!.parseResult.timeJson,
+                                requiredNodeCount = preview!!.parseResult.nodesPerDay
+                            ),
                             context = context,
                             onImported = onImported
                         ) { msg -> errorMsg = msg }
@@ -1248,11 +1255,15 @@ private suspend fun applyImportPreview(
                 onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
             }
             repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
-            // 用户反馈: 追加课程时, 若导入数据节次超过课表, 课表应自动延伸
-            // (课表仍只有 10 节 → 11-13 节课程入库但渲染期看不到, 等于静默丢)
+            // v7.10.16k 无损延伸: 老表作息∪导入作息, 并拓到导入课程实际到达的最大节。
+            // 旧代码 timeJson 空白(粘贴文本常态)就整段跳过 → 课程入库了课表却不延伸 = 静默丢。
             val existingTable = repo.getTable(preview.targetTableId)
-            if (existingTable != null && preview.parseResult.timeJson.isNotBlank()) {
-                val extended = TimeTableUtils.extendTimeJsonWith(existingTable.timeJson, preview.parseResult.timeJson)
+            if (existingTable != null) {
+                val extended = TimeTableUtils.mergeMostComplete(
+                    currentJson = existingTable.timeJson,
+                    incomingJson = preview.parseResult.timeJson,
+                    requiredNodeCount = preview.parseResult.nodesPerDay
+                )
                 if (extended != existingTable.timeJson) {
                     val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
                     repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
@@ -1264,14 +1275,14 @@ private suspend fun applyImportPreview(
             // 当前课表 + 导入数据合并 → 新课表(用户命名)
             val base = repo.getTable(preview.targetTableId)
             val incoming = preview.parseResult
-            // v7.10.16j: 时间表 = 用户在确认框里编辑的 confirmedTimeJson 优先 —
-            // 用户拓到 13 节就是 13 节;确认框里没动则回落 merge(导入作息, 老表作息)。
-            // 旧实现只 merge(incoming.timeJson, base.timeJson), confirmedTimeJson 根本
-            // 没传进来 → 用户在确认框拓节次完全无效。
+            // v7.10.16k: 时间表 = 用户确认框里的 confirmedTimeJson 优先(它本身就是
+            // mergeMostComplete 的无损合并初值, 用户又可手拓); 万一为空白再兜底无损合并。
+            // mergedRows 恒非空(mergeMostComplete 至少 1 行), nodesPerDay 恒取行数。
             val mergedTimeJson = confirmedTimeJson.ifBlank {
-                TimeTableUtils.extendTimeJsonWith(
-                    base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
-                    incoming.timeJson.ifBlank { base?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON }
+                TimeTableUtils.mergeMostComplete(
+                    currentJson = base?.timeJson ?: "",
+                    incomingJson = incoming.timeJson,
+                    requiredNodeCount = incoming.nodesPerDay
                 )
             }
             val mergedRows = TimeTableUtils.parseTimeSlotRows(mergedTimeJson)
@@ -1323,10 +1334,14 @@ private suspend fun applyImportPreview(
                 onError(context.getString(R.string.import_three_layers_kept, dayNames(badDays, context)))
             }
             repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
-            // 节次自动延伸 — 与 AppendNonConflict 同策略
+            // v7.10.16k: 节次无损延伸 — 与 AppendNonConflict 同策略(不再要求导入带 timeJson)
             val existingTable = repo.getTable(preview.targetTableId)
-            if (existingTable != null && preview.parseResult.timeJson.isNotBlank()) {
-                val extended = TimeTableUtils.extendTimeJsonWith(existingTable.timeJson, preview.parseResult.timeJson)
+            if (existingTable != null) {
+                val extended = TimeTableUtils.mergeMostComplete(
+                    currentJson = existingTable.timeJson,
+                    incomingJson = preview.parseResult.timeJson,
+                    requiredNodeCount = preview.parseResult.nodesPerDay
+                )
                 if (extended != existingTable.timeJson) {
                     val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
                     repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))

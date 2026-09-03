@@ -170,7 +170,8 @@ class SleepyMarkerTest {
         val r = ScheduleParser.parse(text, 0L).getOrThrow()
         assertEquals(2, r.courses.size)
         assertTrue(r.timeJson.isNotBlank())
-        assertEquals(3, r.nodesPerDay)
+        // v7.10.16k 无损: 节次数 = max(作息声明 3, 课程到达 4) = 4, timeJson 只含声明过的 3 行真实时间
+        assertEquals(4, r.nodesPerDay)
         val nodes = com.lingion.sleepy.util.TimeTableUtils.parseNodes(r.timeJson)
         assertEquals(3, nodes.size)
         assertEquals(java.time.LocalTime.of(8, 0), nodes[0].start)
@@ -180,19 +181,19 @@ class SleepyMarkerTest {
 
     @Test
     fun plainText_timeTable_noColonFormat_alsoWork() {
-        // "时间表 1 08:00 09:35" 空格分隔形态
+        // "时间表 1 08:00 09:35" 空格分隔形态; 课程到达 4 节 > 作息声明 2 节 → 无损取 4
         val text = "时间表 1 08:00 09:35\n时间表 2 09:55 11:30\n$courses"
         val r = ScheduleParser.parse(text, 0L).getOrThrow()
         assertEquals(2, r.courses.size)
-        assertEquals(2, r.nodesPerDay)
+        assertEquals(4, r.nodesPerDay)
     }
 
     @Test
     fun plainText_noTimeTable_unaffected() {
-        // 没有时间行的纯文本 → timeJson 空, 走默认作息
+        // 没有时间行的纯文本 → timeJson 空(不伪造时间); nodesPerDay = 课程到达 4 节(无损)
         val r = ScheduleParser.parse(courses, 0L).getOrThrow()
         assertEquals("", r.timeJson)
-        assertEquals(0, r.nodesPerDay)
+        assertEquals(4, r.nodesPerDay)
     }
 
     @Test

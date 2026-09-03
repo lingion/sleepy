@@ -762,7 +762,13 @@ object ScheduleParser {
             startDate = java.time.LocalDate.now().toString(),
             courses = courses,
             timeJson = buildTimeJson(TreeMap(nodeTimes)),
-            nodesPerDay = if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey(),
+            // v7.10.16k 无损解析(用户 2026-09-03「导入导出无损」): 节次数 = max(作息声明, 课程到达)。
+            // 课程实际到 13 节时 nodesPerDay 必须承认 13 — 没有时间 ≠ 没有节次,
+            // 否则 13 节源数据被压成 10 节(timeJson 仍留空, 时间由合并层铺 smart 默认)。
+            nodesPerDay = maxOf(
+                if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey(),
+                courses.maxOfOrNull { it.startNode + it.step - 1 } ?: 0
+            ),
             droppedLines = dropped + timeBlockDropped
         )
     }
