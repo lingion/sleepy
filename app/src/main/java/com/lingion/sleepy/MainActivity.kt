@@ -35,9 +35,9 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
-import com.lingion.sleepy.ui.component.PillNavItem
-import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
+import com.lingion.sleepy.ui.component.PillNavigationBar
+import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
@@ -291,11 +291,15 @@ private fun AppRoot(
         modifier = Modifier.fillMaxSize(),
         containerColor = SleepyTheme.colors.background,
         bottomBar = {
-            PillNavigationBar {
-                Tab.entries.forEach { tab ->
-                    PillNavItem(icon = tab.icon, label = stringResource(tab.labelRes), selected = currentTab == tab, onClick = { currentTab = tab })
-                }
-            }
+            val context = LocalContext.current
+            val navDock = AppPrefs.isNavDock(context)
+            val navItems = Tab.entries.map { com.lingion.sleepy.ui.component.PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
+            PillNavigationBar(
+                items = navItems,
+                selectedIndex = currentTab.ordinal,
+                onSelect = { currentTab = Tab.entries[it] },
+                dock = navDock
+            )
         }
     ) { padding ->
         Box(modifier = Modifier.fillMaxSize().padding(padding)) {
