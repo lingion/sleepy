@@ -34,6 +34,15 @@ class SleepyApp : Application() {
         instance = this
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+        // 预热 SharedPreferences: 首次 getSharedPreferences 后台异步加载整文件,
+        // 避免冷启动后首个 Compose 屏在主线程同步做磁盘反序列化 (AppPrefs 全部
+        // getter 都在调用方线程直读, 严格模式 diskRead / 低端机卡顿来源)。
+        // 拿到实例即触发异步 loadFromDisk, 不阻塞本线程。
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            runCatching {
+                getSharedPreferences("sleepy_prefs", android.content.Context.MODE_PRIVATE)
+            }
+        }
         // app 回前台时检测：若当前在某节课的课前窗口内，补起流体云（状态兜底）
         androidx.lifecycle.ProcessLifecycleOwner.get().lifecycle.addObserver(
             object : androidx.lifecycle.DefaultLifecycleObserver {
