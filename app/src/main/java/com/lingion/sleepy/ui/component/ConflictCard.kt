@@ -11,13 +11,17 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.offset
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -778,6 +782,8 @@ fun ConflictClusterCard(
     if (showPicker) {
         ConflictCoursePickerDialog(
             courses = drawList.map { it.course },
+            layerRepIdOfCourse = layerRepIdOfCourse,
+            topRepId = (rotationLayerOrder ?: baselineOrderIds).first(),
             onDismiss = { showPicker = false },
             onPick = { id ->
                 showPicker = false
@@ -948,11 +954,17 @@ private fun ConflictBadge(hiddenCount: Int, onClick: () -> Unit, modifier: Modif
 
 /**
  * N 徽标弹窗 — AlertDialog 列簇内全部课课名点选,点选 → onPickTop(id) 关弹窗。
- * 风格对齐 ImportSheet/EditTableScreen 现有 AlertDialog(titleContentColor/textContentColor + TextButton)。
+ * UI 逐行对齐 ScheduleScreen TableSwitcherDialog(2026-09-04 用户定版):
+ * 行 = Row(文本 weight1 + 当前顶层 Check 18dp), 顶层 primaryContainer /
+ * 其余 surfaceContainer 背景, confirmButton 留空(无取消钮)。
+ * 「选中」= 当前轮换序(无轮换即基准序)顶层代表; 同层成员与层代表同背景
+ * (点击按层上移,选中态与操作语义一致), Check 只标层代表。
  */
 @Composable
 private fun ConflictCoursePickerDialog(
     courses: List<CourseEntity>,
+    layerRepIdOfCourse: Map<Long, Long>,
+    topRepId: Long,
     onDismiss: () -> Unit,
     onPick: (Long) -> Unit
 ) {
@@ -971,26 +983,37 @@ private fun ConflictCoursePickerDialog(
                 verticalArrangement = Arrangement.spacedBy(4.dp)
             ) {
                 courses.forEach { course ->
-                    Text(
-                        text = course.courseName,
-                        style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                        color = colors.onSurface,
-                        maxLines = 2,
-                        overflow = TextOverflow.Ellipsis,
+                    val repId = layerRepIdOfCourse[course.id] ?: course.id
+                    val isTopLayer = repId == topRepId
+                    Row(
                         modifier = Modifier
                             .fillMaxWidth()
                             .clip(SleepyTheme.shapes.small)
+                            .background(if (isTopLayer) colors.primaryContainer else colors.surfaceContainer)
                             .noRippleClickable { onPick(course.id) }
-                            .padding(vertical = 10.dp, horizontal = 8.dp)
-                    )
+                            .padding(vertical = 10.dp, horizontal = 8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = course.courseName,
+                            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                            color = if (isTopLayer) colors.onPrimaryContainer else colors.onSurface,
+                            maxLines = 2,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (repId == course.id && isTopLayer) {
+                            Icon(
+                                imageVector = Icons.Outlined.Check,
+                                contentDescription = null,
+                                tint = colors.primary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                        }
+                    }
                 }
             }
         },
-        confirmButton = {
-            TextButton(onClick = onDismiss) {
-                Text(stringResource(R.string.cancel))
-            }
-        },
+        confirmButton = {},
         dismissButton = {}
     )
 }
