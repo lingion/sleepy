@@ -97,6 +97,9 @@ fun ScheduleScreen(
     fun setTopOverride(key: String, courseId: Long?) {
         topOverrides = if (courseId == null) topOverrides - key else topOverrides + (key to courseId)
     }
+    // v7.10.16r 轮换态(issue#10, 评审 #1): 簇键 → 轮换步数,与 topOverrides 同级持有 —
+    // HorizontalPager 翻页/周切换不丢;纯会话级不落盘,离开课表页即重置。
+    var rotationSteps by remember { mutableStateOf(mapOf<String, Int>()) }
     val displayMode = remember { AppPrefs.getDisplayMode(context) }
     val showDate = remember { AppPrefs.isShowDate(context) }
     val visibleDays = remember { AppPrefs.getVisibleDays(context) }
@@ -264,7 +267,12 @@ fun ScheduleScreen(
                         onCourseClick = { selectedCourse = it },
                         greyDays = greyDays,
                         topOverrides = topOverrides,
-                        onSetTopOverride = ::setTopOverride
+                        onSetTopOverride = ::setTopOverride,
+                        rotationSteps = rotationSteps,
+                        onRotationStep = { key, step ->
+                            rotationSteps = if (step <= 0) rotationSteps - key
+                            else rotationSteps + (key to step)
+                        }
                     )
                 }
             }
@@ -285,7 +293,10 @@ fun ScheduleScreen(
                 onEditCourse(course)
             },
             onDefaultTopChanged = { clusterKey, repId ->
-                // 勾选瞬间: 会话级换层(网格同帧刷新) + 持久化(跨会话默认)
+                // 勾选瞬间: 会话级换层(网格同帧刷新) + 持久化(跨会话默认)。
+                // v7.10.16r(评审 #4): 同簇轮换态一并清除 — 用户显式选默认置顶,
+                // 临时轮换让位,否则该簇轮换步数仍遮蔽 radio 的新决定。
+                rotationSteps = rotationSteps - clusterKey
                 setTopOverride(clusterKey, repId)
                 AppPrefs.putConflictDefaultTop(context, clusterKey, repId)
             }

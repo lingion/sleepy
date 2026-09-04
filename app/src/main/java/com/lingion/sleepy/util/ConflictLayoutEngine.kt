@@ -1,7 +1,6 @@
 package com.lingion.sleepy.util
 
 import com.lingion.sleepy.data.entity.CourseEntity
-import kotlin.math.pow
 
 /** 同一天的冲突簇 — 簇内课程节点区间两两经传递闭包相连(直接或间接共享节次)。 */
 data class ConflictCluster(val day: Int, val courses: List<CourseEntity>)
@@ -108,7 +107,8 @@ object ConflictLayoutEngine {
         cluster: ConflictCluster,
         style: String,
         topOverrideId: Long? = null,
-        maxNode: Int? = null
+        maxNode: Int? = null,
+        layerOrderOverride: List<Long>? = null
     ): List<LaidOutCourse> {
         val ordered = primaryOrder(cluster.courses)
 
@@ -129,8 +129,16 @@ object ConflictLayoutEngine {
             val top: CourseEntity = g.maxWith(primaryComparator)
             LayerSortKey(-top.step, top.startNode, top.id)
         }
-        // z 序构造: override 命中则该层整体前移, 否则按默认序
+        // z 序构造(v7.10.16r 交叉验证修订): layerOrderOverride(完整层序,轮换通道)
+        // 优先 — 按 rep id 逐层映射,未知 id 跳过、缺失层按默认序补尾(层集合完备);
+        // 无 override 时原 topOverrideId 语义不变(该层整体前移,其余默认序垫后)。
         val orderedLayers: List<List<CourseEntity>> = when {
+            layerOrderOverride != null -> {
+                val byRep = defaultLayerOrder.associateBy { g -> g.maxWith(primaryComparator).id }
+                val front = layerOrderOverride.mapNotNull { byRep[it] }.toMutableList()
+                for (g in defaultLayerOrder) if (front.none { it === g }) front.add(g)
+                front
+            }
             topOverrideId != null && layerOfId.containsKey(topOverrideId) -> {
                 val front = layerOfId.getValue(topOverrideId)
                 listOf(front) + defaultLayerOrder.filter { it !== front }
@@ -467,18 +475,18 @@ object ConflictLayoutEngine {
         "${anchor.day}:${anchor.startNode}:${anchor.step}"
 
     // =====================================================================================
-    // v7.10.16r N≥3 轮换置顶 (issue#10, 用户 2026-09-04 定版)
+    // v7.10.16r N≥3 轮换置顶 (issue#10, 用户 2026-09-04 定版;交叉验证修订同日)
     //
-    // 语义: 网格 N≥3 图层簇默认显示「默认序前两层」,右上「+N」气泡 = 被盖人数。
+    // 语义: 网格 N≥3 图层簇默认显示「基准序前两层」,右上「+N」气泡 = 层数-2(按层计)。
     // 点露出带/折角 → 轮换推进一位(会话内临时态,不写任何持久化偏好);点气泡 →
-    // 弹窗选课换来看。默认序永远来自 layoutCluster 的 zRank 序,轮换只是循环左移。
+    // 弹窗选课换来看。轮换基准序 = 置顶感知序(用户置顶层恒在首位)——整周期轮换
+    // 自动还原用户设定,radio 持久化永不被临时轮换遮蔽。
     // =====================================================================================
 
     /**
      * 簇的「默认图层序」— 每图层的代表 id,按 layoutCluster 同一真值排序:
      * 图层按其 top 课(层内主课判定序最前)的 (-step, startNode, id) 升序 —
-     * 与 layoutCluster.defaultLayerOrder 完全一致。轮换与气泡都以此序为基准,
-     * 顶层偏好(topOverrideId)不改变本序(override 是视图态)。
+     * 与 layoutCluster.defaultLayerOrder 完全一致。
      */
     fun defaultLayerIdOrder(courses: List<CourseEntity>): List<Long> =
         orderedDefaultLayers(courses).map { it.first().id }
@@ -486,63 +494,52 @@ object ConflictLayoutEngine {
     /**
      * 簇的「默认图层序」完整形态: 排序后的图层本体(每层 = 成员课列表)。
      * defaultLayerIdOrder / 轮换 UI 的成员→层代表反查共用,保证单一真值。
+     * 层代表 = 层内主课判定序最前课(chainGroups 层内已按 startNode 排,主序最高者
+     * 取 maxWith;此处代表取 maxWith 保持与 badge/详情 radio 的 rep 语义一致)。
      */
     private fun orderedDefaultLayers(courses: List<CourseEntity>): List<List<CourseEntity>> =
         chainGroups(courses)
             .sortedBy { g -> g.maxWith(primaryComparator).let { LayerSortKey(-it.step, it.startNode, it.id) } }
 
     /**
-     * 成员课 id → 其所在图层的代表 id(默认序;代表 = 层内主课判定序最前课)。
-     * 气泡弹窗点选任意成员时反查该层在轮换序中的位置。
+     * 置顶感知轮换基准序(评审 #4): 用户置顶层(repId)永远排基准首位,其余层保持
+     * 默认相对序。整周期轮换(步数 ≡ 0 mod N)时轮换序 === 基准序 → 用户置顶层自动
+     * 回到顶部,持久化偏好不被临时轮换遮蔽。repId 为 null / 不在簇内 → 退回默认序。
+     */
+    fun overrideAwareLayerOrder(courses: List<CourseEntity>, topRepId: Long?): List<Long> {
+        val defaultOrder = defaultLayerIdOrder(courses)
+        if (topRepId == null || topRepId !in defaultOrder) return defaultOrder
+        return listOf(topRepId) + defaultOrder.filter { it != topRepId }
+    }
+
+    /**
+     * 气泡徽标文案(评审 #3): 「+N」= 层数 - 2(默认两层已显示),按层计不按课数,
+     * 轮换中恒定;层数 <2 → 0(不显示)。
+     */
+    fun hiddenLayerCount(layerCount: Int): Int = (layerCount - 2).coerceAtLeast(0)
+
+    /**
+     * 成员课 id → 其所在图层的代表 id(主课判定序最前课)。
+     * 气泡弹窗点选任意成员时反查该层在轮换序中的位置;与 overrideAwareLayerOrder/
+     * defaultLayerIdOrder 的 rep 判定同源(层内 maxWith primaryComparator)。
      */
     fun memberToLayerRep(courses: List<CourseEntity>): Map<Long, Long> {
         val out = HashMap<Long, Long>(courses.size)
         for (layer in orderedDefaultLayers(courses)) {
-            val rep = layer.first().id
+            val rep = layer.maxWith(primaryComparator).id
             for (c in layer) out[c.id] = rep
         }
         return out
     }
 
     /**
-     * 轮换推进一位(纯函数)。层序编码为按位十进制(123 → 231),循环左移:
-     * 首位移到末位。任何 ≥2 位合法序都旋转;N=2 是否轮换由 UI 闸门决定
-     * (两节路径保持既有逐层点选,不进轮换)。非法输入(≤0 / 含 0 位 / 超 9 层)
-     * 回落 0,调用方按「无轮换态」处理。
+     * 会话轮换步数 → 完整轮换层序(循环左移 [steps] 位)。steps 取模,负数同余处理。
+     * 步数 ≡ 0 mod N(含整周期)→ 返回基准序本身。
      */
-    fun rotationNext(order: Int): Int {
-        if (order <= 0) return 0
-        var digits = 0
-        var v = order
-        while (v > 0) {
-            if (v % 10 == 0) return 0 // 0 位非法(层号从 1 起)
-            v /= 10
-            digits++
-        }
-        if (digits > 9 || digits < 2) return order // 1 层无轮换;>9 层防御
-        val pow = 10.0.pow(digits - 1).toInt()
-        val head = order / pow
-        val tail = order % pow
-        return tail * 10 + head
-    }
-
-    /**
-     * 把轮换推进 [steps] 位应用到默认序(循环左移)。steps 取模,负数同余处理。
-     */
-    fun applyLayerRotation(defaultOrder: List<Long>, steps: Int): List<Long> {
-        if (defaultOrder.size < 2 || steps % defaultOrder.size == 0) return defaultOrder
-        val k = ((steps % defaultOrder.size) + defaultOrder.size) % defaultOrder.size
-        return defaultOrder.drop(k) + defaultOrder.take(k)
-    }
-
-    /**
-     * 解析当前应显示的图层序: 会话轮换步数非空则循环左移,否则默认序。
-     * UI 每帧调用,纯函数无副作用 — 会话态由调用方持有(remember,不落盘)。
-     */
-    fun resolveLayerOrder(courses: List<CourseEntity>, sessionRotation: Int?): List<Long> {
-        val defaultOrder = defaultLayerIdOrder(courses)
-        return if (sessionRotation == null || sessionRotation <= 0) defaultOrder
-        else applyLayerRotation(defaultOrder, sessionRotation)
+    fun applyLayerRotation(baselineOrder: List<Long>, steps: Int): List<Long> {
+        if (baselineOrder.size < 2 || steps % baselineOrder.size == 0) return baselineOrder
+        val k = ((steps % baselineOrder.size) + baselineOrder.size) % baselineOrder.size
+        return baselineOrder.drop(k) + baselineOrder.take(k)
     }
 
     fun conflictClusterKey(cluster: ConflictCluster): String =

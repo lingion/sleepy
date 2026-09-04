@@ -105,7 +105,12 @@ fun CardsGridView(
     modifier: Modifier = Modifier,
     greyDays: Set<Int> = emptySet(),  // 本周应灰显的星期几 (1-7)
     topOverrides: Map<String, Long> = emptyMap(),           // v7.10.5: 会话级置顶 override,上提到 ScheduleScreen(radio 瞬时更新写入同一真相源)
-    onSetTopOverride: (String, Long?) -> Unit = { _, _ -> } // (clusterKey, layerRepId|null)
+    onSetTopOverride: (String, Long?) -> Unit = { _, _ -> }, // (clusterKey, layerRepId|null)
+    // v7.10.16r 轮换态(issue#10, 评审 #1): 与 topOverrides 同级持有(离开课表页重置)。
+    // remember 留在页内会在 HorizontalPager 翻页时销毁( beyondViewportPageCount=0 ),
+    // 周切换一次轮换态即丢。
+    rotationSteps: Map<String, Int> = emptyMap(),
+    onRotationStep: (String, Int) -> Unit = { _, _ -> }     // (clusterKey, step)
 ) {
     val colors = SleepyTheme.colors
     val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
@@ -212,9 +217,9 @@ fun CardsGridView(
                     // 非簇课保持原 CourseOverlayCard 单卡路径(回归保护)
                     val context = LocalContext.current
                     val conflictStyle = AppPrefs.getConflictStyle(context)
-                    // v7.10.16r 轮换态(issue#10): 簇键 → 轮换步数,纯会话级(remember,不落盘)。
-                    // 用户 2026-09-04 定版: 默认序永远按用户置顶偏好走;轮换/气泡选课只改当次视图。
-                    var rotationSteps by remember { mutableStateOf(mapOf<String, Int>()) }
+                    // v7.10.16r 轮换态(issue#10): 簇键 → 轮换步数 — 与 topOverrides 同级
+                    // 持有(ScheduleScreen),翻页/周切换不丢(评审 #1);纯会话级不落盘,
+                    // 离开课表页即重置。默认序按用户置顶偏好走,轮换只改当次视图。
                     // v7.10.5: 交换置顶状态上提到 ScheduleScreen — 详情弹窗 radio 点击
                     // 与网格 onPickTop 写同一真相源,radio 勾选瞬间网格同帧换层。
                     // (此前 radio 只写持久化 defaultTopMap,被会话级 topOverrides 遮蔽 → 看似不生效)
@@ -251,10 +256,12 @@ fun CardsGridView(
                             onPickTop = { id -> setTopOverride(clusterKey, id) },
                             // v7.10.16r 轮换(issue#10): 步数与回调都按簇键隔离,纯会话态不落盘
                             rotationStep = rotationSteps[clusterKey],
-                            onRotate = { rotationSteps = rotationSteps + (clusterKey to ((rotationSteps[clusterKey] ?: 0) + 1)) },
+                            onRotate = {
+                                onRotationStep(clusterKey, (rotationSteps[clusterKey] ?: 0) + 1)
+                            },
                             onPickFromBadge = { layerPos ->
-                                // 气泡选课 = 换来看: 轮换步数使目标层转到首位(会话态)
-                                rotationSteps = rotationSteps + (clusterKey to layerPos)
+                                // 气泡选课 = 换来看: 步数使目标层转到基准序首位(会话态)
+                                onRotationStep(clusterKey, layerPos)
                             },
                             onCourseClick = onCourseClick,
                             colW = colW,

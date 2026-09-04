@@ -242,7 +242,7 @@ internal data class ConflictRect(val x: Dp, val y: Dp, val width: Dp, val height
 internal fun conflictBadgeLayerCount(groupSizes: List<Int>, rawCount: Int): Int =
     if (groupSizes.sum() == rawCount) groupSizes.size else rawCount
 
-/** N 徽标可见性 = 图层 N≥3 且存在 hidden 课(N≥3 的逃生门语义,单位是图层)。 */
+/** N 徽标可见性 = 图层 N≥3 且存在被盖层(v7.10.16r: 第二参数 = 层数-2,按层计)。 */
 internal fun conflictShowBadge(layerCount: Int, hiddenCount: Int): Boolean =
     layerCount >= 3 && hiddenCount > 0
 
@@ -396,42 +396,39 @@ fun ConflictClusterCard(
     val context = LocalContext.current
     val cardShape = SleepyTheme.shapes.medium
 
-    // v7.10.16r 轮换(issue#10, N≥3): 先按簇全量课解析「默认图层序」(与引擎
-    // defaultLayerOrder 同键,-top.step/startNode/id 升序),再算轮换后应置顶的层 —
-    // 换层落地 = 把该层代表 id 作为 topOverrideId 交给 layoutCluster(引擎语义:
-    // override 命中层整层前移,其余按默认序 = 完整重排后的层序)。轮换是会话态,
-    // 不落盘;两节簇 rotationStep 恒 null(单调用点闸门),走原 topOverride 通道。
-    val defaultLayerOrderIds: List<Long> = remember(cluster) {
-        ConflictLayoutEngine.defaultLayerIdOrder(cluster.courses)
+    // v7.10.16r 轮换(issue#10, N≥3): 先按簇全量课解析「置顶感知基准序」(用户置顶层
+    // 恒在基准首位),轮换步数在其上循环左移得「完整轮换层序」,经 layoutCluster 的
+    // layerOrderOverride 通道落地 —— 整层序完整重排(评审 #2: 第 3 层能到第二可见位),
+    // 整周期(步数≡0 mod N)轮换序===基准序 → 用户置顶自动还原(评审 #4)。
+    // 轮换是会话态不落盘;两节簇 rotationStep 恒 null(单调用点闸门),走原 topOverride 通道。
+    val baselineOrderIds: List<Long> = remember(cluster, topOverrideId) {
+        ConflictLayoutEngine.overrideAwareLayerOrder(cluster.courses, topOverrideId)
     }
     val layerRepIdOfCourse: Map<Long, Long> = remember(cluster) {
         ConflictLayoutEngine.memberToLayerRep(cluster.courses)
     }
-    val clusterLayerCount = defaultLayerOrderIds.size
+    val clusterLayerCount = baselineOrderIds.size
     val rotationActive = clusterLayerCount >= 3 && rotationStep != null && rotationStep > 0
-    val rotationTopId: Long? = if (rotationActive) {
-        ConflictLayoutEngine.applyLayerRotation(defaultLayerOrderIds, rotationStep).firstOrNull()
+    val rotationLayerOrder: List<Long>? = if (rotationActive) {
+        ConflictLayoutEngine.applyLayerRotation(baselineOrderIds, rotationStep)
     } else null
-    val effectiveTopId = rotationTopId ?: topOverrideId
 
     // 布局现算(引擎零缓存承诺)——override 变化即重排。maxNode 传入引擎:
     // hidden 计算与渲染同一裁剪空间(startNode ∈ 1..maxNode + step 截界)。
-    val laid = ConflictLayoutEngine.layoutCluster(cluster, style, effectiveTopId, maxNode)
+    val laid = ConflictLayoutEngine.layoutCluster(
+        cluster, style, topOverrideId, maxNode, layerOrderOverride = rotationLayerOrder
+    )
 
     // 绘制集: 与原单卡循环同一过滤(startNode ∈ [1, maxNode])——出界课原循环本就跳过。
     val drawList = laid.filter { it.course.startNode in 1..maxNode }
     if (drawList.isEmpty()) return
-    val hiddenCount = drawList.count { it.hidden }
 
-    // N 徽标可见性: 图层 N≥3 且存在 hidden 课(v7.6: N 按图层数——链组整组是一层)
-    val chainGroups = remember(cluster) {
-        ConflictLayoutEngine.chainGroups(drawList.map { it.course })
-    }
-    val layerCount = conflictBadgeLayerCount(
-        groupSizes = chainGroups.map { it.size },
-        rawCount = drawList.size
-    )
-    val showBadge = conflictShowBadge(layerCount, hiddenCount)
+    // v7.10.16r 图层模型统一(评审 #5): 轮换/徽标/切换闸门共用「全量簇的层数」,
+    // 不再从 drawList 重算 chainGroups(出界过滤会让两模型分歧)。徽标「+N」= 层数-2
+    // (评审 #3: 按层计,轮换中恒定;默认两层已显示,三层 +1 / 四层 +2)。
+    val layerCount = clusterLayerCount
+    val hiddenLayerN = ConflictLayoutEngine.hiddenLayerCount(layerCount)
+    val showBadge = conflictShowBadge(layerCount, hiddenLayerN)
     var showPicker by rememberSaveable { mutableStateOf(false) }
 
     // 绘制序(评审 Critical 修复): 非顶卡(zRank 降序) → 顶卡 → hidden 课 Mark 命中区(overlay 层)。
@@ -450,7 +447,9 @@ fun ConflictClusterCard(
     //   - 单课冲突顶层 size>=2: 顶层单课 + 沉底一门课 → foldEligible=true (兼容经典双课等长场景)
     //   - 链组顶层 size>=2: 顶层是 1-3/4-6 这类多课组合 → foldEligible=true (B 方案一起折角)
     //   - 不再用 drawList[0]/drawList[1].startNode 是否相同判断 —— 链组 1-3/4-6 起点不同但应一起折角
-    val topLayer = chainGroups.firstOrNull() ?: emptyList()
+    val topLayer = remember(cluster) {
+        ConflictLayoutEngine.chainGroups(cluster.courses).firstOrNull() ?: emptyList()
+    }
     val foldEligible = drawList.isNotEmpty() && topLayer.size >= 2
     val form = clusterForm(style, hiddenItems.firstOrNull()?.variant, foldEligible)
 
@@ -485,13 +484,16 @@ fun ConflictClusterCard(
     val foldSize = AppPrefs.getConflictFoldSize(context)
     val foldSizeDp = foldSize.dp
 
-    // v7.8 图层语义: 引擎 layerOfId 即每课对应图层; 该层的「整层代表 id」=
-    // 该层内 zRank 最小的成员(引擎 zOrdered 已按图层拼接序排序, 同层内按 startNode 升序)。
-    val layerOfId: Map<Long, Int> = remember(chainGroups) {
-        chainGroups.flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
+    // v7.8 图层语义(评审 #5 统一): 层归属/层代表从簇全量课推导(与轮换/徽标同一模型,
+    // 不再经 drawList 重算); 该层的「整层代表 id」= 层内主课判定序最前课。
+    val layerOfId: Map<Long, Int> = remember(cluster) {
+        ConflictLayoutEngine.chainGroups(cluster.courses)
+            .flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
     }
-    val layerRepId: Map<Int, Long> = remember(chainGroups) {
-        chainGroups.mapIndexed { gi, g -> gi to g.first().id }.toMap()
+    val layerRepId: Map<Int, Long> = remember(cluster) {
+        ConflictLayoutEngine.chainGroups(cluster.courses)
+            .mapIndexed { gi, g -> gi to (layerRepIdOfCourse[g.first().id] ?: g.first().id) }
+            .toMap()
     }
     fun layerRepOf(courseId: Long): Long? =
         layerOfId[courseId]?.let { gi -> layerRepId[gi] }
@@ -762,14 +764,15 @@ fun ConflictClusterCard(
         // 命中区复用 STACK 右下 36dp 见方语义(见下方 Mark 分支, 已统一)。
         // railOthers 字段仅作为 Mark 命中区命中集合使用, 此处不再渲染。
 
-        // ---- N 徽标(图层 N≥3 且 hidden 课存在): overlay 层右上,点击弹课名点选 ----
-        // v7.10.16r(issue#10, 用户 2026-09-04 定版): 徽标文案从「总层数」改「+被盖人数」—
-        // 默认两层已显示,三层 = +1、四层 = +2。气泡点击语义不变(弹课名列表),
-        // 但列表点选 = 「换来看」(把该层转到可见),持久化默认置顶仍只走详情 radio。
+        // ---- N 徽标(图层 N≥3 且存在被盖层): overlay 层右上,点击弹课名点选 ----
+        // v7.10.16r(issue#10, 用户 2026-09-04 定版;评审 #3 修订): 文案「+N」= 层数-2,
+        // 按层计不按课数(链组整组算一层),轮换中恒定 — 三层 +1 / 四层 +2。
+        // 气泡点击语义不变(弹课名列表),列表点选 = 「换来看」(把该层转到轮换序首位),
+        // 持久化默认置顶仍只走详情 radio。
         if (showBadge) {
             val styleIsFold = form == ConflictVariant.FOLD
             ConflictBadge(
-                hiddenCount = hiddenCount,
+                hiddenCount = hiddenLayerN,
                 onClick = { showPicker = true },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -788,10 +791,11 @@ fun ConflictClusterCard(
             onPick = { id ->
                 showPicker = false
                 if (clusterLayerCount >= 3) {
-                    // v7.10.16r: 气泡选课 = 「换来看」— 轮换步数使该课所在层转到首位,
-                    // 会话态不落盘(层内任一成员反查层序)。
+                    // v7.10.16r: 气泡选课 = 「换来看」— 轮换步数使该课所在层转到基准序
+                    // 首位,会话态不落盘(层内任一成员反查层代表)。基准序是置顶感知序,
+                    // target=0 表示该层已在基准首位 → 步数 0 = 清轮换回基准,语义自洽。
                     val repId = layerRepIdOfCourse[id] ?: id
-                    val target = defaultLayerOrderIds.indexOf(repId)
+                    val target = baselineOrderIds.indexOf(repId)
                     if (target >= 0) onPickFromBadge(target)
                 } else {
                     onPickTop(id)
