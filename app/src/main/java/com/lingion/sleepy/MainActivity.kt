@@ -40,6 +40,11 @@ import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.statusBars
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
@@ -305,6 +310,10 @@ private fun AppRoot(
     // 加滚动余量, 保证最后一项能滚到 Dock 上方完全可见。
     val navItems = Tab.entries.map { com.lingion.sleepy.ui.component.PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
 
+    // Dock 滚动余量: 理论估算兜底(首帧前), overlay 实测高(dockOverlayPx)到位后覆盖 —
+    // 猜值必小于真值(手势条 inset 因机型而异), 实测保证「最后一项能滚到 Dock 上方」
+    var dockExtraDp by remember { mutableStateOf(NavDockSpec.itemSeat + NavDockSpec.bottomFloat + NavDockSpec.navBarExtra * 2) }
+
     if (!navDock) {
         androidx.compose.material3.Scaffold(
             modifier = Modifier.fillMaxSize(),
@@ -336,12 +345,16 @@ private fun AppRoot(
         }
     } else {
         // Dock 模式: 无 bottomBar 占位 — 内容通底; Dock 悬浮层 Align.BottomCenter 叠加
-        val dockExtra = NavDockSpec.pillHeight + NavDockSpec.bottomFloat + NavDockSpec.navBarExtra
+        // 顶部: 裸 Box 没有 Scaffold 的 contentWindowInsets, 必须显式补 statusBars inset
+        // (此前丢失 → 课表顶栏顶进摄像头挖孔区); 底部不加 — 内容延伸到最底是 Dock 语义
         androidx.compose.foundation.layout.Box(
-            modifier = Modifier.fillMaxSize().background(SleepyTheme.colors.background)
+            modifier = Modifier
+                .fillMaxSize()
+                .background(SleepyTheme.colors.background)
+                .windowInsetsPadding(WindowInsets.statusBars)
         ) {
             androidx.compose.runtime.CompositionLocalProvider(
-                com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding provides dockExtra
+                com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding provides dockExtraDp
             ) {
                 Box(modifier = Modifier.fillMaxSize()) {
                     MainTabs(
@@ -359,7 +372,16 @@ private fun AppRoot(
                     )
                 }
             }
-            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+            var dockOverlayPx by remember { mutableStateOf(0) }
+            val densityForDock = LocalDensity.current
+            if (dockOverlayPx > 0) {
+                dockExtraDp = with(densityForDock) { dockOverlayPx.toDp() }
+            }
+            Box(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .onGloballyPositioned { c -> dockOverlayPx = c.size.height }
+            ) {
                 PillNavigationBar(
                     items = navItems,
                     selectedIndex = currentTab.ordinal,

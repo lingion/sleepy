@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
@@ -67,7 +68,7 @@ val LocalNavExtraBottomPadding = compositionLocalOf { 0.dp }
 object NavDockSpec {
     val horizontalMargin = 16.dp   // 左右距屏幕边缘
     val bottomFloat = 12.dp        // 药丸底边再悬于手势条上方的高度
-    val pillHeight = 76.dp         // 药丸本体高 = 原 Row 高度
+    val itemSeat = 64.dp           // 每 tab 座位宽(= 图标药丸宽)
     val navBarExtra = 6.dp         // 原 top padding(药丸内上下留白取一半对称)
 }
 
@@ -138,15 +139,23 @@ fun PillNavigationBar(
     }
 
     // 形态: 贴底 = 通栏矩形(现状); Dock = 悬浮药丸 — 由调用方叠加在内容之上,
-    // 本组件只负责自己的几何: 收缩宽度(内容自适应)、药丸圆角、投影、悬于手势条上方
+    // 本组件只负责自己的几何: 紧凑定宽(按 tab 数)、药丸圆角、投影、悬于手势条上方
     val barShape = if (dock) RoundedCornerShape(percent = 50) else RectangleShape
     val shadowMod = if (dock) {
         Modifier.shadow(elevation = 8.dp, shape = barShape, clip = false)
     } else Modifier
+    // Dock 药丸定宽: 每 tab 一个 64dp 座位 + Row 水平内边距 6dp×2 + 屏幕两侧 16dp 边距
+    // (宽度内含两侧留白 = 最窄屏 320dp 也放得下) — iOS Dock 式紧凑, 不通栏
+    // (此前 Row fillMaxWidth 在 wrap-content overlay 里撑满全屏 = 伪悬浮)
+    val widthMod = if (dock) {
+        Modifier.width(
+            NavDockSpec.itemSeat * count + 12.dp + NavDockSpec.horizontalMargin * 2
+        )
+    } else Modifier.fillMaxWidth()
     Box(
         modifier = modifier
             .then(shadowMod)
-            .padding(horizontal = if (dock) NavDockSpec.horizontalMargin else 0.dp)
+            .then(widthMod)
             .clip(barShape)
             .background(colors.surfaceContainer)
             .then(
