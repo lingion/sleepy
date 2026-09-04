@@ -245,6 +245,10 @@
     <string name="slot_step_clamped_hint">La entrada supera el máximo de períodos (el horario actual tiene %3$d). Para añadir más períodos, ve a Gestión de horarios y edita el número de períodos del horario actual</string>
     <string name="slot_time_format">El formato de hora inicio/fin del horario %1$d debe ser HH:mm</string>
     <string name="slot_time_order">La hora de inicio del horario %1$d debe ser anterior a la hora de fin</string>
+    <string name="conflict_detail_title">Conflicto con cursos existentes</string>
+    <string name="conflict_detail_save_anyway">Guardar igualmente</string>
+    <string name="conflict_detail_go_back">Volver</string>
+    <string name="conflict_detail_line">Conflicto con "%4$s": %1$s, períodos %2$s, %3$s</string>
     <string name="slot_time_overlap">El horario %1$d y el horario %2$d se superponen en %3$s</string>
     <string name="fix_issues_first">Por favor corrija estos problemas primero</string>
     <string name="more_unexpanded">%1$d más sin expandir</string>

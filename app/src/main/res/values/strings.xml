@@ -262,6 +262,10 @@
     <string name="slot_step_clamped_hint">输入已超出最大节次（当前课表共 %3$d 节），如需更多节数请到课表管理页面编辑当前课表的节数</string>
     <string name="slot_time_format">时段 %1$d 的开始/结束时间格式应为 HH:mm</string>
     <string name="slot_time_order">时段 %1$d 的开始时间必须早于结束时间</string>
+    <string name="conflict_detail_title">与已有课程时间冲突</string>
+    <string name="conflict_detail_save_anyway">仍然保存</string>
+    <string name="conflict_detail_go_back">返回修改</string>
+    <string name="conflict_detail_line">%1$s 第%2$s节 %3$s 与「%4$s」冲突</string>
     <string name="slot_time_overlap">时段 %1$d 与时段 %2$d 在 %3$s 存在时间重叠</string>
     <string name="fix_issues_first">请先修正这些问题</string>
     <string name="more_unexpanded">还有 %1$d 条未展开</string>

@@ -70,6 +70,7 @@ import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
+import com.lingion.sleepy.util.ConflictDetailReporter
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.weekRangesOverlap
@@ -148,6 +149,8 @@ fun AddCourseScreen(
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
     var showColorPicker by remember { mutableStateOf(false) }
+    // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
+    var pendingConflictDetails by remember { mutableStateOf<List<String>>(emptyList()) }
 
     val meetingBlocks = remember(editingCourse?.id) {
         mutableStateListOf(initialMeetingBlock(editingCourse))
@@ -185,6 +188,117 @@ fun AddCourseScreen(
     }
 
     val canSave = courseName.isNotBlank() && meetingBlocks.isNotEmpty()
+
+    // 星期名(1=周一..7=周日), 冲突明细文案取用;模板在此取(stringResource 不能进协程)
+    val dayNames = context.resources.getStringArray(R.array.day_names)
+    val conflictTemplate = stringResource(R.string.conflict_detail_line)
+
+    // v7.10.16u: 保存主流程(校验 → 草稿 → 冲突明细检查 → 落库)。
+    // forceAfterConflict=false 首次点击: 有冲突弹明细不落库;
+    // =true 弹窗「仍然保存」回调: 跳过冲突检查直接落库。
+    fun performSave(forceAfterConflict: Boolean) {
+        val issues = validateCourseDraft(
+            courseName = courseName,
+            blocks = meetingBlocks,
+            startWeek = startWeek,
+            endWeek = endWeek,
+            table = currentTable,
+            context = context
+        )
+        validationIssues = issues
+        if (issues.isNotEmpty()) return
+
+        val draftTableId = state.selectedTableId  // 进入 scope 前取，drafts 需要
+        val drafts = meetingBlocks.flatMap { block ->
+            block.days.sorted().map { day ->
+                buildCourseEntity(
+                    tableId = draftTableId ?: 0L,
+                    groupId = "",
+                    courseName = courseName.trim(),
+                    teacher = teacher.trim(),
+                    room = room.trim(),
+                    note = note.trim(),
+                    day = day,
+                    block = block,
+                    courseColor = courseColor.ifBlank { "#FF6750A4" }
+                )
+            }
+        }
+        scope.launch {
+            val repo = SleepyApp.get().repository
+            // 没表就自动建一张，保证 selectedTableId 非空
+            val tableId = state.selectedTableId
+                ?: viewModel.createEmptyTable()
+            // 用真实 tableId 修正 drafts
+            val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
+            // v7.10.16t: 三层拦截撤除 — 网格 v7.10.16r(issue#10)已支持任意
+            // 层数(轮换显示), 手动加课与整表导入(本就放行三层)对齐, 不再拦。
+            // 旧逻辑 bug(用户 2026-09-04 报): badDays 取的是全表超层天,
+            // 存量违规天会被列进本次添加的拒绝提示里。
+            // v7.10.16u: 不拦但讲清楚 — 编辑模式排除同组旧记录(自己撞自己),
+            // 有冲突先弹明细, 「仍然保存」才落库。
+            if (!forceAfterConflict) {
+                val existing = repo.getCourses(tableId)
+                    .filter { it.groupId != editingCourse?.groupId }
+                val details = ConflictDetailReporter.draftConflictDetails(
+                    fixedDrafts, existing, dayNames
+                ).map { ConflictDetailReporter.formatDetail(it, conflictTemplate) }
+                if (details.isNotEmpty()) {
+                    pendingConflictDetails = details
+                    return@launch
+                }
+            }
+            if (editingCourse != null) {
+                // 编辑：删同 groupId 全部记录，插入所有新草稿
+                val gid = editingCourse.groupId
+                val toInsert = fixedDrafts.map { it.copy(groupId = gid) }
+                repo.updateCourseGroup(
+                    tableId = tableId,
+                    groupId = gid,
+                    newCourses = toInsert
+                )
+            } else {
+                // 新建：所有草稿共享同一个 groupId
+                val gid = java.util.UUID.randomUUID().toString()
+                repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
+            }
+            onSaved()
+        }
+    }
+
+    // v7.10.16u 冲突明细弹窗(非阻塞): 列出 星期几/第几节/哪几周/撞哪门课 全部细节,
+    // 「仍然保存」= 明确放行落库, 「返回修改」= 关弹窗不保存。
+    if (pendingConflictDetails.isNotEmpty()) {
+        AlertDialog(
+            onDismissRequest = { pendingConflictDetails = emptyList() },
+            title = { Text(stringResource(R.string.conflict_detail_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                    pendingConflictDetails.take(6).forEach { line ->
+                        Text(text = "• $line", style = MaterialTheme.typography.bodySmall)
+                    }
+                    if (pendingConflictDetails.size > 6) {
+                        Text(
+                            text = stringResource(R.string.more_unexpanded, pendingConflictDetails.size - 6),
+                            style = MaterialTheme.typography.labelSmall
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    // 二次进入 save scope: pendingConflictDetails 已空 → 直接落库
+                    pendingConflictDetails = emptyList()
+                    performSave(forceAfterConflict = true)
+                }) { Text(stringResource(R.string.conflict_detail_save_anyway)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingConflictDetails = emptyList() }) {
+                    Text(stringResource(R.string.conflict_detail_go_back))
+                }
+            }
+        )
+    }
 
     Scaffold(
         topBar = {
@@ -407,62 +521,7 @@ fun AddCourseScreen(
 
             item {
                 Button(
-                    onClick = {
-                        val issues = validateCourseDraft(
-                            courseName = courseName,
-                            blocks = meetingBlocks,
-                            startWeek = startWeek,
-                            endWeek = endWeek,
-                            table = currentTable,
-                            context = context
-                        )
-                        validationIssues = issues
-                        if (issues.isNotEmpty()) return@Button
-
-                        val draftTableId = state.selectedTableId  // 进入 scope 前取，drafts 需要
-                        val drafts = meetingBlocks.flatMap { block ->
-                            block.days.sorted().map { day ->
-                                buildCourseEntity(
-                                    tableId = draftTableId ?: 0L,
-                                    groupId = "",
-                                    courseName = courseName.trim(),
-                                    teacher = teacher.trim(),
-                                    room = room.trim(),
-                                    note = note.trim(),
-                                    day = day,
-                                    block = block,
-                                    courseColor = courseColor.ifBlank { "#FF6750A4" }
-                                )
-                            }
-                        }
-                        scope.launch {
-                            val repo = SleepyApp.get().repository
-                            // 没表就自动建一张，保证 selectedTableId 非空
-                            val tableId = state.selectedTableId
-                                ?: viewModel.createEmptyTable()
-                            // 用真实 tableId 修正 drafts
-                            val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
-                            // v7.10.16t: 三层拦截撤除 — 网格 v7.10.16r(issue#10)已支持任意
-                            // 层数(轮换显示), 手动加课与整表导入(本就放行三层)对齐, 不再拦。
-                            // 旧逻辑 bug(用户 2026-09-04 报): badDays 取的是全表超层天,
-                            // 存量违规天会被列进本次添加的拒绝提示里。
-                            if (editingCourse != null) {
-                                // 编辑：删同 groupId 全部记录，插入所有新草稿
-                                val gid = editingCourse.groupId
-                                val toInsert = fixedDrafts.map { it.copy(groupId = gid) }
-                                repo.updateCourseGroup(
-                                    tableId = tableId,
-                                    groupId = gid,
-                                    newCourses = toInsert
-                                )
-                            } else {
-                                // 新建：所有草稿共享同一个 groupId
-                                val gid = java.util.UUID.randomUUID().toString()
-                                repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
-                            }
-                            onSaved()
-                        }
-                    },
+                    onClick = { performSave(forceAfterConflict = false) },
                     enabled = canSave,
                     modifier = Modifier
                         .fillMaxWidth()

@@ -245,6 +245,10 @@
     <string name="slot_step_clamped_hint">入力が最大時限を超えています（現在の時間割は %3$d 時限まで）。時限数を増やすには、時間割管理画面で現在の時間割を編集してください</string>
     <string name="slot_time_format">スロット %1$d の開始/終了時間はHH:mm形式である必要があります</string>
     <string name="slot_time_order">スロット %1$d の開始時間は終了時間より前である必要があります</string>
+    <string name="conflict_detail_title">既存の授業と時間が重複しています</string>
+    <string name="conflict_detail_save_anyway">それでも保存</string>
+    <string name="conflict_detail_go_back">戻って修正</string>
+    <string name="conflict_detail_line">%4$s と衝突 — %1$s %2$s限目、%3$s</string>
     <string name="slot_time_overlap">スロット %1$d とスロット %2$d が %3$s で重複しています</string>
     <string name="fix_issues_first">最初にこれらの問題を修正してください</string>
     <string name="more_unexpanded">他に %1$d 件あります</string>

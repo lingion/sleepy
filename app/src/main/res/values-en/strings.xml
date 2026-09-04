@@ -251,6 +251,10 @@
     <string name="slot_step_clamped_hint">Input exceeds the max period (%3$d). To add more periods, go to Timetable Manager and edit the current timetable\'s period count</string>
     <string name="slot_time_format">Slot %1$d start/end time should be HH:mm format</string>
     <string name="slot_time_order">Slot %1$d start time must be before end time</string>
+    <string name="conflict_detail_title">Conflicts with existing courses</string>
+    <string name="conflict_detail_save_anyway">Save anyway</string>
+    <string name="conflict_detail_go_back">Go back</string>
+    <string name="conflict_detail_line">Conflicts with "%4$s" — %1$s, period %2$s, %3$s</string>
     <string name="slot_time_overlap">Slot %1$d and slot %2$d overlap on %3$s</string>
     <string name="fix_issues_first">Please fix these issues first</string>
     <string name="more_unexpanded">%1$d more unexpanded</string>
