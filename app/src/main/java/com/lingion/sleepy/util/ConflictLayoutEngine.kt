@@ -135,7 +135,13 @@ object ConflictLayoutEngine {
         val orderedLayers: List<List<CourseEntity>> = when {
             layerOrderOverride != null -> {
                 val byRep = defaultLayerOrder.associateBy { g -> g.maxWith(primaryComparator).id }
-                val front = layerOrderOverride.mapNotNull { byRep[it] }.toMutableList()
+                // 去重防御(评审 cycle2 #6): override 序重复 id 会让同一层被收集两次双绘;
+                // 按 rep id 去重保留首个命中,缺失层仍按默认序补尾(层集合完备)。
+                val seen = HashSet<Long>()
+                val front = layerOrderOverride
+                    .mapNotNull { byRep[it] }
+                    .filter { seen.add(it.maxWith(primaryComparator).id) }
+                    .toMutableList()
                 for (g in defaultLayerOrder) if (front.none { it === g }) front.add(g)
                 front
             }
@@ -485,11 +491,16 @@ object ConflictLayoutEngine {
 
     /**
      * 簇的「默认图层序」— 每图层的代表 id,按 layoutCluster 同一真值排序:
-     * 图层按其 top 课(层内主课判定序最前)的 (-step, startNode, id) 升序 —
+     * 图层按其代表课(maxWith)的 (-step, startNode, id) 升序 —
      * 与 layoutCluster.defaultLayerOrder 完全一致。
+     * 代表判定与 memberToLayerRep / layoutCluster.layerOrderOverride 三处同键:
+     * 均为层内 maxWith(primaryComparator) — 链层(成员 step 不等)的 first() 未必是
+     * 代表,两约定分裂会让气泡选课 indexOf=-1 静默无效(评审 cycle2 #1)。
+     * 注意 maxWith 语义 = 比较器下最大者: step 最大;同 step 取 startNode 最大 —
+     * 与 primaryOrder「主序最前」(startNode 最小)是两端,层代表固定取 maxWith 端。
      */
     fun defaultLayerIdOrder(courses: List<CourseEntity>): List<Long> =
-        orderedDefaultLayers(courses).map { it.first().id }
+        orderedDefaultLayers(courses).map { it.maxWith(primaryComparator).id }
 
     /**
      * 簇的「默认图层序」完整形态: 排序后的图层本体(每层 = 成员课列表)。
@@ -519,9 +530,9 @@ object ConflictLayoutEngine {
     fun hiddenLayerCount(layerCount: Int): Int = (layerCount - 2).coerceAtLeast(0)
 
     /**
-     * 成员课 id → 其所在图层的代表 id(主课判定序最前课)。
+     * 成员课 id → 其所在图层的代表 id(主课判定序最前课,maxWith)。
      * 气泡弹窗点选任意成员时反查该层在轮换序中的位置;与 overrideAwareLayerOrder/
-     * defaultLayerIdOrder 的 rep 判定同源(层内 maxWith primaryComparator)。
+     * defaultLayerIdOrder / layoutCluster.layerOrderOverride 三处同键(评审 cycle2 #1)。
      */
     fun memberToLayerRep(courses: List<CourseEntity>): Map<Long, Long> {
         val out = HashMap<Long, Long>(courses.size)

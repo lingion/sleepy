@@ -1576,6 +1576,79 @@ class ConflictLayoutEngineTest {
     }
 
     @Test
+    fun rotation_chain_layer_rep_unified_as_comparator_max() {
+        // 评审 cycle2 #1: 链层 [2-3(id2), 4-9(id4)] 的 first()(=2-3) ≠ maxWith。
+        // 层代表必须三处同键(maxWith): defaultLayerIdOrder / memberToLayerRep /
+        // layoutCluster.layerOrderOverride — 否则气泡选课 indexOf=-1 静默无效、轮换错层。
+        // maxWith(primaryComparator) 语义 = 比较器下最大者: compareByDescending(step) 使
+        // step 最小者为「大」;同 step 时 thenBy(startNode) 取 startNode 最大
+        // (v79_defaultTop cbLayer 选 C(step2) 与 layout_trapezoid Layer0 top=3-5 双向钉死)。
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)  // 1-2
+        val b = course(id = 2, day = 1, startNode = 2, step = 2)  // 2-3
+        val c = course(id = 3, day = 1, startNode = 3, step = 2)  // 3-4
+        val d = course(id = 4, day = 1, startNode = 4, step = 6)  // 4-9
+        val e = course(id = 5, day = 1, startNode = 5, step = 2)  // 5-6
+        val f = course(id = 6, day = 1, startNode = 6, step = 2)  // 6-7
+        val all = listOf(a, b, c, d, e, f)
+
+        // 图层: [a,c,e] / [b,d] / [f];层代表 = maxWith: e / b / f
+        // ([a,c,e] 同 step → startNode 最大 e;[b,d] step 降 → 最小 step 的 b)
+        val order = ConflictLayoutEngine.defaultLayerIdOrder(all)
+        assertEquals(listOf(2L, 5L, 6L), order)
+
+        val rep = ConflictLayoutEngine.memberToLayerRep(all)
+        assertEquals(2L, rep[2L])  // b = [b,d] 层代表(maxWith step 最小端)
+        assertEquals(2L, rep[4L])  // d → 同层代表 b(三处同键,反查归一)
+        assertEquals(5L, rep[1L])  // a → 层代表 e(同 step 层 startNode 最大)
+
+        // picker 路径契约: 任一成员反查的代表必须在 defaultLayerIdOrder 里
+        // (否则 indexOf=-1,弹窗点了没反应)
+        for ((member, r) in rep) {
+            assertTrue("member $member rep $r not in order", r in order)
+        }
+
+        // 轮换落地: layerOrderOverride 传完整序 → z 序完整重排
+        // (层序 [b,d 层, a,c,e 层, f 层],层内按 startNode 拼: b,d,a,c,e,f)
+        val cluster = ConflictLayoutEngine.findClusters(all).first()
+        val laid = ConflictLayoutEngine.layoutCluster(
+            cluster, "stack", maxNode = 12, layerOrderOverride = order
+        )
+        assertEquals(listOf(2L, 4L, 1L, 3L, 5L, 6L), laid.sortedBy { it.zRank }.map { it.course.id })
+    }
+
+    @Test
+    fun rotation_override_aware_resolves_non_rep_member_to_its_layer() {
+        // radio 可以传链层任一成员 → 调用方(ConflictCard)先经 memberToLayerRep
+        // 归一到层代表再进 overrideAwareLayerOrder;本测试钉死该两段契约。
+        val a = course(id = 1, day = 1, startNode = 1, step = 3)  // 1-3
+        val b = course(id = 2, day = 1, startNode = 4, step = 3)  // 4-6(与 a 同链层)
+        val x = course(id = 3, day = 1, startNode = 2, step = 4)  // 2-5
+        // 层: [a,b](代表 b:maxWith 同 step 取 startNode 最大) / [x](step4 单课层)
+        // 默认序: x 层 key(-4,2,3) < b 层 key(-3,4,2) → [3,2]
+        assertEquals(listOf(3L, 2L), ConflictLayoutEngine.defaultLayerIdOrder(listOf(a, b, x)))
+        val rep = ConflictLayoutEngine.memberToLayerRep(listOf(a, b, x))
+        assertEquals(2L, rep[1L])  // 非代表成员 a → 层代表 b
+        assertEquals(2L, rep[2L])
+        // UI 同款两段: 任一层成员先归一到代表 b(id2),再前置其层 → [b 层, x 层]
+        assertEquals(
+            listOf(2L, 3L),
+            ConflictLayoutEngine.overrideAwareLayerOrder(listOf(a, b, x), topRepId = rep[1L])
+        )
+    }
+
+    @Test
+    fun rotation_layer_order_override_duplicate_ids_do_not_duplicate_layers() {
+        // 防御: override 序含重复 id → 层集合仍完备,不双绘
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val cluster = ConflictLayoutEngine.findClusters(listOf(a, b)).first()
+        val laid = ConflictLayoutEngine.layoutCluster(
+            cluster, "stack", maxNode = 12, layerOrderOverride = listOf(2L, 2L)
+        )
+        assertEquals(2, laid.size)
+    }
+
+    @Test
     fun rotation_badge_hidden_layers_formula() {
         // 评审 #3: 气泡「+N」= 层数-2(按层计),与 hidden 课数无关、轮换中恒定
         assertEquals(1, ConflictLayoutEngine.hiddenLayerCount(3))
