@@ -67,9 +67,12 @@ val LocalNavExtraBottomPadding = compositionLocalOf { 0.dp }
 /** Dock 形态常量 — 悬浮几何三处共用(组件本体/滚动余量换算/维护锚点) */
 object NavDockSpec {
     val horizontalMargin = 16.dp   // 左右距屏幕边缘
-    val bottomFloat = 12.dp        // 药丸底边再悬于手势条上方的高度
-    val itemSeat = 64.dp           // 每 tab 座位宽(= 图标药丸宽)
-    val navBarExtra = 6.dp         // 原 top padding(药丸内上下留白取一半对称)
+    val bottomFloat = 12.dp        // 胶囊底边再悬于手势条上方的高度
+    val capsuleHeight = 56.dp      // 胶囊本体高(iOS 26 floating tab bar 同高)
+    val itemSeat = 48.dp           // 每 icon 座位宽(≥48dp 触摸目标)
+    val itemGap = 8.dp             // icon 座位间距
+    val innerPad = 8.dp            // 胶囊内边距
+    val totalWidth = 4.dp          // 4 tab: 48*4 + 8*3 + 8*2 = 232dp(分次提交勿散改)
 }
 
 /**
@@ -138,36 +141,31 @@ fun PillNavigationBar(
         }
     }
 
-    // 形态: 贴底 = 通栏矩形(现状); Dock = 悬浮药丸 — 由调用方叠加在内容之上,
-    // 本组件只负责自己的几何: 紧凑定宽(按 tab 数)、药丸圆角、投影、悬于手势条上方
-    val barShape = if (dock) RoundedCornerShape(percent = 50) else RectangleShape
-    val shadowMod = if (dock) {
-        Modifier.shadow(elevation = 8.dp, shape = barShape, clip = false)
-    } else Modifier
-    // Dock 药丸定宽: 每 tab 一个 64dp 座位 + Row 水平内边距 6dp×2 + 屏幕两侧 16dp 边距
-    // (宽度内含两侧留白 = 最窄屏 320dp 也放得下) — iOS Dock 式紧凑, 不通栏
-    // (此前 Row fillMaxWidth 在 wrap-content overlay 里撑满全屏 = 伪悬浮)
-    val widthMod = if (dock) {
-        Modifier.width(
-            NavDockSpec.itemSeat * count + 12.dp + NavDockSpec.horizontalMargin * 2
+    // ═══ 形态分流 ═══
+    // 贴底 = 通栏 76dp 矩形带(现状不动); Dock = iOS 26 floating tab bar 语义:
+    // 56dp 胶囊 icon-only, 半透明玻璃底+柔投影, 悬于手势条上方, 浮在内容上层
+    if (dock) {
+        DockNavigationBar(
+            items = items,
+            selectedIndex = selectedIndex,
+            onSelect = onSelect,
+            colors = colors,
+            density = density,
+            barRootX = { barRootX },
+            onBarGeometry = { x, y, laid ->
+                barRootX = x; barRootY = y; barLaidOut = laid
+            },
+            modifier = modifier
         )
-    } else Modifier.fillMaxWidth()
+        return
+    }
+
     Box(
         modifier = modifier
-            .then(shadowMod)
-            .then(widthMod)
-            .clip(barShape)
+            .fillMaxWidth()
             .background(colors.surfaceContainer)
-            .then(
-                if (dock) {
-                    // Dock: 手势条 inset 只用于把药丸悬上来; 贴底: 原样整条让出
-                    Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-                        .padding(bottom = NavDockSpec.bottomFloat)
-                } else {
-                    Modifier.windowInsetsPadding(WindowInsets.navigationBars)
-                }
-            )
-            .padding(top = 6.dp, bottom = if (dock) 6.dp else 8.dp)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(top = 6.dp, bottom = 8.dp)
             .onGloballyPositioned { c ->
                 barRootX = c.positionInRoot().x
                 barRootY = c.positionInRoot().y
@@ -264,6 +262,130 @@ private fun intervalCoverage(aStart: Float, aEnd: Float, bStart: Float, bEnd: Fl
     val w = bEnd - bStart
     if (w <= 0f) return 0f
     return (aEnd.coerceAtMost(bEnd) - aStart.coerceAtLeast(bStart)).coerceIn(0f, w) / w
+}
+
+/**
+ * Dock 悬浮胶囊(独立组件, 由 PillNavigationBar dock=true 分流进入)。
+ *
+ * 规范依据(iOS 26 HIG floating tab bar + 2025 浮动 dock 惯例):
+ * - 胶囊高 56dp, 圆角 = 高/2 连续胶囊; icon-only(紧凑胶囊容纳不了常驻标签)
+ * - 座位 48dp(触摸目标下限) + 8dp 间距 + 8dp 内边距; 侧边距 16dp
+ * - 玻璃感: 半透明底 + 柔和投影(无 blur — Modifier.blur 需 API 31+, 实机 API 29 无效)
+ * - active 指示: 40×32dp thumb 色块弹簧滑移 + 图标逐字符扫过变色(与贴底共用算法)
+ * - 选中标签不常驻; 无障碍名称走 semantics contentDescription(label 原文案)
+ */
+@Composable
+private fun DockNavigationBar(
+    items: List<PillNavItemSpec>,
+    selectedIndex: Int,
+    onSelect: (Int) -> Unit,
+    colors: com.lingion.sleepy.ui.theme.WakeUpColorScheme,
+    density: androidx.compose.ui.unit.Density,
+    barRootX: () -> Float,
+    onBarGeometry: (Float, Float, Boolean) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val count = items.size.coerceAtLeast(1)
+    val pillHalf = with(density) { (NavDockSpec.itemSeat / 2).toPx() }
+    val iconHalf = with(density) { 12.dp.toPx() }
+
+    // thumb 弹簧(与贴底同款: NoBouncy + High stiffness, 实测定参)
+    val thumbX = remember { Animatable(0f) }
+    val thumbCenterState = remember { mutableFloatStateOf(0f) }
+    var thumbPlaced by remember { mutableStateOf(false) }
+
+    val capsuleShape = RoundedCornerShape(percent = 50)
+    val glassBg = colors.surfaceContainer.copy(alpha = 0.86f)
+
+    // 座位中心 = 内边距 + 座位宽/2 + i*(座位+间距) — 定宽几何, 直接算, 不实测
+    val seatTotal = NavDockSpec.itemSeat + NavDockSpec.itemGap
+    val centers = List(count) { i ->
+        with(density) {
+            (NavDockSpec.innerPad + NavDockSpec.itemSeat / 2 + seatTotal * i).toPx()
+        }
+    }
+
+    LaunchedEffect(centers, selectedIndex) {
+        val idx = selectedIndex.coerceIn(0, count - 1)
+        val target = centers[idx]
+        if (!thumbPlaced) {
+            thumbX.snapTo(target); thumbCenterState.floatValue = target; thumbPlaced = true
+        } else {
+            thumbX.animateTo(
+                targetValue = target,
+                animationSpec = spring(
+                    dampingRatio = Spring.DampingRatioNoBouncy,
+                    stiffness = Spring.StiffnessHigh
+                ),
+                block = { thumbCenterState.floatValue = value }
+            )
+        }
+    }
+
+    val totalWidth = NavDockSpec.itemSeat * count +
+        NavDockSpec.itemGap * (count - 1) + NavDockSpec.innerPad * 2
+
+    Box(
+        modifier = modifier
+            .padding(horizontal = NavDockSpec.horizontalMargin)
+            .windowInsetsPadding(WindowInsets.navigationBars)
+            .padding(bottom = NavDockSpec.bottomFloat)
+            .shadow(elevation = 12.dp, shape = capsuleShape, clip = false, ambientColor = androidx.compose.ui.graphics.Color.Black, spotColor = androidx.compose.ui.graphics.Color.Black)
+            .width(totalWidth)
+            .height(NavDockSpec.capsuleHeight)
+            .clip(capsuleShape)
+            .background(glassBg)
+            .onGloballyPositioned { c ->
+                onBarGeometry(c.positionInRoot().x, c.positionInRoot().y, true)
+            }
+    ) {
+        // thumb 色块: 40×32 居中于 56dp 高胶囊, 弹簧滑移 + 亚像素余数
+        // 定位居中算术: thumb 视觉中心 = startPad(4dp) + 半宽(20dp) + translationX
+        //            = centers[i] → translationX = thumbX - 24dp
+        Box(
+            Modifier
+                .padding(start = 4.dp)
+                .size(width = NavDockSpec.itemSeat - 8.dp, height = 32.dp)
+                .graphicsLayer {
+                    alpha = if (thumbPlaced) 1f else 0f
+                    translationX = thumbX.value - with(density) { 24.dp.toPx() }
+                    translationY = 0f
+                }
+                .clip(RoundedCornerShape(percent = 50))
+                .background(colors.secondaryContainer)
+        )
+        Row(
+            modifier = Modifier.fillMaxWidth().height(NavDockSpec.capsuleHeight),
+            horizontalArrangement = Arrangement.spacedBy(NavDockSpec.itemGap, Alignment.CenterHorizontally),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            items.forEachIndexed { i, item ->
+                val isSel = i == selectedIndex
+                val tc = thumbCenterState.floatValue
+                val iconCov = intervalCoverage(
+                    tc - pillHalf, tc + pillHalf,
+                    centers[i] - iconHalf, centers[i] + iconHalf
+                )
+                Box(
+                    modifier = Modifier
+                        .size(NavDockSpec.itemSeat, NavDockSpec.capsuleHeight)
+                        .noRippleClickable { onSelect(i) }
+                        .semantics {
+                            role = Role.Tab
+                            selected = isSel
+                        },
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = item.icon,
+                        contentDescription = item.label,
+                        tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
+                        modifier = Modifier.size(24.dp)
+                    )
+                }
+            }
+        }
+    }
 }
 
 /**

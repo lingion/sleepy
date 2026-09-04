@@ -312,7 +312,7 @@ private fun AppRoot(
 
     // Dock 滚动余量: 理论估算兜底(首帧前), overlay 实测高(dockOverlayPx)到位后覆盖 —
     // 猜值必小于真值(手势条 inset 因机型而异), 实测保证「最后一项能滚到 Dock 上方」
-    var dockExtraDp by remember { mutableStateOf(NavDockSpec.itemSeat + NavDockSpec.bottomFloat + NavDockSpec.navBarExtra * 2) }
+    var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
 
     if (!navDock) {
         androidx.compose.material3.Scaffold(
