@@ -18,7 +18,6 @@
     <string name="schedule_go_manage">前往课表管理</string>
     <string name="schedule_manual_first">手动创建第一门课</string>
     <string name="schedule_add_course">添加课程</string>
-    <string name="conflict_three_layers_rejected">%1$s已有两节冲突的课程，暂不支持第三节课程再叠加，请调整上课时间</string>
     <string name="share_sheet_title">分享课表</string>
     <string name="schedule_share_table">分享课表</string>
     <string name="exit_press_back_again">再按一次返回退出</string>

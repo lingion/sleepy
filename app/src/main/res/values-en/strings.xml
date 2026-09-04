@@ -21,7 +21,6 @@
     <string name="schedule_go_manage">Go to Manage</string>
     <string name="schedule_manual_first">Create first course</string>
     <string name="schedule_add_course">Add Course</string>
-    <string name="conflict_three_layers_rejected">%1$s already has two conflicting courses. A third overlapping course is not supported yet — please adjust the schedule</string>
     <string name="share_sheet_title">Share Schedule</string>
     <string name="schedule_share_table">Share Schedule</string>
     <string name="exit_press_back_again">Press back again to exit</string>
