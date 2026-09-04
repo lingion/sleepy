@@ -64,9 +64,9 @@ object ConflictDetailReporter {
         return out
     }
 
-    /** 模板拼行(模板含 5 占位: 星期/节次交集/节次文案/周文案/存量课名)。 */
+    /** 模板拼行(模板含 4 占位: 星期/节次交集文案/周文案/存量课名)。 */
     fun formatDetail(d: ConflictDetail, template: String): String =
-        template.format(d.dayText, d.nodeRangeText, d.nodeRangeText, d.weekText, d.existingName)
+        template.format(d.dayText, d.nodeRangeText, d.weekText, d.existingName)
 
     // ---- 内部: 区间与周次判定 ----
 

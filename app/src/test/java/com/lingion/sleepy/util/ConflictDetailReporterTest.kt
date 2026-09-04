@@ -146,14 +146,30 @@ class ConflictDetailReporterTest {
 
     @Test
     fun format_line_uses_day_name_node_and_week() {
+        // 模板必须与生产 strings.xml conflict_detail_line 一致(4 占位:
+        // 星期/节次/周次/存量课名), 曾因测试自造 5 占位模板掩盖过传参错位
         val line = ConflictDetailReporter.formatDetail(
             ConflictDetailReporter.ConflictDetail(
                 existingName = "高等数学", draftName = "大学英语",
                 day = 5, dayText = "周五",
                 nodeRangeText = "3-4", weekText = "第1-16周"
             ),
-            template = "%1\$s 第%3\$s节 %4\$s 与「%5\$s」冲突"
+            template = "%1\$s 第%2\$s节 %3\$s 与「%4\$s」冲突"
         )
         assertEquals("周五 第3-4节 第1-16周 与「高等数学」冲突", line)
+    }
+
+    @Test
+    fun format_line_places_every_slot_even_when_fields_repeat_shape() {
+        // 钉死槽位次序: 节次与周次文本可能形似("3-4"), 各占位必须各取所值
+        val line = ConflictDetailReporter.formatDetail(
+            ConflictDetailReporter.ConflictDetail(
+                existingName = "体育", draftName = "选修",
+                day = 1, dayText = "周一",
+                nodeRangeText = "3-4", weekText = "第3-4周"
+            ),
+            template = "%1\$s 第%2\$s节 %3\$s 与「%4\$s」冲突"
+        )
+        assertEquals("周一 第3-4节 第3-4周 与「体育」冲突", line)
     }
 }
