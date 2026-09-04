@@ -223,6 +223,16 @@
     "sortKeyFull": "dongbeishiyoudaxue"
   },
   {
+    "sortKey": "D",
+    "name": "东南大学",
+    "url": "https://newxk.urp.seu.edu.cn/",
+    "type": "seu",
+    "aliases": [
+      "seu"
+    ],
+    "sortKeyFull": "dongnandaxue"
+  },
+  {
     "sortKey": "F",
     "name": "福建工程学院",
     "url": "https://jwxtwx.fjut.edu.cn/jwglxt/",
@@ -1133,6 +1143,16 @@
   },
   {
     "sortKey": "Z",
+    "name": "浙江大学",
+    "url": "https://zdbk.zju.edu.cn/",
+    "type": "zju",
+    "aliases": [
+      "zju"
+    ],
+    "sortKeyFull": "zhejiangdaxue"
+  },
+  {
+    "sortKey": "Z",
     "name": "浙江工商大学",
     "url": "http://124.160.64.163/jwglxt/xtgl/",
     "type": "zf_new",
@@ -1186,6 +1206,16 @@
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "zhengzhouhangkonggongyeguanlixueyuan"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国科学技术大学",
+    "url": "https://jw.ustc.edu.cn/",
+    "type": "ustc",
+    "aliases": [
+      "ustc"
+    ],
+    "sortKeyFull": "zhongguokexuejishudaxue"
   },
   {
     "sortKey": "Z",
