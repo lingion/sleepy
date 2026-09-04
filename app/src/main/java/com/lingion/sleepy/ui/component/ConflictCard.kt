@@ -233,15 +233,6 @@ internal fun clusterForm(
 /** 簇内单卡/命中区放置矩形(dp),渲染与单测共用同一份真值。 */
 internal data class ConflictRect(val x: Dp, val y: Dp, val width: Dp, val height: Dp)
 
-/**
- * v7.6 图层语义(纯 JVM 可测) — N 徽标的「N」按**图层数**,不按裸课数。
- * 用户 2026-09-02: 「分组之后这两节就绑定在一个图层了」——多课链组整组是一层,
- * 单课是一层。{1-3,4-6} 组 + 1-6 重叠者 = 2 图层(裸课数 3),徽标不该按 3 出。
- * 防御: 组切分与课数对不上(输入源漂移)→ 回落裸课数,不显示错数。
- */
-internal fun conflictBadgeLayerCount(groupSizes: List<Int>, rawCount: Int): Int =
-    if (groupSizes.sum() == rawCount) groupSizes.size else rawCount
-
 /** N 徽标可见性 = 图层 N≥3 且存在被盖层(v7.10.16r: 第二参数 = 层数-2,按层计)。 */
 internal fun conflictShowBadge(layerCount: Int, hiddenCount: Int): Boolean =
     layerCount >= 3 && hiddenCount > 0

@@ -479,6 +479,11 @@ object ConflictLayoutEngine {
      */
     fun conflictClusterKey(anchor: CourseEntity): String =
         "${anchor.day}:${anchor.startNode}:${anchor.step}"
+    // 键域裁定(评审 cycle2 #3, trade-off 有意为之): 键不含 week/tableId —
+    // 与置顶偏好(AppPrefs)同一键域。单双周拆行使同簇跨周复现(同 day/start/step),
+    // 轮换进度跨周延续是良性副作用(用户在任一周看到同一轮换状态);跨表由
+    // ScheduleScreen 的 rotationSteps remember 生命周期兜底(离开课表页即重置)。
+    // 若收窄键域会造成轮换键与置顶键分叉,radio 持久化与临时轮换对不上位。
 
     // =====================================================================================
     // v7.10.16r N≥3 轮换置顶 (issue#10, 用户 2026-09-04 定版;交叉验证修订同日)
@@ -526,6 +531,10 @@ object ConflictLayoutEngine {
     /**
      * 气泡徽标文案(评审 #3): 「+N」= 层数 - 2(默认两层已显示),按层计不按课数,
      * 轮换中恒定;层数 <2 → 0(不显示)。
+     * 基数裁定(评审 cycle2 #2, trade-off 有意为之): layerCount 用**全量簇层数**,
+     * 不按网格内可渲染层裁剪 —— 徽标 +N 与气泡弹窗候选(picker 全量层)必须一致,
+     * 出界层(整课 > maxNode)在弹窗里照样可选中并轮换到顶;若按可渲染层裁,
+     * 徽标数与弹窗项数会分叉。
      */
     fun hiddenLayerCount(layerCount: Int): Int = (layerCount - 2).coerceAtLeast(0)
 
