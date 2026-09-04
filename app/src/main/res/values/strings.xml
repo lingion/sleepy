@@ -298,9 +298,9 @@
     <!-- More Settings -->
     <string name="settings_language">语言 / Language</string>
     <string name="settings_display_mode">课程时间显示</string>
-    <string name="settings_display_node">统一显示节次</string>
+    <string name="settings_display_node">节次</string>
     <string name="settings_display_node_sub">所有课程显示为「第N节」</string>
-    <string name="settings_display_time">统一显示时间</string>
+    <string name="settings_display_time">时间</string>
     <string name="settings_display_time_sub">所有课程显示为「HH:mm–HH:mm」</string>
     <string name="settings_start_view">启动默认页</string>
     <string name="settings_start_view_full">周视图</string>

@@ -262,9 +262,9 @@
 
     <string name="settings_language">言語 / Language</string>
     <string name="settings_display_mode">時間表示</string>
-    <string name="settings_display_node">時限で統一</string>
+    <string name="settings_display_node">時限</string>
     <string name="settings_display_node_sub">すべての授業を「第N時限」と表示</string>
-    <string name="settings_display_time">時刻で統一</string>
+    <string name="settings_display_time">時刻</string>
     <string name="settings_display_time_sub">すべての授業を「HH:mm–HH:mm」と表示</string>
     <string name="settings_start_view">起動時の表示</string>
     <string name="settings_start_view_full">週表示</string>

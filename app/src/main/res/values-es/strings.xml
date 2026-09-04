@@ -262,9 +262,9 @@
 
     <string name="settings_language">Idioma / Language</string>
     <string name="settings_display_mode">Visualización de hora</string>
-    <string name="settings_display_node">Mostrar como períodos</string>
+    <string name="settings_display_node">Períodos</string>
     <string name="settings_display_node_sub">Todos los cursos muestran \"Período N\"</string>
-    <string name="settings_display_time">Mostrar como horas</string>
+    <string name="settings_display_time">Horas</string>
     <string name="settings_display_time_sub">Todos los cursos muestran \"HH:mm–HH:mm\"</string>
     <string name="settings_start_view">Vista al iniciar</string>
     <string name="settings_start_view_full">Vista semanal</string>

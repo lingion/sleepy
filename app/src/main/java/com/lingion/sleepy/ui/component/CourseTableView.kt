@@ -212,6 +212,9 @@ fun CardsGridView(
                     // 非簇课保持原 CourseOverlayCard 单卡路径(回归保护)
                     val context = LocalContext.current
                     val conflictStyle = AppPrefs.getConflictStyle(context)
+                    // v7.10.16r 轮换态(issue#10): 簇键 → 轮换步数,纯会话级(remember,不落盘)。
+                    // 用户 2026-09-04 定版: 默认序永远按用户置顶偏好走;轮换/气泡选课只改当次视图。
+                    var rotationSteps by remember { mutableStateOf(mapOf<String, Int>()) }
                     // v7.10.5: 交换置顶状态上提到 ScheduleScreen — 详情弹窗 radio 点击
                     // 与网格 onPickTop 写同一真相源,radio 勾选瞬间网格同帧换层。
                     // (此前 radio 只写持久化 defaultTopMap,被会话级 topOverrides 遮蔽 → 看似不生效)
@@ -246,6 +249,13 @@ fun CardsGridView(
                             style = conflictStyle,
                             topOverrideId = topOverrides[clusterKey] ?: defaultTopMap[clusterKey],
                             onPickTop = { id -> setTopOverride(clusterKey, id) },
+                            // v7.10.16r 轮换(issue#10): 步数与回调都按簇键隔离,纯会话态不落盘
+                            rotationStep = rotationSteps[clusterKey],
+                            onRotate = { rotationSteps = rotationSteps + (clusterKey to ((rotationSteps[clusterKey] ?: 0) + 1)) },
+                            onPickFromBadge = { layerPos ->
+                                // 气泡选课 = 换来看: 轮换步数使目标层转到首位(会话态)
+                                rotationSteps = rotationSteps + (clusterKey to layerPos)
+                            },
                             onCourseClick = onCourseClick,
                             colW = colW,
                             rowH = rowH,

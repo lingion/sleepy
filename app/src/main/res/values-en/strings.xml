@@ -268,9 +268,9 @@
 
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>
-    <string name="settings_display_node">Show as periods</string>
+    <string name="settings_display_node">Periods</string>
     <string name="settings_display_node_sub">All courses show as \"Period N\"</string>
-    <string name="settings_display_time">Show as times</string>
+    <string name="settings_display_time">Times</string>
     <string name="settings_display_time_sub">All courses show as \"HH:mm–HH:mm\"</string>
     <string name="settings_start_view">Default view on launch</string>
     <string name="settings_start_view_full">Week view</string>

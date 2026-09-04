@@ -17,6 +17,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -32,7 +33,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -118,20 +122,30 @@ fun SettingsFlatCard(
             horizontalArrangement = Arrangement.spacedBy(12.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
+            // 标题 weight(1f) 吃满剩余宽 → tab 永远贴本行最右(与开关行贴右同一逻辑)
             Text(
                 text = title,
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = colors.onSurface,
-                modifier = Modifier.weight(1f, fill = false)
+                modifier = Modifier.weight(1f)
             )
             if (options.isNotEmpty()) {
-                // title weight(1f, fill=false) 只占自然宽, 剩余宽度全归 tab(同 Rub 一行, 非必要不换行)
+                // tab 宽 = n × 最宽段文字 + 段内边距(16dp×2) + 容器内边距(4dp×2)。
+                // 禁用 IntrinsicSize.Min: CJK 的 minIntrinsicWidth 是单字宽, 配 weight(1f) 会把
+                // 每段压到一个汉字宽导致全部换行 —— 必须用 TextMeasurer 实测宽度。
+                val density = LocalDensity.current
+                val textMeasurer = rememberTextMeasurer()
+                val labelStyle = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold)
+                val maxLabelPx = options.maxOf { textMeasurer.measure(AnnotatedString(it), labelStyle).size.width }
+                val tabWidth = with(density) {
+                    ((maxLabelPx + 32.dp.toPx()) * options.size + 8.dp.toPx()).toDp()
+                }
                 SegmentedSwitcher(
                     options = options.mapIndexed { i, label -> i to label },
                     selected = selectedKey,
                     onSelect = onSelect,
-                    modifier = Modifier.weight(1f),
-                    containerColor = colors.surfaceVariant
+                    modifier = Modifier.width(tabWidth),
+                    containerColor = colors.surfaceContainerHighest
                 )
             }
         }

@@ -383,6 +383,12 @@ fun ConflictClusterCard(
     gapW: Dp,
     gapH: Dp,
     isGrey: Boolean,
+    // v7.10.16r 轮换(issue#10): 会话内轮换步数(null=默认序),由 ScheduleScreen 持有,
+    // 不落盘;N≥3 簇点露出带/折角推进一位,详情 radio 仍走 onPickTop 持久化通道。
+    rotationStep: Int? = null,
+    onRotate: () -> Unit = {},
+    // 气泡弹窗选课 = 「换来看」: 把目标层转到轮换序首位(参数=该层在默认序中的位置)。
+    onPickFromBadge: (Int) -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val palette = SleepyTheme.palette
@@ -473,6 +479,21 @@ fun ConflictClusterCard(
     fun layerRepOf(courseId: Long): Long? =
         layerOfId[courseId]?.let { gi -> layerRepId[gi] }
 
+    // v7.10.16r 轮换(issue#10, N≥3): rotationStep 非 null 且层数 ≥3 时,簇的展示序
+    // 改为「默认序循环左移 rotationStep 位」;两节簇 rotationStep 恒不传(单调用点闸门)。
+    // 换层落地: 把轮换后序中 zRank0 层的代表 id 作为 topOverrideId 交给引擎 —
+    // 引擎语义(override 命中层→整层前移,其余按默认序)恰好等于「重排后的完整层序」。
+    val rotationActive = layerCount >= 3 && rotationStep != null && rotationStep > 0
+    val rotationTopId: Long? = if (rotationActive) {
+        val defaultOrder = layerRepId.keys.sorted().mapNotNull { layerRepId[it] }
+        ConflictLayoutEngine.applyLayerRotation(defaultOrder, rotationStep)
+            .firstOrNull()
+    } else null
+    // 切换类点击统一出口(v7.10.16r): N≥3 簇「点露出带/折角/重叠区」= 轮换推进一位
+    // (用户 2026-09-04 定版: 轮换不持久化);两节簇保持原 onPickTop 逐层点选。
+    // 各命中区自行按 layerCount 分流到 switchTap / 原语义,本函数只处理轮换分支。
+    fun switchTap() = onRotate()
+
     // v7.8: 拼条态(chainStripActive)仅用于 FOLD flap 绘制,不影响 rect 几何。
     // 链组内每张成员卡严格按所在图层走 conflictCardRect 的标准顶/底分支:
     //  - 顶层图层(STACK→缩小左上 / RAIL→收窄 / FOLD→全尺寸折角)
@@ -551,7 +572,7 @@ fun ConflictClusterCard(
                                     .width(r.width)
                                     .height(r.height)
                                     .noRippleClickable {
-                                        onPickTop(layerRepOf(course.id) ?: course.id)
+                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id)
                                     }
                             )
                             return@forEach
@@ -562,12 +583,12 @@ fun ConflictClusterCard(
                                 .width(r.width)
                                 .height(r.height)
                                 .noRippleClickable {
-                                    onPickTop(layerRepOf(course.id) ?: course.id)
+                                    if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id)
                                 }
                         ) {
                             ConflictCourseCard(
                                 course = course,
-                                onClick = { onPickTop(layerRepOf(course.id) ?: course.id) },
+                                onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id) },
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
                                 shape = cardShape
@@ -598,7 +619,7 @@ fun ConflictClusterCard(
                                     .width(hit.width)
                                     .height(hit.height)
                                     .noRippleClickable {
-                                        onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
                                     }
                             )
                         }
@@ -614,7 +635,7 @@ fun ConflictClusterCard(
                                     .width(hit.first)
                                     .height(hit.second)
                                     .noRippleClickable {
-                                        onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
                                     }
                             )
                         }
@@ -635,7 +656,7 @@ fun ConflictClusterCard(
                                     .width(hit.width)
                                     .height(hit.height)
                                     .noRippleClickable {
-                                        onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
+                                        if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(item.hiddenCourseId) ?: item.hiddenCourseId)
                                     }
                             )
                         }
@@ -700,7 +721,7 @@ fun ConflictClusterCard(
                             )
                             .width(hit.first)
                             .height(hit.second)
-                            .noRippleClickable { onPickTop(switchTarget) }
+                            .noRippleClickable { if (layerCount >= 3) switchTap() else onPickTop(switchTarget) }
                     )
                 }
             }
@@ -735,10 +756,13 @@ fun ConflictClusterCard(
         // railOthers 字段仅作为 Mark 命中区命中集合使用, 此处不再渲染。
 
         // ---- N 徽标(图层 N≥3 且 hidden 课存在): overlay 层右上,点击弹课名点选 ----
+        // v7.10.16r(issue#10, 用户 2026-09-04 定版): 徽标文案从「总层数」改「+被盖人数」—
+        // 默认两层已显示,三层 = +1、四层 = +2。气泡点击语义不变(弹课名列表),
+        // 但列表点选 = 「换来看」(把该层转到可见),持久化默认置顶仍只走详情 radio。
         if (showBadge) {
             val styleIsFold = form == ConflictVariant.FOLD
             ConflictBadge(
-                count = layerCount,
+                hiddenCount = hiddenCount,
                 onClick = { showPicker = true },
                 modifier = Modifier
                     .align(Alignment.TopEnd)
@@ -756,7 +780,16 @@ fun ConflictClusterCard(
             onDismiss = { showPicker = false },
             onPick = { id ->
                 showPicker = false
-                onPickTop(id)
+                if (layerCount >= 3) {
+                    // v7.10.16r: 气泡选课 = 「换来看」— 把该课所在层转到轮换序首位,
+                    // 会话态不落盘;层内任一成员都可反查层序(用户点的是画出来的成员)。
+                    val layerIdx = layerOfId[id]
+                    val defaultOrder = layerRepId.keys.sorted().mapNotNull { layerRepId[it] }
+                    val target = defaultOrder.indexOfFirst { it == layerRepId[layerIdx] }
+                    if (target >= 0) onPickFromBadge(target)
+                } else {
+                    onPickTop(id)
+                }
             }
         )
     }
@@ -884,22 +917,27 @@ private fun ConflictCourseCard(
  */
 
 /**
- * N 徽标(N≥3) — 右上角 14dp 小圆标,bg-elevated 类底色(surface token)+onSurface 文字,
- * 8sp 显示簇大小。视觉精修(Task 5): 由 Task 4 的 primary 实底改为中性浮起样式。
+ * N 徽标(N≥3) — 右上角小气泡,bg-elevated 类底色(surface token)+onSurface 文字。
+ * v7.10.16r(issue#10): 文案 = 「+被盖人数」(三层 +1 / 四层 +2),不再是绝对层数;
+ * 宽度随文案自适应(1 位数圆形,2 位数横向胶囊),仍为中性浮起样式。
  */
 @Composable
-private fun ConflictBadge(count: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
+private fun ConflictBadge(hiddenCount: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
     val colors = SleepyTheme.colors
+    val single = hiddenCount in 0..9
     Box(
         modifier = modifier
-            .size(BADGE_SIZE_DP.dp)
+            .then(
+                if (single) Modifier.size(BADGE_SIZE_DP.dp)
+                else Modifier.height(BADGE_SIZE_DP.dp).width(BADGE_SIZE_DP.dp * 1.7f)
+            )
             .clip(RoundedCornerShape(50))
             .background(colors.surface)
             .noRippleClickable(onClick),
         contentAlignment = Alignment.Center
     ) {
         Text(
-            text = count.toString(),
+            text = "+$hiddenCount",
             style = MaterialTheme.typography.labelSmall.copy(fontSize = BADGE_FONT_SP.sp),
             color = colors.onSurface,
             maxLines = 1

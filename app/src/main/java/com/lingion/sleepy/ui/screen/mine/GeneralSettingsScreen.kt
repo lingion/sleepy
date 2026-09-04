@@ -416,13 +416,25 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 )
             }
 
-            // 课程胶囊统一底色: 仅标题 + 开关(用户 2026-09-03 指令: 说明文字去掉), App 侧独立不刷新小组件
+            // 课程胶囊统一底色: 仅标题 + 右侧开关(用户 2026-09-03 指令: 说明文字去掉; 标题禁两遍),
+            // App 侧独立不刷新小组件
             item {
-                SettingsFlatCard(title = stringResource(R.string.settings_course_colorless)) {
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_course_colorless),
+                val colors = SleepyTheme.colors
+                Row(
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_course_colorless),
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
                         checked = courseColorless,
-                        onCheckedChange = { courseColorless = it; AppPrefs.setCourseColorless(context, it) }
+                        onCheckedChange = { courseColorless = it; AppPrefs.setCourseColorless(context, it) },
+                        colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary)
                     )
                 }
             }
