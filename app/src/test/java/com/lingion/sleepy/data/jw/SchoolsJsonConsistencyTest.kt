@@ -42,6 +42,7 @@ class SchoolsJsonConsistencyTest {
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_EAMS5,
             JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC,
             JwProtocol.TYPE_SCU,
+            JwProtocol.TYPE_NEU,
         )
         val bad = loadEntries().filter { it.type != null && it.type !in declared }
         assertEquals("type 未在 JwProtocol 声明的条目: ${bad.map { it.name to it.type }}", 0, bad.size)
@@ -101,7 +102,7 @@ class SchoolsJsonConsistencyTest {
     fun `B-batch first wave (seu zju ustc scu) has at least one live entry each`() {
         // B 档第一波 (宽松/无 license) 漂移点: 这 4 个 type 落地 parser 后必须有 schools.json 条目
         val types = loadEntries().mapNotNull { it.type }
-        for (t in listOf(JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU)) {
+        for (t in listOf(JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU)) {
             assertTrue("B档第一波 type=$t 应至少有 1 所学校", types.count { it == t } >= 1)
         }
     }

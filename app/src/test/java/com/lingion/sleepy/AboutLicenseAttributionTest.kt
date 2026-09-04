@@ -45,6 +45,7 @@ class AboutLicenseAttributionTest {
         Attribution("zju-ical-py", "LGPL-2.1"),        // Xecades/zju-ical-py
         Attribution("USTC-timetable-to-ics", ""),      // 1970633640/USTC-timetable-to-ics (无 license)
         Attribution("ScuTimetable", ""),               // Z-P-J/ScuTimetable (无 license)
+        Attribution("neu_wisedu2wakeup", ""),       // CreamPig233/neu_wisedu2wakeup (无 license)
     )
 
     private fun checkAll(locale: String, atts: List<Attribution>) {

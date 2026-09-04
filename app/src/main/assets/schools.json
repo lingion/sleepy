@@ -208,6 +208,16 @@
   },
   {
     "sortKey": "D",
+    "name": "东北大学",
+    "url": "https://jwxt.neu.edu.cn/",
+    "type": "neu",
+    "aliases": [
+      "neu"
+    ],
+    "sortKeyFull": "dongbeidaxue"
+  },
+  {
+    "sortKey": "D",
     "name": "东北林业大学",
     "url": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
     "type": "qz",
