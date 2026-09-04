@@ -1,0 +1,50 @@
+{
+  "datas": {
+    "arrangedList": [
+      {
+        "courseName": "高等数学",
+        "dayOfWeek": 1,
+        "beginSection": 1,
+        "endSection": 2,
+        "weeksAndTeachers": "1-16周/王教授[主讲]",
+        "titleDetail": [
+          "汇总: 1-16周 王教授",
+          "1-16周 浑南校区一教A楼301"
+        ]
+      },
+      {
+        "courseName": "大学物理",
+        "dayOfWeek": 3,
+        "beginSection": 5,
+        "endSection": 6,
+        "weeksAndTeachers": "2-15周/李老师[主讲]",
+        "titleDetail": [
+          "汇总: 2-15周 李老师",
+          "2-15周 浑南校区一教B楼202"
+        ]
+      },
+      {
+        "courseName": "数据结构实验",
+        "dayOfWeek": 5,
+        "beginSection": 7,
+        "endSection": 8,
+        "weeksAndTeachers": "2,4,6,8,10,12,14,16周/张老师[主讲]",
+        "titleDetail": [
+          "汇总: 2,4,6,8,10,12,14,16周 张老师",
+          "2,4,6,8,10,12,14,16周 浑南校区计算机楼401"
+        ]
+      },
+      {
+        "courseName": "英语口语",
+        "dayOfWeek": 2,
+        "beginSection": 9,
+        "endSection": 10,
+        "weeksAndTeachers": "1-16双周/Smith[主讲]",
+        "titleDetail": [
+          "汇总: 1-16双周 Smith",
+          "1-16双周 南湖校区外语楼501"
+        ]
+      }
+    ]
+  }
+}
