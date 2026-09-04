@@ -361,6 +361,8 @@
     <string name="jw_after_login">Después de iniciar sesión</string>
     <string name="jw_nav_hint">Navega a "Mi horario", luego toca el botón derecho</string>
     <string name="jw_import_page">Importar esta página</string>
+    <string name="jw_fetch_timeout">Tiempo de espera agotado: el servidor no respondió durante mucho tiempo. Verifique su red y reintente</string>
+    <string name="jw_fetch_no_courses">Se obtuvo correctamente pero no se encontraron cursos: asegúrese de que la página muestre el horario del semestre actual y que el semestre sea correcto</string>
 
     <!-- School Select -->
     <string name="select_school">Seleccionar escuela</string>

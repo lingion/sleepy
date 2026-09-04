@@ -367,6 +367,8 @@
     <string name="jw_after_login">After logging in</string>
     <string name="jw_nav_hint">Navigate to "My Schedule" page, then tap the button on the right</string>
     <string name="jw_import_page">Import This Page</string>
+    <string name="jw_fetch_timeout">Fetch timed out: the server did not respond for a long time. Check your network and retry</string>
+    <string name="jw_fetch_no_courses">Fetched successfully but no courses were parsed: make sure the page shows this semester\'s timetable and the semester is correct</string>
 
     <!-- School Select -->
     <string name="select_school">Select School</string>

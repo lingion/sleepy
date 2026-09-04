@@ -475,6 +475,8 @@
     <string name="jw_after_login">完成登录后</string>
     <string name="jw_nav_hint">导航到「个人课表」页，再点右侧按钮</string>
     <string name="jw_import_page">导入此页</string>
+    <string name="jw_fetch_timeout">抓取超时：教务服务器长时间无响应，请检查网络后重试</string>
+    <string name="jw_fetch_no_courses">抓取成功但未解析到课程：请确认页面已显示本学期课表且学期选择正确</string>
 
     <!-- School Select -->
     <string name="select_school">选择学校</string>

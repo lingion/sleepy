@@ -361,6 +361,8 @@
     <string name="jw_after_login">完成登入後</string>
     <string name="jw_nav_hint">導航到「個人課表」頁，再點右側按鈕</string>
     <string name="jw_import_page">匯入此頁</string>
+    <string name="jw_fetch_timeout">抓取逾時：教務伺服器長時間無回應，請檢查網路後重試</string>
+    <string name="jw_fetch_no_courses">抓取成功但未解析到課程：請確認頁面已顯示本學期課表且學期選擇正確</string>
 
     <!-- School Select -->
     <string name="select_school">選擇學校</string>

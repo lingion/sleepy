@@ -50,6 +50,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
+import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.JwImportViewModel
@@ -57,6 +58,9 @@ import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
+
+/** fetch JS 注入超时: 教务宕机时 20s 无桥回调即报超时, 禁无限 pending。 */
+private const val FETCH_TIMEOUT_MS = 20_000L
 
 /**
  * 教务 WebView 登录页
@@ -83,12 +87,15 @@ fun JwWebViewLoginScreen(
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
     val fetchFailedNoResponseMsg = stringResource(R.string.jw_fetch_failed_no_response)
     val fetchFormatErrorMsg = stringResource(R.string.jw_fetch_format_error)
     val fetchFailedFmt = stringResource(R.string.jw_fetch_failed)
     val pageNotLoadedMsg = stringResource(R.string.jw_page_not_loaded)
+    val fetchTimeoutMsg = stringResource(R.string.jw_fetch_timeout)
+    val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
 
     // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
     // 桥回调已切到主线程；result 形如 {ok:true,data:"<xskcb.do JSON>"} 或 {ok:false,err:"..."}
@@ -114,6 +121,11 @@ fun JwWebViewLoginScreen(
                         }
                     }
                     Log.d("JwWebView", "wisedu fetched JSON len=${data.length} periods=${periods.size}")
+                    if (periods.isEmpty() && school.type == JwProtocol.TYPE_CQU) {
+                        // CQU fetch 走通但 time-pattern 没给节次: 落库前明确提示,
+                        // 用户可在确认页手填节次时间, 而非报误导性的「空学期」
+                        scope.launch { snackbar.showSnackbar(fetchNoCoursesMsg) }
+                    }
                     onHtmlCaptured(data, school, periods)
                 }
             } else {
@@ -124,6 +136,23 @@ fun JwWebViewLoginScreen(
             Log.e("JwWebView", "parse wisedu result failed", e)
             scope.launch { snackbar.showSnackbar(fetchFormatErrorMsg) }
         }
+    }
+
+    // fetch JS 注入超时闸: evaluateJavascript 无内建超时, 教务宕机/挂起时
+    // 桥回调永远不来, 用户只见「正在抓取」无限 pending。20s 无回调即报超时。
+    fun evaluateFetchWithTimeout(wv: WebView, js: String) {
+        var answered = false
+        val beginToken = logToken.incrementAndGet()
+        wv.evaluateJavascript(js) {
+            answered = true
+            Log.d("JwWebView", "fetch js done token=$beginToken")
+        }
+        wv.postDelayed({
+            if (!answered) {
+                Log.w("JwWebView", "fetch js timeout token=$beginToken")
+                scope.launch { snackbar.showSnackbar(fetchTimeoutMsg) }
+            }
+        }, FETCH_TIMEOUT_MS)
     }
 
     BackHandler {
@@ -176,18 +205,18 @@ fun JwWebViewLoginScreen(
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
                     // wisedu (金智 jwapp)：课表数据在 JSON API 不在页面 HTML，改用 fetch 拿 JSON（结果走 JS 桥回调）
                     if (school.type == JwProtocol.TYPE_WISEDU) {
-                        wv.evaluateJavascript(WISEDU_FETCH_JS, null)
+                        evaluateFetchWithTimeout(wv, WISEDU_FETCH_JS)
                         return@CaptureBar
                     }
                     // CQU（重庆大学门户）：同走 JS 桥 fetch 四个 REST API，Bearer token 取自 localStorage
                     if (school.type == JwProtocol.TYPE_CQU) {
-                        wv.evaluateJavascript(CQU_FETCH_JS, null)
+                        evaluateFetchWithTimeout(wv, CQU_FETCH_JS)
                         return@CaptureBar
                     }
                     // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
                     // 用户已在 WebView 走完 CAS 登录并落到 jxglstu.hfut.edu.cn 域。
                     if (school.type == JwProtocol.TYPE_EAMS5) {
-                        wv.evaluateJavascript(EAMS5_FETCH_JS, null)
+                        evaluateFetchWithTimeout(wv, EAMS5_FETCH_JS)
                         return@CaptureBar
                     }
                     // T5: 新版正方 jwglxt — WebView 内 fetch kbList JSON
@@ -266,6 +295,7 @@ private fun JwWebView(
     AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
+            val schoolHost = url.toUri().host.orEmpty()
             WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -302,7 +332,12 @@ private fun JwWebView(
                         handler: android.webkit.SslErrorHandler,
                         error: android.net.http.SslError
                     ) {
-                        handler.proceed()
+                        // 中间人防护: 不再无条件 proceed (曾放行任意自签证书劫持课表账号),
+                        // 改为按主域名白名单豁免 — 部分高校教务确用自签/私有 CA, 仅对
+                        // 学校 URL 的注册域放行, 其余一律 cancel。
+                        val host = view.url?.toUri()?.host.orEmpty()
+                        val allowed = SslBypassRegistry.isAllowed(host, schoolHost)
+                        if (allowed) handler.proceed() else handler.cancel()
                     }
                     override fun onPageFinished(view: WebView?, url: String?) {
                         Log.d("JwWebView", "onPageFinished url=$url")
@@ -657,6 +692,35 @@ private class WiseduBridge(private val onResult: (String) -> Unit) {
     @android.webkit.JavascriptInterface
     fun onWiseduResult(json: String) {
         main.post { onResult(json) }
+    }
+}
+
+/**
+ * SSL 豁免注册表: 仅对学校 URL 的注册域 (含其子域) 放行自签/私有 CA 证书 —
+ * 部分高校教务确用私有 CA。除此之外的 SSL 错误一律 cancel (中间人防护)。
+ */
+private object SslBypassRegistry {
+    /** 取注册域: 无公共后缀库, 用启发式 — 取末两段 (xx.edu.cn 形态取末三段)。 */
+    fun registrableDomain(host: String): String {
+        val h = host.lowercase().trim().trimEnd('.')
+        if (h.isEmpty()) return ""
+        val parts = h.split('.')
+        if (parts.size <= 2) return h
+        val secondLevel = parts[parts.size - 2]
+        // 多段公共后缀 (edu.cn / edu.hk / ac.uk 等): 公共后缀 + 域名 = 末三段
+        val tld = parts.last()
+        if ((tld == "cn" || tld == "hk" || tld == "uk" || tld == "tw" || tld == "jp") &&
+            secondLevel in setOf("edu", "ac", "gov", "org")
+        ) {
+            return parts.takeLast(3).joinToString(".")
+        }
+        return parts.takeLast(2).joinToString(".")
+    }
+
+    /** host 是否与 schoolHost 同注册域 (或为其子域)。 */
+    fun isAllowed(host: String, schoolHost: String): Boolean {
+        if (host.isBlank() || schoolHost.isBlank()) return false
+        return registrableDomain(host) == registrableDomain(schoolHost)
     }
 }
 

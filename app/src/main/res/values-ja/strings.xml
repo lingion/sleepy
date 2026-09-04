@@ -361,6 +361,8 @@
     <string name="jw_after_login">ログイン後</string>
     <string name="jw_nav_hint">「個人時間割」ページに移動し、右のボタンをタップ</string>
     <string name="jw_import_page">このページをインポート</string>
+    <string name="jw_fetch_timeout">取得がタイムアウトしました：サーバーが長時間応答しません。ネットワークを確認して再試行してください</string>
+    <string name="jw_fetch_no_courses">取得は成功しましたが授業を解析できませんでした：ページに今学期の時間割が表示されているか、学期選択が正しいか確認してください</string>
 
     <!-- School Select -->
     <string name="select_school">学校を選択</string>
