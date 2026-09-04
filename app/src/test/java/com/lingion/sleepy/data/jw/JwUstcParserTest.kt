@@ -107,6 +107,64 @@ class JwUstcParserTest {
     }
 
     @Test
+    fun `parses USTC courses - malformed lessonCode falls back to start end time inference`() {
+        // lessonCode 并非协议契约 (上游 json_version.py 只把它拼进 description,
+        // 节次实际从 startDate/endDate HH:mm 推) — 4 位定宽解读是自创假设。
+        // 缺失/不合式时不得整行丢弃, 用 startTime/endTime 推断节次。
+        val json = """
+        {
+          "studentTableVm": {
+            "activities": [
+              {
+                "courseName": "机器学习",
+                "campus": "高新园区",
+                "customPlace": null,
+                "room": "电三楼201",
+                "teachers": ["周老师"],
+                "weeksStr": "1-16",
+                "weekday": 2,
+                "startDate": "08:00",
+                "endDate": "09:40",
+                "lessonCode": "X-77"
+              }
+            ]
+          }
+        }
+        """.trimIndent()
+        val courses = JwUstcParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals(1, courses[0].startNode)
+        assertEquals(2, courses[0].endNode)
+    }
+
+    @Test
+    fun `parses USTC courses - lessonCode absent entirely still parses via time inference`() {
+        val json = """
+        {
+          "studentTableVm": {
+            "activities": [
+              {
+                "courseName": "学术道德",
+                "campus": null,
+                "customPlace": "线上",
+                "room": null,
+                "teachers": ["吴老师"],
+                "weeksStr": "6-9",
+                "weekday": 5,
+                "startDate": "19:00",
+                "endDate": "20:50"
+              }
+            ]
+          }
+        }
+        """.trimIndent()
+        val courses = JwUstcParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals(9, courses[0].startNode)
+        assertEquals(10, courses[0].endNode)
+    }
+
+    @Test
     fun `parses USTC courses - confidence is high when studentTableVm anchor present`() {
         val parser = JwUstcParser(loadJson())
         assertTrue("confidence must be >= 80, was ${parser.confidence()}",
