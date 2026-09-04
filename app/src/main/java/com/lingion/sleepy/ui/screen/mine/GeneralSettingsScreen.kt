@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -567,7 +568,13 @@ fun GeneralSettingsScreen(
                         onCheckedChange = { on ->
                             highRefresh = on
                             AppPrefs.setHighRefresh(context, on)
-                            com.lingion.sleepy.util.HighRefreshRate.apply(context as? android.app.Activity ?: return@Switch, on)
+                            val activity = context as? android.app.Activity
+                            if (activity == null) {
+                                // 理论不可达 (本页只从 MainActivity 进入); 留日志防静默失败
+                                Log.w("GeneralSettings", "high refresh toggle: context is not Activity, apply skipped")
+                                return@Switch
+                            }
+                            com.lingion.sleepy.util.HighRefreshRate.apply(activity, on)
                         },
                         colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary),
                         modifier = Modifier.heightIn(max = 32.dp)
