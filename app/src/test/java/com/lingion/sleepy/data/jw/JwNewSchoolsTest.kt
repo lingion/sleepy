@@ -154,8 +154,8 @@ class JwNewSchoolsTest {
         // 硬编码具体数字会在每次收录新校时炸红 (149 断言曾落后 10 校)。
         // 下限只锁已收录的里程碑, 防倒退。
         assertTrue(
-            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 175 (检查是否 cp 主资产)",
-            parsed.size >= 175
+            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 179 (检查是否 cp 主资产)",
+            parsed.size >= 179
         )
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
@@ -167,6 +167,10 @@ class JwNewSchoolsTest {
             "武汉大学", "湖南大学", "华南师范大学", "中国人民大学", "中国矿业大学（北京）",
         )) {
             assertEquals("211 批量收录条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
+        }
+        // 2026-09 211 批量收录 B1 档 4 所 (经典金智 EAMS)
+        for (n in listOf("电子科技大学", "上海财经大学", "湖南师范大学", "南京航空航天大学")) {
+            assertEquals("经典 EAMS 条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
         }
     }
 
@@ -199,7 +203,7 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_HNUST,
             JwProtocol.TYPE_EAMS5, JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU,
             JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU,
-            JwProtocol.TYPE_WHUT
+            JwProtocol.TYPE_WHUT, JwProtocol.TYPE_CLASSIC_EAMS
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",

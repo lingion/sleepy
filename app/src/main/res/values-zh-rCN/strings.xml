@@ -569,7 +569,7 @@
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
     <string name="about_license_title">开源声明</string>
-    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。本应用部分教务导入适配参考了 WakeUp 课程表 (Apache-2.0)、时光课程表重庆大学适配器 (cqu.js) 与 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 协议的公开实现;以及 SEUTimetable (sakimidare, Apache-2.0) 东南大学 URP、zju-ical-py (Xecades, LGPL-2.1) 浙江大学 UGR、USTC-timetable-to-ics (1970633640) 中国科学技术大学 studentTableModule、ScuTimetable (Z-P-J) 四川大学 dateList 与 neu_wisedu2wakeup (CreamPig233) 东北大学 arrangedList 协议与 shiguang_warehouse (MIT) 武汉理工大学 kcbcxby 协议的公开实现,在此一并致谢。</string>
+    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。本应用部分教务导入适配参考了 WakeUp 课程表 (Apache-2.0)、时光课程表重庆大学适配器 (cqu.js) 与 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 协议的公开实现;以及 SEUTimetable (sakimidare, Apache-2.0) 东南大学 URP、zju-ical-py (Xecades, LGPL-2.1) 浙江大学 UGR、USTC-timetable-to-ics (1970633640) 中国科学技术大学 studentTableModule、ScuTimetable (Z-P-J) 四川大学 dateList 与 neu_wisedu2wakeup (CreamPig233) 东北大学 arrangedList 协议与 shiguang_warehouse (MIT) 武汉理工大学 kcbcxby ,经典金智 EAMS 协议形态并参考 shiguang_warehouse (MIT) hunnu/uestc/hpu 适配器与 WakeupSchedule_Kotlin (Apache-2.0) 经典 EAMS 导入实现协议的公开实现,在此一并致谢。</string>
     <string name="about_license_detail">开源许可与致谢</string>
     <string name="license_page_title">开源许可与致谢</string>
     <string name="license_gpl_section">许可证</string>

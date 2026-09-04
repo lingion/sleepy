@@ -212,6 +212,16 @@
   },
   {
     "sortKey": "D",
+    "name": "电子科技大学",
+    "url": "http://eams.uestc.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "uestc"
+    ],
+    "sortKeyFull": "dianzikejidaxue"
+  },
+  {
+    "sortKey": "D",
     "name": "电子科技大学中山学院",
     "url": "http://jwgln.zsc.edu.cn/jsxsd/",
     "type": "qz",
@@ -673,6 +683,16 @@
     "sortKeyFull": "hunannongyedaxue"
   },
   {
+    "sortKey": "H",
+    "name": "湖南师范大学",
+    "url": "https://jwglnew.hunnu.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "hunnu"
+    ],
+    "sortKeyFull": "hunanshifandaxue"
+  },
+  {
     "sortKey": "J",
     "name": "江苏工程职业技术学院",
     "url": "http://tyjw.tmu.edu.cn/",
@@ -798,6 +818,16 @@
   },
   {
     "sortKey": "N",
+    "name": "南京航空航天大学",
+    "url": "https://aao-eas.nuaa.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "nuaa"
+    ],
+    "sortKeyFull": "nanjinghangkonghangtiandaxue"
+  },
+  {
+    "sortKey": "N",
     "name": "南京理工大学",
     "url": "http://202.119.81.112:8080/",
     "type": "qz",
@@ -911,6 +941,16 @@
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "shandongzhengfadaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海财经大学",
+    "url": "https://eams.sufe.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "sufe"
+    ],
+    "sortKeyFull": "shanghaicaijingdaxue"
   },
   {
     "sortKey": "S",

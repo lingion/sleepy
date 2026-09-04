@@ -433,7 +433,11 @@ internal object DiagMapper {
             school.url.contains("jw.ahu.edu.cn") ||          // 安徽大学 (supwisdom 新版)
             school.url.contains("jwxt.cumtb.edu.cn") ||      // 矿大北京 (supwisdom 新版)
             school.url.contains("jwxt.ybu.edu.cn") ||        // 延边大学
-            school.url.contains("jwgl.shzu.edu.cn") ->       // 石河子大学
+            school.url.contains("jwgl.shzu.edu.cn") ||       // 石河子大学
+            school.url.contains("eams.uestc.edu.cn") ||      // 电子科技大学 (经典 EAMS, 202 鉴权)
+            school.url.contains("eams.sufe.edu.cn") ||       // 上海财经大学 (经典 EAMS)
+            school.url.contains("jwglnew.hunnu.edu.cn") ||   // 湖南师范大学 (经典 EAMS, iframe)
+            school.url.contains("aao-eas.nuaa.edu.cn") ->    // 南京航空航天大学 (经典 EAMS)
                 "该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试"
             school.type in setOf(
                 com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ,

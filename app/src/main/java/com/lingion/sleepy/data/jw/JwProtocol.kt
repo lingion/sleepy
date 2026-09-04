@@ -123,6 +123,18 @@ object JwProtocol {
     const val TYPE_WHUT = "whut"
 
     /**
+     * 经典金智/树维 EAMS (courseTableForStd!courseTable.action 系列, HTML+内嵌 JS)。
+     * 课表数据在页面内嵌脚本块: new TaskActivity(教师,课名,...,周次位图) + index=D*unitCount+P;
+     * HTML 表格 #manualArrangeCourseTable 是空壳 (JS 端 fillTable 渲染), 禁走 DOM。
+     * 周次位图下标 0 占位, 下标 i=1 即第 i 周; unitCount 每校不一 (12/13/11), 禁写死。
+     * 适配 (2026-09 211 批量收录): 电子科大 / 上财 / 湖南师大 / 南航 (南航入口是
+     * courseTableStudent!* 但脚本块同构)。
+     * 上游协议形态: shiguang_warehouse (MIT) hunnu/uestc/hpu.js + WakeupSchedule_Kotlin
+     * (Apache-2.0); 代码自写。
+     */
+    const val TYPE_CLASSIC_EAMS = "classic_eams"
+
+    /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
      *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
      *  PAGE_HIGH = HTML 页面级唯一锚点（zftal-ui-、__VIEWSTATE+Table1 ...）
@@ -137,7 +149,8 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
+        TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
+        TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
@@ -158,6 +171,7 @@ object JwProtocol {
         TYPE_HNUST -> "湖南科大教务"
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_EAMS5 -> "合工大教务 (EAMS5)"
+        TYPE_CLASSIC_EAMS -> "金智教务（经典 EAMS）"
         TYPE_SEU -> "东南大学"
         TYPE_ZJU -> "浙江大学"
         TYPE_USTC -> "中国科学技术大学"
@@ -180,6 +194,7 @@ object JwProtocol {
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_EAMS5 -> "eams5"
+        TYPE_CLASSIC_EAMS -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
         TYPE_CF -> "cf"
