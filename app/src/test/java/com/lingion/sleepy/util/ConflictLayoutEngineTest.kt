@@ -1477,4 +1477,97 @@ class ConflictLayoutEngineTest {
         val d = course(id = 4, day = 1, startNode = 5, step = 2)
         assertTrue(ConflictLayoutEngine.daysExceedingTwoLanes(listOf(a, b, c, d)).isEmpty())
     }
+
+    // ============================ v7.10.16r 轮换置顶 (issue#10 三层轮转) ============================
+    //
+    // 用户定版(2026-09-04):
+    //   - 网格 N≥3 冲突默认只显示前两层,右上角「+N」气泡 = 被盖住的人数
+    //   - 点气泡 → 弹窗选课换来看(不写持久化偏好)
+    //   - 点折角/露边/重叠区 → 轮换推进一位(123→231→312),会话内临时态
+    //   - 轮换顺序永远基于「默认图层序」推进,不叠加(312 再点回 123)
+
+    @Test
+    fun rotation_next_cycle_advances_by_one_and_wraps() {
+        // 3 图层 123 → 231;231 → 312;312 → 123(回到默认,不叠加)
+        assertEquals(231, ConflictLayoutEngine.rotationNext(123))
+        assertEquals(312, ConflictLayoutEngine.rotationNext(231))
+        assertEquals(123, ConflictLayoutEngine.rotationNext(312))
+    }
+
+    @Test
+    fun rotation_next_pure_rotate_for_any_valid_order() {
+        // 纯函数语义: 任何 ≥2 位合法序都是循环左移;N=2 是否进轮换由 UI 闸门决定
+        // (两节路径保持既有逐层点选,rotationNext 不被调用到 2 位序)
+        assertEquals(21, ConflictLayoutEngine.rotationNext(12))
+        assertEquals(12, ConflictLayoutEngine.rotationNext(21))
+    }
+
+    @Test
+    fun rotation_next_four_layers_rotates_with_wrap() {
+        // 4 图层: 1234 → 2341 → 3412 → 4123 → 1234
+        assertEquals(2341, ConflictLayoutEngine.rotationNext(1234))
+        assertEquals(3412, ConflictLayoutEngine.rotationNext(2341))
+        assertEquals(4123, ConflictLayoutEngine.rotationNext(3412))
+        assertEquals(1234, ConflictLayoutEngine.rotationNext(4123))
+    }
+
+    @Test
+    fun rotation_from_mid_sequence_returns_to_default_after_full_cycle() {
+        // 从任意轮换态出发,轮满一圈回默认 — 轮换是「基于默认序的环」,无历史漂移
+        // (用户点 2 次: 123→231→312; 再点 1 次: 回 123 而不是 321)
+        var s = 123
+        repeat(3) { s = ConflictLayoutEngine.rotationNext(s) }
+        assertEquals(123, s)
+    }
+
+    @Test
+    fun rotation_order_invalid_input_falls_back_to_default() {
+        // 防御: 非法数字(0/负数/超9层/含0位)回落 0(默认序),UI 按无轮换处理
+        assertEquals(0, ConflictLayoutEngine.rotationNext(0))
+        assertEquals(0, ConflictLayoutEngine.rotationNext(-123))
+        assertEquals(0, ConflictLayoutEngine.rotationNext(1023))  // 含 0 位非法
+        assertEquals(0, ConflictLayoutEngine.rotationNext(1234567890)) // 10 层>9层非法
+    }
+
+    @Test
+    fun rotation_layer_order_maps_ids_by_default_z_order() {
+        // 图层默认序 = layoutCluster 的 zRank 序(主课判定序),轮换只重排列表;
+        // 1-2(id1)/1-3(id2)/1-4(id3) 全重叠: 默认序 = step 降 → id3,id2,id1
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 4)
+        val defaultOrder = ConflictLayoutEngine.defaultLayerIdOrder(listOf(a, b, c))
+        assertEquals(listOf(3L, 2L, 1L), defaultOrder)
+    }
+
+    @Test
+    fun rotation_state_resolution_prefers_session_over_default() {
+        // 解析当前应显示序: 会话轮换态优先,否则默认序(不写任何持久化)
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        val c = course(id = 3, day = 1, startNode = 1, step = 4)
+        val defaultOrder = ConflictLayoutEngine.defaultLayerIdOrder(listOf(a, b, c))
+        // 默认: [3,2,1];用户点一次轮换 → [2,1,3]
+        val rotated = ConflictLayoutEngine.applyLayerRotation(defaultOrder, 1)
+        assertEquals(listOf(2L, 1L, 3L), rotated)
+        // 再点两次 → 回默认
+        val back = ConflictLayoutEngine.applyLayerRotation(rotated, 2)
+        assertEquals(defaultOrder, back)
+    }
+
+    @Test
+    fun rotation_state_resolution_null_session_returns_default() {
+        val a = course(id = 1, day = 1, startNode = 1, step = 2)
+        val b = course(id = 2, day = 1, startNode = 1, step = 3)
+        assertEquals(
+            ConflictLayoutEngine.defaultLayerIdOrder(listOf(a, b)),
+            ConflictLayoutEngine.resolveLayerOrder(listOf(a, b), sessionRotation = null)
+        )
+        // 会话态 1(已推进一位) → 循环左移一位: [2] → [2]... 2 层默认序 [1,2](step 降→id2 在前? 否:
+        // step 降 = b(1-3) 先,a(1-2) 后 → 默认 [2,1];左移一位 = [1,2])
+        assertEquals(
+            listOf(1L, 2L),
+            ConflictLayoutEngine.resolveLayerOrder(listOf(a, b), sessionRotation = 1)
+        )
+    }
 }

@@ -1,6 +1,7 @@
 package com.lingion.sleepy.util
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import kotlin.math.pow
 
 /** 同一天的冲突簇 — 簇内课程节点区间两两经传递闭包相连(直接或间接共享节次)。 */
 data class ConflictCluster(val day: Int, val courses: List<CourseEntity>)
@@ -464,6 +465,66 @@ object ConflictLayoutEngine {
      */
     fun conflictClusterKey(anchor: CourseEntity): String =
         "${anchor.day}:${anchor.startNode}:${anchor.step}"
+
+    // =====================================================================================
+    // v7.10.16r N≥3 轮换置顶 (issue#10, 用户 2026-09-04 定版)
+    //
+    // 语义: 网格 N≥3 图层簇默认显示「默认序前两层」,右上「+N」气泡 = 被盖人数。
+    // 点露出带/折角 → 轮换推进一位(会话内临时态,不写任何持久化偏好);点气泡 →
+    // 弹窗选课换来看。默认序永远来自 layoutCluster 的 zRank 序,轮换只是循环左移。
+    // =====================================================================================
+
+    /**
+     * 簇的「默认图层序」— 每图层的代表 id,按 layoutCluster 同一真值排序:
+     * 图层按其 top 课(层内主课判定序最前)的 (-step, startNode, id) 升序 —
+     * 与 layoutCluster.defaultLayerOrder 完全一致。轮换与气泡都以此序为基准,
+     * 顶层偏好(topOverrideId)不改变本序(override 是视图态)。
+     */
+    fun defaultLayerIdOrder(courses: List<CourseEntity>): List<Long> =
+        chainGroups(courses)
+            .sortedBy { g -> g.maxWith(primaryComparator).let { LayerSortKey(-it.step, it.startNode, it.id) } }
+            .map { it.first().id }
+
+    /**
+     * 轮换推进一位(纯函数)。层序编码为按位十进制(123 → 231),循环左移:
+     * 首位移到末位。任何 ≥2 位合法序都旋转;N=2 是否轮换由 UI 闸门决定
+     * (两节路径保持既有逐层点选,不进轮换)。非法输入(≤0 / 含 0 位 / 超 9 层)
+     * 回落 0,调用方按「无轮换态」处理。
+     */
+    fun rotationNext(order: Int): Int {
+        if (order <= 0) return 0
+        var digits = 0
+        var v = order
+        while (v > 0) {
+            if (v % 10 == 0) return 0 // 0 位非法(层号从 1 起)
+            v /= 10
+            digits++
+        }
+        if (digits > 9 || digits < 2) return order // 1 层无轮换;>9 层防御
+        val pow = 10.0.pow(digits - 1).toInt()
+        val head = order / pow
+        val tail = order % pow
+        return tail * 10 + head
+    }
+
+    /**
+     * 把轮换推进 [steps] 位应用到默认序(循环左移)。steps 取模,负数同余处理。
+     */
+    fun applyLayerRotation(defaultOrder: List<Long>, steps: Int): List<Long> {
+        if (defaultOrder.size < 2 || steps % defaultOrder.size == 0) return defaultOrder
+        val k = ((steps % defaultOrder.size) + defaultOrder.size) % defaultOrder.size
+        return defaultOrder.drop(k) + defaultOrder.take(k)
+    }
+
+    /**
+     * 解析当前应显示的图层序: 会话轮换步数非空则循环左移,否则默认序。
+     * UI 每帧调用,纯函数无副作用 — 会话态由调用方持有(remember,不落盘)。
+     */
+    fun resolveLayerOrder(courses: List<CourseEntity>, sessionRotation: Int?): List<Long> {
+        val defaultOrder = defaultLayerIdOrder(courses)
+        return if (sessionRotation == null || sessionRotation <= 0) defaultOrder
+        else applyLayerRotation(defaultOrder, sessionRotation)
+    }
 
     fun conflictClusterKey(cluster: ConflictCluster): String =
         conflictClusterKey(cluster.courses.first())
