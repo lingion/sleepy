@@ -24,10 +24,9 @@ import kotlinx.serialization.json.jsonPrimitive
  * teacher 提取规则 (split "/", 取末段剥 [主讲]) 与 weeksAndTeachers 解析参考,
  * 代码自写, 仅复用字段映射。
  *
- * v1 限制 (上游协议缺陷):
- *   - upstream 协议层丢失单/双信息 (replace /[()]/g 剥中文括号),
- *     本 parser 强制 type=0, 但端点修正仍按 Sleepy 现有语义 (上游文本剥离后
- *     "1-16双周" 退化为 "1-16周", 视为每周 type=0)。
+ * 单/双周: 线协议 JSON 的周次串自带单/双信息 ("1-16双周" / "1-16周(双)" /
+ * "3-15周（单）"), 上游 CSV 导出才 replace(/[()]/g) 剥括号丢弃 — Sleepy 不丢,
+ * 保留 type=1/2 并按 Sleepy 语义做端点修正 (单周奇数化/双周偶数化)。
  */
 class JwNeuParser(source: String) : JwParser(source) {
 
@@ -52,7 +51,14 @@ class JwNeuParser(source: String) : JwParser(source) {
             val titleDetail = obj["titleDetail"] as? JsonArray
             val (weeksStr, room) = extractWeeksAndRoom(titleDetail, weeksAndTeachers)
             if (weeksStr.isEmpty()) continue
-            for ((sw, ew) in parseWeeks(weeksStr)) {
+            val (parity, cleanedWeeks) = extractParity(weeksStr)
+            for ((sw, ew) in parseWeeks(cleanedWeeks)) {
+                // Sleepy 语义: 单周(1)起点须奇数/双周(2)起点须偶数, 端点同 ZJU 修正
+                val adjustedStart = when (parity) {
+                    1 -> if (sw % 2 == 0) sw + 1 else sw
+                    2 -> if (sw % 2 != 0) sw + 1 else sw
+                    else -> sw
+                }
                 out += JwCourse(
                     name = name,
                     room = room,
@@ -60,9 +66,9 @@ class JwNeuParser(source: String) : JwParser(source) {
                     day = day,
                     startNode = begin,
                     endNode = end,
-                    startWeek = sw,
+                    startWeek = adjustedStart,
                     endWeek = ew,
-                    type = 0,
+                    type = parity,
                 )
             }
         }
@@ -107,9 +113,24 @@ class JwNeuParser(source: String) : JwParser(source) {
     }
 
     /**
-     * 解析周次串 (已剥中文括号): "1-16周" / "2,4,6,8" / "2-15单周" (剥"(单)"后剩"2-15单周")
-     * 形如 "X-Y周" / "X-Y单周" / "X-Y双周" / "X,Y,Z周"。
-     * 单/双信息 upstream 已丢失, type 强制 0; 端点修正仍按 weekly 语义 (无意义, 不动)。
+     * 提取单/双周限定并剥净: 返回 (parity, 已剥限定词与括号的串)。
+     * parity: 0=每周 1=单周 2=双周。线协议形态 "1-16双周" / "1-16周(双)" /
+     * "3-15周（单）" / "2-15单周" — ASCII/全角括号与"单/双"标记全部剥除。
+     */
+    internal fun extractParity(s: String): Pair<Int, String> {
+        val parity = when {
+            "单" in s -> 1
+            "双" in s -> 2
+            else -> 0
+        }
+        val clean = s.replace("（", "(").replace("）", ")")
+            .replace("(单)", "").replace("(双)", "")
+        return parity to clean
+    }
+
+    /**
+     * 解析周次串 (已剥单/双标记与括号): "1-16周" / "2,4,6,8"。
+     * 形如 "X-Y周" / "X,Y,Z周"。单/双限定由 [extractParity] 先行剥离。
      */
     internal fun parseWeeks(s: String): List<Pair<Int, Int>> {
         if (s.isBlank()) return emptyList()

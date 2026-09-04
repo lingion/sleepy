@@ -56,16 +56,72 @@ class JwNeuParserTest {
     }
 
     @Test
-    fun `parses NEU courses - 双周课 type 0 (upstream loses odd even info)`() {
-        // 1-16双周: 上游协议剥"(双)", Sleepy 仍按 weekly 0 处理;
-        // type=0 意味着无端点修正, startWeek=1 endWeek=16 保持原样
+    fun `parses NEU courses - 双周课 carries parity type 2 with even endpoint correction`() {
+        // 1-16双周: 线协议单/双信息仍存在 (上游 CSV 导出才剥括号), Sleepy 保留
+        // type=2, 端点修正 startWeek 1→2 (双周须偶数起点)
         val eng = JwNeuParser(loadJson()).generateCourseList().first { it.name == "英语口语" }
         assertEquals(2, eng.day)
         assertEquals(9, eng.startNode)
         assertEquals(10, eng.endNode)
-        assertEquals(1, eng.startWeek)  // 无端点修正 (type=0)
+        assertEquals(2, eng.startWeek)  // 端点修正: 双周起点须偶数
         assertEquals(16, eng.endWeek)
-        assertEquals(0, eng.type)  // 上游协议层丢失单/双, type 强制 0
+        assertEquals(2, eng.type)
+    }
+
+    @Test
+    fun `parses NEU courses - parenthesized parity week string parses fully`() {
+        // 真实线协议 "1-16周(双)" 带 ASCII 括号 (上游 extract_schedule.js
+        // weeksRaw.replace(/[()]/g) 实证); 旧实现剥不净括号 → toIntOrNull 失败
+        // 截断成 startWeek=endWeek=1
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "概率论",
+              "dayOfWeek": 4,
+              "beginSection": 3,
+              "endSection": 4,
+              "weeksAndTeachers": "1-16周(双)/赵老师[主讲]",
+              "titleDetail": [
+                "汇总: 1-16周(双) 赵老师",
+                "1-16周(双) 浑南校区一教C楼105"
+              ]
+            }]
+          }
+        }
+        """.trimIndent()
+        val courses = JwNeuParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        val c = courses[0]
+        assertEquals(2, c.type)
+        assertEquals(2, c.startWeek)
+        assertEquals(16, c.endWeek)
+    }
+
+    @Test
+    fun `parses NEU courses - fullwidth parens parity also stripped`() {
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "线性代数",
+              "dayOfWeek": 2,
+              "beginSection": 1,
+              "endSection": 2,
+              "weeksAndTeachers": "3-15周（单）/钱老师[主讲]",
+              "titleDetail": [
+                "汇总: 3-15周（单） 钱老师",
+                "3-15周（单） 南湖校区综合楼201"
+              ]
+            }]
+          }
+        }
+        """.trimIndent()
+        val courses = JwNeuParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals(1, courses[0].type)
+        assertEquals(3, courses[0].startWeek)  // 3 已奇数, 不动
+        assertEquals(15, courses[0].endWeek)
     }
 
     @Test
