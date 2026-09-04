@@ -368,16 +368,6 @@
   },
   {
     "sortKey": "H",
-    "name": "合肥工业大学",
-    "url": "https://jxglstu.hfut.edu.cn/",
-    "type": "eams5",
-    "aliases": [
-      "hfut"
-    ],
-    "sortKeyFull": "hefeigongyedaxue"
-  },
-  {
-    "sortKey": "H",
     "name": "海南师范大学",
     "url": "http://210.37.0.16/",
     "type": "zf",
@@ -439,6 +429,16 @@
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "hebeizhengfazhiyexueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "合肥工业大学",
+    "url": "https://jxglstu.hfut.edu.cn/",
+    "type": "eams5",
+    "aliases": [
+      "hfut"
+    ],
+    "sortKeyFull": "hefeigongyedaxue"
   },
   {
     "sortKey": "H",
@@ -812,6 +812,14 @@
   },
   {
     "sortKey": "S",
+    "name": "三江学院",
+    "url": "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "sanjiangxueyuan"
+  },
+  {
+    "sortKey": "S",
     "name": "山东大学（威海）",
     "url": "https://jwxt.wh.sdu.edu.cn/",
     "type": "qz",
@@ -819,14 +827,6 @@
       "sduwh"
     ],
     "sortKeyFull": "shandongdaxueweihai"
-  },
-  {
-    "sortKey": "S",
-    "name": "三江学院",
-    "url": "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "aliases": [],
-    "sortKeyFull": "sanjiangxueyuan"
   },
   {
     "sortKey": "S",
