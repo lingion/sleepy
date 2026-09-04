@@ -1,6 +1,16 @@
 [
   {
     "sortKey": "A",
+    "name": "安徽大学",
+    "url": "https://jw.ahu.edu.cn/student/for-std/course-table",
+    "type": "eams5",
+    "aliases": [
+      "ahu"
+    ],
+    "sortKeyFull": "anhuidaxue"
+  },
+  {
+    "sortKey": "A",
     "name": "安徽工业大学",
     "url": "http://jwxt.ahut.edu.cn/jsxsd/",
     "type": "qz",
@@ -90,6 +100,16 @@
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "beijingxinxikejidaxue"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京中医药大学",
+    "url": "https://jw.bucm.edu.cn/jwapp/",
+    "type": "wisedu",
+    "aliases": [
+      "bucm"
+    ],
+    "sortKeyFull": "beijingzhongyiyaodaxue"
   },
   {
     "sortKey": "B",
@@ -231,6 +251,16 @@
     "type": "hnust",
     "aliases": [],
     "sortKeyFull": "dongbeishiyoudaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "东华大学",
+    "url": "https://jw.dhu.edu.cn/jwapp/",
+    "type": "wisedu",
+    "aliases": [
+      "dhu"
+    ],
+    "sortKeyFull": "donghuadaxue"
   },
   {
     "sortKey": "D",
@@ -492,6 +522,16 @@
   },
   {
     "sortKey": "H",
+    "name": "华东政法大学",
+    "url": "https://jw.ecupl.edu.cn/jwapp",
+    "type": "wisedu",
+    "aliases": [
+      "ecupl"
+    ],
+    "sortKeyFull": "huadongzhengfadaxue"
+  },
+  {
+    "sortKey": "H",
     "name": "淮南师范学院",
     "url": "http://211.70.176.173/jwglxt/xtgl/",
     "type": "zf_new",
@@ -515,6 +555,16 @@
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "huanannongyedaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "华南师范大学",
+    "url": "https://jwxt.scnu.edu.cn/jwglxt",
+    "type": "zf_new",
+    "aliases": [
+      "scnu"
+    ],
+    "sortKeyFull": "huananshifandaxue"
   },
   {
     "sortKey": "H",
@@ -563,6 +613,16 @@
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "hunanchengshixueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南大学",
+    "url": "http://hdjw.hnu.edu.cn/Njw2017/",
+    "type": "qz",
+    "aliases": [
+      "hnu"
+    ],
+    "sortKeyFull": "hunandaxue"
   },
   {
     "sortKey": "H",
@@ -854,11 +914,41 @@
   },
   {
     "sortKey": "S",
+    "name": "上海大学",
+    "url": "https://jwxt.shu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [
+      "shu"
+    ],
+    "sortKeyFull": "shanghaidaxue"
+  },
+  {
+    "sortKey": "S",
     "name": "上海海洋大学",
     "url": "https://urp.shou.edu.cn/login",
     "type": "urp_new",
     "aliases": [],
     "sortKeyFull": "shanghaihaiyangdaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海交通大学",
+    "url": "https://i.sjtu.edu.cn/jwglxt",
+    "type": "zf_new",
+    "aliases": [
+      "sjtu"
+    ],
+    "sortKeyFull": "shanghaijiaotongdaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海外国语大学",
+    "url": "https://jw.shisu.edu.cn/jwapp",
+    "type": "wisedu",
+    "aliases": [
+      "shisu"
+    ],
+    "sortKeyFull": "shanghaiwaiguoyudaxue"
   },
   {
     "sortKey": "S",
@@ -891,6 +981,14 @@
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "shenyangshifandaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "石河子大学",
+    "url": "https://jwgl.shzu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "shihezidaxue"
   },
   {
     "sortKey": "S",
@@ -1000,6 +1098,16 @@
   },
   {
     "sortKey": "W",
+    "name": "武汉大学",
+    "url": "https://jwgl.whu.edu.cn/",
+    "type": "zf_new",
+    "aliases": [
+      "whu"
+    ],
+    "sortKeyFull": "wuhandaxue"
+  },
+  {
+    "sortKey": "W",
     "name": "武汉东湖学院",
     "url": "http://221.232.159.27/",
     "type": "zf",
@@ -1032,6 +1140,16 @@
     "type": "cf",
     "aliases": [],
     "sortKeyFull": "wuyidaxue"
+  },
+  {
+    "sortKey": "X",
+    "name": "厦门大学",
+    "url": "https://jw.xmu.edu.cn/login",
+    "type": "wisedu",
+    "aliases": [
+      "xmu"
+    ],
+    "sortKeyFull": "xiamendaxue"
   },
   {
     "sortKey": "X",
@@ -1144,6 +1262,14 @@
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "yanandaxue"
+  },
+  {
+    "sortKey": "Y",
+    "name": "延边大学",
+    "url": "http://jwxt.ybu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "yanbiandaxue"
   },
   {
     "sortKey": "Y",
@@ -1260,6 +1386,16 @@
   },
   {
     "sortKey": "Z",
+    "name": "中国矿业大学（北京）",
+    "url": "https://jwxt.cumtb.edu.cn/student/for-std/course-table",
+    "type": "eams5",
+    "aliases": [
+      "cumtb"
+    ],
+    "sortKeyFull": "zhongguokuangyedaxuebeijing"
+  },
+  {
+    "sortKey": "Z",
     "name": "中国矿业大学徐海学院",
     "url": "http://xhjw.cumt.edu.cn:8080/jwglxt/xtgl/",
     "type": "zf_new",
@@ -1275,6 +1411,16 @@
       "cau"
     ],
     "sortKeyFull": "zhongguonongyedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国人民大学",
+    "url": "https://jw.ruc.edu.cn/Njw2017/",
+    "type": "qz",
+    "aliases": [
+      "ruc"
+    ],
+    "sortKeyFull": "zhongguorenmindaxue"
   },
   {
     "sortKey": "Z",

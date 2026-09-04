@@ -154,12 +154,20 @@ class JwNewSchoolsTest {
         // 硬编码具体数字会在每次收录新校时炸红 (149 断言曾落后 10 校)。
         // 下限只锁已收录的里程碑, 防倒退。
         assertTrue(
-            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 160 (检查是否 cp 主资产)",
-            parsed.size >= 160
+            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 175 (检查是否 cp 主资产)",
+            parsed.size >= 175
         )
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
         assertEquals(1, parsed.count { it.name == "重庆大学" })
+        // 2026-09 211 批量收录 A 档 15 所
+        for (n in listOf(
+            "上海交通大学", "上海大学", "上海外国语大学", "东华大学", "华东政法大学",
+            "厦门大学", "延边大学", "安徽大学", "石河子大学", "北京中医药大学",
+            "武汉大学", "湖南大学", "华南师范大学", "中国人民大学", "中国矿业大学（北京）",
+        )) {
+            assertEquals("211 批量收录条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
+        }
     }
 
     // -------- 4. 排序约束 --------
