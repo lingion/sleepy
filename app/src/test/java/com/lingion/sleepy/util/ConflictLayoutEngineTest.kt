@@ -1660,4 +1660,41 @@ class ConflictLayoutEngineTest {
         assertEquals(0, ConflictLayoutEngine.hiddenLayerCount(1))
         assertEquals(0, ConflictLayoutEngine.hiddenLayerCount(0))
     }
+
+    @Test
+    fun applyLayerRotation_cyclic_left_shift_by_steps() {
+        // 生产入口 ConflictCard 轮换推进: 循环左移 steps 位
+        val base = listOf(1L, 2L, 3L)
+        assertEquals(listOf(2L, 3L, 1L), ConflictLayoutEngine.applyLayerRotation(base, 1))
+        assertEquals(listOf(3L, 1L, 2L), ConflictLayoutEngine.applyLayerRotation(base, 2))
+        assertEquals(listOf(1L, 2L, 3L), ConflictLayoutEngine.applyLayerRotation(base, 3))
+    }
+
+    @Test
+    fun applyLayerRotation_step_zero_or_full_cycle_returns_baseline_itself() {
+        val base = listOf(7L, 8L, 9L, 10L)
+        assertEquals(base, ConflictLayoutEngine.applyLayerRotation(base, 0))
+        assertEquals(base, ConflictLayoutEngine.applyLayerRotation(base, 4))
+        assertEquals(base, ConflictLayoutEngine.applyLayerRotation(base, 8))
+        // 钉死「返回同一实例」语义 — ConflictCard 用 === 比较可跳过重组
+        assertTrue(ConflictLayoutEngine.applyLayerRotation(base, 0) === base)
+    }
+
+    @Test
+    fun applyLayerRotation_negative_steps_wrap_forward() {
+        // 负数同余: -1 mod 3 = 2 → 左移 2 位
+        val base = listOf(1L, 2L, 3L)
+        assertEquals(listOf(3L, 1L, 2L), ConflictLayoutEngine.applyLayerRotation(base, -1))
+        assertEquals(
+            ConflictLayoutEngine.applyLayerRotation(base, 1),
+            ConflictLayoutEngine.applyLayerRotation(base, -2)
+        )
+    }
+
+    @Test
+    fun applyLayerRotation_single_layer_or_empty_returns_input() {
+        val single = listOf(42L)
+        assertEquals(single, ConflictLayoutEngine.applyLayerRotation(single, 5))
+        assertEquals(emptyList<Long>(), ConflictLayoutEngine.applyLayerRotation(emptyList(), 3))
+    }
 }

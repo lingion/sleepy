@@ -273,6 +273,8 @@ object ConflictLayoutEngine {
             // 按 startNode 升序排列剩余课
             val sorted = remaining.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
             // 区间图最大独立集 — 按右端点贪心
+            // 注: layer 不可能为空 — currentEnd 初始 -1 而 startNode>=0,
+            // sorted 非空(remaining 非空)时首课必入; 无需兜底分支。
             val layer = mutableListOf<CourseEntity>()
             var currentEnd = -1
             for (c in sorted) {
@@ -282,10 +284,6 @@ object ConflictLayoutEngine {
                     layer.add(c)
                     currentEnd = inclEnd
                 }
-            }
-            if (layer.isEmpty()) {
-                // 兜底: 极端情况(不应发生, 仅防御)→ 把第一门课作为单课图层, 防死循环
-                layer.add(sorted.first())
             }
             layers.add(layer.sortedBy { it.startNode })
             remaining.removeAll { c -> layer.any { it.id == c.id } }
