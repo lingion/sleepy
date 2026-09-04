@@ -39,11 +39,12 @@ class AboutLicenseAttributionTest {
         Attribution("HFUT-Schedule", "MIT"),
     )
 
-    /** B 档第一波 (宽松 license 优先): 三校致谢必出 */
+    /** B 档第一波 (宽松/无 license): 四校致谢必出 */
     private val BATCH_B_FIRST_WAVE_ATTRIBUTIONS = listOf(
         Attribution("SEUTimetable", "Apache-2.0"),     // sakimidare/SEUTimetable
         Attribution("zju-ical-py", "LGPL-2.1"),        // Xecades/zju-ical-py
         Attribution("USTC-timetable-to-ics", ""),      // 1970633640/USTC-timetable-to-ics (无 license)
+        Attribution("ScuTimetable", ""),               // Z-P-J/ScuTimetable (无 license)
     )
 
     private fun checkAll(locale: String, atts: List<Attribution>) {

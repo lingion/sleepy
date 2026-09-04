@@ -892,6 +892,16 @@
   },
   {
     "sortKey": "S",
+    "name": "四川大学",
+    "url": "https://scu.edu.cn/",
+    "type": "scu",
+    "aliases": [
+      "scu"
+    ],
+    "sortKeyFull": "sichuandaxue"
+  },
+  {
+    "sortKey": "S",
     "name": "四川大学锦城学院",
     "url": "http://jwweb.scujcc.cn/",
     "type": "zf",
