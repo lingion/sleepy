@@ -6,6 +6,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.widthIn
@@ -417,7 +418,9 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
             }
 
             // 课程胶囊统一底色: 仅标题 + 右侧开关(用户 2026-09-03 指令: 说明文字去掉; 标题禁两遍),
-            // App 侧独立不刷新小组件
+            // App 侧独立不刷新小组件。
+            // 高度对齐折叠卡收起态: Switch 默认 48dp 最小触摸目标会把行撑高, heightIn(max=32dp)
+            // 锁回开关本体高度(触摸目标仍覆盖整行点击区, 不损可用性)
             item {
                 val colors = SleepyTheme.colors
                 Row(
@@ -434,7 +437,8 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                     Switch(
                         checked = courseColorless,
                         onCheckedChange = { courseColorless = it; AppPrefs.setCourseColorless(context, it) },
-                        colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary)
+                        colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary),
+                        modifier = Modifier.heightIn(max = 32.dp)
                     )
                 }
             }
