@@ -29,8 +29,8 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -55,6 +55,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.HolidayStyleChip
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.SettingToggleRow
 import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -306,7 +307,6 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
                 // 标题行右贴 SegmentedSwitcher — 与通用设置页各平铺卡同款(用户 2026-09-04)
                 SettingsFlatCard(
                     title = stringResource(R.string.settings_holiday_style),
-                    subtitle = stringResource(R.string.settings_holiday_style_sub),
                     options = listOf(
                         stringResource(R.string.settings_holiday_style_grey),
                         stringResource(R.string.settings_holiday_style_strikethrough)
@@ -531,6 +531,8 @@ private fun HolidayRemovedCard(
  * 编辑/添加弹窗(起止日期范围段)。
  * target 为网络段时, 保存时补 sourceKey="holiday|workday:<首日>" 挂接替换该网络段。
  * 校验: start/end 均有效且 end >= start, 否则禁用保存并提示 holiday_date_invalid。
+ * 输入框全走项目 token(TextField + fieldShape + fieldColors, 色块无描线);
+ * 类型选择 = SegmentedSwitcher 全宽(与设置页 Tab 同款, 替代散排 chip)。
  */
 @Composable
 private fun HolidayRangeEditDialog(
@@ -551,20 +553,42 @@ private fun HolidayRangeEditDialog(
 
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text(stringResource(if (isNew) R.string.holiday_add_title else R.string.holiday_edit_title), color = colors.onSurface) },
+        titleContentColor = colors.onSurface,
+        textContentColor = colors.onSurfaceVariant,
+        title = { Text(stringResource(if (isNew) R.string.holiday_add_title else R.string.holiday_edit_title)) },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                 DatePickerField(
                     value = startText,
                     onValueChange = { startText = it },
                     label = stringResource(R.string.holiday_name_label_date),
+                    modifier = Modifier.fillMaxWidth(),
                     isError = startText.isNotBlank() && startDate == null
                 )
                 DatePickerField(
                     value = endText,
                     onValueChange = { endText = it },
                     label = stringResource(R.string.holiday_name_label_end),
+                    modifier = Modifier.fillMaxWidth(),
                     isError = endText.isNotBlank() && (endDate == null || (startDate != null && endDate.isBefore(startDate)))
+                )
+                TextField(
+                    value = name,
+                    onValueChange = { name = it },
+                    label = { Text(stringResource(R.string.holiday_name_label)) },
+                    singleLine = true,
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = SleepyTheme.fieldShape,
+                    colors = SleepyTheme.fieldColors()
+                )
+                SegmentedSwitcher(
+                    options = listOf(
+                        HolidayManager.TYPE_PUBLIC_HOLIDAY to stringResource(R.string.holiday_type_holiday),
+                        HolidayManager.TYPE_TRANSFER_WORKDAY to stringResource(R.string.holiday_type_workday)
+                    ),
+                    selected = type,
+                    onSelect = { type = it },
+                    modifier = Modifier.fillMaxWidth()
                 )
                 if (!datesValid && (startText.isNotBlank() || endText.isNotBlank())) {
                     Text(
@@ -573,40 +597,19 @@ private fun HolidayRangeEditDialog(
                         color = colors.error
                     )
                 }
-                OutlinedTextField(
-                    value = name,
-                    onValueChange = { name = it },
-                    label = { Text(stringResource(R.string.holiday_name_label)) },
-                    singleLine = true,
-                    modifier = Modifier.fillMaxWidth()
-                )
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    HolidayStyleChip(
-                        label = stringResource(R.string.holiday_type_holiday),
-                        selected = type == HolidayManager.TYPE_PUBLIC_HOLIDAY,
-                        onClick = { type = HolidayManager.TYPE_PUBLIC_HOLIDAY }
-                    )
-                    HolidayStyleChip(
-                        label = stringResource(R.string.holiday_type_workday),
-                        selected = type == HolidayManager.TYPE_TRANSFER_WORKDAY,
-                        onClick = { type = HolidayManager.TYPE_TRANSFER_WORKDAY }
-                    )
-                }
                 if (!isNew) {
                     // 删除走 errorContainer 色块 — 纯色块禁描边规则。
                     // 弹窗不设"恢复": 已保存段删除=移除覆盖(可从已删除区恢复), 网络段删除=REMOVED 覆盖(同入口恢复);
                     // 弹窗内两个按钮会做同一件事, 恢复入口统一收敛到"已删除"区块。
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Button(
-                            onClick = { onDelete(target) },
-                            modifier = Modifier.weight(1f).height(SleepyTheme.Buttons.regularHeight),
-                            shape = SleepyTheme.Buttons.shape,
-                            colors = ButtonDefaults.buttonColors(
-                                containerColor = colors.errorContainer,
-                                contentColor = colors.onErrorContainer
-                            )
-                        ) { Text(stringResource(R.string.holiday_delete_range)) }
-                    }
+                    Button(
+                        onClick = { onDelete(target) },
+                        modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
+                        shape = SleepyTheme.Buttons.shape,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = colors.errorContainer,
+                            contentColor = colors.onErrorContainer
+                        )
+                    ) { Text(stringResource(R.string.holiday_delete_range)) }
                 }
             }
         },

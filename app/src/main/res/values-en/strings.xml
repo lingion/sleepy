@@ -598,7 +598,6 @@
     <string name="holiday_type_workday">Make-up workday</string>
     <string name="holiday_custom_badge">Custom</string>
     <string name="holiday_add_entry">Add custom dates</string>
-    <string name="settings_holiday_style_sub">Choose how dimmed courses look</string>
     <string name="settings_widget_separator_sub">Show dividers between course names in the week-list widget</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Input</string>

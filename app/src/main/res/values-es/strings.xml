@@ -592,7 +592,6 @@
     <string name="holiday_type_workday">Día de recuperación</string>
     <string name="holiday_custom_badge">Personalizado</string>
     <string name="holiday_add_entry">Añadir fechas personalizadas</string>
-    <string name="settings_holiday_style_sub">Elige el aspecto de los cursos atenuados</string>
     <string name="settings_widget_separator_sub">Mostrar líneas entre los nombres de curso en el widget de lista semanal</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">Entrada</string>

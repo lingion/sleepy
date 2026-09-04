@@ -592,7 +592,6 @@
     <string name="holiday_type_workday">振替出勤日</string>
     <string name="holiday_custom_badge">カスタム</string>
     <string name="holiday_add_entry">カスタム日付を追加</string>
-    <string name="settings_holiday_style_sub">グレー表示した授業の見た目を選択</string>
     <string name="settings_widget_separator_sub">週リストウィジェットでコマ名の間に区切り線を表示するかどうか</string>
     <!-- i18n: hardcoded string extraction -->
     <string name="edit_period_input">入力</string>

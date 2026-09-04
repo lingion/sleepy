@@ -387,7 +387,6 @@
     <string name="holiday_type_workday">补班日</string>
     <string name="holiday_custom_badge">自定义</string>
     <string name="holiday_add_entry">添加自定义日期</string>
-    <string name="settings_holiday_style_sub">选择灰显课程的样子</string>
     <string name="settings_widget_separator_sub">周视图小组件中课程名之间是否显示分隔线</string>
 
     <!-- Theme -->
