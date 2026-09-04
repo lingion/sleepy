@@ -49,6 +49,7 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -150,7 +151,8 @@ fun AddCourseScreen(
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
     var showColorPicker by remember { mutableStateOf(false) }
     // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
-    var pendingConflictDetails by remember { mutableStateOf<List<String>>(emptyList()) }
+    // rememberSaveable: 旋转/配置变更时 Activity 重建, remember 会丢明细列表导致弹窗消失
+    var pendingConflictDetails by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
 
     val meetingBlocks = remember(editingCourse?.id) {
         mutableStateListOf(initialMeetingBlock(editingCourse))

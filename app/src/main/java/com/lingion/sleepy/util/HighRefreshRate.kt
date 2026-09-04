@@ -30,12 +30,8 @@ object HighRefreshRate {
         val best = display.supportedModes
             .filter { it.physicalWidth == current.physicalWidth && it.physicalHeight == current.physicalHeight }
             .maxByOrNull { it.refreshRate } ?: return 0f
-        if (best.refreshRate <= current.refreshRate && attrs.preferredDisplayModeId == 0) {
-            // 已在最高档且未设置过 — 不必申请
-            attrs.preferredDisplayModeId = best.modeId
-            activity.window.attributes = attrs
-            return best.refreshRate
-        }
+        // 显式钉档 (即使 best==current 也申请): 系统省电调度随时可能自己降档,
+        // 只有声明 preferredDisplayModeId 才锁得住; 写同一 modeId 是幂等的。
         attrs.preferredDisplayModeId = best.modeId
         activity.window.attributes = attrs
         return best.refreshRate
