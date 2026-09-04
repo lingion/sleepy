@@ -1,6 +1,6 @@
 ## v1.0.46
 
-Conflicts got a full rework: three-plus courses in one slot now rotate instead of hiding, the stack style works at every layer count, and saving a course that collides shows exactly what it hits before anything is written. The bottom bar became a floating dock. Settings got tabbed and a lot less wordy. 31 commits.
+Conflicts got a full rework: three-plus courses in one slot now rotate instead of hiding, the stack style works at every layer count, and saving a course that collides shows exactly what it hits before anything is written. The bottom bar became a floating dock. Settings got tabbed and a lot less wordy. 48 commits.
 
 ### New
 
@@ -34,7 +34,7 @@ The old "top inset" slider fed both the stack offset and the rail width. Now 叠
 
 **Chongqing University** (my.cqu.edu.cn)
 
-Added to direct JW import (149 schools). CQU runs its own portal REST API rather than the standard jwapp family; the adapter goes through the portal's session/table/time-pattern endpoints with a Bearer token from the WebView session. Thanks 时光 for the protocol write-up (credited in the About page).
+Added to direct JW import (159 schools). CQU runs its own portal REST API rather than the standard jwapp family; the adapter goes through the portal's session/table/time-pattern endpoints with a Bearer token from the WebView session. Thanks 时光 for the protocol write-up (credited in the About page).
 
 ### Fixed
 
@@ -96,7 +96,7 @@ The rotation line alone added 60+ unit tests (rotation kernel, layer-order overr
 
 **重庆大学**(my.cqu.edu.cn)
 
-教务直连导入新增重庆大学(149 所)。重大是自建门户 REST,不走标准 jwapp 协议族;适配器走门户的 session/课表/作息三接口,Bearer token 从 WebView 会话取。感谢 时光 的协议分析(关于页已致谢)。
+教务直连导入新增重庆大学(159 所)。重大是自建门户 REST,不走标准 jwapp 协议族;适配器走门户的 session/课表/作息三接口,Bearer token 从 WebView 会话取。感谢 时光 的协议分析(关于页已致谢)。
 
 ### 修复
 
