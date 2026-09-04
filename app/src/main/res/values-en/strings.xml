@@ -562,6 +562,7 @@
     <string name="settings_holiday_entry_sub">Configure dimming rules and view holiday and make-up day data</string>
     <string name="holiday_page_title">Holidays &amp; Make-up Days</string>
     <string name="holiday_data_source">Data source</string>
+    <string name="holiday_source_label">unpkg.com/holiday-calendar · CN</string>
     <string name="holiday_data_failed">Failed to fetch holiday data. Check your network and retry</string>
     <string name="holiday_data_empty">No holiday or make-up day data for this year</string>
     <string name="holiday_data_refresh">Refresh</string>

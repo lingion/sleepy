@@ -349,6 +349,7 @@
     <string name="settings_holiday_entry_sub">设置灰显规则，查看节假日和补班日数据</string>
     <string name="holiday_page_title">节假日与补班日</string>
     <string name="holiday_data_source">数据源</string>
+    <string name="holiday_source_label">unpkg.com/holiday-calendar · CN</string>
     <string name="holiday_data_failed">节假日和补班日数据获取失败，请检查网络后重试</string>
     <string name="holiday_data_empty">该年份暂无节假日和补班日数据</string>
     <string name="holiday_data_refresh">刷新数据</string>

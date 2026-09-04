@@ -227,7 +227,7 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
                         )
                         Spacer(Modifier.width(10.dp))
                         Text(
-                            text = "unpkg.com/holiday-calendar · CN",
+                            text = stringResource(R.string.holiday_source_label),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant,
                             maxLines = 1,

@@ -556,6 +556,7 @@
     <string name="settings_holiday_entry_sub">グレー表示のルールを設定し、祝日・振替出勤日のデータを表示</string>
     <string name="holiday_page_title">祝日と振替出勤日</string>
     <string name="holiday_data_source">データソース</string>
+    <string name="holiday_source_label">unpkg.com/holiday-calendar · CN</string>
     <string name="holiday_data_failed">祝日・振替出勤日データの取得に失敗しました。ネットワークを確認して再試行してください</string>
     <string name="holiday_data_empty">この年の祝日・振替出勤日データはありません</string>
     <string name="holiday_data_refresh">データを更新</string>
