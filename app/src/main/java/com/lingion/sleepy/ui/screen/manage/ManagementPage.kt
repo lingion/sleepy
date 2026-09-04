@@ -21,7 +21,6 @@ import androidx.compose.material.icons.outlined.FileUpload
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -62,11 +61,15 @@ fun ManagementPage(
     var showImportSheet by remember { mutableStateOf(autoShowImportSheet) }
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
-    Scaffold(containerColor = colors.background) { padding ->
+    Box(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(colors.background)
+    ) {
         // Dock 悬浮底栏: 滚动尾部多留 Dock 总高(FAB 语义, 同今日/我的页)
         val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(padding).padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra),
+            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
