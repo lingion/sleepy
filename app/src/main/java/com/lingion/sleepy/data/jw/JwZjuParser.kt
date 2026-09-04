@@ -49,11 +49,7 @@ class JwZjuParser(source: String) : JwParser(source) {
             val location = kcb.getOrNull(3)?.trim().orEmpty()
             val segments = parseWeekSegments(timeString)
             for ((startW, endW) in segments) {
-                val adjustedStart = when (typeInt) {
-                    1 -> if (startW % 2 == 0) startW + 1 else startW
-                    2 -> if (startW % 2 != 0) startW + 1 else startW
-                    else -> startW
-                }
+                val (sw, ew) = JwParity.adjustedRange(startW, endW, typeInt)
                 out += JwCourse(
                     name = name,
                     room = location,
@@ -61,8 +57,8 @@ class JwZjuParser(source: String) : JwParser(source) {
                     day = xqj,
                     startNode = djj,
                     endNode = djj + skcd - 1,
-                    startWeek = adjustedStart,
-                    endWeek = endW,
+                    startWeek = sw,
+                    endWeek = ew,
                     type = typeInt,
                 )
             }

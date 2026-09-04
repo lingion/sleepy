@@ -123,7 +123,16 @@ class JwEams5Parser(source: String) : JwParser(source) {
      * 失败时回退到 periods 推断。
      */
     internal fun inferNodes(startTime: Int, endTime: Int, periods: Int): Pair<Int, Int>? {
-        val startSec = sectionIndex(startTime) ?: return null
+        val startSec = sectionIndex(startTime)
+        if (startSec == null) {
+            // startTime 不在任何节次段窗口: KDoc 承诺的 periods 兜底 —
+            // 起点退到第 1 节, endNode = 1 + periods - 1; 无 periods 信息
+            // (<=0) 才放弃该行。此前 startTime 不可映射时直接 return null,
+            // periods 完全不参与, 整行静默丢弃。
+            if (periods <= 0) return null
+            val endNode = (1 + periods - 1).coerceAtLeast(1)
+            return 1 to endNode
+        }
         val startNode = startSec * 2 + 1
         val endSec = sectionIndex(endTime)
         val endNode = when {

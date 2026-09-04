@@ -46,10 +46,6 @@ class JwEams5ParserTest {
     @Test
     fun `parses EAMS5 schedule - total count equals scheduleList rows`() {
         val courses = parse()
-        println("EAMS5 样张解析出 ${courses.size} 个 JwCourse:")
-        courses.forEach {
-            println("  ${it.name} 周${it.day} node${it.startNode}-${it.endNode} 周${it.startWeek}-${it.endWeek}(t${it.type}) 老师=${it.teacher} 教室=${it.room}")
-        }
         // 4 个 scheduleList 行 → 4 个 JwCourse (v1 不合并)
         assertEquals("4 个 scheduleList 行应产出 4 个 JwCourse", 4, courses.size)
     }
@@ -155,5 +151,38 @@ class JwEams5ParserTest {
         val feats = p.matchedFeatures()
         assertTrue("应含 scheduleList", feats.any { it.contains("scheduleList") })
         assertTrue("应含 lessonList", feats.any { it.contains("lessonList") })
+    }
+
+    @Test
+    fun `unmappable start time falls back to periods not dropped`() {
+        // KDoc 承诺 periods 兜底: startTime 缺失 (0) 时旧行为是整行丢弃;
+        // 现在退到 startNode=1, endNode = 1 + periods - 1
+        val p = JwEams5Parser("""
+        {"result": {
+          "lessonList": [{"id": 9001, "courseName": "兜底课"}],
+          "scheduleList": [
+            {"lessonId": 9001, "weekday": 2, "weekIndex": 3,
+             "startTime": 0, "endTime": 0, "periods": 3}
+          ]
+        }}
+        """.trimIndent())
+        val courses = p.generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals(1, courses[0].startNode)
+        assertEquals(3, courses[0].endNode)
+    }
+
+    @Test
+    fun `unmappable start time without periods info drops row`() {
+        val p = JwEams5Parser("""
+        {"result": {
+          "lessonList": [{"id": 9002, "courseName": "无信息课"}],
+          "scheduleList": [
+            {"lessonId": 9002, "weekday": 2, "weekIndex": 3,
+             "startTime": 0, "endTime": 0, "periods": 0}
+          ]
+        }}
+        """.trimIndent())
+        assertTrue(p.generateCourseList().isEmpty())
     }
 }

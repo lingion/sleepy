@@ -48,12 +48,8 @@ class JwUstcParser(source: String) : JwParser(source) {
             val weeksStr = obj.str("weeksStr")
             if (weeksStr.isEmpty()) continue
             val (typeInt, cleanStr) = parseWeeksType(weeksStr)
-            for ((sw, ew) in parseWeekSegments(cleanStr)) {
-                val adjustedStart = when (typeInt) {
-                    1 -> if (sw % 2 == 0) sw + 1 else sw
-                    2 -> if (sw % 2 != 0) sw + 1 else sw
-                    else -> sw
-                }
+            for ((segStart, segEnd) in parseWeekSegments(cleanStr)) {
+                val (sw, ew) = JwParity.adjustedRange(segStart, segEnd, typeInt)
                 out += JwCourse(
                     name = name,
                     room = room,
@@ -61,7 +57,7 @@ class JwUstcParser(source: String) : JwParser(source) {
                     day = weekday,
                     startNode = startNode,
                     endNode = endNode,
-                    startWeek = adjustedStart,
+                    startWeek = sw,
                     endWeek = ew,
                     type = typeInt,
                 )

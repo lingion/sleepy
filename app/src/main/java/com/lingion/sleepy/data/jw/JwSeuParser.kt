@@ -2,8 +2,9 @@ package com.lingion.sleepy.data.jw
 
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
+import kotlinx.serialization.json.JsonObject
+import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
-import kotlinx.serialization.json.jsonArray
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
@@ -46,9 +47,14 @@ class JwSeuParser(source: String) : JwParser(source) {
             json.parseToJsonElement(source.trim())
         }.getOrNull() ?: return emptyList()
 
+        // 形状不符 (root 标量 / data 非数组) 返回 emptyList 走 0 课路径 —
+        // 显式 type 分发下 jsonPrimitive.jsonObject 抛 IAE 会把可恢复的
+        // "形状不对" 升级成用户可见解析失败报错 (同批 NEU/USTC/ZJU 全是
+        // as? 安全转换, 此处对齐)
         val arr: JsonArray = when (root) {
             is JsonArray -> root
-            else -> root.jsonObject["data"]?.jsonArray ?: return emptyList()
+            is JsonObject -> root["data"] as? JsonArray ?: return emptyList()
+            else -> return emptyList()
         }
 
         val out = mutableListOf<JwCourse>()
@@ -91,46 +97,42 @@ class JwSeuParser(source: String) : JwParser(source) {
     /**
      * 把 ZCMC 串解析为 List of (startWeek, endWeek, type)。
      *
-     * 支持三形态（与 SEUTimetable parseWeekRange 等价语义）：
+     * 支持三形态：
      *   - 范围："1-16周" → [(1,16,0)]
-     *   - 单双周："1-10周(单)" → [(1,9,1)]  // 单周 1,3,5,...,9
-     *                 "1-16周(双)" → [(2,16,2)]  // 双周 2,4,...,16
+     *   - 单双周："2-15周(单)" → [(3,15,1)]  // 起点抬到首个奇数周
+     *                 "1-16周(双)" → [(2,16,2)]  // 起点抬到首个偶数周
      *   - 离散："2,4,6周" → [(2,2,0),(4,4,0),(6,6,0)]
      *   - 单值："5周" → [(5,5,0)]
      *
-     * 注：单/双周范围的端点收敛到第一个匹配周次。语义来源 SEUTimetable parseWeekRange：
-     *   单周：从 start 起找第一个奇数；双周：从 start 起找第一个偶数。范围本身在 UI 上是连续
-     *   显示（type 字段驱动斜体/灰显），不需要 emit 每周一条。
+     * 注：单/双周只修正起点周 (经 [JwParity.adjustedRange], 端点相等时 end
+     * 抬回 start 防倒挂); endWeek 不做奇偶收缩 — UI 连续显示, type 字段
+     * 驱动斜体/灰显, 周次命中由下游 inWeek 按奇偶判定。
      */
     internal fun parseWeekRanges(zcmc: String): List<Triple<Int, Int, Int>> {
         if (zcmc.isBlank()) return emptyList()
         val out = mutableListOf<Triple<Int, Int, Int>>()
 
-        // 1. 单/双周标志
-        val typeInt = when {
-            zcmc.contains("(单)") -> 1
-            zcmc.contains("(双)") -> 2
-            else -> 0
-        }
-
-        // 2. 剥 "周" + "(单|双)" + 空白; 按逗号拆离散段
-        val clean = zcmc.replace("周", "").replace("(单)", "").replace("(双)", "").trim()
+        // 剥 "周" + 括号形态 "(单)/(双)"; 按逗号拆段 — 单/双标记按段内检测
+        // (混合串 "1-8周(单),9-16周(双)" 两段各自成立, 整串 first-match 会标错后半段)
+        val clean = zcmc.replace("周", "").replace("（", "(").replace("）", ")")
         val segments = clean.split(",", "，").map { it.trim() }.filter { it.isNotEmpty() }
 
         for (seg in segments) {
-            if (seg.contains("-")) {
-                val parts = seg.split("-", limit = 2).map { it.trim() }
+            val typeInt = when {
+                seg.contains("单") -> 1
+                seg.contains("双") -> 2
+                else -> 0
+            }
+            val bare = seg.replace("(单)", "").replace("(双)", "")
+            if (bare.contains("-")) {
+                val parts = bare.split("-", limit = 2).map { it.trim() }
                 val a = parts.getOrNull(0)?.toIntOrNull() ?: continue
                 val b = parts.getOrNull(1)?.toIntOrNull() ?: a
-                // 单双周端点收敛到第一个匹配周次
-                val adjustedA = when (typeInt) {
-                    1 -> if (a % 2 == 0) a + 1 else a  // 单周首=奇数
-                    2 -> if (a % 2 != 0) a + 1 else a  // 双周首=偶数
-                    else -> a
-                }
-                out += Triple(adjustedA, b, typeInt)
+                // 单双周端点修正 (共享 helper: 端点相等时不产出倒挂区间)
+                val (sw, ew) = JwParity.adjustedRange(a, b, typeInt)
+                out += Triple(sw, ew, typeInt)
             } else {
-                val v = seg.toIntOrNull() ?: continue
+                val v = bare.toIntOrNull() ?: continue
                 out += Triple(v, v, 0)
             }
         }

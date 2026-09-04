@@ -19,7 +19,7 @@ import org.junit.Test
  *   KSJC 起始节   → startNode
  *   JSJC 结束节   → endNode
  *   ZCMC 周次串   → 范围/单双周 (parseWeekRange 自写)
- *   KCH  课程号   → room 末尾附加（note-like；Sleepy 不单存 note 字段）
+ *   KCH  课程号   → 不映射（Sleepy 无 note 字段）
  *   JXBQH 教学班群号 → 忽略
  *
  * v1 限制（详见 JwSeuParser KDoc）：
@@ -40,10 +40,6 @@ class JwSeuParserTest {
     @Test
     fun `parses SEU courses - total count is correct`() {
         val courses = parse()
-        println("SEU 样张解析出 ${courses.size} 个 JwCourse:")
-        courses.forEach {
-            println("  ${it.name} 周${it.day} node${it.startNode}-${it.endNode} 周${it.startWeek}-${it.endWeek}(t${it.type}) 老师=${it.teacher} 教室=${it.room}")
-        }
         // 4 个示例课程 (含单/双周展开); 总数 = 1-16周 1 + 2-15单 1 + 2,4,6周 3 + 1-16双 1 = 6
         assertEquals("期望 6 条 JwCourse", 6, courses.size)
     }
@@ -138,5 +134,36 @@ class JwSeuParserTest {
         val p = JwSeuParser(loadJson())
         val feats = p.matchedFeatures()
         assertTrue("应含 KCM 字段", feats.any { it.contains("KCM") })
+    }
+
+    @Test
+    fun `mixed parity string applies marker per segment`() {
+        // "1-8周(单),9-16周(双)": 整串 first-match 会把后半段标成单周,
+        // 偶周 10,12,14,16 全丢且多出 4 个假周。按段检测后两段各自正确。
+        val ranges = JwSeuParser("{}").parseWeekRanges("1-8(单),9-16(双)")
+        assertEquals(2, ranges.size)
+        assertEquals(Triple(1, 8, 1), ranges[0])   // 单周段: start 已奇不动; end 不做奇偶收缩
+        assertEquals(Triple(10, 16, 2), ranges[1]) // 双周段: 9→10 抬起点
+    }
+
+    @Test
+    fun `single week segment equal endpoints does not invert`() {
+        // "6-6(单)" 旧实现产出 (7,6) 倒挂; 共享 helper 把 end 抬回 start
+        val ranges = JwSeuParser("{}").parseWeekRanges("6-6(单)")
+        assertEquals(listOf(Triple(7, 7, 1)), ranges)
+    }
+
+    @Test
+    fun `scalar root json returns empty list not exception`() {
+        // root 是标量 (用户误粘 "42") 旧实现抛 IllegalArgumentException;
+        // 对齐同批 parser 的 as? 安全转换 — 形状不符走 0 课路径
+        val courses = JwSeuParser("42").generateCourseList()
+        assertTrue(courses.isEmpty())
+    }
+
+    @Test
+    fun `data object shape returns empty list not exception`() {
+        val courses = JwSeuParser("""{"data":{"nested":1}}""").generateCourseList()
+        assertTrue(courses.isEmpty())
     }
 }

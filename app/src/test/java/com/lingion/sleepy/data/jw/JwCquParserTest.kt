@@ -40,10 +40,6 @@ class JwCquParserTest {
     @Test
     fun `parses CQU schedule - total count`() {
         val courses = parse()
-        println("CQU 样张解析出 ${courses.size} 个 JwCourse:")
-        courses.groupBy { it.name }.forEach { (name, segs) ->
-            println("  $name × ${segs.size}: " + segs.joinToString { "周${it.day} ${it.startNode}-${it.endNode}节 ${it.startWeek}-${it.endWeek}周(t${it.type})" })
-        }
         assertEquals("6 行压缩后应为 6 个 JwCourse", 6, courses.size)
     }
 
