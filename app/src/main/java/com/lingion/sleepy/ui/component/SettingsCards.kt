@@ -144,7 +144,8 @@ fun SettingsFlatCard(
                     options = options.mapIndexed { i, label -> i to label },
                     selected = selectedKey,
                     onSelect = onSelect,
-                    modifier = Modifier.width(tabWidth),
+                    // 高度 36dp: 介于开关本体(32)与组件默认(42)之间 — 轨道不挤, 行高仍与开关行一致
+                    modifier = Modifier.width(tabWidth).height(36.dp),
                     containerColor = colors.surfaceContainerHighest
                 )
             }
