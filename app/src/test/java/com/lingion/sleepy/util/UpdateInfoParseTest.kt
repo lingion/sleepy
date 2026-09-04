@@ -46,6 +46,42 @@ class UpdateInfoParseTest {
         assertEquals("", info.downloadUrl)
     }
 
+    // ─── 下载地址镜像改写(2026-09-05 用户令: api.github.com 可达 ≠ github.com 资产可达) ──
+
+    private val githubAssetBody = """{"tag_name":"v1.0.47","body":"x","assets":[
+        {"name":"app-arm64-v8a-release.apk","browser_download_url":"https://github.com/lingion/sleepy/releases/download/v1.0.47/app-arm64-v8a-release.apk"}]}"""
+
+    @Test
+    fun github_asset_url_is_rewritten_to_mirror() {
+        // 用户实测: api.github.com 通(0.6s)但 github.com 资产 15s 超时 —
+        // 下载地址必须改写到镜像, 镜像目录结构与 GitHub 1:1
+        val info = parseReleaseJson(githubAssetBody, "1.0.46", "arm64-v8a")
+        assertEquals(
+            "https://gh.qdp.qzz.io/lingion/sleepy/releases/download/v1.0.47/app-arm64-v8a-release.apk",
+            info.downloadUrl
+        )
+    }
+
+    @Test
+    fun non_github_asset_url_passes_through_untouched() {
+        val foreign = """{"tag_name":"v1.0.47","body":"x","assets":[
+            {"name":"app-arm64-v8a-release.apk","browser_download_url":"https://example.com/a.apk"}]}"""
+        val info = parseReleaseJson(foreign, "1.0.46", "arm64-v8a")
+        assertEquals("https://example.com/a.apk", info.downloadUrl)
+    }
+
+    @Test
+    fun github_direct_url_is_derived_from_mirror_url_for_fallback() {
+        // 下载失败时的回退对: 镜像地址 → 原始 GitHub 直连地址
+        val mirror = "https://gh.qdp.qzz.io/lingion/sleepy/releases/download/v1.0.47/app-arm64-v8a-release.apk"
+        val direct = "https://github.com/lingion/sleepy/releases/download/v1.0.47/app-arm64-v8a-release.apk"
+        assertEquals(direct, toDirectGithubUrl(mirror))
+        // 已是直连则原样返回(幂等)
+        assertEquals(direct, toDirectGithubUrl(direct))
+        // 非下载路径不改写
+        assertEquals("https://gh.qdp.qzz.io/other/page", toDirectGithubUrl("https://gh.qdp.qzz.io/other/page"))
+    }
+
     // ─── 镜像页 changelog 提取 ───────────────────────────────────────────
 
     private val mirrorPage = """

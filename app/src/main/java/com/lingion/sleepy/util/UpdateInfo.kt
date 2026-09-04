@@ -15,11 +15,19 @@ data class UpdateInfo(
 
 private const val FORCE_FLAG = "SLEEPY_FORCE_UPDATE=true"
 
+/** 镜像下载前缀 — 目录结构与 github.com 1:1, 直接字符串替换即可改写。 */
+private const val MIRROR_HOST = "https://gh.qdp.qzz.io"
+private const val GITHUB_DOWNLOAD_HOST = "https://github.com"
+
 /**
  * 解析 GitHub releases/latest 的 JSON 为 [UpdateInfo](纯函数,无 IO)。
  *
  * [abi] 形如 "arm64-v8a" / "armeabi-v7a" / "x86_64",用于挑对应 asset。
  * 找不到对应 asset 时 downloadUrl 返回空串(调用方走镜像回退)。
+ *
+ * 镜像改写(2026-09-05 用户报障): api.github.com 可达 ≠ github.com 资产可达 —
+ * 信息拉到了、下载 15s 超时。browser_download_url 指向 github.com 的,
+ * 一律改写到镜像 (目录 1:1), 下载失败时由 [toDirectGithubUrl] 还原直连兜底。
  */
 fun parseReleaseJson(json: String, currentVersion: String, abi: String): UpdateInfo {
     val release = org.json.JSONObject(json)
@@ -30,12 +38,29 @@ fun parseReleaseJson(json: String, currentVersion: String, abi: String): UpdateI
         (0 until assets.length()).map { assets.getJSONObject(it) }
             .firstOrNull { it.optString("name") == assetName }
             ?.optString("browser_download_url")
+            ?.toMirrorDownloadUrl()
     } ?: ""
     val force = body.contains(FORCE_FLAG)
     val isUpdateAvailable = force ||
         VersionUtils.compare(version.ifBlank { "0" }, currentVersion) > 0
     return UpdateInfo(version, body, downloadUrl, isUpdateAvailable)
 }
+
+/** github.com 下载地址 → 镜像地址; 非下载路径原样返回。 */
+private fun String.toMirrorDownloadUrl(): String =
+    if (startsWith("$GITHUB_DOWNLOAD_HOST/lingion/sleepy/releases/download/"))
+        replacePrefix(GITHUB_DOWNLOAD_HOST, MIRROR_HOST)
+    else this
+
+/** 镜像下载地址 → github.com 直连(下载失败的回退); 其余原样返回。 */
+fun toDirectGithubUrl(url: String): String = when {
+    url.startsWith("$MIRROR_HOST/lingion/sleepy/releases/download/") ->
+        url.replacePrefix(MIRROR_HOST, GITHUB_DOWNLOAD_HOST)
+    else -> url
+}
+
+private fun String.replacePrefix(prefix: String, replacement: String): String =
+    replacement + substring(prefix.length)
 
 /**
  * 从镜像 release 页 HTML 提取 changelog,转成 Markdown。

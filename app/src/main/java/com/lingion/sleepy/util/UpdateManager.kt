@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Build
+import android.util.Log
 import androidx.core.content.FileProvider
 import com.lingion.sleepy.BuildConfig
 import kotlinx.coroutines.Dispatchers
@@ -16,6 +17,7 @@ import kotlin.coroutines.coroutineContext
 
 /** 拉 GitHub/镜像 release 信息、下载 APK、清理旧 APK。不含 UI 状态。 */
 object UpdateManager {
+    private const val TAG = "UpdateManager"
     private const val GITHUB_API = "https://api.github.com/repos/lingion/sleepy/releases/latest"
     private const val MIRROR_RELEASE = "https://gh.qdp.qzz.io/lingion/sleepy/releases/latest"
     private const val MIRROR_PREFIX = "https://gh.qdp.qzz.io/lingion/sleepy/releases/download/"
@@ -54,7 +56,26 @@ object UpdateManager {
         context: Context, info: UpdateInfo, onProgress: (Int) -> Unit
     ): File = withContext(Dispatchers.IO) {
         val target = File(context.cacheDir, "sleepy-update-${currentAbiAsset()}")
-        val conn = request(info.downloadUrl)
+        try {
+            downloadOnce(info.downloadUrl, target, onProgress)
+        } catch (primary: Exception) {
+            if (primary is kotlinx.coroutines.CancellationException) throw primary
+            // 镜像下载失败 → GitHub 直连回退 (信息源/下载源各回退一次, 用户 2026-09-05 令)
+            val direct = toDirectGithubUrl(info.downloadUrl)
+            if (direct == info.downloadUrl) throw primary
+            Log.w(TAG, "mirror download failed, falling back to github direct", primary)
+            target.delete()
+            downloadOnce(direct, target, onProgress)
+        }
+        if (!target.isFile || target.length() == 0L)
+            throw IllegalStateException(context.getString(com.lingion.sleepy.R.string.error_empty_download))
+        target
+    }
+
+    private suspend fun downloadOnce(
+        url: String, target: File, onProgress: (Int) -> Unit
+    ) {
+        val conn = request(url)
         val total = conn.contentLengthLong.coerceAtLeast(1L)
         try {
             conn.inputStream.use { input ->
@@ -77,9 +98,6 @@ object UpdateManager {
         } finally {
             conn.disconnect()
         }
-        if (!target.isFile || target.length() == 0L)
-            throw IllegalStateException(context.getString(com.lingion.sleepy.R.string.error_empty_download))
-        target
     }
 
     /** 启动时清理 cacheDir 中旧安装包。 */
