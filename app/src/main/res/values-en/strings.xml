@@ -267,6 +267,9 @@
     <string name="mine_stat_week">Week</string>
 
         <string name="settings_high_refresh">High refresh rate</string>
+    <string name="settings_nav_style">Bottom bar style</string>
+    <string name="settings_nav_style_docked">Docked</string>
+    <string name="settings_nav_style_floating">Floating</string>
     <string name="settings_section_display">Display</string>
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>

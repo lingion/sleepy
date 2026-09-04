@@ -261,6 +261,9 @@
     <string name="mine_stat_week">現在の週</string>
 
         <string name="settings_high_refresh">高リフレッシュレート</string>
+    <string name="settings_nav_style">下部バーのスタイル</string>
+    <string name="settings_nav_style_docked">下部固定</string>
+    <string name="settings_nav_style_floating">フローティング</string>
     <string name="settings_section_display">画面</string>
     <string name="settings_language">言語 / Language</string>
     <string name="settings_display_mode">時間表示</string>

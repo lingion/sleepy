@@ -198,6 +198,9 @@ private fun AppRoot(
     var pendingNewTableId by rememberSaveable { mutableStateOf<Long?>(null) }
     var previousDefaultTableId by rememberSaveable { mutableStateOf<Long?>(null) }
     var autoImportTriggered by remember { mutableStateOf(false) }
+    // 底栏形态(贴底/悬浮 Dock): AppRoot 持真值 — 设置页改, 底栏即时切
+    val context = LocalContext.current
+    var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
 
@@ -267,7 +270,12 @@ private fun AppRoot(
         return
     }
     if (topOverlay() == OverlayScreen.General) {
-        GeneralSettingsScreen(onBack = { popOverlay() }, onOpenHoliday = { pushOverlay(OverlayScreen.Holiday) })
+        GeneralSettingsScreen(
+            onBack = { popOverlay() },
+            onOpenHoliday = { pushOverlay(OverlayScreen.Holiday) },
+            navDock = navDock,
+            onNavDockChange = { navDock = it }
+        )
         return
     }
     if (topOverlay() == OverlayScreen.Holiday) {
@@ -291,8 +299,6 @@ private fun AppRoot(
         modifier = Modifier.fillMaxSize(),
         containerColor = SleepyTheme.colors.background,
         bottomBar = {
-            val context = LocalContext.current
-            val navDock = AppPrefs.isNavDock(context)
             val navItems = Tab.entries.map { com.lingion.sleepy.ui.component.PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
             PillNavigationBar(
                 items = navItems,

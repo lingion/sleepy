@@ -261,6 +261,9 @@
     <string name="mine_stat_week">Semana</string>
 
         <string name="settings_high_refresh">Frecuencia de actualización alta</string>
+    <string name="settings_nav_style">Estilo de barra inferior</string>
+    <string name="settings_nav_style_docked">Acoplada</string>
+    <string name="settings_nav_style_floating">Flotante</string>
     <string name="settings_section_display">Pantalla</string>
     <string name="settings_language">Idioma / Language</string>
     <string name="settings_display_mode">Visualización de hora</string>
