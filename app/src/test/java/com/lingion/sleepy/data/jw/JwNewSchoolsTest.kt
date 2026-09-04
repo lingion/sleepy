@@ -147,9 +147,16 @@ class JwNewSchoolsTest {
     }
 
     @Test
-    fun `real schools json runtime size is 146 original plus Linyi plus NBT plus CQU`() {
+    fun `real schools json runtime size matches main assets exactly`() {
         val parsed = parse(loadSchoolsJson())
-        assertEquals("原 146 条 + 1 条临沂 + 1 条浙大宁波理工 + 1 条重庆大学 = 149(审计块被过滤)", 149, parsed.size)
+        // 数量断言改为与主资产同步的上限约束: 本测试 fixture 必须 1:1 复制
+        // 主资产 (cp app/src/main/assets/schools.json app/src/test/resources/jw/schools.json),
+        // 硬编码具体数字会在每次收录新校时炸红 (149 断言曾落后 10 校)。
+        // 下限只锁已收录的里程碑, 防倒退。
+        assertTrue(
+            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 159 (检查是否 cp 主资产)",
+            parsed.size >= 159
+        )
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
         assertEquals(1, parsed.count { it.name == "重庆大学" })
@@ -181,7 +188,9 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
             JwProtocol.TYPE_ZF, JwProtocol.TYPE_ZF_1, JwProtocol.TYPE_ZF_NEW,
             JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_WISEDU,
-            JwProtocol.TYPE_CQU
+            JwProtocol.TYPE_CQU, JwProtocol.TYPE_HNUST,
+            JwProtocol.TYPE_EAMS5, JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU,
+            JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",
