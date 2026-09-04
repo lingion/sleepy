@@ -8,9 +8,11 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -68,11 +70,10 @@ val LocalNavExtraBottomPadding = compositionLocalOf { 0.dp }
 object NavDockSpec {
     val horizontalMargin = 16.dp   // 左右距屏幕边缘
     val bottomFloat = 12.dp        // 胶囊底边再悬于手势条上方的高度
-    val capsuleHeight = 56.dp      // 胶囊本体高(iOS 26 floating tab bar 同高)
-    val itemSeat = 48.dp           // 每 icon 座位宽(≥48dp 触摸目标)
-    val itemGap = 8.dp             // icon 座位间距
+    val capsuleHeight = 64.dp      // 胶囊本体高(icon+label 双行, 比贴底 76dp 收一档)
+    val itemSeat = 56.dp           // 每 tab 座位宽(≥48dp 触摸目标)
+    val itemGap = 4.dp             // 座位间距
     val innerPad = 8.dp            // 胶囊内边距
-    val totalWidth = 4.dp          // 4 tab: 48*4 + 8*3 + 8*2 = 232dp(分次提交勿散改)
 }
 
 /**
@@ -266,13 +267,8 @@ private fun intervalCoverage(aStart: Float, aEnd: Float, bStart: Float, bEnd: Fl
 
 /**
  * Dock 悬浮胶囊(独立组件, 由 PillNavigationBar dock=true 分流进入)。
- *
- * 规范依据(iOS 26 HIG floating tab bar + 2025 浮动 dock 惯例):
- * - 胶囊高 56dp, 圆角 = 高/2 连续胶囊; icon-only(紧凑胶囊容纳不了常驻标签)
- * - 座位 48dp(触摸目标下限) + 8dp 间距 + 8dp 内边距; 侧边距 16dp
- * - 玻璃感: 半透明底 + 柔和投影(无 blur — Modifier.blur 需 API 31+, 实机 API 29 无效)
- * - active 指示: 40×32dp thumb 色块弹簧滑移 + 图标逐字符扫过变色(与贴底共用算法)
- * - 选中标签不常驻; 无障碍名称走 semantics contentDescription(label 原文案)
+ * 用户定版(2026-09-04): 悬浮形态 + icon+label 双行(与贴底一致), thumb 色块包住图标,
+ * 顶部收一点 — 高 64dp, 座位 56dp 宽, thumb 48×40 罩住 24dp 图标, label 8dp 字号在下。
  */
 @Composable
 private fun DockNavigationBar(
@@ -286,7 +282,7 @@ private fun DockNavigationBar(
     modifier: Modifier = Modifier
 ) {
     val count = items.size.coerceAtLeast(1)
-    val pillHalf = with(density) { (NavDockSpec.itemSeat / 2).toPx() }
+    val seatHalf = with(density) { (NavDockSpec.itemSeat / 2).toPx() }
     val iconHalf = with(density) { 12.dp.toPx() }
 
     // thumb 弹簧(与贴底同款: NoBouncy + High stiffness, 实测定参)
@@ -339,16 +335,15 @@ private fun DockNavigationBar(
                 onBarGeometry(c.positionInRoot().x, c.positionInRoot().y, true)
             }
     ) {
-        // thumb 色块: 40×32 居中于 56dp 高胶囊, 弹簧滑移 + 亚像素余数
-        // 定位居中算术: thumb 视觉中心 = startPad(4dp) + 半宽(20dp) + translationX
-        //            = centers[i] → translationX = thumbX - 24dp
+        // thumb 色块包住图标: 56×40dp 罩住 24dp 图标区, 纵向 y=2dp 起(中心 22 ≈ 图标中心)
+        // 横向定位: translationX = thumbX - seatHalf(28) → thumb 中心 = 座位中心
         Box(
             Modifier
-                .padding(start = 4.dp)
-                .size(width = NavDockSpec.itemSeat - 8.dp, height = 32.dp)
+                .offset(y = 2.dp)
+                .size(width = NavDockSpec.itemSeat, height = 40.dp)
                 .graphicsLayer {
                     alpha = if (thumbPlaced) 1f else 0f
-                    translationX = thumbX.value - with(density) { 24.dp.toPx() }
+                    translationX = thumbX.value - seatHalf
                     translationY = 0f
                 }
                 .clip(RoundedCornerShape(percent = 50))
@@ -363,10 +358,10 @@ private fun DockNavigationBar(
                 val isSel = i == selectedIndex
                 val tc = thumbCenterState.floatValue
                 val iconCov = intervalCoverage(
-                    tc - pillHalf, tc + pillHalf,
+                    tc - seatHalf, tc + seatHalf,
                     centers[i] - iconHalf, centers[i] + iconHalf
                 )
-                Box(
+                Column(
                     modifier = Modifier
                         .size(NavDockSpec.itemSeat, NavDockSpec.capsuleHeight)
                         .noRippleClickable { onSelect(i) }
@@ -374,13 +369,21 @@ private fun DockNavigationBar(
                             role = Role.Tab
                             selected = isSel
                         },
-                    contentAlignment = Alignment.Center
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
                 ) {
                     Icon(
                         imageVector = item.icon,
-                        contentDescription = item.label,
+                        contentDescription = null,
                         tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
                         modifier = Modifier.size(24.dp)
+                    )
+                    Spacer(Modifier.height(2.dp))
+                    Text(
+                        text = item.label,
+                        style = MaterialTheme.typography.labelSmall,
+                        maxLines = 1,
+                        color = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov)
                     )
                 }
             }
