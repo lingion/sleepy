@@ -67,9 +67,13 @@ fun ManagementPage(
             .background(colors.background)
     ) {
         // Dock 悬浮底栏: 滚动尾部多留 Dock 总高(FAB 语义, 同今日/我的页)
+        // contentPadding(非 Modifier.padding): 内容能滚到屏幕边缘自然滑出, 禁列表整体内缩硬裁
         val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
         LazyColumn(
-            modifier = Modifier.fillMaxSize().padding(start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra),
+            modifier = Modifier.fillMaxSize(),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             item {
