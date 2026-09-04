@@ -184,6 +184,12 @@ fun JwWebViewLoginScreen(
                         wv.evaluateJavascript(CQU_FETCH_JS, null)
                         return@CaptureBar
                     }
+                    // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
+                    // 用户已在 WebView 走完 CAS 登录并落到 jxglstu.hfut.edu.cn 域。
+                    if (school.type == JwProtocol.TYPE_EAMS5) {
+                        wv.evaluateJavascript(EAMS5_FETCH_JS, null)
+                        return@CaptureBar
+                    }
                     // T5: 新版正方 jwglxt — WebView 内 fetch kbList JSON
                     // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/, 或 WebVPN /http/<hex>/ 重写形态
                     val currentUrl = wv.url ?: ""
@@ -562,6 +568,75 @@ private const val CQU_FETCH_JS = """
         } catch(e) { periods = []; }
         window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt, periods:periods}));
       });
+    })
+    .catch(function(e){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+    });
+  } catch(err) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * 合工大 EAMS5 (jxglstu.hfut.edu.cn) 协议：在 WebView 内 fetch 三段拿课表 JSON。
+ *
+ * 前提：用户已在 WebView 里走完 CAS 登录
+ *   1) https://cas.hfut.edu.cn/cas/login (POST username + password + execution + _eventId + lt)
+ *   2) 落到 jxglstu.hfut.edu.cn 域 (Cookie 自动带入同源 /eams5-student/ 路径)
+ *
+ * 流程（复用 __sleepyBridge.onWiseduResult 同一回调通道，payload 同为 {ok, data}）：
+ *   1) GET /eams5-student/for-std/course-table           → HTML 含 studentId (script 标签里)
+ *   2) POST /eams5-student/ws/schedule-table/datum
+ *      body: {"lessonIds":[], "studentId":<学号>, "weekIndex":""}
+ *      resp: schedule-table/datum JSON 全文
+ *   3) 通过 __sleepyBridge.onWiseduResult({ok, data}) 回调
+ *
+ * 简化说明（v1 不完美但可用）：
+ *   - 上游协议第 2 段要先调 /for-std/course-table/get-data?bizTypeId=23 拿 lessonIds[];
+ *     v1 简化: 直接 POST datum, lessonIds 数组置空, 上游通常会用空数组返全量
+ *   - 后续 v2: 增加 get-data 段拿 lessonIds, 与上游 Chiu-xaH/HFUT-Schedule 对齐
+ *
+ * 外部佐证：Chiu-xaH/HFUT-Schedule JxglstuService.kt 三段定义。
+ */
+private const val EAMS5_FETCH_JS = """
+(function(){
+  try {
+    if (location.hostname.indexOf('hfut.edu.cn') < 0 && location.hostname.indexOf('jxglstu') < 0) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入合工大教务后再点导入'}));
+      return;
+    }
+    // 1) GET course-table 拿 studentId (Cookie 已带)
+    fetch('/eams5-student/for-std/course-table', {credentials:'include'})
+    .then(function(r){
+      if (!r.ok) throw new Error('course-table 取 studentId 失败 HTTP ' + r.status + '（请确认已在合工大教务主页登录）');
+      return r.text();
+    })
+    .then(function(html){
+      // studentId 在页面 script 里,例如 "var studentId = '2024210001';"
+      var m = (html || '').match(/studentId\s*[=:]\s*['"]([\d]+)['"]/);
+      if (!m) return null;
+      return m[1];
+    })
+    .then(function(studentId){
+      if (!studentId) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'未取到 studentId,请在 course-table 页面停留后再试'}));
+        return null;
+      }
+      // 2) POST schedule-table/datum (lessonIds 空数组; v1 简化,上游多返全量)
+      return fetch('/eams5-student/ws/schedule-table/datum', {
+        method:'POST',
+        credentials:'include',
+        headers:{'Content-Type':'application/json'},
+        body: JSON.stringify({lessonIds:[], studentId:studentId, weekIndex:''})
+      }).then(function(r){
+        if (!r.ok) throw new Error('POST schedule-table/datum 失败 HTTP ' + r.status);
+        return r.text();
+      });
+    })
+    .then(function(txt){
+      if (!txt) return;
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt, periods:[]}));
     })
     .catch(function(e){
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));

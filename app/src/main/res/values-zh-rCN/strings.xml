@@ -566,7 +566,7 @@
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
     <string name="about_license_title">开源声明</string>
-    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。本应用部分教务导入适配参考了 WakeUp 课程表 (Apache-2.0) 与时光课程表重庆大学适配器 (cqu.js) 的公开实现，在此致谢。</string>
+    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。本应用部分教务导入适配参考了 WakeUp 课程表 (Apache-2.0)、时光课程表重庆大学适配器 (cqu.js) 与 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 协议的公开实现，在此致谢。</string>
     <string name="about_update_check">自动检查更新</string>
     <string name="about_update_check_detail">启动时自动检查 GitHub Releases, 发现新版本会在「关于」页顶部提示</string>
     <string name="about_update_available">新版 %1$s 可用,点此查看</string>

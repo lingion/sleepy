@@ -59,6 +59,13 @@ object JwProtocol {
     const val TYPE_HNIU = "hniu"
 
     /**
+     * 合肥工业大学教务 (金智 EAMS5, eams5-student 系列, jxglstu.hfut.edu.cn)。
+     * WebView 内 fetch 三段 (CAS→course-table→lessons→POST schedule-table/datum) 拿课表 JSON。
+     * 上游协议形态: Chiu-xaH/HFUT-Schedule (MIT) 全链路参考。
+     */
+    const val TYPE_EAMS5 = "eams5"
+
+    /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
      *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
      *  PAGE_HIGH = HTML 页面级唯一锚点（zftal-ui-、__VIEWSTATE+Table1 ...）
@@ -73,7 +80,7 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_CQU, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
+        TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
     )
@@ -92,6 +99,7 @@ object JwProtocol {
         TYPE_CQU -> "重庆大学门户"
         TYPE_HNUST -> "湖南科大教务"
         TYPE_HNIU -> "湖南信息职业技术学院"
+        TYPE_EAMS5 -> "合工大教务 (EAMS5)"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -107,6 +115,7 @@ object JwProtocol {
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
+        TYPE_EAMS5 -> "eams5"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
         TYPE_CF -> "cf"
         TYPE_PKU, TYPE_BNUZ -> "other"

@@ -1,0 +1,94 @@
+{
+  "result": {
+    "lessonList": [
+      {
+        "courseName": "高等数学",
+        "name": "高等数学",
+        "id": "1001",
+        "suggestScheduleWeekInfo": "1~16",
+        "courseTypeName": "必修",
+        "remark": null,
+        "teacherAssignmentList": [
+          { "code": "T001", "name": "张三", "age": 45, "titleName": "教授" }
+        ]
+      },
+      {
+        "courseName": "大学物理",
+        "name": "大学物理",
+        "id": "1002",
+        "suggestScheduleWeekInfo": "1~16",
+        "courseTypeName": "必修",
+        "remark": null,
+        "teacherAssignmentList": [
+          { "code": "T002", "name": "李四", "age": 38, "titleName": "副教授" }
+        ]
+      },
+      {
+        "courseName": "数据结构实验",
+        "name": "数据结构实验",
+        "id": "1003",
+        "suggestScheduleWeekInfo": "5~12",
+        "courseTypeName": "必修",
+        "remark": null,
+        "teacherAssignmentList": [
+          { "code": "T003", "name": "王五", "age": 35, "titleName": "讲师" }
+        ]
+      }
+    ],
+    "scheduleList": [
+      {
+        "lessonId": 1001,
+        "room": { "nameZh": "A楼101", "nameEn": null },
+        "weekday": 1,
+        "personName": "张三",
+        "weekIndex": 1,
+        "startTime": 800,
+        "periods": 2,
+        "endTime": 950,
+        "date": "2024-09-02",
+        "lessonType": "理论"
+      },
+      {
+        "lessonId": 1001,
+        "room": { "nameZh": "A楼101", "nameEn": null },
+        "weekday": 1,
+        "personName": "张三",
+        "weekIndex": 2,
+        "startTime": 800,
+        "periods": 2,
+        "endTime": 950,
+        "date": "2024-09-09",
+        "lessonType": "理论"
+      },
+      {
+        "lessonId": 1002,
+        "room": { "nameZh": "B楼205", "nameEn": null },
+        "weekday": 3,
+        "personName": "李四",
+        "weekIndex": 1,
+        "startTime": 1010,
+        "periods": 2,
+        "endTime": 1200,
+        "date": "2024-09-04",
+        "lessonType": "理论"
+      },
+      {
+        "lessonId": 1003,
+        "room": { "nameZh": "实验楼401", "nameEn": null },
+        "weekday": 5,
+        "personName": "王五",
+        "weekIndex": 5,
+        "startTime": 1400,
+        "periods": 4,
+        "endTime": 1800,
+        "date": "2024-09-20",
+        "lessonType": "实验"
+      }
+    ],
+    "scheduleGroupList": [
+      { "lessonId": 1001, "stdCount": 60 },
+      { "lessonId": 1002, "stdCount": 55 },
+      { "lessonId": 1003, "stdCount": 30 }
+    ]
+  }
+}

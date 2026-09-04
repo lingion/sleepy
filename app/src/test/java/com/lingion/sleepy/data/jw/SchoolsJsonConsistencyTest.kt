@@ -39,7 +39,7 @@ class SchoolsJsonConsistencyTest {
             JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
             JwProtocol.TYPE_CF, JwProtocol.TYPE_PKU, JwProtocol.TYPE_BNUZ,
             JwProtocol.TYPE_HNUST, JwProtocol.TYPE_HNIU, JwProtocol.TYPE_WISEDU,
-            JwProtocol.TYPE_CQU,
+            JwProtocol.TYPE_CQU, JwProtocol.TYPE_EAMS5,
         )
         val bad = loadEntries().filter { it.type != null && it.type !in declared }
         assertEquals("type 未在 JwProtocol 声明的条目: ${bad.map { it.name to it.type }}", 0, bad.size)
