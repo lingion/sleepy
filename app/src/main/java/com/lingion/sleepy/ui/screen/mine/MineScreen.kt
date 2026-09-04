@@ -69,9 +69,13 @@ fun MineScreen(
     Box(
         modifier = Modifier.fillMaxSize().background(colors.background)
     ) {
+        // Dock 悬浮底栏: 滚动尾部多留 Dock 总高(FAB 语义, 同今日页)
+        val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
         LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+            contentPadding = androidx.compose.foundation.layout.PaddingValues(
+                start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra
+            ),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             // Header: "我的" + 副标题

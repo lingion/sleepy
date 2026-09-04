@@ -36,7 +36,10 @@ import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
+import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
+import androidx.compose.ui.Alignment
+import androidx.compose.foundation.background
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
@@ -295,41 +298,100 @@ private fun AppRoot(
         return
     }
 
-    androidx.compose.material3.Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        containerColor = SleepyTheme.colors.background,
-        bottomBar = {
-            val navItems = Tab.entries.map { com.lingion.sleepy.ui.component.PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
-            PillNavigationBar(
-                items = navItems,
-                selectedIndex = currentTab.ordinal,
-                onSelect = { currentTab = Tab.entries[it] },
-                dock = navDock
-            )
-        }
-    ) { padding ->
-        Box(modifier = Modifier.fillMaxSize().padding(padding)) {
-            when (currentTab) {
-                Tab.Schedule -> ScheduleScreen(onGoImport = { currentTab = Tab.Manage }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCourse = { course -> editingCourse = course })
-                Tab.Today -> TodayScreen(onEditCourse = { course -> editingCourse = course })
-                Tab.Manage -> {
-                    val ctx = LocalContext.current
-                    ManagementPage(autoShowImportSheet = pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = {
+    // 底栏双形态(用户 2026-09-04 定版):
+    // 贴底 = Scaffold bottomBar 占位(原样, 内容止于栏上沿);
+    // Dock = iOS/Mac 语义悬浮药丸 — 内容 fillMaxSize 通到屏幕底, Dock 悬浮于内容
+    // 上一层(FAB 式 overlay), 各页滚动容器经 LocalNavExtraBottomPadding 拿 Dock 总高
+    // 加滚动余量, 保证最后一项能滚到 Dock 上方完全可见。
+    val navItems = Tab.entries.map { com.lingion.sleepy.ui.component.PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
+
+    if (!navDock) {
+        androidx.compose.material3.Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = SleepyTheme.colors.background,
+            bottomBar = {
+                PillNavigationBar(
+                    items = navItems,
+                    selectedIndex = currentTab.ordinal,
+                    onSelect = { currentTab = Tab.entries[it] },
+                    dock = false
+                )
+            }
+        ) { padding ->
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                MainTabs(
+                    currentTab = currentTab,
+                    setCurrentTab = { currentTab = it },
+                    pushOverlay = ::pushOverlay,
+                    editingCourse = { editingCourse = it },
+                    onCreateNewTable = {
                         mainScope.launch {
                             val previousId = mainVm.state.value.currentTable?.id
                             val newId = mainVm.createEmptyTable(commitSelection = false)
                             previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; pushOverlay(OverlayScreen.EditTable)
                         }
-                    }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { editTableId = null; pendingNewTableId = null; pushOverlay(OverlayScreen.EditTable) }, onImported = { currentTab = Tab.Schedule })
-                }
-                Tab.Mine -> MineScreen(
-                    onOpenAllTables = { pushOverlay(OverlayScreen.AllTables) },
-                    onOpenAppearance = { pushOverlay(OverlayScreen.Theme) },
-                    onOpenGeneral = { pushOverlay(OverlayScreen.General) },
-                    onOpenExport = { pushOverlay(OverlayScreen.Export) },
-                    onOpenReminder = { pushOverlay(OverlayScreen.Reminder) },
-                    onOpenAbout = { pushOverlay(OverlayScreen.About) })
+                    }
+                )
             }
         }
+    } else {
+        // Dock 模式: 无 bottomBar 占位 — 内容通底; Dock 悬浮层 Align.BottomCenter 叠加
+        val dockExtra = NavDockSpec.pillHeight + NavDockSpec.bottomFloat + NavDockSpec.navBarExtra
+        androidx.compose.foundation.layout.Box(
+            modifier = Modifier.fillMaxSize().background(SleepyTheme.colors.background)
+        ) {
+            androidx.compose.runtime.CompositionLocalProvider(
+                com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding provides dockExtra
+            ) {
+                Box(modifier = Modifier.fillMaxSize()) {
+                    MainTabs(
+                        currentTab = currentTab,
+                        setCurrentTab = { currentTab = it },
+                        pushOverlay = ::pushOverlay,
+                        editingCourse = { editingCourse = it },
+                        onCreateNewTable = {
+                            mainScope.launch {
+                                val previousId = mainVm.state.value.currentTable?.id
+                                val newId = mainVm.createEmptyTable(commitSelection = false)
+                                previousDefaultTableId = previousId; pendingNewTableId = newId; editTableId = newId; pushOverlay(OverlayScreen.EditTable)
+                            }
+                        }
+                    )
+                }
+            }
+            Box(modifier = Modifier.align(Alignment.BottomCenter)) {
+                PillNavigationBar(
+                    items = navItems,
+                    selectedIndex = currentTab.ordinal,
+                    onSelect = { currentTab = Tab.entries[it] },
+                    dock = true
+                )
+            }
+        }
+    }
+}
+
+@Composable
+private fun MainTabs(
+    currentTab: Tab,
+    setCurrentTab: (Tab) -> Unit,
+    pushOverlay: (OverlayScreen) -> Unit,
+    editingCourse: (CourseEntity?) -> Unit,
+    onCreateNewTable: () -> Unit
+) {
+    when (currentTab) {
+        Tab.Schedule -> ScheduleScreen(onGoImport = { setCurrentTab(Tab.Manage) }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCourse = { course -> editingCourse(course) })
+        Tab.Today -> TodayScreen(onEditCourse = { course -> editingCourse(course) })
+        Tab.Manage -> {
+            val ctx = LocalContext.current
+            ManagementPage(autoShowImportSheet = MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { pushOverlay(OverlayScreen.EditTable) }, onImported = { setCurrentTab(Tab.Schedule) })
+        }
+        Tab.Mine -> MineScreen(
+            onOpenAllTables = { pushOverlay(OverlayScreen.AllTables) },
+            onOpenAppearance = { pushOverlay(OverlayScreen.Theme) },
+            onOpenGeneral = { pushOverlay(OverlayScreen.General) },
+            onOpenExport = { pushOverlay(OverlayScreen.Export) },
+            onOpenReminder = { pushOverlay(OverlayScreen.Reminder) },
+            onOpenAbout = { pushOverlay(OverlayScreen.About) })
     }
 }

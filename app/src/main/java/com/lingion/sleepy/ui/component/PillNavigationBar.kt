@@ -20,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.compositionLocalOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
@@ -30,6 +31,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
@@ -53,6 +55,21 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
  * content lambda 拿不到子项坐标, API 从 { PillNavItem(...) } 改为数据驱动。
  */
 data class PillNavItemSpec(val icon: ImageVector, val label: String)
+
+/**
+ * Dock(悬浮)模式下主内容需要的额外底部滚动余量 — 让最后一项能滚到 Dock 上方完全可见
+ * (FAB 语义: 内容画到屏幕底, 但滚动范围多留遮挡物的高度)。贴底模式为 0dp。
+ * MainActivity 在 dock 分支 provide Dock 总高, 四个 tab 页的滚动容器读取追加。
+ */
+val LocalNavExtraBottomPadding = compositionLocalOf { 0.dp }
+
+/** Dock 形态常量 — 悬浮几何三处共用(组件本体/滚动余量换算/维护锚点) */
+object NavDockSpec {
+    val horizontalMargin = 16.dp   // 左右距屏幕边缘
+    val bottomFloat = 12.dp        // 药丸底边再悬于手势条上方的高度
+    val pillHeight = 76.dp         // 药丸本体高 = 原 Row 高度
+    val navBarExtra = 6.dp         // 原 top padding(药丸内上下留白取一半对称)
+}
 
 /**
  * 底部导航栏 (v2)
@@ -120,20 +137,28 @@ fun PillNavigationBar(
         }
     }
 
-    // 形态: 贴底 = 通栏矩形(现状); Dock = 悬浮药丸 — 左右留 16dp 边距, 圆角 28dp, 底部
-    // 额外让出 12dp 悬浮高度(navigationBars inset 仍生效, 手势条不遮内容)
-    val barShape = if (dock) RoundedCornerShape(28.dp) else RectangleShape
+    // 形态: 贴底 = 通栏矩形(现状); Dock = 悬浮药丸 — 由调用方叠加在内容之上,
+    // 本组件只负责自己的几何: 收缩宽度(内容自适应)、药丸圆角、投影、悬于手势条上方
+    val barShape = if (dock) RoundedCornerShape(percent = 50) else RectangleShape
+    val shadowMod = if (dock) {
+        Modifier.shadow(elevation = 8.dp, shape = barShape, clip = false)
+    } else Modifier
     Box(
         modifier = modifier
-            .fillMaxWidth()
-            .padding(horizontal = if (dock) 16.dp else 0.dp)
+            .then(shadowMod)
+            .padding(horizontal = if (dock) NavDockSpec.horizontalMargin else 0.dp)
             .clip(barShape)
             .background(colors.surfaceContainer)
-            .windowInsetsPadding(WindowInsets.navigationBars)
-            .padding(
-                top = 6.dp,
-                bottom = if (dock) 12.dp else 8.dp
+            .then(
+                if (dock) {
+                    // Dock: 手势条 inset 只用于把药丸悬上来; 贴底: 原样整条让出
+                    Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                        .padding(bottom = NavDockSpec.bottomFloat)
+                } else {
+                    Modifier.windowInsetsPadding(WindowInsets.navigationBars)
+                }
             )
+            .padding(top = 6.dp, bottom = if (dock) 6.dp else 8.dp)
             .onGloballyPositioned { c ->
                 barRootX = c.positionInRoot().x
                 barRootY = c.positionInRoot().y

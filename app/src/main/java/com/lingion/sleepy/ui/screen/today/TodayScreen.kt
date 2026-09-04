@@ -79,11 +79,15 @@ fun TodayScreen(
 
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
 
+    // Dock 悬浮底栏: 滚动尾部多留 Dock 总高, 最后一项能滚到 Dock 上方(FAB 语义)
+    val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .background(SleepyTheme.colors.background),
-        contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
+        contentPadding = androidx.compose.foundation.layout.PaddingValues(
+            start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra
+        ),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         item { TodayHeader(date = today, week = actualWeek, count = todayCourses.size, semesterStatus = semesterStatus) }

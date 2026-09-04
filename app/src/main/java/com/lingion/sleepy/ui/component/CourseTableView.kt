@@ -154,6 +154,9 @@ fun CardsGridView(
 
             val scrollState = rememberScrollState()
 
+            // Dock 悬浮底栏: 滚动尾部多留 Dock 总高, 最后 ≤maxNode 节的卡片能滚到 Dock 上方
+            val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -299,6 +302,7 @@ fun CardsGridView(
                         )
                     }
                 }
+                if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
             }
         }
     }
@@ -533,6 +537,7 @@ fun FullWeekView(
     val twoColumnMode = AppPrefs.getWeekTwoColumnMode(context)
     val hideEmptyDays = AppPrefs.isWeekHideEmptyDays(context)
     val byDay = courses.groupBy { it.day }
+    val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
 
     Column(
         modifier = modifier
@@ -563,6 +568,8 @@ fun FullWeekView(
             twoColumnMode = twoColumnMode,
             hideEmptyDays = hideEmptyDays
         )
+        // Dock 悬浮底栏: 滚动尾部多留 Dock 总高(同网格视图)
+        if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
     }
 }
 
