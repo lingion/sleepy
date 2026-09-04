@@ -108,7 +108,7 @@ object JwProtocol {
      */
     val ALL_TYPES: List<String> = listOf(
         TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
-        TYPE_SEU,
+        TYPE_SEU, TYPE_ZJU,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
     )
