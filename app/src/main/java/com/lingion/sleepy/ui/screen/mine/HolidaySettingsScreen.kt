@@ -18,6 +18,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -48,12 +49,14 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.HolidayStyleChip
 import com.lingion.sleepy.ui.component.SectionHeader
 import com.lingion.sleepy.ui.component.SettingToggleRow
+import com.lingion.sleepy.ui.component.SettingsFlatCard
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
@@ -206,56 +209,62 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             }
 
             item {
+                // 单行卡(用户 2026-09-04): 标题+URL 同行, 刷新=图标(语言无关, 不随文案伸缩)。
+                // Loading 态图标位转圈占位(行高稳定); Failed 提示行单独挂卡底(信息行不可省)。
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.surfaceContainer)
-                        .padding(16.dp)
+                        .padding(horizontal = 16.dp, vertical = 6.dp)
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Text(
                             text = stringResource(R.string.holiday_data_source),
                             style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.onSurface,
+                            color = colors.onSurface
+                        )
+                        Spacer(Modifier.width(10.dp))
+                        Text(
+                            text = "unpkg.com/holiday-calendar · CN",
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                            maxLines = 1,
+                            overflow = TextOverflow.Ellipsis,
                             modifier = Modifier.weight(1f)
                         )
-                        if (state is HolidayUiState.Loaded || state is HolidayUiState.Empty) {
-                            Button(
+                        when (state) {
+                            HolidayUiState.Loading -> CircularProgressIndicator(
+                                modifier = Modifier.size(18.dp).padding(2.dp),
+                                color = colors.primary,
+                                strokeWidth = 2.dp
+                            )
+                            else -> IconButton(
                                 onClick = { load(year, force = true) },
-                                enabled = state !is HolidayUiState.Loading,
-                                modifier = Modifier.height(SleepyTheme.Buttons.regularHeight),
-                                shape = SleepyTheme.Buttons.shape,
-                                colors = ButtonDefaults.buttonColors(
-                                    containerColor = colors.secondaryContainer,
-                                    contentColor = colors.onSecondaryContainer
-                                )
+                                modifier = Modifier.size(36.dp)
                             ) {
-                                Text(stringResource(R.string.holiday_data_refresh))
+                                Icon(
+                                    Icons.Outlined.Refresh,
+                                    contentDescription = stringResource(R.string.holiday_data_refresh),
+                                    tint = colors.onSurfaceVariant,
+                                    modifier = Modifier.size(20.dp)
+                                )
                             }
                         }
                     }
-                    Spacer(Modifier.height(8.dp))
-                    when (state) {
-                        HolidayUiState.Loading -> CircularProgressIndicator(
-                            modifier = Modifier.size(18.dp),
-                            color = colors.primary,
-                            strokeWidth = 2.dp
-                        )
-                        HolidayUiState.Failed -> {
-                            Text(stringResource(R.string.holiday_data_failed), style = MaterialTheme.typography.bodySmall, color = colors.error)
-                            Spacer(Modifier.height(12.dp))
-                            FilledTonalButton(
-                                onClick = { load(year, force = true) },
-                                modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
-                                shape = SleepyTheme.Buttons.shape
-                            ) { Text(stringResource(R.string.holiday_data_retry)) }
-                        }
-                        HolidayUiState.Empty -> Text(stringResource(R.string.holiday_data_empty), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-                        is HolidayUiState.Loaded -> Text(
-                            "unpkg.com/holiday-calendar · CN",
+                    if (state is HolidayUiState.Failed) {
+                        Text(
+                            stringResource(R.string.holiday_data_failed),
                             style = MaterialTheme.typography.bodySmall,
-                            color = colors.onSurfaceVariant
+                            color = colors.error,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp)
+                        )
+                    } else if (state is HolidayUiState.Empty) {
+                        Text(
+                            stringResource(R.string.holiday_data_empty),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant,
+                            modifier = Modifier.padding(top = 4.dp, bottom = 6.dp)
                         )
                     }
                 }
@@ -294,29 +303,20 @@ fun HolidaySettingsScreen(onBack: () -> Unit) {
             }
 
             item {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clip(SleepyTheme.shapes.large)
-                        .background(colors.surfaceContainer)
-                        .padding(16.dp)
-                ) {
-                    Text(stringResource(R.string.settings_holiday_style), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
-                    Text(stringResource(R.string.settings_holiday_style_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-                    Spacer(Modifier.height(8.dp))
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        HolidayStyleChip(
-                            label = stringResource(R.string.settings_holiday_style_grey),
-                            selected = style == "grey",
-                            onClick = { style = "grey"; AppPrefs.setHolidayStyle(context, "grey") }
-                        )
-                        HolidayStyleChip(
-                            label = stringResource(R.string.settings_holiday_style_strikethrough),
-                            selected = style == "strikethrough",
-                            onClick = { style = "strikethrough"; AppPrefs.setHolidayStyle(context, "strikethrough") }
-                        )
+                // 标题行右贴 SegmentedSwitcher — 与通用设置页各平铺卡同款(用户 2026-09-04)
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_holiday_style),
+                    subtitle = stringResource(R.string.settings_holiday_style_sub),
+                    options = listOf(
+                        stringResource(R.string.settings_holiday_style_grey),
+                        stringResource(R.string.settings_holiday_style_strikethrough)
+                    ),
+                    selectedKey = if (style == "strikethrough") 1 else 0,
+                    onSelect = { idx ->
+                        val next = if (idx == 1) "strikethrough" else "grey"
+                        if (style != next) { style = next; AppPrefs.setHolidayStyle(context, next) }
                     }
-                }
+                )
             }
 
             val loaded = state as? HolidayUiState.Loaded
