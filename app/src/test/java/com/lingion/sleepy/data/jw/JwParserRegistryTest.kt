@@ -23,7 +23,7 @@ class JwParserRegistryTest {
             JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_ZF_NEW,
             JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_CRAZY, JwProtocol.TYPE_QZ_BR,
             JwProtocol.TYPE_QZ_WITH_NODE, JwProtocol.TYPE_QZ_OLD,
-            JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC,
+            JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU,
         )
         for (t in types) {
             assertTrue("type $t must be routable", JwImportViewModel.isRoutable(t))
@@ -31,15 +31,15 @@ class JwParserRegistryTest {
     }
 
     @Test
-    fun `ALL_TYPES contains 21 routable types in priority order`() {
-        assertEquals(21, JwProtocol.ALL_TYPES.size)
+    fun `ALL_TYPES contains 22 routable types in priority order`() {
+        assertEquals(22, JwProtocol.ALL_TYPES.size)
         assertEquals(JwProtocol.TYPE_WISEDU, JwProtocol.ALL_TYPES.first())
         assertEquals(JwProtocol.TYPE_CQU, JwProtocol.ALL_TYPES[1])
         assertEquals(JwProtocol.TYPE_EAMS5, JwProtocol.ALL_TYPES[2])
         val qzIndices = JwProtocol.ALL_TYPES.mapIndexed { i, t -> i to t }.filter { it.second.startsWith("qz") }
         assertEquals(5, qzIndices.size)
         assertTrue("qz_old 必须在末位", qzIndices.last().second == JwProtocol.TYPE_QZ_OLD)
-        assertTrue("qz 系必须排在列表后半段", qzIndices.first().first >= 14)
+        assertTrue("qz 系必须排在列表后半段", qzIndices.first().first >= 15)
     }
 
     @Test

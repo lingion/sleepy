@@ -1,0 +1,108 @@
+{
+  "dateList": [
+    {
+      "selectCourseList": [
+        {
+          "attendClassTeacher": "王教授",
+          "courseName": "高等数学",
+          "examTypeName": "考试",
+          "coursePropertiesName": "必修",
+          "courseCategoryName": "通识",
+          "restrictedCondition": "",
+          "programPlanName": "理论力学",
+          "studyModeName": "正常",
+          "unit": 4,
+          "timeAndPlaceList": [
+            {
+              "classroomName": "301",
+              "teachingBuildingName": "江安校区一教A楼",
+              "weekDescription": "1-16周",
+              "classSessions": 1,
+              "continuingSession": 2,
+              "classDay": 0,
+              "campusName": "江安校区",
+              "coureNumber": "MATH101",
+              "coureSequenceNumber": "01",
+              "executiveEducationPlanNumber": "EP001"
+            }
+          ]
+        },
+        {
+          "attendClassTeacher": "李老师",
+          "courseName": "大学物理",
+          "examTypeName": "考试",
+          "coursePropertiesName": "必修",
+          "courseCategoryName": "通识",
+          "restrictedCondition": "",
+          "programPlanName": "理论力学",
+          "studyModeName": "正常",
+          "unit": 3,
+          "timeAndPlaceList": [
+            {
+              "classroomName": "202",
+              "teachingBuildingName": "江安校区一教B楼",
+              "weekDescription": "2-15周",
+              "classSessions": 5,
+              "continuingSession": 2,
+              "classDay": 2,
+              "campusName": "江安校区",
+              "coureNumber": "PHYS201",
+              "coureSequenceNumber": "01",
+              "executiveEducationPlanNumber": "EP002"
+            }
+          ]
+        },
+        {
+          "attendClassTeacher": "张老师",
+          "courseName": "数据结构实验",
+          "examTypeName": "考查",
+          "coursePropertiesName": "必修",
+          "courseCategoryName": "专业",
+          "restrictedCondition": "",
+          "programPlanName": "计算机",
+          "studyModeName": "正常",
+          "unit": 2,
+          "timeAndPlaceList": [
+            {
+              "classroomName": "401",
+              "teachingBuildingName": "江安校区计算机楼",
+              "weekDescription": "2,4,6,8,10,12,14,16",
+              "classSessions": 7,
+              "continuingSession": 2,
+              "classDay": 4,
+              "campusName": "江安校区",
+              "coureNumber": "CS302",
+              "coureSequenceNumber": "01",
+              "executiveEducationPlanNumber": "EP003"
+            }
+          ]
+        },
+        {
+          "attendClassTeacher": "Smith",
+          "courseName": "英语口语",
+          "examTypeName": "考查",
+          "coursePropertiesName": "选修",
+          "courseCategoryName": "通识",
+          "restrictedCondition": "",
+          "programPlanName": "外语",
+          "studyModeName": "正常",
+          "unit": 2,
+          "timeAndPlaceList": [
+            {
+              "classroomName": "501",
+              "teachingBuildingName": "望江校区外语楼",
+              "weekDescription": "1-16周",
+              "classSessions": 9,
+              "continuingSession": 2,
+              "classDay": 1,
+              "campusName": "望江校区",
+              "coureNumber": "ENG103",
+              "coureSequenceNumber": "01",
+              "executiveEducationPlanNumber": "EP004"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

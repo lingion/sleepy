@@ -93,6 +93,17 @@ object JwProtocol {
     const val TYPE_USTC = "ustc"
 
     /**
+     * 四川大学教务 (scu.edu.cn 自建门户, 强智框架但走 mobile JSON 接口)。
+     * JSON 路径: x.dateList[0].selectCourseList[].timeAndPlaceList[] — 字段 {courseName,
+     * attendClassTeacher, weekDescription, classSessions, continuingSession, classDay,
+     * teachingBuildingName, classroomName}。weekDescription 纯文本"周次段"; 单/双信息
+     * upstream 协议丢失 (replaceAll 剥非数字/横/逗) → 本 parser 强制 type=0 (上游限制)。
+     * classDay 0-6 → day 1-7; raw 7 → 1 (周日推回周一, 上游罕见边界, KDoc 留口)。
+     * 上游协议形态: Z-P-J/ScuTimetable (无 license) TimetableHelper.java — 算法自写。
+     */
+    const val TYPE_SCU = "scu"
+
+    /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
      *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
      *  PAGE_HIGH = HTML 页面级唯一锚点（zftal-ui-、__VIEWSTATE+Table1 ...）
@@ -108,7 +119,7 @@ object JwProtocol {
      */
     val ALL_TYPES: List<String> = listOf(
         TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
-        TYPE_SEU, TYPE_ZJU, TYPE_USTC,
+        TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
     )
@@ -131,6 +142,7 @@ object JwProtocol {
         TYPE_SEU -> "东南大学"
         TYPE_ZJU -> "浙江大学"
         TYPE_USTC -> "中国科学技术大学"
+        TYPE_SCU -> "四川大学"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -147,7 +159,7 @@ object JwProtocol {
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_EAMS5 -> "eams5"
-        TYPE_SEU, TYPE_ZJU, TYPE_USTC -> "other"
+        TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU -> "other"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
         TYPE_CF -> "cf"
         TYPE_PKU, TYPE_BNUZ -> "other"
