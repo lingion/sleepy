@@ -70,9 +70,9 @@ class JwScuParserTest {
     }
 
     @Test
-    fun `parses SCU courses - weekDescription strips non-digit dash comma`() {
-        // weekDescription 实际可能含 "1-15周(单)" 等中文字符; upstream 用 replaceAll("[^\\d\\-\\,]", "")
-        // 但单/双信息上游协议本身丢失 (无 marker), 单/双周课会全部当作 type=0
+    fun `parses SCU courses - weekDescription single week marker kept as type 1`() {
+        // weekDescription 真实含 "3-9周单" 形态 (上游 timetable.json 资产实证);
+        // 单/双信息在线协议并未丢失 — 保留 type 并做端点修正
         val json = """
         {
           "dateList": [{"selectCourseList": [{
@@ -88,7 +88,7 @@ class JwScuParserTest {
             "timeAndPlaceList": [{
               "classroomName": "A101",
               "teachingBuildingName": "一教",
-              "weekDescription": "1-15周(单)",
+              "weekDescription": "2-15周单",
               "classSessions": 1,
               "continuingSession": 2,
               "classDay": 0,
@@ -101,12 +101,48 @@ class JwScuParserTest {
         }
         """.trimIndent()
         val courses = JwScuParser(json).generateCourseList()
-        // Sleepy 保留 range 语义: "1-15" (剥单/双后) → 1 entry (startWeek=1, endWeek=15)
-        // 上游协议缺陷: 单/双周信息丢失, 全部按每周 (type=0) 处理
         assertEquals(1, courses.size)
-        assertEquals(1, courses.first().startWeek)
+        // 单周=奇数, 起点 2 偶 → 校正 3
+        assertEquals(3, courses.first().startWeek)
         assertEquals(15, courses.first().endWeek)
-        assertEquals(0, courses.first().type)
+        assertEquals(1, courses.first().type)
+    }
+
+    @Test
+    fun `parses SCU courses - weekDescription double week paren form kept as type 2`() {
+        val json = """
+        {
+          "dateList": [{"selectCourseList": [{
+            "attendClassTeacher": "X",
+            "courseName": "双周测试",
+            "examTypeName": "",
+            "coursePropertiesName": "",
+            "courseCategoryName": "",
+            "restrictedCondition": "",
+            "programPlanName": "",
+            "studyModeName": "",
+            "unit": 0,
+            "timeAndPlaceList": [{
+              "classroomName": "B202",
+              "teachingBuildingName": "二教",
+              "weekDescription": "1-16周（双）",
+              "classSessions": 1,
+              "continuingSession": 2,
+              "classDay": 1,
+              "campusName": "望江",
+              "coureNumber": "X002",
+              "coureSequenceNumber": "01",
+              "executiveEducationPlanNumber": "E"
+            }]
+          }]}]
+        }
+        """.trimIndent()
+        val courses = JwScuParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        // 双周=偶数, 起点 1 奇 → 校正 2
+        assertEquals(2, courses.first().startWeek)
+        assertEquals(16, courses.first().endWeek)
+        assertEquals(2, courses.first().type)
     }
 
     @Test

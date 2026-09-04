@@ -22,9 +22,10 @@ import kotlinx.serialization.json.jsonPrimitive
  * weekDescription 解析逻辑 (replaceAll 非数字/横/逗) 与 day 0-indexed → 1-indexed 转换参考,
  * 代码自写, 仅复用字段映射。
  *
- * v1 限制 (上游协议缺陷):
- *   - weekDescription 走 replaceAll("[^\\d\\-\\,]", "") 剥 "周(单)/(双)" 等中文后缀,
- *     单/双周信息**协议层丢失**, 本 parser 强制 type=0 (与 EAMS5 v1 一致, KDoc 留口)。
+ * v1 说明:
+ *   - weekDescription 真实含单/双标记 ("3-9周单" / "1-16周（双）", 上游
+ *     timetable.json 资产实证)。上游 app 用 replaceAll 剥掉属于上游自身的
+ *     显示缺陷 — Sleepy 保留 type=1/2 并按 Sleepy 语义做端点修正。
  *   - upstream day 转换有 `if day==8 day=1` (raw 7 → 1) 罕见死路, 本 parser 不复刻 (按 0..6 → 1..7)。
  */
 class JwScuParser(source: String) : JwParser(source) {
@@ -55,10 +56,17 @@ class JwScuParser(source: String) : JwParser(source) {
                 val endNode = startNode + continuing - 1
                 val rawDay = tp.str("classDay").toIntOrNull() ?: continue
                 val day = rawDay + 1  // 0-indexed Mon..Sun → 1..7
-                val weeks = parseWeeks(weekDesc)
+                val (parity, cleanedWeeks) = extractParity(weekDesc)
+                val weeks = parseWeeks(cleanedWeeks)
                 for ((sw, ew) in weeks) {
                     // Sleepy 语义保留 range: "1-16周" → startWeek=1, endWeek=16 (1 entry);
                     // 离散周 "2,4,6,8" → 4 entries (每个 sw=ew=week 单周范围)。
+                    // 单周(1)起点须奇数/双周(2)起点须偶数, 端点同 ZJU 修正
+                    val adjustedStart = when (parity) {
+                        1 -> if (sw % 2 == 0) sw + 1 else sw
+                        2 -> if (sw % 2 != 0) sw + 1 else sw
+                        else -> sw
+                    }
                     out += JwCourse(
                         name = name,
                         room = room,
@@ -66,9 +74,9 @@ class JwScuParser(source: String) : JwParser(source) {
                         day = day,
                         startNode = startNode,
                         endNode = endNode,
-                        startWeek = sw,
+                        startWeek = adjustedStart,
                         endWeek = ew,
-                        type = 0,
+                        type = parity,
                     )
                 }
             }
@@ -77,9 +85,24 @@ class JwScuParser(source: String) : JwParser(source) {
     }
 
     /**
-     * 解析 weekDescription — 形如 "1-16周" / "2,4,6,8,10,12,14,16" / "1-15周(单)"。
-     * 严格按上游 replaceAll("[^\\d\\-\\,]", "") 协议: 剥非数字/横/逗后展开。
-     * 单/双周信息丢失, 按每周 (type=0) 输出。
+     * 提取单/双周限定并剥净: 返回 (parity, 已剥限定词与括号的串)。
+     * parity: 0=每周 1=单周 2=双周。真实形态 "3-9周单" / "1-16周（双）" /
+     * "1-15周(单)" — ASCII/全角括号与"单/双"标记全部剥除。
+     */
+    internal fun extractParity(s: String): Pair<Int, String> {
+        val parity = when {
+            "单" in s -> 1
+            "双" in s -> 2
+            else -> 0
+        }
+        val clean = s.replace("（", "(").replace("）", ")")
+            .replace("(单)", "").replace("(双)", "")
+        return parity to clean
+    }
+
+    /**
+     * 解析 weekDescription (已剥单/双标记) — 形如 "1-16周" / "2,4,6,8,10,12,14,16"。
+     * 剥非数字/横/逗后展开 (同上游 replaceAll)。
      */
     internal fun parseWeeks(s: String): List<Pair<Int, Int>> {
         if (s.isBlank()) return emptyList()
