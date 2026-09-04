@@ -104,7 +104,7 @@ private const val MARK_SQUARE_DP = 16f
 /** 命中区在视觉区基础上的总内延(dp,单边) — 手指命中容差。 */
 private const val MARK_HIT_PAD_DP = 20f
 
-/** STACK 叠卡收缩量 d(dp) — v6 起由设置滑杆传入(AppPrefs.getConflictTopInset),此值为几何测试基线。 */
+/** STACK 叠卡收缩量 d(dp) — v6 起由设置滑杆传入(AppPrefs.getConflictStackInset),此值为几何测试基线。 */
 internal const val STACK_OFFSET_DP = 8f
 
 /** FOLD 折痕直角边长 f(dp) — 右上缺角/翻折 flap 尺寸的默认基线(实际值跟用户拖杆设置走,v7.10.16o)。 */
@@ -251,8 +251,9 @@ internal fun conflictShowBadge(layerCount: Int, hiddenCount: Int): Boolean =
  *   RAIL:  顶卡 = 右缘收窄 topInset 的窄卡;非顶卡全宽。都按自身真实节位/节数铺。
  *   FOLD/NONE: 全尺寸,自身节位(FOLD 的缺角由 Shape 叠加,不改变矩形)。
  *
- * v6: topInset = 顶卡收窄量(dp),STACK 的偏移 d 与 RAIL 的右缘让宽共用同一设置值
- * (AppPrefs.getConflictTopInset 滑杆,4..20dp);默认取 STACK_OFFSET_DP(测试基线)。
+ * v6: topInset = 顶卡收窄量(dp),由 Composable 侧按 form 传入(用户 2026-09-04 拆分:
+ * STACK/RAIL 独立配置,AppPrefs.getConflictStackInset/getConflictRailInset,4..20dp);
+ * 默认取 STACK_OFFSET_DP(测试基线)。
  */
 internal fun conflictCardRect(
     startNode: Int,
@@ -473,8 +474,11 @@ fun ConflictClusterCard(
     fun cardYOf(startNode: Int) = rowH * (startNode - minStart)
     fun cardHOf(courseId: Long) = rowH * (clampedSteps[courseId] ?: 1) - gapH
 
-    // v6: 顶卡收窄量 = 用户设置(A 偏移 d / C 右缘让宽共用),滑杆 4..20dp
-    val topInset = AppPrefs.getConflictTopInset(context).dp
+    // v6: 顶卡收窄量 = 用户设置(用户 2026-09-04 拆分: STACK/RAIL 独立配置不共享),滑杆 4..20dp
+    val topInset = when (form) {
+        ConflictVariant.RAIL -> AppPrefs.getConflictRailInset(context)
+        else -> AppPrefs.getConflictStackInset(context)
+    }.dp
     // v7.10.16o: 折角幅度 = 用户拖杆设置(8..28dp),FoldCutShape 剪裁/flap 视觉/命中区共用同一真值
     val foldSize = AppPrefs.getConflictFoldSize(context)
     val foldSizeDp = foldSize.dp

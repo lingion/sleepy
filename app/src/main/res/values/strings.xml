@@ -329,7 +329,7 @@
     <string name="settings_week_two_column_days">按天对半分</string>
     <string name="settings_week_two_column_balance">按课程数平衡</string>
     <string name="settings_week_hide_empty">周视图隐藏无课日</string>
-    <string name="settings_show_date">课表页表格日期</string>
+    <string name="settings_show_date">网格视图表头显示日期</string>
     <string name="settings_conflict_style">冲突课程样式</string>
     <string name="settings_conflict_stack">叠层偏移</string>
     <string name="settings_conflict_stack_sub">冲突课程层叠错位，下层课程露出边角</string>
@@ -337,8 +337,8 @@
     <string name="settings_conflict_fold_sub">卡片右上折角，提示该格还有下层课程</string>
     <string name="settings_conflict_rail">侧边竖轨</string>
     <string name="settings_conflict_rail_sub">右侧色轨并排展示冲突课程，课名竖排</string>
-    <string name="settings_conflict_top_inset">顶卡收窄量</string>
-    <string name="settings_conflict_top_inset_sub">冲突顶卡比格位窄多少：叠层偏移=错开的距离，侧边竖轨=右侧让宽</string>
+    <string name="settings_conflict_stack_inset">叠层偏移量</string>
+    <string name="settings_conflict_rail_inset">右缘让宽</string>
     <string name="settings_conflict_fold_size">折角幅度</string>
     <string name="settings_conflict_fold_size_sub">折角符号的大小，拖动同步调整视觉与点按区域</string>
     <string name="settings_visible_days">显示星期</string>

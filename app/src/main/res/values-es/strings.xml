@@ -293,7 +293,7 @@
     <string name="settings_week_two_column_days">Reparto fijo de días</string>
     <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
     <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
-    <string name="settings_show_date">Fechas en la tabla del horario</string>
+    <string name="settings_show_date">Fechas en el encabezado de la cuadrícula</string>
     <string name="settings_conflict_style">Estilo de clases en conflicto</string>
     <string name="settings_conflict_stack">Apilado con desplazamiento</string>
     <string name="settings_conflict_stack_sub">Las clases se apilan desplazadas y la inferior asoma por el borde</string>
@@ -301,8 +301,8 @@
     <string name="settings_conflict_fold_sub">Una esquina doblada en la tarjeta indica que hay más clases debajo</string>
     <string name="settings_conflict_rail">Raíl lateral</string>
     <string name="settings_conflict_rail_sub">Una barra de color a la derecha lista las clases con nombre vertical</string>
-    <string name="settings_conflict_top_inset">Reducción de tarjeta superior</string>
-    <string name="settings_conflict_top_inset_sub">Cuánto más estrecha es la tarjeta superior que su celda: apilado = distancia de desfase, riel = margen derecho</string>
+    <string name="settings_conflict_stack_inset">Distancia de desfase</string>
+    <string name="settings_conflict_rail_inset">Margen derecho</string>
     <string name="settings_conflict_fold_size">Tamaño de la esquina doblada</string>
     <string name="settings_conflict_fold_size_sub">Tamaño de la marca doblada; ajusta el aspecto y su zona táctil</string>
     <string name="settings_visible_days">Días visibles</string>

@@ -95,7 +95,8 @@ fun GeneralSettingsScreen(
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
     var weekHideEmptyDays by remember { mutableStateOf(AppPrefs.isWeekHideEmptyDays(context)) }
     var conflictStyle by remember { mutableStateOf(AppPrefs.getConflictStyle(context)) }
-    var conflictTopInset by remember { mutableStateOf(AppPrefs.getConflictTopInset(context)) }
+    var conflictStackInset by remember { mutableStateOf(AppPrefs.getConflictStackInset(context)) }
+    var conflictRailInset by remember { mutableStateOf(AppPrefs.getConflictRailInset(context)) }
     var conflictFoldSize by remember { mutableStateOf(AppPrefs.getConflictFoldSize(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
@@ -320,8 +321,7 @@ fun GeneralSettingsScreen(
                     // 折角幅度拖杆(v7.10.16o): 仅折角样式下显示 —— 其他样式没有折角符号
                     if (conflictStyle == "fold") {
                         HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        Text(text = stringResource(R.string.settings_conflict_fold_size), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                        Text(text = stringResource(R.string.settings_conflict_fold_size_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                        Text(text = stringResource(R.string.settings_conflict_fold_size), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
                                 text = "${conflictFoldSize.roundToInt()}dp",
@@ -344,24 +344,48 @@ fun GeneralSettingsScreen(
                             )
                         }
                     }
-                    // 顶卡收窄量滑杆(v6): 仅叠层偏移/侧边竖轨下显示(用户 2026-09-03 指令) —
-                    // STACK=右/下偏移量, RAIL=右缘让宽, 同一设置值; FOLD 没有顶卡收窄(它有专属折角幅度杆)
-                    if (conflictStyle == "stack" || conflictStyle == "rail") {
+                    // 叠层偏移量(用户 2026-09-04 拆分): 仅叠层样式下显示, 独立配置
+                    if (conflictStyle == "stack") {
                         HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        Text(text = stringResource(R.string.settings_conflict_top_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                        Text(text = stringResource(R.string.settings_conflict_top_inset_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                        Text(text = stringResource(R.string.settings_conflict_stack_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
                         Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                             Text(
-                                text = "${conflictTopInset.roundToInt()}dp",
+                                text = "${conflictStackInset.roundToInt()}dp",
                                 style = MaterialTheme.typography.labelLarge,
                                 color = colors.primary,
                                 modifier = Modifier.widthIn(min = 52.dp)
                             )
                             Slider(
-                                value = conflictTopInset,
-                                onValueChange = { conflictTopInset = it.roundToInt().toFloat() },
+                                value = conflictStackInset,
+                                onValueChange = { conflictStackInset = it.roundToInt().toFloat() },
                                 onValueChangeFinished = {
-                                    AppPrefs.setConflictTopInset(context, conflictTopInset)
+                                    AppPrefs.setConflictStackInset(context, conflictStackInset)
+                                },
+                                valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
+                                colors = SliderDefaults.colors(
+                                    thumbColor = colors.primary,
+                                    activeTrackColor = colors.primary,
+                                    inactiveTrackColor = colors.surfaceVariant
+                                )
+                            )
+                        }
+                    }
+                    // 右缘让宽(同上拆分): 仅侧边竖轨样式下显示, 与叠层互不影响
+                    if (conflictStyle == "rail") {
+                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        Text(text = stringResource(R.string.settings_conflict_rail_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
+                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                            Text(
+                                text = "${conflictRailInset.roundToInt()}dp",
+                                style = MaterialTheme.typography.labelLarge,
+                                color = colors.primary,
+                                modifier = Modifier.widthIn(min = 52.dp)
+                            )
+                            Slider(
+                                value = conflictRailInset,
+                                onValueChange = { conflictRailInset = it.roundToInt().toFloat() },
+                                onValueChangeFinished = {
+                                    AppPrefs.setConflictRailInset(context, conflictRailInset)
                                 },
                                 valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
                                 colors = SliderDefaults.colors(

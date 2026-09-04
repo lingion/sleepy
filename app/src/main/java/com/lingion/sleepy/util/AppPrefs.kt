@@ -46,9 +46,11 @@ object AppPrefs {
     const val KEY_DISPLAY_MODE = "display_mode" // "node" or "time"
     const val KEY_GRID_SUB_INFO = "grid_sub_info" // "room" / "teacher" / "none" — 网格卡片副信息（周视图网格卡课程名下方那行；左栏已有节次，故此处不再显示节次/时间）
     const val KEY_CONFLICT_STYLE = "conflict_style" // "stack" / "fold" / "rail" — 冲突课程显示样式（网格视图同格冲突时；stack=叠层偏移, fold=折角揭示, rail=侧边竖轨, 默认 "rail"）
-    const val KEY_CONFLICT_TOP_INSET = "conflict_top_inset" // Float dp — 冲突顶卡收窄量: A=右/下偏移 d, C=右缘让宽; 滑杆范围 CONFLICT_TOP_INSET_RANGE, 默认 7dp(用户 2026-09-01 实测定版)
-    val CONFLICT_TOP_INSET_RANGE = 4f..20f        // 滑杆量程(dp)
+    const val KEY_CONFLICT_TOP_INSET = "conflict_top_inset" // Float dp — [已拆分停写] 旧共用值: A=右/下偏移 d, C=右缘让宽; 读取仅作迁移源
+    val CONFLICT_TOP_INSET_RANGE = 4f..20f        // 滑杆量程(dp) — 叠层/竖轨两滑杆共用同一量程
     const val CONFLICT_TOP_INSET_DEFAULT = 7f     // 默认(dp) — 用户实测定版
+    const val KEY_CONFLICT_STACK_INSET = "conflict_stack_inset" // Float dp — 叠层偏移量(STACK 专有, 用户 2026-09-04 拆分: 两样式独立配置不共享)
+    const val KEY_CONFLICT_RAIL_INSET = "conflict_rail_inset"   // Float dp — 右缘让宽(RAIL 专有, 同上)
     const val KEY_CONFLICT_FOLD_SIZE = "conflict_fold_size" // Float dp — 折角幅度(fold 样式): 折痕直角边长, 视觉符号与命中区共用; 默认 16dp = 旧硬编码值
     val CONFLICT_FOLD_SIZE_RANGE = 8f..28f        // 拖杆量程(dp)
     const val CONFLICT_FOLD_SIZE_DEFAULT = 16f    // 默认(dp) — 沿用旧 FOLD_SIZE_DP 硬编码值
@@ -260,14 +262,37 @@ object AppPrefs {
         sp(ctx).edit().putString(KEY_CONFLICT_STYLE, value).apply()
     }
 
-    // ===== 冲突顶层卡收窄量(A 偏移 d / C 右缘让宽共用,用户可调) =====
+    // ===== 冲突顶卡收窄量(用户 2026-09-04 拆分: 叠层/竖轨独立配置不共享) =====
+    // 首次读取时从旧共用 key 迁移一次(旧值复制到两新 key), 旧 key 停写保留仅作迁移源。
 
-    fun getConflictTopInset(ctx: Context): Float =
-        sp(ctx).getFloat(KEY_CONFLICT_TOP_INSET, CONFLICT_TOP_INSET_DEFAULT)
+    fun getConflictStackInset(ctx: Context): Float {
+        val sp = sp(ctx)
+        if (!sp.contains(KEY_CONFLICT_STACK_INSET)) {
+            sp.edit()
+                .putFloat(KEY_CONFLICT_STACK_INSET, sp.getFloat(KEY_CONFLICT_TOP_INSET, CONFLICT_TOP_INSET_DEFAULT))
+                .apply()
+        }
+        return sp.getFloat(KEY_CONFLICT_STACK_INSET, CONFLICT_TOP_INSET_DEFAULT)
+    }
 
-    fun setConflictTopInset(ctx: Context, value: Float) {
+    fun setConflictStackInset(ctx: Context, value: Float) {
         require(value in CONFLICT_TOP_INSET_RANGE)
-        sp(ctx).edit().putFloat(KEY_CONFLICT_TOP_INSET, value).apply()
+        sp(ctx).edit().putFloat(KEY_CONFLICT_STACK_INSET, value).apply()
+    }
+
+    fun getConflictRailInset(ctx: Context): Float {
+        val sp = sp(ctx)
+        if (!sp.contains(KEY_CONFLICT_RAIL_INSET)) {
+            sp.edit()
+                .putFloat(KEY_CONFLICT_RAIL_INSET, sp.getFloat(KEY_CONFLICT_TOP_INSET, CONFLICT_TOP_INSET_DEFAULT))
+                .apply()
+        }
+        return sp.getFloat(KEY_CONFLICT_RAIL_INSET, CONFLICT_TOP_INSET_DEFAULT)
+    }
+
+    fun setConflictRailInset(ctx: Context, value: Float) {
+        require(value in CONFLICT_TOP_INSET_RANGE)
+        sp(ctx).edit().putFloat(KEY_CONFLICT_RAIL_INSET, value).apply()
     }
 
     // ===== 冲突折角幅度(fold 样式专有,用户 2026-09-03 拖杆) =====

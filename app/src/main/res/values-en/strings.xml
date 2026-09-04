@@ -299,7 +299,7 @@
     <string name="settings_week_two_column_days">Split days evenly</string>
     <string name="settings_week_two_column_balance">Balance by course count</string>
     <string name="settings_week_hide_empty">Hide empty days in week view</string>
-    <string name="settings_show_date">Schedule table dates</string>
+    <string name="settings_show_date">Show dates in grid header</string>
     <string name="settings_conflict_style">Conflicting course style</string>
     <string name="settings_conflict_stack">Stacked offset</string>
     <string name="settings_conflict_stack_sub">Overlapping courses with the lower one peeking out at the edge</string>
@@ -307,8 +307,8 @@
     <string name="settings_conflict_fold_sub">A folded corner marks cards that hide more courses beneath</string>
     <string name="settings_conflict_rail">Side rail</string>
     <string name="settings_conflict_rail_sub">A color rail on the right lists conflicting courses with vertical names</string>
-    <string name="settings_conflict_top_inset">Top card inset</string>
-    <string name="settings_conflict_top_inset_sub">How much narrower the top card is than its slot: stack = offset distance, rail = right-edge reveal</string>
+    <string name="settings_conflict_stack_inset">Stack offset distance</string>
+    <string name="settings_conflict_rail_inset">Right-edge inset</string>
     <string name="settings_conflict_fold_size">Fold corner size</string>
     <string name="settings_conflict_fold_size_sub">Size of the folded-corner mark; adjusts both the visual and its tap area</string>
     <string name="settings_visible_days">Visible Days</string>

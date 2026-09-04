@@ -293,7 +293,7 @@
     <string name="settings_week_two_column_days">日数で半分ずつ</string>
     <string name="settings_week_two_column_balance">コマ数でバランス</string>
     <string name="settings_week_hide_empty">週ビューで空き日を隠す</string>
-    <string name="settings_show_date">時間割テーブルの日付</string>
+    <string name="settings_show_date">グリッドヘッダーに日付を表示</string>
     <string name="settings_conflict_style">コマの重なり表示</string>
     <string name="settings_conflict_stack">重ねてずらして表示</string>
     <string name="settings_conflict_stack_sub">コマを重ねてずらし、下のコマの端を見せる</string>
@@ -301,8 +301,8 @@
     <string name="settings_conflict_fold_sub">カード右上に折り返しを付け、下にコマがあることを示す</string>
     <string name="settings_conflict_rail">サイドレール</string>
     <string name="settings_conflict_rail_sub">右端のカラーレールに並べ、授業名は縦書きで表示</string>
-    <string name="settings_conflict_top_inset">上カードの幅狭め</string>
-    <string name="settings_conflict_top_inset_sub">上カードがマスより狭くなる量：重ね表示=ずらし幅、横レール=右端の余白</string>
+    <string name="settings_conflict_stack_inset">重ねのずらし幅</string>
+    <string name="settings_conflict_rail_inset">右端の余白</string>
     <string name="settings_conflict_fold_size">折り返しの大きさ</string>
     <string name="settings_conflict_fold_size_sub">折り返しマークの大きさ。見た目とタップ領域が連動して変わります</string>
     <string name="settings_visible_days">表示曜日</string>
