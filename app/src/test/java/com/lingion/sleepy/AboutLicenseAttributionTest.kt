@@ -61,36 +61,22 @@ class AboutLicenseAttributionTest {
         }
     }
 
+    /** 全部发布语言: 致谢漂移曾只查 3 语, en/es/ja 漏整批 B 档致谢而闸门放行 */
+    private val ALL_RELEASED_LOCALES = listOf(
+        "values", "values-zh-rCN", "values-zh-rTW", "values-en", "values-ja", "values-es"
+    )
+
     @Test
-    fun `zh-rCN lists all batch A attributions`() {
-        checkAll("values-zh-rCN", BATCH_A_ATTRIBUTIONS)
+    fun `all released locales list all batch A attributions`() {
+        for (locale in ALL_RELEASED_LOCALES) {
+            checkAll(locale, BATCH_A_ATTRIBUTIONS)
+        }
     }
 
     @Test
-    fun `zh-rTW lists all batch A attributions`() {
-        checkAll("values-zh-rTW", BATCH_A_ATTRIBUTIONS)
-    }
-
-    @Test
-    fun `values (en fallback) lists all batch A attributions`() {
-        // values 是默认 (zh-rCN 兜底镜像), 历史 HFUT 漏在 en 是已知漂移,
-        // 本测试为新批次回归闸, 不为 HFUT 老漂移背书。
-        val body = readString("values", "about_license_body")
-        assertTrue("values/strings.xml 缺少 about_license_body", body.isNotBlank())
-    }
-
-    @Test
-    fun `zh-rCN lists all batch B first wave attributions`() {
-        checkAll("values-zh-rCN", BATCH_B_FIRST_WAVE_ATTRIBUTIONS)
-    }
-
-    @Test
-    fun `zh-rTW lists all batch B first wave attributions`() {
-        checkAll("values-zh-rTW", BATCH_B_FIRST_WAVE_ATTRIBUTIONS)
-    }
-
-    @Test
-    fun `values (en fallback) lists all batch B first wave attributions`() {
-        checkAll("values", BATCH_B_FIRST_WAVE_ATTRIBUTIONS)
+    fun `all released locales list all batch B first wave attributions`() {
+        for (locale in ALL_RELEASED_LOCALES) {
+            checkAll(locale, BATCH_B_FIRST_WAVE_ATTRIBUTIONS)
+        }
     }
 }
