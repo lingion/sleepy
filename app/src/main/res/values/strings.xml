@@ -595,7 +595,7 @@
     <string name="about_feedback_email_body">请描述你遇到的问题或建议：\n\n— 环境 —\n（选填）\n</string>
     <string name="about_feedback_no_mail_app">未找到可用的邮件应用，请改用 GitHub Issue</string>
     <string name="about_license_title">开源声明</string>
-    <string name="about_license_body">Sleepy 是一款开源的智能课表应用，源代码基于 GNU General Public License v3.0 协议发布。任何人都可以自由使用、修改和分发本软件。欢迎通过 GitHub 参与贡献。本应用部分教务导入适配参考了 WakeUp 课程表 (Apache-2.0)、时光课程表重庆大学适配器 (cqu.js) 与 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 协议的公开实现，在此致谢。</string>
+    <string name="about_license_body">Sleepy is an open-source smart class schedule app. The source code is released under the GNU General Public License v3.0. Anyone is free to use, modify, and distribute this software. Contributions via GitHub are welcome. Parts of the academic-system import adapters reference public implementations from WakeUp Schedule (Apache-2.0), the Shiguang timetable Chongqing University adapter (cqu.js), and HFUT-Schedule (Chiu-xaH, MIT) for HFUT EAMS5 protocol; as well as SEUTimetable (sakimidare, Apache-2.0) for SEU URP, zju-ical-py (Xecades, LGPL-2.1) for ZJU UGR, and USTC-timetable-to-ics (1970633640) for USTC studentTableModule protocol — with thanks to all.</string>
     <string name="about_update_check">自动检查更新</string>
     <string name="about_update_check_detail">启动时自动检查 GitHub Releases, 发现新版本会在「关于」页顶部提示</string>
     <string name="about_update_available">新版 %1$s 可用,点此查看</string>
