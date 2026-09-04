@@ -57,6 +57,7 @@ object JwParserRegistry {
      */
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
         JwProtocol.TYPE_WISEDU to ::JwWiseduParser,
+        JwProtocol.TYPE_WHUT to ::JwWhutParser,
         JwProtocol.TYPE_CQU to ::JwCquParser,
         JwProtocol.TYPE_EAMS5 to ::JwEams5Parser,
         JwProtocol.TYPE_SEU to ::JwSeuParser,

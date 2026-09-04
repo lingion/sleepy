@@ -213,6 +213,12 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, CQU_FETCH_JS)
                         return@CaptureBar
                     }
+                    // WHUT（武汉理工）：金智 jwapp 变体 — kcbcxby 微应用三段 fetch
+                    // (currentUser 学号+学期 → cxjcs 开学日期/总周数 → jcjcx 节次映射 → cxxskcb 课表)
+                    if (school.type == JwProtocol.TYPE_WHUT) {
+                        evaluateFetchWithTimeout(wv, WHUT_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
                     // 用户已在 WebView 走完 CAS 登录并落到 jxglstu.hfut.edu.cn 域。
                     if (school.type == JwProtocol.TYPE_EAMS5) {
@@ -614,8 +620,82 @@ private const val CQU_FETCH_JS = """
 """
 
 /**
- * 合工大 EAMS5 (jxglstu.hfut.edu.cn) 协议：在 WebView 内 fetch 三段拿课表 JSON。
+ * WHUT (武汉理工 jwxt.whut.edu.cn) — 金智 jwapp 变体 (kcbcxby 微应用)。
  *
+ * 前提：用户已在 WebView 走统一身份认证 (zhlgd.whut.edu.cn CAS) 登录 jwxt。
+ *
+ * 流程（复用 __sleepyBridge.onWiseduResult 同一回调通道）：
+ *  1) currentUser.do → datas.userId (学号) + datas.welcomeInfo.xnxqdm (当前学期 DM)
+ *  2) cxxljc.do (XN+XQ) → rows[0].XQKSRQ (第一周周一), ZZC (总周数) — 供前端展示
+ *  3) jcjcx.do → rows[{DM,MC}] 节次映射表 (MC 含 "节" 的行按顺序 = 物理节次 1..13);
+ *     拉不到时用 fallback 表 (1..5→1..5, 8..12→6..10, 14..16→11..13, 6/7/13 缺位)
+ *  4) cxxskcb.do (XH=学号&XNXQDM=学期) → datas.cxxskcb.rows[] 课表
+ *     rows 里 KSJC/JSJC (大节 DM) 就地替换为物理节次再回传
+ *  5) 解析由 JwWhutParser 完成 (兼容 datas.xskcb 路径)
+ *
+ * 上游协议形态: shiguang_warehouse (MIT) whut_01.js + iwut (AGPL, 仅引形态)。
+ */
+private const val WHUT_FETCH_JS = """
+(function(){
+  try {
+    if (location.hostname.indexOf('whut.edu.cn') < 0) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入武汉理工教务后再点导入'}));
+      return;
+    }
+    var post = function(url, body){
+      return fetch(url, {
+        method:'POST',
+        headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'},
+        body: body || '',
+        credentials:'include'
+      }).then(function(r){ return r.json(); });
+    };
+    // 1) 学号 + 当前学期
+    fetch('/jwapp/sys/homeapp/api/home/currentUser.do', {credentials:'include'})
+    .then(function(r){ return r.json(); })
+    .then(function(u){
+      var d = u.datas || {};
+      var xh = d.userId || '';
+      var xnxq = (d.welcomeInfo && d.welcomeInfo.xnxqdm) || '';
+      if (!xnxq) throw new Error('未取到当前学期, 请确认已登录本科教务');
+      // 2) 节次映射 (失败用 fallback)
+      var fallbackMap = {"1":1,"2":2,"3":3,"4":4,"5":5,"8":6,"9":7,"10":8,"11":9,"12":10,"14":11,"15":12,"16":13};
+      var sectionMap = {};
+      var mapReady = post('/jwapp/sys/kcbcxby/modules/dzkz/jcjcx.do', '').then(function(j){
+        try {
+          var rows = (j.datas && j.datas.jcjcx && j.datas.jcjcx.rows) || [];
+          var n = 0;
+          for (var i = 0; i < rows.length; i++) {
+            var mc = String(rows[i].MC || '');
+            if (mc.indexOf('节') >= 0) { n += 1; sectionMap[String(rows[i].DM)] = n; }
+          }
+          if (n < 10) sectionMap = fallbackMap;
+        } catch(e) { sectionMap = fallbackMap; }
+      }).catch(function(){ sectionMap = fallbackMap; });
+      return mapReady.then(function(){
+        return post('/jwapp/sys/kcbcxby/modules/xskcb/cxxskcb.do', 'XH=' + encodeURIComponent(xh) + '&XNXQDM=' + encodeURIComponent(xnxq))
+        .then(function(k){
+          var rows = (k.datas && k.datas.cxxskcb && k.datas.cxxskcb.rows) || [];
+          for (var i = 0; i < rows.length; i++) {
+            var r = rows[i];
+            if (sectionMap[r.KSJC] != null) r.KSJC = String(sectionMap[r.KSJC]);
+            if (sectionMap[r.JSJC] != null) r.JSJC = String(sectionMap[r.JSJC]);
+          }
+          window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k), periods:[]}));
+        });
+      });
+    })
+    .catch(function(e){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+    });
+  } catch(err) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * 合工大 EAMS5 (jxglstu.hfut.edu.cn) 协议：在 WebView 内 fetch 三段拿课表 JSON。
  * 前提：用户已在 WebView 里走完 CAS 登录
  *   1) https://cas.hfut.edu.cn/cas/login (POST username + password + execution + _eventId + lt)
  *   2) 落到 jxglstu.hfut.edu.cn 域 (Cookie 自动带入同源 /eams5-student/ 路径)

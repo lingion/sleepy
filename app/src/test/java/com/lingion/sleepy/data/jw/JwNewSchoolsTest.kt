@@ -154,8 +154,8 @@ class JwNewSchoolsTest {
         // 硬编码具体数字会在每次收录新校时炸红 (149 断言曾落后 10 校)。
         // 下限只锁已收录的里程碑, 防倒退。
         assertTrue(
-            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 159 (检查是否 cp 主资产)",
-            parsed.size >= 159
+            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 160 (检查是否 cp 主资产)",
+            parsed.size >= 160
         )
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
@@ -190,7 +190,8 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_WISEDU,
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_HNUST,
             JwProtocol.TYPE_EAMS5, JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU,
-            JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU
+            JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU,
+            JwProtocol.TYPE_WHUT
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",

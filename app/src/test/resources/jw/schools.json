@@ -1008,6 +1008,17 @@
   },
   {
     "sortKey": "W",
+    "name": "武汉理工大学",
+    "url": "https://jwxt.whut.edu.cn/jwapp/",
+    "type": "whut",
+    "aliases": [
+      "whut",
+      "wuhanligong"
+    ],
+    "sortKeyFull": "wuhanligongdaxue"
+  },
+  {
+    "sortKey": "W",
     "name": "武汉轻工大学",
     "url": "http://jwglxt.whpu.edu.cn/xtgl/",
     "type": "zf_new",

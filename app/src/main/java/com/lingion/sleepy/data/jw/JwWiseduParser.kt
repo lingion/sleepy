@@ -27,15 +27,26 @@ import kotlinx.serialization.json.jsonPrimitive
  *
  * 一门课多时段 = 多行（按行展开）；不连续周次 = 拆成多个连续段，每段一个 JwCourse。
  * 整体等差 step=2 的周次（如 11,13,15,17）压缩成单周/双周（type=1/2）。
+ *
+ * open for WHUT: 武汉理工同属金智 jwapp 但走 kcbcxby 微应用 (cxxskcb 路径) 且
+ * 节次 DM 需映射 — 子类 [JwWhutParser] 注入 rows 路径别名与节次映射。
  */
-class JwWiseduParser(source: String) : JwParser(source) {
+open class JwWiseduParser(source: String) : JwParser(source) {
 
     private val json = Json { ignoreUnknownKeys = true; isLenient = true }
+
+    /** rows 所在路径 datas.<module>.rows; 子类可注入别名 (WHUT = xskcb + cxxskcb)。 */
+    protected open val moduleNames: List<String> = listOf("xskcb")
+
+    /** 节次 DM → 物理节次; 默认直通 (HEU DM 即物理节次)。 */
+    protected open fun mapSection(dm: Int): Int = dm
 
     override fun generateCourseList(): List<JwCourse> {
         val root = json.parseToJsonElement(source).jsonObject
         val rows = root["datas"]?.jsonObject
-            ?.get("xskcb")?.jsonObject
+            ?.let { datas ->
+                moduleNames.firstNotNullOfOrNull { datas[it]?.jsonObject }
+            }
             ?.get("rows")?.jsonArray
             ?: return emptyList()
 
@@ -50,8 +61,8 @@ class JwWiseduParser(source: String) : JwParser(source) {
             val teacher = str("SKJS")
             val room = str("JASMC")
             val day = int("SKXQ") ?: continue
-            val startNode = int("KSJC") ?: continue
-            val endNode = int("JSJC") ?: startNode
+            val startNode = int("KSJC")?.let { mapSection(it) } ?: continue
+            val endNode = int("JSJC")?.let { mapSection(it) } ?: startNode
             val skzc = str("SKZC")
 
             for ((sw, ew, type) in weekRuns(skzc)) {

@@ -423,7 +423,8 @@ internal object DiagMapper {
             school.url.contains("jw.ustc.edu.cn") ||         // 中国科学技术大学
             school.url == "https://scu.edu.cn/" ||           // 四川大学 (条目 URL 即门户域)
             school.url.contains("jwms.bit.edu.cn") ||        // 北京理工大学
-            school.url.contains("csujwc.its.csu.edu.cn") ->  // 中南大学
+            school.url.contains("csujwc.its.csu.edu.cn") ||  // 中南大学
+            school.url.contains("jwxt.whut.edu.cn") ->       // 武汉理工大学 (登录后偶发限流, 提示换网络)
                 "该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试"
             school.type in setOf(
                 com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ,

@@ -442,7 +442,7 @@
     <string name="update_download_failed">下載失敗：%1$s</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。本應用部分教務匯入適配參考了 WakeUp 課程表 (Apache-2.0)、時光課程表重慶大學適配器 (cqu.js) 與 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 協議的公開實現;以及 SEUTimetable (sakimidare, Apache-2.0) 東南大學 URP、zju-ical-py (Xecades, LGPL-2.1) 浙江大學 UGR、USTC-timetable-to-ics (1970633640) 中國科學技術大學 studentTableModule、ScuTimetable (Z-P-J) 四川大學 dateList 與 neu_wisedu2wakeup (CreamPig233) 東北大學 arrangedList 協議的公開實現,在此一併致謝。</string>
+    <string name="about_license_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。本應用部分教務匯入適配參考了 WakeUp 課程表 (Apache-2.0)、時光課程表重慶大學適配器 (cqu.js) 與 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 協議的公開實現;以及 SEUTimetable (sakimidare, Apache-2.0) 東南大學 URP、zju-ical-py (Xecades, LGPL-2.1) 浙江大學 UGR、USTC-timetable-to-ics (1970633640) 中國科學技術大學 studentTableModule、ScuTimetable (Z-P-J) 四川大學 dateList 與 neu_wisedu2wakeup (CreamPig233) 東北大學 arrangedList 協議與 shiguang_warehouse (MIT) 武漢理工大學 kcbcxby 協議的公開實現,在此一併致謝。</string>
     <string name="about_license_detail">開源授權與致謝</string>
     <string name="license_page_title">開源授權與致謝</string>
     <string name="license_gpl_section">授權條款</string>
