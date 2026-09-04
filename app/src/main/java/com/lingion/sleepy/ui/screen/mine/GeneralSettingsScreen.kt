@@ -180,8 +180,7 @@ fun GeneralSettingsScreen(
             // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
             item {
                 SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
-                    Text(text = stringResource(R.string.settings_pill_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                    Text(text = stringResource(R.string.settings_pill_scale_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = stringResource(R.string.settings_pill_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = "${(gridScale * 100).roundToInt()}%",
@@ -206,8 +205,7 @@ fun GeneralSettingsScreen(
                         )
                     }
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Text(text = stringResource(R.string.settings_pill_week_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                    Text(text = stringResource(R.string.settings_pill_week_scale_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
+                    Text(text = stringResource(R.string.settings_pill_week_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = "${(weekScale * 100).roundToInt()}%",
@@ -232,8 +230,7 @@ fun GeneralSettingsScreen(
                         )
                     }
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Text(text = stringResource(R.string.settings_pill_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
-                    Text(text = stringResource(R.string.settings_pill_corner_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 4.dp))
+                    Text(text = stringResource(R.string.settings_pill_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         Text(
                             text = "${(gridCorner * 100).roundToInt()}%",
@@ -260,7 +257,6 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_week_two_column),
-                        subtitle = stringResource(R.string.settings_week_two_column_sub),
                         checked = weekTwoColumn,
                         onCheckedChange = { weekTwoColumn = it; AppPrefs.setWeekTwoColumn(context, it) }
                     )
@@ -269,14 +265,14 @@ fun GeneralSettingsScreen(
                         HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                         DisplayModeOption(
                             label = stringResource(R.string.settings_week_two_column_days),
-                            subtitle = stringResource(R.string.settings_week_two_column_days_sub),
+                            subtitle = "",
                             selected = weekTwoColumnMode == "days",
                             onClick = { weekTwoColumnMode = "days"; AppPrefs.setWeekTwoColumnMode(context, "days") }
                         )
                         HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                         DisplayModeOption(
                             label = stringResource(R.string.settings_week_two_column_balance),
-                            subtitle = stringResource(R.string.settings_week_two_column_balance_sub),
+                            subtitle = "",
                             selected = weekTwoColumnMode == "balance",
                             onClick = { weekTwoColumnMode = "balance"; AppPrefs.setWeekTwoColumnMode(context, "balance") }
                         )
@@ -285,7 +281,6 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_week_hide_empty),
-                        subtitle = stringResource(R.string.settings_week_hide_empty_sub),
                         checked = weekHideEmptyDays,
                         onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
                     )
@@ -293,7 +288,6 @@ fun GeneralSettingsScreen(
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_show_date),
-                        subtitle = stringResource(R.string.settings_show_date_sub),
                         checked = showDate,
                         onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
                     )

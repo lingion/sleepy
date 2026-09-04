@@ -287,21 +287,13 @@
     <string name="settings_grid_sub_none_sub">網格卡片只顯示課程名</string>
     <string name="settings_pill">主頁顯示設定</string>
     <string name="settings_pill_scale">網格檢視縮放</string>
-    <string name="settings_pill_scale_sub">整體縮放網格檢視：字號、卡片高度、間距等比調節（70%–130%），調小可一屏顯示更多節課</string>
     <string name="settings_pill_week_scale">週檢視縮放</string>
-    <string name="settings_pill_week_scale_sub">整體縮放週檢視，與網格檢視互相獨立（70%–130%）</string>
     <string name="settings_pill_corner">卡片圓角</string>
-    <string name="settings_pill_corner_sub">調整網格卡片與週檢視卡片的圓角（0% 直角 – 200% 超圓），預設 100%</string>
     <string name="settings_week_two_column">週視圖兩欄顯示</string>
-    <string name="settings_week_two_column_sub">週視圖課程列表拆為左右兩欄（前半週在左、後半週在右），減少縱向捲動</string>
     <string name="settings_week_two_column_days">按天對半分</string>
-    <string name="settings_week_two_column_days_sub">前半週在左欄、後半週在右欄，星期位置固定不變</string>
     <string name="settings_week_two_column_balance">按課程數平衡</string>
-    <string name="settings_week_two_column_balance_sub">星期放進課較少的一欄，兩欄高度接近；星期位置隨課表變化</string>
     <string name="settings_week_hide_empty">週視圖隱藏無課日</string>
-    <string name="settings_week_hide_empty_sub">週視圖不顯示沒有課程的星期，剩餘天數在兩欄下左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）</string>
     <string name="settings_show_date">課表頁表格日期</string>
-    <string name="settings_show_date_sub">在網格檢視每列表頭顯示具體日期（月/日）；小工具的列頭日期也隨此開關</string>
     <string name="settings_conflict_style">衝突課程樣式</string>
     <string name="settings_conflict_stack">疊層偏移</string>
     <string name="settings_conflict_stack_sub">衝突課程層疊錯位，下層課程露出邊角</string>

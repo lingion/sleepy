@@ -287,21 +287,13 @@
     <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
     <string name="settings_pill">ホーム表示設定</string>
     <string name="settings_pill_scale">グリッド表示の拡大率</string>
-    <string name="settings_pill_scale_sub">グリッド表示全体を均等に拡大縮小：文字サイズ・カードの高さ・間隔（70%–130%）。小さくすると1画面に多くのコマが入ります</string>
     <string name="settings_pill_week_scale">週表示の拡大率</string>
-    <string name="settings_pill_week_scale_sub">週表示全体を拡大縮小します。グリッド表示とは独立しています（70%–130%）</string>
     <string name="settings_pill_corner">カードの角丸</string>
-    <string name="settings_pill_corner_sub">グリッドカードと週ビューカードの角丸（0% 直角 – 200% 超丸）、デフォルト 100%</string>
     <string name="settings_week_two_column">週ビュー2列表示</string>
-    <string name="settings_week_two_column_sub">週ビューの授業リストを左右2列に分割します（前半週は左、後半週は右）。縦スクロールを減らせます</string>
     <string name="settings_week_two_column_days">日数で半分ずつ</string>
-    <string name="settings_week_two_column_days_sub">前半週は左、後半週は右。曜日の位置は固定です</string>
     <string name="settings_week_two_column_balance">コマ数でバランス</string>
-    <string name="settings_week_two_column_balance_sub">授業が少ない列に曜日を振り分け、左右の高さを均す。曜日の位置は時間割により変動します</string>
     <string name="settings_week_hide_empty">週ビューで空き日を隠す</string>
-    <string name="settings_week_hide_empty_sub">授業がない曜日を週ビューから除外。2列表示時は残りを左右に均等分割（例: 4日=左2右2、6日=左3右3）</string>
     <string name="settings_show_date">時間割テーブルの日付</string>
-    <string name="settings_show_date_sub">グリッドビューの各列ヘッダーに日付（M/D）を表示。ウィジェットの列ヘッダーも連動します</string>
     <string name="settings_conflict_style">コマの重なり表示</string>
     <string name="settings_conflict_stack">重ねてずらして表示</string>
     <string name="settings_conflict_stack_sub">コマを重ねてずらし、下のコマの端を見せる</string>

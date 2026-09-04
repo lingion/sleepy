@@ -323,21 +323,13 @@
     <string name="settings_grid_sub_none_sub">网格卡片只显示课程名</string>
     <string name="settings_pill">主页显示设置</string>
     <string name="settings_pill_scale">网格视图缩放</string>
-    <string name="settings_pill_scale_sub">整体缩放网格视图：字号、卡片高度、间距等比调节（70%–130%），调小可一屏显示更多节课</string>
     <string name="settings_pill_week_scale">周视图缩放</string>
-    <string name="settings_pill_week_scale_sub">整体缩放周视图，与网格视图互相独立（70%–130%）</string>
     <string name="settings_pill_corner">卡片圆角</string>
-    <string name="settings_pill_corner_sub">调整网格卡片与周视图卡片的圆角（0% 直角 – 200% 超圆），默认 100%</string>
     <string name="settings_week_two_column">周视图两栏显示</string>
-    <string name="settings_week_two_column_sub">周视图课程列表拆为左右两栏（前半周在左、后半周在右），减少纵向滚动</string>
     <string name="settings_week_two_column_days">按天对半分</string>
-    <string name="settings_week_two_column_days_sub">前半周在左栏、后半周在右栏，星期位置固定不变</string>
     <string name="settings_week_two_column_balance">按课程数平衡</string>
-    <string name="settings_week_two_column_balance_sub">星期放进课较少的一栏，两栏高度接近；星期位置随课表变化</string>
     <string name="settings_week_hide_empty">周视图隐藏无课日</string>
-    <string name="settings_week_hide_empty_sub">周视图不显示没有课程的星期，剩余天数在两栏下左右平分（如剩 4 天=左 2 右 2、剩 6 天=左 3 右 3）</string>
     <string name="settings_show_date">课表页表格日期</string>
-    <string name="settings_show_date_sub">在网格视图每列表头显示具体日期（月/日）；小组件的列头日期也随此开关</string>
     <string name="settings_conflict_style">冲突课程样式</string>
     <string name="settings_conflict_stack">叠层偏移</string>
     <string name="settings_conflict_stack_sub">冲突课程层叠错位，下层课程露出边角</string>

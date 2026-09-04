@@ -287,21 +287,13 @@
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
     <string name="settings_pill">Ajustes de pantalla de inicio</string>
     <string name="settings_pill_scale">Zoom de la vista de cuadrícula</string>
-    <string name="settings_pill_scale_sub">Escala toda la vista de cuadrícula por igual: fuente, altura de tarjeta y espaciado (70%–130%); más pequeño, más franjas por pantalla</string>
     <string name="settings_pill_week_scale">Zoom de la vista semanal</string>
-    <string name="settings_pill_week_scale_sub">Escala toda la vista semanal, de forma independiente a la vista de cuadrícula (70%–130%)</string>
     <string name="settings_pill_corner">Esquinas de tarjetas</string>
-    <string name="settings_pill_corner_sub">Radio de las esquinas de tarjetas de cuadrícula y vista semanal (0% rectas – 200% extra redondas), por defecto 100%</string>
     <string name="settings_week_two_column">Vista semanal en dos columnas</string>
-    <string name="settings_week_two_column_sub">Divide la lista de cursos de la vista semanal en dos columnas (primera mitad de la semana a la izquierda, segunda mitad a la derecha) para reducir el desplazamiento vertical</string>
     <string name="settings_week_two_column_days">Reparto fijo de días</string>
-    <string name="settings_week_two_column_days_sub">Primera mitad de la semana a la izquierda, segunda mitad a la derecha — los días mantienen su posición</string>
     <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
-    <string name="settings_week_two_column_balance_sub">Cada día va a la columna con menos cursos, manteniendo ambas partes parejas — la posición varía según el horario</string>
     <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
-    <string name="settings_week_hide_empty_sub">Los días sin cursos se quitan de la vista semanal; con dos columnas los restantes se reparten en partes iguales (p. ej. 4 días = 2+2, 6 días = 3+3)</string>
     <string name="settings_show_date">Fechas en la tabla del horario</string>
-    <string name="settings_show_date_sub">Muestra la fecha (D/M) junto a cada encabezado de columna en la vista de cuadrícula; los encabezados de los widgets también la siguen</string>
     <string name="settings_conflict_style">Estilo de clases en conflicto</string>
     <string name="settings_conflict_stack">Apilado con desplazamiento</string>
     <string name="settings_conflict_stack_sub">Las clases se apilan desplazadas y la inferior asoma por el borde</string>

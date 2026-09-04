@@ -293,21 +293,13 @@
     <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
     <string name="settings_pill">Home display</string>
     <string name="settings_pill_scale">Grid view zoom</string>
-    <string name="settings_pill_scale_sub">Scale the whole grid view uniformly: font, card height and spacing (70%–130%); smaller fits more periods per screen</string>
     <string name="settings_pill_week_scale">Week view zoom</string>
-    <string name="settings_pill_week_scale_sub">Scale the whole week view, independent of the grid view (70%–130%)</string>
     <string name="settings_pill_corner">Card corners</string>
-    <string name="settings_pill_corner_sub">Corner radius of grid and week-view cards (0% square – 200% extra round), default 100%</string>
     <string name="settings_week_two_column">Two-column week view</string>
-    <string name="settings_week_two_column_sub">Split the week view course list into two columns (first half of the week left, second half right) to reduce vertical scrolling</string>
     <string name="settings_week_two_column_days">Split days evenly</string>
-    <string name="settings_week_two_column_days_sub">First half of the week on the left, second half on the right — days stay in a fixed position</string>
     <string name="settings_week_two_column_balance">Balance by course count</string>
-    <string name="settings_week_two_column_balance_sub">Each day goes to the shorter column, keeping both sides even — day positions vary with your schedule</string>
     <string name="settings_week_hide_empty">Hide empty days in week view</string>
-    <string name="settings_week_hide_empty_sub">Days without courses are removed from the week view; with two columns the remaining days split evenly (e.g. 4 left = 2+2, 6 left = 3+3)</string>
     <string name="settings_show_date">Schedule table dates</string>
-    <string name="settings_show_date_sub">Show the date (M/D) next to each column header in the grid view; widget column headers follow this too</string>
     <string name="settings_conflict_style">Conflicting course style</string>
     <string name="settings_conflict_stack">Stacked offset</string>
     <string name="settings_conflict_stack_sub">Overlapping courses with the lower one peeking out at the edge</string>
