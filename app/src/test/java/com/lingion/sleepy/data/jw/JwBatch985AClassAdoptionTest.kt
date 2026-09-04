@@ -38,16 +38,16 @@ class JwBatch985AClassAdoptionTest {
     }
 
     @Test
-    fun `bit csu scut sduwh all exist in schools_json`() {
-        val targets = listOf("北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）")
+    fun `bit csu scut sduwh hfut all exist in schools_json`() {
+        val targets = listOf("北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）", "合肥工业大学")
         for (name in targets) {
             val o = findByName(name)
-            assertNotNull("schools.json 缺少 A 档收录: $name", o)
+            assertNotNull("schools.json 缺少收录: $name", o)
         }
     }
 
     @Test
-    fun `bit csu scut sduwh type field is non-blank and declared`() {
+    fun `bit csu scut sduwh hfut type field is non-blank and declared`() {
         val declared = setOf(
             JwProtocol.TYPE_ZF, JwProtocol.TYPE_ZF_1, JwProtocol.TYPE_ZF_NEW,
             JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW,
@@ -55,13 +55,14 @@ class JwBatch985AClassAdoptionTest {
             JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
             JwProtocol.TYPE_CF, JwProtocol.TYPE_PKU, JwProtocol.TYPE_BNUZ,
             JwProtocol.TYPE_HNUST, JwProtocol.TYPE_HNIU, JwProtocol.TYPE_WISEDU,
-            JwProtocol.TYPE_CQU,
+            JwProtocol.TYPE_CQU, JwProtocol.TYPE_EAMS5,
         )
         val expectedTypes = mapOf(
             "北京理工大学" to JwProtocol.TYPE_QZ_WITH_NODE,
             "中南大学" to JwProtocol.TYPE_QZ,
             "华南理工大学" to JwProtocol.TYPE_ZF_NEW,
             "山东大学（威海）" to JwProtocol.TYPE_QZ,
+            "合肥工业大学" to JwProtocol.TYPE_EAMS5,
         )
         for ((name, expectedType) in expectedTypes) {
             val o = findByName(name) ?: continue
@@ -72,9 +73,9 @@ class JwBatch985AClassAdoptionTest {
     }
 
     @Test
-    fun `bit csu scut sduwh are routable to a parser`() {
+    fun `bit csu scut sduwh hfut are routable to a parser`() {
         val expectedTypes = listOf(
-            "北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）",
+            "北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）", "合肥工业大学",
         )
         for (name in expectedTypes) {
             val o = findByName(name) ?: continue
@@ -84,8 +85,8 @@ class JwBatch985AClassAdoptionTest {
     }
 
     @Test
-    fun `bit csu scut sduwh url is non-blank`() {
-        val expectedNames = listOf("北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）")
+    fun `bit csu scut sduwh hfut url is non-blank`() {
+        val expectedNames = listOf("北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）", "合肥工业大学")
         for (name in expectedNames) {
             val o = findByName(name) ?: continue
             assertTrue("[$name] URL 为空", o.optString("url", "").isNotBlank())
@@ -93,13 +94,14 @@ class JwBatch985AClassAdoptionTest {
     }
 
     @Test
-    fun `bit csu scut sduwh sortKeyFull is pinyin full spelling`() {
-        // pinyin 全拼规则: a-z 字符,长度 ≥ 6
+    fun `bit csu scut sduwh hfut sortKeyFull is pinyin full spelling`() {
+        // pinyin 全拼规则: a-z 字符
         val expected = mapOf(
             "北京理工大学" to "beijingligongdaxue",
             "中南大学" to "zhongnandaxue",
             "华南理工大学" to "huananligongdaxue",
             "山东大学（威海）" to "shandongdaxueweihai",
+            "合肥工业大学" to "hefeigongyedaxue",
         )
         for ((name, want) in expected) {
             val o = findByName(name) ?: continue
@@ -109,9 +111,8 @@ class JwBatch985AClassAdoptionTest {
     }
 
     @Test
-    fun `bit csu scut sduwh aliases are valid`() {
-        // 别名格式:小写字母或空数组
-        val expectedNames = listOf("北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）")
+    fun `bit csu scut sduwh hfut aliases are valid`() {
+        val expectedNames = listOf("北京理工大学", "中南大学", "华南理工大学", "山东大学（威海）", "合肥工业大学")
         for (name in expectedNames) {
             val o = findByName(name) ?: continue
             val aliasesArr = o.optJSONArray("aliases") ?: org.json.JSONArray()
