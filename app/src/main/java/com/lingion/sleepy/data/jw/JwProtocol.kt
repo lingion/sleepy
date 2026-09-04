@@ -66,6 +66,33 @@ object JwProtocol {
     const val TYPE_EAMS5 = "eams5"
 
     /**
+     * 东南大学教务 (正方 URP 系, newxk.urp.seu.edu.cn, 用户粘 JSON 后 fetch 课表)。
+     * JSON 字段集 {KCM,SKJS,JASMC,SKXQ,KSJC,JSJC,ZCMC,KCH,JXBQH} — 与 WakeupSchedule_BUPT
+     * 强智系字段形态高度同构, 但走 JSON 而非 HTML; v1 单次 POST 拿全表, 无周次 bitmap 压缩。
+     * 上游协议形态: sakimidare/SEUTimetable (Apache-2.0) TableParserUtils.kt parseWeekRange
+     * 算法参考 (代码自写, 只复用逻辑)。
+     */
+    const val TYPE_SEU = "seu"
+
+    /**
+     * 浙江大学教务 (正方新版 zf_new, zdbk.zju.edu.cn, CAS = zjuam.zju.edu.cn RSA 加密登录)。
+     * 字段集 {xkkh, xqj, dsz, djj, skcd, kcb, xxq} — kcb 字符串含 \\n 分隔的课名/周次串/老师/教室,
+     * dsz="0"单/"1"双/"2"全周, djj=起始节, skcd=节次长度。
+     * 上游协议形态: Xecades/zju-ical-py (LGPL-2.1) zjuam/ugrs.py + course/ugrs_course.py;
+     * 字段映射参考, kcb 解析逻辑代码自写。
+     */
+    const val TYPE_ZJU = "zju"
+
+    /**
+     * 中国科学技术大学教务 (自研新版, jw.ustc.edu.cn, CAS = passport.ustc.edu.cn 图形验证码)。
+     * JSON 路径: x.studentTableVm.activities[] — 字段 {courseName, room, teachers[], weeksStr,
+     * weekday, startDate, endDate}。weeksStr "1-16"/"1-16单"/"1-16双" 一次性给完整范围 (EAMS5 优势项)。
+     * 上游协议形态: 1970633640/USTC-timetable-to-ics (无 license) json_version.py — 算法参考。
+     * CAS 验证码 → WebView session 必走。
+     */
+    const val TYPE_USTC = "ustc"
+
+    /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
      *  HIGH = URL 唯一锚点（jwapp/sys/、jwglxt、default2.aspx ...）
      *  PAGE_HIGH = HTML 页面级唯一锚点（zftal-ui-、__VIEWSTATE+Table1 ...）
@@ -81,6 +108,7 @@ object JwProtocol {
      */
     val ALL_TYPES: List<String> = listOf(
         TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_PKU, TYPE_BNUZ, TYPE_CF, TYPE_HNUST, TYPE_HNIU,
+        TYPE_SEU,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
     )
@@ -100,6 +128,9 @@ object JwProtocol {
         TYPE_HNUST -> "湖南科大教务"
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_EAMS5 -> "合工大教务 (EAMS5)"
+        TYPE_SEU -> "东南大学"
+        TYPE_ZJU -> "浙江大学"
+        TYPE_USTC -> "中国科学技术大学"
         TYPE_LOGIN -> "特殊登录（v1 暂不支持）"
         TYPE_HELP -> "如何选择教务类型"
         TYPE_MAINTAIN -> "维护中"
@@ -116,6 +147,7 @@ object JwProtocol {
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_EAMS5 -> "eams5"
+        TYPE_SEU, TYPE_ZJU, TYPE_USTC -> "other"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
         TYPE_CF -> "cf"
         TYPE_PKU, TYPE_BNUZ -> "other"

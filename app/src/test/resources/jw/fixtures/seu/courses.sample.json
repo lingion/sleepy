@@ -1,0 +1,46 @@
+[
+  {
+    "KCM": "高等数学",
+    "KCH": "MATH101",
+    "SKJS": "张老师",
+    "JASMC": "九龙湖A楼301",
+    "SKXQ": 1,
+    "KSJC": 1,
+    "JSJC": 2,
+    "ZCMC": "1-16周",
+    "JXBQH": "A01"
+  },
+  {
+    "KCM": "大学物理",
+    "KCH": "PHYS201",
+    "SKJS": "李老师",
+    "JASMC": "九龙湖B楼202",
+    "SKXQ": 3,
+    "KSJC": 5,
+    "JSJC": 6,
+    "ZCMC": "2-15周(单)",
+    "JXBQH": "B03"
+  },
+  {
+    "KCM": "数据结构实验",
+    "KCH": "CS302",
+    "SKJS": "王老师",
+    "JASMC": "计算机楼401",
+    "SKXQ": 5,
+    "KSJC": 7,
+    "JSJC": 8,
+    "ZCMC": "2,4,6周",
+    "JXBQH": "C02"
+  },
+  {
+    "KCM": "英语口语",
+    "KCH": "ENG103",
+    "SKJS": "Sarah",
+    "JASMC": "外语楼501",
+    "SKXQ": 2,
+    "KSJC": 9,
+    "JSJC": 10,
+    "ZCMC": "1-16周(双)",
+    "JXBQH": "D04"
+  }
+]
