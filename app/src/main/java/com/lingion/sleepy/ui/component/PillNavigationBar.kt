@@ -36,7 +36,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -133,10 +132,7 @@ fun PillNavigationBar(
             // 与 SegmentedSwitcher 同参: 高硬度+无回弹, 用户实测 MediumLow 拖沓不跟手
             thumbX.animateTo(
                 targetValue = target,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessHigh
-                ),
+                animationSpec = SleepyThumbSpring,
                 block = { thumbCenterState.floatValue = value }
             )
         }
@@ -152,7 +148,6 @@ fun PillNavigationBar(
             onSelect = onSelect,
             colors = colors,
             density = density,
-            barRootX = { barRootX },
             onBarGeometry = { x, y, laid ->
                 barRootX = x; barRootY = y; barLaidOut = laid
             },
@@ -277,7 +272,6 @@ private fun DockNavigationBar(
     onSelect: (Int) -> Unit,
     colors: com.lingion.sleepy.ui.theme.WakeUpColorScheme,
     density: androidx.compose.ui.unit.Density,
-    barRootX: () -> Float,
     onBarGeometry: (Float, Float, Boolean) -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -309,10 +303,7 @@ private fun DockNavigationBar(
         } else {
             thumbX.animateTo(
                 targetValue = target,
-                animationSpec = spring(
-                    dampingRatio = Spring.DampingRatioNoBouncy,
-                    stiffness = Spring.StiffnessHigh
-                ),
+                animationSpec = SleepyThumbSpring,
                 block = { thumbCenterState.floatValue = value }
             )
         }

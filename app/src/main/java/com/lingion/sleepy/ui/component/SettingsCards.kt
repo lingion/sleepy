@@ -184,21 +184,3 @@ fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean)
         Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
     }
 }
-
-@Composable
-fun HolidayStyleChip(label: String, selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
-    Box(
-        modifier = Modifier
-            .clip(SleepyTheme.shapes.medium)
-            .background(if (selected) colors.primaryContainer else colors.surfaceContainerHigh)
-            .noRippleClickable(onClick)
-            .padding(horizontal = 14.dp, vertical = 8.dp)
-    ) {
-        Text(
-            text = label,
-            style = MaterialTheme.typography.labelLarge.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.SemiBold),
-            color = if (selected) colors.onPrimaryContainer else colors.onSurface
-        )
-    }
-}

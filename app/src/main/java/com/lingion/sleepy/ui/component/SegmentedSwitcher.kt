@@ -80,10 +80,7 @@ fun <T> SegmentedSwitcher(
     LaunchedEffect(selectedIndex) {
         thumbX.animateTo(
             targetValue = selectedIndex.toFloat(),
-            animationSpec = spring(
-                dampingRatio = Spring.DampingRatioNoBouncy,
-                stiffness = Spring.StiffnessHigh
-            ),
+            animationSpec = SleepyThumbSpring,
             block = { thumbXState = value.roundToInt() }
         )
     }
