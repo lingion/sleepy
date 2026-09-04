@@ -24,6 +24,8 @@ data class ScheduleState(
     val courses: List<CourseEntity> = emptyList(),
     val currentWeek: Int = 1,
     val selectedWeek: Int = 1,
+    /** false=首次加载(本周), true=用户/系统已选定周 — 课程变更时 selectedWeek 不再被重置 */
+    val initialWeekSettled: Boolean = false,
     val nodesPerDay: Int = 12,
     val selectedCourseId: Long? = null,
     val showCourseDialog: Boolean = false,
@@ -93,7 +95,16 @@ class ScheduleViewModel : ViewModel() {
                 _state.update { st ->
                     val table = st.tables.find { it.id == tableId }
                     val week = table?.let { DateUtils.currentWeek(it.startDate) } ?: 1
-                    st.copy(courses = courses, currentWeek = week, selectedWeek = week, nodesPerDay = table?.nodesPerDay ?: 12)
+                    // v7.10.16s: 只更新真实周(currentWeek, 供"回到本周"), 不再重置 selectedWeek —
+                    // 用户在第 x 周编辑/删课, 保存回来仍停在 x 周(此前被拽回真实周=跳回第一周体验)。
+                    // 首次加载(initial=true)仍落真实周, 保持原行为
+                    st.copy(
+                        courses = courses,
+                        currentWeek = week,
+                        selectedWeek = if (st.initialWeekSettled) st.selectedWeek else week,
+                        initialWeekSettled = true,
+                        nodesPerDay = table?.nodesPerDay ?: 12
+                    )
                 }
                 // 课程数据变更后刷新所有 widget
                 try {
@@ -107,7 +118,8 @@ class ScheduleViewModel : ViewModel() {
 
     fun selectTable(id: Long) {
         manualSelectDone = true
-        _state.update { it.copy(selectedTableId = id) }
+        // 切表 = 新学期语境, 周选择回到该表真实周(initialWeekSettled 复位, loadCourses 重新落周)
+        _state.update { it.copy(selectedTableId = id, initialWeekSettled = false) }
         loadCourses(id)
         // 切表后同步数据库 isDefault，使小组件严格跟随 App 当前选中表（widget 按默认表解析）
         viewModelScope.launch {
