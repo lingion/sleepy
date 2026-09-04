@@ -88,6 +88,8 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         com.lingion.sleepy.util.UpdateManager.cleanOldApk(this)
         enableEdgeToEdge()
+        // 高刷新率(流畅优先): 按开关把窗口钉到屏幕最高刷率, 不表态会被省电逻辑限 60Hz
+        com.lingion.sleepy.util.HighRefreshRate.apply(this, com.lingion.sleepy.util.AppPrefs.isHighRefresh(this))
         handleDeepLinkIntent(intent)
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)

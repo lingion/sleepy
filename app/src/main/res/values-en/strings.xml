@@ -266,6 +266,8 @@
     <string name="mine_stat_courses">Courses</string>
     <string name="mine_stat_week">Week</string>
 
+        <string name="settings_high_refresh">High refresh rate</string>
+    <string name="settings_section_display">Display</string>
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>
     <string name="settings_display_node">Periods</string>

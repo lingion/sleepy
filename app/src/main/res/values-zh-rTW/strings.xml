@@ -260,6 +260,8 @@
     <string name="mine_stat_courses">課程數</string>
     <string name="mine_stat_week">目前週</string>
 
+        <string name="settings_high_refresh">高重新整理率</string>
+    <string name="settings_section_display">畫面</string>
     <string name="settings_language">語言 / Language</string>
     <string name="settings_display_mode">課程時間顯示</string>
     <string name="settings_display_node">節次</string>

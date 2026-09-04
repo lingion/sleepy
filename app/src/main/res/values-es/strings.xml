@@ -260,6 +260,8 @@
     <string name="mine_stat_courses">Cursos</string>
     <string name="mine_stat_week">Semana</string>
 
+        <string name="settings_high_refresh">Frecuencia de actualización alta</string>
+    <string name="settings_section_display">Pantalla</string>
     <string name="settings_language">Idioma / Language</string>
     <string name="settings_display_mode">Visualización de hora</string>
     <string name="settings_display_node">Períodos</string>

@@ -296,6 +296,8 @@
     <string name="mine_stat_week">当前周</string>
 
     <!-- More Settings -->
+        <string name="settings_high_refresh">高刷新率</string>
+    <string name="settings_section_display">画面</string>
     <string name="settings_language">语言 / Language</string>
     <string name="settings_display_mode">课程时间显示</string>
     <string name="settings_display_node">节次</string>

@@ -519,7 +519,43 @@ fun GeneralSettingsScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
             // ── 分隔线 ──
             item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
 
-            // ── 分组③ 语言 ──
+            // ── 分组③ 画面 ──
+            item {
+                SectionHeader(title = stringResource(R.string.settings_section_display))
+            }
+
+            // 高刷新率: 单行卡, 标题+开关(用户 2026-09-04 定版: 大标题「画面」+卡片「高刷新率」无说明)
+            item {
+                var highRefresh by remember { mutableStateOf(AppPrefs.isHighRefresh(context)) }
+                val colors = SleepyTheme.colors
+                Row(
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Text(
+                        text = stringResource(R.string.settings_high_refresh),
+                        style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                        color = colors.onSurface,
+                        modifier = Modifier.weight(1f)
+                    )
+                    Switch(
+                        checked = highRefresh,
+                        onCheckedChange = { on ->
+                            highRefresh = on
+                            AppPrefs.setHighRefresh(context, on)
+                            com.lingion.sleepy.util.HighRefreshRate.apply(context as? android.app.Activity ?: return@Switch, on)
+                        },
+                        colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary),
+                        modifier = Modifier.heightIn(max = 32.dp)
+                    )
+                }
+            }
+
+            // ── 分隔线 ──
+            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
+
+            // ── 分组④ 语言 ──
             item {
                 SectionHeader(title = stringResource(R.string.settings_language))
             }

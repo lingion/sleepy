@@ -66,6 +66,7 @@ object AppPrefs {
     const val KEY_WEEK_TWO_COLUMN_MODE = "week_two_column_mode" // "days"=按天对半分 / "balance"=按课程数动态平衡, issue#8
     const val KEY_WEEK_HIDE_EMPTY_DAYS = "week_hide_empty_days" // bool default false — 周视图隐藏无课日(仅两栏下生效, issue#8)
     const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled" // bool default true — 启动检查 GitHub releases latest
+    const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -219,6 +220,15 @@ object AppPrefs {
 
     fun setDisplayMode(ctx: Context, mode: String) {
         sp(ctx).edit().putString(KEY_DISPLAY_MODE, mode).apply()
+    }
+
+    // ===== 高刷新率(流畅优先) =====
+
+    fun isHighRefresh(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_HIGH_REFRESH, true)
+
+    fun setHighRefresh(ctx: Context, value: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_HIGH_REFRESH, value).apply()
     }
 
     // ===== 网格卡片副信息：教室 / 教师 / 无 =====
