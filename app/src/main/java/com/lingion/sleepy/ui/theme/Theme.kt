@@ -12,6 +12,7 @@ import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
+import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.ReadOnlyComposable
@@ -477,6 +478,22 @@ fun SleepyThemeProvider(
         LocalWakeUpColors provides wakeColors,
         LocalCoursePalette provides palette
     ) {
+        // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性
+        // API, onCreate 只调一次时 isAppearanceLightStatusBars 停在启动时的系统深浅判定,
+        // 应用内手动切主题后状态栏图标不跟着变(浅色页面+白图标 = 不可见)。
+        // darkTheme 变化(手动切/系统切/启动)即按当前主题重调 — Google issuetracker
+        // 218119686 确认的预期做法: 风格变化时由 app 重新调用。
+        val activity = context as? androidx.activity.ComponentActivity
+        if (activity != null) {
+            androidx.compose.runtime.DisposableEffect(darkTheme) {
+                val lightScrim = android.graphics.Color.argb(0, 0, 0, 0)   // 透明: edge-to-edge 无 scrim
+                val style = androidx.activity.SystemBarStyle.auto(lightScrim, lightScrim) {
+                    darkTheme
+                }
+                activity.enableEdgeToEdge(statusBarStyle = style, navigationBarStyle = style)
+                onDispose { }
+            }
+        }
         MaterialTheme(colorScheme = m3Scheme) {
             content()
         }
