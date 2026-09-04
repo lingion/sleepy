@@ -481,9 +481,28 @@ object ConflictLayoutEngine {
      * 顶层偏好(topOverrideId)不改变本序(override 是视图态)。
      */
     fun defaultLayerIdOrder(courses: List<CourseEntity>): List<Long> =
+        orderedDefaultLayers(courses).map { it.first().id }
+
+    /**
+     * 簇的「默认图层序」完整形态: 排序后的图层本体(每层 = 成员课列表)。
+     * defaultLayerIdOrder / 轮换 UI 的成员→层代表反查共用,保证单一真值。
+     */
+    private fun orderedDefaultLayers(courses: List<CourseEntity>): List<List<CourseEntity>> =
         chainGroups(courses)
             .sortedBy { g -> g.maxWith(primaryComparator).let { LayerSortKey(-it.step, it.startNode, it.id) } }
-            .map { it.first().id }
+
+    /**
+     * 成员课 id → 其所在图层的代表 id(默认序;代表 = 层内主课判定序最前课)。
+     * 气泡弹窗点选任意成员时反查该层在轮换序中的位置。
+     */
+    fun memberToLayerRep(courses: List<CourseEntity>): Map<Long, Long> {
+        val out = HashMap<Long, Long>(courses.size)
+        for (layer in orderedDefaultLayers(courses)) {
+            val rep = layer.first().id
+            for (c in layer) out[c.id] = rep
+        }
+        return out
+    }
 
     /**
      * 轮换推进一位(纯函数)。层序编码为按位十进制(123 → 231),循环左移:

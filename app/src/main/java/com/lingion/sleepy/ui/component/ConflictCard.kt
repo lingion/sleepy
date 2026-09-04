@@ -396,9 +396,27 @@ fun ConflictClusterCard(
     val context = LocalContext.current
     val cardShape = SleepyTheme.shapes.medium
 
+    // v7.10.16r 轮换(issue#10, N≥3): 先按簇全量课解析「默认图层序」(与引擎
+    // defaultLayerOrder 同键,-top.step/startNode/id 升序),再算轮换后应置顶的层 —
+    // 换层落地 = 把该层代表 id 作为 topOverrideId 交给 layoutCluster(引擎语义:
+    // override 命中层整层前移,其余按默认序 = 完整重排后的层序)。轮换是会话态,
+    // 不落盘;两节簇 rotationStep 恒 null(单调用点闸门),走原 topOverride 通道。
+    val defaultLayerOrderIds: List<Long> = remember(cluster) {
+        ConflictLayoutEngine.defaultLayerIdOrder(cluster.courses)
+    }
+    val layerRepIdOfCourse: Map<Long, Long> = remember(cluster) {
+        ConflictLayoutEngine.memberToLayerRep(cluster.courses)
+    }
+    val clusterLayerCount = defaultLayerOrderIds.size
+    val rotationActive = clusterLayerCount >= 3 && rotationStep != null && rotationStep > 0
+    val rotationTopId: Long? = if (rotationActive) {
+        ConflictLayoutEngine.applyLayerRotation(defaultLayerOrderIds, rotationStep).firstOrNull()
+    } else null
+    val effectiveTopId = rotationTopId ?: topOverrideId
+
     // 布局现算(引擎零缓存承诺)——override 变化即重排。maxNode 传入引擎:
     // hidden 计算与渲染同一裁剪空间(startNode ∈ 1..maxNode + step 截界)。
-    val laid = ConflictLayoutEngine.layoutCluster(cluster, style, topOverrideId, maxNode)
+    val laid = ConflictLayoutEngine.layoutCluster(cluster, style, effectiveTopId, maxNode)
 
     // 绘制集: 与原单卡循环同一过滤(startNode ∈ [1, maxNode])——出界课原循环本就跳过。
     val drawList = laid.filter { it.course.startNode in 1..maxNode }
@@ -469,7 +487,6 @@ fun ConflictClusterCard(
 
     // v7.8 图层语义: 引擎 layerOfId 即每课对应图层; 该层的「整层代表 id」=
     // 该层内 zRank 最小的成员(引擎 zOrdered 已按图层拼接序排序, 同层内按 startNode 升序)。
-    // 沉底层任何成员点击 = onPickTop(沉底层代表 id), 引擎收到 id 后整层上移。
     val layerOfId: Map<Long, Int> = remember(chainGroups) {
         chainGroups.flatMapIndexed { gi, g -> g.map { it.id to gi } }.toMap()
     }
@@ -479,16 +496,6 @@ fun ConflictClusterCard(
     fun layerRepOf(courseId: Long): Long? =
         layerOfId[courseId]?.let { gi -> layerRepId[gi] }
 
-    // v7.10.16r 轮换(issue#10, N≥3): rotationStep 非 null 且层数 ≥3 时,簇的展示序
-    // 改为「默认序循环左移 rotationStep 位」;两节簇 rotationStep 恒不传(单调用点闸门)。
-    // 换层落地: 把轮换后序中 zRank0 层的代表 id 作为 topOverrideId 交给引擎 —
-    // 引擎语义(override 命中层→整层前移,其余按默认序)恰好等于「重排后的完整层序」。
-    val rotationActive = layerCount >= 3 && rotationStep != null && rotationStep > 0
-    val rotationTopId: Long? = if (rotationActive) {
-        val defaultOrder = layerRepId.keys.sorted().mapNotNull { layerRepId[it] }
-        ConflictLayoutEngine.applyLayerRotation(defaultOrder, rotationStep)
-            .firstOrNull()
-    } else null
     // 切换类点击统一出口(v7.10.16r): N≥3 簇「点露出带/折角/重叠区」= 轮换推进一位
     // (用户 2026-09-04 定版: 轮换不持久化);两节簇保持原 onPickTop 逐层点选。
     // 各命中区自行按 layerCount 分流到 switchTap / 原语义,本函数只处理轮换分支。
@@ -780,12 +787,11 @@ fun ConflictClusterCard(
             onDismiss = { showPicker = false },
             onPick = { id ->
                 showPicker = false
-                if (layerCount >= 3) {
-                    // v7.10.16r: 气泡选课 = 「换来看」— 把该课所在层转到轮换序首位,
-                    // 会话态不落盘;层内任一成员都可反查层序(用户点的是画出来的成员)。
-                    val layerIdx = layerOfId[id]
-                    val defaultOrder = layerRepId.keys.sorted().mapNotNull { layerRepId[it] }
-                    val target = defaultOrder.indexOfFirst { it == layerRepId[layerIdx] }
+                if (clusterLayerCount >= 3) {
+                    // v7.10.16r: 气泡选课 = 「换来看」— 轮换步数使该课所在层转到首位,
+                    // 会话态不落盘(层内任一成员反查层序)。
+                    val repId = layerRepIdOfCourse[id] ?: id
+                    val target = defaultLayerOrderIds.indexOf(repId)
                     if (target >= 0) onPickFromBadge(target)
                 } else {
                     onPickTop(id)
