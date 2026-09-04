@@ -410,10 +410,21 @@ internal object DiagMapper {
             JwParseDiagnostics.Category.UNKNOWN_EMPTY -> R.string.jw_diag_unknown_empty
         }
         val base = str(catResId, school.name)
-        // 特殊学校 hint: 临沂大学(校园网限制) / 强智系(会话踢下线)
+        // 特殊学校 hint: 临沂大学(校园网限制) / 强智系(会话踢下线) / B 档 985 校(校外多须 VPN/WebVPN)
         val schoolHint = when {
             school.url.contains("jwgl.lyu.edu.cn") ||
-            school.url.contains("jwxt.lyu.edu.cn") -> "该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试"
+            school.url.contains("jwxt.lyu.edu.cn") ||
+            // v1.0.46 B 档新 985 校: 教务域名普遍校外受限, 0 课兜底文案易被误读为学期选错
+            school.url.contains("jwxt.neu.edu.cn") ||        // 东北大学
+            school.url.contains("newxk.urp.seu.edu.cn") ||   // 东南大学
+            school.url.contains("xsjw2018.jw.scut.edu.cn") ||// 华南理工大学
+            school.url.contains("jxglstu.hfut.edu.cn") ||    // 合肥工业大学
+            school.url.contains("zdbk.zju.edu.cn") ||        // 浙江大学
+            school.url.contains("jw.ustc.edu.cn") ||         // 中国科学技术大学
+            school.url == "https://scu.edu.cn/" ||           // 四川大学 (条目 URL 即门户域)
+            school.url.contains("jwms.bit.edu.cn") ||        // 北京理工大学
+            school.url.contains("csujwc.its.csu.edu.cn") ->  // 中南大学
+                "该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试"
             school.type in setOf(
                 com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ,
                 com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ_CRAZY,
