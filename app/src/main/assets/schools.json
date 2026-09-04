@@ -59,6 +59,16 @@
   },
   {
     "sortKey": "B",
+    "name": "北京理工大学",
+    "url": "http://jwms.bit.edu.cn/",
+    "type": "qz_with_node",
+    "aliases": [
+      "bit"
+    ],
+    "sortKeyFull": "beijingligongdaxue"
+  },
+  {
+    "sortKey": "B",
     "name": "北京林业大学",
     "url": "http://newjwxt.bjfu.edu.cn/",
     "type": "qz_br",
@@ -460,6 +470,16 @@
   },
   {
     "sortKey": "H",
+    "name": "华南理工大学",
+    "url": "http://xsjw2018.jw.scut.edu.cn/",
+    "type": "zf_new",
+    "aliases": [
+      "scut"
+    ],
+    "sortKeyFull": "huananligongdaxue"
+  },
+  {
+    "sortKey": "H",
     "name": "华南农业大学",
     "url": "http://202.116.160.170/default2.aspx",
     "type": "zf",
@@ -759,6 +779,16 @@
       "qut"
     ],
     "sortKeyFull": "qingdaoligongdaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东大学（威海）",
+    "url": "https://jwxt.wh.sdu.edu.cn/",
+    "type": "qz",
+    "aliases": [
+      "sduwh"
+    ],
+    "sortKeyFull": "shandongdaxueweihai"
   },
   {
     "sortKey": "S",
@@ -1190,6 +1220,16 @@
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "zhongguoyikedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中南大学",
+    "url": "http://csujwc.its.csu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [
+      "csu"
+    ],
+    "sortKeyFull": "zhongnandaxue"
   },
   {
     "sortKey": "Z",
