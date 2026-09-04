@@ -46,7 +46,7 @@ data class LaidOutCourse(
  * 为空。顶层课(zRank 0)永不为 hidden——除非其区间在裁剪空间内为空(整课出界,fix wave
  * 1b)。hidden 状态每次调用现算,不缓存。
  *
- * 变体分配: hidden 课按 style 直配(stack+N=2=STACK,stack+N≥3=FOLD 合流,fold/rail 直配),
+ * 变体分配: hidden 课按 style 直配(stack/fold/rail,v7.10.16u 起 stack 不再随层数合流),
  * 非 hidden 课(含顶层)一律 NONE。简化裁定: 变体按「簇内是否存在 hidden 课」整体决定,
  * hidden 课统一拿该 style 对应的 variant 值。同起不同止的短课按完全包含路径判 hidden=true
  * 拿标记(短课的「长段」在被覆盖语义下仍归零露出,标记保证其可见可达,与设计 §2.3/§9.1
@@ -82,8 +82,8 @@ object ConflictLayoutEngine {
      * 对每门课算「节点区间减去 z 序更高课的覆盖并集」得露出集;露出空 = hidden。
      * 顶层课(zRank 0)永不为 hidden。
      *
-     * style ∈ "stack"/"fold"/"rail";stack 在 N≥3 时合流为 FOLD(4dp 边承载不了三层语义,
-     * 见设计文档 §3)。
+     * style ∈ "stack"/"fold"/"rail",按样式直配(v7.10.16u;旧版 stack 在 N≥3
+     * 合流为 FOLD,层身份职责已移交轮换 + N 徽标后撤销)。
      *
      * maxNode(可空,final fix wave Important): UI 渲染把每课区间 clamp 进 [1, maxNode]
      * (startNode > maxNode 的课整课不画,step 截到不越界)。hidden 必须在同一裁剪空间算,
@@ -220,20 +220,21 @@ object ConflictLayoutEngine {
     }
 
     /**
-     * hidden 课的 variant 映射(v7.10.16f, 用户 2026-09-03 拍板):
+     * hidden 课的 variant 映射(v7.10.16u, 用户 2026-09-04 报「叠层偏移怎么没了」):
+     * 三种 style 全部直配。v7.10.16f 的「stack N≥3 合流 FOLD」撤销 —
+     * 当初合流的理由是 4dp 偏移边承载不了三层语义,但 v7.10.16r 轮换上线后
+     * 层身份已由轮换点击 + N 徽标承载,偏移边不再背负该职责,
+     * 用户选叠层就该看到叠层(哪怕三层)。
      * rail 直配;**fold 永远 FOLD** — 删除 v3 的同起点回落
      * (「折角样式下肯定是永远折角的」;起点不齐的错位缺口是折角固有形态)。
-     * stack 样式 N≥3 图层合流 FOLD 保留(不再看同起点)。
      * 链式模式(chainMode=true): hidden 课是被链组全遮的重叠者,按样式直配。
      *
-     * v7.6 图层语义: clusterSize 形参 = **图层数**(链组整组算 1 层,单课算 1 层),
-     * 不是裸课数——「分组之后这两节就绑定在一个图层了」(用户 2026-09-02)。
-     * {1-3,4-6} 组 + 1-6 重叠者 = 2 图层 → N≥3 合流不触发;链式分支优先级本身
-     * 也已把组态课与 N≥3 合流隔离(形态由链组决定,不由课数决定)。
+     * v7.6 图层语义(历史): clusterSize 形参曾以「图层数」驱动 N≥3 合流判定
+     * (链组整组算 1 层);合流撤销后该形参不再参与分派,仅为二进制兼容保留。
      */
     private fun variantFor(
         style: String,
-        clusterSize: Int,
+        @Suppress("UNUSED_PARAMETER") clusterSize: Int,
         chainMode: Boolean = false
     ): ConflictVariant = when {
         style == "rail" -> ConflictVariant.RAIL
@@ -242,7 +243,6 @@ object ConflictLayoutEngine {
         // v7.10.16f(用户 2026-09-03): 折角样式永远折角 — 删除同起点回落
         // (起点不齐时缺口处下层课错位是折角样式的固有形态, 用户拍板接受)
         style == "fold" -> ConflictVariant.FOLD
-        clusterSize >= 3 -> ConflictVariant.FOLD
         else -> ConflictVariant.STACK
     }
 

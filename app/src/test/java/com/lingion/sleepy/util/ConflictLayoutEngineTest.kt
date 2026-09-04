@@ -27,7 +27,7 @@ import org.junit.Test
  *   3. 完全包含 — 1-5 内嵌 2-3,内嵌课 hidden=true
  *   4. 梯形 1-3/2-4/3-5 — 全部有独占节次,hidden=false,variant=NONE
  *   5. topOverrideId — 翻转 z 序并重算 hidden;未命中回落主课判定序
- *   6. N≥3 stack→FOLD 合流
+ *   6. stack 按 style 直配(v7.10.16u 起不再 N≥3 合流)
  *   7. RAIL 变体值与簇大小无关 — N=2 单轨 / N≥3 分段是 UI 职责
  *
  * fixture 与 CourseColorUtilTest.course(...) 同款:纯 JVM,无 Robolectric。
@@ -166,8 +166,8 @@ class ConflictLayoutEngineTest {
     // 露出定义: 课 X 的节点区间减去所有 z 序高于 X 的课覆盖区间并集后的剩余节点集。
     // hidden = 露出集为空;顶层课(zRank 0)永不为 hidden。
     // zRank: 0=顶层=主课判定序第一位,除非 topOverrideId 命中某课 id。
-    // 变体: 隐藏课统一按 style 分配(stack+2课=STACK,stack+N≥3=FOLD,fold/rail 直配);
-    //       非隐藏课(含顶层)一律 NONE。
+    // 变体: 隐藏课统一按 style 分配(stack/fold/rail 直配,v7.10.16u 起 stack 不再
+    //       随层数合流 FOLD);非隐藏课(含顶层)一律 NONE。
 
     private fun layoutById(
         courses: List<CourseEntity>,
@@ -288,8 +288,11 @@ class ConflictLayoutEngineTest {
     }
 
     @Test
-    fun layout_three_courses_stack_converges_to_fold() {
-        // N≥3 stack → FOLD 合流(A 合流): 1-3 与 1-3 与 1-3(step 降 > id 升)
+    fun layout_three_courses_stack_keeps_stack_variant() {
+        // v7.10.16u(用户 2026-09-04 报「叠层偏移怎么没了」): N≥3 合流撤销 —
+        // 层身份已由轮换点击 + N 徽标承载,4dp 偏移边不再承载三层语义。
+        // stack 样式按 style 直配,任何层数都是 STACK。
+        // 1-3 与 1-3 与 1-3(step 降 > id 升):
         //   id=2 露出集 = {1,2,3} − {1,2,3}(id=1 覆盖) = ∅ → hidden
         //   id=3 露出集 = {1,2,3} − ({1,2,3} ∪ {1,2,3}) = ∅ → hidden
         val a = course(id = 1, day = 1, startNode = 1, step = 3)
@@ -297,8 +300,8 @@ class ConflictLayoutEngineTest {
         val c = course(id = 3, day = 1, startNode = 1, step = 3)
         val byId = layoutById(listOf(a, b, c), "stack")
         assertEquals(LaidOutCourse(a, 0, false, ConflictVariant.NONE), byId.getValue(1L))
-        assertEquals(LaidOutCourse(b, 1, true, ConflictVariant.FOLD), byId.getValue(2L))
-        assertEquals(LaidOutCourse(c, 2, true, ConflictVariant.FOLD), byId.getValue(3L))
+        assertEquals(LaidOutCourse(b, 1, true, ConflictVariant.STACK), byId.getValue(2L))
+        assertEquals(LaidOutCourse(c, 2, true, ConflictVariant.STACK), byId.getValue(3L))
     }
 
     @Test
@@ -435,11 +438,10 @@ class ConflictLayoutEngineTest {
         )
     }
 
-    /** stack 变体在 N=2/N≥3 下的期望值(测试内共享的小映射,避免魔数散落)。 */
+    /** stack 变体期望值(v7.10.16u 起按 style 直配,不再随层数合流)。 */
     private fun variantFor(style: String, n: Int): ConflictVariant = when {
         style == "fold" -> ConflictVariant.FOLD
         style == "rail" -> ConflictVariant.RAIL
-        n >= 3 -> ConflictVariant.FOLD
         else -> ConflictVariant.STACK
     }
 
@@ -1167,7 +1169,7 @@ class ConflictLayoutEngineTest {
         assertEquals(false, byId.getValue(1L).hidden)
         assertEquals(true, byId.getValue(2L).hidden)
         assertEquals(true, byId.getValue(3L).hidden)
-        assertEquals(ConflictVariant.FOLD, byId.getValue(2L).variant) // N≥3 合流保留
+        assertEquals(ConflictVariant.STACK, byId.getValue(2L).variant) // v7.10.16u: stack 按 style 直配
     }
 
     @Test

@@ -221,7 +221,7 @@ internal fun foldSwitchHitArea(
  * 几何跟用户设置走: rail 恒 RAIL(窄卡形态与 hidden 无关);
  * fold 样式回落看 foldEligible(首个非顶课与紧邻上层同起点,与引擎闸门同规);
  * 其余回落 STACK。
- * N≥3 stack→FOLD 合流仍由引擎经 hidden variant 给出。
+ * stack 按 style 直配(引擎 v7.10.16u 起不再 N≥3 合流 FOLD)。
  */
 internal fun clusterForm(
     style: String,
