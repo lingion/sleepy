@@ -53,9 +53,11 @@ import androidx.compose.ui.viewinterop.AndroidView
 import androidx.core.net.toUri
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
+import com.lingion.sleepy.data.jw.EAMS5_PREFIX_PLACEHOLDER
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
+import com.lingion.sleepy.data.jw.eams5PathPrefixFor
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import kotlinx.coroutines.launch
 
@@ -220,9 +222,12 @@ fun JwWebViewLoginScreen(
                         return@CaptureBar
                     }
                     // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
-                    // 用户已在 WebView 走完 CAS 登录并落到 jxglstu.hfut.edu.cn 域。
+                    // 用户已在 WebView 走完 CAS 登录并落到教务域。supwisdom 新版部署
+                    // 前缀分两形态：合工大 /eams5-student、安大/矿大北京 /student —
+                    // 按学校 URL 推断后替换模板占位符。
                     if (school.type == JwProtocol.TYPE_EAMS5) {
-                        evaluateFetchWithTimeout(wv, EAMS5_FETCH_JS)
+                        val prefix = eams5PathPrefixFor(school.url)
+                        evaluateFetchWithTimeout(wv, EAMS5_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix))
                         return@CaptureBar
                     }
                     // T5: 新版正方 jwglxt — WebView 内 fetch kbList JSON
@@ -717,14 +722,16 @@ private const val WHUT_FETCH_JS = """
 private const val EAMS5_FETCH_JS = """
 (function(){
   try {
-    if (location.hostname.indexOf('hfut.edu.cn') < 0 && location.hostname.indexOf('jxglstu') < 0) {
+    if (location.hostname.indexOf('hfut.edu.cn') < 0 && location.hostname.indexOf('jxglstu') < 0
+        && location.hostname.indexOf('ahu.edu.cn') < 0 && location.hostname.indexOf('cumtb.edu.cn') < 0) {
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入合工大教务后再点导入'}));
       return;
     }
+    var PREFIX = '__EAMS5_PREFIX__';
     // 1) GET course-table 拿 studentId (Cookie 已带)
-    fetch('/eams5-student/for-std/course-table', {credentials:'include'})
+    fetch(PREFIX + '/for-std/course-table', {credentials:'include'})
     .then(function(r){
-      if (!r.ok) throw new Error('course-table 取 studentId 失败 HTTP ' + r.status + '（请确认已在合工大教务主页登录）');
+      if (!r.ok) throw new Error('course-table 取 studentId 失败 HTTP ' + r.status + '（请确认已在教务主页登录）');
       return r.text();
     })
     .then(function(html){
@@ -739,7 +746,7 @@ private const val EAMS5_FETCH_JS = """
         return null;
       }
       // 2) POST schedule-table/datum (lessonIds 空数组; v1 简化,上游多返全量)
-      return fetch('/eams5-student/ws/schedule-table/datum', {
+      return fetch(PREFIX + '/ws/schedule-table/datum', {
         method:'POST',
         credentials:'include',
         headers:{'Content-Type':'application/json'},

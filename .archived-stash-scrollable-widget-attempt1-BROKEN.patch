@@ -1,0 +1,1565 @@
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index e766369..ce5b62c 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -22,6 +22,7 @@
+         android:name=".SleepyApp"
+         android:allowBackup="true"
+         android:dataExtractionRules="@xml/data_extraction_rules"
++        android:enableOnBackInvokedCallback="true"
+         android:fullBackupContent="@xml/backup_rules"
+         android:icon="@mipmap/ic_launcher"
+         android:label="@string/app_name"
+@@ -205,6 +206,16 @@
+             android:exported="false"
+             android:foregroundServiceType="specialUse" />
+ 
++        <!-- ★ 可滚动 widget (v1.0.36): RemoteViewsService 由 Launcher 绑定拉行数据 -->
++        <service
++            android:name=".widget.TodayListService"
++            android:exported="true"
++            android:permission="android.permission.BIND_REMOTEVIEWS" />
++        <service
++            android:name=".widget.WeekListListService"
++            android:exported="true"
++            android:permission="android.permission.BIND_REMOTEVIEWS" />
++
+     </application>
+ 
+ </manifest>
+diff --git a/app/src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt b/app/src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt
+index ee63578..1f467bf 100644
+--- a/app/src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt
++++ b/app/src/main/java/com/lingion/sleepy/ui/screen/mine/GeneralSettingsScreen.kt
+@@ -1,7 +1,6 @@
+ package com.lingion.sleepy.ui.screen.mine
+ 
+ import androidx.compose.foundation.background
+-import androidx.compose.foundation.clickable
+ import androidx.compose.foundation.layout.Arrangement
+ import androidx.compose.foundation.layout.Box
+ import androidx.compose.foundation.layout.Column
+@@ -12,9 +11,14 @@ import androidx.compose.foundation.layout.padding
+ import androidx.compose.foundation.layout.size
+ import androidx.compose.foundation.lazy.LazyColumn
+ import androidx.compose.foundation.shape.RoundedCornerShape
++import androidx.compose.foundation.layout.Spacer
++import androidx.compose.foundation.layout.height
+ import androidx.compose.material.icons.Icons
+ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+ import androidx.compose.material.icons.outlined.Check
++import androidx.compose.material.icons.outlined.ExpandMore
++import androidx.compose.material3.DropdownMenu
++import androidx.compose.material3.DropdownMenuItem
+ import androidx.compose.material3.ExperimentalMaterial3Api
+ import androidx.compose.material3.HorizontalDivider
+ import androidx.compose.material3.Icon
+@@ -44,6 +48,7 @@ import com.lingion.sleepy.ui.component.SectionHeader
+ import com.lingion.sleepy.ui.component.SettingsCard
+ import com.lingion.sleepy.ui.component.SettingToggleRow
+ import com.lingion.sleepy.ui.theme.SleepyTheme
++import com.lingion.sleepy.ui.theme.noRippleClickable
+ import com.lingion.sleepy.util.AppPrefs
+ import com.lingion.sleepy.util.DateUtils
+ import kotlinx.coroutines.CoroutineScope
+@@ -84,6 +89,9 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
+     var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
+     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
++    var widgetTodayRange by remember { mutableStateOf(AppPrefs.getWidgetTodayRange(context)) }
++    var showCustomRangeDialog by remember { mutableStateOf(false) }
++    var customRangeInput by remember { mutableStateOf(if (AppPrefs.getWidgetTodayRange(context) > 4) AppPrefs.getWidgetTodayRange(context).toString() else "") }
+ 
+     // ★ 显示项变更后立即刷小组件(管线自 AppearanceScreen 迁移保留)
+     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
+@@ -129,7 +137,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                         selected = displayMode == "node",
+                         onClick = { displayMode = "node"; AppPrefs.setDisplayMode(context, "node"); refreshWidgets() }
+                     )
+-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     DisplayModeOption(
+                         label = stringResource(R.string.settings_display_time),
+                         subtitle = stringResource(R.string.settings_display_time_sub),
+@@ -148,14 +156,14 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                         selected = gridSubInfo == "room",
+                         onClick = { gridSubInfo = "room"; AppPrefs.setGridSubInfo(context, "room"); refreshWidgets() }
+                     )
+-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     DisplayModeOption(
+                         label = stringResource(R.string.settings_grid_sub_teacher),
+                         subtitle = stringResource(R.string.settings_grid_sub_teacher_sub),
+                         selected = gridSubInfo == "teacher",
+                         onClick = { gridSubInfo = "teacher"; AppPrefs.setGridSubInfo(context, "teacher"); refreshWidgets() }
+                     )
+-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     DisplayModeOption(
+                         label = stringResource(R.string.settings_grid_sub_none),
+                         subtitle = stringResource(R.string.settings_grid_sub_none_sub),
+@@ -172,7 +180,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                     (1..7).forEach { day ->
+                         val checked = day in visibleDays
+                         Row(
+-                            modifier = Modifier.fillMaxWidth().clickable {
++                            modifier = Modifier.fillMaxWidth().noRippleClickable {
+                                 val n = if (checked) visibleDays - day else visibleDays + day
+                                 if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
+                             }.padding(vertical = 8.dp, horizontal = 4.dp),
+@@ -185,7 +193,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                                 if (n.isNotEmpty()) { visibleDays = n; AppPrefs.setVisibleDays(context, n); refreshWidgets() }
+                             }, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
+                         }
+-                        if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                        if (day != 7) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     }
+                 }
+             }
+@@ -215,7 +223,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+             }
+ 
+             // ── 分隔线 ──
+-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.4f)) }
++            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
+ 
+             // ── 分组② 小组件 ──
+             item {
+@@ -234,7 +242,108 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                             refreshWidgets()
+                         }
+                     )
+-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
++                    // ★ 显示课程范围 (2026-08-25 v2): 下拉选择 — 全部 / 1/2/3/4 / 自定义(数字输入+防呆)
++                    //   v1 一排9格窄屏挤爆, 用户点名改下拉+输入
++                    Text(text = stringResource(R.string.settings_widget_range), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(top = 4.dp))
++                    Text(text = stringResource(R.string.settings_widget_range_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant, modifier = Modifier.padding(bottom = 8.dp))
++                    var rangeMenuOpen by remember { mutableStateOf(false) }
++                    Box(modifier = Modifier.fillMaxWidth().clip(SleepyTheme.fieldShape).noRippleClickable { rangeMenuOpen = true }) {
++                        androidx.compose.material3.TextField(
++                            value = when (widgetTodayRange) {
++                                0 -> stringResource(R.string.settings_widget_range_all)
++                                in 1..4 -> stringResource(R.string.settings_widget_range_n, widgetTodayRange)
++                                else -> stringResource(R.string.settings_widget_range_custom_val, widgetTodayRange)
++                            },
++                            onValueChange = {},
++                            readOnly = true,
++                            enabled = false,
++                            modifier = Modifier.fillMaxWidth(),
++                            label = { Text(stringResource(R.string.settings_widget_range_hint)) },
++                            trailingIcon = { Icon(Icons.Outlined.ExpandMore, contentDescription = null, tint = colors.onSurfaceVariant) },
++                            shape = SleepyTheme.fieldShape,
++                            colors = SleepyTheme.fieldColors()
++                        )
++                        DropdownMenu(
++                            expanded = rangeMenuOpen,
++                            onDismissRequest = { rangeMenuOpen = false },
++                            // 菜单浮在 surfaceContainer 卡片上, 用 Highest 拉开对比(默认 High 与卡片几乎同色=隐形)
++                            containerColor = colors.surfaceContainerHighest
++                        ) {
++                            fun select(n: Int) {
++                                widgetTodayRange = n
++                                AppPrefs.setWidgetTodayRange(context, n)
++                                refreshWidgets()
++                                rangeMenuOpen = false
++                            }
++                            DropdownMenuItem(
++                                text = { Text(stringResource(R.string.settings_widget_range_all)) },
++                                onClick = { select(0) },
++                                leadingIcon = { if (widgetTodayRange == 0) Icon(Icons.Outlined.Check, null, tint = colors.primary) else Box(Modifier.size(24.dp)) }
++                            )
++                            (1..4).forEach { n ->
++                                DropdownMenuItem(
++                                    text = { Text(stringResource(R.string.settings_widget_range_n, n)) },
++                                    onClick = { select(n) },
++                                    leadingIcon = { if (widgetTodayRange == n) Icon(Icons.Outlined.Check, null, tint = colors.primary) else Box(Modifier.size(24.dp)) }
++                                )
++                            }
++                            DropdownMenuItem(
++                                text = {
++                                    if (widgetTodayRange > 4) Text(stringResource(R.string.settings_widget_range_custom_val, widgetTodayRange), color = colors.primary)
++                                    else Text(stringResource(R.string.settings_widget_range_custom))
++                                },
++                                onClick = { showCustomRangeDialog = true; rangeMenuOpen = false },
++                                leadingIcon = {
++                                    if (widgetTodayRange > 4) Icon(Icons.Outlined.Check, null, tint = colors.primary)
++                                    else Box(Modifier.size(24.dp))
++                                }
++                            )
++                        }
++                    }
++                    // 自定义数字输入 + 防呆: 空值/非法回落 1, 上限 20(今日课再多 20 节也到顶了)
++                    if (showCustomRangeDialog) {
++                        androidx.compose.material3.AlertDialog(
++                            onDismissRequest = { showCustomRangeDialog = false },
++                            title = { Text(stringResource(R.string.settings_widget_range_custom)) },
++                            text = {
++                                Column {
++                                    Text(stringResource(R.string.settings_widget_range_custom_sub), style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
++                                    Spacer(modifier = Modifier.height(8.dp))
++                                    androidx.compose.material3.TextField(
++                                        value = customRangeInput,
++                                        onValueChange = { raw ->
++                                            customRangeInput = raw.filter { it.isDigit() }.take(2)
++                                        },
++                                        modifier = Modifier.fillMaxWidth(),
++                                        singleLine = true,
++                                        shape = SleepyTheme.fieldShape,
++                                        colors = SleepyTheme.fieldColors(),
++                                        placeholder = { Text(stringResource(R.string.settings_widget_range_custom_ph)) }
++                                    )
++                                    customRangeInput.toIntOrNull()?.let { v ->
++                                        if (v < 1 || v > 20) {
++                                            Spacer(modifier = Modifier.height(6.dp))
++                                            Text(stringResource(R.string.settings_widget_range_custom_range), style = MaterialTheme.typography.bodySmall, color = colors.error)
++                                        }
++                                    }
++                                }
++                            },
++                            confirmButton = {
++                                androidx.compose.material3.TextButton(onClick = {
++                                    val v = customRangeInput.toIntOrNull() ?: 1
++                                    widgetTodayRange = v.coerceIn(1, 20)
++                                    AppPrefs.setWidgetTodayRange(context, widgetTodayRange)
++                                    refreshWidgets()
++                                    showCustomRangeDialog = false
++                                }) { Text(stringResource(R.string.ok)) }
++                            },
++                            dismissButton = {
++                                androidx.compose.material3.TextButton(onClick = { showCustomRangeDialog = false }) { Text(stringResource(R.string.cancel)) }
++                            }
++                        )
++                    }
++                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     SettingToggleRow(
+                         label = stringResource(R.string.settings_widget_separator),
+                         subtitle = stringResource(R.string.settings_widget_separator_sub),
+@@ -245,7 +354,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                             refreshWidgets()
+                         }
+                     )
+-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     SettingToggleRow(
+                         label = stringResource(R.string.settings_vert_punct),
+                         subtitle = stringResource(R.string.settings_vert_punct_sub),
+@@ -260,7 +369,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+             }
+ 
+             // ── 分隔线 ──
+-            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.4f)) }
++            item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
+ 
+             // ── 分组③ 语言 ──
+             item {
+@@ -269,13 +378,13 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+ 
+             item {
+                 Column(
+-                    modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(20.dp)).background(colors.surfaceContainer).padding(16.dp),
++                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(16.dp),
+                     verticalArrangement = Arrangement.spacedBy(4.dp)
+                 ) {
+                     languages.forEach { (code, label) ->
+                         val selected = language == code
+                         Row(
+-                            modifier = Modifier.fillMaxWidth().clickable {
++                            modifier = Modifier.fillMaxWidth().noRippleClickable {
+                                 language = code
+                                 AppPrefs.setLanguage(context, code)
+                                 (context as? android.app.Activity)?.recreate()
+@@ -286,7 +395,7 @@ fun GeneralSettingsScreen(onBack: () -> Unit) {
+                             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
+                             if (selected) Icon(Icons.Outlined.Check, null, tint = colors.primary, modifier = Modifier.size(20.dp))
+                         }
+-                        if (code != languages.last().first) HorizontalDivider(color = colors.outlineVariant.copy(alpha = 0.3f))
++                        if (code != languages.last().first) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                     }
+                 }
+             }
+diff --git a/app/src/main/java/com/lingion/sleepy/util/AppPrefs.kt b/app/src/main/java/com/lingion/sleepy/util/AppPrefs.kt
+index 8f93661..86c8f3a 100644
+--- a/app/src/main/java/com/lingion/sleepy/util/AppPrefs.kt
++++ b/app/src/main/java/com/lingion/sleepy/util/AppPrefs.kt
+@@ -34,6 +34,7 @@ object AppPrefs {
+     const val KEY_WIDGET_COLORLESS = "widget_colorless" // bool default false
+     const val KEY_COURSE_COLORLESS = "course_colorless" // bool default false (App 课程胶囊专用)
+     const val KEY_WIDGET_SEPARATOR = "widget_separator" // bool default true (WeekView 纯文字课程间分隔线)
++    const val KEY_WIDGET_TODAY_RANGE = "widget_today_range" // int default 0 = 全部 (0=全部; 1-20=最近X节, Today/TwoDay 小组件用)
+     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
+     const val THEME_MODE_LIGHT = "light"
+     const val THEME_MODE_DARK = "dark"
+@@ -246,4 +247,13 @@ object AppPrefs {
+     fun setWidgetSeparator(ctx: Context, v: Boolean) {
+         sp(ctx).edit().putBoolean(KEY_WIDGET_SEPARATOR, v).apply()
+     }
++
++    // ===== Today/TwoDay 小组件课程范围 — 0=全部, 1-20=最近X节(从当前时间起算) =====
++
++    fun getWidgetTodayRange(ctx: Context): Int =
++        sp(ctx).getInt(KEY_WIDGET_TODAY_RANGE, 0).coerceIn(0, 20)
++
++    fun setWidgetTodayRange(ctx: Context, v: Int) {
++        sp(ctx).edit().putInt(KEY_WIDGET_TODAY_RANGE, v.coerceIn(0, 20)).apply()
++    }
+ }
+diff --git a/app/src/main/java/com/lingion/sleepy/widget/RemoteViewsWidgetHelper.kt b/app/src/main/java/com/lingion/sleepy/widget/RemoteViewsWidgetHelper.kt
+index 924d1ce..9e78235 100644
+--- a/app/src/main/java/com/lingion/sleepy/widget/RemoteViewsWidgetHelper.kt
++++ b/app/src/main/java/com/lingion/sleepy/widget/RemoteViewsWidgetHelper.kt
+@@ -90,4 +90,55 @@ object RemoteViewsWidgetHelper {
+         bmp.recycle()
+         Log.d(tag, "renderAndPush id=$widgetId ${wDp}x${hDp}dp → ${wPx}x${hPx}px")
+     }
++
++    /**
++     * ★ 可滚动 widget (v1.0.36) — ListView 集合视图推送。
++     *
++     * 静态 bitmap 物理不可滚 → 改 RemoteViewsService 绑定:
++     * setRemoteAdapter(ListView) + setPendingIntentTemplate(行点击模板)。
++     * 推送后 notifyAppWidgetViewDataChanged 触发 Factory 重新加载数据。
++     *
++     * @param headerSetup 往 views 塞头部 bitmap/背景等静态部分 (各 widget 不同, 无则 null)
++     * @param serviceCls RemoteViewsService 子类 (行工厂入口)
++     * @param scopeExtra 行工厂数据范围 (Today 用 "today"; TwoDay 两列两个 ListView)
++     */
++    fun pushScrollable(
++        context: Context,
++        awm: AppWidgetManager,
++        widgetId: Int,
++        layoutRes: Int,
++        listRes: Int,
++        serviceCls: Class<*>,
++        scopeExtra: String?,
++        tag: String,
++        headerSetup: ((RemoteViews, Float, Float) -> Unit)? = null
++    ) {
++        val opts = awm.getAppWidgetOptions(widgetId)
++        val (wDp, hDp) = computeSizeDp(opts)
++
++        val views = RemoteViews(context.packageName, layoutRes)
++        headerSetup?.invoke(views, wDp.toFloat(), hDp.toFloat())
++
++        // 绑定 RemoteViewsService → Launcher 进程拉行数据
++        val svcIntent = Intent(context, serviceCls).apply {
++            putExtra(TodayListService.CourseRowFactory.EXTRA_WIDGET_ID, widgetId)
++            data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
++        }
++        if (scopeExtra != null) svcIntent.putExtra(TodayListService.CourseRowFactory.EXTRA_SCOPE, scopeExtra)
++        views.setRemoteAdapter(listRes, svcIntent)
++
++        // 行点击模板 — 点击任一行打开 MainActivity (FillInIntent 合并)
++        val template = PendingIntent.getActivity(
++            context, widgetId,
++            Intent(context, MainActivity::class.java).apply {
++                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
++            },
++            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
++        )
++        views.setPendingIntentTemplate(listRes, template)
++
++        awm.updateAppWidget(widgetId, views)
++        awm.notifyAppWidgetViewDataChanged(widgetId, listRes)
++        Log.d(tag, "pushScrollable id=$widgetId ${wDp}x${hDp}dp scope=$scopeExtra")
++    }
+ }
+diff --git a/app/src/main/java/com/lingion/sleepy/widget/TodayWidget.kt b/app/src/main/java/com/lingion/sleepy/widget/TodayWidget.kt
+index f9b4738..f580e39 100644
+--- a/app/src/main/java/com/lingion/sleepy/widget/TodayWidget.kt
++++ b/app/src/main/java/com/lingion/sleepy/widget/TodayWidget.kt
+@@ -5,7 +5,9 @@ import android.appwidget.AppWidgetProvider
+ import android.content.Context
+ import android.os.Bundle
+ import android.util.Log
++import com.lingion.sleepy.R
+ import com.lingion.sleepy.SleepyApp
++import com.lingion.sleepy.util.AppPrefs
+ import com.lingion.sleepy.util.DateUtils
+ import com.lingion.sleepy.util.TimeTableUtils
+ import kotlinx.coroutines.CoroutineScope
+@@ -16,17 +18,14 @@ import kotlinx.coroutines.runBlocking
+ import java.time.LocalDate
+ 
+ /**
+- * ★ 桌面 Today 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
++ * ★ 桌面 Today 小组件 (v1.0.36 起可滚动)。
+  *
+- * 之前是 GlanceAppWidgetReceiver → provideGlance 异步 SessionWorker → OPPO OplusHansManager
+- * 冻结进程 → RemoteViews 从不生成 → 卡在 widget_loading 紫色布局 → 不跟随主题。
+- * 现在克隆 WeekGridWidgetProvider 模式: goAsync → 加载 → 画 bitmap → awm.updateAppWidget,
+- * 全程在冻结窗口前完成 → 秒刷 + 主题正确。
++ * 历史: Glance → (v1.0.29 避 OPPO 冻结移植) 同步 RemoteViews + Canvas bitmap →
++ * (v1.0.36) 静态 bitmap 物理不可滚 (Launcher 只把滚动手势交给集合视图) →
++ * 改 ListView + RemoteViewsService, 行 = renderCourseRow bitmap, 恢复滚动。
+  *
+- * 失去 Glance 交互(单课点击跳转/滚动) → 整个 widget 单击打开 app (与 WeekGrid 同取舍)。
+- *
+- * Glance 版 TodayWidget 类已删除(决策 D5-11): 5 个生产入口全走 RemoteViews,
+- * Glance 层生产不可达; loadDataSync 自 Glance companion 迁入本类。
++ * 布局 widget_today_scrollable: 头部(标题 bitmap) + ListView(课程行)。
++ * 最近X节设置在行工厂里过滤; 空态(无课表/无课)由行工厂返回空列表。
+  */
+ class TodayWidgetReceiver : AppWidgetProvider() {
+     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+@@ -37,13 +36,7 @@ class TodayWidgetReceiver : AppWidgetProvider() {
+             try {
+                 for (id in ids) {
+                     try {
+-                        RemoteViewsWidgetHelper.renderAndPush(
+-                            context, awm, id, TAG,
+-                            loadData = { loadDataSync(context) },
+-                            renderBitmap = { data, wDp, hDp ->
+-                                WidgetBitmapRenderers.renderToday(context, data, wDp, hDp)
+-                            }
+-                        )
++                        push(context, awm, id)
+                     } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                 }
+             } finally { pending.finish() }
+@@ -56,32 +49,48 @@ class TodayWidgetReceiver : AppWidgetProvider() {
+         val pending = goAsync()
+         ioScope.launch {
+             try {
+-                RemoteViewsWidgetHelper.renderAndPush(
+-                    context, awm, id, TAG,
+-                    loadData = { loadDataSync(context) },
+-                    renderBitmap = { data, wDp, hDp ->
+-                        WidgetBitmapRenderers.renderToday(context, data, wDp, hDp)
+-                    }
+-                )
++                push(context, awm, id)
+             } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+             finally { pending.finish() }
+         }
+     }
+ 
++    private fun push(context: Context, awm: AppWidgetManager, id: Int) {
++        RemoteViewsWidgetHelper.pushScrollable(
++            context, awm, id,
++            layoutRes = R.layout.widget_today_scrollable,
++            listRes = R.id.widget_course_list,
++            serviceCls = TodayListService::class.java,
++            scopeExtra = TodayListService.CourseRowFactory.SCOPE_TODAY,
++            tag = TAG,
++            headerSetup = { views, wDp, hDp ->
++                val data = loadDataSync(context)
++                // 底层 bg 圆角卡片 + 头部 (坐标均翻译自 main renderToday)
++                views.setImageViewBitmap(
++                    R.id.widget_bg,
++                    WidgetBitmapRenderers.renderScrollableBg(wDp, hDp, data.themeKey, data.isDark, context)
++                )
++                views.setImageViewBitmap(
++                    R.id.widget_header,
++                    WidgetBitmapRenderers.renderTodayHeader(context, data, wDp, data.themeKey, data.isDark)
++                )
++            }
++        )
++    }
++
+     companion object {
+         private const val TAG = "TodayWidgetRV"
+ 
+         /**
+-         * 同步版数据加载 (runBlocking DB 读) — 供 RemoteViews Receiver 使用。
++         * 同步版数据加载 (runBlocking DB 读) — 供 RemoteViews Receiver + 行工厂共用。
+          */
+         fun loadDataSync(context: Context): WidgetData {
+             val today = LocalDate.now()
+             val dayOfWeek = DateUtils.todayDayOfWeek(today)
+             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+-            val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
+-            val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
+-            val themeMode = com.lingion.sleepy.util.AppPrefs.getThemeMode(context)
+-            Log.d("TodayWidget", "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
++            val isDark = AppPrefs.isDarkMode(context, isSystemDark)
++            val themeKey = AppPrefs.getThemeKey(context)
++            Log.d("TodayWidget", "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeKey=$themeKey")
+             return try {
+                 runBlocking {
+                     val app = SleepyApp.get()
+diff --git a/app/src/main/java/com/lingion/sleepy/widget/TwoDayWidget.kt b/app/src/main/java/com/lingion/sleepy/widget/TwoDayWidget.kt
+index 6acc877..a896fd0 100644
+--- a/app/src/main/java/com/lingion/sleepy/widget/TwoDayWidget.kt
++++ b/app/src/main/java/com/lingion/sleepy/widget/TwoDayWidget.kt
+@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetProvider
+ import android.content.Context
+ import android.os.Bundle
+ import android.util.Log
++import com.lingion.sleepy.R
+ import com.lingion.sleepy.SleepyApp
+ import com.lingion.sleepy.util.DateUtils
+ import kotlinx.coroutines.CoroutineScope
+@@ -15,11 +16,9 @@ import kotlinx.coroutines.runBlocking
+ import java.time.LocalDate
+ 
+ /**
+- * ★ 桌面 TwoDay 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+- * 原因见 [TodayWidgetReceiver] 注释。
+- *
+- * Glance 版 TwoDayWidget 类已删除(决策 D5-11): 5 个生产入口全走 RemoteViews,
+- * Glance 层生产不可达; loadDataSync 自 Glance companion 迁入本类。
++ * ★ 桌面 TwoDay 小组件 (v1.0.36 起可滚动)。
++ * 布局 widget_twoday_scrollable: 顶部标签 + 今天/明天两列, 每列列头(静态) + 课程 ListView。
++ * 今天列按最近X节过滤(行工厂里), 明天列全量。
+  */
+ class TwoDayWidgetReceiver : AppWidgetProvider() {
+     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+@@ -30,13 +29,7 @@ class TwoDayWidgetReceiver : AppWidgetProvider() {
+             try {
+                 for (id in ids) {
+                     try {
+-                        RemoteViewsWidgetHelper.renderAndPush(
+-                            context, awm, id, TAG,
+-                            loadData = { loadDataSync(context) },
+-                            renderBitmap = { data, wDp, hDp ->
+-                                WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
+-                            }
+-                        )
++                        push(context, awm, id)
+                     } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                 }
+             } finally { pending.finish() }
+@@ -49,18 +42,75 @@ class TwoDayWidgetReceiver : AppWidgetProvider() {
+         val pending = goAsync()
+         ioScope.launch {
+             try {
+-                RemoteViewsWidgetHelper.renderAndPush(
+-                    context, awm, id, TAG,
+-                    loadData = { loadDataSync(context) },
+-                    renderBitmap = { data, wDp, hDp ->
+-                        WidgetBitmapRenderers.renderTwoDay(context, data, wDp, hDp)
+-                    }
+-                )
++                push(context, awm, id)
+             } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+             finally { pending.finish() }
+         }
+     }
+ 
++    private fun push(context: Context, awm: AppWidgetManager, id: Int) {
++        val opts = awm.getAppWidgetOptions(id)
++        val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
++        val data = loadDataSync(context)
++        // 列宽公式翻译自 main renderTwoDay L517-518: colW = (w - pad*2 - colGap*(n-1)) / n
++        //   pad=12dp, colGap=10dp, n=2 → colW = w/2 - 17dp
++        val colW = (wDp - 24f - 10f) / 2f
++
++        val views = android.widget.RemoteViews(context.packageName, R.layout.widget_twoday_scrollable)
++
++        // 底层 bg 圆角卡片 + 顶部标签 + 两列列头 (静态 bitmap, 坐标翻译自 main renderTwoDay)
++        views.setImageViewBitmap(
++            R.id.widget_bg,
++            WidgetBitmapRenderers.renderScrollableBg(wDp.toFloat(), hDp.toFloat(), data.themeKey, data.isDark, context)
++        )
++        views.setImageViewBitmap(
++            R.id.widget_header,
++            WidgetBitmapRenderers.renderTwodayLabel(context, wDp.toFloat(), data.themeKey, data.isDark)
++        )
++        val today = data.days.firstOrNull { it.isToday }
++        val tomorrow = data.days.firstOrNull { it.isTomorrow }
++        if (today != null) views.setImageViewBitmap(
++            R.id.widget_col_today_head,
++            WidgetBitmapRenderers.renderTwoDayColumnHead(context, today, colW, data.themeKey, data.isDark)
++        )
++        if (tomorrow != null) views.setImageViewBitmap(
++            R.id.widget_col_tomorrow_head,
++            WidgetBitmapRenderers.renderTwoDayColumnHead(context, tomorrow, colW, data.themeKey, data.isDark)
++        )
++        // 列间分隔线 (main: 1dp @0x20 alpha, listTop..listBottom)
++        views.setImageViewBitmap(
++            R.id.widget_col_separator,
++            WidgetBitmapRenderers.renderTwoDaySeparator(context, data.themeKey, data.isDark)
++        )
++
++        // 两个 ListView 各绑一个 scope 的行工厂
++        fun bindAdapter(listRes: Int, scope: String) {
++            val svc = android.content.Intent(context, TodayListService::class.java).apply {
++                putExtra(TodayListService.CourseRowFactory.EXTRA_WIDGET_ID, id)
++                putExtra(TodayListService.CourseRowFactory.EXTRA_SCOPE, scope)
++                setData(android.net.Uri.parse("sleepy://$id/$scope"))
++            }
++            views.setRemoteAdapter(listRes, svc)
++            views.setPendingIntentTemplate(
++                listRes,
++                android.app.PendingIntent.getActivity(
++                    context, id,
++                    android.content.Intent(context, com.lingion.sleepy.MainActivity::class.java).apply {
++                        flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TOP
++                    },
++                    android.app.PendingIntent.FLAG_UPDATE_CURRENT or android.app.PendingIntent.FLAG_IMMUTABLE
++                )
++            )
++        }
++        bindAdapter(R.id.widget_list_today, TodayListService.CourseRowFactory.SCOPE_TWODAY_TODAY)
++        bindAdapter(R.id.widget_list_tomorrow, TodayListService.CourseRowFactory.SCOPE_TWODAY_TOMORROW)
++
++        awm.updateAppWidget(id, views)
++        awm.notifyAppWidgetViewDataChanged(id, R.id.widget_list_today)
++        awm.notifyAppWidgetViewDataChanged(id, R.id.widget_list_tomorrow)
++        android.util.Log.d(TAG, "pushScrollable id=$id ${wDp}dp")
++    }
++
+     companion object {
+         private const val TAG = "TwoDayRV"
+ 
+diff --git a/app/src/main/java/com/lingion/sleepy/widget/WeekListWidget.kt b/app/src/main/java/com/lingion/sleepy/widget/WeekListWidget.kt
+index c0f1ada..8d67757 100644
+--- a/app/src/main/java/com/lingion/sleepy/widget/WeekListWidget.kt
++++ b/app/src/main/java/com/lingion/sleepy/widget/WeekListWidget.kt
+@@ -5,7 +5,9 @@ import android.appwidget.AppWidgetProvider
+ import android.content.Context
+ import android.os.Bundle
+ import android.util.Log
++import com.lingion.sleepy.R
+ import com.lingion.sleepy.SleepyApp
++import com.lingion.sleepy.util.AppPrefs
+ import com.lingion.sleepy.util.DateUtils
+ import kotlinx.coroutines.CoroutineScope
+ import kotlinx.coroutines.Dispatchers
+@@ -15,11 +17,9 @@ import kotlinx.coroutines.runBlocking
+ import java.time.LocalDate
+ 
+ /**
+- * ★ 桌面 WeekList 小组件 — 同步 RemoteViews + Canvas (v1.0.29 起, 从 Glance 移植)。
+- * 原因见 [TodayWidgetReceiver] 注释。失去 LazyColumn 滚动 → 静态 bitmap。
+- *
+- * Glance 版 WeekListWidget 类已删除(决策 D5-11): 5 个生产入口全走 RemoteViews,
+- * Glance 层生产不可达; loadDataSync 自 Glance companion 迁入本类。
++ * ★ 桌面 WeekList 小组件 (v1.0.36 起可滚动)。
++ * RemoteViews 无横向集合视图 → 一天一行, 竖向滚动。
++ * 行 = renderWeekListStrips 横切条带 (整网格按 main 坐标渲染后切片)。
+  */
+ class WeekListWidgetReceiver : AppWidgetProvider() {
+     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
+@@ -30,13 +30,7 @@ class WeekListWidgetReceiver : AppWidgetProvider() {
+             try {
+                 for (id in ids) {
+                     try {
+-                        RemoteViewsWidgetHelper.renderAndPush(
+-                            context, awm, id, TAG,
+-                            loadData = { loadDataSync(context) },
+-                            renderBitmap = { data, wDp, hDp ->
+-                                WidgetBitmapRenderers.renderWeekList(context, data, wDp, hDp)
+-                            }
+-                        )
++                        push(context, awm, id)
+                     } catch (e: Throwable) { Log.e(TAG, "render failed $id", e) }
+                 }
+             } finally { pending.finish() }
+@@ -49,18 +43,31 @@ class WeekListWidgetReceiver : AppWidgetProvider() {
+         val pending = goAsync()
+         ioScope.launch {
+             try {
+-                RemoteViewsWidgetHelper.renderAndPush(
+-                    context, awm, id, TAG,
+-                    loadData = { loadDataSync(context) },
+-                    renderBitmap = { data, wDp, hDp ->
+-                        WidgetBitmapRenderers.renderWeekList(context, data, wDp, hDp)
+-                    }
+-                )
++                push(context, awm, id)
+             } catch (e: Throwable) { Log.e(TAG, "optionsChanged render failed $id", e) }
+             finally { pending.finish() }
+         }
+     }
+ 
++    private fun push(context: Context, awm: AppWidgetManager, id: Int) {
++        RemoteViewsWidgetHelper.pushScrollable(
++            context, awm, id,
++            layoutRes = R.layout.widget_weeklist_scrollable,
++            listRes = R.id.widget_day_list,
++            serviceCls = WeekListListService::class.java,
++            scopeExtra = null,
++            tag = TAG,
++            headerSetup = { views, wDp, hDp ->
++                // 底层 bg 圆角卡片 (main renderWeekList: bg 20dp 圆角)
++                val d = loadDataSync(context)
++                views.setImageViewBitmap(
++                    R.id.widget_bg,
++                    WidgetBitmapRenderers.renderScrollableBg(wDp, hDp, d.themeKey, d.isDark, context)
++                )
++            }
++        )
++    }
++
+     companion object {
+         private const val TAG = "WeekListRV"
+ 
+@@ -70,8 +77,8 @@ class WeekListWidgetReceiver : AppWidgetProvider() {
+         fun loadDataSync(context: Context): WeekData {
+             val today = LocalDate.now()
+             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
+-            val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
+-            val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
++            val isDark = AppPrefs.isDarkMode(context, isSystemDark)
++            val themeKey = AppPrefs.getThemeKey(context)
+             return try {
+                 runBlocking {
+                     val app = SleepyApp.get()
+diff --git a/app/src/main/java/com/lingion/sleepy/widget/WidgetBitmapRenderers.kt b/app/src/main/java/com/lingion/sleepy/widget/WidgetBitmapRenderers.kt
+index ba6c9fb..995d3e0 100644
+--- a/app/src/main/java/com/lingion/sleepy/widget/WidgetBitmapRenderers.kt
++++ b/app/src/main/java/com/lingion/sleepy/widget/WidgetBitmapRenderers.kt
+@@ -45,7 +45,7 @@ object WidgetBitmapRenderers {
+      * 之前硬编码 Default 紫色 → 不跟随 app 主题/system 动态取色 → 移植到 RemoteViews 后仍是错的。
+      * 现在接收 themeKey, 完全对齐 WeekGridWidgetProvider.renderBitmap 的取色方式。
+      */
+-    private fun scheme(context: Context, themeKey: String, isDark: Boolean): Scheme {
++    fun scheme(context: Context, themeKey: String, isDark: Boolean): Scheme {
+         val s = resolveSchemePublic(context, themeKey, isDark)
+         fun androidx.compose.ui.graphics.Color.toIntArgb(): Int =
+             (0xFF shl 24) or ((this.red * 255).toInt() shl 16) or
+@@ -66,6 +66,419 @@ object WidgetBitmapRenderers {
+     // hslToColorInt / pickCourseColor 本地副本已收敛至 util/CourseColorUtil.kt (决策 D3 单一事实来源)。
+     // 之前用 resolveCourseColorKey 关键词分类 → 与首页/WeekGrid 色系不一致, 已废弃。
+ 
++    // ═══════════════════════════════════════════════════════
++    // ListView 行 bitmap (v1.0.36 可滚动 widget) — 坐标全部忠实翻译自 main 分支
++    // renderToday/renderTwoDay/renderWeekList: 静止状态与静态 bitmap 视觉一致,
++    // 滚动时行/条带随 ListView 移动。旧版自创坐标 → 与主分支相似度为 0, 已重写。
++    // ═══════════════════════════════════════════════════════
++
++    /**
++     * 滚动容器背景 bitmap — bg 色 20dp 圆角卡片 (翻译自 renderToday/renderTwoDay 背景段)。
++     * 放在布局最底层 ImageView 上 (RemoteViews 无圆角背景 API → 用 bitmap 画)。
++     */
++    fun renderScrollableBg(wDp: Float, hDp: Float, themeKey: String, isDark: Boolean, context: Context): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(8)
++        val h = (hDp * density).toInt().coerceAtLeast(8)
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++        p.color = s.bg
++        canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
++            20f * density, 20f * density, p)
++        return c
++    }
++
++    /**
++     * Today 滚动版头部 bitmap — 翻译自 renderToday L170-190。
++     * 高度 38dp = pad(14) + 24(标题区); 标题 13sp bold primary 基线 27dp (= pad+13);
++     * 日期 12sp onSurfaceVariant 右对齐同基线 (showDate=false 时隐藏)。
++     * 背景透明 — 卡片背景由底层 renderScrollableBg 画。
++     */
++    fun renderTodayHeader(context: Context, data: WidgetData, wDp: Float, themeKey: String, isDark: Boolean): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(120)
++        val h = (38f * density).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++
++        val pad = 14f * density
++        val ctx = SleepyApp.get()
++        p.color = s.primary
++        p.textSize = 13f * density
++        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
++        val titleStr = "${ctx.getString(R.string.today_today)} · ${DateUtils.localizedDay(data.date.dayOfWeek.value, ctx)}"
++        canvas.drawText(titleStr, pad, pad + 13f * density, p)
++
++        if (AppPrefs.isShowDate(context)) {
++            p.color = s.onSurfaceVariant
++            p.textSize = 12f * density
++            p.typeface = Typeface.DEFAULT
++            val dateStr = "${data.date.monthValue}/${data.date.dayOfMonth}"
++            val dateWidth = p.measureText(dateStr)
++            canvas.drawText(dateStr, w - pad - dateWidth, pad + 13f * density, p)
++        }
++        return c
++    }
++
++    /**
++     * Today/TwoDay 空态行 bitmap — 翻译自 renderToday/renderTwoDay 空态段。
++     * 三种文案: 无课表(widget_create_schedule 15sp) / 无课(16sp bold + today_rest 12sp) /
++     * 已结束(最近X节模式下, 同无课两行结构)。
++     */
++    fun renderTodayEmptyRow(
++        context: Context, text: String, subText: String?, wDp: Float, themeKey: String, isDark: Boolean
++    ): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(120)
++        val h = (44f * density).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++
++        val pad = 14f * density
++        p.color = s.onSurface
++        p.textSize = if (subText != null) 16f * density else 15f * density
++        p.typeface = if (subText != null) Typeface.create(Typeface.DEFAULT, Typeface.BOLD) else Typeface.DEFAULT
++        canvas.drawText(text, pad, 16f * density, p)
++        if (subText != null) {
++            p.color = s.onSurfaceVariant
++            p.textSize = 12f * density
++            p.typeface = Typeface.DEFAULT
++            canvas.drawText(subText, pad, 38f * density, p)
++        }
++        return c
++    }
++
++    /**
++     * ★ Today 可滚动 ListView 单行 bitmap — 翻译自 renderToday 课程列表段 (L213-222)。
++     * 行高 48dp = 38dp 胶囊 + 10dp 行距 (renderToday: rowH=38dp, rowGap=10dp);
++     * 胶囊 x=pad(14dp), 宽 w-2*pad; fontSizeSp=12 与 main 一致。
++     */
++    fun renderCourseRow(
++        context: Context,
++        course: CourseEntity,
++        timeJson: String,
++        themeKey: String,
++        isDark: Boolean,
++        wDp: Float,
++        colorless: Boolean,
++        displayMode: String
++    ): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(120)
++        val rowH = 38f * density
++        val gapH = 10f * density
++        val h = (rowH + gapH).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++        val pad = 14f * density
++        drawCourse(canvas, p, course, timeJson, pad, 0f, w - pad * 2f, rowH, s, density,
++            fontSizeSp = 12f, colorless = colorless, displayMode = displayMode)
++        return c
++    }
++
++    /**
++     * TwoDay 滚动版顶部标签 bitmap — 翻译自 renderTwoDay L498-507。
++     * 高度 34dp = pad(12) + 22(labelH); 标签 13sp bold primary 基线 25dp (= pad+13)。
++     */
++    fun renderTwodayLabel(context: Context, wDp: Float, themeKey: String, isDark: Boolean): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(120)
++        val h = (34f * density).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++        val pad = 12f * density
++        p.color = s.primary
++        p.textSize = 13f * density
++        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
++        canvas.drawText(SleepyApp.get().getString(R.string.widget_twoday_label), pad, pad + 13f * density, p)
++        return c
++    }
++
++    /**
++     * TwoDay 滚动版列头 bitmap — 翻译自 renderTwoDay 列标题段 (L526-544)。
++     * 高度 20dp (renderTwoDay: cy = listTop + 20dp 后开始课程行);
++     * 标题 12sp bold primary 基线 12dp, 日期 10sp onSurfaceVariant 跟在标题右侧同基线。
++     */
++    fun renderTwoDayColumnHead(
++        context: Context, day: DayData, wDp: Float,
++        themeKey: String, isDark: Boolean
++    ): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(60)
++        val h = (20f * density).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++
++        val ctx = SleepyApp.get()
++        p.color = s.primary
++        p.textSize = 12f * density
++        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
++        val title = when {
++            day.isToday -> ctx.getString(R.string.today_today)
++            day.isTomorrow -> ctx.getString(R.string.tomorrow)
++            else -> day.dayName
++        }
++        canvas.drawText(title, 0f, 12f * density, p)
++        val titleW = p.measureText(title)
++
++        if (AppPrefs.isShowDate(context)) {
++            p.color = s.onSurfaceVariant
++            p.textSize = 10f * density
++            p.typeface = Typeface.DEFAULT
++            canvas.drawText(day.dayLabel, titleW + 6f * density, 12f * density, p)
++        }
++
++        return c
++    }
++
++    /**
++     * ★ TwoDay 可滚动 ListView 单行 bitmap — 翻译自 renderTwoDay 课程列表段 (L553-560)。
++     * 行高 52dp = 44dp 胶囊 + 8dp 行距 (renderTwoDay: maxRowH=44dp, rowGap=8dp);
++     * fontSizeSp=10 与 main 一致。行宽 = 列宽 (renderTwoDay colW 公式由调用方算)。
++     */
++    fun renderTwoDayCourseRow(
++        context: Context,
++        course: CourseEntity,
++        timeJson: String,
++        themeKey: String,
++        isDark: Boolean,
++        wDp: Float,
++        colorless: Boolean,
++        displayMode: String
++    ): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(60)
++        val rowH = 44f * density
++        val gapH = 8f * density
++        val h = (rowH + gapH).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++        drawCourse(canvas, p, course, timeJson, 0f, 0f, w.toFloat(), rowH, s, density,
++            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
++        return c
++    }
++
++    /**
++     * TwoDay 空列行 bitmap — 翻译自 renderTwoDay 空列段 (L548-551)。
++     * "无课程/已结束" 11sp onSurfaceVariant 基线 11dp, 高 20dp。
++     */
++    fun renderTwoDayEmptyRow(
++        context: Context, text: String, wDp: Float, themeKey: String, isDark: Boolean
++    ): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt().coerceAtLeast(60)
++        val h = (20f * density).toInt()
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++        p.color = s.onSurfaceVariant
++        p.textSize = 11f * density
++        p.typeface = Typeface.DEFAULT
++        canvas.drawText(text, 0f, 11f * density, p)
++        return c
++    }
++
++    /**
++     * TwoDay 列间分隔线 bitmap — 翻译自 renderTwoDay L563-568: 1dp 宽 0x20 alpha 竖线,
++     * 只画 listTop..listBottom (布局里 1dp ImageView fitXY 拉伸, 无需知道实际高度)。
++     */
++    fun renderTwoDaySeparator(context: Context, themeKey: String, isDark: Boolean): Bitmap {
++        val density = context.resources.displayMetrics.density
++        val s = scheme(context, themeKey, isDark)
++        val c = Bitmap.createBitmap(1, (4f * density).toInt().coerceAtLeast(2), Bitmap.Config.ARGB_8888)
++        c.eraseColor((s.onSurfaceVariant and 0x00FFFFFF) or 0x20000000)
++        return c
++    }
++
++    /**
++     * ★ WeekList 可滚动条带 — 翻译自 renderWeekList (L230-341)。
++     * main 是 7 列并排静态图; RemoteViews 无横向集合视图 → 按 main 坐标整图渲染后
++     * 横切成 stripHdp 高的条带装进 ListView: 静止时与 main 像素级一致,
++     * 滚动时整网格同步上下移动 (列间相对位置永不变化)。
++     * 列高 = max(容器高, 最高列内容高) — 内容超出容器高的部分滚动才可见 (main 直接裁掉)。
++     */
++    fun renderWeekListStrips(
++        context: Context, data: WeekData, wDp: Float, hDp: Float, stripHdp: Float = 64f
++    ): List<Bitmap> {
++        val density = context.resources.displayMetrics.density
++        val w = (wDp * density).toInt()
++        val s = scheme(context, themeKey = data.themeKey, isDark = data.isDark)
++        val colorless = AppPrefs.isWidgetColorless(context)
++        val visibleDays = AppPrefs.getVisibleDays(context)
++        val shownDays = if (visibleDays.isEmpty()) data.days
++            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
++
++        // 空态 — renderWeekList L256-262: widget_create_schedule 15sp onSurface
++        if (!data.hasTable || shownDays.isEmpty()) {
++            val stripH = (stripHdp * density).toInt()
++            val c = Bitmap.createBitmap(w, stripH, Bitmap.Config.ARGB_8888)
++            c.eraseColor(Color.TRANSPARENT)
++            val canvas = Canvas(c)
++            val p = Paint(Paint.ANTI_ALIAS_FLAG)
++            p.color = s.onSurface
++            p.textSize = 15f * density
++            val outerPad = 6f * density
++            canvas.drawText(SleepyApp.get().getString(R.string.widget_create_schedule),
++                outerPad, outerPad + 15f * density, p)
++            return listOf(c)
++        }
++
++        val outerPad = 6f * density
++        val innerW = w - outerPad * 2
++        val colGap = 4f * density
++        val dayCount = shownDays.size
++        val colW = (innerW - colGap * (dayCount - 1)) / dayCount
++
++        // 虚拟总高 = max(容器高, 最高列内容高) — 全列卡片同高 (main: innerH 统一)
++        fun columnContentH(day: DayData): Float {
++            var cy = outerPad + 12f * density
++            cy += 14f * density
++            if (day.courses.isNotEmpty()) {
++                cy += 14f * density + 6f * density  // chip + gap
++                cy += day.courses.size * (16f * density) + (day.courses.size - 1) * 3f * density
++            }
++            return cy + outerPad
++        }
++        val containerH = (hDp * density)
++        val virtualH = maxOf(containerH, shownDays.maxOf { columnContentH(it) }).toInt()
++
++        val c = Bitmap.createBitmap(w, virtualH, Bitmap.Config.ARGB_8888)
++        c.eraseColor(Color.TRANSPARENT)
++        val canvas = Canvas(c)
++        val p = Paint(Paint.ANTI_ALIAS_FLAG)
++
++        val todayDow = LocalDate.now().dayOfWeek.value
++
++        // ── 以下逐行翻译自 renderWeekList L270-338 (仅列高从 innerH 换成 virtualH-outerPad*2) ──
++        for (i in shownDays.indices) {
++            val day = shownDays[i]
++            val x = outerPad + i * (colW + colGap)
++            val isToday = day.dayOfWeek == todayDow
++            val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
++
++            p.color = cardBg
++            canvas.drawRoundRect(RectF(x, outerPad, x + colW, virtualH - outerPad),
++                14f * density, 14f * density, p)
++
++            var cy = outerPad + 12f * density
++
++            p.color = if (isToday) s.onPrimaryContainer else s.onSurface
++            p.textSize = 12f * density
++            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
++            val title = dayLabels[day.dayOfWeek]
++            val tw = p.measureText(title)
++            canvas.drawText(title, x + (colW - tw) / 2, cy, p)
++            cy += 14f * density
++
++            if (day.courses.isNotEmpty()) {
++                val chipText = "${day.courses.size} 门"
++                p.color = s.surfaceVariant
++                val chipW = (chipText.length * 6f + 12f) * density
++                val chipH = 14f * density
++                canvas.drawRoundRect(RectF(x + (colW - chipW) / 2, cy, x + (colW - chipW) / 2 + chipW, cy + chipH),
++                    50f, 50f, p)
++                p.color = s.onSurfaceVariant
++                p.textSize = 9f * density
++                val ctw = p.measureText(chipText)
++                val chipFm = p.fontMetrics
++                val chipBaseline = cy + (chipH - (chipFm.descent - chipFm.ascent)) / 2f - chipFm.ascent
++                canvas.drawText(chipText, x + (colW - ctw) / 2, chipBaseline, p)
++                cy += chipH + 6f * density
++
++                p.textSize = 9f * density
++                p.typeface = Typeface.DEFAULT
++                val coursePad = 3f * density
++                val courseRowH = 16f * density
++                val courseGap = 3f * density
++                day.courses.forEach { course ->
++                    val name = course.courseName
++                    val bgColor = CourseColorUtil.pickCourseColorInt(course, s.isDark, s.surfaceVariant, colorless)
++                    p.color = bgColor
++                    canvas.drawRoundRect(
++                        RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
++                        4f * density, 4f * density, p)
++                    p.color = CourseColorUtil.textColorOn(bgColor, s.isDark, s.onSurface)
++                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
++                    val maxTextWidth = colW - coursePad * 2 - 4f * density
++                    val displayName = if (p.measureText(name) > maxTextWidth) {
++                        var n = name
++                        while (n.isNotEmpty() && p.measureText("$n…") > maxTextWidth) n = n.dropLast(1)
++                        "$n…"
++                    } else name
++                    val fm = p.fontMetrics
++                    val textBaseline = cy + (courseRowH - (fm.descent - fm.ascent)) / 2f - fm.ascent
++                    canvas.drawText(displayName, x + coursePad + 2f * density, textBaseline, p)
++                    p.typeface = Typeface.DEFAULT
++                    cy += courseRowH + courseGap
++                }
++            }
++        }
++
++        // 横切条带 — 每条 stripHdp, 末条收窄
++        val strips = mutableListOf<Bitmap>()
++        var y = 0
++        while (y < virtualH) {
++            val sh = minOf((stripHdp * density).toInt(), virtualH - y)
++            strips.add(Bitmap.createBitmap(c, 0, y, w, sh))
++            y += sh
++        }
++        return strips
++    }
++
++    /**
++     * ★ 最近X节筛选 — Today/TwoDay 小组件课程太多高度受限显示不全的解法。
++     *
++     * range<=0 → 原行为, 返回全部。
++     * range>0  → 以 [now] 为锚点向前取 range 节"还没结束/还没上"的课:
++     *   今天 8-10 节a、10-12 节b, 现在 7 点, range=2 → [a, b]
++     *   现在 11 点 (a 已结束, b 进行中)  , range=2 → [b, 后面下一节]
++     *   今天只剩 b 一节未结束          , range=2 → [b] (不跨天凑数)
++     * 课程结束时刻判定: ownTime 用 startTime/endTime, 否则查 timeJson 节点表;
++     * 解析失败(查不到节点)的课保守视为"未结束", 宁可多显示不漏课。
++     */
++    fun filterRecentCourses(courses: List<CourseEntity>, range: Int, timeJson: String, now: java.time.LocalTime): List<CourseEntity> {
++        if (range <= 0 || courses.isEmpty()) return courses
++        val upcoming = courses.filter { course ->
++            val end = if (course.ownTime && course.endTime.isNotBlank()) {
++                runCatching { java.time.LocalTime.parse(course.endTime) }.getOrNull()
++            } else {
++                TimeTableUtils.courseTimeParts(
++                    courseStartNode = course.startNode,
++                    courseStep = course.step,
++                    timeJson = timeJson,
++                    ownTime = course.ownTime,
++                    startTime = course.startTime,
++                    endTime = course.endTime
++                )?.second?.let { runCatching { java.time.LocalTime.parse(it) }.getOrNull() }
++            }
++            // 结束时刻解析失败 → 视为未结束(宁可多显示)
++            end == null || end.isAfter(now)
++        }
++        return upcoming.take(range)
++    }
++
+     private val dayLabels = arrayOf("", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
+ 
+     private fun drawCourse(
+@@ -146,16 +559,29 @@ object WidgetBitmapRenderers {
+ 
+     /**
+      * Today widget 渲染 — 今日课程列表
++     * ★ (2026-08-25 v2) 缩放修复: bitmap 高度 = Launcher 分配的真实 hDp(容器多大画多大),
++     *   内容行高/行距在固定高度内弹性分配 → 拉伸时元素微调, 不再整图 fitXY 缩放变形。
++     *   (v1 内容高度自适应的思路错了: bitmap 高≠容器高, ImageView match_parent+fitXY 直接把
++     *    整张图当图片压扁/拉长 — 这就是"拉伸压缩后是缩放而非微调"的根因)
++     *   课多时行高压缩到下限仍放不下 → 由"最近X节"设置控制数量, 不再截断。
++     * ★ (2026-08-25) 最近X节 — settings "widget_today_range" >0 时按当前时刻过滤,
++     *      7点选2节→第1,2节; 11点(a已结束)→当前节+下一节; 全结束→空态提示
+      */
+     fun renderToday(context: Context, data: WidgetData, wDp: Float, hDp: Float): Bitmap {
+         val density = context.resources.displayMetrics.density
+         val w = (wDp * density).toInt()
+-        val h = (hDp * density).toInt()
++        val h = (hDp * density).toInt().coerceAtLeast((84f * density).toInt())
+         val s = scheme(context, data.themeKey, data.isDark)
+         val colorless = AppPrefs.isWidgetColorless(context)
+         // ★ 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
+         val displayMode = AppPrefs.getDisplayMode(context)
+         val showDate = AppPrefs.isShowDate(context)
++        // ★ 最近X节 (2026-08-25): >0 → 按当前时刻过滤; 0 → 全部(原行为)
++        val range = AppPrefs.getWidgetTodayRange(context)
++        val shown = if (data.hasTable) filterRecentCourses(data.courses, range, data.timeJson, java.time.LocalTime.now()) else data.courses
++
++        val pad = 14f * density
++        val titleH = 24f * density
+ 
+         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+@@ -167,7 +593,6 @@ object WidgetBitmapRenderers {
+         canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
+             20f * density, 20f * density, p)
+ 
+-        val pad = 14f * density
+         var y = pad
+ 
+         // 标题行：今天 · 周X  +  日期 (★ showDate=false 时隐藏右侧日期, 对齐课表页设置)
+@@ -187,7 +612,7 @@ object WidgetBitmapRenderers {
+             canvas.drawText(dateStr, w - pad - dateWidth, y + 13f * density, p)
+         }
+ 
+-        y += 24f * density
++        y += titleH
+ 
+         if (!data.hasTable) {
+             p.color = s.onSurface
+@@ -196,11 +621,15 @@ object WidgetBitmapRenderers {
+             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+         }
+ 
+-        if (data.courses.isEmpty()) {
++        if (shown.isEmpty()) {
++            // 今日无课 / (最近X节模式下) 今日课程已全部结束
+             p.color = s.onSurface
+             p.textSize = 16f * density
+             p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+-            canvas.drawText(ctx.getString(R.string.today_no_course), pad, y + 16f * density, p)
++            val noCourseStr = if (range > 0 && data.courses.isNotEmpty())
++                ctx.getString(R.string.today_courses_done)
++            else ctx.getString(R.string.today_no_course)
++            canvas.drawText(noCourseStr, pad, y + 16f * density, p)
+             y += 22f * density
+             p.color = s.onSurfaceVariant
+             p.textSize = 12f * density
+@@ -209,16 +638,36 @@ object WidgetBitmapRenderers {
+             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+         }
+ 
+-        // 课程列表（全部渲染，不再截断）
+-        val rowH = 38f * density
+-        val rowGap = 10f * density  // 课程胶囊间距放大(用户反馈太紧凑)
++        // 课程列表 — 行高/行距在剩余高度内弹性分配 (元素微调, 非整图缩放)
++        //   富余: 38dp 行高 10dp 行距; 拥挤: 压到 28dp 行高 4dp 行距下限; 再放不下靠最近X节控制数量
+         val rowW = w - pad * 2
++        val availH = (h - pad) - y  // 底部还有 pad
++        val n = shown.size
++        val rowH: Float
++        val rowGap: Float
++        if (n > 0) {
++            val maxRowH = 38f * density
++            val minRowH = 28f * density
++            val maxGap = 10f * density
++            val minGap = 4f * density
++            // 先按最大规格算需要的高度, 超了 → 等比压到能放下 (不小于下限)
++            val needMax = n * maxRowH + (n - 1) * maxGap
++            if (needMax <= availH) {
++                // 富余: 行距可放大补齐 (行高仍 38dp 上限, 多余空间摊进行距, 视觉居中)
++                rowH = maxRowH
++                rowGap = if (n > 1) ((availH - n * maxRowH) / (n - 1)).coerceIn(minGap, 24f * density) else 0f
++            } else {
++                val scale = availH / needMax
++                rowH = (maxRowH * scale).coerceAtLeast(minRowH)
++                rowGap = if (n > 1) ((availH - n * rowH) / (n - 1)).coerceAtLeast(minGap) else 0f
++            }
++        } else { rowH = 0f; rowGap = 0f }
+ 
+-        data.courses.forEachIndexed { idx, course ->
++        shown.forEachIndexed { idx, course ->
+             drawCourse(canvas, p, course, data.timeJson, pad, y, rowW, rowH, s, density,
+                 fontSizeSp = 12f, colorless = colorless, displayMode = displayMode)
+             y += rowH
+-            if (idx < data.courses.size - 1) y += rowGap
++            if (idx < shown.size - 1) y += rowGap
+         }
+ 
+         return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+@@ -474,16 +923,54 @@ object WidgetBitmapRenderers {
+     /**
+      * TwoDay widget 渲染 — 今天 + 明天 (左右两栏竖排)
+      * 用户反馈: 不要把第二天堆在底下 → 改成左列今天 / 右列明天 并排
++     * ★ (2026-08-25 v2) 缩放修复: bitmap 高度 = Launcher 真实 hDp, 行高/行距在固定高度内
++     *   弹性分配(同 renderToday) → 元素微调而非整图 fitXY 缩放变形。
++     * ★ (2026-08-25) 最近X节: 今天列按 widget_today_range 过滤(以当前时刻),
++     *   明天列不受限(明天的课从第一节起全部显示)。
+      */
+     fun renderTwoDay(context: Context, data: TwoDayData, wDp: Float, hDp: Float): Bitmap {
+         val density = context.resources.displayMetrics.density
+         val w = (wDp * density).toInt()
+-        val h = (hDp * density).toInt()
++        val h = (hDp * density).toInt().coerceAtLeast((100f * density).toInt())
+         val s = scheme(context, data.themeKey, data.isDark)
+         val colorless = AppPrefs.isWidgetColorless(context)
+         // ★ 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
+         val displayMode = AppPrefs.getDisplayMode(context)
+         val showDate = AppPrefs.isShowDate(context)
++        // ★ 最近X节 (2026-08-25): 仅作用于今天列
++        val range = AppPrefs.getWidgetTodayRange(context)
++
++        val ctx = SleepyApp.get()
++        val pad = 12f * density
++        val colHeadH = 20f * density
++        val labelH = 22f * density
++
++        // 每列实际渲染的课程列表: 今天列按最近X节过滤(以当前时刻), 其他天全量
++        val renderLists = data.days.map { day ->
++            if (day.isToday) filterRecentCourses(day.courses, range, day.timeJson, java.time.LocalTime.now())
++            else day.courses
++        }
++
++        // 行高/行距弹性分配 (同 renderToday): 富余摊进行距(上限24dp), 拥挤压行高到下限
++        val availH = h - pad * 2 - labelH - colHeadH
++        val maxRows = renderLists.maxOfOrNull { it.size } ?: 0
++        val maxRowH = 44f * density
++        val minRowH = 30f * density
++        val maxGap = 8f * density
++        val minGap = 3f * density
++        val rowH: Float
++        val rowGap: Float
++        if (maxRows > 0) {
++            val needMax = maxRows * maxRowH + (maxRows - 1) * maxGap
++            if (needMax <= availH) {
++                rowH = maxRowH
++                rowGap = if (maxRows > 1) ((availH - maxRows * maxRowH) / (maxRows - 1)).coerceIn(minGap, 24f * density) else 0f
++            } else {
++                val scale = availH / needMax
++                rowH = (maxRowH * scale).coerceAtLeast(minRowH)
++                rowGap = if (maxRows > 1) ((availH - maxRows * rowH) / (maxRows - 1)).coerceAtLeast(minGap) else 0f
++            }
++        } else { rowH = 0f; rowGap = 0f }
+ 
+         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+@@ -495,8 +982,6 @@ object WidgetBitmapRenderers {
+         canvas.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()),
+             20f * density, 20f * density, p)
+ 
+-        val ctx = SleepyApp.get()
+-        val pad = 12f * density
+         var y = pad
+ 
+         // 顶部标签
+@@ -504,7 +989,7 @@ object WidgetBitmapRenderers {
+         p.textSize = 13f * density
+         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+         canvas.drawText(ctx.getString(R.string.widget_twoday_label), pad, y + 13f * density, p)
+-        y += 22f * density
++        y += labelH
+ 
+         if (!data.hasTable || data.days.isEmpty()) {
+             p.color = s.onSurface
+@@ -518,10 +1003,10 @@ object WidgetBitmapRenderers {
+         val colW = (w - pad * 2 - colGap * (data.days.size - 1)) / data.days.size
+         val listTop = y
+         val listBottom = h - pad
+-        val listH = (listBottom - listTop).coerceAtLeast(40f * density)
+ 
+         data.days.forEachIndexed { colIdx, day ->
+             val colX = pad + colIdx * (colW + colGap)
++            val renderList = renderLists[colIdx]
+ 
+             // 列标题
+             p.color = s.primary
+@@ -543,17 +1028,18 @@ object WidgetBitmapRenderers {
+                 canvas.drawText(day.dayLabel, colX + titleW + 6f * density, listTop + 12f * density, p)
+             }
+ 
+-            var cy = listTop + 20f * density
++            var cy = listTop + colHeadH
+ 
+-            if (day.courses.isEmpty()) {
++            if (renderList.isEmpty()) {
+                 p.color = s.onSurfaceVariant
+                 p.textSize = 11f * density
+-                canvas.drawText(ctx.getString(R.string.no_course), colX, cy + 11f * density, p)
++                // 最近X节模式下今天课上完了 → 显示"已结束"而非"无课程"
++                val emptyStr = if (range > 0 && day.isToday && day.courses.isNotEmpty())
++                    ctx.getString(R.string.today_courses_done)
++                else ctx.getString(R.string.no_course)
++                canvas.drawText(emptyStr, colX, cy + 11f * density, p)
+             } else {
+-                // ★ 胶囊固定最大高度 44dp, 不再撑满整个列
+-                val rowGap = 8f * density
+-                val maxRowH = 44f * density
+-                day.courses.forEach { course ->
++                renderList.forEach { course ->
+                     drawCourse(canvas, p, course, day.timeJson, colX, cy, colW, maxRowH, s, density,
+                         fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
+                     cy += maxRowH + rowGap
+diff --git a/app/src/main/res/values-en/strings.xml b/app/src/main/res/values-en/strings.xml
+index 49755f8..67d0662 100644
+--- a/app/src/main/res/values-en/strings.xml
++++ b/app/src/main/res/values-en/strings.xml
+@@ -190,6 +190,7 @@
+     <string name="today_today">Today</string>
+     <string name="today_no_course">No classes today</string>
+     <string name="today_rest">Free day</string>
++    <string name="today_courses_done">All classes done</string>
+ 
+     <string name="ok">OK</string>
+     <string name="cancel">Cancel</string>
+@@ -401,6 +402,16 @@
+     <string name="settings_course_colorless_sub">Only course pills in the app use a neutral gray; widget settings are unaffected, and courses with custom colors are unaffected</string>
+     <string name="settings_widget_separator">Week view separator</string>
+     <string name="settings_widget_separator_sub">Show a divider between course names in the pure-text week view</string>
++    <string name="settings_widget_range">Widget course range</string>
++    <string name="settings_widget_range_sub">Show all courses or only the next few from the current time; prevents clipping when the Today/Two-day widget is height-limited</string>
++    <string name="settings_widget_range_all">All courses</string>
++    <string name="settings_widget_range_n">Next %1$d periods</string>
++    <string name="settings_widget_range_hint">Display mode</string>
++    <string name="settings_widget_range_custom">Custom…</string>
++    <string name="settings_widget_range_custom_val">Next %1$d periods</string>
++    <string name="settings_widget_range_custom_sub">Enter how many upcoming periods to show (1-20)</string>
++    <string name="settings_widget_range_custom_ph">e.g. 6</string>
++    <string name="settings_widget_range_custom_range">Enter a number between 1 and 20</string>
+     <!-- i18n: hardcoded string extraction -->
+     <string name="edit_period_input">Input</string>
+     <string name="edit_period_duration_label">Per-period duration</string>
+diff --git a/app/src/main/res/values-es/strings.xml b/app/src/main/res/values-es/strings.xml
+index 649a22f..e91c73f 100644
+--- a/app/src/main/res/values-es/strings.xml
++++ b/app/src/main/res/values-es/strings.xml
+@@ -189,6 +189,7 @@
+     <string name="today_today">Hoy</string>
+     <string name="today_no_course">No hay clases hoy</string>
+     <string name="today_rest">Día libre</string>
++    <string name="today_courses_done">Clases terminadas</string>
+ 
+     <string name="ok">Aceptar</string>
+     <string name="cancel">Cancelar</string>
+@@ -400,6 +401,16 @@
+     <string name="settings_course_colorless_sub">Solo las cápsulas de cursos en la app usan un gris neutro; los ajustes de widgets no se ven afectados y los cursos con color personalizado no se ven afectados</string>
+     <string name="settings_widget_separator">Separador vista semanal</string>
+     <string name="settings_widget_separator_sub">Mostrar un divisor entre los nombres de cursos en la vista semanal de texto</string>
++    <string name="settings_widget_range">Rango de cursos del widget</string>
++    <string name="settings_widget_range_sub">Muestra todos los cursos o solo los próximos desde la hora actual; evita el recorte cuando el widget está limitado en altura</string>
++    <string name="settings_widget_range_all">Todos los cursos</string>
++    <string name="settings_widget_range_n">Próximos %1$d periodos</string>
++    <string name="settings_widget_range_hint">Modo de visualización</string>
++    <string name="settings_widget_range_custom">Personalizado…</string>
++    <string name="settings_widget_range_custom_val">Próximos %1$d periodos</string>
++    <string name="settings_widget_range_custom_sub">Introduce cuántos periodos próximos mostrar (1-20)</string>
++    <string name="settings_widget_range_custom_ph">ej. 6</string>
++    <string name="settings_widget_range_custom_range">Introduce un número entre 1 y 20</string>
+     <!-- i18n: hardcoded string extraction -->
+     <string name="edit_period_input">Entrada</string>
+     <string name="edit_period_duration_label">Duración por período</string>
+diff --git a/app/src/main/res/values-ja/strings.xml b/app/src/main/res/values-ja/strings.xml
+index cfd951c..e4df097 100644
+--- a/app/src/main/res/values-ja/strings.xml
++++ b/app/src/main/res/values-ja/strings.xml
+@@ -189,6 +189,7 @@
+     <string name="today_today">今日</string>
+     <string name="today_no_course">今日は授業がありません</string>
+     <string name="today_rest">休み / 自習 でもOK</string>
++    <string name="today_courses_done">本日の授業は終了</string>
+ 
+     <string name="ok">OK</string>
+     <string name="cancel">キャンセル</string>
+@@ -400,6 +401,16 @@
+     <string name="settings_course_colorless_sub">アプリ内の授業カプセルのみをニュートラルグレーに統一します。ウィジェット設定には影響せず、色をカスタマイズした授業には適用されません</string>
+     <string name="settings_widget_separator">週表示の区切り線</string>
+     <string name="settings_widget_separator_sub">テキストのみの週表示で授業名の間に区切り線を表示</string>
++    <string name="settings_widget_range">ウィジェットの表示範囲</string>
++    <string name="settings_widget_range_sub">今日/2日ウィジェットで全授業を表示するか、現在時刻からの直近数節のみ表示。授業が多いときに高さ制限で切れるのを防ぐ</string>
++    <string name="settings_widget_range_all">すべての授業</string>
++    <string name="settings_widget_range_n">直近 %1$d 節</string>
++    <string name="settings_widget_range_hint">表示モード</string>
++    <string name="settings_widget_range_custom">カスタム…</string>
++    <string name="settings_widget_range_custom_val">直近 %1$d 節</string>
++    <string name="settings_widget_range_custom_sub">表示する直近の授業数を入力（1-20）</string>
++    <string name="settings_widget_range_custom_ph">例 6</string>
++    <string name="settings_widget_range_custom_range">1〜20 の数値を入力してください</string>
+     <!-- i18n: hardcoded string extraction -->
+     <string name="edit_period_input">入力</string>
+     <string name="edit_period_duration_label">1時限の時間</string>
+diff --git a/app/src/main/res/values-zh-rCN/strings.xml b/app/src/main/res/values-zh-rCN/strings.xml
+index 103738a..b7fdac8 100644
+--- a/app/src/main/res/values-zh-rCN/strings.xml
++++ b/app/src/main/res/values-zh-rCN/strings.xml
+@@ -198,6 +198,16 @@
+     <string name="settings_course_colorless_sub">仅将 App 内课程胶囊统一为中性底色；小组件设置不受影响，自定义颜色课程不受影响</string>
+     <string name="settings_widget_separator">周视图分隔线</string>
+     <string name="settings_widget_separator_sub">纯文字周视图中课程名之间是否显示分隔线</string>
++    <string name="settings_widget_range">小组件显示课程范围</string>
++    <string name="settings_widget_range_sub">今日/两日小组件显示全部课程或从当前时间起的最近几节，课多时可避免高度受限被截断</string>
++    <string name="settings_widget_range_all">全部课程</string>
++    <string name="settings_widget_range_n">最近 %1$d 节</string>
++    <string name="settings_widget_range_hint">显示模式</string>
++    <string name="settings_widget_range_custom">自定义…</string>
++    <string name="settings_widget_range_custom_val">最近 %1$d 节</string>
++    <string name="settings_widget_range_custom_sub">输入要显示的最近课程节数（1-20）</string>
++    <string name="settings_widget_range_custom_ph">如 6</string>
++    <string name="settings_widget_range_custom_range">请输入 1-20 之间的数字</string>
+ 
+     <!-- Theme -->
+     <string name="theme_system">跟随系统</string>
+@@ -211,6 +221,7 @@
+     <string name="today_today">今天</string>
+     <string name="today_no_course">今日无课程</string>
+     <string name="today_rest">休息 / 自习 都可以</string>
++    <string name="today_courses_done">今日课程已结束</string>
+ 
+     <!-- Common -->
+     <string name="ok">确定</string>
+diff --git a/app/src/main/res/values-zh-rTW/strings.xml b/app/src/main/res/values-zh-rTW/strings.xml
+index d066a4a..3a1797d 100644
+--- a/app/src/main/res/values-zh-rTW/strings.xml
++++ b/app/src/main/res/values-zh-rTW/strings.xml
+@@ -189,6 +189,7 @@
+     <string name="today_today">今天</string>
+     <string name="today_no_course">今日無課程</string>
+     <string name="today_rest">休息 / 自習 都可以</string>
++    <string name="today_courses_done">今日課程已結束</string>
+ 
+     <string name="ok">確定</string>
+     <string name="cancel">取消</string>
+@@ -400,6 +401,16 @@
+     <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色；小工具設定不受影響，自訂顏色課程不受影響</string>
+     <string name="settings_widget_separator">週檢視分隔線</string>
+     <string name="settings_widget_separator_sub">純文字週檢視中課程名之間是否顯示分隔線</string>
++    <string name="settings_widget_range">小工具課程範圍</string>
++    <string name="settings_widget_range_sub">今日/兩日小工具顯示全部課程或從目前時間起的最近幾節，課多時可避免高度受限被截斷</string>
++    <string name="settings_widget_range_all">全部課程</string>
++    <string name="settings_widget_range_n">最近 %1$d 節</string>
++    <string name="settings_widget_range_hint">顯示模式</string>
++    <string name="settings_widget_range_custom">自訂…</string>
++    <string name="settings_widget_range_custom_val">最近 %1$d 節</string>
++    <string name="settings_widget_range_custom_sub">輸入要顯示的最近課程節數（1-20）</string>
++    <string name="settings_widget_range_custom_ph">如 6</string>
++    <string name="settings_widget_range_custom_range">請輸入 1-20 之間的數字</string>
+     <!-- i18n: hardcoded string extraction -->
+     <string name="edit_period_input">輸入</string>
+     <string name="edit_period_duration_label">每節時長</string>
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 3ff4913..c10a6b1 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -216,6 +216,16 @@
+     <string name="settings_course_colorless_sub">仅将 App 内课程胶囊统一为中性底色；小组件设置不受影响，自定义颜色课程不受影响</string>
+     <string name="settings_widget_separator">周视图分隔线</string>
+     <string name="settings_widget_separator_sub">纯文字周视图中课程名之间是否显示分隔线</string>
++    <string name="settings_widget_range">小组件显示课程范围</string>
++    <string name="settings_widget_range_sub">今日/两日小组件显示全部课程或从当前时间起的最近几节，课多时可避免高度受限被截断</string>
++    <string name="settings_widget_range_all">全部课程</string>
++    <string name="settings_widget_range_n">最近 %1$d 节</string>
++    <string name="settings_widget_range_hint">显示模式</string>
++    <string name="settings_widget_range_custom">自定义…</string>
++    <string name="settings_widget_range_custom_val">最近 %1$d 节</string>
++    <string name="settings_widget_range_custom_sub">输入要显示的最近课程节数（1-20）</string>
++    <string name="settings_widget_range_custom_ph">如 6</string>
++    <string name="settings_widget_range_custom_range">请输入 1-20 之间的数字</string>
+ 
+     <!-- Theme -->
+     <string name="theme_system">跟随系统</string>
+@@ -229,6 +239,7 @@
+     <string name="today_today">今天</string>
+     <string name="today_no_course">今日无课程</string>
+     <string name="today_rest">休息 / 自习 都可以</string>
++    <string name="today_courses_done">今日课程已结束</string>
+ 
+     <!-- Common -->
+     <string name="ok">确定</string>
+diff --git a/app/src/main/res/xml/today_widget_info.xml b/app/src/main/res/xml/today_widget_info.xml
+index aaf7a3d..4f2ed05 100644
+--- a/app/src/main/res/xml/today_widget_info.xml
++++ b/app/src/main/res/xml/today_widget_info.xml
+@@ -7,7 +7,7 @@
+     android:targetCellWidth="4"
+     android:targetCellHeight="3"
+     android:updatePeriodMillis="0"
+-    android:initialLayout="@layout/widget_bitmap_container"
++    android:initialLayout="@layout/widget_today_scrollable"
+     android:previewLayout="@layout/widget_bitmap_container"
+     android:resizeMode="horizontal|vertical"
+     android:widgetCategory="home_screen"
+diff --git a/app/src/main/res/xml/twoday_widget_info.xml b/app/src/main/res/xml/twoday_widget_info.xml
+index db62ae6..2781d54 100644
+--- a/app/src/main/res/xml/twoday_widget_info.xml
++++ b/app/src/main/res/xml/twoday_widget_info.xml
+@@ -7,7 +7,7 @@
+     android:targetCellWidth="5"
+     android:targetCellHeight="3"
+     android:updatePeriodMillis="0"
+-    android:initialLayout="@layout/widget_bitmap_container"
++    android:initialLayout="@layout/widget_twoday_scrollable"
+     android:previewLayout="@layout/widget_bitmap_container"
+     android:resizeMode="horizontal|vertical"
+     android:widgetCategory="home_screen"
+diff --git a/app/src/main/res/xml/week_list_widget_info.xml b/app/src/main/res/xml/week_list_widget_info.xml
+index 4e40824..f4bfa5c 100644
+--- a/app/src/main/res/xml/week_list_widget_info.xml
++++ b/app/src/main/res/xml/week_list_widget_info.xml
+@@ -7,7 +7,7 @@
+     android:targetCellWidth="5"
+     android:targetCellHeight="4"
+     android:updatePeriodMillis="0"
+-    android:initialLayout="@layout/widget_bitmap_container"
++    android:initialLayout="@layout/widget_weeklist_scrollable"
+     android:previewLayout="@layout/widget_bitmap_container"
+     android:resizeMode="horizontal|vertical"
+     android:widgetCategory="home_screen"

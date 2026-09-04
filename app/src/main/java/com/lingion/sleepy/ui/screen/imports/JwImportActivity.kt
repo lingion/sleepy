@@ -424,7 +424,16 @@ internal object DiagMapper {
             school.url == "https://scu.edu.cn/" ||           // 四川大学 (条目 URL 即门户域)
             school.url.contains("jwms.bit.edu.cn") ||        // 北京理工大学
             school.url.contains("csujwc.its.csu.edu.cn") ||  // 中南大学
-            school.url.contains("jwxt.whut.edu.cn") ->       // 武汉理工大学 (登录后偶发限流, 提示换网络)
+            school.url.contains("jwxt.whut.edu.cn") ||       // 武汉理工大学 (登录后偶发限流, 提示换网络)
+            // 2026-09 211 批量收录: 海外探测超时率高/域名校内受限的新校, 0 课兜底文案易误读为学期选错
+            school.url.contains("jwxt.scnu.edu.cn") ||       // 华南师范大学
+            school.url.contains("hdjw.hnu.edu.cn") ||        // 湖南大学 (Njw2017)
+            school.url.contains("jw.ruc.edu.cn") ||          // 中国人民大学 (Njw2017)
+            school.url.contains("jw.dhu.edu.cn") ||          // 东华大学
+            school.url.contains("jw.ahu.edu.cn") ||          // 安徽大学 (supwisdom 新版)
+            school.url.contains("jwxt.cumtb.edu.cn") ||      // 矿大北京 (supwisdom 新版)
+            school.url.contains("jwxt.ybu.edu.cn") ||        // 延边大学
+            school.url.contains("jwgl.shzu.edu.cn") ->       // 石河子大学
                 "该校教务系统仅校内可访问。若在校外，请先连接校园网或 VPN 后再试"
             school.type in setOf(
                 com.lingion.sleepy.data.jw.JwProtocol.TYPE_QZ,
