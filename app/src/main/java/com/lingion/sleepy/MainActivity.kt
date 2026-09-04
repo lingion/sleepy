@@ -56,6 +56,7 @@ import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
+import com.lingion.sleepy.ui.screen.mine.LicenseScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -166,7 +167,7 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 private enum class OverlayScreen {
-    AddCourse, AllTables, EditTable, Theme, General, Holiday, Export, Reminder, About
+    AddCourse, AllTables, EditTable, Theme, General, Holiday, Export, Reminder, About, License
 }
 
 @Composable
@@ -299,7 +300,11 @@ private fun AppRoot(
         return
     }
     if (topOverlay() == OverlayScreen.About) {
-        AboutScreen(onBack = { popOverlay() })
+        AboutScreen(onBack = { popOverlay() }, onOpenLicense = { pushOverlay(OverlayScreen.License) })
+        return
+    }
+    if (topOverlay() == OverlayScreen.License) {
+        LicenseScreen(onBack = { popOverlay() })
         return
     }
 

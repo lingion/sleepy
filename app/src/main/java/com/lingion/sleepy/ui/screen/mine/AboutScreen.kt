@@ -21,6 +21,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.OpenInNew
 import androidx.compose.material.icons.outlined.BugReport
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Email
@@ -70,7 +71,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutScreen(onBack: () -> Unit) {
+fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -422,19 +423,31 @@ fun AboutScreen(onBack: () -> Unit) {
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // License card
+            // License 入口行(v1.0.46 用户令): 长卡拆独立二级页, 这里只留入口
             InfoCard {
-                Column {
-                    Text(
-                        text = stringResource(R.string.about_license_title),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = colors.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.about_license_body),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.onSurfaceVariant
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .noRippleClickable(onOpenLicense)
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.about_license_title),
+                            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                            color = colors.onSurface
+                        )
+                        Text(
+                            text = stringResource(R.string.about_license_detail),
+                            style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant
+                        )
+                    }
+                    Icon(
+                        imageVector = Icons.Outlined.ChevronRight,
+                        contentDescription = null,
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

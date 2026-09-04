@@ -443,6 +443,12 @@
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
     <string name="about_license_body">Sleepy はオープンソースのスマート時間割アプリです。ソースコードは GNU General Public License v3.0 の下で公開されています。誰でも自由に使用、改変、配布できます。GitHub での貢献を歓迎します。一部の教务システム取り込みアダプタは、WakeUp 時間割 (Apache-2.0)、時光時間割の重慶大学アダプタ (cqu.js)、HFUT-Schedule (Chiu-xaH, MIT) の合工大 EAMS5 プロトコル、SEUTimetable (sakimidare, Apache-2.0) の東南大学 URP、zju-ical-py (Xecades, LGPL-2.1) の浙江大学 UGR、USTC-timetable-to-ics (1970633640) の中国科学技術大学 studentTableModule、ScuTimetable (Z-P-J) の四川大学 dateList、neu_wisedu2wakeup (CreamPig233) の東北大学 arrangedList の各公開実装を参考にしています。皆様に感謝申し上げます。</string>
+    <string name="about_license_detail">ライセンスと謝辞</string>
+    <string name="license_page_title">ライセンスと謝辞</string>
+    <string name="license_gpl_section">ライセンス</string>
+    <string name="license_gpl_body">Sleepy はオープンソースのスマート時間割アプリです。ソースコードは GNU General Public License v3.0 の下で公開されています。誰でも自由に使用、改変、配布できます。GitHub での貢献を歓迎します。</string>
+    <string name="license_attribution_section">教务システムアダプタの謝辞</string>
+    <string name="license_attribution_note">一部の教务システム取り込みアダプタは、以下のオープンソースプロジェクトの公開実装を参考にしています。皆様に感謝申し上げます。</string>
     <string name="about_update_check">自動的にアップデートを確認</string>
     <string name="about_update_check_detail">起動時に GitHub Releases を確認し、新バージョンがあれば「について」ページ上部にバナーを表示します</string>
     <string name="about_update_available">新バージョン %1$s があります — タップで表示</string>
