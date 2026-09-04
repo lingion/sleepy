@@ -1,0 +1,67 @@
+{
+  "studentTableVm": {
+    "name": "测试学生",
+    "code": "PB21000001",
+    "department": "信息科学技术学院",
+    "credits": 18.0,
+    "major": "计算机科学与技术",
+    "activities": [
+      {
+        "courseName": "高等数学A",
+        "campus": "高新园区",
+        "customPlace": null,
+        "room": "教二楼301",
+        "building": "教二楼",
+        "teachers": ["王教授"],
+        "weeksStr": "1-16",
+        "weekday": 1,
+        "startDate": "08:00",
+        "endDate": "09:40",
+        "lessonCode": "0102",
+        "credits": 4.0
+      },
+      {
+        "courseName": "大学物理B",
+        "campus": "高新园区",
+        "customPlace": null,
+        "room": "教一楼202",
+        "building": "教一楼",
+        "teachers": ["李老师"],
+        "weeksStr": "2-15单",
+        "weekday": 3,
+        "startDate": "13:30",
+        "endDate": "15:10",
+        "lessonCode": "0506",
+        "credits": 3.0
+      },
+      {
+        "courseName": "数据结构实验",
+        "campus": "高新园区",
+        "customPlace": null,
+        "room": "计算机楼401",
+        "building": "计算机楼",
+        "teachers": ["张老师"],
+        "weeksStr": "2,4,6,8,10,12,14,16",
+        "weekday": 5,
+        "startDate": "15:20",
+        "endDate": "16:50",
+        "lessonCode": "0708",
+        "credits": 1.5
+      },
+      {
+        "courseName": "英语口语",
+        "campus": null,
+        "customPlace": "在线",
+        "room": null,
+        "building": null,
+        "teachers": ["Smith"],
+        "weeksStr": "1-16双",
+        "weekday": 2,
+        "startDate": "18:00",
+        "endDate": "19:40",
+        "lessonCode": "0910",
+        "credits": 2.0
+      }
+    ]
+  }
+}
