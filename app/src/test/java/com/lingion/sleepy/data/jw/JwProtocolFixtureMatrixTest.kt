@@ -30,7 +30,7 @@ class JwProtocolFixtureMatrixTest {
             assertEquals("[${ef.name}] expectedProtocol=$expectedProtocol", expectedValue, actual)
             asserted++
         }
-        // 必须至少断言 10 个(9 正样本 + CAS unknown)
+        // 必须至少断言 10 个(9 正样本 + CAS unknown;缺一 = 有协议族的 expected.json 被删)
         assert(asserted >= 10) { "expected fixture count too low: $asserted" }
     }
 

@@ -1,0 +1,15 @@
+{
+  "_note": "强智(qz)登录页指纹样本(参照 jwgl.sdust.edu.cn 强智登录页活体)。本 fixture 是登录页,JwQzParser 应解析为空课程(无 #kbtable)。识别标记:/framework/ 资源路径、verifycode.servlet 验证码、qzdatasoft.com 版权、title 含『强智科技/教学一体化服务平台』、Logon.do 提交。",
+  "_fingerprint": {
+    "urlMarkers": ["Logon.do", "verifycode.servlet", "/jsxsd/", "jxd", "jwgl.sdust"],
+    "htmlMarkers": [
+      "/framework/",
+      "verifycode.servlet",
+      "qzdatasoft.com"
+    ],
+    "expectedProtocol": "qz",
+    "expectedConfidence": 100,
+    "expectedParseResult": "empty"
+  },
+  "courses": []
+}
