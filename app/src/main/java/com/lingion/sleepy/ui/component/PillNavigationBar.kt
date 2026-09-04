@@ -335,12 +335,14 @@ private fun DockNavigationBar(
                 onBarGeometry(c.positionInRoot().x, c.positionInRoot().y, true)
             }
     ) {
-        // thumb 色块包住图标: 56×40dp 罩住 24dp 图标区, 纵向 y=2dp 起(中心 22 ≈ 图标中心)
+        // thumb 色块包住整个座位(图标+文字全包, 不留半包): 56×52dp, y=6dp 起
+        // 座位内容(图标24+间距2+label~14=40dp)垂直居中于 64dp → 内容顶 12dp;
+        // thumb 6..58dp 完整罩住内容, 上下各留 6dp 呼吸, 不破胶囊轮廓
         // 横向定位: translationX = thumbX - seatHalf(28) → thumb 中心 = 座位中心
         Box(
             Modifier
-                .offset(y = 2.dp)
-                .size(width = NavDockSpec.itemSeat, height = 40.dp)
+                .offset(y = 6.dp)
+                .size(width = NavDockSpec.itemSeat, height = 52.dp)
                 .graphicsLayer {
                     alpha = if (thumbPlaced) 1f else 0f
                     translationX = thumbX.value - seatHalf
