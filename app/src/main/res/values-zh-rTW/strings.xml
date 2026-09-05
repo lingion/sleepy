@@ -482,6 +482,8 @@
     <string name="export_json_subtitle">完整課表結構，可被 WakeUp 課表等同類 App 直接匯入</string>
     <string name="export_json_title">WakeUp 相容 JSON</string>
     <string name="export_no_table">暫無可匯出的課表</string>
+    <string name="export_pick_table">選擇要匯出的課表</string>
+    <string name="export_current_table_badge">當前課表</string>
     <string name="export_saved_to">已儲存到 Download/Sleepy/%1$s</string>
     <string name="export_share_chooser">分享課表</string>
     <string name="export_share_subtitle">短文字格式，可貼上到任何聊天工具</string>

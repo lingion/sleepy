@@ -21,6 +21,17 @@ import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Star
+import androidx.compose.material.icons.outlined.ExpandMore
+import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material3.AlertDialog
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.heightIn
+import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.SleepyApp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -78,8 +89,28 @@ fun ExportScreen(
     val colors = SleepyTheme.colors
     val snackbarHostState = remember { SnackbarHostState() }
 
-    val table = state.currentTable
-    val courses = state.courses
+    // 导出目标课表 — 本地选择, 不污染主页 selectedTableId/widget 默认表。
+    // 默认跟随当前课表; 用户切过一次后(pin)固定, 除非主页切到 pin 掉的表之外又变了。
+    var exportTableId by remember { mutableStateOf<Long?>(null) }
+    val effectiveId = exportTableId ?: state.selectedTableId
+    val table = state.tables.find { it.id == effectiveId } ?: state.currentTable
+    val tables = state.tables
+
+    // 选中表的课程: 当前表直接用 state.courses(已观察), 其他表选中时本地加载一次
+    var loadedCourses by remember(effectiveId) { mutableStateOf<List<CourseEntity>?>(null) }
+    LaunchedEffect(effectiveId, state.courses) {
+        val tid = effectiveId
+        if (table != null && tid != null && tid != state.selectedTableId) {
+            loadedCourses = withContext(Dispatchers.IO) {
+                SleepyApp.get().repository.getCourses(tid)
+            }
+        } else {
+            loadedCourses = null
+        }
+    }
+    val courses = loadedCourses ?: state.courses
+
+    var showTablePicker by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().background(colors.background),
@@ -116,21 +147,30 @@ fun ExportScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // 顶部信息卡
+            // 顶部信息卡 — 点击拉出课表选择下拉(默认当前课表)
             item {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(SleepyTheme.shapes.large)
                         .background(colors.primaryContainer)
+                        .noRippleClickable { showTablePicker = true }
                         .padding(20.dp)
                 ) {
-                    Text(
-                        text = table.name,
-                        style = MaterialTheme.typography.titleMedium,
-                        fontWeight = FontWeight.Bold,
-                        color = colors.onPrimaryContainer
-                    )
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Text(
+                            text = table.name,
+                            style = MaterialTheme.typography.titleMedium,
+                            fontWeight = FontWeight.Bold,
+                            color = colors.onPrimaryContainer,
+                            modifier = Modifier.weight(1f)
+                        )
+                        Icon(
+                            imageVector = Icons.Outlined.ExpandMore,
+                            contentDescription = stringResource(R.string.export_pick_table),
+                            tint = colors.onPrimaryContainer
+                        )
+                    }
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "${ctx.getString(R.string.export_course_count, courses.size)} · ${ctx.getString(R.string.export_start_date, table.startDate)}",
@@ -224,6 +264,67 @@ fun ExportScreen(
                 }
             }
         }
+    }
+
+    // 导出课表选择弹窗 — 行样式对齐 ScheduleScreen TableSwitcherDialog(用户定版视觉)
+    if (showTablePicker) {
+        AlertDialog(
+            onDismissRequest = { showTablePicker = false },
+            titleContentColor = colors.onSurface,
+            textContentColor = colors.onSurfaceVariant,
+            title = { Text(stringResource(R.string.export_pick_table)) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 360.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(4.dp)
+                ) {
+                    tables.forEach { t ->
+                        val isSelected = t.id == effectiveId
+                        Row(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clip(SleepyTheme.shapes.small)
+                                .background(if (isSelected) colors.primaryContainer else colors.surfaceContainer)
+                                .noRippleClickable {
+                                    exportTableId = t.id
+                                    showTablePicker = false
+                                }
+                                .padding(vertical = 10.dp, horizontal = 8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = t.name,
+                                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                                    color = if (isSelected) colors.onPrimaryContainer else colors.onSurface,
+                                    maxLines = 2
+                                )
+                                if (t.id == state.selectedTableId) {
+                                    Text(
+                                        text = stringResource(R.string.export_current_table_badge),
+                                        style = MaterialTheme.typography.labelSmall,
+                                        color = if (isSelected) colors.onPrimaryContainer else colors.onSurfaceVariant
+                                    )
+                                }
+                            }
+                            if (isSelected) {
+                                Icon(
+                                    imageVector = Icons.Outlined.Check,
+                                    contentDescription = null,
+                                    tint = colors.primary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+            },
+            confirmButton = {},
+            dismissButton = {}
+        )
     }
 }
 

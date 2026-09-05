@@ -487,6 +487,8 @@
     <string name="export_json_subtitle">Full schedule structure, directly importable by WakeUp and similar apps</string>
     <string name="export_json_title">WakeUp-compatible JSON</string>
     <string name="export_no_table">No schedule available to export</string>
+    <string name="export_pick_table">Choose a timetable to export</string>
+    <string name="export_current_table_badge">Current timetable</string>
     <string name="export_saved_to">Saved to Download/Sleepy/%1$s</string>
     <string name="export_share_chooser">Share Schedule</string>
     <string name="export_share_subtitle">Short text format, pasteable into any chat app</string>

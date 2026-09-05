@@ -482,6 +482,8 @@
     <string name="export_json_subtitle">完全な時間割構造、WakeUp などの同種アプリから直接インポート可能</string>
     <string name="export_json_title">WakeUp 互換 JSON</string>
     <string name="export_no_table">エクスポート可能な時間割がありません</string>
+    <string name="export_pick_table">エクスポートする時間割を選択</string>
+    <string name="export_current_table_badge">現在の時間割</string>
     <string name="export_saved_to">Download/Sleepy/%1$s に保存しました</string>
     <string name="export_share_chooser">時間割を共有</string>
     <string name="export_share_subtitle">短いテキスト形式、チャットアプリに貼り付け可能</string>

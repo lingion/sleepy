@@ -278,6 +278,8 @@
     <!-- Export -->
     <string name="export_title">导出课表</string>
     <string name="export_no_table">暂无可导出的课表</string>
+    <string name="export_pick_table">选择要导出的课表</string>
+    <string name="export_current_table_badge">当前课表</string>
     <string name="export_course_count">%1$d 门课程</string>
     <string name="export_start_date">开学 %1$s</string>
     <string name="export_json_title">WakeUp 兼容 JSON</string>
