@@ -1157,7 +1157,7 @@
   {
     "sortKey": "W",
     "name": "武汉理工大学",
-    "url": "https://jwxt.whut.edu.cn/jwapp/",
+    "url": "https://jwxt.whut.edu.cn/jwapp/sys/homeapp/index.do?forceCas=1",
     "type": "whut",
     "aliases": [
       "whut",
