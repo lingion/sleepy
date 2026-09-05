@@ -11,7 +11,7 @@ import java.io.File
  * T-Aclass — 合工大985计划 A 档 4 校收录闸
  *
  * 4 校零代码、type 已在 JwProtocol 声明、走已有 parser 路由:
- *   - 北京理工大学      (BIT)  →  qz_with_node
+ *   - 北京理工大学      (BIT)  →  wisedu (2026-09-05 实测改判: jxzxehallapp.bit.edu.cn/jwapp, 原 qz_with_node 为旧域误判)
  *   - 中南大学          (CSU)  →  qz
  *   - 华南理工大学      (SCUT) →  zf_new
  *   - 山东大学（威海）  (SDUWH) →  qz
@@ -58,7 +58,7 @@ class JwBatch985AClassAdoptionTest {
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_EAMS5,
         )
         val expectedTypes = mapOf(
-            "北京理工大学" to JwProtocol.TYPE_QZ_WITH_NODE,
+            "北京理工大学" to JwProtocol.TYPE_WISEDU,
             "中南大学" to JwProtocol.TYPE_QZ,
             "华南理工大学" to JwProtocol.TYPE_ZF_NEW,
             "山东大学（威海）" to JwProtocol.TYPE_QZ,

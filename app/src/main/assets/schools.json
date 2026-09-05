@@ -112,6 +112,16 @@
     "sortKeyFull": "beijingzhongyiyaodaxue"
   },
   {
+    "sortKey": "G",
+    "name": "广东医科大学",
+    "url": "https://jw.gdmu.edu.cn/",
+    "type": "zf_new",
+    "aliases": [
+      "GDMU"
+    ],
+    "sortKeyFull": "guangdongyikedaxue"
+  },
+  {
     "sortKey": "S",
     "name": "山东第二医科大学",
     "url": "http://jwgl.sdsmu.edu.cn/jwglxt",
