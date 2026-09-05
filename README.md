@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a>
+  <a href="README.md">中文</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a>
 </p>
 
 ---
@@ -50,7 +50,7 @@
 </p>
 
 <p align="center">
-  <code>v1.0.37</code> · Android 8.0+ · 包名 <code>com.lingion.sleepy</code>
+  Android 8.0+ · 包名 <code>com.lingion.sleepy</code>
 </p>
 
 ---
