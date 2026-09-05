@@ -146,8 +146,15 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | `zf` / `zf_1` / `zf_new` | 正方教务（3 变体） |
 | `urp` / `urp_new` | URP 教务（2 变体） |
 | `cf` | 青果教务 |
+| `classic_eams` | 经典金智 EAMS（电子科大/上财/湖南师大/南航 等） |
+| `eams5` | supwisdom EAMS5（合工大/安徽大学/矿大北京） |
+| `whut` | 武汉理工大学（金智变体） |
 | `pku` | 北京大学 |
 | `bnuz` | 北师珠 |
+
+### 找不到你的学校？
+
+教务直连按学校逐个适配（当前 179 所）。没适配的学校导入会失败。**你花 5 分钟采集一份教务数据，我们就能把你的学校加进去**——电脑登录教务系统，按 F12 粘贴一段脚本，把生成的文件发到 issue 即可。完整步骤见 **[适配采集教程](docs/adapt-kit/README.md)**，或者直接 [开一个适配申请](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml)。
 
 ### 支持的文本格式
 

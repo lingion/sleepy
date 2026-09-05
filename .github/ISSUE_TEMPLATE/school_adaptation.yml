@@ -1,0 +1,52 @@
+name: School Adaptation Request
+description: Request direct JW import support for your university. Attach your collect.js output here.
+title: "[Adapt]: "
+labels:
+  - adaptation
+body:
+  - type: markdown
+    attributes:
+      value: |
+        想让你的学校支持教务直连?请按 [采集教程](https://github.com/lingion/sleepy/blob/main/docs/adapt-kit/README.md) 采集数据后附在这里。
+        有 `sleepy-adapt.zip` 通常 1-2 天内适配完成;没有的话我们会先试探公共入口,时间不定。
+
+        Want your school supported? Follow the [collection guide](https://github.com/lingion/sleepy/blob/main/docs/adapt-kit/README.md) and attach the output here.
+  - type: input
+    id: school
+    attributes:
+      label: "School / 学校"
+      description: "Full official name, e.g. 武汉理工大学"
+      placeholder: "XX大学"
+    validations:
+      required: true
+  - type: input
+    id: jwurl
+    attributes:
+      label: "JW system URL / 教务系统网址"
+      description: "The address you see in the browser bar after logging in, e.g. https://jwxt.xxx.edu.cn/jsxsd/"
+      placeholder: "https://..."
+    validations:
+      required: true
+  - type: checkboxes
+    id: access
+    attributes:
+      label: "Access / 访问环境"
+      options:
+        - label: "I can access the JW system from off campus (校内网/VPN 均可)"
+    validations:
+      required: false
+  - type: textarea
+    id: data
+    attributes:
+      label: "Collected data / 采集文件"
+      description: "Drag sleepy-adapt.zip here (typically 5-15MB; if over the limit, or you prefer email, send it to the adaptation mailbox published on Sleepy's About page — write your school name in the email). Manual fallback: the saved HTML pages + timetable screenshots. Before submitting, search the unzipped files for your name/student ID and replace them with XXX if present."
+      placeholder: "Drag & drop files here"
+    validations:
+      required: true
+  - type: textarea
+    id: extra
+    attributes:
+      label: "Anything else / 补充说明"
+      description: "Console errors, login flow quirks (SMS 2FA, captcha), anything unusual."
+    validations:
+      required: false
