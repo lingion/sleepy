@@ -108,6 +108,12 @@ object ScheduleParser {
 
         return runCatching {
             when {
+                // sleepy-v1 原生格式 (§6.2: 分派链最顶 — magic 行首锚定, 与其他 5 路判别子串零交集)
+                // 显式拒绝 v2: 用户的 "丢 v2 专有字段" 应有升级决策依据, 不静默尽力导入
+                SleepyNativeFormat.detectVersion(trimmed) > 1 ->
+                    throw IllegalArgumentException("文件由新版 Sleepy 导出(v${SleepyNativeFormat.detectVersion(trimmed)}),请升级 Sleepy 后导入")
+                SleepyNativeFormat.detectVersion(trimmed) == 1 ->
+                    SleepyNativeParser.parse(trimmed, defaultTableId, defaultColor)
                 // Excel "另存为网页" 的 Frameset HTML (issue #6): 顶层只有 <frame> 引用,
                 // 真课表在 xxx.files/sheet001.html 附属文件里, OpenDocument 拿不到 → 给出明确指引
                 isExcelFrameset(trimmed) -> throw IllegalArgumentException(excelFramesetError(trimmed))
@@ -1207,6 +1213,12 @@ object ScheduleParser {
         /** timeJson 覆盖的最大节次; 无 → 0 */
         val nodesPerDay: Int = 0,
         /** 防呆: 输入里非空但没解析成功的行(前 40 字符), UI 拿去提示用户 "这几行没进去" */
-        val droppedLines: List<String> = emptyList()
+        val droppedLines: List<String> = emptyList(),
+        /** 表级提示(T行钳制/节点抬升/chk不符/n=不符/二次表头); 行级问题走 droppedLines (sleepy-v1 §7.3) */
+        val warnings: List<String> = emptyList(),
+        /** sleepy-v1: 总周数由解析端声明(修 P2 "maxWeek 写不读"); 0 = 旧路径未声明 */
+        val maxWeek: Int = 0,
+        /** sleepy-v1: groupId 已由解析端权威生成, 落库必须绕过 assignGroupIds (§3.4 契约一) */
+        val groupIdsAuthoritative: Boolean = false
     )
 }
