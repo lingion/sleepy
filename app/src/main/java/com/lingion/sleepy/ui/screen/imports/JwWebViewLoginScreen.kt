@@ -236,11 +236,12 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, EAMS5_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix))
                         return@CaptureBar
                     }
-                    // T5: 新版正方 jwglxt — WebView 内 fetch kbList JSON
-                    // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/, 或 WebVPN /http/<hex>/ 重写形态
+                    // T5: 新版正方 — WebView 内 fetch kbList JSON
+                    // 路径指纹: school.type 显式 zf_new, 或 URL 含 /jwglxt/、/kbcx/ (广东医科等新版), 或 WebVPN /http/<hex>/ 重写形态
                     val currentUrl = wv.url ?: ""
                     val isZfNew = school.type == JwProtocol.TYPE_ZF_NEW ||
                         currentUrl.contains("/jwglxt/", ignoreCase = true) ||
+                        currentUrl.contains("/kbcx/", ignoreCase = true) ||
                         Regex("/http/[0-9a-f]{4,8}/").containsMatchIn(currentUrl)
                     if (isZfNew) {
                         wv.evaluateJavascript(ZF_NEW_FETCH_JS, null)

@@ -76,10 +76,14 @@ class JwImportViewModelBridgeTest {
         // JS 契约静态校验: 关键锚点必须在
         val js = com.lingion.sleepy.ui.screen.imports.ZF_NEW_FETCH_JS
         assertTrue(js.contains("/jwglxt/"))
+        assertTrue(js.contains("/kbcx/"))
         assertTrue(js.contains("xskbcx_cxXsgrkb.html"))
         assertTrue(js.contains("kbList"))
         assertTrue(js.contains("SESSION_EXPIRED"))
         assertTrue(js.contains("NOT_ON_TIMETABLE"))
         assertTrue(js.contains("parseZfNewBridgeResult") || js.contains("format:'zf_new'"))
+        // 2026-09 新版正方裸 /kbcx/ (广东医科等): pathPrefix 推导后 API 不再硬编 /jwglxt
+        assertTrue("apiPath 必须通过 pathPrefix 拼接, 不能硬编 /jwglxt/kbcx",
+            js.contains("pathPrefix + '/kbcx/xskbcx_cxXsgrkb.html"))
     }
 }

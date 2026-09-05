@@ -1,15 +1,16 @@
 package com.lingion.sleepy.ui.screen.imports
 
 /**
- * T5 新增: 新版正方 jwglxt 在 WebView 内 fetch 课表 JSON。
+ * T5 新增: 新版正方在 WebView 内 fetch 课表 JSON。
  *
  * 流程 (参考 HUEL_adapter.js + UJS_zhengfang_v9.0.js):
- *   1) 路径指纹: /jwglxt/ 或 WebVPN /http/<hex>/, 否则 NOT_ON_TIMETABLE
+ *   1) 路径指纹: /jwglxt/、/kbcx/ (广东医科等新版) 或 WebVPN /http/<hex>/, 否则 NOT_ON_TIMETABLE
  *   2) gnmkdm 从 URL 抄, 缺省 N2151
- *   3) 三段兜底取 (xnm,xqm): URL → 页面 #xnm/#xqm → fetch index 页 + native 选学期
- *   4) POST xskbcx_cxXsgrkb.html 拿 JSON
- *   5) 嗅探: kbList → OK; login_slogin+csrftoken+密码框 → SESSION_EXPIRED; 解析失败 → SESSION_EXPIRED
- *   6) 回调 {ok, data, format:'zf_new'} 给 native, JwImportViewModel.parseZfNewBridgeResult 拆包
+ *   3) 推导 pathPrefix: 旧/WebVPN = '/jwglxt'; 新版裸 /kbcx/ = '' (path 自带 /kbcx/)
+ *   4) 三段兜底取 (xnm,xqm): URL → 页面 #xnm/#xqm → fetch index 页 + native 选学期
+ *   5) POST pathPrefix + /kbcx/xskbcx_cxXsgrkb.html 拿 JSON
+ *   6) 嗅探: kbList → OK; login_slogin+csrftoken+密码框 → SESSION_EXPIRED; 解析失败 → SESSION_EXPIRED
+ *   7) 回调 {ok, data, format:'zf_new'} 给 native, JwImportViewModel.parseZfNewBridgeResult 拆包
  *
  * 失败兜底: 捕获任何异常 → onWiseduResult({ok:false, kind:'FORMAT_ERROR', err}),
  * 由 native 侧 tryAllParsers 已抓到的 outerHTML 接管。
@@ -27,12 +28,16 @@ const val ZF_NEW_FETCH_JS = """(function(){
   }
   try {
     var path = location.pathname;
+    // T5+/2026-09 新版正方: 旧版路径前缀 /jwglxt/, 新版 (广东医科等) 直接 /kbcx/, WebVPN 改写为 /http/<hex>/
     var onJwglxt = path.indexOf('/jwglxt/') >= 0;
+    var onKbcx = path.indexOf('/kbcx/') >= 0;
     var onHttpHex = /\/http\/[0-9a-f]{4,8}\//.test(path);
-    if (!onJwglxt && !onHttpHex) {
-      fail('NOT_ON_TIMETABLE', '请先导航到个人课表页(地址应含 /jwglxt/)');
+    if (!onJwglxt && !onKbcx && !onHttpHex) {
+      fail('NOT_ON_TIMETABLE', '请先导航到个人课表页(地址应含 /jwglxt/ 或 /kbcx/)');
       return;
     }
+    // 推导接口前缀: WebVPN/老 jwglxt = '/jwglxt'; 新版裸 /kbcx/ = '' (path 自带 /kbcx/)
+    var pathPrefix = onJwglxt || onHttpHex ? '/jwglxt' : '';
 
     var search = location.search.substring(1);
     var params = {};
@@ -52,7 +57,7 @@ const val ZF_NEW_FETCH_JS = """(function(){
           resolve({xnm:String(sel.value).trim(), xqm:String(sel2.value).trim()});
           return;
         }
-        var idxPath = '/jwglxt/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=' + encodeURIComponent(gnmkdm) + '&layout=default';
+        var idxPath = pathPrefix + '/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=' + encodeURIComponent(gnmkdm) + '&layout=default';
         fetch(idxPath, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
           .then(function(r){ return r.text(); })
           .then(function(html){
@@ -107,7 +112,7 @@ const val ZF_NEW_FETCH_JS = """(function(){
     }
 
     pickTerm().then(function(t){
-      var apiPath = '/jwglxt/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=' + encodeURIComponent(gnmkdm);
+      var apiPath = pathPrefix + '/kbcx/xskbcx_cxXsgrkb.html?gnmkdm=' + encodeURIComponent(gnmkdm);
       var body = 'xnm=' + encodeURIComponent(t.xnm) +
                  '&xqm=' + encodeURIComponent(t.xqm) +
                  '&kzlx=ck&xsdm=&kclbdm=&kclxdm=';
