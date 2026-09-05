@@ -153,9 +153,10 @@ class JwNewSchoolsTest {
         // 主资产 (cp app/src/main/assets/schools.json app/src/test/resources/jw/schools.json),
         // 硬编码具体数字会在每次收录新校时炸红 (149 断言曾落后 10 校)。
         // 下限只锁已收录的里程碑, 防倒退。
+        // 2026-09-05 179 校全量交叉验证: 删 3 僵尸条目 → 176。
         assertTrue(
-            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 179 (检查是否 cp 主资产)",
-            parsed.size >= 179
+            "fixture 条目 ${parsed.size} 不得少于主资产里程碑 176 (检查是否 cp 主资产)",
+            parsed.size >= 176
         )
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })

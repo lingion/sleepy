@@ -391,6 +391,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             u.contains("es.bnuz") -> JwProtocol.TYPE_BNUZ
 
             // ⑩ HNUST — 湖南科大 kdjw / xxjw（HNUSTParser 由 T3 补，T6 先把路由做对）
+            //    2026 起教务迁 .edu.cn 域（老 hnust.cn:8080 全 404），host 前缀不变
             u.contains("kdjw.hnust")
                 || u.contains("xxjw.hnust")
                 || u.contains("jwgl.nepu") -> JwProtocol.TYPE_HNUST
@@ -471,7 +472,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 lower.contains("es.bnuz") -> JwProtocol.TYPE_BNUZ
 
                 // ⑩ HNUST — 湖南科大（HTML 层特征由 T3 补）
-                lower.contains("hnust.cn") -> JwProtocol.TYPE_HNUST
+                //    老域 hnust.cn / 新域 kdjw|xxjw.hnust.edu.cn 统一登录页 form-new-hnkjdx
+                lower.contains("hnust.cn")
+                    || lower.contains("hnust.edu.cn")
+                    || lower.contains("form-new-hnkjdx") -> JwProtocol.TYPE_HNUST
 
                 else -> null
             }
@@ -521,6 +525,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             if (title.contains("北师大珠海") || title.contains("珠海分校")) hits += "title:北师大珠海"
             if (lower.contains("action=\"default.aspx\"")) hits += "form action=default.aspx"
             if (lower.contains("hnust.cn")) hits += "hnust.cn"
+            if (lower.contains("hnust.edu.cn")) hits += "hnust.edu.cn"
+            if (lower.contains("form-new-hnkjdx")) hits += "form-new-hnkjdx"
             return hits
         }
 

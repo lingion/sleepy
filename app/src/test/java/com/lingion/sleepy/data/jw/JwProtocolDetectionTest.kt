@@ -69,6 +69,9 @@ class JwProtocolDetectionTest(
             c += arrayOf("url.pku.elective", "https://elective.pku.edu.cn/elective2008/syllabusV2/", null, "pku", null)
             c += arrayOf("url.bnuz.es", "https://es.bnuz.edu.cn/default.aspx", null, "bnuz", null)
             c += arrayOf("url.hnust.kdjw", "http://kdjw.hnust.cn:8080/kdjw", null, "hnust", null)
+            // 2026 起教务迁 .edu.cn 域（老 hnust.cn:8080 全 404），host 前缀 kdjw/xxjw 不变
+            c += arrayOf("url.hnust.kdjw-edu", "https://kdjw.hnust.edu.cn/", null, "hnust", null)
+            c += arrayOf("url.hnust.xxjw-edu", "https://xxjw.hnust.edu.cn/", null, "hnust", null)
 
             // ============ 2. HTML 正样本(detection-pages) ============
             c += arrayOf("html.wisedu.login", null, "$DP/wisedu-login.html", null, "wisedu")
