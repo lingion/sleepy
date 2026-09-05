@@ -50,7 +50,7 @@ The 179-school cross-validation in this batch changed 60 entries and removed 3 d
 
 ### WHUT and HFUT got the deep fix
 
-WHUT's iWut portal was stuck behind a `Welcome come to EMAP` shell until the entry was rerouted through `forceCas`. HFUT's root path was returning 404, which broke the import script the moment you pointed it at the homepage. Both are verified end-to-end now. A `changeAppRole` step was added before the WHUT timetable fetch, since the personal page is hidden behind a role switch.
+WHUT's iWut portal was stuck behind a `Welcome come to EMAP` shell until the entry was rerouted through `forceCas`. HFUT's root path was returning 404, which broke the import script when it was pointed at the homepage. Both are verified end-to-end now. A `changeAppRole` step was added before the WHUT timetable fetch, since the personal page is hidden behind a role switch. The WHUT failure report and capture pack came from [Aster-poros in issue #14](https://github.com/lingion/sleepy/issues/14) and [issue #15](https://github.com/lingion/sleepy/issues/15).
 
 ---
 
@@ -103,7 +103,7 @@ The "About" screen now lists 26 upstream projects. Three rounds:
 2. +9 student-maintained repos we had been reading from in passing — BIT-Login, iBistu, JdaAssist, CQYTZFCheckScores, ScheduleXParser_SCAU, JW-spider, BohaiServiceDome, courseTable, shangkeschedule.
 3. +3 from the evidence archive — WeNEPU, HeraldStudentCurriculum, the dhu_dlsf_app reference for Donghua.
 
-Each entry is listed with its project name, license, and relationship to Sleepy in About → 开源声明.
+Each entry is listed with its project name, license, and relationship to Sleepy in About → 开源声明. The WHUT fix also credits Aster-poros for the reproduction report and capture pack in issues [#14](https://github.com/lingion/sleepy/issues/14) and [#15](https://github.com/lingion/sleepy/issues/15).
 
 ---
 
@@ -183,7 +183,7 @@ HTML 标志:`powered by chaoxing` 或 `超星综合教务`。URL 标志:含 `/xs
 
 ### WHUT 和 HFUT 顺手做了深度体检
 
-WHUT 的 iWut 入口卡在 `Welcome come to EMAP` 那个页面,改成走 `forceCas` 才打通。HFUT 根路径返回 404,指向首页立刻断。两边都端到端验过了。WHUT 取课表前加了 `changeAppRole` 切本科生角色 — 个人页藏在角色后面,不切看不到。
+WHUT 的 iWut 入口卡在 `Welcome come to EMAP` 页面,改成走 `forceCas` 才打通。HFUT 根路径返回 404,指向首页立刻断。两边都端到端验过了。WHUT 取课表前加了 `changeAppRole` 切本科生角色——个人页藏在角色后面,不切看不到。这条修复来自 [Aster-poros 提交的 issue #14](https://github.com/lingion/sleepy/issues/14) 和采集包 issue [#15](https://github.com/lingion/sleepy/issues/15),感谢提供复现信息和采集数据。
 
 ---
 
@@ -236,7 +236,7 @@ macOS / Linux / Windows / Android 四平台产物都刷了。
 2. +9 条学生项目,路过一直在参考但没挂名的:BIT-Login、iBistu、JdaAssist、CQYTZFCheckScores、ScheduleXParser_SCAU、JW-spider、BohaiServiceDome、courseTable、shangkeschedule。
 3. +3 条证据档案里翻出来的:WeNEPU、HeraldStudentCurriculum、东华那个 dhu_dlsf_app。
 
-致谢条目对应 About → 开源声明中的完整清单;项目名称、许可证和参考范围均列在应用内。
+致谢条目对应 About → 开源声明中的完整清单;项目名称、许可证和参考范围均列在应用内。武汉理工大学这次修复另感谢 Aster-poros 在 [issue #14](https://github.com/lingion/sleepy/issues/14) 提供复现信息,以及在 [issue #15](https://github.com/lingion/sleepy/issues/15) 提供采集包。
 
 ---
 
