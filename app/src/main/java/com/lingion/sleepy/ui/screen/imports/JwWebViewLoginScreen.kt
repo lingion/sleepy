@@ -655,8 +655,14 @@ private const val WHUT_FETCH_JS = """
         credentials:'include'
       }).then(function(r){ return r.json(); });
     };
+    // 0) 切到本科生角色 (EMAP homeapp 角色机制; 值为 WHUT 全站固定的本科生 appRole GUID,
+    //    与 iwut 掌上吾理 bachelor-import 一致)。失败不阻断 — 有些账号可能只有单角色。
+    fetch('/jwapp/sys/homeapp/api/home/changeAppRole.do?appRole=ef212c48c8f84be79acbd9d81b090f51',
+      {method:'POST', credentials:'include', headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'}})
+    .catch(function(){})
+    .then(function(){
     // 1) 学号 + 当前学期
-    fetch('/jwapp/sys/homeapp/api/home/currentUser.do', {credentials:'include'})
+    return fetch('/jwapp/sys/homeapp/api/home/currentUser.do', {credentials:'include'})
     .then(function(r){ return r.json(); })
     .then(function(u){
       var d = u.datas || {};
@@ -689,6 +695,7 @@ private const val WHUT_FETCH_JS = """
           window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k), periods:[]}));
         });
       });
+    });
     })
     .catch(function(e){
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
