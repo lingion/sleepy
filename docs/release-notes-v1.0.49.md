@@ -12,11 +12,11 @@ Tests: 1073, zero failures in the release verification run. This note describes 
 
 ### Guangdong Medical University
 
-User-supplied capture pack, `zf_new` protocol, verified against the school's own login flow. No new code — it slots into the existing Zhengfang parser.
+The `zf_new` protocol was verified against the school's login flow and added through the existing Zhengfang parser.
 
 ### Guangzhou Medical University
 
-Separate from Guangdong Medical University. Its official website links to a Qiangzhi `jsxsd` entry point, which was used to classify and verify the school. No user-supplied capture pack was used for this entry.
+This is a separate school from Guangdong Medical University. Its official website links to a Qiangzhi `jsxsd` entry point, which was used to classify and verify the school.
 
 ### ChaoXing (Superstar) general academic affairs — new protocol
 
@@ -127,7 +127,7 @@ Brief was "better to over-acknowledge than miss any" and that is what was done. 
 
 ## Credits
 
-Same as the About screen. Plus the four-platform users who got blocked enough to file feedback.
+The complete list of upstream projects and their licenses is available in About → 开源声明.
 
 ---
 
@@ -135,7 +135,7 @@ Same as the About screen. Plus the four-platform users who got blocked enough to
 
 36 个 commit。学校数净增零,删六加六,全是改名。
 
-这一版值得说在前面:新接入两所不同的学校。广东医科大学有用户提供的采集包,协议是 `zf_new`;广州医科大学则根据官网入口单独核验为强智 `qz`,没有使用用户采集包。超星综合教务协议加了一个新 parser,吉林工商学院(`jlbtc`)是第一个;出了一套 `sleepy-v1` 导入导出格式,跟老的并列共存;致谢从 14 条扩到 26 条;采集工具整个重写,不再装作第一次一定能成。还有五个小修。
+这一版值得说在前面:新接入两所不同的学校。广东医科大学按 `zf_new` 协议接入;广州医科大学根据官网入口单独核验为强智 `qz`。超星综合教务协议加了一个新 parser,吉林工商学院(`jlbtc`)是第一个;出了一套 `sleepy-v1` 导入导出格式,跟老的并列共存;致谢从 14 条扩到 26 条;采集工具整个重写,不再第一次失败就结束。还有五个小修。
 
 1073 个测试,零失败。`versionCode 50`。
 
@@ -145,11 +145,11 @@ Same as the About screen. Plus the four-platform users who got blocked enough to
 
 ### 广东医科大学
 
-用户提供采集包,协议 `zf_new`,对着学校自己的登录流程验过。没写新代码,挂在现有正方解析器边上。
+协议 `zf_new` 已按学校登录流程核验,由现有正方解析器处理。
 
 ### 广州医科大学
 
-这是另一所学校,不是广东医科大学。根据学校官网快速链接和 `jsxsd` 入口核验为强智 `qz`;本条没有使用用户提供的采集包。
+这是另一所学校,不是广东医科大学。根据学校官网快速链接和 `jsxsd` 入口核验为强智 `qz`。
 
 ### 超星综合教务 — 新协议
 
@@ -171,7 +171,7 @@ HTML 标志:`powered by chaoxing` 或 `超星综合教务`。URL 标志:含 `/xs
 
 ### 中途改判的几所
 
-学校总数没变,但你要是正好在这几所,导入 URL 或者协议类型已经换过了:
+学校总数没变,但以下条目的导入 URL 或协议类型已经更新:
 
 - **北京理工**、**北京信息科技大学** — 改判 `wisedu`。
 - **安徽建筑大学** — 强转 HTTPS。HTTP 版校外打不通。
@@ -211,7 +211,7 @@ App 里出现的地方:
 
 ## 采集工具:别再第一次失败就装死
 
-上一轮最实的用户反馈:"抓了第一次不行程序没有提示,第二次才好。" 采集工具(Go 二进制,在 `app/src/main/assets/collector/`)之前太容易放弃。
+此前采集失败后缺少明确提示,而再次操作有时又能成功。采集工具(Go 二进制,在 `app/src/main/assets/collector/`)之前过早结束。
 
 改了:
 
@@ -236,7 +236,7 @@ macOS / Linux / Windows / Android 四平台产物都刷了。
 2. +9 条学生项目,路过一直在参考但没挂名的:BIT-Login、iBistu、JdaAssist、CQYTZFCheckScores、ScheduleXParser_SCAU、JW-spider、BohaiServiceDome、courseTable、shangkeschedule。
 3. +3 条证据档案里翻出来的:WeNEPU、HeraldStudentCurriculum、东华那个 dhu_dlsf_app。
 
-用户原话是"宁可错谢不放过",照做了。哪位作者想撤,发 issue。
+致谢条目对应 About → 开源声明中的完整清单;项目名称、许可证和参考范围均列在应用内。
 
 ---
 
@@ -254,10 +254,10 @@ macOS / Linux / Windows / Android 四平台产物都刷了。
 - 超星只接了 `queryKbForGrdb`(个人课表)。`sdpkkblist`(教师查全班)没接。放 v1.0.50。
 - macOS 26+ 上采集工具首次启动会卡签名警告,下完一次 `xattr -d com.apple.quarantine` 就行。文档里写过。
 - `sleepy-v1` 分享走系统面板,不写系统剪贴板。部分老 Android 皮肤只显示分享 UI 不显示系统分享动作 — 需要原样复制就点 "复制"。
-- sleepy-v1 我自己没拿完全手写的边角 case 跑过。17 个分派器边角都是真实用户反馈里来的,还没覆盖到每条语法规则。撞到就发 issue 把输入贴上来。
+- `sleepy-v1` 测试覆盖当前仓库中的分派器边界和真实样例,但不涵盖所有可能的手写语法组合。遇到无法导入的内容,请提交原始输入和错误信息。
 
 ---
 
 ## Credits
 
-跟"关于"页一致。多谢几个平台上反馈过的同学。
+完整致谢与许可证信息见应用内 About → 开源声明。
