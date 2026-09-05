@@ -159,6 +159,14 @@ The protocol catalogue grows with school integrations. The table below shows pro
 | `classic_eams` | Classic Wisedu EAMS (UESTC, SUFE, Hunan Normal, NUAA, etc.) |
 | `eams5` | supwisdom EAMS5 (HFUT, Anhui Univ., CUMT-Beijing) |
 | `whut` | Wuhan University of Technology (Wisedu variant) |
+| `cqu` | Chongqing University unified portal |
+| `seu` | Southeast University |
+| `zju` | Zhejiang University |
+| `ustc` | University of Science and Technology of China |
+| `scu` | Sichuan University |
+| `neu` | Northeastern University |
+| `hnust` | Hunan University of Science and Technology JW |
+| `hniu` | Hunan Information Polytechnic JW |
 | `pku` | Peking University |
 | `bnuz` | BNU Zhuhai |
 | `chaoxing` | ChaoXing general academic affairs (Jilin Business and Technology College personal timetable) |
