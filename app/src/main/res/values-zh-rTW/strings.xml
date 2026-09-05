@@ -104,7 +104,7 @@
     <string name="format_html">HTML 表格</string>
     <string name="format_html_desc">&lt;table&gt; 形式，識別表頭後逐行解析</string>
     <string name="format_plain">純文字</string>
-    <string name="format_plain_desc">一行一課，製表符分隔</string>
+    <string name="format_plain_desc">Sleepy 原生格式，一行一課，豎線分列</string>
 
     <!-- 格式詳情彈窗: 文案必須與 ScheduleParser 實際識別行為一致 -->
     <string name="format_help_spec">識別要求</string>
@@ -167,20 +167,26 @@
     </string-array>
     <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;課程&lt;/td&gt;&lt;td&gt;教師&lt;/td&gt;&lt;td&gt;教室&lt;/td&gt;&lt;td&gt;星期&lt;/td&gt;&lt;td&gt;節次&lt;/td&gt;&lt;td&gt;週次&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;高等數學&lt;/td&gt;&lt;td&gt;張三&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
-    <string name="format_plain_when">最靈活的格式：一行一個上課時段。適合手打，更適合讓 AI 從課表截圖生成（見下方 Prompt）。</string>
+    <string name="format_plain_when">Sleepy 原生格式（sleepy-v1）：密度高、格式整齊、容錯強。適合手打，更適合讓 AI 從課表截圖生成（見下方 Prompt）。舊的製表符格式仍可匯入。</string>
     <string-array name="format_plain_spec">
-        <item>欄順序固定：課程名、老師、教室、星期、節次、週次、類型（最後一欄可省，預設每週）</item>
-        <item>欄之間用 Tab、空格或全形逗號分隔</item>
-        <item>星期填 1-7 或 週一~週日 都可以</item>
-        <item>節次寫區間：1-2；只上一節寫單個數字：3</item>
-        <item>週次寫區間：1-16</item>
-        <item>類型填 0/1/2 或 每週/單週/雙週</item>
-        <item>老師或教室沒有就填 - 佔位；# 開頭的行會被忽略</item>
-        <item>課程名裡不能有空格，否則這行會被丟棄</item>
-        <item>作息行（可選）：第N節 HH:mm-HH:mm，放在課程行前面，匯入後自動套用真實作息</item>
-        <item>AI 輸出的廢話不影響：資料包在 &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; 和 &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt; 之間即可，標識外的內容自動忽略</item>
+        <item>第一行固定寫 #sleepy-v1</item>
+        <item>課程行格式固定：C課名|星期|節次|週次|教師|教室|顏色|備註|上課時間|組，共 10 列 9 個豎線</item>
+        <item>沒有內容的列留空，但豎線不能少</item>
+        <item>星期填 1-7（週一=1）；節次寫區間 1-2，單節寫 6</item>
+        <item>週次五種形態：1-16（每週）、1-15單、2-16雙、3-4定（區間指定）、10定（單週）</item>
+        <item>顏色列留空=自動色；上課時間列僅晚課等特殊課填 HH:mm-HH:mm</item>
+        <item>文字含 | \ \" &lt; { ( 字元時在字元前加 \ 轉義</item>
+        <item>作息行（可選）：N節號|開始|結束，如 N3|10:00|10:45；與內建預設作息相同時可寫 Nd 一行代替</item>
+        <item>表資訊行（可選）：T表名|開學日期|總週數|每天節數，開學日期須為第 1 週週一</item>
+        <item>無法識別的行會列在匯入預覽裡，不會靜默丟棄</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1節 08:00-09:35\n第2節 09:55-11:30\n第3節 13:30-15:05\n高等數學\t張三\tA101\t1\t1-2\t1-16\t0\n大學英語\t李四\tB202\t3\t3-4\t1-16\t1\n體育\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1
+T我的課表|2026-03-02|20|12
+Nd
+C高等數學A|1|1-2|1-16|張三|A101||||
+C大學英語|2|3-4|1-15單|李四|C301||||
+C體育|4|5-6|3-4定||||||
+C影視鑑賞|7|6|10-16雙||||||</string>
     <string name="import_dropped_title">有 %1$d 行沒能識別</string>
     <string name="import_dropped_hint">這些行被跳過了，檢查格式後可以重新匯入：</string>
     <string name="import_warnings_title">提示</string>

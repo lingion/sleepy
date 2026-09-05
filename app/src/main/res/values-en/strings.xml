@@ -109,7 +109,7 @@
     <string name="format_html">HTML table</string>
     <string name="format_html_desc">&lt;table&gt; format, parse by row after detecting headers</string>
     <string name="format_plain">Plain text</string>
-    <string name="format_plain_desc">One course per line, tab separated</string>
+    <string name="format_plain_desc">Sleepy native format, one course per line, pipe-separated</string>
 
     <!-- Format detail dialogs: wording must match ScheduleParser behavior -->
     <string name="format_help_spec">Recognition requirements</string>
@@ -172,20 +172,26 @@
     </string-array>
     <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
-    <string name="format_plain_when">The most flexible format: one line per class session. Good for typing by hand, even better for AI-generated text from screenshots (see the prompt below).</string>
+    <string name="format_plain_when">Sleepy native format (sleepy-v1): compact, tidy and fault-tolerant. Great for handwriting and even better for letting AI convert a timetable screenshot (see the prompt below). The legacy tab-separated format still imports.</string>
     <string-array name="format_plain_spec">
-        <item>Column order is fixed: course, teacher, room, day, node, week, type (last column optional, defaults to weekly)</item>
-        <item>Columns separated by Tab, spaces, or full-width comma</item>
-        <item>Day accepts 1-7 or Monday-Sunday</item>
-        <item>Node: range like 1-2; single period like 3</item>
-        <item>Week: range like 1-16</item>
-        <item>Type accepts 0/1/2 or weekly/odd/even</item>
-        <item>Use - for missing teacher/room; lines starting with # are ignored</item>
-        <item>No spaces in course names, or the line is dropped</item>
-        <item>Period time lines (optional): Period N HH:mm-HH:mm, placed before course lines, applied automatically on import</item>
-        <item>AI chatter does not matter: wrap data between &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; and &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;, everything outside is ignored</item>
+        <item>First line is always #sleepy-v1</item>
+        <item>Course line layout: Cname|day|nodes|weeks|teacher|room|color|note|time|group - exactly 10 columns / 9 pipes</item>
+        <item>Empty columns stay empty, but the pipes must not be dropped</item>
+        <item>Day is 1-7 (Monday=1); nodes as a range 1-2, or a single node 6</item>
+        <item>Week column has five shapes: 1-16 (weekly), 1-15单 (odd), 2-16双 (even), 3-4定 (range), 10定 (single week)</item>
+        <item>Leave color empty for auto; time column only for courses with a fixed clock time, as HH:mm-HH:mm</item>
+        <item>Escape | \ \" &lt; { ( in text with a leading backslash</item>
+        <item>Period-time line (optional): N&lt;number&gt;|start|end, e.g. N3|10:00|10:45; or a single Nd line when times equal the built-in preset</item>
+        <item>Table line (optional): Tname|startDate|totalWeeks|nodesPerDay; startDate must be the Monday of week 1</item>
+        <item>Unrecognized lines are listed in the import preview, never silently dropped</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2节 09:55-11:30\n第3节 13:30-15:05\nCalculus\tJohn\tA101\t1\t1-2\t1-16\t0\nEnglish\tMary\tB202\t3\t3-4\t1-16\t1\nPE\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1
+TMy timetable|2026-03-02|20|12
+Nd
+C高等数学A|1|1-2|1-16|张三|A101||||
+C大学英语|2|3-4|1-15单|李四|C301||||
+C体育|4|5-6|3-4定||||||
+C影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">%1$d lines could not be parsed</string>
     <string name="import_dropped_hint">These lines were skipped. Check their format and re-import:</string>
     <string name="import_warnings_title">Notes</string>

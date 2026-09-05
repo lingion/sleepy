@@ -104,7 +104,7 @@
     <string name="format_html">Tabla HTML</string>
     <string name="format_html_desc">&lt;table&gt; formato, analizar por fila después de detectar encabezados</string>
     <string name="format_plain">Texto plano</string>
-    <string name="format_plain_desc">Un curso por línea, separado por tabulaciones</string>
+    <string name="format_plain_desc">Formato nativo de Sleepy, un curso por linea, separado por barras</string>
 
     <!-- Diálogos de detalle de formato: el texto debe coincidir con el comportamiento real de ScheduleParser -->
     <string name="format_help_spec">Requisitos de reconocimiento</string>
@@ -167,20 +167,26 @@
     </string-array>
     <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;curso&lt;/td&gt;&lt;td&gt;profesor&lt;/td&gt;&lt;td&gt;aula&lt;/td&gt;&lt;td&gt;día&lt;/td&gt;&lt;td&gt;periodo&lt;/td&gt;&lt;td&gt;semanas&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Cálculo&lt;/td&gt;&lt;td&gt;Juan&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
-    <string name="format_plain_when">El formato más flexible: una línea por sesión de clase. Sirve para escribir a mano, y mejor aún para texto generado por IA desde capturas (ver prompt abajo).</string>
+    <string name="format_plain_when">Formato nativo de Sleepy (sleepy-v1): compacto, ordenado y tolerante. Ideal para escribir a mano y mejor aun para que una IA convierta una captura (ver el prompt de abajo). El formato antiguo con tabulaciones sigue importandose.</string>
     <string-array name="format_plain_spec">
-        <item>Orden fijo de columnas: asignatura, docente, aula, día, bloque, semana, tipo (la última es opcional, por defecto semanal)</item>
-        <item>Separadores: Tab, espacios o coma ancha</item>
-        <item>Día acepta 1-7 o lunes-domingo</item>
-        <item>Bloque: rango como 1-2; un solo periodo como 3</item>
-        <item>Semana: rango como 1-16</item>
-        <item>Tipo acepta 0/1/2 o semanal/impar/par</item>
-        <item>Usa - si falta docente o aula; las líneas que empiezan por # se ignoran</item>
-        <item>Sin espacios en el nombre de la asignatura, o la línea se descarta</item>
-        <item>Líneas de horario (opcionales): Bloque N HH:mm-HH:mm antes de las asignaturas, se aplican automáticamente al importar</item>
-        <item>La palabrería de la IA no importa: envuelve los datos entre &lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt; y &lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;, lo de fuera se ignora</item>
+        <item>La primera linea es siempre #sleepy-v1</item>
+        <item>Linea de curso: Cnombre|dia|clases|semanas|profesor|aula|color|nota|hora|grupo - exactamente 10 columnas / 9 barras</item>
+        <item>Las columnas vacias quedan vacias, pero las barras no se omiten</item>
+        <item>Dia 1-7 (lunes=1); clases como rango 1-2 o una sola 6</item>
+        <item>Cinco formas de semanas: 1-16 (todas), 1-15单 (impares), 2-16双 (pares), 3-4定 (rango), 10定 (una semana)</item>
+        <item>Color vacio = automatico; hora solo para cursos con horario fijo, HH:mm-HH:mm</item>
+        <item>Escapa | \ \" &lt; { ( en el texto con una barra invertida delante</item>
+        <item>Linea de horario (opcional): N&lt;numero&gt;|inicio|fin, p. ej. N3|10:00|10:45; o una linea Nd si coincide con el horario predefinido</item>
+        <item>Linea de tabla (opcional): Tnombre|fechaInicio|semanasTotales|clasesPorDia; la fecha debe ser el lunes de la semana 1</item>
+        <item>Las lineas no reconocidas se listan en la vista previa, nunca se descartan en silencio</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2節 09:55-11:30\n第3节 13:30-15:05\nCálculo\tJuan\tA101\t1\t1-2\t1-16\t0\nInglés\tMaría\tB202\t3\t3-4\t1-16\t1\nDeporte\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1
+TMi horario|2026-03-02|20|12
+Nd
+C高等数学A|1|1-2|1-16|张三|A101||||
+C大学英语|2|3-4|1-15单|李四|C301||||
+C体育|4|5-6|3-4定||||||
+C影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">%1$d líneas no se pudieron analizar</string>
     <string name="import_dropped_hint">Estas líneas se omitieron. Revisa su formato y vuelve a importar:</string>
     <string name="import_warnings_title">Avisos</string>
