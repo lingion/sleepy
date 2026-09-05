@@ -29,7 +29,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const version = "v1.0"
+const version = "v1.1"
 
 // ---------------- 网络捕获 ----------------
 
