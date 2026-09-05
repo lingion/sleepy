@@ -168,9 +168,10 @@ class Schools179CrossValidationTest {
     // ---- 6. 总量闸 ----
 
     @Test
-    fun `school count stays 177`() {
-        // 179 - 删3 (行健文理/广东环保/广西师范学院重复条目) = 176; 2026-09-05 收录广东医科大学 → 177
-        assertEquals(177, entries().size)
+    fun `school count stays 178`() {
+        // 179 - 删3 (行健文理/广东环保/广西师范学院重复条目) = 176
+        // 2026-09-05 收录广东医科大学 → 177; 同日收录广州医科大学 → 178
+        assertEquals(178, entries().size)
     }
 
     // ---- 7. 实采包钉死 (sleepy-collector 2026-09-05 广东医科大学用户提供) ----
@@ -183,5 +184,16 @@ class Schools179CrossValidationTest {
         assertTrue("广东医科大学 条目缺失", e != null)
         assertTrue("广东医科大学 入口应为 jw.gdmu.edu.cn", e!!.optString("url").contains("jw.gdmu.edu.cn"))
         assertEquals("广东医科大学 应为 zf_new (zftal-ui-v5 + /kbcx/ 菜单实锤)", "zf_new", e.optString("type"))
+    }
+
+    @Test
+    fun `gzhmu entry pinned to official qz evidence`() {
+        // 教务处官网(2026仍挂)快速链接 → "教务管理系统" = 强智教务管理系统;
+        // 入口 https://jwgl.gzhmu.edu.cn/jsxsd (jsxsd 路径 = 强智铁证)。
+        // 注意: jwgl.gzhmu.edu.cn 公网 NXDOMAIN — 校内DNS/教育网限定, 校外走 webvpn.gzhmu.edu.cn (判型链已支持 hex webvpn + /jsxsd/ → qz)
+        val e = entryOf("广州医科大学")
+        assertTrue("广州医科大学 条目缺失", e != null)
+        assertTrue("广州医科大学 入口应含 /jsxsd", e!!.optString("url").contains("/jsxsd"))
+        assertEquals("广州医科大学 应为 qz (官方通知'强智教务管理系统'+jsxsd 路径)", "qz", e.optString("type"))
     }
 }

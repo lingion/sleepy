@@ -122,6 +122,16 @@
     "sortKeyFull": "guangdongyikedaxue"
   },
   {
+    "sortKey": "G",
+    "name": "广州医科大学",
+    "url": "https://jwgl.gzhmu.edu.cn/jsxsd",
+    "type": "qz",
+    "aliases": [
+      "gzhmu"
+    ],
+    "sortKeyFull": "guangzhouyikedaxue"
+  },
+  {
     "sortKey": "S",
     "name": "山东第二医科大学",
     "url": "http://jwgl.sdsmu.edu.cn/jwglxt",
