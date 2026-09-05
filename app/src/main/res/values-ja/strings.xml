@@ -183,6 +183,9 @@
     <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1節 08:00-09:35\n第2節 09:55-11:30\n第3節 13:30-15:05\n微積分\t田中\tA101\t1\t1-2\t1-16\t0\n英語\t山田\tB202\t3\t3-4\t1-16\t1\n体育\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
     <string name="import_dropped_title">%1$d 行を認識できませんでした</string>
     <string name="import_dropped_hint">これらの行はスキップされました。形式を確認して再インポートしてください：</string>
+    <string name="import_warnings_title">ヒント</string>
+    <string name="export_native_title">Sleepy ネイティブ</string>
+    <string name="export_native_subtitle">完全バックアップ · 最小サイズ · 移行に最適</string>
     <string name="import_start_date_required">学期開始日を入力してください</string>
     <string name="start_date_format">日付形式はYYYY-MM-DDで入力してください</string>
     <string name="slot_time_required">第%1$d時限の時間が必要です</string>

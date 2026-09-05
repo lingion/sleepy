@@ -141,6 +141,25 @@ class ScheduleRepository(private val db: AppDatabase) {
         return ids
     }
 
+    /**
+     * sleepy-v1 (§3.4 契约一): groupId 已由解析端权威生成(按文档内 token 分区),
+     * 落库绕过 assignGroupIds — 否则同名不同 token 的分区会被静默合并, 分区往返被破坏。
+     */
+    suspend fun insertCoursesKeepingGroups(courses: List<CourseEntity>): List<Long> {
+        captureForUndo()
+        val ids = courseDao.insertAll(courses)
+        onDataChanged()
+        return ids
+    }
+
+    /** 覆盖式导入(保留解析端 groupId), 配合 insertCoursesKeepingGroups 的 sleepy-v1 路径 */
+    suspend fun replaceCoursesKeepingGroups(tableId: Long, courses: List<CourseEntity>) {
+        captureForUndo()
+        courseDao.replaceAll(tableId, courses)
+        onDataChanged()
+        pruneDefaultTopPrefs()
+    }
+
     suspend fun updateCourse(course: CourseEntity) {
         captureForUndo()
         courseDao.update(course)

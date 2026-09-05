@@ -20,6 +20,7 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material.icons.outlined.CalendarMonth
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -47,6 +48,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.parser.ScheduleExporter
+import com.lingion.sleepy.data.parser.SleepyNativeExporter
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -191,6 +193,28 @@ fun ExportScreen(
                                     fileName = "sleepy_${table.name}_${stamp()}.ics",
                                     mime = "text/calendar",
                                     content = ScheduleExporter.exportIcs(table, courses),
+                                    displayName = table.name,
+                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
+                                )
+                            }
+                        }
+                    )
+                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    ExportItem(
+                        icon = Icons.Outlined.Star,
+                        title = stringResource(R.string.export_native_title),
+                        subtitle = stringResource(R.string.export_native_subtitle),
+                        onClick = {
+                            scope.launch {
+                                exportAndShare(
+                                    ctx = ctx,
+                                    fileName = "sleepy_${table.name}_${stamp()}.sleepy",
+                                    mime = "text/plain",
+                                    // MIME 用 text/plain 规避 ImportReceiverActivity MIME 收窄问题(调查报告 P3)
+                                    content = SleepyNativeExporter.exportFile(
+                                        table.name, table.startDate, table.maxWeek, table.nodesPerDay,
+                                        table.timeJson, courses
+                                    ),
                                     displayName = table.name,
                                     onResult = { msg -> snackbarHostState.showSnackbar(msg) }
                                 )

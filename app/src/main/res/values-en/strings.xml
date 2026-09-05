@@ -188,6 +188,9 @@
     <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2节 09:55-11:30\n第3节 13:30-15:05\nCalculus\tJohn\tA101\t1\t1-2\t1-16\t0\nEnglish\tMary\tB202\t3\t3-4\t1-16\t1\nPE\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
     <string name="import_dropped_title">%1$d lines could not be parsed</string>
     <string name="import_dropped_hint">These lines were skipped. Check their format and re-import:</string>
+    <string name="import_warnings_title">Notes</string>
+    <string name="export_native_title">Sleepy Native</string>
+    <string name="export_native_subtitle">Full backup · smallest size · recommended for migration</string>
     <string name="import_start_date_required">Please enter semester start date</string>
     <string name="start_date_format">Date format must be YYYY-MM-DD</string>
     <string name="slot_time_required">Period %1$d time is required</string>

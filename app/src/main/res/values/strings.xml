@@ -193,6 +193,9 @@
     <string name="format_plain_example" formatted="false">&lt;&lt;&lt;SLEEPY-BEGIN&gt;&gt;&gt;\n第1节 08:00-09:35\n第2节 09:55-11:30\n第3节 13:30-15:05\n高等数学\t张三\tA101\t1\t1-2\t1-16\t0\n大学英语\t李四\tB202\t3\t3-4\t1-16\t1\n体育\t-\t-\t5\t3\t1-16\t2\n&lt;&lt;&lt;SLEEPY-END&gt;&gt;&gt;</string>
     <string name="import_dropped_title">有 %1$d 行没能识别</string>
     <string name="import_dropped_hint">这些行被跳过了，检查格式后可以重新导入：</string>
+    <string name="import_warnings_title">提示</string>
+    <string name="export_native_title">Sleepy 原生格式</string>
+    <string name="export_native_subtitle">完整备份·体积最小·推荐迁移分享</string>
     <string name="import_start_date_required">请填写学期开始日期</string>
     <string name="start_date_format">日期格式应为YYYY-MM-DD</string>
     <string name="slot_time_required">第 %1$d 节时间不能为空</string>

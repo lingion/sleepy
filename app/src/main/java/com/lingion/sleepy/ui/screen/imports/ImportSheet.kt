@@ -912,6 +912,38 @@ private fun ImportPreviewDialog(
                         }
                     }
                 }
+                // sleepy-v1 (§7.3): 表级提示(非行级) — T行钳制/节点抬升/chk不符/n=不符/二次表头
+                val warnings = preview.parseResult.warnings
+                if (warnings.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SleepyTheme.shapes.large)
+                            .background(colors.secondaryContainer)
+                            .padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.import_warnings_title),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colors.onSecondaryContainer
+                        )
+                        warnings.take(4).forEach { line ->
+                            Text(
+                                text = "• $line",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSecondaryContainer
+                            )
+                        }
+                        if (warnings.size > 4) {
+                            Text(
+                                text = stringResource(R.string.import_conflict_more, warnings.size - 4),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.onSecondaryContainer
+                            )
+                        }
+                    }
+                }
             }
         },
         confirmButton = {
@@ -1203,7 +1235,12 @@ private suspend fun applyImportPreview(
                     )
                 )
             }
-            repo.replaceCourses(preview.targetTableId, preview.parseResult.courses)
+            // sleepy-v1 (§3.4 契约一): 解析端权威 groupId → 绕过 assignGroupIds 再分配
+            if (preview.parseResult.groupIdsAuthoritative) {
+                repo.replaceCoursesKeepingGroups(preview.targetTableId, preview.parseResult.courses)
+            } else {
+                repo.replaceCourses(preview.targetTableId, preview.parseResult.courses)
+            }
             // v7.10.12: 整表替换不过闸门(换的是整张表, 拦截太武断), 但超层时提示
             val badDays = com.lingion.sleepy.util.ConflictLayoutEngine
                 .daysExceedingTwoLanes(preview.parseResult.courses)
@@ -1218,14 +1255,18 @@ private suspend fun applyImportPreview(
                 TimeTableEntity(
                     name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
-                    maxWeek = base?.maxWeek ?: 20,
-                    nodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else base?.nodesPerDay ?: 12,
+                    maxWeek = if (preview.parseResult.maxWeek > 0) preview.parseResult.maxWeek else base?.maxWeek ?: 20,
                     timeJson = confirmedTimeJson,
                     color = base?.color ?: "#FF6750A4",
                     isDefault = false
                 )
             )
-            repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
+            // sleepy-v1: groupId 权威时保留分区(ImportAsNew 全量落新课表, 等价 replace 语义)
+            if (preview.parseResult.groupIdsAuthoritative) {
+                repo.insertCoursesKeepingGroups(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
+            } else {
+                repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
+            }
             repo.setDefault(newTableId)
             // v7.10.12: 整表新建不过闸门, 超层时提示(同 ReplaceCurrent 策略)
             val badDaysNew = com.lingion.sleepy.util.ConflictLayoutEngine
@@ -1254,7 +1295,11 @@ private suspend fun applyImportPreview(
                 val droppedDays = conflictDaysBetween(cleanCourses, survivors)
                 onError(context.getString(R.string.import_three_layers_dropped, dayNames(droppedDays, context)))
             }
-            repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            if (preview.parseResult.groupIdsAuthoritative) {
+                repo.insertCoursesKeepingGroups(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            } else {
+                repo.insertCourses(survivors.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            }
             // v7.10.16k 无损延伸: 老表作息∪导入作息, 并拓到导入课程实际到达的最大节。
             // 旧代码 timeJson 空白(粘贴文本常态)就整段跳过 → 课程入库了课表却不延伸 = 静默丢。
             val existingTable = repo.getTable(preview.targetTableId)
@@ -1290,7 +1335,7 @@ private suspend fun applyImportPreview(
                 TimeTableEntity(
                     name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
-                    maxWeek = base?.maxWeek ?: 20,
+                    maxWeek = if (incoming.maxWeek > 0) incoming.maxWeek else base?.maxWeek ?: 20,
                     nodesPerDay = if (mergedRows.isNotEmpty()) mergedRows.size else base?.nodesPerDay ?: 12,
                     timeJson = mergedTimeJson,
                     color = base?.color ?: "#FF6750A4",
@@ -1316,7 +1361,14 @@ private suspend fun applyImportPreview(
             }
             // 全量合并入库: 老课 + 全部非重复导入课(仅提示, 不再剔除 — 闸门只拦编辑恶化,
             // 合并是新建课表, 用户明确要的就是并集)
-            repo.insertCourses((oldCourses + cleanIncoming).map { it.copy(id = 0, tableId = newTableId) })
+            // AppendAsNew 合并新老课: 导入侧 groupId 权威时仅对导入课保组, 老课照原样保组
+            if (preview.parseResult.groupIdsAuthoritative) {
+                val keptOld = oldCourses.map { it.copy(id = 0, tableId = newTableId) }
+                val keptIncoming = cleanIncoming.map { it.copy(id = 0, tableId = newTableId) }
+                repo.insertCoursesKeepingGroups(keptOld + keptIncoming)
+            } else {
+                repo.insertCourses((oldCourses + cleanIncoming).map { it.copy(id = 0, tableId = newTableId) })
+            }
             repo.setDefault(newTableId)
             onImported()
         }
@@ -1333,7 +1385,11 @@ private suspend fun applyImportPreview(
             if (badDays.isNotEmpty()) {
                 onError(context.getString(R.string.import_three_layers_kept, dayNames(badDays, context)))
             }
-            repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            if (preview.parseResult.groupIdsAuthoritative) {
+                repo.insertCoursesKeepingGroups(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            } else {
+                repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
+            }
             // v7.10.16k: 节次无损延伸 — 与 AppendNonConflict 同策略(不再要求导入带 timeJson)
             val existingTable = repo.getTable(preview.targetTableId)
             if (existingTable != null) {

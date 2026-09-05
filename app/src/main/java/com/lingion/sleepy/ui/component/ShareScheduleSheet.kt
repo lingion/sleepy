@@ -7,6 +7,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
@@ -24,6 +25,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.parser.ScheduleExporter
+import com.lingion.sleepy.data.parser.SleepyNativeExporter
 import com.lingion.sleepy.ui.screen.mine.ExportItem
 import com.lingion.sleepy.ui.screen.mine.exportAndShare
 import com.lingion.sleepy.ui.screen.mine.shareText
@@ -115,6 +117,30 @@ fun ShareScheduleSheet(
                             mime = "text/calendar",
                             content = ScheduleExporter.exportIcs(table, courses),
                             displayName = table.name,
+                            onResult = { }
+                        )
+                    }
+                }
+            )
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 16.dp),
+                thickness = 0.5.dp,
+                color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)
+            )
+            ExportItem(
+                icon = Icons.Outlined.Star,
+                title = stringResource(R.string.export_native_title),
+                subtitle = stringResource(R.string.export_native_subtitle),
+                onClick = {
+                    scope.launch {
+                        // 分享形态: marker 包裹 + 无 chk(IM 场景最小体积), 接收方粘贴导入
+                        shareText(
+                            ctx = ctx,
+                            content = SleepyNativeExporter.exportShareText(
+                                table.name, table.startDate, table.maxWeek, table.nodesPerDay,
+                                table.timeJson, courses
+                            ),
+                            subject = table.name,
                             onResult = { }
                         )
                     }
