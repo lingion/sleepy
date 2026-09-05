@@ -385,6 +385,8 @@ sdkmanager "platforms;android-37" "build-tools;37.0.0"
 
 ### 编译
 
+Linux / macOS：
+
 ```bash
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
@@ -392,6 +394,23 @@ cd sleepy
 # Debug（x86_64 模拟器 / arm64 真机），产物约 20MB
 ./gradlew assembleDebug
 ```
+
+Windows 原生环境（PowerShell / CMD，无需 WSL 或 Git Bash）：
+
+1. 安装 JDK 17 或 21，将 `JAVA_HOME` 指向 JDK 根目录（不是 `bin`），或将 JDK 的 `bin` 目录加入 `PATH`。
+2. 安装 Android SDK Platform 37 和所需的 Build Tools（可通过 Android Studio 的 SDK Manager 安装）。将 `ANDROID_HOME` 指向 SDK 根目录，或在项目根目录的 `local.properties` 中配置 `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk`（使用正斜杠，并替换为实际路径；此文件已被 Git 忽略）。
+3. 在项目根目录运行：
+
+```powershell
+java -version
+.\gradlew.bat --version
+.\gradlew.bat assembleDebug
+# 可选：运行单元测试或清理构建产物
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat clean
+```
+
+Wrapper 会按 `gradle/wrapper/gradle-wrapper.properties` 下载指定版本的 Gradle，无需另行安装 Gradle；首次构建需要联网下载 Gradle 和依赖。Debug APK 输出到 `app/build/outputs/apk/debug/`。
 
 ### 安装
 

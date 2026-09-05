@@ -378,6 +378,8 @@ sdkmanager "platforms;android-37" "build-tools;37.0.0"
 
 ### Build
 
+Linux / macOS:
+
 ```bash
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
@@ -385,6 +387,23 @@ cd sleepy
 # Debug (x86_64 emulator / arm64 device), ~20MB
 ./gradlew assembleDebug
 ```
+
+Native Windows (PowerShell / CMD; no WSL or Git Bash required):
+
+1. Install JDK 17 or 21. Set `JAVA_HOME` to the JDK root directory (not `bin`), or add the JDK's `bin` directory to `PATH`.
+2. Install Android SDK Platform 37 and the required Build Tools using Android Studio's SDK Manager or the command-line tools. Set `ANDROID_HOME` to the SDK root directory, or add `sdk.dir=C:/Users/your-name/AppData/Local/Android/Sdk` to `local.properties` in the project root (use forward slashes and your actual SDK path; this file is ignored by Git).
+3. Run these commands from the project root:
+
+```powershell
+java -version
+.\gradlew.bat --version
+.\gradlew.bat assembleDebug
+# Optional: run unit tests or remove build outputs
+.\gradlew.bat testDebugUnitTest
+.\gradlew.bat clean
+```
+
+The wrapper downloads the Gradle version specified in `gradle/wrapper/gradle-wrapper.properties`, so a separate Gradle installation is unnecessary. The first build requires internet access to download Gradle and dependencies. Debug APKs are written to `app/build/outputs/apk/debug/`.
 
 ### Install
 
