@@ -190,13 +190,7 @@
         <item>表信息行（可选）：T表名|开学日期|总周数|每天节数，开学日期须为第 1 周周一</item>
         <item>无法识别的行会列在导入预览里，不会静默丢弃</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">#sleepy-v1
-T我的课表|2026-03-02|20|12
-Nd
-C高等数学A|1|1-2|1-16|张三|A101||||
-C大学英语|2|3-4|1-15单|李四|C301||||
-C体育|4|5-6|3-4定||||||
-C影视鉴赏|7|6|10-16双||||||</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1\nT我的课表|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">有 %1$d 行没能识别</string>
     <string name="import_dropped_hint">这些行被跳过了，检查格式后可以重新导入：</string>
     <string name="import_warnings_title">提示</string>

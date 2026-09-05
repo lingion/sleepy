@@ -180,13 +180,7 @@
         <item>テーブル行（省略可）：T名前|開始日|総週数|1日コマ数。開始日は第1週の月曜日</item>
         <item>認識できない行はインポートプレビューに列挙され、黙って捨てられることはない</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">#sleepy-v1
-T私の時間割|2026-03-02|20|12
-Nd
-C高等数学A|1|1-2|1-16|张三|A101||||
-C大学英语|2|3-4|1-15单|李四|C301||||
-C体育|4|5-6|3-4定||||||
-C影视鉴赏|7|6|10-16双||||||</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1\nT私の時間割|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">%1$d 行を認識できませんでした</string>
     <string name="import_dropped_hint">これらの行はスキップされました。形式を確認して再インポートしてください：</string>
     <string name="import_warnings_title">ヒント</string>

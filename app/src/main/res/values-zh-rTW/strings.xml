@@ -180,13 +180,7 @@
         <item>表資訊行（可選）：T表名|開學日期|總週數|每天節數，開學日期須為第 1 週週一</item>
         <item>無法識別的行會列在匯入預覽裡，不會靜默丟棄</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">#sleepy-v1
-T我的課表|2026-03-02|20|12
-Nd
-C高等數學A|1|1-2|1-16|張三|A101||||
-C大學英語|2|3-4|1-15單|李四|C301||||
-C體育|4|5-6|3-4定||||||
-C影視鑑賞|7|6|10-16雙||||||</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1\nT我的課表|2026-03-02|20|12\nNd\nC高等數學A|1|1-2|1-16|張三|A101||||\nC大學英語|2|3-4|1-15單|李四|C301||||\nC體育|4|5-6|3-4定||||||\nC影視鑑賞|7|6|10-16雙||||||</string>
     <string name="import_dropped_title">有 %1$d 行沒能識別</string>
     <string name="import_dropped_hint">這些行被跳過了，檢查格式後可以重新匯入：</string>
     <string name="import_warnings_title">提示</string>
