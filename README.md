@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a>
+  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a>
 </p>
 
 ---
