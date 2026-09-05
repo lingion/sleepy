@@ -157,17 +157,15 @@ internal object SleepyNativeParser {
             if (m != null) {
                 val algo = m.groupValues[1]
                 if (algo == "crc32") {
-                    val bodyToChk = lines.subList(bodyStart, lines.size)
-                        .joinToString("\n") { it }
-                        .let { body ->
-                            // 校验范围: magic 行后至 z 行前的全部字节
-                            val zIdx = body.lastIndexOf(chkLine!!)
-                            val chkPos = body.lastIndexOf("\nz|") + 1
-                            if (chkPos > 0) body.substring(0, chkPos) else body
+                    // 校验范围 = magic 行(含)至 z 行(不含)的全部字节, 即 trimmed 中 z 行之前 + 结尾换行前的原文
+                    val zIdx = lines.indexOfFirst { it.trim() == chkLine }
+                    if (zIdx > bodyStart - 1) {
+                        // 用原文(未 trim 前)行 join —— 导出端对 body(不带尾 LF)计算 crc
+                        val bodyToChk = lines.subList(0, zIdx).joinToString("\n")
+                        val actual = SleepyNativeFormat.crc32(bodyToChk.toByteArray(Charsets.UTF_8))
+                        if (!actual.equals(m.groupValues[2], ignoreCase = true)) {
+                            warnings.add("完整性校验不符，文件可能被截断或修改")
                         }
-                    val actual = SleepyNativeFormat.crc32(bodyToChk.toByteArray(Charsets.UTF_8))
-                    if (!actual.equals(m.groupValues[2], ignoreCase = true)) {
-                        warnings.add("完整性校验不符，文件可能被截断或修改")
                     }
                 } else {
                     warnings.add("未知校验算法 $algo，已跳过校验")
