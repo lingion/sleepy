@@ -168,10 +168,20 @@ class Schools179CrossValidationTest {
     // ---- 6. 总量闸 ----
 
     @Test
-    fun `school count stays 178`() {
+    fun `school count stays 179`() {
         // 179 - 删3 (行健文理/广东环保/广西师范学院重复条目) = 176
-        // 2026-09-05 收录广东医科大学 → 177; 同日收录广州医科大学 → 178
-        assertEquals(178, entries().size)
+        // 2026-09-05 收录广东医科大学 → 177; 广州医科大学 → 178; 吉林工商学院(超星) → 179
+        assertEquals(179, entries().size)
+    }
+
+    @Test
+    fun `jlbtc entry pinned to chaoxing collector evidence`() {
+        // 采集包 sleepy-adapt-0905-215140: 页脚 Powered by ChaoXing,
+        // queryKbForGrdb 22行个人课表 (xjc=节号, zcstr 周次串) — 首个 chaoxing 协议校
+        val e = entryOf("吉林工商学院")
+        assertTrue("吉林工商学院 条目缺失", e != null)
+        assertTrue("入口应为 jwxt.jlbtc.edu.cn", e!!.optString("url").contains("jwxt.jlbtc.edu.cn"))
+        assertEquals("应为 chaoxing (Powered by ChaoXing 采集包实锤)", "chaoxing", e.optString("type"))
     }
 
     // ---- 7. 实采包钉死 (sleepy-collector 2026-09-05 广东医科大学用户提供) ----

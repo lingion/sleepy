@@ -221,6 +221,12 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, WHUT_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 超星综合教务 (Powered by ChaoXing): getMenuList 取学期 →
+                    // queryKbForGrdb 个人课表 (无参, session 态) → getZclistByXnxq 节次时间
+                    if (school.type == JwProtocol.TYPE_CHAOXING) {
+                        evaluateFetchWithTimeout(wv, CHAOXING_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
                     // 用户已在 WebView 走完 CAS 登录并落到教务域。supwisdom 新版部署
                     // 前缀分两形态：合工大 /eams5-student、安大/矿大北京 /student —
@@ -640,6 +646,59 @@ private const val CQU_FETCH_JS = """
  *
  * 上游协议形态: shiguang_warehouse (MIT) whut_01.js + iwut (AGPL, 仅引形态)。
  */
+private const val CHAOXING_FETCH_JS = """
+(function(){
+  try {
+    // 管理前缀按入口 URL 推断: 部分部署挂 /admin (吉林工商), 部分无前缀
+    var m = location.pathname.match(/^\/(\w+)\//);
+    var base = location.pathname.indexOf('/admin/') === 0 ? '/admin' : '';
+    var get = function(url){
+      return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){ return r.json(); });
+    };
+    // 1) 当前学期 + 校区: getMenuList 响应含 jsxq.dataXnxq / xqid (session 态)
+    var ctx = get(base + '/api/getMenuList').then(function(j){
+      var jsxq = (j && (j.jsxq || (j.data && j.data.jsxq))) || {};
+      return { xnxq: jsxq.dataXnxq || '', xqid: jsxq.xqid || '' };
+    }).catch(function(){ return { xnxq: '', xqid: '' }; });
+    ctx.then(function(c){
+      if (!c.xnxq) {
+        // getMenuList 缺 jsxq 时回退: 让服务端自己用会话学期 (queryKbForGrdb 无参)
+      }
+      // 2) 个人课表 (无参 — 服务端按会话学期返回本人数据)
+      return get(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax')
+      .then(function(kb){
+        var rows = kb && kb.data;
+        if (!rows || !rows.length) throw new Error('课表为空: 请先在教务里打开"我的课表"页再导入');
+        // 3) 节次时间 (尽力而为, 失败不阻断 — periods 仅用于展示)
+        return get(base + '/api/getZclistByXnxq?xnxq=' + encodeURIComponent(c.xnxq) +
+                  '&xqid=' + encodeURIComponent(c.xqid) + '&role=&userId=&sf_request_type=ajax')
+        .then(function(zc){
+          var periods = [];
+          try {
+            var arr = zc.data.jcsjszList || [];
+            for (var i = 0; i < arr.length; i++) {
+              periods.push({node: parseInt(arr[i].jc, 10), kssj: arr[i].kssj, jssj: arr[i].jssj});
+            }
+          } catch(e) {}
+          var payload = JSON.stringify({
+            xnxq: c.xnxq,
+            dqzc: (zc && zc.data && zc.data.dqzc) || null,
+            rows: rows,
+            periods: periods
+          });
+          window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data: payload, periods: periods}));
+        });
+      });
+    })
+    .catch(function(e){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+    });
+  } catch(e) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+  }
+})()"""
+
 private const val WHUT_FETCH_JS = """
 (function(){
   try {

@@ -114,6 +114,15 @@ object JwProtocol {
     const val TYPE_NEU = "neu"
 
     /**
+     * 超星学习通「综合教务管理系统」(Powered by ChaoXing)。
+     * 自建 REST: GET /pkgl/xskb/queryKbGrdb (个人课表, 无参按会话) +
+     * GET /admin/api/getZclistByXnxq (节次时间/学期)。
+     * 字段: kcmc/xjc/xingqi/rqxl/zcstr/tmc/croommc, 单节粒度行。
+     * 首校: 吉林工商学院 (jwxt.jlbtc.edu.cn, 2026-09-05 采集包实锤)。
+     */
+    const val TYPE_CHAOXING = "chaoxing"
+
+    /**
      * 武汉理工大学教务 (jwxt.whut.edu.cn, 金智 jwapp 变体)。
      * 课表走 kcbcxby 微应用 cxxskcb.do (响应 datas.cxxskcb.rows[], 字段与 HEU
      * xskcb 同名同义); 解析内核复用 JwWiseduParser。WHUT 特有: 节次 DM ≠
@@ -149,7 +158,7 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_CQU, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
+        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
         TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
@@ -168,6 +177,7 @@ object JwProtocol {
         TYPE_BNUZ -> "北师珠"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
+        TYPE_CHAOXING -> "超星综合教务"
         TYPE_HNUST -> "湖南科大教务"
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_EAMS5 -> "合工大教务 (EAMS5)"
@@ -193,6 +203,7 @@ object JwProtocol {
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
+        TYPE_CHAOXING -> "chaoxing"
         TYPE_EAMS5 -> "eams5"
         TYPE_CLASSIC_EAMS -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"

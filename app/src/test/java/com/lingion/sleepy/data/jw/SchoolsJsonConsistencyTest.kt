@@ -39,7 +39,7 @@ class SchoolsJsonConsistencyTest {
             JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
             JwProtocol.TYPE_CF, JwProtocol.TYPE_PKU, JwProtocol.TYPE_BNUZ,
             JwProtocol.TYPE_HNUST, JwProtocol.TYPE_HNIU, JwProtocol.TYPE_WISEDU,
-            JwProtocol.TYPE_CQU, JwProtocol.TYPE_EAMS5,
+            JwProtocol.TYPE_CQU, JwProtocol.TYPE_CHAOXING, JwProtocol.TYPE_EAMS5,
             JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC,
             JwProtocol.TYPE_SCU,
             JwProtocol.TYPE_NEU,

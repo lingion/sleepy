@@ -132,6 +132,16 @@
     "sortKeyFull": "guangzhouyikedaxue"
   },
   {
+    "sortKey": "J",
+    "name": "吉林工商学院",
+    "url": "https://jwxt.jlbtc.edu.cn/admin/",
+    "type": "chaoxing",
+    "aliases": [
+      "jlbtc"
+    ],
+    "sortKeyFull": "jilingongshangxueyuan"
+  },
+  {
     "sortKey": "S",
     "name": "山东第二医科大学",
     "url": "http://jwgl.sdsmu.edu.cn/jwglxt",

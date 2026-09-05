@@ -28,6 +28,7 @@ object JwParserRegistry {
     private val TYPE_PRIORITY: Map<String, Int> = linkedMapOf(
         JwProtocol.TYPE_WISEDU to 10,
         JwProtocol.TYPE_CQU to 15,
+        JwProtocol.TYPE_CHAOXING to 16,
         JwProtocol.TYPE_EAMS5 to 18,
         JwProtocol.TYPE_CLASSIC_EAMS to 19,
         JwProtocol.TYPE_PKU to 20,
@@ -60,6 +61,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_WISEDU to ::JwWiseduParser,
         JwProtocol.TYPE_WHUT to ::JwWhutParser,
         JwProtocol.TYPE_CQU to ::JwCquParser,
+        JwProtocol.TYPE_CHAOXING to ::JwChaoxingParser,
         JwProtocol.TYPE_EAMS5 to ::JwEams5Parser,
         JwProtocol.TYPE_CLASSIC_EAMS to ::JwClassicEamsParser,
         JwProtocol.TYPE_SEU to ::JwSeuParser,

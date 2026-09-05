@@ -383,6 +383,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 || u.contains("jxgl.wyu")
                 || u.contains("jw.hbmu") -> JwProtocol.TYPE_CF
 
+            // ⑦b CHAOXING — 超星综合教务 (xsd=学生端 path, queryKbForGrdb 个人课表接口)
+            u.matches(Regex(".*/xsd(/|$).*"))
+                || u.contains("/xsd/pkgl/")
+                || u.contains("querykbforgrdb")
+                || u.contains("sdpkkblist") -> JwProtocol.TYPE_CHAOXING
+
             // ⑧ PKU — 北大 IAAA / elective
             u.contains("elective.pku")
                 || u.contains("iaaa.pku") -> JwProtocol.TYPE_PKU
@@ -460,6 +466,10 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 lower.contains("乘方教务")
                     || lower.contains("乘方科技")
                     || lower.contains("/new/validatecode") -> JwProtocol.TYPE_CF
+
+                // ⑦b CHAOXING — 超星综合教务页脚 (Powered by ChaoXing)
+                lower.contains("powered by chaoxing")
+                    || lower.contains("超星综合教务") -> JwProtocol.TYPE_CHAOXING
 
                 // ⑧ PKU — 北大 IAAA / elective（课表页 title 含 北京大学选课系统）
                 lower.contains("iaaa.pku.edu.cn")
