@@ -20,7 +20,7 @@
   {
     "sortKey": "A",
     "name": "安徽建筑大学",
-    "url": "http://jwnew.ahjzu.edu.cn/",
+    "url": "https://jwnew.ahjzu.edu.cn/",
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "anhuijianzhudaxue"
@@ -70,8 +70,8 @@
   {
     "sortKey": "B",
     "name": "北京理工大学",
-    "url": "https://webvpn.bit.edu.cn/",
-    "type": "qz_with_node",
+    "url": "https://jxzxehallapp.bit.edu.cn/jwapp/sys/wdkbby/*default/index.do",
+    "type": "wisedu",
     "aliases": [
       "bit"
     ],
@@ -96,8 +96,8 @@
   {
     "sortKey": "B",
     "name": "北京信息科技大学",
-    "url": "http://jwgl.bistu.edu.cn/",
-    "type": "zf",
+    "url": "https://jwxt.bistu.edu.cn/jwapp/",
+    "type": "wisedu",
     "aliases": [],
     "sortKeyFull": "beijingxinxikejidaxue"
   },
