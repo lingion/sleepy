@@ -65,7 +65,7 @@
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Direct import from university academic systems (JW), multi-format parsing, five home-screen widget types, daily course notifications, dark mode, and five theme presets. The current release is `v1.0.49`, with direct import support for 179 universities.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. It supports direct import from university academic systems (JW), multi-format parsing, five home-screen widget types, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases.
 
 ### v1.0.49
 
@@ -133,7 +133,7 @@ Auto mode details:
 
 ## JW System Import
 
-Entry: bottom bar "Timetables" → "Import". All three import paths **preview first, import second** — never overwriting an existing timetable.
+Entry: bottom bar "Timetables" → "Import". Import paths preview first and only write after confirmation; they do not silently overwrite an existing timetable.
 
 <p align="left">
   <img src="docs/screenshots/20-import-bottomsheet.png" width="320">
@@ -141,11 +141,13 @@ Entry: bottom bar "Timetables" → "Import". All three import paths **preview fi
 
 | Entry | Flow |
 |---|---|
-| **Direct JW import** | Pick your university → WebView login → automatic fetch → preview → import |
+| **Direct JW import** | Pick a listed university, or enter a JW URL in the search field → WebView login → automatic fetch → preview → import |
 | **Paste text** | Paste any format → auto-detect → preview → import |
 | **From file** | Pick `.json` / `.ics` / `.csv` / `.html` → preview → import |
 
-### Supported JW Protocols
+### JW Protocol Examples
+
+The protocol catalogue grows with school integrations. The table below shows protocol families and representative variants in the code; it is not a replacement for the current in-app school catalogue:
 
 | Protocol | Notes |
 |---|---|
@@ -161,9 +163,11 @@ Entry: bottom bar "Timetables" → "Import". All three import paths **preview fi
 | `bnuz` | BNU Zhuhai |
 | `chaoxing` | ChaoXing general academic affairs (Jilin Business and Technology College personal timetable) |
 
-### University not listed?
+### School Catalogue and Custom URLs
 
-Direct import is adapted per university (179 supported so far). Unadapted universities fail to import. **Collect a JW snapshot in 5 minutes and we'll add yours** — log into the JW system on a computer, paste a short script in the browser console, send us the output. Full guide: **[collection guide](docs/adapt-kit/README.md)** (Chinese — email lingion@hrbeu.edu.cn if you need it in English), or [open an adaptation request](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml) directly.
+The school catalogue changes with each release. Choose a listed university for the maintained path, or enter a JW URL in the search field when your university is not listed. Sleepy will try to detect a protocol from the URL and open it for login and import. Success still depends on the university page, its login flow, and a compatible parser.
+
+If URL detection or parsing does not work, file an adaptation request with the JW URL and the observed failure. Use the **[collection guide](docs/adapt-kit/README.md)** only when more page or network data is needed. Never include an account, password, verification code, or other personal data in an issue. You can [open an adaptation request](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml) directly.
 
 ### Supported Text Formats
 
@@ -195,7 +199,7 @@ Fields: course name · teacher · room · notes · weekday · period range · we
 
 ## Export
 
-Four export formats. Files are saved to the device's `Download/Sleepy/` and the system share sheet opens automatically.
+Multiple export formats are available. File-based formats use the device's `Download/Sleepy/` directory and open the system share sheet; see the current Export screen for the exact list.
 
 <p align="left">
   <img src="docs/screenshots/19-export.png" width="280">
@@ -299,7 +303,7 @@ The About page also checks for updates and shows the full release notes before d
 
 ## Dark Mode & Themes
 
-5 presets + follow-system, each with a complete Light/Dark scheme. Switch in "Mine" → "Appearance".
+Multiple presets + follow-system, each with Light/Dark schemes. Switch in "Mine" → "Appearance & theme".
 
 <p align="left">
   <img src="docs/screenshots/11-theme.png" width="280">
