@@ -2,7 +2,7 @@
 
 36 commits. School count remains 179: three dead or duplicate entries were removed, and Guangdong Medical University, Guangzhou Medical University, and Jilin Business and Technology College were added.
 
-Two new schools were added to direct import: Guangdong Medical University, backed by the user's capture pack, and Guangzhou Medical University, verified separately from its official entry point. They use different protocols: `zf_new` and Qiangzhi. ChaoXing general academic affairs protocol, brand new parser. A parallel `sleepy-v1` import-export format running next to the old text one. Acknowledgements grew from 14 to 26. The collector (Go binary) got rewritten so it stops pretending the first attempt always works. Five smaller fixes ride along.
+Two new schools were added to direct import: Guangdong Medical University, verified with a captured login flow, and Guangzhou Medical University, verified separately from its official entry point. They use different protocols: `zf_new` and Qiangzhi. ChaoXing general academic affairs protocol, brand new parser. A parallel `sleepy-v1` import-export format running next to the old text one. Acknowledgements grew from 14 to 26. The collector (Go binary) got rewritten so a transient failure can be retried. Four smaller fixes ride along.
 
 Tests: 1073, zero failures in the release verification run. This note describes the planned `versionName 1.0.49` / `versionCode 50` release; the current checkout still declares `versionName 1.0.48` / `versionCode 49` until the release-number commit is made.
 
@@ -38,7 +38,7 @@ HTML marker: `powered by chaoxing` or `超星综合教务`. URL marker: anything
 
 ### Protocol and domain corrections
 
-These don't change the count, but if you're on one of them, your import URL or protocol just changed:
+These changes do not affect the total count, but update the import URL or protocol for the listed schools:
 
 - **Beijing Institute of Technology** and **Beijing Information Science and Technology University** — moved to `wisedu`.
 - **Anhui Jianzhu University** — forced HTTPS. The HTTP variant was unreachable.
@@ -56,7 +56,7 @@ WHUT's iWut portal was stuck behind a `Welcome come to EMAP` shell until the ent
 
 ## sleepy-v1: a new import-export format
 
-This is the bigger half of the release. v1.0.49 ships a parallel format alongside the existing text import, called `sleepy-v1`. Same idea of plain text the user can hand-edit, but with a tighter spec.
+This is the bigger half of the release. v1.0.49 ships a parallel format alongside the existing text import, called `sleepy-v1`. It keeps the hand-editable plain-text approach, with a tighter specification.
 
 What you get:
 
@@ -78,7 +78,7 @@ This is opt-in. The old format is untouched and still the default.
 
 ## Collector: stop giving up on the first try
 
-The biggest user-reported bug in the last round: "the student fetched once, nothing happened, fetched again, it worked." The collector (Go binary, ships in `app/src/main/assets/collector/`) used to give up too easily.
+The collector (Go binary, ships in `app/src/main/assets/collector/`) used to stop too quickly after a failed fetch, even when a second attempt could succeed.
 
 What changed:
 
@@ -103,7 +103,7 @@ The "About" screen now lists 26 upstream projects. Three rounds:
 2. +9 student-maintained repos we had been reading from in passing — BIT-Login, iBistu, JdaAssist, CQYTZFCheckScores, ScheduleXParser_SCAU, JW-spider, BohaiServiceDome, courseTable, shangkeschedule.
 3. +3 from the evidence archive — WeNEPU, HeraldStudentCurriculum, the dhu_dlsf_app reference for Donghua.
 
-Brief was "better to over-acknowledge than miss any" and that is what was done. If you maintain one of these and want to be removed, file an issue.
+Each entry is listed with its project name, license, and relationship to Sleepy in About → 开源声明.
 
 ---
 
@@ -116,12 +116,12 @@ Brief was "better to over-acknowledge than miss any" and that is what was done. 
 
 ---
 
-## Boundaries of this release
+## Known limitations
 
 - ChaoXing capture covers `queryKbForGrdb`, the personal timetable endpoint. `sdpkkblist`, the class timetable endpoint, is detected but not wired in this version.
 - The collector fails on macOS 26+ notarisation warnings. Run `xattr -d com.apple.quarantine` once after download. Documented in the operation page.
 - `sleepy-v1` share output uses the share sheet, not the system clipboard. Some older Android skins show only the share UI, not the system share action — use "Copy" if you need the literal block.
-- The `sleepy-v1` tests cover the dispatcher and the real-user cases currently in the repository, but not every possible hand-written grammar corner case. Report a failing input with the issue.
+- The `sleepy-v1` tests cover the dispatcher and the schedule samples currently in the repository, but not every possible hand-written grammar corner case. Include the original input and error message when reporting an import failure.
 
 ---
 
@@ -133,7 +133,7 @@ The complete list of upstream projects and their licenses is available in About 
 
 # v1.0.49
 
-36 个 commit。学校数净增零,删六加六,全是改名。
+36 个 commit。学校总数仍为 179 所:删去 3 条死链或重复条目,新增广东医科大学、广州医科大学和吉林工商学院。
 
 这一版值得说在前面:新接入两所不同的学校。广东医科大学按 `zf_new` 协议接入;广州医科大学根据官网入口单独核验为强智 `qz`。超星综合教务协议加了一个新 parser,吉林工商学院(`jlbtc`)是第一个;出了一套 `sleepy-v1` 导入导出格式,跟老的并列共存;致谢从 14 条扩到 26 条;采集工具整个重写,不再第一次失败就结束。还有五个小修。
 
@@ -179,7 +179,7 @@ HTML 标志:`powered by chaoxing` 或 `超星综合教务`。URL 标志:含 `/xs
 - **渤海大学** — `jw.bhu` 死了。迁到 `bdjw.bhu.edu.cn/jsxsd/`,协议 `qz`。
 - **重庆三峡学院**、**重庆邮电大学移通学院**、**大连工业大学艺术与信息工程学院** — 域名、协议修对。
 
-179 校全量交叉验证落在这个批里:修 60 条,删 3 条死的。提一句,免得你以为 179 这个数是旧的。
+179 校全量交叉验证落在这个批里:修正 60 条,删去 3 条死链或重复条目。新增的 3 所学校补回了总数,最终仍为 179 所。
 
 ### WHUT 和 HFUT 顺手做了深度体检
 
@@ -249,9 +249,9 @@ macOS / Linux / Windows / Android 四平台产物都刷了。
 
 ---
 
-## 没把握的几条
+## 已知限制
 
-- 超星只接了 `queryKbForGrdb`(个人课表)。`sdpkkblist`(教师查全班)没接。放 v1.0.50。
+- 超星只接了 `queryKbForGrdb`(个人课表)。`sdpkkblist`(教师查全班)目前尚未接入。
 - macOS 26+ 上采集工具首次启动会卡签名警告,下完一次 `xattr -d com.apple.quarantine` 就行。文档里写过。
 - `sleepy-v1` 分享走系统面板,不写系统剪贴板。部分老 Android 皮肤只显示分享 UI 不显示系统分享动作 — 需要原样复制就点 "复制"。
 - `sleepy-v1` 测试覆盖当前仓库中的分派器边界和真实样例,但不涵盖所有可能的手写语法组合。遇到无法导入的内容,请提交原始输入和错误信息。
