@@ -100,6 +100,9 @@ class AboutLicenseAttributionTest {
         Attribution("BohaiServiceDome", ""),
         Attribution("courseTable", "acm910"),
         Attribution("shangkeschedule", "Apache-2.0"),
+        Attribution("WeNEPU", "cutiechi"),
+        Attribution("HeraldStudentCurriculum", "idailylife"),
+        Attribution("tk.dcmmcc", ""),
     )
 
     @Test

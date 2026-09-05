@@ -230,6 +230,18 @@ private fun licenseAttributionEntries(): List<AttributionEntry> = listOf(
     AttributionEntry(
         "上课 shangkeschedule (qiqqqqq517)", "Apache-2.0",
         "1776 校学校登记表在名单交叉复核中的对照数据源"
+    ),
+    AttributionEntry(
+        "WeNEPU (cutiechi)", "",
+        "东北石油大学教务门户协议分析的参考"
+    ),
+    AttributionEntry(
+        "HeraldStudentCurriculum (idailylife)", "",
+        "南京理工大学课表查询接口的参考"
+    ),
+    AttributionEntry(
+        "东华大学第三方课表工具 (tk.dcmmcc)", "",
+        "东华大学教务协议分析的参考"
     )
 )
 
