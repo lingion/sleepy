@@ -89,6 +89,26 @@ class AboutLicenseAttributionTest {
         }
     }
 
+    /** 2026-09-05 学生项目批次: 逐校验证的第一手证据源 + 名单对照数据源 ("宁可错谢不放过") */
+    private val BATCH_D_STUDENT_PROJECTS = listOf(
+        Attribution("BIT-Login", "BIT101-dev"),
+        Attribution("iBistu", "ProjektMing"),
+        Attribution("JdaAssist", "CH4019"),
+        Attribution("CQYTZFCheckScores", "xM3GAN"),
+        Attribution("ScheduleXParser_SCAU", "greyovo"),
+        Attribution("JW-spider", "Zhy423310825"),
+        Attribution("BohaiServiceDome", ""),
+        Attribution("courseTable", "acm910"),
+        Attribution("shangkeschedule", "Apache-2.0"),
+    )
+
+    @Test
+    fun `all released locales list batch D student project attributions`() {
+        for (locale in ALL_RELEASED_LOCALES) {
+            checkAll(locale, BATCH_D_STUDENT_PROJECTS)
+        }
+    }
+
     @Test
     fun `all released locales list batch C full sweep attributions`() {
         for (locale in ALL_RELEASED_LOCALES) {

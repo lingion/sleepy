@@ -193,6 +193,43 @@ private fun licenseAttributionEntries(): List<AttributionEntry> = listOf(
     AttributionEntry(
         "FlowCourse (jiaweiyaya)", "GPL-3.0",
         "新正方 kbList 主流形态与 jc 多形态交叉验证"
+    ),
+    // ---- 学校同学维护的项目 (2026-09 逐校验证的第一手协议证据) ----
+    AttributionEntry(
+        "BIT-Login (BIT101-dev)", "",
+        "北京理工大学统一身份认证登录链路 (现行 jwapp 入口的证据源)"
+    ),
+    AttributionEntry(
+        "iBistu (ProjektMing)", "",
+        "北京信息科技大学金智 jwapp 课表 API 的证据源"
+    ),
+    AttributionEntry(
+        "JdaAssist (CH4019)", "MIT",
+        "安徽建筑大学教务入口 (https) 的佐证之一"
+    ),
+    AttributionEntry(
+        "CQYTZFCheckScores (xM3GAN)", "Apache-2.0",
+        "重庆邮电大学移通学院新正方 RSA 登录链路的证据源"
+    ),
+    AttributionEntry(
+        "ScheduleXParser_SCAU (greyovo)", "",
+        "华南农业大学新强智教务一键导入的协议参考"
+    ),
+    AttributionEntry(
+        "JW-spider (Zhy423310825)", "",
+        "齐鲁工业大学新正方接口链的证据源"
+    ),
+    AttributionEntry(
+        "BohaiServiceDome (joun233)", "",
+        "渤海大学老教务域 (2020) 的历史佐证"
+    ),
+    AttributionEntry(
+        "courseTable (acm910)", "",
+        "武汉理工大学课表结构的社区参考"
+    ),
+    AttributionEntry(
+        "上课 shangkeschedule (qiqqqqq517)", "Apache-2.0",
+        "1776 校学校登记表在名单交叉复核中的对照数据源"
     )
 )
 
