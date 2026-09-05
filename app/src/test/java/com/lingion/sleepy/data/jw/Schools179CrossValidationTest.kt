@@ -88,7 +88,7 @@ class Schools179CrossValidationTest {
             "苏州科技大学天平学院" to "tpjw-n.usts.edu.cn",
             "山西工程技术学院" to "xsjw.sxit.edu.cn",
             "湖北医药学院" to "https://jw.hbmu.edu.cn",
-            "山东第二医科大学" to "jwgl.sdmpu.edu.cn",
+            "山东第二医科大学" to "jwgl.sdsmu.edu.cn",
             "哈尔滨商业大学" to "jw.hrbcu.edu.cn",
         )
         val bad = mustContain.mapNotNull { (name, frag) ->
