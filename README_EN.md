@@ -65,7 +65,16 @@
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. No shell dependencies. Direct import from university academic systems (JW), multi-format parsing, five home-screen widget types, daily course notifications, dark mode, and five theme presets.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Direct import from university academic systems (JW), multi-format parsing, five home-screen widget types, daily course notifications, dark mode, and five theme presets. The current release is `v1.0.49`, with direct import support for 179 universities.
+
+### v1.0.49
+
+- Added direct import entries for Guangdong Medical University, Guangzhou Medical University, and Jilin Business and Technology College.
+- Added the `sleepy-v1` native plain-text import/export format while keeping the existing formats.
+- Added ChaoXing personal timetable parsing, including week-run splitting, consecutive-period merging, and HTML field cleanup.
+- Corrected 60 school catalog entries and removed dead or duplicate entries while keeping the catalog at 179 schools.
+- Fixed Wuhan University of Technology login routing and added collector retries and collection logs.
+- Added a dedicated open-source acknowledgements page listing 26 upstream projects and their licenses.
 
 ---
 
@@ -150,6 +159,7 @@ Entry: bottom bar "Timetables" → "Import". All three import paths **preview fi
 | `whut` | Wuhan University of Technology (Wisedu variant) |
 | `pku` | Peking University |
 | `bnuz` | BNU Zhuhai |
+| `chaoxing` | ChaoXing general academic affairs (Jilin Business and Technology College personal timetable) |
 
 ### University not listed?
 
@@ -165,6 +175,7 @@ Direct import is adapted per university (179 supported so far). Unadapted univer
 | **CSV file** | `.csv` with header row, comma-separated |
 | **HTML table** | `<table>` markup, parsed header-first |
 | **Plain text** | One course per line, tab-separated |
+| **sleepy-v1** | Sleepy's native plain-text format with a `chk` integrity field and deterministic records |
 
 ---
 
@@ -184,7 +195,7 @@ Fields: course name · teacher · room · notes · weekday · period range · we
 
 ## Export
 
-Three export formats. Files are saved to the device's `Download/Sleepy/` and the system share sheet opens automatically.
+Four export formats. Files are saved to the device's `Download/Sleepy/` and the system share sheet opens automatically.
 
 <p align="left">
   <img src="docs/screenshots/19-export.png" width="280">
@@ -197,8 +208,11 @@ Three export formats. Files are saved to the device's `Download/Sleepy/` and the
 | **WakeUp-compatible JSON** | Full timetable structure; importable by WakeUp and similar apps | `ScheduleExporter.exportWakeUpJson` |
 | **Share text** | Compact text format (URL-encoded JSON); paste anywhere | `ScheduleExporter.exportWakeUpShareText` |
 | **ICS calendar** | Standard iCalendar; import into system / Google / Apple Calendar | `ScheduleExporter.exportIcs` |
+| **sleepy-v1** | Sleepy's native plain-text format for re-import or editing | `SleepyNativeExporter` |
 
-File path: `Download/Sleepy/sleepy_<name>_<timestamp>.{json|ics}`.
+File path: traditional formats use `Download/Sleepy/sleepy_<name>_<timestamp>.{json|ics}`; `sleepy-v1` is exported through the system share sheet.
+
+The existing WakeUp share text format remains importable.
 
 ---
 
@@ -219,6 +233,16 @@ Implementation notes:
 - Colors sync with the app theme in real time (dark mode + 5 presets)
 - **Three render paths (main app / WeekGrid / screenshot renderer) share identical color logic**: course colors are distributed by golden-angle (137.508°) HSL hue from a hash of the course group — evenly spread and stable per course
 - Refresh: `APPWIDGET_UPDATE` broadcast to all 5 receivers (system-level) + WorkManager every 15 minutes
+
+---
+
+## Course Conflicts and Undo
+
+When courses overlap, the grid keeps two layers visible and tapping the covered area rotates through the other courses. Three or more overlapping courses are not silently dropped; the stack style also works with any layer count.
+
+When a manually added or edited course overlaps an existing course, the confirmation dialog lists the weekday, periods, actual overlapping weeks, and the conflicting course before saving.
+
+The top bar includes Undo for the most recent timetable data change. Switching the active timetable is navigation and does not create an undo entry.
 
 ---
 
@@ -267,6 +291,9 @@ Entry: "Mine" → "About". A dedicated page showing version, author, and open-so
 | **Author** | Lingion, tap to open the GitHub profile |
 | **Source** | github.com/lingion/sleepy, tappable |
 | **License note** | GPL-3.0 summary; contributions welcome |
+| **Open-source acknowledgements** | 26 upstream projects, their licenses, and the parts of Sleepy they informed |
+
+The About page also checks for updates and shows the full release notes before downloading. Downloads can be cancelled.
 
 ---
 
@@ -330,8 +357,8 @@ sleepy/
 │   │   │   ├── AppDatabase.kt          # Room database
 │   │   │   ├── dao/                    # Course / Timetable DAOs
 │   │   │   ├── entity/                 # Course / TimeTable / SmartPeriodConfig
-│   │   │   ├── jw/                     # JW import (wisedu/qz/zf/urp/cf/pku/bnuz)
-│   │   │   ├── parser/                 # ScheduleParser + ScheduleExporter
+│   │   │   ├── jw/                     # JW import (including chaoxing/classic_eams/eams5/whut)
+│   │   │   ├── parser/                 # ScheduleParser + SleepyNativeParser/Exporter
 │   │   │   └── repository/             # ScheduleRepository
 │   │   ├── ui/
 │   │   │   ├── component/              # CourseTableView / CourseDetailSheet /
@@ -409,10 +436,7 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 [GPL-3.0](LICENSE)
 
-Parts of the JW import adapters reference the public interfaces/parsing logic of these open-source projects, with thanks:
-
-- [dIT8Zv/WakeupSchedule_BUPT](https://github.com/dIT8Zv/WakeupSchedule_BUPT)（Apache-2.0）— Zhengfang/Qiangzhi/URP parser structure
-- 时光课程表重庆大学适配器（cqu.js，by 茵符草）— my.cqu.edu.cn REST API shape
+Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list of 26 projects, licenses, and reference scope is available in the app under Mine → About → Open-source acknowledgements.
 
 ---
 

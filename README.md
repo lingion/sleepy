@@ -65,7 +65,16 @@
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
-Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。零壳依赖，支持教务直连导入、多格式解析、五类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。
+Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。支持教务直连导入、多格式解析、五类桌面 Widget、每日课程通知、深色模式，五种主题配色任选。当前版本为 `v1.0.49`，支持 179 所学校的教务直连。
+
+### v1.0.49
+
+- 新增广东医科大学、广州医科大学和吉林工商学院教务直连。
+- 新增 `sleepy-v1` 原生纯文本导入导出格式，旧格式继续保留。
+- 新增超星综合教务个人课表解析，支持周次拆分、连续节次合并和 HTML 字段清理。
+- 修正 179 所学校目录中的 60 条入口或协议记录，并处理死链和重复条目。
+- 武汉理工大学入口改走 `forceCas`，导入前自动切换学生角色；采集器增加重试和采集日志。
+- 关于页新增独立的开源声明页面，列出 26 个上游项目及许可证。
 
 ---
 
@@ -151,6 +160,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | `whut` | 武汉理工大学（金智变体） |
 | `pku` | 北京大学 |
 | `bnuz` | 北师珠 |
+| `chaoxing` | 超星综合教务（当前接入吉林工商学院个人课表） |
 
 ### 找不到你的学校？
 
@@ -166,6 +176,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | **CSV 文件** | 含表头的 `.csv`，逗号分隔 |
 | **HTML 表格** | `<table>` 形式，识别表头后逐行解析 |
 | **纯文本** | 一行一课，制表符分隔 |
+| **sleepy-v1** | Sleepy 原生纯文本格式，带 `chk` 完整性字段和确定性记录 |
 
 > v1.0.18：导入课表改为 ModalBottomSheet 弹窗，三入口统一视觉。
 > v1.0.21：导入流程统一加"先预览再导入"，避免误操作覆盖原课表。
@@ -188,7 +199,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 ## 导出课表
 
-v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存到设备 `Download/Sleepy/` 并触发系统分享面板。
+v1.0.16 新增完整导出功能。现在支持四种格式；传统文件格式自动保存到设备 `Download/Sleepy/`，并触发系统分享面板。
 
 <p align="left">
   <img src="docs/screenshots/19-export.png" width="280">
@@ -196,15 +207,18 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 
 > 截图：导出页（在"我的 → 导出课表"）
 
-三种导出格式：
+四种导出格式：
 
 | 格式 | 用途 | 实现 |
 |---|---|---|
 | **WakeUp 兼容 JSON** | 完整课表结构，可被 WakeUp 课表等同类 App 直接导入 | `ScheduleExporter.exportWakeUpJson` |
 | **分享文本** | 短文本格式（URL 编码 JSON），可粘贴到任何聊天工具 | `ScheduleExporter.exportWakeUpShareText` |
 | **ICS 日历** | 标准 iCalendar 格式，可导入系统日历 / Google / Apple Calendar | `ScheduleExporter.exportIcs` |
+| **sleepy-v1** | Sleepy 原生纯文本格式，可再次导入或编辑 | `SleepyNativeExporter` |
 
-文件路径：`Download/Sleepy/sleepy_<表名>_<时间戳>.{json|ics}`。
+文件路径：传统文件格式使用 `Download/Sleepy/sleepy_<表名>_<时间戳>.{json|ics}`；`sleepy-v1` 通过系统分享面板导出。
+
+旧版 WakeUp 分享文本仍可继续导入。
 
 ---
 
@@ -225,6 +239,16 @@ v1.0.16 新增完整导出功能。三种格式可选，导出文件自动保存
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
 - **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，均匀铺开且每门课稳定唯一
 - 刷新机制：对全部 5 个 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 每 15 分钟定时刷新
+
+---
+
+## 冲突课程和撤回
+
+同一时间有多门课程时，网格视图保留两层可见内容，点击被覆盖区域可以轮换显示其他课程；三门以上的冲突不会静默丢失。叠层样式支持任意层数。
+
+手动添加或编辑课程遇到冲突时，提示会列出星期、节次、实际重叠周次和冲突课程。确认后才保存，返回修改则不写入。
+
+顶栏提供撤回操作，用于回退最近一次课表数据修改。切换当前课表不会被当作数据修改记录。
 
 ---
 
@@ -273,7 +297,9 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 | **版本信息** | 版本号 + 构建号（`BuildConfig.VERSION_NAME` / `BuildConfig.VERSION_CODE`） |
 | **作者** | Lingion，点击跳 GitHub 主页 |
 | **开源地址** | github.com/lingion/sleepy，点击可跳转 |
-| **开源声明** | GPL-3.0 协议说明，欢迎贡献 |
+| **开源声明** | GPL-3.0 协议说明、26 个上游项目的许可证和参考范围 |
+
+关于页还提供版本更新检查。检查到新版本时先展示完整更新说明，确认后才下载；下载过程可取消。
 
 ---
 
@@ -337,8 +363,8 @@ sleepy/
 │   │   │   ├── AppDatabase.kt          # Room 数据库
 │   │   │   ├── dao/                    # 课程 / 课表 DAO
 │   │   │   ├── entity/                 # Course / TimeTable / SmartPeriodConfig
-│   │   │   ├── jw/                     # 教务系统导入（wisedu/qz/zf/urp/cf/pku/bnuz）
-│   │   │   ├── parser/                 # ScheduleParser + ScheduleExporter
+│   │   │   ├── jw/                     # 教务系统导入（含 chaoxing/classic_eams/eams5/whut）
+│   │   │   ├── parser/                 # ScheduleParser + SleepyNativeParser/Exporter
 │   │   │   └── repository/             # ScheduleRepository
 │   │   ├── ui/
 │   │   │   ├── component/              # CourseTableView / CourseDetailSheet /
@@ -416,10 +442,7 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 [GPL-3.0](LICENSE)
 
-部分教务系统导入适配参考了以下开源实现的公开接口/解析逻辑，在此致谢：
-
-- [dIT8Zv/WakeupSchedule_BUPT](https://github.com/dIT8Zv/WakeupSchedule_BUPT)（Apache-2.0）— 正方/强智/URP 等解析器结构
-- 时光课程表重庆大学适配器（cqu.js，by 茵符草）— my.cqu.edu.cn REST API 形状佐证
+Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；完整的 26 项项目名称、许可证和参考范围见应用内「我的」→「关于」→「开源声明」。
 
 ---
 
