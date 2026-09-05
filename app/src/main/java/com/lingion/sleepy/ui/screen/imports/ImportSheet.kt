@@ -652,7 +652,11 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                     color = colors.onSurface
                 )
                 Text(
-                    text = stringResource(exampleRes),
+                    // strings.xml 里 \n/\t 是字面两字符(formatted="false"), 渲染前手动还原 —
+                    // 与下方 ai_prompt_text 同一约定; 否则示例挤成一行, 用户没法照着写
+                    text = stringResource(exampleRes)
+                        .replace("\\n", "\n")
+                        .replace("\\t", "\t"),
                     style = MaterialTheme.typography.bodySmall.copy(fontFamily = FontFamily.Monospace),
                     color = colors.onSurface,
                     modifier = Modifier
