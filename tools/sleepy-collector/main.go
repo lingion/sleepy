@@ -21,6 +21,7 @@ import (
 	"regexp"
 	"sort"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/chromedp/cdproto/network"
@@ -53,6 +54,179 @@ type Collector struct {
 	urlSrc  map[string][]string
 	xnxq    string
 	gnmkdm  string
+	log     *logHub
+}
+
+// logHub 采集日志中枢 — 一处记录,三处消费:
+//
+//	① 页面进度面板 (用户实时看到采集进度/错误)
+//	② 终端输出
+//	③ 包内 6-logs/collect-log.txt (issue 提交后适配者可复盘全过程)
+type logHub struct {
+	mu      sync.Mutex
+	lines   []logLine
+	panelOn bool // 页面是否已注入面板 (采集中途页面跳转会丢,重注入时回放全文)
+}
+
+type logLine struct {
+	time string // HH:MM:SS
+	lvl  string // info / warn / error / ok
+	msg  string
+}
+
+func newLogHub() *logHub { return &logHub{} }
+
+// Log 记录一条日志 (并发安全;onEvent 在 CDP 事件 goroutine 调用)。
+// ctx 传 nil 时只记终端,不推面板 (面板由 packageAll 阶段的 FlushPanel 周期刷新)。
+func (h *logHub) Log(lvl, format string, a ...interface{}) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	line := logLine{
+		time: time.Now().Format("15:04:05"),
+		lvl:  lvl,
+		msg:  fmt.Sprintf(format, a...),
+	}
+	h.lines = append(h.lines, line)
+	// 终端同步输出 (warn/error 带标记醒目)
+	switch lvl {
+	case "error":
+		fmt.Println("  ✗ " + line.msg)
+	case "warn":
+		fmt.Println("  ⚠ " + line.msg)
+	case "ok":
+		fmt.Println("  ✓ " + line.msg)
+	default:
+		fmt.Println("  · " + line.msg)
+	}
+}
+
+// panelJS 往页面注入/刷新进度面板;linesJSON 是全量日志(重注入时回放)。
+func panelJS(linesJSON string) string {
+	return `(function(){
+  var LOGS = ` + linesJSON + `;
+  var w = document.getElementById('__sleepy_log_wrap');
+  if (!w) {
+    if (!document.body) return 'nobody';
+    w = document.createElement('div');
+    w.id = '__sleepy_log_wrap';
+    w.style.cssText = 'position:fixed;right:18px;bottom:86px;z-index:2147483647;'
+      + 'width:340px;max-height:260px;overflow-y:auto;background:rgba(20,20,25,.92);color:#ddd;'
+      + 'border-radius:10px;padding:10px 12px;font:12px/1.6 monospace;'
+      + 'box-shadow:0 6px 24px rgba(0,0,0,.4);display:none;';
+    var head = document.createElement('div');
+    head.textContent = '📋 采集日志';
+    head.style.cssText = 'font-weight:bold;color:#fff;margin-bottom:6px;cursor:pointer;user-select:none;';
+    var body = document.createElement('div');
+    body.id = '__sleepy_log_body';
+    head.onclick = function(){
+      body.style.display = body.style.display === 'none' ? 'block' : 'none';
+    };
+    w.appendChild(head); w.appendChild(body);
+    document.body.appendChild(w);
+    window.__sleepyPanelOn = true;
+  }
+  var body = document.getElementById('__sleepy_log_body');
+  body.innerHTML = '';
+  var colors = {info:'#9ab',ok:'#4caf50',warn:'#ffb74d',error:'#ff8a80',step:'#64b5f6'};
+  for (var i = 0; i < LOGS.length; i++) {
+    var L = LOGS[i];
+    var div = document.createElement('div');
+    var c = colors[L.lvl] || colors.info;
+    div.style.color = c;
+    div.textContent = '[' + L.time + '] ' + L.msg;
+    body.appendChild(div);
+  }
+  w.style.display = 'block';
+  w.scrollTop = w.scrollHeight;
+  return 'ok:' + LOGS.length;
+})()`
+}
+
+// FlushPanel 把全部日志回放到页面面板 (打包阶段每步末调用一次;
+// 页面跳转面板丢失时会重新注入并回放全文)。
+func (h *logHub) FlushPanel(ctx context.Context) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	h.flushLocked(ctx, false)
+}
+
+// FlushPanelVisible 同 FlushPanel 但强制展开日志主体 (采集开始/结束/失败时用,
+// 让用户第一眼就看到进度而不是只看到一个标题条)。
+func (h *logHub) FlushPanelVisible(ctx context.Context) error {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	return h.flushLocked(ctx, true)
+}
+
+func (h *logHub) flushLocked(ctx context.Context, expand bool) error {
+	type pl struct {
+		Time string `json:"time"`
+		Lvl  string `json:"lvl"`
+		Msg  string `json:"msg"`
+	}
+	lines := make([]pl, len(h.lines))
+	for i, l := range h.lines {
+		lines[i] = pl{l.time, l.lvl, l.msg}
+	}
+	b, err := json.Marshal(lines)
+	if err != nil {
+		return err
+	}
+	js := panelJS(string(b))
+	if expand {
+		js += `;(function(){
+      var b2 = document.getElementById('__sleepy_log_body');
+      var w2 = document.getElementById('__sleepy_log_wrap');
+      if (b2) b2.style.display = 'block';
+      if (w2) w2.style.display = 'block';
+    })();`
+	}
+	return chromedp.Run(ctx, chromedp.Evaluate(js, nil))
+}
+
+// pushToPanel 已并入 FlushPanel 全量回放 — 面板刷新频率低(阶段级),
+// 全量重渲染简单且日志量小, 不引入增量复杂度。
+
+// Text 全量日志文本 (入包用)。
+func (h *logHub) Text() string {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	var sb strings.Builder
+	sb.WriteString("时间       级别    内容\n")
+	sb.WriteString("──────────────────────────────────────────────\n")
+	for _, l := range h.lines {
+		lvl := l.lvl
+		switch lvl {
+		case "ok":
+			lvl = "✓ 成功"
+		case "warn":
+			lvl = "⚠ 警告"
+		case "error":
+			lvl = "✗ 错误"
+		case "step":
+			lvl = "▸ 阶段"
+		}
+		sb.WriteString(fmt.Sprintf("%s  %-5s %s\n", l.time, lvl, l.msg))
+	}
+	if len(h.lines) == 0 {
+		sb.WriteString("(无日志)\n")
+	}
+	return sb.String()
+}
+
+// Counts 统计 (错误/警告数, 收尾汇总用)。
+func (h *logHub) Counts() (errs, warns int) {
+	h.mu.Lock()
+	defer h.mu.Unlock()
+	for _, l := range h.lines {
+		switch l.lvl {
+		case "error":
+			errs++
+		case "warn":
+			warns++
+		}
+	}
+	return
 }
 
 func NewCollector() *Collector {
@@ -60,6 +234,7 @@ func NewCollector() *Collector {
 		recs:    map[network.RequestID]*reqRec{},
 		urlSeen: map[string]bool{},
 		urlSrc:  map[string][]string{},
+		log:     newLogHub(),
 	}
 }
 
@@ -148,6 +323,10 @@ func (c *Collector) onEvent(ev interface{}) {
 		if r := c.recs[e.RequestID]; r != nil {
 			r.status = e.Response.Status
 			r.mimeType = e.Response.MimeType
+			// HTTP 错误/重定向异常 → 日志 (静态资源 4xx 噪音大, 只记 API 类)
+			if e.Response.Status >= 400 && isAPILike(r.url) {
+				c.log.Log("warn", "HTTP %d %s", e.Response.Status, shortURL(r.url))
+			}
 		}
 	case *network.EventLoadingFinished:
 		if r := c.recs[e.RequestID]; r != nil {
@@ -159,8 +338,34 @@ func (c *Collector) onEvent(ev interface{}) {
 			if r.status == 0 {
 				r.status = -1
 			}
+			// 请求彻底失败 (连接拒绝/DNS/证书) → error 日志
+			if isAPILike(r.url) {
+				c.log.Log("error", "请求失败 %s (%s)", shortURL(r.url), e.ErrorText)
+			}
 		}
 	}
+}
+
+// isAPILike 粗判是否数据接口 (排除静态资源噪音)。
+func isAPILike(u string) bool {
+	l := strings.ToLower(u)
+	if strings.HasSuffix(l, ".js") || strings.HasSuffix(l, ".css") ||
+		strings.HasSuffix(l, ".png") || strings.HasSuffix(l, ".jpg") ||
+		strings.HasSuffix(l, ".gif") || strings.HasSuffix(l, ".ico") ||
+		strings.HasSuffix(l, ".woff") || strings.HasSuffix(l, ".woff2") ||
+		strings.HasSuffix(l, ".ttf") || strings.HasSuffix(l, ".svg") {
+		return false
+	}
+	return true
+}
+
+// shortURL 缩短 URL 用于日志显示 (去协议,超 90 字符截断)。
+func shortURL(u string) string {
+	u = strings.TrimPrefix(strings.TrimPrefix(u, "https://"), "http://")
+	if len(u) > 90 {
+		u = u[:87] + "..."
+	}
+	return u
 }
 
 // ---------------- ZIP 写入(store,零依赖) ----------------
@@ -663,16 +868,27 @@ func main() {
 
 	fmt.Println()
 	fmt.Println("收到采集指令,正在打包(页面文件多时需要一两分钟,别关窗口)…")
+	fmt.Println("(进度同时显示在页面右下角的「采集日志」面板里)")
+	c.log.Log("step", "收到采集指令 — 打包开始")
+	_ = c.log.FlushPanelVisible(browserCtx) // 面板置顶可见
 	zipPath, err := c.packageAll(browserCtx)
 	if err != nil {
+		c.log.Log("error", "打包失败: %v", err)
+		_ = c.log.FlushPanelVisible(browserCtx)
 		fmt.Println("打包失败:", err)
 		waitEnter()
 		return
 	}
+	errs, warns := c.log.Counts()
 	abs, _ := filepath.Abs(zipPath)
+	c.log.Log("ok", "采集完成: %s", abs)
+	_ = c.log.FlushPanelVisible(browserCtx)
 	fmt.Println()
 	fmt.Println("=====================================================")
 	fmt.Println("✓ 采集完成:", abs)
+	if errs > 0 || warns > 0 {
+		fmt.Printf("  本次采集有 %d 个错误 / %d 个警告 (明细见包内 6-logs/collect-log.txt)\n", errs, warns)
+	}
 	fmt.Println()
 	fmt.Println("接下来:把这个 zip 文件作为附件发到 Sleepy 的适配 issue")
 	fmt.Println("(https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml)")
@@ -719,6 +935,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	p := newPacker()
 
 	// ---- 1. 页面状态 ----
+	c.log.Log("step", "开始打包 — 页面状态采集")
 	var title, ua, cookieFull, mainURL, mainHTML string
 	_ = chromedp.Run(ctx,
 		chromedp.Title(&title),
@@ -734,6 +951,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			cookieNames = append(cookieNames, kv[:i])
 		}
 	}
+	c.log.Log("info", "页面: %s (%s)", shortURL(mainURL), title)
 	if mainHTML != "" {
 		p.add(p.uniq("1-dom/top_page.html"), "页面DOM(打包时刻)", mainHTML)
 	}
@@ -770,12 +988,15 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			p.add(p.uniq(fmt.Sprintf("2-inline/top_%s%02d.%s", kind, i+1, ext)), "内联 "+kind, x["text"])
 		}
 	}
+	c.log.FlushPanel(ctx) // 面板: "页面状态采集" 完成
 
 	// ---- 2. CDP 捕获的网络请求:取响应体并入库 ----
 	origin := ""
 	_ = chromedp.Run(ctx, chromedp.Evaluate(`location.origin`, &origin))
+	c.log.Log("step", "网络请求 %d 个 — 取响应体入库", len(c.order))
 	fmt.Printf("  网络请求共 %d 个,正在取响应体…\n", len(c.order))
 	netOK := 0
+	netErr := 0
 	for idx, rid := range c.order {
 		r := c.recs[rid]
 		if r == nil || isLogout(r.url) {
@@ -795,6 +1016,9 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			if err == nil && body != "" {
 				r.body = body
 				c.mineValues(body)
+			} else if err != nil {
+				netErr++
+				c.log.Log("warn", "响应体获取失败 %s (%v)", shortURL(r.url), err)
 			}
 		}
 		if r.body == "" && r.postData == "" {
@@ -817,6 +1041,8 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			netOK++
 		}
 	}
+	c.log.Log("ok", "请求入库 %d (失败/跳过 %d)", netOK, len(c.order)-netOK)
+	c.log.FlushPanel(ctx)
 
 	// ---- 3. URL 总表(性能日志 + 页内链接补全) ----
 	var perfJSON string
@@ -844,6 +1070,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		allURLs = append(allURLs, u)
 	}
 	sort.Strings(allURLs)
+	c.log.Log("info", "URL 总表 %d 条 (网络请求+性能日志+页内链接)", len(allURLs))
 
 	// ---- 4. 资源重取(同站 GET,带凭证;串行) ----
 	// 同站 = 同根域(含子域),教务的静态资源常放在 res.xxx.edu.cn 这类子域
@@ -860,6 +1087,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	resOK := 0
 	refSkips := map[string]int{}
 	refTried := 0
+	c.log.Log("step", "资源重取 — 同站 GET 补漏 (上限 200)")
 	for _, u := range allURLs {
 		if resOK >= 200 {
 			break
@@ -897,9 +1125,12 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			}
 		}
 	}
+	c.log.Log("ok", "资源重取入库 %d (尝试 %d, 跳过 %v)", resOK, refTried, refSkips)
+	c.log.FlushPanel(ctx)
 
 	// ---- 5. 接口两阶段重放 ----
 	fmt.Println("  正在重放数据接口…")
+	c.log.Log("step", "数据接口重放")
 	var apis []string
 	origBody := map[string]string{} // url → 浏览器实际发的请求体 (用于形态探测)
 	for _, rid := range c.order {
@@ -984,9 +1215,14 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 				}
 			}
 		}
+	} else if c.xnxq == "" {
+		c.log.Log("warn", "未自动发现学期参数 (XNXQDM) — 带参重放跳过; 请确认已进入本学期课表页")
 	}
+	c.log.Log("ok", "接口重放入包 %d (候选 %d)", replayOK, len(apis))
+	c.log.FlushPanel(ctx)
 
 	// ---- 6. 日志与清单 ----
+	c.log.Log("step", "写诊断日志与清单")
 	var logLines []string
 	for _, rid := range c.order {
 		if r := c.recs[rid]; r != nil {
@@ -999,9 +1235,20 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		urlLines = append(urlLines, strings.Join(c.urlSrc[u], " | ")+" | "+u)
 	}
 	p.add(p.uniq("6-logs/all-urls.txt"), "发现的一切 URL 及来源", strings.Join(urlLines, "\n"))
+	// 采集过程日志 (终端/面板同源的完整记录; 适配者复盘用)
+	errCount, warnCount := c.log.Counts()
+	p.add(p.uniq("6-logs/collect-log.txt"), "采集过程日志(含进度与错误, 终端与页面面板同源)", c.log.Text())
 
-	statLine := fmt.Sprintf("文件 %d 个 · 请求入库 %d · 资源重取 %d · 接口重放入包 %d · 自动发现参数 %s",
-		len(p.entries), netOK, resOK, replayOK, c.minedStr())
+	summary := fmt.Sprintf("打包完成: 请求入库 %d · 响应体获取失败 %d · 资源重取 %d · 接口重放入包 %d · 参数 %s · 错误 %d 警告 %d",
+		netOK, netErr, resOK, replayOK, c.minedStr(), errCount, warnCount)
+	if errCount > 0 {
+		c.log.Log("warn", "%s", summary)
+	} else {
+		c.log.Log("ok", "%s", summary)
+	}
+
+	statLine := fmt.Sprintf("文件 %d 个 · 请求入库 %d · 响应体获取失败 %d · 资源重取 %d · 接口重放入包 %d · 自动发现参数 %s · 错误 %d · 警告 %d",
+		len(p.entries), netOK, netErr, resOK, replayOK, c.minedStr(), errCount, warnCount)
 	var idx strings.Builder
 	idx.WriteString("Sleepy 课表采集包 (sleepy-collector " + version + ")\n")
 	idx.WriteString("生成时间: " + time.Now().Format("2006-01-02 15:04:05") + "\n")
@@ -1010,7 +1257,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	idx.WriteString("== 概况 ==\n" + statLine + "\n\n== 目录说明 ==\n")
 	idx.WriteString("1-dom/ 页面DOM · 2-inline/ 内联代码 · 3-res/ 重取的资源文件\n")
 	idx.WriteString("4-net-live/ CDP捕获的请求(含响应体) · 4-net-replay/ 接口重放(withparam=带参数)\n")
-	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志\n\n== 文件清单(路径 | 说明) ==\n")
+	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志(6-logs/collect-log.txt 是采集过程日志)\n\n== 文件清单(路径 | 说明) ==\n")
 	for _, e := range p.entries {
 		idx.WriteString(e.path + "  |  " + e.meta + "\n")
 	}
