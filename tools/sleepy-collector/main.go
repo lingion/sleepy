@@ -713,6 +713,39 @@ func evalAsync(ctx context.Context, expr string, res any) error {
 	}))
 }
 
+// evalAsyncRetry: evalAsync 失败自动重试 — 教务服务器偶发超时/连接重置很常见
+// (用户实锤: 同一学校第一次采集大量资源重取失败, 第二次全好), 不该让一次
+// 抖动直接算错。重试 attempts-1 次, 短退避, 总耗时有界。
+func evalAsyncRetry(ctx context.Context, expr string, res any, attempts int) error {
+	var err error
+	for i := 0; i < attempts; i++ {
+		if i > 0 {
+			// 500ms * i 退避;ctx 取消(浏览器关了/超时)立刻放弃
+			select {
+			case <-time.After(time.Duration(i) * 500 * time.Millisecond):
+			case <-ctx.Done():
+				return ctx.Err()
+			}
+		}
+		if err = evalAsync(ctx, expr, res); err == nil {
+			return nil
+		}
+	}
+	return err
+}
+
+// retryable 判断错误是否值得重试: ctx 取消/超时是全局性的,重试没意义。
+func retryable(err error) bool {
+	if err == nil {
+		return false
+	}
+	if err == context.Canceled || err == context.DeadlineExceeded {
+		return false
+	}
+	s := err.Error()
+	return !strings.Contains(s, "context canceled") && !strings.Contains(s, "context deadline exceeded")
+}
+
 func fetchJS(u string) string {
 	return `(async function(){
   try {
@@ -824,14 +857,29 @@ func main() {
 
 	fmt.Println()
 	fmt.Println("正在启动浏览器…")
-	err = chromedp.Run(browserCtx,
-		network.Enable(),
-		chromedp.Navigate(target),
-		chromedp.WaitVisible("body", chromedp.ByQuery),
-	)
-	if err != nil {
-		fmt.Println("浏览器启动失败:", err)
-		fmt.Println("(本机需要安装 Chrome 或 Edge)")
+	// 初始打开教务网址: 偶发 DNS/网络抖动会在这里失败 — 自动重试 2 次,
+	// 都不行再放弃 (校DNS偶发抽风是"第一次不行第二次好"的常见根因)
+	var navErr error
+	for attempt := 1; attempt <= 3; attempt++ {
+		err = chromedp.Run(browserCtx,
+			network.Enable(),
+			chromedp.Navigate(target),
+			chromedp.WaitVisible("body", chromedp.ByQuery),
+		)
+		if err == nil {
+			navErr = nil
+			break
+		}
+		navErr = err
+		if attempt < 3 {
+			fmt.Printf("  打开失败(%v),5 秒后自动重试 (%d/2)…\n", err, attempt)
+			time.Sleep(5 * time.Second)
+		}
+	}
+	if navErr != nil {
+		fmt.Println("浏览器启动失败:", navErr)
+		fmt.Println("(本机需要安装 Chrome 或 Edge;若浏览器已弹出但页面打不开,")
+		fmt.Println(" 多为教务网址不可达 — 检查网址拼写,或换校园网再试一次)")
 		waitEnter()
 		return
 	}
@@ -869,13 +917,42 @@ func main() {
 	fmt.Println()
 	fmt.Println("收到采集指令,正在打包(页面文件多时需要一两分钟,别关窗口)…")
 	fmt.Println("(进度同时显示在页面右下角的「采集日志」面板里)")
-	c.log.Log("step", "收到采集指令 — 打包开始")
-	_ = c.log.FlushPanelVisible(browserCtx) // 面板置顶可见
-	zipPath, err := c.packageAll(browserCtx)
-	if err != nil {
-		c.log.Log("error", "打包失败: %v", err)
+	// 打包整体最多尝试 3 次: 教务服务器偶发抽风(超时/连接重置/静态资源打不开)
+	// 是"第一次不行、第二次就好"的常见根因 — 给用户重试的机会,失败不当场退出,
+	// 面板+终端同步提示,回车即重试。
+	var zipPath string
+	var lastErr error
+	for attempt := 1; attempt <= 3; attempt++ {
+		if attempt > 1 {
+			fmt.Printf("\n== 第 %d 次打包尝试 ==\n", attempt)
+			c.log.Log("step", "第 %d 次打包尝试 (前次失败,自动给了重试机会)", attempt)
+		}
+		c.log.Log("step", "收到采集指令 — 打包开始")
+		_ = c.log.FlushPanelVisible(browserCtx) // 面板置顶可见
+		p, err := c.packageAll(browserCtx)
+		if err == nil {
+			zipPath = p
+			lastErr = nil
+			break
+		}
+		lastErr = err
+		c.log.Log("error", "打包失败(第 %d 次): %v", attempt, err)
 		_ = c.log.FlushPanelVisible(browserCtx)
-		fmt.Println("打包失败:", err)
+		if attempt < 3 {
+			fmt.Println()
+			fmt.Printf("✗ 打包失败: %v\n", err)
+			fmt.Println("常见原因: 教务服务器偶发超时 / 校园网抖动。")
+			fmt.Printf("按回车立即重试打包 (还剩 %d 次机会),或直接关掉浏览器窗口放弃:\n", 3-attempt)
+			fmt.Scanln() // 阻塞等回车,不给"程序没反应"的观感
+			fmt.Println("(重试打包…)")
+		}
+	}
+	if lastErr != nil {
+		fmt.Println()
+		fmt.Println("✗ 多次打包均失败。建议:")
+		fmt.Println("  1. 在浏览器里重新登录教务系统(会话可能已过期),再点一次采集按钮")
+		fmt.Println("  2. 换个网络环境(校园网内/外互换)重试")
+		fmt.Println("  3. 仍失败请到 https://github.com/lingion/sleepy/issues 反馈,附本窗口截图")
 		waitEnter()
 		return
 	}
@@ -888,6 +965,7 @@ func main() {
 	fmt.Println("✓ 采集完成:", abs)
 	if errs > 0 || warns > 0 {
 		fmt.Printf("  本次采集有 %d 个错误 / %d 个警告 (明细见包内 6-logs/collect-log.txt)\n", errs, warns)
+		fmt.Println("  若错误较多,回到浏览器点一次采集按钮即可重新打包(结果覆盖,放心重试)")
 	}
 	fmt.Println()
 	fmt.Println("接下来:把这个 zip 文件作为附件发到 Sleepy 的适配 issue")
@@ -1013,6 +1091,18 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 				body = string(b)
 				return nil
 			}))
+			if err != nil && retryable(err) {
+				// GetResponseBody 偶发 "No data for requested resource" — 稍候重试一次
+				time.Sleep(500 * time.Millisecond)
+				err = chromedp.Run(ctx, chromedp.ActionFunc(func(ictx context.Context) error {
+					b, err := network.GetResponseBody(rid).Do(ictx)
+					if err != nil {
+						return err
+					}
+					body = string(b)
+					return nil
+				}))
+			}
 			if err == nil && body != "" {
 				r.body = body
 				c.mineValues(body)
@@ -1106,7 +1196,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		}
 		refTried++
 		var resp string
-		evErr := evalAsync(ctx, fetchJS(u), &resp)
+		evErr := evalAsyncRetry(ctx, fetchJS(u), &resp, 3)
 		if evErr == nil && len(resp) > 2 {
 			var fr struct {
 				Status int64  `json:"s"`
@@ -1164,7 +1254,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			fmt.Printf("    接口空体重放 %d/%d\n", i+1, len(apis))
 		}
 		var resp string
-		if err := evalAsync(ctx, postJS(u, ""), &resp); err == nil && len(resp) > 2 {
+		if err := evalAsyncRetry(ctx, postJS(u, ""), &resp, 3); err == nil && len(resp) > 2 {
 			var fr struct {
 				Status int64  `json:"s"`
 				CT     string `json:"ct"`
@@ -1201,7 +1291,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 				b = encodeBodyLike(ob, body)
 			}
 			var resp string
-			if err := evalAsync(ctx, postJS(u, b), &resp); err == nil && len(resp) > 2 {
+			if err := evalAsyncRetry(ctx, postJS(u, b), &resp, 3); err == nil && len(resp) > 2 {
 				var fr struct {
 					Status int64  `json:"s"`
 					CT     string `json:"ct"`
