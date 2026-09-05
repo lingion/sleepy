@@ -661,7 +661,7 @@ private const val WHUT_FETCH_JS = """
       {method:'POST', credentials:'include', headers:{'Content-Type':'application/x-www-form-urlencoded; charset=UTF-8','X-Requested-With':'XMLHttpRequest'}})
     .catch(function(){})
     .then(function(){
-    // 1) 学号 + 当前学期
+    // 1) 当前学期 (学号在 wdkbby 通道不需要 — 服务端按会话返回本人数据)
     return fetch('/jwapp/sys/homeapp/api/home/currentUser.do', {credentials:'include'})
     .then(function(r){ return r.json(); })
     .then(function(u){
@@ -669,10 +669,11 @@ private const val WHUT_FETCH_JS = """
       var xh = d.userId || '';
       var xnxq = (d.welcomeInfo && d.welcomeInfo.xnxqdm) || '';
       if (!xnxq) throw new Error('未取到当前学期, 请确认已登录本科教务');
-      // 2) 节次映射 (失败用 fallback)
+      // 2) 节次 DM→物理节映射: jcjcx.do 按名称含"节"计数 (中课1/晚课等不带"节"的跳过)。
+      //    2026-09 采集包实锤: DM 表 = 1..5,8..12,14..16, 与 fallback 一致。
       var fallbackMap = {"1":1,"2":2,"3":3,"4":4,"5":5,"8":6,"9":7,"10":8,"11":9,"12":10,"14":11,"15":12,"16":13};
       var sectionMap = {};
-      var mapReady = post('/jwapp/sys/kcbcxby/modules/dzkz/jcjcx.do', '').then(function(j){
+      var mapReady = post('/jwapp/sys/wdkbby/modules/dzkz/jcjcx.do', '').then(function(j){
         try {
           var rows = (j.datas && j.datas.jcjcx && j.datas.jcjcx.rows) || [];
           var n = 0;
@@ -683,16 +684,34 @@ private const val WHUT_FETCH_JS = """
           if (n < 10) sectionMap = fallbackMap;
         } catch(e) { sectionMap = fallbackMap; }
       }).catch(function(){ sectionMap = fallbackMap; });
+      var applyMap = function(rows){
+        for (var i = 0; i < rows.length; i++) {
+          var r = rows[i];
+          if (sectionMap[r.KSJC] != null) r.KSJC = String(sectionMap[r.KSJC]);
+          if (sectionMap[r.JSJC] != null) r.JSJC = String(sectionMap[r.JSJC]);
+        }
+      };
       return mapReady.then(function(){
-        return post('/jwapp/sys/kcbcxby/modules/xskcb/cxxskcb.do', 'XH=' + encodeURIComponent(xh) + '&XNXQDM=' + encodeURIComponent(xnxq))
+        // 3) 主通道: wdkbby/学生课程表 cxxszhxqkb.do (2026-09 用户采集包实锤 —
+        //    学生"我的课表"页面走这条: POST XNXQDM → datas.cxxszhxqkb.rows[],
+        //    字段 KCM/SKXQ/KSJC/JSJC/SKZC 与解析内核同构, KSJC 为 DM 值)。
+        //    旧 kcbcxby/cxxskcb.do 是"教室课表"(教师端)微应用, 学生账号常 403/空。
+        return post('/jwapp/sys/wdkbby/modules/xskcb/cxxszhxqkb.do', 'XNXQDM=' + encodeURIComponent(xnxq))
         .then(function(k){
-          var rows = (k.datas && k.datas.cxxskcb && k.datas.cxxskcb.rows) || [];
-          for (var i = 0; i < rows.length; i++) {
-            var r = rows[i];
-            if (sectionMap[r.KSJC] != null) r.KSJC = String(sectionMap[r.KSJC]);
-            if (sectionMap[r.JSJC] != null) r.JSJC = String(sectionMap[r.JSJC]);
+          var rows = (k.datas && k.datas.cxxszhxqkb && k.datas.cxxszhxqkb.rows) || [];
+          if (rows.length > 0) {
+            applyMap(rows);
+            window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k), periods:[]}));
+            return null;
           }
-          window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k), periods:[]}));
+          // 4) 兜底: 老 kcbcxby/cxxskcb.do 通道 (部分老版本部署仍用它)
+          return post('/jwapp/sys/kcbcxby/modules/xskcb/cxxskcb.do', 'XH=' + encodeURIComponent(xh) + '&XNXQDM=' + encodeURIComponent(xnxq))
+          .then(function(k2){
+            var rows2 = (k2.datas && k2.datas.cxxskcb && k2.datas.cxxskcb.rows) || [];
+            if (rows2.length === 0) throw new Error('课表为空: 请确认已在教务"我的课表"页可见本学期课程');
+            applyMap(rows2);
+            window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:JSON.stringify(k2), periods:[]}));
+          });
         });
       });
     });

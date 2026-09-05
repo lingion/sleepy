@@ -97,6 +97,50 @@ class JwWhutParserTest {
         assertEquals(3, courses[0].startNode)
     }
 
+    // ---- 2026-09-05 issue#15 用户采集包实锤通道 ----
+
+    private fun liveFixture(): String =
+        java.io.File("src/test/resources/jw/whut-live/whut_cxxszhxqkb_live.json")
+            .let { if (it.exists()) it.readText(Charsets.UTF_8) else "" }
+
+    @Test
+    fun `live cxxszhxqkb fixture - 27 rows expand to 31 course segments`() {
+        // 学生"我的课表"主通道 (wdkbby/cxxszhxqkb.do) 的真实响应结构。
+        // 27 行课元, SKZC bitmap 按 1-段拆开后共 31 条课程段 (同课不同周段分列)。
+        val src = liveFixture()
+        if (src.isEmpty()) return // fixture 不可达时跳过 (CI 无资源目录场景)
+        val courses = JwWhutParser(src).generateCourseList()
+        assertEquals(31, courses.size)
+    }
+
+    @Test
+    fun `live cxxszhxqkb fixture - evening DM14 maps to node 11`() {
+        // 世界美术欣赏: KSJC=14(JSJC=16) 是 DM 值 (DM表: 14=第十一节, 16=第十三节)
+        // → 映射到物理节 11..13
+        val src = liveFixture()
+        if (src.isEmpty()) return
+        val courses = JwWhutParser(src).generateCourseList()
+        val art = courses.filter { it.name.startsWith("世界美术欣赏") }
+        assertTrue("应解析出世界美术欣赏课元", art.isNotEmpty())
+        assertEquals(11, art[0].startNode)
+        assertEquals(13, art[0].endNode)
+    }
+
+    @Test
+    fun `live cxxszhxqkb fixture - SKZC 30-bit 6-15周`() {
+        // 模拟电子技术基础B 周二第1-2节行: SKZC="000001111111111000000000000000" → 6-15周连续
+        val src = liveFixture()
+        if (src.isEmpty()) return
+        val courses = JwWhutParser(src).generateCourseList()
+        val analog = courses.filter {
+            it.name == "模拟电子技术基础B" && it.day == 2 && it.startNode == 1
+        }
+        assertTrue(analog.isNotEmpty())
+        assertEquals(6, analog[0].startWeek)
+        assertEquals(15, analog[0].endWeek)
+        assertEquals(0, analog[0].type) // 单连续段 → type=0 每周
+    }
+
     @Test
     fun `confidence recognizes cxxskcb anchor`() {
         // 真实响应含 URL 痕迹 cxxskcb.do 时高置信

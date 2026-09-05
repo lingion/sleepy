@@ -12,6 +12,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"os"
@@ -261,6 +262,10 @@ func buildZip(files []zipEntry) []byte {
 const maxFileBytes = 2 * 1024 * 1024
 const maxTotalBytes = 20 * 1024 * 1024
 
+// 6-logs/ 与 INDEX.txt 是诊断命脉 (WHUT issue#15 的包被大响应挤掉 6-logs),
+// 预留配额: 常规条目可用的上限 = maxTotalBytes - reservedBytes。
+const reservedBytes = 256 * 1024
+
 type entry struct {
 	path, meta string
 	data       []byte
@@ -276,6 +281,11 @@ type packer struct {
 func newPacker() *packer { return &packer{seenPath: map[string]bool{}, seenBody: map[string]bool{}} }
 
 func (p *packer) add(path, meta, body string) bool {
+	return p.addLimit(path, meta, body, maxTotalBytes)
+}
+
+// addLimit 带配额上限的入库; 诊断类条目 (6-logs/INDEX) 用全额配额, 其余扣掉预留。
+func (p *packer) addLimit(path, meta, body string, limit int) bool {
 	if p.seenPath[path] {
 		return false
 	}
@@ -292,8 +302,8 @@ func (p *packer) add(path, meta, body string) bool {
 		data = data[:maxFileBytes]
 		meta += " [单文件超限已截断]"
 	}
-	if p.used+len(data) > maxTotalBytes {
-		remain := maxTotalBytes - p.used
+	if p.used+len(data) > limit {
+		remain := limit - p.used
 		if remain < 1024 {
 			return false
 		}
@@ -371,6 +381,51 @@ func extOf(ct, u string) string {
 		}
 	}
 	return ".txt"
+}
+
+// looksBase64Body 探测教务 POST body 是否 base64 编码 (WHUT 教务把
+// "XNXQDM=2026-2027-1" 编成 "WE5YUURNPTIwMjYtMjAyNy0x" 再发; 带参重试若发
+// 明文, 服务端解 base64 失败 → withparam 重放全空)。
+// 判据: 全部字符属 base64 字母表且长度为 4 的倍数, 解码后含 '=' 或 JSON 特征。
+func looksBase64Body(s string) bool {
+	if len(s) == 0 || len(s)%4 != 0 {
+		return false
+	}
+	for _, c := range s {
+		if !(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '+' || c == '/' || c == '=' || c == '\n' || c == '\r') {
+			return false
+		}
+	}
+	dec, err := base64.StdEncoding.DecodeString(strings.TrimSpace(s))
+	if err != nil {
+		return false
+	}
+	d := string(dec)
+	// 解码后应像 URL 表单或 JSON (WHUT 实测解码 = "XNXQDM=2026-2027-1&pageSize=1...")
+	return strings.Contains(d, "=") || strings.Contains(d, "{") || strings.Contains(d, "\"")
+}
+
+// encodeBodyLike 按 original 的编码形态编码 plain (原 base64 → base64, 原明文 → 原样)。
+func encodeBodyLike(original, plain string) string {
+	if looksBase64Body(original) {
+		return base64.StdEncoding.EncodeToString([]byte(plain))
+	}
+	return plain
+}
+
+// isErrPage 探测教务错误页 (会话失效后重取 .do 落"系统异常"页也 HTTP 200)。
+func isErrPage(t string) bool {
+	if len(t) == 0 || len(t) > 20*1024 {
+		return false
+	}
+	for _, k := range []string{"系统异常", "会话已失效", "请重新登录", "访问出错"} {
+		if strings.Contains(t, k) {
+			return true
+		}
+	}
+	l := strings.ToLower(t)
+	return strings.Contains(l, "<title>登录</title>") ||
+		strings.Contains(l, "wengine-auth-failed")
 }
 
 func isRich(t string) bool {
@@ -756,7 +811,9 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		}
 		meta := fmt.Sprintf("%s %s → HTTP %d · %s", r.method, r.url, r.status, r.mimeType)
 		name := fmt.Sprintf("%03d_%s_", idx+1, r.method)
-		if p.add(p.uniq(urlToPath("4-net-live", name+r.url, extOf(r.mimeType, r.url))), meta, content) {
+		// 4-net-live 占包体大头; 扣掉 reservedBytes 给 6-logs/INDEX (WHUT issue#15 的包
+		// 被 umi.js 等大响应挤掉诊断日志, 适配时两眼一抹黑)
+		if p.addLimit(p.uniq(urlToPath("4-net-live", name+r.url, extOf(r.mimeType, r.url))), meta, content, maxTotalBytes-reservedBytes) {
 			netOK++
 		}
 	}
@@ -790,7 +847,16 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 
 	// ---- 4. 资源重取(同站 GET,带凭证;串行) ----
 	// 同站 = 同根域(含子域),教务的静态资源常放在 res.xxx.edu.cn 这类子域
+	// POST 数据接口 (.do/.action 等) 不重取 — GET 语义不同,拿到的是
+	// "系统异常"错误页 (WHUT issue#15 实锤: 3-res 里 3 个 .do 全是异常页,
+	// 污染包体还占配额)。判据: 该 URL 在 CDP 记录里是 POST。
 	siteHost := hostOf(mainURL)
+	postOnly := map[string]bool{}
+	for _, rid := range c.order {
+		if r := c.recs[rid]; r != nil && r.method == "POST" {
+			postOnly[r.url] = true
+		}
+	}
 	resOK := 0
 	refSkips := map[string]int{}
 	refTried := 0
@@ -806,6 +872,10 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			refSkips["cross-site"]++
 			continue
 		}
+		if postOnly[u] {
+			refSkips["post-api"]++
+			continue
+		}
 		refTried++
 		var resp string
 		evErr := evalAsync(ctx, fetchJS(u), &resp)
@@ -816,6 +886,11 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 				Body   string `json:"b"`
 			}
 			if json.Unmarshal([]byte(resp), &fr) == nil && fr.Status == 200 && len(fr.Body) > 20 {
+				// 错误页过滤: 会话失效/越权重取落"系统异常/登录"页也 HTTP 200
+				if isErrPage(fr.Body) {
+					refSkips["error-page"]++
+					continue
+				}
 				if p.add(p.uniq(urlToPath("3-res", u, extOf(fr.CT, u))), "重取 GET "+u+fmt.Sprintf(" · HTTP %d · %s", fr.Status, fr.CT), fr.Body) {
 					resOK++
 				}
@@ -826,6 +901,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	// ---- 5. 接口两阶段重放 ----
 	fmt.Println("  正在重放数据接口…")
 	var apis []string
+	origBody := map[string]string{} // url → 浏览器实际发的请求体 (用于形态探测)
 	for _, rid := range c.order {
 		r := c.recs[rid]
 		if r == nil || isLogout(r.url) || looksBinary(r.url) {
@@ -839,6 +915,9 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			!strings.Contains(strings.ToLower(r.mimeType), "javascript") &&
 			!strings.Contains(strings.ToLower(r.mimeType), "html") {
 			continue
+		}
+		if r.postData != "" {
+			origBody[r.url] = r.postData
 		}
 		apis = append(apis, r.url)
 	}
@@ -882,8 +961,16 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			if (i+1)%10 == 0 {
 				fmt.Printf("    带参重试 %d/%d\n", i+1, len(retry))
 			}
+			// 关键: 按该接口原始请求体的编码形态发参 (WHUT 教务 body 是
+			// base64("XNXQDM=..."), 发明文会被服务端 base64 解码打回 — issue#15 实锤)
+			b := body
+			if ob, ok := origBody[u]; ok && looksBase64Body(ob) {
+				b = base64.StdEncoding.EncodeToString([]byte(body))
+			} else if ob, ok := origBody[u]; ok {
+				b = encodeBodyLike(ob, body)
+			}
 			var resp string
-			if err := evalAsync(ctx, postJS(u, body), &resp); err == nil && len(resp) > 2 {
+			if err := evalAsync(ctx, postJS(u, b), &resp); err == nil && len(resp) > 2 {
 				var fr struct {
 					Status int64  `json:"s"`
 					CT     string `json:"ct"`
@@ -891,7 +978,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 				}
 				if json.Unmarshal([]byte(resp), &fr) == nil && isRich(fr.Body) {
 					c.mineValues(fr.Body)
-					if p.add(p.uniq(urlToPath("4-net-replay-withparam", u, extOf(fr.CT, u))), "接口重放(带参数) POST "+u+"  body: "+body, fr.Body) {
+					if p.add(p.uniq(urlToPath("4-net-replay-withparam", u, extOf(fr.CT, u))), "接口重放(带参数) POST "+u+"  body: "+b, fr.Body) {
 						replayOK++
 					}
 				}
