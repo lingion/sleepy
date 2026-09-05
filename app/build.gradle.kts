@@ -13,8 +13,8 @@ android {
         applicationId = "com.lingion.sleepy"
         minSdk = 26
         targetSdk = 37
-        versionCode = 48
-        versionName = "1.0.47"
+        versionCode = 49
+        versionName = "1.0.48"
         vectorDrawables { useSupportLibrary = true }
         androidResources {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")
