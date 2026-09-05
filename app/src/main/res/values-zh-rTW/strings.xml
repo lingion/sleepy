@@ -445,7 +445,7 @@
     <string name="update_download_failed">下載失敗：%1$s</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">Sleepy 是一款開源的智慧課表應用，原始碼基於 GNU General Public License v3.0 協議發布。任何人都可以自由使用、修改和分發本軟體。歡迎透過 GitHub 參與貢獻。本應用部分教務匯入適配參考了 WakeUp 課程表 (Apache-2.0)、時光課程表重慶大學適配器 (cqu.js) 與 HFUT-Schedule (Chiu-xaH, MIT) 合工大 EAMS5 協議的公開實現;以及 SEUTimetable (sakimidare, Apache-2.0) 東南大學 URP、zju-ical-py (Xecades, LGPL-2.1) 浙江大學 UGR、USTC-timetable-to-ics (1970633640) 中國科學技術大學 studentTableModule、ScuTimetable (Z-P-J) 四川大學 dateList 與 neu_wisedu2wakeup (CreamPig233) 東北大學 arrangedList 協議與 shiguang_warehouse (MIT) 武漢理工大學 kcbcxby ,經典金智 EAMS 協議形態並參考 shiguang_warehouse (MIT) hunnu/uestc/hpu 配接器與 WakeupSchedule_Kotlin (Apache-2.0) 經典 EAMS 匯入實現協議的公開實現,在此一併致謝。</string>
+    <string name="about_license_body">本应用部分教务导入适配參考了以下開源项目的公开实现：WakeUp 課程表 (YZune, Apache-2.0) 與 WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) ——強智/強智變體、舊版正方、URP、青果、湖南科大等十二个教务解析器与中间结构的參考实现;WakeupSchedule_Kotlin (Apache-2.0) 經典金智 EAMS 导入;时光課程表重庆大学適配器 (cqu.js) 重庆大学门户 REST;HFUT-Schedule (Chiu-xaH, MIT) 合肥工業大學 EAMS5 全協議;SEUTimetable (sakimidare, Apache-2.0) 東南大學 URP;zju-ical-py (Xecades, LGPL-2.1) 浙江大學 UGR;USTC-timetable-to-ics (1970633640) 中國科學技術大學;ScuTimetable (Z-P-J) 四川大學;neu_wisedu2wakeup (CreamPig233) 東北大學;shiguang_warehouse (XingHeYuZhuan, MIT) 武漢理工大學 kcbcxby、經典金智 EAMS 与新正方網格視圖;iwut (TokenTeam, AGPL-3.0, 仅參考協議形態) 武漢理工大學節次映射;zfn_api (openschoolcn, MPL-2.0) 與 FlowCourse (jiaweiyaya, GPL-3.0) 新正方 kbList 形態交叉驗證。在此一併致謝。</string>
     <string name="about_license_detail">開源授權與致謝</string>
     <string name="license_page_title">開源授權與致謝</string>
     <string name="license_gpl_section">授權條款</string>

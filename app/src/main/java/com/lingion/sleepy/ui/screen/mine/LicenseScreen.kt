@@ -139,8 +139,16 @@ private data class AttributionEntry(val project: String, val meta: String, val u
  */
 private fun licenseAttributionEntries(): List<AttributionEntry> = listOf(
     AttributionEntry(
-        "WakeUp 课程表", "Apache-2.0",
+        "WakeUp 课程表 (YZune)", "Apache-2.0",
         "JwCourse / JwParser 中间结构语义与强智系 HTML 解析的参考实现"
+    ),
+    AttributionEntry(
+        "WakeupSchedule_BUPT (dIT8Zv)", "Apache-2.0",
+        "十二个教务解析器的上游:强智全家族(qz/qz_with_node/qz_br/qz_crazy/qz_old)、老版正方、URP、青果、新正方、HNUST 与 Parser 设计"
+    ),
+    AttributionEntry(
+        "WakeupSchedule_Kotlin (YZune)", "Apache-2.0",
+        "经典金智 EAMS 导入实现 (TaskActivity 位图解析) 的参考"
     ),
     AttributionEntry(
         "时光课程表 cqu.js", "",
@@ -169,6 +177,22 @@ private fun licenseAttributionEntries(): List<AttributionEntry> = listOf(
     AttributionEntry(
         "neu_wisedu2wakeup (CreamPig233)", "",
         "东北大学 arrangedList 字段映射、教师提取与周次串括号处理参考"
+    ),
+    AttributionEntry(
+        "shiguang_warehouse (XingHeYuZhuan)", "MIT",
+        "武汉理工大学 kcbcxby 协议、经典金智 EAMS (hunnu/uestc/hpu) 与新正方网格视图 (zhengfang_01) 的协议形态参考"
+    ),
+    AttributionEntry(
+        "iwut (TokenTeam)", "AGPL-3.0 · 仅参考协议形态",
+        "武汉理工大学节次 DM 映射的协议佐证 (未引用代码)"
+    ),
+    AttributionEntry(
+        "zfn_api (openschoolcn)", "MPL-2.0",
+        "新正方 jwglxt kbList 接口形态交叉验证"
+    ),
+    AttributionEntry(
+        "FlowCourse (jiaweiyaya)", "GPL-3.0",
+        "新正方 kbList 主流形态与 jc 多形态交叉验证"
     )
 )
 

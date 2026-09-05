@@ -48,6 +48,15 @@ class AboutLicenseAttributionTest {
         Attribution("neu_wisedu2wakeup", ""),       // CreamPig233/neu_wisedu2wakeup (无 license)
     )
 
+    /** 2026-09-05 全量补齐: 源码头注释里引用过的其余上游, body 与逐条卡都要有 */
+    private val BATCH_C_FULL_SWEEP_ATTRIBUTIONS = listOf(
+        Attribution("WakeupSchedule_BUPT", "Apache-2.0"),   // dIT8Zv — 12 parser 上游
+        Attribution("shiguang_warehouse", "MIT"),           // XingHeYuZhuan — whut/classicEams/zf_new
+        Attribution("iwut", "AGPL-3.0"),                    // TokenTeam — WHUT 节次映射 (仅形态)
+        Attribution("zfn_api", "MPL-2.0"),                  // openschoolcn — 新正方 kbList
+        Attribution("FlowCourse", "GPL-3.0"),               // jiaweiyaya — kbList 交叉验证
+    )
+
     private fun checkAll(locale: String, atts: List<Attribution>) {
         val body = readString(locale, "about_license_body")
         assertTrue("locale=$locale 缺少 about_license_body 字符串", body.isNotBlank())
@@ -77,6 +86,13 @@ class AboutLicenseAttributionTest {
     fun `all released locales list all batch B first wave attributions`() {
         for (locale in ALL_RELEASED_LOCALES) {
             checkAll(locale, BATCH_B_FIRST_WAVE_ATTRIBUTIONS)
+        }
+    }
+
+    @Test
+    fun `all released locales list batch C full sweep attributions`() {
+        for (locale in ALL_RELEASED_LOCALES) {
+            checkAll(locale, BATCH_C_FULL_SWEEP_ATTRIBUTIONS)
         }
     }
 }
