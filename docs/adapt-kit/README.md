@@ -26,16 +26,14 @@
 
 ## 1. 下载采集工具
 
-打开 Sleepy 的 Release 页面:<https://github.com/lingion/sleepy/releases>
+按你的电脑点对应链接,浏览器就会开始下载:
 
-找到最新版本,在下方 **Assets** 资产区,按你的电脑下载对应文件:
-
-| 你的电脑 | 下载这个文件 |
+| 你的电脑 | 点这里下载 |
 |---|---|
-| Windows 10/11(64位) | `sleepy-collector-windows-amd64.exe` |
-| Mac(Apple 芯片 M1/M2/M3/M4) | `sleepy-collector-macos-arm64` |
-| Mac(Intel 芯片) | `sleepy-collector-macos-amd64` |
-| Linux(64位) | `sleepy-collector-linux-amd64` |
+| Windows 10/11(64位) | [sleepy-collector-windows-amd64.exe](https://raw.githubusercontent.com/lingion/sleepy/main/tools/sleepy-collector/dist/sleepy-collector-windows-amd64.exe) |
+| Mac(Apple 芯片 M1/M2/M3/M4) | [sleepy-collector-macos-arm64](https://raw.githubusercontent.com/lingion/sleepy/main/tools/sleepy-collector/dist/sleepy-collector-macos-arm64) |
+| Mac(Intel 芯片) | [sleepy-collector-macos-amd64](https://raw.githubusercontent.com/lingion/sleepy/main/tools/sleepy-collector/dist/sleepy-collector-macos-amd64) |
+| Linux(64位) | [sleepy-collector-linux-amd64](https://raw.githubusercontent.com/lingion/sleepy/main/tools/sleepy-collector/dist/sleepy-collector-linux-amd64) |
 
 > 不确定 Mac 是什么芯片?点屏幕左上角苹果菜单 →「关于本机」:写着 "芯片 / Chip" 且是 Apple M 开头,选 arm64;写着 "处理器 / Processor" 且是 Intel,选 amd64。
 
