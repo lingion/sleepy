@@ -173,8 +173,8 @@
   {
     "sortKey": "C",
     "name": "重庆三峡学院",
-    "url": "http://jwgl.sanxiau.edu.cn/",
-    "type": "zf",
+    "url": "http://jwglxt.sanxiau.edu.cn/",
+    "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "chongqingsanxiaxueyuan"
   },
@@ -182,7 +182,7 @@
     "sortKey": "C",
     "name": "重庆邮电大学移通学院",
     "url": "http://222.179.134.225:81/",
-    "type": "zf",
+    "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "chongqingyoudiandaxueyitongxueyuan"
   },
@@ -197,8 +197,8 @@
   {
     "sortKey": "D",
     "name": "大连工业大学艺术与信息工程学院",
-    "url": "https://www.caie.edu.cn/",
-    "type": "zf",
+    "url": "https://jwxt.caie.edu.cn/",
+    "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "daliangongyedaxueyishuyuxinxigongchengxueyuan"
   },
