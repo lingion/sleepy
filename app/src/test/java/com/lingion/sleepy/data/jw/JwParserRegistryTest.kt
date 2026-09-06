@@ -31,8 +31,8 @@ class JwParserRegistryTest {
     }
 
     @Test
-    fun `ALL_TYPES contains 27 routable types in priority order`() {
-        assertEquals(27, JwProtocol.ALL_TYPES.size)
+    fun `ALL_TYPES contains 28 routable types in priority order`() {
+        assertEquals(28, JwProtocol.ALL_TYPES.size)
         assertEquals(JwProtocol.TYPE_WISEDU, JwProtocol.ALL_TYPES.first())
         assertEquals(JwProtocol.TYPE_CQU, JwProtocol.ALL_TYPES[1])
         assertEquals(JwProtocol.TYPE_CHAOXING, JwProtocol.ALL_TYPES[2])

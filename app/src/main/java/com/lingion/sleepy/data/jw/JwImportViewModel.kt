@@ -347,6 +347,8 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // ①b CQU — 重庆大学统一门户（host 锚点；自建 REST，非 jwapp）
             u.matches(Regex("""https?://my\.cqu\.edu\.cn(/.*)?""")) -> JwProtocol.TYPE_CQU
 
+            u.contains("xkgo.ucas.ac.cn") && u.contains("/course/personschedule") -> JwProtocol.TYPE_UCAS
+
             // ②b QZ_IEAS — 必须先于通用 /kbcx/ 规则
             u.contains("/ieas2.1")
                 || u.matches(Regex(""".*/ieas2\.1(/|$).*"""))

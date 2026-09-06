@@ -30,6 +30,11 @@ class JwProtocolDetectionUnitTest {
                 "https://jwxt.buaa.edu.cn:7001/ieas2.1/kbcx/queryGrkb"))
     }
 
+    @Test fun `UCAS personSchedule URL selects UCAS parser`() {
+        assertEquals(JwProtocol.TYPE_UCAS,
+            JwImportViewModel.detectProtocolFromUrlForTest("https://xkgo.ucas.ac.cn:3000/course/personSchedule"))
+    }
+
     @Test
     fun `xtgl 无尾斜杠必须命中 zf_new`() {
         assertEquals(JwProtocol.TYPE_ZF_NEW,

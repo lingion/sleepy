@@ -1,0 +1,6 @@
+[
+  {"repo_name":"ldiex/UCAS_Course_Schedule_Convertor","verdict":"POSITIVE","verdict_reason":"selectedCourse.json and courseTimeList expose UCAS course/week/time bitmaps; confirms 13 sections"},
+  {"repo_name":"Hurray0/UCAS_GET_Course","verdict":"INDIRECT","verdict_reason":"UCAS course-selection client, not the captured schedule HTML"},
+  {"repo_name":"cld378632668/ucas_course_tool","verdict":"INDIRECT","verdict_reason":"UCAS automation tool; no evidence required beyond project family"},
+  {"repo_name":"GentleCP/UCAS-Helper","verdict":"INDIRECT","verdict_reason":"UCAS utility family, no personSchedule HTML parser"}
+]

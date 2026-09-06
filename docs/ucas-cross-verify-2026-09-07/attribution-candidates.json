@@ -1,0 +1,6 @@
+[
+  {"project":"ldiex/UCAS_Course_Schedule_Convertor","license_or_None":"unknown","role_in_verification":"courseTimeList bitmap and 13-section confirmation"},
+  {"project":"Hurray0/UCAS_GET_Course","license_or_None":"unknown","role_in_verification":"UCAS course-selection ecosystem evidence"},
+  {"project":"cld378632668/ucas_course_tool","license_or_None":"unknown","role_in_verification":"UCAS automation ecosystem evidence"},
+  {"project":"GentleCP/UCAS-Helper","license_or_None":"unknown","role_in_verification":"UCAS utility ecosystem evidence"}
+]

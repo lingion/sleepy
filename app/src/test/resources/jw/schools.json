@@ -1427,6 +1427,17 @@
   },
   {
     "sortKey": "Z",
+    "name": "中国科学院大学",
+    "url": "https://xkgo.ucas.ac.cn:3000/course/personSchedule",
+    "type": "ucas",
+    "aliases": [
+      "ucas",
+      "国科大"
+    ],
+    "sortKeyFull": "zhongguokexueyuandaxue"
+  },
+  {
+    "sortKey": "Z",
     "name": "中国科学技术大学",
     "url": "https://jw.ustc.edu.cn/",
     "type": "ustc",
