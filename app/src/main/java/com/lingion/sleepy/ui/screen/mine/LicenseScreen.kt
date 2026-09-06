@@ -102,26 +102,46 @@ fun LicenseScreen(onBack: () -> Unit) {
                 }
             }
 
-            // ---- 致谢导语区块 ----
+            // ---- 致谢导语区块 (可折叠: 默认收起, 点击展开看 about_license_body 全文) ----
             item {
+                val bodyExpanded = expanded["__body__"] == true
                 LicenseCard {
-                    Text(
-                        text = stringResource(R.string.license_attribution_section),
-                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                        color = colors.onSurface
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.license_attribution_note),
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = colors.onSurfaceVariant
-                    )
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        text = stringResource(R.string.about_license_body),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant
-                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { expanded["__body__"] = !bodyExpanded },
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = stringResource(R.string.license_attribution_section),
+                                style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                color = colors.onSurface
+                            )
+                            Spacer(modifier = Modifier.height(8.dp))
+                            Text(
+                                text = stringResource(R.string.license_attribution_note),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colors.onSurfaceVariant
+                            )
+                        }
+                        IconButton(onClick = { expanded["__body__"] = !bodyExpanded }) {
+                            Icon(
+                                imageVector = if (bodyExpanded) Icons.Outlined.ExpandLess else Icons.Outlined.ExpandMore,
+                                contentDescription = if (bodyExpanded) "collapse" else "expand",
+                                tint = colors.onSurfaceVariant
+                            )
+                        }
+                    }
+                    AnimatedVisibility(visible = bodyExpanded) {
+                        Column(modifier = Modifier.padding(top = 8.dp)) {
+                            Text(
+                                text = stringResource(R.string.about_license_body),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant
+                            )
+                        }
+                    }
                 }
             }
 
