@@ -52,9 +52,9 @@ This is a temporary state on the school's network. The import code path itself i
 
 - Tests: 1088 cases, 0 failures, 0 errors.
 - APK:
-  - `app-arm64-v8a-release.apk` — 2,795,511 bytes, SHA-256 `410260a6d725d15fe0981c4ea81c46465cc25dadeee21d5a45c31f7a3de14b55`
-  - `app-armeabi-v7a-release.apk`
-  - `app-x86_64-release.apk`
+  - `app-arm64-v8a-release.apk` — 2,795,511 bytes, SHA-256 `290341f766294a6a33ddc8f9b06f4a4a6f636c0f226c179aea7e754582426e02`
+  - `app-armeabi-v7a-release.apk` — 2,792,819 bytes, SHA-256 `d0bdbb9b7220706338772630623cf97224d742e3ad6e523ee2ed6a86822ce65c`
+  - `app-x86_64-release.apk` — 2,794,617 bytes, SHA-256 `6d334e4f303915c36d88b0152827e66755240e37431d6e95c67bf2ef65d1912f`
 - Build: versionName `1.0.50`, versionCode `51`
 
 ---
@@ -111,7 +111,7 @@ EAMS5 现在能区分真实课表与登录页：
 
 - 测试：1088 用例，0 失败 0 错误。
 - APK：
-  - `app-arm64-v8a-release.apk` — 2,795,511 bytes，SHA-256 `410260a6d725d15fe0981c4ea81c46465cc25dadeee21d5a45c31f7a3de14b55`
-  - `app-armeabi-v7a-release.apk`
-  - `app-x86_64-release.apk`
+  - `app-arm64-v8a-release.apk` — 2,795,511 bytes，SHA-256 `290341f766294a6a33ddc8f9b06f4a4a6f636c0f226c179aea7e754582426e02`
+  - `app-armeabi-v7a-release.apk` — 2,792,819 bytes，SHA-256 `d0bdbb9b7220706338772630623cf97224d742e3ad6e523ee2ed6a86822ce65c`
+  - `app-x86_64-release.apk` — 2,794,617 bytes，SHA-256 `6d334e4f303915c36d88b0152827e66755240e37431d6e95c67bf2ef65d1912f`
 - 构建：versionName `1.0.50`，versionCode `51`
