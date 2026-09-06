@@ -187,25 +187,36 @@ class JwEams5ParserTest {
     }
 
     // -------- AHU (jw.ahu.edu.cn) 形态 — 2026-09-06 cross-verified
-    // 来源: MoeclubM/AHU-AIO (Dart) + qiqqqqq517/shangkeschschedule (Apache-2.0) ahu.js
-    //   GET /student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
-    //   resp: {"code":200,"data":{"lessons":[…]}}
-    // 字段契约:
-    //   lesson.lessonId/courseName/teacher/room (扁平字符串, 与 HFUT 双层结构不同)
-    //   lesson.weekday/weekIndex/startTime/endTime/periods (与 HFUT 同构)
+    // 来源 (5 仓共识):
+    //   MoeclubM/AHU-AIO (Dart) + abydym/Ahu_Plus (Kotlin 同栈) + Landon-3314/AHU-TimeTable (Flutter)
+    //   + Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript) + qiqqqqq517/shangkeschschedule (Apache-2.0)
+    //
+    //   GET /student/for-std/course-table/semester/<semesterId>/print-data
+    //       ?semesterId=<id>&hasExperiment=false
+    //   resp: {"studentTableVms":[{"activities":[…]}]}
+    //
+    // 字段契约 (Landon-3314 + MoeclubM + abydym 共识):
+    //   activity.lessonId (Long/Int)     → 课程 ID
+    //   activity.courseName (String)     → 课程名
+    //   activity.teacherNames (List)     → 教师 (join "/")
+    //   activity.campus+building+room    → 教室 (三段拼接)
+    //   activity.weekday (Int 1-7)       → 周几
+    //   activity.weekIndexes (String)    → 周次位图 "1-16"/"1-16单"/"8,10,12,14"
+    //   activity.startUnit (Int)         → 起始节次 (直接, 无需推断)
+    //   activity.endUnit (Int)           → 结束节次 (直接, 无需推断)
 
     @Test
-    fun `parses AHU get-data - total count equals lessons rows`() {
+    fun `parses AHU print-data - total count equals activities rows`() {
         val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
         assertNotNull("测试资源 get-data-ahu.sample.json 应存在", stream)
         val json = stream!!.bufferedReader().use { it.readText() }
         val courses = JwEams5Parser(json).generateCourseList()
-        // 5 个 lessons 行 → 5 个 JwCourse
-        assertEquals("5 个 lessons 行应产出 5 个 JwCourse", 5, courses.size)
+        // 5 个 activities 行 → 5 个 JwCourse
+        assertEquals("5 个 activities 行应产出 5 个 JwCourse", 5, courses.size)
     }
 
     @Test
-    fun `parses AHU get-data - lesson 1001 高数 maps to correct fields`() {
+    fun `parses AHU print-data - lesson 1001 高数 maps to correct fields`() {
         val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
         val json = stream!!.bufferedReader().use { it.readText() }
         val courses = JwEams5Parser(json).generateCourseList()
@@ -213,16 +224,36 @@ class JwEams5ParserTest {
         assertNotNull("应找到 高等数学", c)
         c!!
         assertEquals("周1", 1, c.day)
-        assertEquals("startNode (08:00 → node1)", 1, c.startNode)
-        assertEquals("endNode (08:50 → node2)", 2, c.endNode)
-        assertEquals("startWeek=weekIndex", 1, c.startWeek)
-        assertEquals("endWeek=weekIndex (v1 单周)", 1, c.endWeek)
-        assertEquals("teacher 张教授", "张教授", c.teacher)
-        assertEquals("room 博学南楼A101", "博学南楼A101", c.room)
+        // startUnit=1 (直接给定, 无需推断)
+        assertEquals("startUnit=1", 1, c.startNode)
+        assertEquals("endUnit=2", 2, c.endNode)
+        // weekIndexes="1-16" → 取首个数字 1
+        assertEquals("weekIndexes 1-16 → startWeek=1", 1, c.startWeek)
+        assertEquals("endWeek=startWeek (v1 单周)", 1, c.endWeek)
+        assertEquals("teacherNames 单元素 join", "张教授", c.teacher)
+        // room: "龙河校区 博学南楼 A101" 三段拼接
+        assertEquals("room campus+building+room 三段拼接", "龙河校区 博学南楼 A101", c.room)
     }
 
     @Test
-    fun `parses AHU get-data - weekday mapping across week`() {
+    fun `parses AHU print-data - 1002 大学物理 多教师 join`() {
+        val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
+        val json = stream!!.bufferedReader().use { it.readText() }
+        val courses = JwEams5Parser(json).generateCourseList()
+        val c = courses.firstOrNull { it.name == "大学物理" }
+        assertNotNull(c)
+        c!!
+        // teacherNames=["李副教授", "钱讲师"] → "李副教授/钱讲师"
+        assertEquals("teacherNames join '/'", "李副教授/钱讲师", c.teacher)
+        assertEquals("周2", 2, c.day)
+        assertEquals("startUnit=3", 3, c.startNode)
+        assertEquals("endUnit=4", 4, c.endNode)
+        // weekIndexes="1-16双" → v1 简化取首个数字 1 (单双周标记暂不解析)
+        assertEquals("weekIndexes 1-16双 → startWeek=1 (单双标记 v1 忽略)", 1, c.startWeek)
+    }
+
+    @Test
+    fun `parses AHU print-data - weekday mapping across week`() {
         val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
         val json = stream!!.bufferedReader().use { it.readText() }
         val courses = JwEams5Parser(json).generateCourseList()
@@ -231,45 +262,68 @@ class JwEams5ParserTest {
         assertNotNull(ds)
         ds!!
         assertEquals("数据结构 周三", 3, ds.day)
-        // startTime=1400 → node5 (下午第一段)
-        assertEquals("数据结构 startNode (14:00 → node5)", 5, ds.startNode)
-        assertEquals("数据结构 endNode (15:50 → node6)", 6, ds.endNode)
-        assertEquals("数据结构 startWeek=5", 5, ds.startWeek)
+        // startUnit=5 → 直接给定
+        assertEquals("startUnit=5", 5, ds.startNode)
+        assertEquals("endUnit=6", 6, ds.endNode)
+        // weekIndexes="5-12" → 5
+        assertEquals("weekIndexes 5-12 → startWeek=5", 5, ds.startWeek)
     }
 
     @Test
-    fun `parses AHU get-data - 1005 形势与政策 晚上段`() {
+    fun `parses AHU print-data - 1005 形势与政策 晚上段 bitmap`() {
         val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
         val json = stream!!.bufferedReader().use { it.readText() }
         val courses = JwEams5Parser(json).generateCourseList()
         val c = courses.firstOrNull { it.name == "形势与政策" }
         assertNotNull(c)
         c!!
-        // startTime=1900 → node9 (晚上段)
-        assertEquals("形势与政策 startNode (19:00 → node9)", 9, c.startNode)
-        assertEquals("形势与政策 endNode (20:50 → node10)", 10, c.endNode)
-        assertEquals("形势与政策 周五", 5, c.day)
+        // startUnit=9 → 晚上段
+        assertEquals("startUnit=9", 9, c.startNode)
+        assertEquals("endUnit=10", 10, c.endNode)
+        assertEquals("周五", 5, c.day)
+        // weekIndexes="8,10,12,14" → 取首个数字 8
+        assertEquals("weekIndexes bitmap 8,10,12,14 → startWeek=8", 8, c.startWeek)
     }
 
     @Test
-    fun `AHU get-data confidence matches HFUT`() {
+    fun `parses AHU print-data - 1003 数据结构 跨校区 room`() {
+        val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
+        val json = stream!!.bufferedReader().use { it.readText() }
+        val courses = JwEams5Parser(json).generateCourseList()
+        val c = courses.firstOrNull { it.name == "数据结构" }
+        assertNotNull(c)
+        c!!
+        // 磬苑校区 + 计算机学院实验楼 + 301 三段
+        assertEquals("跨校区 room 三段拼接", "磬苑校区 计算机学院实验楼 301", c.room)
+    }
+
+    @Test
+    fun `AHU print-data confidence highest among AHU shapes`() {
         val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
         val json = stream!!.bufferedReader().use { it.readText() }
         val p = JwEams5Parser(json)
-        assertEquals("AHU data.lessons[] confidence == HFUT 双层 confidence", 95, p.confidence())
+        // print-data 含 weekday+节次权威 → confidence=100 (高于 HFUT 双层 95)
+        assertEquals("AHU print-data confidence=100 (含 weekday+startUnit 权威)", 100, p.confidence())
         val feats = p.matchedFeatures()
-        assertTrue("应含 AHU 锚点 data.lessons", feats.any { it.contains("AHU") || it.contains("data.lessons") })
+        assertTrue("应含 studentTableVms 锚点", feats.any { it.contains("studentTableVms") })
     }
 
     @Test
-    fun `AHU shape precedence over HFUT shape`() {
-        // data.lessons[] 优先 result.lessonList[] (安大形态必须先命中, 避免 HFUT fallback 误抢)
-        // fixture 同时含两层 (data.lessons 3 课 + result.scheduleList 1 课, 假装冲突响应)
+    fun `AHU print-data precedence over data-lessons and HFUT shape`() {
+        // print-data activities[] 优先 data.lessons[] + result.scheduleList (5 仓共识)
+        // fixture 同时含三层 (5 课 + 1 课 + 1 课, 假装冲突响应)
         val p = JwEams5Parser("""
         {
           "code": 200,
+          "studentTableVms": [{
+            "activities": [
+              {"lessonId": "A1", "courseName": "AHU优先课",
+               "teacherNames": ["T"], "campus": "X", "building": "Y", "room": "Z",
+               "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+            ]
+          }],
           "data": { "lessons": [
-            {"lessonId": 1, "courseName": "AHU优先课", "teacher": "T", "room": "R",
+            {"lessonId": 1, "courseName": "AHU_metadata_课", "teacher": "T", "room": "R",
              "weekday": 1, "weekIndex": 1, "startTime": 800, "endTime": 950, "periods": 2}
           ]},
           "result": { "lessonList": [{"id":"99","courseName":"HFUT抢课"}],
@@ -278,7 +332,43 @@ class JwEams5ParserTest {
         }
         """.trimIndent())
         val courses = p.generateCourseList()
-        assertEquals("只产 1 课 (AHU 形态优先)", 1, courses.size)
+        assertEquals("只产 1 课 (AHU print-data 形态优先)", 1, courses.size)
         assertEquals("AHU优先课", courses[0].name)
+        // room 三段拼接
+        assertEquals("X Y Z", courses[0].room)
+    }
+
+    @Test
+    fun `AHU print-data confidence falls back to data-lessons when no activities`() {
+        // 仅 data.lessons[] 时 → confidence=85 (metadata-only, 比 print-data 低)
+        val p = JwEams5Parser("""
+        {
+          "code": 200,
+          "data": { "lessons": [
+            {"lessonId": 1, "courseName": "AHU_meta_only", "teacher": "T", "room": "R",
+             "weekday": 1, "weekIndex": 1, "startTime": 800, "endTime": 950, "periods": 2}
+          ]}
+        }
+        """.trimIndent())
+        assertEquals("仅 data.lessons[] → confidence=85 (metadata-only)", 85, p.confidence())
+        assertEquals(1, p.generateCourseList().size)
+    }
+
+    @Test
+    fun `AHU empty weekIndexes falls back to week 1`() {
+        val p = JwEams5Parser("""
+        {
+          "code": 200,
+          "studentTableVms": [{
+            "activities": [
+              {"lessonId": "X", "courseName": "TestNoWeek",
+               "teacherNames": ["T"], "weekday": 1, "weekIndexes": "",
+               "startUnit": 1, "endUnit": 2}
+            ]
+          }]
+        }
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("空 weekIndexes 兜底 1", 1, c.startWeek)
     }
 }

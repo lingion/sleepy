@@ -87,22 +87,27 @@ class Eams5PathPrefixTest {
     }
 
     @Test
-    fun `AHU get-data url has dataId empty for server session binding`() {
-        // 安大 qiqqqqq517 模式: dataId 留空, 服务端按 session 绑定学生
-        // 锁契约: fetch URL 的 dataId 参数必须留空, 不允许 client 端补学号
-        val url = "/student/for-std/course-table/get-data?bizTypeId=2&semesterId=234&dataId="
-        org.junit.Assert.assertTrue("安大 get-data URL 末尾 dataId 必须为空字符串", url.endsWith("dataId="))
-        org.junit.Assert.assertFalse("安大 get-data URL 不应含显式学号", url.contains("studentId="))
+    fun `AHU print-data url uses semester in path and hasExperiment=false`() {
+        // 安大 print-data 形态 (5 仓共识: MoeclubM + abydym + Landon-3314 + Zeraora-807 + qiqqqqq517):
+        //   GET /student/for-std/course-table/semester/<semesterId>/print-data
+        //       ?semesterId=<id>&hasExperiment=false
+        // 锁契约: semesterId 同时出现在 path 和 query, hasExperiment=false (安大默认)
+        val url = "/student/for-std/course-table/semester/234/print-data?semesterId=234&hasExperiment=false"
+        org.junit.Assert.assertTrue("AHU print-data URL 形如 /semester/{id}/print-data",
+            url.contains("/semester/234/print-data"))
+        org.junit.Assert.assertTrue("hasExperiment=false 默认", url.contains("hasExperiment=false"))
+        org.junit.Assert.assertFalse("AHU 不应误用合工大 POST schedule-table/datum",
+            url.contains("schedule-table/datum"))
+        org.junit.Assert.assertFalse("AHU 不应误用 /get-data endpoint (metadata-only)",
+            url.contains("/get-data"))
     }
 
     @Test
-    fun `AHU get-data url uses GET not POST`() {
-        // 上游证据: schedule-table/datum POST 不存在于 jw.ahu.edu.cn (issue #17 实锤 HTTP 500)
-        val url = "/student/for-std/course-table/get-data?bizTypeId=2&semesterId=234&dataId="
-        org.junit.Assert.assertTrue("AHU 课表 API 是 GET (data.lessons[]), 非 POST datum",
-            url.contains("/get-data"))
-        org.junit.Assert.assertFalse("AHU 不应误用合工大 POST schedule-table/datum",
-            url.contains("schedule-table/datum"))
+    fun `AHU print-data uses GET not POST`() {
+        // 5 仓共识: print-data 是 GET (不是 POST)
+        val url = "/student/for-std/course-table/semester/234/print-data?semesterId=234&hasExperiment=false"
+        org.junit.Assert.assertTrue("AHU print-data 是 GET, 非 POST datum",
+            url.contains("print-data"))
     }
 
     companion object {
