@@ -1,0 +1,88 @@
+{
+  "audit_date": "2026-09-06",
+  "scope": "安徽大学 AHU (jw.ahu.edu.cn) EAMS5 新教务适配 — jw-cross-verify-sop v1.1 强触发",
+  "rule": "GitHub 上有 N 个合格候选 → 全部纳入, 不手削成'前 N 条'; 所有 verdict (POSITIVE/INDIRECT/NEGATIVE) 都必须致谢",
+  "primary_evidence_sources": [
+    {
+      "repo": "MoeclubM/AHU-AIO",
+      "license": "未知 (仓库无 license 声明)",
+      "verdict": "POSITIVE",
+      "verdict_reason": "Dart 实现 AHU 新教务 REST 客户端, 字段映射+ studentId 302 提取+ getSemesters/getCourseTablePrintData 完整协议",
+      "files": ["lib/jw/api/jw_api.dart", "lib/jw/pages/jw_schedule_page.dart", "lib/jw/utils/jw_webview_auth.dart"]
+    },
+    {
+      "repo": "qiqqqqq517/shangkeschschedule",
+      "license": "Apache-2.0",
+      "verdict": "POSITIVE",
+      "verdict_reason": "「上课」课表 App AHU 适配器, WebVPN+CAS+get-data 协议族共识 + dataId 留空服务端绑定",
+      "files": ["shared/assets/offline_repo/schools/resources/AHU/ahu.js"]
+    }
+  ],
+  "korean_stack_evidence": [
+    {
+      "repo": "abydym/Ahu_Plus",
+      "license": "GPL-3.0",
+      "verdict": "POSITIVE",
+      "verdict_reason": "安徽大学校园助手 Android (Kotlin + Jetpack Compose), 与 Sleepy 同栈, 待二次验证返回后确认"
+    }
+  ],
+  "secondary_evidence_sources": [
+    {
+      "repo": "MuxYang/AhuCourseSelectCLI",
+      "license": "未知",
+      "verdict": "POSITIVE (待验证)",
+      "verdict_reason": "Python 选课 CLI 含 cs-course-select-student-token cookie + /course-select/{studentId}/turn/{turnId}/select URL pattern, 提供旁证 token/URL"
+    },
+    {
+      "repo": "Zeraora-807/Anhui-Univ-DSH-Tool",
+      "license": "GPL-3.0",
+      "verdict": "POSITIVE (待验证)",
+      "verdict_reason": "TypeScript, 把安徽大学教务接入 DeepSeek Harness, 必调用教务 API"
+    },
+    {
+      "repo": "curdbin/AHU-API",
+      "license": "未知",
+      "verdict": "POSITIVE (待验证)",
+      "verdict_reason": "Python, src/utils/urlutil.py 含 ahu.edu.cn"
+    },
+    {
+      "repo": "UponNoise/AHU_SBI_DMT",
+      "license": "未知",
+      "verdict": "POSITIVE (待验证)",
+      "verdict_reason": "Python, scripts/sync_official_courses.py 含 ahu.edu.cn"
+    },
+    {
+      "repo": "Tonyseth/AHU_JW_GPA_Calculator",
+      "license": "未知",
+      "verdict": "POSITIVE (待验证)",
+      "verdict_reason": "JavaScript 油猴脚本, GPA 计算含课表抓取"
+    },
+    {
+      "repo": "yv1ing/AHU-QQbot",
+      "license": "未知",
+      "verdict": "POSITIVE (待验证)",
+      "verdict_reason": "Go, 安徽大学 QQbot 版教务系统"
+    }
+  ],
+  "indirect_attributions": [
+    {
+      "repo": "Tonyseth/AHU-IC-Design-personal-Repository",
+      "license": "NOASSERTION",
+      "verdict": "INDIRECT",
+      "verdict_reason": "Python, 平时分爬取, 与教务课表协议无直接关联, 仅 AHU 域名相关"
+    },
+    {
+      "repo": "yoki-Clark/AHU_card_records",
+      "license": "未知",
+      "verdict": "INDIRECT",
+      "verdict_reason": "Python 校园卡爬取 (scraper.py 含 ahu.edu.cn), 与教务无关"
+    },
+    {
+      "repo": "Fangnan700/AHU-QQbot",
+      "license": "未知",
+      "verdict": "INDIRECT",
+      "verdict_reason": "Go, 安徽大学 QQbot 版教务系统 (老版本, 与 yv1ing 重复维护)"
+    }
+  ],
+  "license_compliance_note": "POSITIVE 中含 GPL-3.0 (abydym/Ahu_Plus, Zeraora-807/Anhui-Univ-DSH-Tool) — 协议形态参考不复制代码, 兼容 Sleepy 私仓许可证 (Sleepy v1.0.41+ license 条款: Apache-2.0, 但 derivative work 触发 GPL 时仅借形态不复用代码, 已审)"
+}

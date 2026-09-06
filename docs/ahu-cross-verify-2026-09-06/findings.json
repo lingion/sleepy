@@ -1,0 +1,61 @@
+[
+  {
+    "repo_name": "MoeclubM/AHU-AIO",
+    "stars": 2,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "license_source": "api.github.com",
+    "relevant_files": [
+      {"path": "lib/jw/utils/jw_webview_auth.dart", "purpose": "WebView cookie sync + login-redirect detection", "lines_with_protocol": [1, 64]},
+      {"path": "lib/jw/api/jw_api.dart", "purpose": "新教务系统 (jw.ahu.edu.cn) REST API 客户端 + studentId 302 提取 + 401/HTML 失效重登", "lines_with_protocol": [1, 286]},
+      {"path": "lib/jw/pages/jw_schedule_page.dart", "purpose": "课表 UI; 调 getCurrentTeachWeek + getSemesters + getCourseTablePrintData", "lines_with_protocol": [1, 1142]},
+      {"path": "lib/auth/cas_native_client.dart", "purpose": "CAS(one.ahu.edu.cn/cas/login)登录 + 设备绑定", "lines_with_protocol": [1, 248]},
+      {"path": "lib/jwapp/api/api_manager.dart", "purpose": "旧 jwapp 微服务入口(jwapp.ahu.edu.cn/eams-micro-server/api/v1)", "lines_with_protocol": [1, 80]}
+    ],
+    "answers": {
+      "1_protocol_family": "AHU 自建'新教务'(jw.ahu.edu.cn, /student/for-std/...), 字段含 course-table/for-std/studentTableVms. 同存旧 jwapp 微服务 (jwapp.ahu.edu.cn/eams-micro-server/api/v1) - 暗示历史 EAMS 血统, 但新教务协议独立.",
+      "2_login_url": "https://jw.ahu.edu.cn/student/sso/login (CAS: https://one.ahu.edu.cn/cas/login?service=https%3A%2F%2Fjw.ahu.edu.cn%2Fstudent%2Fsso%2Flogin)",
+      "3_schedule_api_paths": [
+        {"url": "https://jw.ahu.edu.cn/student/home/get-current-teach-week", "method": "GET"},
+        {"url": "https://jw.ahu.edu.cn/student/for-std/grade/sheet", "method": "GET", "note": "提取 studentId: 302 Location 形如 /student/for-std/grade/sheet/semester-index/<studentId>"},
+        {"url": "https://jw.ahu.edu.cn/student/ws/semester/get/<semesterId>", "method": "GET"},
+        {"url": "https://jw.ahu.edu.cn/student/for-std/course-table/get-data?semesterId=<id>&dataId=<studentId>&bizTypeId=2", "method": "GET"},
+        {"url": "https://jw.ahu.edu.cn/student/for-std/course-table/semester/<semesterId>/print-data?semesterId=<id>&hasExperiment=false", "method": "GET"},
+        {"url": "https://jwapp.ahu.edu.cn/eams-micro-server/api/v1/lesson/student/course-table/<semesterId> (旧 jwapp)", "method": "GET"}
+      ],
+      "4_student_id_extraction": {"approach": "302", "exact_code": "GET /student/for-std/grade/sheet 不跟随重定向 → 响应头 Location 含 /semester-index/<studentId> → 拆路径取第 [i+1] 段"},
+      "5_lesson_ids_handling": "lessonIds 在本仓库 0 命中 (GitHub Code Search 已验证). 课表 API 是 GET 不是 POST, query 含 semesterId+dataId(studentId), lessonIds 不是必填",
+      "6_error_responses": [
+        {"status": 401, "body_shape": "html", "keywords": ["errormsghide", "errormsg", "login"]}
+      ]
+    },
+    "verdict": "POSITIVE",
+    "verdict_reason": "仓库完整实现 AHU 新教务 REST 协议 (CAS + studentId 302 + GET print-data). 同时保留旧 jwapp EAMS 微服务路径 (jwapp.ahu.edu.cn/eams-micro-server/api/v1). 跨语言 invariant 素材 + Android WebView 适配模式齐."
+  },
+  {
+    "repo_name": "qiqqqqq517/shangkeschschedule",
+    "stars": 10,
+    "default_branch": "main",
+    "license": "Apache-2.0",
+    "license_source": "api.github.com",
+    "relevant_files": [
+      {"path": "shared/assets/offline_repo/schools/resources/AHU/ahu.js", "purpose": "AHU 教务适配器: WebVPN+CAS 入口 + 课表 HTML 抓学期 + get-data JSON + 登录态检测", "lines_with_protocol": [1, 230]}
+    ],
+    "answers": {
+      "1_protocol_family": "金智 EAMS 新版 (WebVPN + CAS 统一认证) - 协议族共识达成",
+      "2_login_url": "https://wvpn.ahu.edu.cn/https/77726476706e69737468656265737421fff944d226387d1e7b0c9ce29b5b/cas/login (WebVPN 入口, service 指向智慧安大门户)",
+      "3_schedule_api_paths": [
+        {"url": "/student/for-std/course-table", "method": "GET", "note": "课表页 HTML (登录态: 含 allSemesters = 已登录)"},
+        {"url": "/student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=", "method": "GET", "note": "课表 JSON API; dataId 留空服务端按会话绑定学生; resp: data.lessons[]"}
+      ],
+      "4_student_id_extraction": {"approach": "OTHER", "exact_code": "不显式提取 studentId — dataId 留空,服务端按当前登录会话绑定学生"},
+      "5_lesson_ids_handling": "提交课表时无 lessonIds 概念 — bizTypeId=2 学生课表 + semesterId=<id> + dataId= 空",
+      "6_error_responses": [
+        {"status": null, "body_shape": "html", "keywords": ["登入页面", "统一身份认证", "cas/login", "allSemesters"]},
+        {"status": null, "body_shape": "json", "keywords": ["message"]}
+      ]
+    },
+    "verdict": "POSITIVE",
+    "verdict_reason": "ahu.js 完整暴露金智 EAMS 新版协议族; Apache-2.0 + 10★ + 国内主流课表 App 安大实现 — 跨语言 invariant 素材齐 + 同类应用对照价值最高"
+  }
+]
