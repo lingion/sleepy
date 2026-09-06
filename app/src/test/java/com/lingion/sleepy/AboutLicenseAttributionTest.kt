@@ -37,6 +37,10 @@ class AboutLicenseAttributionTest {
         Attribution("WakeUp", "Apache-2.0"),
         Attribution("cqu.js", ""),
         Attribution("HFUT-Schedule", "MIT"),
+        // 2026-09-06 HFUT 跨仓验证补全: 三个被参考过的仓库无论正反面一律致谢
+        Attribution("HfutOpenApi", "BoynChan"),
+        Attribution("hfut_schedule_hacker", "Aoi-cn"),
+        Attribution("django-hfut-auth", "elonzh"),
     )
 
     /** B 档第一波 (宽松/无 license): 四校致谢必出 */

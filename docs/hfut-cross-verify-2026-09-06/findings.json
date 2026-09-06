@@ -1,0 +1,325 @@
+{
+  "task": "Cross-verify HFUT jxglstu.hfut.edu.cn (EAMS5) course-table / studentId extraction across 4 open-source repos",
+  "target_system": "jxglstu.hfut.edu.cn/eams5-student (HFUT EAMS5)",
+  "generated_at_utc": "2026-09-06T02:52:36.153374Z",
+  "github_api_observed_rate_limit": {
+    "auth_limit": 5000,
+    "remaining_after_run": 5000
+  },
+  "repos": [
+    {
+      "repo_name": "Chiu-xaH/HFUT-Schedule",
+      "owner": "Chiu-xaH",
+      "description": "适用于合肥工业大学本科生的校园服务聚合类 Android 应用 (Kotlin/Android)",
+      "default_branch": "dev",
+      "stars": 149,
+      "language": "Kotlin",
+      "archived": false,
+      "relevant_files": [
+        {
+          "path": "network-api/src/main/java/com/hfut/schedule/network/api/inf/JxglstuService.kt",
+          "role": "Retrofit interface declaring all jxglstu endpoints (baseUrl = http://jxglstu.hfut.edu.cn/eams5-student/)",
+          "key_endpoints": {
+            "checkCanUse": "GET /eams5-student",
+            "jxglstulogin": "GET neusoft-sso/login (CAS Single Sign-On with cookie)",
+            "getStudentId": "GET for-std/course-table  (returns 302 Location containing /for-std/course-table/info/<studentId>)",
+            "getBizTypeId": "GET for-std/course-table/info/{studentId}  (returns HTML with embedded JS object: bizTypeId: <id>)",
+            "getLessonIds": "GET for-std/course-table/get-data?bizTypeId=&semesterId=&dataId=",
+            "getDatum": "POST ws/schedule-table/datum  (JSON body with studentId + lessonIds + weekIndex)",
+            "getInfo": "GET for-std/student-info/info/{studentId}",
+            "getGrade": "GET for-std/grade/sheet/info/{studentId}",
+            "getExam": "GET for-std/exam-arrange/info/{studentId}",
+            "getProgram": "GET for-std/program/root-module-json/{studentId}"
+          }
+        },
+        {
+          "path": "network-api/src/main/java/com/hfut/schedule/network/api/impl/JxglstuServiceCreator.kt",
+          "role": "Retrofit/OkHttp builder with allowAutoRedirect(false) — critical because it preserves the 302 Location header for studentId extraction",
+          "key_settings": {
+            "baseUrl": "Constant.JXGLSTU_URL = http://jxglstu.hfut.edu.cn/eams5-student/",
+            "allowAutoRedirect": false,
+            "webVpnAlternateUrl": "Constant.JXGLSTU_WEBVPN_URL (computed lazily via WebVpnConvertor)"
+          }
+        },
+        {
+          "path": "app/src/main/java/com/hfut/schedule/logic/network/repo/JxglstuRepository.kt",
+          "role": "All studentId/bizTypeId extraction logic (two distinct methods, two different sources)",
+          "primary_extraction_method": "parseStudentId (Location-header based, line 555-569)",
+          "secondary_extraction_method": "parseBizTypeId (HTML <script> regex, line 527-546)"
+        },
+        {
+          "path": "network-api/src/main/java/com/hfut/schedule/network/api/repo/JxglstuRepositoryInf.kt",
+          "role": "Interface contract; getStudentId(cookie) → UiStateHolder<Int>"
+        },
+        {
+          "path": "app/src/main/java/com/hfut/schedule/ui/screen/home/calendar/jxglstu/JxglstuCourseTableUI.kt",
+          "role": "UI orchestration: calls getStudentId → getBizTypeId → getLessonIds pipeline"
+        }
+      ],
+      "studentId_extraction_approach": "Two-stage Location-header + HTML-script extraction; both rely on the jxglstu.eams5 backend using 302 redirects to embed the studentId in the URL, and the rendered course-table page embedding bizTypeId inside an inline <script> tag",
+      "exact_regex_or_code_snippet": {
+        "stage1_parseStudentId_from_redirect_header": {
+          "language": "Kotlin",
+          "file": "app/src/main/java/com/hfut/schedule/logic/network/repo/JxglstuRepository.kt",
+          "lines": "555-569",
+          "snippet": "private fun parseStudentId(headers: Headers): Int {\n    val i = \"/eams5-student/for-std/course-table/info/\"\n    try {\n        if (headers[\"Location\"].toString().contains(i)) {\n            return headers[\"Location\"].toString().substringAfter(i).toInt()\n        } else if(headers[\"Location\"].toString().contains(\"/login\")){\n            throw Exception(\"登陆状态失效\")\n        } else {\n            throw Exception(headers[\"Location\"].toString())\n        }\n    } catch (e : Exception) {\n        throw e\n    }\n}",
+          "rationale": "GET /eams5-student/for-std/course-table responds 302 with Location header pointing to /for-std/course-table/info/<studentId>; substringAfter trims the path prefix and .toInt() converts. Also handles session-expiry detection (Location contains '/login')."
+        },
+        "stage2_parseBizTypeId_from_html_script": {
+          "language": "Kotlin",
+          "file": "app/src/main/java/com/hfut/schedule/logic/network/repo/JxglstuRepository.kt",
+          "lines": "527-546",
+          "snippet": "private fun getBizTypeId(html : String) : Int? {\n    val doc = Jsoup.parse(html)\n    try {\n        val scriptElements = doc.select(\"script\")\n        val regex = \"\"\"bizTypeId\\s*:\\s*(\\d+)\"\"\".toRegex()\n        for (script in scriptElements) {\n            val scriptText = script.html()\n            val matchResult = regex.find(scriptText)\n            if (matchResult != null) {\n                val id = matchResult.groupValues[1].toIntOrNull()\n                return id\n            }\n        }\n    } catch (e: Exception) {\n        LogUtil.error(e)\n        return null\n    }\n    return null\n}",
+          "rationale": "After studentId is known, fetch /for-std/course-table/info/<studentId>. The rendered HTML contains an inline <script> with `bizTypeId: <id>` (plus semesterId and dataId). Jsoup selects all script tags and runs a regex `bizTypeId\\s*:\\s*(\\d+)` to extract the integer."
+        }
+      },
+      "notes": [
+        "Two distinct extraction sources: redirect header for studentId, HTML <script> regex for bizTypeId",
+        "Requires OkHttp .followRedirects(false) (set in JxglstuServiceCreator) so the 302 isn't followed silently and the Location header remains accessible",
+        "Supports webVPN fallback (Constant.JXGLSTU_WEBVPN_URL) for off-campus use"
+      ]
+    },
+    {
+      "repo_name": "BoynChan/HfutOpenApi",
+      "owner": "BoynChan",
+      "description": "Java library providing access to HFUT EAMS5 (course table, grades, etc.)",
+      "default_branch": "master",
+      "stars": 9,
+      "language": "Java",
+      "archived": false,
+      "relevant_files": [
+        {
+          "path": "src/main/java/top/boyn/hfut/constant/JWXT_CONSTANT.java",
+          "role": "URL constants for jxglstu.hfut.edu.cn endpoints",
+          "key_urls": {
+            "JWXT_LOGIN_URL": "http://jxglstu.hfut.edu.cn/eams5-student/login",
+            "JWXT_LOGIN_SALT_URL": "http://jxglstu.hfut.edu.cn/eams5-student/login-salt",
+            "STUDENT_INFO_URL": "http://jxglstu.hfut.edu.cn/eams5-student/for-std/student-info",
+            "COURSE_TABLE_DATA_URL": "http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/get-data",
+            "SCHEDULE_DATUM_URL": "http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum",
+            "SCORE_URL": "http://jxglstu.hfut.edu.cn/eams5-student/for-std/grade/sheet/info/",
+            "PROGRAM_URL": "http://jxglstu.hfut.edu.cn/eams5-student/for-std/program/root-module-json/",
+            "COOKIE_SRVID": "SRVID",
+            "COOKIE_SESSION": "SESSION",
+            "SEMESTER_BACHELOR_ID": "2"
+          }
+        },
+        {
+          "path": "src/main/java/top/boyn/hfut/crawler/LoginCrawler.java",
+          "role": "Two-step auth: GET /login → grab SRVID cookie → GET /login-salt → SHA1(salt + '-' + password) → POST /login JSON"
+        },
+        {
+          "path": "src/main/java/top/boyn/hfut/crawler/StudentInfoCrawler.java",
+          "role": "PRIMARY studentId extraction site — single redirect trick",
+          "extraction_function": "getStuId(Map<String,String> cookieMap) at line 19"
+        },
+        {
+          "path": "src/main/java/top/boyn/hfut/Student.java",
+          "role": "Entry point: login() → getStuId() → wraps in Credential"
+        },
+        {
+          "path": "src/main/java/top/boyn/hfut/crawler/CourseCrawler.java",
+          "role": "Consumes stuId for two JSON endpoints: GET course-table/get-data (lessons + lessonIds) then POST ws/schedule-table/datum (scheduleList + lessonList)"
+        },
+        {
+          "path": "src/main/java/top/boyn/hfut/Credential.java",
+          "role": "Holds cookie + stuId; 5-minute expiry; update() refreshes by re-login (validates stuId matches)"
+        },
+        {
+          "path": "src/main/java/top/boyn/hfut/service/CourseService.java",
+          "role": "Public façade used by callers"
+        }
+      ],
+      "studentId_extraction_approach": "Single-step Location-header extraction: followRedirects(false) on a GET to STUDENT_INFO_URL (= http://jxglstu.hfut.edu.cn/eams5-student/for-std/student-info) which 302-redirects to /for-std/student-info/info/<studentId>; split Location header on '/' and take index 5",
+      "exact_regex_or_code_snippet": {
+        "parseStudentId_from_redirect": {
+          "language": "Java",
+          "file": "src/main/java/top/boyn/hfut/crawler/StudentInfoCrawler.java",
+          "lines": "19-28",
+          "snippet": "public static String getStuId(Map<String, String> cookieMap) throws IOException {\n    Connection.Response response = Jsoup\n            .connect(JWXT_CONSTANT.STUDENT_INFO_URL)\n            .ignoreContentType(true)\n            .method(Connection.Method.GET)\n            .cookies(cookieMap)\n            .followRedirects(false)\n            .execute();\n    return response.header(\"Location\").split(\"/\")[5];\n}",
+          "rationale": "GET /eams5-student/for-std/student-info → 302 → /for-std/student-info/info/<studentId>. Splits the Location URL by '/' and takes index 5. Whether this works depends entirely on whether the Location header is absolute (http://...) or relative (/eams5-student/...).",
+          "split_analysis": {
+            "absolute_url_example": "http://jxglstu.hfut.edu.cn/eams5-student/for-std/student-info/info/123456 → split('/') = ['http:', '', 'jxglstu.hfut.edu.cn', 'eams5-student', 'for-std', 'student-info', 'info', '123456'] → [5] = 'student-info' (WRONG; correct is '123456' at [7]).",
+            "relative_url_example": "/eams5-student/for-std/student-info/info/123456 → split('/') = ['', 'eams5-student', 'for-std', 'student-info', 'info', '123456'] → [5] = '123456' (CORRECT).",
+            "verdict": "Code works only if the server returns a relative-path Location header. If it returns absolute (most modern servers do for 302s), split('/')[5] returns 'student-info' (not a number), which would silently propagate as a bogus stuId and explode later when used as the dataId query parameter."
+          },
+          "bug_or_unknown": "CONFIRMED BUG for absolute-URL redirects. The fix would be either .substringAfterLast('/') (cleanest, always correct) or .split('/').last (safer than fixed index)."
+        }
+      },
+      "notes": [
+        "POTENTIAL BUG: response.header('Location').split('/')[5] returns 'student-info' for absolute-URL redirects, not the studentId",
+        "Student.login() does call getStuId() so the bug WOULD bite if executed against current jxglstu (which returns absolute URLs) — Student.login() would store the wrong stuId in Credential, and downstream CourseCrawler would 400/500 on dataId='student-info'",
+        "All subsequent CourseCrawler code uses the stuId from Credential (not from a fresh extraction) and passes it as dataId form param to /course-table/get-data and as JSON studentId field to /ws/schedule-table/datum",
+        "Hard-coded SEMESTER_BACHELOR_ID='2' (undergrad bizTypeId) — different from Chiu-xaH's discover-via-regex approach"
+      ]
+    },
+    {
+      "repo_name": "Aoi-cn/hfut_schedule_hacker",
+      "owner": "Aoi-cn",
+      "description": "合工大课程表小程序，有情侣课表、查看全校课表等特色功能 (Taro/React mini-program)",
+      "default_branch": "master",
+      "stars": 2,
+      "language": "JavaScript (Taro/React)",
+      "archived": false,
+      "relevant_files": [
+        {
+          "path": "src/actions/schedule.js",
+          "role": "Schedule data fetching — but ALL calls go to the cloud backend, NOT directly to jxglstu.hfut.edu.cn",
+          "key_call": "GET '/schedule', { key, campus, semesterId: currentSemester.id }"
+        },
+        {
+          "path": "src/actions/login.js",
+          "role": "Login flow — same: calls backend cloud at GET '/login', receives {success, msg, key}",
+          "no_local_extraction": true
+        },
+        {
+          "path": "src/actions/allSchedule.js",
+          "role": "全校课表 (campus-wide schedule) feature",
+          "no_local_extraction": true
+        },
+        {
+          "path": "src/actions/customSchedule.js",
+          "role": "Custom events / custom schedule",
+          "no_local_extraction": true
+        },
+        {
+          "path": "src/utils/request.js",
+          "role": "HTTP wrapper to backend",
+          "snippet": "GET('/login', { username, password }) → response {success, key}"
+        }
+      ],
+      "studentId_extraction_approach": "NONE — this is a pure client-side mini-program that delegates ALL jxglstu interaction to a private cloud backend. The client never sees the raw course-table HTML or Location headers; it only receives a 'key' from the backend's /login endpoint and uses that key as an opaque session token for subsequent /schedule, /exam_arrange calls",
+      "exact_regex_or_code_snippet": {
+        "n/a": {
+          "language": "JavaScript",
+          "explanation": "No jxglstu.hfut.edu.cn scraping in client code. All extraction lives on a private server (referenced as e.g. 'GET /schedule' — baseUrl in src/utils/request.js, not present in this open-source repo).",
+          "evidence": "Grep for 'jxglstu', 'eams5', 'course-table', 'studentId', 'xqh' across all src/actions/*.js and src/utils/*.js returned ZERO matches."
+        }
+      },
+      "notes": [
+        "This repo is not a useful reference for studentId extraction — it's a frontend wrapper around a closed-source backend",
+        "Comparison value: confirms a viable product design (couple-schedule, campus-wide-schedule) can be built without exposing scraping logic",
+        "For cross-verification purposes, treat Aoi-cn as null-evidence: it neither extracts studentId from HTML nor from headers on the client side"
+      ]
+    },
+    {
+      "repo_name": "elonzh/django-hfut-auth",
+      "owner": "elonzh (package author: er1iang/erliang)",
+      "description": "Django authentication backend for HFUT students; supports 合肥 and 宣城 campuses",
+      "default_branch": "master",
+      "stars": 0,
+      "language": "Python",
+      "archived": false,
+      "relevant_files": [
+        {
+          "path": "hfut_auth/backends.py",
+          "role": "Django auth backend — delegates to external `hfut` package",
+          "key_code": "session = StudentSession(username, password, campus); session.login()"
+        },
+        {
+          "path": "hfut_auth/__init__.py",
+          "role": "Package metadata (version 0.1.2)"
+        },
+        {
+          "path": "hfut_auth/forms.py",
+          "role": "AuthenticationForm with campus selector (XC/HF)"
+        },
+        {
+          "path": "hfut_auth/settings.py",
+          "role": "CAMPUS config (default 'ALL', values 'XC'/'HF'/'ALL')"
+        },
+        {
+          "path": "requirements.txt",
+          "role": "Dependencies: django>=1.9, hfut>=1.4.1",
+          "key_dependency": "hfut>=1.4.1  ← the actual extraction library (separate PyPI package)"
+        }
+      ],
+      "studentId_extraction_approach": "NOT IN THIS REPO — the actual extraction lives in the upstream `hfut` PyPI package (>=1.4.1, original author er1iang/erliang). This repo is only a Django shim that wraps it. CRITICAL: the `hfut` package on PyPI targets the OLD `ids1.hfut.edu.cn/amserver/UI/Login` CAS portal and `jw.hfut.edu.cn` (legacy 4.x-era system), NOT the current `jxglstu.hfut.edu.cn/eams5-student` (EAMS5). It will not work against the modern system without forking the upstream package.",
+      "exact_regex_or_code_snippet": {
+        "delegation_only": {
+          "language": "Python",
+          "file": "hfut_auth/backends.py",
+          "lines": "26-28",
+          "snippet": "try:\n    session = StudentSession(username, password, campus)\n    session.login()\nexcept (ValidationError, SystemLoginFailed, IPBanned) as e:",
+          "rationale": "All authentication logic is delegated to the `hfut.StudentSession` class. There is no studentId extraction logic in this repo — only exception handling for ValidationError / SystemLoginFailed / IPBanned (raised by the upstream package)."
+        },
+        "upstream_verification": {
+          "evidence": "Downloaded and inspected hfut-1.4.1.tar.gz from PyPI. Upstream hfut/model.py targets http://ids1.hfut.edu.cn/amserver/UI/Login (line 511) and references host = HOSTS[campus] (line 114). Confirmed ZERO references to jxglstu.hfut.edu.cn or eams5-student. This package is for the legacy system.",
+          "verdict": "elonzh/django-hfut-auth is NOT a valid cross-verification reference for the modern jxglstu.eams5 studentId extraction. It is a useful reference for the legacy system only."
+        }
+      },
+      "notes": [
+        "The `hfut` PyPI package (>=1.4.1) is the actual extraction library; this Django package is just glue",
+        "Author is `er1iang` / `erliang` per package metadata; the GitHub username is `elonzh` (likely a re-upload by someone else, or the user has multiple accounts)",
+        "Last update appears to be 2015-2016 era (pre-EAMS5); upstream hfut package is similarly stale",
+        "For modern EAMS5 work, this repo contributes ZERO direct extraction code — the only transferable lesson is the Django-backend glue pattern itself"
+      ]
+    }
+  ],
+  "summary_of_extraction_approaches": {
+    "Chiu-xaH/HFUT-Schedule (Kotlin/Android, 149 stars, ACTIVE on EAMS5)": {
+      "stage1_studentId": "302 Location header substringAfter('/eams5-student/for-std/course-table/info/').toInt()",
+      "stage2_bizTypeId": "Regex `bizTypeId\\s*:\\s*(\\d+)` over Jsoup-selected <script> tags in the HTML of /for-std/course-table/info/<studentId>",
+      "robustness": "Best — handles session-expiry detection, webVPN fallback, and treats bizTypeId/semesterId/dataId as discoverable from page HTML rather than hard-coded",
+      "applicability": "Modern EAMS5, current and actively maintained"
+    },
+    "BoynChan/HfutOpenApi (Java library, 9 stars, EAMS5 but 2019-era)": {
+      "studentId": "302 Location header split('/')[5] from GET /for-std/student-info (LIKELY BUG — split index returns wrong segment for absolute URLs)",
+      "bizTypeId_semesterId_dataId": "Hard-coded constants (SEMESTER_BACHELOR_ID='2', semesterId and dataId come from Credential passed by caller)",
+      "robustness": "Brittle — split-index bug, hard-coded bizTypeId, no fallback if URL pattern changes",
+      "applicability": "Demonstrates the JSON-endpoint contract (get-data + ws/schedule-table/datum) and the credential-management pattern, but the Location-header parser is unreliable"
+    },
+    "Aoi-cn/hfut_schedule_hacker (Taro mini-program, 2 stars)": {
+      "studentId": "None — backend cloud handles all extraction; client only sees opaque session key",
+      "bizTypeId": "None client-side",
+      "robustness": "N/A — extraction lives outside this open-source repo",
+      "applicability": "Confirms a client-only design is possible, but provides zero extraction logic to copy"
+    },
+    "elonzh/django-hfut-auth (Django shim, 0 stars, 2015-2016 era)": {
+      "studentId": "Delegates to hfut PyPI package (legacy ids1.hfut.edu.cn system, NOT jxglstu.eams5)",
+      "bizTypeId": "None — wrong system",
+      "robustness": "N/A — wrong system entirely",
+      "applicability": "Useful only as a Django-backend pattern reference, NOT for EAMS5 studentId extraction"
+    }
+  },
+  "cross_verification_findings": [
+    {
+      "finding_id": 1,
+      "severity": "info",
+      "topic": "302 Location header is the canonical studentId source",
+      "evidence": "Both Chiu-xaH (active, 2024+) and BoynChan (2019) extract studentId from the 302 Location header returned by /for-std/course-table (Chiu) or /for-std/student-info (Boyn). They pick slightly different endpoints but use the same mechanism: turn off follow-redirects, read Location, parse the trailing path segment."
+    },
+    {
+      "finding_id": 2,
+      "severity": "warning",
+      "topic": "BoynChan split-index bug for absolute-URL Location headers",
+      "evidence": "BoynChan StudentInfoCrawler.getStuId uses response.header('Location').split('/')[5]. For an absolute URL like 'http://jxglstu.hfut.edu.cn/eams5-student/for-std/student-info/info/123456', split('/')[5] = 'student-info' (not the studentId, which is at [7]). Only works if the server returns a relative-path Location header.",
+      "fix_suggestion": "Use .substringAfterLast('/') or .split('/').last() — both always return the last path segment regardless of absolute vs relative URL form."
+    },
+    {
+      "finding_id": 3,
+      "severity": "info",
+      "topic": "bizTypeId is discovered from page HTML, not hard-coded",
+      "evidence": "Chiu-xaH's parseBizTypeId regex `bizTypeId\\s*:\\s*(\\d+)` runs against the rendered HTML's <script> tags. This is more robust than BoynChan's hard-coded SEMESTER_BACHELOR_ID='2' — different bizTypeId values exist for undergrad (2), grad (3?), continuing-ed, exchange, etc."
+    },
+    {
+      "finding_id": 4,
+      "severity": "info",
+      "topic": "Two-step call sequence is universal across both EAMS5 implementations",
+      "evidence": "Chiu-xaH and BoynChan both use: (1) get-data (GET with bizTypeId+semesterId+dataId) to obtain lessons[] + lessonIds[], then (2) schedule-table/datum (POST with studentId+lessonIds+weekIndex) to obtain scheduleList + lessonList. This is the canonical EAMS5 schedule fetch protocol."
+    },
+    {
+      "finding_id": 5,
+      "severity": "warning",
+      "topic": "Aoi-cn provides no extraction code (closed-source backend)",
+      "evidence": "All schedule/login calls go to private cloud endpoints (/login, /schedule, /exam_arrange, /select_info). The repo is a frontend only."
+    },
+    {
+      "finding_id": 6,
+      "severity": "warning",
+      "topic": "elonzh/django-hfut-auth targets legacy system, not EAMS5",
+      "evidence": "requirements.txt pins hfut>=1.4.1. The hfut package on PyPI (v1.4.1, downloaded and inspected) targets http://ids1.hfut.edu.cn/amserver/UI/Login (CAS portal for legacy jw.hfut.edu.cn). Zero references to jxglstu.hfut.edu.cn or eams5-student anywhere in the upstream package."
+    }
+  ],
+  "recommended_reference_for_modern_implementation": "Chiu-xaH/HFUT-Schedule (149 stars, active Kotlin/Android codebase) — particularly JxglstuRepository.kt parseStudentId (Location header substringAfter) and parseBizTypeId (Jsoup script-tag regex). The 2024-era code is the most authoritative public reference for the current EAMS5 contract."
+}

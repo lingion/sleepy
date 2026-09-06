@@ -156,7 +156,19 @@ private fun licenseAttributionEntries(): List<AttributionEntry> = listOf(
     ),
     AttributionEntry(
         "HFUT-Schedule (Chiu-xaH)", "MIT",
-        "合工大 EAMS5 全协议: course-table → schedule-table/datum 三段 fetch"
+        "合工大 EAMS5 全协议: course-table → schedule-table/datum 三段 fetch (六种 studentId 形态与登录态 302 重定向检测)"
+    ),
+    AttributionEntry(
+        "HfutOpenApi (BoynChan)", "MIT",
+        "合工大教务全接口封装参考: 与 HFUT-Schedule 形成多源印证, 用于交叉验证 studentId 形态谱"
+    ),
+    AttributionEntry(
+        "hfut_schedule_hacker (Aoi-cn)", "无 LICENSE",
+        "合工大课表小程序: 本轮调研虽未取到 studentId 直接证据, 但项目维护活跃, 列入参考以便后续核对"
+    ),
+    AttributionEntry(
+        "django-hfut-auth (elonzh)", "MIT",
+        "合工大身份认证后端参考: 倒排验证 supwisdom EAMS5 入口形态"
     ),
     AttributionEntry(
         "SEUTimetable (sakimidare)", "Apache-2.0",
