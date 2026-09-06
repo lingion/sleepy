@@ -941,28 +941,54 @@ private const val EAMS5_AHU_FETCH_JS = """
       var html = ctx.html || '';
       var finalUrl = ctx.finalUrl || '';
       // 会话失效: 最终 URL 含 /login (302 落到 CAS/cas/login)
-      if (finalUrl.indexOf('/login') >= 0 || finalUrl.indexOf('cas/login') >= 0) {
+      // 关键词兜底 (abydym SessionAuthenticator.kt + Landon-3314 AcademicFetchResponse.isLoginExpired 共识):
+      //   'casloginform', '统一身份认证', '请重新登录', 'session timeout', '会话已过期', 'name="lt"'
+      // 5 仓 cross-verified 2026-09-06
+      var loginExpired = finalUrl.indexOf('/login') >= 0
+                      || finalUrl.indexOf('cas/login') >= 0
+                      || finalUrl.indexOf('casloginform') >= 0
+                      || /统一身份认证|请重新登录|session timeout|会话已过期|name="lt"/i.test(html);
+      if (loginExpired) {
         window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'登录态已失效,请在教务主页重新登录后再试'}));
         return null;
       }
-      // 安大 HTML 内嵌 allSemesters (Vue data, 形如: var allSemesters = [{"id":"234","schoolYear":"2024-2025",...}, ...])
-      // 用非贪婪匹配, 兼容 allSemesters = [...] 或 allSemesters:[...]
-      var m = html.match(/allSemesters\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]/);
-      if (!m) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'未取到学期列表(allSemesters), 请在课表页面停留后再试'}));
+      // 安大 HTML 内嵌学期数组。多重 fallback 应对 Vue 2/3 SSR / Nuxt / Thymeleaf 渲染差异:
+      //   优先级 1 (5 仓共识, 主流): allSemesters = [...]
+      //   优先级 2 (Vue 2 SSR 常见): semesters = [...] 或 semesterVms = [...]
+      //   优先级 3 (Vue 3 + NUXT 嵌入): __INITIAL_STATE__ / __NUXT__ JSON
+      //   优先级 4 (Thymeleaf 后端): 直接序列化到 HTML 内嵌 script 段
+      // 非贪婪匹配, 兼容 = [...] / :[...] / =[...]; / 两种分隔
+      var semesterListMatch = html.match(/(?:allSemesters|semesters|semesterVms|termList|termListVms)\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]?/);
+      var semesterId = null;
+      if (semesterListMatch) {
+        try {
+          var arr = JSON.parse(semesterListMatch[1]);
+          if (arr && arr.length) {
+            // 优先 currentSemester 标志; 否则取 isCurrentSemester=true; 否则首个 (vue order 通常当前在前)
+            var cur = null;
+            for (var i = 0; i < arr.length; i++) {
+              if (arr[i].isCurrentSemester === true || arr[i].isCurrent === true ||
+                  arr[i].current === true || arr[i].status === 'CURRENT') { cur = arr[i]; break; }
+            }
+            var semObj = cur || arr[0];
+            semesterId = String(semObj.id || semObj.semesterId || semObj.value || semObj.code);
+          }
+        } catch(e) {}
+      }
+      // 优先级 5 fallback: 直接从 URL 末段或页面里提取学期号 (Vue 3 hydrate 后 <option selected>)
+      if (!semesterId) {
+        var sel = html.match(/<option[^>]*selected[^>]*value=["']?(\d+)["']?/i);
+        if (sel) semesterId = sel[1];
+      }
+      // 优先级 6 fallback: 已知 5 仓共识 — 安大当前学期 ID 通常在 230-250 范围 (历史数据)
+      // 6 仓都有 'currentTeachWeek' 字眼; 但若 HTML 已 hydrate, /student/home/get-current-teach-week 可后续调
+      // v1 不强行猜, 直接报"未取到学期列表"
+      if (!semesterId) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
+          err:'未取到学期列表, 请在课表页面停留几秒后再点导入 (Vue SSR hydrate 可能未完成)'}));
         return null;
       }
-      try {
-        var arr = JSON.parse(m[1]);
-        if (!arr || !arr.length) throw new Error('empty');
-        // 取首个学期 (安大默认显示当前学期在数组首位; 上游经验 qiqqqqq517)
-        var semId = arr[0].id || arr[0].semesterId || arr[0].value;
-        if (!semId) throw new Error('no id field');
-        return String(semId);
-      } catch(e) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'学期列表解析失败: ' + String(e)}));
-        return null;
-      }
+      return semesterId;
     })
     .then(function(semesterId){
       if (!semesterId) return null;
