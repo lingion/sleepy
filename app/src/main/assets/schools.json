@@ -28,7 +28,7 @@
   {
     "sortKey": "A",
     "name": "安徽农业大学",
-    "url": "http://newjwxt.ahau.edu.cn/jwglxt",
+    "url": "http://newjwxt.ahau.edu.cn/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "anhuinongyedaxue"
@@ -44,7 +44,7 @@
   {
     "sortKey": "B",
     "name": "保定学院",
-    "url": "http://jwgl.bdu.edu.cn/xtgl/login_slogin.html",
+    "url": "https://jwgl.bdu.edu.cn/xtgl/login_slogin.html",
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "baodingxueyuan"
@@ -305,7 +305,7 @@
   {
     "sortKey": "D",
     "name": "东南大学",
-    "url": "https://newxk.urp.seu.edu.cn/",
+    "url": "https://ehall.seu.edu.cn/",
     "type": "seu",
     "aliases": [
       "seu"
@@ -372,7 +372,7 @@
     "sortKey": "G",
     "name": "广东金融学院",
     "url": "http://jwxt.gduf.edu.cn/",
-    "type": "qz_br",
+    "type": "qz",
     "aliases": [],
     "sortKeyFull": "guangdongjinrongxueyuan"
   },
@@ -643,7 +643,7 @@
   {
     "sortKey": "H",
     "name": "湖南工学院",
-    "url": "http://jwgl.hnit.edu.cn/",
+    "url": "http://jwxt.hnit.edu.cn/",
     "type": "qz_old",
     "aliases": [],
     "sortKeyFull": "hunangongxueyuan"
@@ -709,8 +709,8 @@
   {
     "sortKey": "J",
     "name": "江西农业大学南昌商学院",
-    "url": "http://223.83.249.67:8080/jsxsd/",
-    "type": "qz_br",
+    "url": "https://jwxt.ncbcjxau.edu.cn:8443/jsd/",
+    "type": "qz",
     "aliases": [],
     "sortKeyFull": "jiangxinongyedaxuenanchangshangxueyuan"
   },
@@ -727,7 +727,7 @@
   {
     "sortKey": "J",
     "name": "吉林师范大学",
-    "url": "http://jwxt.jlnu.edu.cn/",
+    "url": "https://jwxt.jlnu.edu.cn/",
     "type": "qz",
     "aliases": [],
     "sortKeyFull": "jilinshifandaxue"
@@ -911,7 +911,7 @@
   {
     "sortKey": "S",
     "name": "三江学院",
-    "url": "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "url": "https://cas.sju.edu.cn/authserver/login?service=https%3A%2F%2Fjw.sju.edu.cn%2Fjwglxt%2Fxtgl%2Flogin_slogin.html",
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "sanjiangxueyuan"
@@ -929,7 +929,7 @@
   {
     "sortKey": "S",
     "name": "山东科技大学",
-    "url": "http://jwgl.sdust.edu.cn/",
+    "url": "https://jwgl.sdust.edu.cn/jsxsd/",
     "type": "qz",
     "aliases": [],
     "sortKeyFull": "shandongkejidaxue"
@@ -937,7 +937,7 @@
   {
     "sortKey": "S",
     "name": "山东农业大学",
-    "url": "http://xjw.sdau.edu.cn/jwglxt/",
+    "url": "http://xjw.sdau.edu.cn/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "shandongnongyedaxue"
@@ -973,7 +973,7 @@
   {
     "sortKey": "S",
     "name": "上海海洋大学",
-    "url": "https://urp.shou.edu.cn/login",
+    "url": "https://urp.shou.edu.cn",
     "type": "urp_new",
     "aliases": [],
     "sortKeyFull": "shanghaihaiyangdaxue"
@@ -1017,8 +1017,8 @@
   {
     "sortKey": "S",
     "name": "绍兴文理学院元培学院",
-    "url": "http://www.ypc.edu.cn/jwgl.htm",
-    "type": "zf",
+    "url": "http://jwc.ypc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "shaoxingwenlixueyuanyuanpeixueyuan"
   },
@@ -1059,7 +1059,7 @@
   {
     "sortKey": "S",
     "name": "四川大学锦城学院",
-    "url": "http://jwweb.scujcc.cn/",
+    "url": "https://jwweb.scujcc.cn/",
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "sichuandaxuejinchengxueyuan"
@@ -1157,7 +1157,7 @@
   {
     "sortKey": "W",
     "name": "武汉东湖学院",
-    "url": "http://221.232.159.27/",
+    "url": "http://jxgl.wdu.edu.cn/",
     "type": "zf",
     "aliases": [],
     "sortKeyFull": "wuhandonghuxueyuan"
@@ -1176,8 +1176,8 @@
   {
     "sortKey": "W",
     "name": "武汉轻工大学",
-    "url": "http://jwglxt.whpu.edu.cn/xtgl/",
-    "type": "zf_new",
+    "url": "https://jwglxt.whpu.edu.cn/xtgl/",
+    "type": "qz",
     "aliases": [],
     "sortKeyFull": "wuhanqinggongdaxue"
   },
@@ -1226,16 +1226,16 @@
   {
     "sortKey": "X",
     "name": "西安科技大学",
-    "url": "http://59.74.168.16:8989/",
-    "type": "zf",
+    "url": "https://jwc.xust.edu.cn/",
+    "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "xiankejidaxue"
   },
   {
     "sortKey": "X",
     "name": "西安理工大学",
-    "url": "http://202.200.112.200/",
-    "type": "zf",
+    "url": "http://jwc.xaut.edu.cn/",
+    "type": "zf_new",
     "aliases": [],
     "sortKeyFull": "xianligongdaxue"
   },
@@ -1324,8 +1324,8 @@
   {
     "sortKey": "Y",
     "name": "云南财经大学",
-    "url": "http://202.203.194.2/",
-    "type": "zf",
+    "url": "https://xjwis.ynufe.edu.cn/",
+    "type": "qz",
     "aliases": [],
     "sortKeyFull": "yunnancaijingdaxue"
   },
