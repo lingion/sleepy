@@ -393,6 +393,10 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "yongjianzheng/Gdufszhushou\nCrazioker/agency"
     ),
     PerSchoolEntry(
+        "school-gdmu", "广东医科大学 GDMU",
+        "用户采集包实锤 zf_new 协议形态 (新正方 zftal-ui-v5 裸 /kbcx/ 路径), 参见 docs/release-notes-v1.0.49.md"
+    ),
+    PerSchoolEntry(
         "school-csust", "长沙理工大学 CSUST",
         "zHElEARN/CSUSTKit\nCreaMakers/EduSpider\ntimeisthe/CSUSTDataGet\nJulius-lq/EduAdminSystem\nJS-CAUTION/csust-course-schedule"
     ),

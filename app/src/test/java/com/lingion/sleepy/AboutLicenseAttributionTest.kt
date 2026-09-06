@@ -104,6 +104,8 @@ class AboutLicenseAttributionTest {
         // 广东外语外贸大学 GDUFS
         Attribution("yongjianzheng/Gdufszhushou", ""),
         Attribution("Crazioker/agency", ""),
+        // 广东医科大学 GDMU (用户采集包确认 zf_new 协议, 无外部学生仓库)
+        Attribution("GDMU", ""),
         // 长沙理工大学 CSUST
         Attribution("zHElEARN/CSUSTKit", ""),
         Attribution("CreaMakers/EduSpider", ""),
