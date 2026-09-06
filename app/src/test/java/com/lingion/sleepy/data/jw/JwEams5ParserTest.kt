@@ -371,4 +371,107 @@ class JwEams5ParserTest {
         val c = p.generateCourseList().single()
         assertEquals("空 weekIndexes 兜底 1", 1, c.startWeek)
     }
+
+    // -------- parseWeekIndex 边界 (weekIndexes bitmap 单/双周标记) --------
+    // 5 仓 cross-verified 2026-09-06: 单周标 '单', 双周标 '双', 'odd'/'even' 兜底
+
+    @Test
+    fun `parseWeekIndex - 1-16单 双周标记 type=2`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T单", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16单", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("1-16单 startWeek=1", 1, c.startWeek)
+        assertEquals("1-16单 type=2 (单周)", 2, c.type)
+    }
+
+    @Test
+    fun `parseWeekIndex - 1-16双 双周标记 type=3`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T双", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16双", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("1-16双 startWeek=1", 1, c.startWeek)
+        assertEquals("1-16双 type=3 (双周)", 3, c.type)
+    }
+
+    @Test
+    fun `parseWeekIndex - 1-16 全周 type=0`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T全", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("1-16 startWeek=1", 1, c.startWeek)
+        assertEquals("1-16 type=0 (全周)", 0, c.type)
+    }
+
+    @Test
+    fun `parseWeekIndex - 8,10,12,14 不连续 v1 取首个 type=0`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T离", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "8,10,12,14", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("8,10,12,14 startWeek=8 (首个)", 8, c.startWeek)
+        assertEquals("不连续周 v1 type=0 (RLE v2 待加)", 0, c.type)
+    }
+
+    @Test
+    fun `parseWeekIndex - 5-12 区间 v1 取首个`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T区", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "5-12", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("5-12 startWeek=5", 5, c.startWeek)
+    }
+
+    @Test
+    fun `parseWeekIndex - 1-8,10-16 复合区间`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T复", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-8,10-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("1-8,10-16 startWeek=1", 1, c.startWeek)
+    }
+
+    @Test
+    fun `parseWeekIndex - even 英文兼容 type=3`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Teven", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16 even", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("even → type=3", 3, c.type)
+    }
+
+    @Test
+    fun `parseWeekIndex - odd 英文兼容 type=2`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Todd", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16 odd", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("odd → type=2", 2, c.type)
+    }
 }

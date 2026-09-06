@@ -275,13 +275,13 @@ class JwEams5Parser(source: String) : JwParser(source) {
             val endNode = o["endUnit"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
 
-            // weekIndexes bitmap 解析 (v1 简化: 左取首个数字当 startWeek=endWeek, type=0)
+            // weekIndexes bitmap 解析 (v1.1: 单/双周标记识别, 但仍 emit 单周 type=0/2/3)
             // 真实形态可能是 "1-16" (连续), "1-16单" (单周), "5,7,9-12" (不连续)
-            // v2: 完整 RLE 解析 + 单双周标记 (MoeclubM 代码自写, 参考其 dayOfWeek/weeksAndTeachers 处理)
+            // v2: 完整 RLE 解析 (MoeclubM 代码自写, 参考其 dayOfWeek/weeksAndTeachers 处理)
             val weekIndexesStr = o["weekIndexes"]?.let {
                 runCatching { it.jsonPrimitive.contentOrNull }.getOrNull()
             }.orEmpty()
-            val startWeek = parseFirstWeek(weekIndexesStr)
+            val (startWeek, weekType) = parseWeekIndex(weekIndexesStr)
 
             out += JwCourse(
                 name = name.trim(),
@@ -292,21 +292,41 @@ class JwEams5Parser(source: String) : JwParser(source) {
                 endNode = endNode.coerceAtLeast(startNode),
                 startWeek = startWeek,
                 endWeek = startWeek,
-                type = 0,
+                type = weekType,
             )
         }
         return out
     }
 
     /**
-     * 从 weekIndexes bitmap 字符串取首个数字当 startWeek。
-     * 形如 "1-16" → 1; "5,7,9-12" → 5; "1-16单" → 1; "" → 1 (兜底)
-     * v1 简化: 单周 emit, type=0; 不解析单双周标记 (v2 加 RLE)
+     * 从 weekIndexes bitmap 字符串解析出首个周次。
+     *
+     * 真实形态候选 (5 仓 cross-validated 2026-09-06):
+     *   "1-16"      → 1     (连续)
+     *   "1-16单"    → 1     (单周; type=2 标记)
+     *   "1-16双"    → 1     (双周; type=3 标记)
+     *   "1,3,5,7-12" → 1    (不连续, v1 取首个; type=0)
+     *   "1-8,10-16" → 1     (区间 + 区间, v1 取首个; type=0)
+     *   ""          → 1     (兜底)
+     *
+     * 返回 Pair(startWeek, type):
+     *   - startWeek: 起始周次 (1-based)
+     *   - type: 0=全周, 2=单周, 3=双周 (与 Sleepy JwCourse.type 兼容)
+     *
+     * v1 限制: 不解析连续周次范围 (如 "1-16" 不 emit 多周, 只取首周 type=0/2/3)
+     * v2 加 RLE: emit [start..end] 完整范围
      */
-    private fun parseFirstWeek(weekIndexes: String): Int {
-        if (weekIndexes.isBlank()) return 1
-        val m = Regex("""\d+""").find(weekIndexes) ?: return 1
-        return m.value.toIntOrNull()?.coerceAtLeast(1) ?: 1
+    internal fun parseWeekIndex(weekIndexes: String): Pair<Int, Int> {
+        if (weekIndexes.isBlank()) return 1 to 0
+        // 单双周标记 (中文 '单'/'双' 在 AHU 已知, 兜底 'odd'/'even' 兼容其他学校)
+        val type = when {
+            weekIndexes.contains('单') || weekIndexes.contains("odd", ignoreCase = true) -> 2
+            weekIndexes.contains('双') || weekIndexes.contains("even", ignoreCase = true) -> 3
+            else -> 0
+        }
+        val m = Regex("""\d+""").find(weekIndexes) ?: return 1 to type
+        val start = m.value.toIntOrNull()?.coerceAtLeast(1) ?: 1
+        return start to type
     }
 
     /**
@@ -365,8 +385,9 @@ class JwEams5Parser(source: String) : JwParser(source) {
     }
 
     /** AHU print-data studentTableVms[0].activities[] = 100 (含 weekday+节次权威);
- *  AHU get-data data.lessons[] = 85 (metadata-only);
- *  HFUT 双层 = 95; schedule-table/datum = 80 */
+     *  AHU get-data data.lessons[] = 85 (metadata-only);
+     *  HFUT 双层 = 95; schedule-table/datum = 80
+     */
     override fun confidence(): Int = when {
         source.contains("studentTableVms") && source.contains("activities") -> 100
         source.contains("data") && source.contains("\"lessons\"") -> 85
