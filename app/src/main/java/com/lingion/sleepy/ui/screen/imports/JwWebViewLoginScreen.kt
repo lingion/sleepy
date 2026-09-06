@@ -233,7 +233,16 @@ fun JwWebViewLoginScreen(
                     // 按学校 URL 推断后替换模板占位符。
                     if (school.type == JwProtocol.TYPE_EAMS5) {
                         val prefix = eams5PathPrefixFor(school.url)
-                        evaluateFetchWithTimeout(wv, EAMS5_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix))
+                        // 安徽大学自建'新教务'走金智 EAMS 新版 GET 路径, 复用 EAMS5 type
+                        // 但 fetch JS 单独走 EAMS5_AHU_FETCH_JS (2026-09-06 cross-verified)
+                        val js = if (school.url.contains("ahu.edu.cn", ignoreCase = true) ||
+                            (wv.url ?: "").contains("ahu.edu.cn", ignoreCase = true)
+                        ) {
+                            EAMS5_AHU_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
+                        } else {
+                            EAMS5_FETCH_JS.replace(EAMS5_PREFIX_PLACEHOLDER, prefix)
+                        }
+                        evaluateFetchWithTimeout(wv, js)
                         return@CaptureBar
                     }
                     // T5: 新版正方 — WebView 内 fetch kbList JSON
@@ -866,6 +875,94 @@ private const val EAMS5_FETCH_JS = """
         body: JSON.stringify({lessonIds:[], studentId:studentId, weekIndex:''})
       }).then(function(r){
         if (!r.ok) throw new Error('POST schedule-table/datum 失败 HTTP ' + r.status);
+        return r.text();
+      });
+    })
+    .then(function(txt){
+      if (!txt) return;
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true, data:txt, periods:[]}));
+    })
+    .catch(function(e){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+    });
+  } catch(err) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * 安大 (AHU) 自建'新教务' (jw.ahu.edu.cn, 金智 EAMS 新版部署形态)。
+ *
+ * 与合工大 EAMS5_FETCH_JS 的差异 (2026-09-06 cross-verified,
+ * MoeclubM/AHU-AIO + qiqqqqq517/shangkeschschedule 共识):
+ *   - 不走 POST /ws/schedule-table/datum (安大返 HTTP 500, 不存在该 endpoint)
+ *   - 走 GET /for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
+ *   - dataId 留空: 服务端按当前登录会话绑定学生, 无需客户端提取 studentId
+ *   - 学期 ID 从 course-table HTML 内嵌 allSemesters JSON 数组取 (取最新)
+ *   - 响应: {data:{lessons:[]}} (与 HFUT result.lessonList/scheduleList 形态不同)
+ *
+ * 流程 (三段, 复用 __sleepyBridge.onWiseduResult 同一回调通道):
+ *   1) GET /student/for-std/course-table → HTML 含 allSemesters + 已登录判定
+ *   2) 从 HTML 提取 allSemesters, 取首个 (或当前) semesterId
+ *   3) GET /student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
+ *   4) __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
+ *
+ * 学号提取: 客户端不提取 studentId, 服务端按 session 绑定 (qiqqqqq517 模式);
+ *           MoeclubM 模式 (302 提取) 作为 fallback, 见 [JwEams5Parser] AHU 解析路径。
+ *
+ * 外部佐证:
+ *   - MoeclubM/AHU-AIO (lib/jw/api/jw_api.dart) — REST 客户端
+ *   - qiqqqqq517/shangkeschschedule (shared/assets/offline_repo/schools/resources/AHU/ahu.js)
+ *   - abydym/Ahu_Plus (Kotlin 同栈, 验证中)
+ */
+private const val EAMS5_AHU_FETCH_JS = """
+(function(){
+  try {
+    if (location.hostname.indexOf('ahu.edu.cn') < 0) {
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入安徽大学教务后再点导入'}));
+      return;
+    }
+    var PREFIX = '__EAMS5_PREFIX__';
+    // 1) GET course-table HTML, 提取 allSemesters (学期 JSON 数组) + 检测登录态
+    fetch(PREFIX + '/for-std/course-table', {credentials:'include'})
+    .then(function(r){
+      if (!r.ok) throw new Error('course-table 失败 HTTP ' + r.status + '（请确认已在教务主页登录）');
+      return r.text().then(function(html){ return {html: html, finalUrl: r.url || ''}; });
+    })
+    .then(function(ctx){
+      var html = ctx.html || '';
+      var finalUrl = ctx.finalUrl || '';
+      // 会话失效: 最终 URL 含 /login (302 落到 CAS/cas/login)
+      if (finalUrl.indexOf('/login') >= 0 || finalUrl.indexOf('cas/login') >= 0) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'登录态已失效,请在教务主页重新登录后再试'}));
+        return null;
+      }
+      // 安大 HTML 内嵌 allSemesters (Vue data, 形如: var allSemesters = [{"id":"234","schoolYear":"2024-2025",...}, ...])
+      // 用非贪婪匹配, 兼容 allSemesters = [...] 或 allSemesters:[...]
+      var m = html.match(/allSemesters\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]/);
+      if (!m) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'未取到学期列表(allSemesters), 请在课表页面停留后再试'}));
+        return null;
+      }
+      try {
+        var arr = JSON.parse(m[1]);
+        if (!arr || !arr.length) throw new Error('empty');
+        // 取首个学期 (安大默认显示当前学期在数组首位; 上游经验 qiqqqqq517)
+        var semId = arr[0].id || arr[0].semesterId || arr[0].value;
+        if (!semId) throw new Error('no id field');
+        return String(semId);
+      } catch(e) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'学期列表解析失败: ' + String(e)}));
+        return null;
+      }
+    })
+    .then(function(semesterId){
+      if (!semesterId) return null;
+      // 2) GET course-table/get-data (dataId 留空, 服务端按 session 绑定学生)
+      var url = PREFIX + '/for-std/course-table/get-data?bizTypeId=2&semesterId=' + encodeURIComponent(semesterId) + '&dataId=';
+      return fetch(url, {credentials:'include'}).then(function(r){
+        if (!r.ok) throw new Error('get-data 失败 HTTP ' + r.status);
         return r.text();
       });
     })
