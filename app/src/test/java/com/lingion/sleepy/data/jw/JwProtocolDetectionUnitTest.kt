@@ -24,6 +24,13 @@ class JwProtocolDetectionUnitTest {
     }
 
     @Test
+    fun `iEAS kbcx URL wins over generic zf_new kbcx marker`() {
+        assertEquals(JwProtocol.TYPE_QZ_IEAS,
+            JwImportViewModel.detectProtocolFromUrlForTest(
+                "https://jwxt.buaa.edu.cn:7001/ieas2.1/kbcx/queryGrkb"))
+    }
+
+    @Test
     fun `xtgl 无尾斜杠必须命中 zf_new`() {
         assertEquals(JwProtocol.TYPE_ZF_NEW,
             JwImportViewModel.detectProtocolFromUrlForTest("https://jwgl.example.edu.cn/xtgl"))

@@ -1,0 +1,13 @@
+[
+  {"repo_name":"APassbyDreg/BUAA_JW_Utils","default_branch":"main","license":null,"verdict":"POSITIVE","verdict_reason":"ieas2.1 URL and authenticated requests explicit"},
+  {"repo_name":"yinwoods/Fuck-BUAA-JiaoWu-Anyway","default_branch":"master","license":null,"verdict":"INDIRECT","verdict_reason":"graduate system, not undergraduate iEAS"},
+  {"repo_name":"SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend","default_branch":"main","license":null,"verdict":"POSITIVE","verdict_reason":"queryGrkb endpoint and BeautifulSoup flow explicit"},
+  {"repo_name":"fondoger/buaa-teacher-evaluation","default_branch":"main","license":"MIT","verdict":"POSITIVE","verdict_reason":"iEAS and SSO anchors explicit"},
+  {"repo_name":"SE2020-TopUnderstanding/BUAA-Campus-Tools-Frontend","default_branch":"main","license":null,"verdict":"INDIRECT","verdict_reason":"UI delegates protocol to backend"},
+  {"repo_name":"Yngu196/Schedule","default_branch":"main","license":"Apache-2.0","verdict":"INDIRECT","verdict_reason":"school registry mention only"},
+  {"repo_name":"LabiKyo/buaa-jwgl-evaluator","default_branch":"master","license":null,"verdict":"INDIRECT","verdict_reason":"evaluation userscript, no timetable protocol"},
+  {"repo_name":"xunux/WeixinScoreGetter","default_branch":"master","license":null,"verdict":"INDIRECT","verdict_reason":"graduate system only"},
+  {"repo_name":"Cauchy1412/BUAAGetCourse","default_branch":"master","license":null,"verdict":"POSITIVE","verdict_reason":"authenticated iEAS endpoint explicit"},
+  {"repo_name":"wyx-1236/BUAA-Java-ACP","default_branch":"master","license":null,"verdict":"INDIRECT","verdict_reason":"course assignment, no protocol evidence"},
+  {"repo_name":"KKRainbow/JWOneShotEval","default_branch":"master","license":null,"verdict":"POSITIVE","verdict_reason":"internal equivalent iEAS root explicit"}
+]

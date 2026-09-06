@@ -168,10 +168,11 @@ class Schools179CrossValidationTest {
     // ---- 6. 总量闸 ----
 
     @Test
-    fun `school count stays 179`() {
+    fun `school count stays 180`() {
         // 179 - 删3 (行健文理/广东环保/广西师范学院重复条目) = 176
         // 2026-09-05 收录广东医科大学 → 177; 广州医科大学 → 178; 吉林工商学院(超星) → 179
-        assertEquals(179, entries().size)
+        // 2026-09-06 收录北京航空航天大学(强智 iEAS) → 180
+        assertEquals(180, entries().size)
     }
 
     @Test

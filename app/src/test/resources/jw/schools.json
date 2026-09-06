@@ -61,6 +61,17 @@
   },
   {
     "sortKey": "B",
+    "name": "北京航空航天大学",
+    "url": "https://jwxt.buaa.edu.cn:7001/ieas2.1",
+    "type": "qz_ieas",
+    "aliases": [
+      "buaa",
+      "北航"
+    ],
+    "sortKeyFull": "beijinghangkonghangtianfazhanxueyuan"
+  },
+  {
+    "sortKey": "B",
     "name": "北京化工大学",
     "url": "http://jwglxt.buct.edu.cn/",
     "type": "zf_new",

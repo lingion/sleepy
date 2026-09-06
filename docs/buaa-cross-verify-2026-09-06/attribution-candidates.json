@@ -1,0 +1,75 @@
+{
+  "audit_date": "2026-09-06",
+  "scope": "北航 (BUAA / 北京航空航天大学) 强智 iEAS 教务协议适配",
+  "rule": "GitHub 上有 N 个合格候选 → 全部纳入, 不手削成'前 N 条'; 所有 verdict (POSITIVE/INDIRECT/NEGATIVE) 都必须致谢",
+  "primary_evidence_sources": [
+    {
+      "repo": "APassbyDreg/BUAA_JW_Utils",
+      "license": "未知 (LICENSE 缺失, 24★)",
+      "verdict": "POSITIVE",
+      "verdict_reason": "完整 URL 锚点 + 选课抓取实锤 (jwxt.buaa.edu.cn:7001/ieas2.1/xslbxk/queryXsxkList)",
+      "files": ["exchanger/releaser.py", "exchanger/getter.py", "autoscore/autoscore.py"]
+    },
+    {
+      "repo": "SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend",
+      "license": "未知",
+      "verdict": "POSITIVE",
+      "verdict_reason": "完整 OAuth + 课表抓取 endpoint (jwxt-7001.e2.buaa.edu.cn/ieas2.1/kbcx/queryGrkb), HTML BeautifulSoup 解析实锤",
+      "files": ["user_login/login_request/web.py"]
+    },
+    {
+      "repo": "fondoger/buaa-teacher-evaluation",
+      "license": "MIT",
+      "verdict": "POSITIVE",
+      "verdict_reason": "URL 锚点 + CAS (jwxt.buaa.edu.cn:8080/ieas2.1 + sso.buaa.edu.cn/login)",
+      "files": ["jiaowu_url_const"]
+    },
+    {
+      "repo": "Cauchy1412/BUAAGetCourse",
+      "license": "未知",
+      "verdict": "POSITIVE",
+      "verdict_reason": "URL 锚点 + saveXsxk 选课接口 (jwxt.buaa.edu.cn:8080/ieas2.1/xslbxk/saveXsxk)",
+      "files": ["grabcourse.py", "xuanke.py"]
+    },
+    {
+      "repo": "KKRainbow/JWOneShotEval",
+      "license": "未知",
+      "verdict": "POSITIVE",
+      "verdict_reason": "校内 IP 锚点 (10.200.21.61:7001/ieas2.1, 等价外网域名 jwxt.buaa.edu.cn:7001)",
+      "files": ["application/models/Connection.php", "application/models/Unitedlogin.php"]
+    }
+  ],
+  "indirect_attributions": [
+    {
+      "repo": "yinwoods/Fuck-BUAA-JiaoWu-Anyway",
+      "verdict": "INDIRECT",
+      "verdict_reason": "爬 gsmis.graduate.buaa.edu.cn (研究生), 与本科生 ieas2.1 不同"
+    },
+    {
+      "repo": "xunux/WeixinScoreGetter",
+      "verdict": "INDIRECT",
+      "verdict_reason": "同样爬 gsmis.graduate, 研究生站"
+    },
+    {
+      "repo": "SE2020-TopUnderstanding/BUAA-Campus-Tools-Frontend",
+      "verdict": "INDIRECT",
+      "verdict_reason": "Flutter UI 层, 协议证据全在后端"
+    },
+    {
+      "repo": "LabiKyo/buaa-jwgl-evaluator",
+      "verdict": "INDIRECT",
+      "verdict_reason": "油猴前端, 无课表抓取"
+    },
+    {
+      "repo": "Yngu196/Schedule",
+      "verdict": "INDIRECT",
+      "verdict_reason": "WakeUp fork, SchoolListActivity 仅占位 'http://jiaowu.buaa.edu.cn'"
+    },
+    {
+      "repo": "wyx-1236/BUAA-Java-ACP",
+      "verdict": "INDIRECT",
+      "verdict_reason": "oop 课程作业, 与教务协议无关"
+    }
+  ],
+  "license_compliance_note": "POSITIVE 仓无 GPL/AGPL, 仅 fondoger 是 MIT (兼容)。APassbyDreg/Cauchy1412/SE2020/fondoger 协议形态参考, 代码自写。"
+}
