@@ -13,24 +13,20 @@
       {"path": "lib/jwapp/api/api_manager.dart", "purpose": "旧 jwapp 微服务入口(jwapp.ahu.edu.cn/eams-micro-server/api/v1)", "lines_with_protocol": [1, 80]}
     ],
     "answers": {
-      "1_protocol_family": "AHU 自建'新教务'(jw.ahu.edu.cn, /student/for-std/...), 字段含 course-table/for-std/studentTableVms. 同存旧 jwapp 微服务 (jwapp.ahu.edu.cn/eams-micro-server/api/v1) - 暗示历史 EAMS 血统, 但新教务协议独立.",
+      "1_protocol_family": "AHU 自建'新教务'(jw.ahu.edu.cn, /student/for-std/...). 同存旧 jwapp 微服务 (jwapp.ahu.edu.cn/eams-micro-server/api/v1)",
       "2_login_url": "https://jw.ahu.edu.cn/student/sso/login (CAS: https://one.ahu.edu.cn/cas/login?service=https%3A%2F%2Fjw.ahu.edu.cn%2Fstudent%2Fsso%2Flogin)",
       "3_schedule_api_paths": [
-        {"url": "https://jw.ahu.edu.cn/student/home/get-current-teach-week", "method": "GET"},
         {"url": "https://jw.ahu.edu.cn/student/for-std/grade/sheet", "method": "GET", "note": "提取 studentId: 302 Location 形如 /student/for-std/grade/sheet/semester-index/<studentId>"},
-        {"url": "https://jw.ahu.edu.cn/student/ws/semester/get/<semesterId>", "method": "GET"},
         {"url": "https://jw.ahu.edu.cn/student/for-std/course-table/get-data?semesterId=<id>&dataId=<studentId>&bizTypeId=2", "method": "GET"},
-        {"url": "https://jw.ahu.edu.cn/student/for-std/course-table/semester/<semesterId>/print-data?semesterId=<id>&hasExperiment=false", "method": "GET"},
-        {"url": "https://jwapp.ahu.edu.cn/eams-micro-server/api/v1/lesson/student/course-table/<semesterId> (旧 jwapp)", "method": "GET"}
+        {"url": "https://jw.ahu.edu.cn/student/for-std/course-table/semester/<semesterId>/print-data?semesterId=<id>&hasExperiment=false", "method": "GET", "note": "返回 studentTableVms[].activities[] (含 weekday/startUnit/endUnit/weekIndexes 真实课表)"},
+        {"url": "https://jwapp.ahu.edu.cn/eams-micro-server/api/v1/lesson/student/course-table/<semesterId>", "method": "GET", "note": "旧 jwapp 路径"}
       ],
-      "4_student_id_extraction": {"approach": "302", "exact_code": "GET /student/for-std/grade/sheet 不跟随重定向 → 响应头 Location 含 /semester-index/<studentId> → 拆路径取第 [i+1] 段"},
-      "5_lesson_ids_handling": "lessonIds 在本仓库 0 命中 (GitHub Code Search 已验证). 课表 API 是 GET 不是 POST, query 含 semesterId+dataId(studentId), lessonIds 不是必填",
-      "6_error_responses": [
-        {"status": 401, "body_shape": "html", "keywords": ["errormsghide", "errormsg", "login"]}
-      ]
+      "4_student_id_extraction": {"approach": "302", "exact_code": "GET /student/for-std/grade/sheet 不跟随重定向 → 响应头 Location 含 /semester-index/<studentId> → 拆路径取第 [i+1] 段 (regex: /\\/(?:semester-index|info)\\/(\\d+)(?:[/?#]|$)/)"},
+      "5_lesson_ids_handling": "lessonIds 0 命中 (search/code 验证). 课表 API 是 GET 不是 POST, query 含 semesterId+dataId(studentId), lessonIds 非必填",
+      "6_error_responses": [{"status": 401, "body_shape": "html", "keywords": ["errormsghide", "errormsg", "login"]}]
     },
     "verdict": "POSITIVE",
-    "verdict_reason": "仓库完整实现 AHU 新教务 REST 协议 (CAS + studentId 302 + GET print-data). 同时保留旧 jwapp EAMS 微服务路径 (jwapp.ahu.edu.cn/eams-micro-server/api/v1). 跨语言 invariant 素材 + Android WebView 适配模式齐."
+    "verdict_reason": "完整 AHU 新教务 REST 协议实现 (CAS + studentId 302 + GET print-data). 5 仓 cross-validated 关键证据"
   },
   {
     "repo_name": "qiqqqqq517/shangkeschschedule",
@@ -42,20 +38,173 @@
       {"path": "shared/assets/offline_repo/schools/resources/AHU/ahu.js", "purpose": "AHU 教务适配器: WebVPN+CAS 入口 + 课表 HTML 抓学期 + get-data JSON + 登录态检测", "lines_with_protocol": [1, 230]}
     ],
     "answers": {
-      "1_protocol_family": "金智 EAMS 新版 (WebVPN + CAS 统一认证) - 协议族共识达成",
-      "2_login_url": "https://wvpn.ahu.edu.cn/https/77726476706e69737468656265737421fff944d226387d1e7b0c9ce29b5b/cas/login (WebVPN 入口, service 指向智慧安大门户)",
+      "1_protocol_family": "金智 EAMS 新版 (WebVPN + CAS 统一认证)",
+      "2_login_url": "https://wvpn.ahu.edu.cn/https/77726476706e69737468656265737421fff944d226387d1e7b0c9ce29b5b/cas/login (WebVPN)",
       "3_schedule_api_paths": [
-        {"url": "/student/for-std/course-table", "method": "GET", "note": "课表页 HTML (登录态: 含 allSemesters = 已登录)"},
-        {"url": "/student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=", "method": "GET", "note": "课表 JSON API; dataId 留空服务端按会话绑定学生; resp: data.lessons[]"}
+        {"url": "/student/for-std/course-table", "method": "GET", "note": "HTML 含 allSemesters (学期数组)"},
+        {"url": "/student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=", "method": "GET", "note": "dataId 留空服务端按 session 绑定学生; resp: data.lessons[] (metadata)"}
       ],
-      "4_student_id_extraction": {"approach": "OTHER", "exact_code": "不显式提取 studentId — dataId 留空,服务端按当前登录会话绑定学生"},
-      "5_lesson_ids_handling": "提交课表时无 lessonIds 概念 — bizTypeId=2 学生课表 + semesterId=<id> + dataId= 空",
+      "4_student_id_extraction": {"approach": "OTHER", "exact_code": "不显式提取 studentId, dataId 留空服务端按会话绑定"},
+      "5_lesson_ids_handling": "提交课表无 lessonIds 概念, bizTypeId=2+semesterId+dataId空",
       "6_error_responses": [
         {"status": null, "body_shape": "html", "keywords": ["登入页面", "统一身份认证", "cas/login", "allSemesters"]},
         {"status": null, "body_shape": "json", "keywords": ["message"]}
       ]
     },
     "verdict": "POSITIVE",
-    "verdict_reason": "ahu.js 完整暴露金智 EAMS 新版协议族; Apache-2.0 + 10★ + 国内主流课表 App 安大实现 — 跨语言 invariant 素材齐 + 同类应用对照价值最高"
+    "verdict_reason": "Apache-2.0 + 国内主流课表 App 安大实现, 协议族共识关键证据"
+  },
+  {
+    "repo_name": "abydym/Ahu_Plus",
+    "stars": 2,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "license_source": "api.github.com",
+    "relevant_files": [
+      {"path": "app/src/main/java/com/yourname/ahu_plus/data/repository/CourseRepository.kt", "purpose": "Course schedule API — print-data + get-data + semester-list HTML parsing", "lines_with_protocol": [1, 295]},
+      {"path": "app/src/main/java/com/yourname/ahu_plus/data/repository/GradeRepository.kt", "purpose": "Grade sheet API + 302-based studentId extraction", "lines_with_protocol": [1, 280]},
+      {"path": "app/src/main/java/com/yourname/ahu_plus/data/model/jw/JwModels.kt", "purpose": "DTO for print-data/get-data: CourseActivity.lessonId (Long), GetDataLesson.id, RequestObject.lessonIds", "lines_with_protocol": [28, 236]},
+      {"path": "app/src/main/java/com/yourname/ahu_plus/data/network/SessionAuthenticator.kt", "purpose": "Auto-renewal interceptor", "lines_with_protocol": [1, 200]}
+    ],
+    "answers": {
+      "1_protocol_family": "Custom in-house JW system at jw.ahu.edu.cn. NOT supwisdom/EAMS5/正方/强智. Path pattern /student/for-std/...",
+      "2_login_url": "JW SSO entry: https://jw.ahu.edu.cn/student/sso/login. CAS base: https://one.ahu.edu.cn/cas (DES-encrypted creds, 6-step SSO)",
+      "3_schedule_api_paths": [
+        {"url": "/student/for-std/course-table/semester/{semesterId}/print-data?semesterId={semesterId}&hasExperiment=false", "method": "GET"},
+        {"url": "/student/for-std/course-table/get-data?semesterId={semesterId}&dataId=22720&bizTypeId=2", "method": "GET"},
+        {"url": "/student/for-std/grade/sheet?semesterId={semesterId}", "method": "GET", "note": "302 → /student/for-std/grade/sheet/semester-index/{studentId}"}
+      ],
+      "4_student_id_extraction": {"approach": "302", "exact_code": "internal fun parseStudentIdFromLocation(location: String): Long? { val tail = location.trim().trimEnd('/').substringAfterLast('/'); return tail.toLongOrNull() }. studentId 是 JW-internal Long, 不是学号"},
+      "5_lesson_ids_handling": "lessonId 是 per-activity Long. RequestObject(val lessonIds: List<Long>?) 存在但从不调用. 数据走 GET endpoints",
+      "6_error_responses": [
+        {"status": 302, "body_shape": "html", "keywords": ["cas/login", "name=\"lt\"", "session timeout"]},
+        {"status": 200, "body_shape": "html", "keywords": ["name=\"lt\""]}
+      ]
+    },
+    "verdict": "POSITIVE",
+    "verdict_reason": "Kotlin 同栈关键证据, print-data+get-data 双轨实现, studentId 是 JW-internal Long (非学号) — 重大发现"
+  },
+  {
+    "repo_name": "Landon-3314/AHU-TimeTable",
+    "stars": 4,
+    "default_branch": "main",
+    "license": null,
+    "relevant_files": [
+      {"path": "lib/services/academic_api_endpoints.dart", "purpose": "端点定义 (URL 形态)", "lines_with_protocol": [1, 60]},
+      {"path": "lib/services/academic_course_api_parser.dart", "purpose": "parse print-data JSON + get-data JSON + currentSemester 提取", "lines_with_protocol": [1, 520]},
+      {"path": "lib/services/academic_import_strategies.dart", "purpose": "导入策略(print-data/get-data/teach-week/grade)", "lines_with_protocol": [1, 410]},
+      {"path": "lib/services/academic_webview_fetch_client.dart", "purpose": "WebView 同源 fetch 桥", "lines_with_protocol": [1, 270]}
+    ],
+    "answers": {
+      "1_protocol_family": "正方教务 for-std 路径族. 无 supwisdom/EAMS5/强智 命中",
+      "2_login_url": "https://one.ahu.edu.cn/cas/login?service=https://jw.ahu.edu.cn/student/sso/login (CAS); 另存 wvpn 入口",
+      "3_schedule_api_paths": [
+        {"url": "/student/for-std/course-table/semester/{semesterId}/print-data", "method": "GET", "note": "返回 studentTableVms[].activities[] 含 weekday/weekIndexes/startUnit/endUnit"},
+        {"url": "/student/for-std/course-table/get-data?semesterId=…&dataId=…&bizTypeId=…", "method": "GET", "note": "返回 lessons[] metadata-only"}
+      ],
+      "4_student_id_extraction": {"approach": "OTHER", "exact_code": "GradeParserService.extractStudentIdFromGradeSheetUrl: 从 URL 末段抓纯数字学号"},
+      "5_lesson_ids_handling": "无 lessonIds 概念. activities[] 直接含 weekday/startUnit/endUnit, 无需提交",
+      "6_error_responses": [{"status": null, "body_shape": "html", "keywords": ["统一身份认证", "caslogin", "BLOCKED_HOST", "NOT_SAME_ORIGIN"]}]
+    },
+    "verdict": "POSITIVE",
+    "verdict_reason": "print-data studentTableVms[].activities[] 字段映射权威, room 三段拼接 (campus+building+room), teacherNames join"
+  },
+  {
+    "repo_name": "Zeraora-807/Anhui-Univ-DSH-Tool",
+    "stars": 4,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "license_source": "api.github.com",
+    "relevant_files": [
+      {"path": "src/core/client.ts", "purpose": "Main JW client with login and schedule APIs", "lines_with_protocol": [4, 5, 6, 77, 88, 100, 183, 201, 442, 454, 619]},
+      {"path": "src/core/auth-web.ts", "purpose": "Local authorization web server", "lines_with_protocol": []}
+    ],
+    "answers": {
+      "1_protocol_family": "金智 EAMS 新版",
+      "2_login_url": "https://one.ahu.edu.cn/cas/login?service=https://jw.ahu.edu.cn/student/sso/login",
+      "3_schedule_api_paths": [
+        {"url": "/student/for-std/course-table", "method": "GET", "note": "HTML with semester selector"},
+        {"url": "/student/for-std/course-table/semester/{semesterId}/print-data", "method": "GET", "note": "studentTableVms"},
+        {"url": "/student/for-std/course-table/get-data?semesterId=…&dataId=22720&bizTypeId=2", "method": "GET"}
+      ],
+      "4_student_id_extraction": {"approach": "302", "exact_code": "parseStudentIdFromLocation() regex: /\\/(?:semester-index|info)\\/(\\d+)(?:[/?#]|$)/ — 涵盖 grade/sheet 和 exam-arrange 两种 Location 模式"},
+      "5_lesson_ids_handling": "无 lessonIds 提交. print-data studentTableVms[].activities; get-data lessons[]",
+      "6_error_responses": [
+        {"status": 302, "body_shape": "redirect", "keywords": ["cas/login"]},
+        {"status": 200, "body_shape": "json", "keywords": ["info", "nf"]}
+      ]
+    },
+    "verdict": "POSITIVE",
+    "verdict_reason": "TypeScript 实现, studentId regex /(?:semester-index|info)\\/(\\d+)/ 比 MoeclubM 模式更通用"
+  },
+  {
+    "repo_name": "MuxYang/AhuCourseSelectCLI",
+    "stars": 9,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "relevant_files": [
+      {"path": "course_selector.py", "purpose": "登录/课表查询/选课/退课全流程客户端", "lines_with_protocol": [161, 858]},
+      {"path": "ahucusthelper.user.js", "purpose": "浏览器端抓取 token + studentId + turn_id", "lines_with_protocol": [1, 249]}
+    ],
+    "answers": {
+      "1_protocol_family": "自研/未公开命名的安徽大学选课平台 REST API (jw.ahu.edu.cn, /course-selection-api/api/v1/student/course-select)",
+      "2_login_url": "https://jw.ahu.edu.cn/ (首页登录页)",
+      "3_schedule_api_paths": [
+        {"url": "/course-selection-api/api/v1/student/course-select/{studentId}/turn/{turnId}/select", "method": "GET"},
+        {"url": "/course-selection-api/api/v1/student/course-select/query-lesson/{studentId}/{turnId}", "method": "POST"}
+      ],
+      "4_student_id_extraction": {"approach": "OTHER", "exact_code": "ahucusthelper.user.js 浏览器 cookie 抓 token + student_id"},
+      "5_lesson_ids_handling": "无 lessonIds (query-lesson/selected-lessons 不含 schedule 数据)"
+    },
+    "verdict": "NEGATIVE",
+    "verdict_reason": "选课系统 (course-selection-api) 不是 EAMS5/jwapp 协议族; 无课表数据 API (仅有 query-lesson 课程查询)"
+  },
+  {
+    "repo_name": "curdbin/AHU-API",
+    "stars": 3,
+    "default_branch": "master",
+    "license": "MIT",
+    "license_source": "api.github.com",
+    "answers": {
+      "1_protocol_family": "正方教务 (ASP.NET ViewState) — archives/kb.php & archives/kc.php 实锤 jw1.ahu.cn/jw2.ahu.cn + xskbcx.aspx?xh= + __VIEWSTATE",
+      "2_login_url": "http://jw2.ahu.cn/default2.aspx (archives/kb.php:login), http://jw1.ahu.cn/default2.aspx (archives/kc.php:login)",
+      "3_schedule_api_paths": [
+        {"url": "http://jw2.ahu.cn/xskbcx.aspx?xh={xh}", "method": "GET"},
+        {"url": "http://jw1.ahu.cn/xskbcx.aspx?xh={xh}", "method": "GET"}
+      ],
+      "5_lesson_ids_handling": "无 (旧正方 ASP.NET 协议)"
+    },
+    "verdict": "NEGATIVE",
+    "verdict_reason": "旧正方 ASP.NET (jw1.ahu.cn/jw2.ahu.cn), 不是 AHU 自建'新教务' jw.ahu.edu.cn. 协议族不一致, 不入 EAMS5 适配"
+  },
+  {
+    "repo_name": "UponNoise/AHU_SBI_DMT",
+    "verdict": "NEGATIVE",
+    "verdict_reason": "旧正方 jwxt3.ahu.edu.cn ASP.NET WebForms 协议 (__VIEWSTATE + RSA + icode 验证码), 不入 EAMS5 适配"
+  },
+  {
+    "repo_name": "Tonyseth/AHU_JW_GPA_Calculator",
+    "verdict": "INDIRECT",
+    "verdict_reason": "金智 EAMS 新版目标 jw.ahu.edu.cn, 但仅 DOM/iframe scraping (无 API 调用), 不提供协议级证据"
+  },
+  {
+    "repo_name": "yv1ing/AHU-QQbot",
+    "verdict": "NEGATIVE",
+    "verdict_reason": "Go, 旧正方 ASP.NET WebForms jwxt3 (HTML scrape only via goquery), 不入 EAMS5 适配"
+  },
+  {
+    "repo_name": "Tonyseth/AHU-IC-Design-personal-Repository",
+    "verdict": "INDIRECT",
+    "verdict_reason": "Python Playwright, 仅平时分 DOM 抓取, 无 EAMS5 协议证据"
+  },
+  {
+    "repo_name": "yoki-Clark/AHU_card_records",
+    "verdict": "NEGATIVE",
+    "verdict_reason": "校园卡 (ycard.ahu.edu.cn) 抓取, 非教务系统"
+  },
+  {
+    "repo_name": "Fangnan700/AHU-QQbot",
+    "verdict": "INDIRECT",
+    "verdict_reason": "Go, 安徽大学 QQbot 版教务系统 (老版本, 与 yv1ing 重复维护)"
   }
 ]
