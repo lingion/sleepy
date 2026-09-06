@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <title>我的课表 - 安徽大学</title>
+    <script>
+      var ctx = "/student";
+      // AHU 新教务 HTML 含 allSemesters (Vue data), 不含显式 studentId
+      // 服务端按 session 绑定, 客户端无需提取 studentId
+      var allSemesters = [
+        {"id":"234","name":"2024-2025学年第一学期","schoolYear":"2024-2025"," semesterCode":"2024-2025-1"},
+        {"id":"235","name":"2024-2025学年第二学期","schoolYear":"2024-2025"," semesterCode":"2024-2025-2"},
+        {"id":"233","name":"2023-2024学年第二学期","schoolYear":"2023-2024"," semesterCode":"2023-2024-2"}
+      ];
+      var currentSemester = {"id":"234","name":"2024-2025学年第一学期"};
+      var bizTypeId = 2;
+      var dataId = "";  // 空, 服务端按 session 绑定
+      var timePattern = {
+        "1": {"startTime": "08:00", "endTime": "09:50"},
+        "3": {"startTime": "10:10", "endTime": "12:00"},
+        "5": {"startTime": "14:00", "endTime": "15:50"},
+        "7": {"startTime": "16:10", "endTime": "18:00"},
+        "9": {"startTime": "19:00", "endTime": "20:50"}
+      };
+    </script>
+  </head>
+  <body>
+    <div id="app">课表加载中…</div>
+    <script src="/student/static/js/course-table.abc123.js"></script>
+  </body>
+</html>

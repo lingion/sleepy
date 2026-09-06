@@ -1,0 +1,73 @@
+{
+  "code": 200,
+  "message": "success",
+  "data": {
+    "lessons": [
+      {
+        "lessonId": 1001,
+        "courseName": "高等数学",
+        "courseCode": "MATH001",
+        "teacher": "张教授",
+        "room": "博学南楼A101",
+        "weekday": 1,
+        "weekIndex": 1,
+        "startTime": "0800",
+        "endTime": "0950",
+        "periods": 2,
+        "weeks": "1-16"
+      },
+      {
+        "lessonId": 1002,
+        "courseName": "大学物理",
+        "courseCode": "PHYS001",
+        "teacher": "李副教授",
+        "room": "博学南楼B205",
+        "weekday": 2,
+        "weekIndex": 3,
+        "startTime": "1010",
+        "endTime": "1200",
+        "periods": 2,
+        "weeks": "1-16单"
+      },
+      {
+        "lessonId": 1003,
+        "courseName": "数据结构",
+        "courseCode": "CS201",
+        "teacher": "王讲师",
+        "room": "计算机学院实验楼301",
+        "weekday": 3,
+        "weekIndex": 5,
+        "startTime": "1400",
+        "endTime": "1550",
+        "periods": 2,
+        "weeks": "5-12"
+      },
+      {
+        "lessonId": 1004,
+        "courseName": "离散数学",
+        "courseCode": "CS102",
+        "teacher": "赵教授",
+        "room": "博学北楼302",
+        "weekday": 4,
+        "weekIndex": 7,
+        "startTime": "1610",
+        "endTime": "1800",
+        "periods": 2,
+        "weeks": "1-16"
+      },
+      {
+        "lessonId": 1005,
+        "courseName": "形势与政策",
+        "courseCode": "POL101",
+        "teacher": "钱老师",
+        "room": "行政楼报告厅",
+        "weekday": 5,
+        "weekIndex": 10,
+        "startTime": "1900",
+        "endTime": "2050",
+        "periods": 2,
+        "weeks": "8,10,12,14"
+      }
+    ]
+  }
+}
