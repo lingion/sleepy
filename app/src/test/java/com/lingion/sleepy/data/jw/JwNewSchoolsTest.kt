@@ -161,6 +161,7 @@ class JwNewSchoolsTest {
         assertEquals(1, parsed.count { it.name == "临沂大学" })
         assertEquals(1, parsed.count { it.name == "浙大宁波理工学院" })
         assertEquals(1, parsed.count { it.name == "重庆大学" })
+        assertEquals(1, parsed.count { it.name == "北京航空航天大学" })
         // 2026-09 211 批量收录 A 档 15 所
         for (n in listOf(
             "上海交通大学", "上海大学", "上海外国语大学", "东华大学", "华东政法大学",
@@ -173,6 +174,13 @@ class JwNewSchoolsTest {
         for (n in listOf("电子科技大学", "上海财经大学", "湖南师范大学", "南京航空航天大学")) {
             assertEquals("经典 EAMS 条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
         }
+
+        // 2026-09-06 北航收录 (issue #18 type=qz_ieas, ieas2.1 协议族)
+        val buaa = parsed.single { it.name == "北京航空航天大学" }
+        assertEquals("qz_ieas", buaa.type)
+        assertEquals("https://jwxt.buaa.edu.cn:7001/ieas2.1", buaa.url)
+        assertTrue("至少含 buaa 别名", buaa.aliases.any { it == "buaa" })
+        assertTrue("至少含 北航 别名", buaa.aliases.any { it == "北航" })
     }
 
     // -------- 4. 排序约束 --------
@@ -198,7 +206,7 @@ class JwNewSchoolsTest {
     fun `every non-audit entry type is routable (report unknown types when T3-T8 not ready)`() {
         val knownTypes = setOf(
             JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_OLD, JwProtocol.TYPE_QZ_CRAZY,
-            JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
+            JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE, JwProtocol.TYPE_QZ_IEAS,
             JwProtocol.TYPE_ZF, JwProtocol.TYPE_ZF_1, JwProtocol.TYPE_ZF_NEW,
             JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_WISEDU,
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_CHAOXING, JwProtocol.TYPE_HNUST,

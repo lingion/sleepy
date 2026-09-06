@@ -50,7 +50,8 @@ object JwParserRegistry {
         JwProtocol.TYPE_QZ_CRAZY to 110,
         JwProtocol.TYPE_QZ_BR to 120,
         JwProtocol.TYPE_QZ_WITH_NODE to 130,
-        JwProtocol.TYPE_QZ_OLD to 140,
+        JwProtocol.TYPE_QZ_IEAS to 140,
+        JwProtocol.TYPE_QZ_OLD to 145,
     )
 
     /**
@@ -79,6 +80,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_QZ_BR to ::JwQzBrParser,
         JwProtocol.TYPE_QZ_WITH_NODE to ::JwQzWithNodeParser,
         JwProtocol.TYPE_QZ_OLD to ::JwOldQzParser,
+        JwProtocol.TYPE_QZ_IEAS to { html -> JwQzIeasParser(html) },
         JwProtocol.TYPE_CF to ::JwChengFangParser,
         JwProtocol.TYPE_PKU to ::JwPekingParser,
         JwProtocol.TYPE_BNUZ to ::JwBnuzParser,

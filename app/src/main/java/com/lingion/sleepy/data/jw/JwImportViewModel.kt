@@ -347,6 +347,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // ①b CQU — 重庆大学统一门户（host 锚点；自建 REST，非 jwapp）
             u.matches(Regex("""https?://my\.cqu\.edu\.cn(/.*)?""")) -> JwProtocol.TYPE_CQU
 
+            // ②b QZ_IEAS — 必须先于通用 /kbcx/ 规则
+            u.contains("/ieas2.1")
+                || u.matches(Regex(""".*/ieas2\.1(/|$).*"""))
+                || u.contains("jwxt.buaa.edu.cn")
+                || u.contains("jwxt-7001.e2.buaa.edu.cn") -> JwProtocol.TYPE_QZ_IEAS
+
             // ② ZF_NEW — 新版正方 jwglxt 全系锚点
             //   a) /jwglxt/ 全路径 b) /xtgl(/|$) 边界（B1） c) /kbcx/ 接口
             //   d) xskbcx_cx（API 名，与 .aspx 不冲突） e) /jwtottxuxsysb/（来源不明，保留）

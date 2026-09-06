@@ -6,7 +6,7 @@ package com.lingion.sleepy.data.jw
  * pick 返回 null = 走原有 outerHTML 路径(默认)。
  * 决策依据: 学校 type 显式声明 > URL 路径指纹(含 WebVPN 重写形态) > enableFetch 开关。
  */
-enum class FetchKind { WISEDU, ZF_NEW, QZ }
+enum class FetchKind { WISEDU, ZF_NEW, QZ, QZ_IEAS }
 
 object JwFetchProtocol {
 
@@ -19,6 +19,7 @@ object JwFetchProtocol {
             JwProtocol.TYPE_ZF_NEW -> if (u.contains("/jwglxt/") || WEBVPN_HTTP_HEX.containsMatchIn(u)) {
                 return FetchKind.ZF_NEW
             }
+            JwProtocol.TYPE_QZ_IEAS -> return FetchKind.QZ_IEAS
             JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE,
             JwProtocol.TYPE_QZ_OLD, JwProtocol.TYPE_QZ_CRAZY -> {
                 // 默认策略: QZ 不强推 fetch, 仅 enableFetch=true 的学校走
@@ -28,6 +29,7 @@ object JwFetchProtocol {
         }
         // ② type 未命中但 URL 路径指纹命中
         if (u.contains("/jwapp/")) return FetchKind.WISEDU
+        if (u.contains("/ieas2.1/") || u.contains("jwxt.buaa.edu.cn")) return FetchKind.QZ_IEAS
         if (u.contains("/jwglxt/") || WEBVPN_HTTP_HEX.containsMatchIn(u)) return FetchKind.ZF_NEW
         if (school.enableFetch && u.contains("/jsxsd/")) return FetchKind.QZ
         return null
@@ -40,6 +42,7 @@ object JwFetchProtocol {
         FetchKind.WISEDU -> "jwapp"
         FetchKind.ZF_NEW -> "jwglxt"
         FetchKind.QZ -> "jsxsd"
+        FetchKind.QZ_IEAS -> "ieas2.1"
     }
 
     /** 从 URL 抓 gnmkdm 参数; 无则返回 default */

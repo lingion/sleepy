@@ -124,6 +124,12 @@ class AboutLicenseAttributionTest {
         Attribution("AuYang261/PKU_Elective_Toolset", ""),
         // 北京化工大学 BUCT
         Attribution("MarkYangKp/ZhengFangJY", ""),
+        // 北京航空航天大学 BUAA
+        Attribution("APassbyDreg/BUAA_JW_Utils", ""),
+        Attribution("SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend", ""),
+        Attribution("fondoger/buaa-teacher-evaluation", "MIT"),
+        Attribution("Cauchy1412/BUAAGetCourse", ""),
+        Attribution("KKRainbow/JWOneShotEval", ""),
         // 北京林业大学 BJFU
         Attribution("Bloomberg2000/bjfu_course_ics_generator", ""),
         Attribution("Bloomberg2000/bjfu_util.py", ""),

@@ -12,7 +12,12 @@ class JwFetchProtocolTest {
     private val qz = JwSchoolInfo("J", "JSNU", url = "https://jwxt.jsnu.edu.cn/jsxsd/", type = JwProtocol.TYPE_QZ)
     private val qzWebvpn = qz.copy(url = "https://webvpn.example.edu.cn/webvpn/jwxt.jsnu.edu.cn/jsxsd/xskb/xskb_list.do")
     private val zfold = JwSchoolInfo("X", "XUST", url = "https://jw.xust.edu.cn/xskbcx.aspx", type = JwProtocol.TYPE_ZF)
+    private val buaa = JwSchoolInfo("B", "BUAA", url = "https://jwxt.buaa.edu.cn:7001/ieas2.1", type = JwProtocol.TYPE_QZ_IEAS)
 
+    @Test fun `qz ieas uses dedicated fetch kind`() {
+        assertEquals(FetchKind.QZ_IEAS,
+            JwFetchProtocol.pick(buaa, "https://jwxt.buaa.edu.cn:7001/ieas2.1/kbcx/queryGrkb"))
+    }
     @Test fun `wisedu HRBEU direct`() {
         val url = "https://jwgl.hrbeu.edu.cn/jwapp/sys/wdkb/modules/xskcb/xskcb.do"
         assertEquals(FetchKind.WISEDU, JwFetchProtocol.pick(heu, url))
@@ -73,6 +78,7 @@ class JwFetchProtocolTest {
         assertEquals("jwapp",  JwFetchProtocol.pathSegment(FetchKind.WISEDU))
         assertEquals("jwglxt", JwFetchProtocol.pathSegment(FetchKind.ZF_NEW))
         assertEquals("jsxsd",  JwFetchProtocol.pathSegment(FetchKind.QZ))
+        assertEquals("ieas2.1", JwFetchProtocol.pathSegment(FetchKind.QZ_IEAS))
     }
 
     @Test fun `stripWebvpnPrefix removes http hex and webhost variants`() {

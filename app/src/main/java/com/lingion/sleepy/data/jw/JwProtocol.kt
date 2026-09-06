@@ -59,6 +59,13 @@ object JwProtocol {
     const val TYPE_HNIU = "hniu"
 
     /**
+     * 强智 iEAS 网络版 (`/ieas2.1/...`) — ASP.NET MVC 框架, 课表 endpoint = `/ieas2.1/kbcx/queryGrkb` 返回 HTML (非 JSON)。
+     * 学校样本: 北京航空航天大学 jwxt.buaa.edu.cn:7001/ieas2.1。
+     * 与 TYPE_QZ (`/jsxsd/` 强智 jxb) 同源, 但 URL 路径不同, 需独立锚点。
+     */
+    const val TYPE_QZ_IEAS = "qz_ieas"
+
+    /**
      * 合肥工业大学教务 (金智 EAMS5, eams5-student 系列, jxglstu.hfut.edu.cn)。
      * WebView 内 fetch 三段 (CAS→course-table→lessons→POST schedule-table/datum) 拿课表 JSON。
      * 上游协议形态: Chiu-xaH/HFUT-Schedule (MIT) 全链路参考。
@@ -162,7 +169,7 @@ object JwProtocol {
         TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
-        TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_OLD,
+        TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_IEAS, TYPE_QZ_OLD,
     )
 
     /**
@@ -170,6 +177,7 @@ object JwProtocol {
      */
     fun displayName(type: String?): String = when (type) {
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE -> "强智教务"
+        TYPE_QZ_IEAS -> "强智教务（iEAS 网络版）"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "正方教务"
         TYPE_URP, TYPE_URP_NEW -> "URP 教务"
         TYPE_CF -> "青果教务"
@@ -199,6 +207,7 @@ object JwProtocol {
      */
     fun category(type: String?): String = when (type) {
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE -> "qz"
+        TYPE_QZ_IEAS -> "qz"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_WISEDU -> "wisedu"
