@@ -27,5 +27,8 @@ q*.json
 
 # User-private SOPs (internal only, never push)
 # 用户的内部 SOP，永久不纳入 git 跟踪，禁止 push 到任何远端。
-# 包含：发版/工作流/跨仓验证方法论等用户机密规范。
+# 包含：发版/工作流/跨仓验证方法论等所有用户机密规范。
+# 用户明确说：所有 SOP 都属于内部机密，commits 与 release SOP 一律 exclude。
 docs/sop/release-sop.md
+docs/sop/jw-cross-verify-sop.md
+
