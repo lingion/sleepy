@@ -793,6 +793,9 @@ private const val WHUT_FETCH_JS = """
  *
  * 流程（复用 __sleepyBridge.onWiseduResult 同一回调通道，payload 同为 {ok, data}）：
  *   1) GET /eams5-student/for-std/course-table           → HTML 含 studentId (script 标签里)
+ *      - 已登录 → 302 跟到 /for-std/course-table/info/<studentId>, 页面 HTML <script>
+ *        段里有 `var studentId = '2024210001';` 或对象字面量 `studentId:'2024210001',`
+ *      - 未登录 → 302 跟到 /eams5-student/login, 报"登录态已失效"
  *   2) POST /eams5-student/ws/schedule-table/datum
  *      body: {"lessonIds":[], "studentId":<学号>, "weekIndex":""}
  *      resp: schedule-table/datum JSON 全文
@@ -803,7 +806,10 @@ private const val WHUT_FETCH_JS = """
  *     v1 简化: 直接 POST datum, lessonIds 数组置空, 上游通常会用空数组返全量
  *   - 后续 v2: 增加 get-data 段拿 lessonIds, 与上游 Chiu-xaH/HFUT-Schedule 对齐
  *
- * 外部佐证：Chiu-xaH/HFUT-Schedule JxglstuService.kt 三段定义。
+ * 外部佐证：Chiu-xaH/HFUT-Schedule JxglstuService.kt + JxglstuRepository.kt
+ * (parseStudentId / parseBizTypeId), BoynChan/HfutOpenApi CourseCrawler.java。
+ * 2026-09 用户反馈原正则只匹配 quoted-digit 形态, 学号嵌入 supwisdom 对象字面量
+ * (studentId: '...') 时漏, 本版放宽正则 + 加 r.url 检测登录失效。
  */
 private const val EAMS5_FETCH_JS = """
 (function(){
@@ -814,15 +820,36 @@ private const val EAMS5_FETCH_JS = """
       return;
     }
     var PREFIX = '__EAMS5_PREFIX__';
-    // 1) GET course-table 拿 studentId (Cookie 已带)
+    // 1) GET course-table 拿 studentId (Cookie 已带)。
+    //    fetch 默认跟随重定向: 已登录 → /for-std/course-table 重定向到
+    //    /for-std/course-table/info/<studentId>, 页面 HTML <script> 段里有
+    //    `var studentId = '2024210001';` 或对象字面量 `studentId:'2024210001',`。
+    //    未登录 → 重定向到 /eams5-student/login, 页面无 studentId。
     fetch(PREFIX + '/for-std/course-table', {credentials:'include'})
     .then(function(r){
       if (!r.ok) throw new Error('course-table 取 studentId 失败 HTTP ' + r.status + '（请确认已在教务主页登录）');
-      return r.text();
+      return r.text().then(function(html){ return {html: html, finalUrl: r.url || ''}; });
     })
-    .then(function(html){
-      // studentId 在页面 script 里,例如 "var studentId = '2024210001';"
-      var m = (html || '').match(/studentId\s*[=:]\s*['"]([\d]+)['"]/);
+    .then(function(ctx){
+      var html = ctx.html || '';
+      // 检测会话失效: 最终 URL 含 /login (302 落到登录页)
+      if (ctx.finalUrl.indexOf('/login') >= 0 || ctx.finalUrl.indexOf('login?') >= 0) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'登录态已失效,请在教务主页重新登录后再试'}));
+        return null;
+      }
+      // 多形态匹配 — 2026-09 用户反馈 + 跨仓验证 (Chiu-xaH/HFUT-Schedule,
+      // BoynChan/HfutOpenApi) 综合, 上游 script 段 studentId 写法不统一:
+      //   A. var studentId = '2024210001';
+      //   B. var studentId="2024210001";
+      //   C. studentId:'2024210001',        ← supwisdom 对象字面量
+      //   D. studentId: "2024210001",        ← supwisdom 对象字面量双引号
+      //   E. studentId=2024210001;           ← 极少数裸数字
+      //   F. studentId=2024210001&...        ← 在查询串里
+      // 用一条宽松正则覆盖 A–F: 键名后 [=:] 可有引号, 值允许 \w (数字/字母/下划线)。
+      // 命中后取第一个纯数字/字母数字串; 不依赖引号, 不依赖分号终止。
+      // 与 JVM 端 EAMS5_STUDENT_ID_REGEX (data/jw/Eams5PathPrefix.kt) 同形 —
+      // 单测锁契约, JS 端保持字符串字面量 (WebView JS context 无 JVM 调用通道)。
+      var m = html.match(/studentId\s*[=:]\s*['"]?([A-Za-z0-9]+)['"]?/);
       if (!m) return null;
       return m[1];
     })

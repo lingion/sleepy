@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="zh">
+  <head>
+    <meta charset="utf-8" />
+    <title>我的课表 - 合肥工业大学</title>
+    <script>
+      var ctx = "/eams5-student";
+      var studentId = '2024210001';
+      var courseTableId = 21;
+      var bizTypeId = 23;
+      var semesterId = 234;
+      var dataId = 170317;
+      var lessonIds = [];
+      var timePattern = {
+        "1": {"startTime": "08:00", "endTime": "09:50"},
+        "3": {"startTime": "10:10", "endTime": "12:00"},
+        "5": {"startTime": "14:00", "endTime": "15:50"},
+        "7": {"startTime": "16:10", "endTime": "18:00"},
+        "9": {"startTime": "19:00", "endTime": "20:50"}
+      };
+    </script>
+  </head>
+  <body>
+    <div id="app">课表加载中…</div>
+    <script src="/eams5-student/static/js/course-table.abc123.js"></script>
+  </body>
+</html>
