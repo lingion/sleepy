@@ -30,7 +30,7 @@
           "building": "博学南楼",
           "room": "B205",
           "weekday": 2,
-          "weekIndexes": "1-16双",
+          "weekIndexes": "1-8双",
           "startUnit": 3,
           "endUnit": 4
         },
@@ -43,7 +43,7 @@
           "building": "计算机学院实验楼",
           "room": "301",
           "weekday": 3,
-          "weekIndexes": "5-12",
+          "weekIndexes": "5,7,9",
           "startUnit": 5,
           "endUnit": 6
         },
@@ -56,7 +56,7 @@
           "building": "博学北楼",
           "room": "302",
           "weekday": 4,
-          "weekIndexes": "1-16",
+          "weekIndexes": "1-16单",
           "startUnit": 7,
           "endUnit": 8
         },

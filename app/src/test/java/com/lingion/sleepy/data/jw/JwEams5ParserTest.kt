@@ -206,13 +206,13 @@ class JwEams5ParserTest {
     //   activity.endUnit (Int)           → 结束节次 (直接, 无需推断)
 
     @Test
-    fun `parses AHU print-data - total count equals activities rows`() {
+    fun `parses AHU print-data - total count equals RLE-expanded activities rows`() {
         val stream = javaClass.classLoader?.getResourceAsStream("jw/fixtures/eams5/get-data-ahu.sample.json")
         assertNotNull("测试资源 get-data-ahu.sample.json 应存在", stream)
         val json = stream!!.bufferedReader().use { it.readText() }
         val courses = JwEams5Parser(json).generateCourseList()
-        // 5 个 activities 行 → 5 个 JwCourse
-        assertEquals("5 个 activities 行应产出 5 个 JwCourse", 5, courses.size)
+        // 5 个 activities 展开: 1-16 (1) + 1-8双 (1) + 5,7,9 (3) + 1-16单 (1) + 8,10,12,14 (4) = 10 个 JwCourse
+        assertEquals("5 个 activities RLE 展开应产出 10 个 JwCourse", 10, courses.size)
     }
 
     @Test
@@ -227,9 +227,9 @@ class JwEams5ParserTest {
         // startUnit=1 (直接给定, 无需推断)
         assertEquals("startUnit=1", 1, c.startNode)
         assertEquals("endUnit=2", 2, c.endNode)
-        // weekIndexes="1-16" → 取首个数字 1
+        // weekIndexes="1-16" → RLE 全周
         assertEquals("weekIndexes 1-16 → startWeek=1", 1, c.startWeek)
-        assertEquals("endWeek=startWeek (v1 单周)", 1, c.endWeek)
+        assertEquals("weekIndexes 1-16 → endWeek=16", 16, c.endWeek)
         assertEquals("teacherNames 单元素 join", "张教授", c.teacher)
         // room: "龙河校区 博学南楼 A101" 三段拼接
         assertEquals("room campus+building+room 三段拼接", "龙河校区 博学南楼 A101", c.room)
@@ -248,8 +248,10 @@ class JwEams5ParserTest {
         assertEquals("周2", 2, c.day)
         assertEquals("startUnit=3", 3, c.startNode)
         assertEquals("endUnit=4", 4, c.endNode)
-        // weekIndexes="1-16双" → v1 简化取首个数字 1 (单双周标记暂不解析)
-        assertEquals("weekIndexes 1-16双 → startWeek=1 (单双标记 v1 忽略)", 1, c.startWeek)
+        // weekIndexes="1-8双" → 双周, startWeek=2 (JwParity 抬到首个偶数), endWeek=8
+        assertEquals("weekIndexes 1-8双 → startWeek=2 (JwParity 抬)", 2, c.startWeek)
+        assertEquals("weekIndexes 1-8双 → endWeek=8", 8, c.endWeek)
+        assertEquals("weekIndexes 1-8双 → type=2 (双周)", 2, c.type)
     }
 
     @Test
@@ -265,8 +267,11 @@ class JwEams5ParserTest {
         // startUnit=5 → 直接给定
         assertEquals("startUnit=5", 5, ds.startNode)
         assertEquals("endUnit=6", 6, ds.endNode)
-        // weekIndexes="5-12" → 5
-        assertEquals("weekIndexes 5-12 → startWeek=5", 5, ds.startWeek)
+        // weekIndexes="5,7,9" 离散 3 段 emit 3 课, 取首个
+        assertEquals("weekIndexes 5,7,9 离散第 1 段 startWeek=5", 5, ds.startWeek)
+        // 总共 3 个 JwCourse 名 "数据结构" 周三
+        val dsCount = courses.count { it.name == "数据结构" }
+        assertEquals("数据结构 离散 emit 3 个", 3, dsCount)
     }
 
     @Test
@@ -281,7 +286,7 @@ class JwEams5ParserTest {
         assertEquals("startUnit=9", 9, c.startNode)
         assertEquals("endUnit=10", 10, c.endNode)
         assertEquals("周五", 5, c.day)
-        // weekIndexes="8,10,12,14" → 取首个数字 8
+        // weekIndexes="8,10,12,14" 离散 → 取首个 8
         assertEquals("weekIndexes bitmap 8,10,12,14 → startWeek=8", 8, c.startWeek)
     }
 
@@ -375,8 +380,12 @@ class JwEams5ParserTest {
     // -------- parseWeekIndex 边界 (weekIndexes bitmap 单/双周标记) --------
     // 5 仓 cross-verified 2026-09-06: 单周标 '单', 双周标 '双', 'odd'/'even' 兜底
 
+    // -------- parseWeekRanges 完整 RLE 解析 (5 仓 bitmap + JwParity 算法) --------
+    // Sleepy type 语义 (JwParity.kt 共识): 0=每周 1=单周 2=双周
+    // 算法: 5 仓 cross-validated bitmap 形态 + JwSeuParser.parseWeekRanges 同型
+
     @Test
-    fun `parseWeekIndex - 1-16单 双周标记 type=2`() {
+    fun `parseWeekRanges - 1-16单 emit 单周 type=1 JwParity 端点修正`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
           {"lessonId": "A", "courseName": "T单", "teacherNames": ["t"],
@@ -384,25 +393,29 @@ class JwEams5ParserTest {
         ]}]}
         """.trimIndent())
         val c = p.generateCourseList().single()
+        // JwParity.adjustedRange(1, 16, parity=1): startWeek=1 (奇数 ✓), endWeek=16 (不做收缩, 连续显示)
         assertEquals("1-16单 startWeek=1", 1, c.startWeek)
-        assertEquals("1-16单 type=2 (单周)", 2, c.type)
+        assertEquals("1-16单 endWeek=16 (JwParity 不收缩 endWeek)", 16, c.endWeek)
+        assertEquals("1-16单 type=1 (Sleepy 单周)", 1, c.type)
     }
 
     @Test
-    fun `parseWeekIndex - 1-16双 双周标记 type=3`() {
+    fun `parseWeekRanges - 2-15双 emit 双周 type=2 JwParity 端点修正`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
           {"lessonId": "A", "courseName": "T双", "teacherNames": ["t"],
-           "weekday": 1, "weekIndexes": "1-16双", "startUnit": 1, "endUnit": 2}
+           "weekday": 1, "weekIndexes": "2-15双", "startUnit": 1, "endUnit": 2}
         ]}]}
         """.trimIndent())
         val c = p.generateCourseList().single()
-        assertEquals("1-16双 startWeek=1", 1, c.startWeek)
-        assertEquals("1-16双 type=3 (双周)", 3, c.type)
+        // startWeek=2 (偶数 ✓), endWeek=15 (JwParity 不收缩, UI 连续显示)
+        assertEquals("2-15双 startWeek=2", 2, c.startWeek)
+        assertEquals("2-15双 endWeek=15 (JwParity 不收缩)", 15, c.endWeek)
+        assertEquals("2-15双 type=2 (Sleepy 双周)", 2, c.type)
     }
 
     @Test
-    fun `parseWeekIndex - 1-16 全周 type=0`() {
+    fun `parseWeekRanges - 1-16 全周 type=0`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
           {"lessonId": "A", "courseName": "T全", "teacherNames": ["t"],
@@ -411,24 +424,124 @@ class JwEams5ParserTest {
         """.trimIndent())
         val c = p.generateCourseList().single()
         assertEquals("1-16 startWeek=1", 1, c.startWeek)
+        assertEquals("1-16 endWeek=16", 16, c.endWeek)
         assertEquals("1-16 type=0 (全周)", 0, c.type)
     }
 
     @Test
-    fun `parseWeekIndex - 8,10,12,14 不连续 v1 取首个 type=0`() {
+    fun `parseWeekRanges - 1-16双 startWeek 抬到首个偶数`() {
+        // 1 是奇数, 双周起点必须是偶数, JwParity 抬到 2
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T双起", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16双", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("1-16双 startWeek=2 (JwParity 抬到首个偶数)", 2, c.startWeek)
+        assertEquals("1-16双 type=2", 2, c.type)
+    }
+
+    @Test
+    fun `parseWeekRanges - 1-16单 startWeek 保持 1 (本身就是奇数)`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T单起", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16单", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("1-16单 startWeek=1 (本身就是奇数)", 1, c.startWeek)
+    }
+
+    @Test
+    fun `parseWeekRanges - 8,10,12,14 离散 emit 多 JwCourse`() {
+        // 离散 4 段, 每段独立 type=0
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
           {"lessonId": "A", "courseName": "T离", "teacherNames": ["t"],
            "weekday": 1, "weekIndexes": "8,10,12,14", "startUnit": 1, "endUnit": 2}
         ]}]}
         """.trimIndent())
-        val c = p.generateCourseList().single()
-        assertEquals("8,10,12,14 startWeek=8 (首个)", 8, c.startWeek)
-        assertEquals("不连续周 v1 type=0 (RLE v2 待加)", 0, c.type)
+        val cs = p.generateCourseList()
+        assertEquals("4 段离散 emit 4 个 JwCourse", 4, cs.size)
+        assertEquals("第 1 段 startWeek=8", 8, cs[0].startWeek)
+        assertEquals("第 2 段 startWeek=10", 10, cs[1].startWeek)
+        assertEquals("第 3 段 startWeek=12", 12, cs[2].startWeek)
+        assertEquals("第 4 段 startWeek=14", 14, cs[3].startWeek)
+        cs.forEach { assertEquals("离散 type=0", 0, it.type) }
     }
 
     @Test
-    fun `parseWeekIndex - 5-12 区间 v1 取首个`() {
+    fun `parseWeekRanges - 1-8,10-16 组合区间 emit 2 个 JwCourse`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T组", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-8,10-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val cs = p.generateCourseList()
+        assertEquals("2 段 emit 2 个 JwCourse", 2, cs.size)
+        assertEquals("段 1 startWeek=1 endWeek=8", Triple(1, 8, 0), Triple(cs[0].startWeek, cs[0].endWeek, cs[0].type))
+        assertEquals("段 2 startWeek=10 endWeek=16", Triple(10, 16, 0), Triple(cs[1].startWeek, cs[1].endWeek, cs[1].type))
+    }
+
+    @Test
+    fun `parseWeekRanges - 1-16单 各 emit 单 JwCourse 端点修正`() {
+        // 端点相等场景: 5-5单 → startWeek=5, endWeek=5 (JwParity 防倒挂)
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T单端", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "5-5单", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("5-5单 startWeek=5", 5, c.startWeek)
+        assertEquals("5-5单 endWeek=5 (无倒挂)", 5, c.endWeek)
+        assertEquals("5-5单 type=1", 1, c.type)
+    }
+
+    @Test
+    fun `parseWeekRanges - 6-6双 JwParity 端点相等时抬 start 到 6`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "T双端", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "6-6双", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        // startWeek=6 (偶数 ✓), endWeek=6 (JwParity max(6,6)=6)
+        assertEquals("6-6双 startWeek=6", 6, c.startWeek)
+        assertEquals("6-6双 endWeek=6 (无倒挂)", 6, c.endWeek)
+        assertEquals("6-6双 type=2", 2, c.type)
+    }
+
+    @Test
+    fun `parseWeekRanges - even 英文兼容 type=2`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Teven", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16 even", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("even → type=2", 2, c.type)
+    }
+
+    @Test
+    fun `parseWeekRanges - odd 英文兼容 type=1`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Todd", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-16 odd", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        val c = p.generateCourseList().single()
+        assertEquals("odd → type=1", 1, c.type)
+    }
+
+    @Test
+    fun `parseWeekRanges - 5-12 区间基本`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
           {"lessonId": "A", "courseName": "T区", "teacherNames": ["t"],
@@ -437,41 +550,133 @@ class JwEams5ParserTest {
         """.trimIndent())
         val c = p.generateCourseList().single()
         assertEquals("5-12 startWeek=5", 5, c.startWeek)
+        assertEquals("5-12 endWeek=12", 12, c.endWeek)
     }
 
     @Test
-    fun `parseWeekIndex - 1-8,10-16 复合区间`() {
+    fun `parseWeekRanges - 单值 5周 emit startWeek=endWeek=5`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
-          {"lessonId": "A", "courseName": "T复", "teacherNames": ["t"],
-           "weekday": 1, "weekIndexes": "1-8,10-16", "startUnit": 1, "endUnit": 2}
+          {"lessonId": "A", "courseName": "T单值", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "5周", "startUnit": 1, "endUnit": 2}
         ]}]}
         """.trimIndent())
         val c = p.generateCourseList().single()
-        assertEquals("1-8,10-16 startWeek=1", 1, c.startWeek)
+        assertEquals("5周 startWeek=5", 5, c.startWeek)
+        assertEquals("5周 endWeek=5", 5, c.endWeek)
     }
 
     @Test
-    fun `parseWeekIndex - even 英文兼容 type=3`() {
+    fun `parseWeekRanges - 混合 1-8周(单),9-16周(双) 每段独立判定`() {
+        // SEU 同型 bug fix: 不能整串 first-match, 必须每段独立
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
-          {"lessonId": "A", "courseName": "Teven", "teacherNames": ["t"],
-           "weekday": 1, "weekIndexes": "1-16 even", "startUnit": 1, "endUnit": 2}
+          {"lessonId": "A", "courseName": "T混", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "1-8周(单),9-16周(双)", "startUnit": 1, "endUnit": 2}
         ]}]}
         """.trimIndent())
-        val c = p.generateCourseList().single()
-        assertEquals("even → type=3", 3, c.type)
+        val cs = p.generateCourseList()
+        assertEquals("2 段 emit 2 个 JwCourse", 2, cs.size)
+        // 段 1: 单周 → startWeek=1, endWeek=7 (1,3,5,7)
+        assertEquals("段 1 (单周) startWeek=1", 1, cs[0].startWeek)
+        assertEquals("段 1 (单周) type=1", 1, cs[0].type)
+        // 段 2: 双周 → startWeek=10 (JwParity 抬到首个偶数), endWeek=16 (10,12,14,16)
+        assertEquals("段 2 (双周) startWeek=10 (JwParity 抬)", 10, cs[1].startWeek)
+        assertEquals("段 2 (双周) type=2", 2, cs[1].type)
     }
 
     @Test
-    fun `parseWeekIndex - odd 英文兼容 type=2`() {
+    fun `parseWeekRanges - 空 bitmap 兜底 (1,1,0)`() {
         val p = JwEams5Parser("""
         {"studentTableVms": [{"activities": [
-          {"lessonId": "A", "courseName": "Todd", "teacherNames": ["t"],
-           "weekday": 1, "weekIndexes": "1-16 odd", "startUnit": 1, "endUnit": 2}
+          {"lessonId": "A", "courseName": "T空", "teacherNames": ["t"],
+           "weekday": 1, "weekIndexes": "", "startUnit": 1, "endUnit": 2}
         ]}]}
         """.trimIndent())
         val c = p.generateCourseList().single()
-        assertEquals("odd → type=2", 2, c.type)
+        assertEquals("空 bitmap startWeek=1", 1, c.startWeek)
+        assertEquals("空 bitmap endWeek=1", 1, c.endWeek)
+        assertEquals("空 bitmap type=0", 0, c.type)
+    }
+
+    // -------- teacher 字段多形态 fallback (5 仓 teacherNames + teachers + teacher + personName) --------
+
+    @Test
+    fun `AHU print-data - teacherNames 数组 join 斜杠`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Test", "teacherNames": ["张三", "李四"],
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("张三/李四", p.generateCourseList().single().teacher)
+    }
+
+    @Test
+    fun `AHU print-data - teachers 数组 fallback`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Test", "teachers": ["甲", "乙", "丙"],
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("甲/乙/丙", p.generateCourseList().single().teacher)
+    }
+
+    @Test
+    fun `AHU print-data - teacherList 数组 fallback`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Test", "teacherList": ["王老师"],
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("王老师", p.generateCourseList().single().teacher)
+    }
+
+    @Test
+    fun `AHU print-data - 单字符串 teacher fallback`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Test", "teacher": "外教",
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("外教", p.generateCourseList().single().teacher)
+    }
+
+    @Test
+    fun `AHU print-data - personName 兜底 (HFUT 形态字段)`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Test", "personName": "兜底教师",
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("兜底教师", p.generateCourseList().single().teacher)
+    }
+
+    @Test
+    fun `AHU print-data - 全部缺 teacher 字段 emit 空串`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "无师课",
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("无 teacher 应输出空串", "", p.generateCourseList().single().teacher)
+    }
+
+    @Test
+    fun `AHU print-data - 空数组 teacherNames 兜底到单字符串`() {
+        val p = JwEams5Parser("""
+        {"studentTableVms": [{"activities": [
+          {"lessonId": "A", "courseName": "Test",
+           "teacherNames": [], "teacher": "降级到单字符串",
+           "weekday": 1, "weekIndexes": "1-16", "startUnit": 1, "endUnit": 2}
+        ]}]}
+        """.trimIndent())
+        assertEquals("空数组降级到 teacher 单字符串", "降级到单字符串",
+            p.generateCourseList().single().teacher)
     }
 }

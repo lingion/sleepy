@@ -251,12 +251,21 @@ class JwEams5Parser(source: String) : JwParser(source) {
             val name = o["courseName"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
                 ?: continue
 
-            // teacherNames → List<String> → join "/"
+            // teacherNames → List<String> → join "/" (5 仓 consensus)
+//   防御性 fallback: teachers[] / teacherList / 单字符串 teacher / personName
             val teacher = runCatching {
-                val arr = o["teacherNames"] as? JsonArray ?: return@runCatching ""
-                val names = arr.mapNotNull { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
-                    .filter { it.isNotBlank() }
-                names.joinToString("/").ifBlank { "" }
+                val arr = o["teacherNames"] as? JsonArray
+                    ?: o["teachers"] as? JsonArray
+                    ?: o["teacherList"] as? JsonArray
+                if (arr != null) {
+                    val names = arr.mapNotNull { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+                        .filter { it.isNotBlank() }
+                    if (names.isNotEmpty()) return@runCatching names.joinToString("/")
+                }
+                // 单字符串字段兜底
+                o["teacher"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.trim()
+                    ?: o["personName"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.trim()
+                    ?: ""
             }.getOrNull().orEmpty()
 
             // room: campus + building + room 三段拼接 (Landon-3314 实锤)
@@ -275,58 +284,101 @@ class JwEams5Parser(source: String) : JwParser(source) {
             val endNode = o["endUnit"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
 
-            // weekIndexes bitmap 解析 (v1.1: 单/双周标记识别, 但仍 emit 单周 type=0/2/3)
-            // 真实形态可能是 "1-16" (连续), "1-16单" (单周), "5,7,9-12" (不连续)
-            // v2: 完整 RLE 解析 (MoeclubM 代码自写, 参考其 dayOfWeek/weeksAndTeachers 处理)
+            // weekIndexes bitmap 完整 RLE 解析 — emit 多 JwCourse (单/双周/区间/离散)
+            // 5 仓 cross-validated 2026-09-06: parseWeekRanges 复用 JwParity 端点修正
+            // 同一活动可在多周出现 → emit 多行 JwCourse (同 SEU parseWeekRanges 形态)
             val weekIndexesStr = o["weekIndexes"]?.let {
                 runCatching { it.jsonPrimitive.contentOrNull }.getOrNull()
             }.orEmpty()
-            val (startWeek, weekType) = parseWeekIndex(weekIndexesStr)
-
-            out += JwCourse(
-                name = name.trim(),
-                room = room,
-                teacher = teacher,
-                day = day.coerceIn(1, 7),
-                startNode = startNode.coerceAtLeast(1),
-                endNode = endNode.coerceAtLeast(startNode),
-                startWeek = startWeek,
-                endWeek = startWeek,
-                type = weekType,
-            )
+            val weekRanges = parseWeekRanges(weekIndexesStr)
+            for ((startWeek, endWeek, weekType) in weekRanges) {
+                out += JwCourse(
+                    name = name.trim(),
+                    room = room,
+                    teacher = teacher,
+                    day = day.coerceIn(1, 7),
+                    startNode = startNode.coerceAtLeast(1),
+                    endNode = endNode.coerceAtLeast(startNode),
+                    startWeek = startWeek,
+                    endWeek = endWeek,
+                    type = weekType,
+                )
+            }
         }
         return out
     }
 
     /**
-     * 从 weekIndexes bitmap 字符串解析出首个周次。
+     * AHU weekIndexes bitmap 完整 RLE 解析 — emit 多 JwCourse
      *
-     * 真实形态候选 (5 仓 cross-validated 2026-09-06):
-     *   "1-16"      → 1     (连续)
-     *   "1-16单"    → 1     (单周; type=2 标记)
-     *   "1-16双"    → 1     (双周; type=3 标记)
-     *   "1,3,5,7-12" → 1    (不连续, v1 取首个; type=0)
-     *   "1-8,10-16" → 1     (区间 + 区间, v1 取首个; type=0)
-     *   ""          → 1     (兜底)
+     * 真实形态 (5 仓 cross-validated 2026-09-06):
+     *   "1-16"        → [(1,16,0)]         (全周)
+     *   "1-16单"      → [(1,15,1)]         (单周; JwParity 端点修正)
+     *   "1-16双"      → [(2,16,2)]         (双周)
+     *   "1-8,10-16"   → [(1,8,0), (10,16,0)]   (区间组合)
+     *   "8,10,12,14"  → [(8,8,0), (10,10,0), (12,12,0), (14,14,0)]  (离散)
+     *   "5周" / "5"   → [(5,5,0)]          (单值)
+     *   ""            → [(1,1,0)]          (兜底)
      *
-     * 返回 Pair(startWeek, type):
-     *   - startWeek: 起始周次 (1-based)
-     *   - type: 0=全周, 2=单周, 3=双周 (与 Sleepy JwCourse.type 兼容)
+     * 算法 (借 JwSeuParser.parseWeekRanges 同型, 复用 JwParity.adjustedRange):
+     *   1. 剥 "周" / "周(单)" / "周(双)" 等修饰
+     *   2. 按 "," / "，" 拆段 (混合 "1-8周(单),9-16周(双)" 每段独立判定)
+     *   3. 段内 "-" 拆 (范围) 或单值
+     *   4. 段内检测 "单"/"双"/"odd"/"even" 设 parity=1/2
+     *   5. parity ∈ {1,2} 时调 JwParity.adjustedRange 端点修正
+     *      (单周起点抬到首个奇数; 双周抬到首个偶数; 端点相等时 end 抬到 start)
+     *   6. emit Triple(startWeek, endWeek, parity)
      *
-     * v1 限制: 不解析连续周次范围 (如 "1-16" 不 emit 多周, 只取首周 type=0/2/3)
-     * v2 加 RLE: emit [start..end] 完整范围
+     * Sleepy type 语义 (JwParity.kt 共识): 0=每周 1=单周 2=双周
+     *
+     * 与 SEU JwSeuParser.parseWeekRanges 区别:
+     *   - AHU 字符不同 (数字无空格 "1-16" vs SEU "1-16周")
+     *   - AHU 用 "单" / "双" (单字); SEU 用 "(单)" / "(双)" (括号)
+     *   - 复用 JwParity.adjustedRange 算法
      */
-    internal fun parseWeekIndex(weekIndexes: String): Pair<Int, Int> {
-        if (weekIndexes.isBlank()) return 1 to 0
-        // 单双周标记 (中文 '单'/'双' 在 AHU 已知, 兜底 'odd'/'even' 兼容其他学校)
-        val type = when {
-            weekIndexes.contains('单') || weekIndexes.contains("odd", ignoreCase = true) -> 2
-            weekIndexes.contains('双') || weekIndexes.contains("even", ignoreCase = true) -> 3
-            else -> 0
+    internal fun parseWeekRanges(weekIndexes: String): List<Triple<Int, Int, Int>> {
+        if (weekIndexes.isBlank()) return listOf(Triple(1, 1, 0))
+        // 剥 "周" / 括号形态; 处理 "1-16周" / "1-16(单)" / "1-16 odd" 等
+        val clean = weekIndexes
+            .replace("周", "")
+            .replace("（", "(")
+            .replace("）", ")")
+            .replace("(", "(")
+            .replace(")", ")")
+        val segments = clean.split(",", "，").map { it.trim() }.filter { it.isNotEmpty() }
+        if (segments.isEmpty()) return listOf(Triple(1, 1, 0))
+
+        val out = mutableListOf<Triple<Int, Int, Int>>()
+        for (seg in segments) {
+            // 段内 parity 检测: "单" / "双" / "odd" / "even" (不区分大小写)
+            val parity = when {
+                seg.contains('单') || Regex("""\bodd\b""", RegexOption.IGNORE_CASE).containsMatchIn(seg) -> 1
+                seg.contains('双') || Regex("""\beven\b""", RegexOption.IGNORE_CASE).containsMatchIn(seg) -> 2
+                else -> 0
+            }
+            val bare = seg
+                .replace("(单)", "").replace("(双)", "")
+                .replace("(单", "").replace("(双", "")
+                .replace("单", "").replace("双", "")
+                .replace("odd", "", ignoreCase = true)
+                .replace("even", "", ignoreCase = true)
+                .trim()
+            if (bare.isBlank()) continue
+            if (bare.contains('-')) {
+                // 范围: "1-16" 或 "1- 16"
+                val parts = bare.split("-", limit = 2).map { it.trim() }
+                val a = parts.getOrNull(0)?.toIntOrNull() ?: continue
+                val b = parts.getOrNull(1)?.toIntOrNull() ?: a
+                val (sw, ew) = JwParity.adjustedRange(a, b, parity)
+                out += Triple(sw, ew, parity)
+            } else {
+                // 单值: "5" 或 "5周"
+                val v = bare.toIntOrNull() ?: continue
+                val (sw, ew) = JwParity.adjustedRange(v, v, parity)
+                out += Triple(sw, ew, parity)
+            }
         }
-        val m = Regex("""\d+""").find(weekIndexes) ?: return 1 to type
-        val start = m.value.toIntOrNull()?.coerceAtLeast(1) ?: 1
-        return start to type
+        return out.ifEmpty { listOf(Triple(1, 1, 0)) }
     }
 
     /**
