@@ -74,7 +74,7 @@ Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。支持教务
 - 新增超星综合教务个人课表解析，支持周次拆分、连续节次合并和 HTML 字段清理。
 - 修正 179 所学校目录中的 60 条入口或协议记录，并处理死链和重复条目。
 - 武汉理工大学入口改走 `forceCas`，导入前自动切换学生角色；采集器增加重试和采集日志。
-- 关于页新增独立的开源声明页面，列出 26 个上游项目及许可证。
+- 关于页新增独立的开源声明页面，列出 83 个上游项目（9 跨校普适 + 74 单校，分布于 32 张学校卡）及许可证。
 
 ---
 
@@ -308,7 +308,7 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 | **版本信息** | 版本号 + 构建号（`BuildConfig.VERSION_NAME` / `BuildConfig.VERSION_CODE`） |
 | **作者** | Lingion，点击跳 GitHub 主页 |
 | **开源地址** | github.com/lingion/sleepy，点击可跳转 |
-| **开源声明** | GPL-3.0 协议说明、26 个上游项目的许可证和参考范围 |
+| **开源声明** | GPL-3.0 协议说明、83 个上游项目的许可证和参考范围（9 跨校普适 + 74 单校，分布于 32 张学校卡）|
 
 关于页还提供版本更新检查。检查到新版本时先展示完整更新说明，确认后才下载；下载过程可取消。
 
@@ -365,47 +365,81 @@ java_compat     = 17
 ## 项目结构
 
 ```
-sleepy/
-├── app/src/main/
-│   ├── java/com/lingion/sleepy/
-│   │   ├── MainActivity.kt              # 单 Activity 入口
-│   │   ├── SleepyApp.kt                # Application（DI、通知调度器）
-│   │   ├── data/
-│   │   │   ├── AppDatabase.kt          # Room 数据库
-│   │   │   ├── dao/                    # 课程 / 课表 DAO
-│   │   │   ├── entity/                 # Course / TimeTable / SmartPeriodConfig
-│   │   │   ├── jw/                     # 教务系统导入（含 chaoxing/classic_eams/eams5/whut）
-│   │   │   ├── parser/                 # ScheduleParser + SleepyNativeParser/Exporter
-│   │   │   └── repository/             # ScheduleRepository
-│   │   ├── ui/
-│   │   │   ├── component/              # CourseTableView / CourseDetailSheet /
-│   │   │   │                           # SmartPeriodEditor / TimeSlotEditor /
-│   │   │   │                           # PillNavigationBar / SegmentedSwitcher
-│   │   │   ├── screen/
-│   │   │   │   ├── schedule/           # 周视图 + 网格视图
-│   │   │   │   ├── today/              # 今日视图
-│   │   │   │   ├── edit/               # 课程编辑
-│   │   │   │   ├── imports/            # 教务导入 + 文本导入 + 学校选择
-│   │   │   │   ├── manage/             # 课程管理
-│   │   │   │   └── mine/               # 我的 / 所有课表 / 编辑课表 / 主题 / 导出
-│   │   │   └── theme/                  # Theme + ThemePresets（5 套配色）
-│   │   ├── util/                       # AppPrefs / DateUtils / LocaleHelper / TimeTableUtils
-│   │   └── widget/                     # 5 类 widget + WidgetRenderActivity + ScrollStripService
-│   └── res/
-│       ├── values/                     # 默认资源 (zh-CN)
-│       ├── values-zh-rCN/              # 中文
-│       ├── values-zh-rTW/              # 繁體
-│       ├── values-en/                  # English
-│       ├── values-ja/                  # 日本語
-│       ├── values-es/                  # Español
-│       └── xml/                        # 5 个 widget 配置 + 网络/备份规则
-├── docs/screenshots/                   # README 截图
-├── assets/                             # logo 原图存档
-├── build.gradle.kts                     # 根构建
-├── app/build.gradle.kts                 # App 模块
-├── settings.gradle.kts
-├── gradle.properties
-└── LICENSE                              # GPL-3.0
+sleepy/                                    # 仓库根目录
+├── app/
+│   ├── src/main/
+│   │   ├── java/com/lingion/sleepy/
+│   │   │   ├── MainActivity.kt           # 单 Activity 入口
+│   │   │   ├── SleepyApp.kt              # Application（DI、通知调度器）
+│   │   │   ├── data/
+│   │   │   │   ├── AppDatabase.kt        # Room 数据库
+│   │   │   │   ├── dao/                  # CourseDao / TimeTableDao
+│   │   │   │   ├── entity/               # CourseEntity / TimeTableEntity / SmartPeriodConfig
+│   │   │   │   ├── jw/                   # 33 个 教务 parser + JwImportViewModel + JwParity
+│   │   │   │   ├── parser/               # ScheduleParser + SleepyNativeParser/Exporter/Format
+│   │   │   │   ├── repository/           # ScheduleRepository
+│   │   │   │   └── undo/                 # UndoManager
+│   │   │   ├── ui/
+│   │   │   │   ├── component/            # 11 个: CourseTableView / CourseDetailSheet /
+│   │   │   │   │                         # SmartPeriodEditor / TimeSlotEditor /
+│   │   │   │   │                         # PillNavigationBar / SegmentedSwitcher /
+│   │   │   │   │                         # ConflictCard / DateTimePickers / SettingsCards /
+│   │   │   │   │                         # ShareScheduleSheet / SleepyMotion
+│   │   │   │   ├── screen/
+│   │   │   │   │   ├── schedule/         # 周视图 + 网格视图
+│   │   │   │   │   ├── today/            # 今日视图
+│   │   │   │   │   ├── edit/             # 课程编辑
+│   │   │   │   │   ├── imports/          # 教务导入 + 文本导入 + 学校选择
+│   │   │   │   │   ├── manage/           # 课程管理
+│   │   │   │   │   └── mine/             # 我的 / 所有课表 / 编辑课表 / 主题 / 导出
+│   │   │   │   └── theme/                # Theme + ThemePresets + NoRippleClickable
+│   │   │   ├── util/                     # 17 个: AppPrefs / DateUtils / LocaleHelper /
+│   │   │   │                             # TimeTableUtils / CourseColorUtil /
+│   │   │   │                             # ConflictLayoutEngine / ConflictDetailReporter /
+│   │   │   │                             # WeekRangeOverlap / HolidayManager / HolidayRange /
+│   │   │   │                             # HighRefreshRate / PinyinMatcher / MarkdownBlocks /
+│   │   │   │                             # FeedbackComposer / UpdateManager / UpdateInfo /
+│   │   │   │                             # UpdateNotifier / VersionUtils
+│   │   │   └── widget/                   # 21 个 widget 文件 + notification/ 子目录
+│   │   │                                 # (Today/WeekList/WeekView/TwoDay/WeekGrid × Provider + Receiver)
+│   │   │                                 # + WidgetRenderActivity + RemoteViewsWidgetHelper +
+│   │   │                                 # WidgetContent / WidgetBitmapRenderers /
+│   │   │                                 # WidgetTableResolver / WidgetUpdateWorker /
+│   │   │                                 # WidgetUpdater / WidgetVariant + WeekGridPreviewActivity
+│   │   │       └── notification/         # CourseNotificationScheduler + FluidCloudService
+│   │   └── res/
+│   │       ├── drawable/                 # 矢量图标
+│   │       ├── drawable-nodpi/           # 不可压缩位图
+│   │       ├── layout/                   # 少量 RemoteViews 布局
+│   │       ├── mipmap-anydpi-v26/        # 自适应图标
+│   │       ├── mipmap-{hdpi,mdpi,xhdpi,xxhdpi,xxxhdpi}/
+│   │       ├── values/                   # 默认资源 (zh-CN)
+│   │       ├── values-zh-rCN/            # 简体中文
+│   │       ├── values-zh-rTW/            # 繁體中文
+│   │       ├── values-en/                # English
+│   │       ├── values-ja/                # 日本語
+│   │       ├── values-es/                # Español
+│   │       └── xml/                      # 5 个 widget_info + 网络/备份规则
+│   └── libs/                             # seedling-support-lite-3.0.7.aar (未声明依赖)
+├── docs/
+│   ├── screenshots/                      # README 引用的 19 张截图
+│   ├── logo.png                          # README 顶部 logo
+│   ├── adapt-kit/                        # 适配采集教程 (独立 README)
+│   └── sop/                              # SOP 索引（不列举具体文件）
+├── assets/                               # logo_1024.png 原图
+├── oppo-fluid-cloud-upk/                 # OPPO 流体云 UPK 源工程（未接入构建）
+├── artifacts/                            # 构建产物归档
+├── scripts/                              # release_check.sh
+├── tools/                                # gen_widget_previews.py + sleepy-collector
+├── tasks/                                # plan.md + todo.md
+├── build.gradle.kts                       # 根构建 (AGP 9.1.0 / Kotlin 2.1.10 / KSP)
+├── app/build.gradle.kts                   # App 模块（compileSdk=37 / minSdk=26 / targetSdk=37）
+├── settings.gradle.kts                   # rootProject.name = "WakeUpPure"
+├── gradle.properties                     # android.disallowKotlinSourceSets=false
+├── gradlew                                # Unix Gradle Wrapper
+├── gradlew.bat                            # Windows Gradle Wrapper（PR #16）
+├── gradle/wrapper/                        # gradle-wrapper.properties (Gradle 9.3.1)
+└── LICENSE                                # GPL-3.0
 ```
 
 ---
@@ -417,7 +451,7 @@ sleepy/
 ```bash
 java -version           # JDK 17+
 
-sdkmanager "platforms;android-37" "build-tools;37.0.0"
+sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
 ```
 
 ### 编译
@@ -472,7 +506,7 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 [GPL-3.0](LICENSE)
 
-Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；完整的 26 项项目名称、许可证和参考范围见应用内「我的」→「关于」→「开源声明」。
+Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；完整的 83 项（9 跨校普适 + 74 单校，分布于 32 张学校卡）项目名称、许可证和参考范围见应用内「我的」→「关于」→「开源声明」。
 
 ---
 

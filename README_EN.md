@@ -74,7 +74,7 @@ Sleepy is an Android timetable app built around three principles: **light, fast,
 - Added ChaoXing personal timetable parsing, including week-run splitting, consecutive-period merging, and HTML field cleanup.
 - Corrected 60 school catalog entries and removed dead or duplicate entries while keeping the catalog at 179 schools.
 - Fixed Wuhan University of Technology login routing and added collector retries and collection logs.
-- Added a dedicated open-source acknowledgements page listing 26 upstream projects and their licenses.
+- Added a dedicated open-source acknowledgements page listing 83 upstream projects (9 cross-school + 74 per-school, across 32 school cards) and their licenses.
 
 ---
 
@@ -303,7 +303,7 @@ Entry: "Mine" → "About". A dedicated page showing version, author, and open-so
 | **Author** | Lingion, tap to open the GitHub profile |
 | **Source** | github.com/lingion/sleepy, tappable |
 | **License note** | GPL-3.0 summary; contributions welcome |
-| **Open-source acknowledgements** | 26 upstream projects, their licenses, and the parts of Sleepy they informed |
+| **Open-source acknowledgements** | 83 upstream projects (9 cross-school + 74 per-school, across 32 school cards), their licenses, and the parts of Sleepy they informed |
 
 The About page also checks for updates and shows the full release notes before downloading. Downloads can be cancelled.
 
@@ -360,47 +360,81 @@ java_compat     = 17
 ## Project Structure
 
 ```
-sleepy/
-├── app/src/main/
-│   ├── java/com/lingion/sleepy/
-│   │   ├── MainActivity.kt              # Single-activity entry
-│   │   ├── SleepyApp.kt                # Application (DI, notification scheduler)
-│   │   ├── data/
-│   │   │   ├── AppDatabase.kt          # Room database
-│   │   │   ├── dao/                    # Course / Timetable DAOs
-│   │   │   ├── entity/                 # Course / TimeTable / SmartPeriodConfig
-│   │   │   ├── jw/                     # JW import (including chaoxing/classic_eams/eams5/whut)
-│   │   │   ├── parser/                 # ScheduleParser + SleepyNativeParser/Exporter
-│   │   │   └── repository/             # ScheduleRepository
-│   │   ├── ui/
-│   │   │   ├── component/              # CourseTableView / CourseDetailSheet /
-│   │   │   │                           # SmartPeriodEditor / TimeSlotEditor /
-│   │   │   │                           # PillNavigationBar / SegmentedSwitcher
-│   │   │   ├── screen/
-│   │   │   │   ├── schedule/           # Week view + grid view
-│   │   │   │   ├── today/              # Today view
-│   │   │   │   ├── edit/               # Course editing
-│   │   │   │   ├── imports/            # JW import + text import + school picker
-│   │   │   │   ├── manage/             # Course management
-│   │   │   │   └── mine/               # Mine / all timetables / edit / theme / export
-│   │   │   └── theme/                  # Theme + ThemePresets (5 presets)
-│   │   ├── util/                       # AppPrefs / DateUtils / LocaleHelper / TimeTableUtils
-│   │   └── widget/                     # 5 widget types + WidgetRenderActivity + ScrollStripService
-│   └── res/
-│       ├── values/                     # Default resources (zh-CN)
-│       ├── values-zh-rCN/              # Chinese simplified
-│       ├── values-zh-rTW/              # Chinese traditional
-│       ├── values-en/                  # English
-│       ├── values-ja/                  # Japanese
-│       ├── values-es/                  # Spanish
-│       └── xml/                        # 5 widget configs + network/backup rules
-├── docs/screenshots/                   # README screenshots
-├── assets/                             # Logo source archive
-├── build.gradle.kts                     # Root build
-├── app/build.gradle.kts                 # App module
-├── settings.gradle.kts
-├── gradle.properties
-└── LICENSE                              # GPL-3.0
+sleepy/                                    # Repository root
+├── app/
+│   ├── src/main/
+│   │   ├── java/com/lingion/sleepy/
+│   │   │   ├── MainActivity.kt           # Single-activity entry
+│   │   │   ├── SleepyApp.kt              # Application (DI, notification scheduler)
+│   │   │   ├── data/
+│   │   │   │   ├── AppDatabase.kt        # Room database
+│   │   │   │   ├── dao/                  # CourseDao / TimeTableDao
+│   │   │   │   ├── entity/               # CourseEntity / TimeTableEntity / SmartPeriodConfig
+│   │   │   │   ├── jw/                   # 33 JW parsers + JwImportViewModel + JwParity
+│   │   │   │   ├── parser/               # ScheduleParser + SleepyNativeParser/Exporter/Format
+│   │   │   │   ├── repository/           # ScheduleRepository
+│   │   │   │   └── undo/                 # UndoManager
+│   │   │   ├── ui/
+│   │   │   │   ├── component/            # 11: CourseTableView / CourseDetailSheet /
+│   │   │   │   │                         # SmartPeriodEditor / TimeSlotEditor /
+│   │   │   │   │                         # PillNavigationBar / SegmentedSwitcher /
+│   │   │   │   │                         # ConflictCard / DateTimePickers / SettingsCards /
+│   │   │   │   │                         # ShareScheduleSheet / SleepyMotion
+│   │   │   │   ├── screen/
+│   │   │   │   │   ├── schedule/         # Week view + grid view
+│   │   │   │   │   ├── today/            # Today view
+│   │   │   │   │   ├── edit/             # Course editing
+│   │   │   │   │   ├── imports/          # JW import + text import + school picker
+│   │   │   │   │   ├── manage/           # Course management
+│   │   │   │   │   └── mine/             # Mine / all timetables / edit / theme / export
+│   │   │   │   └── theme/                # Theme + ThemePresets + NoRippleClickable
+│   │   │   ├── util/                     # 17: AppPrefs / DateUtils / LocaleHelper /
+│   │   │   │                             # TimeTableUtils / CourseColorUtil /
+│   │   │   │                             # ConflictLayoutEngine / ConflictDetailReporter /
+│   │   │   │                             # WeekRangeOverlap / HolidayManager / HolidayRange /
+│   │   │   │                             # HighRefreshRate / PinyinMatcher / MarkdownBlocks /
+│   │   │   │                             # FeedbackComposer / UpdateManager / UpdateInfo /
+│   │   │   │                             # UpdateNotifier / VersionUtils
+│   │   │   └── widget/                   # 21 widget files + notification/ subdirectory
+│   │   │                                 # (Today/WeekList/WeekView/TwoDay/WeekGrid × Provider + Receiver)
+│   │   │                                 # + WidgetRenderActivity + RemoteViewsWidgetHelper +
+│   │   │                                 # WidgetContent / WidgetBitmapRenderers /
+│   │   │                                 # WidgetTableResolver / WidgetUpdateWorker /
+│   │   │                                 # WidgetUpdater / WidgetVariant + WeekGridPreviewActivity
+│   │   │       └── notification/         # CourseNotificationScheduler + FluidCloudService
+│   │   └── res/
+│   │       ├── drawable/                 # Vector icons
+│   │       ├── drawable-nodpi/           # Non-density bitmap assets
+│   │       ├── layout/                   # RemoteViews layouts
+│   │       ├── mipmap-anydpi-v26/        # Adaptive launcher icons
+│   │       ├── mipmap-{hdpi,mdpi,xhdpi,xxhdpi,xxxhdpi}/
+│   │       ├── values/                   # Default resources (zh-CN)
+│   │       ├── values-zh-rCN/            # Chinese simplified
+│   │       ├── values-zh-rTW/            # Chinese traditional
+│   │       ├── values-en/                # English
+│   │       ├── values-ja/                # Japanese
+│   │       ├── values-es/                # Spanish
+│   │       └── xml/                      # 5 widget_info + network/backup rules
+│   └── libs/                             # seedling-support-lite-3.0.7.aar (dependency not declared)
+├── docs/
+│   ├── screenshots/                      # 19 screenshots referenced by README
+│   ├── logo.png                          # Top-of-README logo
+│   ├── adapt-kit/                        # Adaptation collection guide (separate README)
+│   └── sop/                              # SOP index (does not enumerate any specific file)
+├── assets/                               # logo_1024.png original
+├── oppo-fluid-cloud-upk/                 # OPPO Fluid Cloud UPK source (not wired into the build)
+├── artifacts/                            # Build output archive
+├── scripts/                              # release_check.sh
+├── tools/                                # gen_widget_previews.py + sleepy-collector
+├── tasks/                                # plan.md + todo.md
+├── build.gradle.kts                       # Root build (AGP 9.1.0 / Kotlin 2.1.10 / KSP)
+├── app/build.gradle.kts                   # App module (compileSdk=37 / minSdk=26 / targetSdk=37)
+├── settings.gradle.kts                   # rootProject.name = "WakeUpPure"
+├── gradle.properties                     # android.disallowKotlinSourceSets=false
+├── gradlew                                # Unix Gradle Wrapper
+├── gradlew.bat                            # Windows Gradle Wrapper (PR #16)
+├── gradle/wrapper/                        # gradle-wrapper.properties (Gradle 9.3.1)
+└── LICENSE                                # GPL-3.0
 ```
 
 ---
@@ -412,7 +446,7 @@ sleepy/
 ```bash
 java -version           # JDK 17+
 
-sdkmanager "platforms;android-37" "build-tools;37.0.0"
+sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
 ```
 
 ### Build
@@ -467,7 +501,7 @@ adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 
 [GPL-3.0](LICENSE)
 
-Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list of 26 projects, licenses, and reference scope is available in the app under Mine → About → Open-source acknowledgements.
+Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list of 83 projects (9 cross-school + 74 per-school, across 32 school cards), their licenses, and reference scope is available in the app under Mine → About → Open-source acknowledgements.
 
 ---
 
