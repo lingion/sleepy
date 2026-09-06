@@ -1,0 +1,182 @@
+[
+  {
+    "sortKey": "H",
+    "name": "哈尔滨工程大学",
+    "url": "https://jwgl.hrbeu.edu.cn/",
+    "type": "wisedu",
+    "aliases": [
+      "hrbeu"
+    ],
+    "sortKeyFull": "haerbingongchengdaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "海南师范大学",
+    "url": "http://210.37.0.16/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "hainanshifandaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北大学",
+    "url": "http://zhjw.hbu.edu.cn/",
+    "type": "urp",
+    "aliases": [],
+    "sortKeyFull": "hebeidaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北工程大学",
+    "url": "http://219.148.85.172:9111/login",
+    "type": "urp_new",
+    "aliases": [],
+    "sortKeyFull": "hebeigongchengdaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北师范大学",
+    "url": "http://jwgl.hebtu.edu.cn/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "hebeishifandaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北政法职业学院",
+    "url": "http://jwxt.helc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "hebeizhengfazhiyexueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "河海大学",
+    "url": "http://202.119.113.135/",
+    "type": "urp",
+    "aliases": [
+      "hhu"
+    ],
+    "sortKeyFull": "hehaidaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "河南财经政法大学",
+    "url": "http://xk.huel.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "henancaijingzhengfadaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "贺州学院",
+    "url": "http://jwglxt.hzu.gx.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "hezhouxueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "华北电力大学科技学校",
+    "url": "http://202.204.74.178/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "huabeidianlidaxuekejixuexiao"
+  },
+  {
+    "sortKey": "H",
+    "name": "华东理工大学",
+    "url": "https://inquiry.ecust.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "huadongligongdaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "华东政法大学",
+    "url": "https://jw.ecupl.edu.cn/jwapp",
+    "type": "wisedu",
+    "aliases": [
+      "ecupl"
+    ],
+    "sortKeyFull": "huadongzhengfadaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "淮南师范学院",
+    "url": "http://211.70.176.173/jwglxt/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "huainanshifanxueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "华南理工大学",
+    "url": "http://xsjw2018.jw.scut.edu.cn/",
+    "type": "zf_new",
+    "aliases": [
+      "scut"
+    ],
+    "sortKeyFull": "huananligongdaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "华南师范大学",
+    "url": "https://jwxt.scnu.edu.cn/jwglxt",
+    "type": "zf_new",
+    "aliases": [
+      "scnu"
+    ],
+    "sortKeyFull": "huananshifandaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "华中农业大学",
+    "url": "http://jwgl.hzau.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "huazhongnongyedaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "华中师范大学",
+    "url": "http://one.ccnu.edu.cn/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "huazhongshifandaxue"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖北工程学院新技术学院",
+    "url": "http://jwglxt.hbeutc.cn:20000/jwglxt/xtgl",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "hubeigongchengxueyuanxinjishuxueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南工学院",
+    "url": "http://jwgl.hnit.edu.cn/",
+    "type": "qz_old",
+    "aliases": [],
+    "sortKeyFull": "hunangongxueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南理工学院",
+    "url": "http://bkjw.hnist.cn/login",
+    "type": "urp",
+    "aliases": [],
+    "sortKeyFull": "hunanligongxueyuan"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南师范大学",
+    "url": "https://jwglnew.hunnu.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "hunnu"
+    ],
+    "sortKeyFull": "hunanshifandaxue"
+  }
+]

@@ -1,0 +1,80 @@
+[
+  {
+    "sortKey": "X",
+    "name": "厦门大学",
+    "url": "https://jw.xmu.edu.cn/login",
+    "type": "wisedu",
+    "status": "PASS",
+    "note": "原 URL 200,沿用",
+    "evidence_chain": "cfp-fetch HTTP 200 (2026-09-06)"
+  },
+  {
+    "sortKey": "X",
+    "name": "湘潭大学",
+    "url": "http://jwxt.xtu.edu.cn/jsxsd/",
+    "type": "qz",
+    "status": "PASS",
+    "note": "原域名 jwxt.xtu.edu.cn 200;jsxsd 子路径 404 = 鉴权门,真实可达",
+    "evidence_chain": "cfp-fetch jwxt.xtu.edu.cn / -> 200; /jsxsd/ -> 404"
+  },
+  {
+    "sortKey": "X",
+    "name": "西安科技大学",
+    "url": "http://59.74.168.16:8989/",
+    "type": "zf",
+    "status": "DRIFT",
+    "note": "原 IP:8989 入口已死;新教务处官网 jwc.xust.edu.cn HTTPS 可达,但学生 JW 登录入口未在首页露出。",
+    "final_recommendation": {
+      "url": "https://jwc.xust.edu.cn/",
+      "type": "zf_new",
+      "reason": "官方教务处首页 https,jwc.xust.edu.cn HTTP 530 origin 通,需用户/学生提供新版 jwglxt 路径"
+    },
+    "evidence_chain": "cfp-fetch 59.74.168.16:8989 -> HTTP 400 (原IP不可用); jwc.xust.edu.cn -> 200 (106895B); jwxt.xust.edu.cn -> 530"
+  },
+  {
+    "sortKey": "X",
+    "name": "西安理工大学",
+    "url": "http://202.200.112.200/",
+    "type": "zf",
+    "status": "DRIFT",
+    "note": "原 IP 入口已死;新教务处官网 jwc.xaut.edu.cn 200 可达,首页有教务子菜单。",
+    "final_recommendation": {
+      "url": "http://jwc.xaut.edu.cn/",
+      "type": "zf_new",
+      "reason": "官方教务处域名 <title>西安理工大学教务处主页</title>"
+    },
+    "evidence_chain": "cfp-fetch 202.200.112.200 -> HTTP 400; jwc.xaut.edu.cn -> 200 (34279B)"
+  },
+  {
+    "sortKey": "X",
+    "name": "西昌学院",
+    "url": "https://jwxt.xcc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "status": "PASS",
+    "note": "原 URL 200,沿用",
+    "evidence_chain": "cfp-fetch HTTP 200"
+  },
+  {
+    "sortKey": "X",
+    "name": "西华大学",
+    "url": "http://jwc.xhu.edu.cn/",
+    "type": "zf",
+    "status": "PASS",
+    "note": "原 URL 当前为空响应(超时);实际教务门户 xhjwc.xhu.edu.cn 与 jw.xhu.edu.cn 200 可达(jw.xhu 显示为纪检主页);xhjwc.xhu 是真正的教务处。",
+    "final_recommendation": {
+      "url": "http://xhjwc.xhu.edu.cn/",
+      "type": "zf_new",
+      "reason": "<title>教务处(教育教学评估中心)</title>;含 jwxt/slogin 路径"
+    },
+    "evidence_chain": "cfp-fetch jwc.xhu.edu.cn -> 空响应; xhjwc.xhu.edu.cn -> 200 (52160B)"
+  },
+  {
+    "sortKey": "X",
+    "name": "西南政法大学",
+    "url": "http://njwxt.swupl.edu.cn/jwglxt/xtgl",
+    "type": "zf_new",
+    "status": "PASS",
+    "note": "原 URL 412 = 服务器可达但鉴权拦截,符合登录前预期",
+    "evidence_chain": "cfp-fetch HTTP 412"
+  }
+]

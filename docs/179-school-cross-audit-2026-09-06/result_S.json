@@ -1,0 +1,295 @@
+[
+  {
+    "sortKey": "S",
+    "name": "三江学院",
+    "old_url": "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "old_type": "zf_new",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html → timeout (000), unreachable",
+      "https://jw.sju.edu.cn (any path) → timeout",
+      "http://www.sju.edu.cn → 200, contains jwc link http://www.sju.edu.cn/jwc/main.htm (返回 412, 但主页引用存在)",
+      "https://cas.sju.edu.cn/ → 200, 统一身份认证平台, type=userNameLogin (CAS SSO)",
+      "未发现 jwc.sju.edu.cn 或 jwgl.sju.edu.cn 子域名可达"
+    ],
+    "final_recommendation": {
+      "url": "https://cas.sju.edu.cn/authserver/login?service=https%3A%2F%2Fjw.sju.edu.cn%2Fjwglxt%2Fxtgl%2Flogin_slogin.html",
+      "type": "zf_new",
+      "reason": "原URL全死,校方主页+统一身份认证(cas.sju.edu.cn)可达,推 SSO 跳转回 jwglxt 登录页"
+    },
+    "note": "CAS 入口 cas.sju.edu.cn/authserver/login,新 URL 待 subagent 详情确认"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东科技大学",
+    "old_url": "http://jwgl.sdust.edu.cn/",
+    "old_type": "qz",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "http://jwgl.sdust.edu.cn/ → 502 wengine-auth-failed 错误页(可能需内网/校方VPN)",
+      "http://www.sdust.edu.cn → 200 (首页可达)",
+      "https://jwc.sdust.edu.cn/ → 200, 教务处主页包含 jsxsd 路径 http://jwgl.sdust.edu.cn/jsxsd/",
+      "URL 含 /jsxsd/ 强智 qz 指纹确定"
+    ],
+    "final_recommendation": {
+      "url": "https://jwgl.sdust.edu.cn/jsxsd/",
+      "type": "qz",
+      "reason": "原 type=qz 正确,但应明确到 jsxsd 路径;502 推测需校园网/VPN,非URL错误"
+    },
+    "new_url": "https://jwgl.sdust.edu.cn/jsxsd/",
+    "note": "原 URL 无 jsxsd 路径,需补 /jsxsd/ + 类型"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东农业大学",
+    "old_url": "http://xjw.sdau.edu.cn/jwglxt/",
+    "old_type": "zf_new",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "http://xjw.sdau.edu.cn/jwglxt/ → timeout (000)",
+      "https://xjw.sdau.edu.cn 任意路径 → timeout",
+      "http://www.sdau.edu.cn → 200, 主页包含链接 http://xjw.sdau.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=... (校内URL未变)",
+      "http://jwc.sdau.edu.cn → 000 (超时)"
+    ],
+    "final_recommendation": {
+      "url": "http://xjw.sdau.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "原URL路径正确(/jwglxt/xtgl/login_slogin.html=zf_new),但主机需校园网/VPN才能访问;校主页确认URL未变更"
+    },
+    "new_url": "http://xjw.sdau.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "note": "原 URL 503,需补 /xtgl/login_slogin.html"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东政法大学",
+    "old_url": "http://114.214.79.176/jwglxt/",
+    "old_type": "zf_new",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "http://114.214.79.176/jwglxt/ → 000 (超时,裸IP可能已下线或防火墙)",
+      "https://www.sdupsl.edu.cn → 200 (校主页可达)",
+      "http://jwc.sdupsl.edu.cn → 200 (教务处主页, title=山东政法学院-教务处)",
+      "jwc.sdupsl.edu.cn 主页无任何 jwxt/jwgl/jsxsd 链接",
+      "http://jwc.sdupsl.edu.cn/jwglxt → 404 (路径不存在)",
+      "https://jwc.sdupsl.edu.cn/jwglxt → 404",
+      "子域扫描 (atrust/bkpg/bwc/djzt/hqglc/jyxxw/qlsz/tw/xsgzc/xxbgs/xxgk/yjs/zs) 全部 200 但无 jwxt/jwgl",
+      "校名改名: 主页 title 山东政法学院(未含 大学), 可能与正式改名后未迁移jwc数据有关"
+    ],
+    "final_recommendation": {
+      "url": "http://114.214.79.176/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "新URL未找到;原IP直连全死,jwc.sdupsl.edu.cn无jwxt子路径;UNVERIFIED 假设: 原IP 114.214.79.176/jwglxt 仍可能从校内访问(原type=zf_new合理),建议从学生端确认或直接联系校方"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "上海财经大学",
+    "old_url": "https://eams.sufe.edu.cn/eams/",
+    "old_type": "classic_eams",
+    "status": "OK",
+    "evidence_chain": [
+      "https://eams.sufe.edu.cn/eams/ → 200, 重定向到 https://login.sufe.edu.cn/esc-sso/login?service=...eams%2Fsso%2Flogin",
+      "落地点 login.sufe.edu.cn → 200, title=统一身份认证中心 (CAS SSO)",
+      "CAS 通往后端 classic_eams (eams.sufe.edu.cn)",
+      "直链 eams.sufe.edu.cn/eams 可达,但实际登录必经 login.sufe.edu.cn"
+    ],
+    "final_recommendation": {
+      "url": "https://eams.sufe.edu.cn/eams/",
+      "type": "classic_eams",
+      "reason": "原URL+type正确; 直链仍可达但强制CAS跳转 login.sufe.edu.cn; 实测 eams.sufe.edu.cn → login.sufe.edu.cn/esc-sso → eams/sso/login"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "上海大学",
+    "old_url": "https://jwxt.shu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "https://jwxt.shu.edu.cn/jwglxt/xtgl/login_slogin.html → 200, 20955 bytes",
+      "标题: 教学管理信息服务平台",
+      "指纹: login_slogin + xtgl + 统一身份认证 + 正方 → zf_new"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxt.shu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "OK, 原URL+type正确, 200 直达正方新版"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "上海海洋大学",
+    "old_url": "https://urp.shou.edu.cn/login",
+    "old_type": "urp_new",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "https://urp.shou.edu.cn/login → 000 (超时/零字节)",
+      "http://urp.shou.edu.cn:80/login → 000",
+      "https://urp.shou.edu.cn:443/login → 000",
+      "http://urp.shou.edu.cn/ → 000",
+      "DNS 解析: urp.shou.edu.cn → 202.121.66.188 (有效)",
+      "https://202.121.66.188/login → 000 (直接IP仍不通)",
+      "校主页 http://www.shou.edu.cn → 200, 教务处 http://jwc.shou.edu.cn → 200",
+      "教务处主页含链接 https://urp.shou.edu.cn (校方仍推荐urp.shou.edu.cn)",
+      "DNS有效但服务无响应,疑似防火墙/IPv6-only或SSL问题"
+    ],
+    "final_recommendation": {
+      "url": "https://urp.shou.edu.cn",
+      "type": "urp_new",
+      "reason": "原URL主机可能需要证书SNI或非/login路径(教务处直接用urp.shou.edu.cn);type=urp_new 正确; 需从学生端验证默认路径"
+    },
+    "note": "DRIFT 待 subagent 详情确认新 URL"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海交通大学",
+    "old_url": "https://i.sjtu.edu.cn/jwglxt",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "https://i.sjtu.edu.cn/jwglxt → 302 → https://i.sjtu.edu.cn/xtgl/login_slogin.html",
+      "落地点 → 200, 10537 bytes",
+      "标题: 上海交通大学教学信息服务网",
+      "指纹: login_slogin + xtgl + 统一身份认证 → zf_new"
+    ],
+    "final_recommendation": {
+      "url": "https://i.sjtu.edu.cn/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "OK, /jwglxt 已被校方自动重定向到 /xtgl/login_slogin.html; type=zf_new 正确; 用根路径更稳定"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "上海外国语大学",
+    "old_url": "https://jw.shisu.edu.cn/jwapp",
+    "old_type": "wisedu",
+    "status": "OK",
+    "evidence_chain": [
+      "https://jw.shisu.edu.cn/jwapp → 302 → https://jw.shisu.edu.cn/login?refer=https://jw.shisu.edu.cn/jwapp",
+      "落地点 → 200, 7071 bytes",
+      "标题: 登入页面",
+      "前端CAS登录, 后端走 wisedu jwapp"
+    ],
+    "final_recommendation": {
+      "url": "https://jw.shisu.edu.cn/jwapp",
+      "type": "wisedu",
+      "reason": "OK, /jwapp 强制走 /login CAS 验证; type=wisedu 正确"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "韶关学院",
+    "old_url": "http://jwc.sgu.edu.cn/",
+    "old_type": "qz",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "http://jwc.sgu.edu.cn/ → 000 (超时)",
+      "http://www.sgu.edu.cn → 000",
+      "https://www.sgu.edu.cn → 000",
+      "https://jwc.sgu.edu.cn → 000",
+      "http://jw.sgu.edu.cn → 000 (连接立即拒绝)",
+      "DNS 解析: www.sgu.edu.cn → 210.38.192.98 (有效)",
+      "直接 IP http://210.38.192.98/ → 000",
+      "DNS 通, 网络层面连接被 RST 或防火墙阻断; 整体不可达"
+    ],
+    "final_recommendation": {
+      "url": "http://jwc.sgu.edu.cn/",
+      "type": "qz",
+      "reason": "UNVERIFIED; 服务器不可达, DNS有效但IP无法访问; 原 type=qz 未验证; 建议通过VPN/学生端实测"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "绍兴文理学院元培学院",
+    "old_url": "http://www.ypc.edu.cn/jwgl.htm",
+    "old_type": "zf",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "http://www.ypc.edu.cn/jwgl.htm → 302 → https://www.ypc.edu.cn/jwgl.htm → 200 (3367 bytes)",
+      "页面 title: 教务管理-绍兴理工学院(校名已更)",
+      "页面链接 6 个 jw 入口: jwc.ypc.edu.cn / jw.ypc.edu.cn / jw1.ypc.edu.cn / jw2.ypc.edu.cn / jw5.ypc.edu.cn / jw6.ypc.edu.cn",
+      "http://jwc.ypc.edu.cn/ → 200, title=教务处, 含 jwxt/login_slogin/xtgl → zf_new",
+      "http://jw5.ypc.edu.cn/ → 200, '欢迎使用正方教务管理系统！请登录' → zf classic",
+      "主入口是 jwc.ypc.edu.cn"
+    ],
+    "final_recommendation": {
+      "url": "http://jwc.ypc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "原URL是导航页(jwgl.htm), 实际主教务门户是 jwc.ypc.edu.cn/jwglxt/xtgl/login_slogin.html (zf_new); type 应从 zf 升级到 zf_new"
+    },
+    "note": "DRIFT 待 subagent 详情确认新 URL"
+  },
+  {
+    "sortKey": "S",
+    "name": "石河子大学",
+    "old_url": "https://jwgl.shzu.edu.cn/jsxsd/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "https://jwgl.shzu.edu.cn/jsxsd/ → 200 但 0 bytes (空 body), 重定向到 sso.jsp",
+      "https://jwgl.shzu.edu.cn/jsxsd/sso.jsp → 200, 164 bytes",
+      "sso.jsp body: window.location.href='http://authserver.shzu.edu.cn/authserver/login?service=https%3A%2F%2Fjwgl.shzu.edu.cn%2Fjsxsd%2Fsso.jsp'",
+      "实际登录入口是 authserver.shzu.edu.cn (CAS), 后端走强智 jsxsd"
+    ],
+    "final_recommendation": {
+      "url": "https://jwgl.shzu.edu.cn/jsxsd/",
+      "type": "qz",
+      "reason": "OK, 原URL+type正确; jsxsd 强制走 authserver CAS SSO"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "石家庄学院",
+    "old_url": "http://jwgl.sjzc.edu.cn/jwglxt/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "http://jwgl.sjzc.edu.cn/jwglxt/ → 200, 自动重定向到 xtgl/login_slogin.html (实测 200)",
+      "http://jwgl.sjzc.edu.cn/jwglxt/xtgl/login_slogin.html → 200, 20557 bytes",
+      "标题: 教学管理信息服务平台",
+      "指纹: login_slogin + xtgl + 统一身份认证 + 正方 → zf_new"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.sjzc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "OK, 原URL+type正确, 200 直达正方新版; 完整路径比 /jwglxt/ 更稳定"
+    }
+  },
+  {
+    "sortKey": "S",
+    "name": "四川大学锦城学院",
+    "old_url": "http://jwweb.scujcc.cn/",
+    "old_type": "zf",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "http://jwweb.scujcc.cn/ → 301 → https://jwweb.scujcc.cn/ → 200, 14204 bytes",
+      "标题: '欢迎使用正方教务管理系统！请登录'",
+      "style 路径: /style/4.0.0.1/ → zf classic(非新版slogin)",
+      "使用 RSA.js + Barrett.js 加密, 旧版正方指纹"
+    ],
+    "final_recommendation": {
+      "url": "https://jwweb.scujcc.cn/",
+      "type": "zf",
+      "reason": "原URL type=zf 正确; 但建议升级为 https:// 显式TLS(避免 301 跳转); 仍为旧版正方, 客户端需支持 RSA 加密流程"
+    },
+    "note": "DRIFT 待 subagent 详情确认新 URL"
+  },
+  {
+    "sortKey": "S",
+    "name": "苏州科技大学",
+    "old_url": "http://jw.usts.edu.cn/default2.aspx",
+    "old_type": "zf",
+    "status": "OK",
+    "evidence_chain": [
+      "http://jw.usts.edu.cn/default2.aspx → 200, 5693 bytes",
+      "编码: gb2312 (老正方特征)",
+      "指纹: default2.aspx + style/base + jw.css → zf classic(旧版正方)",
+      "无 login_slogin / jsxsd 路径"
+    ],
+    "final_recommendation": {
+      "url": "http://jw.usts.edu.cn/default2.aspx",
+      "type": "zf",
+      "reason": "OK, 原URL+type正确, 200 直达旧版正方"
+    }
+  }
+]

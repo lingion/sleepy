@@ -1,0 +1,89 @@
+[
+  {
+    "sortKey": "J",
+    "name": "江西农业大学南昌商学院",
+    "old_url": "http://223.83.249.67:8080/jsxsd/",
+    "old_type": "qz_br",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "curl 老 URL http://223.83.249.67:8080/jsxsd/ → Connection timed out after 12s (UNREACHABLE)",
+      "Baidu Baike『江西农业大学南昌商学院』页 → 学校官网 http://ncbcjxau.edu.cn（旧域 ncsxy.edu.cn 已不用）",
+      "DNS dig: ncbcjxau.edu.cn → 117.45.146.155（存活）",
+      "curl https://ncbcjxau.edu.cn/ 主页 → 200 OK；href 中发现教务处 https://jwc.ncbcjxau.edu.cn 与统一身份认证 http://cas.ncbcjxau.edu.cn:7002/cas/login",
+      "curl https://jwc.ncbcjxau.edu.cn/ 主页 → 200 OK；href 中发现 https://jwxt.ncbcjxau.edu.cn:8443/jsd/ 与 http://jwxt.ncbcjxau.edu.cn:8443/jsd/",
+      "curl https://jwxt.ncbcjxau.edu.cn:8443/jsd/ → 200 OK；body 含 <title>登录</title>、form action=/jsd/xk/LoginToXk、footer『Copyright © 2017.湖南强智科技发展有限公司』→ 确为强智 qz 系统，但路径是 /jsd/ 而非 /jsxsd/",
+      "Sleepy 解析器（JwImportViewModel.kt / JwFetchProtocol.kt）的 QZ 自动判定依赖 u.contains(\"/jsxsd/\") + logon.do + verifycode.servlet 四锚点；当前新 URL /jsd/ 不含 /jsxsd/ 也不含 logon.do 自动落到 qz，但 FetchKind.QZ 仍需 /jsxsd/ 才返回（需手动 type=qz + 类型强校验通过）"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxt.ncbcjxau.edu.cn:8443/jsd/",
+      "type": "qz",
+      "reason": "Baidu Baike 给出学校官方域 ncbcjxau.edu.cn；教务处主页锚定 jwxt.ncbcjxau.edu.cn:8443/jsd/ 路径，footer 强智科技版权实锤 qz 类型；HTTP 直连会卡 TLS 协商且主机非 80/443 默认入口，必须 HTTPS:8443 + 路径 /jsd/。注意：原 type=qz_br 改为 qz（新系统无 BR 变体特征），并需同步在 JwImportViewModel.kt 的 QZ 锚点加 /jsd/ 子串或保持显式 type=qz 让手动 type 路径生效，否则自动检测会落到 null。"
+    },
+    "url": "http://223.83.249.67:8080/jsxsd/",
+    "type": "qz",
+    "new_url": "https://jwxt.ncbcjxau.edu.cn:8443/jsd/",
+    "new_type": "qz",
+    "note": "原 url timeout,官方域 ncbcjxau.edu.cn,新入口 /jsd/ 路径"
+  },
+  {
+    "sortKey": "J",
+    "name": "吉林师范大学",
+    "old_url": "http://jwxt.jlnu.edu.cn/",
+    "old_type": "qz",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "curl http://jwxt.jlnu.edu.cn/ → HTTP/1.1 302 Found, Location: https://jwxt.jlnu.edu.cn/（仍可达但需 HTTPS）",
+      "curl https://jwxt.jlnu.edu.cn/ → TLS 握手成功（CN=*.jlnu.edu.cn DigiCert Basic OV G2）后 TCP 偶发超时；多次重试均返回 HTML 内容含『吉林师范大学综合教务管理系统-强智科技』title 与 /Logon.do?method=logon 表单 action + qzdatasoft 版权 → 强智 qz 实锤",
+      "content 中 serversArray 含『http://192.168.5.4:8080/jsxsd/』等多个 jsxsd 后端节点；前端 LOGIN URL 走 /Logon.do?method=logon → 自动检测可命中 QZ 四锚点之一",
+      "curl https://jwxt.jlnu.edu.cn/jsxsd/ → 200 OK，body 含 form action=/jsxsd/xk/LoginToXk 与 /jsxsd/framework/images/* 强智模板资源 → jsxsd 子路径同样可用"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxt.jlnu.edu.cn/",
+      "type": "qz",
+      "reason": "HTTP→HTTPS 强制跳转是常见过渡；域名 jlnu.edu.cn 与强智科技 footer 不变，type qz 不动；HTTPS:443 路径走 /Logon.do?method=logon 即可命中 JwImportViewModel.kt 中 QZ 锚点（logon.do + verifycode.servlet）；若想保留 /jsxsd/ 子路径也仍可用 200 OK 资源齐全"
+    },
+    "url": "http://jwxt.jlnu.edu.cn/",
+    "type": "zf_new",
+    "new_url": "https://jwxt.jlnu.edu.cn/",
+    "new_type": "qz",
+    "note": "DRIFT (302→HTTPS),real URL 应为强智 qz (需 subagent 进一步确认 type)"
+  },
+  {
+    "sortKey": "J",
+    "name": "锦州医科大学",
+    "old_url": "http://jwgl.jzmu.edu.cn/jsxsd/",
+    "old_type": "qz",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl 老 URL http://jwgl.jzmu.edu.cn/jsxsd/ → IPv4 解析为 10.21.10.26（RFC1918 私网地址），连接 20s 超时（UNREACHABLE 公网）",
+      "curl https://jwgl.jzmu.edu.cn/jsxsd/ → 同私网 IP，TLS/TCP 全超时",
+      "DNS 交叉查询：8.8.8.8 / 114.114.114.114 均返回 10.21.10.26 → DNS A 记录本身就是私网，非本地解析被劫持",
+      "Baidu Baike『锦州医科大学』页 → 学校官网 http://www.jzmu.edu.cn（验证 210.30.128.91 存活）",
+      "curl http://www.jzmu.edu.cn/ 主页 → 200 OK，href 中发现 https://jwc.jzmu.edu.cn/（教务处）；curl https://jwc.jzmu.edu.cn/ → 200 OK，href 中发现 http://jwgl.jzmu.edu.cn/sso.jsp（教务系统 SSO 入口，与老 /jsxsd/ 路径不同）",
+      "curl http://jwgl.jzmu.edu.cn/sso.jsp → 同样解析为 10.21.10.26 超时（OFFICIAL 入口存在但仅校内网可达）",
+      "jwc 主页另发现 https://jzmujwc.yuketang.cn/pro/portal/home/（雨课堂在线学习平台，非教务系统）"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.jzmu.edu.cn/sso.jsp",
+      "type": "qz",
+      "reason": "DNS 私网 10.21.10.26 表明教务系统托管在校内网，公网无法直连。教务处 jwc.jzmu.edu.cn 官方锚定入口已从 /jsxsd/ 改为 /sso.jsp（SSO 单点登录网关，强智常见架构），仍属 qz 协议族。建议：若用户实际使用需走学校 VPN；离线建议保留学校但 url 改为 sso.jsp；若公网代理/CAS 二次认证存在则需进一步现场验证。此项属于 OFFICIAL_FOUND_BUT_UNREACHABLE，公网侧无法 e2e 验证登录。",
+      "unreachable_reason": "DNS A 记录返回 RFC1918 私网地址 10.21.10.26，公网 TCP 全部超时；教务系统只对校内开放"
+    }
+  },
+  {
+    "sortKey": "J",
+    "name": "吉首大学",
+    "old_url": "http://jwxt.jsu.edu.cn/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "curl http://jwxt.jsu.edu.cn/ → 302 Moved Temporarily, Location: https://jwxt.jsu.edu.cn/（自动跳转）",
+      "curl -L https://jwxt.jsu.edu.cn/ → 200 OK，HTTP/1.1，Set-Cookie JSESSIONID；body 含 <title>吉首大学综合教务管理系统-强智科技</title>、form action=/Logon.do?method=logon、qzdatasoft 版权与 qzdatasoft.com 锚点、serversArray 含 //jwxt.jsu.edu.cn:80/jsxsd/ → 强智 qz 实锤，type 不动"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxt.jsu.edu.cn/",
+      "type": "qz",
+      "reason": "HTTP→HTTPS 是标准升级，域名与系统一致；URL 直接使用 https://jwxt.jsu.edu.cn/ 即可，fetch 时强智 Logon.do action 会自动命中 QZ 四锚点（logon.do + verifycode.servlet）"
+    }
+  }
+]

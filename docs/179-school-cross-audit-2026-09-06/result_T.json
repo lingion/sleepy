@@ -1,0 +1,20 @@
+[
+  {
+    "sortKey": "T",
+    "name": "天津医科大学",
+    "url": "http://tyjw.tmu.edu.cn/",
+    "type": "qz",
+    "evidence_source": "subagent T (agent-ace81bd831791eff5) L99 GH search '强智科技'+直连超时",
+    "status": "OK",
+    "note": "GH 双源实锤 u_2407254c qiangzhi type=qz, 直连超时(校外不可达已知)"
+  },
+  {
+    "sortKey": "T",
+    "name": "天津中医药大学",
+    "url": "http://jiaowu.tjutcm.edu.cn/jsxsd/",
+    "type": "qz",
+    "evidence_source": "subagent T (agent-ace81bd831791eff5) L99 GH search '强智科技'+直连超时",
+    "status": "OK",
+    "note": "GH 双源实锤 u_75e6e2c1 qiangzhi type=qz, 直连超时(校外不可达已知)"
+  }
+]

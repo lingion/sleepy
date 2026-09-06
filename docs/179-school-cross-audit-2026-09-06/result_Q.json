@@ -1,0 +1,22 @@
+[
+  {
+    "sortKey": "Q",
+    "name": "青岛理工大学",
+    "old_url": "https://jxgl.qut.edu.cn/jwglxt",
+    "old_type": "zf_new",
+    "aliases": ["qut"],
+    "sortKeyFull": "qingdaoligongdaxue",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L https://jxgl.qut.edu.cn/jwglxt → 302 → http://jxgl.qut.edu.cn/jwglxt/ → 403 (HEAD被反爬, 但 GET 拉得出首页)",
+      "curl -sL https://jxgl.qut.edu.cn/jwglxt/ → <title>教学管理信息服务平台</title> + meta name=\"Copyright\" content=\"zfsoft\" + var _path=\"/jwglxt\" + _stylePath=\"/zftal-ui-v5-1.0.2\" + Server X-Powered-By: Servlet/3.0 JSP/2.2 (ZFSOFT-SERVER Java/1.8.0_201)",
+      "curl -sL https://jxgl.qut.edu.cn/jwglxt/xtgl/login_slogin.html → <form class=\"form-horizontal\" action=\"/jwglxt/xtgl/login_slogin.html\" method=\"post\"> + 渲染 canvas 二维码登录 + title=\"Teaching integrated information service platform\"(双语版)",
+      "sleepy 源码 JwProtocol.kt 定义 TYPE_ZF_NEW=\"zf_new\", JwWebViewFrameCapture.kt 指纹 'login_slogin.html'→zf_new; 本条 URL + 登录路径指纹完全匹配"
+    ],
+    "final_recommendation": {
+      "url": "https://jxgl.qut.edu.cn/jwglxt",
+      "type": "zf_new",
+      "reason": "实锤=正方软件 zfsoft v5(zftal-ui-v5-1.0.2), 教学管理信息服务平台, 登录页 /jwglxt/xtgl/login_slogin.html, 旧条目 url/type 全部正确, 维持不动"
+    }
+  }
+]

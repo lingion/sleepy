@@ -1,0 +1,47 @@
+[
+  {
+    "sortKey": "C",
+    "name": "长沙理工大学",
+    "old_url": "http://xk.csust.edu.cn/",
+    "old_type": "qz_br",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L http://xk.csust.edu.cn/ → HTTP/1.1 200 OK + set-cookie SERVERID_jsxsd=njxpc136 (jsxsd=强智 nginx 节点标识)",
+      "curl -s http://xk.csust.edu.cn/ → 返回表单 action=\"/Logon.do?method=logon\" (典型 QZ/强智登录路径) + JSESSIONID + verifycode.servlet (强智验证码服务)",
+      "DNS xk.csust.edu.cn → 222.247.37.5 (公网 IP,校园外可达)",
+      "sleepy JwQzBrParser.kt:12 doc 注释明文:'长沙理工 xk.csust.edu.cn'(上游 WakeupSchedule_BUPT 样本校)",
+      "GitHub zHElEARN/CSUSTKit Swift lib Sources/CSUSTKit/Enums/ServiceDomain.swift:'.education => xk.csust.edu.cn'(API 完整 + scheme=http)",
+      "GitHub zzp-love-peace/CSUST_EDU_SYSTEM Dart:'_baseUrl = http://xk.csust.edu.cn'",
+      "GitHub CreaMakers/EduSpider Java:多个文件引用 xk.csust.edu.cn(GetCookies/GetCourseInfo/GetExamArrange 等)",
+      "GitHub timeisthe/CSUSTDataGet ktor 库 + Julius-lq/EduAdminSystem 2023 版 + JS-CAUTION/csust-course-schedule 多个独立仓库均使用 xk.csust.edu.cn",
+      "对比 jwc.csust.edu.cn → 10.255.215.145 (RFC1918 私网 IP,校园网/VPN only) → 印证选课对外入口必须在 xk 子域而非 jwc"
+    ],
+    "final_recommendation": {
+      "url": "http://xk.csust.edu.cn/",
+      "type": "qz_br",
+      "reason": "url + type 全部实锤。xk.csust.edu.cn 是 CSUST 选课/教务公网入口(jsxsd 强智),sleepy JwQzBrParser.kt 注释 + 至少 5 个独立第三方 GitHub 仓库(zHElEARN/CSUSTKit、zzp-love-peace/CSUST_EDU_SYSTEM、CreaMakers/EduSpider、timeisthe/CSUSTDataGet、Julius-lq/EduAdminSystem、JS-CAUTION/csust-course-schedule)均确认同一域名。无需变更。"
+    }
+  },
+  {
+    "sortKey": "C",
+    "name": "重庆大学",
+    "old_url": "https://my.cqu.edu.cn/",
+    "old_type": "cqu",
+    "status": "OK",
+    "evidence_chain": [
+      "裸 curl -sI https://my.cqu.edu.cn/ → HTTP/2 412 (rump/e WAF 反爬挑战页),但带完整浏览器 headers(Sec-Fetch-* + Accept-Language + compressed)后正常返 200 + 600 字节 JS 挑战,域名健康",
+      "DNS my.cqu.edu.cn → 202.202.2.6 (公网 IP,可达)",
+      "sleepy JwCquParser.kt 顶部 doc 注释:'重庆大学 my.cqu.edu.cn 课表 JSON 解析器…POST /api/timetable/class/timetable/student/my-table-detail?sessionId=… headers: Authorization: Bearer <cqu_edu_ACCESS_TOKEN>(localStorage 取)',与下方 shiguang cqu.js 路径完全一致",
+      "sleepy JwWebViewLoginScreen.kt CQU_FETCH_JS 实现:从 localStorage['cqu_edu_ACCESS_TOKEN'] 取 Bearer → fetch /api/resourceapi/session/info-detail → my-table-detail → /api/workspace/time-pattern/session-time-pattern",
+      "GitHub 321CQU/pymycqu README line 3:'这个库对重庆大学 https://my.cqu.edu.cn 和统一身份认证的部分 web api 进行了封装' — 官方维护者明示入口域",
+      "GitHub XingHeYuZhuan/shiguang_warehouse/resources/CQU/cqu.js:与 sleepy 实现完全一致的协议(base URL https://my.cqu.edu.cn/api/,Bearer from localStorage cqu_edu_ACCESS_TOKEN)",
+      "memory [sleepy-cqu-adaptation.md]:my.cqu.edu.cn 自建门户 + 2026-06 起 2FA 验证码(sleepy 已在 JwCquParser + WebViewLogin 中支持人工输入)",
+      "LicenseScreen.kt 致谢:'时光课程表 cqu.js(茵符草)'确认协议溯源"
+    ],
+    "final_recommendation": {
+      "url": "https://my.cqu.edu.cn/",
+      "type": "cqu",
+      "reason": "url + type 全部实锤。my.cqu.edu.cn 是 CQU 自建信息门户(非传统教务厂商系统),sleepy 维护专属 cqu 协议分支(JwCquParser + JwWebViewLoginScreen 的 CQU_FETCH_JS),协议稳定且 memory 已记录 2026-06 起 2FA 验证码支持。GitHub 至少 7 个仓库(321CQU/pymycqu、XingHeYuZhuan/shiguang_warehouse、BillYang2016/CQU-class2ics、haowang02/CourseMonitor、LengerHu/CQU_classtabletoics、Hagb/cqu_timetable_new、VayneDuan/CQU-Grade-Monitor、weearc/cm-http-api、barryZZJ/course_to_calander_converter)均以 my.cqu.edu.cn 为入口域。无需变更。"
+    }
+  }
+]

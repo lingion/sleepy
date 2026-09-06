@@ -1,0 +1,34 @@
+[
+  {
+    "sortKey": "J",
+    "name": "江西农业大学南昌商学院",
+    "url": "http://223.83.249.67:8080/jsxsd/",
+    "type": "qz_br",
+    "aliases": [],
+    "sortKeyFull": "jiangxinongyedaxuenanchangshangxueyuan"
+  },
+  {
+    "sortKey": "J",
+    "name": "吉林师范大学",
+    "url": "http://jwxt.jlnu.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "jilinshifandaxue"
+  },
+  {
+    "sortKey": "J",
+    "name": "锦州医科大学",
+    "url": "http://jwgl.jzmu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "jinzhouyikedaxue"
+  },
+  {
+    "sortKey": "J",
+    "name": "吉首大学",
+    "url": "http://jwxt.jsu.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "jishoudaxue"
+  }
+]

@@ -1,0 +1,54 @@
+[
+  {
+    "sortKey": "B",
+    "name": "保定学院",
+    "url": "http://jwgl.bdu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "baodingxueyuan"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京大学",
+    "url": "http://elective.pku.edu.cn",
+    "type": "pku",
+    "aliases": [
+      "pku"
+    ],
+    "sortKeyFull": "beijingdaxue"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京化工大学",
+    "url": "http://jwglxt.buct.edu.cn/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "beijinghuagongdaxue"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京林业大学",
+    "url": "http://newjwxt.bjfu.edu.cn/",
+    "type": "qz_br",
+    "aliases": [],
+    "sortKeyFull": "beijinglinyedaxue"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京师范大学珠海分校",
+    "url": "http://es.bnuz.edu.cn/",
+    "type": "bnuz",
+    "aliases": [],
+    "sortKeyFull": "beijingshifandaxuezhuhaifenxiao"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京中医药大学",
+    "url": "https://jw.bucm.edu.cn/jwapp/",
+    "type": "wisedu",
+    "aliases": [
+      "bucm"
+    ],
+    "sortKeyFull": "beijingzhongyiyaodaxue"
+  }
+]

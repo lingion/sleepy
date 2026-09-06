@@ -1,0 +1,42 @@
+[
+  {
+    "sortKey": "G",
+    "name": "广东财经大学",
+    "url": "http://jwxt.gdufe.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "guangdongcaijingdaxue"
+  },
+  {
+    "sortKey": "G",
+    "name": "广东工业大学",
+    "url": "http://jxfw.gdut.edu.cn/",
+    "type": "cf",
+    "aliases": [],
+    "sortKeyFull": "guangdonggongyedaxue"
+  },
+  {
+    "sortKey": "G",
+    "name": "广东金融学院",
+    "url": "http://jwxt.gduf.edu.cn/",
+    "type": "qz_br",
+    "aliases": [],
+    "sortKeyFull": "guangdongjinrongxueyuan"
+  },
+  {
+    "sortKey": "G",
+    "name": "广东外语外贸大学",
+    "url": "http://jxgl.gdufs.edu.cn/jsxsd/",
+    "type": "qz_with_node",
+    "aliases": [],
+    "sortKeyFull": "guangdongwaiyuwaimaodaxue"
+  },
+  {
+    "sortKey": "G",
+    "name": "广西大学",
+    "url": "http://jwxt2018.gxu.edu.cn/jwglxt/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "guangxidaxue"
+  }
+]

@@ -1,0 +1,130 @@
+[
+  {
+    "sortKey": "S",
+    "name": "三江学院",
+    "url": "http://jw.sju.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "sanjiangxueyuan"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东科技大学",
+    "url": "http://jwgl.sdust.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "shandongkejidaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东农业大学",
+    "url": "http://xjw.sdau.edu.cn/jwglxt/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "shandongnongyedaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "山东政法大学",
+    "url": "http://114.214.79.176/jwglxt/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "shandongzhengfadaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海财经大学",
+    "url": "https://eams.sufe.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "sufe"
+    ],
+    "sortKeyFull": "shanghaicaijingdaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海大学",
+    "url": "https://jwxt.shu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [
+      "shu"
+    ],
+    "sortKeyFull": "shanghaidaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海海洋大学",
+    "url": "https://urp.shou.edu.cn/login",
+    "type": "urp_new",
+    "aliases": [],
+    "sortKeyFull": "shanghaihaiyangdaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海交通大学",
+    "url": "https://i.sjtu.edu.cn/jwglxt",
+    "type": "zf_new",
+    "aliases": [
+      "sjtu"
+    ],
+    "sortKeyFull": "shanghaijiaotongdaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "上海外国语大学",
+    "url": "https://jw.shisu.edu.cn/jwapp",
+    "type": "wisedu",
+    "aliases": [
+      "shisu"
+    ],
+    "sortKeyFull": "shanghaiwaiguoyudaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "韶关学院",
+    "url": "http://jwc.sgu.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "shaoguanxueyuan"
+  },
+  {
+    "sortKey": "S",
+    "name": "绍兴文理学院元培学院",
+    "url": "http://www.ypc.edu.cn/jwgl.htm",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "shaoxingwenlixueyuanyuanpeixueyuan"
+  },
+  {
+    "sortKey": "S",
+    "name": "石河子大学",
+    "url": "https://jwgl.shzu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "shihezidaxue"
+  },
+  {
+    "sortKey": "S",
+    "name": "石家庄学院",
+    "url": "http://jwgl.sjzc.edu.cn/jwglxt/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "shijiazhuangxueyuan"
+  },
+  {
+    "sortKey": "S",
+    "name": "四川大学锦城学院",
+    "url": "http://jwweb.scujcc.cn/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "sichuandaxuejinchengxueyuan"
+  },
+  {
+    "sortKey": "S",
+    "name": "苏州科技大学",
+    "url": "http://jw.usts.edu.cn/default2.aspx",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "suzhoukejidaxue"
+  }
+]

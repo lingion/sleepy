@@ -1,0 +1,21 @@
+[
+  {
+    "sortKey": "C",
+    "name": "长沙理工大学",
+    "url": "http://xk.csust.edu.cn/",
+    "type": "qz_br",
+    "aliases": [],
+    "sortKeyFull": "changshaligongdaxue"
+  },
+  {
+    "sortKey": "C",
+    "name": "重庆大学",
+    "url": "https://my.cqu.edu.cn/",
+    "type": "cqu",
+    "aliases": [
+      "cqu",
+      "重大"
+    ],
+    "sortKeyFull": "chongqingdaxue"
+  }
+]

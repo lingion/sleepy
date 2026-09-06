@@ -1,0 +1,47 @@
+[
+  {
+    "sortKey": "Y",
+    "name": "延边大学",
+    "old_url": "http://jwxt.ybu.edu.cn/jsxsd/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L http://jwxt.ybu.edu.cn/jsxsd/ → HTTP/1.1 200, Set-Cookie JSESSIONID (Path=/jsxsd)",
+      "DOM body contains '<title>延边大学教务管理系统</title>' + form action='/jsxsd/xk/LoginToXkLdap'",
+      "DOM grep confirms tokens: LoginToXkLdap, framework/images, jsxsd, jsxsd/xk (强智 jsxsd signature)",
+      "校名匹配:title 写明「延边大学教务管理系统」"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt.ybu.edu.cn/jsxsd/",
+      "type": "qz",
+      "reason": "URL 可达,title 明确为延边大学,LoginToXkLdap/jsxsd 路径 + JSESSIONID Path=/jsxsd 实锤强智 qz 协议,无需变更"
+    }
+  },
+  {
+    "sortKey": "Y",
+    "name": "云南财经大学",
+    "old_url": "http://202.203.194.2/",
+    "old_type": "zf",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "curl -v http://202.203.194.2/ → Connection timed out after 15s(连不上,不可达)",
+      "nslookup 202.203.194.2 → SERVFAIL(IP 无 PTR,反查失败)",
+      "ping 202.203.194.2 → 100% packet loss(ICMP 全丢)",
+      "官方 https://www.ynufe.edu.cn/jwcgb/ 教务处页面有 href=\"https://xjwis.ynufe.edu.cn/\"(OFFICIAL 一手来源)",
+      "GitHub NINIYOYYO/ynufe-campus-app(2026-09 创建)README 第 16 行明示:「所有网络请求均由客户端直连学校强智教务系统(https://xjwis.ynufe.edu.cn)」",
+      "GitHub 同仓库 src/config/index.ts AppConfig.TARGET_HOST = \"https://xjwis.ynufe.edu.cn\" + 注释「教务系统域名」(代码实锤)",
+      "GitHub MiaoWuNYA/ynufeRealLogin 描述:「云南财经大学真一网通自动登录插件 ... 自动登陆教务系统」(第二独立仓库佐证)",
+      "curl https://xjwis.ynufe.edu.cn/ → 200,meta 关键词含「强智科技/教学管理平台」,Set-Cookie jsxsd=...(强智 qz 协议 cookie 标志)",
+      "协议实锤:type 从 zf 漂移到 qz(原 IP 推测为正方,实际已迁移到强智 xjwis.ynufe.edu.cn 域名)"
+    ],
+    "final_recommendation": {
+      "url": "https://xjwis.ynufe.edu.cn/",
+      "type": "qz",
+      "reason": "旧 IP 202.203.194.2 完全不可达(SERVFAIL + 100% 丢包);官方教务处页+两个独立 GitHub 仓库(ynufe-campus-app / ynufeRealLogin)+直接 curl 三源实锤新入口为 https://xjwis.ynufe.edu.cn(强智 qz,meta 含「湖南强智科技」);type 必须从 zf 改为 qz"
+    },
+    "url": "http://202.203.194.2",
+    "type": "qz",
+    "new_url": "https://xjwis.ynufe.edu.cn/",
+    "note": "旧 IP DNS SERVFAIL+丢包+timeout,三源实锤新入口强智 qz"
+  }
+]

@@ -1,0 +1,18 @@
+[
+  {
+    "sortKey": "T",
+    "name": "天津医科大学",
+    "url": "http://tyjw.tmu.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "tianjinyikedaxue"
+  },
+  {
+    "sortKey": "T",
+    "name": "天津中医药大学",
+    "url": "http://jiaowu.tjutcm.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "tianjinzhongyiyaodaxue"
+  }
+]

@@ -1,0 +1,103 @@
+[
+  {
+    "sortKey": "G",
+    "name": "广东财经大学",
+    "old_url": "http://jwxt.gdufe.edu.cn/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "gh repo jkgeekJack/Android-GDUFE-JWC-SDK-1.0.0 README 描述: \"广东财经大学正方教务处SDK, 3分钟集成到你的应用, 实现模拟登陆、学生信息、学生成绩等功能\"",
+      "gh repo championcp/waiter-gdufe-api README: \"教务系统(强智系统)、图书馆系统常用接口...实现了强智教务系统的模拟登录, 网页解析, 返回json数据格式\"",
+      "Java 代码 InitLogin.java 显式给出 URL 常量: private String url_Login = \"http://jwxt.gdufe.edu.cn/jsxsd/xk/LoginToXkLdap\"; private String url_safecode = \"http://jwxt.gdufe.edu.cn/jsxsd/verifycode.servlet\"",
+      "gh repo Kiteio/GDUFE-wrapper README 含友情链接: Punica(广财教务系统安卓工具小石榴) — 广财教务广为流传的安卓客户端",
+      "URL 与登录端点(/jsxsd/, /jsxsd/xk/LoginToXkLdap, verifycode.servlet) = 强智基础协议 qz, type=qz 正确"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt.gdufe.edu.cn/",
+      "type": "qz",
+      "reason": "多份 GitHub 源码/文档(Android SDK、waiter 强智 API、GDUFE-wrapper、Punica 小石榴)显式确认入口域 jwxt.gdufe.edu.cn + 强智 /jsxsd/ 体系, 当前配置 qz 正确。"
+    }
+  },
+  {
+    "sortKey": "G",
+    "name": "广东工业大学",
+    "old_url": "http://jxfw.gdut.edu.cn/",
+    "old_type": "cf",
+    "status": "OK",
+    "evidence_chain": [
+      "curl https://jxfw.gdut.edu.cn/ → 301 → https://jxfw.gdut.edu.cn/ → 302 → https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin (CAS 统一身份认证)",
+      "gh repo Richard-Zheng/GDUT-Schedule-ng api.ts: 显式给出登录链 authURL='https://authserver.gdut.edu.cn/authserver/login?service=https%3A%2F%2Fjxfw.gdut.edu.cn%2Fnew%2FssoLogin' + 课表 API 'https://jxfw.gdut.edu.cn/xsgrkbcx!xsAllKbList.action?xnxqdm=' + 字段集 CourseScheduleJSON{jcdm2, jxbmc, jxcdmcs, kcbh, kcmc, kcrwdm, teaxms, xq, zcs}",
+      "gh repo N0tExpectErr0r/GDUT-ClassTimeTable TableModelImpl.java: queryConnection URL = 'http://jxfw.gdut.edu.cn/xsgrkbcx!xsAllKbList.action?xnxqdm=' + 正则 Pattern.compile(\"kbxx = \\\\\\\\[.*\\\\\\\\];\") 抓 var kbxx = [...]",
+      "5 个 GitHub 仓库(N0tExpectErr0r/GDUT-ClassTimeTable, Richard-Zheng/GDUT-Schedule-ng, StarArchive/gdut-course-frontend, StarArchive/gdut-course-backend, HoneQ7/GDUT_iOS_Timetable)全部把 jxfw.gdut.edu.cn 作为广工教务入口",
+      "sleepy cf parser(JwChengFangParser.kt) 识别 var kbxx + 字段 kcmc/teaxms/jxcdmcs/xq/jcdm2/zcs, 与 Richard-Zheng 抓取方式完全一致 — 协议兼容, type=cf 实际可工作"
+    ],
+    "final_recommendation": {
+      "url": "http://jxfw.gdut.edu.cn/",
+      "type": "cf",
+      "reason": "5 个第三方课表项目实锤 jxfw.gdut.edu.cn + xsgrkbcx!xsAllKbList.action + var kbxx JSON 形态, 与 sleepy cf parser 字段集完全吻合; 当前 cf 正确。"
+    }
+  },
+  {
+    "sortKey": "G",
+    "name": "广东金融学院",
+    "old_url": "http://jwxt.gduf.edu.cn/",
+    "old_type": "qz_br",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "curl http://jwxt.gduf.edu.cn/ → 403 Forbidden (校园网限外), 但 curl GET 拉到的 body 含 <title>广东金融学院综合教务管理系统-强智科技</title> + serversArray[0..5] 全部 http://172.18.1.5[2-7]:80/jsxsd/ (强智节点)",
+      "gh repo cbcb5652/gdufTimetable README/小程序页面截图(首页/课表/未绑定/绑定后)显示小程序的广金课表程序, 但仓库纯前端未公开 URL 常量",
+      "gh repo gduf-finmind/gduf-jwxt-api client.py 显式: base_url='https://jwxt.gduf.edu.cn' + 登录 /jsxsd/xk/LoginToXk + 课表 /jsxsd/xskb/xskb_list.do + selector_one('#kbtable') 解析个人课表 — 强智基础协议",
+      "gh repo Kiteio/Punica EducationService.kt: BASE_URL='http://jwxt.gduf.edu.cn' + /jsxsd/verifycode.servlet + /jsxsd/xk/LoginToXkLdap + /jsxsd/xskb/xskb_list.do + doc.getElementById('kbtable')!! — 标准强智基础版解析器",
+      "Kiteio/Punica 是广金主流教务小程序(广金小石榴), 它的解析结构(teacher+room 用 font/title 标签、节次公式 nodeCount*2-1)是基础 qz 而非 qz_br",
+      "qz_br 与 qz 区别: qz_br 课名行后无 font 直接 br(startNode=nodeCount*2-1); 基础 qz 课名行后有 <font title=..>。广金 Punica 代码用的是标准 font 结构, 应为基础 qz"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt.gduf.edu.cn/",
+      "type": "qz",
+      "reason": "2 份独立第三方代码(gduf-finmind + Kiteio/Punica)用 #kbtable + 强智 /jsxsd/ 解析, 都是基础 qz 协议; Punica 的 font/title 结构与 qz_br 的 \"无 font 直接 br\" 不符。建议改为 qz; 若改 qz 后解析仍异常, 可降级到 qz_br。证据 403 仅校外 IP 屏蔽, 校园网正常。"
+    },
+    "url": "https://jwxt.gduf.edu.cn",
+    "type": "qz_br",
+    "new_type": "qz",
+    "note": "GH 双源实锤 qz 强智基础版(type=qz_br 错,应改 qz);#kbtable 解析,getJxlByAjax 是 QZ 标志"
+  },
+  {
+    "sortKey": "G",
+    "name": "广东外语外贸大学",
+    "old_url": "http://jxgl.gdufs.edu.cn/jsxsd/",
+    "old_type": "qz_with_node",
+    "status": "OK",
+    "evidence_chain": [
+      "curl http://jxgl.gdufs.edu.cn/jsxsd/ → TCP Connection timed out after 15000 ms (校外屏蔽), HTTPS 也超时",
+      "gh repo Crazioker/agency LoginUtil.java: GetMethod getMethod = new GetMethod(\"http://jxgl.gdufs.edu.cn/jsxsd/verifycode.servlet\"); url='https://jxgl.gdufs.edu.cn/jsxsd/xk/LoginToXkLdap' — 强智 /jsxsd/ + LoginToXkLdap 标志",
+      "gh repo yongjianzheng/Gdufszhushou HttpUtil.java 含 jxgl.gdufs.edu.cn + jsxsd 调用(广外助手 Android 应用)",
+      "gh code search 'jxgl.gdufs jsxsd' 命中 lingion/sleepy 自身的 JwQzWithNodeParser.kt",
+      "JwQzWithNodeParser.kt 头部注释明确写入: 样本学校: 北邮 jwgl.bupt.edu.cn/jsxsd、广外 jxgl.gdufs.edu.cn/jsxsd、北邮 WebVPN、北理工、北理工珠海、海南大学、江苏师大等 14 所 — 这是 sleepy 开发者本人把广外列入 qz_with_node 协议族的实锤证据",
+      "qz_with_node 与基础 qz 的区别: qz_with_node 课程格内 title='周次(节次)' 文本里包含节次信息, 不依赖行号推导节次 — 与广外 /jsxsd/ 体系一致"
+    ],
+    "final_recommendation": {
+      "url": "http://jxgl.gdufs.edu.cn/jsxsd/",
+      "type": "qz_with_node",
+      "reason": "第三方广外助手(yongjianzheng/Gdufszhushou)和 agency(Crazioker/agency)双源确认 jxgl.gdufs.edu.cn/jsxsd 入口 + LoginToXkLdap + verifycode.servlet; 且 sleepy JwQzWithNodeParser.kt 头部注释显式列入广外为 14 所样本之一, type=qz_with_node 正确。"
+    }
+  },
+  {
+    "sortKey": "G",
+    "name": "广西大学",
+    "old_url": "http://jwxt2018.gxu.edu.cn/jwglxt/xtgl/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl http://jwxt2018.gxu.edu.cn/jwglxt/xtgl/ → 302 → https://jwxt2018.gxu.edu.cn/jwglxt/xtgl/ → 483 (Response body 含 <title>网站限制访问……</title> + 提示: '针对校外网络的访问, 本系统的开放时间仅为每天的7:30—23:00。其他时间如需访问, 请通过广西大学的VPN系统进行访问(https://vpn.gxu.edu.cn/)')",
+      "限外页面明确指出: 入口域仍为 jwxt2018.gxu.edu.cn, 校外 23:00-07:30 限流但域名未变, 配置 URL 正确",
+      "gh repo laoin114514/gxujwxtCrawler python_sdk/base.py: BASE_URL='https://jwxt2018.gxu.edu.cn' + _LOGIN_PATH='/jwglxt/xtgl/login_slogin.html' + _PUBLIC_KEY_PATH='/jwglxt/xtgl/login_getPublicKey.html' (RSA 加密登录 — 正方新标志) + _INIT_MENU_PATH='/jwglxt/xtgl/index_initMenu.html'",
+      "同 README: /jwglxt/cjcx/cjcx_cxDgXscj.html?doType=query&gnmkdm=N305005 (正方功能模块代码) + /index_initMenu.html?jsdm=xs + /jwglxt/xtgl/index_cxKczywIndex.html — 全部正方新教务 /jwglxt/xtgl/ 体系",
+      "正方新版三标志全中: /jwglxt/xtgl/login_slogin.html (路径)、RSA 公钥加密登录、gnmkdm 功能代码 — type=zf_new 正确"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt2018.gxu.edu.cn/jwglxt/xtgl/",
+      "type": "zf_new",
+      "reason": "laoin114514/gxujwxtCrawler 实锤 BASE_URL=https://jwxt2018.gxu.edu.cn + /jwglxt/xtgl/login_slogin.html + RSA login_getPublicKey.html — 三标志全合正方新版。限外提示(23:00-07:30 VPN)证实域名未变, type=zf_new 正确。"
+    }
+  }
+]

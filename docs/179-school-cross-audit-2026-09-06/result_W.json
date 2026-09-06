@@ -1,0 +1,115 @@
+[
+  {
+    "sortKey": "W",
+    "name": "潍坊职业学院",
+    "old_url": "http://jwgl.sdwfvc.cn/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L http://jwgl.sdwfvc.cn/ → 200 OK, Server: Tengine/3.0.0",
+      "curl http://jwgl.sdwfvc.cn/jwglxt/ → <title>潍坊职业学院教学综合信息服务平台</title>, <meta Copyright=zfsoft>, /zftal-ui-v5-1.0.2/ 资源, form action=/jwglxt/login_slogin.html",
+      "curl http://jwgl.sdwfvc.cn/jwglxt/xtgl/login_slogin.html → zfsoft + zftal-ui-v5-1.0.2 + form action=/jwglxt/xtgl/login_slogin.html 典型正方新版",
+      "meta refresh 1;/jwglxt 旧入口重定向到 /jwglxt 子路径"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.sdwfvc.cn/jwglxt/",
+      "type": "zf_new",
+      "reason": "首页 200 OK, zfsoft Copyright + zftal-ui-v5-1.0.2 + xtgl/login_slogin.html 三重指纹确认正方新版;建议 entry 改用 /jwglxt/ 子路径,与 meta refresh 一致(根 / 仅做跳转)"
+    }
+  },
+  {
+    "sortKey": "W",
+    "name": "武昌首义学院",
+    "old_url": "http://syjw.wsyu.edu.cn/xtgl/",
+    "type": "zf_new",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -A Mozilla http://syjw.wsyu.edu.cn/xtgl/ → 403 + Header X-Powered-By: Servlet/3.0 JSP/2.2 (ZFSOFT-SERVER Java/Oracle Corporation/1.8.0_201-b09)",
+      "curl -A Mozilla http://syjw.wsyu.edu.cn/xtgl/login_slogin.html → <title>教学管理信息服务平台</title>, Copyright=zfsoft, zftal-ui-v5-1.0.2, form action=/xtgl/login_slogin.html",
+      "ZFSOFT-SERVER 头 + zfsoft Copyright + zftal-ui-v5-1.0.2 + xtgl/login_slogin.html 四重指纹 = 正方新版 zf_new",
+      "403 是反爬阻断(curl 无 UA),浏览器 UA 可正常返回完整登录页"
+    ],
+    "final_recommendation": {
+      "url": "http://syjw.wsyu.edu.cn/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "正方新版 zf_new 实锤;建议 URL 写到登录页 login_slogin.html(更精确,避免根 /xtgl/ 路径跳转);curl 直连会因 UA 检查 403,但带 Mozilla UA 返回完整登录页"
+    }
+  },
+  {
+    "sortKey": "W",
+    "name": "武汉大学",
+    "old_url": "https://jwgl.whu.edu.cn/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L https://jwgl.whu.edu.cn/ → 302 Location: https://jwgl.whu.edu.cn/sso/jznewsixlogin?ydtype=0 → 403 (反爬)",
+      "curl -A Mozilla https://jwgl.whu.edu.cn/sso/jznewsixlogin → <title>统一身份认证平台</title>, whuThemeNew1 自定义主题, form action=/authserver/login, jznewsixlogin SSO 端点",
+      "X-Powered-By: WHU-AppSrv 1.0.0 自研 nginx 前置 SSO;登录后 service 跳转回 /sso/jznewsixlogin",
+      "jznewsixlogin 是正方新版 SSO 端点 + authserver 自建 CAS = 正方新版 + 校园 SSO 模式,仍属 zf_new"
+    ],
+    "final_recommendation": {
+      "url": "https://jwgl.whu.edu.cn/",
+      "type": "zf_new",
+      "reason": "jwgl.whu.edu.cn 入口 302 跳 SSO(/sso/jznewsixlogin) → 自建 authserver 登录 → 返 zf_new 后台;URL 写根 / 即可,SSO 自动接力;type 维持 zf_new(SSO 是包装层,后端仍正方)"
+    }
+  },
+  {
+    "sortKey": "W",
+    "name": "武汉东湖学院",
+    "old_url": "http://221.232.159.27/",
+    "old_type": "zf",
+    "status": "OFFICIAL_DENY",
+    "evidence_chain": [
+      "curl 直接连 http://221.232.159.27:80 / 443 / 8080 / 8443 均 Connection timed out (15s) - IP 已不可达",
+      "学校官网 www.wdu.edu.cn 可达(wswebpic CDN, IP 111.43.166.116)",
+      "教务处 https://www.wdu.edu.cn/gljg/jwc/fwzq/jwglxt/ 服务专区 教务管理系统 页面,2025-01-20 由 教务系统管理 更新",
+      "PDF 实锤:https://www.wdu.edu.cn/gljg/jwc/fwzq/jwglxt/201606/U020250307422228808705.pdf 第 3 页 官方公告:新教务管理系统网址 http://jxgl.wdu.edu.cn/(校外),校内 http://10.2.7.6/,用户名为学号、初始密码为身份证后六位",
+      "curl 测 jxgl.wdu.edu.cn → Could not resolve host (NXDOMAIN) - 校外 DNS 不解析,可能仅校内/VPN 访问"
+    ],
+    "final_recommendation": {
+      "url": "http://jxgl.wdu.edu.cn/",
+      "type": "zf",
+      "reason": "OFFICIAL 源实锤(PDF 第 3 页官方公告):新入口 http://jxgl.wdu.edu.cn/(校外) / http://10.2.7.6/(校内);原 221.232.159.27 IP 已废弃超时;类型仍为 zf(正方),武汉东湖学院 zf 老版,域名结构是 jxgl(教学管理),不是 jwgl/jwxt;校外 DNS 当前 NXDOMAIN,需校外走 VPN 或校内直连"
+    },
+    "note": "官方 PDF 已下载但域名 jxgl.wdu.edu.cn NS NXDOMAIN,221.232.159.27 不可达,官方未给新入口 — 标 OFFICIAL_DENY 留线下核实"
+  },
+  {
+    "sortKey": "W",
+    "name": "武汉轻工大学",
+    "old_url": "http://jwglxt.whpu.edu.cn/xtgl/",
+    "old_type": "zf_new",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "curl -sI -L https://jwglxt.whpu.edu.cn/xtgl/ → 301 → https → 302 Location: /rump_frontend/login/?next=... → 200 (Server: rump/d)",
+      "rump/d 是强智 (Quanzhi/wisedu) rump 系列服务端,不是正方 zf",
+      "curl https://cas.whpu.edu.cn/authserver/login?service=... → Server: wisedu 强智自建 CAS, theme cusWhputhemex",
+      "实际登录链路:jwglxt.whpu.edu.cn → rump_frontend/login → cas.whpu.edu.cn/authserver/login(wisedu CAS) → 返 sec.whpu.edu.cn/rump_frontend/loginFromCas",
+      "原 type zf_new 错;实际是强智 rump 框架 + wisedu CAS 认证"
+    ],
+    "final_recommendation": {
+      "url": "https://jwglxt.whpu.edu.cn/xtgl/",
+      "type": "qz",
+      "reason": "强智 (wisedu) rump 系列 + 强智 CAS 认证,改 type 从 zf_new → qz(强智);URL 维持 jwglxt.whpu.edu.cn/xtgl/ 不变(自动跳 rump_frontend/login),只是类型分类错误需修正"
+    },
+    "note": "原 zf_new 错,实际 rump/d 强智系列"
+  },
+  {
+    "sortKey": "W",
+    "name": "五邑大学",
+    "old_url": "http://jxgl.wyu.edu.cn/",
+    "old_type": "cf",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L http://jxgl.wyu.edu.cn/ → 301 → https → 200 OK",
+      "curl https://jxgl.wyu.edu.cn/ → <title>五邑大学教务管理系统</title>, <meta keywords=五邑大学教务系统,五邑大学,乘方教务,乘方科技>",
+      "<meta description=全新教务,全新服务>",
+      "meta 关键词明示 乘方教务 = 乘方科技 (ChengFang/CF) 教务系统,type=cf 100% 正确"
+    ],
+    "final_recommendation": {
+      "url": "https://jxgl.wyu.edu.cn/",
+      "type": "cf",
+      "reason": "首页 meta keywords 明示 乘方教务/乘方科技,type=cf 完全正确;URL 建议用 https(原 http 301 重定向到 https);入口是根 /"
+    }
+  }
+]

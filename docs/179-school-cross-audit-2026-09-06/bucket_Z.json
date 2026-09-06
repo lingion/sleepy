@@ -1,0 +1,131 @@
+[
+  {
+    "sortKey": "Z",
+    "name": "浙大宁波理工学院",
+    "url": "http://jwxt.nit.net.cn/default2.aspx",
+    "type": "zf",
+    "aliases": [
+      "nbt",
+      "宁波理工"
+    ],
+    "sortKeyFull": "zhedaningboligongxueyuan"
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江大学",
+    "url": "https://zdbk.zju.edu.cn/",
+    "type": "zju",
+    "aliases": [
+      "zju"
+    ],
+    "sortKeyFull": "zhejiangdaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江工商大学",
+    "url": "http://124.160.64.163/jwglxt/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "zhejianggongshangdaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江工业大学",
+    "url": "http://www.gdjw.zjut.edu.cn/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "zhejianggongyedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江工业大学之江学院",
+    "url": "http://jwgl.zzjc.edu.cn/default2.aspx",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "zhejianggongyedaxuezhijiangxueyuan"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国科学技术大学",
+    "url": "https://jw.ustc.edu.cn/",
+    "type": "ustc",
+    "aliases": [
+      "ustc"
+    ],
+    "sortKeyFull": "zhongguokexuejishudaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国矿业大学",
+    "url": "http://jwxt.cumt.edu.cn/jwglxt/",
+    "type": "zf_new",
+    "aliases": [
+      "cumt"
+    ],
+    "sortKeyFull": "zhongguokuangyedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国矿业大学（北京）",
+    "url": "https://jwxt.cumtb.edu.cn/student/for-std/course-table",
+    "type": "eams5",
+    "aliases": [
+      "cumtb"
+    ],
+    "sortKeyFull": "zhongguokuangyedaxuebeijing"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国农业大学",
+    "url": "http://urpjw.cau.edu.cn/login",
+    "type": "urp_new",
+    "aliases": [
+      "cau"
+    ],
+    "sortKeyFull": "zhongguonongyedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国人民大学",
+    "url": "https://jw.ruc.edu.cn/Njw2017/",
+    "type": "qz",
+    "aliases": [
+      "ruc"
+    ],
+    "sortKeyFull": "zhongguorenmindaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国药科大学",
+    "url": "http://jwgl.cpu.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "zhongguoyaokedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国医科大学",
+    "url": "http://jw.cmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "zhongguoyikedaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中南大学",
+    "url": "http://csujwc.its.csu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [
+      "csu"
+    ],
+    "sortKeyFull": "zhongnandaxue"
+  },
+  {
+    "sortKey": "Z",
+    "name": "中南林业科技大学",
+    "url": "http://jwgl.csuft.edu.cn/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "zhongnanlinyekejidaxue"
+  }
+]

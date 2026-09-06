@@ -1,0 +1,60 @@
+[
+  {
+    "sortKey": "X",
+    "name": "厦门大学",
+    "url": "https://jw.xmu.edu.cn/login",
+    "type": "wisedu",
+    "aliases": [
+      "xmu"
+    ],
+    "sortKeyFull": "xiamendaxue"
+  },
+  {
+    "sortKey": "X",
+    "name": "湘潭大学",
+    "url": "http://jwxt.xtu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "xiangtandaxue"
+  },
+  {
+    "sortKey": "X",
+    "name": "西安科技大学",
+    "url": "http://59.74.168.16:8989/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "xiankejidaxue"
+  },
+  {
+    "sortKey": "X",
+    "name": "西安理工大学",
+    "url": "http://202.200.112.200/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "xianligongdaxue"
+  },
+  {
+    "sortKey": "X",
+    "name": "西昌学院",
+    "url": "https://jwxt.xcc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "xichangxueyuan"
+  },
+  {
+    "sortKey": "X",
+    "name": "西华大学",
+    "url": "http://jwc.xhu.edu.cn/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "xihuadaxue"
+  },
+  {
+    "sortKey": "X",
+    "name": "西南政法大学",
+    "url": "http://njwxt.swupl.edu.cn/jwglxt/xtgl",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "xinanzhengfadaxue"
+  }
+]

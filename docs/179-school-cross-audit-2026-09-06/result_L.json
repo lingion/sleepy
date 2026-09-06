@@ -1,0 +1,23 @@
+[
+  {
+    "sortKey": "L",
+    "name": "临沂大学",
+    "old_url": "http://jwgl.lyu.edu.cn/jwglxt",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "现状(读 schools.json): sortKeyFull=linyidaxue, aliases=[lyu, lyu.edu.cn, linyidaxue]",
+      "HTTP 直连 jwgl.lyu.edu.cn/jwglxt/xtgl/login_slogin.html → curl exit 28 (timeout after 20s); HTTPS → HTTP 502 Bad Gateway; DNS 解析 211.64.247.58 同 /24 与官方 IP 段",
+      "官方教务处 jwc.lyu.edu.cn 200 OK;其下载专区页(792/list.htm)列出官方 IP 段 211.64.240.23/25/224,均校外不通(超时)→ 印证 memory: 'lyu 校外 502 是防火墙'",
+      "searXNG 搜 '临沂大学 教务系统 jwgl' → 百度文库学生选课指南原文 '登录网址:jwgl.lyu.edu.cn' + 'xtgl/login_slogin.html' 路径(zf_new 标志)",
+      "GitHub 反查 search/code q='lyu.edu.cn login_slogin' → 命中 XingHeYuZhuan/shiguang_warehouse/resources/LYU/adapters.yaml(竞品 shiguang_warehouse 适配器): adapter_name='临沂大学正方教务', import_url='https://sdp.lyu.edu.cn/https/webvpn.../jwglxt/xtgl/login_slogin.html', description='临沂大学正方教务V9,需通过webvpn访问' — 第二来源实锤 正方V9 + zf_new 协议 + login_slogin 路径",
+      "WebVPN 门户 sdp.lyu.edu.cn 实测 302 → nginx,可达(shiguang adapter 用的就是这个 WebVPN 包裹 jwglxt)",
+      "git 历史: 7b9343e 标题 'T12 补临沂大学(zf_new)' 显式定 type=zf_new; 7b4fbf0 (179校全量交叉验证) 未修改此条(无漂移信号)"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.lyu.edu.cn/jwglxt",
+      "type": "zf_new",
+      "reason": "URL 与 type 维持现状(zf_new V9); 校外 IP 直连超时/502 是防火墙策略(已记录 memory:lyu校外502是防火墙),学生通过 sdp.lyu.edu.cn WebVPN 或校内网访问; shiguang_warehouse 第二来源实锤 '正方教务V9 + /jwglxt/xtgl/login_slogin.html',与 schools.json 当前条目完全吻合,无需修改。"
+    }
+  }
+]

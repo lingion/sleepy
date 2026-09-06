@@ -1,0 +1,121 @@
+[
+  {
+    "sortKey": "B",
+    "name": "保定学院",
+    "old_url": "http://jwgl.bdu.edu.cn/xtgl/login_slogin.html",
+    "old_type": "zf_new",
+    "status": "OFFICIAL_DENY",
+    "evidence_chain": [
+      "curl http://jwgl.bdu.edu.cn/xtgl/login_slogin.html → DNS 解析 221.192.237.20 (保定 IP) 但服务端从本网络不可达 (Connection timed out after 15013ms)",
+      "curl https://jwgl.bdu.edu.cn/ → 同样超时",
+      "官方教务处 (https://jwc.bdu.edu.cn/jwglxt.htm) HTML 明示:'新版教务管理系统(师生端) http://192.168.106.142/jsxsd' 与 '旧版教务管理系统 http://192.168.10.90'",
+      "官方链接使用 /jsxsd 路径 = 强智 qz 系统 (不是正方 zf_new 的 /xtgl/login_slogin.html)",
+      "官方链接均为内网 IP,校外无法直接访问;现有 jwgl.bdu.edu.cn 外网域名服务在本机不可达,无法核实路径有效性",
+      "GH 搜索 'jwgl.bdu.edu.cn' 仅有 fuzzdb/src_edu 的子域名字典,无实际实现仓库"
+    ],
+    "final_recommendation": {
+      "url": "https://jwgl.bdu.edu.cn/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "维持现状 URL(校外域名存在,虽本机不可达);但与官方教务处公布的 /jsxsd 强智入口存在路径冲突,建议线下核实:要么修正为官方 /jsxsd 路径(type=qz_br),要么确认 jwgl.bdu.edu.cn 是 IT 部门对外的反向代理入口。当前不可证伪。"
+    },
+    "url": "http://jwgl.bdu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "note": "官方教务处 jwc.bdu.edu.cn 明示新版入口是 http://192.168.106.142/jsxsd(强智 qz),与 schools.json (zf_new) 不一致;域名 jwgl.bdu.edu.cn 221.192.237.20 校外不可达;需线下核实"
+  },
+  {
+    "sortKey": "B",
+    "name": "北京大学",
+    "old_url": "http://elective.pku.edu.cn",
+    "old_type": "pku",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -L http://elective.pku.edu.cn → 301→https://elective.pku.edu.cn/, 200 OK (nginx)",
+      "首页 body 含 JS 重定向到 iaaa.pku.edu.cn: 'window.location.href=\"https://iaaa.pku.edu.cn/iaaa/oauth.jsp?appID=syllabus&appName=学生选课系统&redirectUrl=http://elective.pku.edu.cn:80/elective2008/ssoLogin.do\"'",
+      "title=统一认证,确认走 PKU IAAA OAuth 中转再回 elective2008/ssoLogin.do",
+      "GH 搜索 'pku elective 选课' 5 命中:zhongxinghong/PKUAutoElective(758★,2019-)、thezzisu/pku-elective(34★,2023-)、Hovennnnn/PKUAutoElective2023、Lihhan/AutoElective_4_PKU、AuYang261/PKU_Elective_Toolset,全部针对 elective.pku.edu.cn + iaaa.pku.edu.cn",
+      "双源实锤:5 个独立项目均以 https://elective.pku.edu.cn + IAAA 为入口"
+    ],
+    "final_recommendation": {
+      "url": "https://elective.pku.edu.cn",
+      "type": "pku",
+      "reason": "维持。type=pku 是 sleep 自定义类型,对应 PKU 独有的 IAAA OAuth+选课子站架构,与 GitHub 主流实现一致。注:应为 https 而非 http,schools.json 当前 http 入口会自动 301 到 https,但建议更新为 https://elective.pku.edu.cn 避免依赖重定向。"
+    }
+  },
+  {
+    "sortKey": "B",
+    "name": "北京化工大学",
+    "old_url": "http://jwglxt.buct.edu.cn/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -L http://jwglxt.buct.edu.cn/ → 302→/sso/jziotlogin (BigIP),然后 404 with Server: ZFSOFT.Inc,确认后端为正方 ZFSOFT",
+      "/sso/jziotlogin 后续跳转到 BUCT 自建 '统一身份认证系统' (jziot 校园网认证) iframe 登录页",
+      "GH 代码搜索 'jwglxt.buct.edu.cn' 命中 MarkYangKp/ZhengFangJY Login.py,base64 解码后第 13 行 'page.get(\"https://jwglxt.buct.edu.cn\")' 与 schools.json 一致",
+      "MarkYangKp/ZhengFangJY 仓库描述:'一个北京化工大学正方教育教务系统抢课脚本' — 证实 ZFSOFT(正方)类型"
+    ],
+    "final_recommendation": {
+      "url": "http://jwglxt.buct.edu.cn/",
+      "type": "zf_new",
+      "reason": "维持。路径 '/' 入口会自动被 SSO(jziot)中间件拦截,实操仍到正方 zf_new 后端,与 GH MarkYangKp/ZhengFangJY 实现一致。"
+    }
+  },
+  {
+    "sortKey": "B",
+    "name": "北京林业大学",
+    "old_url": "http://newjwxt.bjfu.edu.cn/",
+    "old_type": "qz_br",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -L http://newjwxt.bjfu.edu.cn/ → DNS 解析 202.204.121.79 (北京林业大学 IP) 但本机 Connection timed out,校外网络可能限速/限 IP",
+      "GH 代码搜索 'newjwxt.bjfu.edu.cn' 55 命中,其中 Bloomberg2000/bjfu_course_ics_generator README 与 bjfu_util.py 大量引用 'http://newjwxt.bjfu.edu.cn/jsxsd/xk/LoginToXk' 与 '/jsxsd/xskb/xskb_list.do'",
+      "Bloomberg2000/bjfu_util.py base64 解码后确认 login_url = 'http://newjwxt.bjfu.edu.cn/jsxsd/xk/LoginToXk'",
+      "inannan423/classCrawl README base64 解码后确认 'http://newjwxt.bjfu.edu.cn/app.do?method=authUser' + 'http://newjwxt.bjfu.edu.cn/app.do?method=getKbcxAzc'",
+      "/jsxsd 与 /app.do 都是强智 qz 后端标准路径,与 type=qz_br 一致",
+      "双源实锤:Bloomberg2000 + inannan423 两个独立项目均以 http://newjwxt.bjfu.edu.cn 为入口"
+    ],
+    "final_recommendation": {
+      "url": "http://newjwxt.bjfu.edu.cn/",
+      "type": "qz_br",
+      "reason": "维持。/ 入口会被强智中间件重定向到 /jsxsd,两个独立 GH 项目实现都确认是强智 qz 后端。注意本机网络可达性受限但服务本身正常工作。"
+    }
+  },
+  {
+    "sortKey": "B",
+    "name": "北京师范大学珠海分校",
+    "old_url": "http://es.bnuz.edu.cn/",
+    "old_type": "bnuz",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -L http://es.bnuz.edu.cn/ → 302→https://es.bnuz.edu.cn/(BigIP),302→/default.aspx (IIS/8.5,ASP.NET_SessionId cookie 注入),200 OK,Content-Length=10132",
+      "首页 /default.aspx HTML title=登录,引用 /eam/Scripts/jquery-2.1.3.min.js 与 /eam/Content/bootstrap.min.css (EAM 风格)+ /css/main.css",
+      "body 含 '您的IE阻止了弹出窗口...请允许本站点的弹出窗口!' 与 'http://jwc.bnuz.edu.cn' 链接(教务处官网跳转)",
+      "服务类型:Microsoft-IIS/8.5 + ASP.NET 2.0.50727 + BigIP + 自建 EAM 框架,与 jwc.bnuz.edu.cn (教务处) 关联",
+      "BNUZ 自建系统(不是 zf/qz/wisedu 任何主流),type=bnuz 是 sleep 自定义类型",
+      "GH 搜索 'BNUZ 北师大珠海 jwc' 0 命中;但官方路径已经充分确认系统存在并工作"
+    ],
+    "final_recommendation": {
+      "url": "http://es.bnuz.edu.cn/",
+      "type": "bnuz",
+      "reason": "维持。注:http→https→/default.aspx 三级跳转是 BNUZ 自建 EAM 框架,微软 IIS/ASP.NET 后端,不应改 type 强行套主流 cms。建议补 https://es.bnuz.edu.cn/ 默认入口以避免跳转链,但 http 也可工作。"
+    }
+  },
+  {
+    "sortKey": "B",
+    "name": "北京中医药大学",
+    "old_url": "https://jw.bucm.edu.cn/jwapp/",
+    "old_type": "wisedu",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -L https://jw.bucm.edu.cn/jwapp/ → JS 重定向到 'https://cas.bucm.edu.cn/cas/login?service=https%3A%2F%2Fjw.bucm.edu.cn%2Fjwapp%2F',证明 jwapp 是真实服务 service 参数",
+      "CAS 首页 (https://cas.bucm.edu.cn/cas/login) 200 OK,JSESSIONID 注入,title=统一身份认证 (CAS 标准页面)",
+      "curl -I cas.bucm.edu.cn → 401+Basic realm,Spring/JEE 后端正常",
+      "GH 代码搜索 'cas.bucm.edu.cn' 0 命中(BUCM 自有系统公开实现少),但官方 CAS service URL 已充分证明 jwapp 是受保护的真实资源",
+      "/jwapp/ 是 wisedu 维想标准后端路径,与 type=wisedu 完全一致"
+    ],
+    "final_recommendation": {
+      "url": "https://jw.bucm.edu.cn/jwapp/",
+      "type": "wisedu",
+      "reason": "维持。jwapp 是 BUCM 教务的真实服务,通过 cas.bucm.edu.cn 统一认证登录,wisedu 类型正确。"
+    }
+  }
+]

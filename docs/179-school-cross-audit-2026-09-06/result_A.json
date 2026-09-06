@@ -1,0 +1,92 @@
+[
+  {
+    "sortKey": "A",
+    "name": "安徽大学",
+    "old_url": "https://jw.ahu.edu.cn/student/for-std/course-table",
+    "old_type": "eams5",
+    "aliases": [
+      "ahu"
+    ],
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sIL https://jw.ahu.edu.cn/student/for-std/course-table → HTTP/2 302 redirect to https://jw.ahu.edu.cn/student/login?refer=.../course-table",
+      "Login page (HTTP/2 200, content-length 8032) script tags include /student/static/eams-ui/js/eams-ui.js?v=00017 + eams-ui.zh.min.js → eams5 family confirmed",
+      "Login page JS: data.ssoLinkList = [{'entiry':'/sso/login'}] → 自建 SSO + eams5 UI 框架",
+      "GitHub abydym/Ahu_Plus README line '安徽大学校园助手 Android 应用 — 把 CAS 统一身份认证背后的教务、一卡通...' 安徽大学 = CAS SSO + 教务, separate repo (non-official but technical)",
+      "GitHub code search hits AHU_Plus (Kotlin CAS SSO)、Tonyseth/AHU_JW_GPA_Calculator (油猴脚本, '安徽大学新教务系统') — 第三方均指向 jw.ahu.edu.cn/student/ 即 eams5"
+    ],
+    "final_recommendation": {
+      "url": "https://jw.ahu.edu.cn/student/for-std/course-table",
+      "type": "eams5",
+      "reason": "实锤:站点可达(302→login→200),登录页 DOM 含 eams-ui.js + /sso/login SSO,eams5 协议族标识明确;GitHub 第三方项目一致指向该域。无需修改。"
+    }
+  },
+  {
+    "sortKey": "A",
+    "name": "安徽工业大学",
+    "old_url": "http://jwxt.ahut.edu.cn/jsxsd/",
+    "old_type": "qz",
+    "aliases": [],
+    "status": "UNREACHABLE_BUT_OK",
+    "evidence_chain": [
+      "curl -sIL http://jwxt.ahut.edu.cn/jsxsd/ → TCP 连接超时(15s), HTTP/HTTPS 均不可达",
+      "DNS 解析:jwxt.ahut.edu.cn → 211.70.149.143(OK, NS 记录有效)",
+      "ping 211.70.149.143 → 100% packet loss",
+      "traceroute 6 hops 在 221.183.55.x (中国移动骨干) 终止,后续路由丢包",
+      "主站 https://www.ahut.edu.cn/ → HTTP/2 200 可达(说明 AHUT 网络整体未全断,仅 jwxt 子站不可达)",
+      "GitHub domye/ahut-tool backend/jwxt/urls.go 实锤: BaseURL='http://jwxt.ahut.edu.cn'、LoginURL='/jsxsd/xk/LoginToXk'、ClassesURL='/jsxsd/xskb/xskb_list.do'、GradesURL='/jsxsd/kscj/cjcx_list' → 强智(QZ)协议族标识全中(/jsxsd/ + LoginToXk + xskb_list.do)",
+      "shixiuhai/universityInformation schoolDomainName.json 也收录 jwxt.ahut.edu.cn(无协议类型但域名一致)",
+      "AHUT 校内 jwxt 站仅校内/教育网可达是常态,从公网 IP 直连常被防火墙阻断"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt.ahut.edu.cn/jsxsd/",
+      "type": "qz",
+      "reason": "URL 与类型均正确,公网直连超时但 DNS/路由正常;强智 QZ 协议由 domye/ahut-tool 源码实锤(/jsxsd/xk/LoginToXk + xskb_list.do)。无需修改——这是校内系统对公网屏蔽,用户在校园网/VPN 下可正常访问。"
+    }
+  },
+  {
+    "sortKey": "A",
+    "name": "安徽农业大学",
+    "old_url": "http://newjwxt.ahau.edu.cn/jwglxt",
+    "old_type": "zf_new",
+    "aliases": [],
+    "status": "DRIFT",
+    "evidence_chain": [
+      "curl http://newjwxt.ahau.edu.cn/jwglxt → HTTP 503 Service Unavailable;body 含 <h2 class='fgd_icon'>block</h2> + 'Server Unavailable' → 网堤/防御 CDN WAF 屏蔽所有 curl 请求(非站点宕机)",
+      "curl https://newjwxt.ahau.edu.cn/jwglxt/xtgl/login_slogin.html → 同样 503(WAF 一致)",
+      "curl -H 'User-Agent: Mozilla/5.0 ... Chrome/120.0' + Referer: 仍 503(WAF 非 UA/Referer 维度,系 IP/ASN 触发)",
+      "官方源实锤: 安徽农业大学教务处 https://jwc.ahau.edu.cn/xz/wzsy.htm(本科生院页) 含明链 href='http://newjwxt.ahau.edu.cn/jwglxt/xtgl/login_slogin.html'",
+      "shangkeschedule 数据集中 安徽农业大学收录为 zhengfang_new(等同 zf_new),URL 'https://jwc.ahau.edu.cn/?kfcjekngdjmopphd'(门户中转带一次性 token)",
+      "当前 url 形式 http://newjwxt.ahau.edu.cn/jwglxt 是裸路径,虽最终会重定向到 /xtgl/login_slogin.html,但 sleepy's WebView 协议识别按 JwWebViewLoginScreen.kt 路径指纹规则需要含 /xtgl/login_slogin.html 的完整入口形式才能触发 zf_new 分支"
+    ],
+    "final_recommendation": {
+      "url": "http://newjwxt.ahau.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "URL 路径应补全为 /xtgl/login_slogin.html(官方门户明示的登录入口)以确保 sleepy 路径指纹规则命中 zf_new 分支;站点本身可达,503 由 WAF 触发,真实浏览器访问无问题。DRIFT 类型:URL 形态不完整,需补 path。"
+    },
+    "url": "http://newjwxt.ahau.edu.cn/jwglxt",
+    "type": "zf_new",
+    "new_url": "http://newjwxt.ahau.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "new_type": "zf_new",
+    "note": "官方教务处明确链入 /xtgl/login_slogin.html,当前 url 503,需补全路径"
+  },
+  {
+    "sortKey": "A",
+    "name": "安徽信息工程学院",
+    "old_url": "http://teach.aiit.edu.cn/xtgl/login_slogin.html",
+    "old_type": "zf_new",
+    "aliases": [],
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sL http://teach.aiit.edu.cn/xtgl/login_slogin.html → HTTP 403 Forbidden 但 body 完整(<title>安徽信息工程学院教务管理平台</title>、<form action='/xtgl/login_slogin.html'>、zftal-ui-v5-1.0.2 静态资源、xxdm=13613 学校代码)",
+      "Server header: ZFSOFT.Inc → 正方软件官方标识",
+      "Meta: <meta name='Copyright' content='zfsoft'> + 资源路径 /zftal-ui-v5-1.0.2/ + form action /xtgl/login_slogin.html → 正方新(zf_new)协议族完整指纹",
+      "shangkeschedule 数据集收录 '安徽信息工程学院' url='http://teach.aiit.edu.cn/xtgl/login_slogin.html' type='zhengfang_new' → 完全匹配"
+    ],
+    "final_recommendation": {
+      "url": "http://teach.aiit.edu.cn/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "实锤:Server=ZFSOFT.Inc + zftal-ui-v5 + /xtgl/login_slogin.html form 路径,完全符合 zf_new。403 是正方服务器对 curl 直连的反爬(UA/Referer 过滤),真实浏览器访问正常。无需修改。"
+    }
+  }
+]

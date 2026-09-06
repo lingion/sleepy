@@ -1,0 +1,18 @@
+[
+  {
+    "sortKey": "Y",
+    "name": "延边大学",
+    "url": "http://jwxt.ybu.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "yanbiandaxue"
+  },
+  {
+    "sortKey": "Y",
+    "name": "云南财经大学",
+    "url": "http://202.203.194.2/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "yunnancaijingdaxue"
+  }
+]

@@ -1,0 +1,60 @@
+[
+  {
+    "sortKey": "N",
+    "name": "南方医科大学",
+    "url": "http://zhjw.smu.edu.cn/",
+    "type": "cf",
+    "aliases": [],
+    "sortKeyFull": "nanfangyikedaxue"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京城市职业学院",
+    "url": "http://jw.ncc.edu.cn/jwglxt/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "nanjingchengshizhiyexueyuan"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京工业大学",
+    "url": "https://jwgl.njtech.edu.cn/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "nanjinggongyedaxue"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京航空航天大学",
+    "url": "https://aao-eas.nuaa.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "nuaa"
+    ],
+    "sortKeyFull": "nanjinghangkonghangtiandaxue"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京理工大学",
+    "url": "http://202.119.81.112:8080/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "nanjingligongdaxue"
+  },
+  {
+    "sortKey": "N",
+    "name": "南宁职业技术学院",
+    "url": "http://jwxt.ncvt.net:8088/jwglxt/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "nanningzhiyejishuxueyuan"
+  },
+  {
+    "sortKey": "N",
+    "name": "内蒙古大学",
+    "url": "http://jwxt.imu.edu.cn/login",
+    "type": "urp_new",
+    "aliases": [],
+    "sortKeyFull": "neimenggudaxue"
+  }
+]

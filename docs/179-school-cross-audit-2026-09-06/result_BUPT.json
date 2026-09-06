@@ -1,0 +1,51 @@
+[
+  {
+    "sortKey": "*",
+    "name": "北京邮电大学新教务(VPN)",
+    "old_url": "https://vpn.bupt.edu.cn/",
+    "old_type": "qz_with_node",
+    "aliases": [
+      "bupt"
+    ],
+    "sortKeyFull": "beijingyoudiandaxuexinjiaowu",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI https://vpn.bupt.edu.cn/ 返回 HTTP/2 405,title=aTrust 2.0,CSP 含 lark/feishu/open.feishu.cn/qqmail 域名 — 即深信服 aTrust SSL VPN 客户端入口,Web 端不可用,需装客户端",
+      "https://jwc.bupt.edu.cn 与 https://www.bupt.edu.cn 主页 JS 渲染/Cloudflare 保护无法直接抓链接",
+      "byrdocs/bupt-survival-guide 校园网.md(北邮学生 BYR 团队官方学生指南)明文写:aTrust VPN=https://vpn.bupt.edu.cn/,Web 功能极为简陋,必须下载客户端,使用企业微信-校园网动态密码登录",
+      "BUPT 内网 jwgl.bupt.edu.cn 直接访问 DNS 失败(curl exit=6),仅 VPN 通",
+      "GitHub 社区脚本 helium777/bupt-course-grab、JmPotato/BUPT-Grader、Seizzzz/Auto-Login-BUPT 均指向 https://jwgl.bupt.edu.cn/jsxsd/ 强智教务路径,与 qz_with_node 解析器定义相符",
+      "qz_with_node 解析器注释明确列出样本学校包含'北邮 jwgl.bupt.edu.cn/jsxsd'",
+      "校外访问 VPN 走 aTrust 客户端隧道进 jwgl.bupt.edu.cn/jsxsd,渲染出来的 HTML 是强智+周次(节次)特征,qz_with_node 解析器可消化"
+    ],
+    "final_recommendation": {
+      "url": "https://vpn.bupt.edu.cn/",
+      "type": "qz_with_node",
+      "reason": "BUPT 官方/学生 BYR 文档/byrdocs 实锤 aTrust VPN 入口即为该 URL;qz_with_node 类型与内网 jwgl.bupt.edu.cn/jsxsd 强智周次(节次)形态匹配,解析器自带样本字段,无需改动。注:Web 端不可用,需装 aTrust 客户端;Sleepy 当前不感知 VPN 隧道建立,此 URL 仅是 VPN 门户入口,真实抓取仍依赖用户机器已建 VPN 隧道。"
+    }
+  },
+  {
+    "sortKey": "*",
+    "name": "北京邮电大学新教务(WebVPN)",
+    "old_url": "https://webvpn.bupt.edu.cn/",
+    "old_type": "qz_with_node",
+    "aliases": [
+      "bupt"
+    ],
+    "sortKeyFull": "beijingyoudiandaxuexinjiaowu",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L https://webvpn.bupt.edu.cn/ 连续 302 → /login,Set-Cookie 名为 wengine_vpn_ticketwebvpn_bupt_edu_cn,确认厂商=Wengine 网瑞达 WebVPN",
+      "curl -sL https://webvpn.bupt.edu.cn/ 返回 title=北京邮电大学WebVPN系统,meta keywords 含 网瑞达/WEBVPN/clientless vpn/资源访问控制系统/SSLVPN",
+      "byrdocs/bupt-survival-guide 校园网.md 明文写:WebVPN=https://webvpn.bupt.edu.cn/,标注'不推荐'但仍可用,只支持微信/企业微信扫码登录",
+      "GitHub 油猴脚本 xianfei/tampermonkey-js-share 的 Bupt WebVPN Optimization.user.js @match https://webvpn.bupt.edu.cn/*,其代码注释显式说明登录 webvpn 后 jsxsd 路径仍为 https://jwgl.bupt.edu.cn/jsxsd/ (强智) — 与 qz_with_node 解析器一致",
+      "WebVPN 为 clientless 反向代理,与 aTrust 不同,无需客户端,纯 Web 可达;登录后通过 URL 重写进 jwgl.bupt.edu.cn/jsxsd,产物 HTML 形态同样走周次(节次)解析路径",
+      "url 直接 GET 返回 302 到 /login,网络层可达性 OK"
+    ],
+    "final_recommendation": {
+      "url": "https://webvpn.bupt.edu.cn/",
+      "type": "qz_with_node",
+      "reason": "Wengine 网瑞达 WebVPN,客户端无关,校外直连可达;BYR 学生文档与社区油猴脚本双源实锤登录后落地 jwgl.bupt.edu.cn/jsxsd,周次(节次)形态属 qz_with_node,无需调整 type。注意 BYR 文档标'不推荐',aTrust VPN 是首选;WebVPN 仅作兜底,适合 Sleepy 用户在没装 aTrust 客户端时选用。"
+    }
+  }
+]

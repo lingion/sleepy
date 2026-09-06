@@ -1,0 +1,74 @@
+[
+  {
+    "sortKey": "D",
+    "name": "电子科技大学",
+    "url": "http://eams.uestc.edu.cn/eams/",
+    "type": "classic_eams",
+    "aliases": [
+      "uestc"
+    ],
+    "sortKeyFull": "dianzikejidaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "电子科技大学中山学院",
+    "url": "http://jwgln.zsc.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "dianzikejidaxuezhongshanxueyuan"
+  },
+  {
+    "sortKey": "D",
+    "name": "东北财经大学",
+    "url": "http://202.199.165.159/",
+    "type": "urp",
+    "aliases": [],
+    "sortKeyFull": "dongbeicaijingdaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "东北大学",
+    "url": "https://jwxt.neu.edu.cn/",
+    "type": "neu",
+    "aliases": [
+      "neu"
+    ],
+    "sortKeyFull": "dongbeidaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "东北林业大学",
+    "url": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "dongbeilinyedaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "东北石油大学",
+    "url": "http://jwgl.nepu.edu.cn/",
+    "type": "hnust",
+    "aliases": [],
+    "sortKeyFull": "dongbeishiyoudaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "东华大学",
+    "url": "https://jw.dhu.edu.cn/jwapp/",
+    "type": "wisedu",
+    "aliases": [
+      "dhu"
+    ],
+    "sortKeyFull": "donghuadaxue"
+  },
+  {
+    "sortKey": "D",
+    "name": "东南大学",
+    "url": "https://newxk.urp.seu.edu.cn/",
+    "type": "seu",
+    "aliases": [
+      "seu"
+    ],
+    "sortKeyFull": "dongnandaxue"
+  }
+]

@@ -1,0 +1,231 @@
+[
+  {
+    "sortKey": "H",
+    "name": "哈尔滨工程大学",
+    "url": "https://jwgl.hrbeu.edu.cn/",
+    "type": "wisedu",
+    "old_status": "OK",
+    "http_code": 200,
+    "body_title": "哈尔滨工程大学统一身份认证",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "海南师范大学",
+    "url": "http://210.37.0.16/",
+    "type": "zf",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北大学",
+    "url": "http://zhjw.hbu.edu.cn/",
+    "type": "urp",
+    "old_status": "OK",
+    "http_code": 302,
+    "body_title": "WEBVPN资源访问系统",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北工程大学",
+    "url": "http://219.148.85.172:9111/login",
+    "type": "urp_new",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北师范大学",
+    "url": "http://jwgl.hebtu.edu.cn/xtgl/",
+    "type": "zf_new",
+    "old_status": "OK",
+    "http_code": 403,
+    "body_title": "教学管理信息服务平台",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "河北政法职业学院",
+    "url": "http://jwxt.helc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "河海大学",
+    "url": "http://202.119.113.135/",
+    "type": "urp",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "河南财经政法大学",
+    "url": "http://xk.huel.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "old_status": "OK",
+    "http_code": 403,
+    "body_title": "教学管理信息服务平台",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "贺州学院",
+    "url": "http://jwglxt.hzu.gx.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "华北电力大学科技学校",
+    "url": "http://202.204.74.178/",
+    "type": "zf",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "华东理工大学",
+    "url": "https://inquiry.ecust.edu.cn/jsxsd/",
+    "type": "qz",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "华东政法大学",
+    "url": "https://jw.ecupl.edu.cn/jwapp",
+    "type": "wisedu",
+    "old_status": "OK",
+    "http_code": 403,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK",
+    "note": "wisedu 403反爬正常,有响应(64393 bytes)"
+  },
+  {
+    "sortKey": "H",
+    "name": "淮南师范学院",
+    "url": "http://211.70.176.173/jwglxt/xtgl/",
+    "type": "zf_new",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "华南理工大学",
+    "url": "http://xsjw2018.jw.scut.edu.cn/",
+    "type": "zf_new",
+    "old_status": "UNREACHABLE",
+    "http_code": 0,
+    "body_title": "",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "UNREACHABLE"
+  },
+  {
+    "sortKey": "H",
+    "name": "华南师范大学",
+    "url": "https://jwxt.scnu.edu.cn/jwglxt",
+    "type": "zf_new",
+    "old_status": "OK",
+    "http_code": 403,
+    "body_title": "教学管理信息服务平台",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "华中农业大学",
+    "url": "http://jwgl.hzau.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "old_status": "OK",
+    "http_code": 403,
+    "body_title": "教学管理信息服务平台",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "华中师范大学",
+    "url": "http://one.ccnu.edu.cn/",
+    "type": "zf_new",
+    "old_status": "OK",
+    "http_code": 200,
+    "body_title": "统一身份认证服务",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖北工程学院新技术学院",
+    "url": "http://jwglxt.hbeutc.cn:20000/jwglxt/xtgl",
+    "type": "zf_new",
+    "old_status": "OK",
+    "http_code": 403,
+    "body_title": "教学管理信息服务平台",
+    "evidence_source": "subagent H reachability matrix (L106 of agent-aae8b8be7901ea9e0.jsonl)",
+    "status": "OK"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南工学院",
+    "url": "http://jwgl.hnit.edu.cn/",
+    "type": "qz_old",
+    "status": "DRIFT",
+    "note": "官方教务入口是 jwxt.hnit.edu.cn,不是 jwgl.hnit.edu.cn,需补 url",
+    "new_url": "http://jwxt.hnit.edu.cn/",
+    "final_recommendation": {
+      "url": "http://jwxt.hnit.edu.cn/",
+      "type": "qz_old",
+      "reason": "官方教务入口是 jwxt.hnit.edu.cn,不是 jwgl.hnit.edu.cn,需补 url"
+    }
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南理工学院",
+    "url": "http://bkjw.hnist.cn/login",
+    "type": "urp",
+    "status": "UNREACHABLE",
+    "note": "bkjw.hnist.cn 403反爬,主 jwxt 不可达"
+  },
+  {
+    "sortKey": "H",
+    "name": "湖南师范大学",
+    "url": "https://jwglnew.hunnu.edu.cn/eams/",
+    "type": "classic_eams",
+    "status": "OK",
+    "note": "jwglnew.hunnu.edu.cn/eams/ 26629 bytes, classic_eams 类型正确"
+  }
+]

@@ -1,0 +1,60 @@
+[
+  {
+    "sortKey": "F",
+    "name": "福建工程学院",
+    "old_url": "https://jwxtwx.fjut.edu.cn/jwglxt/",
+    "old_type": "zf_new",
+    "old_aliases": [],
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI HEAD https://jwxtwx.fjut.edu.cn/jwglxt/ -> HTTP 403 (ZFSOFT.Inc Tomcat/7.0.92 anti-bot blocks HEAD) but GET 200",
+      "curl -s GET https://jwxtwx.fjut.edu.cn/jwglxt/ -> HTML body redirects via window.location to /jwglxt/xtgl/dl_loginForward.html",
+      "curl -sL GET dl_loginForward.html -> title='教学综合信息服务平台'; meta Copyright=zfsoft; scripts use _path=/jwglxt, _stylePath=/zftal-ui-v5-1.0.2 (Bootstrap-based zftal UI v5.1.0.2); hidden inputs csrftoken/yhm/mm — definitive zf_new (new 正方) signature",
+      "WebFetch https://jwc.fjut.edu.cn/ lists 教学综合服务平台 link as https://jwxt.fjut.edu.cn/jwglxt/ (NOT jwxtwx) — this alt URL is dead (curl returns HTTP 000 = connection refused); the only working Fjut JW host is jwxtwx.fjut.edu.cn, which matches schools.json entry",
+      "School has been renamed 福建工程学院 -> 福建理工大学 (fjut.edu.cn homepage title updated 2026-09-04 per WebFetch) but JW host stayed on fjut.edu.cn — no URL drift for schools.json"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxtwx.fjut.edu.cn/jwglxt/",
+      "type": "zf_new",
+      "reason": "URL is reachable and serves definitive new 正方 (zf_new) login page; type label matches the serving system. The official 教务处 page lists a dead alt URL (jwxt.fjut.edu.cn) so no change recommended."
+    }
+  },
+  {
+    "sortKey": "F",
+    "name": "福建农林大学",
+    "old_url": "http://jwgl.fafu.edu.cn",
+    "old_type": "zf_1",
+    "old_aliases": [],
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L http://jwgl.fafu.edu.cn -> 302 to /(siirjx45ntr2ovfy0vt5ilfj)/default2.aspx (ASP.NET session-seeded redirect), then 200 OK (Server: Microsoft-IIS/7.5, X-Powered-By: WAF/2.0)",
+      "curl -s GET -> HTML title='欢迎使用教务管理系统请登录' (gb2312); form name=form1 action=default2.aspx; hidden __VIEWSTATE; RadioButtonList1 with 学生/教师/管理者/来访者; CheckCode.aspx captcha; footer '&copy;1999-2017 http://www.zfsoft.com 正方软件股份有限公司' — classic 正方老 zf_1 signature",
+      "WebFetch https://jwc.fafu.edu.cn/main.htm -> 教务处 official page lists http://jwgl.fafu.edu.cn as the 教务管理系统 link (exact match with schools.json)",
+      "GitHub search via gh.qdp.qzz.io found curiosity86/iFAFU (repo id 272340298) — README explicitly says 'An unofficial zfsoft educational management system Application for Android'; description '福建农林大学正方教务管理系统第三方Android应用' — independent second-source confirmation of zf family for FAFU"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.fafu.edu.cn",
+      "type": "zf_1",
+      "reason": "URL works (302→200), serves classic 正方老 (zf_1) login page, official FAFU 教务处 page confirms this exact URL, and a third-party Android client on GitHub explicitly documents FAFU uses zfsoft — no drift."
+    }
+  },
+  {
+    "sortKey": "F",
+    "name": "福建农林大学金山学院",
+    "old_url": "http://jsxyjwgl.fafu.edu.cn/",
+    "old_type": "zf",
+    "old_aliases": [],
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L http://jsxyjwgl.fafu.edu.cn/ -> HTTP 200 directly (no redirect; Server: Microsoft-IIS/7.5, X-Powered-By: WAF/2.0, ASP.NET_SessionId cookie set)",
+      "curl -s GET -> HTML title='欢迎使用教务管理系统请登录' (gb2312); form name=form1 action=default.aspx (NOT default2.aspx — slight variant from FAFU main); RadioButtonList1 学生/教师/管理者/来访者; CheckCode.aspx captcha; footer '&copy;1999-2017 http://www.zfsoft.com 正方软件股份有限公司' — 正方老 (zf) family",
+      "Form action=default.aspx vs FAFU main's default2.aspx indicates slightly older/simpler zf build but same family — current schools.json label 'zf' is correct",
+      "No official FAFU 教务处 page lists jsxy; FAFU main page does not mention 金山学院 either — institutional status uncertain (金山学院 announced 2020 merge back into FAFU, but as of 2026-09 the JW host jsxyjwgl.fafu.edu.cn is still serving zf, so URL/type in schools.json remains valid)"
+    ],
+    "final_recommendation": {
+      "url": "http://jsxyjwgl.fafu.edu.cn/",
+      "type": "zf",
+      "reason": "URL reachable (200 OK), serves 正方老 (zf) login page with form action=default.aspx. No official source contradicts current entry; type label matches the served system. Keep as-is."
+    }
+  }
+]

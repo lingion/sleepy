@@ -1,0 +1,26 @@
+[
+  {
+    "sortKey": "F",
+    "name": "福建工程学院",
+    "url": "https://jwxtwx.fjut.edu.cn/jwglxt/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "fujiangongchengxueyuan"
+  },
+  {
+    "sortKey": "F",
+    "name": "福建农林大学",
+    "url": "http://jwgl.fafu.edu.cn",
+    "type": "zf_1",
+    "aliases": [],
+    "sortKeyFull": "fujiannonglindaxue"
+  },
+  {
+    "sortKey": "F",
+    "name": "福建农林大学金山学院",
+    "url": "http://jsxyjwgl.fafu.edu.cn/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "fujiannonglindaxuejinshanxueyuan"
+  }
+]

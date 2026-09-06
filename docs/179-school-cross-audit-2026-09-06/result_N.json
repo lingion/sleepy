@@ -1,0 +1,72 @@
+[
+  {
+    "sortKey": "N",
+    "name": "南方医科大学",
+    "url": "http://zhjw.smu.edu.cn/",
+    "type": "cf",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "OK",
+    "note": "meta=乘方教务,type=cf正确,http→https"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京城市职业学院",
+    "url": "http://jw.ncc.edu.cn/jwglxt/xtgl/",
+    "type": "zf_new",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "UNVERIFIED",
+    "note": "直连返回学校主页,需手工验证 jwglxt/xtgl 是否为正方新入口"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京工业大学",
+    "url": "https://jwgl.njtech.edu.cn/",
+    "type": "zf_new",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "OK",
+    "note": "ZFSOFT 本科教学管理与服务平台,type=zf_new正确"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京航空航天大学",
+    "url": "https://aao-eas.nuaa.edu.cn/eams/",
+    "type": "classic_eams",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "OK",
+    "note": "meta refresh to home.action,classic_eams特征"
+  },
+  {
+    "sortKey": "N",
+    "name": "南京理工大学",
+    "url": "http://202.119.81.112:8080/",
+    "type": "qz",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "OK",
+    "note": "强智科技 qzdatasoft,title确认qz"
+  },
+  {
+    "sortKey": "N",
+    "name": "南宁职业技术学院",
+    "url": "http://jwxt.ncvt.net:8088/jwglxt/",
+    "type": "zf_new",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "DRIFT",
+    "note": "DRIFT (无新 URL 可填,见 final_recommendation.reason)",
+    "new_url": "",
+    "new_type": "",
+    "final_recommendation": {
+      "url": "",
+      "type": "",
+      "reason": "学校升级为南宁职业技术大学,原 jwxt.ncvt.net:8088 522 无 backend;新域 jwc.nncvt.edu.cn/jwc.nnvtu.edu.cn 200 仅教务处子站,学生 JW 登录入口未在 ncvt.net/jwxtlj.htm 露出的两个候选(jw.sub.ncvt.net / jwxt.ncvt.net:8088)均不可达。无新 URL 可填。"
+    }
+  },
+  {
+    "sortKey": "N",
+    "name": "内蒙古大学",
+    "url": "http://jwxt.imu.edu.cn/login",
+    "type": "urp_new",
+    "evidence_source": "subagent N (agent-a039b4bf4bfb917ea) L38/L40/L101/L106/L112 tests",
+    "status": "OK",
+    "note": "jwxt.imu.edu.cn/login 301→https 200,type=urp_new正确"
+  }
+]

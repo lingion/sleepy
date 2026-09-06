@@ -1,0 +1,272 @@
+[
+  {
+    "sortKey": "Z",
+    "name": "浙大宁波理工学院",
+    "old_url": "http://jwxt.nit.net.cn/default2.aspx",
+    "old_type": "zf",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl -I -L --max-time 12 直接连 → connect timed out (8s+) (curl 8.13.0, IP 61.153.148.237:80 不可达)",
+      "curl -I -L --max-time 8 https://jwxt.nit.net.cn/default2.aspx → 同样 timeout",
+      "WebFetch 也报 connect ECONNREFUSED 61.153.148.237:443",
+      "DNS 解析正常 (dig +short → 61.153.148.237), 端口被校外防火墙滤",
+      "git 历史: b28f2f0 (2026-09-03) 'feat(jw): 收录浙大宁波理工学院(正方老版 zf)' 明确注明 'jwxt.nit.net.cn 当前校外直连不通(端口全滤), 校内网/VPN 下可用'",
+      "协议判定 (default2.aspx 路径指纹 + b28f2f0 验收) = zf 老版正方"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt.nit.net.cn/default2.aspx",
+      "type": "zf",
+      "reason": "URL+类型维持现状;b28f2f0 已明确官方教务入口 (default2.aspx = 正方老版), 校外不通为已知约束 (内网/VPN 可用), 无需变更"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江大学",
+    "old_url": "https://zdbk.zju.edu.cn/",
+    "old_type": "zju",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 https://zdbk.zju.edu.cn/ → 200 (0.44s)",
+      "首页含 meta refresh 跳 /jwglxt, body 68 字节仅跳转标签",
+      "curl -s https://zdbk.zju.edu.cn/jwglxt/xtgl/login_slogin.html → 200 (12417 字节), title='本科教学管理信息服务平台', form action=/jwglxt/xtgl/login_slogin.html (post)",
+      "服务器 header 含 X-Powered-By: Servlet/3.0 JSP/2.2 (ZFSOFT-SERVER Java/Oracle) — 强 ZFSOFT (正方) 指纹",
+      "JwProtocol.kt 显式定义 TYPE_ZJU='zju', 注释: '浙江大学教务 (正方新版 zf_new, zdbk.zju.edu.cn, CAS = zjuam.zju.edu.cn RSA 加密登录)'",
+      "协议: 强智新版直链 + RSA-CAS, schools.json type='zju' 为自定义别名, 指向自建 zju parser (JwZjuParser.kt)"
+    ],
+    "final_recommendation": {
+      "url": "https://zdbk.zju.edu.cn/",
+      "type": "zju",
+      "reason": "实锤 OK;首页 → /jwglxt/xtgl/login_slogin.html (ZFSOFT 标志);type='zju' 维持 (有专用 JwZjuParser 处理 zjuam RSA 登录)"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江工商大学",
+    "old_url": "http://124.160.64.163/jwglxt/xtgl/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 http://124.160.64.163/jwglxt/xtgl/ → 403 Forbidden (Tengine 静态拦截)",
+      "curl -I -L --max-time 8 http://124.160.64.163/jwglxt/xtgl/login_slogin.html → 200 (21579 字节)",
+      "body title='教学管理信息服务平台', window.location.href = _path+'/xtgl/init_cxBrowser.html' (ZF 经典跳转), form action='/jwglxt/xtgl/login_slogin.html' method=post, 含 device.js 指纹",
+      "服务器 header: X-Powered-By: Servlet/3.0 JSP/2.2 (ZFSOFT-SERVER Java/Oracle) — 强正方新版指纹",
+      "URL 路径 /jwglxt/xtgl/ + ZFSOFT 服务器 = zf_new 实锤"
+    ],
+    "final_recommendation": {
+      "url": "http://124.160.64.163/jwglxt/xtgl/",
+      "type": "zf_new",
+      "reason": "实锤 OK;xtgl/login_slogin.html 200 + ZFSOFT 服务器指纹 = 正方新版;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江工业大学",
+    "old_url": "http://www.gdjw.zjut.edu.cn/",
+    "old_type": "zf_new",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 http://www.gdjw.zjut.edu.cn/ → 200 (0.19s)",
+      "首页 128 字节纯 meta refresh: '<meta http-equiv=\"refresh\" content=\"0;URL=/jwglxt/\" >'",
+      "curl -s http://www.gdjw.zjut.edu.cn/jwglxt/xtgl/login_slogin.html → 200 (23720 字节), title='教学管理信息服务平台', window.location.href = _path+'/xtgl/init_cxBrowser.html'",
+      "URL 路径 /jwglxt/xtgl/ + login_slogin.html = zf_new 实锤"
+    ],
+    "final_recommendation": {
+      "url": "http://www.gdjw.zjut.edu.cn/",
+      "type": "zf_new",
+      "reason": "实锤 OK;meta refresh → /jwglxt/xtgl/login_slogin.html = 正方新版;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "浙江工业大学之江学院",
+    "old_url": "http://jwgl.zzjc.edu.cn/default2.aspx",
+    "old_type": "zf",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl -I -L --max-time 12 http://jwgl.zzjc.edu.cn/default2.aspx → connect timed out (8s+, IP 220.189.230.41:80)",
+      "curl https://jwgl.zzjc.edu.cn/default2.aspx → 000 (TCP RST/拒)",
+      "WebFetch → connect ECONNREFUSED 220.189.230.41:443",
+      "DNS 正常 (dig → 220.189.230.41)",
+      "协议判定: URL 路径 default2.aspx = 正方老版 zf 指纹 (与 NBT/合工大等同模式)",
+      "d189b67 commit 已收录, 当前唯一信息源为入库时记录"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.zzjc.edu.cn/default2.aspx",
+      "type": "zf",
+      "reason": "校外不可达, 路径指纹 default2.aspx = 正方老版 zf;维持现状 (依赖内网/VPN 验证), 无证据需变更"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国科学技术大学",
+    "old_url": "https://jw.ustc.edu.cn/",
+    "old_type": "ustc",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 https://jw.ustc.edu.cn/ → 302 → location: /login (nginx, x-application-context=application)",
+      "curl -s https://jw.ustc.edu.cn/login → 200 (11604 字节, gzipped)",
+      "JwProtocol.kt 显式定义 TYPE_USTC='ustc', 注释: '中国科学技术大学教务 (自研新版, jw.ustc.edu.cn, CAS = passport.ustc.edu.cn 图形验证码)'",
+      "type='ustc' 为自定义 (有专用 JwUstcParser.kt 处理 studentTableVm JSON)"
+    ],
+    "final_recommendation": {
+      "url": "https://jw.ustc.edu.cn/",
+      "type": "ustc",
+      "reason": "实锤 OK;302→/login + 自研 JSON 接口;type='ustc' 维持 (专用 USTC parser)"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国矿业大学",
+    "old_url": "http://jwxt.cumt.edu.cn/jwglxt/",
+    "old_type": "zf_new",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl -I -L --max-time 12 http://jwxt.cumt.edu.cn/jwglxt/ → connect timed out (8s+, IP 202.119.206.41:80)",
+      "curl https://jwxt.cumt.edu.cn/jwglxt/ → 000 (timeout)",
+      "WebFetch → connect ECONNREFUSED 202.119.206.41:443",
+      "DNS 正常 (dig → 202.119.206.41)",
+      "协议判定: URL 路径 /jwglxt/ + d189b67 commit 标 type=zf_new = 正方新版 (典型形态)",
+      "URL+类型无证据需变更"
+    ],
+    "final_recommendation": {
+      "url": "http://jwxt.cumt.edu.cn/jwglxt/",
+      "type": "zf_new",
+      "reason": "校外不可达, 路径 /jwglxt/ = 正方新版 zf_new 指纹;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国矿业大学（北京）",
+    "old_url": "https://jwxt.cumtb.edu.cn/student/for-std/course-table",
+    "old_type": "eams5",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -sI -L --max-time 8 https://jwxt.cumtb.edu.cn/ → 302 → location: https://jwxt.cumtb.edu.cn/student/login?refer=https://jwxt.cumtb.edu.cn/student/for-std/course-table (HSTS, x-application-context=application)",
+      "curl -sI -L --max-time 8 https://jwxt.cumtb.edu.cn/student/login → 200 (HSTS 头, Set-Cookie SESSION + __testid__)",
+      "JwProtocol.kt 定义 TYPE_EAMS5='eams5', Eams5PathPrefix.kt 注释: '安徽大学 / 矿大北京: /student/for-std/... (jwxt.cumtb.edu.cn)'",
+      "60a1bbc commit: 'eams5 2 所: 安徽大学 / 矿大北京 (supwisdom 新版, /student/ 前缀)'",
+      "URL 路径 /student/for-std/course-table + supwisdom 后端 = eams5 实锤"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxt.cumtb.edu.cn/student/for-std/course-table",
+      "type": "eams5",
+      "reason": "实锤 OK;HTTPS 302→/student/login + supwisdom EAMS5 部署形态;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国农业大学",
+    "old_url": "http://urpjw.cau.edu.cn/login",
+    "old_type": "urp_new",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl -I -L --max-time 12 http://urpjw.cau.edu.cn/login → connect timed out (8s+, IP 202.205.91.62:80)",
+      "curl https://urpjw.cau.edu.cn/login → 000 (timeout)",
+      "curl https://jwxt.cau.edu.cn/ → 000 (DNS 通但 timeout)",
+      "WebFetch → connect ECONNREFUSED 202.205.91.62:443",
+      "协议判定: URL 路径 /login + d189b67 commit 标 type=urp_new (URP 统一身份认证新版, 与内蒙古大学/上海海洋大学等同模式)",
+      "gh search/code: 'urpjw.cau.edu.cn' 仅在 edusrc/fuzzdb 收集仓库出现 (无官方适配器仓库可作二级证据)",
+      "URL+类型无证据需变更"
+    ],
+    "final_recommendation": {
+      "url": "http://urpjw.cau.edu.cn/login",
+      "type": "urp_new",
+      "reason": "校外不可达, 路径 /login + urp_new 协议指纹;维持现状 (依赖内网/VPN 验证), 无变更证据"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国人民大学",
+    "old_url": "https://jw.ruc.edu.cn/Njw2017/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 https://jw.ruc.edu.cn/Njw2017/ → 200 (0.15s)",
+      "curl -s https://jw.ruc.edu.cn/Njw2017/ → 7213 字节, title='人民大学'",
+      "body 含 <link href='/Njw2017/static/theme/qz-default/index.css'> + <script src='/Njw2017/qz.config.new.js'> — 强智新版 (Njw2017) 指纹",
+      "60a1bbc commit: 'qz 3 所: 湖南大学 Njw2017 (强智新版) / 延边大学 / 石河子大学' (人大虽未单列, 但 Njw2017 路径与强智新版形态完全一致, qz 实锤)"
+    ],
+    "final_recommendation": {
+      "url": "https://jw.ruc.edu.cn/Njw2017/",
+      "type": "qz",
+      "reason": "实锤 OK;Njw2017 路径 + qz-default CSS + qz.config.new.js = 强智新版 qz;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国药科大学",
+    "old_url": "http://jwgl.cpu.edu.cn/",
+    "old_type": "qz",
+    "status": "UNREACHABLE_LIVE_INTRANET_ONLY",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 http://jwgl.cpu.edu.cn/ → 200 (0.13s)",
+      "curl -s http://jwgl.cpu.edu.cn/ → 623 字节, title='网站维护', body: '您访问的网站正在维护中，现在无法使用互联网访问，您可以使用校园网或者vpn进行访问'",
+      "主机可达但服务显示维护页 — 内网/VPN 才可访问, 当前无法验证协议指纹",
+      "类型判定依赖 d189b67 commit (type=qz); 站点本身在校外=维护页, 无 zf/qz 形态指纹可作二级证据"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.cpu.edu.cn/",
+      "type": "qz",
+      "reason": "主机可达但服务=维护页 (校内/VPN 才能进), 当前无 qz/jsxsd 形态指纹实锤;维持现状, 标记待 VPN 实测"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中国医科大学",
+    "old_url": "http://jw.cmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "old_type": "zf_new",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl -I -L --max-time 12 http://jw.cmu.edu.cn/jwglxt/xtgl/login_slogin.html → connect timed out (8s+, IP 202.118.47.23:80)",
+      "curl https://jw.cmu.edu.cn/jwglxt/xtgl/login_slogin.html → 000",
+      "WebFetch → connect ECONNREFUSED 202.118.47.23:443",
+      "DNS 正常 (dig → 202.118.47.23)",
+      "协议判定: URL 路径 /jwglxt/xtgl/login_slogin.html = 正方新版 zf_new 指纹 (与 ZJGSU/ZJUT/CUMT 同模式)",
+      "URL+类型无证据需变更"
+    ],
+    "final_recommendation": {
+      "url": "http://jw.cmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "type": "zf_new",
+      "reason": "校外不可达, 路径 /jwglxt/xtgl/login_slogin.html = 正方新版 zf_new 指纹;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中南大学",
+    "old_url": "http://csujwc.its.csu.edu.cn/jsxsd/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L --max-time 8 http://csujwc.its.csu.edu.cn/jsxsd/ → 200 (0.97s)",
+      "curl -s http://csujwc.its.csu.edu.cn/jsxsd/ → 8839 字节 (UTF-8), title='教学管理系统' (GB18030→UTF8 解码后乱码但内容完整)",
+      "body 含 /jsxsd/js/jquery-min.js + /jsxsd/framework/images/common.css + /jsxsd/js/conwork.js — 强智 qz/jsxsd 指纹 (强智典型三件套)",
+      "URL 路径 /jsxsd/ + 资源脚本路径 = qz 实锤"
+    ],
+    "final_recommendation": {
+      "url": "http://csujwc.its.csu.edu.cn/jsxsd/",
+      "type": "qz",
+      "reason": "实锤 OK;/jsxsd/ 路径 + jquery-min.js + conwork.js 三件套 = 强智 qz;维持现状"
+    }
+  },
+  {
+    "sortKey": "Z",
+    "name": "中南林业科技大学",
+    "old_url": "http://jwgl.csuft.edu.cn/",
+    "old_type": "qz",
+    "status": "UNREACHABLE",
+    "evidence_chain": [
+      "curl -I -L --max-time 12 http://jwgl.csuft.edu.cn/ → connect timed out (8s+, IP 210.43.246.60:80)",
+      "curl https://jwgl.csuft.edu.cn/ → 000",
+      "WebFetch → connect ECONNREFUSED 210.43.246.60:443",
+      "DNS 正常 (dig → 210.43.246.60)",
+      "协议判定: d189b67 commit 标 type=qz; URL 路径 / 未含 /jsxsd/ 段 (可能首页重定向), 但 qz 体系经典首页入口形态",
+      "gh search/code: 'jwgl.csuft' 仅匹配 Lingion/sleepy 自身 (本仓库), 无第三方适配器佐证",
+      "URL+类型无强证据变更 (需 VPN 实测确认)"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.csuft.edu.cn/",
+      "type": "qz",
+      "reason": "校外不可达;d189b67 commit 标 qz;维持现状, 需 VPN 实测确认 qz/jsxsd 形态 (未找到第三方佐证)"
+    }
+  }
+]

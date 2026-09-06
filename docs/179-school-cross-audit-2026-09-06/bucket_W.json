@@ -1,0 +1,52 @@
+[
+  {
+    "sortKey": "W",
+    "name": "潍坊职业学院",
+    "url": "http://jwgl.sdwfvc.cn/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "weifangzhiyexueyuan"
+  },
+  {
+    "sortKey": "W",
+    "name": "武昌首义学院",
+    "url": "http://syjw.wsyu.edu.cn/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "wuchangshouyixueyuan"
+  },
+  {
+    "sortKey": "W",
+    "name": "武汉大学",
+    "url": "https://jwgl.whu.edu.cn/",
+    "type": "zf_new",
+    "aliases": [
+      "whu"
+    ],
+    "sortKeyFull": "wuhandaxue"
+  },
+  {
+    "sortKey": "W",
+    "name": "武汉东湖学院",
+    "url": "http://221.232.159.27/",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "wuhandonghuxueyuan"
+  },
+  {
+    "sortKey": "W",
+    "name": "武汉轻工大学",
+    "url": "http://jwglxt.whpu.edu.cn/xtgl/",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "wuhanqinggongdaxue"
+  },
+  {
+    "sortKey": "W",
+    "name": "五邑大学",
+    "url": "http://jxgl.wyu.edu.cn/",
+    "type": "cf",
+    "aliases": [],
+    "sortKeyFull": "wuyidaxue"
+  }
+]

@@ -1,0 +1,36 @@
+[
+  {
+    "sortKey": "A",
+    "name": "安徽大学",
+    "url": "https://jw.ahu.edu.cn/student/for-std/course-table",
+    "type": "eams5",
+    "aliases": [
+      "ahu"
+    ],
+    "sortKeyFull": "anhuidaxue"
+  },
+  {
+    "sortKey": "A",
+    "name": "安徽工业大学",
+    "url": "http://jwxt.ahut.edu.cn/jsxsd/",
+    "type": "qz",
+    "aliases": [],
+    "sortKeyFull": "anhuigongyedaxue"
+  },
+  {
+    "sortKey": "A",
+    "name": "安徽农业大学",
+    "url": "http://newjwxt.ahau.edu.cn/jwglxt",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "anhuinongyedaxue"
+  },
+  {
+    "sortKey": "A",
+    "name": "安徽信息工程学院",
+    "url": "http://teach.aiit.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "aliases": [],
+    "sortKeyFull": "anhuixinxigongchengxueyuan"
+  }
+]

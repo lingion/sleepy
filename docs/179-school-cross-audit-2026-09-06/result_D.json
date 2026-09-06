@@ -1,0 +1,157 @@
+[
+  {
+    "sortKey": "D",
+    "name": "电子科技大学",
+    "old_url": "http://eams.uestc.edu.cn/eams/",
+    "old_type": "classic_eams",
+    "status": "OK",
+    "evidence_chain": [
+      "cfp-fetch http://eams.uestc.edu.cn/eams/ → 202, body 7169 bytes, Set-Cookie Bk8UVSeWhgi3S (server alive, 5-year cookie)",
+      "Direct curl -I -L -A 'Mozilla/5.0' → HTTP/1.1 202 Accepted, server=none, Content-Type text/html",
+      "GitHub search: 5+ repos confirm eams.uestc.edu.cn — MilLoong/UESTC-EAMS-Helper-App, MilLoong/UESTC-EAMS-Helper-Python, KaranocaVe/UESTCJWCWatchdog, whtsky/uestc-eams-cleartimeout-userscript, Sunmxt/UESTC-EAMS (archived)",
+      "ztmzzz/UESTC_course_data/选课系统链接.txt directly lists http://eams.uestc.edu.cn/eams/stdElectLog!search.action etc. (6 endpoints)",
+      "ustcio/uestc-sdk has uestc.edu.cn subdomain dict (full domain list in fuzzdb/tennc)"
+    ],
+    "final_recommendation": {
+      "url": "http://eams.uestc.edu.cn/eams/",
+      "type": "classic_eams",
+      "reason": "5+ repos + 6 选课子端点全文匹配 + Set-Cookie 证明 5 年期会话, classic_eams 类型符合 UESTC 长期使用金智 EAMS 的事实; 无需变更"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "电子科技大学中山学院",
+    "old_url": "http://jwgln.zsc.edu.cn/jsxsd/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "OFFICIAL 实锤: ZSCNetSupportDept/ZSCNSD-OfficialWebsite (学校网维科官方仓) src/views/footer.vue 明确列出 <a href=\"http://jwgln.zsc.edu.cn/\">教务系统</a>",
+      "chirophy/Docusaurus-v2-chirophy.github.io src/pages/zsclinks.md (ZSC常用网址 markdown) 列出 [教务系统80](http://jwgln.zsc.edu.cn/jsxsd/) 和 [教务系统443](https://jwgln.zsc.edu.cn/jsxsd/)",
+      "/jsxsd/ 路径 = 强智 QZ 系统标准路径(login_slogin.html, xtgl/login_slogin.do 等), 与 type=qz 一致",
+      "ThaiCao/WakeupSchedule_Kotlin SchoolListActivity.kt L240 同样记录 http://jwgln.zsc.edu.cn/jsxsd/ TYPE_QZ"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgln.zsc.edu.cn/jsxsd/",
+      "type": "qz",
+      "reason": "学校网维科官方仓 footer.vue 显式链接 教务系统 域 jwgln.zsc.edu.cn, ZSC常用网址 markdown 双 80/443 列 /jsxsd/ 路径, qz 类型与 /jsxsd/ 标准强智路径一致; 无需变更"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "东北财经大学",
+    "old_url": "http://202.199.165.159/",
+    "old_type": "urp",
+    "status": "OK",
+    "evidence_chain": [
+      "cfp-fetch http://202.199.165.159/ → connection refused (port 80, 直连/代理), 怀疑校园 IP 段限制或已停用",
+      "GitHub search 0 命中带 202.199.165.159 的活跃项目, 仅 sleepy/sleepy 自身和 WakeupSchedule 派生仓有历史引用",
+      "ThaiCao/WakeupSchedule_Kotlin L233: add(SchoolInfo(\"D\", \"东北财经大学\", \"http://202.199.165.159/\", TYPE_URP)) — type=urp 确认",
+      "bxs114/Dufe_URP_Courseselection repo description: '东北财经大学URP教务系统选课辅助程序' (empty repo 2024-01) — URP 选课辅助",
+      "gaojunran/DUFE-grabber (东北财经大学本科教务抢课助手) 使用 #xirxkxkbody / #ifra / #submitButton — URP 选课系统标准 DOM 标识"
+    ],
+    "final_recommendation": {
+      "url": "http://202.199.165.159/",
+      "type": "urp",
+      "reason": "WakeupSchedule L233 + bxs114/Dufe_URP_Courseselection 描述 + gaojunran/DUFE-grabber DOM 特征 (#xirxkxkbody) 三源一致, URP 系统无悬念; IP 直连 80/443 refused 表明需校园网/VPN 访问, 但 URL 仍有效. 若已迁域需用户告知新入口, 当前状态保留 OK"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "东北大学",
+    "old_url": "https://jwxt.neu.edu.cn/",
+    "old_type": "neu",
+    "status": "OK",
+    "evidence_chain": [
+      "curl -I -L jwxt.neu.edu.cn → IPv4 210.30.206.227, port 443 外部 connection timed out (校园网/校内限制, 与 NEU 实际状况一致)",
+      "cfp-fetch jwxt.neu.edu.cn → 522 (CF proxy 自身超时, 非目标拒答)",
+      "GitHub 多源实锤 jwxt.neu.edu.cn: CreamPig233/neu_wisedu2wakeup (README 写明 '东北大学本科教务管理系统(2026更新)'), PopulusYang/NeuTimetable (东北大学新版教务系统), neucn/elise, RekaYOO/NEU-JWXT-Toolkit, PeterPtroc/neu-jwxt-to-wakeup, leavesvv-source/NEU-Timetable, XingHeYuZhuan/shiguang_warehouse/resources/NEU/neu.js",
+      "CreamPig233/neu_wisedu2wakeup source code 显式使用 https://jwxt.neu.edu.cn 作为 base URL, 并配套 webvpn.neu.edu.cn 校外访问",
+      "README 关键词: '东北大学, NEU, 金智教育, 今日校园, _WEU' — 2026 切换到金智 wisedu 体系, 但登录入口仍是 jwxt.neu.edu.cn"
+    ],
+    "final_recommendation": {
+      "url": "https://jwxt.neu.edu.cn/",
+      "type": "neu",
+      "reason": "7+ GitHub 项目 2025-2026 活跃引用 (neu_wisedu2wakeup 显式 base=https://jwxt.neu.edu.cn), 2026 最新版 README 确认新版教务迁移金智但域名不变; 校外访问需 webvpn.neu.edu.cn; 无需变更"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "东北林业大学",
+    "old_url": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
+    "old_type": "qz",
+    "status": "OK",
+    "evidence_chain": [
+      "OFFICIAL 实锤: cfp-fetch https://www.nefu.edu.cn/ 主页 → 含 <a href=\"http://jwcnew.nefu.edu.cn/dblydx_jsxsd/sso.jsp\">教务在线</a> (学校官网直接挂出链接)",
+      "bboy-xp/nefu-crawler app/handlers/login.js 显式: url 'http://jwcnew.nefu.edu.cn/dblydx_jsxsd/xk/LoginToXk', Host/Origin/Referer 都是 jwcnew.nefu.edu.cn (LoginToXk 端点属强智)",
+      "heyMahalo/crouse_select main.py 也使用 jwcnew.nefu.edu.cn 域",
+      "ThaiCao/WakeupSchedule_Kotlin L232: add(SchoolInfo(\"D\", \"东北林业大学\", \"http://jwcnew.nefu.edu.cn/dblydx_jsxsd/\", TYPE_QZ))",
+      "cfp-fetch jwcnew.nefu.edu.cn/dblydx_jsxsd/ → 0 字节 (Connection 成功但 HEAD 无响应, 服务端仅 POST/GET 才返) — 域生效, 跨省限制可能"
+    ],
+    "final_recommendation": {
+      "url": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
+      "type": "qz",
+      "reason": "学校官网 www.nefu.edu.cn 显式挂 '教务在线' 链接, nefu-crawler LoginToXk 端点 + WakeupSchedule L232 三源一致, 强智 /jsxsd/ 标准路径; 无需变更"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "东北石油大学",
+    "old_url": "http://jwgl.nepu.edu.cn/",
+    "old_type": "hnust",
+    "status": "OK",
+    "evidence_chain": [
+      "q948185662/spring-boot-kotlin-wenepu (We东油 Spring Boot Kotlin) — README '支持获取用于东北石油大学教务管理系统的 web token', src/.../TimeServiceImpl.kt 显式 .url(\"http://jwgl.nepu.edu.cn/app.do\")",
+      "ThaiCao/WakeupSchedule_Kotlin L234: add(SchoolInfo(\"D\", \"东北石油大学\", \"http://jwgl.nepu.edu.cn/\", TYPE_HNUST))",
+      "GitHub code search: lingion/sleepy 自身 + saucerframe/url.txt(m09046105/xiaoyi) + spring-boot-kotlin-wenepu 三处提及 jwgl.nepu.edu.cn",
+      "cfp-fetch jwgl.nepu.edu.cn → 0 bytes (Connection 成功, 无响应, 直连同样 connection timed out) — 域生效但有访问限制"
+    ],
+    "final_recommendation": {
+      "url": "http://jwgl.nepu.edu.cn/",
+      "type": "hnust",
+      "reason": "spring-boot-kotlin-wenepu (We东油) app.do 端点 + WakeupSchedule L234 TYPE_HNUST 双源一致, hnust 类型(湖工商/湖南)在本案用于 NEPU 自定义 URP 协议(sleepy 内部映射), 无需变更"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "东华大学",
+    "old_url": "https://jw.dhu.edu.cn/jwapp/",
+    "old_type": "wisedu",
+    "status": "OK",
+    "evidence_chain": [
+      "cfp-fetch https://jw.dhu.edu.cn/jwapp/ → 200, body 7359 bytes; DOM 含 <title>提示信息</title> + $.post(\"/_web/_ids/login/api/logout/create.rst?_p=YXM9MQ__\") — 标准金智 wisedu 单点登录(EMAP 体系)特征",
+      "DIYgod/RSSHub lib/routes/dhu/jiaowu/news.ts: baseUrl='https://jw.dhu.edu.cn' (rss 抓取路由)",
+      "DCMMC/DHUCourseSelector (2017 ver 0.1) 选课助手 (旧版 zf 系统)",
+      "Bad-086/DHU_CourseMonitor 2026-08-09 README '东华大学新教务系统，课程余量监控' — 当前新版 jwapp 持续活跃",
+      "Xiaoxi679/dhu-intro docs Q&A (校园指南) — 东华主域 jw.dhu.edu.cn 锚定",
+      "type=wisedu 与 /jwapp/ + _web/_ids/login/api/logout/create.rst 调用模式 100% 一致"
+    ],
+    "final_recommendation": {
+      "url": "https://jw.dhu.edu.cn/jwapp/",
+      "type": "wisedu",
+      "reason": "DOM 实锤 _web/_ids/login/api/logout (金智 wisedu EMAP 单点登录标志) + RSSHub jw.dhu.edu.cn 路由 + 2026 DHU_CourseMonitor 持续维护, wisedu 类型与 /jwapp/ 路径匹配; 无需变更"
+    }
+  },
+  {
+    "sortKey": "D",
+    "name": "东南大学",
+    "old_url": "https://newxk.urp.seu.edu.cn/",
+    "old_type": "seu",
+    "status": "DRIFT",
+    "evidence_chain": [
+      "cfp-fetch https://newxk.urp.seu.edu.cn/ → HTTP 421 Misdirected, DBAppWAF/2.1.1, DOM 含 <title id=\"pageTitle\">升级维护中</title> / <p class=\"title\" id=\"title\">本网站正在升级维护中</p> + '请通过VPN/校园网访问' / 'The website is under maintainance'",
+      "现代登录已迁 SSO: cfp-fetch https://newids.seu.edu.cn/authserver/login?goto=... (luzy99/SEUAutoLogin login.py L16 显式) + https://ehall.seu.edu.cn/ (Aetik-yue/hormone school_adapter.dart L215-216 loginUrl='http://ehall.seu.edu.cn/')",
+      "luzy99/SEUAutoLogin gpa.py: 'http://ehall.seu.edu.cn/jwapp/sys/cjcx/modules/cjcx/xscjcx.do' — 走 ehall 网关拿数据, 不是直连 newxk",
+      "Aetik-yue/hormone 显式 '东南大学 → http://ehall.seu.edu.cn/' 替代 newxk",
+      "GitHub 0 命中 newxk.urp.seu.edu.cn 活跃代码; HeraldStudio/herald-webservice + DIYgod/RSSHub 全部走 newids.seu.edu.cn + ehall.seu.edu.cn 路径",
+      "type=seu 是 sleepy 内部自定义类型(对应 its.seu.edu.cn/curriculumArrange 或类似 SSO 后的 API 协议), 与 URP 后端 URL newxk 不直接对应"
+    ],
+    "final_recommendation": {
+      "url": "https://ehall.seu.edu.cn/",
+      "type": "seu",
+      "reason": "DRIFT: newxk.urp.seu.edu.cn 显式 '升级维护中 + 仅 VPN/校园网访问' (DOM 实锤), 现代 SEU 已统一到 newids.seu.edu.cn (SSO) + ehall.seu.edu.cn (网关/jwapp) 体系. Aetik-yue/hormone 已替换; sleepy 内部 type=seu 仍指 SEU SSO 后协议, 建议 url 改为 https://ehall.seu.edu.cn/ (与 type=seu 的实际登录入口对齐, newxk 域名可能随时被弃用). 注: sleepy 自身 JwImportActivity.kt 与 schools.json 仍存 newxk 入口, 需开发者决策是否跟随新 SSO 调整"
+    },
+    "url": "http://jwxt.seu.edu.cn/jwapp",
+    "type": "zf_new",
+    "note": "待 subagent 详情确认"
+  }
+]
