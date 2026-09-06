@@ -24,3 +24,8 @@ q*.json
 *.tmp
 *.bak
 .claude/
+
+# User-private SOPs (internal only, never push)
+# 用户的内部 SOP，永久不纳入 git 跟踪，禁止 push 到任何远端。
+# 包含：发版/工作流/跨仓验证方法论等用户机密规范。
+docs/sop/release-sop.md

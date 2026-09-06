@@ -1,21 +1,117 @@
 # Sleepy v1.0.50
 
-### 致谢页按学校聚合
+> Direct import adds Guangdong Medical University with the new `/kbcx/` path; Hefei University of Technology EAMS5 distinguishes login state from timetable data; 18 school entries corrected; about page credits 32 schools by project.
+>
+> 教务直连新增广东医科大学（支持新版 `/kbcx/` 路径）；合肥工业大学 EAMS5 区分登录态与课表数据；修正 18 所学校入口；关于页按学校聚合 32 所学校的致谢。
 
-教务适配致谢页面改版。原先按仓库逐条列出（29 条单卡滚动阅读），现在按两层结构组织：跨校普适项目（WakeUp / WakeupSchedule_BUPT / WakeupSchedule_Kotlin / 时光课程表 cqu.js / shiguang_warehouse / zfn_api / FlowCourse / iwut / shangkeschedule）保持单卡直陈；单校项目按学校聚合，1 校 1 卡，31 张卡片，默认收起，点击展开后看到该校所参考的所有学生维护 GitHub 项目；GDMU 为用户采集包确认项（共 74 个单校 token）。
+## What's New
 
-覆盖范围以 179 校全量交叉验证（commit `94485ee`）过程中触达的仓库为底：合肥工业大学（4 个）、东南大学（3 个）、东北大学（6 个）、重庆大学（8 个）、电子科技大学（5 个）、广东工业大学（5 个）、长沙理工大学（5 个）、北京大学（5 个）、北京邮电大学（3 个）、广东财经大学 / 广东金融学院 / 广东外语外贸大学 / 北京林业大学 / 东北林业大学 / 东华大学 / 云南财经大学 / 安徽大学 / 四川大学 / 浙江大学 / 中国科学技术大学 / 武汉理工大学 / 北京化工大学 / 北京理工大学 / 北京信息科技大学 / 安徽建筑大学 / 重庆邮电大学移通学院 / 华南农业大学 / 齐鲁工业大学 / 渤海大学 / 东北石油大学 / 南京理工大学（各 1–2 个）。
+### Guangdong Medical University: `/kbcx/` direct import
 
-展开态用 `mutableStateMapOf` 按卡片 id 维护，跨滚动保持。回滚逻辑只在用户主动切回关于页时清空。
+Guangdong Medical University has moved to the new Zhengfang `zftal-ui-v5` timetable path:
 
-致谢段落文本已在 6 个发布语言（values / values-zh-rCN / values-zh-rTW / values-en / values-ja / values-es）同步重写，每条仓库名 + 作者标记跨语种不翻译，作为 `AboutLicenseAttributionTest` 的漂移闸门依据。测试覆盖从原 29 条 token 扩展到 83 条（跨校 9 + 单校 74，含 GDMU 单 token 软致谢，因 zh-TW 与其余语种校名汉字不同不取汉字做漂移闸门），全部 6 语必查。
+```
+https://jw.gdmu.edu.cn/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default
+```
 
-### 广东医科大学 GDMU：裸 `/kbcx/` 路径落地
+Sleepy now accepts `/kbcx/`, `/jwglxt/`, and WebVPN `/http/<hex>/` as valid timetable prefixes. The internal bridge test forbids hardcoding `/jwglxt/kbcx`.
 
-正方教务新版 zftal-ui-v5 的个人课表真实 URL 为 `https://jw.gdmu.edu.cn/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default`，不再走 `/jwglxt/` 前缀。原 `JwZfNewFetchJs` 仅校验 `/jwglxt/` 路径，导致用户场景报错 `请先导航到个人课表页(地址应含 /jwglxt/)`。本次同步在 JS 与 Kotlin 两侧把 `/kbcx/` 与 WebVPN `/http/<hex>/` 一并纳入合法路径前缀判断，API 路径拼接保留 `pathPrefix + '/kbcx/xskbcx_cxXsgrkb.html'`，契约由 `JwImportViewModelBridgeTest` 锁死，禁止硬编码 `/jwglxt/kbcx`。
+Guangdong Medical University has no public student-maintained adapter; the new path was confirmed from a user-submitted capture and is recorded as a capture acknowledgement.
 
-GDMU 无外部学生维护 GitHub 仓库可参考，本次落地依赖用户提供采集包实锤 zftal-ui-v5 形态，关于页以单校软致谢形式记录（30 张学校卡中第 31 张）。
+### Hefei University of Technology EAMS5
 
-### 关于外网可达性的诚实声明
+EAMS5 distinguishes a live timetable from a login page.
 
-发布前对 `https://jw.gdmu.edu.cn/` 实测 `cfp-fetch` 探测：域名解析正常，但 HTTPS 握手后连接超时（exit 28），主站 `https://www.gdmu.edu.cn/` 仍可达。这是学校侧教务出口的临时网络/防火墙/维护状态，非本应用代码阻塞。建议用户在 GDMU 教务出口恢复正常后再做导入。
+- `studentId` matches six real-world forms (`{ studentId: '...' }`, `{studentId="..."}`, `var studentId = '...'`, and variants).
+- A login page is detected before parse; expired sessions surface a clear error instead of being parsed as timetable data.
+
+The four student-maintained repositories that informed the Hefei adapter are now all credited:
+
+- HFUT-Schedule (Chiu-xaH, MIT)
+- HfutOpenApi (BoynChan, MIT)
+- hfut_schedule_hacker (Aoi-cn)
+- django-hfut-auth (elonzh, MIT)
+
+### About page: 32 schools grouped by project
+
+The about page is reorganized. 29 flat credits become 9 cross-school projects and 32 school cards. Each school card is collapsed by default; tap to expand the projects used for that school. The long introduction paragraph is also collapsible.
+
+## Fixes
+
+- 18 school entries corrected — protocol, URL, and alias — so direct import opens them where it previously failed.
+- Three missing Hefei University of Technology repository credits added.
+- The boilerplate "report omissions via GitHub Issue" line is removed from the about page.
+
+## Known Limitations
+
+`https://jw.gdmu.edu.cn/` was probed before release: DNS resolves, HTTPS handshake times out (exit 28). The main university site `https://www.gdmu.edu.cn/` remains reachable.
+
+This is a temporary state on the school's network. The import code path itself is unchanged; if the domain is still timing out when you tap Import, wait for the school to restore the endpoint.
+
+## Verification
+
+- Tests: 1088 cases, 0 failures, 0 errors.
+- APK:
+  - `app-arm64-v8a-release.apk` — 2,795,511 bytes, SHA-256 `410260a6d725d15fe0981c4ea81c46465cc25dadeee21d5a45c31f7a3de14b55`
+  - `app-armeabi-v7a-release.apk`
+  - `app-x86_64-release.apk`
+- Build: versionName `1.0.50`, versionCode `51`
+
+---
+
+# Sleepy v1.0.50
+
+> 教务直连新增广东医科大学（支持新版 `/kbcx/` 路径）；合肥工业大学 EAMS5 区分登录态与课表数据；修正 18 所学校入口；关于页按学校聚合 32 所学校的致谢。
+
+## 新增功能
+
+### 广东医科大学：支持裸 `/kbcx/` 路径
+
+广东医科大学已迁移到正方新版 `zftal-ui-v5` 课表路径：
+
+```
+https://jw.gdmu.edu.cn/kbcx/xskbcx_cxXskbcxIndex.html?gnmkdm=N2151&layout=default
+```
+
+Sleepy 现已接受 `/kbcx/`、`/jwglxt/` 和 WebVPN `/http/<hex>/` 作为合法前缀。桥接测试禁止硬编码 `/jwglxt/kbcx`。
+
+广东医科大学暂无公开的学生维护适配器，新路径由用户采集包确认，按"采集包致谢"记录。
+
+### 合肥工业大学 EAMS5
+
+EAMS5 现在能区分真实课表与登录页：
+
+- `studentId` 匹配六种实际写法：`{ studentId: '...' }`、`{studentId="..."}`、`var studentId = '...'` 及其变体。
+- 抓取前先识别登录页；登录态过期时给出明确错误，不会被当成课表解析。
+
+参考合工大协议形态的 4 个学生仓库现已全部致谢：
+
+- HFUT-Schedule (Chiu-xaH, MIT)
+- HfutOpenApi (BoynChan, MIT)
+- hfut_schedule_hacker (Aoi-cn)
+- django-hfut-auth (elonzh, MIT)
+
+### 关于页：32 所学校按项目聚合
+
+关于页重新组织：29 条散乱致谢 → 9 张跨校项目卡 + 32 张学校卡。每张学校卡默认收起，点开展开看该校参考的全部学生项目。原先长段的致谢说明也改为可折叠。
+
+## 修复
+
+- 修正 18 所学校的协议 / URL / 别名，使原先无法进入教务直连的学校恢复正常。
+- 补齐合肥工业大学 3 条被遗漏的仓库致谢。
+- 删除关于页"如遗漏请通过 GitHub Issue 告知"等冗余话术。
+
+## 已知限制
+
+发布前探测 `https://jw.gdmu.edu.cn/`：DNS 解析正常，HTTPS 握手超时（exit 28）。同期主站 `https://www.gdmu.edu.cn/` 可达。
+
+这是学校侧的临时网络状态。导入代码路径本身未改变；若点击"导入此页"时 GDMU 教务域名仍超时，请等学校恢复正常后再导入。
+
+## 验证
+
+- 测试：1088 用例，0 失败 0 错误。
+- APK：
+  - `app-arm64-v8a-release.apk` — 2,795,511 bytes，SHA-256 `410260a6d725d15fe0981c4ea81c46465cc25dadeee21d5a45c31f7a3de14b55`
+  - `app-armeabi-v7a-release.apk`
+  - `app-x86_64-release.apk`
+- 构建：versionName `1.0.50`，versionCode `51`
