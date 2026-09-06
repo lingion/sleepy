@@ -170,10 +170,6 @@ object WidgetBitmapRenderers {
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR
     ): Bitmap {
-        if (variant == WidgetVariant.SMALL && wDp < 150f) {
-            return renderTodayCompact(context, data, wDp, hDp)
-        }
-        // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
         return renderTodayRegular(context, data, wDp, hDp)
     }
 
@@ -193,7 +189,7 @@ object WidgetBitmapRenderers {
             return listOf(resolve(statusRes))
         }
         if (data.courses.isEmpty()) return listOf(resolve(R.string.today_no_course))
-        return data.courses.take(1).map { it.courseName }
+        return data.courses.map { it.courseName }
     }
 
     /**
@@ -427,7 +423,7 @@ object WidgetBitmapRenderers {
         }
         val today = data.days.first()
         if (today.courses.isEmpty()) return listOf(resolve(R.string.no_course))
-        return listOf(today.courses.first().courseName)
+        return data.days.flatMap { it.courses }.map { it.courseName }
     }
 
     /**
@@ -988,10 +984,6 @@ object WidgetBitmapRenderers {
         context: Context, data: TwoDayData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR
     ): Bitmap {
-        if (variant == WidgetVariant.SMALL && wDp < 150f) {
-            return renderTwoDayCompact(context, data, wDp, hDp)
-        }
-        // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
         return renderTwoDayRegular(context, data, wDp, hDp)
     }
 

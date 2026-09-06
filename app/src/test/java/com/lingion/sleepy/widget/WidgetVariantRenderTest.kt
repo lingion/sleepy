@@ -17,7 +17,7 @@ import java.time.LocalDate
  * Bitmap 像素管线无法在纯 JVM 断言(Bitmap.createBitmap 返回 null 桩)。
  * 因此这里断言渲染与测试共用的单一事实来源 todayCompactTexts 的
  * 资源解析无关核心重载((Int)->String resolver 版):
- *   - 课表内 + 学期内: 只保留首门课程名(compact 档仅显示一行)
+ *   - 课表内 + 学期内: 保留全部课程名，不能因 SMALL 变体截断数据
  *   - 无课表 / 学期前 / 学期后 / 无课: 各自状态文案分支选中正确资源
  *
  * Bitmap 尺寸断言(SMALL 档输出宽高)需 Robolectric — 本仓库未引入该依赖且
@@ -48,10 +48,9 @@ class WidgetVariantRenderTest {
     private fun resolve(resId: Int): String = resNames.getValue(resId)
 
     @Test
-    fun `compact texts keep only first course`() {
+    fun `compact texts keep all courses`() {
         val texts = WidgetBitmapRenderers.todayCompactTexts(::resolve, data)
-        assertEquals(1, texts.size)
-        assertEquals("高等数学", texts[0])
+        assertEquals(listOf("高等数学", "大学英语", "数据结构"), texts)
     }
 
     @Test
@@ -101,13 +100,16 @@ class WidgetVariantRenderTest {
             DayData(
                 date = LocalDate.of(2026, 9, 1),
                 dayOfWeek = 2,
-                courses = listOf(testCourse(name = "高等数学", startNode = 1)),
+                courses = listOf(
+                    testCourse(name = "高等数学", startNode = 1),
+                    testCourse(name = "大学英语", startNode = 3)
+                ),
                 timeJson = TimeTableUtils.DEFAULT_TIME_JSON
             ),
             DayData(
                 date = LocalDate.of(2026, 9, 2),
                 dayOfWeek = 3,
-                courses = emptyList(),
+                courses = listOf(testCourse(name = "数据结构", startNode = 5)),
                 timeJson = TimeTableUtils.DEFAULT_TIME_JSON
             )
         ),
@@ -115,10 +117,9 @@ class WidgetVariantRenderTest {
     )
 
     @Test
-    fun `twoDay compact texts keep only today first course`() {
+    fun `twoDay compact texts keep all courses across both days`() {
         val texts = WidgetBitmapRenderers.twoDayCompactTexts(::resolve, twoDayData)
-        assertEquals(1, texts.size)
-        assertEquals("高等数学", texts[0])
+        assertEquals(listOf("高等数学", "大学英语", "数据结构"), texts)
     }
 
     @Test
