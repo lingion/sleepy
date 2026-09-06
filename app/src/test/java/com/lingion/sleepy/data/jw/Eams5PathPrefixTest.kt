@@ -72,7 +72,7 @@ class Eams5PathPrefixTest {
     }
 
     // -------- AHU (安徽大学) fetch JS 契约 — 2026-09-06 cross-verified --------
-    // 安大走金智 EAMS 新版 GET 路径 (data.lessons[]), 与合工大 POST datum 形态不同。
+    // 安大走金智 EAMS 新版 GET 路径 (print-data studentTableVms[].activities), 与合工大 POST datum 形态不同。
     // fetch JS 必须用占位符拼前缀, 禁把 /student 硬编码。
 
     @Test
@@ -84,6 +84,56 @@ class Eams5PathPrefixTest {
         assertEquals("AHU fetch 应使用 /student 前缀", "fetch('__EAMS5_PREFIX__' + '/for-std/course-table')", js)
         assertEquals("AHU fetch 替换后无残留占位符", "fetch('/student' + '/for-std/course-table')", resolved)
         org.junit.Assert.assertFalse(resolved.contains(EAMS5_PREFIX_PLACEHOLDER))
+    }
+
+    @Test
+    fun `AHU semester select extraction regex matches real Thymeleaf DOM`() {
+        // 5 仓 consensus (a999c385 agent): AHU 是 Thymeleaf/J2EE 模板渲染, 学期列表嵌入
+        //   `<select id="allSemesters"><option value="112">2024-2025-2</option>...`
+        // qiqqqqq517 ahu.js:37 + abydym CourseRepository.kt:119-167 + Zeraora client.ts:480-489
+        // 锁契约: regex 必须匹配真实 HTML, 取 <option value="数字"> id, 按 id 倒序取首
+        val html = """
+        <select id="allSemesters" name="allSemesters" class="select">
+          <option value="234" selected="selected">2024-2025-1</option>
+          <option value="233">2023-2024-2</option>
+          <option value="232">2023-2024-1</option>
+        </select>
+        """
+        val selectRegex = Regex("""<select[^>]*\bid=["']allSemesters["'][^>]*>([\s\S]*?)</select>""", RegexOption.IGNORE_CASE)
+        val selectMatch = selectRegex.find(html)
+        org.junit.Assert.assertNotNull("应能匹配 <select id='allSemesters'>", selectMatch)
+        val inner = selectMatch!!.groupValues[1]
+        val optionRegex = Regex("""<option[^>]*\bvalue=["'](\d+)["'][^>]*>([^<]*)</option>""", RegexOption.IGNORE_CASE)
+        val opts = optionRegex.findAll(inner).map { m ->
+            m.groupValues[1].toInt() to m.groupValues[2].trim()
+        }.toList()
+        org.junit.Assert.assertEquals("应抽出 3 个 option", 3, opts.size)
+        // 按 id 倒序取首 → 234
+        val maxId = opts.maxOf { it.first }
+        assertEquals("newest id 是 234", 234, maxId)
+    }
+
+    @Test
+    fun `AHU session expired detection matches CAS login page shape`() {
+        // Zeraora client.ts:608-617 (a999c385/aa707ac2033872402 agents consensus):
+        //   1) 302-399 + Location 落 one.ahu.edu.cn/cas 或 /cas/login
+        //   2) 200 + name="lt" AND name="execution" 双字段
+        //   3) 兜底: 统一身份认证 / 请重新登录 / casloginform
+        val casLoginHtml = """
+        <html><body>
+          <form id="casloginform" action="/cas/login">
+            <input name="username"/><input name="password"/>
+            <input name="lt" value="LT-xxx"/>
+            <input name="execution" value="e1s1"/>
+          </form>
+        </body></html>
+        """
+        val hasLt = Regex("""name=["']lt["']""", RegexOption.IGNORE_CASE).containsMatchIn(casLoginHtml)
+        val hasExec = Regex("""name=["']execution["']""", RegexOption.IGNORE_CASE).containsMatchIn(casLoginHtml)
+        org.junit.Assert.assertTrue("应能识别 lt 字段", hasLt)
+        org.junit.Assert.assertTrue("应能识别 execution 字段", hasExec)
+        val hasCasLoginUi = Regex("""casloginform""", RegexOption.IGNORE_CASE).containsMatchIn(casLoginHtml)
+        org.junit.Assert.assertTrue("应能识别 casloginform form id", hasCasLoginUi)
     }
 
     @Test

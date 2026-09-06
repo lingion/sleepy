@@ -932,60 +932,96 @@ private const val EAMS5_AHU_FETCH_JS = """
     }
     var PREFIX = '__EAMS5_PREFIX__';
     // 1) GET course-table HTML, 提取 allSemesters (学期 JSON 数组) + 检测登录态
-    fetch(PREFIX + '/for-std/course-table', {credentials:'include'})
+    fetch(PREFIX + '/for-std/course-table', {credentials:'include', redirect:'follow'})
     .then(function(r){
-      if (!r.ok) throw new Error('course-table 失败 HTTP ' + r.status + '（请确认已在教务主页登录）');
-      return r.text().then(function(html){ return {html: html, finalUrl: r.url || ''}; });
+      // 会话失效判定 (Zeraora client.ts:608-617 + abydym SessionAuthenticator.kt + Landon-3314 isLoginExpired 共识):
+      //   1) 302-399 redirect + Location 落到 CAS (/cas/login, one.ahu.edu.cn/cas)
+      //   2) 200 OK + HTML 含 'name="lt"' AND 'name="execution"' 双字段 (CAS 登录页)
+      //   3) URL 含 casloginform / 统一身份认证 / 请重新登录 (兜底)
+      // 5 仓 cross-verified 2026-09-06 (a999c385/aa707ac2033872402 agents)
+      var status = r.status;
+      var locHeader = r.headers.get('location') || '';
+      var isCasRedirect = status >= 300 && status < 400
+        && (locHeader.indexOf('one.ahu.edu.cn/cas') >= 0
+            || /\/cas\/login/.test(locHeader)
+            || /\/cas\b/.test(locHeader));
+      // r.text() 单次消费 — 先一次性读再判
+      return r.text().then(function(body){
+        // 同时读 r.url, fetch redirect:'follow' 后 finalUrl 是最终 URL (CAS 登录页)
+        var finalUrl = r.url || '';
+        var hasLtField = /name=["']lt["']/i.test(body);
+        var hasExecField = /name=["']execution["']/i.test(body);
+        var hasCasLoginUi = /统一身份认证|请重新登录|session timeout|会话已过期|name=["']casloginform["']/i.test(body);
+        var loginExpired = finalUrl.indexOf('/login') >= 0
+                        || finalUrl.indexOf('cas/login') >= 0
+                        || finalUrl.indexOf('one.ahu.edu.cn/cas') >= 0
+                        || finalUrl.indexOf('casloginform') >= 0
+                        || isCasRedirect
+                        || (hasLtField && hasExecField)
+                        || hasCasLoginUi;
+        return {html: body, finalUrl: finalUrl, status: status, loginExpired: loginExpired};
+      });
     })
     .then(function(ctx){
-      var html = ctx.html || '';
-      var finalUrl = ctx.finalUrl || '';
-      // 会话失效: 最终 URL 含 /login (302 落到 CAS/cas/login)
-      // 关键词兜底 (abydym SessionAuthenticator.kt + Landon-3314 AcademicFetchResponse.isLoginExpired 共识):
-      //   'casloginform', '统一身份认证', '请重新登录', 'session timeout', '会话已过期', 'name="lt"'
-      // 5 仓 cross-verified 2026-09-06
-      var loginExpired = finalUrl.indexOf('/login') >= 0
-                      || finalUrl.indexOf('cas/login') >= 0
-                      || finalUrl.indexOf('casloginform') >= 0
-                      || /统一身份认证|请重新登录|session timeout|会话已过期|name="lt"/i.test(html);
-      if (loginExpired) {
-        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'登录态已失效,请在教务主页重新登录后再试'}));
+      if (ctx.loginExpired) {
+        window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
+          err:'登录态已失效,请在教务主页重新登录后再试'}));
         return null;
       }
-      // 安大 HTML 内嵌学期数组。多重 fallback 应对 Vue 2/3 SSR / Nuxt / Thymeleaf 渲染差异:
-      //   优先级 1 (5 仓共识, 主流): allSemesters = [...]
-      //   优先级 2 (Vue 2 SSR 常见): semesters = [...] 或 semesterVms = [...]
-      //   优先级 3 (Vue 3 + NUXT 嵌入): __INITIAL_STATE__ / __NUXT__ JSON
-      //   优先级 4 (Thymeleaf 后端): 直接序列化到 HTML 内嵌 script 段
-      // 非贪婪匹配, 兼容 = [...] / :[...] / =[...]; / 两种分隔
-      var semesterListMatch = html.match(/(?:allSemesters|semesters|semesterVms|termList|termListVms)\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]?/);
+      var html = ctx.html || '';
+      // 学期列表提取 — 5 仓共识 (a999c385 agent):
+      //   AHU 是 Thymeleaf/J2EE 模板渲染, 学期列表嵌入 HTML 内
+      //   `<select id="allSemesters"><option value="112">2024-2025-2</option>...`
+      //   qiqqqqq517 ahu.js:37 / abydym CourseRepository.kt:119-167 / Zeraora client.ts:480-489
+      //   共识 regex: <select[^>]*id=["']allSemesters["'][^>]*>([\s\S]*?)</select>
+      //   + 内部 <option value="(\d+)"[^>]*>([^<]+)</option> 循环
+      // 按 id 倒序取首 (服务器返回 newest-first, abydym + Zeraora 一致)
       var semesterId = null;
-      if (semesterListMatch) {
-        try {
-          var arr = JSON.parse(semesterListMatch[1]);
-          if (arr && arr.length) {
-            // 优先 currentSemester 标志; 否则取 isCurrentSemester=true; 否则首个 (vue order 通常当前在前)
-            var cur = null;
-            for (var i = 0; i < arr.length; i++) {
-              if (arr[i].isCurrentSemester === true || arr[i].isCurrent === true ||
-                  arr[i].current === true || arr[i].status === 'CURRENT') { cur = arr[i]; break; }
-            }
-            var semObj = cur || arr[0];
-            semesterId = String(semObj.id || semObj.semesterId || semObj.value || semObj.code);
-          }
-        } catch(e) {}
+      var selectMatch = html.match(/<select[^>]*\bid=["']allSemesters["'][^>]*>([\s\S]*?)<\/select>/i);
+      if (selectMatch) {
+        var inner = selectMatch[1];
+        var optionRegex = /<option[^>]*\bvalue=["'](\d+)["'][^>]*>([^<]*)<\/option>/gi;
+        var m;
+        var opts = [];
+        while ((m = optionRegex.exec(inner)) !== null) {
+          opts.push({id: parseInt(m[1], 10), name: m[2].trim()});
+        }
+        // 取 id 最大 (newest first; abydym .sortedByDescending { it.id }.first())
+        if (opts.length) {
+          opts.sort(function(a, b) { return b.id - a.id; });
+          semesterId = String(opts[0].id);
+        }
       }
-      // 优先级 5 fallback: 直接从 URL 末段或页面里提取学期号 (Vue 3 hydrate 后 <option selected>)
+      // 优先级 2 fallback: Vue/Nuxt 嵌入的 JSON 形态 (防御性)
+      // 形如 var allSemesters = [...] 或 semesters = [...]
       if (!semesterId) {
-        var sel = html.match(/<option[^>]*selected[^>]*value=["']?(\d+)["']?/i);
+        var jsonMatch = html.match(/(?:allSemesters|semesters)\s*[=:]\s*(\[[\s\S]*?\])\s*[;,]?/);
+        if (jsonMatch) {
+          try {
+            var arr = JSON.parse(jsonMatch[1]);
+            if (arr && arr.length) {
+              // 优先 isCurrentSemester 标志
+              var cur = null;
+              for (var i = 0; i < arr.length; i++) {
+                if (arr[i].isCurrentSemester === true || arr[i].isCurrent === true ||
+                    arr[i].current === true || arr[i].status === 'CURRENT') { cur = arr[i]; break; }
+              }
+              var semObj = cur || arr[0];
+              semesterId = String(semObj.id || semObj.semesterId || semObj.value || semObj.code);
+            }
+          } catch(e) {}
+        }
+      }
+      // 优先级 3 fallback: <option selected value="X">
+      if (!semesterId) {
+        var sel = html.match(/<option[^>]*\bselected\b[^>]*\bvalue=["']?(\d+)["']?/i);
         if (sel) semesterId = sel[1];
       }
-      // 优先级 6 fallback: 已知 5 仓共识 — 安大当前学期 ID 通常在 230-250 范围 (历史数据)
-      // 6 仓都有 'currentTeachWeek' 字眼; 但若 HTML 已 hydrate, /student/home/get-current-teach-week 可后续调
-      // v1 不强行猜, 直接报"未取到学期列表"
+      // v1 兜底: abydym hardcoded DEFAULT_SEMESTER_ID = 112 (2024-2025-2 已知)
+      // 不强行猜, 直接报"未取到学期列表"
       if (!semesterId) {
         window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
-          err:'未取到学期列表, 请在课表页面停留几秒后再点导入 (Vue SSR hydrate 可能未完成)'}));
+          err:'未取到学期列表 (allSemesters), 请在课表页面停留几秒后再点导入'}));
         return null;
       }
       return semesterId;
@@ -993,7 +1029,7 @@ private const val EAMS5_AHU_FETCH_JS = """
     .then(function(semesterId){
       if (!semesterId) return null;
       // 2) GET print-data (含 weekday/weekIndexes/startUnit/endUnit 的真实课表数据)
-      // 不跟随重定向, 不需要 studentId — 服务端按 session 绑定学生
+      // followRedirects: 'follow' (服务端按 session 绑定学生, 不需要 studentId — 5 仓共识)
       var url = PREFIX + '/for-std/course-table/semester/' + encodeURIComponent(semesterId)
               + '/print-data?semesterId=' + encodeURIComponent(semesterId) + '&hasExperiment=false';
       return fetch(url, {credentials:'include', redirect:'follow'}).then(function(r){
