@@ -15,6 +15,7 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"net/url"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -29,32 +30,34 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const version = "v1.1"
+const version = "v1.2"
 
 // ---------------- 网络捕获 ----------------
 
 type reqRec struct {
-	requestID network.RequestID
-	url       string
-	method    string
-	postData  string
-	status    int64
-	mimeType  string
-	frameID   string
-	done      bool // loadingFinished 收到,可取响应体
-	failed    bool
-	body      string // 取回的响应体
-	order     int
+	requestID   network.RequestID
+	url         string
+	method      string
+	postData    string
+	status      int64
+	mimeType    string
+	frameID     string
+	done        bool // loadingFinished 收到,可取响应体
+	failed      bool
+	failureText string
+	body        string // 取回的响应体
+	order       int
 }
 
 type Collector struct {
-	recs    map[network.RequestID]*reqRec
-	order   []network.RequestID
-	urlSeen map[string]bool
-	urlSrc  map[string][]string
-	xnxq    string
-	gnmkdm  string
-	log     *logHub
+	recs     map[network.RequestID]*reqRec
+	order    []network.RequestID
+	urlSeen  map[string]bool
+	urlSrc   map[string][]string
+	xnxq     string
+	gnmkdm   string
+	log      *logHub
+	outcomes *outcomeSummary
 }
 
 // logHub 采集日志中枢 — 一处记录,三处消费:
@@ -231,10 +234,11 @@ func (h *logHub) Counts() (errs, warns int) {
 
 func NewCollector() *Collector {
 	return &Collector{
-		recs:    map[network.RequestID]*reqRec{},
-		urlSeen: map[string]bool{},
-		urlSrc:  map[string][]string{},
-		log:     newLogHub(),
+		recs:     map[network.RequestID]*reqRec{},
+		urlSeen:  map[string]bool{},
+		urlSrc:   map[string][]string{},
+		log:      newLogHub(),
+		outcomes: newOutcomeSummary(),
 	}
 }
 
@@ -325,7 +329,13 @@ func (c *Collector) onEvent(ev interface{}) {
 			r.mimeType = e.Response.MimeType
 			// HTTP 错误/重定向异常 → 日志 (静态资源 4xx 噪音大, 只记 API 类)
 			if e.Response.Status >= 400 && isAPILike(r.url) {
-				c.log.Log("warn", "HTTP %d %s", e.Response.Status, shortURL(r.url))
+				category := "http_failure"
+				if r.method == "OPTIONS" {
+					category = "cors_preflight_blocked"
+				}
+				if c.outcomes.add(collectionOutcome{Category: category, URL: r.url, Method: r.method, Phase: "live", Detail: fmt.Sprintf("HTTP %d", e.Response.Status)}) {
+					c.log.Log("warn", "HTTP %d %s", e.Response.Status, shortURL(r.url))
+				}
 			}
 		}
 	case *network.EventLoadingFinished:
@@ -335,14 +345,185 @@ func (c *Collector) onEvent(ev interface{}) {
 	case *network.EventLoadingFailed:
 		if r := c.recs[e.RequestID]; r != nil {
 			r.failed = true
+			r.failureText = e.ErrorText
 			if r.status == 0 {
 				r.status = -1
 			}
-			// 请求彻底失败 (连接拒绝/DNS/证书) → error 日志
-			if isAPILike(r.url) {
-				c.log.Log("error", "请求失败 %s (%s)", shortURL(r.url), e.ErrorText)
+			if !isAPILike(r.url) {
+				return
+			}
+			category := "network_failure"
+			level := "error"
+			if r.method == "OPTIONS" {
+				category = "cors_preflight_blocked"
+				level = "warn"
+			}
+			if c.outcomes.add(collectionOutcome{Category: category, URL: r.url, Method: r.method, Phase: "live", Detail: e.ErrorText}) {
+				c.log.Log(level, "%s %s (%s)", outcomeLabel(category), shortURL(r.url), e.ErrorText)
 			}
 		}
+	}
+}
+
+type captureStrategy string
+
+const captureByNavigation captureStrategy = "navigation"
+
+type capturePlan struct {
+	URL      string
+	Method   string
+	Strategy captureStrategy
+}
+
+type replayPlan struct {
+	URL    string
+	Method string
+}
+
+// planDetailCaptures deliberately accepts only cross-origin, document-like links.
+// A page-context fetch would be CORS constrained; direct tab navigation is not.
+func planDetailCaptures(mainURL string, links []string) []capturePlan {
+	plans := make([]capturePlan, 0)
+	seen := map[string]bool{}
+	for _, link := range links {
+		if seen[link] || !isNavigationCandidate(mainURL, link) {
+			continue
+		}
+		seen[link] = true
+		plans = append(plans, capturePlan{URL: link, Method: "GET", Strategy: captureByNavigation})
+	}
+	if len(plans) > 40 {
+		return plans[:40]
+	}
+	return plans
+}
+
+func isNavigationCandidate(mainURL, candidate string) bool {
+	u, err := url.Parse(candidate)
+	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
+		return false
+	}
+	if sameOrigin(mainURL, candidate) || isLogout(candidate) || looksBinary(candidate) {
+		return false
+	}
+	p := strings.ToLower(u.Path)
+	return strings.Contains(p, "course") || strings.Contains(p, "schedule") ||
+		strings.Contains(p, "timetable") || strings.Contains(p, "detail") ||
+		strings.Contains(p, "lesson") || strings.Contains(p, "class")
+}
+
+// replayCandidates preserves the evidence from real browser traffic. It never
+// upgrades a discovered GET link into a synthetic POST request.
+func replayCandidates(mainURL string, recs []*reqRec) []replayPlan {
+	seen := map[string]bool{}
+	plans := make([]replayPlan, 0)
+	for _, r := range recs {
+		if r == nil || r.method != "POST" || !sameOrigin(mainURL, r.url) ||
+			isLogout(r.url) || looksBinary(r.url) || !isAPILike(r.url) {
+			continue
+		}
+		if r.mimeType != "" && !strings.Contains(strings.ToLower(r.mimeType), "json") &&
+			!strings.Contains(strings.ToLower(r.mimeType), "text") &&
+			!strings.Contains(strings.ToLower(r.mimeType), "javascript") &&
+			!strings.Contains(strings.ToLower(r.mimeType), "html") {
+			continue
+		}
+		if !seen[r.url] {
+			seen[r.url] = true
+			plans = append(plans, replayPlan{URL: r.url, Method: r.method})
+		}
+	}
+	if len(plans) > 100 {
+		return plans[:100]
+	}
+	return plans
+}
+
+type collectionOutcome struct {
+	Category string `json:"category"`
+	URL      string `json:"url"`
+	Method   string `json:"method"`
+	Phase    string `json:"phase"`
+	Detail   string `json:"detail,omitempty"`
+}
+
+type outcomeGroup struct {
+	Category   string `json:"category"`
+	Phase      string `json:"phase"`
+	UniqueURLs int    `json:"unique_urls"`
+	Events     int    `json:"events"`
+}
+
+type outcomeSummary struct {
+	mu      sync.Mutex
+	entries map[string]collectionOutcome
+	events  map[string]int
+}
+
+func newOutcomeSummary() *outcomeSummary {
+	return &outcomeSummary{entries: map[string]collectionOutcome{}, events: map[string]int{}}
+}
+
+// add returns true for a new logical outcome. Methods are intentionally not
+// part of the key: GET/POST/OPTIONS for one target are one CORS incident.
+func (s *outcomeSummary) add(o collectionOutcome) bool {
+	key := o.Category + "|" + o.Phase + "|" + normalizeOutcomeURL(o.URL)
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	s.events[key]++
+	if _, exists := s.entries[key]; exists {
+		return false
+	}
+	s.entries[key] = o
+	return true
+}
+
+func (s *outcomeSummary) groups() []outcomeGroup {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	byCategory := map[string]*outcomeGroup{}
+	for key, outcome := range s.entries {
+		groupKey := outcome.Category + "|" + outcome.Phase
+		group := byCategory[groupKey]
+		if group == nil {
+			group = &outcomeGroup{Category: outcome.Category, Phase: outcome.Phase}
+			byCategory[groupKey] = group
+		}
+		group.UniqueURLs++
+		group.Events += s.events[key]
+	}
+	out := make([]outcomeGroup, 0, len(byCategory))
+	for _, group := range byCategory {
+		out = append(out, *group)
+	}
+	sort.Slice(out, func(i, j int) bool {
+		if out[i].Category == out[j].Category {
+			return out[i].Phase < out[j].Phase
+		}
+		return out[i].Category < out[j].Category
+	})
+	return out
+}
+
+func normalizeOutcomeURL(raw string) string {
+	u, err := url.Parse(raw)
+	if err != nil {
+		return raw
+	}
+	u.Fragment = ""
+	return u.String()
+}
+
+func outcomeLabel(category string) string {
+	switch category {
+	case "cors_preflight_blocked":
+		return "跨域预检受阻"
+	case "detail_navigation_failed":
+		return "详情页导航失败"
+	case "session_expired":
+		return "详情页会话失效"
+	default:
+		return "请求失败"
 	}
 }
 
@@ -1009,6 +1190,68 @@ func fileExists(p string) bool {
 
 // ---------------- 打包 ----------------
 
+type detailNavigationSummary struct {
+	Candidates     int `json:"candidates"`
+	Success        int `json:"success"`
+	SessionExpired int `json:"session_expired"`
+	Failed         int `json:"failed"`
+}
+
+type collectionSummary struct {
+	Version              string                  `json:"version"`
+	RequestsSeen         int                     `json:"requests_seen"`
+	LiveBodiesCaptured   int                     `json:"live_bodies_captured"`
+	ResponseBodyFailures int                     `json:"response_body_failures"`
+	DetailNavigation     detailNavigationSummary `json:"detail_navigation"`
+	Outcomes             []outcomeGroup          `json:"outcomes"`
+}
+
+func (c *Collector) captureDetailNavigations(ctx context.Context, p *packer, mainURL string, links []string) (success, sessionExpired, failed int) {
+	plans := planDetailCaptures(mainURL, links)
+	if len(plans) == 0 {
+		return 0, 0, 0
+	}
+	c.log.Log("step", "跨域详情页导航采集 — %d 个候选", len(plans))
+	for i, plan := range plans {
+		tabCtx, tabCancel := chromedp.NewContext(ctx)
+		captureCtx, cancel := context.WithTimeout(tabCtx, 20*time.Second)
+		var finalURL, title, html string
+		err := chromedp.Run(captureCtx,
+			network.Enable(),
+			chromedp.Navigate(plan.URL),
+			chromedp.WaitReady("body", chromedp.ByQuery),
+			chromedp.Title(&title),
+			chromedp.Evaluate(`location.href`, &finalURL),
+			chromedp.Evaluate(`document.documentElement.outerHTML`, &html),
+		)
+		cancel()
+		tabCancel()
+		if err != nil || html == "" {
+			failed++
+			if c.outcomes.add(collectionOutcome{Category: "detail_navigation_failed", URL: plan.URL, Method: plan.Method, Phase: "detail_navigation", Detail: fmt.Sprint(err)}) {
+				c.log.Log("warn", "%s %s", outcomeLabel("detail_navigation_failed"), shortURL(plan.URL))
+			}
+			continue
+		}
+		if isErrPage(html) || !sameOrigin(plan.URL, finalURL) {
+			sessionExpired++
+			if c.outcomes.add(collectionOutcome{Category: "session_expired", URL: plan.URL, Method: plan.Method, Phase: "detail_navigation", Detail: finalURL}) {
+				c.log.Log("warn", "%s %s", outcomeLabel("session_expired"), shortURL(plan.URL))
+			}
+			continue
+		}
+		meta := fmt.Sprintf("详情页导航 GET %s · 最终页 %s · 标题 %s", plan.URL, finalURL, title)
+		if p.add(p.uniq(urlToPath("4-detail-nav", finalURL, ".html")), meta, html) {
+			success++
+		}
+		if (i+1)%10 == 0 || i+1 == len(plans) {
+			c.log.Log("info", "详情页导航 %d/%d (成功 %d)", i+1, len(plans), success)
+		}
+	}
+	c.log.Log("ok", "详情页导航入库 %d (会话失效 %d, 失败 %d)", success, sessionExpired, failed)
+	return success, sessionExpired, failed
+}
+
 func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	p := newPacker()
 
@@ -1162,12 +1405,17 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	sort.Strings(allURLs)
 	c.log.Log("info", "URL 总表 %d 条 (网络请求+性能日志+页内链接)", len(allURLs))
 
-	// ---- 4. 资源重取(同站 GET,带凭证;串行) ----
-	// 同站 = 同根域(含子域),教务的静态资源常放在 res.xxx.edu.cn 这类子域
+	// ---- 4. 跨域课程详情页: 受控新标签页导航采集 ----
+	// 同根域不代表同源。详情页若由课程表<a>给出，直接导航可复用同一
+	// 浏览器 profile 的会话，又不会触发页面 fetch 的 CORS 预检。
+	detailOK, detailSessionExpired, detailFailed := c.captureDetailNavigations(ctx, p, mainURL, links)
+	c.log.FlushPanel(ctx)
+
+	// ---- 5. 资源重取(同源 GET,带凭证;串行) ----
+	// 页面上下文 fetch 必须同源；跨域链接已由详情页导航阶段处理。
 	// POST 数据接口 (.do/.action 等) 不重取 — GET 语义不同,拿到的是
 	// "系统异常"错误页 (WHUT issue#15 实锤: 3-res 里 3 个 .do 全是异常页,
 	// 污染包体还占配额)。判据: 该 URL 在 CDP 记录里是 POST。
-	siteHost := hostOf(mainURL)
 	postOnly := map[string]bool{}
 	for _, rid := range c.order {
 		if r := c.recs[rid]; r != nil && r.method == "POST" {
@@ -1186,7 +1434,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			refSkips["binary/logout"]++
 			continue
 		}
-		if !sameSite(hostOf(u), siteHost) {
+		if !sameOrigin(mainURL, u) {
 			refSkips["cross-site"]++
 			continue
 		}
@@ -1218,34 +1466,23 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	c.log.Log("ok", "资源重取入库 %d (尝试 %d, 跳过 %v)", resOK, refTried, refSkips)
 	c.log.FlushPanel(ctx)
 
-	// ---- 5. 接口两阶段重放 ----
+	// ---- 6. 接口两阶段重放 ----
 	fmt.Println("  正在重放数据接口…")
 	c.log.Log("step", "数据接口重放")
 	var apis []string
 	origBody := map[string]string{} // url → 浏览器实际发的请求体 (用于形态探测)
+	recs := make([]*reqRec, 0, len(c.order))
 	for _, rid := range c.order {
 		r := c.recs[rid]
-		if r == nil || isLogout(r.url) || looksBinary(r.url) {
-			continue
+		if r != nil {
+			recs = append(recs, r)
 		}
-		if !sameSite(hostOf(r.url), siteHost) {
-			continue
-		}
-		if r.mimeType != "" && !strings.Contains(strings.ToLower(r.mimeType), "json") &&
-			!strings.Contains(strings.ToLower(r.mimeType), "text") &&
-			!strings.Contains(strings.ToLower(r.mimeType), "javascript") &&
-			!strings.Contains(strings.ToLower(r.mimeType), "html") {
-			continue
-		}
-		if r.postData != "" {
+		if r != nil && r.postData != "" {
 			origBody[r.url] = r.postData
 		}
-		apis = append(apis, r.url)
 	}
-	sort.Strings(apis)
-	apis = uniqStrings(apis)
-	if len(apis) > 100 {
-		apis = apis[:100]
+	for _, plan := range replayCandidates(mainURL, recs) {
+		apis = append(apis, plan.URL)
 	}
 	replayOK := 0
 	var retry []string
@@ -1311,7 +1548,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	c.log.Log("ok", "接口重放入包 %d (候选 %d)", replayOK, len(apis))
 	c.log.FlushPanel(ctx)
 
-	// ---- 6. 日志与清单 ----
+	// ---- 7. 日志与清单 ----
 	c.log.Log("step", "写诊断日志与清单")
 	var logLines []string
 	for _, rid := range c.order {
@@ -1326,19 +1563,33 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	}
 	p.add(p.uniq("6-logs/all-urls.txt"), "发现的一切 URL 及来源", strings.Join(urlLines, "\n"))
 	// 采集过程日志 (终端/面板同源的完整记录; 适配者复盘用)
+	groups := c.outcomes.groups()
+	summaryDoc := collectionSummary{
+		Version:              version,
+		RequestsSeen:         len(c.order),
+		LiveBodiesCaptured:   netOK,
+		ResponseBodyFailures: netErr,
+		DetailNavigation: detailNavigationSummary{
+			Candidates: len(planDetailCaptures(mainURL, links)), Success: detailOK,
+			SessionExpired: detailSessionExpired, Failed: detailFailed,
+		},
+		Outcomes: groups,
+	}
+	summaryJSON, _ := json.MarshalIndent(summaryDoc, "", "  ")
+	p.add(p.uniq("6-logs/collection-summary.json"), "机器可读采集结果汇总", string(summaryJSON)+"\n")
 	errCount, warnCount := c.log.Counts()
 	p.add(p.uniq("6-logs/collect-log.txt"), "采集过程日志(含进度与错误, 终端与页面面板同源)", c.log.Text())
 
-	summary := fmt.Sprintf("打包完成: 请求入库 %d · 响应体获取失败 %d · 资源重取 %d · 接口重放入包 %d · 参数 %s · 错误 %d 警告 %d",
-		netOK, netErr, resOK, replayOK, c.minedStr(), errCount, warnCount)
+	summary := fmt.Sprintf("打包完成: 请求入库 %d · 响应体获取失败 %d · 详情导航 %d/%d · 资源重取 %d · 接口重放入包 %d · 参数 %s · 错误 %d 警告 %d",
+		netOK, netErr, detailOK, len(planDetailCaptures(mainURL, links)), resOK, replayOK, c.minedStr(), errCount, warnCount)
 	if errCount > 0 {
 		c.log.Log("warn", "%s", summary)
 	} else {
 		c.log.Log("ok", "%s", summary)
 	}
 
-	statLine := fmt.Sprintf("文件 %d 个 · 请求入库 %d · 响应体获取失败 %d · 资源重取 %d · 接口重放入包 %d · 自动发现参数 %s · 错误 %d · 警告 %d",
-		len(p.entries), netOK, netErr, resOK, replayOK, c.minedStr(), errCount, warnCount)
+	statLine := fmt.Sprintf("文件 %d 个 · 请求入库 %d · 响应体获取失败 %d · 详情导航 %d/%d · 资源重取 %d · 接口重放入包 %d · 自动发现参数 %s · 错误 %d · 警告 %d",
+		len(p.entries), netOK, netErr, detailOK, len(planDetailCaptures(mainURL, links)), resOK, replayOK, c.minedStr(), errCount, warnCount)
 	var idx strings.Builder
 	idx.WriteString("Sleepy 课表采集包 (sleepy-collector " + version + ")\n")
 	idx.WriteString("生成时间: " + time.Now().Format("2006-01-02 15:04:05") + "\n")
@@ -1346,7 +1597,7 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	idx.WriteString("Cookie 名(只有名字,没有值): " + strings.Join(cookieNames, ", ") + "\n\n")
 	idx.WriteString("== 概况 ==\n" + statLine + "\n\n== 目录说明 ==\n")
 	idx.WriteString("1-dom/ 页面DOM · 2-inline/ 内联代码 · 3-res/ 重取的资源文件\n")
-	idx.WriteString("4-net-live/ CDP捕获的请求(含响应体) · 4-net-replay/ 接口重放(withparam=带参数)\n")
+	idx.WriteString("4-net-live/ CDP捕获的请求(含响应体) · 4-detail-nav/ 跨域详情页导航捕获 · 4-net-replay/ 已观察 POST 接口重放(withparam=带参数)\n")
 	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志(6-logs/collect-log.txt 是采集过程日志)\n\n== 文件清单(路径 | 说明) ==\n")
 	for _, e := range p.entries {
 		idx.WriteString(e.path + "  |  " + e.meta + "\n")
@@ -1385,6 +1636,15 @@ func hostOf(u string) string {
 		h = h[:i]
 	}
 	return strings.ToLower(h)
+}
+
+func sameOrigin(a, b string) bool {
+	ua, errA := url.Parse(a)
+	ub, errB := url.Parse(b)
+	if errA != nil || errB != nil {
+		return false
+	}
+	return strings.EqualFold(ua.Scheme, ub.Scheme) && strings.EqualFold(ua.Host, ub.Host) && ua.Host != ""
 }
 
 // sameSite 判断两 host 是否同根域(粗略 eTLD+1:取末两段;edu.cn/gov.cn 等二段后缀取末三段)

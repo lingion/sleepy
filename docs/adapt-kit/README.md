@@ -228,9 +228,10 @@ chmod +x sleepy-collector-linux-amd64
 | `2-inline/` | 页面内联的 `<script>` / `<style>` 源码 |
 | `3-res/` | 页面加载过的所有 HTML/CSS/JS/JSON,逐个重新抓取的原样内容 |
 | `4-net-live/` | 每个网络请求的完整记录(请求体+响应体) |
-| `4-net-replay/` | 数据接口的重放响应(方式一在底层抓包,这层基本用不上) |
+| `4-detail-nav/` | 课表页发现的跨来源课程详情页，以同一浏览器会话的新标签页直接打开后保存的 DOM |
+| `4-net-replay/` | 已由浏览器实际发出的同源 POST 数据接口的重放响应；不会把链接伪造成 POST |
 | `5-storage/` | localStorage / sessionStorage |
-| `6-logs/` | 浏览器完整网络日志、发现的所有 URL、抓取失败清单 |
+| `6-logs/` | 浏览器完整网络日志、发现的所有 URL、抓取失败清单和 `collection-summary.json` 汇总 |
 | `INDEX.txt` | 全包清单:每个文件是什么、从哪来的 |
 
 三路信息互为备份(渲染 DOM / 接口响应 / 请求记录):某一路拿不到,另外两路也够。Sleepy 现有 25 种教务协议解析器(正方、强智、金智、URP、青果等),遇到新系统,我们照包里的真实数据写新解析器。
@@ -239,4 +240,4 @@ chmod +x sleepy-collector-linux-amd64
 
 ---
 
-*手册对应采集工具 v1.0。工具或流程更新时本页同步更新。*
+*手册对应采集工具 v1.2。工具或流程更新时本页同步更新。*
