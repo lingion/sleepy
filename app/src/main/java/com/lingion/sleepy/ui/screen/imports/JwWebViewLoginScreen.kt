@@ -894,27 +894,34 @@ private const val EAMS5_FETCH_JS = """
 /**
  * 安大 (AHU) 自建'新教务' (jw.ahu.edu.cn, 金智 EAMS 新版部署形态)。
  *
- * 与合工大 EAMS5_FETCH_JS 的差异 (2026-09-06 cross-verified,
- * MoeclubM/AHU-AIO + qiqqqqq517/shangkeschschedule 共识):
+ * 与合工大 EAMS5_FETCH_JS 的差异 (2026-09-06 cross-verified, 5 仓共识:
+ * MoeclubM/AHU-AIO + qiqqqqq517/shangkeschschedule + abydym/Ahu_Plus +
+ * Landon-3314/AHU-TimeTable + Zeraora-807/Anhui-Univ-DSH-Tool):
  *   - 不走 POST /ws/schedule-table/datum (安大返 HTTP 500, 不存在该 endpoint)
- *   - 走 GET /for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
- *   - dataId 留空: 服务端按当前登录会话绑定学生, 无需客户端提取 studentId
- *   - 学期 ID 从 course-table HTML 内嵌 allSemesters JSON 数组取 (取最新)
- *   - 响应: {data:{lessons:[]}} (与 HFUT result.lessonList/scheduleList 形态不同)
+ *   - 走 GET /for-std/course-table/semester/<semesterId>/print-data
+ *     (activities[] 含 weekday/weekIndexes/startUnit/endUnit/courseName/
+ *      teacherNames/campus/building/room, 是真正的课表数据)
+ *   - 不再依赖 get-data 的 lessons[]: 那是 metadata-only (courseCode/examMode),
+ *     不含 weekday/节次, 不能直接渲染到课表
+ *   - studentId (JW-internal Long, 非学号) 从 /grade/sheet 302 Location 提取
+ *     (MoeclubM + abydym + Zeraora 共识 regex:
+ *      /\/(?:semester-index|info)\/(\d+)(?:[/?#]|$)/)
+ *   - dataId: 客户端尝试走 print-data 不需要 dataId; 若 print-data 失败, 退到
+ *     get-data 走 dataId=<studentId> (MoeclubM 模式)
  *
  * 流程 (三段, 复用 __sleepyBridge.onWiseduResult 同一回调通道):
  *   1) GET /student/for-std/course-table → HTML 含 allSemesters + 已登录判定
- *   2) 从 HTML 提取 allSemesters, 取首个 (或当前) semesterId
- *   3) GET /student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
+ *   2) 从 HTML 提取 allSemesters, 取首个 semesterId
+ *      并行: GET /student/for-std/grade/sheet (302 → 提取 studentId)
+ *   3) GET /student/for-std/course-table/semester/<semesterId>/print-data?semesterId=<id>&hasExperiment=false
  *   4) __sleepyBridge.onWiseduResult({ok, data, periods}) 回调
  *
- * 学号提取: 客户端不提取 studentId, 服务端按 session 绑定 (qiqqqqq517 模式);
- *           MoeclubM 模式 (302 提取) 作为 fallback, 见 [JwEams5Parser] AHU 解析路径。
- *
- * 外部佐证:
- *   - MoeclubM/AHU-AIO (lib/jw/api/jw_api.dart) — REST 客户端
- *   - qiqqqqq517/shangkeschschedule (shared/assets/offline_repo/schools/resources/AHU/ahu.js)
- *   - abydym/Ahu_Plus (Kotlin 同栈, 验证中)
+ * 外部佐证 (5 仓):
+ *   - MoeclubM/AHU-AIO (lib/jw/api/jw_api.dart, GPL-3.0)
+ *   - qiqqqqq517/shangkeschschedule (Apache-2.0, ahu.js)
+ *   - abydym/Ahu_Plus (GPL-3.0, Kotlin 同栈 — 关键同栈证据)
+ *   - Landon-3314/AHU-TimeTable (Flutter, print-data + get-data 双轨实现)
+ *   - Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript DeepSeek Harness)
  */
 private const val EAMS5_AHU_FETCH_JS = """
 (function(){
@@ -959,10 +966,12 @@ private const val EAMS5_AHU_FETCH_JS = """
     })
     .then(function(semesterId){
       if (!semesterId) return null;
-      // 2) GET course-table/get-data (dataId 留空, 服务端按 session 绑定学生)
-      var url = PREFIX + '/for-std/course-table/get-data?bizTypeId=2&semesterId=' + encodeURIComponent(semesterId) + '&dataId=';
-      return fetch(url, {credentials:'include'}).then(function(r){
-        if (!r.ok) throw new Error('get-data 失败 HTTP ' + r.status);
+      // 2) GET print-data (含 weekday/weekIndexes/startUnit/endUnit 的真实课表数据)
+      // 不跟随重定向, 不需要 studentId — 服务端按 session 绑定学生
+      var url = PREFIX + '/for-std/course-table/semester/' + encodeURIComponent(semesterId)
+              + '/print-data?semesterId=' + encodeURIComponent(semesterId) + '&hasExperiment=false';
+      return fetch(url, {credentials:'include', redirect:'follow'}).then(function(r){
+        if (!r.ok) throw new Error('print-data 失败 HTTP ' + r.status);
         return r.text();
       });
     })
