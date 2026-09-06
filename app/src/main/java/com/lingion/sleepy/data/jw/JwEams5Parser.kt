@@ -11,35 +11,47 @@ import kotlinx.serialization.json.jsonPrimitive
 /**
  * 合工大教务 (金智 EAMS5, eams5-student 系列) 课表 JSON 解析器。
  *
- * 适配学校：合肥工业大学 (jxglstu.hfut.edu.cn)。
+ * 适配学校：合肥工业大学 (jxglstu.hfut.edu.cn) + 安徽大学 (jw.ahu.edu.cn, 金智 EAMS 新版)。
  * 与 [JwCquParser] 同类：source 不是 HTML，而是课表 API 的 JSON 响应。
  *
- * 数据来源 (WebView 内 fetch 三段, 见 JwWebViewLoginScreen.EAMS5_FETCH_JS):
- *   1) GET /eams5-student/for-std/course-table                → studentId
- *   2) GET /eams5-student/for-std/lessons?studentId=…        → lessonIds[]
- *   3) POST /eams5-student/ws/schedule-table/datum            → 完整课表
- *      body: {"lessonIds":[…], "studentId":…, "weekIndex":""}
- *      resp: {"result":{"lessonList":[…],"scheduleList":[…],"scheduleGroupList":[…]}}
+ * 数据来源 (WebView 内 fetch):
+ *
+ *   **HFUT 形态** (JwWebViewLoginScreen.EAMS5_FETCH_JS 三段):
+ *     1) GET /eams5-student/for-std/course-table                → studentId
+ *     2) GET /eams5-student/for-std/lessons?studentId=…        → lessonIds[]
+ *     3) POST /eams5-student/ws/schedule-table/datum            → 完整课表
+ *        body: {"lessonIds":[…], "studentId":…, "weekIndex":""}
+ *        resp: {"result":{"lessonList":[…],"scheduleList":[…],"scheduleGroupList":[…]}}
+ *
+ *   **AHU 形态** (JwWebViewLoginScreen.EAMS5_AHU_FETCH_JS 三段, 2026-09-06 加):
+ *     1) GET /student/for-std/course-table                       → HTML 含 allSemesters
+ *     2) (从 allSemesters 取 semesterId, 客户端不提取 studentId — dataId 空服务端按 session 绑定)
+ *     3) GET /student/for-std/course-table/get-data?bizTypeId=2&semesterId=<id>&dataId=
+ *        resp: {"data":{"lessons":[…]}}
+ *        字段: lessonId/courseName/teacher/room/weekday/startTime/endTime/weekIndex
+ *        (与 HFUT scheduleList 同构, lessons[] 已是 scheduleList+lessonList 合并形态)
  *
  * 字段映射（教务 → JwCourse）：
- *   scheduleList[].lessonId          → lessonList[].id 查找 → lessonList[].courseName; 找不到回退 lessonId.toString()
- *   scheduleList[].room.nameZh       → room (null → "")
- *   scheduleList[].weekday           → day (1=周一..7=周日)
- *   scheduleList[].personName        → teacher
- *   scheduleList[].weekIndex         → startWeek = endWeek (v1 每行 = 单周, 见下限制)
- *   scheduleList[].startTime (HHmm)  → 推断 startNode (标准 985 节次表)
- *   scheduleList[].endTime   (HHmm)  → 推断 endNode
- *   scheduleList[].periods           (Int) → 备用: endNode = startNode + periods - 1 (节次已知时优先)
+ *   scheduleList[].lessonId (HFUT) / lessons[].lessonId (AHU)
+ *     → HFUT 查 lessonList[].id → lessonList[].courseName; 找不到回退 lessonId.toString()
+ *     → AHU 直接读 courseName (扁平结构)
+ *   scheduleList[].room.nameZh (HFUT) / lessons[].room (AHU 字符串) → room
+ *   scheduleList[].weekday     → day (1=周一..7=周日)
+ *   scheduleList[].personName  / lessons[].teacher      → teacher
+ *   scheduleList[].weekIndex                            → startWeek = endWeek
+ *   scheduleList[].startTime (HHmm)                     → 推断 startNode (标准 985 节次表)
+ *   scheduleList[].endTime   (HHmm)                     → 推断 endNode
+ *   scheduleList[].periods (Int)                        → 备用: endNode = startNode + periods - 1
  *
- * v1 限制（与 [JwCquParser] 形态不同）：
- *   1. **节次推断**: HFUT 接口直接给绝对时间 (HHmm),不返回节次节点;
- *      推断表按典型上午 5 节次布局 (08:00 10:10 14:00 16:10 19:00 各为节次段起点)。
- *      v2 可拉 /for-std/program/root-module-json 拿时间表布局纠正。
- *   2. **每行一周**: scheduleList 每行只表示某周一次出现; v1 emit 单周 (startWeek=endWeek=weekIndex, type=0),
- *      不在 parser 内做连续周次合并 (无教学周 bitmap, 单双周判定要 RLE 推断)。
- *   3. **periods 用法**: 当 startTime/endTime 推断不出节点 (罕见边缘), 用 periods 兜底 endNode = startNode + periods - 1。
+ * v1 限制（同 [JwCquParser]）:
+ *   1. **节次推断**: HFUT/AHU 都直接给绝对时间, 不返节次节点;
+ *      推断表按典型上午 5 节次布局 (08:00 10:10 14:00 16:10 19:00)。
+ *   2. **每行一周**: 每行只表示某周一次出现, v1 emit 单周 (startWeek=endWeek=weekIndex, type=0)。
+ *   3. **periods 兜底**: startTime/endTime 推断不出时用 periods 兜底。
  *
- * 外部佐证：Chiu-xaH/HFUT-Schedule (jxglstu.hfut.edu.cn 全协议实现)。
+ * 外部佐证：
+ *   HFUT: Chiu-xaH/HFUT-Schedule, BoynChan/HfutOpenApi, elonzh/django-hfut-auth, Aoi-cn/hfut_schedule_hacker
+ *   AHU: MoeclubM/AHU-AIO (Dart), qiqqqqq517/shangkeschschedule (Apache-2.0), abydym/Ahu_Plus (Kotlin)
  */
 class JwEams5Parser(source: String) : JwParser(source) {
 
@@ -50,6 +62,13 @@ class JwEams5Parser(source: String) : JwParser(source) {
             json.parseToJsonElement(source).jsonObject
         }.getOrNull() ?: return emptyList()
 
+        // AHU 形态: data.lessons[] (扁平, 自含 courseName)
+        val ahuLessons = root["data"]?.jsonObject?.get("lessons") as? JsonArray
+        if (ahuLessons != null && ahuLessons.isNotEmpty()) {
+            return parseAhuLessons(ahuLessons)
+        }
+
+        // HFUT 形态: result.lessonList[] + result.scheduleList[] (双层)
         val result = root["result"]?.jsonObject ?: return emptyList()
 
         // lessonList → lessonId (String) → courseName (HFUT 用 String, scheduleList 用 Int — 注意互转)
@@ -83,6 +102,66 @@ class JwEams5Parser(source: String) : JwParser(source) {
             val teacher = o["personName"]?.let {
                 runCatching { it.jsonPrimitive.contentOrNull }.getOrNull()
             }?.trim().orEmpty()
+
+            val day = o["weekday"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
+                ?: continue
+            val weekIndex = o["weekIndex"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
+                ?: continue
+            val startTime = o["startTime"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 0
+            val endTime = o["endTime"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 0
+            val periods = o["periods"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull() ?: 1
+
+            val inferred = inferNodes(startTime, endTime, periods)
+            if (inferred == null) continue
+
+            out += JwCourse(
+                name = name.trim(),
+                room = room,
+                teacher = teacher,
+                day = day.coerceIn(1, 7),
+                startNode = inferred.first.coerceAtLeast(1),
+                endNode = inferred.second.coerceAtLeast(inferred.first),
+                startWeek = weekIndex,
+                endWeek = weekIndex,
+                type = 0,
+            )
+        }
+        return out
+    }
+
+    /**
+     * AHU 形态解析: `data.lessons[]` 扁平结构 (已合并 scheduleList+lessonList)。
+     *
+     * 字段映射 (qiqqqqq517 ahu.js 实锤):
+     *   lesson.id              → lessonId (Int)
+     *   lesson.courseName      → name (扁平, 无需二次查表)
+     *   lesson.teacher         → teacher (字符串, 非 list)
+     *   lesson.room            → room (字符串)
+     *   lesson.weekday         → day (1-7)
+     *   lesson.weekIndex       → startWeek = endWeek
+     *   lesson.startTime (HHmm)→ 推断 startNode
+     *   lesson.endTime   (HHmm)→ 推断 endNode
+     *   lesson.periods         → 兜底
+     *
+     * 与 HFUT scheduleList 同构, 区别仅在 courseName 扁平化 + room/teacher 字符串化。
+     */
+    private fun parseAhuLessons(lessons: JsonArray): List<JwCourse> {
+        val out = mutableListOf<JwCourse>()
+        for (el in lessons) {
+            val o = runCatching { el.jsonObject }.getOrNull() ?: continue
+            val lessonId = o["lessonId"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+                ?: o["id"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+            if (lessonId.isNullOrBlank()) continue
+
+            val name = o["courseName"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+                ?: lessonId
+
+            val room = o["room"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+                ?.trim().orEmpty()
+
+            val teacher = o["teacher"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+                ?: o["personName"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }
+                ?.trim().orEmpty()
 
             val day = o["weekday"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: continue
@@ -165,14 +244,16 @@ class JwEams5Parser(source: String) : JwParser(source) {
         return null
     }
 
-    /** schedule-table/datum = 100; scheduleList = 90; lessonList = 80 */
+    /** schedule-table/datum = 100; data.lessons = 95; scheduleList = 90; lessonList = 80 */
     override fun confidence(): Int = when {
+        source.contains("data") && source.contains("\"lessons\"") -> 95
         source.contains("scheduleList") && source.contains("lessonList") -> 95
         source.contains("schedule-table/datum") -> 80
         else -> 0
     }
 
     override fun matchedFeatures(): List<String> = buildList {
+        if (source.contains("data") && source.contains("\"lessons\"")) add("data.lessons (AHU)")
         if (source.contains("scheduleList")) add("result.scheduleList")
         if (source.contains("lessonList")) add("result.lessonList")
         if (source.contains("schedule-table/datum")) add("ws/schedule-table/datum")
