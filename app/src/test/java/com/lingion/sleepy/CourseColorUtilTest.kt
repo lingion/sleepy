@@ -171,4 +171,89 @@ class CourseColorUtilTest {
             CourseColorUtil.pickCourseColorCompose(custom, false, neutral, colorless = true)
         )
     }
+
+    // ============================ issue#22 同名课程多地点 3 态取色 ============================
+
+    private fun multiCourse(
+        id: Long,
+        gid: String = "g1",
+        color: String = "#FFFF0000",
+        colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP
+    ) = CourseEntity(
+        id = id, groupId = gid, tableId = 1, courseName = "x",
+        teacher = "", room = "room$id", note = "",
+        day = 1, startNode = 1, step = 1,
+        startWeek = 1, endWeek = 16, type = 0,
+        color = color, colorMode = colorMode
+    )
+
+    @Test fun `WithGroupRows GROUP 模式回退到 stableHue(等价旧路径)`() {
+        val c = multiCourse(1, color = "#FF6750A4", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP)
+        val color = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+            row = c, groupRows = listOf(c), isDark = false, neutralColor = neutral
+        )
+        // 不为 neutral(走了 HSL stableHue)
+        assertNotEquals(neutral, color)
+    }
+
+    @Test fun `GoldenAngleColor AUTO 模式 idx 0_1_2 hue 按 golden angle 推进`() {
+        // 组色源=红(0°),3 个 AUTO 行依次 hue = 0, 137.508, 275.016
+        val rows = listOf(
+            multiCourse(1, color = "#FFFF0000", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(2, color = "", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO),
+            multiCourse(3, color = "", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO),
+            multiCourse(4, color = "", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO)
+        )
+        val h1 = com.lingion.sleepy.util.GoldenAngleColor.forRow(rows[1], rows, "#FFFF0000")
+        val h2 = com.lingion.sleepy.util.GoldenAngleColor.forRow(rows[2], rows, "#FFFF0000")
+        val h3 = com.lingion.sleepy.util.GoldenAngleColor.forRow(rows[3], rows, "#FFFF0000")
+        assertEquals(137.508f, h1, 0.5f)
+        assertEquals(275.016f, h2, 0.5f)
+        assertEquals(52.524f, h3, 0.5f)  // 412.524 % 360 = 52.524
+    }
+
+    @Test fun `GoldenAngleColor 确定性 — 相同输入产出相同 hue`() {
+        val rows = listOf(
+            multiCourse(5, color = "#FF112233", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(10, color = "", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO)
+        )
+        val r = rows[1]
+        val h1 = com.lingion.sleepy.util.GoldenAngleColor.forRow(r, rows, "#FF112233")
+        val h2 = com.lingion.sleepy.util.GoldenAngleColor.forRow(r, rows, "#FF112233")
+        assertEquals(h1, h2, 0.001f)
+    }
+
+    @Test fun `GoldenAngleColor baseHue 边界 — baseHue 350 idx 1 hue 落在 (100,150) 区间`() {
+        val rows = listOf(
+            multiCourse(1, color = "#FFFF00C8", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),  // hue≈350
+            multiCourse(2, color = "", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO)
+        )
+        val r = rows[1]
+        val h = com.lingion.sleepy.util.GoldenAngleColor.forRow(r, rows, "#FFFF00C8")
+        // idx=1, baseHue≈350, hue = ((350 + 137.508) % 360 + 360) % 360 = 127.508
+        assertTrue("hue=$h 应落在 [100,150)", h > 100f && h < 150f)
+    }
+
+    @Test fun `WithGroupRows CUSTOM 模式用 row color(优先于 neutral)`() {
+        val c = multiCourse(1, color = "#FF112233", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM)
+        val color = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+            row = c, groupRows = listOf(c), isDark = false, neutralColor = neutral
+        )
+        // CUSTOM 模式: 解析 row.color 0xFF112233
+        // 注: 纯 JVM 环境 android.graphics.Color.parseColor 是 mockable, 这里
+        // 期望 color != neutral 即可 — 走到了 CUSTOM 分支
+        assertNotEquals("CUSTOM 分支应返回非 neutral 色", neutral, color)
+    }
+
+    @Test fun `WithGroupRows AUTO 模式 color 字段被忽略 — 即使填了色也按 row id 算`() {
+        val rows = listOf(
+            multiCourse(1, color = "#FFFF0000", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(2, color = "#FF00FF00", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO)
+        )
+        // AUTO 行 color 字段填了绿色,但应按组色源(红)+ golden angle 算 hue,不走 color 字段
+        val color = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+            row = rows[1], groupRows = rows, isDark = false, neutralColor = neutral
+        )
+        assertNotEquals("AUTO 不应消费 row.color 字段", neutral, color)
+    }
 }

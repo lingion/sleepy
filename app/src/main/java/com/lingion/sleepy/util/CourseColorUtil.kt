@@ -1,6 +1,8 @@
 package com.lingion.sleepy.util
 
 import androidx.compose.ui.graphics.Color
+import androidx.core.graphics.ColorUtils
+import com.lingion.sleepy.data.entity.CourseColorMode
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.CoursePalette
 
@@ -188,5 +190,131 @@ object CourseColorUtil {
         val s = if (isDark) S_DARK else S_LIGHT
         val l = if (isDark) L_DARK else L_LIGHT
         return hslToColorInt(hue, s, l)
+    }
+
+    // ============================ 第三层 · issue#22 3 态取色入口 ============================
+    //
+    // 旧 [pickCourseColorCompose]/[pickCourseColorInt] 不动 — 它们的语义是
+    // "整门课一个色",被 WidgetContent 之类纯 group-level 渲染路径使用。
+    // issue#22 同名课程多地点修复后,WeekGrid/WeekList/Widget/Todo 等渲染
+    // 每个 block 独立色的入口走下方 *WithGroupRows 版本。
+
+    /**
+     * Compose 路径 · issue#22 3 态取色入口。
+     *
+     * @param row 目标行
+     * @param groupRows 同 groupId 所有行(含 row 自身) — 用于 AUTO 模式按行号顺序算 hue
+     * @param neutralColor colorless 灰底
+     */
+    fun pickCourseColorComposeWithGroupRows(
+        row: CourseEntity,
+        groupRows: List<CourseEntity>,
+        isDark: Boolean,
+        neutralColor: Color,
+        colorless: Boolean = false
+    ): Color {
+        return when (row.colorMode) {
+            CourseColorMode.CUSTOM -> runCatching {
+                Color(android.graphics.Color.parseColor(row.color))
+            }.getOrElse { neutralColor }
+            CourseColorMode.AUTO -> {
+                if (colorless) return neutralColor
+                val hue = GoldenAngleColor.forRow(row, groupRows, groupSourceColorHex(groupRows))
+                val (s, l) = GoldenAngleColor.hsl(hue, isDark)
+                hslToColor(hue, s, l)
+            }
+            else -> {  // GROUP(0) 或未知
+                if (hasCustomColor(row)) {
+                    runCatching { return Color(android.graphics.Color.parseColor(row.color)) }
+                }
+                if (colorless) return neutralColor
+                val hue = stableHue(row.groupId)
+                val s = if (isDark) S_DARK else S_LIGHT
+                val l = if (isDark) L_DARK else L_LIGHT
+                hslToColor(hue, s, l)
+            }
+        }
+    }
+
+    /** Canvas 路径 · issue#22 3 态取色入口 */
+    fun pickCourseColorIntWithGroupRows(
+        row: CourseEntity,
+        groupRows: List<CourseEntity>,
+        isDark: Boolean,
+        neutralColorInt: Int,
+        colorless: Boolean = false
+    ): Int {
+        return when (row.colorMode) {
+            CourseColorMode.CUSTOM -> runCatching {
+                android.graphics.Color.parseColor(row.color)
+            }.getOrElse { neutralColorInt }
+            CourseColorMode.AUTO -> {
+                if (colorless) return neutralColorInt
+                val hue = GoldenAngleColor.forRow(row, groupRows, groupSourceColorHex(groupRows))
+                val (s, l) = GoldenAngleColor.hsl(hue, isDark)
+                hslToColorInt(hue, s, l)
+            }
+            else -> {
+                if (hasCustomColor(row)) {
+                    runCatching { return android.graphics.Color.parseColor(row.color) }
+                }
+                if (colorless) return neutralColorInt
+                val hue = stableHue(row.groupId)
+                val s = if (isDark) S_DARK else S_LIGHT
+                val l = if (isDark) L_DARK else L_LIGHT
+                hslToColorInt(hue, s, l)
+            }
+        }
+    }
+
+    /** 组色源 — 同 groupId 内 colorMode=GROUP 中 id 最小的行的 color */
+    fun groupSourceColorHex(groupRows: List<CourseEntity>): String {
+        val source = groupRows
+            .filter { it.colorMode == CourseColorMode.GROUP }
+            .minByOrNull { it.id }
+            ?: groupRows.minByOrNull { it.id }
+        return source?.color ?: ""
+    }
+}
+
+/**
+ * 自动色算法 — golden angle 137.508° 在 HSV 色环上按 row 序号推进。
+ * 不落库: 仅用 row 自身 id + 同组行 id 顺序 + 组色源色相 算色相,确定性重算。
+ * (issue#22 同名课程多地点修复的 AUTO 模式取色)
+ */
+object GoldenAngleColor {
+
+    private const val GOLDEN_ANGLE_DEG = 137.508f
+    private const val SATURATION_LIGHT = 0.55f
+    private const val SATURATION_DARK = 0.40f
+    private const val LIGHTNESS_LIGHT = 0.82f
+    private const val LIGHTNESS_DARK = 0.28f
+
+    /**
+     * @param row 目标行(只读,用于取 id)
+     * @param groupRows 同 groupId 的所有行(含 row 自身)
+     * @param groupSourceColorHex 组色源行(通常是 colorMode=GROUP 中 id 最小)的 color 字段值
+     */
+    fun forRow(row: CourseEntity, groupRows: List<CourseEntity>, groupSourceColorHex: String?): Float {
+        val baseHue = parseHexHue(groupSourceColorHex)
+        val sorted = groupRows.sortedBy { it.id }
+        val idx = sorted.indexOfFirst { it.id == row.id }
+        val safeIdx = if (idx < 0) 0 else idx
+        return (((baseHue + safeIdx * GOLDEN_ANGLE_DEG) % 360f) + 360f) % 360f
+    }
+
+    /** 给定 hue 返回 (saturation, lightness) — 由 isDark 决定亮/暗主题 */
+    fun hsl(hue: Float, isDark: Boolean): Pair<Float, Float> =
+        (if (isDark) SATURATION_DARK else SATURATION_LIGHT) to
+            (if (isDark) LIGHTNESS_DARK else LIGHTNESS_LIGHT)
+
+    private fun parseHexHue(hex: String?): Float {
+        if (hex.isNullOrBlank()) return 0f
+        return runCatching {
+            val argb = android.graphics.Color.parseColor(hex)
+            val hsl = FloatArray(3)
+            ColorUtils.colorToHSL(argb, hsl)
+            hsl[0]
+        }.getOrDefault(0f)
     }
 }
