@@ -339,6 +339,7 @@
     <string name="widget_edit_section_schedule">表示する時間割</string>
     <string name="widget_edit_default_label">デフォルト（現在の時間割に従う）</string>
     <string name="widget_manage_title">ホームウィジェットを管理</string>
+    <string name="widget_edit_title">ウィジェットを編集</string>
     <string name="widget_manage_empty">ホーム画面に Sleepy ウィジェットが追加されていません。空いているスペースを長押し → ウィジェット → Sleepy を選択してください。</string>
     <string name="more_sections">他に %1$d コマ…</string>
     <string name="tomorrow">明日</string>
