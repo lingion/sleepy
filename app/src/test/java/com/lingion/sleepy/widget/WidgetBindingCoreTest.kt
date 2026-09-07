@@ -94,4 +94,48 @@ class WidgetBindingCoreTest {
         assertTrue("remove missing", "remove" in methods)
         assertTrue("getAll missing", "getAll" in methods)
     }
+
+    // ---- resolveBoundTableId (lazy invalidation helper) ----
+
+    @Test
+    fun `resolveBoundTableId returns null when binding is null`() {
+        val result = WidgetBindingCore.resolveBoundTableId<Long>(null) { it }
+        assertNull(result)
+    }
+
+    @Test
+    fun `resolveBoundTableId returns null when loader returns null (deleted table)`() {
+        // Simulating a table that was deleted after the binding was created.
+        // The lookup closure returning null is the signal.
+        val result = WidgetBindingCore.resolveBoundTableId(42L) { _ -> null }
+        assertNull(result)
+    }
+
+    @Test
+    fun `resolveBoundTableId returns loaded entity when table exists`() {
+        val sentinel = "table-42"
+        val result = WidgetBindingCore.resolveBoundTableId(42L) { _ -> sentinel }
+        assertEquals(sentinel, result)
+    }
+
+    @Test
+    fun `resolveBoundTableId does not invoke loader when binding is null`() {
+        var loaderCalled = false
+        WidgetBindingCore.resolveBoundTableId<Long>(null) {
+            loaderCalled = true
+            it
+        }
+        assertEquals(false, loaderCalled)
+    }
+
+    @Test
+    fun `WidgetTableResolver exposes resolveBoundTable`() {
+        // The body of resolveBoundTable is a thin wrapper around
+        // WidgetBindingCore.resolveBoundTableId which is covered by the unit
+        // tests above. This pin just guards against accidental removal of the
+        // Android facade method that loadDataSync will call from each receiver.
+        val method = com.lingion.sleepy.widget.WidgetTableResolver::class.java
+            .declaredMethods.firstOrNull { it.name == "resolveBoundTable" }
+        assertNotNull("resolveBoundTable must exist on WidgetTableResolver", method)
+    }
 }

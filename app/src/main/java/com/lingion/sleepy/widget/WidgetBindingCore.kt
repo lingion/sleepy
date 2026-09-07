@@ -31,4 +31,15 @@ internal object WidgetBindingCore {
     fun delete(raw: MutableMap<String, Long>, widgetId: Int) {
         raw.remove(key(widgetId))
     }
+
+    /**
+     * Pure-JVM lookup: given a bound table id and a function that fetches a
+     * table by id, return the table if it still exists, else null.
+     *
+     * Lazy invalidation: when a table is deleted, callers fall back to
+     * `WidgetTableResolver.resolveCurrentTable`. The store is never rewritten
+     * from this path; receivers and `onDeleted` handle cleanup.
+     */
+    fun <T> resolveBoundTableId(boundTableId: Long?, loadTable: (Long) -> T?): T? =
+        boundTableId?.let(loadTable)
 }

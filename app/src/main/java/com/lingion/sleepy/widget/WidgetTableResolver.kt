@@ -26,4 +26,22 @@ object WidgetTableResolver {
         return all.maxByOrNull { runCatching { repo.getCourses(it.id).size }.getOrDefault(0) }
             ?.takeIf { runCatching { repo.getCourses(it.id).isNotEmpty() }.getOrDefault(false) }
     }
+
+    /**
+     * Resolve the table a specific widget instance is bound to.
+     *
+     * Returns the bound table if the user has explicitly bound one and it
+     * still exists in the database. Returns null when the widget has no
+     * binding or the bound table was deleted — callers should fall back to
+     * [resolveCurrentTable] in that case.
+     *
+     * Lazy invalidation: a deleted table does NOT rewrite the binding entry;
+     * [WidgetBindingStore.remove] is invoked only from the receiver's
+     * `onDeleted` callback when the widget instance itself is removed.
+     */
+    suspend fun resolveBoundTable(widgetId: Int): TimeTableEntity? {
+        val app = SleepyApp.get()
+        val boundId = WidgetBindingStore.get(app, widgetId) ?: return null
+        return runCatching { app.repository.getTable(boundId) }.getOrNull()
+    }
 }
