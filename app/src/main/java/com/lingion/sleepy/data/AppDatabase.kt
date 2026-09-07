@@ -11,7 +11,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class],
-    version = 3,
+    version = 4,                            // 3 → 4: 加 courses.colorMode (issue#22)
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
@@ -32,7 +32,9 @@ abstract class AppDatabase : RoomDatabase() {
                     AppDatabase::class.java,
                     DB_NAME
                 )
-                    .fallbackToDestructiveMigration()
+                    .addMigrations(*ALL_MIGRATIONS)
+                    // 严禁 fallbackToDestructiveMigration — 任意版本升会清空用户课表
+                    // 任何 schema 改动必须先在 Migrations.kt 登记, 再升 version
                     .build()
                     .also { instance = it }
             }
