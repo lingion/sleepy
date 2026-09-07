@@ -1,5 +1,6 @@
 package com.lingion.sleepy.data.entity
 
+import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -99,5 +100,44 @@ class CourseEntityTest {
 
     private fun assertEqualsSafe(msg: String, expected: Boolean, actual: Boolean) {
         if (expected != actual) throw AssertionError("$msg: expected=$expected actual=$actual")
+    }
+
+    // --- colorMode 字段 (issue#22 同名课程多地点修复) ---
+
+    @Test
+    fun colorMode_defaultIsGROUP() {
+        val course = CourseEntity(
+            id = 1, groupId = "g", tableId = 1, courseName = "x",
+            day = 1, startNode = 1, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "#FF6750A4"
+        )
+        assertEquals(0, course.colorMode)
+        assertEquals(CourseColorMode.GROUP, course.colorMode)
+    }
+
+    @Test
+    fun colorMode_explicitCUSTOM_preserved() {
+        val course = CourseEntity(
+            id = 1, groupId = "g", tableId = 1, courseName = "x",
+            day = 1, startNode = 1, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "#FF112233",
+            colorMode = CourseColorMode.CUSTOM
+        )
+        assertEquals(2, course.colorMode)
+        assertEquals("#FF112233", course.color)
+    }
+
+    @Test
+    fun colorMode_AUTO_valueStoredAsInt() {
+        val course = CourseEntity(
+            id = 1, groupId = "g", tableId = 1, courseName = "x",
+            day = 1, startNode = 1, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "",
+            colorMode = CourseColorMode.AUTO
+        )
+        assertEquals(1, course.colorMode)
     }
 }
