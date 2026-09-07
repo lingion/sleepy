@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data.repository
 
 import com.lingion.sleepy.data.AppDatabase
+import com.lingion.sleepy.data.diff.DiffResult
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.undo.UndoManager
@@ -198,6 +199,21 @@ class ScheduleRepository(private val db: AppDatabase) {
         courseDao.deleteByGroupId(tableId, groupId)
         onDataChanged()
         pruneDefaultTopPrefs()
+    }
+
+    /**
+     * 行级 diff/patch 落库(替代 [updateCourseGroup] 整组覆盖, issue#22 同名多地点修复):
+     *   - toDelete 行按 id 批量删除
+     *   - toUpdate 行按 id 批量覆盖(保留 RowKey)
+     *   - toInsert 行批量新增(id=0 让 Room 自增)
+     *
+     * 调用前必须已 `captureForUndo`([UndoManager] 单条写默认触发,复合动作入口见 [beginBatch])。
+     */
+    suspend fun applyDiff(tableId: Long, diff: DiffResult) {
+        if (diff.toDelete.isNotEmpty()) courseDao.deleteByIds(diff.toDelete)
+        if (diff.toUpdate.isNotEmpty()) courseDao.updateAll(diff.toUpdate)
+        if (diff.toInsert.isNotEmpty()) courseDao.insertAll(diff.toInsert)
+        onDataChanged()
     }
 
     suspend fun countCourses(tableId: Long): Int = courseDao.countByTable(tableId)
