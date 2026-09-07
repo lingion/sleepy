@@ -984,8 +984,11 @@ func main() {
 	fmt.Println("  Sleepy 课表适配采集工具 " + version)
 	fmt.Println("=====================================================")
 	fmt.Println()
-	fmt.Println("流程:输入教务网址 → 弹出浏览器 → 你在里面登录并打开课表 →")
-	fmt.Println("      点页面右下角绿色按钮 → 自动生成 sleepy-adapt.zip")
+	fmt.Println("浏览器已打开。请在窗口里登录教务系统,进入你的课表页面。")
+	fmt.Println("登录后:把页面上能勾的复选框、能展开的栏目(周次、单双周、任课教师、教室备注之类)全勾上全展开 — 拿全了适配器才能少问,缺字段只能等你补一份新包。")
+	fmt.Println("账号下如果不止一个课表页(本学期 / 下学期 / 补退选 / 重修 / 辅修),每个页都重复一次登录+展开+点按钮,各打一个包,别合并。")
+	fmt.Println("看到课表后,点页面右下角绿色按钮「一键采集打包」;")
+	fmt.Println("找不到按钮的话,回到这个黑色窗口按一次回车也行。")
 	fmt.Println()
 	var target string
 	if auto := os.Getenv("SLEEPY_COLLECTOR_URL"); auto != "" {
