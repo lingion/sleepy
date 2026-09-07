@@ -14,10 +14,11 @@ import kotlinx.serialization.json.jsonPrimitive
  * 数据源: jwxt.neu.edu.cn mobile 接口
  *   /jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do
  * JSON 路径: x.datas.arrangedList[]
- * 字段集: {courseName, dayOfWeek, beginSection, endSection, weeksAndTeachers, titleDetail[]}
+ * 字段集: {courseName, dayOfWeek, beginSection, endSection, weeksAndTeachers, titleDetail[], placeName}
  *   weeksAndTeachers: "周数串/老师[主讲]" 形式
  *   titleDetail[0]: 汇总字符串 (无 location 信息)
  *   titleDetail[1..]: "周数串 教室" 形式, 按空格 split 末段为 location
+ *   实验课 ([实] 前缀): 教师取 titleDetail[1] 第二段, 地点取 placeName 首段
  *
  * 上游协议形态参考: CreamPig233/neu_wisedu2wakeup (无 license) extract_schedule.js
  * (https://github.com/CreamPig233/neu_wisedu2wakeup/blob/master/extract_schedule.js)
@@ -46,30 +47,40 @@ class JwNeuParser(source: String) : JwParser(source) {
             val begin = obj.str("beginSection").toIntOrNull() ?: continue
             val end = obj.str("endSection").toIntOrNull() ?: begin
             val weeksAndTeachers = obj.str("weeksAndTeachers")
-            val teacher = extractTeacher(weeksAndTeachers)
-            // 优先从 titleDetail[1..] 拿 location; 无则空串
             val titleDetail = obj["titleDetail"] as? JsonArray
-            val (weeksStr, room) = extractWeeksAndRoom(titleDetail, weeksAndTeachers)
-            if (weeksStr.isEmpty()) continue
-            val (parity, cleanedWeeks) = extractParity(weeksStr)
-            for ((sw, ew) in parseWeeks(cleanedWeeks)) {
-                // Sleepy 语义: 单周(1)起点须奇数/双周(2)起点须偶数, 端点同 ZJU 修正
-                val adjustedStart = when (parity) {
-                    1 -> if (sw % 2 == 0) sw + 1 else sw
-                    2 -> if (sw % 2 != 0) sw + 1 else sw
-                    else -> sw
+            val isLab = name.startsWith("[实]")
+            val entries = if (isLab) {
+                // 实验课的接口结构不同：脚本从 titleDetail[1] 取教师，
+                // 从 placeName 取地点，并从 weeksAndTeachers 中剥出周次。
+                listOf(extractLabWeeksAndRoom(obj, weeksAndTeachers))
+            } else {
+                // 普通课程每一条 titleDetail 明细都是独立的周次/地点安排。
+                extractWeeksAndRooms(titleDetail, weeksAndTeachers)
+            }
+            val teacher = if (isLab) {
+                extractLabTeacher(titleDetail)
+            } else {
+                extractTeacher(weeksAndTeachers)
+            }
+            for ((weeksStr, room) in entries) {
+                if (weeksStr.isEmpty()) continue
+                val (parity, cleanedWeeks) = extractParity(weeksStr)
+                for ((sw, ew) in parseWeeks(cleanedWeeks)) {
+                    // Sleepy 语义: 单周(1)起点须奇数/双周(2)起点须偶数，
+                    // 同时避免单条周次在修正后出现倒挂区间。
+                    val (adjustedStart, adjustedEnd) = JwParity.adjustedRange(sw, ew, parity)
+                    out += JwCourse(
+                        name = name,
+                        room = room,
+                        teacher = teacher,
+                        day = day,
+                        startNode = begin,
+                        endNode = end,
+                        startWeek = adjustedStart,
+                        endWeek = adjustedEnd,
+                        type = parity,
+                    )
                 }
-                out += JwCourse(
-                    name = name,
-                    room = room,
-                    teacher = teacher,
-                    day = day,
-                    startNode = begin,
-                    endNode = end,
-                    startWeek = adjustedStart,
-                    endWeek = ew,
-                    type = parity,
-                )
             }
         }
         return out
@@ -86,12 +97,9 @@ class JwNeuParser(source: String) : JwParser(source) {
         return last.replace("[主讲]", "").replace("[主讲 ", "").trim()
     }
 
-    /**
-     * 从 titleDetail 提取 (weeksStr, room):
-     *   - 若 titleDetail 有 >= 2 条且 [1..] 中有以数字开头的, 取首条 split " " 第一段作 weeks, 末段作 room
-     *   - 否则回退到 weeksAndTeachers "/" 前段作 weeks, room 空串
-     */
-    internal fun extractWeeksAndRoom(titleDetail: JsonArray?, weeksAndTeachers: String): Pair<String, String> {
+    /** Returns every independently scheduled week-range and room in titleDetail[1..]. */
+    internal fun extractWeeksAndRooms(titleDetail: JsonArray?, weeksAndTeachers: String): List<Pair<String, String>> {
+        val details = mutableListOf<Pair<String, String>>()
         if (titleDetail != null) {
             for (i in 1 until titleDetail.size) {
                 val s = (titleDetail[i] as? JsonPrimitive)?.contentOrNull?.trim().orEmpty()
@@ -99,17 +107,36 @@ class JwNeuParser(source: String) : JwParser(source) {
                 val parts = s.split(" ").filter { it.isNotEmpty() }
                 if (parts.size >= 2) {
                     val weeks = parts.first().trim()
-                    val room = parts.last().trim()
-                    if (room.endsWith("校区")) continue  // upstream 视 "X校区" 为待定, 跳过取下一条
-                    return weeks to room
-                } else if (parts.size == 1) {
-                    return parts.first().trim() to ""
+                    val rawRoom = parts.last().trim()
+                    val room = if (rawRoom.endsWith("校区")) "待定" else rawRoom
+                    details += weeks to room
+                } else {
+                    details += parts.first().trim() to ""
                 }
             }
         }
-        // 回退: weeksAndTeachers "/" 前段
+        if (details.isNotEmpty()) return details
         val fallbackWeeks = weeksAndTeachers.split("/").firstOrNull()?.trim().orEmpty()
-        return fallbackWeeks to ""
+        return listOf(fallbackWeeks to "")
+    }
+
+    /** 实验课的教师规则与上游脚本保持一致：titleDetail[1] 的第二个空白字段。 */
+    private fun extractLabTeacher(titleDetail: JsonArray?): String {
+        val detail = (titleDetail?.getOrNull(1) as? JsonPrimitive)
+            ?.contentOrNull?.trim().orEmpty()
+        return detail.split(Regex("\\s+")).getOrNull(1).orEmpty()
+    }
+
+    /** 实验课：weeksAndTeachers 取 '[' 前内容，地点取 placeName 的首段。 */
+    private fun extractLabWeeksAndRoom(
+        obj: JsonObject,
+        weeksAndTeachers: String,
+    ): Pair<String, String> {
+        val rawPlace = obj.str("placeName")
+        val place = rawPlace.split(Regex("\\s+")).firstOrNull().orEmpty()
+        val room = if (place.endsWith(")")) "暂未安排教室" else place
+        val weeks = weeksAndTeachers.substringBefore("[").trim()
+        return weeks to room
     }
 
     /**
@@ -138,7 +165,7 @@ class JwNeuParser(source: String) : JwParser(source) {
             .replace("单", "").replace("双", "").trim()
         if (clean.isBlank()) return emptyList()
         val out = mutableListOf<Pair<Int, Int>>()
-        for (seg in clean.split(",", "，").map { it.trim() }.filter { it.isNotEmpty() }) {
+        for (seg in clean.split(",", "，", "、").map { it.trim() }.filter { it.isNotEmpty() }) {
             if (seg.contains("-")) {
                 val parts = seg.split("-", limit = 2).map { it.trim() }
                 val a = parts.getOrNull(0)?.toIntOrNull() ?: continue

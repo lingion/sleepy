@@ -86,4 +86,18 @@ class JwImportViewModelBridgeTest {
         assertTrue("apiPath 必须通过 pathPrefix 拼接, 不能硬编 /jwglxt/kbcx",
             js.contains("pathPrefix + '/kbcx/xskbcx_cxXsgrkb.html"))
     }
+
+    @Test
+    fun `NEU fetch JS follows the mobile schedule API sequence`() {
+        val js = com.lingion.sleepy.ui.screen.imports.NEU_FETCH_JS
+        assertTrue(js.contains("/jwapp/sys/homeapp/api/home/currentUser.do"))
+        assertTrue(js.contains("getMyScheduledCampus.do?termCode="))
+        assertTrue(js.contains("getMyScheduleDetail.do"))
+        assertTrue(js.contains("termCode="))
+        assertTrue(js.contains("campusCode="))
+        assertTrue(js.contains("type=term"))
+        assertTrue(js.contains("arrangedList"))
+        assertTrue(js.contains("onWiseduResult"))
+        assertTrue(js.contains("hostname !== 'jwxt.neu.edu.cn'"))
+    }
 }

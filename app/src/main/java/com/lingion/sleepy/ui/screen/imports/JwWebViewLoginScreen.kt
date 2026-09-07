@@ -210,6 +210,12 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, WISEDU_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 东北大学新版金智教务：课表只在 homeapp 的 mobile JSON API 中，
+                    // 页面 HTML 不含 arrangedList，必须主动取当前学期、校区和课表详情。
+                    if (school.type == JwProtocol.TYPE_NEU) {
+                        evaluateFetchWithTimeout(wv, NEU_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // CQU（重庆大学门户）：同走 JS 桥 fetch 四个 REST API，Bearer token 取自 localStorage
                     if (school.type == JwProtocol.TYPE_CQU) {
                         evaluateFetchWithTimeout(wv, CQU_FETCH_JS)
@@ -553,6 +559,81 @@ private const val WISEDU_FETCH_JS = """
     });
   } catch(err) {
     window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * 东北大学 (jwxt.neu.edu.cn) 金智新版教务的课表 JSON 抓取。
+ *
+ * 课表页面没有可供 HTML parser 使用的课程数据。登录态下依次取得当前学期、可用校区，
+ * 再向 getMyScheduleDetail.do 提交表单；返回的 datas.arrangedList 由 JwNeuParser 解析。
+ */
+const val NEU_FETCH_JS = """
+(function(){
+  function finish(payload) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify(payload));
+  }
+
+  function fetchJson(url, options) {
+    var request = Object.assign({credentials:'include'}, options || {});
+    return fetch(url, request).then(function(response) {
+      return response.text().then(function(body) {
+        if (!response.ok) throw new Error('请求失败 HTTP ' + response.status + ': ' + url);
+        try {
+          return JSON.parse(body);
+        } catch (e) {
+          throw new Error('接口返回不是 JSON: ' + url);
+        }
+      });
+    });
+  }
+
+  try {
+    var hostname = (location.hostname || '').toLowerCase();
+    if (hostname !== 'jwxt.neu.edu.cn') {
+      finish({ok:false, err:'请先完成登录并进入东北大学教务系统后再点导入'});
+      return;
+    }
+
+    fetchJson('/jwapp/sys/homeapp/api/home/currentUser.do')
+    .then(function(userData) {
+      var termCode = userData && userData.datas && userData.datas.welcomeInfo &&
+        userData.datas.welcomeInfo.xnxqdm;
+      if (!termCode) throw new Error('当前用户信息中没有学期代码，请重新登录后重试');
+
+      return fetchJson(
+        '/jwapp/sys/homeapp/api/home/student/getMyScheduledCampus.do?termCode=' +
+        encodeURIComponent(String(termCode))
+      ).then(function(campusData) {
+        var campuses = campusData && campusData.datas;
+        var campusCode = Array.isArray(campuses) && campuses[0] && campuses[0].id;
+        if (campusCode === undefined || campusCode === null || campusCode === '') {
+          throw new Error('当前学期没有可用校区信息');
+        }
+
+        var body = 'termCode=' + encodeURIComponent(String(termCode)) +
+          '&campusCode=' + encodeURIComponent(String(campusCode)) + '&type=term';
+        return fetchJson('/jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With':'XMLHttpRequest'
+          },
+          body:body
+        });
+      });
+    })
+    .then(function(scheduleData) {
+      var arranged = scheduleData && scheduleData.datas && scheduleData.datas.arrangedList;
+      if (!Array.isArray(arranged)) throw new Error('课表响应中没有 arrangedList');
+      finish({ok:true, data:JSON.stringify(scheduleData)});
+    })
+    .catch(function(error) {
+      finish({ok:false, err:String(error && error.message ? error.message : error)});
+    });
+  } catch (error) {
+    finish({ok:false, err:String(error && error.message ? error.message : error)});
   }
 })();
 """
