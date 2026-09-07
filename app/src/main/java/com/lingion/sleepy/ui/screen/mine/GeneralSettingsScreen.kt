@@ -67,6 +67,7 @@ import kotlin.math.roundToInt
 fun GeneralSettingsScreen(
     onBack: () -> Unit,
     onOpenHoliday: () -> Unit = {},
+    onOpenWidgetManagement: () -> Unit = {},
     navDock: Boolean = false,
     onNavDockChange: (Boolean) -> Unit = {}
 ) {
@@ -536,6 +537,33 @@ fun GeneralSettingsScreen(
                             AppPrefs.setVertPunctReplace(context, it)
                             refreshWidgets()
                         }
+                    )
+                }
+            }
+
+            // 管理桌面小组件: 跳二级页列出已放置的小组件(模板: 节假日课程灰显入口行)
+            item {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer)
+                        .noRippleClickable(onOpenWidgetManagement)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = stringResource(R.string.widget_manage_entry),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colors.onSurface
+                        )
+                    }
+                    Icon(
+                        Icons.Outlined.ChevronRight,
+                        contentDescription = null,
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(20.dp)
                     )
                 }
             }

@@ -47,6 +47,8 @@ import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.ui.platform.LocalDensity
 import com.lingion.sleepy.ui.component.PillNavItemSpec
 import com.lingion.sleepy.ui.screen.manage.ManagementPage
+import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
+import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.MineScreen
@@ -167,7 +169,7 @@ private enum class Tab(val labelRes: Int, val icon: ImageVector) {
 }
 
 private enum class OverlayScreen {
-    AddCourse, AllTables, EditTable, Theme, General, Holiday, Export, Reminder, About, License
+    AddCourse, AllTables, EditTable, Theme, General, Holiday, Export, Reminder, About, License, WidgetManagement, WidgetEdit
 }
 
 @Composable
@@ -206,6 +208,7 @@ private fun AppRoot(
     var editTableId by rememberSaveable { mutableStateOf<Long?>(null) }
     var pendingNewTableId by rememberSaveable { mutableStateOf<Long?>(null) }
     var previousDefaultTableId by rememberSaveable { mutableStateOf<Long?>(null) }
+    var widgetEditId by rememberSaveable { mutableStateOf<Int?>(null) }
     var autoImportTriggered by remember { mutableStateOf(false) }
     // 底栏形态(贴底/悬浮 Dock): AppRoot 持真值 — 设置页改, 底栏即时切
     val context = LocalContext.current
@@ -282,6 +285,7 @@ private fun AppRoot(
         GeneralSettingsScreen(
             onBack = { popOverlay() },
             onOpenHoliday = { pushOverlay(OverlayScreen.Holiday) },
+            onOpenWidgetManagement = { pushOverlay(OverlayScreen.WidgetManagement) },
             navDock = navDock,
             onNavDockChange = { navDock = it }
         )
@@ -305,6 +309,22 @@ private fun AppRoot(
     }
     if (topOverlay() == OverlayScreen.License) {
         LicenseScreen(onBack = { popOverlay() })
+        return
+    }
+    // widgetEditId 持久化(Int): 旋转/进程恢复后仍能定位具体 widget —
+    // Int 可 Bundle 化, 与上面 editTableId/pendingNewTableId 同款处理。
+    if (topOverlay() == OverlayScreen.WidgetManagement) {
+        WidgetManagementScreen(
+            onBack = { popOverlay() },
+            onSelect = { widgetId -> widgetEditId = widgetId; pushOverlay(OverlayScreen.WidgetEdit) }
+        )
+        return
+    }
+    if (topOverlay() == OverlayScreen.WidgetEdit) {
+        WidgetEditScreen(
+            widgetId = widgetEditId ?: -1,
+            onBack = { popOverlay(); widgetEditId = null }
+        )
         return
     }
 
