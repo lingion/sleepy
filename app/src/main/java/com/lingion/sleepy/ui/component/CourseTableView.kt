@@ -117,6 +117,13 @@ fun CardsGridView(
     val sortedDays = visibleDays.sorted()
     val dayCount = sortedDays.size
 
+    // issue#23: 边缘节次节点的"行号"按 timeSlots 自然顺序取(已按 node ASC 排序);
+    // 前置节点(-1, 0)排到 grid 顶部, 后置节点(N+1, N+2)排到 grid 底部,
+    // 视觉上就是"第 0 节在第 1 节之上" / "第 N+1 节在第 N 节之下", 与插入直觉一致。
+    //   返回 -1 = 该节点不在 timeSlots(典型场景: 课程来自已删除的旧 timeJson, 数据脏)
+    //   调用方需先判 >= 0 再绘;cardY 那侧 .coerceAtLeast(0) 兜底防负坐标。
+    fun slotIndexOf(node: Int): Int = timeSlots.indexOfFirst { it.nodeStart == node }
+
     // 设置页改 scale / cornerRatio 后强制 recompose
     var prefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
@@ -150,7 +157,9 @@ fun CardsGridView(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 算出每列宽度 (dp)
             val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
-            val gridH = rowH * maxNode   // grid 内容区固定高度
+            // issue#23: grid 高度按 timeSlots 行数算(maxNode 已不反映边缘节点总数)——
+            // edge 节点在 timeSlots 末尾, 视觉上自然排到第 N 节之下。
+            val gridH = rowH * (timeSlots.size.coerceAtLeast(1))
 
             val scrollState = rememberScrollState()
 
@@ -240,16 +249,17 @@ fun CardsGridView(
                     val clusteredIds = clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
 
                     for (cluster in clusters) {
-                        // 簇内课若因 visibleDays/maxNode 过滤全出界则整簇跳过
+                        // 簇内课若因 visibleDays 过滤或节点不在 timeJson 则整簇跳过
                         if (cluster.day !in visibleDays) continue
+                        // issue#23: 边缘节点同样允许 — 用 slotIndexOf 兜底,数据脏返回 -1 也直接过滤掉
                         val inGrid = cluster.courses.filter {
-                            it.startNode in 1..maxNode
+                            slotIndexOf(it.startNode) >= 0
                         }
                         if (inGrid.isEmpty()) continue
                         val anchor = cluster.courses.first() // 主课判定序首位,决定簇基点
                         val dayIdx = sortedDays.indexOf(cluster.day)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
-                        val cardY = rowH * (anchor.startNode - 1)
+                        val cardY = rowH * slotIndexOf(anchor.startNode).coerceAtLeast(0)
                         val clusterKey = ConflictLayoutEngine.conflictClusterKey(cluster)
 
                         ConflictClusterCard(
@@ -270,6 +280,7 @@ fun CardsGridView(
                             colW = colW,
                             rowH = rowH,
                             maxNode = maxNode,
+                            timeSlots = timeSlots,
                             timeW = timeW,
                             gapW = gapW,
                             gapH = gapH,
@@ -280,13 +291,17 @@ fun CardsGridView(
 
                     for (course in courses) {
                         if (course.day !in visibleDays) continue
-                        if (course.startNode !in 1..maxNode) continue
+                        // issue#23: 边缘节点允许 — slotIndexOf = -1 表示该课 startNode 不在当前 timeJson,
+                        // 通常是数据脏(老 timeJson 残留了已删节点), 静默跳过不渲染避免越界
+                        val nodeIdx = slotIndexOf(course.startNode)
+                        if (nodeIdx < 0) continue
                         if (course.id in clusteredIds) continue // 簇内课已由 ConflictClusterCard 绘制
                         val dayIdx = sortedDays.indexOf(course.day)
+                        // 步长上限按剩余行数算(边缘节点也按 timeSlots 总行数取模)
                         val steps = course.step.coerceAtLeast(1)
-                            .coerceAtMost(maxNode - course.startNode + 1)
+                            .coerceAtMost(timeSlots.size - nodeIdx)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
-                        val cardY = rowH * (course.startNode - 1)
+                        val cardY = rowH * nodeIdx
                         val cardH = rowH * steps - gapH
 
                         CourseOverlayCard(
@@ -298,7 +313,8 @@ fun CardsGridView(
                                 .height(cardH),
                             isGrey = course.day in greyDays,
                             scale = scale,
-                            cornerRatio = cornerRatio
+                            cornerRatio = cornerRatio,
+                            groupRows = courses.filter { it.groupId == course.groupId }
                         )
                     }
                 }
@@ -355,14 +371,17 @@ private fun CourseOverlayCard(
     modifier: Modifier = Modifier,
     isGrey: Boolean = false,
     scale: Float = 1f,
-    cornerRatio: Float = 1f
+    cornerRatio: Float = 1f,
+    groupRows: List<CourseEntity> = listOf(course)
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
     val context = androidx.compose.ui.platform.LocalContext.current
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
-    val bg = CourseColorUtil.pickCourseColorCompose(
-        course = course,
+    // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+        row = course,
+        groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isCourseColorless(context)
@@ -882,7 +901,8 @@ private fun DetailDayCard(
                         LessonRow(
                             course = row.courses[0], displayMode = displayMode, timeJson = timeJson,
                             onClick = { onCourseClick(row.courses[0]) }, isGrey = isGrey,
-                            scale = scale, cornerRatio = cornerRatio
+                            scale = scale, cornerRatio = cornerRatio,
+                            groupRows = courses.filter { it.groupId == row.courses[0].groupId }
                         )
                     } else {
                         // 冲突行: 按 lane 并排,每列 weight 均分,同栏课程纵向堆叠
@@ -922,7 +942,8 @@ private fun DetailDayCard(
                                                     timeJson = timeJson,
                                                     onClick = { onCourseClick(laneCourse) },
                                                     isGrey = isGrey, scale = scale, cornerRatio = cornerRatio,
-                                                    laneScale = laneScale, hideSideLabel = hideSide
+                                                    laneScale = laneScale, hideSideLabel = hideSide,
+                                                    groupRows = courses.filter { it.groupId == laneCourse.groupId }
                                                 )
                                             }
                                         }
@@ -969,7 +990,8 @@ private fun LessonRow(
     scale: Float = 1f,
     cornerRatio: Float = 1f,
     laneScale: Float = 1f,
-    hideSideLabel: Boolean = false
+    hideSideLabel: Boolean = false,
+    groupRows: List<CourseEntity> = listOf(course)
 ) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
@@ -978,8 +1000,10 @@ private fun LessonRow(
     val effScale = scale * laneScale
     val sd = { v: Float -> (v * effScale).dp }
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
-    val bg = CourseColorUtil.pickCourseColorCompose(
-        course = course,
+    // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+        row = course,
+        groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isCourseColorless(context)

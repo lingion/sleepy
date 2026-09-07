@@ -378,6 +378,10 @@ fun ConflictClusterCard(
     timeW: Dp,
     gapW: Dp,
     gapH: Dp,
+    // issue#23: 边缘节点(课表外节次)允许进簇 — 传 timeSlots 让簇内 filter+clamp
+    // 能用真实 slotIndex 替代过时的 startNode ∈ [1, maxNode] 判定。
+    // 不传 = 旧行为(startNode ∈ [1, maxNode] 才绘)。
+    timeSlots: List<com.lingion.sleepy.ui.component.TimeSlot> = emptyList(),
     isGrey: Boolean,
     // v7.10.16r 轮换(issue#10): 会话内轮换步数(null=默认序),由 ScheduleScreen 持有,
     // 不落盘;N≥3 簇点露出带/折角推进一位,详情 radio 仍走 onPickTop 持久化通道。
@@ -415,8 +419,15 @@ fun ConflictClusterCard(
         cluster, style, topOverrideId, maxNode, layerOrderOverride = rotationLayerOrder
     )
 
-    // 绘制集: 与原单卡循环同一过滤(startNode ∈ [1, maxNode])——出界课原循环本就跳过。
-    val drawList = laid.filter { it.course.startNode in 1..maxNode }
+    // 绘制集: 与原单卡循环同一过滤 — issue#23: 边缘节点用 slotIndexOf ≥ 0 替代
+    // 旧 startNode ∈ [1, maxNode],否则 第 0 节 / 第 N+1 节 课会在簇内被静默吞掉。
+    // timeSlots 为空(旧调用方)=退回旧行为,数据脏课被显式过滤仍兜底。
+    val slotIndexOfCached: (Int) -> Int = if (timeSlots.isEmpty()) {
+        { node -> if (node in 1..maxNode) node - 1 else -1 }
+    } else {
+        { node -> timeSlots.indexOfFirst { it.nodeStart == node } }
+    }
+    val drawList = laid.filter { slotIndexOfCached(it.course.startNode) >= 0 }
     if (drawList.isEmpty()) return
 
     // v7.10.16r 图层模型统一(评审 #5): 轮换/徽标/切换闸门共用「全量簇的层数」,
@@ -450,9 +461,12 @@ fun ConflictClusterCard(
     val form = clusterForm(style, hiddenItems.firstOrNull()?.variant, foldEligible)
 
     // 课色(描边/虚线/flap 取色,含 isGrey 灰显,与卡渲染取同一色)
+    // issue#22: 同名课程多地点 — 传 cluster 全行作为 groupRows,支持 AUTO/CUSTOM 模式取色
+    val groupRowsForCard = cluster.courses
     fun courseColorOf(course: CourseEntity): Color {
-        val bg = CourseColorUtil.pickCourseColorCompose(
-            course = course,
+        val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+            row = course,
+            groupRows = groupRowsForCard,
             isDark = CourseColorUtil.isPaletteDark(palette),
             neutralColor = colors.surfaceVariant,
             colorless = AppPrefs.isCourseColorless(context)
@@ -464,8 +478,13 @@ fun ConflictClusterCard(
     // 簇几何: 整簇基点 = 主课判定序首位课(调用方以它定位,override 不改变该锚点)。
     val baseNode = cluster.courses.first().startNode
     val minStart = drawList.minOf { it.course.startNode }
-    val clampedSteps = drawList.associate {
-        it.course.id to it.course.step.coerceAtLeast(1).coerceAtMost(maxNode - it.course.startNode + 1)
+    val clampedSteps = drawList.associate { laidItem ->
+        val sIdx = slotIndexOfCached(laidItem.course.startNode)
+        // issue#23: 步长上限按 timeSlots 剩余行数算,边缘节点也走同一公式
+        // (maxNode - startNode + 1 在 startNode > maxNode 时会变 ≤ 0,导致 edge 课被压成 1 节)
+        val maxStep = if (sIdx < 0) laidItem.course.step.coerceAtLeast(1)
+            else (timeSlots.size - sIdx).coerceAtLeast(1)
+        laidItem.course.id to laidItem.course.step.coerceAtLeast(1).coerceAtMost(maxStep)
     }
     val maxEnd = drawList.maxOf { it.course.startNode + (clampedSteps[it.course.id] ?: 1) } - 1
     val clusterH = rowH * (maxEnd - minStart + 1) - gapH
@@ -563,7 +582,8 @@ fun ConflictClusterCard(
                                 .width(topRect.width)
                                 .height(topRect.height),
                             isGrey = isGrey,
-                            shape = memberShape
+                            shape = memberShape,
+                            groupRows = groupRowsForCard
                         )
                     } else {
                         // ---- 沉底卡: 同一矩形函数(hidden 与否同待遇)——尺寸只跟课走,
@@ -599,7 +619,8 @@ fun ConflictClusterCard(
                                 onClick = { if (layerCount >= 3) switchTap() else onPickTop(layerRepOf(course.id) ?: course.id) },
                                 modifier = Modifier.fillMaxSize(),
                                 isGrey = isGrey,
-                                shape = cardShape
+                                shape = cardShape,
+                                groupRows = groupRowsForCard
                             )
                         }
                     }
@@ -842,13 +863,16 @@ private fun ConflictCourseCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
     isGrey: Boolean = false,
-    shape: Shape = SleepyTheme.shapes.medium
+    shape: Shape = SleepyTheme.shapes.medium,
+    groupRows: List<CourseEntity> = listOf(course)
 ) {
     val palette = SleepyTheme.palette
     val colors = SleepyTheme.colors
     val context = LocalContext.current
-    val bg = CourseColorUtil.pickCourseColorCompose(
-        course = course,
+    // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+        row = course,
+        groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isCourseColorless(context)
