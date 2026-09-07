@@ -77,6 +77,11 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
         }
     }
 
+    override fun onDeleted(context: Context, appWidgetIds: IntArray) {
+        super.onDeleted(context, appWidgetIds)
+        for (id in appWidgetIds) WidgetBindingStore.remove(context, id)
+    }
+
     companion object {
         private const val TAG = "TwoDayRV"
 
