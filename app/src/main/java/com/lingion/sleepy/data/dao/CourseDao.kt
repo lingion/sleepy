@@ -21,6 +21,21 @@ interface CourseDao {
     @Update
     suspend fun update(course: CourseEntity)
 
+    /** issue#22 行级 diff/patch 用 — 批量 update,保留各行 id */
+    @Update
+    suspend fun updateAll(courses: List<CourseEntity>)
+
+    /**
+     * issue#22 行级 diff/patch 用 — 保留指定 id 的 insert(REPLACE 冲突策略
+     * 保证若 id 已存在则覆盖,不存在则插入新行)
+     */
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertKeepId(course: CourseEntity): Long
+
+    /** issue#22 行级 diff/patch 用 — 批量按 id 删除 */
+    @Query("DELETE FROM courses WHERE id IN (:ids)")
+    suspend fun deleteByIds(ids: List<Long>)
+
     @Query("DELETE FROM courses WHERE id = :id")
     suspend fun deleteById(id: Long)
 
