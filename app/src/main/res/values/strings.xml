@@ -425,6 +425,8 @@
     <string name="widget_open_sleepy">打开 Sleepy 开始添加</string>
     <string name="widget_edit_section_schedule">呈现的课表</string>
     <string name="widget_edit_default_label">默认（跟随当前课表）</string>
+    <string name="widget_manage_title">管理桌面小组件</string>
+    <string name="widget_manage_empty">暂未在桌面添加 Sleepy 小组件。长按桌面空白处 → 小组件 → 选 Sleepy 即可添加。</string>
     <string name="more_sections">还有 %1$d 节…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 节课程</string>

@@ -338,6 +338,8 @@
     <string name="widget_open_sleepy">開啟 Sleepy 開始新增</string>
     <string name="widget_edit_section_schedule">呈現的課表</string>
     <string name="widget_edit_default_label">預設（跟隨當前課表）</string>
+    <string name="widget_manage_title">管理桌面小工具</string>
+    <string name="widget_manage_empty">桌面上尚未加入 Sleepy 小工具。長按桌面空白處 → 小工具 → 選擇 Sleepy 即可新增。</string>
     <string name="more_sections">還有 %1$d 節…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 節課程</string>
