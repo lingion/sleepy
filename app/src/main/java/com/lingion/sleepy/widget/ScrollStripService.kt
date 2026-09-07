@@ -64,19 +64,19 @@ class ScrollStripService : RemoteViewsService() {
             val full: Bitmap
             when (scope) {
                 SCOPE_TODAY -> {
-                    val d = TodayWidgetReceiver.loadDataSync(context)
+                    val d = TodayWidgetReceiver.loadDataSync(context, widgetId)
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d)
                     val renderH = ceil(contentHdp / STRIP_DP) * STRIP_DP
                     full = WidgetBitmapRenderers.renderToday(context, d, wDp.toFloat(), renderH)
                 }
                 SCOPE_TWODAY -> {
-                    val d = TwoDayWidgetReceiver.loadDataSync(context)
+                    val d = TwoDayWidgetReceiver.loadDataSync(context, widgetId)
                     contentHdp = WidgetBitmapRenderers.twoDayContentHeightDp(d)
                     val renderH = ceil(contentHdp / STRIP_DP) * STRIP_DP
                     full = WidgetBitmapRenderers.renderTwoDay(context, d, wDp.toFloat(), renderH)
                 }
                 SCOPE_WEEKLIST -> {
-                    val d = WeekListWidgetReceiver.loadDataSync(context)
+                    val d = WeekListWidgetReceiver.loadDataSync(context, widgetId)
                     contentHdp = WidgetBitmapRenderers.weekListContentHeightDp(context, d)
                     val renderH = ceil(contentHdp / STRIP_DP) * STRIP_DP
                     full = WidgetBitmapRenderers.renderWeekList(context, d, wDp.toFloat(), renderH)

@@ -29,7 +29,7 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
     open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
-        val data = loadDataSync(context)
+        val data = loadDataSync(context, id)
         val opts = awm.getAppWidgetOptions(id)
         val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
         val contentH = WidgetBitmapRenderers.weekListContentHeightDp(context, data)
@@ -85,8 +85,12 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
 
         /**
          * 同步版数据加载 — 7 列日列课程。与 WeekGridWidgetProvider.loadWeekData 结构一致。
+         *
+         * [appWidgetId] is plumbed through so a per-widget binding can override
+         * the app-wide default table; receivers fall back to
+         * [WidgetTableResolver.resolveCurrentTable] when no binding exists.
          */
-        fun loadDataSync(context: Context): WeekData {
+        fun loadDataSync(context: Context, appWidgetId: Int): WeekData {
             val today = LocalDate.now()
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
@@ -95,7 +99,8 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                 runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
-                    val table = WidgetTableResolver.resolveCurrentTable()
+                    val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
+                        ?: WidgetTableResolver.resolveCurrentTable()
                     if (table == null) {
                         WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {

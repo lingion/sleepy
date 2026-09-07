@@ -29,7 +29,7 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
     open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
-        val data = loadDataSync(context)
+        val data = loadDataSync(context, id)
         val opts = awm.getAppWidgetOptions(id)
         val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
         val contentH = WidgetBitmapRenderers.twoDayContentHeightDp(data)
@@ -82,8 +82,12 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
 
         /**
          * 同步版数据加载 — 今天 + 明天课程。
+         *
+         * [appWidgetId] is plumbed through so a per-widget binding can override
+         * the app-wide default table; receivers fall back to
+         * [WidgetTableResolver.resolveCurrentTable] when no binding exists.
          */
-        fun loadDataSync(context: Context): TwoDayData {
+        fun loadDataSync(context: Context, appWidgetId: Int): TwoDayData {
             val today = LocalDate.now()
             val tomorrow = today.plusDays(1)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -93,7 +97,8 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                 runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
-                    val table = WidgetTableResolver.resolveCurrentTable()
+                    val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
+                        ?: WidgetTableResolver.resolveCurrentTable()
                     if (table == null) {
                         TwoDayData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {

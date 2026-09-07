@@ -79,7 +79,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
     }
 
     private fun renderWidget(context: Context, awm: AppWidgetManager, widgetId: Int) {
-        var data = loadWeekData(context)
+        var data = loadWeekData(context, widgetId)
         val opts = awm.getAppWidgetOptions(widgetId)
         val density = context.resources.displayMetrics.density
 
@@ -694,7 +694,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             return (0.299 * r + 0.587 * g + 0.114 * b) / 255.0 < 0.55
         }
 
-        fun loadWeekData(context: Context): WeekData {
+        fun loadWeekData(context: Context, appWidgetId: Int): WeekData {
             val today = LocalDate.now()
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = AppPrefs.isDarkMode(context, isSystemDark)
@@ -706,8 +706,9 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 val loaded = kotlinx.coroutines.runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
-                    // 选表逻辑统一走 WidgetTableResolver（默认表优先），避免与 App 选中表不同步
-                    val t = WidgetTableResolver.resolveCurrentTable()
+                    // 选表逻辑：先按 widgetId 取绑定表，未绑定则走 WidgetTableResolver（默认表优先），避免与 App 选中表不同步
+                    val t = WidgetTableResolver.resolveBoundTable(appWidgetId)
+                        ?: WidgetTableResolver.resolveCurrentTable()
                     val status = if (t != null)
                         DateUtils.semesterStatus(t.startDate, t.maxWeek, today)
                     else DateUtils.SemesterStatus.IN_RANGE

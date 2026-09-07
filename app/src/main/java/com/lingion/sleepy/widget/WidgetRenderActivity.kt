@@ -1,6 +1,7 @@
 package com.lingion.sleepy.widget
 
 import android.app.Activity
+import android.appwidget.AppWidgetManager
 import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
@@ -143,7 +144,10 @@ class WidgetRenderActivity : Activity() {
                 )
             }
             else -> {
-                val data = WeekGridWidgetProvider.loadWeekData(this)
+                // Debug 预览不是真实 widget 实例 — 传 INVALID_APPWIDGET_ID 让 binding 查找短路, 落到默认表
+                val data = WeekGridWidgetProvider.loadWeekData(
+                    this, AppWidgetManager.INVALID_APPWIDGET_ID
+                )
                 val density = resources.displayMetrics.density
                 val w = (wDp * density).toInt()
                 val h = (hDp * density).toInt()

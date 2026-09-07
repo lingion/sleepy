@@ -35,7 +35,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
     open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
-        pushTodayData(context, awm, id, variantHint, loadDataSync(context))
+        pushTodayData(context, awm, id, variantHint, loadDataSync(context, id))
     }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
@@ -97,8 +97,12 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
 
         /**
          * 同步版数据加载 (runBlocking DB 读) — 供 RemoteViews Receiver 使用。
+         *
+         * [appWidgetId] is plumbed through so a per-widget binding can override
+         * the app-wide default table; receivers fall back to
+         * [WidgetTableResolver.resolveCurrentTable] when no binding exists.
          */
-        fun loadDataSync(context: Context): WidgetData {
+        fun loadDataSync(context: Context, appWidgetId: Int): WidgetData {
             val today = LocalDate.now()
             val dayOfWeek = DateUtils.todayDayOfWeek(today)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
@@ -110,7 +114,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
-                    val table = WidgetTableResolver.resolveCurrentTable()
+                    val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
+                        ?: WidgetTableResolver.resolveCurrentTable()
                     if (table == null) {
                         WidgetData(date = today, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
