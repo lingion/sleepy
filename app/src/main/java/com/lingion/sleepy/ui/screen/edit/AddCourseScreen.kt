@@ -82,6 +82,14 @@ import java.time.LocalTime
 
 enum class MeetingInputMode { ByNode, ByClock }
 
+/** issue#23: UI 工作副本 — 用户在「课表外节次」里点 + 弹对话框填的边缘节次,
+ *  暂存在此处,落库前不污染 timeJson,保存时串接 [TimeTableUtils.insertEdgeNode] */
+internal data class PendingEdgeInsert(
+    val edgeClass: TimeTableUtils.EdgeClass,
+    val start: String,
+    val end: String
+)
+
 private class MeetingBlockDraft(
     val id: Int,
     val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
@@ -154,6 +162,17 @@ fun AddCourseScreen(
     var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
+    // issue#23: 非常规开关(课表外节次 + 非标准时长)。默认 OFF,开启后必须
+    // 至少启用其中一项(添加了边缘节次 或 某时段切到 ByClock 模式)
+    var irregularEnabled by remember(editingCourse?.id) { mutableStateOf(false) }
+    // 待落库的边缘节次 — UI 工作副本,落库前不污染 timeJson;保存时串接 insertEdgeNode 后一次性 updateTable
+    val pendingEdgeInserts = remember(editingCourse?.id) {
+        mutableStateListOf<PendingEdgeInsert>()
+    }
+    var showEdgeDialog by remember { mutableStateOf(false) }
+    var pendingDialogClass by remember { mutableStateOf<TimeTableUtils.EdgeClass?>(null) }
+    var pendingDialogStart by remember { mutableStateOf("07:30") }
+    var pendingDialogEnd by remember { mutableStateOf("08:15") }
     // 颜色选择器改为按 block 持有状态(每节次独立弹窗) — 删除顶层 showColorPicker
     // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
     // rememberSaveable: 旋转/配置变更时 Activity 重建, remember 会丢明细列表导致弹窗消失
@@ -215,7 +234,9 @@ fun AddCourseScreen(
             startWeek = startWeek,
             endWeek = endWeek,
             table = currentTable,
-            context = context
+            context = context,
+            irregularEnabled = irregularEnabled,
+            pendingEdgeInserts = pendingEdgeInserts
         )
         validationIssues = issues
         if (issues.isNotEmpty()) return
@@ -272,6 +293,17 @@ fun AddCourseScreen(
                 val gid = java.util.UUID.randomUUID().toString()
                 repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
             }
+            // issue#23: 边缘节次先在编辑页暂存,课程保存成功后再写回课表 timeJson。
+            // 顺序串接保证一次添加多个节点时编号连续且方向元数据不丢失。
+            if (pendingEdgeInserts.isNotEmpty()) {
+                val table = currentTable ?: repo.getTable(tableId)
+                if (table != null) {
+                    val updatedTimeJson = pendingEdgeInserts.fold(table.timeJson) { json, insert ->
+                        TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
+                    }
+                    viewModel.updateTable(table.copy(timeJson = updatedTimeJson))
+                }
+            }
             onSaved()
         }
     }
@@ -305,6 +337,49 @@ fun AddCourseScreen(
             dismissButton = {
                 TextButton(onClick = { pendingConflictDetails = emptyList() }) {
                     Text(stringResource(R.string.conflict_detail_go_back))
+                }
+            }
+        )
+    }
+
+    // issue#23: 「+ 前加一个 / + 后加一个」打开的对话框 — 起止时间填好后挂到 pendingEdgeInserts
+    if (showEdgeDialog && pendingDialogClass != null) {
+        AlertDialog(
+            onDismissRequest = { showEdgeDialog = false },
+            title = { Text(stringResource(R.string.edge_insert_dialog_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                    TimePickerField(
+                        label = stringResource(R.string.edge_insert_start_label),
+                        value = pendingDialogStart,
+                        onValueChange = { pendingDialogStart = it }
+                    )
+                    TimePickerField(
+                        label = stringResource(R.string.edge_insert_end_label),
+                        value = pendingDialogEnd,
+                        onValueChange = { pendingDialogEnd = it }
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(
+                    enabled = parseHm(pendingDialogStart) != null &&
+                        parseHm(pendingDialogEnd) != null &&
+                        (parseHm(pendingDialogStart)?.isBefore(parseHm(pendingDialogEnd)) == true),
+                    onClick = {
+                        pendingDialogClass?.let { cls ->
+                            pendingEdgeInserts.add(
+                                PendingEdgeInsert(cls, pendingDialogStart, pendingDialogEnd)
+                            )
+                        }
+                        showEdgeDialog = false
+                        pendingDialogClass = null
+                    }
+                ) { Text(stringResource(R.string.edge_insert_ok)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showEdgeDialog = false }) {
+                    Text(stringResource(R.string.cancel))
                 }
             }
         )
@@ -473,6 +548,23 @@ fun AddCourseScreen(
                 }
             }
 
+            // issue#23: 非常规开关 — 开启后展开 课表外节次 / 非标准时长 两块
+            item {
+                IrregularSection(
+                    enabled = irregularEnabled,
+                    onEnabledChange = { irregularEnabled = it },
+                    pendingEdgeInserts = pendingEdgeInserts,
+                    currentTimeJson = currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
+                    onAddEdge = { edgeClass ->
+                        pendingDialogClass = edgeClass
+                        pendingDialogStart = "07:30"
+                        pendingDialogEnd = "08:15"
+                        showEdgeDialog = true
+                    },
+                    onRemovePendingEdge = { idx -> pendingEdgeInserts.removeAt(idx) }
+                )
+            }
+
             item {
                 Button(
                     onClick = { performSave(forceAfterConflict = false) },
@@ -620,7 +712,9 @@ private fun validateCourseDraft(
     startWeek: Int,
     endWeek: Int,
     table: TimeTableEntity?,
-    context: android.content.Context
+    context: android.content.Context,
+    irregularEnabled: Boolean = false,
+    pendingEdgeInserts: List<PendingEdgeInsert> = emptyList()
 ): List<ValidationIssue> {
     val issues = mutableListOf<ValidationIssue>()
     if (courseName.isBlank()) issues += ValidationIssue(null, context.getString(R.string.course_name_empty))
@@ -683,6 +777,14 @@ private fun validateCourseDraft(
                     context.getString(R.string.slot_time_overlap, i + 1, j + 1, dayText)
                 )
             }
+        }
+    }
+    // issue#23: 非常规开启后必须至少启用「课表外节次」或「非标准时长」其中一项
+    if (irregularEnabled) {
+        val hasEdge = pendingEdgeInserts.isNotEmpty()
+        val hasByClock = blocks.any { it.mode == MeetingInputMode.ByClock }
+        if (!hasEdge && !hasByClock) {
+            issues += ValidationIssue(null, context.getString(R.string.irregular_at_least_one))
         }
     }
     return issues
@@ -992,6 +1094,178 @@ private fun MeetingBlockEditor(
                 }
             }
         }
+    }
+}
+
+/** issue#23: 非常规总开关 + 展开后的「课表外节次」「非标准时长」两块。
+ *  - 总开关 = 启用本课程的特殊课表特性
+ *  - 课表外节次: 从当前 timeJson 拉边缘节点 + 用户新增(未保存)的边缘节次,展示成列表;
+ *    底部「+ 前加一个 / + 后加一个」打开对话框 → 加入 pendingEdgeInserts(待保存串接 insertEdgeNode)
+ *  - 非标准时长: 仅说明文字,实际行为由 MeetingBlockEditor 的 ModePicker(ByClock)负责 */
+@Composable
+private fun IrregularSection(
+    enabled: Boolean,
+    onEnabledChange: (Boolean) -> Unit,
+    pendingEdgeInserts: List<PendingEdgeInsert>,
+    currentTimeJson: String,
+    onAddEdge: (TimeTableUtils.EdgeClass) -> Unit,
+    onRemovePendingEdge: (Int) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    val context = LocalContext.current
+    val existingBefore = remember(currentTimeJson) {
+        TimeTableUtils.edgeNodesOf(currentTimeJson, TimeTableUtils.EdgeClass.Before)
+    }
+    val existingAfter = remember(currentTimeJson) {
+        TimeTableUtils.edgeNodesOf(currentTimeJson, TimeTableUtils.EdgeClass.After)
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.extraLarge)
+            .background(colors.surfaceContainer)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(
+                    text = stringResource(R.string.irregular_switch),
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface
+                )
+                Text(
+                    text = stringResource(R.string.irregular_switch_sub),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+            Switch(checked = enabled, onCheckedChange = onEnabledChange)
+        }
+
+        if (enabled) {
+            // ── 课表外节次 ──
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                Text(
+                    text = stringResource(R.string.edge_section_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colors.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.edge_section_sub),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant
+                )
+
+                // 现有边缘节点(只读,展示当前 timeJson 状态)
+                if (existingBefore.isEmpty() && existingAfter.isEmpty() && pendingEdgeInserts.isEmpty()) {
+                    Text(
+                        text = stringResource(R.string.edge_no_nodes),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                } else {
+                    // 现有节点 — 带节点号与起止时间
+                    existingBefore.forEach { node ->
+                        val (s, e) = readNodeRange(currentTimeJson, node)
+                        Text(
+                            text = stringResource(R.string.edge_node_range,
+                                stringResource(R.string.edge_node_label, node), s, e),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.onSurface
+                        )
+                    }
+                    existingAfter.forEach { node ->
+                        val (s, e) = readNodeRange(currentTimeJson, node)
+                        Text(
+                            text = stringResource(R.string.edge_node_range,
+                                stringResource(R.string.edge_node_label, node), s, e),
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.onSurface
+                        )
+                    }
+                    // 待添加 — 编号保存时由 insertEdgeNode 决定,这里只标"将添加"避免 UI 与实际编号错位
+                    pendingEdgeInserts.forEachIndexed { idx, p ->
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
+                        ) {
+                            Text(
+                                text = stringResource(R.string.edge_node_range,
+                                    "将添加 #${idx + 1}", p.start, p.end),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = colors.onSurfaceVariant
+                            )
+                            IconButton(onClick = { onRemovePendingEdge(idx) }) {
+                                Icon(
+                                    Icons.Outlined.Delete,
+                                    contentDescription = stringResource(R.string.delete_slot),
+                                    tint = colors.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Button(
+                        onClick = { onAddEdge(TimeTableUtils.EdgeClass.Before) },
+                        modifier = Modifier.weight(1f),
+                        shape = SleepyTheme.Buttons.shape,
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+                    ) {
+                        Text(stringResource(R.string.edge_add_before), color = colors.onSecondaryContainer)
+                    }
+                    Button(
+                        onClick = { onAddEdge(TimeTableUtils.EdgeClass.After) },
+                        modifier = Modifier.weight(1f),
+                        shape = SleepyTheme.Buttons.shape,
+                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+                    ) {
+                        Text(stringResource(R.string.edge_add_after), color = colors.onSecondaryContainer)
+                    }
+                }
+            }
+
+            // ── 非标准时长 ──
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text(
+                    text = stringResource(R.string.custom_duration_section_title),
+                    style = MaterialTheme.typography.labelLarge,
+                    color = colors.onSurfaceVariant
+                )
+                Text(
+                    text = stringResource(R.string.custom_duration_section_sub),
+                    style = MaterialTheme.typography.bodySmall,
+                    color = colors.onSurfaceVariant
+                )
+            }
+        }
+    }
+}
+
+/** 从 timeJson 中读取指定 node 的起止时间(用于在 UI 上展示现有边缘节次) */
+private fun readNodeRange(timeJson: String, node: Int): Pair<String, String> {
+    return try {
+        val arr = JSONArray(timeJson)
+        for (i in 0 until arr.length()) {
+            val o = arr.getJSONObject(i)
+            if (o.optInt("node") == node) {
+                return (o.optString("start", "—")) to (o.optString("end", "—"))
+            }
+        }
+        "—" to "—"
+    } catch (_: Exception) {
+        "—" to "—"
     }
 }
 
