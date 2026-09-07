@@ -237,6 +237,8 @@
     <string name="color_custom">自定义</string>
     <string name="color_refresh">换自动色</string>
     <string name="color_toast_last_group">最后一节将跟随组色</string>
+    <string name="import_multi_location_warning">部分课程存在多个上课地点</string>
+    <string name="import_multi_location_warning_detail">「%1$s」有 %2$d 个不同上课地点,导入后会作为独立节次展示</string>
     <string name="week_range">周次范围</string>
     <string name="week_range_sub">整门课的默认周次；用「应用到所有时段」批量覆盖各时段</string>
     <string name="start_week">起始周</string>

@@ -763,7 +763,9 @@ private data class ImportPreview(
     val targetTableName: String,
     val parseResult: ScheduleParser.ParseResult,
     val existingCourses: List<CourseEntity>,
-    val conflicts: List<CourseConflict>
+    val conflicts: List<CourseConflict>,
+    // issue#22: 同 groupId 多地点提示 — 不阻塞导入,只让用户心里有数
+    val multiLocationWarnings: List<String> = emptyList()
 ) {
     val incomingCount: Int get() = parseResult.courses.size
     val conflictCount: Int get() = conflicts.size
@@ -847,6 +849,39 @@ private fun ImportPreviewDialog(
                                 else -> stringResource(R.string.import_conflict_count, preview.conflictCount)
                             }
                         )
+                    }
+                }
+                if (preview.multiLocationWarnings.isNotEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SleepyTheme.shapes.large)
+                            .background(colors.secondaryContainer)
+                            .padding(14.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.import_multi_location_warning),
+                            style = MaterialTheme.typography.titleSmall,
+                            color = colors.onSecondaryContainer
+                        )
+                        preview.multiLocationWarnings.take(5).forEach { warning ->
+                            Text(
+                                text = "• $warning",
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSecondaryContainer
+                            )
+                        }
+                        if (preview.multiLocationWarnings.size > 5) {
+                            Text(
+                                text = stringResource(
+                                    R.string.more_unexpanded,
+                                    preview.multiLocationWarnings.size - 5
+                                ),
+                                style = MaterialTheme.typography.labelSmall,
+                                color = colors.onSecondaryContainer
+                            )
+                        }
                     }
                 }
                 if (preview.conflicts.isNotEmpty()) {
@@ -1194,12 +1229,27 @@ private suspend fun buildImportPreview(
                 existingCourses.firstOrNull { existing -> coursesConflict(incoming, existing) }
                     ?.let { CourseConflict(incoming = incoming, existing = it) }
             }
+            // issue#22: 同 groupId 多地点提示文案 — 按 (groupId) 聚合,
+            // 有 ≥2 个非空不同地点时给一句提示,导入后会作为独立节次展示
+            val multiLocWarnings = mutableListOf<String>()
+            parseResult.courses.groupBy { it.groupId }.forEach { (gid, cs) ->
+                if (gid.isBlank()) return@forEach
+                val distinctRooms = cs.map { it.room.trim() }.distinct().filter { it.isNotEmpty() }
+                if (distinctRooms.size >= 2) {
+                    multiLocWarnings += context.getString(
+                        R.string.import_multi_location_warning_detail,
+                        cs.first().courseName,
+                        distinctRooms.size
+                    )
+                }
+            }
             ImportPreview(
                 targetTableId = tableId,
                 targetTableName = existingTable?.name ?: context.getString(R.string.manage_current_table),
                 parseResult = parseResult,
                 existingCourses = existingCourses,
-                conflicts = conflicts
+                conflicts = conflicts,
+                multiLocationWarnings = multiLocWarnings
             )
         },
         onFailure = { e ->
