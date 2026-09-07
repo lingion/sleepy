@@ -110,7 +110,7 @@ class JwClassicEamsParserTest {
         val courses = JwClassicEamsParser(literalLike).generateCourseList()
         assertEquals(1, courses.size)
         val lan = courses.single()
-        assertEquals("局域网与城域网", lan.name)   // 课程编码后缀被剥离 (uestc.js 形态)
+        assertEquals("局域网与城域网(G0102030.01)", lan.name)   // verbatim: 课程编码后缀原样保留 (uestc.js 形态)
         assertEquals("韦老师", lan.teacher)
         assertEquals("A108", lan.room)
         assertEquals(1, lan.day)
@@ -269,5 +269,56 @@ class JwClassicEamsParserTest {
         val feats = JwClassicEamsParser(tjuLike).matchedFeatures()
         assertTrue(feats.any { it.contains("TaskActivity") })
         assertTrue(feats.any { it.contains("manualArrangeCourseTable") })
+    }
+
+    // -------- verbatim: 课程名整体入库, 不做任何括号/编码剥离 --------
+    // 用户明示: "你就正正经经的把这一整个课程提取出来, 不做任何的清洗适配"
+    // 历史误伤: cleanCourseName("大学物理Ⅱ(D1200440.18)") → "大学物理Ⅱ" 丢了课程编码
+
+    @Test
+    fun `trailing course-code parenthetical is preserved verbatim for uestc`() {
+        // 电子科大 (uestc.js) 形态: 课名尾缀课程编码 (D1200440.18) 必须原样保留
+        val uestc = """
+            <script>
+            var table0 = new CourseTable(2025,1);
+            var unitCount = 12;
+            var activity=null;
+                activity = new TaskActivity("1","王老师","2(02)","大学物理Ⅱ(D1200440.18)","100","教1-101","00000000100000000000000000000000000000000000000000000",null,"","","","","");
+                index =2*unitCount+0;
+                table0.activities[index][table0.activities[index].length]=activity;
+            table0.marshalTable(2,1,21);
+            </script>
+        """.trimIndent()
+        val courses = JwClassicEamsParser(uestc).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("大学物理Ⅱ(D1200440.18)", courses.single().name)
+    }
+
+    @Test
+    fun `brackets in TaskActivity name field are preserved verbatim`() {
+        // 通用: 课程名任意括号形态 (理论/实验/实践/课程编码/书名号引用) 全部原样入库
+        // 不做清洗 — 包括括号内的非课程编码内容
+        val page = """
+            <script>
+            var table0 = new CourseTable(2025,1);
+            var unitCount = 12;
+            var activity=null;
+                activity = new TaskActivity("1","A","x","市场营销学(理论)","100","R1","00000000100000000000000000000000000000000000000000000",null,"","","","","");
+                index =1*unitCount+0;
+                table0.activities[index][table0.activities[index].length]=activity;
+                activity = new TaskActivity("1","B","x","数据库实验(上机)","100","R2","00000000100000000000000000000000000000000000000000000",null,"","","","","");
+                index =1*unitCount+1;
+                table0.activities[index][table0.activities[index].length]=activity;
+                activity = new TaskActivity("1","C","x","《红楼梦》导读","100","R3","00000000100000000000000000000000000000000000000000000",null,"","","","","");
+                index =1*unitCount+2;
+                table0.activities[index][table0.activities[index].length]=activity;
+            table0.marshalTable(2,1,21);
+            </script>
+        """.trimIndent()
+        val courses = JwClassicEamsParser(page).generateCourseList()
+        assertEquals(3, courses.size)
+        assertEquals("市场营销学(理论)", courses[0].name)
+        assertEquals("数据库实验(上机)", courses[1].name)
+        assertEquals("《红楼梦》导读", courses[2].name)
     }
 }

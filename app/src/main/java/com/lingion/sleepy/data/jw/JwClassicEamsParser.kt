@@ -189,16 +189,14 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
 
     /** 上财形态: 第 4 参 = this.courseNameLessonNo → 块后反查 var courseNameLessonNo = ".."; */
     private fun resolveCourseName(task: Task): String {
-        task.name.takeIf { it.isNotBlank() }?.let { return cleanCourseName(it) }
+        // verbatim: 课程名整体入库, 不做任何清洗/剥离
+        // 历史误伤: cleanCourseName("大学物理Ⅱ(D1200440.18)") → "大学物理Ⅱ" 丢了课程编码
+        task.name.takeIf { it.isNotBlank() }?.let { return it }
         val expr = task.nameExpr ?: return ""
         if (!expr.contains("courseNameLessonNo")) return ""
         val re = Regex("""var\s+courseNameLessonNo\s*=\s*"([^"]*)"\s*;""")
         return re.find(source)?.groupValues?.get(1).orEmpty()
     }
-
-    /** 课名尾缀课程编码剥离: "大学物理Ⅱ(D1200440.18)" → "大学物理Ⅱ" (uestc.js 形态) */
-    private fun cleanCourseName(name: String): String =
-        name.replace(Regex("""\s*\([A-Z]{1,3}\d+\.[\w.]+\)\s*$"""), "").trim()
 
     /**
      * 位图 → 周列表。下标 0 占位, 下标 i=1 即第 i 周 (勿 +1, 四源同证)。
