@@ -12,4 +12,5 @@
     android:previewImage="@drawable/widget_preview_twoday_small"
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
-    android:description="@string/widget_twoday_small_label" />
+    android:description="@string/widget_twoday_small_label"
+    android:configure=".widget.WidgetConfigureActivity" />

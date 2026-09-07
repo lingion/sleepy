@@ -261,6 +261,13 @@
             android:label="Widget 预览"
             android:theme="@style/Theme.Sleepy" />
 
+        <!-- Native launcher entry for editing an existing widget -->
+        <activity
+            android:name=".widget.WidgetConfigureActivity"
+            android:exported="true"
+            android:label="@string/app_name"
+            android:theme="@style/Theme.Sleepy" />
+
         <!-- Pin widget to home (adb automation) -->
         <activity
             android:name=".widget.PinWidgetActivity"
