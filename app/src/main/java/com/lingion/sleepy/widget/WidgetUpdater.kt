@@ -1,6 +1,7 @@
 package com.lingion.sleepy.widget
 
 import android.appwidget.AppWidgetManager
+import android.appwidget.AppWidgetProvider
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
@@ -27,18 +28,8 @@ object WidgetUpdater {
     private const val REPEAT_MINUTES = 15L
 
     /** All widget providers receiving the synchronous refresh broadcast. */
-    internal val remoteViewsReceiverClasses = listOf(
-        WeekGridWidgetProvider::class.java,
-        TodayWidgetReceiver::class.java,
-        WeekListWidgetReceiver::class.java,
-        WeekViewWidgetReceiver::class.java,
-        TwoDayWidgetReceiver::class.java,
-        TodaySmallWidgetReceiver::class.java,
-        TwoDaySmallWidgetReceiver::class.java,
-        WeekListSmallWidgetReceiver::class.java,
-        WeekViewSmallWidgetReceiver::class.java,
-        WeekGridSmallWidgetProvider::class.java
-    )
+    internal val remoteViewsReceiverClasses: List<Class<out AppWidgetProvider>> =
+        ALL_WIDGET_VARIANTS.map { it.receiverClass }
     /** 注册定期刷新（幂等） */
     fun schedule(context: Context) {
         val request = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
