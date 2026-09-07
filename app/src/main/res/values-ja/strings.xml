@@ -336,6 +336,8 @@
     <!-- Widget / Common UI -->
     <string name="widget_create_schedule">最初に時間割を作成してください</string>
     <string name="widget_open_sleepy">Sleepyを開いて追加</string>
+    <string name="widget_edit_section_schedule">表示する時間割</string>
+    <string name="widget_edit_default_label">デフォルト（現在の時間割に従う）</string>
     <string name="more_sections">他に %1$d コマ…</string>
     <string name="tomorrow">明日</string>
     <string name="n_course_periods">%1$dコマ</string>

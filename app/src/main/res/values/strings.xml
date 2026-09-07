@@ -423,6 +423,8 @@
     <!-- Widget / Common UI -->
     <string name="widget_create_schedule">请先创建课表</string>
     <string name="widget_open_sleepy">打开 Sleepy 开始添加</string>
+    <string name="widget_edit_section_schedule">呈现的课表</string>
+    <string name="widget_edit_default_label">默认（跟随当前课表）</string>
     <string name="more_sections">还有 %1$d 节…</string>
     <string name="tomorrow">明天</string>
     <string name="n_course_periods">%1$d 节课程</string>
@@ -681,4 +683,23 @@
     <string name="error_unknown">未知错误</string>
     <string name="error_no_version_found">主站和镜像都没找到最新版本</string>
     <string name="error_empty_download">下载文件为空</string>
+
+    <!-- issue#23 / 手动课程"非常规"开关 (2026-09-06) -->
+    <string name="irregular_switch">非常规</string>
+    <string name="irregular_switch_sub">课表外节次 · 非标准时长</string>
+    <string name="irregular_at_least_one">非常规课程至少启用「课表外节次」或「非标准时长」其中一项</string>
+    <string name="edge_section_title">课表外节次</string>
+    <string name="edge_section_sub">在标准节次之外额外加一节（第 0 节 / 第 N+1 节 / 第 -1 节 / …）</string>
+    <string name="edge_dropdown_label">选择课表外节次</string>
+    <string name="edge_no_nodes">当前没有课表外节次</string>
+    <string name="edge_node_label">第 %1$d 节</string>
+    <string name="edge_node_range">%1$s – %2$s</string>
+    <string name="edge_add_before">+ 前加一个</string>
+    <string name="edge_add_after">+ 后加一个</string>
+    <string name="edge_insert_dialog_title">添加课表外节次</string>
+    <string name="edge_insert_start_label">起始时间</string>
+    <string name="edge_insert_end_label">结束时间</string>
+    <string name="edge_insert_ok">添加</string>
+    <string name="custom_duration_section_title">非标准时长</string>
+    <string name="custom_duration_section_sub">这门课的开始/结束时间与课表默认节次不一致</string>
 </resources>

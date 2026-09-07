@@ -336,6 +336,8 @@
     <!-- Widget / Common UI -->
     <string name="widget_create_schedule">Por favor cree un horario primero</string>
     <string name="widget_open_sleepy">Abre Sleepy para agregar</string>
+    <string name="widget_edit_section_schedule">Horario mostrado</string>
+    <string name="widget_edit_default_label">Predeterminado (sigue el horario actual)</string>
     <string name="more_sections">%1$d más...</string>
     <string name="tomorrow">Mañana</string>
     <string name="n_course_periods">%1$d períodos de curso</string>
