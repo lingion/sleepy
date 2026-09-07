@@ -141,7 +141,13 @@ object TimeTableUtils {
      * 节次编辑用的行模型：node=节次编号, start/end="HH:mm"。
      * 节点编号在删除时会重新 1..N 连续编号。
      */
-    data class TimeSlotRow(val node: Int, val start: String, val end: String)
+    data class TimeSlotRow(
+        val node: Int,
+        val start: String,
+        val end: String,
+        /** Non-null only for nodes created by the manual-course edge controls. */
+        val edgeClass: EdgeClass? = null
+    )
 
     /** timeJson -> 编辑 rows (按数组顺序) */
     fun parseTimeSlotRows(timeJson: String): List<TimeSlotRow> = try {
@@ -151,7 +157,8 @@ object TimeTableUtils {
             TimeSlotRow(
                 node = o.optInt("node", i + 1),
                 start = o.optString("start", smartStartDefault(i + 1)),
-                end = o.optString("end", smartEndDefault(i + 1))
+                end = o.optString("end", smartEndDefault(i + 1)),
+                edgeClass = parseEdgeClass(o.optString("edge", ""))
             )
         }
     } catch (_: Exception) {
@@ -166,9 +173,18 @@ object TimeTableUtils {
             obj.put("node", row.node)
             obj.put("start", row.start)
             obj.put("end", row.end)
+            if (row.edgeClass != null) {
+                obj.put("edge", row.edgeClass.name.lowercase())
+            }
             arr.put(obj)
         }
         return arr.toString()
+    }
+
+    private fun parseEdgeClass(s: String): EdgeClass? = when (s.lowercase()) {
+        "before" -> EdgeClass.Before
+        "after" -> EdgeClass.After
+        else -> null
     }
 
     /**
@@ -232,6 +248,85 @@ object TimeTableUtils {
     fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {
         val nextNode = (rows.maxOfOrNull { it.node } ?: 0) + 1
         return rows + TimeSlotRow(nextNode, "", "")
+    }
+
+    // ------------------------------------------------------------------
+    // 课表外节次 (issue #23 / 用户 2026-09-06 手动课程"非常规"开关)
+    //
+    // 标准节次 = 1..maxContiguousFromOne(timeJson) 的连续节点;
+    // 前置边缘节次 = node < 1 (用户加第 0 节 / 第 -1 节 / ...);
+    // 后置边缘节次 = node > maxContiguousFromOne (用户加第 N+1 节 / 第 N+2 节 / ...)。
+    //
+    // 这些节点是 timeJson 的**真实结构**, 不是 UI 标签: 删除某边缘节点上最后
+    // 一门课时, timeJson 必须回收该节点(用户明示: 课程表恢复到之前的状态)。
+    // ------------------------------------------------------------------
+
+    /** 边缘节次的方向: 前置 (< 1) / 后置 (> maxContiguous) */
+    enum class EdgeClass { Before, After }
+
+    /**
+     * timeJson 中 1..N 的最大连续 N — 标准节次的上界。
+     * 节点的 `edgeClass=Before/After` 永远**不是**标准节点; 标准节点的 edgeClass 必须为 null。
+     * 默认 12 节制返回 12; 全删 / 异常返回 0。
+     */
+    private fun maxContiguousFromOne(rows: List<TimeSlotRow>): Int {
+        val standardNodes = rows.filter { it.edgeClass == null }.map { it.node }.toHashSet()
+        if (1 !in standardNodes) return 0
+        var n = 1
+        while ((n + 1) in standardNodes) n++
+        return n
+    }
+
+    /**
+     * 在 timeJson 中新增一个边缘节次节点:
+     *   - Before: 无前置时 = 0, 否则 = (现有前置最小值) - 1
+     *   - After:  无后置时 = maxContiguousFromOne + 1, 否则 = (现有后置最大值) + 1
+     *
+     * 新节点带 `edge=<direction>` 元数据, 与标准节点严格区分 — 后续 [maxContiguousFromOne]
+     * / [edgeNodesOf] 都靠此字段判断归属。
+     */
+    fun insertEdgeNode(timeJson: String, edgeClass: EdgeClass, start: String, end: String): String {
+        val rows = parseTimeSlotRows(timeJson)
+        val newNode = when (edgeClass) {
+            EdgeClass.Before -> {
+                val existingBefore = rows.filter { it.edgeClass == EdgeClass.Before }
+                if (existingBefore.isEmpty()) 0 else (existingBefore.minOf { it.node }) - 1
+            }
+            EdgeClass.After -> {
+                val maxStd = maxContiguousFromOne(rows)
+                val existingAfter = rows.filter { it.edgeClass == EdgeClass.After }
+                if (existingAfter.isEmpty()) maxStd + 1 else (existingAfter.maxOf { it.node }) + 1
+            }
+        }
+        return buildTimeJsonFromRows(rows + TimeSlotRow(newNode, start, end, edgeClass))
+    }
+
+    /**
+     * 删除某边缘节次节点 — 仅当 (a) 节点确实是边缘 (edgeClass != null)
+     * 且 (b) 当前没有任何课程使用它 (usedNodes 不含 edgeNode) 时, 才从 timeJson 移除。
+     * 上述任一条件不满足, 原样返回 (用户删课 → 仍有其他课引用 → 不能回收)。
+     */
+    fun removeEdgeNodeIfUnused(timeJson: String, edgeNode: Int, usedNodes: Set<Int>): String {
+        val rows = parseTimeSlotRows(timeJson)
+        val target = rows.firstOrNull { it.node == edgeNode } ?: return timeJson
+        if (target.edgeClass == null) return timeJson          // 标准节点不回收
+        if (edgeNode in usedNodes) return timeJson             // 还有课程引用
+        return buildTimeJsonFromRows(rows.filter { it.node != edgeNode })
+    }
+
+    /**
+     * 列出某方向的边缘节次节点号, 按节点号排序:
+     *   - Before: 降序 (0, -1, -2, ...) — 最近插入的在前, 与用户加节习惯一致
+     *   - After:  升序 (13, 14, 15, ...) — 最近插入的在前
+     */
+    fun edgeNodesOf(timeJson: String, edgeClass: EdgeClass): List<Int> {
+        val nodes = parseTimeSlotRows(timeJson)
+            .filter { it.edgeClass == edgeClass }
+            .map { it.node }
+        return when (edgeClass) {
+            EdgeClass.Before -> nodes.sortedDescending()
+            EdgeClass.After -> nodes.sorted()
+        }
     }
 
     private fun smartStartDefault(node: Int): String = when {
