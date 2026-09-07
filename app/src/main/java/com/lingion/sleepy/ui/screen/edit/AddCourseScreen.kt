@@ -36,6 +36,7 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
@@ -91,7 +92,12 @@ private class MeetingBlockDraft(
     endTime: String,
     startWeek: Int = 1,
     endWeek: Int = 16,
-    weekType: Int = 0
+    weekType: Int = 0,
+    room: String = "",
+    teacher: String = "",
+    note: String = "",
+    color: String = "",
+    colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP
 ) {
     var mode by mutableStateOf(initialMode)
     var startNode by mutableStateOf(startNode)
@@ -101,6 +107,11 @@ private class MeetingBlockDraft(
     var startWeek by mutableStateOf(startWeek)
     var endWeek by mutableStateOf(endWeek)
     var weekType by mutableStateOf(weekType)
+    var roomState by mutableStateOf(room)
+    var teacherState by mutableStateOf(teacher)
+    var noteState by mutableStateOf(note)
+    var colorState by mutableStateOf(color)
+    var colorModeState by mutableStateOf(colorMode)
     // issue#9 延伸: NumberField 把超界输入静默夹紧时, 置 true → 编辑器顶红块提示
     // 用户感知到"我输 100 被改成了 2", 而不是无报错地接受了错值
     var clamped by mutableStateOf(false)
@@ -138,18 +149,12 @@ fun AddCourseScreen(
     }
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
-    var teacher by remember(editingCourse?.id) { mutableStateOf(editingCourse?.teacher ?: "") }
-    var room by remember(editingCourse?.id) { mutableStateOf(editingCourse?.room ?: "") }
-    var note by remember(editingCourse?.id) { mutableStateOf(editingCourse?.note ?: "") }
-    var courseColor by remember(editingCourse?.id) {
-        val c = editingCourse?.color ?: ""
-        mutableStateOf(if (c.isBlank() || c == "#FF6750A4") "" else c)
-    }
+    // issue#22: teacher/room/note/color/colorMode 已下沉到 MeetingBlockDraft(每个时段独立编辑)
     var startWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.startWeek ?: 1) }
     var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
-    var showColorPicker by remember { mutableStateOf(false) }
+    // 颜色选择器改为按 block 持有状态(每节次独立弹窗) — 删除顶层 showColorPicker
     // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
     // rememberSaveable: 旋转/配置变更时 Activity 重建, remember 会丢明细列表导致弹窗消失
     var pendingConflictDetails by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
@@ -182,7 +187,12 @@ fun AddCourseScreen(
                         endTime = first.endTime.ifBlank { "09:40" },
                         startWeek = first.startWeek,
                         endWeek = first.endWeek,
-                        weekType = first.type
+                        weekType = first.type,
+                        room = first.room,
+                        teacher = first.teacher,
+                        note = first.note,
+                        color = first.color,
+                        colorMode = first.colorMode
                     ))
                 }
             }
@@ -215,14 +225,10 @@ fun AddCourseScreen(
             block.days.sorted().map { day ->
                 buildCourseEntity(
                     tableId = draftTableId ?: 0L,
-                    groupId = "",
+                    groupId = "",  // 编辑模式暂留 "", 落库前再覆盖 editingCourse.groupId
                     courseName = courseName.trim(),
-                    teacher = teacher.trim(),
-                    room = room.trim(),
-                    note = note.trim(),
-                    day = day,
                     block = block,
-                    courseColor = courseColor.ifBlank { "#FF6750A4" }
+                    day = day
                 )
             }
         }
@@ -231,8 +237,12 @@ fun AddCourseScreen(
             // 没表就自动建一张，保证 selectedTableId 非空
             val tableId = state.selectedTableId
                 ?: viewModel.createEmptyTable()
-            // 用真实 tableId 修正 drafts
-            val fixedDrafts = drafts.map { it.copy(tableId = tableId) }
+            // 编辑模式: 草稿继承原 groupId;新建模式: 仍共享一个新生成的 groupId
+            val fixedDrafts = if (editingCourse != null) {
+                drafts.map { it.copy(groupId = editingCourse.groupId) }
+            } else {
+                drafts
+            }
             // v7.10.16t: 三层拦截撤除 — 网格 v7.10.16r(issue#10)已支持任意
             // 层数(轮换显示), 手动加课与整表导入(本就放行三层)对齐, 不再拦。
             // 旧逻辑 bug(用户 2026-09-04 报): badDays 取的是全表超层天,
@@ -251,14 +261,12 @@ fun AddCourseScreen(
                 }
             }
             if (editingCourse != null) {
-                // 编辑：删同 groupId 全部记录，插入所有新草稿
-                val gid = editingCourse.groupId
-                val toInsert = fixedDrafts.map { it.copy(groupId = gid) }
-                repo.updateCourseGroup(
-                    tableId = tableId,
-                    groupId = gid,
-                    newCourses = toInsert
-                )
+                // v7.10.16+: 行级 diff/patch 替换整组覆盖 — issue#22 同名多地点
+                // 只动该 groupId 内的行, 不波及同表其他课程
+                val existing = repo.getCourses(tableId)
+                    .filter { it.groupId == editingCourse.groupId }
+                val diff = com.lingion.sleepy.data.diff.RowKeyDiffer.diff(fixedDrafts, existing)
+                repo.applyDiff(tableId, diff)
             } else {
                 // 新建：所有草稿共享同一个 groupId
                 val gid = java.util.UUID.randomUUID().toString()
@@ -351,63 +359,7 @@ fun AddCourseScreen(
                             shape = fieldShape,
                             colors = fieldColors
                         )
-                        TextField(
-                            value = teacher,
-                            onValueChange = { teacher = it },
-                            label = { Text(stringResource(R.string.course_teacher)) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = fieldShape,
-                            colors = fieldColors
-                        )
-                        TextField(
-                            value = room,
-                            onValueChange = { room = it },
-                            label = { Text(stringResource(R.string.course_room)) },
-                            singleLine = true,
-                            modifier = Modifier.fillMaxWidth(),
-                            shape = fieldShape,
-                            colors = fieldColors
-                        )
-                        TextField(
-                            value = note,
-                            onValueChange = { note = it },
-                            label = { Text(stringResource(R.string.course_note)) },
-                            modifier = Modifier.fillMaxWidth(),
-                            minLines = 2,
-                            maxLines = 4,
-                            shape = fieldShape,
-                            colors = fieldColors
-                        )
-                        // 颜色选择器
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(10.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.course_color),
-                                style = MaterialTheme.typography.labelLarge,
-                                color = colors.onSurfaceVariant
-                            )
-                            // 自动色
-                            AutoColorDot(
-                                selected = courseColor.isBlank(),
-                                onClick = { courseColor = "" }
-                            )
-                            // 自定义色圆点 — 点击弹出调色盘
-                            CustomColorDot(
-                                hex = courseColor.takeIf { it.isNotBlank() },
-                                onClick = { showColorPicker = true }
-                            )
-                            if (courseColor.isNotBlank()) {
-                                Text(
-                                    text = courseColor,
-                                    style = MaterialTheme.typography.labelSmall,
-                                    color = colors.onSurfaceVariant
-                                )
-                            }
-                        }
+                        // issue#22: teacher/room/note/color 已下沉到每个 MeetingBlockDraft(同名多地点独立编辑)
                     }
                 }
             }
@@ -580,26 +532,18 @@ fun AddCourseScreen(
             item { Spacer(modifier = Modifier.height(32.dp)) }
         }
 
-        if (showColorPicker) {
-            ColorPickerDialog(
-                initialHex = courseColor,
-                onConfirm = { hex ->
-                    courseColor = hex
-                    showColorPicker = false
-                },
-                onDismiss = { showColorPicker = false }
-            )
-        }
+        // issue#22: 顶层 ColorPickerDialog 已删 — 颜色按 block 独立弹窗(见 MeetingBlockEditor 内的 ColorSection)
     }
 }
 
 
 
-/** 编辑回填：按完整时段特征分组。周次/单双周参与分组，
- *  保证「同节次不同周次」回填成两个 block 而不是被错误合并。 */
+/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师 参与分组，
+ *  保证「同节次不同周次」「同名多地点」「同名多老师」回填成多个 block 而不是被错误合并。
+ *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块 */
 internal fun groupSlotsForEdit(courses: List<CourseEntity>): List<List<CourseEntity>> =
     courses.groupBy { c ->
-        "${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}"
+        "${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
     }.values.toList()
 
 private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
@@ -625,7 +569,12 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         endTime = course.endTime.ifBlank { "09:40" },
         startWeek = course.startWeek,
         endWeek = course.endWeek,
-        weekType = course.type
+        weekType = course.type,
+        room = course.room,
+        teacher = course.teacher,
+        note = course.note,
+        color = course.color,
+        colorMode = course.colorMode
     )
 }
 
@@ -633,28 +582,32 @@ private fun buildCourseEntity(
     tableId: Long,
     groupId: String,
     courseName: String,
-    teacher: String,
-    room: String,
-    note: String,
-    day: Int,
     block: MeetingBlockDraft,
-    courseColor: String = "#FF6750A4"
+    day: Int
 ): CourseEntity {
     val ownTime = block.mode == MeetingInputMode.ByClock
+    // issue#22: color/colorMode 从 block 取;AUTO 模式 color 留空(渲染时按 hash 取)
+    val finalColor = when (block.colorModeState) {
+        com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM ->
+            block.colorState.ifBlank { "#FF6750A4" }
+        com.lingion.sleepy.data.entity.CourseColorMode.AUTO -> ""
+        else -> block.colorState.ifBlank { "#FF6750A4" }
+    }
     return CourseEntity(
         groupId = groupId,
         tableId = tableId,
         courseName = courseName,
-        teacher = teacher,
-        room = room,
-        note = note,
+        teacher = block.teacherState.trim(),
+        room = block.roomState.trim(),
+        note = block.noteState.trim(),
         day = day,
         startNode = block.startNode,
         step = block.step,
         startWeek = block.startWeek,
         endWeek = block.endWeek,
         type = block.weekType,
-        color = courseColor.ifBlank { "#FF6750A4" },
+        color = finalColor,
+        colorMode = block.colorModeState,
         ownTime = ownTime,
         startTime = if (ownTime) block.startTime else "",
         endTime = if (ownTime) block.endTime else ""
@@ -995,6 +948,39 @@ private fun MeetingBlockEditor(
             modifier = Modifier.fillMaxWidth()
         )
 
+        // issue#22: 老师/地点/备注下沉到每时段独立编辑 — 同名同周次不同地点时不再相互覆盖
+        TextField(
+            value = block.teacherState,
+            onValueChange = { block.teacherState = it },
+            label = { Text(stringResource(R.string.course_teacher)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = fieldShape,
+            colors = fieldColors
+        )
+        TextField(
+            value = block.roomState,
+            onValueChange = { block.roomState = it },
+            label = { Text(stringResource(R.string.course_room)) },
+            singleLine = true,
+            modifier = Modifier.fillMaxWidth(),
+            shape = fieldShape,
+            colors = fieldColors
+        )
+        TextField(
+            value = block.noteState,
+            onValueChange = { block.noteState = it },
+            label = { Text(stringResource(R.string.course_note)) },
+            modifier = Modifier.fillMaxWidth(),
+            minLines = 2,
+            maxLines = 4,
+            shape = fieldShape,
+            colors = fieldColors
+        )
+
+        // 颜色 — 三态(GROUP 跟组 / AUTO 自动 / CUSTOM 自定义)
+        ColorSection(block = block)
+
         if (issues.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 issues.forEach { issue ->
@@ -1006,6 +992,92 @@ private fun MeetingBlockEditor(
                 }
             }
         }
+    }
+}
+
+/** issue#22: 颜色三态 — 开关 OFF = 跟组色(GROUP);开关 ON 后可切 AUTO/CUSTOM
+ *  - GROUP(默认): colorState 留空,渲染按 groupId hash 取统一色
+ *  - AUTO: 同 GROUP 但色相按块序号 + 黄金角(137.508°)发散,自动换色
+ *  - CUSTOM: 用户在 ColorPickerDialog 里挑的固定 hex */
+@Composable
+private fun ColorSection(block: MeetingBlockDraft) {
+    val colors = SleepyTheme.colors
+    val useDifferent = block.colorModeState != com.lingion.sleepy.data.entity.CourseColorMode.GROUP
+    var showColorPicker by remember { mutableStateOf(false) }
+
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            Text(
+                text = stringResource(R.string.course_color),
+                style = MaterialTheme.typography.labelLarge,
+                color = colors.onSurfaceVariant
+            )
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    text = if (useDifferent) stringResource(R.string.color_use_different) else stringResource(R.string.color_follow_group),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.width(8.dp))
+                Switch(
+                    checked = useDifferent,
+                    onCheckedChange = { on ->
+                        block.colorModeState = if (on) {
+                            // 第一次打开: 落 AUTO(自动散色), 用户可再切自定义
+                            com.lingion.sleepy.data.entity.CourseColorMode.AUTO
+                        } else {
+                            com.lingion.sleepy.data.entity.CourseColorMode.GROUP
+                        }
+                    }
+                )
+            }
+        }
+        if (useDifferent) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                // 自动 — 按块序号散色(渲染时由 hueForCourse 计算)
+                AutoColorDot(
+                    selected = block.colorModeState == com.lingion.sleepy.data.entity.CourseColorMode.AUTO,
+                    onClick = {
+                        block.colorModeState = com.lingion.sleepy.data.entity.CourseColorMode.AUTO
+                        block.colorState = ""
+                    }
+                )
+                // 自定义 — 弹出调色盘选固定色
+                CustomColorDot(
+                    hex = block.colorState.takeIf {
+                        it.isNotBlank() && block.colorModeState == com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM
+                    },
+                    onClick = { showColorPicker = true }
+                )
+                if (block.colorModeState == com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM && block.colorState.isNotBlank()) {
+                    Text(
+                        text = block.colorState,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.onSurfaceVariant
+                    )
+                }
+            }
+        }
+    }
+
+    if (showColorPicker) {
+        ColorPickerDialog(
+            initialHex = block.colorState.ifBlank { "#FF6750A4" },
+            onConfirm = { hex ->
+                block.colorState = hex
+                block.colorModeState = com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM
+                showColorPicker = false
+            },
+            onDismiss = { showColorPicker = false }
+        )
     }
 }
 
