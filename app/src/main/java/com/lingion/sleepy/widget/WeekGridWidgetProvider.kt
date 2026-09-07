@@ -185,6 +185,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val maxNode = (data.days.flatMap { it.courses }
                 .maxOfOrNull { it.startNode + it.step - 1 } ?: allSlots.size)
                 .coerceAtLeast(1)
+            // issue#22: 同名课程多地点 — 跨天汇总 course 全集,传给 pickCourseColorIntWithGroupRows
+            val allCourses = data.days.flatMap { it.courses }
             val slots = allSlots.take(maxNode)
             val sortedDays = data.visibleDays.sorted()
             val dayCount = sortedDays.size.coerceIn(1, 7)
@@ -405,7 +407,10 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
 
                     // 卡片背景色 (v19e: 对齐 CourseTableView palette) — 统一入口 CourseColorUtil (决策 D3)
                     // colorless 灰底传 gridLine(即 surfaceVariant 的 Int), 与原实现一致
-                    val baseColor = CourseColorUtil.pickCourseColorInt(course, isDark, gridLine, colorless)
+                    val baseColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
+                        course, allCourses.filter { it.groupId == course.groupId },
+                        isDark, gridLine, colorless
+                    )
                     p.color = baseColor
                     p.alpha = 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)

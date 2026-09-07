@@ -71,10 +71,12 @@ object WidgetBitmapRenderers {
     private fun drawCourse(
         c: Canvas, p: Paint, course: CourseEntity, timeJson: String, x: Float, y: Float, w: Float, h: Float,
         scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false,
-        displayMode: String = "node"
+        displayMode: String = "node",
+        groupRows: List<CourseEntity> = listOf(course)
     ) {
         // 统一取色入口 (决策 D3) — colorless 灰底传 scheme.surfaceVariant 的 Int 值
-        val bgColor = CourseColorUtil.pickCourseColorInt(course, scheme.isDark, scheme.surfaceVariant, colorless)
+        // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.surfaceVariant, colorless)
         // 文字色亮度自适应 (决策 D5-13) — 深色自定义课色上切白字, 浅色底仍 onSurface
         val textColor = CourseColorUtil.textColorOn(bgColor, scheme.isDark, scheme.onSurface)
         val pad = (3f * density).coerceAtLeast(1f)
@@ -338,7 +340,8 @@ object WidgetBitmapRenderers {
         laneRows.forEach { row ->
             if (row.laneCount == 1) {
                 drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
-                    fontSizeSp = 12f, colorless = colorless, displayMode = displayMode)
+                    fontSizeSp = 12f, colorless = colorless, displayMode = displayMode,
+                    groupRows = data.courses.filter { it.groupId == row.courses[0].groupId })
                 y += rowH + rowGap
             } else {
                 val laneGap = 5f * density
@@ -363,7 +366,8 @@ object WidgetBitmapRenderers {
                     var ly = y
                     laneCourses.forEachIndexed { ci, laneCourse ->
                         drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
-                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
+                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
+                            groupRows = data.courses.filter { it.groupId == laneCourse.groupId })
                         ly += rowH
                         if (ci < laneCourses.size - 1) ly += stackGap
                     }
@@ -720,7 +724,11 @@ object WidgetBitmapRenderers {
                 day.courses.forEachIndexed { idx, course ->
                     val name = course.courseName
                     // 课程颜色背景 (对齐 WeekGrid 风格) — 统一入口 CourseColorUtil (决策 D3)
-                    val bgColor = CourseColorUtil.pickCourseColorInt(course, s.isDark, s.surfaceVariant, colorless)
+                    // issue#22: 同名课程多地点 — 用 day.courses 同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+                    val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
+                        course, day.courses.filter { it.groupId == course.groupId },
+                        s.isDark, s.surfaceVariant, colorless
+                    )
                     p.color = bgColor
                     canvas.drawRoundRect(
                         RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
@@ -1092,7 +1100,8 @@ object WidgetBitmapRenderers {
                 laneRows.forEach { row ->
                     if (row.laneCount == 1) {
                         drawCourse(canvas, p, row.courses[0], day.timeJson, colX, cy, colW, maxRowH, s, density,
-                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode)
+                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
+                            groupRows = day.courses.filter { it.groupId == row.courses[0].groupId })
                         cy += maxRowH + rowGap
                     } else {
                         val laneW = (colW - laneGap * (row.laneCount - 1)) / row.laneCount
@@ -1113,7 +1122,8 @@ object WidgetBitmapRenderers {
                             var ly = cy
                             laneCourses.forEach { laneCourse ->
                                 drawCourse(canvas, p, laneCourse, day.timeJson, laneX, ly, laneW, maxRowH, s, density,
-                                    fontSizeSp = 9f, colorless = colorless, displayMode = displayMode)
+                                    fontSizeSp = 9f, colorless = colorless, displayMode = displayMode,
+                                    groupRows = day.courses.filter { it.groupId == laneCourse.groupId })
                                 ly += maxRowH
                                 if (ly < cy + laneRowTotalH) ly += stackGap
                             }

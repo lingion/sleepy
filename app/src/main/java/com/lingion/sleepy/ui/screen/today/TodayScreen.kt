@@ -105,7 +105,8 @@ fun TodayScreen(
                         TodayCourseCard(
                             course = row.courses[0],
                             timeJson = state.currentTable?.timeJson,
-                            onClick = { selectedCourse = row.courses[0] }
+                            onClick = { selectedCourse = row.courses[0] },
+                            groupRows = todayCourses.filter { it.groupId == row.courses[0].groupId }
                         )
                     }
                 } else {
@@ -136,7 +137,8 @@ fun TodayScreen(
                                         TodayCourseCard(
                                             course = laneCourse,
                                             timeJson = state.currentTable?.timeJson,
-                                            onClick = { selectedCourse = laneCourse }
+                                            onClick = { selectedCourse = laneCourse },
+                                            groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
                                         )
                                     }
                                 }
@@ -289,14 +291,16 @@ private fun EmptyToday(semesterStatus: DateUtils.SemesterStatus = DateUtils.Seme
 }
 
 @Composable
-private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onClick: (() -> Unit)? = null) {
+private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onClick: (() -> Unit)? = null, groupRows: List<CourseEntity> = listOf(course)) {
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = LocalContext.current
     // 统一取色入口 — hue 源自动对齐 groupId（修复原 course.id%360 导致同门课多节次异色+三屏三色）
     // colorless 读取 AppPrefs course_colorless 独立开关
-    val bg = CourseColorUtil.pickCourseColorCompose(
-        course = course,
+    // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
+    val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+        row = course,
+        groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
         neutralColor = colors.surfaceVariant,
         colorless = AppPrefs.isCourseColorless(context)
