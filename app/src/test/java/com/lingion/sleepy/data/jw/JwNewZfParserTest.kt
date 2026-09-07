@@ -360,4 +360,29 @@ class JwNewZfParserTest {
         val courses = JwNewZfParser(src).generateCourseList()
         assertEquals(7, courses[0].day)
     }
+
+    // ════════════════════════════════════════════════════════
+    // 课程名完整保留 — #20 广东医科 zf_new 协议括号不丢
+    // ════════════════════════════════════════════════════════
+    //
+    // parser 现状就是把 kcmc 字段整体当字符串存 — 不做任何清洗/裁剪/归一化.
+    // 这两条锁死的就是 issue #20 给 Yinzhixiang152 的承诺:
+    // "市场营销学(理论)" / "全口义齿工艺技术(实验)" 进了 CourseEntity 仍是原始字符串.
+    // 任何后续归一化 (groupId trim, sortKey, 等等) 都不得动 courseName 字段本身.
+
+    @Test
+    fun `bracketed theory kcmc preserved verbatim for GDMU issue 20`() {
+        val src = """{"kbList":[{"kcmc":"市场营销学(理论)","xqj":1,"jc":"1-2","zcd":"1-16周","cdmc":"","xm":""}]}"""
+        val courses = JwNewZfParser(src).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("市场营销学(理论)", courses[0].name)
+    }
+
+    @Test
+    fun `bracketed experiment kcmc preserved verbatim for GDMU issue 20`() {
+        val src = """{"kbList":[{"kcmc":"全口义齿工艺技术(实验)","xqj":2,"jc":"3-4","zcd":"1-16周","cdmc":"","xm":""}]}"""
+        val courses = JwNewZfParser(src).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("全口义齿工艺技术(实验)", courses[0].name)
+    }
 }
