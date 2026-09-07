@@ -413,6 +413,10 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "MarkYangKp/ZhengFangJY"
     ),
     PerSchoolEntry(
+        "school-ucas", "中国科学院大学 UCAS",
+        "ldiex/UCAS_Course_Schedule_Convertor\nHurray0/UCAS_GET_Course\ncld378632668/ucas_course_tool\nGentleCP/UCAS-Helper"
+    ),
+    PerSchoolEntry(
         "school-bjfu", "北京林业大学 BJFU",
         "Bloomberg2000/bjfu_course_ics_generator\nBloomberg2000/bjfu_util.py"
     ),

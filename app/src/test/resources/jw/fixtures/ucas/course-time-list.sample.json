@@ -1,0 +1,39 @@
+<!--
+  Sanitized UCAS JSON fixture for JwUcasParserTest.
+  Source contract cross-verified 2026-09-07 against ldiex/UCAS_Course_Schedule_Convertor
+  (selectedCourse.json + per-courseId.json). Course names anonymized.
+
+  Bit layout (verbatim from upstream, do NOT alter without re-cross-verifying):
+    courseWeek = int  -> bin()[2:][::-1], bit i = 1 -> 第 i+1 周上课
+    courseTime = int  -> bin()[2:], suffix 12 bits are 节次位图 (reversed),
+                         remaining high-order bits encode day per DAY_BITS dictionary.
+-->
+{
+  "selectedCourse": {"list": []},
+  "courseTimeList": [
+    {
+      "courseName": "新时代中国特色社会主义理论与实践",
+      "coursePlace": "教学楼A101",
+      "courseWeek": 65535,
+      "courseTime": 8195
+    },
+    {
+      "courseName": "计算机体系结构",
+      "coursePlace": "教学楼B205",
+      "courseWeek": 21845,
+      "courseTime": 26112
+    },
+    {
+      "courseName": "羽毛球",
+      "coursePlace": "体育馆",
+      "courseWeek": 43690,
+      "courseTime": 40976
+    },
+    {
+      "courseName": "无效条目",
+      "coursePlace": "未排定",
+      "courseWeek": 0,
+      "courseTime": 0
+    }
+  ]
+}

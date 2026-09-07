@@ -130,6 +130,11 @@ class AboutLicenseAttributionTest {
         Attribution("fondoger/buaa-teacher-evaluation", "MIT"),
         Attribution("Cauchy1412/BUAAGetCourse", ""),
         Attribution("KKRainbow/JWOneShotEval", ""),
+        // 中国科学院大学 UCAS (issue #18, SOP cross-verified 2026-09-07, 4 仓全量纳入)
+        Attribution("ldiex/UCAS_Course_Schedule_Convertor", ""),
+        Attribution("Hurray0/UCAS_GET_Course", ""),
+        Attribution("cld378632668/ucas_course_tool", ""),
+        Attribution("GentleCP/UCAS-Helper", ""),
         // 北京林业大学 BJFU
         Attribution("Bloomberg2000/bjfu_course_ics_generator", ""),
         Attribution("Bloomberg2000/bjfu_util.py", ""),
