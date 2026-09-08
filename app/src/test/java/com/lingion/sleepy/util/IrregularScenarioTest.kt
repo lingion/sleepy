@@ -424,4 +424,60 @@ class IrregularScenarioTest {
         )
         assertEquals("第 0 节与第 1 节不相交, 不应报冲突", 0, details.size)
     }
+
+    // ===============================================================
+    // issue#23 §5 渲染: 非常规时间胶囊按真实分钟比例定位 (行坐标, 1.0 = 一整行)
+    // ===============================================================
+
+    /** 节内时间 → 行下标 + 槽内比例: 08:01-08:26 落在第 1 节(行 0, 45 分钟)内. */
+    @Test
+    fun fractional_withinOneNode() {
+        val (s, e) = TimeTableUtils.timeToFractionalRows("08:01", "08:26", base)!!
+        assertEquals(1f / 45f, s, 0.0001f)
+        assertEquals(26f / 45f, e, 0.0001f)
+    }
+
+    /** 跨节连续: 08:20 起(第 1 节内), 10:20 止(第 3 节 10:00-10:45 内 → 行 2 + 20/45). */
+    @Test
+    fun fractional_acrossNodes_continuous() {
+        val (s, e) = TimeTableUtils.timeToFractionalRows("08:20", "10:20", base)!!
+        assertEquals(20f / 45f, s, 0.0001f)
+        assertEquals(2f + 20f / 45f, e, 0.0001f)
+    }
+
+    /** 空隙归属下一行顶端: 13:00 在午休空隙 → 第 5 节(14:00)行 4 的 0.0. */
+    @Test
+    fun fractional_gap_clampsToNextRowTop() {
+        val (s, e) = TimeTableUtils.timeToFractionalRows("13:00", "14:20", base)!!
+        assertEquals(4f, s, 0.0001f)
+        assertEquals(4f + 20f / 45f, e, 0.0001f)
+    }
+
+    /** 窗口外钳到网格两端: 07:00-23:30 → (0, 12). */
+    @Test
+    fun fractional_outsideWindow_clampsToGridBounds() {
+        val (s, e) = TimeTableUtils.timeToFractionalRows("07:00", "23:30", base)!!
+        assertEquals(0f, s, 0.0001f)
+        assertEquals(12f, e, 0.0001f)
+    }
+
+    /** 边缘槽位参与行序: 注册第 0 节(07:30-08:00)+第 13 节后, 07:40-07:55 → 行 0 内比例. */
+    @Test
+    fun fractional_edgeSlots_countedAsRows() {
+        val withEdges = TimeTableUtils.insertEdgeNode(
+            TimeTableUtils.insertEdgeNode(
+                base, TimeTableUtils.EdgeClass.Before, "07:30", "08:00"
+            ), TimeTableUtils.EdgeClass.After, "21:30", "22:15"
+        )
+        val (s, e) = TimeTableUtils.timeToFractionalRows("07:40", "07:55", withEdges)!!
+        assertEquals(10f / 30f, s, 0.0001f)
+        assertEquals(25f / 30f, e, 0.0001f)
+    }
+
+    /** 不可解析 / 结束≤开始 → null, 调用方退回整格吸附. */
+    @Test
+    fun fractional_unparseableOrNull() {
+        assertNull(TimeTableUtils.timeToFractionalRows("xx", "08:26", base))
+        assertNull(TimeTableUtils.timeToFractionalRows("09:00", "08:00", base))
+    }
 }

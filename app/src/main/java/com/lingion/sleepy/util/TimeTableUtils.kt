@@ -5,6 +5,7 @@ import com.lingion.sleepy.ui.component.TimeSlot
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 /**
  * 时间表 (timeJson) 解析与查询工具。
@@ -127,6 +128,49 @@ object TimeTableUtils {
         if (endNode < startNode) return null
         return Pair(startNode, endNode - startNode + 1)
     }
+
+    // ------------------------------------------------------------------
+    // issue#23 §5 渲染: 非常规时间胶囊按真实分钟在网格内按比例定位
+    // ------------------------------------------------------------------
+
+    /**
+     * 把课程起止时间映射到「槽位行坐标」: 1.0 = 一整行, 小数部分 = 该槽位内按时间的比例。
+     * 返回 (startFrac, endFrac); 时间不可解析 / 结束≤开始 / 映射退化返回 null,
+     * 调用方应退回整格吸附(timeToNode)。
+     *
+     * 规则:
+     * - 时间落在某槽位 [start, end] 内 → 行下标 + 槽内比例
+     * - 落在两槽位空隙 → 归属下一行顶端
+     * - 早于首槽位 → 0.0; 晚于末槽位 → 槽位总数(网格底边)
+     */
+    fun timeToFractionalRows(startTime: String, endTime: String, slots: List<TimeSlot>): Pair<Float, Float>? {
+        if (slots.isEmpty()) return null
+        val st = runCatching { LocalTime.parse(startTime) }.getOrNull() ?: return null
+        val et = runCatching { LocalTime.parse(endTime) }.getOrNull() ?: return null
+        if (et <= st) return null
+        fun pos(t: LocalTime): Float = when {
+            t <= slots.first().start -> 0f
+            t >= slots.last().end -> slots.size.toFloat()
+            else -> {
+                val i = slots.indexOfFirst { t >= it.start && t <= it.end }
+                if (i >= 0) {
+                    val dur = ChronoUnit.MINUTES.between(slots[i].start, slots[i].end).coerceAtLeast(1)
+                    i + ChronoUnit.MINUTES.between(slots[i].start, t).toFloat() / dur
+                } else {
+                    // 空隙: 全部归属下一行顶端
+                    slots.indexOfFirst { it.start > t }.toFloat()
+                }
+            }
+        }
+        val startFrac = pos(st)
+        val endFrac = pos(et)
+        if (endFrac <= startFrac) return null
+        return startFrac to endFrac
+    }
+
+    /** 便捷重载: 直接传 timeJson 字符串。 */
+    fun timeToFractionalRows(startTime: String, endTime: String, timeJson: String): Pair<Float, Float>? =
+        timeToFractionalRows(startTime, endTime, timeSlotsFor(timeJson))
 
     /** 便捷: 拿 TimeTableEntity 直接出 slots */
     fun timeSlotsFor(table: TimeTableEntity?): List<TimeSlot> =
