@@ -165,15 +165,14 @@ class IrregularScenarioTest {
         // 注册路径相同(同一 insertCourses) — 这里只验证两者都能构造
         assertEquals(normal.tableId, irregular.tableId)
 
-        // 冲突检测: 用存储坐标判定 → 两者都占 1-2, 报冲突
-        // 但实际上非常规课在 10:00-11:40(节点 3-4), 与常规课不冲突 — 这是误报
+        // 冲突检测: 必须 normalize 真实节点号。非常规课 10:00-11:40 → 节点 3-4,
+        // 与常规课的 1-2 不相交, 不应报冲突。
         val details = ConflictDetailReporter.draftConflictDetails(
             listOf(irregular), listOf(normal), arrayOf("一", "二", "三", "四", "五", "六", "日")
         )
-        // 误报冲突(因为没 normalizeNode)
-        assertTrue(
-            "ConflictDetailReporter 未 normalizeNode, ownTime 课按存储坐标判冲突, 可能误报",
-            details.isNotEmpty()
+        assertEquals(
+            "ConflictDetailReporter 必须 normalizeNode 后再比较 (issue#23 Fix 3)",
+            0, details.size
         )
     }
 
@@ -433,5 +432,70 @@ class IrregularScenarioTest {
         assertFalse(r.ownTime)
         assertEquals("22:30", r.startTime)
         assertEquals("23:15", r.endTime)
+    }
+
+    // ===============================================================
+    // Fix 3 (issue#23 场景3): ConflictDetailReporter 必须把 ownTime 草稿
+    // normalize 到真实节点号后再做 nodesOverlap — 否则 ownTime 草稿
+    // 按 startNode 比较会与同 day 不同真实位置的标准课假撞车。
+    // ===============================================================
+
+    @Test
+    fun conflictReporter_ownTimeDraft_normalizesBeforeOverlapCheck() {
+        // 标准 12 节, 第 3 节 08:00-08:45 已有存量"数据库课"
+        val existing = CourseEntity(
+            groupId = "stored", tableId = 1L, courseName = "数据库课",
+            day = 1, startNode = 3, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "", ownTime = false, startTime = "", endTime = ""
+        )
+        // 草稿: ownTime=true, 真实时间 10:00-11:40 (映射到节点 3-4),
+        // 但用户在 UI 里"先选 ByNode 写 startNode=1" 误操作场景 — startNode=1
+        // 与数据库课 startNode=3 直接比较不撞(1..1 vs 3..3), 无冲突 — 正确
+        val draftByNode = CourseEntity(
+            groupId = "draft", tableId = 1L, courseName = "测试课",
+            day = 1, startNode = 1, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "",
+            ownTime = true, startTime = "10:00", endTime = "11:40"
+        )
+        // normalize 后真实位置 = (3, 2)
+        val normalized = draftByNode.normalizeNode(base)
+        assertEquals(3, normalized.startNode)
+        assertEquals(2, normalized.step)
+        // 报给用户的明细应是 (3..4 vs 3..3) 命中 — 不再误报 startNode=1 不撞
+        val details = ConflictDetailReporter.draftConflictDetails(
+            listOf(draftByNode), listOf(existing),
+            arrayOf("周一", "周二", "周三", "周四", "周五", "周六", "周日")
+        )
+        assertEquals("应报一条冲突(节点 3-4 与 3 相交)", 1, details.size)
+    }
+
+    @Test
+    fun conflictReporter_ownTimeDraft_atEdgeNode_notReportedAsNormalOverlap() {
+        // 第 0 节 07:30-08:00 的草稿(ownTime=true, 真实时间=第 0 节节点时间),
+        // 与标准 1..12 节上的存量课不应该撞
+        val jsonWithEdge = TimeTableUtils.insertEdgeNode(
+            base, TimeTableUtils.EdgeClass.Before, "07:30", "08:00"
+        )
+        val existing = CourseEntity(
+            groupId = "stored", tableId = 1L, courseName = "早八课",
+            day = 1, startNode = 1, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "", ownTime = false, startTime = "", endTime = ""
+        )
+        // 草稿放第 0 节, ownTime=true 但起止时间 = 第 0 节节点时间
+        val draft = CourseEntity(
+            groupId = "draft", tableId = 1L, courseName = "更早的课",
+            day = 1, startNode = 0, step = 1,
+            startWeek = 1, endWeek = 16,
+            color = "",
+            ownTime = false,  // 经 resolveIrregular 后 = false(边缘节点赢)
+            startTime = "07:30", endTime = "08:00"
+        )
+        val details = ConflictDetailReporter.draftConflictDetails(
+            listOf(draft), listOf(existing), arrayOf("周一")
+        )
+        assertEquals("第 0 节与第 1 节不相交, 不应报冲突", 0, details.size)
     }
 }

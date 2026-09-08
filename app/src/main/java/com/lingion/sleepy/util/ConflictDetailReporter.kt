@@ -28,24 +28,38 @@ object ConflictDetailReporter {
     )
 
     /**
+     * issue#23 Fix 3: ownTime 课程/草稿的 startNode 只是 UI 占位, 真实网格位置
+     * 由 startTime/endTime 反算(normalizeNode)。比较前必须先 normalize, 否则
+     * ownTime 草稿按占位 startNode 比对会漏报/误报冲突。
+     */
+    private fun normalizedForCompare(c: CourseEntity, timeJson: String): CourseEntity =
+        if (!c.ownTime) c else c.normalizeNode(timeJson)
+
+    /**
      * 找出草稿与存量课的全部冲突(同 day + 节次区间相交 + 公共上课周)。
      * 每对(草稿, 存量)至多一条明细;多条草稿多条存量的组合逐对展开, 按存量课
-     * 节次起点升序(表单从上往下读的顺序)。
+     * 真实节点位置升序(表单从上往下读的顺序)。
+     *
+     * issue#23 Fix 3: 接受 timeJson 以便 ownTime 课程在比对前归一化到真实节点号。
      */
     fun draftConflictDetails(
         drafts: List<CourseEntity>,
         stored: List<CourseEntity>,
-        dayNames: Array<String>
+        dayNames: Array<String>,
+        timeJson: String = TimeTableUtils.DEFAULT_TIME_JSON
     ): List<ConflictDetail> {
         if (drafts.isEmpty() || stored.isEmpty()) return emptyList()
+        val normalizedDrafts = drafts.map { normalizedForCompare(it, timeJson) }
+        val normalizedStored = stored.map { normalizedForCompare(it, timeJson) }
         val out = mutableListOf<ConflictDetail>()
-        val byDay = stored.groupBy { it.day }
-        for (draft in drafts) {
-            val candidates = byDay[draft.day] ?: continue
+        val byDay = normalizedStored.groupBy { it.day }
+        for ((idx, draft) in drafts.withIndex()) {
+            val nDraft = normalizedDrafts[idx]
+            val candidates = byDay[nDraft.day] ?: continue
             val hits = mutableListOf<Pair<CourseEntity, Pair<IntRange, Int?>>>()
             for (s in candidates) {
-                val commonWeeks = commonWeeks(draft, s) ?: continue
-                if (nodesOverlap(draft, s)) hits.add(s to commonWeeks)
+                val commonWeeks = commonWeeks(nDraft, s) ?: continue
+                if (nodesOverlap(nDraft, s)) hits.add(s to commonWeeks)
             }
             hits.sortBy { it.first.startNode }
             for ((s, weeks) in hits) {
@@ -55,7 +69,7 @@ object ConflictDetailReporter {
                         draftName = draft.courseName,
                         day = draft.day,
                         dayText = dayNames.getOrElse(draft.day - 1) { "" },
-                        nodeRangeText = nodeRangeText(draft, s),
+                        nodeRangeText = nodeRangeText(nDraft, s),
                         weekText = weekText(weeks)
                     )
                 )

@@ -146,14 +146,42 @@ fun AddCourseScreen(
     val fieldShape = SleepyTheme.fieldShape
     val fieldColors = SleepyTheme.fieldColors()
 
+    // 待落库的边缘节次 — UI 工作副本,落库前不污染 timeJson;保存时串接 insertEdgeNode 后一次性 updateTable
+    val pendingEdgeInserts = remember(editingCourse?.id) {
+        mutableStateListOf<PendingEdgeInsert>()
+    }
+
     // issue#9: 之前 startNode/step 硬编码 max=12/8, 12 节连排时仍允许 step=8 → startNode=12, step=8
     // 会显示成 12-19 越过实际节数。改为从当前 timeJson 解析实际节点数, 默认 12。
-    val maxNode = remember(currentTable?.id, currentTable?.timeJson) {
+    val maxNode = remember(currentTable?.id, currentTable?.timeJson, pendingEdgeInserts.size) {
         try {
-            val arr = JSONArray(currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON)
-            (0 until arr.length()).mapNotNull { arr.getJSONObject(it).optInt("node", 0) }
-                .takeIf { it.isNotEmpty() }?.max() ?: 12
+            val baseRows = TimeTableUtils.parseTimeSlotRows(
+                currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+            )
+            val withPending = pendingEdgeInserts.fold(baseRows) { rows, insert ->
+                val next = TimeTableUtils.insertEdgeNode(
+                    TimeTableUtils.buildTimeJsonFromRows(rows),
+                    insert.edgeClass, insert.start, insert.end
+                )
+                TimeTableUtils.parseTimeSlotRows(next)
+            }
+            withPending.maxOfOrNull { it.node } ?: 12
         } catch (_: Exception) { 12 }
+    }
+    val minNode = remember(currentTable?.id, currentTable?.timeJson, pendingEdgeInserts.size) {
+        try {
+            val baseRows = TimeTableUtils.parseTimeSlotRows(
+                currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+            )
+            val withPending = pendingEdgeInserts.fold(baseRows) { rows, insert ->
+                val next = TimeTableUtils.insertEdgeNode(
+                    TimeTableUtils.buildTimeJsonFromRows(rows),
+                    insert.edgeClass, insert.start, insert.end
+                )
+                TimeTableUtils.parseTimeSlotRows(next)
+            }
+            withPending.minOfOrNull { it.node } ?: 1
+        } catch (_: Exception) { 1 }
     }
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
@@ -163,12 +191,15 @@ fun AddCourseScreen(
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
     // issue#23: 非常规开关(课表外节次 + 非标准时长)。默认 OFF,开启后必须
-    // 至少启用其中一项(添加了边缘节次 或 某时段切到 ByClock 模式)
+    // 至少启用其中一项(添加了边缘节次 或 设置有效的非常规起止时间)
     var irregularEnabled by remember(editingCourse?.id) { mutableStateOf(false) }
+    // 非常规开启后的全局非常规起止时间 — 替代 block 内 ByClock 行(用户原话:
+    // 「你选出了这个非常规时间, 那上面那个开始时间和结束时间就不要了把它隐藏起来,
+    //   在下面的'非常规时间'选项卡里单独出一个'开始时间''结束时间'」)。
+    // 所有 block 在非常规模式下共用同一对起止时间, 通过 block.startNode/step 决定网格位置。
+    var irregularNodeStartTime by remember(editingCourse?.id) { mutableStateOf("08:00") }
+    var irregularNodeEndTime by remember(editingCourse?.id) { mutableStateOf("09:40") }
     // 待落库的边缘节次 — UI 工作副本,落库前不污染 timeJson;保存时串接 insertEdgeNode 后一次性 updateTable
-    val pendingEdgeInserts = remember(editingCourse?.id) {
-        mutableStateListOf<PendingEdgeInsert>()
-    }
     var showEdgeDialog by remember { mutableStateOf(false) }
     var pendingDialogClass by remember { mutableStateOf<TimeTableUtils.EdgeClass?>(null) }
     var pendingDialogStart by remember { mutableStateOf("07:30") }
@@ -194,6 +225,12 @@ fun AddCourseScreen(
                 var bid = 1
                 for (courses in slots) {
                     val first = courses.first()
+                    // ownTime=true 的课程一律视为非常规(起止时间走全局非常规面板而非 block.ByClock)
+                    if (first.ownTime) {
+                        irregularEnabled = true
+                        irregularNodeStartTime = first.startTime.ifBlank { "08:00" }
+                        irregularNodeEndTime = first.endTime.ifBlank { "09:40" }
+                    }
                     meetingBlocks.add(MeetingBlockDraft(
                         id = bid++,
                         days = androidx.compose.runtime.mutableStateListOf<Int>().apply {
@@ -228,15 +265,22 @@ fun AddCourseScreen(
     // forceAfterConflict=false 首次点击: 有冲突弹明细不落库;
     // =true 弹窗「仍然保存」回调: 跳过冲突检查直接落库。
     fun performSave(forceAfterConflict: Boolean) {
+        val baseTimeJson = currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+        val effectiveTimeJson = pendingEdgeInserts.fold(baseTimeJson) { json, insert ->
+            TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
+        }
         val issues = validateCourseDraft(
             courseName = courseName,
             blocks = meetingBlocks,
             startWeek = startWeek,
             endWeek = endWeek,
             table = currentTable,
+            timeJson = effectiveTimeJson,
             context = context,
             irregularEnabled = irregularEnabled,
-            pendingEdgeInserts = pendingEdgeInserts
+            pendingEdgeInserts = pendingEdgeInserts,
+            irregularStartTime = irregularNodeStartTime,
+            irregularEndTime = irregularNodeEndTime
         )
         validationIssues = issues
         if (issues.isNotEmpty()) return
@@ -249,7 +293,11 @@ fun AddCourseScreen(
                     groupId = "",  // 编辑模式暂留 "", 落库前再覆盖 editingCourse.groupId
                     courseName = courseName.trim(),
                     block = block,
-                    day = day
+                    day = day,
+                    irregularEnabled = irregularEnabled,
+                    irregularStartTime = irregularNodeStartTime,
+                    irregularEndTime = irregularNodeEndTime,
+                    timeJson = effectiveTimeJson
                 )
             }
         }
@@ -274,7 +322,7 @@ fun AddCourseScreen(
                 val existing = repo.getCourses(tableId)
                     .filter { it.groupId != editingCourse?.groupId }
                 val details = ConflictDetailReporter.draftConflictDetails(
-                    fixedDrafts, existing, dayNames
+                    fixedDrafts, existing, dayNames, effectiveTimeJson
                 ).map { ConflictDetailReporter.formatDetail(it, conflictTemplate) }
                 if (details.isNotEmpty()) {
                     pendingConflictDetails = details
@@ -514,6 +562,8 @@ fun AddCourseScreen(
                     fieldShape = fieldShape,
                     fieldColors = fieldColors,
                     maxNode = maxNode,
+                    minNode = minNode,
+                    irregularEnabled = irregularEnabled,
                     onRemove = { meetingBlocks.remove(block) }
                 )
             }
@@ -561,7 +611,11 @@ fun AddCourseScreen(
                         pendingDialogEnd = "08:15"
                         showEdgeDialog = true
                     },
-                    onRemovePendingEdge = { idx -> pendingEdgeInserts.removeAt(idx) }
+                    onRemovePendingEdge = { idx -> pendingEdgeInserts.removeAt(idx) },
+                    irregularStartTime = irregularNodeStartTime,
+                    irregularEndTime = irregularNodeEndTime,
+                    onIrregularStartChange = { irregularNodeStartTime = it },
+                    onIrregularEndChange = { irregularNodeEndTime = it }
                 )
             }
 
@@ -675,9 +729,26 @@ private fun buildCourseEntity(
     groupId: String,
     courseName: String,
     block: MeetingBlockDraft,
-    day: Int
+    day: Int,
+    // issue#23: 非常规模式走全局起止时间, 与 block 内 ByClock 解耦
+    irregularEnabled: Boolean = false,
+    irregularStartTime: String = "08:00",
+    irregularEndTime: String = "09:40",
+    timeJson: String = TimeTableUtils.DEFAULT_TIME_JSON
 ): CourseEntity {
-    val ownTime = block.mode == MeetingInputMode.ByClock
+    // issue#23 Fix 4: 边缘节点上的课优先使用节点自身时间 (ownTime=false),
+    // 而不是被全局非常规时间覆盖. 详见 TimeTableUtils.resolveIrregularCourseTime.
+    val resolved = TimeTableUtils.resolveIrregularCourseTime(
+        startNode = block.startNode,
+        step = block.step,
+        modeIsByClock = block.mode == MeetingInputMode.ByClock,
+        blockStartTime = block.startTime,
+        blockEndTime = block.endTime,
+        irregularEnabled = irregularEnabled,
+        irregularStartTime = irregularStartTime,
+        irregularEndTime = irregularEndTime,
+        timeJson = timeJson
+    )
     // issue#22: color/colorMode 从 block 取;AUTO 模式 color 留空(渲染时按 hash 取)
     val finalColor = when (block.colorModeState) {
         com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM ->
@@ -700,9 +771,9 @@ private fun buildCourseEntity(
         type = block.weekType,
         color = finalColor,
         colorMode = block.colorModeState,
-        ownTime = ownTime,
-        startTime = if (ownTime) block.startTime else "",
-        endTime = if (ownTime) block.endTime else ""
+        ownTime = resolved.ownTime,
+        startTime = if (resolved.ownTime) resolved.startTime else "",
+        endTime = if (resolved.ownTime) resolved.endTime else ""
     )
 }
 
@@ -712,19 +783,21 @@ private fun validateCourseDraft(
     startWeek: Int,
     endWeek: Int,
     table: TimeTableEntity?,
+    timeJson: String = TimeTableUtils.DEFAULT_TIME_JSON,
     context: android.content.Context,
     irregularEnabled: Boolean = false,
-    pendingEdgeInserts: List<PendingEdgeInsert> = emptyList()
+    pendingEdgeInserts: List<PendingEdgeInsert> = emptyList(),
+    // issue#23: 非常规模式下, 起止时间走全局(下方 IrregularSection), 不再走 block.ByClock
+    irregularStartTime: String = "",
+    irregularEndTime: String = ""
 ): List<ValidationIssue> {
     val issues = mutableListOf<ValidationIssue>()
     if (courseName.isBlank()) issues += ValidationIssue(null, context.getString(R.string.course_name_empty))
     if (startWeek <= 0 || endWeek <= 0) issues += ValidationIssue(null, context.getString(R.string.week_must_be_positive))
-    // issue#9: 该课表最大节次(从 timeJson 解析), 用于判断 startNode+step-1 是否越界
-    val maxNode = try {
-        val arr = JSONArray(table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON)
-        (0 until arr.length()).mapNotNull { arr.getJSONObject(it).optInt("node", 0) }
-            .takeIf { it.isNotEmpty() }?.max() ?: 12
-    } catch (_: Exception) { 12 }
+    // issue#9: 该课表最大/最小节次(从 timeJson 解析), 用于判断 startNode 范围
+    val rows = TimeTableUtils.parseTimeSlotRows(timeJson)
+    val maxNode = rows.maxOfOrNull { it.node } ?: 12
+    val minNode = rows.minOfOrNull { it.node } ?: 1
 
     blocks.forEachIndexed { index, block ->
         if (block.days.isEmpty()) {
@@ -733,7 +806,13 @@ private fun validateCourseDraft(
         if (block.startWeek > block.endWeek) issues += ValidationIssue(block.id, context.getString(R.string.slot_week_order, index + 1))
         when (block.mode) {
             MeetingInputMode.ByNode -> {
-                if (block.startNode <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_start_node_positive, index + 1))
+                // issue#23 Fix 2: 边缘节点允许 startNode<=0 (例如第 0 节 / 第 -1 节),
+                // 只要该节点在 timeJson 中存在即合法; 否则退回到要求 startNode>=minNode.
+                val startOk = block.startNode in minNode..maxNode
+                if (!startOk) issues += ValidationIssue(
+                    block.id,
+                    context.getString(R.string.slot_start_node_positive, index + 1)
+                )
                 if (block.step <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_step_positive, index + 1))
                 // issue#9: startNode+step-1 越过该课表实际最大节次时拒绝保存
                 val endNode = block.startNode + block.step - 1
@@ -745,14 +824,29 @@ private fun validateCourseDraft(
                 }
             }
             MeetingInputMode.ByClock -> {
-                val start = parseHm(block.startTime)
-                val end = parseHm(block.endTime)
-                if (start == null || end == null) {
-                    issues += ValidationIssue(block.id, context.getString(R.string.slot_time_format, index + 1))
-                } else if (!start.isBefore(end)) {
-                    issues += ValidationIssue(block.id, context.getString(R.string.slot_time_order, index + 1))
+                // issue#23: 非常规模式下 block 内 ByClock 时间行已隐藏, 时间走全局字段,
+                // 这里不再校验 block.startTime/endTime(避免误报); 全局时间单独校验
+                if (!irregularEnabled) {
+                    val start = parseHm(block.startTime)
+                    val end = parseHm(block.endTime)
+                    if (start == null || end == null) {
+                        issues += ValidationIssue(block.id, context.getString(R.string.slot_time_format, index + 1))
+                    } else if (!start.isBefore(end)) {
+                        issues += ValidationIssue(block.id, context.getString(R.string.slot_time_order, index + 1))
+                    }
                 }
             }
+        }
+    }
+
+    // issue#23: 非常规模式下校验全局起止时间(替代 block 内 ByClock 校验)
+    if (irregularEnabled) {
+        val gStart = parseHm(irregularStartTime)
+        val gEnd = parseHm(irregularEndTime)
+        if (gStart == null || gEnd == null) {
+            issues += ValidationIssue(null, context.getString(R.string.irregular_time_format))
+        } else if (!gStart.isBefore(gEnd)) {
+            issues += ValidationIssue(null, context.getString(R.string.irregular_time_order))
         }
     }
 
@@ -762,8 +856,8 @@ private fun validateCourseDraft(
             val second = blocks[j]
             val overlapDays = first.days.intersect(second.days)
             if (overlapDays.isEmpty()) continue
-            val firstRange = blockRangeMinutes(first, table)
-            val secondRange = blockRangeMinutes(second, table)
+            val firstRange = blockRangeMinutes(first, table, irregularEnabled, irregularStartTime, irregularEndTime, timeJson)
+            val secondRange = blockRangeMinutes(second, table, irregularEnabled, irregularStartTime, irregularEndTime, timeJson)
             if (firstRange == null || secondRange == null) continue
             if (firstRange.first < secondRange.second && secondRange.first < firstRange.second) {
                 if (!weekRangesOverlap(
@@ -779,18 +873,26 @@ private fun validateCourseDraft(
             }
         }
     }
-    // issue#23: 非常规开启后必须至少启用「课表外节次」或「非标准时长」其中一项
-    if (irregularEnabled) {
-        val hasEdge = pendingEdgeInserts.isNotEmpty()
-        val hasByClock = blocks.any { it.mode == MeetingInputMode.ByClock }
-        if (!hasEdge && !hasByClock) {
-            issues += ValidationIssue(null, context.getString(R.string.irregular_at_least_one))
-        }
-    }
+    // issue#23: 新模型下非常规开启后全局起止时间字段始终存在并直接驱动 ownTime,
+    // 不再有"开关打开却什么都没配"的无操作状态 — 上方格式/顺序校验已足够,
+    // 故不再要求"至少启用一项"(避免编辑已存在的 08:00/09:40 ownTime 课程时被误拦)
     return issues
 }
 
-private fun blockRangeMinutes(block: MeetingBlockDraft, table: TimeTableEntity?): Pair<Int, Int>? {
+private fun blockRangeMinutes(
+    block: MeetingBlockDraft,
+    table: TimeTableEntity?,
+    irregularEnabled: Boolean = false,
+    irregularStartTime: String = "08:00",
+    irregularEndTime: String = "09:40",
+    timeJson: String? = null
+): Pair<Int, Int>? {
+    // issue#23: 非常规模式下全部 block 共用全局起止时间, 重叠检测必须用同一对值
+    if (irregularEnabled) {
+        val start = parseHm(irregularStartTime) ?: return null
+        val end = parseHm(irregularEndTime) ?: return null
+        return start.hour * 60 + start.minute to end.hour * 60 + end.minute
+    }
     return when (block.mode) {
         MeetingInputMode.ByClock -> {
             val start = parseHm(block.startTime) ?: return null
@@ -798,8 +900,9 @@ private fun blockRangeMinutes(block: MeetingBlockDraft, table: TimeTableEntity?)
             start.hour * 60 + start.minute to end.hour * 60 + end.minute
         }
         MeetingInputMode.ByNode -> {
-            val timeJson = table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-            val nodes = parseNodeMinuteMap(timeJson)
+            val nodes = parseNodeMinuteMap(
+                timeJson ?: table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+            )
             val start = nodes[block.startNode]?.first ?: return null
             val end = nodes[block.startNode + block.step - 1]?.second ?: return null
             start to end
@@ -901,6 +1004,8 @@ private fun MeetingBlockEditor(
     fieldShape: CornerBasedShape,
     fieldColors: androidx.compose.material3.TextFieldColors,
     maxNode: Int,
+    minNode: Int = 1,
+    irregularEnabled: Boolean = false,
     onRemove: () -> Unit
 ) {
     val colors = SleepyTheme.colors
@@ -953,61 +1058,98 @@ private fun MeetingBlockEditor(
             }
         }
 
-        ModePicker(mode = block.mode, onChange = { block.mode = it })
+        // 非常规模式下 block 内不再提供 ModePicker 和 ByClock 时间行 —
+        // 起止时间统一收拢到下方「非常规」面板的全局字段, 这里只保留节次定位。
+        if (!irregularEnabled) {
+            ModePicker(mode = block.mode, onChange = { block.mode = it })
+        }
         MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
             if (day in block.days) block.days.remove(day) else block.days.add(day)
         })
 
-        when (block.mode) {
-            MeetingInputMode.ByNode -> {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    NumberField(
-                        label = stringResource(R.string.start_node),
-                        value = block.startNode,
-                        min = 1,
-                        max = maxNode,
-                        modifier = Modifier.weight(1f),
-                        shape = fieldShape,
-                        colors = fieldColors,
-                        onClamp = { block.clamped = true }
-                    ) { v ->
-                        block.startNode = v
-                        // startNode 上调 → step 上限缩到 (maxNode - startNode + 1), 防止越界
-                        val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
-                        if (block.step > stepCap) block.step = stepCap
-                    }
-                    NumberField(
-                        label = stringResource(R.string.step_count),
-                        value = block.step,
-                        min = 1,
-                        max = (maxNode - block.startNode + 1).coerceAtLeast(1),
-                        modifier = Modifier.weight(1f),
-                        shape = fieldShape,
-                        colors = fieldColors,
-                        onClamp = { block.clamped = true }
-                    ) { v -> block.step = v }
+        if (irregularEnabled) {
+            // 非常规: 强制按节次定位(网格位置), 真实起止时间走上方全局字段
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                NumberField(
+                    label = stringResource(R.string.start_node),
+                    value = block.startNode,
+                    min = minNode,
+                    max = maxNode,
+                    modifier = Modifier.weight(1f),
+                    shape = fieldShape,
+                    colors = fieldColors,
+                    onClamp = { block.clamped = true }
+                ) { v ->
+                    block.startNode = v
+                    val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
+                    if (block.step > stepCap) block.step = stepCap
                 }
+                NumberField(
+                    label = stringResource(R.string.step_count),
+                    value = block.step,
+                    min = 1,
+                    max = (maxNode - block.startNode + 1).coerceAtLeast(1),
+                    modifier = Modifier.weight(1f),
+                    shape = fieldShape,
+                    colors = fieldColors,
+                    onClamp = { block.clamped = true }
+                ) { v -> block.step = v }
             }
-            MeetingInputMode.ByClock -> {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    TimePickerField(
-                        label = stringResource(R.string.start_time),
-                        value = block.startTime,
-                        onValueChange = { block.startTime = it },
-                        modifier = Modifier.weight(1f)
-                    )
-                    TimePickerField(
-                        label = stringResource(R.string.end_time),
-                        value = block.endTime,
-                        onValueChange = { block.endTime = it },
-                        modifier = Modifier.weight(1f)
-                    )
+        } else {
+            when (block.mode) {
+                MeetingInputMode.ByNode -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        NumberField(
+                            label = stringResource(R.string.start_node),
+                            value = block.startNode,
+                            min = 1,
+                            max = maxNode,
+                            modifier = Modifier.weight(1f),
+                            shape = fieldShape,
+                            colors = fieldColors,
+                            onClamp = { block.clamped = true }
+                        ) { v ->
+                            block.startNode = v
+                            // startNode 上调 → step 上限缩到 (maxNode - startNode + 1), 防止越界
+                            val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
+                            if (block.step > stepCap) block.step = stepCap
+                        }
+                        NumberField(
+                            label = stringResource(R.string.step_count),
+                            value = block.step,
+                            min = 1,
+                            max = (maxNode - block.startNode + 1).coerceAtLeast(1),
+                            modifier = Modifier.weight(1f),
+                            shape = fieldShape,
+                            colors = fieldColors,
+                            onClamp = { block.clamped = true }
+                        ) { v -> block.step = v }
+                    }
+                }
+                MeetingInputMode.ByClock -> {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        TimePickerField(
+                            value = block.startTime,
+                            onValueChange = { block.startTime = it },
+                            label = stringResource(R.string.start_time),
+                            modifier = Modifier.weight(1f)
+                        )
+                        TimePickerField(
+                            value = block.endTime,
+                            onValueChange = { block.endTime = it },
+                            label = stringResource(R.string.end_time),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
                 }
             }
         }
@@ -1109,7 +1251,12 @@ private fun IrregularSection(
     pendingEdgeInserts: List<PendingEdgeInsert>,
     currentTimeJson: String,
     onAddEdge: (TimeTableUtils.EdgeClass) -> Unit,
-    onRemovePendingEdge: (Int) -> Unit
+    onRemovePendingEdge: (Int) -> Unit,
+    // issue#23: 全局非常规起止时间(替代 block 内 ByClock),所有 block 共用
+    irregularStartTime: String,
+    irregularEndTime: String,
+    onIrregularStartChange: (String) -> Unit,
+    onIrregularEndChange: (String) -> Unit
 ) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
@@ -1237,7 +1384,10 @@ private fun IrregularSection(
             }
 
             // ── 非标准时长 ──
-            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            // issue#23: 非常规模式下全部 block 共用同一对起止时间,这里统一维护
+            // 单独一对开始/结束字段(用户原话:「在下面的'非常规时间'选项卡里单独
+            // 出一个'开始时间''结束时间'」),block 内 ByClock 时间行因此被隐藏
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(
                     text = stringResource(R.string.custom_duration_section_title),
                     style = MaterialTheme.typography.labelLarge,
@@ -1248,6 +1398,23 @@ private fun IrregularSection(
                     style = MaterialTheme.typography.bodySmall,
                     color = colors.onSurfaceVariant
                 )
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    TimePickerField(
+                        value = irregularStartTime,
+                        onValueChange = onIrregularStartChange,
+                        label = stringResource(R.string.start_time),
+                        modifier = Modifier.weight(1f)
+                    )
+                    TimePickerField(
+                        value = irregularEndTime,
+                        onValueChange = onIrregularEndChange,
+                        label = stringResource(R.string.end_time),
+                        modifier = Modifier.weight(1f)
+                    )
+                }
             }
         }
     }
