@@ -4,23 +4,27 @@ import android.app.Activity
 import android.appwidget.AppWidgetManager
 import android.content.Intent
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import com.lingion.sleepy.util.AppPrefs
-import kotlinx.coroutines.runBlocking
 
 /**
  * Launcher entry point for configuring an individual widget.
  *
  * Two paths:
- * - First add (no binding for [appWidgetId]): silently binds the current default
- *   table and finishes OK. No UI is shown, so third-party launchers (lawnchair
- *   etc.) that mishandle the configure flow can still complete widget add.
- * - Re-edit (binding exists): shows [WidgetEditScreen] so the user can pick a
- *   different table.
+ * - First add (no binding for [appWidgetId]): writes a sentinel binding
+ *   (0L = "follow default") and finishes OK. No UI, no DB query, no
+ *   main-thread blocking — keeps third-party launchers (lawnchair, OEM
+ *   forks, "Launcher" apps) happy even when their configure flow is flaky.
+ *   Receivers already fall back via resolveBoundTable(0)=null →
+ *   resolveCurrentTable(), so the sentinel is functionally identical to
+ *   "no binding" at render time.
+ * - Re-edit (binding exists): shows [WidgetEditScreen] so the user can pick
+ *   a different table.
  */
 class WidgetConfigureActivity : ComponentActivity() {
     private var appWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
@@ -31,27 +35,26 @@ class WidgetConfigureActivity : ComponentActivity() {
             AppWidgetManager.EXTRA_APPWIDGET_ID,
             AppWidgetManager.INVALID_APPWIDGET_ID
         )
+        Log.i(TAG, "onCreate appWidgetId=$appWidgetId")
         if (appWidgetId == AppWidgetManager.INVALID_APPWIDGET_ID) {
+            Log.w(TAG, "no EXTRA_APPWIDGET_ID — canceling")
             setResult(Activity.RESULT_CANCELED)
             finish()
             return
         }
 
-        // First-add path: silently bind default table and finish OK.
-        // Keeps third-party launchers happy — no UI, no friction.
+        // First-add path: write sentinel binding (0L = follow default) and
+        // finish OK. Pure SharedPreferences write — no DB, no runBlocking.
         val existingBinding = WidgetBindingStore.get(this, appWidgetId)
         if (existingBinding == null) {
-            val defaultTableId = runCatching {
-                runBlocking { WidgetTableResolver.resolveCurrentTable()?.id }
-            }.getOrNull()
-            if (defaultTableId != null) {
-                WidgetBindingStore.put(this, appWidgetId, defaultTableId)
-            }
+            WidgetBindingStore.put(this, appWidgetId, 0L)
+            Log.i(TAG, "first-add: wrote sentinel binding for $appWidgetId, finishing OK")
             finishWithResult(Activity.RESULT_OK)
             return
         }
 
         // Re-edit path: show the table picker.
+        Log.i(TAG, "re-edit: existing binding=$existingBinding, showing edit screen")
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 finishWithResult(Activity.RESULT_OK)
@@ -75,5 +78,9 @@ class WidgetConfigureActivity : ComponentActivity() {
         val result = Intent().putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, appWidgetId)
         setResult(resultCode, result)
         finish()
+    }
+
+    private companion object {
+        const val TAG = "SleepyWidgetCfg"
     }
 }
