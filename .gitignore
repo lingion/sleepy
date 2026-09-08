@@ -32,3 +32,9 @@ q*.json
 docs/sop/release-sop.md
 docs/sop/jw-cross-verify-sop.md
 
+# User-private workflow policies (internal only, never push)
+# 分支规范与内部贡献流程属于用户私有信息，仅存本地，禁止 push。
+# 对外贡献者规范后续单独提供公开版 PR 指南。
+BRANCHING.md
+CONTRIBUTING.md
+
