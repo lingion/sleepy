@@ -113,8 +113,204 @@ class JwUcasParserTest {
         // 现实里 source 通常只含 JSON 或只含 HTML, 不会两者拼接
         val malformedJson = """{"selectedCourse":{"list":[]},"courseTimeList":"not-an-array"}"""
         val courses = JwUcasParser(malformedJson).generateCourseList()
-        // extractCourseTimeList 在非数组时返回 null → 走 HTML 路径, HTML 也没命中 → 空
+        // extractCourseTimeList在非数组时返回 null → 走 HTML 路径, HTML 也没命中 → 空
         assertNotNull(courses)
         assertEquals(0, courses.size)
+    }
+
+    // ---- HTML 详情路径 (v1.2 采集包, exact-week) ----
+
+    private fun readDetailFixture(name: String): String =
+        javaClass.classLoader!!.getResourceAsStream("jw/fixtures/ucas/$name")!!
+            .bufferedReader().use { it.readText() }
+
+    private fun detailSection(url: String, html: String): String =
+        JwUcasParser.DETAIL_MARKER_OPEN + url + "-->\n" + html + "\n" + JwUcasParser.DETAIL_MARKER_CLOSE + "\n"
+
+    private val GRID = htmlFixture()
+
+    @Test fun `combined grid and detail sections give exact weeks for holey lists`() {
+        val combined = GRID + detailSection(
+            "https://xkcts.ucas.ac.cn:8443/course/coursetime/313611",
+            readDetailFixture("coursetime-multi.sample.html")
+        )
+        val courses = JwUcasParser(combined).generateCourseList()
+
+        // 周二 10-11: {2,3,4,5,7..12} 缺第 6 周 → 拆 [2-5] + [7-12] 两条 (每周)
+        val tue = courses.filter { it.name == "网络攻防基础" && it.day == 2 }
+        assertEquals(2, tue.size)
+        assertEquals(10, tue[0].startNode)
+        assertEquals(11, tue[0].endNode)
+        assertEquals(2, tue[0].startWeek)
+        assertEquals(5, tue[0].endWeek)
+        assertEquals(JwUcasParser.TYPE_DEFAULT, tue[0].type)
+        assertEquals(7, tue[1].startWeek)
+        assertEquals(12, tue[1].endWeek)
+        assertEquals(JwUcasParser.TYPE_DEFAULT, tue[1].type)
+        assertEquals("实验楼207", tue[0].room)
+        assertEquals("实验楼207", tue[1].room)
+
+        // 周日 10-11: 单周次 {3} → 一条 3-3
+        val sun = courses.single { it.name == "网络攻防基础" && it.day == 7 }
+        assertEquals(10, sun.startNode)
+        assertEquals(11, sun.endNode)
+        assertEquals(3, sun.startWeek)
+        assertEquals(3, sun.endWeek)
+        assertEquals("实验楼207", sun.room)
+
+        // 详情页里的周四块在网格没有对应格子 → 不造课 (网格权威)
+        assertTrue(courses.none { it.name == "网络攻防基础" && it.day == 4 })
+        // 无详情的课保持占位
+        val badminton = courses.single { it.name == "羽毛球" }
+        assertEquals(JwUcasParser.PROVISIONAL_START_WEEK, badminton.startWeek)
+        assertEquals(JwUcasParser.PROVISIONAL_END_WEEK, badminton.endWeek)
+    }
+
+    @Test fun `continuous weeks stay single course and room is enriched`() {
+        val combined = GRID + detailSection(
+            "https://xkcts.ucas.ac.cn:8443/course/coursetime/315751",
+            readDetailFixture("coursetime-continuous.sample.html")
+        )
+        val courses = JwUcasParser(combined).generateCourseList()
+        val theory = courses.single { it.name == "新时代中国特色社会主义理论与实践" && it.day == 1 }
+        assertEquals(1, theory.day)
+        assertEquals(1, theory.startNode)
+        assertEquals(2, theory.endNode)
+        assertEquals(2, theory.startWeek)
+        assertEquals(10, theory.endWeek)
+        assertEquals(JwUcasParser.TYPE_DEFAULT, theory.type)
+        assertEquals("教一楼107", theory.room)
+
+        // 同名但节点不重叠的格子 (计算机体系结构 周六第 2 节 vs 详情块周一 1-2) 不误挂
+        val arch = courses.single { it.name == "计算机体系结构" && it.day == 6 }
+        assertEquals(JwUcasParser.PROVISIONAL_START_WEEK, arch.startWeek)
+        assertEquals(JwUcasParser.PROVISIONAL_END_WEEK, arch.endWeek)
+    }
+
+    @Test fun `parity week runs collapse to a single odd or even course`() {
+        val grid = """<html><body><table><thead><tr><th>节次/星期</th>""" +
+            """<th>星期一</th><th>星期二</th><th>星期三</th><th>星期四</th><th>星期五</th><th>星期六</th><th>星期日</th></tr></thead><tbody>""" +
+            """<tr><th>1</th><td><a href='https://xkcts.ucas.ac.cn:8443/course/coursetime/1'>甲</a></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>""" +
+            """</tbody></table></body></html>"""
+
+        fun detail(weeks: String) = detailSection(
+            "https://xw.ucas.ac.cn:8443/course/coursetime/1",
+            "<html><body><table><tbody>" +
+                "<tr><th>课程名称</th><td>甲</td></tr>" +
+                "<tr><th>上课时间</th><td>星期一： 第1、2节。</td></tr>" +
+                "<tr><th>上课地点</th><td>教室A</td></tr>" +
+                "<tr><th>上课周次</th><td>$weeks</td></tr>" +
+                "</tbody></table></body></html>"
+        )
+
+        // 双周 {2,4,6,8} → 一条 type=2 (2-8)
+        val even = JwUcasParser(grid + detail("2、4、6、8")).generateCourseList()
+        val evenCourse = even.single()
+        assertEquals(2, evenCourse.startWeek)
+        assertEquals(8, evenCourse.endWeek)
+        assertEquals(JwUcasParser.TYPE_EVEN, evenCourse.type)
+
+        // 单周 {13,15} → 一条 type=1 (13-15)
+        val odd = JwUcasParser(grid + detail("13、15")).generateCourseList()
+        val oddCourse = odd.single()
+        assertEquals(13, oddCourse.startWeek)
+        assertEquals(15, oddCourse.endWeek)
+        assertEquals(JwUcasParser.TYPE_ODD, oddCourse.type)
+    }
+
+    @Test fun `malformed detail section falls back to placeholder`() {
+        val combined = GRID + detailSection("https://xkcts.ucas.ac.cn:8443/course/coursetime/999999", "<html><body>无标签内容</body></html>")
+        val courses = JwUcasParser(combined).generateCourseList()
+        assertEquals(6, courses.size)
+        assertTrue(courses.all {
+            it.startWeek == JwUcasParser.PROVISIONAL_START_WEEK && it.endWeek == JwUcasParser.PROVISIONAL_END_WEEK
+        })
+    }
+
+    @Test fun `detail section for unknown course is ignored`() {
+        val detail = "<html><body><table><tbody>" +
+            "<tr><th>课程名称</th><td>不存在的课</td></tr>" +
+            "<tr><th>上课时间</th><td>星期一： 第1、2节。</td></tr>" +
+            "<tr><th>上课地点</th><td>教室A</td></tr>" +
+            "<tr><th>上课周次</th><td>1、2、3</td></tr>" +
+            "</tbody></table></body></html>"
+        val combined = GRID + detailSection("https://xkcts.ucas.ac.cn:8443/course/coursetime/1", detail)
+        val courses = JwUcasParser(combined).generateCourseList()
+        assertEquals(6, courses.size)
+        assertTrue(courses.all {
+            it.startWeek == JwUcasParser.PROVISIONAL_START_WEEK && it.endWeek == JwUcasParser.PROVISIONAL_END_WEEK
+        })
+    }
+
+    @Test fun `extractDetailUrls dedupes and absolutizes relative forms`() {
+        val urls = JwUcasParser.extractDetailUrls(GRID)
+        assertTrue(urls.isNotEmpty())
+        assertTrue(urls.all { it.startsWith("https://xkcts.ucas.ac.cn:8443/course/coursetime/") })
+        assertEquals(urls.size, urls.toSet().size)
+
+        val relative = JwUcasParser.extractDetailUrls("<a href='/course/coursetime/315751'>x</a><a href=\"/course/coursetime/315751\">y</a>")
+        assertEquals(listOf("https://xkcts.ucas.ac.cn:8443/course/coursetime/315751"), relative)
+    }
+
+    @Test fun `splitWeekRuns covers parity gaps and mixed steps`() {
+        fun triples(weeks: List<Int>) = JwUcasParser.splitWeekRuns(weeks)
+            .map { Triple(it.startWeek, it.endWeek, it.type) }
+
+        // 缺口断开: {2,3,4,5,7..12} → [2-5] + [7-12]
+        assertEquals(
+            listOf(Triple(2, 5, 0), Triple(7, 12, 0)),
+            triples(listOf(2, 3, 4, 5, 7, 8, 9, 10, 11, 12))
+        )
+        // 步长 2 同奇偶 → 单条单/双周
+        assertEquals(
+            listOf(Triple(2, 8, 2)),
+            triples(listOf(2, 4, 6, 8))
+        )
+        assertEquals(
+            listOf(Triple(1, 5, 1)),
+            triples(listOf(1, 3, 5))
+        )
+        // 单元素 → 每周
+        assertEquals(
+            listOf(Triple(3, 3, 0)),
+            triples(listOf(3))
+        )
+        // 步长 2 段被缺口打断: {2,4} + {8} → [2-4 双周] + [8 每周]
+        assertEquals(
+            listOf(Triple(2, 4, 2), Triple(8, 8, 0)),
+            triples(listOf(2, 4, 8))
+        )
+        // 步长切换断开: {2,3} 每周 + {5,6} 每周
+        assertEquals(
+            listOf(Triple(2, 3, 0), Triple(5, 6, 0)),
+            triples(listOf(2, 3, 5, 6))
+        )
+        // 连续 1-16 → 单条每周
+        assertEquals(
+            listOf(Triple(1, 16, 0)),
+            triples((1..16).toList())
+        )
+    }
+
+    @Test fun `parseNumberList handles enum comma ascii comma and ranges`() {
+        assertEquals(listOf(2, 3, 4), JwUcasParser.parseNumberList("2、3、4"))
+        assertEquals(listOf(1, 3), JwUcasParser.parseNumberList("1，3"))
+        assertEquals((1..16).toList(), JwUcasParser.parseNumberList("1-16"))
+        assertEquals((1..16).toList(), JwUcasParser.parseNumberList("1~16"))
+        assertEquals(listOf(3), JwUcasParser.parseNumberList("3"))
+        // 无数字 → 空
+        assertTrue(JwUcasParser.parseNumberList("无周次").isEmpty())
+    }
+
+    @Test fun `JSON path splits non-contiguous bitmap weeks into runs`() {
+        // courseWeek 位图: 第 2/3/4/5/7 周 → bits 1,2,3,4,6 → 2+4+8+16+64 = 94
+        val timeInt = Integer.parseInt("10" + "000000000001", 2)  // 周一 第 1 节
+        val json = """{"selectedCourse":{},"courseTimeList":[""" +
+            """{"courseName":"x","coursePlace":"R","courseWeek":94,"courseTime":$timeInt}]}"""
+        val courses = JwUcasParser(json).generateCourseList()
+        assertEquals(2, courses.size)
+        assertEquals(2 to 5, courses[0].startWeek to courses[0].endWeek)
+        assertEquals(JwUcasParser.TYPE_DEFAULT, courses[0].type)
+        assertEquals(7 to 7, courses[1].startWeek to courses[1].endWeek)
     }
 }

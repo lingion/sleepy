@@ -43,7 +43,9 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.jw.JwCourse
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
+import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
+import com.lingion.sleepy.data.jw.UcasDetailFetch
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
@@ -256,7 +258,13 @@ class JwImportActivity : ComponentActivity() {
                                     statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
-                                            val courses = jwViewModel.parseHtml(html, effectiveType ?: "")
+                                            // #18 UCAS: 课程格链到跨源详情站 xkcts:8443 (WebView fetch 被 CORS
+                                            // 挡), 详情页免登录 → 原生 HTTP 逐课直抓补全周次/教室; 失败降级原 HTML
+                                            // (parser 落 1-16 占位, 与既有行为一致)
+                                            val htmlForParse = if (effectiveType == JwProtocol.TYPE_UCAS) {
+                                                runCatching { UcasDetailFetch.enrich(html) }.getOrDefault(html)
+                                            } else html
+                                            val courses = jwViewModel.parseHtml(htmlForParse, effectiveType ?: "")
                                             Log.d("JwImport", "parseHtml returned ${courses.size} courses")
                                             if (courses.isEmpty()) {
                                                 // T9 诊断壳: classify 拿精确分类再选文案
