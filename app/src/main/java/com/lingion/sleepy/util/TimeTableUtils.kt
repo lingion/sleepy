@@ -388,6 +388,50 @@ object TimeTableUtils {
         }
     }
 
+    // ------------------------------------------------------------------
+    // issue#23 §2.2 候选集合 + §2.1 槽位默认时间编辑
+    // ------------------------------------------------------------------
+
+    /** 候选节次: exists=true = 复用已有槽位(带默认时间); exists=false = 新建(时间待用户填) */
+    data class EdgeCandidate(
+        val node: Int,
+        val start: String,
+        val end: String,
+        val exists: Boolean
+    )
+
+    /**
+     * 候选节次集合 (§2.2): Before 组升序(-2,-1,0...) + After 组升序(N+1,N+2...)。
+     * 每组 = 该方向全部已有边缘槽位 + 紧贴边界的一个「新建」候选;
+     * 无任何槽位时新建候选 = 0 / maxContiguous+1。禁止跳号。
+     */
+    fun edgeCandidates(timeJson: String): List<EdgeCandidate> {
+        val rows = parseTimeSlotRows(timeJson)
+        val beforeSlots = rows.filter { it.edgeClass == EdgeClass.Before }.sortedBy { it.node }
+        val afterSlots = rows.filter { it.edgeClass == EdgeClass.After }.sortedBy { it.node }
+        val maxStd = maxContiguousFromOne(rows)
+        val newBefore = (beforeSlots.minOfOrNull { it.node } ?: 1) - 1
+        val newAfter = (afterSlots.maxOfOrNull { it.node } ?: maxStd) + 1
+        val beforeGroup = listOf(EdgeCandidate(newBefore, "", "", false)) +
+            beforeSlots.map { EdgeCandidate(it.node, it.start, it.end, true) }
+        val afterGroup = afterSlots.map { EdgeCandidate(it.node, it.start, it.end, true) } +
+            EdgeCandidate(newAfter, "", "", false)
+        return beforeGroup + afterGroup
+    }
+
+    /**
+     * 修改某边缘槽位的默认时间 — 仅 edgeClass != null 的行可改;
+     * 节点不存在或为标准行时原样返回入参 (调用方无需预检)。
+     */
+    fun updateEdgeNodeTimes(timeJson: String, node: Int, start: String, end: String): String {
+        val rows = parseTimeSlotRows(timeJson)
+        val target = rows.firstOrNull { it.node == node } ?: return timeJson
+        if (target.edgeClass == null) return timeJson
+        return buildTimeJsonFromRows(
+            rows.map { if (it.node == node) it.copy(start = start, end = end) else it }
+        )
+    }
+
     private fun smartStartDefault(node: Int): String = when {
         node <= 2 -> "08:00"
         node <= 4 -> "10:00"
