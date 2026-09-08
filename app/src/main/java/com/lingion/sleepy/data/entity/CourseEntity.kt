@@ -153,6 +153,8 @@ data class CourseEntity(
      * 使其在网格中正确定位。ownTime=false 的课原样返回。
      */
     fun normalizeNode(timeJson: String): CourseEntity {
+        // issue#23: 边缘槽位卡的网格位置 = 槽位编号本身, 禁止按时间重映射
+        if (isIrregularNode) return this
         if (!ownTime || startTime.isBlank() || endTime.isBlank()) return this
         val mapped = com.lingion.sleepy.util.TimeTableUtils.timeToNode(startTime, endTime, timeJson)
             ?: return this

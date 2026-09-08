@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.util.TimeTableUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -58,5 +59,21 @@ class CourseEntityFlagsTest {
         // 保存路径契约: ownTime = isIrregularTime 永远同值(§5)
         val migrated = course(ownTime = true, isIrregularTime = true)
         assertEquals(migrated.ownTime, migrated.isIrregularTime)
+    }
+
+    @Test
+    fun 非常规节次卡_normalizeNode_禁止时间重映射() {
+        // issue#23: 边缘槽位卡的网格位置 = 槽位编号本身 (selectedEdgeNode), step 锁 1;
+        // 即便覆盖时间恰好匹配标准节次窗口, 也不得被 timeToNode 重映射走
+        val c = course(
+            ownTime = true,
+            isIrregularNode = true,
+            isIrregularTime = true,
+            startNode = 0,
+            step = 1
+        ).copy(startTime = "08:00", endTime = "08:45")
+        val normalized = c.normalizeNode(TimeTableUtils.DEFAULT_TIME_JSON)
+        assertEquals(0, normalized.startNode)
+        assertEquals(1, normalized.step)
     }
 }
