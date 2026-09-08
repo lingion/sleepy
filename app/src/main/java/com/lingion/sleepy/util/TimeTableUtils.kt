@@ -332,6 +332,48 @@ object TimeTableUtils {
     }
 
     /**
+     * 非常规时间优先级解析 (issue#23 场景4: "非常规的课程，它同时也是一个常规的课程"):
+     *   1. 课程落在边缘节点上 → 边缘节点自身的 start/end 赢, 不套全局非常规时间
+     *      (第 0 节 07:30-08:00 的课就显示 07:30-08:00, 哪怕全局非常规时间开着)
+     *   2. 该 block 用 ByClock 手填时间 → 手填时间赢 (ownTime=true)
+     *   3. 全局非常规时间开启 → 全局 start/end 赢 (ownTime=true)
+     *   4. 都不满足 → 走标准节次渲染, ownTime=false
+     *
+     * step 参数当前不参与判定 (边缘节点是单节), 保留在签名中以备 block 跨多节点时扩展。
+     */
+    fun resolveIrregularCourseTime(
+        startNode: Int,
+        step: Int,
+        modeIsByClock: Boolean,
+        blockStartTime: String,
+        blockEndTime: String,
+        irregularEnabled: Boolean,
+        irregularStartTime: String,
+        irregularEndTime: String,
+        timeJson: String
+    ): IrregularTimeResolution {
+        val rows = parseTimeSlotRows(timeJson)
+        val edge = rows.firstOrNull { it.node == startNode && it.edgeClass != null }
+        if (edge != null) {
+            return IrregularTimeResolution(ownTime = false, startTime = edge.start, endTime = edge.end)
+        }
+        if (modeIsByClock) {
+            return IrregularTimeResolution(ownTime = true, startTime = blockStartTime, endTime = blockEndTime)
+        }
+        if (irregularEnabled) {
+            return IrregularTimeResolution(ownTime = true, startTime = irregularStartTime, endTime = irregularEndTime)
+        }
+        return IrregularTimeResolution(ownTime = false, startTime = "", endTime = "")
+    }
+
+    /** [resolveIrregularCourseTime] 的结果: ownTime=true 时 startTime/endTime 有值, false 时走标准节次 */
+    data class IrregularTimeResolution(
+        val ownTime: Boolean,
+        val startTime: String,
+        val endTime: String
+    )
+
+    /**
      * 列出某方向的边缘节次节点号, 按节点号排序:
      *   - Before: 降序 (0, -1, -2, ...) — 最近插入的在前, 与用户加节习惯一致
      *   - After:  升序 (13, 14, 15, ...) — 最近插入的在前
