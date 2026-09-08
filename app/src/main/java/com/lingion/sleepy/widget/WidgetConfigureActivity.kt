@@ -10,13 +10,17 @@ import androidx.activity.compose.setContent
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
 import com.lingion.sleepy.util.AppPrefs
+import kotlinx.coroutines.runBlocking
 
 /**
  * Launcher entry point for configuring an individual widget.
  *
- * The launcher supplies [AppWidgetManager.EXTRA_APPWIDGET_ID]. Keep this
- * activity separate from MainActivity so the native launcher edit flow does
- * not depend on the app's overlay navigation stack.
+ * Two paths:
+ * - First add (no binding for [appWidgetId]): silently binds the current default
+ *   table and finishes OK. No UI is shown, so third-party launchers (lawnchair
+ *   etc.) that mishandle the configure flow can still complete widget add.
+ * - Re-edit (binding exists): shows [WidgetEditScreen] so the user can pick a
+ *   different table.
  */
 class WidgetConfigureActivity : ComponentActivity() {
     private var appWidgetId: Int = AppWidgetManager.INVALID_APPWIDGET_ID
@@ -32,6 +36,22 @@ class WidgetConfigureActivity : ComponentActivity() {
             finish()
             return
         }
+
+        // First-add path: silently bind default table and finish OK.
+        // Keeps third-party launchers happy — no UI, no friction.
+        val existingBinding = WidgetBindingStore.get(this, appWidgetId)
+        if (existingBinding == null) {
+            val defaultTableId = runCatching {
+                runBlocking { WidgetTableResolver.resolveCurrentTable()?.id }
+            }.getOrNull()
+            if (defaultTableId != null) {
+                WidgetBindingStore.put(this, appWidgetId, defaultTableId)
+            }
+            finishWithResult(Activity.RESULT_OK)
+            return
+        }
+
+        // Re-edit path: show the table picker.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 finishWithResult(Activity.RESULT_OK)
