@@ -315,6 +315,23 @@ object TimeTableUtils {
     }
 
     /**
+     * 扫描全部边缘节次节点, 逐个回收未被引用的 — 从 before + after 两个方向.
+     * 被引用的判定: 某门课的 startNode..startNode+step-1 区间包含该节点号.
+     * 标准节点(1..N) 绝不回收(removeEdgeNodeIfUnused 内部有 edgeClass!=null 硬闸).
+     * 未接线历史清理: 删课/删组后应把本函数的结果回写课表 timeJson, 否则节点残留在表里.
+     */
+    fun reclaimUnusedEdgeNodes(timeJson: String, usedNodes: Set<Int>): String {
+        var json = timeJson
+        edgeNodesOf(json, EdgeClass.Before).forEach { n ->
+            json = removeEdgeNodeIfUnused(json, n, usedNodes)
+        }
+        edgeNodesOf(json, EdgeClass.After).forEach { n ->
+            json = removeEdgeNodeIfUnused(json, n, usedNodes)
+        }
+        return json
+    }
+
+    /**
      * 列出某方向的边缘节次节点号, 按节点号排序:
      *   - Before: 降序 (0, -1, -2, ...) — 最近插入的在前, 与用户加节习惯一致
      *   - After:  升序 (13, 14, 15, ...) — 最近插入的在前

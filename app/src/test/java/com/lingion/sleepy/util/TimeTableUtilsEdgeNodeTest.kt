@@ -156,4 +156,66 @@ class TimeTableUtilsEdgeNodeTest {
         assertEquals(emptyList<Int>(), TimeTableUtils.edgeNodesOf(baseStandard, TimeTableUtils.EdgeClass.Before))
         assertEquals(emptyList<Int>(), TimeTableUtils.edgeNodesOf(baseStandard, TimeTableUtils.EdgeClass.After))
     }
+
+    // ===== reclaimUnusedEdgeNodes (issue#23 fix: ScheduleRepository 删课后接线) =====
+
+    @Test
+    fun reclaimUnusedEdgeNodes_removes_all_unused_before_edges() {
+        // 第 0 节 + 第 -1 节 都无人引用 → 全部回收
+        var json = baseStandard
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.Before, "07:30", "08:00")
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.Before, "07:00", "07:30")
+        val reclaimed = TimeTableUtils.reclaimUnusedEdgeNodes(json, emptySet())
+        assertEquals(12, rows(reclaimed).size)
+        assertNull(rows(reclaimed).firstOrNull { it.node == 0 })
+        assertNull(rows(reclaimed).firstOrNull { it.node == -1 })
+    }
+
+    @Test
+    fun reclaimUnusedEdgeNodes_removes_all_unused_after_edges() {
+        var json = baseStandard
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.After, "22:30", "23:15")
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.After, "23:15", "24:00")
+        val reclaimed = TimeTableUtils.reclaimUnusedEdgeNodes(json, emptySet())
+        assertEquals(12, rows(reclaimed).size)
+        assertNull(rows(reclaimed).firstOrNull { it.node == 13 })
+        assertNull(rows(reclaimed).firstOrNull { it.node == 14 })
+    }
+
+    @Test
+    fun reclaimUnusedEdgeNodes_keeps_referenced_edges() {
+        // 第 0 节还有课引用, 第 -1 节无人引用 → 只回收 -1
+        var json = baseStandard
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.Before, "07:30", "08:00")
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.Before, "07:00", "07:30")
+        val reclaimed = TimeTableUtils.reclaimUnusedEdgeNodes(json, setOf(0))
+        val rs = rows(reclaimed)
+        assertEquals(13, rs.size)
+        assertNotNull(rs.firstOrNull { it.node == 0 })  // 保留
+        assertNull(rs.firstOrNull { it.node == -1 })    // 回收
+    }
+
+    @Test
+    fun reclaimUnusedEdgeNodes_handles_mixed_before_and_after() {
+        // 第 0 节无引用 + 第 13 节有引用 → 仅回收 0, 保留 13
+        var json = baseStandard
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.Before, "07:30", "08:00")
+        json = TimeTableUtils.insertEdgeNode(json, TimeTableUtils.EdgeClass.After, "22:30", "23:15")
+        val reclaimed = TimeTableUtils.reclaimUnusedEdgeNodes(json, setOf(13))
+        val rs = rows(reclaimed)
+        assertEquals(13, rs.size)
+        assertNull(rs.firstOrNull { it.node == 0 })
+        assertNotNull(rs.firstOrNull { it.node == 13 })
+    }
+
+    @Test
+    fun reclaimUnusedEdgeNodes_noop_when_no_edges_present() {
+        assertEquals(baseStandard, TimeTableUtils.reclaimUnusedEdgeNodes(baseStandard, emptySet()))
+    }
+
+    @Test
+    fun reclaimUnusedEdgeNodes_does_not_remove_standard_nodes() {
+        // 即便 usedNodes 为空, 标准 1..12 也绝不回收
+        assertEquals(baseStandard, TimeTableUtils.reclaimUnusedEdgeNodes(baseStandard, emptySet()))
+    }
 }
