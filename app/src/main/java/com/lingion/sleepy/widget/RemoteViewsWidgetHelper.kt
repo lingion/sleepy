@@ -87,7 +87,13 @@ object RemoteViewsWidgetHelper {
         )
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
         awm.updateAppWidget(widgetId, views)
-        bmp.recycle()
+        // NOTE: 不能 bmp.recycle()!
+        // RemoteViews.setImageViewBitmap 把 bitmap 放进 RemoteViews.mBitmapCache,
+        // 通过 binder 传给系统 AppWidgetService; 大尺寸 bitmap 在系统进程内常以 ashmem
+        // 共享方式持有, 本进程 recycle 会立刻释放 native pixel memory →
+        // 启动器渲染时 setImageBitmap 抛 "trying to use a recycled bitmap" →
+        // RemoteViews.apply() 失败 → AppWidgetHostView 回落到 "无法加载微件" 错误视图。
+        // 改成 next onUpdate 推送新 RemoteViews 时旧 bitmap 自然随 mBitmapCache 一起被 GC。
         Log.d(tag, "renderAndPush id=$widgetId ${wDp}x${hDp}dp → ${wPx}x${hPx}px")
     }
 
@@ -131,7 +137,8 @@ object RemoteViewsWidgetHelper {
 
         awm.updateAppWidget(widgetId, views)
         awm.notifyAppWidgetViewDataChanged(widgetId, R.id.widget_strip_list)
-        shellBitmap.recycle()
+        // 同样不能 recycle: 壳图经 setImageViewBitmap 持有, 由 RemoteViews.mBitmapCache 引用,
+        // 启动器渲染期间 native pixel 必须有效 (见 renderAndPush 同注释)。
         Log.d(tag, "pushScrollable id=$widgetId scope=$scopeExtra")
     }
 }

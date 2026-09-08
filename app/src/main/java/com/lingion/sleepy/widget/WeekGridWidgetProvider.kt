@@ -146,9 +146,11 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
         awm.updateAppWidget(widgetId, views)
-        // Bitmap 回收: RemoteViews.setImageViewBitmap 会拷贝 bitmap 到 binder 事务,
-        // 本进程持有的原 bitmap 不再需要, 立即回收避免 ~7.8MB 大图累积占内存。
-        bmp.recycle()
+        // Bitmap 回收已删除: setImageViewBitmap 进入 RemoteViews.mBitmapCache,
+        // 系统进程常以 ashmem 共享持有, 本进程 recycle 会让启动器拿到已释放的 native
+        // pixel → setImageBitmap 抛异常 → AppWidgetHostView 回落到错误视图。
+        // 下一轮 onUpdate 推送新 RemoteViews 时旧 bitmap 自然随 mBitmapCache 被 GC,
+        // 内存峰值受 widget 数量约束 (典型 3-5 个, ~7.8MB/个), 可接受。
     }
 
     companion object {

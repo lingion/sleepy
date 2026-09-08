@@ -45,11 +45,16 @@ class WidgetConfigureActivity : ComponentActivity() {
 
         // First-add path: write sentinel binding (0L = follow default) and
         // finish OK. Pure SharedPreferences write — no DB, no runBlocking.
+        // Defer finish to after the current frame (decorView.post) so stubborn
+        // third-party launchers (lawnchair, OEM forks) that inspect activity
+        // state in onActivityResult still see a fully-resumed activity.
         val existingBinding = WidgetBindingStore.get(this, appWidgetId)
         if (existingBinding == null) {
             WidgetBindingStore.put(this, appWidgetId, 0L)
             Log.i(TAG, "first-add: wrote sentinel binding for $appWidgetId, finishing OK")
-            finishWithResult(Activity.RESULT_OK)
+            window.decorView.post {
+                if (!isFinishing) finishWithResult(Activity.RESULT_OK)
+            }
             return
         }
 
