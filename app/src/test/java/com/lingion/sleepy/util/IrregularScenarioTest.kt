@@ -288,150 +288,76 @@ class IrregularScenarioTest {
         // 不管用户填的 startNode=0, 实际画在节点 3
     }
 
-    // ---------------------------------------------------------------
-    // 修复 4: edge time wins — 边缘节点自带时间永远赢, 不被全局覆盖
-    // ---------------------------------------------------------------
+    // ===============================================================
+    // issue#23 §3.3 逐卡 effective 时间解析矩阵 — 旧课程级 resolveIrregularCourseTime
+    // 已删除, 消费方迁至逐卡 [TimeTableUtils.effectiveCourseTime]
+    // ===============================================================
 
-    /**
-     * 场景 1 修复后的行为: 用户同时启用全局非常规时间 10:00-11:40 并把课放在
-     * 第 0 节(已加边缘 07:30-08:00). 修复后: 课使用第 0 节的 07:30-08:00,
-     * ownTime=false, 网格位置就是节点 0 — 不再被全局时间拉到节点 3.
-     */
+    /** 覆盖优先: 勾选非常规时间 → 课程自带起止直接生效, 不受槽位默认时间约束 (§2.3). */
     @Test
-    fun resolveIrregular_edgeTimeWins_overGlobalTime() {
+    fun effective_overrideWins_onEdgeSlot() {
         val jsonWithEdge = TimeTableUtils.insertEdgeNode(
             base, TimeTableUtils.EdgeClass.Before, "07:30", "08:00"
         )
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 0, step = 1,
-            modeIsByClock = false,
-            blockStartTime = "08:00", blockEndTime = "09:40",
-            irregularEnabled = true,
-            irregularStartTime = "10:00", irregularEndTime = "11:40",
-            timeJson = jsonWithEdge
+        val r = TimeTableUtils.effectiveCourseTime(
+            isIrregularTime = true, startTime = "08:01", endTime = "08:26",
+            startNode = 0, step = 1, timeJson = jsonWithEdge
         )
-        assertFalse("边缘节点 ownTime 必须为 false", r.ownTime)
-        assertEquals("用第 0 节时间 07:30", "07:30", r.startTime)
-        assertEquals("用第 0 节时间 08:00", "08:00", r.endTime)
+        assertEquals("08:01" to "08:26", r)
     }
 
-    /**
-     * 边缘节点 + ByClock: 边缘节点仍然赢 — 边缘节点是结构性的, 不允许块时间覆盖.
-     */
+    /** 边缘继承: 未勾选覆盖 → 用边缘槽位默认时间 (§3.3 分支 2). */
     @Test
-    fun resolveIrregular_edgeTimeWins_overByClock() {
-        val jsonWithEdge = TimeTableUtils.insertEdgeNode(
-            base, TimeTableUtils.EdgeClass.Before, "06:30", "07:00"
-        )
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 0, step = 1,
-            modeIsByClock = true,                       // 用户手动填了 09:00-10:00
-            blockStartTime = "09:00", blockEndTime = "10:00",
-            irregularEnabled = false,
-            irregularStartTime = "", irregularEndTime = "",
-            timeJson = jsonWithEdge
-        )
-        assertFalse(r.ownTime)
-        assertEquals("06:30", r.startTime)
-        assertEquals("07:00", r.endTime)
-    }
-
-    /**
-     * 标准节点 + 启用全局非常规: ownTime=true, 用全局时间.
-     */
-    @Test
-    fun resolveIrregular_standardNode_irregularEnabled_usesGlobal() {
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 3, step = 2,
-            modeIsByClock = false,
-            blockStartTime = "08:00", blockEndTime = "09:40",
-            irregularEnabled = true,
-            irregularStartTime = "10:00", irregularEndTime = "11:40",
-            timeJson = base
-        )
-        assertTrue(r.ownTime)
-        assertEquals("10:00", r.startTime)
-        assertEquals("11:40", r.endTime)
-    }
-
-    /**
-     * 标准节点 + ByClock + 启用非常规: ByClock 块时间赢(块内显式, 全局兜底).
-     * (两者都 ownTime=true; 优先级留给 buildCourseEntity 决定哪个字段被填.)
-     */
-    @Test
-    fun resolveIrregular_standardNode_byClockWins() {
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 3, step = 2,
-            modeIsByClock = true,
-            blockStartTime = "11:00", blockEndTime = "12:30",
-            irregularEnabled = true,
-            irregularStartTime = "10:00", irregularEndTime = "11:40",
-            timeJson = base
-        )
-        assertTrue(r.ownTime)
-        assertEquals("11:00", r.startTime)
-        assertEquals("12:30", r.endTime)
-    }
-
-    /**
-     * 标准节点 + ByNode + 不启用非常规: ownTime=false, 渲染时按 timeJson 节点时间取.
-     */
-    @Test
-    fun resolveIrregular_standardNode_noIrregular_noByClock() {
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 1, step = 2,
-            modeIsByClock = false,
-            blockStartTime = "08:00", blockEndTime = "09:40",
-            irregularEnabled = false,
-            irregularStartTime = "", irregularEndTime = "",
-            timeJson = base
-        )
-        assertFalse("ByNode 标准节点 ownTime 必须为 false", r.ownTime)
-        assertEquals("", r.startTime)
-        assertEquals("", r.endTime)
-    }
-
-    /**
-     * 边缘节点 + 不启用非常规 + ByNode: 边缘时间仍然赢 — 用户加边缘节点就
-     * 是为了放课在那, 不启用"全局非常规"也不应该让边缘节点时间丢失.
-     */
-    @Test
-    fun resolveIrregular_edgeNode_noIrregular_stillUsesEdgeTime() {
+    fun effective_edgeSlotInheritsSlotDefault() {
         val jsonWithEdge = TimeTableUtils.insertEdgeNode(
             base, TimeTableUtils.EdgeClass.Before, "07:30", "08:00"
         )
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 0, step = 1,
-            modeIsByClock = false,
-            blockStartTime = "08:00", blockEndTime = "09:40",
-            irregularEnabled = false,
-            irregularStartTime = "", irregularEndTime = "",
-            timeJson = jsonWithEdge
+        val r = TimeTableUtils.effectiveCourseTime(
+            isIrregularTime = false, startTime = "", endTime = "",
+            startNode = 0, step = 1, timeJson = jsonWithEdge
         )
-        assertFalse(r.ownTime)
-        assertEquals("07:30", r.startTime)
-        assertEquals("08:00", r.endTime)
+        assertEquals("07:30" to "08:00", r)
     }
 
-    /**
-     * 后置边缘节点同样适用.
-     */
+    /** 标准节次: 未勾选覆盖 → 标准 1..N 节次时间 (第 1-2 节 = 08:00-09:40). */
     @Test
-    fun resolveIrregular_afterEdge_alsoWins() {
-        val jsonWithAfter = TimeTableUtils.insertEdgeNode(
-            base, TimeTableUtils.EdgeClass.After, "22:30", "23:15"
+    fun effective_standardNode_usesNodeRange() {
+        val r = TimeTableUtils.effectiveCourseTime(
+            isIrregularTime = false, startTime = "", endTime = "",
+            startNode = 1, step = 2, timeJson = base
         )
-        val r = TimeTableUtils.resolveIrregularCourseTime(
-            startNode = 13, step = 1,
-            modeIsByClock = false,
-            blockStartTime = "08:00", blockEndTime = "09:40",
-            irregularEnabled = true,
-            irregularStartTime = "10:00", irregularEndTime = "11:40",
-            timeJson = jsonWithAfter
+        assertEquals("08:00" to "09:40", r)
+    }
+
+    /** 标准节次 + 覆盖: 勾选非常规时间在标准节次上 = 旧 ByClock 语义, 两选项完全独立 (§1). */
+    @Test
+    fun effective_standardNode_withOverride() {
+        val r = TimeTableUtils.effectiveCourseTime(
+            isIrregularTime = true, startTime = "10:00", endTime = "11:40",
+            startNode = 1, step = 2, timeJson = base
         )
-        assertFalse(r.ownTime)
-        assertEquals("22:30", r.startTime)
-        assertEquals("23:15", r.endTime)
+        assertEquals("10:00" to "11:40", r)
+    }
+
+    /** 勾选覆盖但时间无效 → null (validateCourseDraft 负责报格式错, 这里不静默给值). */
+    @Test
+    fun effective_invalidTimes_null() {
+        val r = TimeTableUtils.effectiveCourseTime(
+            isIrregularTime = true, startTime = "garbage", endTime = "xx",
+            startNode = 1, step = 2, timeJson = base
+        )
+        assertNull(r)
+    }
+
+    /** 节次不存在 → null. */
+    @Test
+    fun effective_unknownNode_null() {
+        assertNull(
+            TimeTableUtils.effectiveCourseTime(
+                isIrregularTime = false, startTime = "", endTime = "",
+                startNode = 99, step = 1, timeJson = base
+            )
+        )
     }
 
     // ===============================================================

@@ -332,48 +332,6 @@ object TimeTableUtils {
     }
 
     /**
-     * 非常规时间优先级解析 (issue#23 场景4: "非常规的课程，它同时也是一个常规的课程"):
-     *   1. 课程落在边缘节点上 → 边缘节点自身的 start/end 赢, 不套全局非常规时间
-     *      (第 0 节 07:30-08:00 的课就显示 07:30-08:00, 哪怕全局非常规时间开着)
-     *   2. 该 block 用 ByClock 手填时间 → 手填时间赢 (ownTime=true)
-     *   3. 全局非常规时间开启 → 全局 start/end 赢 (ownTime=true)
-     *   4. 都不满足 → 走标准节次渲染, ownTime=false
-     *
-     * step 参数当前不参与判定 (边缘节点是单节), 保留在签名中以备 block 跨多节点时扩展。
-     */
-    fun resolveIrregularCourseTime(
-        startNode: Int,
-        step: Int,
-        modeIsByClock: Boolean,
-        blockStartTime: String,
-        blockEndTime: String,
-        irregularEnabled: Boolean,
-        irregularStartTime: String,
-        irregularEndTime: String,
-        timeJson: String
-    ): IrregularTimeResolution {
-        val rows = parseTimeSlotRows(timeJson)
-        val edge = rows.firstOrNull { it.node == startNode && it.edgeClass != null }
-        if (edge != null) {
-            return IrregularTimeResolution(ownTime = false, startTime = edge.start, endTime = edge.end)
-        }
-        if (modeIsByClock) {
-            return IrregularTimeResolution(ownTime = true, startTime = blockStartTime, endTime = blockEndTime)
-        }
-        if (irregularEnabled) {
-            return IrregularTimeResolution(ownTime = true, startTime = irregularStartTime, endTime = irregularEndTime)
-        }
-        return IrregularTimeResolution(ownTime = false, startTime = "", endTime = "")
-    }
-
-    /** [resolveIrregularCourseTime] 的结果: ownTime=true 时 startTime/endTime 有值, false 时走标准节次 */
-    data class IrregularTimeResolution(
-        val ownTime: Boolean,
-        val startTime: String,
-        val endTime: String
-    )
-
-    /**
      * 列出某方向的边缘节次节点号, 按节点号排序:
      *   - Before: 降序 (0, -1, -2, ...) — 最近插入的在前, 与用户加节习惯一致
      *   - After:  升序 (13, 14, 15, ...) — 最近插入的在前
@@ -389,8 +347,39 @@ object TimeTableUtils {
     }
 
     // ------------------------------------------------------------------
-    // issue#23 §2.2 候选集合 + §2.1 槽位默认时间编辑
+    // issue#23 §2.2 候选集合 + §2.1 槽位默认时间编辑 + §3.3 effective 解析
     // ------------------------------------------------------------------
+
+    /**
+     * issue#23 §3.3 逐卡 effective 时间解析 — validateCourseDraft / buildCourseEntity /
+     * blockRangeMinutes 共用契约, 四处解析必须一致:
+     *   1. isIrregularTime=true → 课程自带覆盖起止直接生效 (不受槽位默认时间窗口约束, §2.3)
+     *   2. startNode 为边缘槽位 (edgeClass != null) → 槽位默认时间
+     *   3. 否则 → 标准 1..N 节次时间 (startNode..startNode+step-1)
+     * 无法解析 (时间无效 / 节次不存在) → null, 由调用方校验报错, 不静默给值。
+     */
+    fun effectiveCourseTime(
+        isIrregularTime: Boolean,
+        startTime: String,
+        endTime: String,
+        startNode: Int,
+        step: Int,
+        timeJson: String
+    ): Pair<String, String>? {
+        if (isIrregularTime) {
+            val s = runCatching { LocalTime.parse(startTime.trim()) }.getOrNull() ?: return null
+            val e = runCatching { LocalTime.parse(endTime.trim()) }.getOrNull() ?: return null
+            return s.toString() to e.toString()
+        }
+        val rows = parseTimeSlotRows(timeJson)
+        val first = rows.firstOrNull { it.node == startNode } ?: return null
+        val last = rows.firstOrNull { it.node == startNode + step - 1 } ?: return null
+        return first.start to last.end
+    }
+
+    /** 标准 1..N 连续节次上界 (edge 行不参与) — 逐卡重构后标准卡片只允许 1..maxStd */
+    fun maxStandardNode(timeJson: String): Int = maxContiguousFromOne(parseTimeSlotRows(timeJson))
+
 
     /** 候选节次: exists=true = 复用已有槽位(带默认时间); exists=false = 新建(时间待用户填) */
     data class EdgeCandidate(
@@ -398,7 +387,11 @@ object TimeTableUtils {
         val start: String,
         val end: String,
         val exists: Boolean
-    )
+    ) {
+        /** 候选归属: Before 组节点 <= 0, After 组节点 > 0 (edgeCandidates 构造保证) */
+        val edgeClass: EdgeClass
+            get() = if (node <= 0) EdgeClass.Before else EdgeClass.After
+    }
 
     /**
      * 候选节次集合 (§2.2): Before 组升序(-2,-1,0...) + After 组升序(N+1,N+2...)。
