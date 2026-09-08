@@ -647,6 +647,9 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="default_course_name">Course</string>
     <string name="default_room">Location</string>
     <string name="error_unknown">Unknown error</string>
+    <!-- issue#23 / manual-course "irregular" toggle (2026-09-06) -->
+    <string name="irregular_time_format">Irregular start/end time should be HH:mm format</string>
+    <string name="irregular_time_order">Irregular start time must be before end time</string>
     <string name="error_no_version_found">No version found from main site or mirror</string>
     <string name="error_empty_download">Downloaded file is empty</string>
 </resources>
