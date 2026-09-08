@@ -1,0 +1,39 @@
+{
+  "school": "NEU",
+  "date": "2026-09-07",
+  "findings": [
+    {
+      "issue": "#27",
+      "severity": "high",
+      "status": "fixed",
+      "root_cause": "The WebView capture dispatcher had no TYPE_NEU branch, so NEU fell through to the generic Wisedu endpoint sequence.",
+      "fix": "Added a dedicated TYPE_NEU branch and NEU_FETCH_JS for getMyScheduleDetail.do with session credentials and the existing bridge envelope.",
+      "verification": "JwNeuWebViewContractTest: 2 tests passed."
+    },
+    {
+      "issue": "#28",
+      "severity": "high",
+      "status": "fixed",
+      "root_cause": "NEU ICS uses a custom PRODID and event time blocks that require NEU-specific node inference; generic fallback can assign the wrong section.",
+      "fix": "NEU-specific ICS node inference remains selected by PRODID, while explicit section descriptions remain authoritative; round-trip regression added.",
+      "verification": "NeuRealFixtureImportTest and NeuRoundTripIcsTest passed."
+    },
+    {
+      "issue": "#22",
+      "severity": "high",
+      "status": "fixed-in-tree",
+      "root_cause": "Group-level replacement could delete or rewrite same-name rows in different rooms together.",
+      "fix": "RowKey includes schedule slot, room, and teacher; save uses row-level diff/patch.",
+      "verification": "RowKeyDifferTest passed, including multi-location delete/update isolation."
+    },
+    {
+      "issue": "#23",
+      "severity": "high",
+      "status": "fixed-in-tree",
+      "root_cause": "Irregular node and custom-duration state was not consistently owned by each meeting block.",
+      "fix": "Per-block irregular state, explicit node/time anchors, edge-node persistence, and unused-edge cleanup are covered in the current implementation.",
+      "verification": "IrregularValidationTest, GroupSlotsForEditTest, and TimeTableUtilsEdgeNodeTest passed."
+    }
+  ],
+  "online_limit": "Live NEU service validation was not run; it requires an authenticated session and reachable service."
+}

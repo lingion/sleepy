@@ -1,0 +1,13 @@
+{
+  "school": "Northeast University (NEU)",
+  "date": "2026-09-07",
+  "selection_rule": "All NEU repositories already recorded by the project's attribution inventory are retained; no candidate was manually dropped.",
+  "candidates": [
+    {"repository": "CreamPig233/neu_wisedu2wakeup", "role": "primary protocol and ICS reference", "license": "unknown"},
+    {"repository": "PopulusYang/NeuTimetable", "role": "NEU timetable reference", "license": "unknown"},
+    {"repository": "neucn/elise", "role": "NEU timetable reference", "license": "unknown"},
+    {"repository": "RekaYOO/NEU-JWXT-Toolkit", "role": "NEU JW reference", "license": "unknown"},
+    {"repository": "PeterPtroc/neu-jwxt-to-wakeup", "role": "NEU timetable conversion reference", "license": "unknown"},
+    {"repository": "leavesvv-source/NEU-Timetable", "role": "NEU timetable reference", "license": "unknown"}
+  ]
+}

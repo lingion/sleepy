@@ -11,6 +11,7 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import java.time.LocalTime
 import java.util.TreeMap
+import kotlin.math.roundToInt
 
 /**
  * 课程表文本解析器 — 支持：
@@ -417,6 +418,10 @@ object ScheduleParser {
         )
 
         val events = mutableListOf<Event>()
+        val isNeuIcs = Regex("(?im)^PRODID:.*NEU_Wisedu2Wakeup").containsMatchIn(text)
+        // NEU 导出把真实时间块作为五个逻辑教学时段，块间午休/晚间间隔不占节次。
+        // 先按时钟排序建立映射，避免 fixture 中事件顺序改变逻辑节点编号。
+        val neuTimeNodes = if (isNeuIcs) buildNeuTimeNodes(text) else emptyMap()
         // 全校作息收割: 节次 → (start,end)。每个 VEVENT 直接给出
         // node[首节].start=DTSTART, node[末节].end=DTEND, 中间节次按边界推导。
         val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
@@ -445,7 +450,12 @@ object ScheduleParser {
 
             val day = extractIcsDayOfWeek(block) ?: continue
             val dtstart = extractIcsDate(block) ?: continue
-            val (startNode, step) = extractIcsNode(description) ?: extractIcsTime(block) ?: continue
+            val explicitNode = extractIcsNode(description)
+            val inferredNode = explicitNode
+                ?: (if (isNeuIcs) extractNeuTime(block, neuTimeNodes)
+                else extractIcsTime(block))
+                ?: continue
+            val (startNode, step) = inferredNode
 
             // 作息收割: 有节次行 + 有起止钟点才有贡献(Sleepy 自家导出也满足)
             harvestNodeTimes(block, startNode, step, nodeTimes)
@@ -626,6 +636,50 @@ object ScheduleParser {
         return regex.find(block)?.groupValues?.get(1)
             ?.replace(Regex("\\n "), "")
             ?.trim()
+    }
+
+    /**
+     * NEU ICS 的特殊逻辑节次: 五个按时钟排序的教学块固定从 1、3、5、7、9 节开始，
+     * 块间空档不占节次。同一开始时刻可能同时出现跨多个教学块的事件，取最长事件的步数，
+     * 但不让它改变后续教学块的固定起点。
+     * 显式 DESCRIPTION 节次在调用方优先，本函数只处理 NEU 的无描述导出。
+     */
+    private fun buildNeuTimeNodes(text: String): Map<LocalTime, Pair<Int, Int>> {
+        val durationsByStart = text.split("BEGIN:VEVENT").drop(1).mapNotNull { raw ->
+            val end = raw.indexOf("END:VEVENT")
+            val block = if (end > 0) raw.substring(0, end) else raw
+            val start = extractIcsField(block, "DTSTART")?.substringAfter("T")?.take(6)
+                ?.let { runCatching { parseIcsTimeOfDay(it) }.getOrNull() }
+            val finish = extractIcsField(block, "DTEND")?.substringAfter("T")?.take(6)
+                ?.let { runCatching { parseIcsTimeOfDay(it) }.getOrNull() }
+            if (start == null || finish == null || !start.isBefore(finish)) {
+                null
+            } else {
+                val duration = (finish.toSecondOfDay() - start.toSecondOfDay()) / 60.0
+                start to duration
+            }
+        }.groupBy({ it.first }, { it.second })
+
+        return durationsByStart.keys.sorted().mapIndexed { index, start ->
+            val step = durationsByStart.getValue(start).maxOrNull()
+                ?.div(50.0)
+                ?.roundToInt()
+                ?.coerceAtLeast(1)
+                ?: 1
+            start to (index * 2 + 1 to step)
+        }.toMap()
+    }
+
+    private fun extractNeuTime(
+        block: String,
+        nodes: Map<LocalTime, Pair<Int, Int>>
+    ): Pair<Int, Int>? {
+        val dtstart = extractIcsField(block, "DTSTART") ?: return null
+        val start = runCatching {
+            parseIcsTimeOfDay(dtstart.substringAfter("T").take(6))
+        }.getOrNull() ?: return null
+        val hit = nodes[start] ?: return null
+        return hit.first to hit.second
     }
 
     /** 从 DTSTART/DTEND 提取节次（按 45min课+5min课间≈50min/节估算；DESCRIPTION 无"第X-Y节"时的兜底） */
