@@ -652,4 +652,8 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="irregular_node_required">Franja no estándar no válida en el bloque %1$d; vuelve a elegir</string>
     <string name="irregular_slot_edit_title">Editar hora predeterminada del periodo %1$d</string>
     <string name="irregular_duration_label">Duración (minutos)</string>
+    <string name="edge_node_label">Periodo %1$d</string>
+    <string name="edge_insert_start_label">Hora de inicio</string>
+    <string name="edge_insert_end_label">Hora de fin</string>
+    <string name="edge_insert_ok">Añadir</string>
 </resources>

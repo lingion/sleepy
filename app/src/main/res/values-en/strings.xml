@@ -661,4 +661,8 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="irregular_duration_label">Duration (minutes)</string>
     <string name="error_no_version_found">No version found from main site or mirror</string>
     <string name="error_empty_download">Downloaded file is empty</string>
+    <string name="edge_node_label">Period %1$d</string>
+    <string name="edge_insert_start_label">Start time</string>
+    <string name="edge_insert_end_label">End time</string>
+    <string name="edge_insert_ok">Add</string>
 </resources>

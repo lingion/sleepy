@@ -1060,7 +1060,7 @@ private fun MeetingBlockEditor(
                     text = if (selected != null && selected.exists) {
                         stringResource(
                             R.string.edge_node_range,
-                            stringResource(R.string.edge_node_label, selected.node),
+                            selected.node,
                             selected.start,
                             selected.end
                         )
@@ -1311,7 +1311,7 @@ private fun EdgeCandidatePickerDialog(
                             text = if (c.exists) {
                                 stringResource(
                                     R.string.edge_node_range,
-                                    stringResource(R.string.edge_node_label, c.node),
+                                    c.node,
                                     c.start,
                                     c.end
                                 )

@@ -480,4 +480,82 @@ class IrregularScenarioTest {
         assertNull(TimeTableUtils.timeToFractionalRows("xx", "08:26", base))
         assertNull(TimeTableUtils.timeToFractionalRows("09:00", "08:00", base))
     }
+
+    /** 边界精确对齐: 08:00-08:45 = 恰好第 1 节整行 → (0.0, 1.0). */
+    @Test
+    fun fractional_exactRowBoundaries() {
+        val (s, e) = TimeTableUtils.timeToFractionalRows("08:00", "08:45", base)!!
+        assertEquals(0f, s, 0.0001f)
+        assertEquals(1f, e, 0.0001f)
+    }
+
+    /**
+     * 交叉验证不变量(与坐标公式无关的第二条路径):
+     * 「比例坐标 → 按各行时长折回分钟」必须等于「课程时钟区间与各节次时间窗的交叠分钟数」。
+     * 前者走 rows 映射, 后者走集合求交 — 两者独立计算, 相等才算比例忠实。
+     */
+    @Test
+    fun fractional_roundTrip_equalsClockWindowOverlap() {
+        val slots = TimeTableUtils.timeSlotsFor(base)
+        val cases = listOf(
+            "08:01" to "08:26", "08:00" to "08:45", "08:20" to "10:20",
+            "13:00" to "14:20", "19:30" to "21:35", "10:00" to "11:40",
+            "07:00" to "23:30"
+        )
+        for ((st, et) in cases) {
+            val (s, e) = TimeTableUtils.timeToFractionalRows(st, et, slots)!!
+            assertTrue("$st 起点在网格内", s >= 0f)
+            assertTrue("$et 终点在网格内", e <= slots.size.toFloat())
+            assertTrue("$st-$et 顺序单调", s < e)
+            // 路径 A: 比例坐标按各行时长折回分钟
+            var byRows = 0f
+            var i = kotlin.math.floor(s).toInt()
+            while (i < e) {
+                val lo = maxOf(s, i.toFloat())
+                val hi = minOf(e, (i + 1).toFloat())
+                byRows += (hi - lo) * rowMinutes(slots[i])
+                i++
+            }
+            // 路径 B: 时钟区间与节次时间窗逐一求交
+            val stT = java.time.LocalTime.parse(st)
+            val etT = java.time.LocalTime.parse(et)
+            var byWindows = 0L
+            for (slot in slots) {
+                val lo = maxOf(stT, slot.start)
+                val hi = minOf(etT, slot.end)
+                if (hi > lo) byWindows += java.time.temporal.ChronoUnit.MINUTES.between(lo, hi)
+            }
+            assertEquals(
+                "$st-$et 比例折回分钟应等于时间窗交叠分钟",
+                byWindows.toFloat(), byRows, 1.5f
+            )
+        }
+    }
+
+    /** 每行时长(分钟) — 交叉验证测试用的独立取值路径. */
+    private fun rowMinutes(slot: com.lingion.sleepy.ui.component.TimeSlot): Float =
+        java.time.temporal.ChronoUnit.MINUTES.between(slot.start, slot.end).toFloat()
+
+    // ===============================================================
+    // issue#23 真机闪退复现: edge_node_range 格式串首占位符是 %1$d(Int),
+    // 调用点曾把 edge_node_label 生成的 String ("第 0 节") 塞进去 →
+    // String.format 抛 IllegalFormatConversionException → 弹窗组合即崩。
+    // 此测试锁定格式契约: 首参必须 Int。
+    // ===============================================================
+
+    @Test
+    fun formatContract_edgeNodeRange_firstArgMustBeInt() {
+        val fmt = "第 %1\$d 节 %2\$s – %3\$s"  // R.string.edge_node_range (6 语同构)
+        var threw: Exception? = null
+        try {
+            String.format(fmt, "第 0 节", "07:30", "08:00")
+        } catch (e: Exception) {
+            threw = e
+        }
+        assertTrue(
+            "String 塞进 %d 必须抛 IllegalFormatConversionException",
+            threw is java.util.IllegalFormatConversionException
+        )
+        assertEquals("正确形态: 首参 Int", "第 0 节 07:30 – 08:00", String.format(fmt, 0, "07:30", "08:00"))
+    }
 }

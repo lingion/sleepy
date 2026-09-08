@@ -652,4 +652,8 @@
     <string name="irregular_node_required">時段 %1$d 綁定的非常規節次無效，請重新選擇</string>
     <string name="irregular_slot_edit_title">編輯第 %1$d 節預設時間</string>
     <string name="irregular_duration_label">持續時長（分鐘）</string>
+    <string name="edge_node_label">第 %1$d 節</string>
+    <string name="edge_insert_start_label">起始時間</string>
+    <string name="edge_insert_end_label">結束時間</string>
+    <string name="edge_insert_ok">新增</string>
 </resources>

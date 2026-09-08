@@ -654,4 +654,8 @@
     <string name="irregular_node_required">ブロック %1$d の非定期時限が無効です。選び直してください</string>
     <string name="irregular_slot_edit_title">%1$d 限の既定時刻を編集</string>
     <string name="irregular_duration_label">連続時間（分）</string>
+    <string name="edge_node_label">%1$d 限</string>
+    <string name="edge_insert_start_label">開始時刻</string>
+    <string name="edge_insert_end_label">終了時刻</string>
+    <string name="edge_insert_ok">追加</string>
 </resources>
