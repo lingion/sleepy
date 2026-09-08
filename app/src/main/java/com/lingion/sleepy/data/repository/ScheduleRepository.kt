@@ -187,7 +187,9 @@ class ScheduleRepository(private val db: AppDatabase) {
 
     suspend fun deleteCourse(id: Long) {
         captureForUndo()
+        val course = courseDao.getById(id) ?: return
         courseDao.deleteById(id)
+        reclaimUnusedEdgeNodes(course.tableId)
         onDataChanged()
         pruneDefaultTopPrefs()
     }
@@ -197,8 +199,40 @@ class ScheduleRepository(private val db: AppDatabase) {
         captureForUndo()
         if (groupId.isBlank()) return
         courseDao.deleteByGroupId(tableId, groupId)
+        reclaimUnusedEdgeNodes(tableId)
         onDataChanged()
         pruneDefaultTopPrefs()
+    }
+
+    /**
+     * issue#23 修: 删课/删组后扫描该表 timeJson, 回收所有无人引用的边缘节次节点.
+     * 直接走 tableDao.update 绕过 updateTable 的 captureForUndo — 撤回时上层
+     * (deleteCourse 等)已捕获了"删前完整快照(含完整 timeJson)", 撤回 = 回到删前,
+     * 课程和节点都复原, 此处不应再叠加中间快照.
+     */
+    private suspend fun reclaimUnusedEdgeNodes(tableId: Long) {
+        val table = tableDao.getById(tableId) ?: return
+        val remaining = courseDao.getByTable(tableId)
+        val used = mutableSetOf<Int>()
+        remaining.forEach { c ->
+            val effStart = if (c.ownTime) {
+                com.lingion.sleepy.util.TimeTableUtils.timeToNode(
+                    c.startTime, c.endTime, table.timeJson
+                )?.first ?: c.startNode
+            } else c.startNode
+            val end = (effStart + c.step - 1).coerceAtLeast(effStart)
+            for (n in effStart..end) used.add(n)
+            // 防御: 存储的 startNode 也算"用户意图", 即便 normalize 后位置不同
+            // 也保留节点 — 防止误回收导致课崩.
+            val storedEnd = c.startNode + c.step - 1
+            for (n in c.startNode..storedEnd) used.add(n)
+        }
+        val reclaimed = com.lingion.sleepy.util.TimeTableUtils.reclaimUnusedEdgeNodes(
+            table.timeJson, used
+        )
+        if (reclaimed != table.timeJson) {
+            tableDao.update(table.copy(timeJson = reclaimed))
+        }
     }
 
     /**
@@ -213,6 +247,8 @@ class ScheduleRepository(private val db: AppDatabase) {
         if (diff.toDelete.isNotEmpty()) courseDao.deleteByIds(diff.toDelete)
         if (diff.toUpdate.isNotEmpty()) courseDao.updateAll(diff.toUpdate)
         if (diff.toInsert.isNotEmpty()) courseDao.insertAll(diff.toInsert)
+        // issue#23 修: 编辑删行也要回收(否则编辑掉 edge 上的 block 后节点残留)
+        if (diff.toDelete.isNotEmpty()) reclaimUnusedEdgeNodes(tableId)
         onDataChanged()
     }
 
