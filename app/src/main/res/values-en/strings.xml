@@ -252,8 +252,6 @@
     <string name="slot_step_positive">Slot %1$d consecutive periods must be greater than 0</string>
     <string name="slot_step_exceeds_max">Slot %1$d periods %2$d–%3$d exceed the timetable\'s max period (%4$d)</string>
     <string name="slot_step_clamped_hint">Input exceeds the max period (%3$d). To add more periods, go to Timetable Manager and edit the current timetable\'s period count</string>
-    <string name="slot_time_format">Slot %1$d start/end time should be HH:mm format</string>
-    <string name="slot_time_order">Slot %1$d start time must be before end time</string>
     <string name="conflict_detail_title">Conflicts with existing courses</string>
     <string name="conflict_detail_save_anyway">Save anyway</string>
     <string name="conflict_detail_go_back">Go back</string>
@@ -650,6 +648,21 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <!-- issue#23 / manual-course "irregular" toggle (2026-09-06) -->
     <string name="irregular_time_format">Irregular start/end time should be HH:mm format</string>
     <string name="irregular_time_order">Irregular start time must be before end time</string>
+    <string name="edge_node_range">Period %1$d %2$s – %3$s</string>
+    <string name="irregular_node_switch">Irregular period</string>
+    <string name="irregular_node_switch_sub">Bind to an edge slot outside the standard grid (period 0 / -1 / N+1)</string>
+    <string name="irregular_time_switch">Irregular time</string>
+    <string name="irregular_time_switch_sub">Override start/end for this block; may fall entirely outside the slot window</string>
+    <string name="irregular_node_pick">Choose period</string>
+    <string name="irregular_node_new">Period %1$d (new)</string>
+    <string name="irregular_node_new_title">New period %1$d</string>
+    <string name="irregular_node_required">Invalid irregular period in block %1$d; choose again</string>
+    <string name="irregular_slot_edit_title">Edit default time of period %1$d</string>
+    <string name="irregular_duration_label">Duration (minutes)</string>
     <string name="error_no_version_found">No version found from main site or mirror</string>
     <string name="error_empty_download">Downloaded file is empty</string>
+    <string name="edge_node_label">Period %1$d</string>
+    <string name="edge_insert_start_label">Start time</string>
+    <string name="edge_insert_end_label">End time</string>
+    <string name="edge_insert_ok">Add</string>
 </resources>

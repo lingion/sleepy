@@ -5,6 +5,7 @@ import com.lingion.sleepy.ui.component.TimeSlot
 import org.json.JSONArray
 import org.json.JSONObject
 import java.time.LocalTime
+import java.time.temporal.ChronoUnit
 
 /**
  * 时间表 (timeJson) 解析与查询工具。
@@ -127,6 +128,49 @@ object TimeTableUtils {
         if (endNode < startNode) return null
         return Pair(startNode, endNode - startNode + 1)
     }
+
+    // ------------------------------------------------------------------
+    // issue#23 §5 渲染: 非常规时间胶囊按真实分钟在网格内按比例定位
+    // ------------------------------------------------------------------
+
+    /**
+     * 把课程起止时间映射到「槽位行坐标」: 1.0 = 一整行, 小数部分 = 该槽位内按时间的比例。
+     * 返回 (startFrac, endFrac); 时间不可解析 / 结束≤开始 / 映射退化返回 null,
+     * 调用方应退回整格吸附(timeToNode)。
+     *
+     * 规则:
+     * - 时间落在某槽位 [start, end] 内 → 行下标 + 槽内比例
+     * - 落在两槽位空隙 → 归属下一行顶端
+     * - 早于首槽位 → 0.0; 晚于末槽位 → 槽位总数(网格底边)
+     */
+    fun timeToFractionalRows(startTime: String, endTime: String, slots: List<TimeSlot>): Pair<Float, Float>? {
+        if (slots.isEmpty()) return null
+        val st = runCatching { LocalTime.parse(startTime) }.getOrNull() ?: return null
+        val et = runCatching { LocalTime.parse(endTime) }.getOrNull() ?: return null
+        if (et <= st) return null
+        fun pos(t: LocalTime): Float = when {
+            t <= slots.first().start -> 0f
+            t >= slots.last().end -> slots.size.toFloat()
+            else -> {
+                val i = slots.indexOfFirst { t >= it.start && t <= it.end }
+                if (i >= 0) {
+                    val dur = ChronoUnit.MINUTES.between(slots[i].start, slots[i].end).coerceAtLeast(1)
+                    i + ChronoUnit.MINUTES.between(slots[i].start, t).toFloat() / dur
+                } else {
+                    // 空隙: 全部归属下一行顶端
+                    slots.indexOfFirst { it.start > t }.toFloat()
+                }
+            }
+        }
+        val startFrac = pos(st)
+        val endFrac = pos(et)
+        if (endFrac <= startFrac) return null
+        return startFrac to endFrac
+    }
+
+    /** 便捷重载: 直接传 timeJson 字符串。 */
+    fun timeToFractionalRows(startTime: String, endTime: String, timeJson: String): Pair<Float, Float>? =
+        timeToFractionalRows(startTime, endTime, timeSlotsFor(timeJson))
 
     /** 便捷: 拿 TimeTableEntity 直接出 slots */
     fun timeSlotsFor(table: TimeTableEntity?): List<TimeSlot> =
@@ -332,48 +376,6 @@ object TimeTableUtils {
     }
 
     /**
-     * 非常规时间优先级解析 (issue#23 场景4: "非常规的课程，它同时也是一个常规的课程"):
-     *   1. 课程落在边缘节点上 → 边缘节点自身的 start/end 赢, 不套全局非常规时间
-     *      (第 0 节 07:30-08:00 的课就显示 07:30-08:00, 哪怕全局非常规时间开着)
-     *   2. 该 block 用 ByClock 手填时间 → 手填时间赢 (ownTime=true)
-     *   3. 全局非常规时间开启 → 全局 start/end 赢 (ownTime=true)
-     *   4. 都不满足 → 走标准节次渲染, ownTime=false
-     *
-     * step 参数当前不参与判定 (边缘节点是单节), 保留在签名中以备 block 跨多节点时扩展。
-     */
-    fun resolveIrregularCourseTime(
-        startNode: Int,
-        step: Int,
-        modeIsByClock: Boolean,
-        blockStartTime: String,
-        blockEndTime: String,
-        irregularEnabled: Boolean,
-        irregularStartTime: String,
-        irregularEndTime: String,
-        timeJson: String
-    ): IrregularTimeResolution {
-        val rows = parseTimeSlotRows(timeJson)
-        val edge = rows.firstOrNull { it.node == startNode && it.edgeClass != null }
-        if (edge != null) {
-            return IrregularTimeResolution(ownTime = false, startTime = edge.start, endTime = edge.end)
-        }
-        if (modeIsByClock) {
-            return IrregularTimeResolution(ownTime = true, startTime = blockStartTime, endTime = blockEndTime)
-        }
-        if (irregularEnabled) {
-            return IrregularTimeResolution(ownTime = true, startTime = irregularStartTime, endTime = irregularEndTime)
-        }
-        return IrregularTimeResolution(ownTime = false, startTime = "", endTime = "")
-    }
-
-    /** [resolveIrregularCourseTime] 的结果: ownTime=true 时 startTime/endTime 有值, false 时走标准节次 */
-    data class IrregularTimeResolution(
-        val ownTime: Boolean,
-        val startTime: String,
-        val endTime: String
-    )
-
-    /**
      * 列出某方向的边缘节次节点号, 按节点号排序:
      *   - Before: 降序 (0, -1, -2, ...) — 最近插入的在前, 与用户加节习惯一致
      *   - After:  升序 (13, 14, 15, ...) — 最近插入的在前
@@ -386,6 +388,85 @@ object TimeTableUtils {
             EdgeClass.Before -> nodes.sortedDescending()
             EdgeClass.After -> nodes.sorted()
         }
+    }
+
+    // ------------------------------------------------------------------
+    // issue#23 §2.2 候选集合 + §2.1 槽位默认时间编辑 + §3.3 effective 解析
+    // ------------------------------------------------------------------
+
+    /**
+     * issue#23 §3.3 逐卡 effective 时间解析 — validateCourseDraft / buildCourseEntity /
+     * blockRangeMinutes 共用契约, 四处解析必须一致:
+     *   1. isIrregularTime=true → 课程自带覆盖起止直接生效 (不受槽位默认时间窗口约束, §2.3)
+     *   2. startNode 为边缘槽位 (edgeClass != null) → 槽位默认时间
+     *   3. 否则 → 标准 1..N 节次时间 (startNode..startNode+step-1)
+     * 无法解析 (时间无效 / 节次不存在) → null, 由调用方校验报错, 不静默给值。
+     */
+    fun effectiveCourseTime(
+        isIrregularTime: Boolean,
+        startTime: String,
+        endTime: String,
+        startNode: Int,
+        step: Int,
+        timeJson: String
+    ): Pair<String, String>? {
+        if (isIrregularTime) {
+            val s = runCatching { LocalTime.parse(startTime.trim()) }.getOrNull() ?: return null
+            val e = runCatching { LocalTime.parse(endTime.trim()) }.getOrNull() ?: return null
+            return s.toString() to e.toString()
+        }
+        val rows = parseTimeSlotRows(timeJson)
+        val first = rows.firstOrNull { it.node == startNode } ?: return null
+        val last = rows.firstOrNull { it.node == startNode + step - 1 } ?: return null
+        return first.start to last.end
+    }
+
+    /** 标准 1..N 连续节次上界 (edge 行不参与) — 逐卡重构后标准卡片只允许 1..maxStd */
+    fun maxStandardNode(timeJson: String): Int = maxContiguousFromOne(parseTimeSlotRows(timeJson))
+
+
+    /** 候选节次: exists=true = 复用已有槽位(带默认时间); exists=false = 新建(时间待用户填) */
+    data class EdgeCandidate(
+        val node: Int,
+        val start: String,
+        val end: String,
+        val exists: Boolean
+    ) {
+        /** 候选归属: Before 组节点 <= 0, After 组节点 > 0 (edgeCandidates 构造保证) */
+        val edgeClass: EdgeClass
+            get() = if (node <= 0) EdgeClass.Before else EdgeClass.After
+    }
+
+    /**
+     * 候选节次集合 (§2.2): Before 组升序(-2,-1,0...) + After 组升序(N+1,N+2...)。
+     * 每组 = 该方向全部已有边缘槽位 + 紧贴边界的一个「新建」候选;
+     * 无任何槽位时新建候选 = 0 / maxContiguous+1。禁止跳号。
+     */
+    fun edgeCandidates(timeJson: String): List<EdgeCandidate> {
+        val rows = parseTimeSlotRows(timeJson)
+        val beforeSlots = rows.filter { it.edgeClass == EdgeClass.Before }.sortedBy { it.node }
+        val afterSlots = rows.filter { it.edgeClass == EdgeClass.After }.sortedBy { it.node }
+        val maxStd = maxContiguousFromOne(rows)
+        val newBefore = (beforeSlots.minOfOrNull { it.node } ?: 1) - 1
+        val newAfter = (afterSlots.maxOfOrNull { it.node } ?: maxStd) + 1
+        val beforeGroup = listOf(EdgeCandidate(newBefore, "", "", false)) +
+            beforeSlots.map { EdgeCandidate(it.node, it.start, it.end, true) }
+        val afterGroup = afterSlots.map { EdgeCandidate(it.node, it.start, it.end, true) } +
+            EdgeCandidate(newAfter, "", "", false)
+        return beforeGroup + afterGroup
+    }
+
+    /**
+     * 修改某边缘槽位的默认时间 — 仅 edgeClass != null 的行可改;
+     * 节点不存在或为标准行时原样返回入参 (调用方无需预检)。
+     */
+    fun updateEdgeNodeTimes(timeJson: String, node: Int, start: String, end: String): String {
+        val rows = parseTimeSlotRows(timeJson)
+        val target = rows.firstOrNull { it.node == node } ?: return timeJson
+        if (target.edgeClass == null) return timeJson
+        return buildTimeJsonFromRows(
+            rows.map { if (it.node == node) it.copy(start = start, end = end) else it }
+        )
     }
 
     private fun smartStartDefault(node: Int): String = when {

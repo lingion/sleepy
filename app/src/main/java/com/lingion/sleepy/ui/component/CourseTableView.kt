@@ -301,8 +301,18 @@ fun CardsGridView(
                         val steps = course.step.coerceAtLeast(1)
                             .coerceAtMost(timeSlots.size - nodeIdx)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
-                        val cardY = rowH * nodeIdx
-                        val cardH = rowH * steps - gapH
+                        // issue#23 §5: 非常规时间(ownTime)课按真实分钟比例定位(1.0 = 一整行);
+                        // 时间映射失败退回整格吸附(normalizeNode 已反算 nodeIdx/steps)
+                        val frac = if (course.ownTime) TimeTableUtils.timeToFractionalRows(
+                            course.startTime, course.endTime, timeSlots
+                        ) else null
+                        val cardY = frac?.let { rowH * it.first } ?: rowH * nodeIdx
+                        val cardH = if (frac != null) {
+                            // 按比例, 但保底 0.3 行避免过短课胶囊塌缩到不可点
+                            (rowH * (frac.second - frac.first) - gapH).coerceAtLeast(rowH * 0.3f)
+                        } else {
+                            rowH * steps - gapH
+                        }
 
                         CourseOverlayCard(
                             course = course,

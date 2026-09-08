@@ -246,8 +246,6 @@
     <string name="slot_step_positive">Los períodos consecutivos del horario %1$d deben ser mayores que 0</string>
     <string name="slot_step_exceeds_max">El horario %1$d ocupa los períodos %2$d–%3$d y supera el máximo del horario (%4$d)</string>
     <string name="slot_step_clamped_hint">La entrada supera el máximo de períodos (el horario actual tiene %3$d). Para añadir más períodos, ve a Gestión de horarios y edita el número de períodos del horario actual</string>
-    <string name="slot_time_format">El formato de hora inicio/fin del horario %1$d debe ser HH:mm</string>
-    <string name="slot_time_order">La hora de inicio del horario %1$d debe ser anterior a la hora de fin</string>
     <string name="conflict_detail_title">Conflicto con cursos existentes</string>
     <string name="conflict_detail_save_anyway">Guardar igualmente</string>
     <string name="conflict_detail_go_back">Volver</string>
@@ -643,4 +641,19 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="error_unknown">Error desconocido</string>
     <string name="error_no_version_found">No se encontró versión en sitio principal ni espejo</string>
     <string name="error_empty_download">El archivo descargado está vacío</string>
+    <string name="edge_node_range">Periodo %1$d %2$s – %3$s</string>
+    <string name="irregular_node_switch">Franja no estándar</string>
+    <string name="irregular_node_switch_sub">Enlaza a un hueco fuera de la cuadrícula estándar (periodo 0 / -1 / N+1)</string>
+    <string name="irregular_time_switch">Hora no estándar</string>
+    <string name="irregular_time_switch_sub">Anula el inicio/fin solo de este bloque; puede quedar fuera de la ventana del hueco</string>
+    <string name="irregular_node_pick">Elegir periodo</string>
+    <string name="irregular_node_new">Periodo %1$d (nuevo)</string>
+    <string name="irregular_node_new_title">Nuevo periodo %1$d</string>
+    <string name="irregular_node_required">Franja no estándar no válida en el bloque %1$d; vuelve a elegir</string>
+    <string name="irregular_slot_edit_title">Editar hora predeterminada del periodo %1$d</string>
+    <string name="irregular_duration_label">Duración (minutos)</string>
+    <string name="edge_node_label">Periodo %1$d</string>
+    <string name="edge_insert_start_label">Hora de inicio</string>
+    <string name="edge_insert_end_label">Hora de fin</string>
+    <string name="edge_insert_ok">Añadir</string>
 </resources>

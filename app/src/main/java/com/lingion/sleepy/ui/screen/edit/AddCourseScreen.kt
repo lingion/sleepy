@@ -26,6 +26,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.AlertDialog
@@ -80,12 +81,35 @@ import kotlinx.coroutines.launch
 import org.json.JSONArray
 import java.time.LocalTime
 
-enum class MeetingInputMode { ByNode, ByClock }
-
-/** issue#23: UI 工作副本 — 用户在「课表外节次」里点 + 弹对话框填的边缘节次,
- *  暂存在此处,落库前不污染 timeJson,保存时串接 [TimeTableUtils.insertEdgeNode] */
+/** issue#23 逐卡: UI 工作副本 — 卡片勾「非常规节次」新建槽位时暂存,
+ *  落库前不污染 timeJson, 保存时串接 [TimeTableUtils.insertEdgeNode] 一次性写回。
+ *  ownerBlockId = 创建它的卡片 id, 卡片取消勾选且无他卡引用时回收暂存项。 */
 internal data class PendingEdgeInsert(
     val edgeClass: TimeTableUtils.EdgeClass,
+    /** 用户所点的候选编号 — 暂存期编号簿记, 落库仍由 insertEdgeNode 按序分配 */
+    val node: Int = 0,
+    val start: String,
+    val end: String,
+    val ownerBlockId: Int = 0
+)
+
+/** issue#23 逐卡: 已有槽位默认时间编辑 — 保存时串接 [TimeTableUtils.updateEdgeNodeTimes]
+ *  写回课表, 全局生效于所有引用该槽位的课程。 */
+internal data class EdgeSlotEdit(
+    val node: Int,
+    val start: String,
+    val end: String
+)
+
+/** issue#23 逐卡: 「新建槽位」确认弹层的目标 — 哪张卡片选择了哪个候选 */
+private data class NewSlotTarget(
+    val block: MeetingBlockDraft,
+    val candidate: TimeTableUtils.EdgeCandidate
+)
+
+/** issue#23 逐卡: 已有槽位默认时间编辑弹层的目标 */
+internal data class SlotEditTarget(
+    val node: Int,
     val start: String,
     val end: String
 )
@@ -93,11 +117,13 @@ internal data class PendingEdgeInsert(
 private class MeetingBlockDraft(
     val id: Int,
     val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
-    initialMode: MeetingInputMode,
     startNode: Int,
     step: Int,
     startTime: String,
     endTime: String,
+    isIrregularNode: Boolean = false,
+    selectedEdgeNode: Int = 0,
+    isIrregularTime: Boolean = false,
     startWeek: Int = 1,
     endWeek: Int = 16,
     weekType: Int = 0,
@@ -107,11 +133,12 @@ private class MeetingBlockDraft(
     color: String = "",
     colorMode: Int = com.lingion.sleepy.data.entity.CourseColorMode.GROUP
 ) {
-    var mode by mutableStateOf(initialMode)
     var startNode by mutableStateOf(startNode)
     var step by mutableStateOf(step)
     var startTime by mutableStateOf(startTime)
     var endTime by mutableStateOf(endTime)
+    /** issue#23 §2.4 B 规则: 持续时长(分钟)文本 — 改起止重算, 改时长反推结束 */
+    var durationText by mutableStateOf("")
     var startWeek by mutableStateOf(startWeek)
     var endWeek by mutableStateOf(endWeek)
     var weekType by mutableStateOf(weekType)
@@ -120,9 +147,25 @@ private class MeetingBlockDraft(
     var noteState by mutableStateOf(note)
     var colorState by mutableStateOf(color)
     var colorModeState by mutableStateOf(colorMode)
+    /** issue#23 逐卡: 绑定边缘槽位 (0/-1/N+1…); true 时位置=selectedEdgeNode, step 锁 1 */
+    var isIrregularNode by mutableStateOf(isIrregularNode)
+    var selectedEdgeNode by mutableIntStateOf(selectedEdgeNode)
+    /** issue#23 逐卡: 本卡覆盖起止时间 (与落库 ownTime 同值, §5 契约) */
+    var isIrregularTime by mutableStateOf(isIrregularTime)
     // issue#9 延伸: NumberField 把超界输入静默夹紧时, 置 true → 编辑器顶红块提示
     // 用户感知到"我输 100 被改成了 2", 而不是无报错地接受了错值
     var clamped by mutableStateOf(false)
+
+    /** §3.3 契约: 本卡生效起止 = 覆盖值 / 槽位默认 / 标准节次时间, 单一出口 */
+    fun effectiveRange(timeJson: String): Pair<String, String>? =
+        TimeTableUtils.effectiveCourseTime(
+            isIrregularTime = isIrregularTime,
+            startTime = startTime,
+            endTime = endTime,
+            startNode = if (isIrregularNode) selectedEdgeNode else startNode,
+            step = if (isIrregularNode) 1 else step,
+            timeJson = timeJson
+        )
 }
 
 private data class ValidationIssue(
@@ -146,43 +189,28 @@ fun AddCourseScreen(
     val fieldShape = SleepyTheme.fieldShape
     val fieldColors = SleepyTheme.fieldColors()
 
-    // 待落库的边缘节次 — UI 工作副本,落库前不污染 timeJson;保存时串接 insertEdgeNode 后一次性 updateTable
+    // issue#23 逐卡: 待落库的新建槽位 / 已有槽位默认时间编辑 — UI 工作副本,
+    // 落库前不污染 timeJson; 保存时串接 insertEdgeNode / updateEdgeNodeTimes 后一次性 updateTable
     val pendingEdgeInserts = remember(editingCourse?.id) {
         mutableStateListOf<PendingEdgeInsert>()
     }
+    val pendingEdgeEdits = remember(editingCourse?.id) {
+        mutableStateListOf<EdgeSlotEdit>()
+    }
 
-    // issue#9: 之前 startNode/step 硬编码 max=12/8, 12 节连排时仍允许 step=8 → startNode=12, step=8
-    // 会显示成 12-19 越过实际节数。改为从当前 timeJson 解析实际节点数, 默认 12。
-    val maxNode = remember(currentTable?.id, currentTable?.timeJson, pendingEdgeInserts.size) {
-        try {
-            val baseRows = TimeTableUtils.parseTimeSlotRows(
-                currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-            )
-            val withPending = pendingEdgeInserts.fold(baseRows) { rows, insert ->
-                val next = TimeTableUtils.insertEdgeNode(
-                    TimeTableUtils.buildTimeJsonFromRows(rows),
-                    insert.edgeClass, insert.start, insert.end
-                )
-                TimeTableUtils.parseTimeSlotRows(next)
-            }
-            withPending.maxOfOrNull { it.node } ?: 12
-        } catch (_: Exception) { 12 }
+    // issue#9/issue#23: 生效时间表 = 课表 timeJson + 本次会话暂存的新建槽位 + 槽位时间编辑。
+    // 候选集合/槽位时间展示/校验/落库全部以它为唯一依据。
+    val effectiveTimeJson = run {
+        val base = currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+        val withInserts = pendingEdgeInserts.fold(base) { json, insert ->
+            TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
+        }
+        pendingEdgeEdits.fold(withInserts) { json, edit ->
+            TimeTableUtils.updateEdgeNodeTimes(json, edit.node, edit.start, edit.end)
+        }
     }
-    val minNode = remember(currentTable?.id, currentTable?.timeJson, pendingEdgeInserts.size) {
-        try {
-            val baseRows = TimeTableUtils.parseTimeSlotRows(
-                currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-            )
-            val withPending = pendingEdgeInserts.fold(baseRows) { rows, insert ->
-                val next = TimeTableUtils.insertEdgeNode(
-                    TimeTableUtils.buildTimeJsonFromRows(rows),
-                    insert.edgeClass, insert.start, insert.end
-                )
-                TimeTableUtils.parseTimeSlotRows(next)
-            }
-            withPending.minOfOrNull { it.node } ?: 1
-        } catch (_: Exception) { 1 }
-    }
+    // 标准 1..N 连续节次上界 — 标准卡片 startNode/step 的取值范围
+    val maxStd = remember(effectiveTimeJson) { TimeTableUtils.maxStandardNode(effectiveTimeJson) }
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
     // issue#22: teacher/room/note/color/colorMode 已下沉到 MeetingBlockDraft(每个时段独立编辑)
@@ -190,20 +218,10 @@ fun AddCourseScreen(
     var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
     var nextBlockId by remember(editingCourse?.id) { mutableIntStateOf(2) }
     var validationIssues by remember { mutableStateOf<List<ValidationIssue>>(emptyList()) }
-    // issue#23: 非常规开关(课表外节次 + 非标准时长)。默认 OFF,开启后必须
-    // 至少启用其中一项(添加了边缘节次 或 设置有效的非常规起止时间)
-    var irregularEnabled by remember(editingCourse?.id) { mutableStateOf(false) }
-    // 非常规开启后的全局非常规起止时间 — 替代 block 内 ByClock 行(用户原话:
-    // 「你选出了这个非常规时间, 那上面那个开始时间和结束时间就不要了把它隐藏起来,
-    //   在下面的'非常规时间'选项卡里单独出一个'开始时间''结束时间'」)。
-    // 所有 block 在非常规模式下共用同一对起止时间, 通过 block.startNode/step 决定网格位置。
-    var irregularNodeStartTime by remember(editingCourse?.id) { mutableStateOf("08:00") }
-    var irregularNodeEndTime by remember(editingCourse?.id) { mutableStateOf("09:40") }
-    // 待落库的边缘节次 — UI 工作副本,落库前不污染 timeJson;保存时串接 insertEdgeNode 后一次性 updateTable
-    var showEdgeDialog by remember { mutableStateOf(false) }
-    var pendingDialogClass by remember { mutableStateOf<TimeTableUtils.EdgeClass?>(null) }
-    var pendingDialogStart by remember { mutableStateOf("07:30") }
-    var pendingDialogEnd by remember { mutableStateOf("08:15") }
+    // issue#23 逐卡: 三个弹层目标 — 顶层持状态, 内容按卡片渲染
+    var edgePickTarget by remember { mutableStateOf<MeetingBlockDraft?>(null) }
+    var newSlotTarget by remember { mutableStateOf<NewSlotTarget?>(null) }
+    var slotEditTarget by remember { mutableStateOf<SlotEditTarget?>(null) }
     // 颜色选择器改为按 block 持有状态(每节次独立弹窗) — 删除顶层 showColorPicker
     // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
     // rememberSaveable: 旋转/配置变更时 Activity 重建, remember 会丢明细列表导致弹窗消失
@@ -213,7 +231,7 @@ fun AddCourseScreen(
         mutableStateListOf(initialMeetingBlock(editingCourse))
     }
 
-    // 编辑模式：查同 groupId 全部课程，按时段分组回填多个 block
+    // 编辑模式：查同 groupId 全部课程，按时段分组回填多个 block (issue#22 分组规则不变)
     LaunchedEffect(editingCourse?.groupId) {
         val eg = editingCourse
         if (eg != null && eg.groupId.isNotBlank()) {
@@ -223,24 +241,26 @@ fun AddCourseScreen(
                 val slots = groupSlotsForEdit(groupCourses)
                 meetingBlocks.clear()
                 var bid = 1
+                // issue#23 §4.3: startNode 落在边缘槽位 → 点亮该卡「非常规节次」;
+                // ownTime=true → 点亮「非常规时间」并预填课程起止 (旧 ByClock 并入此开关)
+                val edgeNodes = TimeTableUtils.parseTimeSlotRows(
+                    currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
+                ).filter { it.edgeClass != null }.map { it.node }.toSet()
                 for (courses in slots) {
                     val first = courses.first()
-                    // ownTime=true 的课程一律视为非常规(起止时间走全局非常规面板而非 block.ByClock)
-                    if (first.ownTime) {
-                        irregularEnabled = true
-                        irregularNodeStartTime = first.startTime.ifBlank { "08:00" }
-                        irregularNodeEndTime = first.endTime.ifBlank { "09:40" }
-                    }
+                    val isEdge = first.startNode in edgeNodes
                     meetingBlocks.add(MeetingBlockDraft(
                         id = bid++,
                         days = androidx.compose.runtime.mutableStateListOf<Int>().apply {
                             addAll(courses.map { it.day }.distinct().sorted())
                         },
-                        initialMode = if (first.ownTime) MeetingInputMode.ByClock else MeetingInputMode.ByNode,
                         startNode = first.startNode,
                         step = first.step,
                         startTime = first.startTime.ifBlank { "08:00" },
                         endTime = first.endTime.ifBlank { "09:40" },
+                        isIrregularNode = isEdge,
+                        selectedEdgeNode = if (isEdge) first.startNode else 0,
+                        isIrregularTime = first.ownTime,
                         startWeek = first.startWeek,
                         endWeek = first.endWeek,
                         weekType = first.type,
@@ -250,6 +270,11 @@ fun AddCourseScreen(
                         color = first.color,
                         colorMode = first.colorMode
                     ))
+                    // §2.4: 覆盖时间的卡补派生时长文本
+                    val b = meetingBlocks.last()
+                    if (b.isIrregularTime) {
+                        b.durationText = minutesBetween(b.startTime, b.endTime)?.toString() ?: ""
+                    }
                 }
             }
         }
@@ -261,26 +286,15 @@ fun AddCourseScreen(
     val dayNames = context.resources.getStringArray(R.array.day_names)
     val conflictTemplate = stringResource(R.string.conflict_detail_line)
 
-    // v7.10.16u: 保存主流程(校验 → 草稿 → 冲突明细检查 → 落库)。
-    // forceAfterConflict=false 首次点击: 有冲突弹明细不落库;
-    // =true 弹窗「仍然保存」回调: 跳过冲突检查直接落库。
+    // 保存主流程: 校验 → 草稿 → 冲突明细 → 落库。forceAfterConflict = 冲突弹窗「仍然保存」回调
     fun performSave(forceAfterConflict: Boolean) {
-        val baseTimeJson = currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-        val effectiveTimeJson = pendingEdgeInserts.fold(baseTimeJson) { json, insert ->
-            TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
-        }
         val issues = validateCourseDraft(
             courseName = courseName,
             blocks = meetingBlocks,
             startWeek = startWeek,
             endWeek = endWeek,
-            table = currentTable,
             timeJson = effectiveTimeJson,
-            context = context,
-            irregularEnabled = irregularEnabled,
-            pendingEdgeInserts = pendingEdgeInserts,
-            irregularStartTime = irregularNodeStartTime,
-            irregularEndTime = irregularNodeEndTime
+            context = context
         )
         validationIssues = issues
         if (issues.isNotEmpty()) return
@@ -293,11 +307,7 @@ fun AddCourseScreen(
                     groupId = "",  // 编辑模式暂留 "", 落库前再覆盖 editingCourse.groupId
                     courseName = courseName.trim(),
                     block = block,
-                    day = day,
-                    irregularEnabled = irregularEnabled,
-                    irregularStartTime = irregularNodeStartTime,
-                    irregularEndTime = irregularNodeEndTime,
-                    timeJson = effectiveTimeJson
+                    day = day
                 )
             }
         }
@@ -341,16 +351,17 @@ fun AddCourseScreen(
                 val gid = java.util.UUID.randomUUID().toString()
                 repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
             }
-            // issue#23: 边缘节次先在编辑页暂存,课程保存成功后再写回课表 timeJson。
-            // 顺序串接保证一次添加多个节点时编号连续且方向元数据不丢失。
-            if (pendingEdgeInserts.isNotEmpty()) {
-                val table = currentTable ?: repo.getTable(tableId)
-                if (table != null) {
-                    val updatedTimeJson = pendingEdgeInserts.fold(table.timeJson) { json, insert ->
-                        TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
-                    }
-                    viewModel.updateTable(table.copy(timeJson = updatedTimeJson))
+            // issue#23: 新建槽位 / 槽位时间编辑先在编辑页暂存, 课程落库成功后再写回课表 timeJson。
+            // 顺序串接保证一次添加多个槽位时编号连续且方向元数据不丢失。
+            val table = currentTable ?: repo.getTable(tableId)
+            if (table != null && (pendingEdgeInserts.isNotEmpty() || pendingEdgeEdits.isNotEmpty())) {
+                val withInserts = pendingEdgeInserts.fold(table.timeJson) { json, insert ->
+                    TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
                 }
+                val updated = pendingEdgeEdits.fold(withInserts) { json, edit ->
+                    TimeTableUtils.updateEdgeNodeTimes(json, edit.node, edit.start, edit.end)
+                }
+                if (updated != table.timeJson) viewModel.updateTable(table.copy(timeJson = updated))
             }
             onSaved()
         }
@@ -390,46 +401,49 @@ fun AddCourseScreen(
         )
     }
 
-    // issue#23: 「+ 前加一个 / + 后加一个」打开的对话框 — 起止时间填好后挂到 pendingEdgeInserts
-    if (showEdgeDialog && pendingDialogClass != null) {
-        AlertDialog(
-            onDismissRequest = { showEdgeDialog = false },
-            title = { Text(stringResource(R.string.edge_insert_dialog_title)) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    TimePickerField(
-                        label = stringResource(R.string.edge_insert_start_label),
-                        value = pendingDialogStart,
-                        onValueChange = { pendingDialogStart = it }
-                    )
-                    TimePickerField(
-                        label = stringResource(R.string.edge_insert_end_label),
-                        value = pendingDialogEnd,
-                        onValueChange = { pendingDialogEnd = it }
-                    )
-                }
+    // ── issue#23 逐卡: 候选弹层 / 新建槽位弹窗 / 槽位默认时间编辑弹窗 ──
+    edgePickTarget?.let { target ->
+        EdgeCandidatePickerDialog(
+            candidates = TimeTableUtils.edgeCandidates(effectiveTimeJson),
+            onPickExisting = { node ->
+                target.isIrregularNode = true
+                target.selectedEdgeNode = node
+                edgePickTarget = null
             },
-            confirmButton = {
-                TextButton(
-                    enabled = parseHm(pendingDialogStart) != null &&
-                        parseHm(pendingDialogEnd) != null &&
-                        (parseHm(pendingDialogStart)?.isBefore(parseHm(pendingDialogEnd)) == true),
-                    onClick = {
-                        pendingDialogClass?.let { cls ->
-                            pendingEdgeInserts.add(
-                                PendingEdgeInsert(cls, pendingDialogStart, pendingDialogEnd)
-                            )
-                        }
-                        showEdgeDialog = false
-                        pendingDialogClass = null
-                    }
-                ) { Text(stringResource(R.string.edge_insert_ok)) }
+            onPickNew = { candidate ->
+                edgePickTarget = null
+                newSlotTarget = NewSlotTarget(target, candidate)
             },
-            dismissButton = {
-                TextButton(onClick = { showEdgeDialog = false }) {
-                    Text(stringResource(R.string.cancel))
-                }
-            }
+            onDismiss = { edgePickTarget = null }
+        )
+    }
+    newSlotTarget?.let { target ->
+        NewEdgeSlotDialog(
+            candidate = target.candidate,
+            onConfirm = { start, end ->
+                val c = target.candidate
+                pendingEdgeInserts.add(
+                    PendingEdgeInsert(c.edgeClass, c.node, start, end, ownerBlockId = target.block.id)
+                )
+                target.block.isIrregularNode = true
+                target.block.selectedEdgeNode = c.node
+                newSlotTarget = null
+            },
+            onDismiss = { newSlotTarget = null }
+        )
+    }
+    slotEditTarget?.let { target ->
+        SlotEditDialog(
+            node = target.node,
+            initialStart = target.start,
+            initialEnd = target.end,
+            onConfirm = { s, e ->
+                // 同节点旧编辑项覆盖 (最新一次编辑为准)
+                pendingEdgeEdits.removeAll { it.node == target.node }
+                pendingEdgeEdits.add(EdgeSlotEdit(target.node, s, e))
+                slotEditTarget = null
+            },
+            onDismiss = { slotEditTarget = null }
         )
     }
 
@@ -561,10 +575,21 @@ fun AddCourseScreen(
                     issues = blockIssues,
                     fieldShape = fieldShape,
                     fieldColors = fieldColors,
-                    maxNode = maxNode,
-                    minNode = minNode,
-                    irregularEnabled = irregularEnabled,
-                    onRemove = { meetingBlocks.remove(block) }
+                    maxStd = maxStd,
+                    timeJson = effectiveTimeJson,
+                    candidates = TimeTableUtils.edgeCandidates(effectiveTimeJson),
+                    onRemove = { meetingBlocks.remove(block) },
+                    onPickEdge = { edgePickTarget = block },
+                    onEditSlot = { node, s, e -> slotEditTarget = SlotEditTarget(node, s, e) },
+                    onDeselectEdge = { released ->
+                        // 无他卡引用的 owned 暂存槽位回收 (§2.3 槽位复用)
+                        pendingEdgeInserts.removeAll { ins ->
+                            ins.ownerBlockId == block.id && ins.node == released &&
+                                meetingBlocks.none { o ->
+                                    o.id != block.id && o.isIrregularNode && o.selectedEdgeNode == released
+                                }
+                        }
+                    }
                 )
             }
 
@@ -576,7 +601,6 @@ fun AddCourseScreen(
                             MeetingBlockDraft(
                                 id = nextBlockId,
                                 days = mutableStateListOf(2),
-                                initialMode = MeetingInputMode.ByNode,
                                 startNode = 3,
                                 step = 2,
                                 startTime = "10:00",
@@ -596,27 +620,6 @@ fun AddCourseScreen(
                     Spacer(modifier = Modifier.width(8.dp))
                     Text(stringResource(R.string.add_slot), color = colors.onSecondaryContainer)
                 }
-            }
-
-            // issue#23: 非常规开关 — 开启后展开 课表外节次 / 非标准时长 两块
-            item {
-                IrregularSection(
-                    enabled = irregularEnabled,
-                    onEnabledChange = { irregularEnabled = it },
-                    pendingEdgeInserts = pendingEdgeInserts,
-                    currentTimeJson = currentTable?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
-                    onAddEdge = { edgeClass ->
-                        pendingDialogClass = edgeClass
-                        pendingDialogStart = "07:30"
-                        pendingDialogEnd = "08:15"
-                        showEdgeDialog = true
-                    },
-                    onRemovePendingEdge = { idx -> pendingEdgeInserts.removeAt(idx) },
-                    irregularStartTime = irregularNodeStartTime,
-                    irregularEndTime = irregularNodeEndTime,
-                    onIrregularStartChange = { irregularNodeStartTime = it },
-                    onIrregularEndChange = { irregularNodeEndTime = it }
-                )
             }
 
             item {
@@ -697,7 +700,6 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
         return MeetingBlockDraft(
             id = 1,
             days = androidx.compose.runtime.mutableStateListOf(1),
-            initialMode = MeetingInputMode.ByNode,
             startNode = 1,
             step = 2,
             startTime = "08:00",
@@ -708,11 +710,11 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     return MeetingBlockDraft(
         id = 1,
         days = days,
-        initialMode = if (course.ownTime) MeetingInputMode.ByClock else MeetingInputMode.ByNode,
         startNode = course.startNode,
         step = course.step,
         startTime = course.startTime.ifBlank { "08:00" },
         endTime = course.endTime.ifBlank { "09:40" },
+        isIrregularTime = course.ownTime,
         startWeek = course.startWeek,
         endWeek = course.endWeek,
         weekType = course.type,
@@ -729,26 +731,8 @@ private fun buildCourseEntity(
     groupId: String,
     courseName: String,
     block: MeetingBlockDraft,
-    day: Int,
-    // issue#23: 非常规模式走全局起止时间, 与 block 内 ByClock 解耦
-    irregularEnabled: Boolean = false,
-    irregularStartTime: String = "08:00",
-    irregularEndTime: String = "09:40",
-    timeJson: String = TimeTableUtils.DEFAULT_TIME_JSON
+    day: Int
 ): CourseEntity {
-    // issue#23 Fix 4: 边缘节点上的课优先使用节点自身时间 (ownTime=false),
-    // 而不是被全局非常规时间覆盖. 详见 TimeTableUtils.resolveIrregularCourseTime.
-    val resolved = TimeTableUtils.resolveIrregularCourseTime(
-        startNode = block.startNode,
-        step = block.step,
-        modeIsByClock = block.mode == MeetingInputMode.ByClock,
-        blockStartTime = block.startTime,
-        blockEndTime = block.endTime,
-        irregularEnabled = irregularEnabled,
-        irregularStartTime = irregularStartTime,
-        irregularEndTime = irregularEndTime,
-        timeJson = timeJson
-    )
     // issue#22: color/colorMode 从 block 取;AUTO 模式 color 留空(渲染时按 hash 取)
     val finalColor = when (block.colorModeState) {
         com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM ->
@@ -756,6 +740,8 @@ private fun buildCourseEntity(
         com.lingion.sleepy.data.entity.CourseColorMode.AUTO -> ""
         else -> block.colorState.ifBlank { "#FF6750A4" }
     }
+    // issue#23 逐卡: 边缘槽位卡 → startNode=槽位号, step 锁 1;
+    // 覆盖时间卡 → ownTime=isIrregularTime 且起止为覆盖值 (§5 同值契约)
     return CourseEntity(
         groupId = groupId,
         tableId = tableId,
@@ -764,16 +750,18 @@ private fun buildCourseEntity(
         room = block.roomState.trim(),
         note = block.noteState.trim(),
         day = day,
-        startNode = block.startNode,
-        step = block.step,
+        startNode = if (block.isIrregularNode) block.selectedEdgeNode else block.startNode,
+        step = if (block.isIrregularNode) 1 else block.step,
         startWeek = block.startWeek,
         endWeek = block.endWeek,
         type = block.weekType,
         color = finalColor,
         colorMode = block.colorModeState,
-        ownTime = resolved.ownTime,
-        startTime = if (resolved.ownTime) resolved.startTime else "",
-        endTime = if (resolved.ownTime) resolved.endTime else ""
+        isIrregularNode = block.isIrregularNode,
+        isIrregularTime = block.isIrregularTime,
+        ownTime = block.isIrregularTime,
+        startTime = if (block.isIrregularTime) block.startTime.trim() else "",
+        endTime = if (block.isIrregularTime) block.endTime.trim() else ""
     )
 }
 
@@ -782,71 +770,51 @@ private fun validateCourseDraft(
     blocks: List<MeetingBlockDraft>,
     startWeek: Int,
     endWeek: Int,
-    table: TimeTableEntity?,
-    timeJson: String = TimeTableUtils.DEFAULT_TIME_JSON,
-    context: android.content.Context,
-    irregularEnabled: Boolean = false,
-    pendingEdgeInserts: List<PendingEdgeInsert> = emptyList(),
-    // issue#23: 非常规模式下, 起止时间走全局(下方 IrregularSection), 不再走 block.ByClock
-    irregularStartTime: String = "",
-    irregularEndTime: String = ""
+    timeJson: String,
+    context: android.content.Context
 ): List<ValidationIssue> {
     val issues = mutableListOf<ValidationIssue>()
     if (courseName.isBlank()) issues += ValidationIssue(null, context.getString(R.string.course_name_empty))
     if (startWeek <= 0 || endWeek <= 0) issues += ValidationIssue(null, context.getString(R.string.week_must_be_positive))
-    // issue#9: 该课表最大/最小节次(从 timeJson 解析), 用于判断 startNode 范围
+    // 生效时间表唯一依据: 候选/展示/校验/落库全走 effectiveTimeJson
     val rows = TimeTableUtils.parseTimeSlotRows(timeJson)
-    val maxNode = rows.maxOfOrNull { it.node } ?: 12
-    val minNode = rows.minOfOrNull { it.node } ?: 1
+    val maxStd = TimeTableUtils.maxStandardNode(timeJson)
 
     blocks.forEachIndexed { index, block ->
         if (block.days.isEmpty()) {
             issues += ValidationIssue(block.id, context.getString(R.string.slot_at_least_one_day, index + 1))
         }
         if (block.startWeek > block.endWeek) issues += ValidationIssue(block.id, context.getString(R.string.slot_week_order, index + 1))
-        when (block.mode) {
-            MeetingInputMode.ByNode -> {
-                // issue#23 Fix 2: 边缘节点允许 startNode<=0 (例如第 0 节 / 第 -1 节),
-                // 只要该节点在 timeJson 中存在即合法; 否则退回到要求 startNode>=minNode.
-                val startOk = block.startNode in minNode..maxNode
-                if (!startOk) issues += ValidationIssue(
-                    block.id,
-                    context.getString(R.string.slot_start_node_positive, index + 1)
-                )
-                if (block.step <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_step_positive, index + 1))
-                // issue#9: startNode+step-1 越过该课表实际最大节次时拒绝保存
-                val endNode = block.startNode + block.step - 1
-                if (endNode > maxNode) {
-                    issues += ValidationIssue(
-                        block.id,
-                        context.getString(R.string.slot_step_exceeds_max, index + 1, block.startNode, endNode, maxNode)
-                    )
-                }
+        // issue#23 逐卡: 非常规节次卡 → 槽位必须真实存在于生效时间表;
+        // 标准卡 → 1..maxStd 越界拒绝。时间格式/顺序只对勾了「非常规时间」的卡检查。
+        if (block.isIrregularNode) {
+            val row = rows.firstOrNull { it.node == block.selectedEdgeNode && it.edgeClass != null }
+            if (row == null) {
+                issues += ValidationIssue(block.id, context.getString(R.string.irregular_node_required, index + 1))
             }
-            MeetingInputMode.ByClock -> {
-                // issue#23: 非常规模式下 block 内 ByClock 时间行已隐藏, 时间走全局字段,
-                // 这里不再校验 block.startTime/endTime(避免误报); 全局时间单独校验
-                if (!irregularEnabled) {
-                    val start = parseHm(block.startTime)
-                    val end = parseHm(block.endTime)
-                    if (start == null || end == null) {
-                        issues += ValidationIssue(block.id, context.getString(R.string.slot_time_format, index + 1))
-                    } else if (!start.isBefore(end)) {
-                        issues += ValidationIssue(block.id, context.getString(R.string.slot_time_order, index + 1))
-                    }
-                }
+        } else {
+            if (block.startNode < 1) issues += ValidationIssue(
+                block.id,
+                context.getString(R.string.slot_start_node_positive, index + 1)
+            )
+            if (block.step <= 0) issues += ValidationIssue(block.id, context.getString(R.string.slot_step_positive, index + 1))
+            // issue#9: startNode+step-1 越过标准 1..maxStd 段上界时拒绝保存(边缘槽位不受此限)
+            val endNode = block.startNode + block.step - 1
+            if (endNode > maxStd) {
+                issues += ValidationIssue(
+                    block.id,
+                    context.getString(R.string.slot_step_exceeds_max, index + 1, block.startNode, endNode, maxStd)
+                )
             }
         }
-    }
-
-    // issue#23: 非常规模式下校验全局起止时间(替代 block 内 ByClock 校验)
-    if (irregularEnabled) {
-        val gStart = parseHm(irregularStartTime)
-        val gEnd = parseHm(irregularEndTime)
-        if (gStart == null || gEnd == null) {
-            issues += ValidationIssue(null, context.getString(R.string.irregular_time_format))
-        } else if (!gStart.isBefore(gEnd)) {
-            issues += ValidationIssue(null, context.getString(R.string.irregular_time_order))
+        if (block.isIrregularTime) {
+            val start = parseHm(block.startTime)
+            val end = parseHm(block.endTime)
+            if (start == null || end == null) {
+                issues += ValidationIssue(block.id, context.getString(R.string.irregular_time_format))
+            } else if (!start.isBefore(end)) {
+                issues += ValidationIssue(block.id, context.getString(R.string.irregular_time_order))
+            }
         }
     }
 
@@ -856,8 +824,8 @@ private fun validateCourseDraft(
             val second = blocks[j]
             val overlapDays = first.days.intersect(second.days)
             if (overlapDays.isEmpty()) continue
-            val firstRange = blockRangeMinutes(first, table, irregularEnabled, irregularStartTime, irregularEndTime, timeJson)
-            val secondRange = blockRangeMinutes(second, table, irregularEnabled, irregularStartTime, irregularEndTime, timeJson)
+            val firstRange = blockRangeMinutes(first, timeJson)
+            val secondRange = blockRangeMinutes(second, timeJson)
             if (firstRange == null || secondRange == null) continue
             if (firstRange.first < secondRange.second && secondRange.first < firstRange.second) {
                 if (!weekRangesOverlap(
@@ -873,62 +841,28 @@ private fun validateCourseDraft(
             }
         }
     }
-    // issue#23: 新模型下非常规开启后全局起止时间字段始终存在并直接驱动 ownTime,
-    // 不再有"开关打开却什么都没配"的无操作状态 — 上方格式/顺序校验已足够,
-    // 故不再要求"至少启用一项"(避免编辑已存在的 08:00/09:40 ownTime 课程时被误拦)
     return issues
 }
 
-private fun blockRangeMinutes(
-    block: MeetingBlockDraft,
-    table: TimeTableEntity?,
-    irregularEnabled: Boolean = false,
-    irregularStartTime: String = "08:00",
-    irregularEndTime: String = "09:40",
-    timeJson: String? = null
-): Pair<Int, Int>? {
-    // issue#23: 非常规模式下全部 block 共用全局起止时间, 重叠检测必须用同一对值
-    if (irregularEnabled) {
-        val start = parseHm(irregularStartTime) ?: return null
-        val end = parseHm(irregularEndTime) ?: return null
-        return start.hour * 60 + start.minute to end.hour * 60 + end.minute
-    }
-    return when (block.mode) {
-        MeetingInputMode.ByClock -> {
-            val start = parseHm(block.startTime) ?: return null
-            val end = parseHm(block.endTime) ?: return null
-            start.hour * 60 + start.minute to end.hour * 60 + end.minute
-        }
-        MeetingInputMode.ByNode -> {
-            val nodes = parseNodeMinuteMap(
-                timeJson ?: table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON
-            )
-            val start = nodes[block.startNode]?.first ?: return null
-            val end = nodes[block.startNode + block.step - 1]?.second ?: return null
-            start to end
-        }
-    }
-}
-
-private fun parseNodeMinuteMap(timeJson: String): Map<Int, Pair<Int, Int>> = try {
-    val arr = JSONArray(timeJson)
-    buildMap {
-        for (i in 0 until arr.length()) {
-            val o = arr.getJSONObject(i)
-            val node = o.getInt("node")
-            val start = parseHm(o.getString("start")) ?: continue
-            val end = parseHm(o.getString("end")) ?: continue
-            put(node, start.hour * 60 + start.minute to end.hour * 60 + end.minute)
-        }
-    }
-} catch (_: Exception) {
-    emptyMap()
+/** §3.3 契约的分钟化: 本卡生效起止 → [startMin, endMin), 用于卡间重叠检测 */
+private fun blockRangeMinutes(block: MeetingBlockDraft, timeJson: String): Pair<Int, Int>? {
+    val range = block.effectiveRange(timeJson) ?: return null
+    val start = parseHm(range.first) ?: return null
+    val end = parseHm(range.second) ?: return null
+    return start.hour * 60 + start.minute to end.hour * 60 + end.minute
 }
 
 private fun parseHm(value: String): LocalTime? = try {
     LocalTime.parse(value.trim())
 } catch (_: Exception) {
     null
+}
+
+/** §2.4 B 规则: 起止时间差(分钟), 解析失败返回 null */
+private fun minutesBetween(start: String, end: String): Int? {
+    val s = parseHm(start) ?: return null
+    val e = parseHm(end) ?: return null
+    return (e.hour * 60 + e.minute) - (s.hour * 60 + s.minute)
 }
 
 @Composable
@@ -995,6 +929,36 @@ private fun CardSection(
     }
 }
 
+/** issue#23 逐卡: 标签 + 副标题 + Switch 的标准行 — 卡内两个非常规开关共用 */
+@Composable
+private fun SwitchRow(
+    label: String,
+    sub: String,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(
+                text = label,
+                style = MaterialTheme.typography.bodyMedium,
+                color = colors.onSurface
+            )
+            Text(
+                text = sub,
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onSurfaceVariant
+            )
+        }
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
+    }
+}
+
 @Composable
 private fun MeetingBlockEditor(
     title: String,
@@ -1003,10 +967,13 @@ private fun MeetingBlockEditor(
     issues: List<String>,
     fieldShape: CornerBasedShape,
     fieldColors: androidx.compose.material3.TextFieldColors,
-    maxNode: Int,
-    minNode: Int = 1,
-    irregularEnabled: Boolean = false,
-    onRemove: () -> Unit
+    maxStd: Int,
+    timeJson: String,
+    candidates: List<TimeTableUtils.EdgeCandidate>,
+    onRemove: () -> Unit,
+    onPickEdge: () -> Unit,
+    onEditSlot: (node: Int, start: String, end: String) -> Unit,
+    onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
@@ -1021,14 +988,14 @@ private fun MeetingBlockEditor(
             .padding(14.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        // issue#9 延伸: 用户输了超出 maxNode 的数字时显示提示, 并提供去课表管理的快捷入口
+        // issue#9 延伸: 用户输了超出 maxStd 的数字时显示提示, 并提供去课表管理的快捷入口
         if (block.clamped) {
             Text(
                 text = stringResource(
                     R.string.slot_step_clamped_hint,
                     block.startNode,
                     block.startNode + block.step - 1,
-                    maxNode
+                    maxStd
                 ),
                 style = MaterialTheme.typography.labelSmall,
                 color = colors.onErrorContainer
@@ -1058,17 +1025,64 @@ private fun MeetingBlockEditor(
             }
         }
 
-        // 非常规模式下 block 内不再提供 ModePicker 和 ByClock 时间行 —
-        // 起止时间统一收拢到下方「非常规」面板的全局字段, 这里只保留节次定位。
-        if (!irregularEnabled) {
-            ModePicker(mode = block.mode, onChange = { block.mode = it })
-        }
         MultiDayPicker(selectedDays = block.days.toSet(), onToggleDay = { day ->
             if (day in block.days) block.days.remove(day) else block.days.add(day)
         })
 
-        if (irregularEnabled) {
-            // 非常规: 强制按节次定位(网格位置), 真实起止时间走上方全局字段
+        // issue#23 逐卡: 卡内两个独立开关 — 非常规节次 / 非常规时间 (§4 逐卡开关设计)
+        SwitchRow(
+            label = stringResource(R.string.irregular_node_switch),
+            sub = stringResource(R.string.irregular_node_switch_sub),
+            checked = block.isIrregularNode,
+            onCheckedChange = { on ->
+                if (on) {
+                    block.isIrregularNode = true
+                    onPickEdge()
+                } else {
+                    val released = block.selectedEdgeNode
+                    block.isIrregularNode = false
+                    block.selectedEdgeNode = 0
+                    onDeselectEdge(released)
+                }
+                block.clamped = false
+            }
+        )
+
+        if (block.isIrregularNode) {
+            // 非常规节次卡: 槽位摘要 + 换一个节次 + 已有槽位默认时间编辑入口
+            val selected = candidates.firstOrNull { it.node == block.selectedEdgeNode }
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
+                Text(
+                    text = if (selected != null && selected.exists) {
+                        stringResource(
+                            R.string.edge_node_range,
+                            selected.node,
+                            selected.start,
+                            selected.end
+                        )
+                    } else {
+                        stringResource(R.string.edge_node_label, block.selectedEdgeNode)
+                    },
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurface,
+                    modifier = Modifier.weight(1f)
+                )
+                if (selected != null && selected.exists) {
+                    IconButton(onClick = { onEditSlot(selected.node, selected.start, selected.end) }) {
+                        Icon(
+                            Icons.Outlined.Edit,
+                            contentDescription = stringResource(R.string.irregular_slot_edit_title),
+                            tint = colors.onSurfaceVariant
+                        )
+                    }
+                }
+            }
+        } else {
+            // 标准卡: startNode/step, 1..maxStd
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1076,79 +1090,103 @@ private fun MeetingBlockEditor(
                 NumberField(
                     label = stringResource(R.string.start_node),
                     value = block.startNode,
-                    min = minNode,
-                    max = maxNode,
+                    min = 1,
+                    max = maxStd,
                     modifier = Modifier.weight(1f),
                     shape = fieldShape,
                     colors = fieldColors,
                     onClamp = { block.clamped = true }
                 ) { v ->
                     block.startNode = v
-                    val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
+                    val stepCap = (maxStd - block.startNode + 1).coerceAtLeast(1)
                     if (block.step > stepCap) block.step = stepCap
                 }
                 NumberField(
                     label = stringResource(R.string.step_count),
                     value = block.step,
                     min = 1,
-                    max = (maxNode - block.startNode + 1).coerceAtLeast(1),
+                    max = (maxStd - block.startNode + 1).coerceAtLeast(1),
                     modifier = Modifier.weight(1f),
                     shape = fieldShape,
                     colors = fieldColors,
                     onClamp = { block.clamped = true }
                 ) { v -> block.step = v }
             }
-        } else {
-            when (block.mode) {
-                MeetingInputMode.ByNode -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        NumberField(
-                            label = stringResource(R.string.start_node),
-                            value = block.startNode,
-                            min = 1,
-                            max = maxNode,
-                            modifier = Modifier.weight(1f),
-                            shape = fieldShape,
-                            colors = fieldColors,
-                            onClamp = { block.clamped = true }
-                        ) { v ->
-                            block.startNode = v
-                            // startNode 上调 → step 上限缩到 (maxNode - startNode + 1), 防止越界
-                            val stepCap = (maxNode - block.startNode + 1).coerceAtLeast(1)
-                            if (block.step > stepCap) block.step = stepCap
+        }
+
+        // 非常规时间
+        SwitchRow(
+            label = stringResource(R.string.irregular_time_switch),
+            sub = stringResource(R.string.irregular_time_switch_sub),
+            checked = block.isIrregularTime,
+            onCheckedChange = { on ->
+                if (on) {
+                    block.isIrregularTime = true
+                    if (block.startTime.isBlank() || block.endTime.isBlank()) {
+                        // 首次开启: 预填本卡生效时间 (槽位默认 / 标准节次时间), 见 §4 B 规则
+                        val r = block.effectiveRange(timeJson)
+                        if (r != null) {
+                            block.startTime = r.first
+                            block.endTime = r.second
                         }
-                        NumberField(
-                            label = stringResource(R.string.step_count),
-                            value = block.step,
-                            min = 1,
-                            max = (maxNode - block.startNode + 1).coerceAtLeast(1),
-                            modifier = Modifier.weight(1f),
-                            shape = fieldShape,
-                            colors = fieldColors,
-                            onClamp = { block.clamped = true }
-                        ) { v -> block.step = v }
                     }
+                    if (block.durationText.isBlank()) {
+                        block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
+                    }
+                } else {
+                    // 关闭覆盖时间 → 回落槽位默认 / 栟准节次时间
+                    block.startTime = ""
+                    block.endTime = ""
+                    block.durationText = ""
                 }
-                MeetingInputMode.ByClock -> {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(12.dp)
-                    ) {
-                        TimePickerField(
-                            value = block.startTime,
-                            onValueChange = { block.startTime = it },
-                            label = stringResource(R.string.start_time),
-                            modifier = Modifier.weight(1f)
-                        )
-                        TimePickerField(
-                            value = block.endTime,
-                            onValueChange = { block.endTime = it },
-                            label = stringResource(R.string.end_time),
-                            modifier = Modifier.weight(1f)
-                        )
+            }
+        )
+        if (block.isIrregularTime) {
+            // §2.4 B 规则: 起止/时长三输入, 最后编辑的输入对为权威 — 改起止重算时长,
+            // 改时长反推结束时间; 三者都允许填写
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                TimePickerField(
+                    value = block.startTime,
+                    onValueChange = { v ->
+                        block.startTime = v
+                        block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
+                    },
+                    label = stringResource(R.string.start_time),
+                    modifier = Modifier.weight(1f)
+                )
+                TimePickerField(
+                    value = block.endTime,
+                    onValueChange = { v ->
+                        block.endTime = v
+                        block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
+                    },
+                    label = stringResource(R.string.end_time),
+                    modifier = Modifier.weight(1f)
+                )
+            }
+            NumberField(
+                label = stringResource(R.string.irregular_duration_label),
+                value = block.durationText.toIntOrNull() ?: 0,
+                min = 1,
+                max = 24 * 60,
+                modifier = Modifier.fillMaxWidth(),
+                shape = fieldShape,
+                colors = fieldColors
+            ) { mins ->
+                if (mins > 0) {
+                    block.durationText = mins.toString()
+                    parseHm(block.startTime)?.let { s ->
+                        val end = s.plusMinutes(mins.toLong())
+                        block.endTime = end.toString()
+                    }
+                    val diff = minutesBetween(block.startTime, block.endTime)
+                    if (diff != null && diff != mins) {
+                        // plusMinutes 跨午夜会把 end 翻到次日, 回退清空交由校验报错
+                        block.endTime = ""
+                        block.durationText = ""
                     }
                 }
             }
@@ -1239,201 +1277,140 @@ private fun MeetingBlockEditor(
     }
 }
 
-/** issue#23: 非常规总开关 + 展开后的「课表外节次」「非标准时长」两块。
- *  - 总开关 = 启用本课程的特殊课表特性
- *  - 课表外节次: 从当前 timeJson 拉边缘节点 + 用户新增(未保存)的边缘节次,展示成列表;
- *    底部「+ 前加一个 / + 后加一个」打开对话框 → 加入 pendingEdgeInserts(待保存串接 insertEdgeNode)
- *  - 非标准时长: 仅说明文字,实际行为由 MeetingBlockEditor 的 ModePicker(ByClock)负责 */
+/** issue#23 §2.2 候选弹层: Before 组升序 + After 组升序, 已有槽位显示默认时间,
+ *  「新建」候选点击后进入 NewEdgeSlotDialog 填时间 */
 @Composable
-private fun IrregularSection(
-    enabled: Boolean,
-    onEnabledChange: (Boolean) -> Unit,
-    pendingEdgeInserts: List<PendingEdgeInsert>,
-    currentTimeJson: String,
-    onAddEdge: (TimeTableUtils.EdgeClass) -> Unit,
-    onRemovePendingEdge: (Int) -> Unit,
-    // issue#23: 全局非常规起止时间(替代 block 内 ByClock),所有 block 共用
-    irregularStartTime: String,
-    irregularEndTime: String,
-    onIrregularStartChange: (String) -> Unit,
-    onIrregularEndChange: (String) -> Unit
+private fun EdgeCandidatePickerDialog(
+    candidates: List<TimeTableUtils.EdgeCandidate>,
+    onPickExisting: (Int) -> Unit,
+    onPickNew: (TimeTableUtils.EdgeCandidate) -> Unit,
+    onDismiss: () -> Unit
 ) {
     val colors = SleepyTheme.colors
-    val context = LocalContext.current
-    val existingBefore = remember(currentTimeJson) {
-        TimeTableUtils.edgeNodesOf(currentTimeJson, TimeTableUtils.EdgeClass.Before)
-    }
-    val existingAfter = remember(currentTimeJson) {
-        TimeTableUtils.edgeNodesOf(currentTimeJson, TimeTableUtils.EdgeClass.After)
-    }
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(SleepyTheme.shapes.extraLarge)
-            .background(colors.surfaceContainer)
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp)
-    ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-                Text(
-                    text = stringResource(R.string.irregular_switch),
-                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                    color = colors.onSurface
-                )
-                Text(
-                    text = stringResource(R.string.irregular_switch_sub),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
-            }
-            Switch(checked = enabled, onCheckedChange = onEnabledChange)
-        }
-
-        if (enabled) {
-            // ── 课表外节次 ──
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = stringResource(R.string.edge_section_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colors.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(R.string.edge_section_sub),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurfaceVariant
-                )
-
-                // 现有边缘节点(只读,展示当前 timeJson 状态)
-                if (existingBefore.isEmpty() && existingAfter.isEmpty() && pendingEdgeInserts.isEmpty()) {
-                    Text(
-                        text = stringResource(R.string.edge_no_nodes),
-                        style = MaterialTheme.typography.bodySmall,
-                        color = colors.onSurfaceVariant
-                    )
-                } else {
-                    // 现有节点 — 带节点号与起止时间
-                    existingBefore.forEach { node ->
-                        val (s, e) = readNodeRange(currentTimeJson, node)
-                        Text(
-                            text = stringResource(R.string.edge_node_range,
-                                stringResource(R.string.edge_node_label, node), s, e),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.onSurface
-                        )
-                    }
-                    existingAfter.forEach { node ->
-                        val (s, e) = readNodeRange(currentTimeJson, node)
-                        Text(
-                            text = stringResource(R.string.edge_node_range,
-                                stringResource(R.string.edge_node_label, node), s, e),
-                            style = MaterialTheme.typography.bodyMedium,
-                            color = colors.onSurface
-                        )
-                    }
-                    // 待添加 — 编号保存时由 insertEdgeNode 决定,这里只标"将添加"避免 UI 与实际编号错位
-                    pendingEdgeInserts.forEachIndexed { idx, p ->
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.SpaceBetween
-                        ) {
-                            Text(
-                                text = stringResource(R.string.edge_node_range,
-                                    "将添加 #${idx + 1}", p.start, p.end),
-                                style = MaterialTheme.typography.bodyMedium,
-                                color = colors.onSurfaceVariant
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.irregular_node_pick)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                candidates.forEach { c ->
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clip(SleepyTheme.shapes.medium)
+                            .background(
+                                if (c.exists) SleepyTheme.colors.secondaryContainer
+                                else SleepyTheme.colors.surfaceContainerHighest
                             )
-                            IconButton(onClick = { onRemovePendingEdge(idx) }) {
-                                Icon(
-                                    Icons.Outlined.Delete,
-                                    contentDescription = stringResource(R.string.delete_slot),
-                                    tint = colors.onSurfaceVariant
-                                )
+                            .noRippleClickable {
+                                if (c.exists) onPickExisting(c.node) else onPickNew(c)
                             }
-                        }
-                    }
-                }
-
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    Button(
-                        onClick = { onAddEdge(TimeTableUtils.EdgeClass.Before) },
-                        modifier = Modifier.weight(1f),
-                        shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
+                            .padding(horizontal = 12.dp, vertical = 10.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(stringResource(R.string.edge_add_before), color = colors.onSecondaryContainer)
-                    }
-                    Button(
-                        onClick = { onAddEdge(TimeTableUtils.EdgeClass.After) },
-                        modifier = Modifier.weight(1f),
-                        shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
-                    ) {
-                        Text(stringResource(R.string.edge_add_after), color = colors.onSecondaryContainer)
+                        Text(
+                            text = if (c.exists) {
+                                stringResource(
+                                    R.string.edge_node_range,
+                                    c.node,
+                                    c.start,
+                                    c.end
+                                )
+                            } else {
+                                stringResource(R.string.irregular_node_new, c.node)
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = if (c.exists) colors.onSecondaryContainer else colors.onSurface
+                        )
                     }
                 }
             }
-
-            // ── 非标准时长 ──
-            // issue#23: 非常规模式下全部 block 共用同一对起止时间,这里统一维护
-            // 单独一对开始/结束字段(用户原话:「在下面的'非常规时间'选项卡里单独
-            // 出一个'开始时间''结束时间'」),block 内 ByClock 时间行因此被隐藏
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                Text(
-                    text = stringResource(R.string.custom_duration_section_title),
-                    style = MaterialTheme.typography.labelLarge,
-                    color = colors.onSurfaceVariant
-                )
-                Text(
-                    text = stringResource(R.string.custom_duration_section_sub),
-                    style = MaterialTheme.typography.bodySmall,
-                    color = colors.onSurfaceVariant
-                )
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.spacedBy(12.dp)
-                ) {
-                    TimePickerField(
-                        value = irregularStartTime,
-                        onValueChange = onIrregularStartChange,
-                        label = stringResource(R.string.start_time),
-                        modifier = Modifier.weight(1f)
-                    )
-                    TimePickerField(
-                        value = irregularEndTime,
-                        onValueChange = onIrregularEndChange,
-                        label = stringResource(R.string.end_time),
-                        modifier = Modifier.weight(1f)
-                    )
-                }
-            }
+        },
+        confirmButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
-    }
+    )
 }
 
-/** 从 timeJson 中读取指定 node 的起止时间(用于在 UI 上展示现有边缘节次) */
-private fun readNodeRange(timeJson: String, node: Int): Pair<String, String> {
-    return try {
-        val arr = JSONArray(timeJson)
-        for (i in 0 until arr.length()) {
-            val o = arr.getJSONObject(i)
-            if (o.optInt("node") == node) {
-                return (o.optString("start", "—")) to (o.optString("end", "—"))
+/** issue#23: 新建槽位 — 输入起止时间后加入 pendingEdgeInserts (保存时写回课表) */
+@Composable
+private fun NewEdgeSlotDialog(
+    candidate: TimeTableUtils.EdgeCandidate,
+    onConfirm: (start: String, end: String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var start by remember { mutableStateOf("") }
+    var end by remember { mutableStateOf("") }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.irregular_node_new_title, candidate.node)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                TimePickerField(
+                    value = start,
+                    onValueChange = { start = it },
+                    label = stringResource(R.string.edge_insert_start_label),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                TimePickerField(
+                    value = end,
+                    onValueChange = { end = it },
+                    label = stringResource(R.string.edge_insert_end_label),
+                    modifier = Modifier.fillMaxWidth()
+                )
             }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = parseHm(start) != null && parseHm(end) != null,
+                onClick = { onConfirm(start, end) }
+            ) { Text(stringResource(R.string.edge_insert_ok)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
         }
-        "—" to "—"
-    } catch (_: Exception) {
-        "—" to "—"
-    }
+    )
+}
+
+/** issue#23 §2.5: 已有槽位默认时间编辑 — 全局生效于所有引用该槽位的课程 */
+@Composable
+private fun SlotEditDialog(
+    node: Int,
+    initialStart: String,
+    initialEnd: String,
+    onConfirm: (start: String, end: String) -> Unit,
+    onDismiss: () -> Unit
+) {
+    var start by remember(node) { mutableStateOf(initialStart) }
+    var end by remember(node) { mutableStateOf(initialEnd) }
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.irregular_slot_edit_title, node)) },
+        text = {
+            Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
+                TimePickerField(
+                    value = start,
+                    onValueChange = { start = it },
+                    label = stringResource(R.string.edge_insert_start_label),
+                    modifier = Modifier.fillMaxWidth()
+                )
+                TimePickerField(
+                    value = end,
+                    onValueChange = { end = it },
+                    label = stringResource(R.string.edge_insert_end_label),
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        },
+        confirmButton = {
+            TextButton(
+                enabled = parseHm(start) != null && parseHm(end) != null,
+                onClick = { onConfirm(start, end) }
+            ) { Text(stringResource(R.string.edge_insert_ok)) }
+        },
+        dismissButton = {
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) }
+        }
+    )
 }
 
 /** issue#22: 颜色三态 — 开关 OFF = 跟组色(GROUP);开关 ON 后可切 AUTO/CUSTOM
@@ -1523,24 +1500,6 @@ private fun ColorSection(block: MeetingBlockDraft) {
 }
 
 @Composable
-private fun ModePicker(
-    mode: MeetingInputMode,
-    onChange: (MeetingInputMode) -> Unit
-) {
-    // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
-    // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
-    SegmentedSwitcher(
-        options = listOf(
-            MeetingInputMode.ByNode to stringResource(R.string.mode_by_node),
-            MeetingInputMode.ByClock to stringResource(R.string.mode_by_time)
-        ),
-        selected = mode,
-        onSelect = onChange,
-        modifier = Modifier.fillMaxWidth()
-    )
-}
-
-@Composable
 private fun MultiDayPicker(
     selectedDays: Set<Int>,
     onToggleDay: (Int) -> Unit
@@ -1624,35 +1583,6 @@ private fun NumberField(
         modifier = modifier,
         shape = shape,
         colors = colors
-    )
-}
-
-@OptIn(androidx.compose.material3.ExperimentalMaterial3Api::class)
-@Composable
-private fun TimeField(
-    label: String,
-    value: String,
-    modifier: Modifier = Modifier,
-    shape: CornerBasedShape,
-    colors: androidx.compose.material3.TextFieldColors,
-    onChange: (String) -> Unit
-) {
-    var text by remember(value) { mutableStateOf(value) }
-
-    TextField(
-        value = text,
-        onValueChange = { txt ->
-            val filtered = txt.take(5)
-            text = filtered
-            onChange(filtered)
-        },
-        label = { Text(label) },
-        singleLine = true,
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-        modifier = modifier,
-        shape = shape,
-        colors = colors,
-        supportingText = { Text(stringResource(R.string.time_format_hint)) }
     )
 }
 

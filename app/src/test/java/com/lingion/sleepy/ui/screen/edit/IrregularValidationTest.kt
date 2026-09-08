@@ -30,8 +30,8 @@ class IrregularValidationTest {
     fun save_path_persists_pending_edges_via_insertEdgeNode() {
         var timeJson = TimeTableUtils.DEFAULT_TIME_JSON
         val pending = listOf(
-            PendingEdgeInsert(TimeTableUtils.EdgeClass.Before, "07:30", "08:00"),
-            PendingEdgeInsert(TimeTableUtils.EdgeClass.After, "21:30", "22:15")
+            PendingEdgeInsert(TimeTableUtils.EdgeClass.Before, start = "07:30", end = "08:00"),
+            PendingEdgeInsert(TimeTableUtils.EdgeClass.After, start = "21:30", end = "22:15")
         )
         pending.forEach { p ->
             timeJson = TimeTableUtils.insertEdgeNode(timeJson, p.edgeClass, p.start, p.end)

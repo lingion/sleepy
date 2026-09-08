@@ -256,8 +256,6 @@
     <string name="slot_step_positive">时段 %1$d 的连上节数必须大于 0</string>
     <string name="slot_step_exceeds_max">时段 %1$d 第 %2$d-%3$d 节已超出课表最大节次（%4$d 节）</string>
     <string name="slot_step_clamped_hint">输入已超出最大节次（当前课表共 %3$d 节），如需更多节数请到课表管理页面编辑当前课表的节数</string>
-    <string name="slot_time_format">时段 %1$d 的开始/结束时间格式应为 HH:mm</string>
-    <string name="slot_time_order">时段 %1$d 的开始时间必须早于结束时间</string>
     <string name="conflict_detail_title">与已有课程时间冲突</string>
     <string name="conflict_detail_save_anyway">仍然保存</string>
     <string name="conflict_detail_go_back">返回修改</string>
@@ -658,4 +656,15 @@
     <string name="error_unknown">未知错误</string>
     <string name="error_no_version_found">主站和镜像都没找到最新版本</string>
     <string name="error_empty_download">下载文件为空</string>
+    <string name="edge_node_range">第 %1$d 节 %2$s – %3$s</string>
+    <string name="irregular_node_switch">非常规节次</string>
+    <string name="irregular_node_switch_sub">绑定课表边缘槽位（第 0 节 / 第 -1 节 / 第 N+1 节）</string>
+    <string name="irregular_time_switch">非常规时间</string>
+    <string name="irregular_time_switch_sub">覆盖本卡起止时间，可完全在槽位时间窗之外</string>
+    <string name="irregular_node_pick">选择节次</string>
+    <string name="irregular_node_new">第 %1$d 节（新建）</string>
+    <string name="irregular_node_new_title">新建第 %1$d 节</string>
+    <string name="irregular_node_required">时段 %1$d 绑定的非常规节次无效，请重新选择</string>
+    <string name="irregular_slot_edit_title">编辑第 %1$d 节默认时间</string>
+    <string name="irregular_duration_label">持续时长（分钟）</string>
 </resources>

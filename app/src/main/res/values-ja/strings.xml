@@ -246,8 +246,6 @@
     <string name="slot_step_positive">スロット %1$d の連続時限数は0より大きくなければなりません</string>
     <string name="slot_step_exceeds_max">スロット %1$d の %2$d-%3$d 時限は時間割の最大時限（%4$d）を超えています</string>
     <string name="slot_step_clamped_hint">入力が最大時限を超えています（現在の時間割は %3$d 時限まで）。時限数を増やすには、時間割管理画面で現在の時間割を編集してください</string>
-    <string name="slot_time_format">スロット %1$d の開始/終了時間はHH:mm形式である必要があります</string>
-    <string name="slot_time_order">スロット %1$d の開始時間は終了時間より前である必要があります</string>
     <string name="conflict_detail_title">既存の授業と時間が重複しています</string>
     <string name="conflict_detail_save_anyway">それでも保存</string>
     <string name="conflict_detail_go_back">戻って修正</string>
@@ -645,4 +643,19 @@
     <string name="error_unknown">不明なエラー</string>
     <string name="error_no_version_found">本サイトでもミラーでもバージョンが見つかりません</string>
     <string name="error_empty_download">ダウンロードファイルが空です</string>
+    <string name="edge_node_range">%1$d 限 %2$s – %3$s</string>
+    <string name="irregular_node_switch">非定期時限</string>
+    <string name="irregular_node_switch_sub">標準グリッド外の枠にバインド（0 限 / -1 限 / N+1 限）</string>
+    <string name="irregular_time_switch">非定期時刻</string>
+    <string name="irregular_time_switch_sub">このブロックだけ開始・終了を上書き。枠の時間帯外でも可</string>
+    <string name="irregular_node_pick">時限を選択</string>
+    <string name="irregular_node_new">%1$d 限（新規）</string>
+    <string name="irregular_node_new_title">新規 %1$d 限</string>
+    <string name="irregular_node_required">ブロック %1$d の非定期時限が無効です。選び直してください</string>
+    <string name="irregular_slot_edit_title">%1$d 限の既定時刻を編集</string>
+    <string name="irregular_duration_label">連続時間（分）</string>
+    <string name="edge_node_label">%1$d 限</string>
+    <string name="edge_insert_start_label">開始時刻</string>
+    <string name="edge_insert_end_label">終了時刻</string>
+    <string name="edge_insert_ok">追加</string>
 </resources>

@@ -87,14 +87,26 @@ data class CourseEntity(
 
     /**
      * 是否自定义时间 (即 startTime/endTime 由用户设置而非系统)
-     * 保留字段以兼容 WakeUp 旧 db
+     * 保留字段以兼容 WakeUp 旧 db; 与 [isIrregularTime] 永远同值 (§5 同步契约)
      */
     @ColumnInfo(name = "ownTime") val ownTime: Boolean = false,
 
-    /** 自定义开始时间 (HH:mm), 仅 ownTime=true 时使用 */
+    /**
+     * issue#23 逐卡重构: 本卡片是否勾选「非常规节次」— 绑定边缘节次槽位 (0/-1/N+1...)。
+     * timeJson 为真理源 (编号本身可推导), 此标志为行级回写, 保存时按实际编号回填, 防漂移。
+     */
+    @ColumnInfo(name = "isIrregularNode", defaultValue = "0") val isIrregularNode: Boolean = false,
+
+    /**
+     * issue#23 逐卡重构: 本卡片是否勾选「非常规时间」— startTime/endTime 为该卡覆盖值,
+     * 不受槽位默认时间窗口约束 (§2.3)。
+     */
+    @ColumnInfo(name = "isIrregularTime", defaultValue = "0") val isIrregularTime: Boolean = false,
+
+    /** 自定义开始时间 (HH:mm), 仅 ownTime/isIrregularTime=true 时使用 */
     @ColumnInfo(name = "startTime") val startTime: String = "",
 
-    /** 自定义结束时间 (HH:mm), 仅 ownTime=true 时使用 */
+    /** 自定义结束时间 (HH:mm), 仅 ownTime/isIrregularTime=true 时使用 */
     @ColumnInfo(name = "endTime") val endTime: String = "",
 
     @ColumnInfo(name = "credit") val credit: Float = 0f,
@@ -141,6 +153,8 @@ data class CourseEntity(
      * 使其在网格中正确定位。ownTime=false 的课原样返回。
      */
     fun normalizeNode(timeJson: String): CourseEntity {
+        // issue#23: 边缘槽位卡的网格位置 = 槽位编号本身, 禁止按时间重映射
+        if (isIrregularNode) return this
         if (!ownTime || startTime.isBlank() || endTime.isBlank()) return this
         val mapped = com.lingion.sleepy.util.TimeTableUtils.timeToNode(startTime, endTime, timeJson)
             ?: return this
