@@ -4,7 +4,6 @@ import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
@@ -18,7 +17,6 @@ import android.os.Looper
 import android.util.Log
 import android.view.View
 import android.widget.RemoteViews
-import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.AppPrefs
@@ -140,10 +138,9 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         val bmp = renderBitmap(context, data, w, h)
         val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
         views.setImageViewBitmap(R.id.widget_bitmap, bmp)
-        val pi = PendingIntent.getActivity(context, widgetId,
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
+        val pi = PendingIntent.getActivity(context, WidgetRoutes.tapRequestCode(widgetId),
+            WidgetRoutes.tapIntent(context),
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE)
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
         awm.updateAppWidget(widgetId, views)
         // Bitmap 回收已删除: setImageViewBitmap 进入 RemoteViews.mBitmapCache,
