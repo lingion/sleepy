@@ -125,10 +125,11 @@ fun CardsGridView(
 ) {
     val colors = SleepyTheme.colors
     // 渲染槽位表: 有 timeJson 且存在跨空隙非常规课 → 标准 12 节 + 占位行; 否则原表
-    val renderSlots = remember(timeSlots, timeJson, courses) {
-        if (timeJson != null) TimeTableUtils.buildRenderSlotPlan(courses, timeJson).slots
-        else timeSlots
+    val renderPlan = remember(timeSlots, timeJson, courses) {
+        if (timeJson != null) TimeTableUtils.buildRenderSlotPlan(courses, timeJson)
+        else TimeTableUtils.RenderSlotPlan(timeSlots)
     }
+    val renderSlots = renderPlan.slots
     val maxNode = renderSlots.maxOfOrNull { it.nodeEnd } ?: 12
     val sortedDays = visibleDays.sorted()
     val dayCount = sortedDays.size
@@ -163,6 +164,20 @@ fun CardsGridView(
     val gapW = d(5f)
     val rowH = slotH + gapH
 
+    // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
+    // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
+    // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp;
+    // rowWeightAt(i) = 第 i 行权重(标准行恒 1, 占位行 < 1); 无权重 = 全标准行。
+    fun yOfRows(r: Float): Dp {
+        val ws = renderPlan.slotWeights ?: return rowH * r
+        var acc = 0f
+        val full = r.toInt().coerceAtMost(ws.size)
+        for (i in 0 until full) acc += ws[i]
+        if (full < ws.size && r > full) acc += ws[full] * (r - full)
+        return rowH * acc
+    }
+    fun rowHeightAt(i: Int): Dp = rowH * (renderPlan.slotWeights?.getOrNull(i) ?: 1f)
+
     val gridBgShape = SleepyTheme.shapes.large
 
     Box(
@@ -176,8 +191,8 @@ fun CardsGridView(
             val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
             // issue#23: grid 高度按 renderSlots 行数算(maxNode 已不反映边缘节点总数)——
             // edge 节点在 timeSlots 末尾, 视觉上自然排到第 N 节之下;
-            // 用户反馈 2026-09-09: 占位节次行同样扩展网格高度。
-            val gridH = rowH * (renderSlots.size.coerceAtLeast(1))
+            // 用户反馈 2026-09-09: 占位节次行同样扩展网格高度(按分钟加权, 不占满整行)。
+            val gridH = yOfRows(renderSlots.size.coerceAtLeast(1).toFloat())
 
             val scrollState = rememberScrollState()
 
@@ -220,13 +235,13 @@ fun CardsGridView(
 
                 // ---- Grid 主体：固定高度 Box，内部全用 Modifier.offset 绝对定位 ----
                 Box(modifier = Modifier.fillMaxWidth().height(gridH)) {
-                    // 时间栏：每个节次一个 Row，用 offset 定位到正确 y
+                    // 时间栏：每个节次一个 Row，用 offset 定位到正确 y (分钟加权)
                     for ((i, slot) in renderSlots.withIndex()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(slotH)
-                                .offset(y = rowH * i),
+                                .height(rowHeightAt(i) - gapH)
+                                .offset(y = yOfRows(i.toFloat())),
                             horizontalArrangement = Arrangement.spacedBy(gapW),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
@@ -279,7 +294,7 @@ fun CardsGridView(
                         val anchor = cluster.courses.first() // 主课判定序首位,决定簇基点
                         val dayIdx = sortedDays.indexOf(cluster.day)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
-                        val cardY = rowH * slotIndexOf(anchor.startNode).coerceAtLeast(0)
+                        val cardY = yOfRows(slotIndexOf(anchor.startNode).coerceAtLeast(0).toFloat())
                         val clusterKey = ConflictLayoutEngine.conflictClusterKey(cluster)
 
                         ConflictClusterCard(
@@ -328,12 +343,12 @@ fun CardsGridView(
                         val frac = if (course.ownTime) TimeTableUtils.timeToFractionalRows(
                             course.startTime, course.endTime, renderSlots
                         ) else null
-                        val cardY = frac?.let { rowH * it.first } ?: rowH * nodeIdx
+                        val cardY = frac?.let { yOfRows(it.first) } ?: yOfRows(nodeIdx.toFloat())
                         val cardH = if (frac != null) {
-                            // 按比例, 但保底 0.3 行避免过短课胶囊塌缩到不可点
-                            (rowH * (frac.second - frac.first) - gapH).coerceAtLeast(rowH * 0.3f)
+                            // 按比例(分钟加权), 保底 0.3 标准行避免过短课胶囊塌缩到不可点
+                            (yOfRows(frac.second) - yOfRows(frac.first)).coerceAtLeast(rowH * 0.3f) - gapH
                         } else {
-                            rowH * steps - gapH
+                            yOfRows((nodeIdx + steps).toFloat()) - yOfRows(nodeIdx.toFloat()) - gapH
                         }
 
                         CourseOverlayCard(

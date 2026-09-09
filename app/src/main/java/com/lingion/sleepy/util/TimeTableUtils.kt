@@ -188,8 +188,13 @@ object TimeTableUtils {
     /**
      * 渲染期槽位方案 — 标准槽位 + 按当前课程集合合成的**占位节次**(渲染期产物,
      * 绝不写回 timeJson; 与用户手建边缘节点 insertEdgeNode 机制严格无关)。
+     *
+     * @param slotWeights 每行渲染权重 = 该行分钟数 / 左邻标准行分钟数(首行对右邻取基准),
+     *   全 null = 全部标准行(等高)。占位行只有真实分钟占比(如 5/45 ≈ 0.111), 渲染层
+     *   按 y = rowH * 加权前缀和 定位 — 用户反馈 2026-09-09: 整行占位把时间轴拉歪,
+     *   课头视觉位置明显低于真实时刻。
      */
-    data class RenderSlotPlan(val slots: List<TimeSlot>)
+    data class RenderSlotPlan(val slots: List<TimeSlot>, val slotWeights: List<Float>? = null)
 
     /**
      * 为当前可见课程合成渲染槽位表(纯函数):
@@ -236,8 +241,11 @@ object TimeTableUtils {
         if (placeholderByGap.isEmpty()) return RenderSlotPlan(base)
 
         val out = mutableListOf<TimeSlot>()
+        val weights = mutableListOf<Float>()
+        fun minutes(a: LocalTime, b: LocalTime): Long = ChronoUnit.MINUTES.between(a, b).coerceAtLeast(1)
         for ((i, slot) in base.withIndex()) {
             out.add(slot)
+            weights.add(1f)
             placeholderByGap[i]?.let { (lo, hi) ->
                 out.add(
                     TimeSlot(
@@ -250,9 +258,11 @@ object TimeTableUtils {
                         nodeEnd = slot.nodeEnd
                     )
                 )
+                // 占位行权重 = 自身分钟数 / 左邻标准行分钟数 (时间轴按分钟加权, 不占满整行)
+                weights.add(minutes(lo, hi).toFloat() / minutes(slot.start, slot.end).toFloat())
             }
         }
-        return RenderSlotPlan(out)
+        return RenderSlotPlan(out, weights)
     }
 
     /** 便捷: 拿 TimeTableEntity 直接出 slots */

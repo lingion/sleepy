@@ -55,7 +55,7 @@ class IrregularPrecisionTest {
         val ph = plan.slots.filter { it.isPlaceholder }
         assertEquals(1, ph.size)
         val idx = plan.slots.indexOf(ph[0])
-        val weight: Float? = plan.let { p -> if (idx < p.slotWeights.size) p.slotWeights[idx] else null }
+        val weight: Float? = plan.let { p -> p.slotWeights?.getOrNull(idx) }
         assertEquals(
             "占位行 5 分钟应只占 5/45 ≈ 0.111 标准行高, 不是整行",
             5f / 45f, weight!!, 0.01f
