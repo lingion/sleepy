@@ -38,3 +38,8 @@ docs/sop/jw-cross-verify-sop.md
 BRANCHING.md
 CONTRIBUTING.md
 
+# Superpowers SDD workflow artifacts (local only, never push)
+# AI 工作流的 spec/design/task 产物只在本地保留,禁止入库。
+# 2026-09-09 task-7-report.md 误入库已移除,整目录兜底忽略。
+.superpowers/
+
