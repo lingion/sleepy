@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
+import android.util.TypedValue
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
@@ -125,30 +126,51 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         fun navRequestCode(widgetId: Int, ordinal: Int): Int = widgetId * 3 + ordinal
 
         /**
-         * 配置今日导航按钮条 — 只给 Today 系 receiver 的实例用
+         * 配置今日导航顶栏 — 只给 Today 系 receiver 的实例用
          * (WeekGrid 最小档复用 pushTodayData 管线但传 receiverClass=null → 不会进来)。
-         * 可见按钮 = 高亮位图 (renderNavCircle 圆钮 × 2 + renderNavPill 胶囊, 主题色底 +
-         * 对比色箭头/文字) + 三个导航 PendingIntent (issue #24 交互改造: 点击区从透明小角
-         * 换成可见大按钮, 解决"点击区域太小不好点")。
+         * 顶栏 = 真实 RemoteViews 视图顶栏: 标题 TextView + 左右低对比三角按钮 + 「回到今天」
+         * TextView (仅导航态显示, 居两钮正中)。视图即点击区 (40×28dp 大热区, 修
+         * 「点击区域太小」); bitmap 头部留白由渲染器 emptyHeader=true 保证, 不双重标题。
          */
         fun configureTodayNav(
             context: Context, views: android.widget.RemoteViews,
             widgetId: Int, receiverClass: Class<*>, data: WidgetData
         ) {
-            // 按钮位图 — renderNav* 以 data 主题渲染, 与卡面同源配色
+            // 顶栏背景 — overflow 路径挡住条带上滑内容; 颜色与卡面 bitmap 同一 scheme
+            val colors = WidgetBitmapRenderers.todayNavHeaderColors(context, data)
+            views.setInt(com.lingion.sleepy.R.id.widget_today_header, "setBackgroundColor", colors.bg)
+            // 标题 — 「M/D · 周X」恒显日期 (用户定稿: 两种状态格式统一)
+            views.setTextViewText(
+                com.lingion.sleepy.R.id.widget_today_nav_title,
+                navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context))
+            )
+            views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_title, colors.title)
+            views.setTextViewTextSize(
+                com.lingion.sleepy.R.id.widget_today_nav_title,
+                TypedValue.COMPLEX_UNIT_DIP, 13f
+            )
+            // 「回到今天」 — 仅导航态显示, 纯文本居两钮正中 (用户规格)
+            views.setTextViewText(
+                com.lingion.sleepy.R.id.widget_today_nav_today,
+                context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today)
+            )
+            views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_today, colors.action)
+            views.setTextViewTextSize(
+                com.lingion.sleepy.R.id.widget_today_nav_today,
+                TypedValue.COMPLEX_UNIT_DIP, 11f
+            )
+            views.setViewVisibility(
+                com.lingion.sleepy.R.id.widget_today_nav_today,
+                if (data.isToday) android.view.View.GONE else android.view.View.VISIBLE
+            )
+            // 三角按钮位图 — 低对比圆角矩形 (surfaceVariant 底 + onSurfaceVariant 图标)
             views.setImageViewBitmap(
                 com.lingion.sleepy.R.id.widget_today_nav_prev,
-                WidgetBitmapRenderers.renderNavCircle(context, data, pointLeft = true)
-            )
-            views.setImageViewBitmap(
-                com.lingion.sleepy.R.id.widget_today_nav_today,
-                WidgetBitmapRenderers.renderNavPill(
-                    context, data, context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today)
-                )
+                WidgetBitmapRenderers.renderNavTriangle(context, data, pointLeft = true)
             )
             views.setImageViewBitmap(
                 com.lingion.sleepy.R.id.widget_today_nav_next,
-                WidgetBitmapRenderers.renderNavCircle(context, data, pointLeft = false)
+            WidgetBitmapRenderers.renderNavTriangle(context, data, pointLeft = false)
             )
             val zones = listOf(
                 Triple(com.lingion.sleepy.R.id.widget_today_nav_prev, ACTION_PREV_DAY, 0),
@@ -168,13 +190,17 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             }
         }
 
+        /** 顶栏标题 — 「M/D · 周X」恒显日期 (用户定稿), 今日/导航两态格式统一。纯函数可 JVM 断言。 */
+        fun navTitle(data: WidgetData, dayName: String): String =
+            "${data.dateLabel} · $dayName"
+
         /**
          * 今日课程推送管线(静态/可滚动闸门) — 网格小最小档与今日课程·小共用,
          * 保证"变成今日课程那个小组件的样子"像素级同源(同一渲染器+同一滚动条带工厂)。
          * 注意 Today 小变体在这里等效直通(REGULAR 也走这条闸), 与改动前行为一致。
          *
          * [receiverClass] = 拥有该 widget 的 AppWidgetProvider 类 (issue #24 Feature2):
-         * Today 系 receiver (含子类) → 传自身类, 挂日期导航 (widget_today_stack_container /
+         * Today 系 receiver (含子类) → 传自身类, 挂日期导航 (widget_today_nav_static /
          * widget_scroll_today_nav + configureTodayNav);
          * WeekGrid 最小档 → 不传 (默认 null) → 布局与行为与改动前逐字节一致, 不沾导航区。
          */
@@ -214,42 +240,37 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY
                     )
                 }
-            } else if (TodayStackCore.staticFits(contentH.toFloat(), hDp.toFloat())) {
-                // Today 系静态分支 → StackView 竖滑翻页容器 (issue #24 交互改造)
+            } else if (contentH <= hDp) {
+                // Today 系静态分支 — bitmap(emptyHeader 留白顶栏) + 真实视图顶栏 (issue #24)
                 val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), hDp.toFloat(), variant
+                    context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
                 )
-                val views = android.widget.RemoteViews(context.packageName, com.lingion.sleepy.R.layout.widget_today_stack_container)
+                val views = android.widget.RemoteViews(
+                    context.packageName, com.lingion.sleepy.R.layout.widget_today_nav_static
+                )
                 views.setImageViewBitmap(com.lingion.sleepy.R.id.widget_bitmap, shell)
                 val tap = PendingIntent.getActivity(
                     context, WidgetRoutes.tapRequestCode(id),
                     WidgetRoutes.tapIntent(context),
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
-                // 壳图点击仅 StackView 未加载完时可达 (loading 兜底); 卡面点击走 template
                 views.setOnClickPendingIntent(com.lingion.sleepy.R.id.widget_bitmap, tap)
                 configureTodayNav(context, views, id, receiverClass!!, data)
-                val svc = Intent(context, TodayStackService::class.java).apply {
-                    putExtra(TodayStackService.StackFactory.EXTRA_WIDGET_ID, id)
-                    putExtra(TodayStackService.StackFactory.EXTRA_VARIANT, variant.name)
-                    this.data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
-                }
-                views.setRemoteAdapter(com.lingion.sleepy.R.id.widget_today_stack, svc)
-                views.setPendingIntentTemplate(com.lingion.sleepy.R.id.widget_today_stack, tap)
                 awm.updateAppWidget(id, views)
-                awm.notifyAppWidgetViewDataChanged(id, com.lingion.sleepy.R.id.widget_today_stack)
-                Log.d(TAG, "pushTodayData stack id=$id ${wDp}x${hDp}dp content=$contentH")
+                Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH")
             } else {
-                // Today 系 overflow → scroll 分支: 壳+条带 ListView+底部按钮条 (按钮翻页)
+                // Today 系 overflow — 壳+条带(emptyHeader 同源) + 真实视图顶栏
+                // (不透明, 挡住条带上滑内容; 条带滚动位 0 与静态渲染坐标一致)
                 val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), hDp.toFloat(), variant
+                    context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
                 )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
                     layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today_nav,
                     shellBitmap = shell,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
-                    configureViews = navZones
+                    configureViews = navZones,
+                    stripHeaderless = true
                 )
             }
         }

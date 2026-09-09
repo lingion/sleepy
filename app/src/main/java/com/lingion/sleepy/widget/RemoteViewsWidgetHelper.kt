@@ -108,6 +108,9 @@ object RemoteViewsWidgetHelper {
      * @param layoutRes 可滚动容器布局 (含 widget_shell + widget_strip_list)
      * @param configureViews 推送前对 RemoteViews 的追加配置钩子(挂导航区 PendingIntent),
      *        null = 不追加 → 既有调用方零改动
+     * @param stripHeaderless 条带长图渲染是否去头 (issue #24 顶栏导航: 今日导航版条带长图
+     *        不画 bitmap 标题行 — 真实视图顶栏覆盖在 ListView 之上, 条带再画标题 = 双重标题;
+     *        false = 旧行为, WeekGrid 最小档 overflow 条带仍带头) — 缺省 false, 既有调用方零改动
      */
     fun pushScrollable(
         context: Context,
@@ -117,7 +120,8 @@ object RemoteViewsWidgetHelper {
         layoutRes: Int,
         shellBitmap: Bitmap,
         scopeExtra: String,
-        configureViews: ((RemoteViews) -> Unit)? = null
+        configureViews: ((RemoteViews) -> Unit)? = null,
+        stripHeaderless: Boolean = false
     ) {
         val views = RemoteViews(context.packageName, layoutRes)
         views.setImageViewBitmap(R.id.widget_shell, shellBitmap)
@@ -125,6 +129,7 @@ object RemoteViewsWidgetHelper {
         val svcIntent = Intent(context, ScrollStripService::class.java).apply {
             putExtra(ScrollStripService.StripFactory.EXTRA_WIDGET_ID, widgetId)
             putExtra(ScrollStripService.StripFactory.EXTRA_SCOPE, scopeExtra)
+            putExtra(ScrollStripService.StripFactory.EXTRA_EMPTY_HEADER, stripHeaderless)
             data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
         }
         views.setRemoteAdapter(R.id.widget_strip_list, svcIntent)

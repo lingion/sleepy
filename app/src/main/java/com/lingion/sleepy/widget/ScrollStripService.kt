@@ -33,6 +33,7 @@ class ScrollStripService : RemoteViewsService() {
         companion object {
             const val EXTRA_WIDGET_ID = "widget_id"
             const val EXTRA_SCOPE = "scope"
+            const val EXTRA_EMPTY_HEADER = "intent_extra_key_empty_header"
             const val SCOPE_TODAY = "today"
             const val SCOPE_TWODAY = "twoday"
             const val SCOPE_WEEKLIST = "weeklist"
@@ -43,6 +44,8 @@ class ScrollStripService : RemoteViewsService() {
 
         private val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
         private val scope = intent.getStringExtra(EXTRA_SCOPE) ?: SCOPE_TODAY
+        // 条带长图是否去头 (今日导航版 true: 真实视图顶栏覆盖 ListView 之上, 条带再画标题=双重标题)
+        private val emptyHeader = intent.getBooleanExtra(EXTRA_EMPTY_HEADER, false)
         private var strips: List<Bitmap> = emptyList()
 
         override fun onCreate() {}
@@ -67,7 +70,9 @@ class ScrollStripService : RemoteViewsService() {
                     val d = TodayWidgetReceiver.loadDataSync(context, widgetId)
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d)
                     val renderH = ceil(contentHdp / STRIP_DP) * STRIP_DP
-                    full = WidgetBitmapRenderers.renderToday(context, d, wDp.toFloat(), renderH)
+                    full = WidgetBitmapRenderers.renderToday(
+                        context, d, wDp.toFloat(), renderH, emptyHeader = emptyHeader
+                    )
                 }
                 SCOPE_TWODAY -> {
                     val d = TwoDayWidgetReceiver.loadDataSync(context, widgetId)

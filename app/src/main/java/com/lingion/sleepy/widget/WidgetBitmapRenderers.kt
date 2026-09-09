@@ -169,16 +169,17 @@ object WidgetBitmapRenderers {
     /**
      * Today widget 渲染 — 今日课程列表
      * SMALL 变体 + 容器 <150dp → 走紧凑档(纯文本); REGULAR 或容器被拖大 ≥150dp → 全量排版
-     * (默认参数 REGULAR → 全部现有调用点零改动; 大档路径 renderTodayRegular 函数体标题行箭头
-     * 在 suppressHeaderNavAffordances=true 时不再绘制 — StackView 版布局的翻页/导航
-     * 全部收进底部高亮按钮条, 标题行的小箭头已成无效可供性, 不再画)。
+     * (默认参数 REGULAR → 全部现有调用点零改动; 大档路径 renderTodayRegular 函数体标题行
+     * 在 emptyHeader=true 时整体不画(标题/右侧槽位/‹›小箭头全跳过, y 前进量保留 →
+     * 内容纵坐标与带头模式逐像素一致) — 今日导航版用真实 RemoteViews 视图(TextView+按钮)
+     * 覆盖顶栏, bitmap 头部必须留白, 否则双重标题; WeekGrid 最小档/旧调用方默认 false 不受影响。
      */
     fun renderToday(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR,
-        suppressHeaderNavAffordances: Boolean = false
+        emptyHeader: Boolean = false
     ): Bitmap {
-        return renderTodayRegular(context, data, wDp, hDp, suppressHeaderNavAffordances)
+        return renderTodayRegular(context, data, wDp, hDp, emptyHeader)
     }
 
     /**
@@ -288,7 +289,7 @@ object WidgetBitmapRenderers {
      */
     private fun renderTodayRegular(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
-        suppressHeaderNavAffordances: Boolean
+        emptyHeader: Boolean
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -300,6 +301,7 @@ object WidgetBitmapRenderers {
         // 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
         val displayMode = AppPrefs.getDisplayMode(context)
         val showDate = AppPrefs.isShowDate(context)
+        val ctx = SleepyApp.get()
 
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
@@ -314,47 +316,43 @@ object WidgetBitmapRenderers {
         val pad = 14f * density
         var y = pad
 
-        // 标题行 (issue #24 Feature2 日期导航): 标题 + 右侧槽位。
-        // 今日态: 「今天 · 周X」+ showDate 日期; 导航态: 「M/D · 周X」+「回到今天」。
-        // 翻页/导航交互全部收进底部高亮按钮条 (StackView 竖滑 + 三钮), 标题行小箭头已删 —
-        // 新布局顶部无点击区, 保留小箭头 = 无效可供性。
-        val ctx = SleepyApp.get()
-        val header = todayHeaderParts(
-            data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate
-        ) { ctx.getString(it) }
-        val titleX = pad
-        val rightX = w - pad
-        // 左右导航箭头 — 仅保留给不接底部按钮条的调用方 (WeekGrid 最小档沿用旧可供性);
-        // suppressHeaderNavAffordances=true 的今日 StackView 版不画。
-        if (!suppressHeaderNavAffordances) {
+        // 标题行 — emptyHeader=true 时整体不画: 今日导航版顶栏用真实 RemoteViews 视图
+        // (TextView 标题 + 三角按钮) 覆盖, bitmap 头部留白防双重标题; y 前进量保留 →
+        // 内容纵坐标与带头渲染逐像素一致。WeekGrid 最小档等旧调用方 (false) 逐字节不变。
+        if (!emptyHeader) {
+            val header = todayHeaderParts(
+                data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate
+            ) { ctx.getString(it) }
+            val titleX = pad
+            val rightX = w - pad
             p.color = s.onSurfaceVariant
             p.textSize = 16f * density
             p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             canvas.drawText("‹", pad, y + 13f * density, p)
             val arrowW = p.measureText("›")
             canvas.drawText("›", w - pad - arrowW, y + 13f * density, p)
-        }
-        // 标题 (右侧槽位存在时按需截断)
-        p.color = s.primary
-        p.textSize = 13f * density
-        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        canvas.drawText(
-            ellipsize(p, header.title, (rightX - 4f * density - titleX).coerceAtLeast(40f * density)),
-            titleX, y + 13f * density, p
-        )
-        // 右侧槽位: 导航态「回到今天」(primary 加粗 action 样式) / 今日态日期 (次要样式)
-        if (header.rightText != null) {
-            if (header.rightIsAction) {
-                p.color = s.primary
-                p.textSize = 11f * density
-                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            } else {
-                p.color = s.onSurfaceVariant
-                p.textSize = 12f * density
-                p.typeface = Typeface.DEFAULT
+            // 标题 (右侧槽位存在时按需截断)
+            p.color = s.primary
+            p.textSize = 13f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            canvas.drawText(
+                ellipsize(p, header.title, (rightX - 4f * density - titleX).coerceAtLeast(40f * density)),
+                titleX, y + 13f * density, p
+            )
+            // 右侧槽位: 导航态「回到今天」(primary 加粗 action 样式) / 今日态日期 (次要样式)
+            if (header.rightText != null) {
+                if (header.rightIsAction) {
+                    p.color = s.primary
+                    p.textSize = 11f * density
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                } else {
+                    p.color = s.onSurfaceVariant
+                    p.textSize = 12f * density
+                    p.typeface = Typeface.DEFAULT
+                }
+                val rw = p.measureText(header.rightText)
+                canvas.drawText(header.rightText, rightX - rw, y + 13f * density, p)
             }
-            val rw = p.measureText(header.rightText)
-            canvas.drawText(header.rightText, rightX - rw, y + 13f * density, p)
         }
 
         y += 24f * density
@@ -477,69 +475,57 @@ object WidgetBitmapRenderers {
         return h
     }
 
-    // ── 今日导航按钮条 (issue #24 交互改造: 竖滑翻页 + 高亮圆角按钮) ──
+    // ── 今日导航顶栏按钮 (issue #24: 低对比圆角矩形 + 三角形图标) ──
 
-    /** 导航按钮统一口径: 圆钮直径/胶囊高 28dp, 胶囊宽 54dp, 全圆角(半径=高/2)。 */
-    const val NAV_BUTTON_SIZE_DP = 28f
-    const val NAV_PILL_W_DP = 54f
-    const val NAV_PILL_H_DP = 28f
-
-    /**
-     * 今日导航圆钮 — 直径 28dp 圆形, primary 底 + 对比色三角箭头 (用户规格「圆圈高亮」)。
-     * 箭头用 Canvas Path 三角形, 禁用字体 glyph (‹›) — 不依赖系统字体是否含 U+25B8。
-     */
-    fun renderNavCircle(context: Context, data: WidgetData, pointLeft: Boolean): Bitmap {
-        val density = context.resources.displayMetrics.density
-        val size = (NAV_BUTTON_SIZE_DP * density).toInt()
-        val s = scheme(context, data.themeKey, data.isDark)
-        val bmp = Bitmap.createBitmap(size, size, Bitmap.Config.ARGB_8888)
-        val c = Canvas(bmp)
-        val p = Paint(Paint.ANTI_ALIAS_FLAG)
-
-        p.color = s.primary
-        c.drawCircle(size / 2f, size / 2f, size / 2f, p)
-
-        // 三角箭头 — tip 偏移 4dp, 底边高 9dp, 宽 4.5dp (视觉居中: 底边中心后移 1dp)
-        val arrowColor = CourseColorUtil.textColorOn(s.primary, s.isDark, s.onSurface)
-        val tipDx = if (pointLeft) -4f else 4f
-        val cx = size / 2f
-        val cy = size / 2f
-        val path = android.graphics.Path().apply {
-            moveTo(cx + tipDx * density, cy)
-            lineTo(cx - tipDx * density, cy - 4.5f * density)
-            lineTo(cx - tipDx * density, cy + 4.5f * density)
-            close()
-        }
-        p.color = arrowColor
-        c.drawPath(path, p)
-        return bmp
-    }
+    /** 视图口径: 按钮视图 40×28dp(即点击热区, 大于可视矩形), 顶栏条高 36dp。 */
+    const val NAV_BUTTON_W_DP = 40f
+    const val NAV_BUTTON_H_DP = 28f
+    const val NAV_HEADER_H_DP = 36f
 
     /**
-     * 今日导航胶囊钮 — 54×28dp 全圆角矩形, primary 底 + 对比色文字标签 (用户规格
-     * 「高亮圆角矩形」)。今日态与导航态同样式 (状态语义由卡面标题行表达)。
+     * 今日导航三角按钮 — 40×28dp 位图, 内缩 4dp×3dp 的圆角矩形(半径 7dp),
+     * 低对比配色: surfaceVariant 底 + onSurfaceVariant 三角形图标 (M3 标准安静配色,
+     * 修掉上一版 primary 高饱和实心圆钮的“对比度太高”)。三角形走 Canvas Path,
+     * 禁字体 glyph (‹› U+25B8 依赖系统字体)。
      */
-    fun renderNavPill(context: Context, data: WidgetData, label: String): Bitmap {
+    fun renderNavTriangle(context: Context, data: WidgetData, pointLeft: Boolean): Bitmap {
         val density = context.resources.displayMetrics.density
-        val w = (NAV_PILL_W_DP * density).toInt()
-        val h = (NAV_PILL_H_DP * density).toInt()
+        val w = (NAV_BUTTON_W_DP * density).toInt()
+        val h = (NAV_BUTTON_H_DP * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
         val c = Canvas(bmp)
         val p = Paint(Paint.ANTI_ALIAS_FLAG)
 
-        // 胶囊 — 全圆角 (半径=高/2)
-        p.color = s.primary
-        c.drawRoundRect(RectF(0f, 0f, w.toFloat(), h.toFloat()), h / 2f, h / 2f, p)
+        // 低对比圆角矩形底 — 内缩留出的透明边 = 按钮之间的呼吸空隙, 视图本身即点击区
+        p.color = s.surfaceVariant
+        c.drawRoundRect(RectF(4f * density, 3f * density, w - 4f * density, h - 3f * density),
+            7f * density, 7f * density, p)
 
-        // 标签 — 对比色居中
-        p.color = CourseColorUtil.textColorOn(s.primary, s.isDark, s.onSurface)
-        p.textSize = 12f * density
-        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        p.textAlign = Paint.Align.CENTER
-        c.drawText(label, w / 2f, h / 2f - (p.fontMetrics.ascent + p.fontMetrics.descent) / 2f, p)
-        p.textAlign = Paint.Align.LEFT
+        // 三角形图标 — tip 3.5dp, 半高 4dp, 视觉居中 (底边中心后移 0.5dp)
+        val cx = w / 2f
+        val cy = h / 2f
+        val tipDx = (if (pointLeft) -3.5f else 3.5f) * density
+        val path = android.graphics.Path().apply {
+            moveTo(cx + tipDx, cy)
+            lineTo(cx - tipDx, cy - 4f * density)
+            lineTo(cx - tipDx, cy + 4f * density)
+            close()
+        }
+        p.color = s.onSurfaceVariant
+        c.drawPath(path, p)
         return bmp
+    }
+
+    /**
+     * 今日导航顶栏运行时配色 — 顶栏真实视图 (标题/动作文字/背景) 与卡面 bitmap 同一 scheme
+     * 取色 (单一事实来源), 防止 TextView 与 Canvas 渲染色彩漂移。
+     */
+    data class TodayNavHeaderColors(val title: Int, val action: Int, val bg: Int)
+
+    fun todayNavHeaderColors(context: Context, data: WidgetData): TodayNavHeaderColors {
+        val s = scheme(context, data.themeKey, data.isDark)
+        return TodayNavHeaderColors(title = s.primary, action = s.primary, bg = s.bg)
     }
 
     /**
