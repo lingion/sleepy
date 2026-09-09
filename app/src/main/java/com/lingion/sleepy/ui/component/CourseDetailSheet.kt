@@ -66,7 +66,11 @@ fun CourseDetailSheet(
     allCourses: List<CourseEntity> = emptyList(),
     onDismiss: () -> Unit,
     onEdit: ((CourseEntity) -> Unit)? = null,
-    onDefaultTopChanged: ((clusterKey: String, layerRepId: Long?) -> Unit)? = null
+    onDefaultTopChanged: ((clusterKey: String, layerRepId: Long?) -> Unit)? = null,
+    // 用户报障 2026-09-10: 非网格面(详情页)聚簇必须与网格同一时间域 —
+    // ownTime 课落库的 startNode/step 是表单占位值, 节点域聚簇会把时间零交集的
+    // 两门 ownTime 课(节点区间恰好相同)误判成冲突簇。null = 旧行为(节点域)。
+    timeJson: String? = null
 ) {
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
@@ -74,9 +78,11 @@ fun CourseDetailSheet(
         // 找出 course 所在冲突簇(仅当 day 下 ≥2 课区间相交才有)。
         // findClusters 按 day 分桶, 簇键 = "${day}:${anchor.startNode}:${anchor.step}",
         // 与 ConflictClusterCard / topOverrides 用同一公式。
-        val clusterInfo: ConflictCluster? = remember(course, allCourses) {
+        // 用户报障 2026-09-10: 带 timeJson 走分钟域(与网格一致), ownTime 课先归一化。
+        val clusterInfo: ConflictCluster? = remember(course, allCourses, timeJson) {
             val sameDay = allCourses.filter { it.day == course.day }
-            ConflictLayoutEngine.findClusters(sameDay)
+                .let { list -> if (timeJson == null) list else list.map { it.normalizeNode(timeJson) } }
+            ConflictLayoutEngine.findClusters(sameDay, timeJson)
                 .firstOrNull { it.courses.any { c -> c.id == course.id } }
                 ?.takeIf { it.courses.size >= 2 }
         }
