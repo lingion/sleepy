@@ -208,4 +208,21 @@ class Schools179CrossValidationTest {
         assertTrue("广州医科大学 入口应含 /jsxsd", e!!.optString("url").contains("/jsxsd"))
         assertEquals("广州医科大学 应为 qz (官方通知'强智教务管理系统'+jsxsd 路径)", "qz", e.optString("type"))
     }
+
+    // ---- 8. UCAS (#18) 入口钉死 ----
+
+    @Test
+    fun `UCAS entry URL must point at SEP auth gateway (not xkgo schedule)`() {
+        // 回归 issue #18 reporter 现象: 浏览器/App 第一次进入 xkgo personSchedule
+        // 不 302 到 SEP, 而是 200 HTML Error 页 (title=Error, "登录失败!" 红色横幅,
+        // "请重新登录" 链接). xkgo 任意路径在未登录时都返同一 Error 页 — 没有 xkgo URL
+        // 可作安全首屏. SEP 受保护路径 (/appStore 等) 又被 WebView XRW 头拦截返 401
+        // JSON. 唯一 XRW-safe 的入口是 SEP 根 (登录页, 200, 带/不带 XRW 同).
+        val e = entryOf("中国科学院大学")
+        assertTrue("中国科学院大学 条目缺失", e != null)
+        val url = e!!.optString("url")
+        assertTrue("UCAS 入口应指向 SEP 门户根: $url", url.startsWith("https://sep.ucas.ac.cn/"))
+        // 禁直贴 xkgo 课表 URL: 该 URL 未登录 = 登录失败页 (xkgo 不 302 到 SEP)
+        assertFalse("UCAS 入口禁指向 xkgo 课表 URL: $url", url.contains("xkgo.ucas.ac.cn"))
+    }
 }
