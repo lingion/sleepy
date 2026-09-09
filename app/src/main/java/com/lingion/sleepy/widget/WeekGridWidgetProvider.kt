@@ -23,6 +23,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -340,6 +341,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
 
             // v21: 竖排(直书) — token 化 + 拉丁组旋转 + 标点优化
             val useVertForms = AppPrefs.isVertPunctReplace(context)  // 方案B开关(默认false=方案A'旋转)
+            // issue#26: widget 场景别名 — 字号预算与绘制必须用同一个名字, 否则截断不一致
+            val useAlias = AppPrefs.isWidgetUseAlias(context)
 
             // v20b: 字号统一到「全表最小理想值」— 自适应算法 + 统一字号
             // 每卡按 cardH/unitHeight 算理想字号(v21: 用 token 单位高度替代旧字数)
@@ -367,7 +370,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     val roomReservePre = if (hasRoom) (nameMinDp * 0.7f).coerceAtMost(availCardHPre * 0.35f) else 0f
                     val nameAvailH = (availCardHPre - roomReservePre).coerceAtLeast(0f)
                     // v21: token 单位高度(拉丁组旋转省空间 → unit<字数 → 统一号可能更大)
-                    val tokens = tokenizeName(course.courseName, useVertForms)
+                    val tokens = tokenizeName(CourseDisplayUtil.displayName(course, useAlias), useVertForms)
                     val unitH = measureUnitHeight(tokens, measurePaint).coerceAtLeast(1f)
                     val ideal = (nameAvailH / unitH).coerceIn(nameMinDp, nameCeil)
                     if (ideal < minIdeal) minIdeal = ideal
@@ -451,7 +454,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     p.alpha = 255
                     p.textAlign = Paint.Align.CENTER
 
-                    val tokens = tokenizeName(course.courseName, useVertForms)
+                    val tokens = tokenizeName(CourseDisplayUtil.displayName(course, useAlias), useVertForms)
 
                     // v22: 字符级贪心截断 — 任何 token 都可拆到字符级, 彻底杜绝溢出
                     //   CJK/PUNCT: 逐字累加, 放不下就截断

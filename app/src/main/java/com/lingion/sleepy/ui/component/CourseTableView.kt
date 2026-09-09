@@ -56,6 +56,7 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.flow.filter
@@ -128,7 +129,8 @@ fun CardsGridView(
     var prefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         AppPrefs.changeBus.filter {
-            it == AppPrefs.KEY_GRID_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO
+            it == AppPrefs.KEY_GRID_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO ||
+                it == AppPrefs.KEY_GRID_USE_ALIAS
         }.collect { prefVersion++ }
     }
 
@@ -403,6 +405,8 @@ private fun CourseOverlayCard(
     // 副信息（教室/教师/无）— 左栏 SingleTimeHeadCell 已有节次+时间，卡片 y 位置本身编码节次，
     // 故卡内不再显示节次/时间，改由 grid_sub_info 设置决定
     val subInfo = AppPrefs.getGridSubInfo(context)
+    // issue#26: 网格场景别名 — 网格设置开且别名非空才显示别名, 否则原名
+    val name = CourseDisplayUtil.displayName(course, AppPrefs.isGridUseAlias(context))
     val subText = when (subInfo) {
         "room" -> course.room
         "teacher" -> course.teacher
@@ -428,7 +432,7 @@ private fun CourseOverlayCard(
         if (subText.isBlank()) {
             // 无副信息: 课程名整体居中(原行为)
             Text(
-                text = course.courseName,
+                text = name,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = (10 * scale).sp,
@@ -450,7 +454,7 @@ private fun CourseOverlayCard(
                 // 用 weight(1f) 占位让课程名在上半区居中, 避免正正好好贴住副文字
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = course.courseName,
+                        text = name,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = (10 * scale).sp,
@@ -551,13 +555,13 @@ fun FullWeekView(
     greyDays: Set<Int> = emptySet()
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
-    // 设置页改 weekScale/cornerRatio/twoColumn/hideEmptyDays 后强制 recompose
+    // 设置页改 weekScale/cornerRatio/twoColumn/hideEmptyDays/别名后强制 recompose
     var prefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
         AppPrefs.changeBus.filter {
             it == AppPrefs.KEY_WEEK_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO ||
             it == AppPrefs.KEY_WEEK_TWO_COLUMN || it == AppPrefs.KEY_WEEK_TWO_COLUMN_MODE ||
-            it == AppPrefs.KEY_WEEK_HIDE_EMPTY_DAYS
+            it == AppPrefs.KEY_WEEK_HIDE_EMPTY_DAYS || it == AppPrefs.KEY_WEEK_USE_ALIAS
         }.collect { prefVersion++ }
     }
     val scale = AppPrefs.getWeekScale(context)
@@ -565,6 +569,8 @@ fun FullWeekView(
     val twoColumn = AppPrefs.isWeekTwoColumn(context)
     val twoColumnMode = AppPrefs.getWeekTwoColumnMode(context)
     val hideEmptyDays = AppPrefs.isWeekHideEmptyDays(context)
+    // issue#26: 周视图场景别名 — 周视图设置开才用别名; 传给所有子渲染单元
+    val useAlias = AppPrefs.isWeekUseAlias(context)
     val byDay = courses.groupBy { it.day }
     val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
 
@@ -579,6 +585,7 @@ fun FullWeekView(
             visibleDays = visibleDays,
             today = today,
             greyDays = greyDays,
+            useAlias = useAlias,
             scale = scale,
             cornerRatio = cornerRatio,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
@@ -608,6 +615,7 @@ private fun WeekStrip(
     today: Int,
     visibleDays: Set<Int>,
     greyDays: Set<Int> = emptySet(),
+    useAlias: Boolean = false,
     scale: Float = 1f,
     cornerRatio: Float = 1f,
     modifier: Modifier = Modifier
@@ -625,6 +633,7 @@ private fun WeekStrip(
                 courses = dayCourses,
                 isToday = isToday,
                 isGrey = day in greyDays,
+                useAlias = useAlias,
                 scale = scale,
                 cornerRatio = cornerRatio,
                 modifier = Modifier.weight(1f)
@@ -639,6 +648,7 @@ private fun DaySummaryCell(
     courses: List<CourseEntity>,
     isToday: Boolean,
     isGrey: Boolean = false,
+    useAlias: Boolean = false,
     modifier: Modifier = Modifier,
     scale: Float = 1f,
     cornerRatio: Float = 1f
@@ -711,7 +721,7 @@ private fun DaySummaryCell(
         ) {
             courses.take(5).forEach { c ->
                 Text(
-                    text = c.courseName,
+                    text = com.lingion.sleepy.util.CourseDisplayUtil.displayName(c, useAlias),
                     style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
                     color = if (isToday) colors.onPrimaryContainer.copy(alpha = SleepyTheme.Alpha.highContent) else colors.onSurfaceVariant,
                     maxLines = 2,
@@ -1006,6 +1016,8 @@ private fun LessonRow(
     val colors = SleepyTheme.colors
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
+    // issue#26: 周视图场景别名 — 与 colorless 同模式, 叶子直接读场景开关
+    val name = CourseDisplayUtil.displayName(course, AppPrefs.isWeekUseAlias(context))
     // 双层缩放: scale=全局周视图缩放(issue#8), laneScale=v7.10.4 冲突栏按实宽压缩
     val effScale = scale * laneScale
     val sd = { v: Float -> (v * effScale).dp }
@@ -1067,7 +1079,7 @@ private fun LessonRow(
         }
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = course.courseName,
+                text = name,
                 style = MaterialTheme.typography.labelMedium.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = (12 * effScale).sp,
