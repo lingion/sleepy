@@ -472,6 +472,7 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="license_attribution_note">Partes de los adaptadores de importación de sistemas académicos hacen referencia a implementaciones públicas de los siguientes proyectos de código abierto, con agradecimiento a todos.</string>
     <string name="license_foundational_section">Proyectos transversales</string>
     <string name="license_perschool_section">Agradecimientos por universidad</string>
+    <string name="license_contributor_section">Colaboradores</string>
     <string name="about_update_check">Buscar actualizaciones automáticamente</string>
     <string name="about_update_check_detail">Comprueba GitHub Releases al iniciar; aparecerá un aviso en la página Acerca cuando haya una versión nueva</string>
     <string name="about_update_available">Versión %1$s disponible — toca para ver</string>

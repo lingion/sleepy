@@ -472,6 +472,7 @@
     <string name="license_attribution_note">一部の教务システム取り込みアダプタは、以下のオープンソースプロジェクトの公開実装を参考にしています。皆様に感謝申し上げます。</string>
     <string name="license_foundational_section">複数大学共通の基盤プロジェクト</string>
     <string name="license_perschool_section">大学別の謝辞</string>
+    <string name="license_contributor_section">貢献者</string>
     <string name="about_update_check">自動的にアップデートを確認</string>
     <string name="about_update_check_detail">起動時に GitHub Releases を確認し、新バージョンがあれば「について」ページ上部にバナーを表示します</string>
     <string name="about_update_available">新バージョン %1$s があります — タップで表示</string>
