@@ -135,6 +135,9 @@ class AboutLicenseAttributionTest {
         Attribution("Hurray0/UCAS_GET_Course", ""),
         Attribution("cld378632668/ucas_course_tool", ""),
         Attribution("GentleCP/UCAS-Helper", ""),
+        // 2026-09-09 SEP SSO 登录链跨仓验证 (issue #18 回复: XRW 修复) 触达 2 仓
+        Attribution("wirsbf/TraintimePda-UCAS", ""),
+        Attribution("tbjuechen/sep-api", ""),
         // 北京林业大学 BJFU
         Attribution("Bloomberg2000/bjfu_course_ics_generator", ""),
         Attribution("Bloomberg2000/bjfu_util.py", ""),

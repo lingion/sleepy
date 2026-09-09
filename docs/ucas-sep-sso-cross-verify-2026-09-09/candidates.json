@@ -1,0 +1,6 @@
+[
+  {"full_name":"wirsbf/TraintimePda-UCAS","stars":12,"license":"无 (致谢合规, 不复用代码)","role":"主候选",
+   "evidence":"docs/protocol-notes-2026-09.md — SEP 登录链 2026-09-05 CDP 实测抓包: slogin RSA-2048 表单、303 重定向链、JSESSIONID 单 cookie、doUserVisitPhone 新设备验证、xkgo:3000/xkcts:8443 域名拓扑"},
+  {"full_name":"tbjuechen/sep-api","stars":2,"license":"MIT","role":"次候选",
+   "evidence":"src/sep_api/services/xkgo.py — SEP 原生会话 (loginError/loginSuccess label 判定), 印证 slogin 表单链路"}
+]
