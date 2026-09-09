@@ -1,0 +1,237 @@
+<script language='javascript' type='text/javascript'> window.parent.location.href='logout.aspx'</script>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>现代教学管理信息系统</title>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta content="all" name="robots">
+    <meta name="author" content="作者信息">
+    <meta name="Copyright" content="版权信息">
+    <meta name="description" content="站点介绍">
+    <meta name="keywords" content="站点关键词">
+    <link rel="icon" type="image/x-icon" href="style/4.0.0.1/images/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="style/4.0.0.1/images/favicon.ico" />
+    <link rel="stylesheet" href="/style/4.0.0.1/css/common.css">
+    <link rel="stylesheet" href="/style/4.0.0.1/css/jwstyle.css">
+    <link rel="stylesheet" href="/style/4.0.0.1/css/kebiao.css">
+    <link rel="stylesheet" type="text/css" href="/style/4.0.0.1/font-awesome-4.7.0/css/font-awesome.min.css">
+    <link rel="stylesheet" type="text/css" href="/style/4.0.0.1/css/bootstrap.min.css">
+    <script type="text/javascript" src="/style/4.0.0.1/js/jquery.min.js"></script>
+    <script type="text/javascript" src="/style/4.0.0.1/js/bootstrap.min.js"></script>
+    <!--<script defer>   
+		function  PutSettings()   
+			{     
+			factory.printing.header="";   
+			factory.printing.footer="";   
+		    factory.printing.leftMargin="5";   
+			factory.printing.topMargin="5";   
+			factory.printing.rightMargin="5";   
+			factory.printing.bottomMargin="5";
+		 }
+					</script>-->
+    <style>
+        @media Print {
+            .bgnoprint {
+            }
+
+            .noprint {
+                DISPLAY: none
+            }
+        }
+    </style>
+     <style type="text/css">
+        .tablesec {
+            position: relative;
+        }
+         .schedule tr td:first-child {
+             white-space:normal;
+         }
+
+        .newschedule {
+            overflow: hidden;
+            position: absolute;
+            left: 0;
+            top: 0;
+            z-index: 10;
+            background: #ffffff;
+        }
+
+        .oldschedule {
+            width: 100%;
+            z-index: 5;
+            overflow-x: auto;
+        }
+    </style>
+    <script type="text/javascript">
+        jQuery(function () {
+            var newtbele = jQuery('<div class="newschedule"></div>');
+            var newtable = jQuery('#Table1').clone(true);
+            newtable.appendTo(newtbele);
+            newtbele.width(jQuery('#Table1 tr:first td:first').outerWidth() + 1);
+            jQuery('#Table1').after(newtbele);
+            jQuery('#Table1').wrap("<div class='oldschedule'></div>");
+        })
+    </script>
+</head>
+<body class="combody">
+    <!--<OBJECT id="factory" style="DISPLAY: none" codeBase="ScriptX.cab#Version=5,60,0,360" classid="clsid:1663ed61-23eb-11d2-b92f-008048fdd814"
+			VIEWASTEXT>
+		</OBJECT>-->
+    <form name="xskb_form" method="post" action="./xskbcx.aspx" id="xskb_form">
+<div>
+<input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+<input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+<input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+<input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="YT6wW3u1DVZkayhQUdTSsOAhv9P/qS/waqyRQculyqo7FJ1HI3VEm5qEETe2JVGZHL12nKpE96bTX4zg49FkDZVCIgwiLvpM2Cyd6ExcbFZo/Xz+eR0E75kqqRe/8D+KXtyXpjF21jtrwqqq+xWvHltuKyMScqZzFWxisFh/MzoC/vzF3MviBFkO7G8p2FW15AxJ1DWoFEEfyk6KGmoIRfnMNZtrT5nogbWngqRh3YC3BDQ9hvvNjbk73hW3imHZsh+bw7Urt+RAnZJD" />
+</div>
+
+<script type="text/javascript">
+//<![CDATA[
+var theForm = document.forms['xskb_form'];
+if (!theForm) {
+    theForm = document.xskb_form;
+}
+function __doPostBack(eventTarget, eventArgument) {
+    if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+        theForm.__EVENTTARGET.value = eventTarget;
+        theForm.__EVENTARGUMENT.value = eventArgument;
+        theForm.submit();
+    }
+}
+//]]>
+</script>
+
+
+<div>
+
+	<input type="hidden" name="__VIEWSTATEGENERATOR" id="__VIEWSTATEGENERATOR" value="817A6D9A" />
+</div>
+        <div class="toolbox1">
+            <!-- 过滤条件开始 -->
+            <div class="searchbox">
+                <div class="search_con">
+                    <span id="Label5"></span>|
+					<span id="Label6"></span>|
+					<span id="Label7"></span>|
+					<span id="Label8"></span>|
+					<span id="Label9"></span>
+                    &nbsp;&nbsp;&nbsp;&nbsp;<span id="labTS" style="color:Red;"></span>
+                    <span id="labTip" style="color:Red;"></span>
+                </div>
+
+            </div>
+        </div>
+        <div class="mid-box-title">
+            <div class="bgcttit">
+                <p>
+                    
+                    <select name="xnd" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;xnd\&#39;,\&#39;\&#39;)&#39;, 0)" id="xnd" class="form-control" style="width:110px;">
+
+</select>
+                    <span id="Label2" style="font-size:14pt;">学年第</span>
+                    <select name="xqd" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;xqd\&#39;,\&#39;\&#39;)&#39;, 0)" id="xqd" class="form-control" style="width:50px;">
+	<option selected="selected" value="1">1</option>
+	<option value="2">2</option>
+	<option value="3">3</option>
+
+</select>
+                    <span id="Label1" style="font-size:14pt;">学期学生个人课程表</span>
+                </p>
+            </div>
+        </div>
+        
+
+        <div class="class-schedule">
+            <div class="combk">
+                <div class="tablesec">
+                    <table id="Table1" class="schedule" rules="all" border="0" style="border-color:Black;width:100%;">
+	<tr>
+		<td colspan="2" rowspan="1" style="width:2%;">时间</td><td align="center" style="width:14%;">星期一</td><td align="center" style="width:14%;">星期二</td><td align="center" style="width:14%;">星期三</td><td align="center" style="width:14%;">星期四</td><td align="center" style="width:14%;">星期五</td><td class="noprint" align="center" style="width:14%;">星期六</td><td class="noprint" align="center" style="width:14%;">星期日</td>
+	</tr><tr>
+		<td colspan="2">早晨</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td style="width:1%;">第1节</td><td align="center" style="width:7%;">&nbsp;</td><td align="center" style="width:7%;">&nbsp;</td><td align="center" style="width:7%;">&nbsp;</td><td align="center" style="width:7%;">&nbsp;</td><td align="center" style="width:7%;">&nbsp;</td><td class="noprint" align="center" style="width:7%;">&nbsp;</td><td class="noprint" align="center" style="width:7%;">&nbsp;</td>
+	</tr><tr>
+		<td>第2节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第3节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第4节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第5节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第6节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第7节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第8节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第9节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第10节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第11节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第12节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第13节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第14节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第15节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td>第16节</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr><tr>
+		<td style="width:1%;">中午</td><td></td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td><td class="noprint" align="center">&nbsp;</td>
+	</tr>
+</table>
+                </div>
+
+            </div>
+        </div>
+
+        <div class="formbox">
+            
+            <div id="cjsy" align="left">
+                <div class="formbox-title clearfix">
+                    <h3>实验课信息：</h3>
+                </div>
+                <div class="portallet">
+                    
+                </div>
+            </div>
+            <div class="formbox-title clearfix">
+                <h3>调、停（补）课信息：</h3>
+            </div>
+            <div class="portallet">
+                
+            </div>
+
+            <div id="tr_sjk" class="formbox-title clearfix">
+                <h3>实践课(或无上课时间)信息：</h3>
+            </div>
+            <div id="tr_dtsjk" class="portallet">
+                
+            </div>
+
+            <div class="formbox-title clearfix">
+                <h3>实习课信息：</h3>
+            </div>
+            <div class="portallet">
+                
+            </div>
+            <div id="tr_wap" class="formbox-title clearfix">
+                <h3 id="hqtkcxs">未安排上课时间的课程：</h3>
+            </div>
+            <div id="tr_dtwap" class="portallet">
+                
+            </div>
+
+        </div>
+     
+    </form>
+</body>
+</html>
