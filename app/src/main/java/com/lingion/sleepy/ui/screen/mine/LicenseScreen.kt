@@ -500,6 +500,10 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "bjtu_teaching_assessment (xxxand, MIT)\nBJTU-script (Coconut00)\nBJTU-CC (aooxin)\n" +
             "CourseTable (etherealviator, MIT)\nZF-Assistant (mcdona1d)\n" +
             "Greasy Fork 430918 北交大iCalender课表生成"
+    ),
+    PerSchoolEntry(
+        "school-jou", "江苏海洋大学 JOU",
+        "酱海带 jianghaidai (sunjingquan, 闭源参考, 仅协议分析未复用)\nJOU-Campus-Guide (sunjingquan)\njou_course_bot (brodamndamn)\nWehhit-server (dengjj)\nWehhit (zqy1)\nGrain (LeeReindeer, 浙江海洋大学, GPL-3.0)\n家庭记账系统 finance (GeorgeLeoo)\nfinance-server (GeorgeLeoo)\nJStore (GeorgeLeoo)\nRSSHub jou 路由 (RSSHub, MIT)"
     )
 )
 
