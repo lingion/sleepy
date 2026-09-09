@@ -13,4 +13,5 @@
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:description="@string/widget_week_grid_label"
+    android:widgetFeatures="reconfigurable"
     android:configure=".widget.WidgetConfigureActivity" />
