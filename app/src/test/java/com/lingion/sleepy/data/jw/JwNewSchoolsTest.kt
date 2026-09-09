@@ -214,7 +214,7 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_URP, JwProtocol.TYPE_URP_NEW, JwProtocol.TYPE_WISEDU,
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_CHAOXING, JwProtocol.TYPE_HNUST,
             JwProtocol.TYPE_EAMS5, JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU,
-            JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU,
+            JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU, JwProtocol.TYPE_BJTU,
             JwProtocol.TYPE_WHUT, JwProtocol.TYPE_CLASSIC_EAMS
         )
         val pendingTypes = listOf(
