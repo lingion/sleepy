@@ -1,9 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 条带行 — 高度必须 == ScrollStripService.STRIP_DP (48dp)。
-     条带宽 == widget 宽 → fitXY 1:1 无畸变; 条带间无间隙 → 连续长图。 -->
+<!-- 条带行 v3 (2026-09-10 第三次实现)。
+     多 child 48dp 切片 → launcher ListView extent 冻结 (ceil(V/H)*H−V 实测吻合),
+     尾部不可达; 单 child 自适应行高 → OPPO launcher 量出错高
+     (626px 等比高量成 270px) → fitXY 压扁 + 渲染错乱。
+     v3 契约: 单 child 整张长图, 行高由服务端 setViewLayoutHeight (API31+) 按
+     位图真实 dp 显式钉死 — launcher 无量测自由; 固定 dp 兜底值只服务
+     API<31 (真机不在列) 与 fallback, 绝不做自适应量测 (量错高根因)。 -->
 <ImageView xmlns:android="http://schemas.android.com/apk/res/android"
     android:id="@+id/widget_row_bitmap"
     android:layout_width="match_parent"
-    android:layout_height="48dp"
-    android:scaleType="fitXY"
-    android:adjustViewBounds="false" />
+    android:layout_height="386dp"
+    android:scaleType="fitCenter" />
