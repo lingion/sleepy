@@ -306,6 +306,7 @@ fun JwWebViewLoginScreen(
         ) {
             JwWebView(
                 url = school.url.ifBlank { "https://www.baidu.com" },
+                school = school,
                 onProgressChange = { p -> progress = p },
                 onWebViewCreated = { wv -> webViewRef = wv },
                 onHtmlCaptured = { html -> onHtmlCaptured(html, school, emptyList()) },
@@ -337,6 +338,7 @@ fun JwWebViewLoginScreen(
 @Composable
 private fun JwWebView(
     url: String,
+    school: JwSchoolInfo,
     onProgressChange: (Int) -> Unit,
     onWebViewCreated: (WebView) -> Unit,
     onHtmlCaptured: (String) -> Unit,
@@ -376,32 +378,11 @@ private fun JwWebView(
                         return true
                     }
                 }
-                webViewClient = object : android.webkit.WebViewClient() {
-                    override fun onReceivedSslError(
-                        view: WebView,
-                        handler: android.webkit.SslErrorHandler,
-                        error: android.net.http.SslError
-                    ) {
-                        // 中间人防护: 不再无条件 proceed (曾放行任意自签证书劫持课表账号),
-                        // 改为按主域名白名单豁免 — 部分高校教务确用自签/私有 CA, 仅对
-                        // 学校 URL 的注册域放行, 其余一律 cancel。
-                        val host = view.url?.toUri()?.host.orEmpty()
-                        val allowed = SslBypassRegistry.isAllowed(host, schoolHost)
-                        if (allowed) handler.proceed() else handler.cancel()
-                    }
-                    // UCAS (#18): sep.ucas.ac.cn 的 filter 对任何带 X-Requested-With
-                    // 头的请求返回 401 JSON, 而 Android WebView 每个请求都强制带
-                    // <包名> 作该头 (公开 API 无法移除) → 点「请重新登录」直接渲染
-                    // 401 JSON 而非跳 SEP 登录页。仅此域剥离该头, 细节见
-                    // SepXrwStripInterceptor。
-                    override fun shouldInterceptRequest(
-                        view: WebView,
-                        request: android.webkit.WebResourceRequest
-                    ): android.webkit.WebResourceResponse? =
-                        SepXrwStripInterceptor.intercept(request, view.settings.userAgentString)
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        Log.d("JwWebView", "onPageFinished url=$url")
-                    }
+                webViewClient = JwWebViewClientBuilder.build(
+                    webView = this,
+                    school = school,
+                ) { url ->
+                    Log.d("JwWebView", "onPageFinished url=$url")
                 }
                 loadUrl(url)
                 onWebViewCreated(this)
@@ -1342,7 +1323,7 @@ private class WiseduBridge(private val onResult: (String) -> Unit) {
  * SSL 豁免注册表: 仅对学校 URL 的注册域 (含其子域) 放行自签/私有 CA 证书 —
  * 部分高校教务确用私有 CA。除此之外的 SSL 错误一律 cancel (中间人防护)。
  */
-private object SslBypassRegistry {
+internal object SslBypassRegistry {
     /** 取注册域: 无公共后缀库, 用启发式 — 取末两段 (xx.edu.cn 形态取末三段)。 */
     fun registrableDomain(host: String): String {
         val h = host.lowercase().trim().trimEnd('.')
