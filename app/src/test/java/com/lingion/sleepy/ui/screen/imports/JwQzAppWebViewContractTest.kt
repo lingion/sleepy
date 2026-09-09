@@ -26,7 +26,7 @@ class JwQzAppWebViewContractTest {
 
     private val source: String = sequenceOf(
         java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
-        java.io.File("/Users/lingion_k/sleepy-adapt-hebzyhj/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
+        java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
     ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load JwWebViewLoginScreen.kt source")
 
     @Test
