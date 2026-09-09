@@ -17,9 +17,12 @@
     <string name="tab_manage">Manage</string>
 
     <string name="schedule_empty">No schedule yet</string>
-    <string name="schedule_empty_hint">Go to Manage to import, or manually create your first course.</string>
+    <string name="schedule_empty_hint">Go to Manage to import, or manually create your first timetable.</string>
     <string name="schedule_go_manage">Go to Manage</string>
-    <string name="schedule_manual_first">Create first course</string>
+    <string name="schedule_manual_first">Add a course manually</string>
+    <!-- EmptyState (no table yet) only: import + create-table guidance -->
+    <string name="schedule_empty_import">Import first timetable</string>
+    <string name="schedule_empty_create_table">Create first timetable</string>
     <string name="schedule_add_course">Add Course</string>
     <string name="share_sheet_title">Share Schedule</string>
     <string name="schedule_share_table">Share Schedule</string>

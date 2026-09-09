@@ -12,9 +12,12 @@
     <string name="tab_manage">課表管理</string>
 
     <string name="schedule_empty">還沒有課表</string>
-    <string name="schedule_empty_hint">前往「課表管理」匯入，或手動建立第一門課。</string>
+    <string name="schedule_empty_hint">前往「課表管理」匯入，或手動建立第一張課表。</string>
     <string name="schedule_go_manage">前往課表管理</string>
-    <string name="schedule_manual_first">手動建立第一門課</string>
+    <string name="schedule_manual_first">手動新增課程</string>
+    <!-- 無表空態 (EmptyState) 專屬: 匯入引導 + 建表引導 -->
+    <string name="schedule_empty_import">匯入第一張課表</string>
+    <string name="schedule_empty_create_table">手動建立第一張課表</string>
     <string name="schedule_add_course">新增課程</string>
     <string name="share_sheet_title">分享課表</string>
     <string name="schedule_share_table">分享課表</string>

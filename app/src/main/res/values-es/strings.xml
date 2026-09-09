@@ -12,9 +12,12 @@
     <string name="tab_manage">Gestionar</string>
 
     <string name="schedule_empty">No hay horario todavía</string>
-    <string name="schedule_empty_hint">Ve a Gestionar para importar, o crea tu primer curso manualmente.</string>
+    <string name="schedule_empty_hint">Ve a Gestionar para importar, o crea tu primer horario manualmente.</string>
     <string name="schedule_go_manage">Ir a Gestionar</string>
-    <string name="schedule_manual_first">Crear primer curso</string>
+    <string name="schedule_manual_first">Añadir curso manualmente</string>
+    <!-- EmptyState (sin horario) exclusivo: guía de importación y creación de horario -->
+    <string name="schedule_empty_import">Importar primer horario</string>
+    <string name="schedule_empty_create_table">Crear primer horario</string>
     <string name="schedule_add_course">Añadir curso</string>
     <string name="share_sheet_title">Compartir horario</string>
     <string name="schedule_share_table">Compartir horario</string>
