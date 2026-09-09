@@ -114,7 +114,7 @@ internal data class SlotEditTarget(
     val end: String
 )
 
-private class MeetingBlockDraft(
+internal class MeetingBlockDraft(
     val id: Int,
     val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
     startNode: Int,
@@ -213,6 +213,8 @@ fun AddCourseScreen(
     val maxStd = remember(effectiveTimeJson) { TimeTableUtils.maxStandardNode(effectiveTimeJson) }
 
     var courseName by remember(editingCourse?.id) { mutableStateOf(editingCourse?.courseName ?: "") }
+    // issue#26: 课程别名(可选) — 空串 = 处处显示原名; 组级属性, 编辑页保存时整组覆盖
+    var courseAlias by remember(editingCourse?.id) { mutableStateOf(editingCourse?.alias ?: "") }
     // issue#22: teacher/room/note/color/colorMode 已下沉到 MeetingBlockDraft(每个时段独立编辑)
     var startWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.startWeek ?: 1) }
     var endWeek by remember(editingCourse?.id) { mutableIntStateOf(editingCourse?.endWeek ?: 16) }
@@ -307,7 +309,8 @@ fun AddCourseScreen(
                     groupId = "",  // 编辑模式暂留 "", 落库前再覆盖 editingCourse.groupId
                     courseName = courseName.trim(),
                     block = block,
-                    day = day
+                    day = day,
+                    alias = courseAlias.trim()
                 )
             }
         }
@@ -491,6 +494,16 @@ fun AddCourseScreen(
                             value = courseName,
                             onValueChange = { courseName = it },
                             label = { Text(stringResource(R.string.course_name_required)) },
+                            singleLine = true,
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = fieldShape,
+                            colors = fieldColors
+                        )
+                        // issue#26: 别名输入(可选) — 空 = 原名; 语义是"展示名", 不参与身份/匹配
+                        TextField(
+                            value = courseAlias,
+                            onValueChange = { courseAlias = it },
+                            label = { Text(stringResource(R.string.course_alias)) },
                             singleLine = true,
                             modifier = Modifier.fillMaxWidth(),
                             shape = fieldShape,
@@ -726,12 +739,14 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     )
 }
 
-private fun buildCourseEntity(
+/** issue#26: internal 以便 BuildCourseEntityAliasTest 同包直测保存路径 */
+internal fun buildCourseEntity(
     tableId: Long,
     groupId: String,
     courseName: String,
     block: MeetingBlockDraft,
-    day: Int
+    day: Int,
+    alias: String = ""
 ): CourseEntity {
     // issue#22: color/colorMode 从 block 取;AUTO 模式 color 留空(渲染时按 hash 取)
     val finalColor = when (block.colorModeState) {
@@ -746,6 +761,7 @@ private fun buildCourseEntity(
         groupId = groupId,
         tableId = tableId,
         courseName = courseName,
+        alias = alias.trim(),
         teacher = block.teacherState.trim(),
         room = block.roomState.trim(),
         note = block.noteState.trim(),

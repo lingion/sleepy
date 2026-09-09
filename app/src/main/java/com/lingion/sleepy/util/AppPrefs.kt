@@ -3,6 +3,7 @@ package com.lingion.sleepy.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import androidx.core.content.edit
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -67,6 +68,10 @@ object AppPrefs {
     const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
     const val KEY_WEEK_TWO_COLUMN_MODE = "week_two_column_mode" // "days"=按天对半分 / "balance"=按课程数动态平衡, issue#8
     const val KEY_WEEK_HIDE_EMPTY_DAYS = "week_hide_empty_days" // bool default false — 周视图隐藏无课日(仅两栏下生效, issue#8)
+    // issue#26 课程别名 — 三场景各自开关, 默认 false = 显示原名
+    const val KEY_WEEK_USE_ALIAS = "week_use_alias"     // bool default false — 周视图显示别名
+    const val KEY_GRID_USE_ALIAS = "grid_use_alias"     // bool default false — 网格视图显示别名
+    const val KEY_WIDGET_USE_ALIAS = "widget_use_alias" // bool default false — 全部小组件显示别名
     const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled" // bool default true — 启动检查 GitHub releases latest
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
@@ -497,6 +502,34 @@ object AppPrefs {
     fun setWeekHideEmptyDays(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_WEEK_HIDE_EMPTY_DAYS, v).apply()
         _changeBus.tryEmit(KEY_WEEK_HIDE_EMPTY_DAYS)
+    }
+
+    // ===== issue#26 课程别名 — 三场景各自开关, 默认关(显示原名) =====
+    // alias 只改"展示名"; 详情/预览/通知/导出等身份场景永远原名。
+    // widget 是全局一档(渲染器无 widgetId, 与 colorless/separator/vertPunct 同先例)。
+
+    fun isWeekUseAlias(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_WEEK_USE_ALIAS, false)
+
+    fun setWeekUseAlias(ctx: Context, v: Boolean) {
+        sp(ctx).edit { putBoolean(KEY_WEEK_USE_ALIAS, v) }
+        _changeBus.tryEmit(KEY_WEEK_USE_ALIAS)
+    }
+
+    fun isGridUseAlias(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_GRID_USE_ALIAS, false)
+
+    fun setGridUseAlias(ctx: Context, v: Boolean) {
+        sp(ctx).edit { putBoolean(KEY_GRID_USE_ALIAS, v) }
+        _changeBus.tryEmit(KEY_GRID_USE_ALIAS)
+    }
+
+    fun isWidgetUseAlias(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_WIDGET_USE_ALIAS, false)
+
+    fun setWidgetUseAlias(ctx: Context, v: Boolean) {
+        sp(ctx).edit { putBoolean(KEY_WIDGET_USE_ALIAS, v) }
+        _changeBus.tryEmit(KEY_WIDGET_USE_ALIAS)
     }
 
     // ===== 节假日灰显 =====

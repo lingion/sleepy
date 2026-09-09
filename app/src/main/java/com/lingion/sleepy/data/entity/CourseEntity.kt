@@ -43,6 +43,14 @@ data class CourseEntity(
     /** 备注 */
     @ColumnInfo(name = "note") val note: String = "",
 
+    /**
+     * issue#26 课程别名 — 可选;空串 = 处处显示原名。
+     * 组级属性: 同 groupId 所有行共享同一别名(编辑页保存时整组覆盖)。
+     * 仅"展示"场景(周视图/网格视图/小组件)按各自设置取用;
+     * 详情页/导入预览/通知/导出等"身份"场景一律原名。
+     */
+    @ColumnInfo(name = "alias", defaultValue = "") val alias: String = "",
+
     /** 周几 1-7 (周一=1) */
     @ColumnInfo(name = "day") val day: Int,
 

@@ -67,6 +67,7 @@ import com.lingion.sleepy.util.ConflictCluster
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.ConflictVariant
 import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.LaidOutCourse
 
 /**
@@ -888,6 +889,8 @@ private fun ConflictCourseCard(
         "teacher" -> course.teacher
         else -> ""
     }
+    // issue#26: 冲突卡属网格场景 — 跟随网格别名开关(与 CourseOverlayCard 同步)
+    val name = CourseDisplayUtil.displayName(course, AppPrefs.isGridUseAlias(context))
 
     Box(
         modifier = modifier
@@ -900,7 +903,7 @@ private fun ConflictCourseCard(
     ) {
         if (subText.isBlank()) {
             Text(
-                text = course.courseName,
+                text = name,
                 style = MaterialTheme.typography.labelSmall.copy(
                     fontWeight = FontWeight.SemiBold,
                     fontSize = 10.sp,
@@ -920,7 +923,7 @@ private fun ConflictCourseCard(
             ) {
                 Box(modifier = Modifier.weight(1f).fillMaxWidth(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = course.courseName,
+                        text = name,
                         style = MaterialTheme.typography.labelSmall.copy(
                             fontWeight = FontWeight.SemiBold,
                             fontSize = 10.sp,

@@ -17,6 +17,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *     - 两列: INTEGER NOT NULL DEFAULT 0
  *     - ownTime=1 旧行 isIrregularTime=1 (旧「自定义时间」语义并入新标志)
  *     - isIrregularNode 由 startNode 是否为边缘编号推导, 保存时回写防漂移
+ *   v5 → v6: 加 courses.alias (issue#26 课程别名)
+ *     - 列: TEXT NOT NULL DEFAULT ''
+ *     - 旧库所有行 alias='' → 处处显示原名, 行为不变
  */
 val MIGRATION_3_4: Migration = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -35,5 +38,16 @@ val MIGRATION_4_5: Migration = object : Migration(4, 5) {
     }
 }
 
+val MIGRATION_5_6: Migration = object : Migration(5, 6) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        MIGRATION_5_6_STATEMENTS.forEach { db.execSQL(it) }
+    }
+}
+
 /** 当前已注册的全部 Migration — AppDatabase.Companion.get() 链入 */
-val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_3_4, MIGRATION_4_5)
+val ALL_MIGRATIONS: Array<Migration> = arrayOf(MIGRATION_3_4, MIGRATION_4_5, MIGRATION_5_6)
+
+/** issue#26: v5→v6 逐条 SQL — 单一事实来源, CourseAliasMigrationTest 用 sqlite-jdbc 直接执行同一份 */
+internal val MIGRATION_5_6_STATEMENTS: List<String> = listOf(
+    "ALTER TABLE courses ADD COLUMN alias TEXT NOT NULL DEFAULT ''"
+)

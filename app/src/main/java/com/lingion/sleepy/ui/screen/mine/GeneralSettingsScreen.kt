@@ -96,6 +96,9 @@ fun GeneralSettingsScreen(
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
     var weekHideEmptyDays by remember { mutableStateOf(AppPrefs.isWeekHideEmptyDays(context)) }
+    // issue#26: 周视图/网格视图场景别名开关
+    var weekUseAlias by remember { mutableStateOf(AppPrefs.isWeekUseAlias(context)) }
+    var gridUseAlias by remember { mutableStateOf(AppPrefs.isGridUseAlias(context)) }
     var conflictStyle by remember { mutableStateOf(AppPrefs.getConflictStyle(context)) }
     var conflictStackInset by remember { mutableStateOf(AppPrefs.getConflictStackInset(context)) }
     var conflictRailInset by remember { mutableStateOf(AppPrefs.getConflictRailInset(context)) }
@@ -176,6 +179,38 @@ fun GeneralSettingsScreen(
                     onSelect = { i ->
                         val v = listOf("room", "teacher", "none")[i]
                         gridSubInfo = v; AppPrefs.setGridSubInfo(context, v); refreshWidgets()
+                    }
+                )
+            }
+
+            // issue#26 课程别名: 周视图场景 原名/别名 二选一
+            item {
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_week_alias),
+                    options = listOf(
+                        stringResource(R.string.settings_name_original),
+                        stringResource(R.string.settings_name_alias)
+                    ),
+                    selectedKey = if (weekUseAlias) 1 else 0,
+                    onSelect = { i ->
+                        val v = i == 1
+                        weekUseAlias = v; AppPrefs.setWeekUseAlias(context, v)
+                    }
+                )
+            }
+
+            // issue#26 课程别名: 网格场景 原名/别名 二选一
+            item {
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_grid_alias),
+                    options = listOf(
+                        stringResource(R.string.settings_name_original),
+                        stringResource(R.string.settings_name_alias)
+                    ),
+                    selectedKey = if (gridUseAlias) 1 else 0,
+                    onSelect = { i ->
+                        val v = i == 1
+                        gridUseAlias = v; AppPrefs.setGridUseAlias(context, v)
                     }
                 )
             }

@@ -30,9 +30,10 @@ import com.lingion.sleepy.widget.WidgetEditViewModel
  * per-widget settings (e.g. "show week number", "dim past periods") can
  * be added as additional sections without changing this screen's shape.
  *
- * Currently one section, [WidgetEditScheduleSection] — pick which schedule
- * this widget displays. Toggling the binding writes
- * [com.lingion.sleepy.widget.WidgetBindingStore] and triggers
+ * Currently two sections: [WidgetEditScheduleSection] (pick which schedule
+ * this widget displays) and [WidgetEditAliasSection] (issue#26 — original
+ * name vs alias). Toggling either writes
+ * [com.lingion.sleepy.widget.WidgetBindingStore] / AppPrefs and triggers
  * [com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged] so all 9
  * widget receivers re-read their binding and redraw.
  */
@@ -47,13 +48,15 @@ fun WidgetEditScreen(
 
     // To add a new section later, append here — the screen picks it up
     // automatically. Each section must implement WidgetEditSection.
-    val sections: List<WidgetEditSection> = remember { listOf(WidgetEditScheduleSection) }
-    val scope = remember(state.currentBinding, state.availableTables) {
+    val sections: List<WidgetEditSection> = remember { listOf(WidgetEditScheduleSection, WidgetEditAliasSection) }
+    val scope = remember(state.currentBinding, state.availableTables, state.useAlias) {
         WidgetEditScope(
             widgetId = widgetId,
             currentBinding = state.currentBinding,
             availableTables = state.availableTables,
-            onSelectTable = { vm.setBinding(it) }
+            onSelectTable = { vm.setBinding(it) },
+            useAlias = state.useAlias,
+            onUseAliasChange = { vm.setUseAlias(it) }
         )
     }
 

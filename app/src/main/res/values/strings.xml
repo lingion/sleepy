@@ -226,6 +226,8 @@
     <string name="course_basic_info">课程基础信息</string>
     <string name="course_basic_info_sub">老师、地点统一填写；一门课可以挂多个时段块</string>
     <string name="course_name_required">课程名 *</string>
+    <!-- issue#26 课程别名 -->
+    <string name="course_alias">别名 (可选)</string>
     <string name="course_teacher">老师</string>
     <string name="course_room">地点 / 教室</string>
     <string name="course_note">备注（可选）</string>
@@ -341,6 +343,11 @@
     <string name="settings_week_two_column_days">按天对半分</string>
     <string name="settings_week_two_column_balance">按课程数平衡</string>
     <string name="settings_week_hide_empty">周视图隐藏无课日</string>
+    <!-- issue#26 课程别名 -->
+    <string name="settings_week_alias">周视图课程名</string>
+    <string name="settings_grid_alias">网格视图课程名</string>
+    <string name="settings_name_original">原名</string>
+    <string name="settings_name_alias">别名</string>
     <string name="settings_show_date">网格视图表头显示日期</string>
     <string name="settings_conflict_style">冲突课程样式</string>
     <string name="settings_conflict_stack">叠层偏移</string>
@@ -431,6 +438,7 @@
     <string name="widget_create_schedule">请先创建课表</string>
     <string name="widget_open_sleepy">打开 Sleepy 开始添加</string>
     <string name="widget_edit_section_schedule">呈现的课表</string>
+    <string name="widget_edit_section_alias">课程名显示</string>
     <string name="widget_edit_default_label">默认（跟随当前课表）</string>
     <string name="widget_manage_title">管理桌面小组件</string>
     <string name="widget_edit_title">编辑小组件</string>

@@ -210,6 +210,7 @@
     <string name="course_basic_info">基本情報</string>
     <string name="course_basic_info_sub">教員・教室は共通。1つの授業に複数の時限を設定できます</string>
     <string name="course_name_required">授業名 *</string>
+    <string name="course_alias">別名 (任意)</string>
     <string name="course_teacher">教員</string>
     <string name="course_room">教室</string>
     <string name="course_note">メモ（任意）</string>
@@ -294,6 +295,10 @@
     <string name="settings_week_two_column_days">日数で半分ずつ</string>
     <string name="settings_week_two_column_balance">コマ数でバランス</string>
     <string name="settings_week_hide_empty">週ビューで空き日を隠す</string>
+    <string name="settings_week_alias">週ビューの科目名</string>
+    <string name="settings_grid_alias">グリッドビューの科目名</string>
+    <string name="settings_name_original">元の名前</string>
+    <string name="settings_name_alias">別名</string>
     <string name="settings_show_date">グリッドヘッダーに日付を表示</string>
     <string name="settings_conflict_style">コマの重なり表示</string>
     <string name="settings_conflict_stack">重ねてずらして表示</string>
@@ -335,6 +340,7 @@
     <string name="widget_create_schedule">最初に時間割を作成してください</string>
     <string name="widget_open_sleepy">Sleepyを開いて追加</string>
     <string name="widget_edit_section_schedule">表示する時間割</string>
+    <string name="widget_edit_section_alias">科目名の表示</string>
     <string name="widget_edit_default_label">デフォルト（現在の時間割に従う）</string>
     <string name="widget_manage_title">ホームウィジェットを管理</string>
     <string name="widget_edit_title">ウィジェットを編集</string>

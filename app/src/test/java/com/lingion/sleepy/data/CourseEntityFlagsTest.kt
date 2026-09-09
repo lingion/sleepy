@@ -37,6 +37,8 @@ class CourseEntityFlagsTest {
         assertFalse(c.isIrregularNode)
         assertFalse(c.isIrregularTime)
         assertFalse(c.ownTime)
+        // issue#26: alias 默认值是空串 — 显示按 settings 走,空 = 原名, 行为不变
+        assertEquals("", c.alias)
     }
 
     @Test
@@ -45,12 +47,14 @@ class CourseEntityFlagsTest {
             ownTime = true,
             isIrregularNode = true,
             isIrregularTime = true,
-            startNode = 0
+            startNode = 0,
+            alias = "高数"
         )
         assertTrue(c.isIrregularNode)
         assertTrue(c.isIrregularTime)
         assertTrue(c.ownTime)
         assertEquals(0, c.startNode)
+        assertEquals("高数", c.alias)
     }
 
     @Test

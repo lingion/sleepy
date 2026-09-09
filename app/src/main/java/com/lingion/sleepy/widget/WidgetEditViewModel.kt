@@ -5,6 +5,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -21,7 +22,9 @@ import kotlinx.coroutines.launch
  */
 data class WidgetEditUiState(
     val currentBinding: Long? = null,
-    val availableTables: List<TimeTableEntity> = emptyList()
+    val availableTables: List<TimeTableEntity> = emptyList(),
+    /** issue#26: widget 场景 课程名显示 原名/别名(全局一档, 全部小组件共享) */
+    val useAlias: Boolean = false
 )
 
 /**
@@ -63,8 +66,21 @@ class WidgetEditViewModel(
             val raw = WidgetBindingStore.get(ctx, widgetId)
             _state.value = WidgetEditUiState(
                 currentBinding = if (raw != null && raw > 0L) raw else null,
-                availableTables = available
+                availableTables = available,
+                useAlias = AppPrefs.isWidgetUseAlias(ctx)
             )
+        }
+    }
+
+    /**
+     * issue#26: 切换 widget 场景 课程名显示(原名/别名)。全局一档(所有小组件共享),
+     * 写 AppPrefs 后 reload + 全量刷 widget — 与 setBinding 同管线。
+     */
+    fun setUseAlias(v: Boolean) {
+        AppPrefs.setWidgetUseAlias(ctx, v)
+        reload()
+        viewModelScope.launch {
+            runCatching { WidgetUpdater.notifyDataChanged(ctx) }
         }
     }
 

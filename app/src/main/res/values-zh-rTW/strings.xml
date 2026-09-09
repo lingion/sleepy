@@ -210,6 +210,7 @@
     <string name="course_basic_info">課程基本資訊</string>
     <string name="course_basic_info_sub">老師、地點統一填寫；一門課可以掛多個時段</string>
     <string name="course_name_required">課程名 *</string>
+    <string name="course_alias">別名 (可選)</string>
     <string name="course_teacher">老師</string>
     <string name="course_room">地點 / 教室</string>
     <string name="course_note">備註（可選）</string>
@@ -294,6 +295,10 @@
     <string name="settings_week_two_column_days">按天對半分</string>
     <string name="settings_week_two_column_balance">按課程數平衡</string>
     <string name="settings_week_hide_empty">週視圖隱藏無課日</string>
+    <string name="settings_week_alias">週視圖課程名</string>
+    <string name="settings_grid_alias">網格視圖課程名</string>
+    <string name="settings_name_original">原名</string>
+    <string name="settings_name_alias">別名</string>
     <string name="settings_show_date">網格視圖表頭顯示日期</string>
     <string name="settings_conflict_style">衝突課程樣式</string>
     <string name="settings_conflict_stack">疊層偏移</string>
@@ -335,6 +340,7 @@
     <string name="widget_create_schedule">請先建立課表</string>
     <string name="widget_open_sleepy">開啟 Sleepy 開始新增</string>
     <string name="widget_edit_section_schedule">呈現的課表</string>
+    <string name="widget_edit_section_alias">課程名顯示</string>
     <string name="widget_edit_default_label">預設（跟隨當前課表）</string>
     <string name="widget_manage_title">管理桌面小工具</string>
     <string name="widget_edit_title">編輯小工具</string>

@@ -12,6 +12,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import java.time.LocalDate
@@ -72,7 +73,8 @@ object WidgetBitmapRenderers {
         c: Canvas, p: Paint, course: CourseEntity, timeJson: String, x: Float, y: Float, w: Float, h: Float,
         scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false,
         displayMode: String = "node",
-        groupRows: List<CourseEntity> = listOf(course)
+        groupRows: List<CourseEntity> = listOf(course),
+        useAlias: Boolean = false
     ) {
         // 统一取色入口 (决策 D3) — colorless 灰底传 scheme.surfaceVariant 的 Int 值
         // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
@@ -141,7 +143,8 @@ object WidgetBitmapRenderers {
         p.textSize = nameSize
         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
         p.color = textColor
-        val name = course.courseName
+        // issue#26: widget 场景别名 — 渲染时读全局 widget 开关(先例: colorless)
+        val name = CourseDisplayUtil.displayName(course, useAlias)
         val maxWidth = w - pad * 2
         val displayName = if (p.measureText(name) > maxWidth) {
             var n = name
@@ -180,10 +183,14 @@ object WidgetBitmapRenderers {
      * resolver 抽象掉 Context 资源访问 → 核心选取逻辑可在纯 JVM 单测断言(仓库无 Robolectric)。
      */
     fun todayCompactTexts(context: Context, data: WidgetData): List<String> =
-        todayCompactTexts({ resId -> context.getString(resId) }, data)
+        todayCompactTexts({ resId -> context.getString(resId) }, AppPrefs.isWidgetUseAlias(context), data)
 
     /** 同上 — resolver 注入版(纯 JVM 单测入口) */
-    fun todayCompactTexts(resolve: (Int) -> String, data: WidgetData): List<String> {
+    fun todayCompactTexts(resolve: (Int) -> String, data: WidgetData): List<String> =
+        todayCompactTexts(resolve, useAlias = false, data = data)
+
+    /** resolver + 别名开关注入版 — useAlias 语义: true 时显示别名(空回退原名) */
+    fun todayCompactTexts(resolve: (Int) -> String, useAlias: Boolean, data: WidgetData): List<String> {
         if (!data.hasTable) return listOf(resolve(R.string.widget_create_schedule))
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
             val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
@@ -191,7 +198,7 @@ object WidgetBitmapRenderers {
             return listOf(resolve(statusRes))
         }
         if (data.courses.isEmpty()) return listOf(resolve(R.string.today_no_course))
-        return data.courses.map { it.courseName }
+        return data.courses.map { CourseDisplayUtil.displayName(it, useAlias) }
     }
 
     /**
@@ -255,6 +262,8 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
+        // issue#26: widget 场景别名 — 渲染时读全局 widget 开关
+        val useAlias = AppPrefs.isWidgetUseAlias(context)
         // 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
         val displayMode = AppPrefs.getDisplayMode(context)
         val showDate = AppPrefs.isShowDate(context)
@@ -341,7 +350,8 @@ object WidgetBitmapRenderers {
             if (row.laneCount == 1) {
                 drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
                     fontSizeSp = 12f, colorless = colorless, displayMode = displayMode,
-                    groupRows = data.courses.filter { it.groupId == row.courses[0].groupId })
+                    groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
+                    useAlias = useAlias)
                 y += rowH + rowGap
             } else {
                 val laneGap = 5f * density
@@ -367,7 +377,8 @@ object WidgetBitmapRenderers {
                     laneCourses.forEachIndexed { ci, laneCourse ->
                         drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
                             fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
-                            groupRows = data.courses.filter { it.groupId == laneCourse.groupId })
+                            groupRows = data.courses.filter { it.groupId == laneCourse.groupId },
+                            useAlias = useAlias)
                         ly += rowH
                         if (ci < laneCourses.size - 1) ly += stackGap
                     }
@@ -415,10 +426,14 @@ object WidgetBitmapRenderers {
      * resolver 抽象掉 Context 资源访问 → 核心选取逻辑可在纯 JVM 单测断言(仓库无 Robolectric)。
      */
     fun twoDayCompactTexts(context: Context, data: TwoDayData): List<String> =
-        twoDayCompactTexts({ resId -> context.getString(resId) }, data)
+        twoDayCompactTexts({ resId -> context.getString(resId) }, AppPrefs.isWidgetUseAlias(context), data)
 
     /** 同上 — resolver 注入版(纯 JVM 单测入口) */
-    fun twoDayCompactTexts(resolve: (Int) -> String, data: TwoDayData): List<String> {
+    fun twoDayCompactTexts(resolve: (Int) -> String, data: TwoDayData): List<String> =
+        twoDayCompactTexts(resolve, useAlias = false, data = data)
+
+    /** resolver + 别名开关注入版 — useAlias 语义: true 时显示别名(空回退原名) */
+    fun twoDayCompactTexts(resolve: (Int) -> String, useAlias: Boolean, data: TwoDayData): List<String> {
         if (!data.hasTable || data.days.isEmpty()) return listOf(resolve(R.string.widget_create_schedule))
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) {
             val statusRes = if (data.semesterStatus == DateUtils.SemesterStatus.BEFORE_START)
@@ -427,7 +442,7 @@ object WidgetBitmapRenderers {
         }
         val today = data.days.first()
         if (today.courses.isEmpty()) return listOf(resolve(R.string.no_course))
-        return data.days.flatMap { it.courses }.map { it.courseName }
+        return data.days.flatMap { it.courses }.map { CourseDisplayUtil.displayName(it, useAlias) }
     }
 
     /**
@@ -539,6 +554,7 @@ object WidgetBitmapRenderers {
         weekListCompactTexts(
             { resId -> context.getString(resId) },
             { dow -> DateUtils.localizedDay(dow, context) },
+            AppPrefs.isWidgetUseAlias(context),
             today, data
         )
 
@@ -546,6 +562,15 @@ object WidgetBitmapRenderers {
     fun weekListCompactTexts(
         resolve: (Int) -> String,
         dayName: (Int) -> String,
+        today: LocalDate,
+        data: WeekData
+    ): List<String> = weekListCompactTexts(resolve, dayName, useAlias = false, today = today, data = data)
+
+    /** resolver + 别名开关注入版 — useAlias 语义: true 时显示别名(空回退原名) */
+    fun weekListCompactTexts(
+        resolve: (Int) -> String,
+        dayName: (Int) -> String,
+        useAlias: Boolean,
         today: LocalDate,
         data: WeekData
     ): List<String> {
@@ -562,7 +587,7 @@ object WidgetBitmapRenderers {
             // ISO 排序会把"明天"排到"今天"前面
             .sortedBy { targetDows.indexOf(it.dayOfWeek) }
             .take(2)
-            .map { "${dayName(it.dayOfWeek)} ${it.courses.first().courseName}" }
+            .map { "${dayName(it.dayOfWeek)} ${CourseDisplayUtil.displayName(it.courses.first(), useAlias)}" }
         return lines.ifEmpty { listOf(resolve(R.string.no_course)) }
     }
 
@@ -629,6 +654,8 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
+        // issue#26: widget 场景别名 — 渲染时读全局 widget 开关
+        val useAlias = AppPrefs.isWidgetUseAlias(context)
         // visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
         // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
         val visibleDays = AppPrefs.getVisibleDays(context)
@@ -722,7 +749,7 @@ object WidgetBitmapRenderers {
                 val courseRowH = 16f * density
                 val courseGap = 3f * density
                 day.courses.forEachIndexed { idx, course ->
-                    val name = course.courseName
+                    val name = CourseDisplayUtil.displayName(course, useAlias)
                     // 课程颜色背景 (对齐 WeekGrid 风格) — 统一入口 CourseColorUtil (决策 D3)
                     // issue#22: 同名课程多地点 — 用 day.courses 同 groupId 全行,支持 AUTO/CUSTOM 模式取色
                     val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
@@ -848,8 +875,10 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val showSeparator = AppPrefs.isWidgetSeparator(context)
+        // issue#26: widget 场景别名 — 渲染时读全局 widget 开关
+        val useAlias = AppPrefs.isWidgetUseAlias(context)
         // visibleDays (决策 D5-12, 对齐 WeekGridWidgetProvider.renderBitmap L162-163):
-        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集时回退全周防御
+        // 用户"显示星期"设置决定渲染列; 设置页 UI 保证至少留 1 天, 空集下回退全周防御
         val visibleDays = AppPrefs.getVisibleDays(context)
         val shownDays = if (visibleDays.isEmpty()) data.days
             else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
@@ -945,7 +974,7 @@ object WidgetBitmapRenderers {
                 val lineH = fm.descent - fm.ascent
                 val courses = day.courses.take(5)
                 courses.forEachIndexed { idx, course ->
-                    val name = course.courseName
+                    val name = CourseDisplayUtil.displayName(course, useAlias)
                     // today → onPrimaryContainer@0.82alpha, 其他 → onSurfaceVariant
                     p.color = if (isToday)
                         (0xD1 shl 24) or (s.onPrimaryContainer and 0x00FFFFFF)
@@ -1004,6 +1033,8 @@ object WidgetBitmapRenderers {
         val h = (hDp * density).toInt()
         val s = scheme(context, data.themeKey, data.isDark)
         val colorless = AppPrefs.isWidgetColorless(context)
+        // issue#26: widget 场景别名 — 渲染时读全局 widget 开关
+        val useAlias = AppPrefs.isWidgetUseAlias(context)
         // 用户显示设置 (决策 D5-12, 读法对齐 WeekGridWidgetProvider.loadWeekData L660-662)
         val displayMode = AppPrefs.getDisplayMode(context)
         val showDate = AppPrefs.isShowDate(context)
@@ -1101,7 +1132,8 @@ object WidgetBitmapRenderers {
                     if (row.laneCount == 1) {
                         drawCourse(canvas, p, row.courses[0], day.timeJson, colX, cy, colW, maxRowH, s, density,
                             fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
-                            groupRows = day.courses.filter { it.groupId == row.courses[0].groupId })
+                            groupRows = day.courses.filter { it.groupId == row.courses[0].groupId },
+                            useAlias = useAlias)
                         cy += maxRowH + rowGap
                     } else {
                         val laneW = (colW - laneGap * (row.laneCount - 1)) / row.laneCount
@@ -1123,7 +1155,8 @@ object WidgetBitmapRenderers {
                             laneCourses.forEach { laneCourse ->
                                 drawCourse(canvas, p, laneCourse, day.timeJson, laneX, ly, laneW, maxRowH, s, density,
                                     fontSizeSp = 9f, colorless = colorless, displayMode = displayMode,
-                                    groupRows = day.courses.filter { it.groupId == laneCourse.groupId })
+                                    groupRows = day.courses.filter { it.groupId == laneCourse.groupId },
+                                    useAlias = useAlias)
                                 ly += maxRowH
                                 if (ly < cy + laneRowTotalH) ly += stackGap
                             }

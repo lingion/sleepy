@@ -287,7 +287,7 @@ internal object SleepyNativeParser {
         nodeTimes[nodeNo!!] = start!! to end!!
     }
 
-    // ---- C 行 (§3.1, 恒 10 列) ----
+    // ---- C 行 (§3.1, 恒 10 列 + issue#26 可选第 11 列=课程别名) ----
 
     private fun parseCourseLine(
         line: String,
@@ -298,11 +298,11 @@ internal object SleepyNativeParser {
         dropped: MutableList<String>
     ) {
         var cols = splitRespectingEscape(line.substring(1))
-        // 全角｜次级分隔符: 仅当半角切分列数 < 10 且全角重切恰好补齐时(§7.6)
+        // 全角｜次级分隔符: 仅当半角切分列数 < 10 且全角重切恰好补齐到规范列数(10 或 11=带别名)时(§7.6)
         if (cols.size < 10 && cols.none { it.contains('|') }) {
             val alt = splitRespectingEscape(line.substring(1).replace('｜', '|'))
-            // 注意: 上面的 replace 也会替换被转义域内的｜ — 罕见且手输容忍, 精确重切仅在 alt.size == 10 时采纳
-            if (alt.size == 10) cols = alt
+            // 注意: 上面的 replace 也会替换被转义域内的｜ — 罕见且手输容忍, 精确重切仅在 alt.size ∈ {10, 11} 时采纳
+            if (alt.size == 10 || alt.size == 11) cols = alt
         }
 
         fun col(i: Int): String = cols.getOrNull(i)?.trim() ?: ""
@@ -386,12 +386,17 @@ internal object SleepyNativeParser {
         // group(10)
         val token = text(9)
 
+        // issue#26: 可选第 11 列 = 课程别名。缺列/空值 → ""(向后兼容既有 v1 文件);
+        // 形状宽容(自由文本无非法态), 空白归一为 ""。
+        val alias = if (cols.size >= 11) text(10) else ""
+
         courses.add(
             CourseEntity(
                 id = 0,
                 groupId = "",   // 分区在 pass 结束后统一分配
                 tableId = defaultTableId,
                 courseName = name,
+                alias = alias,
                 teacher = teacher,
                 room = room,
                 note = note,
