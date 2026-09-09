@@ -272,7 +272,10 @@ fun ScheduleScreen(
                         onRotationStep = { key, step ->
                             rotationSteps = if (step <= 0) rotationSteps - key
                             else rotationSteps + (key to step)
-                        }
+                        },
+                        // 用户反馈 2026-09-09: 非常规课跨节次空隙 → 渲染期合成占位节次,
+                        // 比例定位与聚簇都基于扩展后的槽位表(真实分钟语义)
+                        timeJson = state.currentTable?.timeJson
                     )
                 }
             }

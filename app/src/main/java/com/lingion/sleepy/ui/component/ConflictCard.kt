@@ -269,6 +269,35 @@ internal fun conflictCardRect(
 ): ConflictRect {
     val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
     val y = rowH * (startNode - minStart)
+    return conflictCardRectFrac(
+        startRowFrac = startNode.toFloat(),
+        ownRowsFrac = ownRows.coerceAtLeast(1).toFloat(),
+        isTop = isTop, form = form,
+        colW = colW, rowH = rowH, gapH = gapH, minStartRow = minStart.toFloat(),
+        topInset = topInset
+    )
+}
+
+/**
+ * 簇内单卡放置矩形 — 比例行坐标版(用户反馈 2026-09-09)。
+ * ownTime 课在簇内按真实分钟比例定位: startRowFrac/ownRowsFrac 为行坐标小数
+ * (1.0 = 一整行, 来自 timeToFractionalRows 基于 renderSlots 的映射),
+ * 常规课传整数值 = 历史行为逐字节等价。
+ */
+internal fun conflictCardRectFrac(
+    startRowFrac: Float,
+    ownRowsFrac: Float,
+    isTop: Boolean,
+    form: ConflictVariant,
+    colW: Dp,
+    rowH: Dp,
+    gapH: Dp,
+    minStartRow: Float,
+    topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+): ConflictRect {
+    val rows = ownRowsFrac.coerceAtLeast(0.3f)
+    val ownH = rowH * rows - gapH
+    val y = rowH * (startRowFrac - minStartRow)
     return when {
         isTop && form == ConflictVariant.STACK ->
             ConflictRect(0.dp, y, colW - topInset, ownH - topInset)
@@ -299,9 +328,28 @@ internal fun conflictMarkRect(
     minStart: Int,
     clusterH: Dp,
     topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+): ConflictRect = conflictMarkRectFrac(
+    startRowFrac = startNode.toFloat(),
+    ownRowsFrac = ownRows.coerceAtLeast(1).toFloat(),
+    form = form,
+    colW = colW, rowH = rowH, gapH = gapH, minStartRow = minStart.toFloat(),
+    clusterH = clusterH, topInset = topInset
+)
+
+/** 命中区矩形 — 比例行坐标版(用户反馈 2026-09-09), 常规课传整数值 = 历史行为。 */
+internal fun conflictMarkRectFrac(
+    startRowFrac: Float,
+    ownRowsFrac: Float,
+    form: ConflictVariant,
+    colW: Dp,
+    rowH: Dp,
+    gapH: Dp,
+    minStartRow: Float,
+    clusterH: Dp,
+    @Suppress("UNUSED_PARAMETER") topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
 ): ConflictRect {
-    val ownH = rowH * ownRows.coerceAtLeast(1) - gapH
-    val y = rowH * (startNode - minStart)
+    val ownH = rowH * ownRowsFrac.coerceAtLeast(0.3f) - gapH
+    val y = rowH * (startRowFrac - minStartRow)
     return when (form) {
         ConflictVariant.STACK, ConflictVariant.RAIL -> {
             // v7.8.4 修订: RAIL 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
@@ -477,22 +525,46 @@ fun ConflictClusterCard(
     val courseById = drawList.associateBy { it.course.id }
 
     // 簇几何: 整簇基点 = 主课判定序首位课(调用方以它定位,override 不改变该锚点)。
-    val baseNode = cluster.courses.first().startNode
-    val minStart = drawList.minOf { it.course.startNode }
-    val clampedSteps = drawList.associate { laidItem ->
-        val sIdx = slotIndexOfCached(laidItem.course.startNode)
-        // issue#23: 步长上限按 timeSlots 剩余行数算,边缘节点也走同一公式
-        // (maxNode - startNode + 1 在 startNode > maxNode 时会变 ≤ 0,导致 edge 课被压成 1 节)
-        val maxStep = if (sIdx < 0) laidItem.course.step.coerceAtLeast(1)
-            else (timeSlots.size - sIdx).coerceAtLeast(1)
-        laidItem.course.id to laidItem.course.step.coerceAtLeast(1).coerceAtMost(maxStep)
+    // 用户反馈 2026-09-09: ownTime 课的簇内几何按真实分钟比例定位 — 行坐标来自
+    // timeToFractionalRows(基于 renderSlots 含占位节次), 不再 slotIndexOf 整格吸附。
+    // 常规课 = 整数行, 历史行为逐字节等价。
+    val fracRowsOf: Map<Long, Pair<Float, Float>?> = remember(drawList, timeSlots) {
+        drawList.associate { laidItem ->
+            val c = laidItem.course
+            c.id to (if (c.ownTime && c.startTime.isNotBlank() && c.endTime.isNotBlank()) {
+                com.lingion.sleepy.util.TimeTableUtils.timeToFractionalRows(c.startTime, c.endTime, timeSlots)
+            } else null)
+        }
     }
-    val maxEnd = drawList.maxOf { it.course.startNode + (clampedSteps[it.course.id] ?: 1) } - 1
-    val clusterH = rowH * (maxEnd - minStart + 1) - gapH
-    val clusterYOffset = rowH * (minStart - baseNode)
+    // 每课 (startRowFrac, rowSpanFrac); 常规课回落节点区间整行
+    val rowGeomOf: Map<Long, Pair<Float, Float>> = drawList.associate { laidItem ->
+        val c = laidItem.course
+        val frac = fracRowsOf[c.id]
+        if (frac != null) {
+            c.id to frac
+        } else {
+            val sIdx = slotIndexOfCached(c.startNode)
+            val maxStep = if (sIdx < 0) c.step.coerceAtLeast(1)
+                else (timeSlots.size - sIdx).coerceAtLeast(1)
+            val rows = c.step.coerceAtLeast(1).coerceAtMost(maxStep)
+            c.id to (sIdx.toFloat() to rows.toFloat())
+        }
+    }
+    val baseNode = cluster.courses.first().startNode
+    val baseRowFrac = rowGeomOf[cluster.courses.first().id]?.first
+        ?: slotIndexOfCached(baseNode).coerceAtLeast(0).toFloat()
+    val minStartRow = drawList.minOf { rowGeomOf[it.course.id]?.first ?: 0f }
+    val maxEndRow = drawList.maxOf {
+        val g = rowGeomOf[it.course.id] ?: (0f to 1f)
+        g.first + g.second
+    }
+    val minStart = minStartRow.toInt()
+    val clusterH = rowH * (maxEndRow - minStartRow) - gapH
+    val clusterYOffset = rowH * (minStartRow - baseRowFrac)
 
-    fun cardYOf(startNode: Int) = rowH * (startNode - minStart)
-    fun cardHOf(courseId: Long) = rowH * (clampedSteps[courseId] ?: 1) - gapH
+    fun cardYOf(course: CourseEntity) = rowH * ((rowGeomOf[course.id]?.first ?: 0f) - minStartRow)
+    fun cardHOf(courseId: Long) =
+        rowH * ((rowGeomOf[courseId]?.second ?: 1f).coerceAtLeast(0.3f)) - gapH
 
     // v6: 顶卡收窄量 = 用户设置(用户 2026-09-04 拆分: STACK/RAIL 独立配置不共享),滑杆 4..20dp
     val topInset = when (form) {
@@ -529,17 +601,20 @@ fun ConflictClusterCard(
     // A/B/C 三方案无差别, 不存在「链组走全尺寸」的特殊分支。
     val chainStripActive = topLaid.chainFront
 
-    /** 单卡放置矩形(纯函数 conflictCardRect 的 Composable 包装,几何真值唯一来源)。
-     *  isFront = 该课程是否属于顶层图层, 直接驱动 conflictCardRect 的 isTop 分支。
-     *  链组态不影响 rect: 顶层链组成员按顶层标准收窄, 底层链组成员按底层标准收窄。 */
-    fun rectOf(course: CourseEntity, isFront: Boolean): ConflictRect = conflictCardRect(
-        startNode = course.startNode,
-        ownRows = clampedSteps[course.id] ?: 1,
-        isTop = isFront,
-        form = form,
-        colW = colW, rowH = rowH, gapH = gapH, minStart = minStart,
-        topInset = topInset
-    )
+    /** 单卡放置矩形(纯函数 conflictCardRectFrac 的 Composable 包装,几何真值唯一来源)。
+     *  isFront = 该课程是否属于顶层图层, 直接驱动 isTop 分支。
+     *  用户反馈 2026-09-09: ownTime 课传比例行坐标(真实分钟), 常规课整数行 = 历史行为。 */
+    fun rectOf(course: CourseEntity, isFront: Boolean): ConflictRect {
+        val g = rowGeomOf[course.id] ?: (0f to 1f)
+        return conflictCardRectFrac(
+            startRowFrac = g.first,
+            ownRowsFrac = g.second,
+            isTop = isFront,
+            form = form,
+            colW = colW, rowH = rowH, gapH = gapH, minStartRow = minStartRow,
+            topInset = topInset
+        )
+    }
 
     // 簇格位高 = minStart..maxEnd 全区间(STACK 的右下锚定参照——不能用顶课区间:
     // 短课置顶时,底部长课仍要按自己的尺寸锚在簇位右下)。
@@ -635,12 +710,14 @@ fun ConflictClusterCard(
                     when (item.variant) {
                         ConflictVariant.STACK -> {
                             // hit: 自身区间右下 36dp 见方,点击=该课置顶
-                            val hit = conflictMarkRect(
-                                startNode = hiddenCourse.startNode,
-                                ownRows = clampedSteps[hiddenCourse.id] ?: 1,
+                            // (用户反馈 2026-09-09: ownTime 课按比例行坐标)
+                            val g = rowGeomOf[hiddenCourse.id] ?: (0f to 1f)
+                            val hit = conflictMarkRectFrac(
+                                startRowFrac = g.first,
+                                ownRowsFrac = g.second,
                                 form = ConflictVariant.STACK,
                                 colW = colW, rowH = rowH, gapH = gapH,
-                                minStart = minStart, clusterH = cellH,
+                                minStartRow = minStartRow, clusterH = cellH,
                                 topInset = topInset
                             )
                             Box(
@@ -661,7 +738,7 @@ fun ConflictClusterCard(
                             ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
                             Box(
                                 modifier = Modifier
-                                    .offset(x = colW - hit.first, y = cardYOf(topCourse.startNode))
+                                    .offset(x = colW - hit.first, y = cardYOf(topCourse))
                                     .width(hit.first)
                                     .height(hit.second)
                                     .noRippleClickable {
@@ -672,12 +749,14 @@ fun ConflictClusterCard(
                         ConflictVariant.RAIL -> {
                             // v7.8.4 修订: RAIL 不再有侧边竖轨结构, 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
                             // 链组态下 hidden 课为空, 不会走到这里; 经典完全重叠 RAIL hit 走 STACK 同一矩形函数。
-                            val hit = conflictMarkRect(
-                                startNode = hiddenCourse.startNode,
-                                ownRows = clampedSteps[hiddenCourse.id] ?: 1,
+                            // (用户反馈 2026-09-09: ownTime 课按比例行坐标)
+                            val g = rowGeomOf[hiddenCourse.id] ?: (0f to 1f)
+                            val hit = conflictMarkRectFrac(
+                                startRowFrac = g.first,
+                                ownRowsFrac = g.second,
                                 form = ConflictVariant.STACK,
                                 colW = colW, rowH = rowH, gapH = gapH,
-                                minStart = minStart, clusterH = cellH,
+                                minStartRow = minStartRow, clusterH = cellH,
                                 topInset = topInset
                             )
                             Box(
@@ -724,7 +803,7 @@ fun ConflictClusterCard(
                     modifier = Modifier
                         .offset(
                             x = colW - foldSizeDp - 2.dp,
-                            y = cardYOf(host.startNode) + 2.dp
+                            y = cardYOf(host) + 2.dp
                         )
                         .size(foldSizeDp)
                 ) {
@@ -742,12 +821,12 @@ fun ConflictClusterCard(
                 if (!markPresent && switchTarget != null) {
                     val hit = foldSwitchHitArea(
                         ConflictVariant.FOLD, colW.value, cellH.value, foldSize
-                    ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtMost(cellH) }
+                    ).let { (w, h) -> w.dp.coerceAtMost(colW) to h.dp.coerceAtLeast(0.dp).coerceAtMost(cellH) }
                     Box(
                         modifier = Modifier
                             .offset(
                                 x = colW - hit.first,
-                                y = cardYOf(host.startNode)
+                                y = cardYOf(host)
                             )
                             .width(hit.first)
                             .height(hit.second)
@@ -772,7 +851,7 @@ fun ConflictClusterCard(
                     modifier = Modifier
                         .offset(
                             x = 2.dp,
-                            y = cardYOf(hid.course.startNode) + 2.dp
+                            y = cardYOf(hid.course) + 2.dp
                         )
                         .size(width = colW - 4.dp, height = hidH - 4.dp)
                 )
