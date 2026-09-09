@@ -146,6 +146,9 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
     testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
     testImplementation("org.json:json:20231013")
+    // issue#26: 迁移测试用 sqlite-jdbc 直接执行 MIGRATION_5_6_STATEMENTS(单一事实来源),
+    //             避免 Robolectric/Instrumentation 依赖(本仓库无)
+    testImplementation("org.xerial:sqlite-jdbc:3.46.1.3")
     androidTestImplementation("androidx.test.ext:junit:1.2.1")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
     androidTestImplementation("androidx.compose.ui:ui-test-junit4")

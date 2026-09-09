@@ -11,7 +11,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class],
-    version = 5,                            // 4 → 5: 加 courses.isIrregularNode/isIrregularTime (issue#23)
+    version = 6,                            // 5 → 6: 加 courses.alias (issue#26 课程别名)
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {
