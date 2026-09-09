@@ -58,11 +58,11 @@ class WidgetEditViewModel(
                 tableId.id to runCatching { repo.countCourses(tableId.id) }.getOrDefault(0)
             }
             val available = WidgetEditCore.filterAvailableTables(all) { counts[it] ?: 0 }
-            // Sentinel 0L means "follow default" — translate to null so the
+            // Sentinel (0L) means "follow default" — translated to null so the
             // UI shows the "Default" row as selected (same as no binding).
             val raw = WidgetBindingStore.get(ctx, widgetId)
             _state.value = WidgetEditUiState(
-                currentBinding = if (raw != null && raw > 0L) raw else null,
+                currentBinding = WidgetEditCore.displayBinding(raw),
                 availableTables = available
             )
         }

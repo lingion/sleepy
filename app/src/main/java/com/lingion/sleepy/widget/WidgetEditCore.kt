@@ -48,4 +48,11 @@ internal object WidgetEditCore {
         if (newTableId == null) WidgetBindingCore.delete(raw, widgetId)
         else WidgetBindingCore.write(raw, widgetId, newTableId)
     }
+
+    /**
+     * Translate a raw stored binding into the value the picker UI treats as
+     * "explicitly bound": the first-add sentinel (0L) and absent entries
+     * both mean "follow the app-wide default" → null.
+     */
+    fun displayBinding(raw: Long?): Long? = raw?.takeIf { it > 0L }
 }
