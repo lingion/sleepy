@@ -31,6 +31,7 @@ q*.json
 # 用户明确说：所有 SOP 都属于内部机密，commits 与 release SOP 一律 exclude。
 docs/sop/release-sop.md
 docs/sop/jw-cross-verify-sop.md
+docs/sop/commit-sop.md
 
 # User-private workflow policies (internal only, never push)
 # 分支规范与内部贡献流程属于用户私有信息，仅存本地，禁止 push。
