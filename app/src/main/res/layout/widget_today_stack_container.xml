@@ -1,34 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- 可滚动 Today + 底部高亮导航按钮条 (issue #24 交互改造)。
-     内容装不下(overflow)时 Today 走本布局: 壳图+条带 ListView 保留竖直滚动;
-     StackView 竖滑翻页只用于静态分支 — ListView 与 StackView 争同一竖直拖拽手势,
-     同容器共存量集视图必互相打架, 故 overflow 档翻页=按钮翻页。
-     z 序(后声明在上): shell → ListView → 底部按钮条(可见, 与 widget_today_stack_container
-     同款, 同一 configureTodayNav 配置)。 -->
+<!-- 今日课程 StackView 竖滑翻页容器 (issue #24 交互改造)。
+     平台事实 (AOSP 源码实锤): 标准 AppWidget 白名单唯一自带手势视图 = StackView(竖直拖拽);
+     HorizontalScrollView 无 @RemoteView 注解(塞入=launcher inflate 崩);
+     AdapterViewFlipper 仅定时轮播无手势 → 横向滑动物理不可行。
+     z 序(后声明在上): widget_bitmap(壳图, renderAndPush 挂 open-app PI) 在下,
+     StackView(每日卡, 位置0=锚定日) 居中, 底部高亮按钮条 在上。
+     卡片渲染 = renderToday 全尺寸(壳图同源), 静态闸门保证内容不压按钮条区域。 -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/widget_scroll_clip"
-    android:outlineProvider="background"
-    android:clipToOutline="true"
     tools:targetApi="31">
+
     <ImageView
-        android:id="@+id/widget_shell"
+        android:id="@+id/widget_bitmap"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:scaleType="fitXY"
         android:adjustViewBounds="false"
         android:contentDescription="@string/widget_week_grid_label" />
-    <ListView
-        android:id="@+id/widget_strip_list"
+
+    <StackView
+        android:id="@+id/widget_today_stack"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:divider="@null"
-        android:dividerHeight="0dp"
-        android:scrollbars="none"
-        android:cacheColorHint="@android:color/transparent"
-        android:listSelector="@android:color/transparent" />
+        android:layout_height="match_parent" />
+
     <LinearLayout
         android:id="@+id/widget_today_navbar"
         android:layout_width="wrap_content"
@@ -36,12 +32,14 @@
         android:layout_gravity="bottom|center_horizontal"
         android:layout_marginBottom="8dp"
         android:orientation="horizontal">
+
         <ImageView
             android:id="@+id/widget_today_nav_prev"
             android:layout_width="28dp"
             android:layout_height="28dp"
             android:clickable="true"
             android:contentDescription="@string/today_nav_prev_day" />
+
         <ImageView
             android:id="@+id/widget_today_nav_today"
             android:layout_width="54dp"
@@ -49,6 +47,7 @@
             android:layout_marginStart="10dp"
             android:clickable="true"
             android:contentDescription="@string/today_nav_back_to_today" />
+
         <ImageView
             android:id="@+id/widget_today_nav_next"
             android:layout_width="28dp"

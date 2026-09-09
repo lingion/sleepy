@@ -21,7 +21,7 @@ import java.time.LocalDate
  *    (R1/R3/R6: 今日 vs 导航态显示差异);
  * 3) 源码级守卫 (沿用 [[WidgetBitmapLifecycleTest]] 风格): TodayWidget.kt 必须接
  *    上 onReceive 派发 + 调 TodayDateNavStore.shift/remove + pushTodayData 用
- *    widget_today_container 布局 + applyNavClickZones; RemoteViewsWidgetHelper 必须
+ *    widget_today_stack_container 布局 + configureTodayNav; RemoteViewsWidgetHelper 必须
  *    有 configureViews 钩子接驳今日小组件的导航区。
  */
 class TodayDateNavWiringTest {
@@ -158,11 +158,11 @@ class TodayDateNavWiringTest {
         // onDeleted 必须清掉导航状态
         assertTrue("onDeleted 必须调 TodayDateNavStore.remove",
             src.contains("onDeleted") && src.contains("TodayDateNavStore.remove"))
-        // pushTodayData 必须用 widget_today_container 布局 + applyNavClickZones
-        assertTrue("pushTodayData 必须传 widget_today_container 布局",
-            src.contains("R.layout.widget_today_container"))
-        assertTrue("pushTodayData 必须调 applyNavClickZones",
-            src.contains("applyNavClickZones"))
+        // pushTodayData 必须用 widget_today_stack_container 布局 + configureTodayNav
+        assertTrue("pushTodayData 必须传 widget_today_stack_container 布局",
+            src.contains("R.layout.widget_today_stack_container"))
+        assertTrue("pushTodayData 必须调 configureTodayNav",
+            src.contains("configureTodayNav"))
     }
 
     @Test
@@ -181,7 +181,7 @@ class TodayDateNavWiringTest {
         // android.view.View 无 @RemoteView 注解 → 裸 <View> 在 launcher inflate 必炸
         // → 「载入窗口小组件时出现问题」(v1.0.53 回归: 两个今日变体都走 nav 布局,
         //   周课表布局无裸 View 所以只有今日挂)。
-        listOf("widget_today_container.xml", "widget_scroll_today_nav.xml").forEach { name ->
+        listOf("widget_today_stack_container.xml", "widget_scroll_today_nav.xml").forEach { name ->
             val xml = layoutFile(name).readText()
             assertFalse(
                 "$name 禁止裸 <View> (无 @RemoteView 注解, launcher 端 inflate 抛异常)",
@@ -207,22 +207,23 @@ class TodayDateNavWiringTest {
     }
 
     @Test
-    fun `widget_today_container layout declares three nav zones with content descriptions`() {
-        val xml = layoutFile("widget_today_container.xml").readText()
+    fun `widget_today_stack_container layout declares navbar with three visible buttons`() {
+        val xml = layoutFile("widget_today_stack_container.xml").readText()
+        // 底部高亮按钮条: 28dp 圆钮 × 2 + 54×28dp 胶囊, 圆钮直径与胶囊高 = renderer 常量口径
+        assertTrue("缺底部导航条容器", xml.contains("widget_today_navbar"))
+        assertTrue("navbar 须 bottom|center_horizontal",
+            xml.contains("android:layout_gravity=\"bottom|center_horizontal\""))
         listOf(
             "widget_today_nav_prev" to "today_nav_prev_day",
             "widget_today_nav_next" to "today_nav_next_day",
-            "widget_today_nav_today" to "today_nav_back_to_today"
+            "widget_today_nav_today" to "today_nav_back_to_today",
         ).forEach { (id, contentDesc) ->
-            assertTrue("layout 缺 $id id", xml.contains("@+id/$id") || xml.contains("@id/$id"))
+            assertTrue("layout 缺 $id id", xml.contains("@+id/$id"))
             assertTrue("layout $id 缺 contentDescription=@string/$contentDesc",
                 xml.contains("android:contentDescription=\"@string/$contentDesc\""))
         }
-        // 三个透明 zone 固定 dp 尺寸, 与 renderer 绘制的箭头位置对齐 (36×30dp)
-        assertTrue("prev zone 须 36dp×30dp", xml.contains("widget_today_nav_prev") &&
-            xml.contains("36dp") && xml.contains("30dp"))
-        assertTrue("layout 含 background=\"@android:color/transparent\"",
-            xml.contains("@android:color/transparent"))
+        // 28dp 圆钮 + 54dp 胶囊宽 (renderer 常量 NAV_BUTTON_SIZE_DP / NAV_PILL_W_DP 口径)
+        assertTrue("圆钮/胶囊尺寸须 28dp + 54dp", xml.contains("28dp") && xml.contains("54dp"))
     }
 
     @Test
@@ -251,14 +252,65 @@ class TodayDateNavWiringTest {
         // issue #24 范围铁律: 日期导航只在每日小组件。WeekGrid 最小档复用 pushTodayData
         // 管线, 但不得获得导航布局/点击区 — 守卫 WeekGrid 侧零沾染。
         val grid = widgetSource("WeekGridWidgetProvider.kt").readText()
-        assertFalse("WeekGrid 不得引用 widget_today_container",
-            grid.contains("widget_today_container"))
+        assertFalse("WeekGrid 不得引用 widget_today_stack_container",
+            grid.contains("widget_today_stack_container"))
         assertFalse("WeekGrid 不得引用 widget_scroll_today_nav",
             grid.contains("widget_scroll_today_nav"))
-        assertFalse("WeekGrid 不得引用 applyNavClickZones",
-            grid.contains("applyNavClickZones"))
+        assertFalse("WeekGrid 不得引用 configureTodayNav",
+            grid.contains("configureTodayNav"))
         // 它的 5 参调用 (receiverClass 缺省 null → 导航关) 保持原样
         assertTrue("WeekGrid 调用点保持 5 参缺省形态",
             grid.contains("pushTodayData(context, awm, widgetId, WidgetVariant.SMALL, todayData)"))
     }
+    // ---- issue #24 交互改造: StackView 竖滑翻页 ----
+
+    @Test
+    fun `TodayStackCore dayForPosition orders cards forward from anchor`() {
+        assertEquals(100L, TodayStackCore.dayForPosition(100L, 0))
+        assertEquals(101L, TodayStackCore.dayForPosition(100L, 1))
+        assertEquals(113L, TodayStackCore.dayForPosition(100L, 13))
+        assertEquals(100L, TodayStackCore.dayForPosition(100L, -1))
+        assertEquals(113L, TodayStackCore.dayForPosition(100L, 14))
+    }
+
+    @Test
+    fun `TodayStackCore staticFits requires navbar clearance`() {
+        // 装得下(留 36dp 按钮条) = StackView 静态分支; 装不下 = scroll 按钮翻页分支
+        assertTrue(TodayStackCore.staticFits(100f, 136f))
+        assertFalse(TodayStackCore.staticFits(101f, 136f))
+    }
+
+    @Test
+    fun `TodayStackService source lazy-renders cards and keeps bitmap discipline`() {
+        val src = widgetSource("TodayStackService.kt").readText()
+        assertTrue("卡工厂必须经 loadDataForDate 拿指定日数据",
+            src.contains("loadDataForDate"))
+        assertTrue("卡渲染必须 suppressHeaderNavAffordances=true",
+            src.contains("renderToday(context, d, wDp, hDp, variant, true)"))
+        assertTrue("必须用 stack item 布局", src.contains("R.layout.widget_today_stack_item"))
+        assertTrue("必须 setOnClickFillInIntent 合并 template 点击",
+            src.contains("setOnClickFillInIntent"))
+        assertTrue("禁止 recycle 卡片 bitmap", !src.contains(".recycle()"))
+        assertTrue("锚点从 store 重读 (factory 跨 notify 存活)",
+            src.contains("TodayDateNavStore.target"))
+    }
+
+    @Test
+    fun `AndroidManifest registers TodayStackService with BIND_REMOTEVIEWS`() {
+        val mf = findUpward("app/src/main/AndroidManifest.xml").readText()
+        assertTrue("manifest 须注册 TodayStackService", mf.contains(".widget.TodayStackService"))
+        assertTrue("RemoteViewsService 须 BIND_REMOTEVIEWS 权限",
+            Regex("TodayStackService[\\s\\S]*?BIND_REMOTEVIEWS").containsMatchIn(mf))
+    }
+
+    private fun findUpward(rel: String): File {
+        var dir: File? = File(".").absoluteFile
+        while (dir != null) {
+            val f = File(dir, rel)
+            if (f.exists()) return f
+            dir = dir.parentFile
+        }
+        error("\$rel not found")
+    }
+
 }

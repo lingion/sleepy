@@ -297,6 +297,10 @@
             android:name=".widget.ScrollStripService"
             android:exported="true"
             android:permission="android.permission.BIND_REMOTEVIEWS" />
+        <service
+            android:name=".widget.TodayStackService"
+            android:exported="true"
+            android:permission="android.permission.BIND_REMOTEVIEWS" />
 
     </application>
 

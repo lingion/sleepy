@@ -125,13 +125,31 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         fun navRequestCode(widgetId: Int, ordinal: Int): Int = widgetId * 3 + ordinal
 
         /**
-         * 挂三个导航区 PendingIntent — 只给 Today 系 receiver 的实例用
+         * 配置今日导航按钮条 — 只给 Today 系 receiver 的实例用
          * (WeekGrid 最小档复用 pushTodayData 管线但传 receiverClass=null → 不会进来)。
+         * 可见按钮 = 高亮位图 (renderNavCircle 圆钮 × 2 + renderNavPill 胶囊, 主题色底 +
+         * 对比色箭头/文字) + 三个导航 PendingIntent (issue #24 交互改造: 点击区从透明小角
+         * 换成可见大按钮, 解决"点击区域太小不好点")。
          */
-        fun applyNavClickZones(
+        fun configureTodayNav(
             context: Context, views: android.widget.RemoteViews,
-            widgetId: Int, receiverClass: Class<*>
+            widgetId: Int, receiverClass: Class<*>, data: WidgetData
         ) {
+            // 按钮位图 — renderNav* 以 data 主题渲染, 与卡面同源配色
+            views.setImageViewBitmap(
+                com.lingion.sleepy.R.id.widget_today_nav_prev,
+                WidgetBitmapRenderers.renderNavCircle(context, data, pointLeft = true)
+            )
+            views.setImageViewBitmap(
+                com.lingion.sleepy.R.id.widget_today_nav_today,
+                WidgetBitmapRenderers.renderNavPill(
+                    context, data, context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today)
+                )
+            )
+            views.setImageViewBitmap(
+                com.lingion.sleepy.R.id.widget_today_nav_next,
+                WidgetBitmapRenderers.renderNavCircle(context, data, pointLeft = false)
+            )
             val zones = listOf(
                 Triple(com.lingion.sleepy.R.id.widget_today_nav_prev, ACTION_PREV_DAY, 0),
                 Triple(com.lingion.sleepy.R.id.widget_today_nav_next, ACTION_NEXT_DAY, 1),
@@ -156,8 +174,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * 注意 Today 小变体在这里等效直通(REGULAR 也走这条闸), 与改动前行为一致。
          *
          * [receiverClass] = 拥有该 widget 的 AppWidgetProvider 类 (issue #24 Feature2):
-         * Today 系 receiver (含子类) → 传自身类, 挂日期导航点击区 (widget_today_container /
-         * widget_scroll_today_nav + applyNavClickZones);
+         * Today 系 receiver (含子类) → 传自身类, 挂日期导航 (widget_today_stack_container /
+         * widget_scroll_today_nav + configureTodayNav);
          * WeekGrid 最小档 → 不传 (默认 null) → 布局与行为与改动前逐字节一致, 不沾导航区。
          */
         fun pushTodayData(
@@ -172,27 +190,63 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
             val navZones: ((android.widget.RemoteViews) -> Unit)? = if (navEnabled) {
                 val rc = receiverClass!!
-                { views -> applyNavClickZones(context, views, id, rc) }
+                { views -> configureTodayNav(context, views, id, rc, data) }
             } else null
-            if (contentH <= hDp) {
-                RemoteViewsWidgetHelper.renderAndPush(
-                    context, awm, id, TAG,
-                    loadData = { data },
-                    renderBitmap = { d, w, h ->
-                        WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
-                    },
-                    layoutRes = if (navEnabled) com.lingion.sleepy.R.layout.widget_today_container
-                                else com.lingion.sleepy.R.layout.widget_bitmap_container,
-                    configureViews = navZones
+            if (!navEnabled) {
+                // WeekGrid 最小档 — 改动前行为逐字节一致 (无导航, 无按钮条)
+                if (contentH <= hDp) {
+                    RemoteViewsWidgetHelper.renderAndPush(
+                        context, awm, id, TAG,
+                        loadData = { data },
+                        renderBitmap = { d, w, h ->
+                            WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
+                        },
+                        layoutRes = com.lingion.sleepy.R.layout.widget_bitmap_container
+                    )
+                } else {
+                    val shell = WidgetBitmapRenderers.renderToday(
+                        context, data, wDp.toFloat(), hDp.toFloat(), variant
+                    )
+                    RemoteViewsWidgetHelper.pushScrollable(
+                        context, awm, id, TAG,
+                        layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
+                        shellBitmap = shell,
+                        scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY
+                    )
+                }
+            } else if (TodayStackCore.staticFits(contentH.toFloat(), hDp.toFloat())) {
+                // Today 系静态分支 → StackView 竖滑翻页容器 (issue #24 交互改造)
+                val shell = WidgetBitmapRenderers.renderToday(
+                    context, data, wDp.toFloat(), hDp.toFloat(), variant
                 )
+                val views = android.widget.RemoteViews(context.packageName, com.lingion.sleepy.R.layout.widget_today_stack_container)
+                views.setImageViewBitmap(com.lingion.sleepy.R.id.widget_bitmap, shell)
+                val tap = PendingIntent.getActivity(
+                    context, WidgetRoutes.tapRequestCode(id),
+                    WidgetRoutes.tapIntent(context),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                // 壳图点击仅 StackView 未加载完时可达 (loading 兜底); 卡面点击走 template
+                views.setOnClickPendingIntent(com.lingion.sleepy.R.id.widget_bitmap, tap)
+                configureTodayNav(context, views, id, receiverClass!!, data)
+                val svc = Intent(context, TodayStackService::class.java).apply {
+                    putExtra(TodayStackService.StackFactory.EXTRA_WIDGET_ID, id)
+                    putExtra(TodayStackService.StackFactory.EXTRA_VARIANT, variant.name)
+                    this.data = android.net.Uri.parse(toUri(Intent.URI_INTENT_SCHEME))
+                }
+                views.setRemoteAdapter(com.lingion.sleepy.R.id.widget_today_stack, svc)
+                views.setPendingIntentTemplate(com.lingion.sleepy.R.id.widget_today_stack, tap)
+                awm.updateAppWidget(id, views)
+                awm.notifyAppWidgetViewDataChanged(id, com.lingion.sleepy.R.id.widget_today_stack)
+                Log.d(TAG, "pushTodayData stack id=$id ${wDp}x${hDp}dp content=$contentH")
             } else {
+                // Today 系 overflow → scroll 分支: 壳+条带 ListView+底部按钮条 (按钮翻页)
                 val shell = WidgetBitmapRenderers.renderToday(
                     context, data, wDp.toFloat(), hDp.toFloat(), variant
                 )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
-                    layoutRes = if (navEnabled) com.lingion.sleepy.R.layout.widget_scroll_today_nav
-                                else com.lingion.sleepy.R.layout.widget_scroll_today,
+                    layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today_nav,
                     shellBitmap = shell,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
                     configureViews = navZones
@@ -207,10 +261,15 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * the app-wide default table; receivers fall back to
          * [WidgetTableResolver.resolveCurrentTable] when no binding exists.
          */
-        fun loadDataSync(context: Context, appWidgetId: Int): WidgetData {
+        fun loadDataSync(context: Context, appWidgetId: Int): WidgetData =
+            loadDataForDate(context, appWidgetId, TodayDateNavStore.target(context, appWidgetId, LocalDate.now()))
+
+        /**
+         * 指定日期版数据加载 (issue #24 StackView 翻页卡工厂用) — [target] 由调用方给出
+         * (loadDataSync 传导航锚定日, StackView 卡工厂传卡面日期)。
+         */
+        fun loadDataForDate(context: Context, appWidgetId: Int, target: LocalDate): WidgetData {
             val today = LocalDate.now()
-            // issue #24 Feature2: 该实例导航选中日期 — 跨天锚点失效自动回今天 (R5)
-            val target = TodayDateNavStore.target(context, appWidgetId, today)
             val dayOfWeek = DateUtils.todayDayOfWeek(target)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
