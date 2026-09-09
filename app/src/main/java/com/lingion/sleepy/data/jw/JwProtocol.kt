@@ -147,6 +147,19 @@ object JwProtocol {
     const val TYPE_CHAOXING = "chaoxing"
 
     /**
+     * 博雅研究生平台 (超星 chaoxingbook 旗下"博雅研究生", 前端挂 /pp/ 路径)。
+     * 自建 REST: GET /api/microForm/term (学期含 termBeginTime/weekEnd) +
+     * GET /api/schedule/class/setting/current (lessonConfig 节次时间) +
+     * GET /api/schedule/table/byStudent?whichWeek=N&yearTerm=… (排课行, 每行自带
+     * whichWeek/week/lessonNumber; 实测不带 whichWeek 返回不完整子集, 须逐周抓)。
+     * 认证: cookie `token` / 同名请求头, 响应信封 {code:200,data}。
+     * 多校 SaaS (代码内含 YANSHANDAXUE/DALIANJIAOTONG fid 常量)。
+     * 首校: 燕山大学研究生 (yjsxt.ysu.edu.cn/pp, fid=41571,
+     * 2026-09-06 采集包 + 接口实采 390 行实锤)。
+     */
+    const val TYPE_BOYA_PP = "boya_pp"
+
+    /**
      * 武汉理工大学教务 (jwxt.whut.edu.cn, 金智 jwapp 变体)。
      * 课表走 kcbcxby 微应用 cxxskcb.do (响应 datas.cxxskcb.rows[], 字段与 HEU
      * xskcb 同名同义); 解析内核复用 JwWiseduParser。WHUT 特有: 节次 DM ≠
@@ -182,7 +195,7 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
+        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_BOYA_PP, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
         TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
@@ -205,6 +218,7 @@ object JwProtocol {
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
         TYPE_CHAOXING -> "超星综合教务"
+        TYPE_BOYA_PP -> "博雅研究生平台"
         TYPE_HNUST -> "湖南科大教务"
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_EAMS5 -> "合工大教务 (EAMS5)"
@@ -233,6 +247,7 @@ object JwProtocol {
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"
+        TYPE_BOYA_PP -> "other"
         TYPE_EAMS5 -> "eams5"
         TYPE_CLASSIC_EAMS -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"

@@ -1342,6 +1342,20 @@
   },
   {
     "sortKey": "Y",
+    "name": "燕山大学",
+    "url": "https://cer.ysu.edu.cn/authserver/login?service=https%3A%2F%2Fyjsxt.ysu.edu.cn%2Fapi%2FcasLogin%2Fysu",
+    "type": "boya_pp",
+    "status": "grad_supported",
+    "aliases": [
+      "ysu",
+      "ysu.edu.cn",
+      "yanshandaxue",
+      "cer.ysu.edu.cn"
+    ],
+    "sortKeyFull": "yanshandaxue"
+  },
+  {
+    "sortKey": "Y",
     "name": "云南财经大学",
     "url": "https://xjwis.ynufe.edu.cn/",
     "type": "qz",

@@ -143,6 +143,14 @@
     "sortKeyFull": "guangzhouyikedaxue"
   },
   {
+    "sortKey": "H",
+    "name": "河北资源环境职业技术学院",
+    "url": "https://jwpt.hebzyhj.edu.cn:1233/dist/#/login",
+    "type": "qz_app",
+    "aliases": [],
+    "sortKeyFull": "hebeiziyuanhuanjingzhiyejishuxueyuan"
+  },
+  {
     "sortKey": "J",
     "name": "吉林工商学院",
     "url": "https://jwxt.jlbtc.edu.cn/admin/",
@@ -1331,6 +1339,20 @@
     "type": "qz",
     "aliases": [],
     "sortKeyFull": "yanbiandaxue"
+  },
+  {
+    "sortKey": "Y",
+    "name": "燕山大学",
+    "url": "https://cer.ysu.edu.cn/authserver/login?service=https%3A%2F%2Fyjsxt.ysu.edu.cn%2Fapi%2FcasLogin%2Fysu",
+    "type": "boya_pp",
+    "status": "grad_supported",
+    "aliases": [
+      "ysu",
+      "ysu.edu.cn",
+      "yanshandaxue",
+      "cer.ysu.edu.cn"
+    ],
+    "sortKeyFull": "yanshandaxue"
   },
   {
     "sortKey": "Y",

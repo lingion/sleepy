@@ -249,12 +249,12 @@ class JwImportActivity : ComponentActivity() {
                         } else {
                             JwWebViewLoginScreen(
                                 school = school,
-                                onHtmlCaptured = { html, sch, periods ->
+                                onHtmlCaptured = { html, sch, periods, termStartDate ->
                                     // T6 双层判定：sch.type 已知直接用；空 → HTML/URL 组合兜底
                                     val rawType = sch.type
                                     val effectiveType = rawType?.takeIf { it.isNotBlank() }
                                         ?: jwViewModel.detectProtocol(html, sch.url.ifBlank { null })
-                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} rawType=$rawType effectiveType=$effectiveType periods=${periods.size}")
+                                    Log.d("JwImport", "onHtmlCaptured htmlLen=${html.length} rawType=$rawType effectiveType=$effectiveType periods=${periods.size} termStartDate=$termStartDate")
                                     statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
@@ -297,7 +297,10 @@ class JwImportActivity : ComponentActivity() {
                                                     end = filled?.second ?: ""
                                                 )
                                             }
-                                            configStartDate = ""
+                                            // 学期起始日预填: JSON 直连协议 (boya_pp/cqu/chaoxing) 能从
+                                            // 接口拿到第一周周一 (如燕大 2026-2027-1 实为 2026-08-31,
+                                            // 本地 9 月首一推断会差一周), 用户仍可在确认页修改
+                                            configStartDate = termStartDate
                                             configTimeJson = ""
                                             stage = Stage.ConfigureConfirm
                                             statusMsg = null
