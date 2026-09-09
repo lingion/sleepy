@@ -316,6 +316,9 @@
     <string name="view_cards">Cuadrícula</string>
 
     <string name="today_today">Hoy</string>
+    <string name="today_nav_prev_day">Día anterior</string>
+    <string name="today_nav_next_day">Día siguiente</string>
+    <string name="today_nav_back_to_today">Volver a hoy</string>
     <string name="today_no_course">No hay clases hoy</string>
     <string name="today_rest">Día libre</string>
 

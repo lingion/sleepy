@@ -316,6 +316,9 @@
     <string name="view_cards">網格</string>
 
     <string name="today_today">今天</string>
+    <string name="today_nav_prev_day">前一天</string>
+    <string name="today_nav_next_day">後一天</string>
+    <string name="today_nav_back_to_today">回到今天</string>
     <string name="today_no_course">今日無課程</string>
     <string name="today_rest">休息 / 自習 都可以</string>
 

@@ -316,6 +316,9 @@
     <string name="view_cards">グリッド</string>
 
     <string name="today_today">今日</string>
+    <string name="today_nav_prev_day">前日</string>
+    <string name="today_nav_next_day">翌日</string>
+    <string name="today_nav_back_to_today">今日に戻る</string>
     <string name="today_no_course">今日は授業がありません</string>
     <string name="today_rest">休み / 自習 でもOK</string>
 
