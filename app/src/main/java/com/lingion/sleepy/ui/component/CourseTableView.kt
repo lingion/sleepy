@@ -77,6 +77,13 @@ data class TimeSlot(
 ) {
     // nodeString 死属性已删（恒返回 "N-N" 且全库零调用; 界面用的是 CourseEntity.nodeString 本地化版本）
     val timeString: String get() = "$displayStart-$displayEnd"
+
+    /**
+     * 渲染期占位节次 (用户反馈 2026-09-09): 非常规课跨节次空隙时由
+     * TimeTableUtils.buildRenderSlotPlan 合成的空隙占位行 — 只显示时间不显示
+     * 节号(label 为空), 绝不写回 timeJson, 与 insertEdgeNode 手建节点无关。
+     */
+    val isPlaceholder: Boolean get() = label.isEmpty()
 }
 
 /**
@@ -111,19 +118,27 @@ fun CardsGridView(
     // remember 留在页内会在 HorizontalPager 翻页时销毁( beyondViewportPageCount=0 ),
     // 周切换一次轮换态即丢。
     rotationSteps: Map<String, Int> = emptyMap(),
-    onRotationStep: (String, Int) -> Unit = { _, _ -> }     // (clusterKey, step)
+    onRotationStep: (String, Int) -> Unit = { _, _ -> },     // (clusterKey, step)
+    // 用户反馈 2026-09-09: 非常规课跨节次空隙时按当前课程集合合成渲染期占位节次,
+    // 比例定位基于扩展后的槽位表。null = 不合成(旧调用方兼容)。
+    timeJson: String? = null
 ) {
     val colors = SleepyTheme.colors
-    val maxNode = timeSlots.maxOfOrNull { it.nodeEnd } ?: 12
+    // 渲染槽位表: 有 timeJson 且存在跨空隙非常规课 → 标准 12 节 + 占位行; 否则原表
+    val renderSlots = remember(timeSlots, timeJson, courses) {
+        if (timeJson != null) TimeTableUtils.buildRenderSlotPlan(courses, timeJson).slots
+        else timeSlots
+    }
+    val maxNode = renderSlots.maxOfOrNull { it.nodeEnd } ?: 12
     val sortedDays = visibleDays.sorted()
     val dayCount = sortedDays.size
 
-    // issue#23: 边缘节次节点的"行号"按 timeSlots 自然顺序取(已按 node ASC 排序);
+    // issue#23: 边缘节次节点的"行号"按 renderSlots 自然顺序取(已按 node ASC 排序);
     // 前置节点(-1, 0)排到 grid 顶部, 后置节点(N+1, N+2)排到 grid 底部,
     // 视觉上就是"第 0 节在第 1 节之上" / "第 N+1 节在第 N 节之下", 与插入直觉一致。
-    //   返回 -1 = 该节点不在 timeSlots(典型场景: 课程来自已删除的旧 timeJson, 数据脏)
+    //   返回 -1 = 该节点不在 renderSlots(典型场景: 课程来自已删除的旧 timeJson, 数据脏)
     //   调用方需先判 >= 0 再绘;cardY 那侧 .coerceAtLeast(0) 兜底防负坐标。
-    fun slotIndexOf(node: Int): Int = timeSlots.indexOfFirst { it.nodeStart == node }
+    fun slotIndexOf(node: Int): Int = renderSlots.indexOfFirst { it.nodeStart == node }
 
     // 设置页改 scale / cornerRatio 后强制 recompose
     var prefVersion by remember { mutableIntStateOf(0) }
@@ -159,9 +174,10 @@ fun CardsGridView(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 算出每列宽度 (dp)
             val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
-            // issue#23: grid 高度按 timeSlots 行数算(maxNode 已不反映边缘节点总数)——
-            // edge 节点在 timeSlots 末尾, 视觉上自然排到第 N 节之下。
-            val gridH = rowH * (timeSlots.size.coerceAtLeast(1))
+            // issue#23: grid 高度按 renderSlots 行数算(maxNode 已不反映边缘节点总数)——
+            // edge 节点在 timeSlots 末尾, 视觉上自然排到第 N 节之下;
+            // 用户反馈 2026-09-09: 占位节次行同样扩展网格高度。
+            val gridH = rowH * (renderSlots.size.coerceAtLeast(1))
 
             val scrollState = rememberScrollState()
 
@@ -205,7 +221,7 @@ fun CardsGridView(
                 // ---- Grid 主体：固定高度 Box，内部全用 Modifier.offset 绝对定位 ----
                 Box(modifier = Modifier.fillMaxWidth().height(gridH)) {
                     // 时间栏：每个节次一个 Row，用 offset 定位到正确 y
-                    for ((i, slot) in timeSlots.withIndex()) {
+                    for ((i, slot) in renderSlots.withIndex()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -247,7 +263,9 @@ fun CardsGridView(
 
                     // 引擎聚簇: 同天区间相交(含链式)课程归簇,簇键=主课判定序首课三元组
                     // (override 不改变首课——findClusters 输出固定,键稳定)
-                    val clusters = ConflictLayoutEngine.findClusters(courses)
+                    // 用户反馈 2026-09-09: 带 timeJson 按真实时间区间(分钟级)聚簇 —
+                    // 跨空隙反算的节点范围不再制造假冲突(12:30 结束被吸进 14:00 节)。
+                    val clusters = ConflictLayoutEngine.findClusters(courses, timeJson)
                     val clusteredIds = clusters.flatMap { c -> c.courses.map { it.id } }.toSet()
 
                     for (cluster in clusters) {
@@ -282,7 +300,7 @@ fun CardsGridView(
                             colW = colW,
                             rowH = rowH,
                             maxNode = maxNode,
-                            timeSlots = timeSlots,
+                            timeSlots = renderSlots,
                             timeW = timeW,
                             gapW = gapW,
                             gapH = gapH,
@@ -299,14 +317,16 @@ fun CardsGridView(
                         if (nodeIdx < 0) continue
                         if (course.id in clusteredIds) continue // 簇内课已由 ConflictClusterCard 绘制
                         val dayIdx = sortedDays.indexOf(course.day)
-                        // 步长上限按剩余行数算(边缘节点也按 timeSlots 总行数取模)
+                        // 步长上限按剩余行数算(边缘节点也按 renderSlots 总行数取模)
                         val steps = course.step.coerceAtLeast(1)
-                            .coerceAtMost(timeSlots.size - nodeIdx)
+                            .coerceAtMost(renderSlots.size - nodeIdx)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
                         // issue#23 §5: 非常规时间(ownTime)课按真实分钟比例定位(1.0 = 一整行);
+                        // 用户反馈 2026-09-09: 比例映射基于 renderSlots(含占位节次) —
+                        // 12:30 落在 11:40~12:30 占位行内, 不再侵入 14:00 行;
                         // 时间映射失败退回整格吸附(normalizeNode 已反算 nodeIdx/steps)
                         val frac = if (course.ownTime) TimeTableUtils.timeToFractionalRows(
-                            course.startTime, course.endTime, timeSlots
+                            course.startTime, course.endTime, renderSlots
                         ) else null
                         val cardY = frac?.let { rowH * it.first } ?: rowH * nodeIdx
                         val cardH = if (frac != null) {
@@ -341,6 +361,8 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
     val shape = RoundedCornerShape(sd(12f * cornerRatio))
+    // 渲染期占位节次: 更低调的呈现 — 半透明底, 只显示时间不显示节号
+    val isPh = slot.isPlaceholder
     Box(
         modifier = modifier.padding(sd(2f)),
         contentAlignment = Alignment.Center
@@ -350,18 +372,20 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .clip(shape)
-                .background(colors.surfaceContainerLow)
+                .background(if (isPh) colors.surfaceContainerLow.copy(alpha = 0.5f) else colors.surfaceContainerLow)
                 .padding(sd(4f)),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = stringResource(R.string.period_format_node, slot.label),
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp),
-                    color = colors.onSurface,
-                    maxLines = 1
-                )
-                Spacer(modifier = Modifier.height(sd(1f)))
+                if (!isPh) {
+                    Text(
+                        text = stringResource(R.string.period_format_node, slot.label),
+                        style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp),
+                        color = colors.onSurface,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.height(sd(1f)))
+                }
                 Text(
                     text = slot.timeString,
                     style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),

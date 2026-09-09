@@ -1,6 +1,7 @@
 package com.lingion.sleepy.util
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import java.time.LocalTime
 
 /** 同一天的冲突簇 — 簇内课程节点区间两两经传递闭包相连(直接或间接共享节次)。 */
 data class ConflictCluster(val day: Int, val courses: List<CourseEntity>)
@@ -56,17 +57,97 @@ object ConflictLayoutEngine {
 
     /**
      * 找出全部冲突簇。输出簇间按 day 升序,簇内课程已按主课判定序排好。
+     *
+     * timeJson 非空(推荐,渲染主链路): ownTime 课的真实时间区间(分钟级)参与聚簇 —
+     * 跨节次空隙反算出的节点范围不再制造假冲突(用户 2026-09-09: 12:30 结束跨午间
+     * 空隙被吸进 14:00 节 = 报障本体)。比较基准:
+     *   - ownTime 课 = startTime~endTime 本身
+     *   - 常规课     = 其节次的真实起止时间(effectiveCourseTime 同一契约)
+     * 节点区间只用于排序/簇内几何, 重叠判定一律按分钟区间。真实时间不重叠的课绝不入簇。
+     *
+     * timeJson 为空(旧调用方兼容): 行为与历史版本完全一致 — 节点区间 [startNode,
+     * startNode+step-1] 相交即聚簇。
      */
-    fun findClusters(courses: List<CourseEntity>): List<ConflictCluster> {
+    fun findClusters(courses: List<CourseEntity>, timeJson: String? = null): List<ConflictCluster> {
         // 按 day 分组 → 簇内按 startNode 升序,线性扫相邻区间合并 → 仅保留 size≥2 的簇
         return courses.groupBy { it.day }
             .toSortedMap()
             .flatMap { (day, dayCourses) ->
                 val sorted = dayCourses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
-                mergeOverlapping(sorted)
-                    .filter { it.size >= 2 }
-                    .map { ConflictCluster(day, it.sortedWith(primaryComparator)) }
+                if (timeJson != null) {
+                    mergeOverlappingByTime(sorted, timeJson)
+                        .filter { it.size >= 2 }
+                        .map { ConflictCluster(day, it.sortedWith(primaryComparator)) }
+                } else {
+                    mergeOverlapping(sorted)
+                        .filter { it.size >= 2 }
+                        .map { ConflictCluster(day, it.sortedWith(primaryComparator)) }
+                }
             }
+    }
+
+    /**
+     * 真实时间区间(分钟级)聚簇 — 线性扫按 startNode 排序的课, 相邻课真实时间
+     * 区间相交则合并为一簇(传递闭包)。区间解析: ownTime 课用自身起止, 常规课用
+     * 节次起止; 任一课无法解析出时间 → 回落节点区间判定(数据脏时宁可保守, 不静默丢簇)。
+     */
+    private fun mergeOverlappingByTime(sorted: List<CourseEntity>, timeJson: String): List<List<CourseEntity>> {
+        if (sorted.isEmpty()) return emptyList()
+        val intervals = sorted.map { c -> realIntervalOf(c, timeJson) }
+        val clusters = mutableListOf<MutableList<CourseEntity>>(mutableListOf(sorted[0]))
+        var currentEnd = intervals[0]?.second ?: (sorted[0].startNode + sorted[0].step - 1).toLong()
+        var currentEndIsTime = intervals[0] != null
+        for (i in 1 until sorted.size) {
+            val c = sorted[i]
+            val iv = intervals[i]
+            val start: Long
+            val end: Long
+            val isTime: Boolean
+            if (iv != null) {
+                start = iv.first; end = iv.second; isTime = true
+            } else {
+                start = c.startNode.toLong()
+                end = (c.startNode + c.step - 1).toLong()
+                isTime = false
+            }
+            // 分钟与节点序不可直接比较: 时间基准 vs 节点基准的相邻比较统一换算到
+            // 各自序列 — 这里按"当前簇右端"与"下一课起点"的**同域**比较:
+            // 两者都能解析成时间 → 分钟域; 否则节点域。
+            val overlaps = if (currentEndIsTime && iv != null) {
+                start < currentEnd
+            } else if (!currentEndIsTime && iv == null) {
+                start <= currentEnd
+            } else {
+                // 混合域(理论不可达: 常规课总能从 timeJson 解析出节次时间, 除非数据脏)
+                // 回落节点域保守判定
+                start <= currentEnd
+            }
+            if (overlaps) {
+                clusters.last().add(c)
+                if (end > currentEnd) { currentEnd = end; currentEndIsTime = isTime }
+            } else {
+                clusters.add(mutableListOf(c))
+                currentEnd = end
+                currentEndIsTime = isTime
+            }
+        }
+        return clusters
+    }
+
+    /**
+     * 课的真实时间区间(分钟, 自午夜起) — ownTime 课用自身起止, 常规课用节次起止
+     * (effectiveCourseTime 同一契约)。无法解析 → null, 调用方回落节点区间。
+     */
+    private fun realIntervalOf(c: CourseEntity, timeJson: String): Pair<Long, Long>? {
+        val eff = TimeTableUtils.effectiveCourseTime(
+            c.isIrregularTime || c.ownTime,
+            c.startTime, c.endTime,
+            c.startNode, c.step, timeJson
+        ) ?: return null
+        val s = runCatching { LocalTime.parse(eff.first) }.getOrNull() ?: return null
+        val e = runCatching { LocalTime.parse(eff.second) }.getOrNull() ?: return null
+        if (!e.isAfter(s)) return null
+        return s.toSecondOfDay().toLong() to e.toSecondOfDay().toLong()
     }
 
     /**
