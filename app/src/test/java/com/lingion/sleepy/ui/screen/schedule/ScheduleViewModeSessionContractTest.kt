@@ -99,7 +99,10 @@ class ScheduleViewModeSessionContractTest {
     /** 契约 4b: MainTabs 两个调用位(贴底 Scaffold / Dock)都必须把状态注入下去 */
     @Test
     fun mainActivity_passes_viewMode_through_every_MainTabs_call_site() {
-        val callSites = Regex("""MainTabs\(""").findAll(mainSource).toList()
+        // 只取调用位, 排除 "fun MainTabs(" 定义本身
+        val callSites = Regex("""MainTabs\(""").findAll(mainSource)
+            .filter { mainSource.substring(0, it.range.first).takeLast(4) != "fun " }
+            .toList()
         assertTrue("MainTabs call sites not found in MainActivity", callSites.size >= 2)
         callSites.forEach { match ->
             // 取该调用括号到闭合前的一段(下一个 "}" 前的参数区足够覆盖命名实参)
