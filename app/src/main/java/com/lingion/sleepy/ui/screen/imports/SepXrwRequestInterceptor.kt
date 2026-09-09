@@ -1,6 +1,5 @@
 package com.lingion.sleepy.ui.screen.imports
 
-import android.webkit.CookieManager
 import android.webkit.WebResourceRequest
 import android.webkit.WebResourceResponse
 import java.io.ByteArrayInputStream
@@ -10,7 +9,7 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 /**
- * UCAS (#18) SEP SSO 域 (sep.ucas.ac.cn) 的 X-Requested-With 剥离代理。
+ * UCAS (#18) SEP SSO 域 (sep.ucas.ac.cn) 的 X-Requested-With 剥离拦截器。
  *
  * #18 根因 (2026-09-09 服务端实测实锤):
  *   - sep.ucas.ac.cn 的鉴权 filter 对**任何带 X-Requested-With 头**的请求返回
@@ -25,57 +24,40 @@ import java.net.URL
  * **不带**该头; 302 逐跳跟随, 每跳 Set-Cookie 同步回 WebView CookieManager;
  * 重定向出域 (→ xkgo?ticket=) 时回 302 交 WebView 原生跟随 (xkgo 不检查该头)。
  *
+ * 实现 [JwRequestInterceptor] 接口 — userAgent / schoolHost 通过 [JwInterceptorContext]
+ * 在主线程工厂期一次性捕获注入, 本类在 background thread 调用时不再触碰 WebView
+ * 实例 (该约束是该接口的核心, 见 `JwWebViewCallbackThreadAffinenessTest`)。
+ *
  * 纯函数部分 (shouldProxy / contentTypeParts / resolveRedirect) JVM 单测锁契约;
- * 网络执行体由 SepXrwStripInterceptorContractTest 源码扫描锁不变量。
+ * 网络执行体由 [SepXrwStripInterceptorContractTest] 源码扫描锁不变量 (class 名沿用
+ * 历史名以保留契约不变量)。
  */
-object SepXrwStripInterceptor {
+class SepXrwRequestInterceptor : JwRequestInterceptor {
 
-    /** SEP SSO host — 实测仅此域的 filter 按 XRW 分流 (xkgo.ucas.ac.cn:3000 不检查) */
-    const val SEP_HOST = "sep.ucas.ac.cn"
+    override fun handles(request: WebResourceRequest): Boolean =
+        shouldProxy(request.url.host, request.method)
 
-    /** 重定向逐跳上限: appStore→login 实测两跳 + 裕量 */
-    const val MAX_HOPS = 5
-
-    private const val CONNECT_TIMEOUT_MS = 10_000
-    private const val READ_TIMEOUT_MS = 10_000
-
-    /** 请求头里跳过的键 (忽略大小写): 根因头、会禁用透明 gzip 的头、由代理自管的头 */
-    internal val SKIP_REQUEST_HEADERS = setOf(
-        "x-requested-with",
-        "accept-encoding",
-        "cookie",
-        "host",
-        "content-length",
-        "connection",
-    )
-
-    /** 拦截门: 仅 sep.ucas.ac.cn 的 GET (POST /slogin 实测与 XRW 无关, 放行) */
-    fun shouldProxy(host: String?, method: String?): Boolean =
-        host?.equals(SEP_HOST, ignoreCase = true) == true && method.equals("GET", ignoreCase = true)
-
-    /**
-     * shouldInterceptRequest 入口。仅在 SEP host 的 GET 介入; 任何失败返回 null
-     * (回退 WebView 原生行为 — 即 #18 已知症状, 不会更糟)。
-     */
-    fun intercept(request: WebResourceRequest, userAgent: String?): WebResourceResponse? {
-        if (!shouldProxy(request.url.host, request.method)) return null
-        return try {
-            execute(request.url.toString(), request.requestHeaders, userAgent)
-        } catch (e: Exception) {
-            null
-        }
+    override fun handle(
+        request: WebResourceRequest,
+        ctx: JwInterceptorContext
+    ): WebResourceResponse? = try {
+        execute(request.url.toString(), request.requestHeaders, ctx.userAgent, ctx.cookieManager)
+    } catch (e: Exception) {
+        null
     }
 
     /**
      * 网络执行体: SEP 域内逐跳跟随重定向 (每跳同步 Set-Cookie), 出域回 302。
      * headers = WebView 原始请求头 (SKIP_REQUEST_HEADERS 里的键跳过)。
+     * cookieManager = 主线程工厂期从 [JwInterceptorContext.cookieManager] 注入,
+     * 避免 callback 内调用 [android.webkit.CookieManager.getInstance] 引发的额外开销。
      */
-    internal fun execute(
+    private fun execute(
         url0: String,
         headers: Map<String, String>,
-        userAgent: String?
+        userAgent: String?,
+        cookieManager: android.webkit.CookieManager,
     ): WebResourceResponse {
-        val cookieManager = CookieManager.getInstance()
         var url = url0
         repeat(MAX_HOPS) {
             val conn = (URL(url).openConnection() as HttpURLConnection).apply {
@@ -123,7 +105,7 @@ object SepXrwStripInterceptor {
     }
 
     /** 每跳 Set-Cookie 同步进 WebView cookie jar (intercepted 响应的 Set-Cookie WebView 不自理) */
-    private fun syncSetCookies(cm: CookieManager, url: String, conn: HttpURLConnection) {
+    private fun syncSetCookies(cm: android.webkit.CookieManager, url: String, conn: HttpURLConnection) {
         for ((name, values) in conn.headerFields) {
             if (name != null && name.equals("Set-Cookie", ignoreCase = true)) {
                 for (v in values) {
@@ -162,30 +144,55 @@ object SepXrwStripInterceptor {
         else -> "Status"
     }
 
-    /**
-     * Content-Type → (mimeType, encoding)。charset 大小写/空格形态多样
-     * ("charset=UTF-8" / "charset=utf8" / 无 charset)。
-     */
-    internal fun contentTypeParts(ct: String?): Pair<String, String?> {
-        if (ct.isNullOrBlank()) return "text/html" to null
-        val mime = ct.substringBefore(';').trim().ifBlank { "text/html" }
-        val charset = ct.substringAfter(';', "")
-            .substringAfter("charset=", "")
-            .substringBefore(';').trim().trim('"').trim()
-        return mime to charset.takeIf { it.isNotEmpty() }?.lowercase()
-    }
+    companion object {
+        /** SEP SSO host — 实测仅此域的 filter 按 XRW 分流 (xkgo.ucas.ac.cn:3000 不检查) */
+        const val SEP_HOST = "sep.ucas.ac.cn"
 
-    /**
-     * Location 解析: 绝对 URL / 协议相对 (//host/…) / 绝对路径 (/…) / 相对路径,
-     * 解析基 = 当前跳 URL。
-     */
-    internal fun resolveRedirect(currentUrl: String, location: String): String {
-        val loc = location.trim()
-        if (loc.isEmpty()) return currentUrl
-        return try {
-            URL(URL(currentUrl), loc).toString()
-        } catch (e: Exception) {
-            currentUrl
+        /** 重定向逐跳上限: appStore→login 实测两跳 + 裕量 */
+        const val MAX_HOPS = 5
+
+        private const val CONNECT_TIMEOUT_MS = 10_000
+        private const val READ_TIMEOUT_MS = 10_000
+
+        /** 请求头里跳过的键 (忽略大小写): 根因头、会禁用透明 gzip 的头、由代理自管的头 */
+        internal val SKIP_REQUEST_HEADERS = setOf(
+            "x-requested-with",
+            "accept-encoding",
+            "cookie",
+            "host",
+            "content-length",
+            "connection",
+        )
+
+        /** 拦截门: 仅 sep.ucas.ac.cn 的 GET (POST /slogin 实测与 XRW 无关, 放行) */
+        fun shouldProxy(host: String?, method: String?): Boolean =
+            host?.equals(SEP_HOST, ignoreCase = true) == true && method.equals("GET", ignoreCase = true)
+
+        /**
+         * Content-Type → (mimeType, encoding)。charset 大小写/空格形态多样
+         * ("charset=UTF-8" / "charset=utf8" / 无 charset)。
+         */
+        internal fun contentTypeParts(ct: String?): Pair<String, String?> {
+            if (ct.isNullOrBlank()) return "text/html" to null
+            val mime = ct.substringBefore(';').trim().ifBlank { "text/html" }
+            val charset = ct.substringAfter(';', "")
+                .substringAfter("charset=", "")
+                .substringBefore(';').trim().trim('"').trim()
+            return mime to charset.takeIf { it.isNotEmpty() }?.lowercase()
+        }
+
+        /**
+         * Location 解析: 绝对 URL / 协议相对 (//host/…) / 绝对路径 (/…) / 相对路径,
+         * 解析基 = 当前跳 URL。
+         */
+        internal fun resolveRedirect(currentUrl: String, location: String): String {
+            val loc = location.trim()
+            if (loc.isEmpty()) return currentUrl
+            return try {
+                URL(URL(currentUrl), loc).toString()
+            } catch (e: Exception) {
+                currentUrl
+            }
         }
     }
 }
