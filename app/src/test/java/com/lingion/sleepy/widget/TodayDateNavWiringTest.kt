@@ -175,6 +175,38 @@ class TodayDateNavWiringTest {
     }
 
     @Test
+    fun `nav zones in both today layouts use RemoteViews-whitelisted view classes`() {
+        // launcher 端 RemoteViews.apply 只放行 @RemoteView 注解的 view 类
+        // (AOSP RemoteViews.INFLATER_FILTER = clazz.isAnnotationPresent(RemoteView.class));
+        // android.view.View 无 @RemoteView 注解 → 裸 <View> 在 launcher inflate 必炸
+        // → 「载入窗口小组件时出现问题」(v1.0.53 回归: 两个今日变体都走 nav 布局,
+        //   周课表布局无裸 View 所以只有今日挂)。
+        listOf("widget_today_container.xml", "widget_scroll_today_nav.xml").forEach { name ->
+            val xml = layoutFile(name).readText()
+            assertFalse(
+                "$name 禁止裸 <View> (无 @RemoteView 注解, launcher 端 inflate 抛异常)",
+                Regex("<View\\b").containsMatchIn(xml)
+            )
+            listOf(
+                "widget_today_nav_today", "widget_today_nav_prev", "widget_today_nav_next"
+            ).forEach { id ->
+                val idIdx = xml.indexOf("android:id=\"@+id/$id\"")
+                assertTrue("$name 缺 nav zone $id", idIdx >= 0)
+                val tagStart = xml.lastIndexOf('<', idIdx)
+                val tag = Regex("[A-Za-z][A-Za-z0-9.]*")
+                    .find(xml.substring(tagStart + 1))?.value
+                assertEquals("$name 的 $id 必须用 ImageView (RemoteViews 白名单类)",
+                    "ImageView", tag)
+                // 保持点击区语义: 显式 clickable, 与替换前 View 行为一致
+                val blockEnd = xml.indexOf('>', idIdx)
+                val block = xml.substring(tagStart, blockEnd + 1)
+                assertTrue("$name 的 $id 必须保留 android:clickable=\"true\"",
+                    block.contains("android:clickable=\"true\""))
+            }
+        }
+    }
+
+    @Test
     fun `widget_today_container layout declares three nav zones with content descriptions`() {
         val xml = layoutFile("widget_today_container.xml").readText()
         listOf(

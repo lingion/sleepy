@@ -13,7 +13,10 @@
         android:scaleType="fitXY"
         android:adjustViewBounds="false"
         android:contentDescription="@string/widget_week_grid_label" />
-    <View
+    <!-- 三个透明点击区必须用 RemoteViews 白名单类 (ImageView 有 @RemoteView 注解;
+         裸 View 无注解 → launcher 端 RemoteViews.apply inflate 抛异常 →
+         「载入窗口小组件时出现问题」, 见 issue #24 回归)。 -->
+    <ImageView
         android:id="@+id/widget_today_nav_today"
         android:layout_width="match_parent"
         android:layout_height="30dp"
@@ -21,7 +24,7 @@
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/today_nav_back_to_today" />
-    <View
+    <ImageView
         android:id="@+id/widget_today_nav_prev"
         android:layout_width="36dp"
         android:layout_height="30dp"
@@ -29,7 +32,7 @@
         android:background="@android:color/transparent"
         android:clickable="true"
         android:contentDescription="@string/today_nav_prev_day" />
-    <View
+    <ImageView
         android:id="@+id/widget_today_nav_next"
         android:layout_width="36dp"
         android:layout_height="30dp"
