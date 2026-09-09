@@ -143,6 +143,14 @@
     "sortKeyFull": "guangzhouyikedaxue"
   },
   {
+    "sortKey": "H",
+    "name": "河北资源环境职业技术学院",
+    "url": "https://jwpt.hebzyhj.edu.cn:1233/dist/#/login",
+    "type": "qz_app",
+    "aliases": [],
+    "sortKeyFull": "hebeiziyuanhuanjingzhiyejishuxueyuan"
+  },
+  {
     "sortKey": "J",
     "name": "吉林工商学院",
     "url": "https://jwxt.jlbtc.edu.cn/admin/",
