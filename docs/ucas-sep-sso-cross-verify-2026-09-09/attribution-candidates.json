@@ -1,0 +1,6 @@
+{
+  "acknowledged": [
+    {"repo": "wirsbf/TraintimePda-UCAS", "license": "none", "why": "主候选: 登录链 CDP 实测笔记 (303 链/JSESSIONID/slogin RSA 表单/域名拓扑) 直接交叉印证修复假设 ×4"},
+    {"repo": "tbjuechen/sep-api", "license": "MIT", "why": "次候选: 原生会话实现印证 slogin 表单链路"}
+  ]
+}

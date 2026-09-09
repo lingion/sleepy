@@ -1,0 +1,25 @@
+{
+  "task": "#18 App内SEP登录401 JSON 修复的跨仓验证 (补跑)",
+  "cross_verified_claims": [
+    {"claim": "POST /slogin 表单形状 userName/pwd(RSA-2048, 344字符base64)/loginFrom/certCode/sb",
+     "sources": ["TraintimePda-UCAS 协议笔记 §1.1 (CDP 实测)", "SEP 登录页 HTML 表单字段 (本机 curl 直采)"], "verdict": "confirmed"},
+    {"claim": "SEP 重定向已 302→303 (validateSession 类实现需兼容 303)",
+     "sources": ["TraintimePda-UCAS §1.2 问题1", "本机 curl: appStore→302→303→200 登录页 3 跳"], "verdict": "confirmed"},
+    {"claim": "SEP 会话 = 单 JSESSIONID cookie",
+     "sources": ["TraintimePda-UCAS §1.1 ③", "本机 curl 每响应 Set-Cookie JSESSIONID"], "verdict": "confirmed"},
+   {"claim": "xkgo.ucas.ac.cn:3000 = 当前课表 host (9月门户仍指向它)",
+     "schools.json": "ucas 条目 url=xkgo:3000/course/personSchedule",
+     "sources": ["TraintimePda-UCAS §2.1 表格 (App 实测)", "本机 curl 200"], "verdict": "confirmed"},
+    {"claim": "SEP→xkgo SSO 经门户 site 链接 (/portal/site/524/... XOR token) 而非裸 ticket 参数",
+     "sources": ["TraintimePda-UCAS §2.1 门户入口拓扑表"], "verdict": "confirmed — 与修复的 leaveHostRedirect 设计相容: 门户链接在 WebView 内照常可点, 出域跳转由 WebView 原生跟随"},
+    {"claim": "XRW (X-Requested-With) 毒化 SEP filter = 无公开先例记录",
+     "sources": ["GitHub code search \"X-Requested-With sep.ucas\" total=None; \"未登录或会话已过期 ucas\" total=0"],
+     "verdict": "novel — 诊断为本轮首创, curl 带/不带头对照为本轮根因证据, 无实现反例"}
+  ],
+  "new_intelligence_not_in_fix_scope": [
+    "doUserVisitPhone 新设备短信验证可能触发 — WebView 内由 SEP 页面自身流程处理 (页面 JS 完整运行), 无需代码",
+    "xkcts.ucas.ac.cn:8443 = 选课系统迁移方向 (门户 siteId 226 已指向); 学校迁移课表网格到 xkcts 时 Sleepy UCAS 入口需更新 — 未来风险登记",
+    "门户页 = 域名动态发现层: 学校换域名只改门户页; Sleepy 现走 WebView 人工导航, 天然兼容"
+  ],
+  "post_login_chain_unverified": "登录 POST 后的完整链 (303→appStore→sepCard) 无法无凭据验证; Traintime CDP 实测链路 + proxy 逐跳 Set-Cookie 同步设计覆盖; 真机回归待 v1.0.53 后用户实测"
+}
