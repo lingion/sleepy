@@ -9,7 +9,6 @@ import android.os.Build
 import android.util.Log
 import android.util.SizeF
 import android.widget.RemoteViews
-import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 
 /**
@@ -79,10 +78,8 @@ object RemoteViewsWidgetHelper {
         val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
         views.setImageViewBitmap(R.id.widget_bitmap, bmp)
         val pi = PendingIntent.getActivity(
-            context, widgetId,
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            },
+            context, WidgetRoutes.tapRequestCode(widgetId),
+            WidgetRoutes.tapIntent(context),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
@@ -127,10 +124,8 @@ object RemoteViewsWidgetHelper {
         views.setRemoteAdapter(R.id.widget_strip_list, svcIntent)
 
         val template = PendingIntent.getActivity(
-            context, widgetId,
-            Intent(context, MainActivity::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-            },
+            context, WidgetRoutes.tapRequestCode(widgetId),
+            WidgetRoutes.tapIntent(context),
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setPendingIntentTemplate(R.id.widget_strip_list, template)

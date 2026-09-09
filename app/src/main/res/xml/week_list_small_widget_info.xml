@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <appwidget-provider xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="UnusedAttribute" 
     android:minWidth="150dp"
     android:minHeight="110dp"
     android:minResizeWidth="150dp"
@@ -13,4 +15,5 @@
     android:resizeMode="horizontal|vertical"
     android:widgetCategory="home_screen"
     android:description="@string/widget_week_list_small_label"
+    android:widgetFeatures="reconfigurable"
     android:configure=".widget.WidgetConfigureActivity" />

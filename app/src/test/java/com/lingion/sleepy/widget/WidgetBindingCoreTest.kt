@@ -138,4 +138,54 @@ class WidgetBindingCoreTest {
             .declaredMethods.firstOrNull { it.name == "resolveBoundTable" }
         assertNotNull("resolveBoundTable must exist on WidgetTableResolver", method)
     }
+
+    // ---- sentinel 0L round-trip (issue #24 F1 R2: binding persists by widget id) ----
+
+    @Test
+    fun `first-add sentinel 0L round-trips as 0L by widget id`() {
+        val data = mutableMapOf<String, Long>()
+        WidgetBindingCore.write(data, 42, 0L)
+        assertEquals(0L, WidgetBindingCore.read(data, 42))
+    }
+
+    @Test
+    fun `sentinel survives the load-parse cycle (restart persistence)`() {
+        // Simulates an app restart: the written map is persisted to prefs,
+        // reloaded raw, and re-parsed. The sentinel must survive as 0L so the
+        // configure activity counts the widget as already-added (R5) and the
+        // edit screen shows follow-default instead of table id 0.
+        val persisted = mutableMapOf<String, Long>()
+        WidgetBindingCore.write(persisted, 42, 0L)
+        // SharedPreferences returns the raw string-keyed map verbatim; parseAll
+        // is the only transformation between prefs and the by-id view.
+        val parsedById = WidgetBindingCore.parseAll(persisted)
+        assertEquals(0L, parsedById[42])
+    }
+
+    @Test
+    fun `explicit binding and sentinel coexist keyed by different ids`() {
+        val data = mutableMapOf<String, Long>()
+        WidgetBindingCore.write(data, 42, 0L) // follow default
+        WidgetBindingCore.write(data, 43, 7L) // explicit table 7
+        assertEquals(0L, WidgetBindingCore.read(data, 42))
+        assertEquals(7L, WidgetBindingCore.read(data, 43))
+    }
+
+    @Test
+    fun `rebind overwrites sentinel by widget id`() {
+        val data = mutableMapOf<String, Long>()
+        WidgetBindingCore.write(data, 42, 0L)
+        WidgetBindingCore.write(data, 42, 9L)
+        assertEquals(9L, WidgetBindingCore.read(data, 42))
+    }
+
+    @Test
+    fun `deleting one id leaves the other id's binding intact`() {
+        val data = mutableMapOf<String, Long>()
+        WidgetBindingCore.write(data, 42, 7L)
+        WidgetBindingCore.write(data, 43, 8L)
+        WidgetBindingCore.delete(data, 42)
+        assertNull(WidgetBindingCore.read(data, 42))
+        assertEquals(8L, WidgetBindingCore.read(data, 43))
+    }
 }

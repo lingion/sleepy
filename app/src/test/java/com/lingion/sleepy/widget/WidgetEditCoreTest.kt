@@ -136,4 +136,39 @@ class WidgetEditCoreTest {
         WidgetEditCore.applyBindingChange(raw, 42, null)
         assertNull(WidgetEditCore.initialBinding(raw, 42))
     }
+
+    // ---- displayBinding (sentinel 0L / absent -> null = follow default) ----
+
+    @Test
+    fun `displayBinding returns null for absent entry`() {
+        assertNull(WidgetEditCore.displayBinding(null))
+    }
+
+    @Test
+    fun `displayBinding translates the first-add sentinel to follow-default`() {
+        assertNull(WidgetEditCore.displayBinding(0L))
+    }
+
+    @Test
+    fun `displayBinding keeps an explicit binding`() {
+        assertEquals(7L, WidgetEditCore.displayBinding(7L))
+    }
+
+    @Test
+    fun `displayBinding treats non-positive values as follow-default`() {
+        assertNull(WidgetEditCore.displayBinding(-3L))
+    }
+
+    @Test
+    fun `displayBinding round-trips with applyBindingChange`() {
+        // Rebind by id: write, read back through the display translation,
+        // clear, read back as default (R2 rebind + unbind).
+        val raw = mutableMapOf<String, Long>()
+        WidgetEditCore.applyBindingChange(raw, 11, 5L)
+        assertEquals(5L, WidgetEditCore.displayBinding(WidgetEditCore.initialBinding(raw, 11)))
+        WidgetEditCore.applyBindingChange(raw, 11, 8L)
+        assertEquals(8L, WidgetEditCore.displayBinding(WidgetEditCore.initialBinding(raw, 11)))
+        WidgetEditCore.applyBindingChange(raw, 11, null)
+        assertNull(WidgetEditCore.displayBinding(WidgetEditCore.initialBinding(raw, 11)))
+    }
 }
