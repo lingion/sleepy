@@ -294,7 +294,14 @@ fun CardsGridView(
                         val anchor = cluster.courses.first() // 主课判定序首位,决定簇基点
                         val dayIdx = sortedDays.indexOf(cluster.day)
                         val cardX = timeW + gapW + (colW + gapW) * dayIdx
-                        val cardY = yOfRows(slotIndexOf(anchor.startNode).coerceAtLeast(0).toFloat())
+                        // 用户报障 2026-09-10: 簇锚点用锚课**小数行坐标**(ownTime 锚课
+                        // 不再被 slotIndexOf 整格吸附丢掉小数偏移, 整簇上移 ~0.9 行的本体);
+                        // 加权 dp 与簇内 spanDpOf 同一真值。
+                        val anchorFrac = if (anchor.ownTime && anchor.startTime.isNotBlank() && anchor.endTime.isNotBlank()) {
+                            TimeTableUtils.timeToFractionalRows(anchor.startTime, anchor.endTime, renderSlots)?.first
+                        } else null
+                        val anchorRow = anchorFrac ?: slotIndexOf(anchor.startNode).coerceAtLeast(0).toFloat()
+                        val cardY = yOfRows(anchorRow)
                         val clusterKey = ConflictLayoutEngine.conflictClusterKey(cluster)
 
                         ConflictClusterCard(
@@ -316,6 +323,7 @@ fun CardsGridView(
                             rowH = rowH,
                             maxNode = maxNode,
                             timeSlots = renderSlots,
+                            spanDpOf = { from, to -> yOfRows(to) - yOfRows(from) },
                             timeW = timeW,
                             gapW = gapW,
                             gapH = gapH,
@@ -950,8 +958,10 @@ private fun DetailDayCard(
             // v7.10.6 行分组下沉引擎: mergeOverlapping 区域是划分(每课恰属一区域),
             // 冲突区域整区域一行(横向 laneCount 栏,同栏多门课纵向堆叠),
             // 无冲突课一行一门全宽。结构上保证不丢课、不重复(用户 2026-09-02 报障修复)。
-            val rows = remember(courses) {
-                ConflictLayoutEngine.weekLaneRows(courses)
+            // 用户报障 2026-09-10: 分组走时间域 — FullWeekView 的 courses 输入虽已
+            // normalizeNode, ownTime 课的真实分钟重叠判定仍需 timeJson 才与网格一致。
+            val rows = remember(courses, timeJson) {
+                ConflictLayoutEngine.weekLaneRows(courses, timeJson.ifBlank { null })
             }
 
             Column(verticalArrangement = Arrangement.spacedBy(sd(7f))) {

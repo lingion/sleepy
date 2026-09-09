@@ -293,11 +293,15 @@ internal fun conflictCardRectFrac(
     rowH: Dp,
     gapH: Dp,
     minStartRow: Float,
-    topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+    topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp,
+    // 用户报障 2026-09-10: 簇含占位行/小数行成员时, 行差必须按分钟加权换算 dp
+    // (与外层 yOfRows 同一真值); null = 全标准行(裸 rowH, 历史行为)。
+    spanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null
 ): ConflictRect {
-    val rows = ownRowsFrac.coerceAtLeast(0.3f)
-    val ownH = rowH * rows - gapH
-    val y = rowH * (startRowFrac - minStartRow)
+    val ownSpanDp = (spanDpOf?.invoke(startRowFrac, startRowFrac + ownRowsFrac) ?: rowH * ownRowsFrac)
+        .coerceAtLeast(rowH * 0.3f)
+    val ownH = ownSpanDp - gapH
+    val y = spanDpOf?.invoke(minStartRow, startRowFrac) ?: rowH * (startRowFrac - minStartRow)
     return when {
         isTop && form == ConflictVariant.STACK ->
             ConflictRect(0.dp, y, colW - topInset, ownH - topInset)
@@ -346,10 +350,13 @@ internal fun conflictMarkRectFrac(
     gapH: Dp,
     minStartRow: Float,
     clusterH: Dp,
-    @Suppress("UNUSED_PARAMETER") topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp
+    @Suppress("UNUSED_PARAMETER") topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp,
+    // 用户报障 2026-09-10: 与 conflictCardRectFrac 同一加权轴契约
+    spanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null
 ): ConflictRect {
-    val ownH = rowH * ownRowsFrac.coerceAtLeast(0.3f) - gapH
-    val y = rowH * (startRowFrac - minStartRow)
+    val ownH = (spanDpOf?.invoke(startRowFrac, startRowFrac + ownRowsFrac) ?: rowH * ownRowsFrac)
+        .coerceAtLeast(rowH * 0.3f) - gapH
+    val y = spanDpOf?.invoke(minStartRow, startRowFrac) ?: rowH * (startRowFrac - minStartRow)
     return when (form) {
         ConflictVariant.STACK, ConflictVariant.RAIL -> {
             // v7.8.4 修订: RAIL 命中区复用 STACK 风格 —— 自身区间右下 36dp 见方。
@@ -431,6 +438,10 @@ fun ConflictClusterCard(
     // 能用真实 slotIndex 替代过时的 startNode ∈ [1, maxNode] 判定。
     // 不传 = 旧行为(startNode ∈ [1, maxNode] 才绘)。
     timeSlots: List<com.lingion.sleepy.ui.component.TimeSlot> = emptyList(),
+    // 用户报障 2026-09-10: 加权行坐标 → dp 映射(与外层网格 yOfRows 同一真值)。
+    // 簇内几何(簇框/卡位/命中区)全部经它换算, 占位行/小数行不再按裸 rowH 失真。
+    // null = 全标准行(裸 rowH, 旧调用方兼容)。
+    spanDpOf: ((Float, Float) -> Dp)? = null,
     isGrey: Boolean,
     // v7.10.16r 轮换(issue#10): 会话内轮换步数(null=默认序),由 ScheduleScreen 持有,
     // 不落盘;N≥3 簇点露出带/折角推进一位,详情 radio 仍走 onPickTop 持久化通道。
@@ -528,6 +539,10 @@ fun ConflictClusterCard(
     // 用户反馈 2026-09-09: ownTime 课的簇内几何按真实分钟比例定位 — 行坐标来自
     // timeToFractionalRows(基于 renderSlots 含占位节次), 不再 slotIndexOf 整格吸附。
     // 常规课 = 整数行, 历史行为逐字节等价。
+    // 用户报障 2026-09-10 (第三轮): rowGeomOf 第二分量改为**真 span** (endFrac-startFrac)
+    // — 旧码把 endFrac 按 span 契约消费, ownTime 课高度 = rowH*endFrac ≈ 9 行失真;
+    // 同时簇内一切 dp 换算走加权映射 spanDpOf(与外层 yOfRows 同一真值),
+    // 占位行/小数行成员的行差不再按裸 rowH 表达。
     val fracRowsOf: Map<Long, Pair<Float, Float>?> = remember(drawList, timeSlots) {
         drawList.associate { laidItem ->
             val c = laidItem.course
@@ -541,7 +556,7 @@ fun ConflictClusterCard(
         val c = laidItem.course
         val frac = fracRowsOf[c.id]
         if (frac != null) {
-            c.id to frac
+            c.id to (frac.first to (frac.second - frac.first))
         } else {
             val sIdx = slotIndexOfCached(c.startNode)
             val maxStep = if (sIdx < 0) c.step.coerceAtLeast(1)
@@ -550,21 +565,27 @@ fun ConflictClusterCard(
             c.id to (sIdx.toFloat() to rows.toFloat())
         }
     }
-    val baseNode = cluster.courses.first().startNode
+    // 加权轴: 行坐标差 → dp, 与外层 yOfRows 逐字节同一算法(slotWeights 为空 = 裸 rowH)。
+    // spanDpOf 由调用方传入; 未传(旧调用方)时按无权重处理 = 历史行为。
+
     val baseRowFrac = rowGeomOf[cluster.courses.first().id]?.first
-        ?: slotIndexOfCached(baseNode).coerceAtLeast(0).toFloat()
+        ?: slotIndexOfCached(cluster.courses.first().startNode).coerceAtLeast(0).toFloat()
     val minStartRow = drawList.minOf { rowGeomOf[it.course.id]?.first ?: 0f }
     val maxEndRow = drawList.maxOf {
         val g = rowGeomOf[it.course.id] ?: (0f to 1f)
         g.first + g.second
     }
-    val minStart = minStartRow.toInt()
-    val clusterH = rowH * (maxEndRow - minStartRow) - gapH
-    val clusterYOffset = rowH * (minStartRow - baseRowFrac)
+    val clusterH = (spanDpOf?.invoke(minStartRow, maxEndRow) ?: rowH * (maxEndRow - minStartRow)) - gapH
+    val clusterYOffset = spanDpOf?.invoke(minStartRow, baseRowFrac) ?: rowH * (minStartRow - baseRowFrac)
 
-    fun cardYOf(course: CourseEntity) = rowH * ((rowGeomOf[course.id]?.first ?: 0f) - minStartRow)
-    fun cardHOf(courseId: Long) =
-        rowH * ((rowGeomOf[courseId]?.second ?: 1f).coerceAtLeast(0.3f)) - gapH
+    fun cardYOf(course: CourseEntity) = spanDpOf?.invoke(
+        minStartRow, rowGeomOf[course.id]?.first ?: 0f
+    ) ?: rowH * ((rowGeomOf[course.id]?.first ?: 0f) - minStartRow)
+    fun cardHOf(courseId: Long): Dp {
+        val g = rowGeomOf[courseId] ?: (0f to 1f)
+        return (spanDpOf?.invoke(g.first, g.first + g.second) ?: rowH * g.second)
+            .coerceAtLeast(rowH * 0.3f) - gapH
+    }
 
     // v6: 顶卡收窄量 = 用户设置(用户 2026-09-04 拆分: STACK/RAIL 独立配置不共享),滑杆 4..20dp
     val topInset = when (form) {
@@ -612,7 +633,8 @@ fun ConflictClusterCard(
             isTop = isFront,
             form = form,
             colW = colW, rowH = rowH, gapH = gapH, minStartRow = minStartRow,
-            topInset = topInset
+            topInset = topInset,
+            spanDpOf = spanDpOf
         )
     }
 
@@ -718,7 +740,8 @@ fun ConflictClusterCard(
                                 form = ConflictVariant.STACK,
                                 colW = colW, rowH = rowH, gapH = gapH,
                                 minStartRow = minStartRow, clusterH = cellH,
-                                topInset = topInset
+                                topInset = topInset,
+                                spanDpOf = spanDpOf
                             )
                             Box(
                                 modifier = Modifier
@@ -757,7 +780,8 @@ fun ConflictClusterCard(
                                 form = ConflictVariant.STACK,
                                 colW = colW, rowH = rowH, gapH = gapH,
                                 minStartRow = minStartRow, clusterH = cellH,
-                                topInset = topInset
+                                topInset = topInset,
+                                spanDpOf = spanDpOf
                             )
                             Box(
                                 modifier = Modifier

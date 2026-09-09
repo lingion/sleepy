@@ -294,6 +294,9 @@ fun ScheduleScreen(
             course = selectedCourse,
             timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
             allCourses = state.courses.filter { it.inWeek(state.selectedWeek) },
+            // 用户报障 2026-09-10: 详情页聚簇与网格同一时间域 — ownTime 课
+            // 按真实分钟判重叠, 节点占位值不再制造假冲突。
+            timeJson = state.currentTable?.timeJson,
             onDismiss = { selectedCourse = null },
             onEdit = { course ->
                 selectedCourse = null

@@ -308,7 +308,9 @@ class ScheduleRepository(private val db: AppDatabase) {
         val stored = AppPrefs.getConflictDefaultTop(ctx)
         if (stored.isEmpty()) return
         val allCourses = courseDao.getAll()
-        val pruned = ConflictLayoutEngine.pruneConflictDefaultTop(stored, allCourses)
+        // 用户报障 2026-09-10: liveKeys 与网格聚簇同一时间域, 偏好不被节点域误删
+        val timeJson = tableDao.getDefault()?.timeJson
+        val pruned = ConflictLayoutEngine.pruneConflictDefaultTop(stored, allCourses, timeJson)
         if (pruned.size != stored.size) {
             AppPrefs.setConflictDefaultTop(ctx, pruned)
         }

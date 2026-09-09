@@ -394,7 +394,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 // v7.10.8: 冲突课分栏 — 与 App 周视图同一引擎(ConflictLayoutEngine.gridDayLanes),
                 // 冲突区域内的课并排各占 1/N 列宽, 无冲突课整列宽。旧实现所有课画满整列宽,
                 // 同节次课互相覆盖(后画盖先画), 小组件上冲突课信息丢失。
-                val laneRects = com.lingion.sleepy.util.ConflictLayoutEngine.gridDayLanes(dayData.courses)
+                val laneRects = com.lingion.sleepy.util.ConflictLayoutEngine.gridDayLanes(dayData.courses, dayData.timeJson)
                 for (laneRect in laneRects) {
                     val course = laneRect.course
                     val startIdx = (course.startNode - 1).coerceAtLeast(0)

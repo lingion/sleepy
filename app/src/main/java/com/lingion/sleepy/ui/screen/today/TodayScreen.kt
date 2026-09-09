@@ -68,13 +68,22 @@ fun TodayScreen(
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
     val todayCourses = if (isOutOfSemester) emptyList() else state.courses.filter {
         it.day == dayOfWeek && it.inWeek(actualWeek)
+    }.let { list ->
+        // 用户报障 2026-09-10: ownTime 课渲染前按真实时间归一化节点(与网格同一预处理),
+        // 落库的表单占位节点不再影响今日页分组与显示。
+        val tj = state.currentTable?.timeJson
+        if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
     }.sortedBy { it.startNode }
 
     // v7.10.10 今日页冲突分栏 — 与周视图同一引擎同一分组(weekLaneRows):
     // 冲突区域一行内并排分栏(栏间浅细竖线), 无冲突课整宽单行。
     // 分组在 LazyColumn 外 remember(LazyListScope 非 composable 上下文)。
-    val laneRows = remember(todayCourses) {
-        com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(todayCourses)
+    // 用户报障 2026-09-10: 分组走时间域(带 timeJson), 时间零交集的 ownTime 课对
+    // 不再因节点占位值相同被并成假冲突行。
+    val laneRows = remember(todayCourses, state.currentTable?.timeJson) {
+        com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(
+            todayCourses, state.currentTable?.timeJson
+        )
     }
 
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
@@ -154,6 +163,8 @@ fun TodayScreen(
     CourseDetailSheet(
         course = selectedCourse,
         timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
+        allCourses = todayCourses,
+        timeJson = state.currentTable?.timeJson,
         onDismiss = { selectedCourse = null },
         onEdit = { course ->
             selectedCourse = null

@@ -478,13 +478,26 @@ object ConflictLayoutEngine {
      * 栏位几何复用 weekLaneSegments 的算法(chainGroups 贪心独立集),与 segments 输出
      * 严格一致。
      */
-    fun weekLaneRows(courses: List<CourseEntity>): List<WeekLaneRow> {
+    fun weekLaneRows(courses: List<CourseEntity>): List<WeekLaneRow> =
+        weekLaneRows(courses, null)
+
+    /**
+     * 时间域行分组(用户报障 2026-09-10) — timeJson 非空时: ownTime 课先按真实时间
+     * 归一化节点, 区域划分按分钟域(mergeOverlappingByTime, 混合域不成簇)。
+     * 时间零交集的 ownTime 课对不再因落库占位节点相同被并成冲突行。
+     */
+    fun weekLaneRows(courses: List<CourseEntity>, timeJson: String?): List<WeekLaneRow> {
         if (courses.isEmpty()) return emptyList()
+        val prepared = if (timeJson == null) courses else courses.map { it.normalizeNode(timeJson) }
         val rows = mutableListOf<WeekLaneRow>()
 
-        for ((day, dayCourses) in courses.groupBy { it.day }) {
+        for ((day, dayCourses) in prepared.groupBy { it.day }) {
             val sorted = dayCourses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
-            val regions = mergeOverlapping(sorted)
+            val regions = if (timeJson != null) {
+                mergeOverlappingByTime(sorted, timeJson)
+            } else {
+                mergeOverlapping(sorted)
+            }
             for (region in regions) {
                 if (region.size < 2) {
                     for (c in region) rows.add(WeekLaneRow(listOf(c), emptyMap(), 1))
@@ -522,11 +535,20 @@ object ConflictLayoutEngine {
      * 输入无须预排序;输出按 startNode 升序。laneGap 由渲染器自行扣除
      * (本函数只给比例,像素几何归渲染器)。
      */
-    fun gridDayLanes(courses: List<CourseEntity>): List<GridLaneRect> {
+    fun gridDayLanes(courses: List<CourseEntity>): List<GridLaneRect> =
+        gridDayLanes(courses, null)
+
+    /**
+     * 时间域分栏(用户报障 2026-09-10) — timeJson 非空时按真实分钟域划分区域
+     * (ownTime 课先归一化节点), 小组件与 App 同一真值。
+     */
+    fun gridDayLanes(courses: List<CourseEntity>, timeJson: String?): List<GridLaneRect> {
         if (courses.isEmpty()) return emptyList()
         val out = mutableListOf<GridLaneRect>()
-        val sorted = courses.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
-        for (region in mergeOverlapping(sorted)) {
+        val prepared = if (timeJson == null) courses else courses.map { it.normalizeNode(timeJson) }
+        val sorted = prepared.sortedWith(compareBy({ it.startNode }, { it.step }, { it.id }))
+        val regions = if (timeJson != null) mergeOverlappingByTime(sorted, timeJson) else mergeOverlapping(sorted)
+        for (region in regions) {
             if (region.size < 2) {
                 for (c in region) out.add(GridLaneRect(c, 0f, 1f))
                 continue
@@ -664,11 +686,14 @@ object ConflictLayoutEngine {
      */
     fun pruneConflictDefaultTop(
         stored: Map<String, Long>,
-        currentCourses: List<CourseEntity>
+        currentCourses: List<CourseEntity>,
+        // 用户报障 2026-09-10: 与网格聚簇同一时间域 — 旧节点域 liveKeys 与网格
+        // 时间域簇键永不相等, 用户的置顶偏好会被本函数静默误删。
+        timeJson: String? = null
     ): Map<String, Long> {
         if (stored.isEmpty() || currentCourses.isEmpty()) return emptyMap()
         val liveIds = currentCourses.map { it.id }.toSet()
-        val liveKeys = findClusters(currentCourses).mapTo(mutableSetOf()) { conflictClusterKey(it) }
+        val liveKeys = findClusters(currentCourses, timeJson).mapTo(mutableSetOf()) { conflictClusterKey(it) }
         return stored.filterKeys { key -> key in liveKeys }
             .filterValues { repId -> repId in liveIds }
     }
