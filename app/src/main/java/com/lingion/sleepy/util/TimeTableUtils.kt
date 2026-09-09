@@ -209,8 +209,9 @@ object TimeTableUtils {
         val base = timeSlotsFor(timeJson)
         if (base.isEmpty()) return RenderSlotPlan(base)
 
-        // 每个空隙 = (左节 end, 右节 start)。课尾溢出进空隙且终止于空隙 =
-        // 课 end ∈ (左节 end, 右节 start], 且课 start < 左节 end(课从前面延伸过来)。
+        // 每个空隙 = (左节 end, 右节 start)。课的结束时间终止在空隙内 =
+        // 课 end ∈ (左节 end, 右节 start] — 无论课从空隙前延伸过来还是整段落在
+        // 空隙里, 都需要占位行承载(整段空隙课按比例渲染在占位行内)。
         data class Gap(val leftEnd: LocalTime, val rightStart: LocalTime)
 
         val gaps = (0 until base.size - 1).map { i ->
@@ -224,7 +225,7 @@ object TimeTableUtils {
             val et = runCatching { LocalTime.parse(c.endTime) }.getOrNull() ?: continue
             if (et <= st) continue
             for ((gi, g) in gaps.withIndex()) {
-                if (et > g.leftEnd && et <= g.rightStart && st < g.leftEnd) {
+                if (et > g.leftEnd && et <= g.rightStart) {
                     val lo = g.leftEnd
                     val cur = placeholderByGap[gi]
                     placeholderByGap[gi] = if (cur == null) lo to et
