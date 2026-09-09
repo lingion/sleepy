@@ -310,7 +310,7 @@ object WidgetBitmapRenderers {
 
         // 标题行 (issue #24 Feature2 日期导航): ‹ › 导航箭头 + 标题 + 右侧槽位。
         // 今日态: 「今天 · 周X」+ showDate 日期; 导航态: 「M/D · 周X」+「回到今天」。
-        // 箭头与点击区对齐: 左右 36×30dp 透明 View (widget_today_container /
+        // 箭头与点击区对齐: 左右 36×30dp 透明 ImageView (widget_today_container /
         // widget_scroll_today_nav), 基线与标题一致 (y+13dp)。
         val ctx = SleepyApp.get()
         val header = todayHeaderParts(
