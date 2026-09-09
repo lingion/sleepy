@@ -475,6 +475,7 @@
     <string name="url_direct_login">直接用此 URL 登录</string>
     <string name="url_detected">检测到：</string>
     <string name="url_auto_detect">自动检测协议类型</string>
+    <string name="url_match_school">匹配学校：%s</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (%2$d-%3$d周)</string>

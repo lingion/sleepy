@@ -981,6 +981,14 @@ private const val WHUT_FETCH_JS = """
 private const val EAMS5_FETCH_JS = """
 (function(){
   try {
+    if (location.hostname === 'one.hfut.edu.cn') {
+      // issue #25: 门户 (统一信息门户) 不是教务 — 门户 SPA 无课表数据,
+      // 且 'one.hfut.edu.cn'.indexOf('hfut.edu.cn') >= 0 会误过下方弱包含守卫。
+      // 显式拦截并引导用户去 jxglstu 教务入口。
+      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,
+        err:'检测到您在合工大统一信息门户 (one.hfut.edu.cn), 门户没有课表数据。请到"我的学校"选择合肥工业大学, 直接进入 jxglstu 教务系统后再点导入'}));
+      return;
+    }
     if (location.hostname.indexOf('hfut.edu.cn') < 0 && location.hostname.indexOf('jxglstu') < 0
         && location.hostname.indexOf('ahu.edu.cn') < 0 && location.hostname.indexOf('cumtb.edu.cn') < 0) {
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入合工大教务后再点导入'}));

@@ -1,0 +1,13 @@
+{
+  "issue": 25,
+  "new_attributions_this_issue": 0,
+  "reason": "Diagnosis of an existing adaptation; root cause was UI routing, not a protocol divergence. All prior art for EAMS5 was consulted and attributed during the original EAMS5 support work.",
+  "existing_attributions_unchanged": [
+    "HFUT-Schedule (Chiu-xaH, MIT)",
+    "HfutOpenApi (BoynChan, MIT)",
+    "hfut_schedule_hacker (Aoi-cn)",
+    "django-hfut-auth (elonzh, MIT)"
+  ],
+  "license_screen_location": "app/src/main/java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt line ~345",
+  "test": "AboutLicenseAttributionTest green in full suite (1297)."
+}

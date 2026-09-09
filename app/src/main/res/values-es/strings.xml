@@ -380,6 +380,7 @@
     <string name="url_direct_login">Iniciar sesión con esta URL</string>
     <string name="url_detected">Detectado:</string>
     <string name="url_auto_detect">Autodetectar protocolo</string>
+    <string name="url_match_school">Escuela coincidente: %s</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (Semana %2$d-%3$d)</string>

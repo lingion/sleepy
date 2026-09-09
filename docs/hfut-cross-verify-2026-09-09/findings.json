@@ -1,0 +1,24 @@
+{
+  "issue": 25,
+  "failure_chain": [
+    "1. Reporter typed https://one.hfut.edu.cn/ (the unified info portal) into the URL search box.",
+    "2. looksLikeUrl() = true -> detectProtocolFromUrl returns null (the entire chain had ZERO eams5 anchors; even the correct jxglstu course-table URL would return null).",
+    "3. UrlDirectRow shows auto-detect; onClick created a custom entry JwSchoolInfo(name=custom, url=portal, type=null).",
+    "4. WebView opened the portal; reporter logged in via CAS and landed on the portal SPA home.",
+    "5. Import tapped -> type=null -> generic frame capture (captureWithRetry), NOT the EAMS5 fetch JS.",
+    "6. Captured HTML = portal SPA shell with 0 protocol fingerprints -> detectProtocolFromHtml null -> tryAllParsers 0 courses.",
+    "7. User sees the empty-parse error. Package log: 132 portal requests, 0 jxglstu requests, detail-navigation 0/0."
+  ],
+  "root_causes": [
+    "RC1 (primary): detectProtocolFromUrlImpl had no EAMS5 anchors at all - even a correct jxglstu URL would fall to the generic path and yield 0 courses.",
+    "RC2 (primary): SchoolSelectScreen UrlDirectRow created a type=null custom entry for any URL not matched by detectProtocolFromUrl, with no domain-level mapping back to the catalog.",
+    "RC3 (defense): EAMS5_FETCH_JS host guard used weak indexOf('hfut.edu.cn') containment which 'one.hfut.edu.cn' passes; if the user stayed on the portal and tapped import, the JS cross-domain fetch failed with a confusing error."
+  ],
+  "package_evidence": {
+    "top_page.html": "389KB portal SPA shell (title, crypto-js plugins, alicdn icon font), zero protocol fingerprints.",
+    "4-net-live/1_2026-09-7.json": "Portal own course API: GET /api/operation/course-timetable/search/1/<date>, returns {code,msg,data.nextWeek,data.currentWeek} two-week slice with 14 fields (cxjc/skrq/skjc/jsxm/xh/jxbdm/kch/dayOfWeek/skbm/kclx/kxh/jsgh/kcmc/jxdd) - a display slice, not a semester source.",
+    "6-logs/collect-log.txt": "132 requests, all one.hfut.edu.cn except CAS; 0 hits to jxglstu EAMS5 endpoints; detail-navigation 0/0.",
+    "sensitive_data": "Reporter CAS credentials visible in package URLs - desensitized in fixtures (xh -> 2024xxxxxx, teacher names/ids replaced). Never committed raw package."
+  },
+  "portal_api_not_a_source": "The portal slice API returns only current+next week and lacks semester/week-index semantics; using it would import a partial timetable. Locked by test: JwEams5Parser on this JSON yields 0 courses (must not phantom-parse)."
+}

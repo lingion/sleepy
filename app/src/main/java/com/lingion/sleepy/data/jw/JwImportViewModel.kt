@@ -344,6 +344,17 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             // ① WISEDU — 金智 jwapp 微应用，URL 唯一锚点，优先级最高
             u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
 
+            // ①a EAMS5 — supwisdom 平台（issue #25）：此前整条判型链无任何 EAMS5 锚点，
+            //    连正确的 jxglstu 课表 URL 都判 null 走通用抓取必 0 课。
+            //    锚点三件套: host (jxglstu / jw.ahu / jwxt.cumtb) + 路径级 /eams5-student/ +
+            //    supwisdom 唯一路径约定 /for-std/（斜杠包围, forum-standard 不误命中）。
+            u.contains("jxglstu")
+                || u.contains("/eams5-student")
+                || u.contains("/for-std/")
+                || u.matches(Regex(""".*/for-std(/|$).*"""))
+                || u.contains("jw.ahu.edu.cn")
+                || u.contains("jwxt.cumtb.edu.cn") -> JwProtocol.TYPE_EAMS5
+
             // ①b CQU — 重庆大学统一门户（host 锚点；自建 REST，非 jwapp）
             u.matches(Regex("""https?://my\.cqu\.edu\.cn(/.*)?""")) -> JwProtocol.TYPE_CQU
 
