@@ -14,7 +14,7 @@ In the grid view, a course with custom clock times is drawn at its real position
 
 ### Widget management and editing in-app
 
-Settings now has a Manage home-screen widgets entry: it lists every widget you have placed, and each widget binds to a timetable of your choice, so one launcher can show different timetables in different widgets. What each widget shows is edited on the same screen.
+Settings now has a Manage home-screen widgets entry (#24): it lists every widget you have placed, and each widget binds to a timetable of your choice, so one launcher can show different timetables in different widgets. What each widget shows is edited on the same screen.
 
 Pressing a widget's edit control on the launcher opens this in-app editor directly, including on third-party launchers.
 
@@ -81,7 +81,7 @@ This adaptation comes from @jim139129 (PR #29), who verified the import with a r
 
 ### 应用内管理桌面小组件
 
-设置里多了"管理桌面小组件"入口:列出桌面上每个小组件,各自绑定一张课表,同一个桌面可以放不同课表的小组件。每个小组件显示什么,也在这一屏里改。
+设置里多了"管理桌面小组件"入口(#24):列出桌面上每个小组件,各自绑定一张课表,同一个桌面可以放不同课表的小组件。每个小组件显示什么,也在这一屏里改。
 
 在桌面点小组件的编辑,直接进应用内的编辑页,第三方桌面同样走这条路。
 
