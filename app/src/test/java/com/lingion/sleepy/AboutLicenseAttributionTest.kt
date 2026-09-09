@@ -167,6 +167,31 @@ class AboutLicenseAttributionTest {
         Attribution("WeNEPU", "cutiechi"),
         // 南京理工大学 NUST
         Attribution("HeraldStudentCurriculum", "idailylife"),
+        // 北京交通大学 BJTU (issue #19, SOP cross-verified 2026-09-09, 24 候选全量纳入)
+        Attribution("bjtu_mis_Android", "wan300"),
+        Attribution("BJTU-MIS-HarmonyOS", "Anyes666"),
+        Attribution("BJTUselfService", "HFDLYS"),
+        Attribution("bjtu-cli", "fish2lab"),
+        Attribution("BJTUselfService-macOS", "fish2lab"),
+        Attribution("BJTU-course-assistant", "s1y4x1"),
+        Attribution("ZiuChen/userscript", "MIT"),
+        Attribution("BJTU-iCalendar-Generator", "ymzhang-cs"),
+        Attribution("bjtu-timetable", "Moliseeee"),
+        Attribution("BJTU-course-autoget-program", "hyskr"),
+        Attribution("BjtuCoursePlatform", "57Darling02"),
+        Attribution("bjtuDean", "jlytwhx"),
+        Attribution("bjtubox_python", "jlytwhx"),
+        Attribution("Campus-Mate", "Orien233"),
+        Attribution("BJTU-STU-MCP", "ymzhang-cs"),
+        Attribution("CourseRobber", "xschur"),
+        Attribution("Futuremind-BJTU", ""),
+        Attribution("BJTU_ezRate", "Yukikasu"),
+        Attribution("bjtu_teaching_assessment", "xxxand"),
+        Attribution("BJTU-script", "Coconut00"),
+        Attribution("BJTU-CC", "aooxin"),
+        Attribution("CourseTable", "etherealviator"),
+        Attribution("ZF-Assistant", "mcdona1d"),
+        Attribution("北交大iCalender课表生成", "Greasy Fork"),
     )
 
     private fun checkAll(locale: String, atts: List<Attribution>) {

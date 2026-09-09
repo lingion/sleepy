@@ -1,0 +1,6 @@
+=== REPO QUERY: 北交大 课表 ===
+=== REPO QUERY: bjtu 课表 ===
+wan300/bjtu_mis_Android | stars=9 | lang=Svelte | pushed=2026-09-08T19:50:35Z | desc=面向北京交通大学学生的 MIS Android 校园学习服务 App，聚合课表、成绩、考试、作业、课程资源、空教室、校历、校园邮箱与智能作业助手。
+Anyes666/BJTU-MIS-HarmonyOS | stars=2 | lang=TypeScript | pushed=2026-07-28T06:11:47Z | desc=面向北京交通大学学生的 HarmonyOS 校园助手，支持课表、考试、历年成绩、学业信息与校历同步，提供本地离线缓存并适配深浅色模式。
+ymzhang-cs/BJTU-iCalendar-Generator | stars=2 | lang=Python | pushed=2025-11-14T14:05:54Z | desc=课表导入日历 / BJTU iCalendar 课程表生成
+=== REPO QUERY: BJTU course table ===

@@ -1,0 +1,42 @@
+=== QUERY: 北京交通大学 教务 ===
+xxxand/bjtu_teaching_assessment | stars=0 | lang=JavaScript | archived=false | pushed=2026-06-11T18:02:14Z | desc=北京交通大学教务系统一键评教教程。
+Yukikasu/BJTU_ezRate | stars=7 | lang=JavaScript | archived=false | pushed=2026-04-21T03:23:09Z | desc=本脚本是一个基于 Tampermonkey的浏览器用户脚本，专为**北京交通大学教务系统（MIS）评教**与**中国大学 MOOC（慕课）互评**设计。
+jlytwhx/bjtuDean | stars=1 | lang=Python | archived=false | pushed=2019-05-05T12:07:54Z | desc=北京交通大学MIS&教务处模拟登陆和空闲教室信息爬取
+mcdona1d/ZF-Assistant | stars=1 | lang=Python | archived=false | pushed=2016-10-09T03:40:43Z | desc=北京交通大学海滨学院 正方教务助手 微信服务端 发布版
+=== QUERY: 北京交通大学 课表 ===
+wan300/bjtu_mis_Android | stars=9 | lang=Svelte | archived=false | pushed=2026-09-08T19:50:35Z | desc=面向北京交通大学学生的 MIS Android 校园学习服务 App，聚合课表、成绩、考试、作业、课程资源、空教室、校历、校园邮箱与智能作业助手。
+Anyes666/BJTU-MIS-HarmonyOS | stars=2 | lang=TypeScript | archived=false | pushed=2026-07-28T06:11:47Z | desc=面向北京交通大学学生的 HarmonyOS 校园助手，支持课表、考试、历年成绩、学业信息与校历同步，提供本地离线缓存并适配深浅色模式。
+=== QUERY: Beijing Jiaotong University schedule ===
+=== QUERY: BJTU course OR jwgl OR timetable OR schedule ===
+fangvv/Homepage | stars=27 | lang=HTML | archived=false | pushed=2026-09-08T22:00:42Z | desc=北京交通大学计算机科学与技术学院系统与网络实验室 
+wan300/bjtu_mis_Android | stars=9 | lang=Svelte | archived=false | pushed=2026-09-08T19:50:35Z | desc=面向北京交通大学学生的 MIS Android 校园学习服务 App，聚合课表、成绩、考试、作业、课程资源、空教室、校历、校园邮箱与智能作业助手。
+s1y4x1/BJTU-course-assistant | stars=3 | lang=JavaScript | archived=false | pushed=2026-09-08T17:49:57Z | desc=BJTU 课程助手
+yingzhou-bjtu/yingzhou-bjtu.github.io | stars=1 | lang=SCSS | archived=false | pushed=2026-09-08T08:54:28Z | desc=Ying Zhou's Academic Homepage
+sellersrobert344/bjtuhb | stars=0 | lang=null | archived=false | pushed=2026-09-07T13:42:08Z | desc=
+warrennicholas4864/bjtuhn | stars=0 | lang=null | archived=false | pushed=2026-09-07T11:24:47Z | desc=
+MaverickRen/HW-BJTU-OPD | stars=0 | lang=Python | archived=false | pushed=2026-09-07T09:34:55Z | desc=Reproducible multimodal SFT and crop-based OPD for Qwen3.5
+BJTU-Guitar-Association/.github.io | stars=2 | lang=HTML | archived=false | pushed=2026-09-07T05:29:20Z | desc=Build up for BJTU-Guitar Association
+13915965368-stack/HongGuo | stars=0 | lang=JavaScript | archived=false | pushed=2026-09-05T17:05:24Z | desc=BJTU专用，北京交通大学专用查询agent
+zagdaaanh-commits/bjtu-connect | stars=0 | lang=TypeScript | archived=false | pushed=2026-09-05T10:46:45Z | desc=
+Moliseeee/bjtu-timetable | stars=0 | lang=Python | archived=false | pushed=2026-09-04T07:43:21Z | desc=BJTU semester timetable as an iCal (.ics) subscription file
+SgfKrc/LEDS_BJTU | stars=0 | lang=Python | archived=false | pushed=2026-09-08T15:26:57Z | desc=Lightweight Edge Distributed Inference System
+hexwander/bjtu-enroll | stars=0 | lang=JavaScript | archived=false | pushed=2026-09-03T01:59:05Z | desc=北交大迎新网快速秒过demo
+youranwang-hub/bjtu-meal-hub | stars=0 | lang=Python | archived=false | pushed=2026-09-02T17:20:14Z | desc=面向北京交通大学师生的菜品浏览、评分评论、社区交流与三餐打卡一站式平台。
+Hantao-Ye/Circuits-and-Systems | stars=2 | lang=JavaScript | archived=false | pushed=2026-09-02T05:17:21Z | desc=This is the personal notes of BJTU 20L749Q Circuits and Systems
+huozhipeng666/bjtu_helper | stars=0 | lang=null | archived=false | pushed=2026-09-01T06:08:20Z | desc=
+jolly326/bjtu_food | stars=1 | lang=Vue | archived=false | pushed=2026-09-06T16:04:17Z | desc=
+hejiye567/bjtu-communication-lab-qa | stars=0 | lang=Python | archived=false | pushed=2026-08-30T13:42:08Z | desc=bjtu-communication-lab-qa
+rstao-bjtu/rstao-bjtu.github.io | stars=0 | lang=HTML | archived=false | pushed=2026-08-27T11:21:26Z | desc=
+LTX129/jittor-BJTU_LTX-Track1B | stars=0 | lang=Python | archived=false | pushed=2026-08-27T10:36:16Z | desc=jittor competition track1B
+samantha2830877/bjtuaf | stars=0 | lang=null | archived=false | pushed=2026-08-27T03:45:02Z | desc=
+Ls0208/Calculator_202608_bjtu | stars=0 | lang=C++ | archived=false | pushed=2026-08-26T04:18:45Z | desc=
+kristen24125607/bjtuoi | stars=0 | lang=null | archived=false | pushed=2026-08-25T03:29:18Z | desc=
+N-Leon-Wesker-C/BJTUOS | stars=0 | lang=Rust | archived=false | pushed=2026-08-24T09:47:28Z | desc=基于ByteOS开发的操作系统内核
+leo372239-1024/Complete-Guide-to-Graduate-Studies-BJTU-IT | stars=5 | lang=null | archived=false | pushed=2026-08-22T11:45:57Z | desc=北京交大计算机读研 全攻略手册--从入学到毕业就业-“小王的Agent手记”著
+Iranb/bjtu-kindle-dashboard | stars=0 | lang=Python | archived=false | pushed=2026-08-18T09:59:08Z | desc=Data-driven grayscale HPC dashboard renderer and SSH deployer for Kindle Paperwhite 3
+shrenanagardo/bjtuhx | stars=0 | lang=null | archived=false | pushed=2026-08-17T20:31:51Z | desc=
+shrenanagardo/bjtukj | stars=0 | lang=null | archived=false | pushed=2026-08-17T04:33:51Z | desc=
+shrenanagardo/bjtuln | stars=0 | lang=null | archived=false | pushed=2026-08-16T19:25:06Z | desc=
+BiasedCognition/PaperReadingAgent | stars=0 | lang=Python | archived=false | pushed=2026-08-16T09:10:29Z | desc=BJTU Homework
+=== QUERY: jwc.bjtu.edu.cn ===
+=== QUERY: jwxt.bjtu.edu.cn ===
