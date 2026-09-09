@@ -36,11 +36,16 @@ object ConflictDetailReporter {
         if (!c.ownTime) c else c.normalizeNode(timeJson)
 
     /**
-     * 找出草稿与存量课的全部冲突(同 day + 节次区间相交 + 公共上课周)。
+     * 找出草稿与存量课的全部冲突(同 day + 真实时间区间相交 + 公共上课周)。
      * 每对(草稿, 存量)至多一条明细;多条草稿多条存量的组合逐对展开, 按存量课
      * 真实节点位置升序(表单从上往下读的顺序)。
      *
      * issue#23 Fix 3: 接受 timeJson 以便 ownTime 课程在比对前归一化到真实节点号。
+     *
+     * 用户反馈 2026-09-09: 重叠判定升级为**真实时间区间(分钟级)**相交 —
+     * ownTime 课用自身起止, 常规课用节次真实起止(effectiveCourseTime 同一契约)。
+     * 跨节次空隙反算出的节点范围不再制造假冲突(12:30 结束跨午间空隙被吸进
+     * 14:00 节 = 报障本体)。时间无法解析的课对回落节点区间判定(数据脏时保守)。
      */
     fun draftConflictDetails(
         drafts: List<CourseEntity>,
@@ -59,7 +64,7 @@ object ConflictDetailReporter {
             val hits = mutableListOf<Pair<CourseEntity, Pair<IntRange, Int?>>>()
             for (s in candidates) {
                 val commonWeeks = commonWeeks(nDraft, s) ?: continue
-                if (nodesOverlap(nDraft, s)) hits.add(s to commonWeeks)
+                if (coursesOverlap(nDraft, s, timeJson)) hits.add(s to commonWeeks)
             }
             hits.sortBy { it.first.startNode }
             for ((s, weeks) in hits) {
@@ -88,6 +93,32 @@ object ConflictDetailReporter {
         val aEnd = a.startNode + a.step - 1
         val bEnd = b.startNode + b.step - 1
         return a.startNode <= bEnd && b.startNode <= aEnd
+    }
+
+    /**
+     * 重叠判定(分钟级优先): 两课都能解析出真实时间区间 → 分钟域半开区间相交;
+     * 任一解析失败 → 回落节点区间(数据脏时保守, 不静默漏报)。
+     */
+    private fun coursesOverlap(a: CourseEntity, b: CourseEntity, timeJson: String): Boolean {
+        val ivA = realIntervalOf(a, timeJson)
+        val ivB = realIntervalOf(b, timeJson)
+        if (ivA != null && ivB != null) {
+            return ivA.first < ivB.second && ivB.first < ivA.second
+        }
+        return nodesOverlap(a, b)
+    }
+
+    /** 课的真实时间区间(分钟, 自午夜起) — ownTime 用自身起止, 常规课用节次起止。 */
+    private fun realIntervalOf(c: CourseEntity, timeJson: String): Pair<Long, Long>? {
+        val eff = TimeTableUtils.effectiveCourseTime(
+            c.isIrregularTime || c.ownTime,
+            c.startTime, c.endTime,
+            c.startNode, c.step, timeJson
+        ) ?: return null
+        val s = runCatching { java.time.LocalTime.parse(eff.first) }.getOrNull() ?: return null
+        val e = runCatching { java.time.LocalTime.parse(eff.second) }.getOrNull() ?: return null
+        if (!e.isAfter(s)) return null
+        return s.toSecondOfDay().toLong() to e.toSecondOfDay().toLong()
     }
 
     /** 节次交集(闭区间), 无交集返回 null。 */

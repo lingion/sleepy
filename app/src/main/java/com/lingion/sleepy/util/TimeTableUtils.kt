@@ -193,10 +193,13 @@ object TimeTableUtils {
 
     /**
      * 为当前可见课程合成渲染槽位表(纯函数):
-     *   1. 非常规课(ownTime)的时间占据某节次空隙(课区间与空隙交叠非空)时,
-     *      该空隙里合成一个占位节次, 范围 = 各课与该空隙交集的贪心并包:
-     *      起点 = 各课交叠起点的最小值, 终点 = 各课交叠终点的最大值(谁长听谁的);
-     *   2. 无溢出 → 槽位表与 timeSlotsFor(timeJson) 完全一致。
+     *   1. 非常规课(ownTime)的结束时间**终止在**某节次空隙内(课尾溢出进空隙、
+     *      且不再延伸到下一节)时, 该空隙里合成一个占位节次, 范围 = 各溢出课
+     *      与空隙交集的贪心并包: 起点 = 各课交叠起点的最小值, 终点 = 各课溢出
+     *      终点的最大值(谁长听谁的);
+     *   2. 课同时占据空隙两侧节点(连续跨节)时不合成 — 该空隙是常规连堂间隙,
+     *      比例渲染按真实分钟表达, 合占位行只会切碎连堂卡;
+     *   3. 无溢出 → 槽位表与 timeSlotsFor(timeJson) 完全一致。
      *
      * 占位节次在时间轴上低调呈现: 只显示时间不显示节号(TimeSlot.label 为空串,
      * 渲染层按 isPlaceholder 分支)。渲染期合成物, 绝不写回 timeJson —
@@ -206,8 +209,8 @@ object TimeTableUtils {
         val base = timeSlotsFor(timeJson)
         if (base.isEmpty()) return RenderSlotPlan(base)
 
-        // 每个空隙 = (左节 end, 右节 start)。课占据空隙 = 课 end > 左节 end 且课 start < 右节 start;
-        // 贡献区间 = 课区间 ∩ 空隙。
+        // 每个空隙 = (左节 end, 右节 start)。课尾溢出进空隙且终止于空隙 =
+        // 课 end ∈ (左节 end, 右节 start], 且课 start < 左节 end(课从前面延伸过来)。
         data class Gap(val leftEnd: LocalTime, val rightStart: LocalTime)
 
         val gaps = (0 until base.size - 1).map { i ->
@@ -221,13 +224,11 @@ object TimeTableUtils {
             val et = runCatching { LocalTime.parse(c.endTime) }.getOrNull() ?: continue
             if (et <= st) continue
             for ((gi, g) in gaps.withIndex()) {
-                if (et > g.leftEnd && st < g.rightStart) {
-                    val lo = maxOf(st, g.leftEnd)
-                    val hi = minOf(et, g.rightStart)
-                    if (hi <= lo) continue
+                if (et > g.leftEnd && et <= g.rightStart && st < g.leftEnd) {
+                    val lo = g.leftEnd
                     val cur = placeholderByGap[gi]
-                    placeholderByGap[gi] = if (cur == null) lo to hi
-                    else minOf(cur.first, lo) to maxOf(cur.second, hi)
+                    placeholderByGap[gi] = if (cur == null) lo to et
+                    else minOf(cur.first, lo) to maxOf(cur.second, et)
                 }
             }
         }
