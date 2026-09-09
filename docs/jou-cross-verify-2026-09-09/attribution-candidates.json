@@ -1,0 +1,17 @@
+{
+  "school": "江苏海洋大学 (JOU, 旧名淮海工学院/HHIT)",
+  "date": "2026-09-09",
+  "rule": "触达即致谢 (宁可错谢不可放过); verdict 与致谢无关, 触达 = 致谢",
+  "acks": [
+    {"repo": "sunjingquan/JOU-Campus-Guide", "line": "JOU-Campus-Guide (sunjingquan, 江苏海洋大学校园指南前端)", "reason": "触达核查: 无协议内容, 触达即谢"},
+    {"repo": "sunjingquan/jianghaidai-release", "line": "酱海带 (sunjingquan, 闭源参考, 仅协议分析未复用任何代码)", "reason": "用户指定参考; APK strings 印证 CAS+zf 链"},
+    {"repo": "brodamndamn/script", "line": "script/jou_course_bot (brodamndamn, JOU 正方选课脚本)", "reason": "POSITIVE: 独立印证 ZF classic 族 (yhm/mm/yzm)"},
+    {"repo": "dluobida/Wehhit-server", "line": "Wehhit-server (dengjj, 淮海工学院教务小程序后端)", "reason": "触达核查: 2019 老链参考"},
+    {"repo": "zqy1/Wehhit", "line": "Wehhit (zqy1, 淮海工学院微信小程序)", "reason": "触达核查: README 骨架"},
+    {"repo": "LeeReindeer/Grain", "line": "Grain (LeeReindeer, 浙江海洋大学校园 App, GPL-3.0)", "reason": "触达核查: zjou 非 jou, 防误认登记"},
+    {"repo": "GeorgeLeoo/finance", "line": "家庭记账系统 (GeorgeLeoo, 江苏海洋大学小程序赛作品)", "reason": "触达核查: 纯记账"},
+    {"repo": "GeorgeLeoo/finance-server", "line": "finance-server (GeorgeLeoo, 记账后端)", "reason": "触达核查: 纯记账"},
+    {"repo": "GeorgeLeoo/JStore", "line": "JStore (GeorgeLeoo, 小程序状态管理库)", "reason": "触达核查: 通用库"},
+    {"repo": "RSSHub/RSSHub", "line": "RSSHub jou 路由 (RSSHub 项目, MIT)", "reason": "触达核查: 公开通知 RSS"}
+  ]
+}

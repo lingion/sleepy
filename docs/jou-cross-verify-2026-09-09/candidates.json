@@ -1,0 +1,62 @@
+[
+ {
+  "full_name": "sunjingquan/JOU-Campus-Guide",
+  "license": "no-license",
+  "role": "primary",
+  "evidence": "reference app's open sibling repo by same author (pushed 2026-08-19); expect JOU login/schedule code"
+ },
+ {
+  "full_name": "sunjingquan/jianghaidai-release",
+  "license": "closed-source",
+  "role": "user-designated",
+  "evidence": "v0.6.1 APK sha256=0724475b0b7f56e9fd5e4ddb8522f3a0743353995c71b5a775282e41c100400a; libapp.so strings show zf.jou.edu.cn full path set + lyuapServer CAS + zfxk domain + LegacyZfxkRsaCipher"
+ },
+ {
+  "full_name": "brodamndamn/script",
+  "license": "no-license",
+  "role": "primary",
+  "evidence": "jou_course_bot.py (2026-09-02); expect direct zf.jou.edu.cn classic ZF requests"
+ },
+ {
+  "full_name": "dluobida/Wehhit-server",
+  "license": "no-license",
+  "role": "secondary",
+  "evidence": "HHIT (Huaihai) mini-program server 2019; expect classic ZF ASP.NET postback login chain"
+ },
+ {
+  "full_name": "zqy1/Wehhit",
+  "license": "no-license",
+  "role": "secondary",
+  "evidence": "HHIT wechat client 2017; NULL_EVIDENCE likely, dispatched per full-coverage rule"
+ },
+ {
+  "full_name": "LeeReindeer/Grain",
+  "license": "GPL-3.0",
+  "role": "secondary",
+  "evidence": "Android campus app 2019; search hit needs verification whether zf.jou.edu.cn truly present"
+ },
+ {
+  "full_name": "GeorgeLeoo/finance",
+  "license": "no-license",
+  "role": "secondary",
+  "evidence": "JOU wechat mini-program contest entry 2020; verify any academic login logic"
+ },
+ {
+  "full_name": "GeorgeLeoo/finance-server",
+  "license": "no-license",
+  "role": "secondary",
+  "evidence": "Express+MongoDB side of finance 2022; verify zf.jou.edu.cn login chain"
+ },
+ {
+  "full_name": "GeorgeLeoo/JStore",
+  "license": "no-license",
+  "role": "secondary",
+  "evidence": "same-author wechat state mgmt lib 2019; NULL_EVIDENCE likely"
+ },
+ {
+  "full_name": "RSSHub/RSSHub",
+  "license": "MIT",
+  "role": "indirect",
+  "evidence": "jou route search hit (matrix line D); indirect likely, still dispatched 1:1"
+ }
+]
