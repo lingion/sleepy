@@ -119,7 +119,8 @@ object RemoteViewsWidgetHelper {
      * + ListView(ScrollStripService 条带, 原渲染器按全展开高度画长图后横切)。
      * 条带与壳同源 → 滚动位置 0 与主分支静态 widget 像素一致。
      *
-     * @param shellBitmap 壳图 (调用方用原渲染器按 wDp×hDp 渲染)
+     * @param shellBitmap 壳图 (调用方用原渲染器按 wDp×hDp 渲染); null = 布局无壳
+     *        (v3 今日导航滚动布局已删壳图层, 整图行自带背景 — 双图层重影根因)
      * @param layoutRes 可滚动容器布局 (含 widget_shell + widget_strip_list)
      * @param configureViews 推送前对 RemoteViews 的追加配置钩子(挂导航区 PendingIntent),
      *        null = 不追加 → 既有调用方零改动
@@ -133,14 +134,17 @@ object RemoteViewsWidgetHelper {
         widgetId: Int,
         tag: String,
         layoutRes: Int,
-        shellBitmap: Bitmap,
+        shellBitmap: Bitmap?,
         scopeExtra: String,
         configureViews: ((RemoteViews) -> Unit)? = null,
         stripHeaderless: Boolean = false,
         pushGen: Long = 0L
     ) {
         val views = RemoteViews(context.packageName, layoutRes)
-        views.setImageViewBitmap(R.id.widget_shell, shellBitmap)
+        // null 壳 (v3 导航布局无壳层): 对不存在 id 的 action 会炸整次 apply, 必须跳过
+        if (shellBitmap != null) {
+            views.setImageViewBitmap(R.id.widget_shell, shellBitmap)
+        }
 
         val svcIntent = Intent(context, ScrollStripService::class.java).apply {
             putExtra(ScrollStripService.StripFactory.EXTRA_WIDGET_ID, widgetId)

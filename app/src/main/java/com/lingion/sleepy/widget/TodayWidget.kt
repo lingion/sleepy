@@ -171,6 +171,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 com.lingion.sleepy.R.id.widget_today_nav_title,
                 titleText
             )
+            // 真机取证标签: title 文本 + 档位 + 宽度 — uiautomator content-desc 可读
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_today_nav_title,
+                "title=$titleText tier=$tier w=$wDp"
+            )
             views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_title, colors.title)
             views.setTextViewTextSize(
                 com.lingion.sleepy.R.id.widget_today_nav_title,
@@ -198,14 +203,39 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 if (data.isToday || tier >= NavTier.HIDE_TODAY)
                     android.view.View.GONE else android.view.View.VISIBLE
             )
+            // 真机取证标签: nav_today 可见性原因 — isToday or tier
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_today_nav_today,
+                "navtoday gone=${data.isToday || tier >= NavTier.HIDE_TODAY} isToday=${data.isToday} tier=$tier"
+            )
             // 三角按钮位图 — 低对比圆角矩形 (surfaceVariant 底 + onSurfaceVariant 图标)
             views.setImageViewBitmap(
                 com.lingion.sleepy.R.id.widget_today_nav_prev,
                 WidgetBitmapRenderers.renderNavTriangle(context, data, pointLeft = true)
             )
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_today_nav_prev,
+                "prev 40x28dp w=$wDp"
+            )
             views.setImageViewBitmap(
                 com.lingion.sleepy.R.id.widget_today_nav_next,
             WidgetBitmapRenderers.renderNavTriangle(context, data, pointLeft = false)
+            )
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_today_nav_next,
+                "next 40x28dp w=$wDp"
+            )
+            // 头部容器取证标签: 档位/宽度/日期可见性一站式
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_today_header,
+                "header tier=$tier w=$wDp id=$widgetId"
+            )
+            // spacer 取证标签 (无图标无绘制也打标 — 用户要求全元素可探测)
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_spacer_l, "spacerL tier=$tier w=$wDp"
+            )
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_spacer_r, "spacerR tier=$tier w=$wDp"
             )
             val zones = listOf(
                 Triple(com.lingion.sleepy.R.id.widget_today_nav_prev, ACTION_PREV_DAY, 0),
@@ -397,6 +427,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(com.lingion.sleepy.R.id.widget_bitmap, tap)
+                // 真机取证标签: 静态 bitmap 尺寸
+                views.setContentDescription(
+                    com.lingion.sleepy.R.id.widget_bitmap,
+                    "static ${wDp}x${hDp}dp content=$contentH id=$id"
+                )
                 configureTodayNav(context, views, id, receiverClass!!, data, wDp)
                 if (WidgetResizeCore.isStale(id, pushGen)) {
                     Log.d(TAG, "skip stale static push id=$id gen=$pushGen")
@@ -405,17 +440,28 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 awm.updateAppWidget(id, views)
                 Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH tier=${navHeaderTier(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), data.dateLabel, wDp)}")
             } else {
-                // Today 系 overflow — 壳+条带(emptyHeader 同源) + 真实视图顶栏
-                // (不透明, 挡住条带上滑内容; 条带滚动位 0 与静态渲染坐标一致)
-                val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
-                )
+                // Today 系 overflow v3 — 无壳: 整图行自带圆角背景与全部内容,
+                // 壳 = 静止底图 = 滚动时"两个图层在移动"重影根因 (2026-09-10 删)。
+                // 真实视图顶栏 (不透明) 挡住条带上滑内容于 36dp 线; 长图滚动位 0
+                // 与静态渲染坐标一致 (emptyHeader 同源)。
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
                     layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today_nav,
-                    shellBitmap = shell,
+                    shellBitmap = null,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
-                    configureViews = navZones,
+                    configureViews = { views ->
+                        navZones?.invoke(views)
+                        // 真机取证标签: 滚动容器 root 尺寸 (壳已删, root 即卡面)
+                        views.setContentDescription(
+                            com.lingion.sleepy.R.id.widget_scroll_root,
+                            "scrollroot ${wDp}x${hDp}dp content=${WidgetBitmapRenderers.todayContentHeightDp(data)}dp id=$id"
+                        )
+                        // ListView 取证标签: 工厂侧 strips 总数由服务端定, 此处标 viewport 尺寸
+                        views.setContentDescription(
+                            com.lingion.sleepy.R.id.widget_strip_list,
+                            "strips viewport ${wDp}x${hDp}dp id=$id"
+                        )
+                    },
                     stripHeaderless = true,
                     pushGen = pushGen
                 )
