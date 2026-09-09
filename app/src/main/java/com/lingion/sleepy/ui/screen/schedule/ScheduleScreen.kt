@@ -84,6 +84,7 @@ private enum class ViewMode(val labelRes: Int) {
 fun ScheduleScreen(
     onGoImport: () -> Unit = {},
     onManualAdd: () -> Unit = {},
+    onCreateTable: () -> Unit = {},
     onEditCourse: (CourseEntity) -> Unit = {},
     viewModel: ScheduleViewModel = viewModel()
 ) {
@@ -111,7 +112,7 @@ fun ScheduleScreen(
         modifier = Modifier.fillMaxSize()
     ) {
         if (!hasTable) {
-            // 真的没表：去创建
+            // 真的没表：导入或建表 (不用加课 — 无表载体时加课无从谈起)
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -120,7 +121,7 @@ fun ScheduleScreen(
                 EmptyState(
                     modifier = Modifier.align(Alignment.TopCenter),
                     onGoImport = onGoImport,
-                    onManualAdd = onManualAdd
+                    onCreateTable = onCreateTable
                 )
             }
         } else if (!hasCourses) {
@@ -606,7 +607,7 @@ private fun NoCourseState(
 private fun EmptyState(
     modifier: Modifier = Modifier,
     onGoImport: () -> Unit = {},
-    onManualAdd: () -> Unit = {}
+    onCreateTable: () -> Unit = {}
 ) {
     val colors = SleepyTheme.colors
     Column(
@@ -628,21 +629,23 @@ private fun EmptyState(
             style = MaterialTheme.typography.bodyMedium,
             color = colors.onSurfaceVariant
         )
+        // 主按钮 = 导入第一张课表 (用户反馈: "前往课表管理"引导性不足)
         Button(
             onClick = onGoImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text(stringResource(R.string.schedule_go_manage), color = colors.onPrimary)
+            Text(stringResource(R.string.schedule_empty_import), color = colors.onPrimary)
         }
+        // 副按钮 = 手动创建第一张课表 (建表流, 非加课 — 无表载体时"创建第一门课"无从谈起)
         Button(
-            onClick = onManualAdd,
+            onClick = onCreateTable,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
             colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
-            Text(stringResource(R.string.schedule_manual_first), color = colors.onSecondaryContainer)
+            Text(stringResource(R.string.schedule_empty_create_table), color = colors.onSecondaryContainer)
         }
     }
 }

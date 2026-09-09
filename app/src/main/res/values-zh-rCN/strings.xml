@@ -14,9 +14,12 @@
 
     <!-- Schedule screen -->
     <string name="schedule_empty">还没有课表</string>
-    <string name="schedule_empty_hint">前往「课表管理」导入，或手动创建第一门课。</string>
+    <string name="schedule_empty_hint">前往「课表管理」导入，或手动创建第一张课表。</string>
     <string name="schedule_go_manage">前往课表管理</string>
-    <string name="schedule_manual_first">手动创建第一门课</string>
+    <string name="schedule_manual_first">手动添加课程</string>
+    <!-- 无表空态 (EmptyState) 专属: 导入引导 + 建表引导 -->
+    <string name="schedule_empty_import">导入第一张课表</string>
+    <string name="schedule_empty_create_table">手动创建第一张课表</string>
     <string name="schedule_add_course">添加课程</string>
     <string name="share_sheet_title">分享课表</string>
     <string name="schedule_share_table">分享课表</string>

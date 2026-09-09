@@ -66,25 +66,24 @@ class EmptyStateFirstTableContractTest {
 
     @Test
     fun `empty state second button routes to table creation flow not AddCourse`() {
-        // EmptyState composable 区域: 从定义起到文件尾的下一个 private fun 之前。
+        // EmptyState composable 区域: 从定义起, 到下一个 @Composable 或文件尾。
         val start = scheduleScreen.indexOf("private fun EmptyState(")
         assertTrue("ScheduleScreen.kt 必须定义 EmptyState composable", start >= 0)
-        val region = scheduleScreen.substring(start)
-
-        // 空态第二按钮必须走 onManualAdd 以外的新建表回调 —
-        // 契约: EmptyState 的手动路径回调名必须含 CreateTable (建表流), 禁止复用加课回调名。
-        assertTrue(
-            "EmptyState 必须声明建表流回调 (onCreateTable / onCreateFirstTable 类), " +
-                "而非复用加课语义的 onManualAdd — 无表时'创建第一门课'无从谈起",
-            Regex("""on\w*CreateTable\w*\s*:\s*\(\)\s*->\s*Unit""").containsMatchIn(
-                scheduleScreen.substring(start, scheduleScreen.indexOf('{', start))
-            )
+        val region = scheduleScreen.substring(
+            start,
+            scheduleScreen.indexOf("@Composable", start + 1).takeIf { it > 0 }
+                ?: scheduleScreen.length
         )
-        // 历史误接: onManualAdd 进 AddCourse — 空态区域内禁止再引用
-        val body = scheduleScreen.substring(scheduleScreen.indexOf('{', start))
+
+        // 空态第二按钮必须走建表流回调 (onCreateTable), 禁止复用加课回调名 onManualAdd。
+        assertTrue(
+            "EmptyState 必须声明建表流回调 (onCreateTable 类), " +
+                "而非复用加课语义的 onManualAdd — 无表时'创建第一门课'无从谈起",
+            Regex("""onCreateTable\w*\s*:\s*\(\)\s*->\s*Unit""").containsMatchIn(region)
+        )
         assertFalse(
             "EmptyState 区域禁止再引用 onManualAdd (那是加课/NoCourseState 语义)",
-            body.contains("onManualAdd")
+            region.contains("onManualAdd")
         )
     }
 
@@ -93,21 +92,20 @@ class EmptyStateFirstTableContractTest {
         // 与 AllTablesScreen.onCreateNewTable 同源: createEmptyTable(commitSelection = false)
         // → previousDefaultTableId/pendingNewTableId/editTableId → pushOverlay(EditTable)。
         // ScheduleScreen 调用点的 onCreateTable 参数必须复用这个闭包 (onCreateNewTable)。
-        val scheduleLine = Regex("""ScheduleScreen\(([\s\S]*?)\)\s*$""", RegexOption.MULTILINE)
+        val scheduleCall = Regex("""ScheduleScreen\(([\s\S]*?)\)\s*$""", RegexOption.MULTILINE)
             .find(mainActivity)?.groupValues?.get(1).orEmpty()
         assertTrue(
-            "MainActivity 的 ScheduleScreen(...) 调用必须存在", scheduleLine.isNotEmpty()
+            "MainActivity 的 ScheduleScreen(...) 调用必须存在", scheduleCall.isNotEmpty()
         )
         assertTrue(
             "ScheduleScreen 空态建表回调必须复用 MainTabs.onCreateNewTable 闭包 " +
                 "(createEmptyTable(commitSelection=false) → EditTable), 不得开 AddCourse",
-            Regex("""onCreateTable\w*\s*=\s*onCreateNewTable""").containsMatchIn(scheduleLine)
+            Regex("""onCreateTable\w*\s*=\s*onCreateNewTable""").containsMatchIn(scheduleCall)
         )
-        assertFalse(
-            "ScheduleScreen 的 onManualAdd 不应指向 AddCourse — 空态第二按钮已改走建表流, " +
-                "剩余 onManualAdd 仅服务 NoCourseState/TopBar (需保留传参)",
-            Regex("""onManualAdd\s*=\s*\{\s*pushOverlay\(OverlayScreen\.AddCourse\)\s*\}""")
-                .containsMatchIn(scheduleLine)
+        // NoCourseState/TopBar 仍合法使用 onManualAdd → AddCourse (加课语义在有表后是对的)。
+        assertTrue(
+            "有表后的加课入口 (NoCourseState/TopBar) 仍需 onManualAdd → AddCourse",
+            scheduleCall.contains("onManualAdd")
         )
     }
 
@@ -154,21 +152,22 @@ class EmptyStateFirstTableContractTest {
 
     @Test
     fun `switching to manage from empty state auto shows import sheet`() {
-        // ScheduleScreen 新回调 onGoImport 仍叫 onGoImport, 但 MainActivity 侧必须在
-        // 切 Tab.Manage 的同时让 ManagementPage 自动弹 ImportSheet。
+        // ManagementPage 必须有 autoShowImportSheet 参数 (导入引导机制入口)。
         assertTrue(
             "ManagementPage 必须保留 autoShowImportSheet 参数 (导入引导机制)",
-            managementPage.contains("autoShowImportSheet")
+            Regex("""autoShowImportSheet:\s*Boolean""").containsMatchIn(managementPage)
         )
-        // MainActivity: 空态导入路径 = 设 tab + 置自动弹层 flag。存在至少一处
-        // autoShow 的赋值/传递, 且不是只读 pendingImportText 判空 (旧机制)。
-        val wiring = Regex(
-            """autoShow\w*\s*=\s*(?!.*pendingImportText)(.+)"""
-        ).find(mainActivity)
+        // MainActivity: 空态导入路径 = 会话级 flag 写路径 (onGoImport 置位)
+        // + flag 流入 ManagementPage 的 autoShowImportSheet。
         assertTrue(
-            "MainActivity 必须有 autoShow flag 的写路径 (空态导入引导), " +
-                "现状只有 ManagementPage(autoShowImportSheet = pendingImportText != null) 读路径",
-            wiring != null
+            "MainActivity 空态导入回调必须置位 autoShow 引导 flag (写路径)",
+            Regex("""onGoImport\s*=\s*\{[^}]*autoShowImportOnce\w*\.value\s*=\s*true""")
+                .containsMatchIn(mainActivity)
+        )
+        assertTrue(
+            "引导 flag 必须流入 ManagementPage 的 autoShowImportSheet 参数",
+            Regex("""ManagementPage\([^)]*autoShowImportSheet\s*=\s*autoOnce""")
+                .containsMatchIn(mainActivity)
         )
     }
 }

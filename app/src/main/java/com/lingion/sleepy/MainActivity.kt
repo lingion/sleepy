@@ -89,6 +89,10 @@ class MainActivity : ComponentActivity() {
         var pendingImportText: String?
             get() = pendingImportTextState.value
             set(v) { pendingImportTextState.value = v }
+        // 无表空态 → "导入第一张课表" 引导: 切管理页时自动弹 ImportSheet 一次。
+        // 会话级一次性 flag (组合态可读), 消费即清 — 避免下次进管理页误弹。
+        val autoShowImportOnceState: androidx.compose.runtime.MutableState<Boolean> =
+            androidx.compose.runtime.mutableStateOf(false)
     }
 
     private val editingCourseFromIntent = MutableStateFlow<CourseEntity?>(null)
@@ -427,11 +431,19 @@ private fun MainTabs(
     onCreateNewTable: () -> Unit
 ) {
     when (currentTab) {
-        Tab.Schedule -> ScheduleScreen(onGoImport = { setCurrentTab(Tab.Manage) }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCourse = { course -> editingCourse(course) })
+        Tab.Schedule -> ScheduleScreen(
+            onGoImport = { MainActivity.autoShowImportOnceState.value = true; setCurrentTab(Tab.Manage) },
+            onManualAdd = { pushOverlay(OverlayScreen.AddCourse) },
+            onCreateTable = onCreateNewTable,
+            onEditCourse = { course -> editingCourse(course) })
         Tab.Today -> TodayScreen(onEditCourse = { course -> editingCourse(course) })
         Tab.Manage -> {
             val ctx = LocalContext.current
-            ManagementPage(autoShowImportSheet = MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { pushOverlay(OverlayScreen.EditTable) }, onImported = { setCurrentTab(Tab.Schedule) })
+            // 空态导入引导: autoShowImportOnce 置位过 → 本次进管理页自动弹 ImportSheet, 随即消费清零。
+            // pendingImportText != null 是另一路 (外部 app 分享课表文本进来) 的既有自动弹层, 语义不同并存。
+            val autoOnce = MainActivity.autoShowImportOnceState.value
+            if (autoOnce) MainActivity.autoShowImportOnceState.value = false
+            ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { pushOverlay(OverlayScreen.EditTable) }, onImported = { setCurrentTab(Tab.Schedule) })
         }
         Tab.Mine -> MineScreen(
             onOpenAllTables = { pushOverlay(OverlayScreen.AllTables) },

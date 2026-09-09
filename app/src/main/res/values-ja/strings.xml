@@ -12,9 +12,12 @@
     <string name="tab_manage">管理</string>
 
     <string name="schedule_empty">時間割がまだありません</string>
-    <string name="schedule_empty_hint">「管理」からインポートするか、最初の授業を手動で作成してください。</string>
+    <string name="schedule_empty_hint">「管理」からインポートするか、最初の時間割を手動で作成してください。</string>
     <string name="schedule_go_manage">管理へ移動</string>
-    <string name="schedule_manual_first">最初の授業を作成</string>
+    <string name="schedule_manual_first">授業を手動で追加</string>
+    <!-- 空状態 (EmptyState) 専用: インポート + 時間割作成ガイド -->
+    <string name="schedule_empty_import">最初の時間割をインポート</string>
+    <string name="schedule_empty_create_table">最初の時間割を作成</string>
     <string name="schedule_add_course">授業を追加</string>
     <string name="share_sheet_title">時間割を共有</string>
     <string name="schedule_share_table">時間割を共有</string>
