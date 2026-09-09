@@ -1,0 +1,108 @@
+{
+  "_provenance": "issue #25 回归 fixture (脱敏)。来源: sleepy-adapt-0907-122346.zip / 4-net-live/1_2026-09-7.json — 门户自有课表切片 API GET https://one.hfut.edu.cn/api/operation/course-timetable/search/1/2026-09-7, 双周切片 (nextWeek + currentWeek) 共 6 条记录。脱敏: 学号→2024xxxxxx, 教师姓名→王老师/李老师, 教师工号→0000000047 形态。字段名与结构保真: 保留 code/msg/data.nextWeek/data.currentWeek, 每条记录 14 字段 (cxjc/skrq/skjc/jsxm/xh/jxbdm/kch/dayOfWeek/skbm/kclx/kxh/jsgh/kcmc/jxdd) 全保真。",
+  "_key_facts": "门户 API 只回当前周+下一周切片 (非全学期); skjc=起始节次(单值), cxjc=连堂节次数, skrq=上课日期。这是门户展示用切片, 不是 supwisdom EAMS5 的 schedule-table/datum (result.lessonList/scheduleList) 形态, 必须不被 EAMS5 parser 误解析成课。",
+  "code": 1,
+  "msg": "success",
+  "data": {
+    "nextWeek": [
+      {
+        "cxjc": 2,
+        "skrq": "2026-09-14",
+        "skjc": "3",
+        "jsxm": "王老师",
+        "xh": "2024xxxxxx",
+        "jxbdm": "计算机24-1班,计算机24-2班,计算机24-3班",
+        "kch": "0509112B",
+        "dayOfWeek": 2,
+        "skbm": "计算机与信息学院",
+        "kclx": "学科基础和专业必修课",
+        "kxh": "0509112B--004",
+        "jsgh": "0000000047",
+        "kcmc": "操作系统",
+        "jxdd": "计算中心楼,计算中心103（临时）"
+      },
+      {
+        "cxjc": 2,
+        "skrq": "2026-09-15",
+        "skjc": "1",
+        "jsxm": "李老师",
+        "xh": "2024xxxxxx",
+        "jxbdm": "计算机24-1班,计算机24-2班",
+        "kch": "0520022B",
+        "dayOfWeek": 3,
+        "skbm": "计算机与信息学院",
+        "kclx": "学科基础和专业必修课",
+        "kxh": "0520022B--005",
+        "jsgh": "0000000067",
+        "kcmc": "计算机网络",
+        "jxdd": "敬亭学堂,敬亭学堂119（临时）"
+      },
+      {
+        "cxjc": 2,
+        "skrq": "2026-09-17",
+        "skjc": "3",
+        "jsxm": "王老师",
+        "xh": "2024xxxxxx",
+        "jxbdm": "计算机24-1班,计算机24-2班,计算机24-3班",
+        "kch": "0509112B",
+        "dayOfWeek": 5,
+        "skbm": "计算机与信息学院",
+        "kclx": "学科基础和专业必修课",
+        "kxh": "0509112B--004",
+        "jsgh": "0000000047",
+        "kcmc": "操作系统",
+        "jxdd": "敬亭学堂,敬亭学堂114"
+      },
+      {
+        "cxjc": 2,
+        "skrq": "2026-09-17",
+        "skjc": "1",
+        "jsxm": "李老师",
+        "xh": "2024xxxxxx",
+        "jxbdm": "计算机24-1班,计算机24-2班",
+        "kch": "0520022B",
+        "dayOfWeek": 5,
+        "skbm": "计算机与信息学院",
+        "kclx": "学科基础和专业必修课",
+        "kxh": "0520022B--005",
+        "jsgh": "0000000067",
+        "kcmc": "计算机网络",
+        "jxdd": "敬亭学堂,敬亭学堂217"
+      }
+    ],
+    "currentWeek": [
+      {
+        "cxjc": 2,
+        "skrq": "2026-09-07",
+        "skjc": "3",
+        "jsxm": "王老师",
+        "xh": "2024xxxxxx",
+        "jxbdm": "计算机24-1班,计算机24-2班,计算机24-3班",
+        "kch": "0509112B",
+        "dayOfWeek": 2,
+        "skbm": "计算机与信息学院",
+        "kclx": "学科基础和专业必修课",
+        "kxh": "0509112B--004",
+        "jsgh": "0000000047",
+        "kcmc": "操作系统",
+        "jxdd": "计算中心楼,计算中心103（临时）"
+      },
+      {
+        "cxjc": 2,
+        "skrq": "2026-09-10",
+        "skjc": "1",
+        "jsxm": "王老师",
+        "xh": "2024xxxxxx",
+        "jxbdm": "计算机24-1班,计算机24-2班,计算机24-3班",
+        "kch": "0509112B",
+        "dayOfWeek": 5,
+        "skbm": "计算机与信息学院",
+        "kclx": "学科基础和专业必修课",
+        "kxh": "0509112B--004",
+        "jsgh": "0000000047",
+        "kcmc": "操作系统",
+        "jxdd": "敬亭学堂,敬亭学堂114"
+      }
+    ]
+  }
+}
