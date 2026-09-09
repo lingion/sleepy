@@ -1,0 +1,33 @@
+{
+  "issue": 25,
+  "school": "HFUT (jxglstu.hfut.edu.cn, eams5)",
+  "note": "This is a diagnosis of an existing adaptation. The EAMS5 protocol itself was already cross-verified (4 HFUT repos + 5 AHU repos) during the original EAMS5 support work and is already attributed in LicenseScreen. This issue's root cause turned out to be UI routing (portal URL treated as a custom entry), not a protocol divergence, so no new repositories were consulted.",
+  "prior_art_already_attributed": [
+    {
+      "repo": "Chiu-xaH/HFUT-Schedule",
+      "license": "MIT",
+      "used_for": "studentId extraction forms + schedule-table/datum protocol",
+      "attribution": "LicenseScreen.kt line ~345 + 6-locale strings, since EAMS5 adaptation"
+    },
+    {
+      "repo": "BoynChan/HfutOpenApi",
+      "license": "MIT",
+      "used_for": "studentId object-literal forms, CourseCrawler",
+      "attribution": "LicenseScreen.kt, since EAMS5 adaptation"
+    },
+    {
+      "repo": "Aoi-cn/hfut_schedule_hacker",
+      "license": "unspecified",
+      "used_for": "protocol shape",
+      "attribution": "LicenseScreen.kt, since EAMS5 adaptation"
+    },
+    {
+      "repo": "elonzh/django-hfut-auth",
+      "license": "MIT",
+      "used_for": "CAS auth flow",
+      "attribution": "LicenseScreen.kt, since EAMS5 adaptation"
+    }
+  ],
+  "new_candidates_this_issue": [],
+  "new_attributions_this_issue": 0
+}
