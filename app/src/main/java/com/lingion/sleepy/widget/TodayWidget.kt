@@ -31,6 +31,18 @@ import java.time.LocalDate
  *
  * Glance 版 TodayWidget 类已删除(决策 D5-11); loadDataSync 自 Glance companion 迁入本类。
  */
+/** 顶栏降级档位 — 真机窄档 (SIZES=148dp) 实测两字也装不下, 必须再降两级。 */
+internal enum class NavTier {
+    /** 满标题「M/D · 周X」+「回到今天」 */
+    FULL,
+    /** 满标题 +「今天」两字 */
+    TWO_CHAR,
+    /** 标题去星期「M/D」+「今天」两字 */
+    SHORT_TITLE,
+    /** 标题去星期 + 隐藏 nav_today (prev/next 保留, 核心翻页不丢) */
+    HIDE_TODAY
+}
+
 open class TodayWidgetReceiver : AppWidgetProvider() {
     private val ioScope = CoroutineScope(SupervisorJob() + Dispatchers.Default)
 
@@ -149,8 +161,12 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             // 顶栏背景 — overflow 路径挡住条带上滑内容; 颜色与卡面 bitmap 同一 scheme
             val colors = WidgetBitmapRenderers.todayNavHeaderColors(context, data)
             views.setInt(com.lingion.sleepy.R.id.widget_today_header, "setBackgroundColor", colors.bg)
-            // 标题 — 「M/D · 周X」恒显日期 (用户定稿: 两种状态格式统一)
-            val titleText = navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context))
+            // 标题 — 「M/D · 周X」满配, 装不下逐级降级 (真机 148dp 档实测: 满标题+两字
+            // 也溢出 → 去星期; 再不够 → 隐藏回到今天, prev/next 保留)
+            val fullTitle = navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context))
+            val dateOnlyTitle = data.dateLabel
+            val tier = navHeaderTier(context, fullTitle, dateOnlyTitle, wDp)
+            val titleText = if (tier >= NavTier.SHORT_TITLE) dateOnlyTitle else fullTitle
             views.setTextViewText(
                 com.lingion.sleepy.R.id.widget_today_nav_title,
                 titleText
@@ -160,11 +176,10 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 com.lingion.sleepy.R.id.widget_today_nav_title,
                 TypedValue.COMPLEX_UNIT_DIP, 13f
             )
-            // 「回到今天」vs「今天」 — 运行时测量当前 widget 宽度下"四字 + 标题 + 按钮 + 间隔 + padding"
-            //   是否装得下, 装不下用「今天」两字让 nav_next 不被挤成单行巨钮 (issue: 宽度 ≤ 2 列)。
-            //   阈值不硬编码 dp 数: 标题按实际字符长度测量, "回到今天"/"今天" 都按当前
-            //   textSize/bold 真实度量 — widget 越窄自动越早切换。
-            val navTodayText = if (wDp > 0 && fitsNavTodayFourChar(context, titleText, wDp)) {
+            // 「回到今天」vs「今天」vs 隐藏 — 三级降级逐档真实度量 (无固定 dp 阈值):
+            //   真机窄档 (SIZES=148dp) 连两字+满标题都装不下 → 去星期 → 仍不够隐藏,
+            //   nav_next 不再被 LinearLayout 横向溢出推出可视区 (2026-09-09 真机根因)。
+            val navTodayText = if (tier <= NavTier.TWO_CHAR) {
                 context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today)
             } else {
                 context.getString(com.lingion.sleepy.R.string.today_nav_today_short)
@@ -180,7 +195,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             )
             views.setViewVisibility(
                 com.lingion.sleepy.R.id.widget_today_nav_today,
-                if (data.isToday) android.view.View.GONE else android.view.View.VISIBLE
+                if (data.isToday || tier >= NavTier.HIDE_TODAY)
+                    android.view.View.GONE else android.view.View.VISIBLE
             )
             // 三角按钮位图 — 低对比圆角矩形 (surfaceVariant 底 + onSurfaceVariant 图标)
             views.setImageViewBitmap(
@@ -267,6 +283,57 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         }
 
         /**
+         * 顶栏三级降级判定 — 逐档真实度量, 全程无固定 dp 阈值。
+         *
+         * 真机取证 (OPPO PKX110, 2026-09-09): 148dp 档上「9/8 · 周二」+两钮+「今天」
+         * 固定件 ≈187dp > 148dp → LinearLayout 横向溢出, nav_next 被推出可视区
+         * (uiautomator 层级中消失)。旧判定只到"两字"档, 装不下时无路可退。
+         *
+         * 降级序 (恓牲度递增, 与用户定稿一致: 先去星期, 不到万不得已不隐藏功能):
+         *   FULL → TWO_CHAR → SHORT_TITLE(去星期) → HIDE_TODAY(隐藏回到今天)
+         * 每档按当档文案真实测量; prev/next 按钮 40dp×2 + padding 20dp + margins
+         * 10dp 是不可压缩底座 (spacer weight=1 可压到 0)。
+         */
+        internal fun navHeaderTier(
+            density: Float, wDp: Int, fullTitle: String, dateOnlyTitle: String,
+            titleMeasure: (String) -> Float, navTodayMeasure: (String) -> Float
+        ): NavTier {
+            if (wDp <= 0) return NavTier.FULL  // 未知宽 → 走满配安全路径
+            fun required(title: String, navTodayText: String): Float {
+                val titleW = titleMeasure(title) / density
+                val navW = navTodayMeasure(navTodayText) / density
+                // padStart10 + title + margin4 + prev40 + (6+navToday+6) + next40 + padEnd10
+                return 10f + titleW + 4f + 40f + (6f + navW + 6f) + 40f + 10f
+            }
+            if (required(fullTitle, "回到今天") <= wDp) return NavTier.FULL
+            if (required(fullTitle, "今天") <= wDp) return NavTier.TWO_CHAR
+            if (required(dateOnlyTitle, "今天") <= wDp) return NavTier.SHORT_TITLE
+            return NavTier.HIDE_TODAY
+        }
+
+        /** Android Context 入口 — 真实 Paint (含 fontScale) 注入纯函数判定档位。 */
+        private fun navHeaderTier(
+            context: Context, fullTitle: String, dateOnlyTitle: String, wDp: Int
+        ): NavTier {
+            val density = context.resources.displayMetrics.density
+            val fontScale = context.resources.configuration.fontScale
+            fun scaledPaint(sp: Float) = android.graphics.Paint().apply {
+                isAntiAlias = true
+                textSize = sp * density * fontScale
+                typeface = android.graphics.Typeface.create(
+                    android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD
+                )
+            }
+            val titlePaint = scaledPaint(13f)
+            val navTodayPaint = scaledPaint(11f)
+            return navHeaderTier(
+                density, wDp, fullTitle, dateOnlyTitle,
+                titleMeasure = titlePaint::measureText,
+                navTodayMeasure = navTodayPaint::measureText
+            )
+        }
+
+        /**
          * 今日课程推送管线(静态/可滚动闸门) — 网格小最小档与今日课程·小共用,
          * 保证"变成今日课程那个小组件的样子"像素级同源(同一渲染器+同一滚动条带工厂)。
          * 注意 Today 小变体在这里等效直通(REGULAR 也走这条闸), 与改动前行为一致。
@@ -336,7 +403,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     return
                 }
                 awm.updateAppWidget(id, views)
-                Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH todayLabel=${if (fitsNavTodayFourChar(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), wDp)) "back" else "short"}")
+                Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH tier=${navHeaderTier(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), data.dateLabel, wDp)}")
             } else {
                 // Today 系 overflow — 壳+条带(emptyHeader 同源) + 真实视图顶栏
                 // (不透明, 挡住条带上滑内容; 条带滚动位 0 与静态渲染坐标一致)

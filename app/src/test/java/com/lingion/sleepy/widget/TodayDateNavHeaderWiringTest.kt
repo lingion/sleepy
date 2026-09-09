@@ -104,6 +104,24 @@ class TodayDateNavHeaderWiringTest {
     }
 
     @Test
+    fun `nav header tier degrades inside configureTodayNav`() {
+        // 真机根因 (OPPO 148dp 窄档, 2026-09-09): 满标题+两字「今天」固定宽 ≈187dp
+        // > 148dp → LinearLayout 横向溢出, nav_next 被推出可视区。旧判定只到两字档,
+        // 装不下无路可退 → 必须用 navHeaderTier 逐档降级 (去星期 → 隐藏 nav_today)。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("fun configureTodayNav(")
+            .substringBefore("/** 顶栏标题")
+        assertTrue("configureTodayNav 必须走 navHeaderTier 降级判定",
+            body.contains("navHeaderTier("))
+        assertTrue("SHORT_TITLE 档必须标题去星期 (dateOnlyTitle)",
+            body.contains("dateOnlyTitle"))
+        assertTrue("HIDE_TODAY 档必须隐藏 nav_today (prev/next 保留)",
+            body.contains("HIDE_TODAY"))
+        assertTrue("隐藏判定必须保留 isToday 短路 (今日不显回到今天)",
+            body.contains("data.isToday"))
+    }
+
+    @Test
     fun `renderer nav triangle is low-contrast and glyph-free`() {
         val src = widgetSource("WidgetBitmapRenderers.kt").readText()
         val body = src.substringAfter("fun renderNavTriangle")
