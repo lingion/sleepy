@@ -709,6 +709,8 @@
     <string name="error_empty_download">下载文件为空</string>
 
     <!-- issue#23 / 手动课程"非常规"开关 (2026-09-06) -->
+    <string name="irregular_options_section">非常规选项</string>
+    <string name="irregular_options_section_sub">边缘槽位 / 自定时间等特殊排课，普通课程无需展开</string>
     <string name="irregular_time_format">非常规开始/结束时间格式应为 HH:mm</string>
     <string name="irregular_time_order">非常规开始时间必须早于结束时间</string>
     <string name="edge_node_range">第 %1$d 节 %2$s – %3$s</string>

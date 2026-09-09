@@ -652,6 +652,8 @@
     <string name="error_unknown">未知錯誤</string>
     <string name="error_no_version_found">主站和鏡像都沒找到最新版本</string>
     <string name="error_empty_download">下載檔案為空</string>
+    <string name="irregular_options_section">非常規選項</string>
+    <string name="irregular_options_section_sub">邊緣槽位 / 自訂時間等特殊排課，普通課程無需展開</string>
     <string name="edge_node_range">第 %1$d 節 %2$s – %3$s</string>
     <string name="irregular_node_switch">非常規節次</string>
     <string name="irregular_node_switch_sub">綁定課表邊緣槽位（第 0 節 / 第 -1 節 / 第 N+1 節）</string>

@@ -657,6 +657,8 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="default_room">Location</string>
     <string name="error_unknown">Unknown error</string>
     <!-- issue#23 / manual-course "irregular" toggle (2026-09-06) -->
+    <string name="irregular_options_section">Advanced options</string>
+    <string name="irregular_options_section_sub">Edge slots / custom times for special scheduling — no need to expand for regular courses</string>
     <string name="irregular_time_format">Irregular start/end time should be HH:mm format</string>
     <string name="irregular_time_order">Irregular start time must be before end time</string>
     <string name="edge_node_range">Period %1$d %2$s – %3$s</string>

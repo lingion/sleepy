@@ -1,6 +1,12 @@
 package com.lingion.sleepy.ui.screen.edit
 
 import com.lingion.sleepy.R
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -29,6 +35,7 @@ import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Close
+import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -56,6 +63,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.platform.LocalContext
@@ -152,6 +160,8 @@ internal class MeetingBlockDraft(
     var selectedEdgeNode by mutableIntStateOf(selectedEdgeNode)
     /** issue#23 逐卡: 本卡覆盖起止时间 (与落库 ownTime 同值, §5 契约) */
     var isIrregularTime by mutableStateOf(isIrregularTime)
+    /** 非常规选项折叠栏: 编辑已启用任一非常规项的卡时自动展开, 否则默认收起 (普通课程主路径不被"非常规"字样干扰) */
+    var irregularOptionsExpanded by mutableStateOf(isIrregularNode || isIrregularTime)
     // issue#9 延伸: NumberField 把超界输入静默夹紧时, 置 true → 编辑器顶红块提示
     // 用户感知到"我输 100 被改成了 2", 而不是无报错地接受了错值
     var clamped by mutableStateOf(false)
@@ -881,6 +891,32 @@ private fun minutesBetween(start: String, end: String): Int? {
     return (e.hour * 60 + e.minute) - (s.hour * 60 + s.minute)
 }
 
+/** 非常规选项折叠态摘要 — 收起但已启用选项时, 栏头露出启用了什么。
+ *  纯函数便于 JVM 直测; 参数都是已解析的文案/值, 不触 Compose。 */
+internal fun irregularOptionsSummary(
+    isIrregularNode: Boolean,
+    isIrregularTime: Boolean,
+    startTime: String,
+    endTime: String,
+    nodeSwitchLabel: String,
+    edgeNodeLabel: String,
+    timeSwitchLabel: String
+): String {
+    val parts = mutableListOf<String>()
+    if (isIrregularNode) {
+        parts += listOf(nodeSwitchLabel, edgeNodeLabel).joinToString(" · ")
+    }
+    if (isIrregularTime) {
+        // 起止齐全才拼区间; 缺一(如跨午夜回退清空)只显示开关名, 不露半截区间
+        parts += if (startTime.isNotBlank() && endTime.isNotBlank()) {
+            listOf(timeSwitchLabel, "$startTime–$endTime").joinToString(" · ")
+        } else {
+            timeSwitchLabel
+        }
+    }
+    return parts.joinToString(" / ")
+}
+
 @Composable
 private fun ValidationCard(issues: List<ValidationIssue>) {
     val colors = SleepyTheme.colors
@@ -1045,60 +1081,8 @@ private fun MeetingBlockEditor(
             if (day in block.days) block.days.remove(day) else block.days.add(day)
         })
 
-        // issue#23 逐卡: 卡内两个独立开关 — 非常规节次 / 非常规时间 (§4 逐卡开关设计)
-        SwitchRow(
-            label = stringResource(R.string.irregular_node_switch),
-            sub = stringResource(R.string.irregular_node_switch_sub),
-            checked = block.isIrregularNode,
-            onCheckedChange = { on ->
-                if (on) {
-                    block.isIrregularNode = true
-                    onPickEdge()
-                } else {
-                    val released = block.selectedEdgeNode
-                    block.isIrregularNode = false
-                    block.selectedEdgeNode = 0
-                    onDeselectEdge(released)
-                }
-                block.clamped = false
-            }
-        )
-
-        if (block.isIrregularNode) {
-            // 非常规节次卡: 槽位摘要 + 换一个节次 + 已有槽位默认时间编辑入口
-            val selected = candidates.firstOrNull { it.node == block.selectedEdgeNode }
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-                Text(
-                    text = if (selected != null && selected.exists) {
-                        stringResource(
-                            R.string.edge_node_range,
-                            selected.node,
-                            selected.start,
-                            selected.end
-                        )
-                    } else {
-                        stringResource(R.string.edge_node_label, block.selectedEdgeNode)
-                    },
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = colors.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                if (selected != null && selected.exists) {
-                    IconButton(onClick = { onEditSlot(selected.node, selected.start, selected.end) }) {
-                        Icon(
-                            Icons.Outlined.Edit,
-                            contentDescription = stringResource(R.string.irregular_slot_edit_title),
-                            tint = colors.onSurfaceVariant
-                        )
-                    }
-                }
-            }
-        } else {
-            // 标准卡: startNode/step, 1..maxStd
+        // 标准卡: startNode/step, 1..maxStd — 普通课程主路径, 不被"非常规"折叠栏干扰
+        if (!block.isIrregularNode) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
@@ -1130,83 +1114,18 @@ private fun MeetingBlockEditor(
             }
         }
 
-        // 非常规时间
-        SwitchRow(
-            label = stringResource(R.string.irregular_time_switch),
-            sub = stringResource(R.string.irregular_time_switch_sub),
-            checked = block.isIrregularTime,
-            onCheckedChange = { on ->
-                if (on) {
-                    block.isIrregularTime = true
-                    if (block.startTime.isBlank() || block.endTime.isBlank()) {
-                        // 首次开启: 预填本卡生效时间 (槽位默认 / 标准节次时间), 见 §4 B 规则
-                        val r = block.effectiveRange(timeJson)
-                        if (r != null) {
-                            block.startTime = r.first
-                            block.endTime = r.second
-                        }
-                    }
-                    if (block.durationText.isBlank()) {
-                        block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
-                    }
-                } else {
-                    // 关闭覆盖时间 → 回落槽位默认 / 栟准节次时间
-                    block.startTime = ""
-                    block.endTime = ""
-                    block.durationText = ""
-                }
-            }
+        // issue#23 逐卡: 非常规节次 / 非常规时间 — 收进同一折叠栏 (用户反馈 2026-09-09:
+        // 平铺的"非常规"字样让用户误以为表单不能添加正常课程)
+        IrregularOptionsSection(
+            block = block,
+            fieldShape = fieldShape,
+            fieldColors = fieldColors,
+            timeJson = timeJson,
+            candidates = candidates,
+            onPickEdge = onPickEdge,
+            onEditSlot = onEditSlot,
+            onDeselectEdge = onDeselectEdge
         )
-        if (block.isIrregularTime) {
-            // §2.4 B 规则: 起止/时长三输入, 最后编辑的输入对为权威 — 改起止重算时长,
-            // 改时长反推结束时间; 三者都允许填写
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                TimePickerField(
-                    value = block.startTime,
-                    onValueChange = { v ->
-                        block.startTime = v
-                        block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
-                    },
-                    label = stringResource(R.string.start_time),
-                    modifier = Modifier.weight(1f)
-                )
-                TimePickerField(
-                    value = block.endTime,
-                    onValueChange = { v ->
-                        block.endTime = v
-                        block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
-                    },
-                    label = stringResource(R.string.end_time),
-                    modifier = Modifier.weight(1f)
-                )
-            }
-            NumberField(
-                label = stringResource(R.string.irregular_duration_label),
-                value = block.durationText.toIntOrNull() ?: 0,
-                min = 1,
-                max = 24 * 60,
-                modifier = Modifier.fillMaxWidth(),
-                shape = fieldShape,
-                colors = fieldColors
-            ) { mins ->
-                if (mins > 0) {
-                    block.durationText = mins.toString()
-                    parseHm(block.startTime)?.let { s ->
-                        val end = s.plusMinutes(mins.toLong())
-                        block.endTime = end.toString()
-                    }
-                    val diff = minutesBetween(block.startTime, block.endTime)
-                    if (diff != null && diff != mins) {
-                        // plusMinutes 跨午夜会把 end 翻到次日, 回退清空交由校验报错
-                        block.endTime = ""
-                        block.durationText = ""
-                    }
-                }
-            }
-        }
 
         // 周次 — 每时段独立
         Row(
@@ -1287,6 +1206,229 @@ private fun MeetingBlockEditor(
                         style = MaterialTheme.typography.labelSmall,
                         color = colors.error
                     )
+                }
+            }
+        }
+    }
+}
+
+/** 非常规选项折叠栏 (用户反馈 2026-09-09): 「非常规节次」「非常规时间」两个开关
+ *  绑到一起收进可展开区块, 默认折叠 — 普通课程用户不再被平铺的"非常规"字样干扰。
+ *  展开模式沿用仓库既有写法 (EditTableScreen 节次时间表 / SettingsCards.SettingsCard):
+ *  ExpandMore chevron 随展开旋转 180f + AnimatedVisibility 高度/淡入动画。
+ *  编辑已启用任一非常规项的卡时自动展开 (irregularOptionsExpanded 由构造参数派生),
+ *  收起但已启用选项时栏头露出摘要, 用户能看见"这里有东西开着"。 */
+@Composable
+private fun IrregularOptionsSection(
+    block: MeetingBlockDraft,
+    fieldShape: CornerBasedShape,
+    fieldColors: androidx.compose.material3.TextFieldColors,
+    timeJson: String,
+    candidates: List<TimeTableUtils.EdgeCandidate>,
+    onPickEdge: () -> Unit,
+    onEditSlot: (node: Int, start: String, end: String) -> Unit,
+    onDeselectEdge: (releasedNode: Int) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    val arrowRotation by animateFloatAsState(
+        targetValue = if (block.irregularOptionsExpanded) 180f else 0f,
+        label = "irregular-options-arrow"
+    )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.medium)
+            .background(colors.surfaceContainerHighest)
+    ) {
+        // 栏头: 标题 + 摘要 + chevron, 整行可点
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .noRippleClickable { block.irregularOptionsExpanded = !block.irregularOptionsExpanded }
+                .padding(horizontal = 12.dp, vertical = 10.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                Text(
+                    text = stringResource(R.string.irregular_options_section),
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                    color = colors.onSurface
+                )
+                Text(
+                    text = if (block.irregularOptionsExpanded) {
+                        stringResource(R.string.irregular_options_section_sub)
+                    } else {
+                        irregularOptionsSummary(
+                            isIrregularNode = block.isIrregularNode,
+                            isIrregularTime = block.isIrregularTime,
+                            startTime = block.startTime,
+                            endTime = block.endTime,
+                            nodeSwitchLabel = stringResource(R.string.irregular_node_switch),
+                            edgeNodeLabel = if (block.selectedEdgeNode != 0) {
+                                stringResource(R.string.edge_node_label, block.selectedEdgeNode)
+                            } else {
+                                ""
+                            },
+                            timeSwitchLabel = stringResource(R.string.irregular_time_switch)
+                        ).ifBlank { stringResource(R.string.irregular_options_section_sub) }
+                    },
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant,
+                    maxLines = 2
+                )
+            }
+            Icon(
+                Icons.Outlined.ExpandMore,
+                contentDescription = null,
+                tint = colors.onSurfaceVariant,
+                modifier = Modifier
+                    .size(20.dp)
+                    .rotate(arrowRotation)
+            )
+        }
+        AnimatedVisibility(
+            visible = block.irregularOptionsExpanded,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
+            Column(
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 12.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                // issue#23 逐卡: 开关一 — 非常规节次 (§4 逐卡开关设计, 行为原样保留)
+                SwitchRow(
+                    label = stringResource(R.string.irregular_node_switch),
+                    sub = stringResource(R.string.irregular_node_switch_sub),
+                    checked = block.isIrregularNode,
+                    onCheckedChange = { on ->
+                        if (on) {
+                            block.isIrregularNode = true
+                            onPickEdge()
+                        } else {
+                            val released = block.selectedEdgeNode
+                            block.isIrregularNode = false
+                            block.selectedEdgeNode = 0
+                            onDeselectEdge(released)
+                        }
+                        block.clamped = false
+                    }
+                )
+
+                if (block.isIrregularNode) {
+                    // 非常规节次卡: 槽位摘要 + 换一个节次 + 已有槽位默认时间编辑入口
+                    val selected = candidates.firstOrNull { it.node == block.selectedEdgeNode }
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(10.dp)
+                    ) {
+                        Text(
+                            text = if (selected != null && selected.exists) {
+                                stringResource(
+                                    R.string.edge_node_range,
+                                    selected.node,
+                                    selected.start,
+                                    selected.end
+                                )
+                            } else {
+                                stringResource(R.string.edge_node_label, block.selectedEdgeNode)
+                            },
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = colors.onSurface,
+                            modifier = Modifier.weight(1f)
+                        )
+                        if (selected != null && selected.exists) {
+                            IconButton(onClick = { onEditSlot(selected.node, selected.start, selected.end) }) {
+                                Icon(
+                                    Icons.Outlined.Edit,
+                                    contentDescription = stringResource(R.string.irregular_slot_edit_title),
+                                    tint = colors.onSurfaceVariant
+                                )
+                            }
+                        }
+                    }
+                }
+
+                // issue#23 逐卡: 开关二 — 非常规时间 (行为原样保留)
+                SwitchRow(
+                    label = stringResource(R.string.irregular_time_switch),
+                    sub = stringResource(R.string.irregular_time_switch_sub),
+                    checked = block.isIrregularTime,
+                    onCheckedChange = { on ->
+                        if (on) {
+                            block.isIrregularTime = true
+                            if (block.startTime.isBlank() || block.endTime.isBlank()) {
+                                // 首次开启: 预填本卡生效时间 (槽位默认 / 标准节次时间), 见 §4 B 规则
+                                val r = block.effectiveRange(timeJson)
+                                if (r != null) {
+                                    block.startTime = r.first
+                                    block.endTime = r.second
+                                }
+                            }
+                            if (block.durationText.isBlank()) {
+                                block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
+                            }
+                        } else {
+                            // 关闭覆盖时间 → 回落槽位默认 / 标准节次时间
+                            block.startTime = ""
+                            block.endTime = ""
+                            block.durationText = ""
+                        }
+                    }
+                )
+                if (block.isIrregularTime) {
+                    // §2.4 B 规则: 起止/时长三输入, 最后编辑的输入对为权威 — 改起止重算时长,
+                    // 改时长反推结束时间; 三者都允许填写
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        TimePickerField(
+                            value = block.startTime,
+                            onValueChange = { v ->
+                                block.startTime = v
+                                block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
+                            },
+                            label = stringResource(R.string.start_time),
+                            modifier = Modifier.weight(1f)
+                        )
+                        TimePickerField(
+                            value = block.endTime,
+                            onValueChange = { v ->
+                                block.endTime = v
+                                block.durationText = minutesBetween(block.startTime, block.endTime)?.toString() ?: ""
+                            },
+                            label = stringResource(R.string.end_time),
+                            modifier = Modifier.weight(1f)
+                        )
+                    }
+                    NumberField(
+                        label = stringResource(R.string.irregular_duration_label),
+                        value = block.durationText.toIntOrNull() ?: 0,
+                        min = 1,
+                        max = 24 * 60,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = fieldShape,
+                        colors = fieldColors
+                    ) { mins ->
+                        if (mins > 0) {
+                            block.durationText = mins.toString()
+                            parseHm(block.startTime)?.let { s ->
+                                val end = s.plusMinutes(mins.toLong())
+                                block.endTime = end.toString()
+                            }
+                            val diff = minutesBetween(block.startTime, block.endTime)
+                            if (diff != null && diff != mins) {
+                                // plusMinutes 跨午夜会把 end 翻到次日, 回退清空交由校验报错
+                                block.endTime = ""
+                                block.durationText = ""
+                            }
+                        }
+                    }
                 }
             }
         }

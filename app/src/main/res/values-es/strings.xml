@@ -652,6 +652,8 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="error_unknown">Error desconocido</string>
     <string name="error_no_version_found">No se encontró versión en sitio principal ni espejo</string>
     <string name="error_empty_download">El archivo descargado está vacío</string>
+    <string name="irregular_options_section">Opciones avanzadas</string>
+    <string name="irregular_options_section_sub">Huecos de borde / horarios personalizados para casos especiales; no hace falta expandirlos en cursos normales</string>
     <string name="edge_node_range">Periodo %1$d %2$s – %3$s</string>
     <string name="irregular_node_switch">Franja no estándar</string>
     <string name="irregular_node_switch_sub">Enlaza a un hueco fuera de la cuadrícula estándar (periodo 0 / -1 / N+1)</string>
