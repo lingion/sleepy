@@ -54,6 +54,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwProtocol
 import com.lingion.sleepy.data.jw.JwSchoolInfo
+import com.lingion.sleepy.data.jw.SchoolDomainMatch
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.PinyinMatcher
@@ -242,11 +243,17 @@ fun SchoolSelectScreen(
             }
 
             if (isUrl) {
+                // issue #25: 输入 URL 的注册域若与目录条目同域, 直接映射到目录条目
+                // (拿权威教务 URL + 协议 type), 而不是建 type=null 的自定义条目。
+                val matchedSchool = remember(query, schools) {
+                    SchoolDomainMatch.matchSchool(normalizeUrl(query.trim()), schools)
+                }
                 UrlDirectRow(
                     url = query.trim(),
                     protocolType = urlProtocol,
+                    matchedSchool = matchedSchool,
                     onClick = {
-                        val school = JwSchoolInfo(
+                        val school = matchedSchool ?: JwSchoolInfo(
                             sortKey = "",
                             name = "自定义教务",
                             url = normalizeUrl(query.trim()),
@@ -498,7 +505,7 @@ private fun SchoolStatusBadge(school: JwSchoolInfo) {
 }
 
 @Composable
-private fun UrlDirectRow(url: String, protocolType: String?, onClick: () -> Unit) {
+private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSchoolInfo?, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     Row(
         modifier = Modifier
@@ -535,14 +542,19 @@ private fun UrlDirectRow(url: String, protocolType: String?, onClick: () -> Unit
                 maxLines = 1
             )
             val protoName = JwProtocol.displayName(if (protocolType.isNullOrBlank()) "" else protocolType)
-            if (protocolType != null) {
-                Text(
+            when {
+                // issue #25: 域名映射命中目录条目时, 显示学校名, 比协议名更可确认
+                matchedSchool != null -> Text(
+                    text = stringResource(R.string.url_match_school, matchedSchool.name),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.primary
+                )
+                protocolType != null -> Text(
                     text = "${stringResource(R.string.url_detected)} $protoName",
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.primary
                 )
-            } else {
-                Text(
+                else -> Text(
                     text = stringResource(R.string.url_auto_detect),
                     style = MaterialTheme.typography.labelSmall,
                     color = colors.onSurfaceVariant

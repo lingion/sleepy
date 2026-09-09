@@ -380,6 +380,7 @@
     <string name="url_direct_login">この URL でログイン</string>
     <string name="url_detected">検出：</string>
     <string name="url_auto_detect">プロトコルを自動検出</string>
+    <string name="url_match_school">一致した学校：%s</string>
 
     <!-- Course Detail -->
     <string name="course_week_range">%1$s (%2$d-%3$d週)</string>
