@@ -381,6 +381,16 @@ private fun JwWebView(
                         val allowed = SslBypassRegistry.isAllowed(host, schoolHost)
                         if (allowed) handler.proceed() else handler.cancel()
                     }
+                    // UCAS (#18): sep.ucas.ac.cn 的 filter 对任何带 X-Requested-With
+                    // 头的请求返回 401 JSON, 而 Android WebView 每个请求都强制带
+                    // <包名> 作该头 (公开 API 无法移除) → 点「请重新登录」直接渲染
+                    // 401 JSON 而非跳 SEP 登录页。仅此域剥离该头, 细节见
+                    // SepXrwStripInterceptor。
+                    override fun shouldInterceptRequest(
+                        view: WebView,
+                        request: android.webkit.WebResourceRequest
+                    ): android.webkit.WebResourceResponse? =
+                        SepXrwStripInterceptor.intercept(request, view.settings.userAgentString)
                     override fun onPageFinished(view: WebView?, url: String?) {
                         Log.d("JwWebView", "onPageFinished url=$url")
                     }
