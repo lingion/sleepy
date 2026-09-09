@@ -134,25 +134,35 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          */
         fun configureTodayNav(
             context: Context, views: android.widget.RemoteViews,
-            widgetId: Int, receiverClass: Class<*>, data: WidgetData
+            widgetId: Int, receiverClass: Class<*>, data: WidgetData,
+            wDp: Int = 0
         ) {
             // 顶栏背景 — overflow 路径挡住条带上滑内容; 颜色与卡面 bitmap 同一 scheme
             val colors = WidgetBitmapRenderers.todayNavHeaderColors(context, data)
             views.setInt(com.lingion.sleepy.R.id.widget_today_header, "setBackgroundColor", colors.bg)
             // 标题 — 「M/D · 周X」恒显日期 (用户定稿: 两种状态格式统一)
+            val titleText = navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context))
             views.setTextViewText(
                 com.lingion.sleepy.R.id.widget_today_nav_title,
-                navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context))
+                titleText
             )
             views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_title, colors.title)
             views.setTextViewTextSize(
                 com.lingion.sleepy.R.id.widget_today_nav_title,
                 TypedValue.COMPLEX_UNIT_DIP, 13f
             )
-            // 「回到今天」 — 仅导航态显示, 纯文本居两钮正中 (用户规格)
+            // 「回到今天」vs「今天」 — 运行时测量当前 widget 宽度下"四字 + 标题 + 按钮 + 间隔 + padding"
+            //   是否装得下, 装不下用「今天」两字让 nav_next 不被挤成单行巨钮 (issue: 宽度 ≤ 2 列)。
+            //   阈值不硬编码 dp 数: 标题按实际字符长度测量, "回到今天"/"今天" 都按当前
+            //   textSize/bold 真实度量 — widget 越窄自动越早切换。
+            val navTodayText = if (wDp > 0 && fitsNavTodayFourChar(context, titleText, wDp)) {
+                context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today)
+            } else {
+                context.getString(com.lingion.sleepy.R.string.today_nav_today_short)
+            }
             views.setTextViewText(
                 com.lingion.sleepy.R.id.widget_today_nav_today,
-                context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today)
+                navTodayText
             )
             views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_today, colors.action)
             views.setTextViewTextSize(
@@ -195,6 +205,61 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             "${data.dateLabel} · $dayName"
 
         /**
+         * 当前 widget 宽度下, 顶栏装得下"回到今天"四字吗 — 装不下用"今天"两字,
+         * 避免 nav_next 被 LinearLayout 挤到下面单独成行(launcher 列宽 ≤ 2 时复现)。
+         *
+         * 顶栏 LinearLayout 横向累加(单位 dp):
+         *   padStart 10 + titleText(实际) + marginStart 4 + nav_prev 40 + spacer 0(weight=1,可压到0)
+         *   + nav_today text + marginStart 6 + marginEnd 6 + spacer 0(weight=1) + nav_next 40 + padEnd 10
+         * spacer 是 weight=1 弹性项, 剩余空间不够时压缩到 0dp — 因此只要"标题 + 两钮 + 今日 + margin
+         * + padding" 总和 ≤ widget 宽, LinearLayout 就能正常排(两个 spacer 平分剩余空间)。
+         * 反之总和 > widget 宽, nav_next 会被外推成第二行的巨 view。
+         *
+         * 阈值不硬编码: 标题按 navTitle 实际字符长度用 Paint measureText 真实度量,
+         * "回到今天"/"今天" 按当前 11sp textStyle bold 真实度量。窄宽 / 不同密度 / 不同 locale
+         * 下都自动按真实字符宽判定 — widget 越窄越早切换, 不分档适配。
+         *
+         * 纯函数 + resolver 注入: Paint 与 string resolver 由调用方提供, 单测可 JVM 断言
+         * (true/false 边界, 不依赖 Android framework)。
+         */
+        internal fun fitsNavTodayFourChar(
+            density: Float, wDp: Int, titleText: String,
+            titlePaint: android.graphics.Paint, navTodayPaint: android.graphics.Paint
+        ): Boolean {
+            if (wDp <= 0) return true  // 未知宽 → 走四字安全路径
+            // 文本宽转 dp: Paint 默认返回 px, 除以 density
+            val titleW = titlePaint.measureText(titleText) / density
+            // "回到今天" 始终是四字中文, hardcode 字符串字面量 measureText
+            val backToTodayW = navTodayPaint.measureText("回到今天") / density
+            // 累加: padStart + title + marginStart + nav_prev + nav_today(margin+text) + nav_next + padEnd
+            // spacer(weight=1) 可压到 0 → 不计入"最小必要宽度"
+            val requiredDp = 10f + titleW + 4f + 40f + (6f + backToTodayW + 6f) + 40f + 10f
+            return requiredDp <= wDp.toFloat()
+        }
+
+        /** Android Context 入口 — 解析 resource / 构造 Paint 注入到纯函数。 */
+        private fun fitsNavTodayFourChar(
+            context: Context, titleText: String, wDp: Int
+        ): Boolean {
+            val density = context.resources.displayMetrics.density
+            val titlePaint = android.graphics.Paint().apply {
+                isAntiAlias = true
+                textSize = 13f * density  // nav_title 是 13sp
+                typeface = android.graphics.Typeface.create(
+                    android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD
+                )
+            }
+            val navTodayPaint = android.graphics.Paint().apply {
+                isAntiAlias = true
+                textSize = 11f * density  // nav_today 是 11sp
+                typeface = android.graphics.Typeface.create(
+                    android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD
+                )
+            }
+            return fitsNavTodayFourChar(density, wDp, titleText, titlePaint, navTodayPaint)
+        }
+
+        /**
          * 今日课程推送管线(静态/可滚动闸门) — 网格小最小档与今日课程·小共用,
          * 保证"变成今日课程那个小组件的样子"像素级同源(同一渲染器+同一滚动条带工厂)。
          * 注意 Today 小变体在这里等效直通(REGULAR 也走这条闸), 与改动前行为一致。
@@ -216,7 +281,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
             val navZones: ((android.widget.RemoteViews) -> Unit)? = if (navEnabled) {
                 val rc = receiverClass!!
-                { views -> configureTodayNav(context, views, id, rc, data) }
+                { views -> configureTodayNav(context, views, id, rc, data, wDp) }
             } else null
             if (!navEnabled) {
                 // WeekGrid 最小档 — 改动前行为逐字节一致 (无导航, 无按钮条)
@@ -255,9 +320,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
                 )
                 views.setOnClickPendingIntent(com.lingion.sleepy.R.id.widget_bitmap, tap)
-                configureTodayNav(context, views, id, receiverClass!!, data)
+                configureTodayNav(context, views, id, receiverClass!!, data, wDp)
                 awm.updateAppWidget(id, views)
-                Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH")
+                Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH todayLabel=${if (fitsNavTodayFourChar(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), wDp)) "back" else "short"}")
             } else {
                 // Today 系 overflow — 壳+条带(emptyHeader 同源) + 真实视图顶栏
                 // (不透明, 挡住条带上滑内容; 条带滚动位 0 与静态渲染坐标一致)
