@@ -1,0 +1,11 @@
+{
+  "date": "2026-09-09",
+  "school": "hebzyhj",
+  "search_matrix": {
+    "executed": false,
+    "reason": "SOP §11 edge case: 协议已由学生采集包 100% 实锤 (serverconfig.json title/schoolCode + 强智字段族), 非协议不明场景; 检索矩阵用于协议不明时找参考实现, 本案无此需求",
+    "note": "qz 系已有 6 个 parser 在册 (qz/qz_crazy/qz_br/qz_with_node/qz_ieas/qz_old), 强智移动端形态无既有 parser 可复用 → 新建 TYPE_QZ_APP"
+  },
+  "candidates": [],
+  "conclusion": "0 候选: 无外部仓库触达 → 0 致谢 (SOP Step 5.5 空集), 无跨仓派单"
+}

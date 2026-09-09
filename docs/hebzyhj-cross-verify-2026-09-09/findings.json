@@ -1,0 +1,42 @@
+{
+  "date": "2026-09-09",
+  "school": "hebzyhj 河北资源环境职业技术学院",
+  "host": "jwpt.hebzyhj.edu.cn:1233",
+  "evidence": {
+    "package": "sleepy-adapt-0907-120917.zip (sha256 db503b49690c217f775447c33f246318e302efa85ebc44961c8fbcf36c03ef90)",
+    "files": 61,
+    "identity": "dist_serverconfig.json: title=河北资源环境职业技术学院, schoolCode=50139",
+    "api_prefix": "/njwhd"
+  },
+  "protocol": {
+    "family": "强智移动教务 SPA (qzdatasoft mobile)",
+    "auth": "sessionStorage.Token (JWT) → 请求头 token: <JWT>",
+    "endpoint": "POST {ApiUrl}/student/curriculum?week=&kbjcmsid= → 一次性全学期",
+    "envelope": "{code, Msg, data:[{date:[7天], courses:[…]}], needClassName, needClassRoomNub}",
+    "fields": {
+      "classTime": "WDDSS EE 编码: 首位=星期 1-7, 后 4 位=起止节各 2 位补零 ('10304'=周一3-4节)",
+      "classWeek": "区间+单周混合 '1-4,6-19' (带洞)",
+      "classWeekDetails": "逗号位图串 ',1,2,3,…' (回退源)",
+      "room": "classroomNub (完整房号 'Z5-117', 非数字房号 'Z微机室（二）A102' 亦存在)",
+      "class_name": "ktmc ('2025级市场营销专业2班', needClassName=1 时显示用, 不消费)"
+    },
+    "expired_shape": "{\"code\":\"401\",\"Msg\":\"非法访问：/student/curriculum\"}"
+  },
+  "ingestion_design": {
+    "method": "WebView 登录 SPA 后注入 QZ_APP_FETCH_JS",
+    "steps": [
+      "GET serverconfig.json (相对) → catch 回退 /dist/serverconfig.json (免鉴权静态)",
+      "读 cfg.ApiUrl (去尾斜杠), 禁硬编码 /njwhd",
+      "sessionStorage.Token → POST {ApiUrl}/student/curriculum?week=&kbjcmsid= header token",
+      "code=='401' → 报'登录已过期'; 否则 {ok:true, data:text} 桥回 Kotlin"
+    ],
+    "js_invariant": "JS 只做 fetch + 传输层 status 路由; 协议字段解码唯一落点 = JwQzAppParser (跨语言 invariant)"
+  },
+  "parser_design": {
+    "type": "qz_app (priority 141, 介于 qz_ieas 140 与 ucas 142 之间)",
+    "expansion": "10 行课程行 → 20 JwCourse (classWeek 带洞 → 拆连续段, 非 step-2 全部 type=0)",
+    "fallback": "classWeek 空时回退 classWeekDetails 位图串",
+    "fixture": "app/src/test/resources/jw/fixtures/qz_app/curriculum.sample.json (去敏, PII 已清)"
+  },
+  "pii_boundary": "学生姓名/学号/JWT 只存 capture/ (gitignored); fixture 为课表体, PII 扫描确认无姓名/学号/token"
+}
