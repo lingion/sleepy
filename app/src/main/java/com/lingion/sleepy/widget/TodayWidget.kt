@@ -38,7 +38,15 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
     open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
-        pushTodayData(context, awm, id, variantHint, loadDataSync(context, id), this::class.java)
+        // 世代号: resize/更新连发时, 后台渲染任务乱序完成会让旧尺寸结果覆盖新内容
+        // (覆盖后无后续更新纠正 = 永久 stale)。开渲染前 bump, commit 前校验。
+        val gen = WidgetResizeCore.bump(id)
+        try {
+            pushTodayData(context, awm, id, variantHint, loadDataSync(context, id), this::class.java, gen)
+        } catch (e: Throwable) {
+            // 渲染失败保留上一份有效 RemoteViews (launcher 端继续显示旧内容), 只记日志
+            Log.e(TAG, "push render failed id=$id", e)
+        }
     }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
@@ -69,6 +77,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         for (id in appWidgetIds) {
             WidgetBindingStore.remove(context, id)
             TodayDateNavStore.remove(context, id)
+            WidgetResizeCore.remove(id)
         }
     }
 
@@ -215,48 +224,46 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * + padding" 总和 ≤ widget 宽, LinearLayout 就能正常排(两个 spacer 平分剩余空间)。
          * 反之总和 > widget 宽, nav_next 会被外推成第二行的巨 view。
          *
-         * 阈值不硬编码: 标题按 navTitle 实际字符长度用 Paint measureText 真实度量,
-         * "回到今天"/"今天" 按当前 11sp textStyle bold 真实度量。窄宽 / 不同密度 / 不同 locale
-         * 下都自动按真实字符宽判定 — widget 越窄越早切换, 不分档适配。
-         *
-         * 纯函数 + resolver 注入: Paint 与 string resolver 由调用方提供, 单测可 JVM 断言
-         * (true/false 边界, 不依赖 Android framework)。
+         * 阈值不硬编码: 标题按 navTitle 实际字符长度测量 — 测量闭包由调用方注入,
+         * Android 入口用真实 Paint; sp 文本跟随系统字体缩放 (fontScale), Paint 构造
+         * textSize 必须乘 fontScale, 否则大字体设备实测比测量宽 → 漏判 → nav_next 再被挤。
+         * 纯函数 + 测量闭包注入: 不依赖 Android framework, 单测可 JVM 断言边界。
          */
         internal fun fitsNavTodayFourChar(
             density: Float, wDp: Int, titleText: String,
-            titlePaint: android.graphics.Paint, navTodayPaint: android.graphics.Paint
+            titleMeasure: (String) -> Float, navTodayMeasure: (String) -> Float
         ): Boolean {
             if (wDp <= 0) return true  // 未知宽 → 走四字安全路径
-            // 文本宽转 dp: Paint 默认返回 px, 除以 density
-            val titleW = titlePaint.measureText(titleText) / density
-            // "回到今天" 始终是四字中文, hardcode 字符串字面量 measureText
-            val backToTodayW = navTodayPaint.measureText("回到今天") / density
+            // 文本宽转 dp: measure 返回 px, 除以 density
+            val titleW = titleMeasure(titleText) / density
+            // "回到今天" 始终是四字, 用实际资源串外的字面量度量 (与渲染同宽)
+            val backToTodayW = navTodayMeasure("回到今天") / density
             // 累加: padStart + title + marginStart + nav_prev + nav_today(margin+text) + nav_next + padEnd
             // spacer(weight=1) 可压到 0 → 不计入"最小必要宽度"
             val requiredDp = 10f + titleW + 4f + 40f + (6f + backToTodayW + 6f) + 40f + 10f
             return requiredDp <= wDp.toFloat()
         }
 
-        /** Android Context 入口 — 解析 resource / 构造 Paint 注入到纯函数。 */
+        /** Android Context 入口 — 构造真实 Paint (含 fontScale) 注入纯函数。 */
         private fun fitsNavTodayFourChar(
             context: Context, titleText: String, wDp: Int
         ): Boolean {
             val density = context.resources.displayMetrics.density
-            val titlePaint = android.graphics.Paint().apply {
+            val fontScale = context.resources.configuration.fontScale
+            fun scaledPaint(sp: Float) = android.graphics.Paint().apply {
                 isAntiAlias = true
-                textSize = 13f * density  // nav_title 是 13sp
+                textSize = sp * density * fontScale  // sp = dp × fontScale
                 typeface = android.graphics.Typeface.create(
                     android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD
                 )
             }
-            val navTodayPaint = android.graphics.Paint().apply {
-                isAntiAlias = true
-                textSize = 11f * density  // nav_today 是 11sp
-                typeface = android.graphics.Typeface.create(
-                    android.graphics.Typeface.DEFAULT, android.graphics.Typeface.BOLD
-                )
-            }
-            return fitsNavTodayFourChar(density, wDp, titleText, titlePaint, navTodayPaint)
+            val titlePaint = scaledPaint(13f)   // nav_title 是 13sp
+            val navTodayPaint = scaledPaint(11f)  // nav_today 是 11sp
+            return fitsNavTodayFourChar(
+                density, wDp, titleText,
+                titleMeasure = titlePaint::measureText,
+                navTodayMeasure = navTodayPaint::measureText
+            )
         }
 
         /**
@@ -272,7 +279,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         fun pushTodayData(
             context: Context, awm: AppWidgetManager, id: Int,
             variant: WidgetVariant, data: WidgetData,
-            receiverClass: Class<*>? = null
+            receiverClass: Class<*>? = null,
+            pushGen: Long = 0L
         ) {
             val navEnabled = receiverClass != null &&
                 TodayWidgetReceiver::class.java.isAssignableFrom(receiverClass)
@@ -292,7 +300,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         renderBitmap = { d, w, h ->
                             WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
                         },
-                        layoutRes = com.lingion.sleepy.R.layout.widget_bitmap_container
+                        layoutRes = com.lingion.sleepy.R.layout.widget_bitmap_container,
+                        pushGen = pushGen
                     )
                 } else {
                     val shell = WidgetBitmapRenderers.renderToday(
@@ -302,7 +311,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         context, awm, id, TAG,
                         layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
                         shellBitmap = shell,
-                        scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY
+                        scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
+                        pushGen = pushGen
                     )
                 }
             } else if (contentH <= hDp) {
@@ -321,6 +331,10 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 )
                 views.setOnClickPendingIntent(com.lingion.sleepy.R.id.widget_bitmap, tap)
                 configureTodayNav(context, views, id, receiverClass!!, data, wDp)
+                if (WidgetResizeCore.isStale(id, pushGen)) {
+                    Log.d(TAG, "skip stale static push id=$id gen=$pushGen")
+                    return
+                }
                 awm.updateAppWidget(id, views)
                 Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH todayLabel=${if (fitsNavTodayFourChar(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), wDp)) "back" else "short"}")
             } else {
@@ -335,7 +349,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     shellBitmap = shell,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
                     configureViews = navZones,
-                    stripHeaderless = true
+                    stripHeaderless = true,
+                    pushGen = pushGen
                 )
             }
         }

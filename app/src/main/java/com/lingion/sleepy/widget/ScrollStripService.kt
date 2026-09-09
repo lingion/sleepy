@@ -62,6 +62,15 @@ class ScrollStripService : RemoteViewsService() {
             val density = context.resources.displayMetrics.density
             val stripPx = (STRIP_DP * density).toInt()
 
+            // 世代闸第一道: 读尺寸前快照。渲染+切条带期间又落了新 resize/更新触发
+            // → 本次重算的是旧尺寸条带, 直接丢弃 (保留旧 strips 继续显示, 新触发会再刷)。
+            // gen 递增由 TodayWidgetReceiver.push 等 provider 侧触发点驱动; 当前世代为 0
+            // (进程重启后 factory 先于 provider 触发) 也放行 — provider 侧 push 会再刷。
+            val genBefore = WidgetResizeCore.current(widgetId)
+            if (genBefore > 0 && WidgetResizeCore.isStale(widgetId, genBefore)) {
+                return
+            }
+
             // 原渲染器 + 内容全展开高度 → 渲染高度向上取整到条带整数倍(末条带不缺角)
             val contentHdp: Float
             val full: Bitmap
@@ -91,9 +100,16 @@ class ScrollStripService : RemoteViewsService() {
 
             // 横切条带 — 共享像素缓冲, 不复制
             val count = full.height / stripPx
-            strips = (0 until count).map { i ->
+            val newStrips = (0 until count).map { i ->
                 Bitmap.createBitmap(full, 0, i * stripPx, full.width, stripPx)
             }
+            // 世代闸第二道: 渲染+切条带是重活, commit 前再验一次 — 期间落了新触发就丢弃
+            // (旧 strips 原地保留 = launcher 端 ListView 继续显示上一份完整条带, 不闪空)。
+            if (WidgetResizeCore.isStale(widgetId, genBefore)) {
+                android.util.Log.d("ScrollStrip", "skip stale strips id=$widgetId gen=$genBefore")
+                return
+            }
+            strips = newStrips
             android.util.Log.d("ScrollStrip",
                 "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${full.height / density}dp strips=$count")
         }

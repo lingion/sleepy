@@ -239,8 +239,31 @@ class TodayDateNavWiringTest {
     }
 
     @Test
-    fun `WeekGrid minimum variant reuses pushTodayData without nav zones (scope guard)`() {
-        // issue #24 范围铁律: 日期导航只在每日小组件。WeekGrid 最小档复用 pushTodayData
+    fun `push commit points guard against stale generations`() {
+        // resize 稳定性: 渲染在后台协程, resize 拖拽期间系统连发 OPTIONS_CHANGED。
+        // 旧尺寸任务若后完成会覆盖新内容且无人纠正 → commit 前必须校验世代号。
+        val helper = widgetSource("RemoteViewsWidgetHelper.kt").readText()
+        assertTrue("pushScrollable commit 前须校验世代号 (WidgetResizeCore.isStale)",
+            helper.substringAfter("fun pushScrollable").contains("WidgetResizeCore.isStale"))
+        assertTrue("renderAndPush commit 前也须校验 (WeekGrid 最小档 overflow 同样受益)",
+            helper.substringAfter("fun renderAndPush").contains("WidgetResizeCore.isStale"))
+        val today = widgetSource("TodayWidget.kt").readText()
+        assertTrue("Today receiver 三个触发点 (onUpdate/optionsChanged/nav) 须先 bump 世代",
+            today.contains("WidgetResizeCore.bump"))
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        assertTrue("条带工厂 onDataSetChanged 也须按世代丢弃过期重算",
+            svc.contains("WidgetResizeCore"))
+    }
+
+    @Test
+    fun `onDeleted clears resize generation for widget id reuse`() {
+        val today = widgetSource("TodayWidget.kt").readText()
+        assertTrue("onDeleted 必须清世代号 (widget id 被系统复用后旧世代不得干扰新实例)",
+            today.contains("WidgetResizeCore.remove"))
+    }
+
+    @Test
+    fun `WeekGrid minimum variant reuses pushTodayData without nav zones (scope guard)`() {        // issue #24 范围铁律: 日期导航只在每日小组件。WeekGrid 最小档复用 pushTodayData
         // 管线, 但不得获得导航布局/点击区 — 守卫 WeekGrid 侧零沾染。
         val grid = widgetSource("WeekGridWidgetProvider.kt").readText()
         assertFalse("WeekGrid 不得引用 widget_today_nav_static",

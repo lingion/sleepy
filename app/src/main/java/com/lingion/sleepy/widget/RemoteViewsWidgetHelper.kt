@@ -26,8 +26,10 @@ object RemoteViewsWidgetHelper {
 
     /**
      * 从 AppWidgetOptions 算出 widget 当前真实尺寸(dp)。
-     * API31+: OPTION_APPWIDGET_SIZES 取最大 SizeF(真实当前尺寸)。
-     * 回退: MIN_W × MAX_H 近似默认窄高容器。
+     * API31+: OPTION_APPWIDGET_SIZES 定向选择 (纯函数见 [WidgetSizeCore.pickSizeDp] —
+     * 横竖两份时面积最大 ≠ 当前方向, 旧 maxByOrNull 面积法在横向面积更大时选错方向)。
+     * 回退: MIN_W × MIN_H 同源边界 (API29/30 javadoc: MIN=当前下界; 旧 MIN_W×MAX_H
+     * 混拼上下界会把 1 行 widget 画成 5 行长图)。
      */
     fun computeSizeDp(opts: android.os.Bundle): Pair<Int, Int> {
         var wDp = 0
@@ -37,18 +39,24 @@ object RemoteViewsWidgetHelper {
             //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java
-            )?.maxByOrNull { it.width * it.height }
-                ?.let { wDp = it.width.toInt(); hDp = it.height.toInt() }
+            )?.map { it.width to it.height }
+                ?.let { picked -> WidgetSizeCore.pickSizeDp(picked)?.let { wDp = it.first.toInt(); hDp = it.second.toInt() } }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // API 31/32: OPTION_APPWIDGET_SIZES 已存在但只有无类型重载(开发期过时警告, 运行时安全)
             @Suppress("DEPRECATION", "UncheckedCast")
             val legacy = opts.getParcelableArrayList<SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES)
-            legacy?.maxByOrNull { it.width * it.height }
-                ?.let { wDp = it.width.toInt(); hDp = it.height.toInt() }
+            legacy?.map { it.width to it.height }
+                ?.let { picked -> WidgetSizeCore.pickSizeDp(picked)?.let { wDp = it.first.toInt(); hDp = it.second.toInt() } }
         }
         if (wDp <= 0 || hDp <= 0) {
-            wDp = (opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH).takeIf { it > 0 } ?: 250)
-            hDp = (opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT).takeIf { it > 0 } ?: 180)
+            val fb = WidgetSizeCore.fallbackSizeDp(
+                opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH),
+                opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT),
+                opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH),
+                opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
+            )
+            wDp = fb.first
+            hDp = fb.second
         }
         return wDp to hDp
     }
@@ -67,7 +75,8 @@ object RemoteViewsWidgetHelper {
         loadData: () -> T,
         renderBitmap: (data: T, wDp: Float, hDp: Float) -> Bitmap,
         layoutRes: Int = R.layout.widget_bitmap_container,
-        configureViews: ((RemoteViews) -> Unit)? = null
+        configureViews: ((RemoteViews) -> Unit)? = null,
+        pushGen: Long = 0L
     ) {
         val data = loadData()
         val opts = awm.getAppWidgetOptions(widgetId)
@@ -86,6 +95,12 @@ object RemoteViewsWidgetHelper {
         )
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
         configureViews?.invoke(views)
+        // 世代号校验: pushGen>0 时 (由 receiver bump 后传入), 渲染期间落了更新的触发
+        // → 本结果作废 (新触发的任务会提交最新状态); 0 = 不过关, 既有调用方零改动。
+        if (pushGen > 0 && WidgetResizeCore.isStale(widgetId, pushGen)) {
+            Log.d(tag, "renderAndPush skip stale id=$widgetId gen=$pushGen")
+            return
+        }
         awm.updateAppWidget(widgetId, views)
         // NOTE: 不能 bmp.recycle()!
         // RemoteViews.setImageViewBitmap 把 bitmap 放进 RemoteViews.mBitmapCache,
@@ -121,7 +136,8 @@ object RemoteViewsWidgetHelper {
         shellBitmap: Bitmap,
         scopeExtra: String,
         configureViews: ((RemoteViews) -> Unit)? = null,
-        stripHeaderless: Boolean = false
+        stripHeaderless: Boolean = false,
+        pushGen: Long = 0L
     ) {
         val views = RemoteViews(context.packageName, layoutRes)
         views.setImageViewBitmap(R.id.widget_shell, shellBitmap)
@@ -142,6 +158,15 @@ object RemoteViewsWidgetHelper {
         views.setPendingIntentTemplate(R.id.widget_strip_list, template)
 
         configureViews?.invoke(views)
+        // 世代号校验 (同 renderAndPush): 壳图按触发时的旧尺寸画, 尺寸已变则丢弃,
+        // 由最新触发的 push 提交新壳 + 触发新条带 — 防 resize 拖拽期间旧结果覆盖新结果。
+        if (pushGen > 0 && WidgetResizeCore.isStale(widgetId, pushGen)) {
+            Log.d(tag, "pushScrollable skip stale id=$widgetId gen=$pushGen")
+            return
+        }
+        // updateAppWidget 与 notifyAppWidgetViewDataChanged 是两次独立 binder 调用,
+        // 中间 launcher 可能拿到"新壳+旧条带"。顺序不可原子化, 但把 notify 紧跟 update
+        // 且都在世代校验后执行, 把错配窗口压到最小 (launcher 端同帧应用时视觉无感)。
         awm.updateAppWidget(widgetId, views)
         awm.notifyAppWidgetViewDataChanged(widgetId, R.id.widget_strip_list)
         // 同样不能 recycle: 壳图经 setImageViewBitmap 持有, 由 RemoteViews.mBitmapCache 引用,

@@ -90,6 +90,20 @@ class TodayDateNavHeaderWiringTest {
     }
 
     @Test
+    fun `nav fit measurement honors font scale`() {
+        // sp 文本跟随系统字体缩放: Paint textSize 必须乘 fontScale,
+        // 否则大字体设备 (fontScale>1 常见) 实测文本比测量宽 → fitsNavTodayFourChar
+        // 漏判 → nav_next 又被挤成第二行巨钮。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("private fun fitsNavTodayFourChar(\n            context: Context")
+            .ifEmpty { src.substringAfter("context: Context, titleText: String, wDp: Int") }
+        assertTrue("nav fit Android 入口必须读 configuration.fontScale",
+            body.contains("fontScale"))
+        assertTrue("Paint textSize 须 sp*density*fontScale 构造",
+            body.contains("fontScale"))
+    }
+
+    @Test
     fun `renderer nav triangle is low-contrast and glyph-free`() {
         val src = widgetSource("WidgetBitmapRenderers.kt").readText()
         val body = src.substringAfter("fun renderNavTriangle")
