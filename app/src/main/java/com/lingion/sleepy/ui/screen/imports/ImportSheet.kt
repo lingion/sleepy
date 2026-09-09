@@ -73,6 +73,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
@@ -1114,6 +1115,18 @@ private fun ImportConfirmDialog(
     var rows by remember(timeJson) {
         mutableStateOf(TimeTableUtils.parseTimeSlotRows(timeJson))
     }
+    // issue#28 P2: 自动模式状态必须真实持有并回传 — 旧代码没传 smartConfig/
+    // onSmartConfigChange, 落到默认 no-op, "添加课间"点了没有任何反应。
+    // 初值从导入解析出的行播种(节次数+首节开始, 与 EditTableScreen 同规),
+    // 否则切自动模式会瞬间被 08:00/45min 默认覆盖, 用户感知为"自动模式也是坏的"。
+    var smartConfig by remember {
+        mutableStateOf(
+            SmartPeriodConfig(
+                totalPeriods = rows.size.coerceAtLeast(1),
+                startTime = rows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+            )
+        )
+    }
     var errorMsg by remember { mutableStateOf<String?>(null) }
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1162,7 +1175,9 @@ private fun ImportConfirmDialog(
                         onRowsChange = { newRows ->
                             rows = newRows
                             onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(newRows))
-                        }
+                        },
+                        smartConfig = smartConfig,
+                        onSmartConfigChange = { smartConfig = it }
                     )
                 }
             }

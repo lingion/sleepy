@@ -287,6 +287,35 @@ object TimeTableUtils {
     }
 
     /**
+     * issue#28 P3: 作息表变更后的课程节次自适应。
+     *
+     * 节次编号只是旧表绝对时间窗的载体: 取课程首节在旧表的 start 与末节在旧表的
+     * end, 在新表上找与之重叠的节点区间 — 首节 = 第一个 end 晚于课程起点的节,
+     * 末节 = 最后一个 start 早于课程终点的节。旧表缺行(课程锚的节次不存在)或
+     * 新表无任何重叠 → 返回原值(孤儿课保持原节次, 不猜不丢)。
+     */
+    fun remapCourseNodes(
+        startNode: Int,
+        step: Int,
+        oldTimeJson: String,
+        newTimeJson: String
+    ): Pair<Int, Int> {
+        if (startNode < 1 || step < 1) return startNode to step
+        val oldRows = parseTimeSlotRows(oldTimeJson).sortedBy { it.node }
+        val newRows = parseTimeSlotRows(newTimeJson).sortedBy { it.node }
+        val oldStart = oldRows.firstOrNull { it.node == startNode }?.start.orEmpty()
+        val oldEnd = oldRows.firstOrNull { it.node == startNode + step - 1 }?.end.orEmpty()
+        if (oldStart.isBlank() || oldEnd.isBlank()) return startNode to step
+        val firstIdx = newRows.indexOfFirst { it.end > oldStart }
+        if (firstIdx < 0) return startNode to step
+        val lastIdx = newRows.indexOfLast { it.start < oldEnd }
+        if (lastIdx < firstIdx) return startNode to step
+        val firstNode = newRows[firstIdx].node
+        val lastNode = newRows[lastIdx].node
+        return firstNode to (lastNode - firstNode + 1).coerceAtLeast(1)
+    }
+
+    /**
      * 追加一节 (node = maxOfOrNull + 1)，时间留空让用户填。
      */
     fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {

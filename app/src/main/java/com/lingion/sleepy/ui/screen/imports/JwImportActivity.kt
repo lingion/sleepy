@@ -40,6 +40,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.jw.JwCourse
 import com.lingion.sleepy.data.jw.JwImportViewModel
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
@@ -96,6 +97,9 @@ class JwImportActivity : ComponentActivity() {
                 var configStartDate by remember { mutableStateOf("") }
                 var configTimeJson by remember { mutableStateOf("") }
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
+                // issue#28 P2: 自动模式"添加课间"的状态 — 旧代码没传 smartConfig/
+                // onSmartConfigChange, 落到默认 no-op 回调, 点击无效。
+                var configSmartConfig by remember { mutableStateOf(SmartPeriodConfig()) }
                 // 用户可改的导入课表名; 初值 = "教务导入 - {学校名}"; 留空 = 沿用初值
                 var configTableName by remember(parsedSchool) {
                     mutableStateOf(
@@ -165,7 +169,9 @@ class JwImportActivity : ComponentActivity() {
                                         onRowsChange = { newRows ->
                                             configRows = newRows
                                             configTimeJson = TimeTableUtils.buildTimeJsonFromRows(newRows)
-                                        }
+                                        },
+                                        smartConfig = configSmartConfig,
+                                        onSmartConfigChange = { configSmartConfig = it }
                                     )
                                 }
                             },
