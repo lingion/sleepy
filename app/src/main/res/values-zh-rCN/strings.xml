@@ -667,6 +667,8 @@
     <string name="error_unknown">未知错误</string>
     <string name="error_no_version_found">主站和镜像都没找到最新版本</string>
     <string name="error_empty_download">下载文件为空</string>
+    <string name="irregular_options_section">非常规选项</string>
+    <string name="irregular_options_section_sub">边缘槽位 / 自定时间等特殊排课，普通课程无需展开</string>
     <string name="edge_node_range">第 %1$d 节 %2$s – %3$s</string>
     <string name="irregular_node_switch">非常规节次</string>
     <string name="irregular_node_switch_sub">绑定课表边缘槽位（第 0 节 / 第 -1 节 / 第 N+1 节）</string>

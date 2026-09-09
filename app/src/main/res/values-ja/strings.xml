@@ -652,6 +652,8 @@
     <string name="error_unknown">不明なエラー</string>
     <string name="error_no_version_found">本サイトでもミラーでもバージョンが見つかりません</string>
     <string name="error_empty_download">ダウンロードファイルが空です</string>
+    <string name="irregular_options_section">詳細設定</string>
+    <string name="irregular_options_section_sub">端の枠 / 時刻の上書きなど特殊な設定。通常の授業では開く必要なし</string>
     <string name="edge_node_range">%1$d 限 %2$s – %3$s</string>
     <string name="irregular_node_switch">非定期時限</string>
     <string name="irregular_node_switch_sub">標準グリッド外の枠にバインド（0 限 / -1 限 / N+1 限）</string>
