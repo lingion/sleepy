@@ -320,7 +320,10 @@ fun AddCourseScreen(
                     courseName = courseName.trim(),
                     block = block,
                     day = day,
-                    alias = courseAlias.trim()
+                    alias = courseAlias.trim(),
+                    // 用户报障 2026-09-10: ownTime 课落库即反算真实节点 —
+                    // 裸节点消费方(今日页/小组件/详情页)不再拿到表单占位节点
+                    timeJson = effectiveTimeJson
                 )
             }
         }
@@ -756,7 +759,11 @@ internal fun buildCourseEntity(
     courseName: String,
     block: MeetingBlockDraft,
     day: Int,
-    alias: String = ""
+    alias: String = "",
+    // 用户报障 2026-09-10: 落库前把 ownTime 课的占位节点反算成真实节点
+    // (timeToNode), 时间零交集的 ownTime 课对不再共享相同节点区间 —
+    // 裸节点消费方(今日页/小组件/详情页/prune)从此拿到自洽坐标。
+    timeJson: String = ""
 ): CourseEntity {
     // issue#22: color/colorMode 从 block 取;AUTO 模式 color 留空(渲染时按 hash 取)
     val finalColor = when (block.colorModeState) {
@@ -767,6 +774,15 @@ internal fun buildCourseEntity(
     }
     // issue#23 逐卡: 边缘槽位卡 → startNode=槽位号, step 锁 1;
     // 覆盖时间卡 → ownTime=isIrregularTime 且起止为覆盖值 (§5 同值契约)
+    val rawStartNode = if (block.isIrregularNode) block.selectedEdgeNode else block.startNode
+    val rawStep = if (block.isIrregularNode) 1 else block.step
+    // ownTime 反算: 时间可解析且非边缘槽位卡 → 真实节点; 失败/边缘卡保持原值
+    val (finalNode, finalStep) = if (block.isIrregularTime && !block.isIrregularNode && timeJson.isNotBlank()) {
+        TimeTableUtils.timeToNode(block.startTime.trim(), block.endTime.trim(), timeJson)
+            ?: (rawStartNode to rawStep)
+    } else {
+        rawStartNode to rawStep
+    }
     return CourseEntity(
         groupId = groupId,
         tableId = tableId,
@@ -776,8 +792,8 @@ internal fun buildCourseEntity(
         room = block.roomState.trim(),
         note = block.noteState.trim(),
         day = day,
-        startNode = if (block.isIrregularNode) block.selectedEdgeNode else block.startNode,
-        step = if (block.isIrregularNode) 1 else block.step,
+        startNode = finalNode,
+        step = finalStep,
         startWeek = block.startWeek,
         endWeek = block.endWeek,
         type = block.weekType,

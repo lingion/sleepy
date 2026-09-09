@@ -401,7 +401,7 @@ object WidgetBitmapRenderers {
         val rowGap = 10f * density  // 课程胶囊间距放大(用户反馈太紧凑)
         val rowW = w - pad * 2
 
-        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
+        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
         val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
         laneRows.forEach { row ->
             if (row.laneCount == 1) {
@@ -461,7 +461,7 @@ object WidgetBitmapRenderers {
         val rowH = 38f
         val rowGap = 10f
         val stackGap = 3f
-        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
+        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
         for (row in laneRows) {
             if (row.laneCount == 1) {
                 h += rowH + rowGap
@@ -611,7 +611,7 @@ object WidgetBitmapRenderers {
         val colH = data.days.maxOf { day ->
             if (day.courses.isEmpty()) return@maxOf 20f + 16f
             var cy = 20f
-            val rows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(day.courses)
+            val rows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(day.courses, day.timeJson)
             rows.forEach { row ->
                 if (row.laneCount == 1) {
                     cy += 44f + 8f
@@ -1237,7 +1237,7 @@ object WidgetBitmapRenderers {
                 val stackGap = 3f * density
                 val laneGap = 5f * density
                 val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000
-                val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(day.courses)
+                val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(day.courses, day.timeJson)
                 laneRows.forEach { row ->
                     if (row.laneCount == 1) {
                         drawCourse(canvas, p, row.courses[0], day.timeJson, colX, cy, colW, maxRowH, s, density,
