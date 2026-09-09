@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 可滚动 Today + 日期导航点击区 (issue #24 Feature2)。
+     结构同 widget_scroll_today(壳图+条带), 顶部叠三个透明点击区:
+     nav_today(全宽条带)=回到今天, prev/next(角落 36×30dp)=前/后一天。
+     点击区在最上层 → 条带滚动与条目点击不受顶部条带影响。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_scroll_clip"
+    android:outlineProvider="background"
+    android:clipToOutline="true"
+    tools:targetApi="31">
+    <ImageView
+        android:id="@+id/widget_shell"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="false"
+        android:contentDescription="@string/widget_week_grid_label" />
+    <ListView
+        android:id="@+id/widget_strip_list"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="none"
+        android:cacheColorHint="@android:color/transparent"
+        android:listSelector="@android:color/transparent" />
+    <View
+        android:id="@+id/widget_today_nav_today"
+        android:layout_width="match_parent"
+        android:layout_height="30dp"
+        android:layout_gravity="top"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/today_nav_back_to_today" />
+    <View
+        android:id="@+id/widget_today_nav_prev"
+        android:layout_width="36dp"
+        android:layout_height="30dp"
+        android:layout_gravity="start|top"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/today_nav_prev_day" />
+    <View
+        android:id="@+id/widget_today_nav_next"
+        android:layout_width="36dp"
+        android:layout_height="30dp"
+        android:layout_gravity="end|top"
+        android:background="@android:color/transparent"
+        android:clickable="true"
+        android:contentDescription="@string/today_nav_next_day" />
+</FrameLayout>

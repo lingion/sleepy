@@ -65,7 +65,9 @@ object RemoteViewsWidgetHelper {
         widgetId: Int,
         tag: String,
         loadData: () -> T,
-        renderBitmap: (data: T, wDp: Float, hDp: Float) -> Bitmap
+        renderBitmap: (data: T, wDp: Float, hDp: Float) -> Bitmap,
+        layoutRes: Int = R.layout.widget_bitmap_container,
+        configureViews: ((RemoteViews) -> Unit)? = null
     ) {
         val data = loadData()
         val opts = awm.getAppWidgetOptions(widgetId)
@@ -75,7 +77,7 @@ object RemoteViewsWidgetHelper {
         val hPx = (hDp * density).toInt().coerceAtLeast((150 * density).toInt())
 
         val bmp = renderBitmap(data, wDp.toFloat(), hDp.toFloat())
-        val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
+        val views = RemoteViews(context.packageName, layoutRes)
         views.setImageViewBitmap(R.id.widget_bitmap, bmp)
         val pi = PendingIntent.getActivity(
             context, WidgetRoutes.tapRequestCode(widgetId),
@@ -83,6 +85,7 @@ object RemoteViewsWidgetHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         views.setOnClickPendingIntent(R.id.widget_bitmap, pi)
+        configureViews?.invoke(views)
         awm.updateAppWidget(widgetId, views)
         // NOTE: 不能 bmp.recycle()!
         // RemoteViews.setImageViewBitmap 把 bitmap 放进 RemoteViews.mBitmapCache,
@@ -103,6 +106,8 @@ object RemoteViewsWidgetHelper {
      *
      * @param shellBitmap 壳图 (调用方用原渲染器按 wDp×hDp 渲染)
      * @param layoutRes 可滚动容器布局 (含 widget_shell + widget_strip_list)
+     * @param configureViews 推送前对 RemoteViews 的追加配置钩子(挂导航区 PendingIntent),
+     *        null = 不追加 → 既有调用方零改动
      */
     fun pushScrollable(
         context: Context,
@@ -111,7 +116,8 @@ object RemoteViewsWidgetHelper {
         tag: String,
         layoutRes: Int,
         shellBitmap: Bitmap,
-        scopeExtra: String
+        scopeExtra: String,
+        configureViews: ((RemoteViews) -> Unit)? = null
     ) {
         val views = RemoteViews(context.packageName, layoutRes)
         views.setImageViewBitmap(R.id.widget_shell, shellBitmap)
@@ -130,6 +136,7 @@ object RemoteViewsWidgetHelper {
         )
         views.setPendingIntentTemplate(R.id.widget_strip_list, template)
 
+        configureViews?.invoke(views)
         awm.updateAppWidget(widgetId, views)
         awm.notifyAppWidgetViewDataChanged(widgetId, R.id.widget_strip_list)
         // 同样不能 recycle: 壳图经 setImageViewBitmap 持有, 由 RemoteViews.mBitmapCache 引用,

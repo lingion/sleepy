@@ -201,6 +201,33 @@ object WidgetBitmapRenderers {
         return data.courses.map { CourseDisplayUtil.displayName(it, useAlias) }
     }
 
+    /** 标题行内容三元组 — 渲染与单测共用单一事实来源 (issue #24 Feature2 日期导航)。 */
+    data class TodayHeaderParts(
+        val title: String,
+        val rightText: String?,
+        val rightIsAction: Boolean
+    )
+
+    /**
+     * 标题行内容 (纯 JVM 可断言, resolver 注入抽掉 Context):
+     * 今日态 → 「今天 · 周X」+ 可选右侧日期 (showDate);
+     * 导航态 → 「M/D · 周X」+ 右侧「回到今天」(showDate 不影响右侧, 保可发现性)。
+     */
+    fun todayHeaderParts(
+        data: WidgetData, dayName: String, showDate: Boolean,
+        resolve: (Int) -> String
+    ): TodayHeaderParts {
+        val title = if (data.isToday) "${resolve(R.string.today_today)} · $dayName"
+                    else "${data.dateLabel} · $dayName"
+        return if (!data.isToday) {
+            TodayHeaderParts(title, resolve(R.string.today_nav_back_to_today), true)
+        } else if (showDate) {
+            TodayHeaderParts(title, data.dateLabel, false)
+        } else {
+            TodayHeaderParts(title, null, false)
+        }
+    }
+
     /**
      * Today 紧凑档 — 日期小字(顶) + 状态/首课程名(居中), 纯文本无课程胶囊。
      * 布局常量: compact 档不参与 todayContentHeightDp 滚动条带估算(固定 size 变体), 无需镜像。
@@ -281,21 +308,44 @@ object WidgetBitmapRenderers {
         val pad = 14f * density
         var y = pad
 
-        // 标题行：今天 · 周X  +  日期 (showDate=false 时隐藏右侧日期, 对齐课表页设置)
+        // 标题行 (issue #24 Feature2 日期导航): ‹ › 导航箭头 + 标题 + 右侧槽位。
+        // 今日态: 「今天 · 周X」+ showDate 日期; 导航态: 「M/D · 周X」+「回到今天」。
+        // 箭头与点击区对齐: 左右 36×30dp 透明 View (widget_today_container /
+        // widget_scroll_today_nav), 基线与标题一致 (y+13dp)。
         val ctx = SleepyApp.get()
+        val header = todayHeaderParts(
+            data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate
+        ) { ctx.getString(it) }
+        val titleX = pad + 10f * density          // 左箭头(≈6dp 宽)后留 4dp 间隙
+        val rightX = w - pad - 10f * density      // 右箭头 + 4dp 间隙
+        // 左右导航箭头
+        p.color = s.onSurfaceVariant
+        p.textSize = 16f * density
+        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+        canvas.drawText("‹", pad, y + 13f * density, p)
+        val arrowW = p.measureText("›")
+        canvas.drawText("›", w - pad - arrowW, y + 13f * density, p)
+        // 标题 (右侧槽位存在时按需截断)
         p.color = s.primary
         p.textSize = 13f * density
         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        val titleStr = "${ctx.getString(R.string.today_today)} · ${DateUtils.localizedDay(data.date.dayOfWeek.value, ctx)}"
-        canvas.drawText(titleStr, pad, y + 13f * density, p)
-
-        if (showDate) {
-            p.color = s.onSurfaceVariant
-            p.textSize = 12f * density
-            p.typeface = Typeface.DEFAULT
-            val dateStr = "${data.date.monthValue}/${data.date.dayOfMonth}"
-            val dateWidth = p.measureText(dateStr)
-            canvas.drawText(dateStr, w - pad - dateWidth, y + 13f * density, p)
+        canvas.drawText(
+            ellipsize(p, header.title, (rightX - 4f * density - titleX).coerceAtLeast(40f * density)),
+            titleX, y + 13f * density, p
+        )
+        // 右侧槽位: 导航态「回到今天」(primary 加粗 action 样式) / 今日态日期 (次要样式)
+        if (header.rightText != null) {
+            if (header.rightIsAction) {
+                p.color = s.primary
+                p.textSize = 11f * density
+                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            } else {
+                p.color = s.onSurfaceVariant
+                p.textSize = 12f * density
+                p.typeface = Typeface.DEFAULT
+            }
+            val rw = p.measureText(header.rightText)
+            canvas.drawText(header.rightText, rightX - rw, y + 13f * density, p)
         }
 
         y += 24f * density

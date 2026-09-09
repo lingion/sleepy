@@ -327,6 +327,9 @@
     <string name="view_cards">Grid</string>
 
     <string name="today_today">Today</string>
+    <string name="today_nav_prev_day">Previous day</string>
+    <string name="today_nav_next_day">Next day</string>
+    <string name="today_nav_back_to_today">Back to today</string>
     <string name="today_no_course">No classes today</string>
     <string name="today_rest">Free day</string>
 

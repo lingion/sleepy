@@ -36,7 +36,14 @@ data class WidgetData(
     /** 跟 app 主题色（ThemePresets key） */
     val themeKey: String = ThemePresets.KEY_DEFAULT,
     /** 学期状态（v1.0.37）: 学期外时 Today 渲染状态文案不渲染课程 */
-    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
+    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE,
+    /**
+     * date 是否为真·今天 (issue #24 Feature2 日期导航)。
+     * 今日态 → 标题「今天 · 周X」; 导航态 → 标题「M/D · 周X」+ 右侧「回到今天」。
+     * 默认 true: 既有调用方 (WidgetRenderActivity 预览 / weekGridMinimumTodayData)
+     * 构造的都是今日数据, 不加字段零改动。
+     */
+    val isToday: Boolean = true
 ) {
     val dayName: String get() = DateUtils.localizedDay(date.dayOfWeek.value, com.lingion.sleepy.SleepyApp.get())
     val dateLabel: String get() = "${date.monthValue}/${date.dayOfMonth}"

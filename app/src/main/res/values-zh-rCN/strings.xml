@@ -400,6 +400,9 @@
 
     <!-- Today screen -->
     <string name="today_today">今天</string>
+    <string name="today_nav_prev_day">前一天</string>
+    <string name="today_nav_next_day">后一天</string>
+    <string name="today_nav_back_to_today">回到今天</string>
     <string name="today_no_course">今日无课程</string>
     <string name="today_rest">休息 / 自习 都可以</string>
 
