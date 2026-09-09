@@ -113,14 +113,18 @@ object ConflictLayoutEngine {
             // 分钟与节点序不可直接比较: 时间基准 vs 节点基准的相邻比较统一换算到
             // 各自序列 — 这里按"当前簇右端"与"下一课起点"的**同域**比较:
             // 两者都能解析成时间 → 分钟域; 否则节点域。
+            // 用户反馈 2026-09-09: 混合域(一方时间不可解析)严禁拿节点数与秒数直接
+            // 比较 — 节点数(1..12)永远 < 秒数(30000+), 时间域簇会把任何脏 ownTime 课
+            // 粘上来(探针实测: 早上 08:20 课 + 时间为空的 ownTime 课假成簇)。
+            // 混合域改为**不成簇**(不相交): 两课时间域信息不对称, 没有任何可靠证据
+            // 证明重叠, 宁可漏报不可误报 — 与 coursesOverlap 的"双双可解析才比时间,
+            // 否则双双节点域"原则一致, 这里没有双双可比的公共域, 判不相交。
             val overlaps = if (currentEndIsTime && iv != null) {
                 start < currentEnd
             } else if (!currentEndIsTime && iv == null) {
                 start <= currentEnd
             } else {
-                // 混合域(理论不可达: 常规课总能从 timeJson 解析出节次时间, 除非数据脏)
-                // 回落节点域保守判定
-                start <= currentEnd
+                false // 混合域无公共可比域 → 不并簇
             }
             if (overlaps) {
                 clusters.last().add(c)
