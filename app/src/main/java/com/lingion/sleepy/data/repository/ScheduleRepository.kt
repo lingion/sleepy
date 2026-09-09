@@ -87,6 +87,39 @@ class ScheduleRepository(private val db: AppDatabase) {
         onDataChanged()
     }
 
+    /**
+     * issue#28 P3: 编辑课表保存 — timeJson 变更时课程按绝对时间自适应新节次。
+     *
+     * 节次编号语义 = "该节在新表上的钟点", 表变了编号必须跟着变, 否则改完 16→12 节
+     * 课程还停在 13-16 节。ownTime 课自带绝对时间(timeToNode 直接定位), 普通课按
+     * remapCourseNodes 重排; 无法映射的课保持原节次。与 updateTable 同为单动作
+     * 撤回单元(首快照 = 改表前)。
+     */
+    suspend fun updateTableRemappingCourses(table: TimeTableEntity) {
+        captureForUndo()
+        val oldJson = tableDao.getById(table.id)?.timeJson.orEmpty()
+        tableDao.update(table)
+        if (table.timeJson != oldJson) {
+            val courses = courseDao.getByTable(table.id)
+            val remapped = courses.map { c ->
+                if (c.ownTime) {
+                    val mapped = com.lingion.sleepy.util.TimeTableUtils.timeToNode(
+                        c.startTime, c.endTime, table.timeJson
+                    )
+                    if (mapped != null) c.copy(startNode = mapped.first, step = mapped.second) else c
+                } else {
+                    val (node, step) = com.lingion.sleepy.util.TimeTableUtils.remapCourseNodes(
+                        c.startNode, c.step, oldJson, table.timeJson
+                    )
+                    c.copy(startNode = node, step = step)
+                }
+            }
+            val changed = remapped.filterIndexed { i, c -> c != courses[i] }
+            if (changed.isNotEmpty()) courseDao.updateAll(changed)
+        }
+        onDataChanged()
+    }
+
     suspend fun deleteTable(id: Long) {
         captureForUndo()
         // 删除前先取该表全部课程 id：tableDao.deleteById 靠外键 CASCADE 级联删课程，

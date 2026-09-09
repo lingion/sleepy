@@ -203,6 +203,11 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch { repo.updateTable(table) }
     }
 
+    /** issue#28 P3: 保存课表编辑 — timeJson 变更时课程节次按绝对时间自适应 */
+    fun updateTableRemappingCourses(table: TimeTableEntity) {
+        viewModelScope.launch { repo.updateTableRemappingCourses(table) }
+    }
+
     fun deleteTable(id: Long) {
         viewModelScope.launch {
             repo.deleteTable(id)

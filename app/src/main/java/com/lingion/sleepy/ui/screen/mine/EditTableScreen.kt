@@ -292,7 +292,9 @@ fun EditTableScreen(
                             smartConfigJson = smartConfigJson
                         )
                         scope.launch {
-                            viewModel.updateTable(updated)
+                            // issue#28 P3: timeJson 变了课程节次必须自适应(16→12 节后
+                            // 课程不能再停在 13-16 节)
+                            viewModel.updateTableRemappingCourses(updated)
                             onSaved()
                         }
                     },
