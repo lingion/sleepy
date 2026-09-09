@@ -109,7 +109,10 @@ object TimeTableUtils {
      *
      * 规则：
      * - startNode = 时间表中 start ≤ courseStart 的最大节点（向下取）
-     * - endNode   = 时间表中 end   ≥ courseEnd   的最小节点（向上取）
+     * - endNode   = 从 startNode 起沿节点序连续延伸的最后一节 — 课程在节次空隙内
+     *   结束时停在空隙前的那一节, 绝不跨过空隙吸附到下一节 (用户 2026-09-09:
+     *   12:30 结束跨午间空隙被吸进 14:00 节 = 报障本体; 旧行为 "end ≥ courseEnd
+     *   的最小节点" 会跨空隙撑大 step, 已否决)
      * - step      = endNode - startNode + 1
      * - 若 StartTime 早于第一节，用第1节；endTime 晚于最后一节，用最后一节
      * 返回 null 表示无法映射（时间格式错误或时间表为空）。
@@ -120,11 +123,17 @@ object TimeTableUtils {
         val st = runCatching { LocalTime.parse(startTime) }.getOrNull() ?: return null
         val et = runCatching { LocalTime.parse(endTime) }.getOrNull() ?: return null
 
-        val startNode = nodes.filter { it.start <= st }.maxByOrNull { it.node }?.node
-            ?: nodes.first().node
-        val endNode = nodes.filter { it.end >= et }.minByOrNull { it.node }?.node
-            ?: nodes.last().node
+        val startIdx = nodes.indexOfLast { it.start <= st }
+        val sIdx = if (startIdx >= 0) startIdx else 0
+        var endIdx = sIdx
+        var i = sIdx + 1
+        while (i < nodes.size && nodes[i].start < et) {
+            endIdx = i
+            i++
+        }
 
+        val startNode = nodes[sIdx].node
+        val endNode = nodes[endIdx].node
         if (endNode < startNode) return null
         return Pair(startNode, endNode - startNode + 1)
     }
@@ -171,6 +180,78 @@ object TimeTableUtils {
     /** 便捷重载: 直接传 timeJson 字符串。 */
     fun timeToFractionalRows(startTime: String, endTime: String, timeJson: String): Pair<Float, Float>? =
         timeToFractionalRows(startTime, endTime, timeSlotsFor(timeJson))
+
+    // ------------------------------------------------------------------
+    // 用户反馈 2026-09-09: 非常规课跨节次空隙的渲染期占位节次合成
+    // ------------------------------------------------------------------
+
+    /**
+     * 渲染期槽位方案 — 标准槽位 + 按当前课程集合合成的**占位节次**(渲染期产物,
+     * 绝不写回 timeJson; 与用户手建边缘节点 insertEdgeNode 机制严格无关)。
+     */
+    data class RenderSlotPlan(val slots: List<TimeSlot>)
+
+    /**
+     * 为当前可见课程合成渲染槽位表(纯函数):
+     *   1. 非常规课(ownTime)的时间占据某节次空隙(课区间与空隙交叠非空)时,
+     *      该空隙里合成一个占位节次, 范围 = 各课与该空隙交集的贪心并包:
+     *      起点 = 各课交叠起点的最小值, 终点 = 各课交叠终点的最大值(谁长听谁的);
+     *   2. 无溢出 → 槽位表与 timeSlotsFor(timeJson) 完全一致。
+     *
+     * 占位节次在时间轴上低调呈现: 只显示时间不显示节号(TimeSlot.label 为空串,
+     * 渲染层按 isPlaceholder 分支)。渲染期合成物, 绝不写回 timeJson —
+     * 与用户手建边缘节点(insertEdgeNode)机制严格无关。
+     */
+    fun buildRenderSlotPlan(courses: List<com.lingion.sleepy.data.entity.CourseEntity>, timeJson: String): RenderSlotPlan {
+        val base = timeSlotsFor(timeJson)
+        if (base.isEmpty()) return RenderSlotPlan(base)
+
+        // 每个空隙 = (左节 end, 右节 start)。课占据空隙 = 课 end > 左节 end 且课 start < 右节 start;
+        // 贡献区间 = 课区间 ∩ 空隙。
+        data class Gap(val leftEnd: LocalTime, val rightStart: LocalTime)
+
+        val gaps = (0 until base.size - 1).map { i ->
+            Gap(base[i].end, base[i + 1].start)
+        }
+        // 空隙下标 → (占位起点, 占位终点)
+        val placeholderByGap = HashMap<Int, Pair<LocalTime, LocalTime>>()
+        for (c in courses) {
+            if (!c.ownTime) continue
+            val st = runCatching { LocalTime.parse(c.startTime) }.getOrNull() ?: continue
+            val et = runCatching { LocalTime.parse(c.endTime) }.getOrNull() ?: continue
+            if (et <= st) continue
+            for ((gi, g) in gaps.withIndex()) {
+                if (et > g.leftEnd && st < g.rightStart) {
+                    val lo = maxOf(st, g.leftEnd)
+                    val hi = minOf(et, g.rightStart)
+                    if (hi <= lo) continue
+                    val cur = placeholderByGap[gi]
+                    placeholderByGap[gi] = if (cur == null) lo to hi
+                    else minOf(cur.first, lo) to maxOf(cur.second, hi)
+                }
+            }
+        }
+        if (placeholderByGap.isEmpty()) return RenderSlotPlan(base)
+
+        val out = mutableListOf<TimeSlot>()
+        for ((i, slot) in base.withIndex()) {
+            out.add(slot)
+            placeholderByGap[i]?.let { (lo, hi) ->
+                out.add(
+                    TimeSlot(
+                        label = "",
+                        start = lo,
+                        end = hi,
+                        displayStart = formatTime(lo),
+                        displayEnd = formatTime(hi),
+                        nodeStart = slot.nodeEnd,
+                        nodeEnd = slot.nodeEnd
+                    )
+                )
+            }
+        }
+        return RenderSlotPlan(out)
+    }
 
     /** 便捷: 拿 TimeTableEntity 直接出 slots */
     fun timeSlotsFor(table: TimeTableEntity?): List<TimeSlot> =

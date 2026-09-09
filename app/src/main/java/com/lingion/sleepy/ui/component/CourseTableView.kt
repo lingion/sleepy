@@ -77,6 +77,13 @@ data class TimeSlot(
 ) {
     // nodeString 死属性已删（恒返回 "N-N" 且全库零调用; 界面用的是 CourseEntity.nodeString 本地化版本）
     val timeString: String get() = "$displayStart-$displayEnd"
+
+    /**
+     * 渲染期占位节次 (用户反馈 2026-09-09): 非常规课跨节次空隙时由
+     * TimeTableUtils.buildRenderSlotPlan 合成的空隙占位行 — 只显示时间不显示
+     * 节号(label 为空), 绝不写回 timeJson, 与 insertEdgeNode 手建节点无关。
+     */
+    val isPlaceholder: Boolean get() = label.isEmpty()
 }
 
 /**
@@ -341,6 +348,8 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
     val colors = SleepyTheme.colors
     val sd = { v: Float -> (v * scale).dp }
     val shape = RoundedCornerShape(sd(12f * cornerRatio))
+    // 渲染期占位节次: 更低调的呈现 — 半透明底, 只显示时间不显示节号
+    val isPh = slot.isPlaceholder
     Box(
         modifier = modifier.padding(sd(2f)),
         contentAlignment = Alignment.Center
@@ -350,18 +359,20 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
                 .fillMaxWidth()
                 .fillMaxHeight()
                 .clip(shape)
-                .background(colors.surfaceContainerLow)
+                .background(if (isPh) colors.surfaceContainerLow.copy(alpha = 0.5f) else colors.surfaceContainerLow)
                 .padding(sd(4f)),
             contentAlignment = Alignment.Center
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                Text(
-                    text = stringResource(R.string.period_format_node, slot.label),
-                    style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp),
-                    color = colors.onSurface,
-                    maxLines = 1
-                )
-                Spacer(modifier = Modifier.height(sd(1f)))
+                if (!isPh) {
+                    Text(
+                        text = stringResource(R.string.period_format_node, slot.label),
+                        style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp),
+                        color = colors.onSurface,
+                        maxLines = 1
+                    )
+                    Spacer(modifier = Modifier.height(sd(1f)))
+                }
                 Text(
                     text = slot.timeString,
                     style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
