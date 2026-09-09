@@ -17,7 +17,7 @@ class JwNeuParserTest {
         //   1-16周 (连续)            → 1 entry
         //   2-15周 (连续)            → 1 entry
         //   2,4,6,8,10,12,14,16 (离散8) → 8 entries
-        //   1-16双周 (连续)          → 1 entry (但剥"双"后 1-16, type=0, 端点修正后 startWeek=2)
+        //   1-16双周 (连续)          → 1 entry (type=2, 端点修正后 startWeek=2)
         assertEquals(11, courses.size)
     }
 
@@ -156,6 +156,93 @@ class JwNeuParserTest {
         assertEquals("", courses[0].room)
         assertEquals(1, courses[0].startWeek)
         assertEquals(8, courses[0].endWeek)
+    }
+
+    @Test
+    fun `parses NEU courses - multiple titleDetail locations keep their own weeks`() {
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "Multi-room course",
+              "dayOfWeek": 3,
+              "beginSection": 5,
+              "endSection": 6,
+              "weeksAndTeachers": "1-4/Teacher",
+              "titleDetail": [
+                "Summary 1-4 Teacher",
+                "1-2 Room-A",
+                "3-4 Room-B"
+              ]
+            }]
+          }
+        }
+        """.trimIndent()
+
+        val courses = JwNeuParser(json).generateCourseList()
+
+        assertEquals(2, courses.size)
+        val roomA = courses.single { it.room == "Room-A" }
+        val roomB = courses.single { it.room == "Room-B" }
+        assertEquals(1, roomA.startWeek)
+        assertEquals(2, roomA.endWeek)
+        assertEquals(3, roomB.startWeek)
+        assertEquals(4, roomB.endWeek)
+    }
+
+    @Test
+    fun `parses NEU lab course with script specific teacher and place fields`() {
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "[实] 数据结构实验",
+              "dayOfWeek": 5,
+              "beginSection": 7,
+              "endSection": 8,
+              "weeksAndTeachers": "2,4,6,8周[张老师]",
+              "titleDetail": [
+                "汇总: 2,4,6,8周 张老师",
+                "2,4,6,8周 张老师"
+              ],
+              "placeName": "计算机楼401 其他信息"
+            }]
+          }
+        }
+        """.trimIndent()
+
+        val courses = JwNeuParser(json).generateCourseList()
+
+        assertEquals(4, courses.size)
+        assertTrue(courses.all { it.name == "[实] 数据结构实验" })
+        assertTrue(courses.all { it.teacher == "张老师" })
+        assertTrue(courses.all { it.room == "计算机楼401" })
+        assertEquals(listOf(2, 4, 6, 8), courses.map { it.startWeek }.sorted())
+        assertTrue(courses.all { it.startWeek == it.endWeek })
+    }
+
+    @Test
+    fun `parses NEU lab course without a classroom as unassigned`() {
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "[实] 实验课",
+              "dayOfWeek": 1,
+              "beginSection": 1,
+              "endSection": 2,
+              "weeksAndTeachers": "1-2周[李老师]",
+              "titleDetail": ["汇总", "1-2周 李老师"],
+              "placeName": "南湖校区)"
+            }]
+          }
+        }
+        """.trimIndent()
+
+        val courses = JwNeuParser(json).generateCourseList()
+
+        assertEquals(1, courses.size)
+        assertEquals("暂未安排教室", courses[0].room)
     }
 
     @Test
