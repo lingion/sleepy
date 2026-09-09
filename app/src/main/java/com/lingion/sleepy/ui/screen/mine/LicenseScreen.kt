@@ -513,6 +513,6 @@ private data class ContributorEntry(val id: String, val title: String, val meta:
 private val contributorEntries: List<ContributorEntry> = listOf(
     ContributorEntry(
         "contributor-jim139129", "jim139129", "GitHub @jim139129",
-        "PR #29 — 修复东北大学教务导入 (NEU homeapp POST 链),已随 v1.0.52 发布"
+        "已合并多项 PR 并持续反馈 issue — 全部提交与讨论记录见 github.com/jim139129"
     )
 )

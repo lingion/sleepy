@@ -1,5 +1,6 @@
 package com.lingion.sleepy
 
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -199,11 +200,12 @@ class AboutLicenseAttributionTest {
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
     // v1.0.53 用户令: 收录 PR #29 作者 jim139129 (NEU 教务导入修复, 已随 v1.0.52 发布)。
-    // 条目实体在 LicenseScreen.kt 的 contributorEntries (硬编码中文说明是本页既有模式),
-    // 本测试锁两点: 6 语 section header 齐全 + 源码含贡献者 token, 缺一即漂移。
+    // 2026-09-09 定稿: 区块**不枚举**具体 PR/issue 编号 (贡献者提交到 1000 条时静态文案必漏,
+    // 也没有读者价值) — 只放姓名 + GitHub 主页链接, GitHub 即永远完整的清单; 条目实体在
+    // LicenseScreen.kt 的 contributorEntries。本测试锁两点: 6 语 header 齐全 + 源码含主页链接。
 
     private val CONTRIBUTOR_ATTRIBUTIONS = listOf(
-        Attribution("jim139129", "PR #29"),
+        Attribution("jim139129", "github.com/jim139129"),
     )
 
     /** 贡献者区块标题, 6 语各有一条 string。 */
@@ -266,6 +268,29 @@ class AboutLicenseAttributionTest {
                 assertTrue("LicenseScreen.kt 漏写 ${c.project} 的 PR 标记 ${c.licenseOrAuthor}",
                     src.contains(c.licenseOrAuthor))
             }
+        }
+    }
+
+    /**
+     * 贡献者条目形态闸门 (2026-09-09 定稿): 区块**禁止枚举**具体 PR/issue 编号 —
+     * 贡献者提交到 1000 条时静态文案必漏必烂 (枚举 = GitHub 页面的劣化复制品),
+     * 只放姓名 + GitHub 主页链接, GitHub 即永远完整的清单。
+     * 本测试反向锁: 主页链接必须在, 枚举 token 禁止回归。
+     */
+    @Test
+    fun `contributor entry links github profile instead of enumerating`() {
+        val src = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt")
+            .readText()
+        val region = src.substringAfter("private val contributorEntries")
+        assertTrue(
+            "LicenseScreen.kt 贡献者条目必须含 GitHub 主页链接 github.com/jim139129",
+            region.contains("github.com/jim139129")
+        )
+        for (t in listOf("PR ×", "issue ×", "#13", "#16", "#29", "#8 ", "#9 ")) {
+            assertFalse(
+                "贡献者条目禁止枚举编号 (链接外指才是可缩放形态), 发现回归 token: $t",
+                region.contains(t)
+            )
         }
     }
 
