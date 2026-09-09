@@ -205,11 +205,6 @@ fun JwWebViewLoginScreen(
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
-                    // 东北大学：使用独立的 mobile schedule-detail 接口，不能落入通用 Wisedu dqxnxq/xskcb 流程。
-                    if (school.type == JwProtocol.TYPE_NEU) {
-                        evaluateFetchWithTimeout(wv, NEU_FETCH_JS)
-                        return@CaptureBar
-                    }
                     // wisedu (金智 jwapp)：课表数据在 JSON API 不在页面 HTML，改用 fetch 拿 JSON（结果走 JS 桥回调）
                     if (school.type == JwProtocol.TYPE_WISEDU) {
                         evaluateFetchWithTimeout(wv, WISEDU_FETCH_JS)
@@ -428,34 +423,6 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
         }
     }
 }
-
-/**
- * NEU mobile 课表接口：直接读取当前登录会话的 schedule detail JSON。
- * 结果沿用现有 Wisedu bridge envelope，data 保留接口原始响应文本。
- */
-private const val NEU_FETCH_JS = """
-(function(){
-  try {
-    if (location.pathname.indexOf('/jwapp/') < 0) {
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入东北大学教务后再点导入'}));
-      return;
-    }
-    fetch('/jwapp/sys/home/student/getMyScheduleDetail.do', {
-      credentials:'include',
-      headers:{'X-Requested-With':'XMLHttpRequest'}
-    })
-    .then(function(r){ return r.text(); })
-    .then(function(txt){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true,data:txt,periods:[]}));
-    })
-    .catch(function(e){
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,err:String(e)}));
-    });
-  } catch(err) {
-    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,err:String(err)}));
-  }
-})();
-"""
 
 /**
  * wisedu (金智 jwapp) 协议：在 WebView 内 fetch 课表 JSON + 抓节次时间。
