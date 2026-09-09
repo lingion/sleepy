@@ -51,20 +51,21 @@ class WidgetManagementViewModel : ViewModel() {
             val repo = SleepyApp.get().repository
             val awm = AppWidgetManager.getInstance(ctx)
             val items = withContext(Dispatchers.IO) {
-                buildList {
-                    for (variant in ALL_WIDGET_VARIANTS) {
-                        val component = ComponentName(ctx, variant.receiverClass)
-                        val ids = runCatching { awm.getAppWidgetIds(component) }
-                            .getOrDefault(intArrayOf())
-                        for (id in ids) {
-                            val boundId = WidgetBindingStore.get(ctx, id)
-                            val tableName = boundId?.let { bound ->
-                                runCatching { repo.getTable(bound) }.getOrNull()?.name
-                            }
-                            add(PlacedWidgetItem(id, variant, tableName))
-                        }
-                    }
-                }
+                // One Room round-trip for all names; per-id getTable() is
+                // suspend and can't run inside the plain lambdas below.
+                val nameById = runCatching { repo.getAllTables() }
+                    .getOrDefault(emptyList())
+                    .associate { it.id to it.name }
+                WidgetManagementCore.buildPlacedItems(
+                    variants = ALL_WIDGET_VARIANTS,
+                    idsFor = { variant ->
+                        runCatching {
+                            awm.getAppWidgetIds(ComponentName(ctx, variant.receiverClass))
+                        }.getOrDefault(intArrayOf())
+                    },
+                    bindingFor = { id -> WidgetBindingStore.get(ctx, id) },
+                    tableNameFor = { bound -> nameById[bound] }
+                )
             }
             _state.value = items
         }
