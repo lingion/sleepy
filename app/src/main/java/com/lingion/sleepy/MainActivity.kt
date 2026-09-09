@@ -33,6 +33,7 @@ import androidx.compose.ui.res.stringResource
 import android.widget.Toast
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
+import com.lingion.sleepy.ui.screen.schedule.ViewMode
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
@@ -212,6 +213,15 @@ private fun AppRoot(
     var autoImportTriggered by remember { mutableStateOf(false) }
     // 底栏形态(贴底/悬浮 Dock): AppRoot 持真值 — 设置页改, 底栏即时切
     val context = LocalContext.current
+    // 课表视图模式(周视图/网格) — 会话级状态, 与 currentTab 同级持有:
+    // overlay(加课/编辑课程)与 tab 切换都会整页移除 ScheduleScreen, 状态必须提升到这层才存活。
+    // 初始化只读启动默认(KEY_START_VIEW), 手动切换仅写这里不回写 AppPrefs —
+    // 启动默认与会话内切换分离(AppPrefs.kt KEY_START_VIEW 注释的既有设计)。
+    var scheduleViewMode by remember {
+        mutableStateOf(
+            if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full
+        )
+    }
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
@@ -358,6 +368,8 @@ private fun AppRoot(
                     setCurrentTab = { currentTab = it },
                     pushOverlay = ::pushOverlay,
                     editingCourse = { editingCourse = it },
+                    viewMode = scheduleViewMode,
+                    onViewModeChange = { scheduleViewMode = it },
                     onCreateNewTable = {
                         mainScope.launch {
                             val previousId = mainVm.state.value.currentTable?.id
@@ -387,6 +399,8 @@ private fun AppRoot(
                         setCurrentTab = { currentTab = it },
                         pushOverlay = ::pushOverlay,
                         editingCourse = { editingCourse = it },
+                        viewMode = scheduleViewMode,
+                        onViewModeChange = { scheduleViewMode = it },
                         onCreateNewTable = {
                             mainScope.launch {
                                 val previousId = mainVm.state.value.currentTable?.id
@@ -424,10 +438,12 @@ private fun MainTabs(
     setCurrentTab: (Tab) -> Unit,
     pushOverlay: (OverlayScreen) -> Unit,
     editingCourse: (CourseEntity?) -> Unit,
+    viewMode: ViewMode,
+    onViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit
 ) {
     when (currentTab) {
-        Tab.Schedule -> ScheduleScreen(onGoImport = { setCurrentTab(Tab.Manage) }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCourse = { course -> editingCourse(course) })
+        Tab.Schedule -> ScheduleScreen(viewMode = viewMode, onViewModeChange = onViewModeChange, onGoImport = { setCurrentTab(Tab.Manage) }, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCourse = { course -> editingCourse(course) })
         Tab.Today -> TodayScreen(onEditCourse = { course -> editingCourse(course) })
         Tab.Manage -> {
             val ctx = LocalContext.current

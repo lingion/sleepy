@@ -75,13 +75,17 @@ import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.TimeTableUtils
 
-private enum class ViewMode(val labelRes: Int) {
+// 非 private: MainActivity(AppRoot 会话层)需以本类型注入 viewMode —
+// 会话内切视图/编辑课程 overlay 往返/切 tab 往返都不丢(启动默认仍由 AppRoot 初始化时读 AppPrefs)。
+enum class ViewMode(val labelRes: Int) {
     Full(R.string.view_full),
     Cards(R.string.view_cards)
 }
 
 @Composable
 fun ScheduleScreen(
+    viewMode: ViewMode,
+    onViewModeChange: (ViewMode) -> Unit,
     onGoImport: () -> Unit = {},
     onManualAdd: () -> Unit = {},
     onEditCourse: (CourseEntity) -> Unit = {},
@@ -89,7 +93,6 @@ fun ScheduleScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val context = androidx.compose.ui.platform.LocalContext.current
-    var viewMode by remember { mutableStateOf(if (AppPrefs.getStartView(context) == "cards") ViewMode.Cards else ViewMode.Full) }
     var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
     // v7.10.5 会话级置顶 override — 网格 onPickTop 与详情弹窗 radio 共用真相源。
     // radio 点击 → 这里瞬时换层(同帧) + AppPrefs 持久化(跨会话),两条通道一次写齐。
@@ -189,11 +192,11 @@ fun ScheduleScreen(
                 )
             }
 
-            // Segmented Switcher
+            // Segmented Switcher — 选中态由调用方注入(会话级存活), 切换经回调上抛
             SegmentedSwitcher(
                 options = ViewMode.entries.map { it to stringResource(it.labelRes) },
                 selected = viewMode,
-                onSelect = { viewMode = it },
+                onSelect = onViewModeChange,
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(horizontal = 16.dp, vertical = 8.dp)
