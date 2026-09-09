@@ -3,6 +3,7 @@ package com.lingion.sleepy.util
 import android.content.Context
 import android.content.SharedPreferences
 import android.content.res.Configuration
+import androidx.core.content.edit
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.channels.awaitClose
 import kotlinx.coroutines.flow.Flow
@@ -511,7 +512,7 @@ object AppPrefs {
         sp(ctx).getBoolean(KEY_WEEK_USE_ALIAS, false)
 
     fun setWeekUseAlias(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_WEEK_USE_ALIAS, v).apply()
+        sp(ctx).edit { putBoolean(KEY_WEEK_USE_ALIAS, v) }
         _changeBus.tryEmit(KEY_WEEK_USE_ALIAS)
     }
 
@@ -519,7 +520,7 @@ object AppPrefs {
         sp(ctx).getBoolean(KEY_GRID_USE_ALIAS, false)
 
     fun setGridUseAlias(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_GRID_USE_ALIAS, v).apply()
+        sp(ctx).edit { putBoolean(KEY_GRID_USE_ALIAS, v) }
         _changeBus.tryEmit(KEY_GRID_USE_ALIAS)
     }
 
@@ -527,7 +528,7 @@ object AppPrefs {
         sp(ctx).getBoolean(KEY_WIDGET_USE_ALIAS, false)
 
     fun setWidgetUseAlias(ctx: Context, v: Boolean) {
-        sp(ctx).edit().putBoolean(KEY_WIDGET_USE_ALIAS, v).apply()
+        sp(ctx).edit { putBoolean(KEY_WIDGET_USE_ALIAS, v) }
         _changeBus.tryEmit(KEY_WIDGET_USE_ALIAS)
     }
 
