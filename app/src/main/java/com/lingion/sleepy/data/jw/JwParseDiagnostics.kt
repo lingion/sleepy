@@ -53,6 +53,30 @@ object JwParseDiagnostics {
     )
 
     /**
+     * 老正方通用"登录态失效"硬指纹 — 整段 script 只含
+     *   (window.)(parent|top).location(.href)?='logout.aspx'
+     * 一条即判, 不走 score≥2 门槛。
+     *
+     * 设计原因 (JOU 2026-09-09 jw-cross-verify-sop Step 5.5):
+     * 老正方 .aspx 协议惯用法 = HTTP 200 + 文档首行注入
+     *   <script>window.parent.location.href='logout.aspx'</script>
+     * 强制顶层跳回 logout.aspx。该形态:
+     *  - 只 1 条硬指纹, 既有 LOGIN_FINGERPRINTS score<2 永远漏报;
+     *  - 跳转前的 HTML 仍含真实 id="Table1" 骨架, 锚点会先命中,
+     *    把过期页误判 OK/EMPTY_SEMESTER 而非 SESSION_EXPIRED。
+     * → 必须在 selectBestFrame / rankAll 中先于锚点 + 先于 looksLikeLoginPage。
+     *
+     * 形态约束 (拒误伤):
+     *  - 必须整段 script 体只含此一句 (script 开闭间仅空白);
+     *  - 必须 (parent|top).location(.href)?= 的赋值形态,
+     *    拒绝 <a onclick="parent.location.href='logout.aspx'"> 菜单退出按钮;
+     *  - script 体内含其他语句时不得误伤 (独立 script 块须自闭合)。
+     */
+    val LOGOUT_REDIRECT: Regex = Regex(
+        """(?is)<script[^>]*>\s*(?:window\.)?(?:parent|top)\.location(?:\.href)?\s*=\s*['"]logout\.aspx['"]\s*;?\s*</script>"""
+    )
+
+    /**
      * 给一段 HTML 做"页面级嗅探"。
      * 优先级: SessionExpired > NoContainer > ImageOrEmpty > EmptySemester > WrongProtocol > UnknownEmpty。
      */
@@ -64,6 +88,7 @@ object JwParseDiagnostics {
 
         // 1) 会话过期 / 登录页
         val loginMarkers = listOf(
+            "logout-redirect" to LOGOUT_REDIRECT,
             "login_slogin" to Regex("""login_slogin|csrfToken|csrftoken"""),
             "登录" to Regex("""用户登录|请输入密码|请输入账号|登录系统|统一身份认证登录|请重新登录"""),
             "captcha" to Regex("""kaptcha|verifycode|RANDOMCODE|输入验证码|CheckCode"""),

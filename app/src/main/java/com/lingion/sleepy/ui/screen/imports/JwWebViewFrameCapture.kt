@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import com.lingion.sleepy.data.jw.JwParseDiagnostics
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -178,12 +179,30 @@ object FrameTraversalTree {
      */
     fun looksLikeLoginPage(html: String): Boolean {
         if (html.isEmpty()) return false
+        // 硬指纹 logout-redirect 单条即判 — 老正方 CAS 化部署惯用法,
+        // 既有 LOGIN_FINGERPRINTS 关键词打分<2 永远漏报, 必须先于 score≥2。
+        if (JwParseDiagnostics.LOGOUT_REDIRECT.containsMatchIn(html)) return true
         val lower = html.lowercase()
         var score = 0
         for ((kw, _) in LOGIN_FINGERPRINTS) {
             if (lower.contains(kw)) score++
         }
         return score >= 2
+    }
+
+    /**
+     * 硬指纹 logout-redirect 帧搜索 — 单条即判, 不依赖 score≥2 门槛, 不依赖锚点。
+     * 用于 selectBestFrame / rankAll 的最早分支: 检测到立即 SESSION_EXPIRED,
+     * 越过 anchor-based OK 与 EMPTY_SEMESTER 分支 (老正方 CAS 化部署的"登录态失效"
+     * 形态在跳转前的 HTML 仍含真实 id="Table1" 骨架, 锚点会先命中而误判 OK/EMPTY_SEMESTER)。
+     *
+     * 返回: 最深的可达 frame; null = 全部可达 frame 均无该指纹。
+     */
+    internal fun findLogoutRedirectFrame(snapshots: FrameSnapshotList, maxDepth: Int): FrameSnapshot? {
+        return snapshots.frames
+            .filter { it.outerHTML != null && it.depth <= maxDepth }
+            .filter { JwParseDiagnostics.LOGOUT_REDIRECT.containsMatchIn(it.outerHTML!!) }
+            .maxByOrNull { it.depth }
     }
 
     internal data class Candidate(
@@ -242,6 +261,20 @@ object FrameTraversalTree {
         val blocked = findBlockedFrames(snapshots)
         val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
+        // 硬指纹 logout-redirect 先于锚点 + 先于 looksLikeLoginPage 评分 (见 helper doc)
+        val logoutFrame = findLogoutRedirectFrame(snapshots, maxDepth)
+        if (logoutFrame != null) {
+            return FrameCaptureResult(
+                selectedFramePath = logoutFrame.parentPath + (logoutFrame.frameName ?: ""),
+                html = logoutFrame.outerHTML ?: "",
+                matchedAnchors = emptyList(),
+                status = FrameCaptureStatus.SESSION_EXPIRED,
+                blockedFrames = blocked,
+                maxDepthReached = maxDepthReached,
+                skippedFrames = emptyList(),
+                diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」"
+            )
+        }
         // ②③ 候选
         val candidates = rankedCandidates(snapshots, maxDepth)
         val best = candidates.firstOrNull()
@@ -315,6 +348,20 @@ object FrameTraversalTree {
     ): FrameCaptureResult {
         val blocked = findBlockedFrames(snapshots)
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
+        // 硬指纹 logout-redirect 先于锚点 + 先于 parser 解析 (见 helper doc)
+        val logoutFrame = findLogoutRedirectFrame(snapshots, maxDepth)
+        if (logoutFrame != null) {
+            return FrameCaptureResult(
+                selectedFramePath = logoutFrame.parentPath + (logoutFrame.frameName ?: ""),
+                html = logoutFrame.outerHTML ?: "",
+                matchedAnchors = emptyList(),
+                status = FrameCaptureStatus.SESSION_EXPIRED,
+                blockedFrames = blocked,
+                maxDepthReached = maxDepthReached,
+                skippedFrames = emptyList(),
+                diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」"
+            )
+        }
         val candidates = rankedCandidates(snapshots, maxDepth)
         val skipped = computeSkipped(snapshots, maxDepth, candidates)
 

@@ -195,6 +195,17 @@ class AboutLicenseAttributionTest {
         Attribution("BJTU-CC", "aooxin"),
         Attribution("CourseTable", "etherealviator"),
         Attribution("ZF-Assistant", "mcdona1d"),
+        // 江苏海洋大学 JOU (2026-09-09 SOP cross-verified, 10 候选全量纳入; 酱海带为闭源参考仅协议分析)
+        Attribution("jianghaidai", "sunjingquan"),
+        Attribution("JOU-Campus-Guide", "sunjingquan"),
+        Attribution("jou_course_bot", "brodamndamn"),
+        Attribution("Wehhit-server", "dengjj"),
+        Attribution("Wehhit", "zqy1"),
+        Attribution("Grain", "LeeReindeer"),
+        Attribution("finance", "GeorgeLeoo"),
+        Attribution("finance-server", "GeorgeLeoo"),
+        Attribution("JStore", "GeorgeLeoo"),
+        Attribution("RSSHub jou", "MIT"),
         Attribution("北交大iCalender课表生成", "Greasy Fork"),
     )
 

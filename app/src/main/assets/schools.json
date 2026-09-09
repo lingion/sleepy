@@ -738,6 +738,14 @@
   },
   {
     "sortKey": "J",
+    "name": "江苏海洋大学",
+    "url": "https://zf.jou.edu.cn/login_cas.aspx",
+    "type": "zf",
+    "aliases": [],
+    "sortKeyFull": "jiangsuhaiyangdaxue"
+  },
+  {
+    "sortKey": "J",
     "name": "江西农业大学南昌商学院",
     "url": "https://jwxt.ncbcjxau.edu.cn:8443/jsd/",
     "type": "qz",

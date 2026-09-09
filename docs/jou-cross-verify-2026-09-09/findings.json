@@ -1,0 +1,62 @@
+[
+ {
+  "repo": "sunjingquan/JOU-Campus-Guide",
+  "verdict": "NULL_EVIDENCE",
+  "evidence_summary": "CloudBase static frontend (Tailwind+Lucide+NoSQL); zero hits for zf.jou/xskbcx/login_cas; auth via CloudBase signIn only",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "sunjingquan/jianghaidai-release",
+  "verdict": "INDIRECT",
+  "evidence_summary": "closed-source Flutter app (user-designated reference); libapp.so strings confirm lyuapServer CAS chain + zf.jou.edu.cn paths (login_cas/xs_main?xh=/xskbcx/CheckCode) + zfxk domain",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "brodamndamn/script",
+  "verdict": "POSITIVE",
+  "evidence_summary": "Playwright JOU course-selection bot on zfxk.jou.edu.cn; classic ZF family confirmed: yhm/mm/yzm fields, CheckCode captcha, ASP.NET grid paging, login-page detection (password field + login button label)",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "dluobida/Wehhit-server",
+  "verdict": "INDIRECT",
+  "evidence_summary": "2019 pre-CAS direct ZF postback at zfxk.hhit.edu.cn: VIEWSTATE-only, txtUserName/TextBox2/txtSecretCode/RadioButtonList1 student, no __EVENTVALIDATION; exam/CET only, no course table",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "zqy1/Wehhit",
+  "verdict": "NULL_EVIDENCE",
+  "evidence_summary": "README-only skeleton (2 commits 2017-01-03), intended core/kb page never committed; no code evidence",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "LeeReindeer/Grain",
+  "verdict": "NEGATIVE",
+  "evidence_summary": "serves ZHEJIANG Ocean Univ (zjou.edu.cn my.zjou/portal.zjou), NOT Jiangsu; CAS + grades only, no course table; false search hit on name similarity",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "GeorgeLeoo/finance",
+  "verdict": "INDIRECT",
+  "evidence_summary": "JOU wechat contest winner 2020, family-finance app; private JWT + local bills API only; school attribution in description/README, zero academic endpoints",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "GeorgeLeoo/finance-server",
+  "verdict": "NEGATIVE",
+  "evidence_summary": "Express+MongoDB bills CRUD backend; no outbound academic HTTP at all; JOU/HHIT only in repo description",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "GeorgeLeoo/JStore",
+  "verdict": "NEGATIVE",
+  "evidence_summary": "generic vuex-style mini-program state lib (2 files); school mention is author attribution only",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ },
+ {
+  "repo": "RSSHub/RSSHub",
+  "verdict": "INDIRECT",
+  "evidence_summary": "lib/routes/jou: public notice RSS only (www.jou.edu.cn/index/tzgg.htm, yz.jou.edu.cn); no login/course/score routes",
+  "dispatch": "1 agent per repo, schema JSON verdict, 2026-09-09"
+ }
+]
