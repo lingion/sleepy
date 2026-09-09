@@ -1,0 +1,19 @@
+### School / 学校
+
+武汉理工大学
+
+### JW system URL / 教务系统网址
+
+https://jwxt.whut.edu.cn
+
+### Access / 访问环境
+
+- [x] I can access the JW system from off campus (校内网/VPN 均可)
+
+### Collected data / 采集文件
+
+[sleepy-adapt-0905-173945.zip](https://github.com/user-attachments/files/31861745/sleepy-adapt-0905-173945.zip)
+
+### Anything else / 补充说明
+
+_No response_

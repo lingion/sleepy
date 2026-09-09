@@ -1,0 +1,19 @@
+### School / 学校
+
+合肥工业大学
+
+### JW system URL / 教务系统网址
+
+https://one.hfut.edu.cn/
+
+### Access / 访问环境
+
+- [x] I can access the JW system from off campus (校内网/VPN 均可)
+
+### Collected data / 采集文件
+
+[sleepy-adapt-0907-122346.zip](https://github.com/user-attachments/files/31896284/sleepy-adapt-0907-122346.zip)
+
+### Anything else / 补充说明
+
+_No response_

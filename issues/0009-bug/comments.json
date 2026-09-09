@@ -1,0 +1,49 @@
+[
+  {
+    "url": "https://api.github.com/repos/lingion/sleepy/issues/comments/5493189523",
+    "html_url": "https://github.com/lingion/sleepy/issues/9#issuecomment-5493189523",
+    "issue_url": "https://api.github.com/repos/lingion/sleepy/issues/9",
+    "id": 5493189523,
+    "node_id": "IC_kwDOS8keYs8AAAABR2trkw",
+    "user": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "created_at": "2026-09-01T11:25:12Z",
+    "updated_at": "2026-09-01T11:25:12Z",
+    "body": "已在 v1.0.43 (versionCode 44) 修复：手动添加课程的「连上几节」范围限制为当前课表总节数。节次超出最大节次时编辑器会夹紧值并显示指向「课表管理」的内联提示。\n\n参考 commit：7ae357c（fix: limit manual course periods to timetable range）。\n\n下载：https://github.com/lingion/sleepy/releases/tag/v1.0.43",
+    "author_association": "OWNER",
+    "pin": null,
+    "reactions": {
+      "url": "https://api.github.com/repos/lingion/sleepy/issues/comments/5493189523/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null,
+    "minimized": null
+  }
+]

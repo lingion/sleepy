@@ -1,0 +1,49 @@
+[
+  {
+    "url": "https://api.github.com/repos/lingion/sleepy/issues/comments/5568206660",
+    "html_url": "https://github.com/lingion/sleepy/issues/26#issuecomment-5568206660",
+    "issue_url": "https://api.github.com/repos/lingion/sleepy/issues/26",
+    "id": 5568206660,
+    "node_id": "IC_kwDOS8keYs8AAAABS-QXRA",
+    "user": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "created_at": "2026-09-07T09:07:39Z",
+    "updated_at": "2026-09-07T09:07:39Z",
+    "body": "感谢你的建议！课程别名/简写确实能改善长课程名称在手机上的显示体验。这个功能本身规模不大，不过目前手上积攒的 Issues 比较多，我会安排在接下来的 3 个版本内完成。届时会考虑支持按场景选择显示课程原名或别名。",
+    "author_association": "OWNER",
+    "pin": null,
+    "reactions": {
+      "url": "https://api.github.com/repos/lingion/sleepy/issues/comments/5568206660/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null,
+    "minimized": null
+  }
+]

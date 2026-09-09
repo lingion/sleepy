@@ -471,5 +471,17 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     PerSchoolEntry(
         "school-nust", "南京理工大学 NUST",
         "HeraldStudentCurriculum (idailylife)"
+    ),
+    PerSchoolEntry(
+        "school-bjtu", "北京交通大学 BJTU",
+        "bjtu_mis_Android (wan300, MIT)\nBJTU-MIS-HarmonyOS (Anyes666, MIT)\nBJTUselfService (HFDLYS, MIT)\n" +
+            "bjtu-cli (fish2lab)\nBJTUselfService-macOS (fish2lab)\nBJTU-course-assistant (s1y4x1)\n" +
+            "ZiuChen/userscript (MIT)\nBJTU-iCalendar-Generator (ymzhang-cs, MIT)\nbjtu-timetable (Moliseeee)\n" +
+            "BJTU-course-autoget-program (hyskr)\nBjtuCoursePlatform (57Darling02)\nbjtuDean (jlytwhx, MIT)\n" +
+            "bjtubox_python (jlytwhx)\nCampus-Mate (Orien233)\nBJTU-STU-MCP (ymzhang-cs)\n" +
+            "CourseRobber (xschur)\nFuturemind-BJTU\nBJTU_ezRate (Yukikasu, MIT)\n" +
+            "bjtu_teaching_assessment (xxxand, MIT)\nBJTU-script (Coconut00)\nBJTU-CC (aooxin)\n" +
+            "CourseTable (etherealviator, MIT)\nZF-Assistant (mcdona1d)\n" +
+            "Greasy Fork 430918 北交大iCalender课表生成"
     )
 )

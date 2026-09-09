@@ -1,0 +1,13 @@
+请描述你遇到的问题或建议：
+
+---
+**Version:** 1.0.50
+**VersionCode:** 51
+**Android:** 16
+**Device:** Xiaomi 25113PN0EC
+**Resolution:** 1220x2656
+**Locale:** zh-CN
+**Build:** Release
+安徽大学的课表抓取失败
+显示：
+抓取失败：Error: POST schedule-table/datum失败 HTTP500

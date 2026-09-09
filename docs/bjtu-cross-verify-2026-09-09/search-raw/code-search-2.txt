@@ -1,0 +1,40 @@
+=== CODE QUERY: mis.bjtu.edu.cn ===
+57Darling02/BjtuCoursePlatform | api/proxy.js
+57Darling02/BjtuCoursePlatform | public/proxy.conf
+57Darling02/BjtuCoursePlatform | src/api/api_cas/login.ts
+57Darling02/BjtuCoursePlatform | vite.config.ts
+Coconut00/BJTU-script | xuanke.py
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/fulldomain/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/fulldomain_nd/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/fulldomain_nd_0426/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/resolved_domain/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/fulldomain/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/fulldomain_nd/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/resolved_domain/bjtu.edu.cn.txt
+HFDLYS/BJTUselfService | app/src/main/java/team/bjtuss/bjtuselfservice/screen/EmailScreen.kt
+HFDLYS/BJTUselfService | app/src/main/java/team/bjtuss/bjtuselfservice/web/MisDataManager.java
+Orien233/Campus-Mate | CONTRIBUTING.md
+Orien233/Campus-Mate | README.md
+Qclover/CDNCheck | checkCDN/ipsList.txt
+aooxin/BJTU-CC | CC.py
+curbe454/BJTU_homework_template | makezip.ps1
+hyskr/BJTU-course-autoget-program | src/login.py
+=== CODE QUERY: dean.bjtu.edu.cn ===
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/dnsres/bjtu.edu.cn_DNSres.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/fulldomain/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/fulldomain_nd/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/fulldomain_nd_0426/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/get_fulldomain/output/domain/resolved_domain/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/dnsres/bjtu.edu.cn_DNSres.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/fulldomain/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/fulldomain_nd/bjtu.edu.cn.txt
+Ducky97/CDN_checker | dataset/get_fulldomain/output/domain/resolved_domain/bjtu.edu.cn.txt
+Futuremind-BJTU/Futuremind-BJTU | README.md
+jlytwhx/bjtubox_python | course/update_course_jwc.py
+jlytwhx/bjtubox_python | utils/freeclass.py
+xschur/CourseRobber | checkbox.py
+=== CODE QUERY: 综合教务 北京交通 ===
+frankyZhang/User_Preference_Prediction | SERP_baidu/燕京理工学院是几本_baidu.html
+hansnow/blog | post/index.xml
+hansnow/blog | posts/index.xml
+=== CODE QUERY: 北京交通大学 authserver ===

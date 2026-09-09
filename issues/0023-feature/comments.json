@@ -1,0 +1,49 @@
+[
+  {
+    "url": "https://api.github.com/repos/lingion/sleepy/issues/comments/5563272925",
+    "html_url": "https://github.com/lingion/sleepy/issues/23#issuecomment-5563272925",
+    "issue_url": "https://api.github.com/repos/lingion/sleepy/issues/23",
+    "id": 5563272925,
+    "node_id": "IC_kwDOS8keYs8AAAABS5jO3Q",
+    "user": {
+      "login": "lingion",
+      "id": 165679819,
+      "node_id": "U_kgDOCeASyw",
+      "avatar_url": "https://avatars.githubusercontent.com/u/165679819?v=4",
+      "gravatar_id": "",
+      "url": "https://api.github.com/users/lingion",
+      "html_url": "https://github.com/lingion",
+      "followers_url": "https://api.github.com/users/lingion/followers",
+      "following_url": "https://api.github.com/users/lingion/following{/other_user}",
+      "gists_url": "https://api.github.com/users/lingion/gists{/gist_id}",
+      "starred_url": "https://api.github.com/users/lingion/starred{/owner}{/repo}",
+      "subscriptions_url": "https://api.github.com/users/lingion/subscriptions",
+      "organizations_url": "https://api.github.com/users/lingion/orgs",
+      "repos_url": "https://api.github.com/users/lingion/repos",
+      "events_url": "https://api.github.com/users/lingion/events{/privacy}",
+      "received_events_url": "https://api.github.com/users/lingion/received_events",
+      "type": "User",
+      "user_view_type": "public",
+      "site_admin": false
+    },
+    "created_at": "2026-09-07T00:13:29Z",
+    "updated_at": "2026-09-07T00:13:29Z",
+    "body": "感谢你把场景写得这么具体：40 分钟一节课，中午有 30 分钟的课，还需要第 0 节和第 n+1 节来放早晚自习这类临时课程。\n\n我会按这个方向处理，争取在接下来的两个版本内把不同时长和自定义节次的问题修出来。",
+    "author_association": "OWNER",
+    "pin": null,
+    "reactions": {
+      "url": "https://api.github.com/repos/lingion/sleepy/issues/comments/5563272925/reactions",
+      "total_count": 0,
+      "+1": 0,
+      "-1": 0,
+      "laugh": 0,
+      "hooray": 0,
+      "confused": 0,
+      "heart": 0,
+      "rocket": 0,
+      "eyes": 0
+    },
+    "performed_via_github_app": null,
+    "minimized": null
+  }
+]

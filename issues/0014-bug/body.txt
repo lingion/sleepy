@@ -1,0 +1,31 @@
+### Prerequisites
+
+- [x] I am using the latest version of Sleepy
+- [x] I have searched existing issues and found no duplicate
+- [ ] I will attach logs, screenshots, or a sample schedule file if helpful
+
+### Current behavior
+
+教务直连里有武汉理工大学，但是在进入教务系统时出现错误，没有显示登入界面，而是Welcome come to EMAP.
+
+### Expected behavior
+
+应该是显示登入界面
+
+### Steps to reproduce
+
+在教务直连尝试进入武汉理工大学教务系统
+
+### Schedule source
+
+_No response_
+
+### Additional context
+
+_No response_
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```

@@ -1,0 +1,31 @@
+### Prerequisites
+
+- [x] I have searched existing issues and found no duplicate
+- [x] I have confirmed this feature is not already in the latest release
+
+### Problem or motivation
+
+很多学校（例如广东医科大学）会直接把课程类型写在课程名称括号内，示例：
+- 市场营销学(理论)
+- 全口义齿工艺技术(实验)
+如果有这个功能可以很方便的识别上什么课
+
+### Proposed solution
+
+1. 解析器通过正则匹配课程名字符串括号内关键词：理论、实验、实践、实训。
+2.识别不到的时候，允许用户手动标记课程类型。
+
+
+### Alternatives considered
+
+目前只能手动添加课程备注，效率较低
+
+### Additional context
+
+<img width="309" height="571" alt="Image" src="https://github.com/user-attachments/assets/1aae0715-293d-4cea-b5db-1d7ccddcccf6" />
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```

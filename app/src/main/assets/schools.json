@@ -80,6 +80,17 @@
   },
   {
     "sortKey": "B",
+    "name": "北京交通大学",
+    "url": "https://aa.bjtu.edu.cn/",
+    "type": "bjtu",
+    "aliases": [
+      "bjtu",
+      "北交大"
+    ],
+    "sortKeyFull": "beijingjiaotongdaxue"
+  },
+  {
+    "sortKey": "B",
     "name": "北京理工大学",
     "url": "https://jxzxehallapp.bit.edu.cn/jwapp/sys/wdkbby/*default/index.do",
     "type": "wisedu",

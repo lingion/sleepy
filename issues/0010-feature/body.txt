@@ -1,0 +1,28 @@
+### Prerequisites
+
+- [x] I have searched existing issues and found no duplicate
+- [x] I have confirmed this feature is not already in the latest release
+
+### Problem or motivation
+
+大学很常见课程冲突的情况，有时候你喜欢的选修课与某个必修课重合了几节，教务系统没有阻止冲突选课，这样课表中就出现了同时要上两节课的情况。虽然作为学生不得不翘掉一节，但课表应该如实显示两节课而不是随机覆盖
+
+### Proposed solution
+
+网络视图本身比较挤，这种情况有点棘手。如果屏幕够大可以对半拆分成两块，小屏幕显示不下的话可能不得不通过手动配置的优先级覆盖了。
+
+### Alternatives considered
+
+还有一种思路是像wakeup一样带个角标，点一下切换，但不适用于现在点击显示详情的设计
+
+### Additional context
+
+<img width="1272" height="2800" alt="Image" src="https://github.com/user-attachments/assets/e74a0e53-cb18-453f-aa4b-6989209059e1" />
+
+<img width="1271" height="727" alt="Image" src="https://github.com/user-attachments/assets/caad2920-7852-4a77-9ccf-50c6f116b4b2" />
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```

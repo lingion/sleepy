@@ -1,0 +1,26 @@
+### Prerequisites
+
+- [x] I have searched existing issues and found no duplicate
+- [x] I have confirmed this feature is not already in the latest release
+
+### Problem or motivation
+
+每次打开应用时默认页面是周视图，需要手动点上面的按钮切换到网格。感觉网格页面相比周视图更直观。
+
+### Proposed solution
+
+在“通用”设置里选择打开应用时的默认页面（周视图/网格）。
+
+### Alternatives considered
+
+_No response_
+
+### Additional context
+
+_No response_
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```

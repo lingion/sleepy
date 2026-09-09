@@ -1,0 +1,21 @@
+### School / 学校
+
+中国科学院大学
+
+### JW system URL / 教务系统网址
+
+https://xkgo.ucas.ac.cn:3000/course/personSchedule
+
+### Access / 访问环境
+
+- [x] I can access the JW system from off campus (校内网/VPN 均可)
+
+### Collected data / 采集文件
+
+[22:39:16] 打包完成: 请求入库 34 · 响应体获取失败 0 · 资源重取 37 · 接口重放入包 32 · 参数 {} · 错误 153 警告 17
+
+[sleepy-adapt-0906-223916.zip](https://github.com/user-attachments/files/31881870/sleepy-adapt-0906-223916.zip)
+
+### Anything else / 补充说明
+
+_No response_

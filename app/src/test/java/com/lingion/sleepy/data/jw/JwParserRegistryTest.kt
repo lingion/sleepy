@@ -24,6 +24,7 @@ class JwParserRegistryTest {
             JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_CRAZY, JwProtocol.TYPE_QZ_BR,
             JwProtocol.TYPE_QZ_WITH_NODE, JwProtocol.TYPE_QZ_OLD,
             JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU,
+            JwProtocol.TYPE_BJTU,
         )
         for (t in types) {
             assertTrue("type $t must be routable", JwImportViewModel.isRoutable(t))

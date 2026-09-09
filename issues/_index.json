@@ -1,0 +1,218 @@
+[
+  {
+    "number": 1,
+    "title": "请求适配江苏海洋大学",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/1",
+    "created_at": "2026-07-08T10:04:57Z",
+    "updated_at": "2026-09-01T08:45:33Z",
+    "closed_at": "2026-09-01T08:45:33Z"
+  },
+  {
+    "number": 4,
+    "title": "适配OPPO流体云",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/4",
+    "created_at": "2026-07-29T09:13:01Z",
+    "updated_at": "2026-08-29T17:20:50Z",
+    "closed_at": "2026-08-29T17:20:50Z"
+  },
+  {
+    "number": 5,
+    "title": "请求适配临沂大学",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/5",
+    "created_at": "2026-08-27T21:44:54Z",
+    "updated_at": "2026-08-31T13:08:05Z",
+    "closed_at": "2026-08-31T13:08:05Z"
+  },
+  {
+    "number": 6,
+    "title": "无法通过HTML表格导入课表",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/6",
+    "created_at": "2026-08-30T11:37:33Z",
+    "updated_at": "2026-08-31T13:07:58Z",
+    "closed_at": "2026-08-31T13:07:58Z"
+  },
+  {
+    "number": 7,
+    "title": "希望可以增加一个选择app启动时默认页面的功能。",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/7",
+    "created_at": "2026-08-31T20:04:09Z",
+    "updated_at": "2026-09-01T08:33:32Z",
+    "closed_at": "2026-09-01T08:33:32Z"
+  },
+  {
+    "number": 8,
+    "title": "[Feature]: 自定义课表网络视图课程胶囊大小与字号",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/8",
+    "created_at": "2026-09-01T03:06:08Z",
+    "updated_at": "2026-09-01T15:34:55Z",
+    "closed_at": "2026-09-01T15:34:54Z"
+  },
+  {
+    "number": 9,
+    "title": "[Bug]: 可以设置超过最大节次的课程",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/9",
+    "created_at": "2026-09-01T08:21:38Z",
+    "updated_at": "2026-09-01T15:35:03Z",
+    "closed_at": "2026-09-01T15:35:03Z"
+  },
+  {
+    "number": 10,
+    "title": "[Feature]: 网络视图中冲突课程处理",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/10",
+    "created_at": "2026-09-01T08:53:20Z",
+    "updated_at": "2026-09-04T08:11:51Z",
+    "closed_at": "2026-09-04T08:11:51Z"
+  },
+  {
+    "number": 11,
+    "title": "求适配浙大宁波理工学院，正方教务",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/11",
+    "created_at": "2026-09-02T17:25:40Z",
+    "updated_at": "2026-09-06T13:38:36Z",
+    "closed_at": null
+  },
+  {
+    "number": 12,
+    "title": "[Bug]: 课表管理页面上下存在白边",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/12",
+    "created_at": "2026-09-04T05:11:48Z",
+    "updated_at": "2026-09-04T08:12:20Z",
+    "closed_at": "2026-09-04T08:12:20Z"
+  },
+  {
+    "number": 14,
+    "title": "[Bug]: 无法登入教务",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/14",
+    "created_at": "2026-09-05T09:12:52Z",
+    "updated_at": "2026-09-05T16:57:00Z",
+    "closed_at": "2026-09-05T16:57:00Z"
+  },
+  {
+    "number": 15,
+    "title": "[Adapt]: 采集",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/15",
+    "created_at": "2026-09-05T10:11:08Z",
+    "updated_at": "2026-09-05T16:56:49Z",
+    "closed_at": "2026-09-05T16:56:49Z"
+  },
+  {
+    "number": 17,
+    "title": "[Sleepy] ",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/17",
+    "created_at": "2026-09-06T08:46:24Z",
+    "updated_at": "2026-09-06T13:35:43Z",
+    "closed_at": null
+  },
+  {
+    "number": 18,
+    "title": "[Adapt]: 求适配中国科学院大学",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/18",
+    "created_at": "2026-09-06T14:41:33Z",
+    "updated_at": "2026-09-07T14:41:33Z",
+    "closed_at": null
+  },
+  {
+    "number": 19,
+    "title": "[Adapt]: 求适配北京交通大学",
+    "state": "closed",
+    "html_url": "https://github.com/lingion/sleepy/issues/19",
+    "created_at": "2026-09-06T15:52:02Z",
+    "updated_at": "2026-09-06T16:08:25Z",
+    "closed_at": "2026-09-06T16:02:09Z"
+  },
+  {
+    "number": 20,
+    "title": "解析课程名称自动区分理论课/实验实践课",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/20",
+    "created_at": "2026-09-06T19:00:46Z",
+    "updated_at": "2026-09-07T02:01:45Z",
+    "closed_at": null
+  },
+  {
+    "number": 21,
+    "title": "[Feature]: 小组件增加多重尺寸",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/21",
+    "created_at": "2026-09-06T20:48:53Z",
+    "updated_at": "2026-09-07T00:13:31Z",
+    "closed_at": null
+  },
+  {
+    "number": 22,
+    "title": "[Bug]: 正方教务同名称课程不同地点导入时错误",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/22",
+    "created_at": "2026-09-06T21:05:58Z",
+    "updated_at": "2026-09-07T00:13:30Z",
+    "closed_at": null
+  },
+  {
+    "number": 23,
+    "title": "[Feature]: 适配不同时长的课长，课程节数优化",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/23",
+    "created_at": "2026-09-06T21:24:06Z",
+    "updated_at": "2026-09-07T00:13:29Z",
+    "closed_at": null
+  },
+  {
+    "number": 24,
+    "title": "[Feature]:more",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/24",
+    "created_at": "2026-09-07T01:09:22Z",
+    "updated_at": "2026-09-07T03:34:38Z",
+    "closed_at": null
+  },
+  {
+    "number": 25,
+    "title": "[Adapt]: 求适配学校",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/25",
+    "created_at": "2026-09-07T04:27:01Z",
+    "updated_at": "2026-09-07T04:27:01Z",
+    "closed_at": null
+  },
+  {
+    "number": 26,
+    "title": "[Feature]: 支持课程别名/简写",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/26",
+    "created_at": "2026-09-07T07:35:50Z",
+    "updated_at": "2026-09-07T09:07:39Z",
+    "closed_at": null
+  },
+  {
+    "number": 27,
+    "title": "[Bug]: 东北大学教务系统无法导入",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/27",
+    "created_at": "2026-09-07T09:10:47Z",
+    "updated_at": "2026-09-07T09:10:47Z",
+    "closed_at": null
+  },
+  {
+    "number": 28,
+    "title": "[Bug]: ics导入节次混乱",
+    "state": "open",
+    "html_url": "https://github.com/lingion/sleepy/issues/28",
+    "created_at": "2026-09-07T09:55:23Z",
+    "updated_at": "2026-09-07T09:55:23Z",
+    "closed_at": null
+  }
+]

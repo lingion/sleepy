@@ -1,0 +1,33 @@
+### Prerequisites
+
+- [x] I am using the latest version of Sleepy
+- [x] I have searched existing issues and found no duplicate
+- [x] I will attach logs, screenshots, or a sample schedule file if helpful
+
+### Current behavior
+
+注意到当从教务导入相同名字不同地点时的课程，即使地点不同，时间是共享的。例如某新时代特色思想有线上下两种上课方式，删除一次线上课的部分会导致所有地点被线上课覆盖
+
+### Expected behavior
+
+线上和线下分为两门课或者时间根据地点区分开
+
+### Steps to reproduce
+
+1.导入课表
+2.修改冲突课程上课时间
+3.复现
+
+### Schedule source
+
+_No response_
+
+### Additional context
+
+_No response_
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```

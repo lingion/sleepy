@@ -1,0 +1,33 @@
+### Prerequisites
+
+- [x] I am using the latest version of Sleepy
+- [x] I have searched existing issues and found no duplicate
+- [x] I will attach logs, screenshots, or a sample schedule file if helpful
+
+### Current behavior
+
+以一天12节课为例，新建课程可以设置从12节开始连上8节，显示为12-19节
+
+### Expected behavior
+
+连上几节的范围 不应该是1-8，而是课表总节数-开始节数+1
+
+### Steps to reproduce
+
+新建课表
+手动添加课程
+从最后一节课开始加连上多节的课
+
+### Schedule source
+
+_No response_
+
+### Additional context
+
+_No response_
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```

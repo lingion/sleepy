@@ -240,6 +240,14 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, QZ_APP_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 北京交通大学 AA 平台 (issue #19): 课表 HTML 在 /course_selection/ 双端点
+                    // (无学期/周次参数, 服务端按会话返回)。WebView 内同源 fetch 两段 HTML
+                    // 拼组合源 (<!--sleepy-bjtu-doc:label--> 标记), JwBjtuParser 切段解析,
+                    // 节次时间从行首格 [HH:MM-HH:MM] 抽出随 periods 回传。
+                    if (school.type == JwProtocol.TYPE_BJTU) {
+                        evaluateFetchWithTimeout(wv, BJTU_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
                     // 用户已在 WebView 走完 CAS 登录并落到教务域。supwisdom 新版部署
                     // 前缀分两形态：合工大 /eams5-student、安大/矿大北京 /student —
@@ -1196,6 +1204,105 @@ private const val EAMS5_AHU_FETCH_JS = """
     });
   } catch(err) {
     window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
+  }
+})();
+"""
+
+/**
+ * 北京交通大学教学支撑平台 (AA, aa.bjtu.edu.cn) — WebView 同源 fetch 双端点组合源。
+ *
+ * 协议证据 (SOP 跨仓验证 2026-09-09, POSITIVE 12 仓): HFDLYS/BJTUselfService (MIT) +
+ * wan300/bjtu_mis_Android (MIT) 双仓独立证实:
+ *   GET /course_selection/courseselect/stuschedule/        本学期课表 (HTML 表格)
+ *   GET /course_selection/courseselecttask/schedule/       选课任务课表 (全学期)
+ * 两端点无学期/周次参数 — 服务端按会话决定; 登录失效时 302 到 /client/login/。
+ *
+ * 流程 (复用 __sleepyBridge.onWiseduResult 同一回调通道, payload 同为 {ok, data, periods}):
+ *   1) host 校验 bjtu.edu.cn (schools.json url = https://aa.bjtu.edu.cn/, CAS 登录后
+ *      落回 aa origin — 同源 fetch 直通; 落在 cas/mis 域时报"请先到 aa.bjtu.edu.cn")
+ *   2) 并行 fetch 两端点 (credentials include)
+ *   3) 双双命中登录页 (/client/login/ 且无 星期一 表头) → 报"登录已失效"
+ *   4) 双双 <200 字符 → 报"课表页为空"
+ *   5) 拼组合源 '<!--sleepy-bjtu-doc:stuschedule-->' + a + '<!--sleepy-bjtu-doc:schedule-->' + b
+ *   6) 节次时间: DOMParser 解析行首格 `第N节 ... [HH:MM-HH:MM]` (页面自带, 3 仓实锚)
+ *   7) __sleepyBridge.onWiseduResult({ok, data, periods})
+ *
+ * 跨语言 invariant (SOP 铁律 3): LABEL_RE / TIME_RE 的 JS 字符串字面量与
+ * JwBjtuParser.PERIOD_LABEL_RE_SRC / PERIOD_TIME_RE_SRC 逐字符相等 —
+ * JS 字符串字面量里的 \\s 在字符串求值后即 Kotlin 常量值里的 \s;
+ * JwBjtuParserTest 按源码字面文本断言锁死。
+ */
+private const val BJTU_FETCH_JS = """
+(function(){
+  function finish(payload) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify(payload));
+  }
+  function err(msg) {
+    finish({ok:false, err:msg});
+  }
+  try {
+    if (location.hostname.indexOf('bjtu.edu.cn') < 0) {
+      err('请先在北京交通大学教务页面 (aa.bjtu.edu.cn) 登录后再点导入');
+      return;
+    }
+    var LABEL_RE = new RegExp('第\\s*(\\d+)\\s*节');
+    var TIME_RE = new RegExp('(\\d{1,2}:\\d{2})\\s*[-–—~至]\\s*(\\d{1,2}:\\d{2})');
+    function get(path) {
+      return fetch(path, {credentials:'include'}).then(function(r){
+        return r.text().then(function(body){ return {status: r.status, body: body}; });
+      });
+    }
+    function isLoginExpired(ctx) {
+      return (ctx.body || '').indexOf('/client/login/') >= 0 &&
+             (ctx.body || '').indexOf('星期一') < 0;
+    }
+    function periodsFrom(html) {
+      var periods = [];
+      try {
+        var doc = new DOMParser().parseFromString(html, 'text/html');
+        var rows = doc.querySelectorAll('tr');
+        var seen = {};
+        for (var i = 0; i < rows.length; i++) {
+          var cell = rows[i].querySelector('th,td');
+          if (!cell) continue;
+          var text = cell.textContent || '';
+          var lm = text.match(LABEL_RE);
+          if (!lm) continue;
+          var node = parseInt(lm[1], 10);
+          if (seen[node]) continue;
+          seen[node] = true;
+          var tm = text.match(TIME_RE);
+          periods.push({node: node, start: tm ? tm[1] : '', end: tm ? tm[2] : ''});
+        }
+        periods.sort(function(a,b){ return a.node - b.node; });
+      } catch(e) { periods = []; }
+      return periods;
+    }
+    Promise.all([
+      get('/course_selection/courseselect/stuschedule/'),
+      get('/course_selection/courseselecttask/schedule/')
+    ])
+    .then(function(rs){
+      var a = rs[0], b = rs[1];
+      if (isLoginExpired(a) && isLoginExpired(b)) {
+        err('登录已失效，请重新登录后再点导入');
+        return;
+      }
+      if ((a.body || '').length < 200 && (b.body || '').length < 200) {
+        err('课表页返回内容为空，请先在教务里打开课表页后再点导入');
+        return;
+      }
+      var combined = '<!--sleepy-bjtu-doc:stuschedule-->' + (a.body || '') +
+                     '<!--sleepy-bjtu-doc:schedule-->' + (b.body || '');
+      var periods = periodsFrom(a.body || '');
+      if (periods.length === 0) periods = periodsFrom(b.body || '');
+      finish({ok:true, data:combined, periods:periods});
+    })
+    .catch(function(e){
+      err('抓取失败: ' + String(e && e.message ? e.message : e) + '（登录会话可能已失效，请重新登录）');
+    });
+  } catch(e) {
+    err(String(e && e.message ? e.message : e));
   }
 })();
 """

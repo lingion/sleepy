@@ -83,6 +83,19 @@ object JwProtocol {
     const val TYPE_UCAS = "ucas"
 
     /**
+     * 北京交通大学教学支撑平台 (AA, aa.bjtu.edu.cn) — 自研 Django 系, CAS(cas.bjtu.edu.cn
+     * 算式验证码) + MIS 门户(mis.bjtu.edu.cn module 桥) 后的教务主数据源。
+     * 课表 = HTML 表格 (table.table, 节次行 x 星期列, 行首格含 [HH:MM-HH:MM]),
+     * 周次文法: 第A-B周 / 第2,4,6周 / 第X周 + (单/双) 奇偶后缀 (分隔符 -~—–－至到)。
+     * WebView 会话内同源 fetch 双端点:
+     *   GET /course_selection/courseselect/stuschedule/        本学期课表
+     *   GET /course_selection/courseselecttask/schedule/       选课任务课表 (全学期)
+     * 协议证据: docs/bjtu-cross-verify-2026-09-09/ (24 仓 POSITIVE 12, issue #19)。
+     * 上游协议形态: HFDLYS/BJTUselfService (MIT) + wan300/bjtu_mis_Android (MIT) — 算法自写。
+     */
+    const val TYPE_BJTU = "bjtu"
+
+    /**
      * 合肥工业大学教务 (金智 EAMS5, eams5-student 系列, jxglstu.hfut.edu.cn)。
      * WebView 内 fetch 三段 (CAS→course-table→lessons→POST schedule-table/datum) 拿课表 JSON。
      * 上游协议形态: Chiu-xaH/HFUT-Schedule (MIT) 全链路参考。
@@ -185,6 +198,7 @@ object JwProtocol {
         TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
         TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
+        TYPE_BJTU,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_IEAS, TYPE_QZ_APP, TYPE_UCAS, TYPE_QZ_OLD,
     )
@@ -197,6 +211,7 @@ object JwProtocol {
         TYPE_QZ_APP -> "强智移动教务"
         TYPE_QZ_IEAS -> "强智教务（iEAS 网络版）"
         TYPE_UCAS -> "国科大选课系统"
+        TYPE_BJTU -> "北京交通大学"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "正方教务"
         TYPE_URP, TYPE_URP_NEW -> "URP 教务"
         TYPE_CF -> "青果教务"
@@ -236,6 +251,7 @@ object JwProtocol {
         TYPE_EAMS5 -> "eams5"
         TYPE_CLASSIC_EAMS -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"
+        TYPE_BJTU -> "other"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
         TYPE_CF -> "cf"
         TYPE_PKU, TYPE_BNUZ -> "other"

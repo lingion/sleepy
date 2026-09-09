@@ -1,0 +1,26 @@
+### Prerequisites
+
+- [x] I have searched existing issues and found no duplicate
+- [x] I have confirmed this feature is not already in the latest release
+
+### Problem or motivation
+
+求适配浙大宁波理工学院，正方教务
+
+### Proposed solution
+
+求适配浙大宁波理工学院，正方教务
+
+### Alternatives considered
+
+_No response_
+
+### Additional context
+
+_No response_
+
+### Diagnostic info (auto-filled by app)
+
+```markdown
+
+```
