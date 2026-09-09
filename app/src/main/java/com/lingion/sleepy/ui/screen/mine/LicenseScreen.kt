@@ -102,6 +102,23 @@ fun LicenseScreen(onBack: () -> Unit) {
                 }
             }
 
+            // ---- 贡献者区块 (直接向本项目提交代码并合入的开发者, 与上游参考仓库致谢区分) ----
+            item {
+                SectionHeader(stringResource(R.string.license_contributor_section))
+            }
+            items(
+                items = contributorEntries,
+                key = { it.id }
+            ) { entry ->
+                AttributionCard(
+                    title = entry.title,
+                    subtitle = entry.meta,
+                    description = entry.usage,
+                    expanded = false,
+                    onToggle = {}
+                )
+            }
+
             // ---- 致谢导语区块 (可折叠: 默认收起, 点击展开看 about_license_body 全文) ----
             item {
                 val bodyExpanded = expanded["__body__"] == true
@@ -471,5 +488,19 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     PerSchoolEntry(
         "school-nust", "南京理工大学 NUST",
         "HeraldStudentCurriculum (idailylife)"
+    )
+)
+
+/**
+ * 贡献者: 直接向本项目提交代码并合入的开发者 (与"上游参考仓库"致谢是两回事)。
+ * v1.0.53 用户令: 收录 PR #29 作者 jim139129 (NEU 教务导入修复)。
+ * 姓名/handle 是通用标识不翻译; 贡献描述沿用本页硬编码中文说明的既有模式。
+ */
+private data class ContributorEntry(val id: String, val title: String, val meta: String, val usage: String)
+
+private val contributorEntries: List<ContributorEntry> = listOf(
+    ContributorEntry(
+        "contributor-jim139129", "jim139129", "GitHub @jim139129",
+        "PR #29 — 修复东北大学教务导入 (NEU homeapp POST 链),已随 v1.0.52 发布"
     )
 )

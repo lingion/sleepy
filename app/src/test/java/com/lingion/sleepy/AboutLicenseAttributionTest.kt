@@ -169,6 +169,19 @@ class AboutLicenseAttributionTest {
         Attribution("HeraldStudentCurriculum", "idailylife"),
     )
 
+    // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
+    // v1.0.53 用户令: 收录 PR #29 作者 jim139129 (NEU 教务导入修复, 已随 v1.0.52 发布)。
+    // 条目实体在 LicenseScreen.kt 的 contributorEntries (硬编码中文说明是本页既有模式),
+    // 本测试锁两点: 6 语 section header 齐全 + 源码含贡献者 token, 缺一即漂移。
+
+    private val CONTRIBUTOR_ATTRIBUTIONS = listOf(
+        Attribution("jim139129", "PR #29"),
+    )
+
+    /** 贡献者区块标题, 6 语各有一条 string。 */
+    private fun readContributorHeader(locale: String): String =
+        readString(locale, "license_contributor_section")
+
     private fun checkAll(locale: String, atts: List<Attribution>) {
         val body = readString(locale, "about_license_body")
         assertTrue("locale=$locale 缺少 about_license_body 字符串", body.isNotBlank())
@@ -201,11 +214,38 @@ class AboutLicenseAttributionTest {
         }
     }
 
-    /** 自检: 统计 token 总数与跨校/单校分类 (commit 前打印日志, 漂移检测助手) */
+    // ----- 贡献者区块闸门 (v1.0.53 用户令: PR #29 作者 jim139129 入贡献者) -----
+
+    /** 贡献者条目实体在 LicenseScreen.kt, 源码 token 断言; 6 语 header 齐全闸门。 */
+    @Test
+    fun `contributor section header present in all released locales`() {
+        for (locale in ALL_RELEASED_LOCALES) {
+            val header = readContributorHeader(locale)
+            assertTrue("locale=$locale 缺少 license_contributor_section header", header.isNotBlank())
+        }
+    }
+
+    @Test
+    fun `license screen lists code contributors with pr tokens`() {
+        val src = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt")
+            .readText()
+        assertTrue("LicenseScreen.kt 未引用贡献者区块标题 license_contributor_section",
+            src.contains("R.string.license_contributor_section"))
+        for (c in CONTRIBUTOR_ATTRIBUTIONS) {
+            assertTrue("LicenseScreen.kt 致谢贡献者漏写 ${c.project}",
+                src.contains(c.project))
+            if (c.licenseOrAuthor.isNotEmpty()) {
+                assertTrue("LicenseScreen.kt 漏写 ${c.project} 的 PR 标记 ${c.licenseOrAuthor}",
+                    src.contains(c.licenseOrAuthor))
+            }
+        }
+    }
+
+    /** 自检: 统计 token 总数与跨校/单校/贡献者分类 (commit 前打印日志, 漂移检测助手) */
     @Test
     fun `attribution coverage summary`() {
-        val total = FOUNDATIONAL_ATTRIBUTIONS.size + PER_SCHOOL_ATTRIBUTIONS.size
-        println("[ATTRIBUTION] foundational=${FOUNDATIONAL_ATTRIBUTIONS.size}, per-school=${PER_SCHOOL_ATTRIBUTIONS.size}, total=$total")
+        val total = FOUNDATIONAL_ATTRIBUTIONS.size + PER_SCHOOL_ATTRIBUTIONS.size + CONTRIBUTOR_ATTRIBUTIONS.size
+        println("[ATTRIBUTION] foundational=${FOUNDATIONAL_ATTRIBUTIONS.size}, per-school=${PER_SCHOOL_ATTRIBUTIONS.size}, contributors=${CONTRIBUTOR_ATTRIBUTIONS.size}, total=$total")
         assertTrue("必须覆盖至少 50 条致谢 token", total >= 50)
     }
 }

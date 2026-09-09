@@ -468,6 +468,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="license_attribution_note">Parts of the academic-system import adapters reference public implementations from the following open-source projects, with thanks to all.</string>
     <string name="license_foundational_section">Cross-university foundational projects</string>
     <string name="license_perschool_section">Per-school acknowledgements</string>
+    <string name="license_contributor_section">Contributors</string>
     <string name="about_update_check">Check for updates automatically</string>
     <string name="about_update_check_detail">Checks GitHub Releases on app start; a banner appears on the About page when a new version is found</string>
     <string name="about_update_available">Version %1$s is available — tap to view</string>
