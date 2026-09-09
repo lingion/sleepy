@@ -11,7 +11,6 @@ import kotlinx.serialization.json.jsonPrimitive
 import kotlinx.serialization.json.longOrNull
 import java.time.LocalTime
 import java.util.TreeMap
-import kotlin.math.roundToInt
 
 /**
  * 课程表文本解析器 — 支持：
@@ -419,9 +418,12 @@ object ScheduleParser {
 
         val events = mutableListOf<Event>()
         val isNeuIcs = Regex("(?im)^PRODID:.*NEU_Wisedu2Wakeup").containsMatchIn(text)
-        // NEU 导出把真实时间块作为五个逻辑教学时段，块间午休/晚间间隔不占节次。
-        // 先按时钟排序建立映射，避免 fixture 中事件顺序改变逻辑节点编号。
-        val neuTimeNodes = if (isNeuIcs) buildNeuTimeNodes(text) else emptyMap()
+        // NEU 导出把真实时间块作为若干逻辑教学时段，块间午休/晚间间隔不占节次。
+        // issue #28: 改教学块模型整表重建 — 原子块(起止之间不含其他块起点)给出
+        // 节次行, 连排事件映射为跨块节次区间; 不再走逐事件收割。旧法两个缺陷:
+        // 同一时刻"最长事件步数"套给该时刻所有事件(08:00-09:40 被拉成 1-4 节),
+        // 以及长事件 start 写进共享 endNode.start(第4节 08:00-11:40 时间倒挂)。
+        val neuBlocks = if (isNeuIcs) analyzeNeuBlocks(text) else emptyList()
         // 全校作息收割: 节次 → (start,end)。每个 VEVENT 直接给出
         // node[首节].start=DTSTART, node[末节].end=DTEND, 中间节次按边界推导。
         val nodeTimes = TreeMap<Int, Pair<LocalTime, LocalTime>>()
@@ -452,13 +454,14 @@ object ScheduleParser {
             val dtstart = extractIcsDate(block) ?: continue
             val explicitNode = extractIcsNode(description)
             val inferredNode = explicitNode
-                ?: (if (isNeuIcs) extractNeuTime(block, neuTimeNodes)
+                ?: (if (isNeuIcs) neuSpanFor(neuBlocks, block)
                 else extractIcsTime(block))
                 ?: continue
             val (startNode, step) = inferredNode
 
-            // 作息收割: 有节次行 + 有起止钟点才有贡献(Sleepy 自家导出也满足)
-            harvestNodeTimes(block, startNode, step, nodeTimes)
+            // 作息收割: NEU 走块模型整表重建(buildNeuTimetable), 不逐事件合并;
+            // 非 NEU (如 WakeUp 导出带 DESCRIPTION 第X-Y节) 保留逐事件收割。
+            if (!isNeuIcs) harvestNodeTimes(block, startNode, step, nodeTimes)
 
             val rrule = extractIcsField(block, "RRULE") ?: ""
             val interval = if (rrule.contains("INTERVAL=2")) 2 else 1
@@ -557,12 +560,14 @@ object ScheduleParser {
             }
         }
 
+        // NEU: 整表由块模型重建(与事件写入顺序无关); 非 NEU: 逐事件收割结果。
+        val timeMap = if (isNeuIcs) buildNeuTimetable(neuBlocks) else nodeTimes
         return lossless(
             "导入的 ICS 课表",
             anchor.toString(),
             courses,
-            buildTimeJson(nodeTimes),
-            if (nodeTimes.isEmpty()) 0 else nodeTimes.lastKey()
+            buildTimeJson(timeMap),
+            if (timeMap.isEmpty()) 0 else timeMap.lastKey()
         )
     }
 
@@ -638,48 +643,89 @@ object ScheduleParser {
             ?.trim()
     }
 
+    /** NEU 教学块: [start,end] 时钟区间 → [firstNode, firstNode+nodeCount-1] 节次区间 */
+    private data class NeuBlock(
+        val start: LocalTime,
+        val end: LocalTime,
+        val nodeCount: Int,
+        val firstNode: Int
+    ) {
+        val lastNode: Int get() = firstNode + nodeCount - 1
+    }
+
     /**
-     * NEU ICS 的特殊逻辑节次: 五个按时钟排序的教学块固定从 1、3、5、7、9 节开始，
-     * 块间空档不占节次。同一开始时刻可能同时出现跨多个教学块的事件，取最长事件的步数，
-     * 但不让它改变后续教学块的固定起点。
-     * 显式 DESCRIPTION 节次在调用方优先，本函数只处理 NEU 的无描述导出。
+     * issue #28: NEU ICS 节次重建的块模型。
+     *
+     * 从全部 VEVENT 的 (DTSTART, DTEND) 形态推导教学块: **原子块** = 起止之间
+     * 不含其他事件开始时刻的形态(如 08:00-09:40; 08:00-11:40 中间含 10:00 →
+     * 是跨块连排, 不是块)。块宽按 50min/节(45课+5间)从块自身时长四舍五入,
+     * 节次编号从 1 跨块累加; 块间空档(午休/晚休)不占节次。
      */
-    private fun buildNeuTimeNodes(text: String): Map<LocalTime, Pair<Int, Int>> {
-        val durationsByStart = text.split("BEGIN:VEVENT").drop(1).mapNotNull { raw ->
-            val end = raw.indexOf("END:VEVENT")
-            val block = if (end > 0) raw.substring(0, end) else raw
+    private fun analyzeNeuBlocks(text: String): List<NeuBlock> {
+        val shapes = text.split("BEGIN:VEVENT").drop(1).mapNotNull { raw ->
+            val endIdx = raw.indexOf("END:VEVENT")
+            val block = if (endIdx > 0) raw.substring(0, endIdx) else raw
             val start = extractIcsField(block, "DTSTART")?.substringAfter("T")?.take(6)
                 ?.let { runCatching { parseIcsTimeOfDay(it) }.getOrNull() }
             val finish = extractIcsField(block, "DTEND")?.substringAfter("T")?.take(6)
                 ?.let { runCatching { parseIcsTimeOfDay(it) }.getOrNull() }
-            if (start == null || finish == null || !start.isBefore(finish)) {
-                null
-            } else {
-                val duration = (finish.toSecondOfDay() - start.toSecondOfDay()) / 60.0
-                start to duration
-            }
-        }.groupBy({ it.first }, { it.second })
-
-        return durationsByStart.keys.sorted().mapIndexed { index, start ->
-            val step = durationsByStart.getValue(start).maxOrNull()
-                ?.div(50.0)
-                ?.roundToInt()
-                ?.coerceAtLeast(1)
-                ?: 1
-            start to (index * 2 + 1 to step)
-        }.toMap()
+            if (start == null || finish == null || !start.isBefore(finish)) null else start to finish
+        }
+        val startTimes = shapes.map { it.first }.distinct().sorted()
+        var acc = 1
+        return startTimes.mapIndexed { i, s ->
+            // 原子块终点 = 该开始时刻所有事件里最早的结束时刻(连排事件的终点属于后面的块)
+            val end = shapes.filter { it.first == s }.minOf { it.second }
+            val nodeCount = Math.round(java.time.Duration.between(s, end).toMinutes() / 50.0)
+                .toInt().coerceAtLeast(1)
+            NeuBlock(s, end, nodeCount, acc).also { acc += nodeCount }
+        }
     }
 
-    private fun extractNeuTime(
-        block: String,
-        nodes: Map<LocalTime, Pair<Int, Int>>
-    ): Pair<Int, Int>? {
+    /**
+     * 事件 → 节次区间。终点恰好是某块终点 → 精确跨块(块 i 到块 j);
+     * 否则按起点块的每节分钟数折算步数。
+     * 显式 DESCRIPTION 节次在调用方优先, 本函数只处理 NEU 的无描述导出。
+     */
+    private fun neuSpanFor(blocks: List<NeuBlock>, block: String): Pair<Int, Int>? {
         val dtstart = extractIcsField(block, "DTSTART") ?: return null
+        val dtend = extractIcsField(block, "DTEND") ?: return null
         val start = runCatching {
             parseIcsTimeOfDay(dtstart.substringAfter("T").take(6))
         }.getOrNull() ?: return null
-        val hit = nodes[start] ?: return null
-        return hit.first to hit.second
+        val end = runCatching {
+            parseIcsTimeOfDay(dtend.substringAfter("T").take(6))
+        }.getOrNull() ?: return null
+        val i = blocks.indexOfFirst { it.start == start }
+        if (i < 0) return null
+        val b = blocks[i]
+        val j = blocks.indexOfFirst { it.end == end }
+        if (j > i) return b.firstNode to (blocks[j].lastNode - b.firstNode + 1)
+        val perNode = java.time.Duration.between(b.start, b.end).toMinutes().toDouble() / b.nodeCount
+        val step = Math.round(java.time.Duration.between(start, end).toMinutes() / perNode)
+            .toInt().coerceAtLeast(1)
+        return b.firstNode to step
+    }
+
+    /**
+     * 块模型 → 节次时间表: 块内均匀插值(块首节 start=块起点, 块末节 end=块终点),
+     * 块间空档不产生行。与事件写入顺序无关。
+     */
+    private fun buildNeuTimetable(blocks: List<NeuBlock>): TreeMap<Int, Pair<LocalTime, LocalTime>> {
+        val out = TreeMap<Int, Pair<LocalTime, LocalTime>>()
+        for (b in blocks) {
+            val startSec = b.start.toSecondOfDay()
+            val endSec = b.end.toSecondOfDay()
+            val perNodeSec = (endSec - startSec).toDouble() / b.nodeCount
+            for (k in 0 until b.nodeCount) {
+                val s = LocalTime.ofSecondOfDay(Math.round(startSec + k * perNodeSec).toLong())
+                    .truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
+                val e = LocalTime.ofSecondOfDay(Math.round(startSec + (k + 1) * perNodeSec).toLong())
+                    .truncatedTo(java.time.temporal.ChronoUnit.MINUTES)
+                out[b.firstNode + k] = s to e
+            }
+        }
+        return out
     }
 
     /** 从 DTSTART/DTEND 提取节次（按 45min课+5min课间≈50min/节估算；DESCRIPTION 无"第X-Y节"时的兜底） */
