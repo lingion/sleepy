@@ -15,7 +15,10 @@ data class WidgetEditScope(
     val widgetId: Int,
     val currentBinding: Long?,
     val availableTables: List<TimeTableEntity>,
-    val onSelectTable: (Long?) -> Unit
+    val onSelectTable: (Long?) -> Unit,
+    /** issue#26: 全部小组件共享一档 — widget 场景 课程名显示 原名/别名 */
+    val useAlias: Boolean = false,
+    val onUseAliasChange: (Boolean) -> Unit = {}
 )
 
 /**

@@ -301,6 +301,10 @@
     <string name="settings_week_two_column_days">Split days evenly</string>
     <string name="settings_week_two_column_balance">Balance by course count</string>
     <string name="settings_week_hide_empty">Hide empty days in week view</string>
+    <string name="settings_week_alias">Week view course names</string>
+    <string name="settings_grid_alias">Grid view course names</string>
+    <string name="settings_name_original">Original</string>
+    <string name="settings_name_alias">Alias</string>
     <string name="settings_show_date">Show dates in grid header</string>
     <string name="settings_conflict_style">Conflicting course style</string>
     <string name="settings_conflict_stack">Stacked offset</string>
@@ -342,6 +346,7 @@
     <string name="widget_create_schedule">Please create a schedule first</string>
     <string name="widget_open_sleepy">Open Sleepy to add</string>
     <string name="widget_edit_section_schedule">Schedule</string>
+    <string name="widget_edit_section_alias">Course name display</string>
     <string name="widget_edit_default_label">Default (follow current schedule)</string>
     <string name="widget_manage_title">Manage Widgets</string>
     <string name="widget_edit_title">Edit Widget</string>

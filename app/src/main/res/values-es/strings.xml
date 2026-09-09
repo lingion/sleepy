@@ -295,6 +295,10 @@
     <string name="settings_week_two_column_days">Reparto fijo de días</string>
     <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
     <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
+    <string name="settings_week_alias">Nombres en la vista semanal</string>
+    <string name="settings_grid_alias">Nombres en la vista de cuadrícula</string>
+    <string name="settings_name_original">Original</string>
+    <string name="settings_name_alias">Alias</string>
     <string name="settings_show_date">Fechas en el encabezado de la cuadrícula</string>
     <string name="settings_conflict_style">Estilo de clases en conflicto</string>
     <string name="settings_conflict_stack">Apilado con desplazamiento</string>
@@ -336,6 +340,7 @@
     <string name="widget_create_schedule">Por favor cree un horario primero</string>
     <string name="widget_open_sleepy">Abre Sleepy para agregar</string>
     <string name="widget_edit_section_schedule">Horario mostrado</string>
+    <string name="widget_edit_section_alias">Visualización del nombre</string>
     <string name="widget_edit_default_label">Predeterminado (sigue el horario actual)</string>
     <string name="widget_manage_title">Administrar widgets del escritorio</string>
     <string name="widget_edit_title">Editar widget</string>
