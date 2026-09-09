@@ -215,6 +215,7 @@
     <string name="course_basic_info">Basic Info</string>
     <string name="course_basic_info_sub">Teacher and room are shared; one course can have multiple time slots</string>
     <string name="course_name_required">Course Name *</string>
+    <string name="course_alias">Alias (optional)</string>
     <string name="course_teacher">Teacher</string>
     <string name="course_room">Room</string>
     <string name="course_note">Note (optional)</string>

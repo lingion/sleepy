@@ -210,6 +210,7 @@
     <string name="course_basic_info">課程基本資訊</string>
     <string name="course_basic_info_sub">老師、地點統一填寫；一門課可以掛多個時段</string>
     <string name="course_name_required">課程名 *</string>
+    <string name="course_alias">別名 (可選)</string>
     <string name="course_teacher">老師</string>
     <string name="course_room">地點 / 教室</string>
     <string name="course_note">備註（可選）</string>

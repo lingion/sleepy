@@ -210,6 +210,7 @@
     <string name="course_basic_info">基本情報</string>
     <string name="course_basic_info_sub">教員・教室は共通。1つの授業に複数の時限を設定できます</string>
     <string name="course_name_required">授業名 *</string>
+    <string name="course_alias">別名 (任意)</string>
     <string name="course_teacher">教員</string>
     <string name="course_room">教室</string>
     <string name="course_note">メモ（任意）</string>

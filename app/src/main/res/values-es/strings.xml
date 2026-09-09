@@ -210,6 +210,7 @@
     <string name="course_basic_info">Información básica</string>
     <string name="course_basic_info_sub">Profesor y aula son compartidos; un curso puede tener múltiples horarios</string>
     <string name="course_name_required">Nombre del curso *</string>
+    <string name="course_alias">Alias (opcional)</string>
     <string name="course_teacher">Profesor</string>
     <string name="course_room">Aula</string>
     <string name="course_note">Nota (opcional)</string>

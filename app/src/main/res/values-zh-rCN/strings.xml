@@ -219,6 +219,7 @@
     <string name="course_basic_info">课程基础信息</string>
     <string name="course_basic_info_sub">老师、地点统一填写；一门课可以挂多个时段块</string>
     <string name="course_name_required">课程名 *</string>
+    <string name="course_alias">别名 (可选)</string>
     <string name="course_teacher">老师</string>
     <string name="course_room">地点 / 教室</string>
     <string name="course_note">备注（可选）</string>
