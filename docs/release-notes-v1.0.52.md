@@ -22,12 +22,17 @@ Pressing a widget's edit control on the launcher opens this in-app editor direct
 
 The import preview now warns when a course name appears with more than one location or teacher, instead of merging them silently. Each block keeps its own teacher, room, note, and color. Colors can be automatic, per-group, or custom. Edits apply per row, so fixing one block no longer rewrites the whole course.
 
-### UCAS, Beihang, and Northeastern University
+### UCAS and Beihang
 
 - University of Chinese Academy of Sciences (#18): week numbers are read from the course detail page, so grid cells show the real weeks instead of a placeholder. The parsing was checked against the DOM captured in the v1.2 collection package.
 - Beihang University: native import through the school's iEAS system.
-- Northeastern University: native import.
 - The about page credits the public repositories behind these adaptations.
+
+### Northeastern University
+
+Northeastern University (jwxt.neu.edu.cn) imports through the school's mobile JSON API: the app reads the current term from the login session, picks the campus, then POSTs the schedule detail form and parses the returned course list (#27). The parser keeps every week/room group a course carries, recognizes lab courses, fills rooms that only name a campus as "待定" (to be assigned), and odd/even week ranges end at the correct week.
+
+This adaptation comes from @jim139129 (PR #29), who verified the import with a real school account.
 
 ## Fixes
 
@@ -45,16 +50,17 @@ The import preview now warns when a course name appears with more than one locat
 ## Known Limitations
 
 - The UCAS detail-page parsing was verified against captured DOM, not against the live system with a school account. If the school changes the page, the parser needs re-checking.
+- Northeastern University: the import was verified with a real school account by the contributor (PR #29); the maintainer has no NEU account. If the school changes the API paths or the response shape, the parser needs re-checking.
 - `jw.ahu.edu.cn` (added in v1.0.51): reachable off campus, but no import has been run with a real account (the maintainer has no AHU account). Unchanged since v1.0.51.
 - `jwxt.nit.net.cn` (added in v1.0.45): campus network or VPN only; off-campus access times out at the TCP layer. Unchanged since v1.0.45.
 
 ## Verification
 
-- Tests: 1266 cases, 0 failures, 0 errors.
+- Tests: 1270 cases, 0 failures, 0 errors.
 - APK SHA-256:
-  - arm64-v8a: `2bfaf6b3bcbb6b2f9399b173214e02ab4f28858648f2c5d25e2194bea3eeebf1` (2,870,815 bytes)
-  - armeabi-v7a: `a10f8c3942d314a2574e18ca2de29450ffe3ab604b431703bb4fe8f103c67afa` (2,868,123 bytes)
-  - x86_64: `1a5de7ba0330f3034b197ad771889241d8e2174d50da5e7a7d6ec5ddc0b08335` (2,869,921 bytes)
+  - arm64-v8a: `778d1c55a724b04ed2c201d7aeac346909597406472d50d609fe3bca99043b44` (2,870,815 bytes)
+  - armeabi-v7a: `98e9436a3df23e199ceae8a784045e45f481349ea117dfc75b0edf7aee5a6667` (2,868,123 bytes)
+  - x86_64: `39a0f4a4fcdb976ed03c3c604f210df566fbf4576e30bcf8fb2f3885b3da76f6` (2,869,921 bytes)
 - Build: versionName `1.0.52`, versionCode `53`
 
 ---
@@ -83,12 +89,17 @@ The import preview now warns when a course name appears with more than one locat
 
 导入预览发现同名课程有多个地点或老师时会提醒,不再悄悄合并。每个课块保留自己的老师、地点、备注、颜色。颜色可以自动、按组或自定义。修改按行落库,改一个课块不再重写整门课。
 
-### 中国科学院大学、北航、东北大学
+### 中国科学院大学与北航
 
 - 中国科学院大学(#18):周次从课程详情页读取,网格显示真实周次,不再是占位。解析按 v1.2 采集包里的真实 DOM 验证。
 - 北京航空航天大学:走学校 iEAS 系统原生导入。
-- 东北大学:原生导入。
 - 关于页已加这些适配所参考的公开仓库致谢。
+
+### 东北大学
+
+东北大学(jwxt.neu.edu.cn)通过学校移动端 JSON 接口导入:应用从登录会话读当前学期、选校区,再提交课表详情表单,解析返回的课程列表(#27)。解析器保留每门课携带的全部周次/教室组合,识别实验课,只写校区没写教室的填"待定",单双周范围的结束周落到正确的周。
+
+本适配来自 @jim139129(PR #29),适配者已用真实学号验证导入。
 
 ## 修复
 
@@ -106,14 +117,15 @@ The import preview now warns when a course name appears with more than one locat
 ## 已知限制
 
 - UCAS 详情页解析按采集到的 DOM 验证,未用学号在真实系统上跑过导入。学校改版后解析需重查。
+- 东北大学:导入由贡献者用真实学号验证(PR #29);维护者没有东大账号。若学校改动接口路径或响应结构,解析需重查。
 - `jw.ahu.edu.cn`(v1.0.51 收录):校外可达,但没有真实账号跑过导入(维护者没有安大账号)。自 v1.0.51 未变。
 - `jwxt.nit.net.cn`(v1.0.45 收录):仅校内网或 VPN 可达,校外直连在 TCP 层超时。自 v1.0.45 未变。
 
 ## 验证
 
-- 测试: 1266 cases, 0 failures, 0 errors。
+- 测试: 1270 cases, 0 failures, 0 errors。
 - APK SHA-256:
-  - arm64-v8a: `2bfaf6b3bcbb6b2f9399b173214e02ab4f28858648f2c5d25e2194bea3eeebf1`(2,870,815 bytes)
-  - armeabi-v7a: `a10f8c3942d314a2574e18ca2de29450ffe3ab604b431703bb4fe8f103c67afa`(2,868,123 bytes)
-  - x86_64: `1a5de7ba0330f3034b197ad771889241d8e2174d50da5e7a7d6ec5ddc0b08335`(2,869,921 bytes)
+  - arm64-v8a: `778d1c55a724b04ed2c201d7aeac346909597406472d50d609fe3bca99043b44`(2,870,815 bytes)
+  - armeabi-v7a: `98e9436a3df23e199ceae8a784045e45f481349ea117dfc75b0edf7aee5a6667`(2,868,123 bytes)
+  - x86_64: `39a0f4a4fcdb976ed03c3c604f210df566fbf4576e30bcf8fb2f3885b3da76f6`(2,869,921 bytes)
 - 构建: versionName `1.0.52`, versionCode `53`
