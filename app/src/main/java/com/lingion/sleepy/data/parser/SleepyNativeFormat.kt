@@ -8,7 +8,7 @@ import java.util.zip.CRC32
 /**
  * sleepy-v1 原生格式 — 纯函数层(规范: sleepy-v1-终稿规范.md §2/§3/§5/§6.1)。
  *
- * 行式竖线分列: magic 行 `#sleepy-v1` + T(表) / N(作息) / Nd(预设) / C(课程, 恒10列) / z(校验) 行。
+ * 行式竖线分列: magic 行 `#sleepy-v1` + T(表) / N(作息) / Nd(预设) / C(课程, 恒10列, 可选第11列=课程别名 issue#26) / z(校验) 行。
  * 本对象只放无状态的常量与纯函数; 解析见 [SleepyNativeParser], 导出见 [SleepyNativeExporter]。
  */
 object SleepyNativeFormat {

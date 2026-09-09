@@ -138,6 +138,10 @@ object SleepyNativeExporter {
             sb.append('|')
         }
         sb.append('|').append(token)
+        // issue#26: 可选第 11 列 = 课程别名(escape 后写入); 空别名不写列(文件形状与既有 v1 完全一致)
+        if (c.alias.isNotBlank()) {
+            sb.append('|').append(SleepyNativeFormat.escape(c.alias.trim()))
+        }
         return sb.toString()
     }
 
