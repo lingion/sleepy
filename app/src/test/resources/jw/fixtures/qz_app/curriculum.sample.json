@@ -1,0 +1,659 @@
+{
+  "Msg": "success~",
+  "code": "1",
+  "data": [
+    {
+      "date": [
+        {
+          "xqmc": "一",
+          "mxrq": "2026-09-07",
+          "zc": "1",
+          "xqid": "1",
+          "rq": "07"
+        },
+        {
+          "xqmc": "二",
+          "mxrq": "2026-09-08",
+          "zc": "1",
+          "xqid": "2",
+          "rq": "08"
+        },
+        {
+          "xqmc": "三",
+          "mxrq": "2026-09-09",
+          "zc": "1",
+          "xqid": "3",
+          "rq": "09"
+        },
+        {
+          "xqmc": "四",
+          "mxrq": "2026-09-10",
+          "zc": "1",
+          "xqid": "4",
+          "rq": "10"
+        },
+        {
+          "xqmc": "五",
+          "mxrq": "2026-09-11",
+          "zc": "1",
+          "xqid": "5",
+          "rq": "11"
+        },
+        {
+          "xqmc": "六",
+          "mxrq": "2026-09-12",
+          "zc": "1",
+          "xqid": "6",
+          "rq": "12"
+        },
+        {
+          "xqmc": "日",
+          "mxrq": "2026-09-13",
+          "zc": "1",
+          "xqid": "0",
+          "rq": "13"
+        }
+      ],
+      "courses": [
+        {
+          "classWeek": "1-4,6-19",
+          "teacherName": "贾菲璠",
+          "weekNoteDetail": "103,104",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "10304",
+          "classroomNub": "Z5-117",
+          "jx0408id": "827CB0AAF67549C3B0F013009282CDD3",
+          "buildingName": "Z5教学楼",
+          "courseName": "广告策划与创意",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000109",
+          "weekDay": "1",
+          "classroomName": "5-117",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "10:20",
+          "endTIme": "11:50",
+          "location": "5-117",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-19",
+          "teacherName": "冯娇",
+          "weekNoteDetail": "203,204",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "20304",
+          "classroomNub": "Z5-118",
+          "jx0408id": "FB6F1A77295C425A8D0FF63C5801DE4B",
+          "buildingName": "Z5教学楼",
+          "courseName": "数字营销",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000101",
+          "weekDay": "2",
+          "classroomName": "5-118",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "10:20",
+          "endTIme": "11:50",
+          "location": "5-118",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-10",
+          "teacherName": "陈伟",
+          "weekNoteDetail": "303,304",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "30304",
+          "classroomNub": "Z5-103",
+          "jx0408id": "CEC72B3AAF3C4EF59284944D9DB8C9A8",
+          "buildingName": "Z5教学楼",
+          "courseName": "管理学",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000105",
+          "weekDay": "3",
+          "classroomName": "5-103",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "10:20",
+          "endTIme": "11:50",
+          "location": "5-103",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-17",
+          "teacherName": "陈伟",
+          "weekNoteDetail": "307,308",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "30708",
+          "classroomNub": "Z5-105",
+          "jx0408id": "FDFC15AEFD80421AA22598941C6EFA62",
+          "buildingName": "Z5教学楼",
+          "courseName": "财务管理（市场营销专业）",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000095",
+          "weekDay": "3",
+          "classroomName": "5-105",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "15:40",
+          "endTIme": "17:00",
+          "location": "5-105",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-19",
+          "teacherName": "胡美娜",
+          "weekNoteDetail": "401,402",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "40102",
+          "classroomNub": "Z5-117",
+          "jx0408id": "35479FB3F95F43C99537982773924A0B",
+          "buildingName": "Z5教学楼",
+          "courseName": "消费行为分析",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000107",
+          "weekDay": "4",
+          "classroomName": "5-117",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "08:30",
+          "endTIme": "10:00",
+          "location": "5-117",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-19",
+          "teacherName": "陈伟",
+          "weekNoteDetail": "403,404",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "40304",
+          "classroomNub": "Z5-105",
+          "jx0408id": "DDEFE4DCBE224AF88711B85F556CB8F0",
+          "buildingName": "Z5教学楼",
+          "courseName": "管理学",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000105",
+          "weekDay": "4",
+          "classroomName": "5-105",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "10:20",
+          "endTIme": "11:50",
+          "location": "5-105",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-14",
+          "teacherName": "贾菲璠",
+          "weekNoteDetail": "501,502",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "50102",
+          "classroomNub": "Z微机室（二）A102",
+          "jx0408id": "FBA462FB141D4F45BD8E335BBD638CD1",
+          "buildingName": "Z微机室",
+          "courseName": "商务数据分析",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000147",
+          "weekDay": "5",
+          "classroomName": "微机室（二）A102",
+          "khfs": "F笔试+过程性考核",
+          "startTime": "08:30",
+          "endTIme": "10:00",
+          "location": "微机室（二）A102",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-15",
+          "teacherName": "贾菲璠",
+          "weekNoteDetail": "503,504",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "50304",
+          "classroomNub": "Z微机室（二）A102",
+          "jx0408id": "3D1C2692E4CE41DF9846C87ABDBD6251",
+          "buildingName": "Z微机室",
+          "courseName": "商务数据分析",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000147",
+          "weekDay": "5",
+          "classroomName": "微机室（二）A102",
+          "khfs": "F笔试+过程性考核",
+          "startTime": "10:20",
+          "endTIme": "11:50",
+          "location": "微机室（二）A102",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-10",
+          "teacherName": "安金鹏",
+          "weekNoteDetail": "505,506",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "50506",
+          "classroomNub": "Z5-107",
+          "jx0408id": "9EED960170F044E3A672AEA2C5C39F93",
+          "buildingName": "Z5教学楼",
+          "courseName": "短视频策划与制作",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000097",
+          "weekDay": "5",
+          "classroomName": "5-107",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "14:00",
+          "endTIme": "15:30",
+          "location": "5-107",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,",
+          "coursesNote": 2
+        },
+        {
+          "classWeek": "1-4,6-10",
+          "teacherName": "安金鹏",
+          "weekNoteDetail": "507,508",
+          "buttonCode": "0",
+          "xkrs": 69,
+          "ktmc": "2025级市场营销专业2班",
+          "classTime": "50708",
+          "classroomNub": "Z5-107",
+          "jx0408id": "9CFCBBF5DA3E4E8F9334A06BA5FA2C98",
+          "buildingName": "Z5教学楼",
+          "courseName": "短视频策划与制作",
+          "isRepeatCode": "0",
+          "jx0404id": "202620271000097",
+          "weekDay": "5",
+          "classroomName": "5-107",
+          "khfs": "C过程性考核（含项目化、平时作业或作品）",
+          "startTime": "15:40",
+          "endTIme": "17:00",
+          "location": "5-107",
+          "fzmc": "",
+          "classWeekDetails": ",1,2,3,4,6,7,8,9,10,",
+          "coursesNote": 2
+        }
+      ],
+      "nodesLst": [
+        {
+          "nodeName": "第一节",
+          "nodeNumber": "01"
+        },
+        {
+          "nodeName": "第二节",
+          "nodeNumber": "02"
+        },
+        {
+          "nodeName": "第三节",
+          "nodeNumber": "03"
+        },
+        {
+          "nodeName": "第四节",
+          "nodeNumber": "04"
+        },
+        {
+          "nodeName": "第五节",
+          "nodeNumber": "05"
+        },
+        {
+          "nodeName": "第六节",
+          "nodeNumber": "06"
+        },
+        {
+          "nodeName": "第七节",
+          "nodeNumber": "07"
+        },
+        {
+          "nodeName": "第八节",
+          "nodeNumber": "08"
+        },
+        {
+          "nodeName": "第九节",
+          "nodeNumber": "09"
+        },
+        {
+          "nodeName": "第十节",
+          "nodeNumber": "10"
+        },
+        {
+          "nodeName": "第十一节",
+          "nodeNumber": "11"
+        },
+        {
+          "nodeName": "第十二节",
+          "nodeNumber": "12"
+        }
+      ],
+      "item": [
+        [
+          [
+            {
+              "classWeek": "1-4,6-19",
+              "teacherName": "贾菲璠",
+              "weekNoteDetail": "103,104",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "10304",
+              "classroomNub": "Z5-117",
+              "jx0408id": "827CB0AAF67549C3B0F013009282CDD3",
+              "buildingName": "Z5教学楼",
+              "courseName": "广告策划与创意",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000109",
+              "weekDay": "1",
+              "classroomName": "5-117",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "10:20",
+              "endTIme": "11:50",
+              "location": "5-117",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+              "coursesNote": 2
+            }
+          ]
+        ],
+        [
+          [
+            {
+              "classWeek": "1-4,6-19",
+              "teacherName": "冯娇",
+              "weekNoteDetail": "203,204",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "20304",
+              "classroomNub": "Z5-118",
+              "jx0408id": "FB6F1A77295C425A8D0FF63C5801DE4B",
+              "buildingName": "Z5教学楼",
+              "courseName": "数字营销",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000101",
+              "weekDay": "2",
+              "classroomName": "5-118",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "10:20",
+              "endTIme": "11:50",
+              "location": "5-118",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+              "coursesNote": 2
+            }
+          ]
+        ],
+        [
+          [
+            {
+              "classWeek": "1-4,6-10",
+              "teacherName": "陈伟",
+              "weekNoteDetail": "303,304",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "30304",
+              "classroomNub": "Z5-103",
+              "jx0408id": "CEC72B3AAF3C4EF59284944D9DB8C9A8",
+              "buildingName": "Z5教学楼",
+              "courseName": "管理学",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000105",
+              "weekDay": "3",
+              "classroomName": "5-103",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "10:20",
+              "endTIme": "11:50",
+              "location": "5-103",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,",
+              "coursesNote": 2
+            }
+          ],
+          [
+            {
+              "classWeek": "1-4,6-17",
+              "teacherName": "陈伟",
+              "weekNoteDetail": "307,308",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "30708",
+              "classroomNub": "Z5-105",
+              "jx0408id": "FDFC15AEFD80421AA22598941C6EFA62",
+              "buildingName": "Z5教学楼",
+              "courseName": "财务管理（市场营销专业）",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000095",
+              "weekDay": "3",
+              "classroomName": "5-105",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "15:40",
+              "endTIme": "17:00",
+              "location": "5-105",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,",
+              "coursesNote": 2
+            }
+          ]
+        ],
+        [
+          [
+            {
+              "classWeek": "1-4,6-19",
+              "teacherName": "胡美娜",
+              "weekNoteDetail": "401,402",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "40102",
+              "classroomNub": "Z5-117",
+              "jx0408id": "35479FB3F95F43C99537982773924A0B",
+              "buildingName": "Z5教学楼",
+              "courseName": "消费行为分析",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000107",
+              "weekDay": "4",
+              "classroomName": "5-117",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "08:30",
+              "endTIme": "10:00",
+              "location": "5-117",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+              "coursesNote": 2
+            }
+          ],
+          [
+            {
+              "classWeek": "1-4,6-19",
+              "teacherName": "陈伟",
+              "weekNoteDetail": "403,404",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "40304",
+              "classroomNub": "Z5-105",
+              "jx0408id": "DDEFE4DCBE224AF88711B85F556CB8F0",
+              "buildingName": "Z5教学楼",
+              "courseName": "管理学",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000105",
+              "weekDay": "4",
+              "classroomName": "5-105",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "10:20",
+              "endTIme": "11:50",
+              "location": "5-105",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19,",
+              "coursesNote": 2
+            }
+          ]
+        ],
+        [
+          [
+            {
+              "classWeek": "1-4,6-14",
+              "teacherName": "贾菲璠",
+              "weekNoteDetail": "501,502",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "50102",
+              "classroomNub": "Z微机室（二）A102",
+              "jx0408id": "FBA462FB141D4F45BD8E335BBD638CD1",
+              "buildingName": "Z微机室",
+              "courseName": "商务数据分析",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000147",
+              "weekDay": "5",
+              "classroomName": "微机室（二）A102",
+              "khfs": "F笔试+过程性考核",
+              "startTime": "08:30",
+              "endTIme": "10:00",
+              "location": "微机室（二）A102",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,",
+              "coursesNote": 2
+            }
+          ],
+          [
+            {
+              "classWeek": "1-4,6-15",
+              "teacherName": "贾菲璠",
+              "weekNoteDetail": "503,504",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "50304",
+              "classroomNub": "Z微机室（二）A102",
+              "jx0408id": "3D1C2692E4CE41DF9846C87ABDBD6251",
+              "buildingName": "Z微机室",
+              "courseName": "商务数据分析",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000147",
+              "weekDay": "5",
+              "classroomName": "微机室（二）A102",
+              "khfs": "F笔试+过程性考核",
+              "startTime": "10:20",
+              "endTIme": "11:50",
+              "location": "微机室（二）A102",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,11,12,13,14,15,",
+              "coursesNote": 2
+            }
+          ],
+          [
+            {
+              "classWeek": "1-4,6-10",
+              "teacherName": "安金鹏",
+              "weekNoteDetail": "505,506",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "50506",
+              "classroomNub": "Z5-107",
+              "jx0408id": "9EED960170F044E3A672AEA2C5C39F93",
+              "buildingName": "Z5教学楼",
+              "courseName": "短视频策划与制作",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000097",
+              "weekDay": "5",
+              "classroomName": "5-107",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "14:00",
+              "endTIme": "15:30",
+              "location": "5-107",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,",
+              "coursesNote": 2
+            }
+          ],
+          [
+            {
+              "classWeek": "1-4,6-10",
+              "teacherName": "安金鹏",
+              "weekNoteDetail": "507,508",
+              "buttonCode": "0",
+              "xkrs": 69,
+              "ktmc": "2025级市场营销专业2班",
+              "classTime": "50708",
+              "classroomNub": "Z5-107",
+              "jx0408id": "9CFCBBF5DA3E4E8F9334A06BA5FA2C98",
+              "buildingName": "Z5教学楼",
+              "courseName": "短视频策划与制作",
+              "isRepeatCode": "0",
+              "jx0404id": "202620271000097",
+              "weekDay": "5",
+              "classroomName": "5-107",
+              "khfs": "C过程性考核（含项目化、平时作业或作品）",
+              "startTime": "15:40",
+              "endTIme": "17:00",
+              "location": "5-107",
+              "fzmc": "",
+              "classWeekDetails": ",1,2,3,4,6,7,8,9,10,",
+              "coursesNote": 2
+            }
+          ]
+        ],
+        [],
+        []
+      ],
+      "week": 1,
+      "nodes": {
+        "sw": [
+          "01",
+          "02",
+          "03",
+          "04"
+        ],
+        "ws": [
+          "09",
+          "10",
+          "11",
+          "12"
+        ],
+        "zw": [],
+        "xw": [
+          "05",
+          "06",
+          "07",
+          "08"
+        ]
+      },
+      "weekday": "一",
+      "topInfo": [
+        {
+          "semesterId": "2026-2027-1",
+          "week": "1",
+          "today": "2026-09-07",
+          "weekday": "星期一",
+          "maxWeek": "20"
+        }
+      ]
+    }
+  ],
+  "needClassName": "1",
+  "needClassRoomNub": "1"
+}

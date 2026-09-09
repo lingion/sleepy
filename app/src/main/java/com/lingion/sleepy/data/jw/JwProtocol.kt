@@ -65,6 +65,20 @@ object JwProtocol {
      */
     const val TYPE_QZ_IEAS = "qz_ieas"
 
+    /**
+     * 强智移动教务 SPA（qzdatasoft 移动端，`/dist/#/login` 单页应用 + `/njwhd` JSON API）。
+     * 首校: 河北资源环境职业技术学院 (jwpt.hebzyhj.edu.cn:1233, schoolCode 50139,
+     * 2026-09-09 学生回传采集包实锤)。登录态 = sessionStorage.Token (JWT)，请求头
+     * `token: <JWT>`；课表 POST /njwhd/student/curriculum?week=&kbjcmsid= 一次性返回
+     * 全学期 courses[]: classTime = 星期+起止节 (WDDSS EE, 如 "10304"=周一3-4节)、
+     * classWeek "1-4,6-19" 区间串、classWeekDetails 逗号位图串、ktmc 班级名。
+     * API 前缀 (/njwhd) 各校部署可不同 → fetch JS 先 GET /dist/serverconfig.json
+     * (免鉴权) 发现 ApiUrl，禁止硬编码。同 host 常并存经典强智 /jsxsd/ (serverconfig
+     * SelectUrl)，但移动端账号体系独立，不走经典 HTML 网格。
+     * 上游协议形态: 时光课程表 qz 移动端适配器形态（仅字段形态参考，算法自写）。
+     */
+    const val TYPE_QZ_APP = "qz_app"
+
     /** 中国科学院大学选课系统：personSchedule 服务端 HTML 课表网格。 */
     const val TYPE_UCAS = "ucas"
 
@@ -172,7 +186,7 @@ object JwProtocol {
         TYPE_CF, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
-        TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_IEAS, TYPE_UCAS, TYPE_QZ_OLD,
+        TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_IEAS, TYPE_QZ_APP, TYPE_UCAS, TYPE_QZ_OLD,
     )
 
     /**
@@ -180,6 +194,7 @@ object JwProtocol {
      */
     fun displayName(type: String?): String = when (type) {
         TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE -> "强智教务"
+        TYPE_QZ_APP -> "强智移动教务"
         TYPE_QZ_IEAS -> "强智教务（iEAS 网络版）"
         TYPE_UCAS -> "国科大选课系统"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "正方教务"
@@ -210,7 +225,7 @@ object JwProtocol {
      * 协议大类，用于 WebViewLogin UI 上的提示文案分类
      */
     fun category(type: String?): String = when (type) {
-        TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE -> "qz"
+        TYPE_QZ, TYPE_QZ_OLD, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_APP -> "qz"
         TYPE_QZ_IEAS -> "qz"
         TYPE_UCAS -> "other"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"

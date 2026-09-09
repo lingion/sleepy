@@ -233,6 +233,13 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, CHAOXING_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 强智移动教务 SPA: 课表只在移动 JSON API 里 (token header 鉴权), 页面 HTML
+                    // 无课程数据。先 GET /dist/serverconfig.json (免鉴权) 发现 ApiUrl (前缀
+                    // 各校部署可不同, 禁硬编码), 再带 sessionStorage.Token POST 课表。
+                    if (school.type == JwProtocol.TYPE_QZ_APP) {
+                        evaluateFetchWithTimeout(wv, QZ_APP_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // 合工大 EAMS5: 三段 fetch (for-std/course-table → for-std/lessons → POST schedule-table/datum)
                     // 用户已在 WebView 走完 CAS 登录并落到教务域。supwisdom 新版部署
                     // 前缀分两形态：合工大 /eams5-student、安大/矿大北京 /student —
@@ -789,6 +796,66 @@ private const val CHAOXING_FETCH_JS = """
     });
   } catch(e) {
     window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
+  }
+})()"""
+
+/**
+ * 强智移动教务 SPA (type=qz_app) 课表 JSON 抓取。
+ *
+ * 课表只在 {ApiUrl}/student/curriculum 移动 JSON API 中 (token header 鉴权), 页面
+ * HTML 无课程数据。链路: 相对路径 serverconfig.json (各校部署根可不同, 先试当前
+ * 目录再试 /dist/serverconfig.json) 免鉴权发现 ApiUrl → sessionStorage.Token 作
+ * `token` 请求头 POST 课表 → 透传 JSON。未登录 (无 Token) 或会话过期 (code:401)
+ * 直接报错, 不落伪"空学期"。JS 只做 fetch 与传输层状态路由, 协议字段解码全部在
+ * JwQzAppParser (跨语言 invariant)。
+ */
+const val QZ_APP_FETCH_JS = """
+(function(){
+  try {
+    var post = function(obj){
+      window.__sleepyBridge.onWiseduResult(JSON.stringify(obj));
+    };
+    var token = '';
+    try { token = sessionStorage.getItem('Token') || ''; } catch(e) {}
+    if (!token) {
+      post({ok:false, err:'未取到登录令牌: 请先登录移动教务后再点导入'});
+      return;
+    }
+    var getCfg = function(url){
+      return fetch(url, {credentials:'include'})
+        .then(function(r){
+          if (!r.ok) { throw new Error('serverconfig.json HTTP ' + r.status); }
+          return r.json();
+        });
+    };
+    getCfg('serverconfig.json')
+      .catch(function(){
+        return getCfg('/dist/serverconfig.json');
+      })
+      .then(function(cfg){
+        var apiUrl = String(cfg.ApiUrl || '').replace(/\/+$/,'');
+        if (!apiUrl) { throw new Error('serverconfig.json 缺 ApiUrl'); }
+        return fetch(apiUrl + '/student/curriculum?week=&kbjcmsid=', {
+          method:'POST',
+          credentials:'include',
+          headers: { 'token': token }
+        });
+      })
+      .then(function(r){ return r.text(); })
+      .then(function(text){
+        var expired = false;
+        try { expired = JSON.parse(text).code == '401'; } catch(e) {}
+        if (expired) {
+          post({ok:false, err:'登录已过期: 请重新登录后再点导入'});
+          return;
+        }
+        post({ok:true, data: text});
+      })
+      .catch(function(e){
+        post({ok:false, err:String(e && e.message || e)});
+      });
+  } catch(err) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(err)}));
   }
 })()"""
 
