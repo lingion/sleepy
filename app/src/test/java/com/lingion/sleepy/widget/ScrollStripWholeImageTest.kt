@@ -125,38 +125,40 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 调用方: v7 overflow = TwoDay 同构 (壳图+条带) + 上方 bar 行 ----
-    // 2026-09-10 用户定稿: 「最近两日的那个小组件它怎么做你就怎么做, 然后在上面
-    // 加一个切换的 bar」。v6 无壳 (shellBitmap=null) 翻车: 条带异步加载期间整卡透明。
-    // v7 回归真机已证安全的 TwoDay 双层 (widget_scroll_twoday 同构) + bar 独立行。
+    // ---- 调用方: v9 overflow = TwoDay overflow 逐字节同构 (头部画进长图随滚) ----
+    // 2026-09-10 用户放弃 overflow 左右切换: 「今日的就不搞左右切换了…样子就是跟
+    // 最近两天一样, 就是这个头部和下面一起滚动」。v7/v8 的 bar 行 + 去头条带 +
+    // viewport 钉高在真机仍翻车 (巨卡), 整体退场 — 回到同台 OPPO 一直正常的
+    // TwoDay 双层结构 (壳图+条带, stripHeaderless 缺省 false)。
+    // v6 无壳 (shellBitmap=null) 翻车教训保留: overflow 必须有壳图兜底。
 
     @Test
     fun `today nav overflow uses twoday-identical shell plus strip with bar row`() {
         val src = widgetSource("TodayWidget.kt").readText()
-        val body = src.substringAfter("Today 系 overflow")
+        val body = src.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         assertTrue(
-            "v7 overflow 必须走 pushScrollable (竖排滑动)",
+            "v9 overflow 必须走 pushScrollable (竖排滑动)",
             body.contains("pushScrollable")
         )
         assertTrue(
-            "v7 overflow 必须用 widget_today_overflow (bar 行 + TwoDay 同构滚动层)",
-            body.contains("widget_today_overflow")
+            "v9 overflow 必须用 widget_scroll_today (TwoDay 同构滚动层, 头部随内容滚)",
+            body.contains("widget_scroll_today")
         )
         assertTrue(
-            "v7 overflow 必须有壳图 (TwoDay 同构: 条带加载期间壳图兜底, 不透明闪空)",
+            "v9 overflow 必须有壳图 (TwoDay 同构: 条带加载期间壳图兜底, 不透明闪空)",
             body.contains("renderToday(")
         )
         assertTrue(
-            "v7 overflow 条带去头不留空档 (bar 是布局独立行)",
-            body.contains("stripHeaderless = true")
+            "v9 overflow 条带必须带头 (stripHeaderless 缺省 false = 头部画进长图随滚)",
+            !body.contains("stripHeaderless")
         )
         assertTrue(
-            "v7 overflow 禁翻页残留 (TodayPagerCore 已删)",
+            "v9 overflow 禁 bar 行 (widget_today_overflow 已删, configureTodayOverflow 已删)",
+            !body.contains("widget_today_overflow") && !src.contains("configureTodayOverflow")
+        )
+        assertTrue(
+            "v9 overflow 禁翻页残留 (TodayPagerCore 已删)",
             !body.contains("TodayPagerCore")
-        )
-        assertTrue(
-            "v7 overflow 顶栏走 configureTodayOverflow (三键, 非静态档四件套)",
-            body.contains("configureTodayOverflow")
         )
         // 取证标签: 所有元素 drawn or not 全打标 — spacer 也要有 (静态分支仍在用)
         val nav = src.substringAfter("fun configureTodayNav(")
@@ -168,65 +170,27 @@ class ScrollStripWholeImageTest {
     }
 
     @Test
-    fun `overflow layout is bar row above twoday-identical scroll layer`() {
-        // v7 结构铁律: bar 行在上 (36dp, 三键), 滚动层 1:1 抄 widget_scroll_twoday
-        // (壳图 ImageView + 条带 ListView) — 用户定稿: 最近两天怎么做就怎么做。
-        val xml = layoutFile("widget_today_overflow.xml").readText()
+    fun `overflow scroll layer is twoday-identical unbarred frame`() {
+        // v9 结构铁律: overflow 布局 = widget_scroll_today 与 !navEnabled 分支共用
+        // (根 FrameLayout 直下 match_parent ListView — 全网 collection widget 标准形态,
+        // v7 的 weight 分层是唯一翻车过的宿主结构)。bar 行布局必须已物理删除。
+        val xml = layoutFile("widget_scroll_today.xml").readText()
+        // 壳图 ImageView (widget_shell, fitXY) + 条带 ListView (match_parent)
         assertTrue(
-            "根容器须 LinearLayout vertical (bar 行 + 滚动层竖排)",
-            Regex("LinearLayout[^>]*android:orientation=\"vertical\"").containsMatchIn(xml)
-        )
-        // 滚动层 = TwoDay 同构: 壳图 ImageView (widget_shell, fitXY) + 条带 ListView (weight=1)
-        assertTrue(
-            "滚动层必须有壳图 widget_shell (TwoDay 同构, 条带加载期间兜底)",
+            "滚动层必须有壳图 widget_shell (条带加载期间兜底)",
             xml.contains("widget_shell")
         )
         val shellBlock = xml.substring(xml.indexOf("widget_shell"), xml.indexOf("widget_strip_list"))
         assertTrue(
-            "壳图 scaleType 必须与 widget_scroll_twoday 一致 (fitXY)",
+            "壳图 scaleType 必须 fitXY (TwoDay 同构)",
             shellBlock.contains("fitXY")
         )
-        // bar 行: 三键顺序 prev < title < next, 按钮恒 40x28dp
-        val iPrev = xml.indexOf("widget_today_nav_prev")
-        val iTitle = xml.indexOf("widget_today_nav_title")
-        val iNext = xml.indexOf("widget_today_nav_next")
-        assertTrue("三键顺序 prev<title<next", iPrev >= 0 && iPrev < iTitle && iTitle < iNext)
-        assertTrue("按钮口径 40dp/28dp 保留", xml.contains("40dp") && xml.contains("28dp"))
-        assertTrue("bar 高 36dp (NAV_HEADER_H_DP 口径)", xml.contains("36dp"))
-        // 中键日期: weight=1 + ellipsize → 拉缩只截断标题, 三键结构上永不被挤出
-        val titleBlock = xml.substring(xml.indexOf("widget_today_nav_title"), xml.indexOf("widget_today_nav_next"))
-        assertTrue("标题须 weight=1", titleBlock.contains("layout_weight=\"1\""))
-        assertTrue("标题须 ellipsize (窄卡截断而非挤出 ›)", titleBlock.contains("ellipsize"))
-        // 滚动层 FrameLayout 占满剩余高 (weight=1, TwoDay 的 ListView 就是 match_parent)
-        // + 禁裸 View (@RemoteView 白名单)
-        assertFalse("禁裸 <View>", Regex("<View\\b").containsMatchIn(xml))
-        val scrollBlock = xml.substring(xml.indexOf("widget_today_nav_next"))
-        assertTrue("滚动层须 weight=1 吃满剩余高", scrollBlock.contains("layout_weight=\"1\""))
+        val listBlock = xml.substring(xml.indexOf("widget_strip_list"))
         assertTrue(
-            "条带 ListView 须 match_parent (widget_scroll_twoday 逐行同构)",
-            scrollBlock.contains("match_parent")
+            "条带 ListView 须 match_parent (无 weight 分层, v7 巨卡宿主结构禁回流)",
+            listBlock.contains("match_parent") && !listBlock.contains("layout_weight")
         )
-    }
-
-    @Test
-    fun `overflow header configures three-button zones with labels`() {
-        val src = widgetSource("TodayWidget.kt").readText()
-        val body = src.substringAfter("fun configureTodayOverflow(")
-            .substringBefore("/** 顶栏标题")
-        // 三键 PendingIntent: prev/next 翻天, 日期键回到今天
-        assertTrue("prev→ACTION_PREV_DAY", body.contains("ACTION_PREV_DAY"))
-        assertTrue("next→ACTION_NEXT_DAY", body.contains("ACTION_NEXT_DAY"))
-        assertTrue("日期键→ACTION_RESET_DAY (三键定稿: 无独立回到今天键)",
-            body.contains("ACTION_RESET_DAY"))
-        // 全元素取证标签
-        assertTrue("bar 行打标", body.contains("overflow bar v7"))
-        assertTrue("壳图打标", body.contains("overflow shell v7"))
-        assertTrue("列表打标", body.contains("overflow list v7"))
-        assertTrue("日期键打标 (date=…tap=back-to-today)", body.contains("tap=back-to-today"))
-        assertTrue("prev 打标", body.contains("prev 40x28dp"))
-        assertTrue("next 打标", body.contains("next 40x28dp"))
-        // 底色: bar 行同 scheme setBackgroundColor (滚动层底色由壳图自带, 不再手动补)
-        assertTrue("bar 行底色 setBackgroundColor", body.contains("setBackgroundColor"))
+        assertFalse("禁裸 <View>", Regex("<View\\b").containsMatchIn(xml))
     }
 
     @Test

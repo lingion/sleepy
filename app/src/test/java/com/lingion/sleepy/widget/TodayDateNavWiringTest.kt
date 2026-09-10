@@ -163,8 +163,8 @@ class TodayDateNavWiringTest {
             !src.contains("widget_scroll_today_nav"))
         assertTrue("nav 静态分支必须 emptyHeader=true (bitmap 头部留白)",
             src.contains("emptyHeader = true"))
-        assertTrue("v6 overflow 必须竖排滑动 (pushScrollable + 三键顶栏布局)",
-            src.contains("pushScrollable") && src.contains("widget_today_overflow"))
+        assertTrue("v9 overflow 必须竖排滑动 (pushScrollable + TwoDay 同构滚动层, 头部随内容滚)",
+            src.contains("pushScrollable") && src.contains("widget_scroll_today"))
         assertTrue("v5 翻页机制必须已删净 (TodayPagerCore 废弃)",
             !src.contains("TodayPagerCore") && !src.contains("ACTION_PREV_PAGE"))
         assertTrue("pushTodayData 必须调 configureTodayNav",

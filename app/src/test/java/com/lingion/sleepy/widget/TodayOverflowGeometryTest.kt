@@ -7,22 +7,18 @@ import org.junit.Test
 import java.io.File
 
 /**
- * v8 overflow 几何契约 (2026-09-10, 真机 "巨型圆角卡片" 报障后的修复锁定):
+ * v9 overflow 几何契约 (2026-09-10, 用户放弃 overflow 左右切换后的定稿锁定):
  *
- * 三个被本测试锁死的缺陷 (研究 workflow 三方交叉证实):
- * 1. 镜像失配 — renderTodayRegular 的行几何硬编码 (14+24)dp 起点与 h−52dp 可见窗,
- *    而 todayContentHeightDp(headerSpace=true) 只计 14dp 起点 → 条带长图顶部 24dp
- *    死带 + 最后一行课程被可见过滤丢弃 (Today 是唯一 headerSpace=true 调用方,
- *    TwoDay/WeekList 从未中招)。修法: 行几何抽成单一真值纯函数, 渲染/内容高度
- *    两边同调一份。
- * 2. 巨型卡片根因 — v7 条带 ListView 是第一个不在根 FrameLayout 直下
- *    match_parent 的条带宿主 (卡在 weight=1 FrameLayout 里), viewport 高度
- *    落回 launcher 量测自由 (v2 翻车同源), ColorOS 量错 → 单 child 整图行
- *    (管线里唯一 >38dp 的圆角矩形) 就是那张巨卡。修法: 行 = 每课程行一张卡
- *    (多 child, 各行 setViewLayoutHeight 钉死 38dp/分栏堆叠高), viewport 量错
- *    只影响可视区不再放大整卡 — 退回全网 collection widget 标准形态。
- * 3. overscroll stretch — 拉到边缘 ListView 纵向拉伸整行 (Android 12+ stretch),
- *    条带整图行被拉成跟手巨卡。修法: 全部条带布局 overScrollMode="never"。
+ * v9 = overflow 回归 TwoDay 形态 (用户定稿: 「样子就是跟最近两天一样, 就是这个
+ * 头部和下面一起滚动」): 壳图+条带 ListView 双层, bitmap 头部画进长图随内容滚,
+ * 无 bar 行无导航键。本测试锁死:
+ * 1. 镜像失配根除 (v8 修复保留) — 渲染/内容高度/条带全部经 TodayRowGeometry
+ *    单一真值, 禁再手写 maxStack*rowH 镜像 (v8 之前 24dp 死带 + 丢末行根因)。
+ * 2. overflow 结构 = TwoDay 逐字节同构 — widget_scroll_today (根 FrameLayout +
+ *    match_parent ListView, 无 weight 分层), 壳图带头 (emptyHeader 缺省 false),
+ *    条带带头 (stripHeaderless 缺省 false)。v7/v8 的 bar 行 + 去头条带 + viewport
+ *    钉高全部退场 — 真机巨卡翻车形态整体回撤, 回到同台 OPPO 一直正常的结构。
+ * 3. overscroll stretch 禁用 (v8 修复保留) — 条带布局 overScrollMode="never"。
  */
 class TodayOverflowGeometryTest {
 
@@ -174,21 +170,46 @@ class TodayOverflowGeometryTest {
     }
 
     @Test
-    fun `overflow scroll layer viewport height is server pinned not launcher measured`() {
-        // 巨型卡片根因修复: v7 的条带 ListView 卡在 weight=1 FrameLayout 里,
-        // viewport 高度落回 ColorOS 量测自由 (v2 翻车同源)。v8 = 服务端 setViewLayoutHeight
-        // 显式钉死滚动层高 (hDp − bar 36dp), launcher 失去量测权。
+    fun `nav overflow branch is byte-identical to non-nav overflow pattern`() {
+        // v9 定稿: Today overflow = TwoDay overflow 同构 (壳图按整卡尺寸渲染 + 条带
+        // 带头, 头部画进长图随内容滚)。v7/v8 的 bar 行/去头条带/viewport 钉高整体退场。
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         assertTrue(
-            "v8 overflow 必须显式钉滚动层 viewport 高 (setViewLayoutHeight on 滚动层容器)",
-            body.contains("setViewLayoutHeight")
+            "v9 overflow 必须走 pushScrollable (竖排滑动)",
+            body.contains("pushScrollable")
         )
-        val xml = layoutFile("widget_today_overflow.xml").readText()
         assertTrue(
-            "滚动层容器必须有可寻址 id (服务端钉高目标)",
-            xml.contains("widget_overflow_scroll")
+            "v9 overflow 必须用 widget_scroll_today (与 !navEnabled overflow 同一布局)",
+            body.contains("widget_scroll_today")
         )
+        assertTrue(
+            "v9 overflow 禁 bar 行布局 (widget_today_overflow 已删)",
+            !body.contains("widget_today_overflow")
+        )
+        assertTrue(
+            "v9 overflow 条带必须带头 (stripHeaderless=false = TwoDay 行为, 头部随内容滚)",
+            !body.contains("stripHeaderless")
+        )
+        assertTrue(
+            "v9 overflow 壳图按整卡尺寸渲染 (emptyHeader 缺省 false, 与条带同参)",
+            body.contains("hDp.toFloat()")
+        )
+        val xml = File(layoutDir(), "widget_today_overflow.xml")
+        assertFalse(
+            "widget_today_overflow.xml 布局必须已删 (bar 行形态整体退场)",
+            xml.exists()
+        )
+    }
+
+    private fun layoutDir(): File {
+        var dir: File? = File(".").absoluteFile
+        while (dir != null) {
+            val f = File(dir, "app/src/main/res/layout")
+            if (f.exists()) return f
+            dir = dir.parentFile
+        }
+        error("layout dir not found")
     }
 
     // ---- 修复 3: overscroll stretch 禁用 (Android 12+ 纵向拉伸 = 跟手巨卡) ----
@@ -198,8 +219,7 @@ class TodayOverflowGeometryTest {
         for (lay in listOf(
             "widget_scroll_today.xml",
             "widget_scroll_twoday.xml",
-            "widget_scroll_weeklist.xml",
-            "widget_today_overflow.xml"
+            "widget_scroll_weeklist.xml"
         )) {
             val xml = layoutFile(lay).readText()
             assertTrue(

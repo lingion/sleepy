@@ -5,7 +5,6 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -259,85 +258,6 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             }
         }
 
-        /**
-         * v7 overflow 三键 bar — widget_today_overflow 专用 (2026-09-10 用户定稿:
-         * 装不下时顶栏 = 左 ‹ + 当前显示日期 + 右 ›, 这样总装得下了)。
-         * 与静态档 configureTodayNav 的差异:
-         *   - 无「回到今天」独立键 — 点日期键即回到今天 (三键定稿);
-         *   - 标题恒为当前显示日期 (navTitle 短格式, weight=1+ellipsize 兜底) —
-         *     结构上三键永不被挤出, 不走 NavTier 度量降级;
-         *   - 无 spacer (标题 weight=1 就是弹性槽)。
-         * 滚动层 = TwoDay 同构 (壳图自带底色), bar 行底色同 scheme 补齐。
-         * 全元素打取证标签 (用户要求: 管他有没有画出来)。
-         */
-        fun configureTodayOverflow(
-            context: Context, views: android.widget.RemoteViews,
-            widgetId: Int, receiverClass: Class<*>, data: WidgetData,
-            wDp: Int = 0
-        ) {
-            // bar 行底色 — 与卡面 bitmap 同一 scheme (单一事实来源), 圆角由根容器裁剪
-            val colors = WidgetBitmapRenderers.todayNavHeaderColors(context, data)
-            views.setInt(com.lingion.sleepy.R.id.widget_today_header, "setBackgroundColor", colors.bg)
-            // 中键 = 当前显示日期; 是今天时点它无意义 → 仍回今天 (RESET 幂等)
-            val dateText = data.dateLabel
-            views.setTextViewText(com.lingion.sleepy.R.id.widget_today_nav_title, dateText)
-            views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_title, colors.title)
-            views.setTextViewTextSize(
-                com.lingion.sleepy.R.id.widget_today_nav_title,
-                TypedValue.COMPLEX_UNIT_DIP, 13f
-            )
-            // 取证标签: 日期键文本/语义/宽度 — uiautomator content-desc 可读
-            views.setContentDescription(
-                com.lingion.sleepy.R.id.widget_today_nav_title,
-                "date=$dateText tap=back-to-today isToday=${data.isToday} w=$wDp"
-            )
-            // 三角按钮位图 — 与静态档同款低对比圆角矩形
-            views.setImageViewBitmap(
-                com.lingion.sleepy.R.id.widget_today_nav_prev,
-                WidgetBitmapRenderers.renderNavTriangle(context, data, pointLeft = true)
-            )
-            views.setContentDescription(
-                com.lingion.sleepy.R.id.widget_today_nav_prev, "prev 40x28dp w=$wDp"
-            )
-            views.setImageViewBitmap(
-                com.lingion.sleepy.R.id.widget_today_nav_next,
-                WidgetBitmapRenderers.renderNavTriangle(context, data, pointLeft = false)
-            )
-            views.setContentDescription(
-                com.lingion.sleepy.R.id.widget_today_nav_next, "next 40x28dp w=$wDp"
-            )
-            // 头部容器 + 壳图/列表取证标签
-            views.setContentDescription(
-                com.lingion.sleepy.R.id.widget_today_header,
-                "overflow bar v7 w=$wDp id=$widgetId"
-            )
-            views.setContentDescription(
-                com.lingion.sleepy.R.id.widget_shell,
-                "overflow shell v7 w=$wDp id=$widgetId"
-            )
-            views.setContentDescription(
-                com.lingion.sleepy.R.id.widget_strip_list,
-                "overflow list v7 w=$wDp id=$widgetId"
-            )
-            // 三键语义: ‹› 翻天, 日期 = 回到今天
-            val zones = listOf(
-                Triple(com.lingion.sleepy.R.id.widget_today_nav_prev, ACTION_PREV_DAY, 0),
-                Triple(com.lingion.sleepy.R.id.widget_today_nav_next, ACTION_NEXT_DAY, 1),
-                Triple(com.lingion.sleepy.R.id.widget_today_nav_title, ACTION_RESET_DAY, 2)
-            )
-            for ((viewId, action, ordinal) in zones) {
-                val pi = PendingIntent.getBroadcast(
-                    context, navRequestCode(widgetId, ordinal),
-                    Intent(context, receiverClass).apply {
-                        this.action = action
-                        putExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, widgetId)
-                    },
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                views.setOnClickPendingIntent(viewId, pi)
-            }
-        }
-
         /** 顶栏标题 — 「M/D · 周X」恒显日期 (用户定稿), 今日/导航两态格式统一。纯函数可 JVM 断言。 */
         fun navTitle(data: WidgetData, dayName: String): String =
             "${data.dateLabel} · $dayName"
@@ -466,9 +386,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 TodayWidgetReceiver::class.java.isAssignableFrom(receiverClass)
             val opts = awm.getAppWidgetOptions(id)
             val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
-            // 闸门口径: 非导航路径内容不带顶栏 (headerSpace=false, 与渲染一致);
-            // v8.1: 导航路径 overflow 档条带按 headerSpace=true 渲染 → 闸门也按同一
-            // 口径比对 hDp−bar36 (旧 code 内容高多计 24dp, 装得下也被推进 overflow)
+            // 闸门口径: 所有路径统一按带头口径 (headerSpace=false, 与渲染/条带同参) —
+            // v9 起 overflow 与静态同一把尺, 不再有 bar 行口径分叉
             val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
             if (!navEnabled) {
                 // WeekGrid 最小档 — 改动前行为逐字节一致 (无导航, 无按钮条)
@@ -524,71 +443,25 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 awm.updateAppWidget(id, views)
                 Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH tier=${navHeaderTier(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), data.dateLabel, wDp)}")
             } else {
-                // Today 系 overflow v7 (2026-09-10 用户定稿: 「最近两日的那个小组件它怎么做
-                // 你就怎么做, 然后在上面加一个切换的 bar」):
-                //   滚动层 1:1 抄 TwoDay (壳图+条带 ListView, 同一台 OPPO 一直正常);
-                //   bar 行 = 36dp 三键 ‹ 当前日期 ›, 竖排在上, 与滚动层同级不叠压。
-                // v6 无壳 (shellBitmap=null) 翻车: 条带异步加载期间整卡透明。
-                // 壳图 = renderToday 按【滚动层】尺寸渲染 (容器高 − bar 36dp — TwoDay 壳图
-                // 填满整卡, v7 滚动层被 bar 占走顶部, 按整卡高渲染会被 fitXY 竖向拉伸);
-                // emptyHeader=true + headerSpace=true → 与条带同参, 滚动位 0 首屏逐像素一致。
-                // 条带 stripHeaderless=true + headerSpace → 长图从第一行课程直接起, 无双重头部。
-                // 标题 weight=1+ellipsize → 三键结构上永不被挤出 (度量降级无需介入)。
-                // v8.1 闸门口径: 条带按 headerSpace=true 渲染 (内容高少 24dp), 滚动层高
-                // 是 hDp−36 — 闸门也按同一口径: stripContentH ≤ hDp−36 才谈得上"装得下"。
-                // 旧 code 用 contentH(headerSpace=false) ≤ hDp 比对 → 装得下被推进 overflow。
-                val stripContentH = WidgetBitmapRenderers.todayContentHeightDp(data, headerSpace = true)
-                val shellH = (hDp - WidgetBitmapRenderers.NAV_HEADER_H_DP).coerceAtLeast(40f)
-                if (stripContentH <= shellH) {
-                    // 条带内容在滚动层高内 = 纯静态展示语义 (无滚动收益) → 回退静态分支渲染
-                    // (不再可能出现, 仅防御: shellH < 40 兜底时口径翻转)
-                    val shell = WidgetBitmapRenderers.renderToday(
-                        context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
-                    )
-                    val views = android.widget.RemoteViews(
-                        context.packageName, com.lingion.sleepy.R.layout.widget_today_nav_static
-                    )
-                    views.setImageViewBitmap(com.lingion.sleepy.R.id.widget_bitmap, shell)
-                    views.setContentDescription(
-                        com.lingion.sleepy.R.id.widget_bitmap,
-                        "static ${wDp}x${hDp}dp content=$contentH id=$id fallback-v81"
-                    )
-                    configureTodayNav(context, views, id, receiverClass!!, data, wDp)
-                    if (WidgetResizeCore.isStale(id, pushGen)) {
-                        Log.d(TAG, "skip stale static push id=$id gen=$pushGen")
-                        return
-                    }
-                    awm.updateAppWidget(id, views)
-                    Log.d(TAG, "pushTodayData static-nav(fallback v8.1) id=$id ${wDp}x${hDp}dp content=$contentH")
-                    return
-                }
+                // Today 系 overflow v9 (2026-09-10 用户定稿放弃左右切换: 「今日的就不搞
+                // 左右切换了…样子就是跟最近两天一样, 就是这个头部和下面一起滚动」):
+                //   1:1 抄 TwoDay overflow — 壳图+条带 ListView 双层, bitmap 头部 (日期
+                //   标题) 画进长图随内容一起滚, 无独立 bar 行, 无导航键。
+                // v6 无壳翻车 (条带异步加载期间整卡透明); v7/v8 的 36dp bar 行 + 去头条带
+                // 在真机仍翻车 (巨卡), 一并退场 — 回到同台 OPPO 一直正常的 TwoDay 形态。
+                // 条带不带去头标记 (缺省带头) → 长图从头部标题起 = 壳图同参, 滚动位 0
+                // 首屏与静态渲染逐像素一致 (与 !navEnabled overflow 分支逐字节同构)。
                 val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), shellH, variant,
-                    emptyHeader = true, headerSpace = true
+                    context, data, wDp.toFloat(), hDp.toFloat(), variant
                 )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
-                    layoutRes = com.lingion.sleepy.R.layout.widget_today_overflow,
+                    layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
                     shellBitmap = shell,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
-                    configureViews = { views ->
-                        // v8 巨型卡片根因修复: v7 的条带 ListView 卡在 weight=1 FrameLayout
-                        // 里 = viewport 高度落回 ColorOS 量测自由 (v2 wrap_content 翻车同源,
-                        // 量错 → 单 child 整图行被放大成"巨卡"盖住内容)。服务端按已知几何
-                        // 显式钉死滚动层高 (hDp − bar 36dp), launcher 失去量测权 —
-                        // 与 v3 钉行高同一哲学, 补上 v3 没覆盖的 viewport 一环。
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            views.setViewLayoutHeight(
-                                com.lingion.sleepy.R.id.widget_overflow_scroll,
-                                shellH, TypedValue.COMPLEX_UNIT_DIP
-                            )
-                        }
-                        configureTodayOverflow(context, views, id, receiverClass!!, data, wDp)
-                    },
-                    stripHeaderless = true,
                     pushGen = pushGen
                 )
-                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH (v7 TwoDay同构+三键bar行)")
+                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH (v9 TwoDay同构, 头部随滚)")
             }
         }
 
