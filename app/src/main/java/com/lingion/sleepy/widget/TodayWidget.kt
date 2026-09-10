@@ -466,6 +466,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 TodayWidgetReceiver::class.java.isAssignableFrom(receiverClass)
             val opts = awm.getAppWidgetOptions(id)
             val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
+            // 闸门口径: 非导航路径内容不带顶栏 (headerSpace=false, 与渲染一致);
+            // v8.1: 导航路径 overflow 档条带按 headerSpace=true 渲染 → 闸门也按同一
+            // 口径比对 hDp−bar36 (旧 code 内容高多计 24dp, 装得下也被推进 overflow)
             val contentH = WidgetBitmapRenderers.todayContentHeightDp(data)
             if (!navEnabled) {
                 // WeekGrid 最小档 — 改动前行为逐字节一致 (无导航, 无按钮条)
@@ -493,6 +496,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 }
             } else if (contentH <= hDp) {
                 // Today 系静态分支 — bitmap(emptyHeader 留白顶栏) + 真实视图顶栏 (issue #24)
+                // v8.1 口径: 静态档 bitmap 画 24dp 头部空档 (headerSpace=false), 闸门用
+                // contentH(同口径) ≤ hDp — 与渲染逐字节一致
                 val shell = WidgetBitmapRenderers.renderToday(
                     context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
                 )
@@ -529,7 +534,34 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 // emptyHeader=true + headerSpace=true → 与条带同参, 滚动位 0 首屏逐像素一致。
                 // 条带 stripHeaderless=true + headerSpace → 长图从第一行课程直接起, 无双重头部。
                 // 标题 weight=1+ellipsize → 三键结构上永不被挤出 (度量降级无需介入)。
+                // v8.1 闸门口径: 条带按 headerSpace=true 渲染 (内容高少 24dp), 滚动层高
+                // 是 hDp−36 — 闸门也按同一口径: stripContentH ≤ hDp−36 才谈得上"装得下"。
+                // 旧 code 用 contentH(headerSpace=false) ≤ hDp 比对 → 装得下被推进 overflow。
+                val stripContentH = WidgetBitmapRenderers.todayContentHeightDp(data, headerSpace = true)
                 val shellH = (hDp - WidgetBitmapRenderers.NAV_HEADER_H_DP).coerceAtLeast(40f)
+                if (stripContentH <= shellH) {
+                    // 条带内容在滚动层高内 = 纯静态展示语义 (无滚动收益) → 回退静态分支渲染
+                    // (不再可能出现, 仅防御: shellH < 40 兜底时口径翻转)
+                    val shell = WidgetBitmapRenderers.renderToday(
+                        context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
+                    )
+                    val views = android.widget.RemoteViews(
+                        context.packageName, com.lingion.sleepy.R.layout.widget_today_nav_static
+                    )
+                    views.setImageViewBitmap(com.lingion.sleepy.R.id.widget_bitmap, shell)
+                    views.setContentDescription(
+                        com.lingion.sleepy.R.id.widget_bitmap,
+                        "static ${wDp}x${hDp}dp content=$contentH id=$id fallback-v81"
+                    )
+                    configureTodayNav(context, views, id, receiverClass!!, data, wDp)
+                    if (WidgetResizeCore.isStale(id, pushGen)) {
+                        Log.d(TAG, "skip stale static push id=$id gen=$pushGen")
+                        return
+                    }
+                    awm.updateAppWidget(id, views)
+                    Log.d(TAG, "pushTodayData static-nav(fallback v8.1) id=$id ${wDp}x${hDp}dp content=$contentH")
+                    return
+                }
                 val shell = WidgetBitmapRenderers.renderToday(
                     context, data, wDp.toFloat(), shellH, variant,
                     emptyHeader = true, headerSpace = true
