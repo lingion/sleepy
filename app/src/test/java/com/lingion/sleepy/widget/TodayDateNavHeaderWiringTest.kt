@@ -153,4 +153,21 @@ class TodayDateNavHeaderWiringTest {
                 iTitle < iPrev && iPrev < iToday && iToday < iNext)
         }
     }
+
+    @Test
+    fun `configure activity declares empty taskAffinity and delayed auto-finish`() {
+        // 2026-09-10 真机+模拟器实证: 拖放添加时 launcher 经 ProxyActivityStarter 启动 configure,
+        // 缺省 affinity 下 ActivityRecord 被丢弃 → CanceledException → add 回滚 → "小组件无法添加"。
+        // 守卫: manifest 须 taskAffinity="" 且 first-add auto-finish 须延迟 (≥300ms), 禁回退一帧 post。
+        val mf = findUpward("app/src/main/AndroidManifest.xml").readText()
+        val block = mf.substringAfter("WidgetConfigureActivity")
+            .substringBefore("/>")
+        assertTrue("configure 须 android:taskAffinity=\"\"", block.contains("android:taskAffinity=\"\""))
+        val cfg = widgetSource("WidgetConfigureActivity.kt").readText()
+        assertTrue("first-add finish 须 postDelayed ≥300ms (一帧 post 在 launcher result 回调前送达)",
+            Regex("postDelayed\\(\\s*\\{[^}]*finishWithResult", RegexOption.DOT_MATCHES_ALL)
+                .containsMatchIn(cfg))
+        assertFalse("禁回退到一帧 decorView.post 直 finish (竞态根因)",
+            cfg.contains("decorView.post {"))
+    }
 }

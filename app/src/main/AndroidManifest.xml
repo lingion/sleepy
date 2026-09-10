@@ -261,12 +261,20 @@
             android:label="Widget 预览"
             android:theme="@style/Theme.Sleepy" />
 
-        <!-- Native launcher entry for editing an existing widget -->
+        <!-- Native launcher entry for editing an existing widget.
+             taskAffinity="" (2026-09-10): launcher 经 ProxyActivityStarter 启动 configure,
+             缺省 affinity=applicationId 使 ActivityStarter 找不到可并入的 task 时
+             configure ActivityRecord 直接丢弃 → launcher 收 CANCELED → add 回滚 →
+             "小组件拖到桌面直接消失" (AOSP 模拟器实证: Bound widget 成功 + push 成功
+             + configure 无 lifecycle + PendingIntent CanceledException)。
+             空 affinity 允许 configure 并入调用方 task, first-add 瞬时 finish 不再竞态。 -->
         <activity
             android:name=".widget.WidgetConfigureActivity"
             android:exported="true"
             android:label="@string/app_name"
-            android:theme="@style/Theme.Sleepy" />
+            android:theme="@style/Theme.Sleepy"
+            android:taskAffinity=""
+            android:excludeFromRecents="true" />
 
         <!-- Pin widget to home (adb automation) -->
         <activity
