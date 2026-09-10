@@ -125,34 +125,37 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 调用方: v6 overflow 竖排同级 (三键顶栏行 + ListView 行, 界限分明不叠压) ----
+    // ---- 调用方: v7 overflow = TwoDay 同构 (壳图+条带) + 上方 bar 行 ----
+    // 2026-09-10 用户定稿: 「最近两日的那个小组件它怎么做你就怎么做, 然后在上面
+    // 加一个切换的 bar」。v6 无壳 (shellBitmap=null) 翻车: 条带异步加载期间整卡透明。
+    // v7 回归真机已证安全的 TwoDay 双层 (widget_scroll_twoday 同构) + bar 独立行。
 
     @Test
-    fun `today nav overflow uses v6 sibling layout with three-button header`() {
+    fun `today nav overflow uses twoday-identical shell plus strip with bar row`() {
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow")
         assertTrue(
-            "v6 overflow 必须走 pushScrollable (竖排滑动)",
+            "v7 overflow 必须走 pushScrollable (竖排滑动)",
             body.contains("pushScrollable")
         )
         assertTrue(
-            "v6 overflow 必须用 widget_today_overflow (竖排同级布局)",
+            "v7 overflow 必须用 widget_today_overflow (bar 行 + TwoDay 同构滚动层)",
             body.contains("widget_today_overflow")
         )
         assertTrue(
-            "v6 overflow 无壳图层 (覆盖层/叠压是 ColorOS 腐坏源, 底色走 setBackgroundColor)",
-            body.contains("shellBitmap = null")
+            "v7 overflow 必须有壳图 (TwoDay 同构: 条带加载期间壳图兜底, 不透明闪空)",
+            body.contains("renderToday(")
         )
         assertTrue(
-            "v6 overflow 条带去头不留空档 (顶栏是布局独立行)",
+            "v7 overflow 条带去头不留空档 (bar 是布局独立行)",
             body.contains("stripHeaderless = true")
         )
         assertTrue(
-            "v6 overflow 禁翻页残留 (TodayPagerCore 已删)",
+            "v7 overflow 禁翻页残留 (TodayPagerCore 已删)",
             !body.contains("TodayPagerCore")
         )
         assertTrue(
-            "v6 overflow 顶栏走 configureTodayOverflow (三键, 非静态档四件套)",
+            "v7 overflow 顶栏走 configureTodayOverflow (三键, 非静态档四件套)",
             body.contains("configureTodayOverflow")
         )
         // 取证标签: 所有元素 drawn or not 全打标 — spacer 也要有 (静态分支仍在用)
@@ -165,33 +168,44 @@ class ScrollStripWholeImageTest {
     }
 
     @Test
-    fun `overflow layout is vertical siblings never z-overlay`() {
-        // v6 结构铁律: 顶栏行与 ListView 是 LinearLayout vertical 竖排兄弟,
-        // 禁 FrameLayout 叠压 (v4 巨箭头/透明/内容消失的 ColorOS 腐坏根因)
+    fun `overflow layout is bar row above twoday-identical scroll layer`() {
+        // v7 结构铁律: bar 行在上 (36dp, 三键), 滚动层 1:1 抄 widget_scroll_twoday
+        // (壳图 ImageView + 条带 ListView) — 用户定稿: 最近两天怎么做就怎么做。
         val xml = layoutFile("widget_today_overflow.xml").readText()
         assertTrue(
-            "根容器须 LinearLayout vertical",
+            "根容器须 LinearLayout vertical (bar 行 + 滚动层竖排)",
             Regex("LinearLayout[^>]*android:orientation=\"vertical\"").containsMatchIn(xml)
         )
+        // 滚动层 = TwoDay 同构: 壳图 ImageView (widget_shell, fitXY) + 条带 ListView (weight=1)
         assertTrue(
-            "禁 FrameLayout 叠压 (z 序覆盖层 = ColorOS 腐坏源)",
-            !xml.contains("<FrameLayout")
+            "滚动层必须有壳图 widget_shell (TwoDay 同构, 条带加载期间兜底)",
+            xml.contains("widget_shell")
         )
-        // 顶栏行: 三键顺序 prev < title < next, 按钮恒 40x28dp
+        val shellBlock = xml.substring(xml.indexOf("widget_shell"), xml.indexOf("widget_strip_list"))
+        assertTrue(
+            "壳图 scaleType 必须与 widget_scroll_twoday 一致 (fitXY)",
+            shellBlock.contains("fitXY")
+        )
+        // bar 行: 三键顺序 prev < title < next, 按钮恒 40x28dp
         val iPrev = xml.indexOf("widget_today_nav_prev")
         val iTitle = xml.indexOf("widget_today_nav_title")
         val iNext = xml.indexOf("widget_today_nav_next")
         assertTrue("三键顺序 prev<title<next", iPrev >= 0 && iPrev < iTitle && iTitle < iNext)
         assertTrue("按钮口径 40dp/28dp 保留", xml.contains("40dp") && xml.contains("28dp"))
-        assertTrue("顶栏高 36dp (NAV_HEADER_H_DP 口径)", xml.contains("36dp"))
-        // 中键日期: weight=1 吃满剩余宽 → 三键结构上永不被挤出 (用户: 总装得下了吧)
+        assertTrue("bar 高 36dp (NAV_HEADER_H_DP 口径)", xml.contains("36dp"))
+        // 中键日期: weight=1 + ellipsize → 拉缩只截断标题, 三键结构上永不被挤出
         val titleBlock = xml.substring(xml.indexOf("widget_today_nav_title"), xml.indexOf("widget_today_nav_next"))
         assertTrue("标题须 weight=1", titleBlock.contains("layout_weight=\"1\""))
         assertTrue("标题须 ellipsize (窄卡截断而非挤出 ›)", titleBlock.contains("ellipsize"))
-        // ListView 占满剩余高 (weight=1) + 禁裸 View (@RemoteView 白名单)
+        // 滚动层 FrameLayout 占满剩余高 (weight=1, TwoDay 的 ListView 就是 match_parent)
+        // + 禁裸 View (@RemoteView 白名单)
         assertFalse("禁裸 <View>", Regex("<View\\b").containsMatchIn(xml))
-        val listBlock = xml.substring(xml.indexOf("widget_strip_list"))
-        assertTrue("ListView 须 weight=1 吃满剩余高", listBlock.contains("layout_weight=\"1\""))
+        val scrollBlock = xml.substring(xml.indexOf("widget_today_nav_next"))
+        assertTrue("滚动层须 weight=1 吃满剩余高", scrollBlock.contains("layout_weight=\"1\""))
+        assertTrue(
+            "条带 ListView 须 match_parent (widget_scroll_twoday 逐行同构)",
+            scrollBlock.contains("match_parent")
+        )
     }
 
     @Test
@@ -205,16 +219,14 @@ class ScrollStripWholeImageTest {
         assertTrue("日期键→ACTION_RESET_DAY (三键定稿: 无独立回到今天键)",
             body.contains("ACTION_RESET_DAY"))
         // 全元素取证标签
-        assertTrue("顶栏容器打标", body.contains("overflow header v6"))
-        assertTrue("列表打标", body.contains("overflow list v6"))
+        assertTrue("bar 行打标", body.contains("overflow bar v7"))
+        assertTrue("壳图打标", body.contains("overflow shell v7"))
+        assertTrue("列表打标", body.contains("overflow list v7"))
         assertTrue("日期键打标 (date=…tap=back-to-today)", body.contains("tap=back-to-today"))
         assertTrue("prev 打标", body.contains("prev 40x28dp"))
         assertTrue("next 打标", body.contains("next 40x28dp"))
-        // 底色补齐: 无壳图层 → header/list 同 scheme setBackgroundColor
-        assertTrue("header 底色 setBackgroundColor", body.contains("setBackgroundColor"))
-        assertTrue("list 底色 setBackgroundColor (无壳层, 底色不能靠位图)",
-            body.substringAfter("widget_strip_list", "").contains("setBackgroundColor") ||
-                Regex("setInt\\([^)]*widget_strip_list[^)]*,\\s*\"setBackgroundColor\"").containsMatchIn(body))
+        // 底色: bar 行同 scheme setBackgroundColor (滚动层底色由壳图自带, 不再手动补)
+        assertTrue("bar 行底色 setBackgroundColor", body.contains("setBackgroundColor"))
     }
 
     @Test

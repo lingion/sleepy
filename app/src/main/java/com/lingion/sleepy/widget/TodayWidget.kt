@@ -259,13 +259,14 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         }
 
         /**
-         * v6 overflow 三键顶栏 — widget_today_overflow 专用 (2026-09-10 用户定稿:
+         * v7 overflow 三键 bar — widget_today_overflow 专用 (2026-09-10 用户定稿:
          * 装不下时顶栏 = 左 ‹ + 当前显示日期 + 右 ›, 这样总装得下了)。
          * 与静态档 configureTodayNav 的差异:
          *   - 无「回到今天」独立键 — 点日期键即回到今天 (三键定稿);
          *   - 标题恒为当前显示日期 (navTitle 短格式, weight=1+ellipsize 兜底) —
          *     结构上三键永不被挤出, 不走 NavTier 度量降级;
          *   - 无 spacer (标题 weight=1 就是弹性槽)。
+         * 滚动层 = TwoDay 同构 (壳图自带底色), bar 行底色同 scheme 补齐。
          * 全元素打取证标签 (用户要求: 管他有没有画出来)。
          */
         fun configureTodayOverflow(
@@ -273,10 +274,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             widgetId: Int, receiverClass: Class<*>, data: WidgetData,
             wDp: Int = 0
         ) {
-            // 顶栏/列表底色 — 与卡面 bitmap 同一 scheme (单一事实来源), 圆角由根容器裁剪
+            // bar 行底色 — 与卡面 bitmap 同一 scheme (单一事实来源), 圆角由根容器裁剪
             val colors = WidgetBitmapRenderers.todayNavHeaderColors(context, data)
             views.setInt(com.lingion.sleepy.R.id.widget_today_header, "setBackgroundColor", colors.bg)
-            views.setInt(com.lingion.sleepy.R.id.widget_strip_list, "setBackgroundColor", colors.bg)
             // 中键 = 当前显示日期; 是今天时点它无意义 → 仍回今天 (RESET 幂等)
             val dateText = data.dateLabel
             views.setTextViewText(com.lingion.sleepy.R.id.widget_today_nav_title, dateText)
@@ -305,14 +305,18 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             views.setContentDescription(
                 com.lingion.sleepy.R.id.widget_today_nav_next, "next 40x28dp w=$wDp"
             )
-            // 头部容器 + 列表取证标签
+            // 头部容器 + 壳图/列表取证标签
             views.setContentDescription(
                 com.lingion.sleepy.R.id.widget_today_header,
-                "overflow header v6 w=$wDp id=$widgetId"
+                "overflow bar v7 w=$wDp id=$widgetId"
+            )
+            views.setContentDescription(
+                com.lingion.sleepy.R.id.widget_shell,
+                "overflow shell v7 w=$wDp id=$widgetId"
             )
             views.setContentDescription(
                 com.lingion.sleepy.R.id.widget_strip_list,
-                "overflow list v6 w=$wDp id=$widgetId"
+                "overflow list v7 w=$wDp id=$widgetId"
             )
             // 三键语义: ‹› 翻天, 日期 = 回到今天
             val zones = listOf(
@@ -514,21 +518,25 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 awm.updateAppWidget(id, views)
                 Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH tier=${navHeaderTier(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), data.dateLabel, wDp)}")
             } else {
-                // Today 系 overflow v6 竖排同级结构 (2026-09-10 用户定稿: 装不下时顶栏 =
-                // 三键 ‹ 当前日期 ›)。腐坏源重新归因: 不是 ListView (WeekList/TwoDay 同一台
-                // OPPO 一直正常), 是顶栏覆盖层与 ListView 的 z 序叠压 (巨箭头/透明/内容消失)。
-                // v6 顶栏行与 ListView 是 LinearLayout 竖排兄弟 — 两个已证安全模式的合成:
-                //   ListView = WeekList 同款 (widget_strip_list 全同); 顶栏 = 静态档同款
-                //   真实视图 (‹› 三角钮 40×28dp + 中键日期), 但不再叠在列表上而是上方独立行。
-                // 中键 = 当前显示日期, 点按回到今天 (第三键收进日期文本, 用户定稿);
+                // Today 系 overflow v7 (2026-09-10 用户定稿: 「最近两日的那个小组件它怎么做
+                // 你就怎么做, 然后在上面加一个切换的 bar」):
+                //   滚动层 1:1 抄 TwoDay (壳图+条带 ListView, 同一台 OPPO 一直正常);
+                //   bar 行 = 36dp 三键 ‹ 当前日期 ›, 竖排在上, 与滚动层同级不叠压。
+                // v6 无壳 (shellBitmap=null) 翻车: 条带异步加载期间整卡透明。
+                // 壳图 = renderToday 按【滚动层】尺寸渲染 (容器高 − bar 36dp — TwoDay 壳图
+                // 填满整卡, v7 滚动层被 bar 占走顶部, 按整卡高渲染会被 fitXY 竖向拉伸);
+                // emptyHeader=true + headerSpace=true → 与条带同参, 滚动位 0 首屏逐像素一致。
+                // 条带 stripHeaderless=true + headerSpace → 长图从第一行课程直接起, 无双重头部。
                 // 标题 weight=1+ellipsize → 三键结构上永不被挤出 (度量降级无需介入)。
-                // 条带 stripHeaderless=true + 渲染 headerSpace (ScrollStripService 内同参联动)
-                // → 长图从第一行课程直接起, 无 24dp 头部空档; 无壳图层, 底色由根容器
-                // 圆角裁剪 + header/list 同 scheme 背景色补齐。
+                val shellH = (hDp - WidgetBitmapRenderers.NAV_HEADER_H_DP).coerceAtLeast(40f)
+                val shell = WidgetBitmapRenderers.renderToday(
+                    context, data, wDp.toFloat(), shellH, variant,
+                    emptyHeader = true, headerSpace = true
+                )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
                     layoutRes = com.lingion.sleepy.R.layout.widget_today_overflow,
-                    shellBitmap = null,
+                    shellBitmap = shell,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
                     configureViews = { views ->
                         configureTodayOverflow(context, views, id, receiverClass!!, data, wDp)
@@ -536,7 +544,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     stripHeaderless = true,
                     pushGen = pushGen
                 )
-                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH (v6 三键顶栏竖排同级)")
+                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH (v7 TwoDay同构+三键bar行)")
             }
         }
 
