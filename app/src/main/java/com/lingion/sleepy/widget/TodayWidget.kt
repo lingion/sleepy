@@ -89,7 +89,6 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         for (id in appWidgetIds) {
             WidgetBindingStore.remove(context, id)
             TodayDateNavStore.remove(context, id)
-            TodayPagerStore.remove(context, id)
             WidgetResizeCore.remove(id)
         }
     }
@@ -101,13 +100,12 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
      */
     override fun onReceive(context: Context, intent: Intent) {
         when (intent.action) {
-            ACTION_PREV_DAY, ACTION_NEXT_DAY, ACTION_RESET_DAY,
-            ACTION_PREV_PAGE, ACTION_NEXT_PAGE -> handleNav(context, intent)
+            ACTION_PREV_DAY, ACTION_NEXT_DAY, ACTION_RESET_DAY -> handleNav(context, intent)
             else -> super.onReceive(context, intent)
         }
     }
 
-    /** shift / remove / 翻页 持久化后重推该实例 (R2 带参 / R3 回今天 / R4 按 id 隔离)。 */
+    /** shift / remove 持久化后重推该实例 (R2 带参 / R3 回今天 / R4 按 id 隔离)。 */
     private fun handleNav(context: Context, intent: Intent) {
         val action = intent.action
         val widgetId = intent.getIntExtra(
@@ -117,30 +115,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         val pending = goAsync()
         ioScope.launch {
             try {
-                when (action) {
-                    ACTION_PREV_PAGE -> {
-                        val cur = TodayPagerStore.page(context, widgetId)
-                        TodayPagerStore.setPage(context, widgetId, (cur - 1).coerceAtLeast(0))
-                    }
-                    ACTION_NEXT_PAGE -> {
-                        val cur = TodayPagerStore.page(context, widgetId)
-                        TodayPagerStore.setPage(context, widgetId, cur + 1)
-                    }
-                    else -> when (navDelta(action)) {
-                        -1L -> {
-                            // prev 从页 0 跨天 → 落前一天末页 (TodayPagerCore.resolvePrev 语义):
-                            // 先记"待落末页"标记, pushTodayData 算出新页数后 clamp 到末页。
-                            TodayPagerStore.setPage(context, widgetId, Int.MAX_VALUE)
-                            TodayDateNavStore.shift(context, widgetId, LocalDate.now(), -1L)
-                        }
-                        1L -> {
-                            TodayPagerStore.setPage(context, widgetId, 0)
-                            TodayDateNavStore.shift(context, widgetId, LocalDate.now(), 1L)
-                        }
-                        else -> {
-                            if (action == ACTION_RESET_DAY) TodayDateNavStore.remove(context, widgetId)
-                            TodayPagerStore.setPage(context, widgetId, 0)
-                        }
+                when (navDelta(action)) {
+                    -1L -> TodayDateNavStore.shift(context, widgetId, LocalDate.now(), -1L)
+                    1L -> TodayDateNavStore.shift(context, widgetId, LocalDate.now(), 1L)
+                    else -> {
+                        if (action == ACTION_RESET_DAY) TodayDateNavStore.remove(context, widgetId)
                     }
                 }
                 push(context, AppWidgetManager.getInstance(context), widgetId)
@@ -158,10 +137,6 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         const val ACTION_PREV_DAY = "com.lingion.sleepy.widget.TODAY_NAV_PREV"
         const val ACTION_NEXT_DAY = "com.lingion.sleepy.widget.TODAY_NAV_NEXT"
         const val ACTION_RESET_DAY = "com.lingion.sleepy.widget.TODAY_NAV_RESET"
-
-        // ── v4 手动翻页 (OPPO launcher 滚动全灭后的定案) ──
-        const val ACTION_PREV_PAGE = "com.lingion.sleepy.widget.TODAY_NAV_PREV_PAGE"
-        const val ACTION_NEXT_PAGE = "com.lingion.sleepy.widget.TODAY_NAV_NEXT_PAGE"
 
         /** action → 导航增量; RESET / 未知 / null → null (RESET 由 handleNav 单独分支)。 */
         fun navDelta(action: String?): Long? = when (action) {
@@ -183,7 +158,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         fun configureTodayNav(
             context: Context, views: android.widget.RemoteViews,
             widgetId: Int, receiverClass: Class<*>, data: WidgetData,
-            wDp: Int = 0, pages: Int = 1, page: Int = 0
+            wDp: Int = 0
         ) {
             // 顶栏背景 — overflow 路径挡住条带上滑内容; 颜色与卡面 bitmap 同一 scheme
             val colors = WidgetBitmapRenderers.todayNavHeaderColors(context, data)
@@ -264,35 +239,12 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             views.setContentDescription(
                 com.lingion.sleepy.R.id.widget_spacer_r, "spacerR tier=$tier w=$wDp"
             )
-            // v4 按钮语义: 多页 → ‹› 翻页 (页内); 单页 → ‹› 翻天 (既有行为)。
-            // 「回到今天」多页态同时复位页码。动作统一 resolvePrev/resolveNext:
-            // 页内翻页归页码, 页尾跨天归日期 — 此处按 pages 拆解成具体 action。
-            val multiPage = pages > 1
-            val prevAction = if (multiPage && page > 0) ACTION_PREV_PAGE else ACTION_PREV_DAY
-            val nextAction = if (multiPage && page < pages - 1) ACTION_NEXT_PAGE else ACTION_NEXT_DAY
-            // prev 落到前一天末页 / next 归零页码: 跨天 push 前由 handler 统一复位
+            // 按钮语义: ‹› 翻天, nav_today = 回到今天 (v5 定案, 翻页语义删除)。
             val zones = listOf(
-                Triple(com.lingion.sleepy.R.id.widget_today_nav_prev, prevAction, 0),
-                Triple(com.lingion.sleepy.R.id.widget_today_nav_next, nextAction, 1),
+                Triple(com.lingion.sleepy.R.id.widget_today_nav_prev, ACTION_PREV_DAY, 0),
+                Triple(com.lingion.sleepy.R.id.widget_today_nav_next, ACTION_NEXT_DAY, 1),
                 Triple(com.lingion.sleepy.R.id.widget_today_nav_today, ACTION_RESET_DAY, 2)
             )
-            // 页码指示 (多页态): 标题右侧「N/M」 — nav_today 槽位复用 (导航态才显页码)
-            if (multiPage) {
-                views.setTextViewText(
-                    com.lingion.sleepy.R.id.widget_today_nav_today,
-                    "$page/$pages"
-                )
-                views.setTextColor(com.lingion.sleepy.R.id.widget_today_nav_today, colors.action)
-                views.setViewVisibility(
-                    com.lingion.sleepy.R.id.widget_today_nav_today,
-                    if (tier >= NavTier.HIDE_TODAY) android.view.View.GONE else android.view.View.VISIBLE
-                )
-                // 取证标签覆盖 (前面 navtoday 标签写的是日期导航语义, 页码态重写)
-                views.setContentDescription(
-                    com.lingion.sleepy.R.id.widget_today_nav_today,
-                    "pager $page/$pages tier=$tier w=$wDp id=$widgetId"
-                )
-            }
             for ((viewId, action, ordinal) in zones) {
                 val pi = PendingIntent.getBroadcast(
                     context, navRequestCode(widgetId, ordinal),
@@ -465,7 +417,6 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 }
             } else if (contentH <= hDp) {
                 // Today 系静态分支 — bitmap(emptyHeader 留白顶栏) + 真实视图顶栏 (issue #24)
-                TodayPagerStore.setPage(context, id, 0)  // 单页: 页码归零 (尺寸拖大后残留页码防御)
                 val shell = WidgetBitmapRenderers.renderToday(
                     context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
                 )
@@ -484,7 +435,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     com.lingion.sleepy.R.id.widget_bitmap,
                     "static ${wDp}x${hDp}dp content=$contentH id=$id"
                 )
-                configureTodayNav(context, views, id, receiverClass!!, data, wDp, pages = 1, page = 0)
+                configureTodayNav(context, views, id, receiverClass!!, data, wDp)
                 if (WidgetResizeCore.isStale(id, pushGen)) {
                     Log.d(TAG, "skip stale static push id=$id gen=$pushGen")
                     return
@@ -492,45 +443,25 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 awm.updateAppWidget(id, views)
                 Log.d(TAG, "pushTodayData static-nav id=$id ${wDp}x${hDp}dp content=$contentH tier=${navHeaderTier(context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)), data.dateLabel, wDp)}")
             } else {
-                // Today 系 overflow v4 手动翻页 (2026-09-10 定案):
-                // OPPO ColorOS launcher 对 ListView 滚动三种标准模式全灭
-                // (v1 extent 冻结 / v2 量错高 / v3 滑动即整页错乱), 静态单位图
-                // 路径三轮全程正常 → 唯一稳定通道 = setImageViewBitmap。
-                // 内容切页 (TodayPagerCore 几何), 顶栏 ‹› 翻页, 页尾跨天;
-                // 布局与静态分支完全相同 (widget_today_nav_static), 无 ListView。
-                val totalPages = TodayPagerCore.pageCount(contentH, hDp.toFloat())
-                val stored = TodayPagerStore.page(context, id)
-                // stored = Int.MAX_VALUE → prev 跨天"落末页"标记 → clamp 收敛到末页
-                val page = TodayPagerCore.clampPage(stored, totalPages)
-                if (page != stored) TodayPagerStore.setPage(context, id, page)
-                val offset = TodayPagerCore.pageOffsetDp(page, contentH, hDp.toFloat())
-                val pageBmp = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), hDp.toFloat(), variant,
-                    emptyHeader = true, pageOffsetDp = offset
+                // Today 系 overflow v5 竖排滑动 (2026-09-10 用户定案, 翻页方案废弃):
+                // 重新归因 — 三轮失败布局共同点不是 ListView 而是"真实视图顶栏覆盖层"
+                // (巨型 prev 箭头 = 覆盖层上的 setImageViewBitmap 按钮被 ColorOS 拉伸);
+                // WeekList/TwoDay 同一台 OPPO 上 ListView 滚动一直正常 = 无覆盖层结构。
+                // v5 完全复刻 WeekList 双层同构: shell 底图(圆角背景+顶栏视觉画进位图)
+                // + ListView 含头整图条带, 滚动位 0 与 shell 逐像素对齐 (同源渲染器)。
+                // 顶栏视觉保留但不可点; 点 widget 任意处打开 app (setOnClickPendingIntent
+                // 挂 shell, ListView 行 setOnClickFillInIntent 合并同一 PendingIntentTemplate)。
+                val shell = WidgetBitmapRenderers.renderToday(
+                    context, data, wDp.toFloat(), hDp.toFloat(), variant
                 )
-                val views = android.widget.RemoteViews(
-                    context.packageName, com.lingion.sleepy.R.layout.widget_today_nav_static
+                RemoteViewsWidgetHelper.pushScrollable(
+                    context, awm, id, TAG,
+                    layoutRes = com.lingion.sleepy.R.layout.widget_scroll_today,
+                    shellBitmap = shell,
+                    scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
+                    pushGen = pushGen
                 )
-                views.setImageViewBitmap(com.lingion.sleepy.R.id.widget_bitmap, pageBmp)
-                val tap = PendingIntent.getActivity(
-                    context, WidgetRoutes.tapRequestCode(id),
-                    WidgetRoutes.tapIntent(context),
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                views.setOnClickPendingIntent(com.lingion.sleepy.R.id.widget_bitmap, tap)
-                // 真机取证标签: 页码/页数/偏移一站式
-                views.setContentDescription(
-                    com.lingion.sleepy.R.id.widget_bitmap,
-                    "page ${page + 1}/$totalPages ${wDp}x${hDp}dp content=$contentH offset=${offset}dp id=$id"
-                )
-                configureTodayNav(context, views, id, receiverClass!!, data, wDp,
-                    pages = totalPages, page = page)
-                if (WidgetResizeCore.isStale(id, pushGen)) {
-                    Log.d(TAG, "skip stale pager push id=$id gen=$pushGen")
-                    return
-                }
-                awm.updateAppWidget(id, views)
-                Log.d(TAG, "pushTodayData pager id=$id ${wDp}x${hDp}dp content=$contentH page=${page + 1}/$totalPages offset=${offset}dp")
+                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH (v5 WeekList 同构)")
             }
         }
 

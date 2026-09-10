@@ -174,10 +174,8 @@ object WidgetBitmapRenderers {
      * 内容纵坐标与带头模式逐像素一致) — 今日导航版用真实 RemoteViews 视图(TextView+按钮)
      * 覆盖顶栏, bitmap 头部必须留白, 否则双重标题; WeekGrid 最小档/旧调用方默认 false 不受影响。
      *
-     * v4 手动翻页: pageOffsetDp > 0 时从内容纵轴该偏移起画一页 (drawCourse 行起点
-     * 跳过 offset 之前、末尾裁掉 offset+可视内容高之后的部分)。课程行 y 推进循环
-     * 里按整行过滤 — 行是原子 (冲突分栏行不可拦腰切), 起始偏移以上的整行跳过,
-     * 以下的画到页底为止。默认 0 = 现有调用点逐字节不变。
+     * pageOffsetDp > 0 时从内容纵轴该偏移起画 (v4 翻页遗留机制, 现调用方恒传默认
+     * 0; 行原子切片逻辑保留备用)。默认 0 = 现有调用点逐字节不变。
      */
     fun renderToday(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,

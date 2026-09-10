@@ -92,13 +92,13 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 壳图层: 今日导航滚动布局 v4 已整体删除 (滚动方案废弃) ----
+    // ---- 壳图层: 今日导航滚动布局 v4 已整体删除 (真实视图覆盖层 = ColorOS 腐坏源) ----
 
     @Test
     fun `nav scroll layout removed in v4 pager architecture`() {
         val lay = File(".").resolve("app/src/main/res/layout/widget_scroll_today_nav.xml")
         assertTrue(
-            "widget_scroll_today_nav.xml 必须已删 (v4 手动翻页, 无 ListView 滚动)",
+            "widget_scroll_today_nav.xml 必须已删 (v5 复用 widget_scroll_today, 无覆盖层布局)",
             !lay.exists()
         )
     }
@@ -125,29 +125,33 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 调用方: v4 overflow 走静态整图 + 手动翻页, 无滚动服务 ----
+    // ---- 调用方: v5 overflow 复刻 WeekList 双层同构 (shell + ListView, 无覆盖层) ----
 
     @Test
-    fun `today nav overflow uses static pager not scroll service`() {
+    fun `today nav overflow replicates weeklist scroll structure`() {
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow")
         assertTrue(
-            "v4 overflow 必须渲染进 widget_today_nav_static (无 ListView)",
-            body.contains("widget_today_nav_static")
+            "v5 overflow 必须走 pushScrollable (竖排滑动)",
+            body.contains("pushScrollable")
         )
         assertTrue(
-            "v4 overflow 必须经 TodayPagerCore 切页",
-            body.contains("TodayPagerCore")
+            "v5 overflow 必须复用 widget_scroll_today (WeekList 同款布局, shell+ListView)",
+            body.contains("widget_scroll_today")
         )
         assertTrue(
-            "v4 overflow 禁再走 pushScrollable (ColorOS ListView 滚动全线翻车)",
-            !body.contains("pushScrollable")
+            "v5 overflow 条带必须含头 (stripHeaderless 缺省 false, 与 shell 逐像素对齐)",
+            !body.contains("stripHeaderless = true")
         )
         assertTrue(
-            "v4 overflow 禁引用已删的 widget_scroll_today_nav",
-            !body.contains("widget_scroll_today_nav")
+            "v5 overflow 禁翻页残留 (TodayPagerCore 已删)",
+            !body.contains("TodayPagerCore")
         )
-        // 取证标签: 所有元素 drawn or not 全打标 — spacer 也要有
+        assertTrue(
+            "v5 overflow shell 必须带头渲染 (顶栏视觉画进位图, emptyHeader 缺省)",
+            !body.contains("emptyHeader = true")
+        )
+        // 取证标签: 所有元素 drawn or not 全打标 — spacer 也要有 (静态分支仍在用)
         val nav = src.substringAfter("fun configureTodayNav(")
             .substringBefore("val zones = listOf(")
         assertTrue(

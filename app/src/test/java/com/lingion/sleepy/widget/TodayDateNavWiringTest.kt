@@ -159,12 +159,14 @@ class TodayDateNavWiringTest {
         // pushTodayData 静态 = 真实视图顶栏容器 (bitmap 头部留白防双重标题)
         assertTrue("pushTodayData 必须用 widget_today_nav_static 静态容器",
             src.contains("widget_today_nav_static"))
-        assertTrue("v4 overflow 禁引用已删的 widget_scroll_today_nav (ColorOS 滚动全线翻车)",
+        assertTrue("v4/v5 均禁引用已删的 widget_scroll_today_nav (真实视图覆盖层 = ColorOS 腐坏源)",
             !src.contains("widget_scroll_today_nav"))
         assertTrue("nav 静态分支必须 emptyHeader=true (bitmap 头部留白)",
             src.contains("emptyHeader = true"))
-        assertTrue("v4 overflow 必须经 TodayPagerCore 手动切页",
-            src.contains("TodayPagerCore"))
+        assertTrue("v5 overflow 必须竖排滑动 (pushScrollable, WeekList 同构)",
+            src.contains("pushScrollable"))
+        assertTrue("v5 翻页机制必须已删净 (TodayPagerCore 废弃)",
+            !src.contains("TodayPagerCore") && !src.contains("ACTION_PREV_PAGE"))
         assertTrue("pushTodayData 必须调 configureTodayNav",
             src.contains("configureTodayNav"))
     }
