@@ -192,8 +192,8 @@ class TodayOverflowGeometryTest {
             !body.contains("stripHeaderless")
         )
         assertTrue(
-            "v9 overflow 壳图按整卡尺寸渲染 (emptyHeader 缺省 false, 与条带同参)",
-            body.contains("hDp.toFloat()")
+            "v9.1 overflow 壳图按全展开 contentH 渲染 (与 ScrollStripService 条带同参, 丢行根除)",
+            Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*contentH,").containsMatchIn(body)
         )
         val xml = File(layoutDir(), "widget_today_overflow.xml")
         assertFalse(
