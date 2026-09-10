@@ -185,6 +185,10 @@ object TimeTableUtils {
     // 用户反馈 2026-09-09: 非常规课跨节次空隙的渲染期占位节次合成
     // ------------------------------------------------------------------
 
+    /** 占位行权重可见下限 — 低于它渲染层减 gap/padding 后内容高度 ≤ 0, 时间文字隐形。
+     *  0.36 行 ≈ 56dp × 0.36 = 20dp, 扣 gap 4dp + cell padding 4dp 后剩 ~12dp, 容一行 micro 文字。 */
+    const val PLACEHOLDER_MIN_WEIGHT = 0.36f
+
     /**
      * 渲染期槽位方案 — 标准槽位 + 按当前课程集合合成的**占位节次**(渲染期产物,
      * 绝不写回 timeJson; 与用户手建边缘节点 insertEdgeNode 机制严格无关)。
@@ -258,8 +262,14 @@ object TimeTableUtils {
                         nodeEnd = slot.nodeEnd
                     )
                 )
-                // 占位行权重 = 自身分钟数 / 左邻标准行分钟数 (时间轴按分钟加权, 不占满整行)
-                weights.add(minutes(lo, hi).toFloat() / minutes(slot.start, slot.end).toFloat())
+                // 占位行权重 = 自身分钟数 / 左邻标准行分钟数 (时间轴按分钟加权, 不占满整行)。
+                // 用户报障 2026-09-10: 5 分钟占位 ≈ 0.111 行, 56dp×0.111−gapH−padding ≤ 0,
+                // 时间文字挤没 = 时间轴上隐形。下限 = 够渲染一行 micro 时间文字(0.36 行),
+                // 行高与 y 前缀和同源, 抬下限后时间轴仍自洽(只是该段略高于真实分钟比例)。
+                weights.add(
+                    (minutes(lo, hi).toFloat() / minutes(slot.start, slot.end).toFloat())
+                        .coerceAtLeast(PLACEHOLDER_MIN_WEIGHT)
+                )
             }
         }
         return RenderSlotPlan(out, weights)
