@@ -1,0 +1,38 @@
+[
+  {
+    "repo_name": "qnxg/hnu_query",
+    "license": "AGPL-3.0",
+    "relevant_files": ["src/yjsxt/login.rs", "src/yjsxt/class_table/fetch.rs"],
+    "studentId_extraction_approach": "Rust client for a yjsxt system",
+    "exact_regex_or_code_snippet": "Not boya_pp; no shared endpoint evidence",
+    "verdict": "INDIRECT",
+    "verdict_reason": "The search hit identifies another graduate-system family, but not the 博雅/chaoxingbook API."
+  },
+  {
+    "repo_name": "qnxg/weihuda_backend",
+    "license": null,
+    "relevant_files": ["src/service/user_state/systems/yjsxt.rs"],
+    "studentId_extraction_approach": "Backend system mapping",
+    "exact_regex_or_code_snippet": "Not boya_pp; no shared endpoint evidence",
+    "verdict": "INDIRECT",
+    "verdict_reason": "The search hit is a yjsxt integration reference, not evidence of the boya_pp product."
+  },
+  {
+    "repo_name": "heriec/suda-yjs-shedule",
+    "license": null,
+    "relevant_files": ["code/provider.js", "code/parser.js"],
+    "studentId_extraction_approach": "Iframe DOM extraction; parser reads #kb table",
+    "exact_regex_or_code_snippet": "scheduleHtmlProvider iframe -> curriculum; scheduleHtmlParser #kb tbody tr",
+    "verdict": "NEGATIVE",
+    "verdict_reason": "Public README and source identify jyjxxt.yjs.suda.edu.cn and an iframe HTML table, with no boya_pp API paths."
+  },
+  {
+    "repo_name": "dlutor/chaoxingbook",
+    "license": "MIT",
+    "relevant_files": ["README.md"],
+    "studentId_extraction_approach": "Not applicable",
+    "exact_regex_or_code_snippet": "No boya_pp endpoint or school fid evidence found",
+    "verdict": "INDIRECT",
+    "verdict_reason": "The name matches the vendor family, but repository content does not provide evidence for the graduate-platform protocol."
+  }
+]

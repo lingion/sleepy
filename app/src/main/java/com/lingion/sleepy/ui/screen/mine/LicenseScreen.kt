@@ -504,6 +504,10 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     PerSchoolEntry(
         "school-jou", "江苏海洋大学 JOU",
         "酱海带 jianghaidai (sunjingquan, 闭源参考, 仅协议分析未复用)\nJOU-Campus-Guide (sunjingquan)\njou_course_bot (brodamndamn)\nWehhit-server (dengjj)\nWehhit (zqy1)\nGrain (LeeReindeer, 浙江海洋大学, GPL-3.0)\n家庭记账系统 finance (GeorgeLeoo)\nfinance-server (GeorgeLeoo)\nJStore (GeorgeLeoo)\nRSSHub jou 路由 (RSSHub, MIT)"
+    ),
+    PerSchoolEntry(
+        "school-ysu", "燕山大学 YSU",
+        "LzBsA (github.com/LzBsA, boya_pp 协议适配原始提交, PR 复活)\nqnxg/hnu_query (qnxg, AGPL-3.0)\nqnxg/weihuda_backend (qnxg)\nheriec/suda-yjs-shedule (heriec)\ndlutor/chaoxingbook (dlutor, MIT)"
     )
 )
 

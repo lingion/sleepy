@@ -207,6 +207,12 @@ class AboutLicenseAttributionTest {
         Attribution("JStore", "GeorgeLeoo"),
         Attribution("RSSHub jou", "MIT"),
         Attribution("北交大iCalender课表生成", "Greasy Fork"),
+        // 燕山大学 YSU / boya_pp 多校 SaaS 调研 (全量触达仓库, 含非协议反例)
+        Attribution("LzBsA", "github.com/LzBsA"),
+        Attribution("qnxg/hnu_query", "AGPL-3.0"),
+        Attribution("qnxg/weihuda_backend", "qnxg"),
+        Attribution("heriec/suda-yjs-shedule", "heriec"),
+        Attribution("dlutor/chaoxingbook", "MIT"),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
