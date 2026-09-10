@@ -1,0 +1,1698 @@
+{
+ "term": "2026-2027-1",
+ "rows": [
+  {
+   "adjusting": null,
+   "allWhichWeekList": [],
+   "buildingCode": "210580",
+   "buildingName": "西区第四教学楼",
+   "classPlanId": 57702,
+   "classStudentCount": 279,
+   "classTime": null,
+   "classTimeRange": "2周： 周二 5-8节 西(四)201多媒体 西校区 李亚蕾",
+   "classroomCode": "2105800201",
+   "classroomConflictEnabled": true,
+   "classroomEnglishName": "",
+   "classroomName": "西(四)201多媒体",
+   "classroomRange": "2周，西(四)201多媒体",
+   "college": "研究生院",
+   "collegeCode": "202",
+   "collegeId": 201,
+   "comment": "",
+   "compOrElec": "",
+   "conflictLesson": [],
+   "conflictStudentList": [],
+   "courseId": 38091,
+   "courseName": "心理健康教育专题",
+   "courseNo": "4000000591",
+   "courseTeacher": [
+    {
+     "avoid": null,
+     "belongCourseResearchRoom": "",
+     "chargeOfJobType": "",
+     "college": "马克思主义学院",
+     "collegeId": 187,
+     "detailMajorCode": "",
+     "detailMajorName": "",
+     "doctoralAdvisers": "",
+     "duty": "",
+     "employerName": "",
+     "englishName": "",
+     "enrollCollege": "",
+     "enrollCollegeId": null,
+     "firstScienceCode": "",
+     "firstScienceName": "",
+     "formRecordId": null,
+     "id": 402408156,
+     "identityNo": "",
+     "link": "",
+     "name": "李亚蕾",
+     "no": "150591",
+     "organization": "",
+     "outside": null,
+     "pass": null,
+     "phone": "",
+     "practiceBase": "",
+     "profilePhoto": [],
+     "requestSubmitAttachments": [],
+     "requestSubmitReason": "",
+     "requestSubmitSign": "",
+     "requestSubmitTime": "",
+     "researchDirection": "",
+     "role": "",
+     "selectResearchDirection": "",
+     "sign": [],
+     "teacherGender": "",
+     "teacherUnit": "",
+     "title": "",
+     "tutorCategory": ""
+    }
+   ],
+   "courseType": "",
+   "createTime": "2026-07-23 12:49:31",
+   "cxFid": 41571,
+   "degreeCourse": "",
+   "deleted": false,
+   "dynamicReviewStatus": null,
+   "enable": null,
+   "englishName": "",
+   "forceArrange": false,
+   "forceArrangeType": [],
+   "gradeName": "2026",
+   "id": 1092560,
+   "lastExamSchedule": null,
+   "lessonNumber": 5,
+   "lessonNumbers": "",
+   "lessonTime": {
+    "comment": "",
+    "lessonEnglishName": "",
+    "lessonName": "第五节",
+    "lessonNumber": 5,
+    "lessonNumberAlias": [
+     5
+    ],
+    "lessonPeriod": null,
+    "lessonTime": [
+     "2023-01-01 13:30:00",
+     "2023-01-01 14:15:00"
+    ],
+    "lessonUuid": "0f059597-880a-4957-96a2-19cc8031dff3"
+   },
+   "lessonUuid": "",
+   "originWhichWeek": 2,
+   "publish": true,
+   "remark": "",
+   "scheduleClassSettingId": 30,
+   "studentGradeCollegeMajors": [],
+   "studentMajor": [],
+   "studentTypes": [],
+   "suspension": false,
+   "teachingClassCode": "20264000000591204",
+   "teachingClassName": "2026心理健康教育专题西16环化",
+   "teachingContent": "",
+   "teachingDate": null,
+   "teachingForm": "",
+   "teachingMethod": "",
+   "trainPlanStudentConflictConfig": [],
+   "transferEducational": "",
+   "updateTime": "2026-08-12 12:39:28",
+   "virtualClassroom": "",
+   "week": 2,
+   "whichWeek": 2,
+   "whichWeekGroupByWeekLessonNumber": "2",
+   "whichWeeks": "",
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57702,
+   "classroomCode": "2105800201",
+   "classroomName": "西(四)201多媒体",
+   "college": "研究生院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "心理健康教育专题",
+   "courseNo": "4000000591",
+   "courseTeacher": [
+    {
+     "id": 402408156,
+     "name": "李亚蕾",
+     "no": "150591"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1092561,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20264000000591204",
+   "teachingClassName": "2026心理健康教育专题西16环化",
+   "week": 2,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57702,
+   "classroomCode": "2105800201",
+   "classroomName": "西(四)201多媒体",
+   "college": "研究生院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "心理健康教育专题",
+   "courseNo": "4000000591",
+   "courseTeacher": [
+    {
+     "id": 402408156,
+     "name": "李亚蕾",
+     "no": "150591"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1092562,
+   "lessonNumber": 7,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20264000000591204",
+   "teachingClassName": "2026心理健康教育专题西16环化",
+   "week": 2,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57702,
+   "classroomCode": "2105800201",
+   "classroomName": "西(四)201多媒体",
+   "college": "研究生院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "心理健康教育专题",
+   "courseNo": "4000000591",
+   "courseTeacher": [
+    {
+     "id": 402408156,
+     "name": "李亚蕾",
+     "no": "150591"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1092563,
+   "lessonNumber": 8,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20264000000591204",
+   "teachingClassName": "2026心理健康教育专题西16环化",
+   "week": 2,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089314,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 1,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089315,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 1,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089316,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 3,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089317,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 3,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089318,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 1,
+   "whichWeek": 3,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089319,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 1,
+   "whichWeek": 3,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089320,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 3,
+   "whichWeek": 3,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089321,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 3,
+   "whichWeek": 3,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089346,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 1,
+   "whichWeek": 10,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089347,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 1,
+   "whichWeek": 10,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089348,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 3,
+   "whichWeek": 10,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57544,
+   "classroomCode": "2107390207",
+   "classroomName": "（里）J207多媒体",
+   "college": "马克思主义学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "新时代中国特色社会主义理论与实践",
+   "courseNo": "2000009002",
+   "courseTeacher": [
+    {
+     "id": 402408297,
+     "name": "何茜曦",
+     "no": "150808"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1089349,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262000009002289",
+   "teachingClassName": "2026级西22环化班",
+   "week": 3,
+   "whichWeek": 10,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101726,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101727,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101728,
+   "lessonNumber": 7,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101729,
+   "lessonNumber": 8,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101738,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 5,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101739,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 5,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101740,
+   "lessonNumber": 7,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 5,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101741,
+   "lessonNumber": 8,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 5,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101766,
+   "lessonNumber": 3,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 6,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101767,
+   "lessonNumber": 4,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 6,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101768,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 6,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101769,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 6,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101770,
+   "lessonNumber": 7,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 2,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101771,
+   "lessonNumber": 8,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 2,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101773,
+   "lessonNumber": 5,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57936,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "材料与化工现代研究方法",
+   "courseNo": "2085611008",
+   "courseTeacher": [
+    {
+     "id": 375270414,
+     "name": "田克松",
+     "no": "150246"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1101772,
+   "lessonNumber": 6,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611008161",
+   "teachingClassName": "2026材料与化工现代研究方法硕士课161",
+   "week": 6,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100280,
+   "lessonNumber": 9,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100281,
+   "lessonNumber": 10,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100282,
+   "lessonNumber": 11,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100283,
+   "lessonNumber": 12,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100284,
+   "lessonNumber": 9,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100285,
+   "lessonNumber": 10,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100286,
+   "lessonNumber": 11,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100287,
+   "lessonNumber": 12,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 2,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100320,
+   "lessonNumber": 9,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100321,
+   "lessonNumber": 10,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100322,
+   "lessonNumber": 11,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100323,
+   "lessonNumber": 12,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 3,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100324,
+   "lessonNumber": 9,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100325,
+   "lessonNumber": 10,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100326,
+   "lessonNumber": 11,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57947,
+   "classroomCode": "2107390105",
+   "classroomName": "（里）J105",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "高等催化原理",
+   "courseNo": "2085611013",
+   "courseTeacher": [
+    {
+     "id": 375270464,
+     "name": "张亚茹",
+     "no": "150329"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1100327,
+   "lessonNumber": 12,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611013378",
+   "teachingClassName": "2026高等催化原理378",
+   "week": 7,
+   "whichWeek": 7,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57949,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "学科前沿专题",
+   "courseNo": "2085611021",
+   "courseTeacher": [
+    {
+     "id": 61098030,
+     "name": "钟金玲",
+     "no": "140182"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1102918,
+   "lessonNumber": 1,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611021218",
+   "teachingClassName": "2026学科前沿专题硕士课218",
+   "week": 6,
+   "whichWeek": 13,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57949,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "学科前沿专题",
+   "courseNo": "2085611021",
+   "courseTeacher": [
+    {
+     "id": 61098030,
+     "name": "钟金玲",
+     "no": "140182"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1102919,
+   "lessonNumber": 2,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611021218",
+   "teachingClassName": "2026学科前沿专题硕士课218",
+   "week": 6,
+   "whichWeek": 13,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57949,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "学科前沿专题",
+   "courseNo": "2085611021",
+   "courseTeacher": [
+    {
+     "id": 61098030,
+     "name": "钟金玲",
+     "no": "140182"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1102920,
+   "lessonNumber": 3,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611021218",
+   "teachingClassName": "2026学科前沿专题硕士课218",
+   "week": 6,
+   "whichWeek": 13,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57949,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "学科前沿专题",
+   "courseNo": "2085611021",
+   "courseTeacher": [
+    {
+     "id": 61098030,
+     "name": "钟金玲",
+     "no": "140182"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1102921,
+   "lessonNumber": 4,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611021218",
+   "teachingClassName": "2026学科前沿专题硕士课218",
+   "week": 6,
+   "whichWeek": 13,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57949,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "学科前沿专题",
+   "courseNo": "2085611021",
+   "courseTeacher": [
+    {
+     "id": 61098030,
+     "name": "钟金玲",
+     "no": "140182"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1102916,
+   "lessonNumber": 7,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611021218",
+   "teachingClassName": "2026学科前沿专题硕士课218",
+   "week": 4,
+   "whichWeek": 15,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "adjusting": null,
+   "classPlanId": 57949,
+   "classroomCode": "2107360401",
+   "classroomName": "（里）AD401",
+   "college": "环境与化学工程学院",
+   "comment": "",
+   "compOrElec": "",
+   "courseName": "学科前沿专题",
+   "courseNo": "2085611021",
+   "courseTeacher": [
+    {
+     "id": 61098030,
+     "name": "钟金玲",
+     "no": "140182"
+    }
+   ],
+   "deleted": false,
+   "gradeName": "2026",
+   "id": 1102917,
+   "lessonNumber": 8,
+   "remark": "",
+   "suspension": false,
+   "teachingClassCode": "20262085611021218",
+   "teachingClassName": "2026学科前沿专题硕士课218",
+   "week": 4,
+   "whichWeek": 15,
+   "yearTerm": "2026-2027-1"
+  },
+  {
+   "courseName": "测试停课课",
+   "week": 1,
+   "lessonNumber": 1,
+   "whichWeek": 2,
+   "classroomName": "测试教室",
+   "courseTeacher": [
+    {
+     "id": 1,
+     "name": "测试师",
+     "no": "001"
+    }
+   ],
+   "suspension": true,
+   "deleted": false,
+   "college": "测试学院"
+  },
+  {
+   "courseName": "测试字符串周次课",
+   "week": 4,
+   "lessonNumber": 3,
+   "whichWeek": "6",
+   "classroomName": "",
+   "classroomCode": "999888",
+   "courseTeacher": [
+    {
+     "id": 2,
+     "name": "李四",
+     "no": "002"
+    }
+   ],
+   "suspension": false,
+   "deleted": false
+  }
+ ]
+}

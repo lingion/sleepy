@@ -174,7 +174,8 @@ class Schools179CrossValidationTest {
         // 2026-09-06 收录北京航空航天大学(强智 iEAS) → 180；2026-09-07 国科大 → 181
         // 2026-09-09 收录河北资源环境职业技术学院(强智移动教务) → 182；北京交通大学(AA) → 183
         // 2026-09-09 江苏海洋大学 JOU (老正方 CAS, 跨仓验证 SOP v1.1+) → 184
-        assertEquals(184, entries().size)
+        // 2026-09-10 收录燕山大学(博雅研究生平台, 首个 grad_supported, PR #30) → 185
+        assertEquals(185, entries().size)
     }
 
     @Test
@@ -185,6 +186,21 @@ class Schools179CrossValidationTest {
         assertTrue("吉林工商学院 条目缺失", e != null)
         assertTrue("入口应为 jwxt.jlbtc.edu.cn", e!!.optString("url").contains("jwxt.jlbtc.edu.cn"))
         assertEquals("应为 chaoxing (Powered by ChaoXing 采集包实锤)", "chaoxing", e.optString("type"))
+    }
+
+    @Test
+    fun `ysu entry pinned to collector and replay evidence`() {
+        // 采集包 sleepy-adapt (2026-09-06) + token 重放实采: yjsxt.ysu.edu.cn/pp 研究生平台
+        // (博雅研究生 V6.0, fid=41571), 逐周 byStudent 390 行, termBeginTime=2026-08-31。
+        // 入口 = 燕大统一身份认证 CAS, service 回调 yjsxt /api/casLogin/ysu (实测 302 链路)。
+        // 研究生入口, status=grad_supported; 首个 boya_pp 协议校。
+        val e = entryOf("燕山大学")
+        assertTrue("燕山大学 条目缺失", e != null)
+        val url = e!!.optString("url")
+        assertTrue("入口应为 cer.ysu.edu.cn 统一身份认证", url.contains("cer.ysu.edu.cn/authserver/login"))
+        assertTrue("service 应回调 yjsxt casLogin", url.contains("yjsxt.ysu.edu.cn%2Fapi%2FcasLogin%2Fysu"))
+        assertEquals("应为 boya_pp (博雅研究生平台实锤)", "boya_pp", e.optString("type"))
+        assertEquals("应为 grad_supported (研究生入口)", "grad_supported", e.optString("status"))
     }
 
     // ---- 7. 实采包钉死 (sleepy-collector 2026-09-05 广东医科大学用户提供) ----
