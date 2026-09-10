@@ -78,4 +78,26 @@ object TodayRowGeometry {
     fun contentHeightDp(courses: List<CourseEntity>, headerSpace: Boolean): Float =
         rowSpans(courses, headerSpace).lastOrNull()?.let { it.bottomDp + PAD_BOTTOM_DP }
             ?: contentTopDp(headerSpace) + PAD_BOTTOM_DP
+
+    /**
+     * v9.2 固定高页 offset 序列 — 条带每个 child 高度恒等于容器可视高,
+     * 末页对齐内容底部 (offset 钳到 maxOffset), 不再依赖 launcher 对单个
+     * 超高 child 的量测/滚动处理 (v9.1 窄容器「只显两节+滚动空白」根因)。
+     * 可视行高 = 容器高 − 内容顶 pad − 底 pad; 一页都装不下 (clamp) 时
+     * 至少给 1dp 防死循环。
+     */
+    fun pageOffsetsDp(contentHeightDp: Float, viewportHeightDp: Float, headerSpace: Boolean): List<Float> {
+        if (contentHeightDp <= viewportHeightDp) return listOf(0f)
+        val visibleHeight = (viewportHeightDp - contentTopDp(headerSpace) - PAD_BOTTOM_DP)
+            .coerceAtLeast(1f)
+        val maxOffset = (contentHeightDp - visibleHeight).coerceAtLeast(0f)
+        val offsets = ArrayList<Float>()
+        var offset = 0f
+        while (offset < maxOffset) {
+            offsets += offset
+            offset += visibleHeight
+        }
+        if (offsets.isEmpty() || offsets.last() != maxOffset) offsets += maxOffset
+        return offsets
+    }
 }

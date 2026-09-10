@@ -1,6 +1,8 @@
 package com.lingion.sleepy.widget
 
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -45,47 +47,42 @@ class TodayOverflowScrollParityTest {
 
     @Test
     fun `today nav overflow shell renders full content height not widget container`() {
-        // v9.1: 壳图尺寸 = contentH (全展开), 与条带同参。
-        // 锁法: 路径里 renderToday 第三参数必须出现 contentH 字面量, 不能再是 hDp.toFloat()。
+        // v9.2: 壳图尺寸 = hDp (首屏页), 条带分页后每页同高。
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         assertTrue("nav overflow 走 pushScrollable", body.contains("pushScrollable"))
         assertTrue(
-            "v9.1: nav overflow 壳图必须引用 contentH 作渲染高",
-            body.contains("renderToday(") && body.contains("contentH")
+            "v9.2: nav overflow 壳图按 hDp 渲染",
+            Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),").containsMatchIn(body)
         )
         // !navEnabled 分支也同源
         val nonNav = src.substringAfter("!navEnabled").substringBefore("} else if (contentH")
         assertTrue(
-            "!navEnabled overflow 也须按 contentH 渲染 (TwoDay 形态同步)",
-            nonNav.contains("renderToday(") && nonNav.contains("contentH")
+            "!navEnabled overflow 壳图按 hDp 渲染",
+            Regex("renderToday\\s*\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),").containsMatchIn(nonNav)
         )
     }
 
     @Test
     fun `overflow scroll parity shell and strip share same renderToday size parameter`() {
-        // v9.1: pushScrollable 路径下壳图与 ScrollStripService 条带传同样的位图高。
-        // 锁法: 两条路径的 renderToday 第三参数都引用 contentH, 禁再传 hDp.toFloat()。
+        // v9.2: 壳图和第一条带页都使用 viewport 高度 hDp；后续页通过 offset 分页。
         val today = widgetSource("TodayWidget.kt").readText()
         val navBody = today.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         val nonNavBody = today.substringAfter("!navEnabled").substringBefore("} else if (contentH")
-        // 锁: 两条路径都形如 "renderToday(context, data, wDp.toFloat(), contentH, variant)"
-        val shellPattern = Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*contentH,")
-        assertTrue("nav overflow 壳图渲染高 = contentH (v9.1)", shellPattern.containsMatchIn(navBody))
-        assertTrue("!navEnabled overflow 壳图渲染高 = contentH (TwoDay 同步)",
+        // v9.2: 壳图与第一条带页都是 viewport 高度 hDp; 后续页通过 pageOffsetsDp 分页。
+        val shellPattern = Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),")
+        assertTrue("nav overflow 壳图渲染高 = hDp (v9.2)", shellPattern.containsMatchIn(navBody))
+        assertTrue("!navEnabled overflow 壳图渲染高 = hDp (v9.2)",
             shellPattern.containsMatchIn(nonNavBody))
-        // 禁: shell 不能再传 hDp.toFloat() 给 renderToday
-        val bugPattern = Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\)")
-        assertFalse(
-            "renderToday 第三参数禁传 hDp.toFloat() (v9 bug: 容器尺寸进 renderer 后丢行)",
-            bugPattern.containsMatchIn(navBody) || bugPattern.containsMatchIn(nonNavBody)
-        )
-        // 条带 (已有契约, 锁定不回流)
         val strip = widgetSource("ScrollStripService.kt").readText()
         val stripBody = strip.substringAfter("SCOPE_TODAY ->").substringBefore("SCOPE_TWODAY ->")
         assertTrue(
-            "条带长图 = todayContentHeightDp 全展开派生 (ScrollStripService.kt)",
-            stripBody.contains("todayContentHeightDp")
+            "条带必须按 pageOffsetsDp 分页",
+            stripBody.contains("pageOffsetsDp") && stripBody.contains("pages = offsets.map")
+        )
+        assertTrue(
+            "条带每页高度 = hDp (与壳图首屏同参)",
+            stripBody.contains("wDp.toFloat(), hDp.toFloat()") && stripBody.contains("pageOffsetDp = offset")
         )
     }
 
@@ -108,5 +105,30 @@ class TodayOverflowScrollParityTest {
             "visible filter 表达式仅引用 spans/offsetPx/pageVisiblePx (无外部常量)",
             "spans" in filterLine && "offsetPx" in filterLine && "pageVisiblePx" in filterLine
         )
+    }
+
+    @Test
+    fun `pageOffsetsDp generates fixed-viewport pages aligned to content bottom`() {
+        // v9.2 核心: 多页条带 = 固定高 viewport; 末页 offset 钳到 maxOffset (末页贴底)。
+        // 锁法: 直接验证 pageOffsetsDp 几何 (纯 JVM 可测)。
+        val hDp = 281f
+        val contentH = 618f  // 模拟器实测 logcat 数据
+        val offsets = TodayRowGeometry.pageOffsetsDp(contentH, hDp, headerSpace = true)
+        assertTrue("内容超出视口时页数 >= 2", offsets.size >= 2)
+        // 每页 offset 增量 ≤ viewport 减头部减底部的可视行高 (= 281 - 14 - 14 = 253)
+        for (i in 1 until offsets.size) {
+            val step = offsets[i] - offsets[i - 1]
+            assertTrue("页 ${i-1}→${i} 步长 ${step} 必须 ≤ viewport 可视高 253", step <= 253f + 0.01f)
+        }
+        // 末页 = contentH − viewport 可视行高 (贴底)
+        assertEquals(
+            "末页 offset 必须对齐内容底 (maxOffset)",
+            contentH - 253f,
+            offsets.last(),
+            0.01f
+        )
+        // 内容装得下: 1 页即可
+        val small = TodayRowGeometry.pageOffsetsDp(120f, 281f, headerSpace = true)
+        assertEquals("装得下时只一页", listOf(0f), small)
     }
 }

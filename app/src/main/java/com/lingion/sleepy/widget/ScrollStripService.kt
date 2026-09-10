@@ -72,7 +72,8 @@ class ScrollStripService : RemoteViewsService() {
 
             // 原渲染器 + 内容全展开高度 (ceil 到整数 dp, 长图不缺行)
             val contentHdp: Float
-            val full: Bitmap
+            var full: Bitmap? = null
+            var pages: List<Bitmap>? = null
             var rowCount = -1
             when (scope) {
                 SCOPE_TODAY -> {
@@ -84,10 +85,20 @@ class ScrollStripService : RemoteViewsService() {
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
                     rowCount = TodayRowGeometry.rowSpans(d.courses, emptyHeader).size
                     val renderH = ceil(contentHdp)
-                    full = WidgetBitmapRenderers.renderToday(
-                        context, d, wDp.toFloat(), renderH, emptyHeader = emptyHeader,
-                        headerSpace = emptyHeader
-                    )
+                    // v9.2 修复: 窄高容器里 launcher 对一个超高 child 的滚动处理
+                    // 不可靠 (实测只显首屏约两节, 下滑即空)。改成多页固定高: 每页
+                    // height=hDp, 用 pageOffsetDp 让可见过滤只看这一页; 末页
+                    // offset 对齐内容底 (TodayRowGeometry.pageOffsetsDp 钳到
+                    // maxOffset)。壳图是首屏高度, 与第一页逐像素一致。
+                    val offsets = TodayRowGeometry.pageOffsetsDp(renderH, hDp.toFloat(), emptyHeader)
+                    pages = offsets.map { offset ->
+                        WidgetBitmapRenderers.renderToday(
+                            context, d, wDp.toFloat(), hDp.toFloat(),
+                            emptyHeader = emptyHeader, pageOffsetDp = offset,
+                            headerSpace = emptyHeader
+                        )
+                    }
+                    full = pages.first()
                 }
                 SCOPE_TWODAY -> {
                     val d = TwoDayWidgetReceiver.loadDataSync(context, widgetId)
@@ -110,9 +121,10 @@ class ScrollStripService : RemoteViewsService() {
                 android.util.Log.d("ScrollStrip", "skip stale strips id=$widgetId gen=$genBefore")
                 return
             }
-            strips = listOf(full)
+            strips = pages ?: listOf(full!!)
+            val firstStrip = strips.first()
             android.util.Log.d("ScrollStrip",
-                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${full.height / density}dp rows=$rowCount wholeImage=1")
+                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${firstStrip.height / density}dp rows=$rowCount strips=${strips.size}")
         }
 
         /** count 恒等 strips.size — stale/异常路径空 adapter (count=0) 绝不触 getViewAt 越界。 */

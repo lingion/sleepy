@@ -142,16 +142,20 @@ class TodayOverflowGeometryTest {
     // ---- 修复 2: 条带行 = 每课程行一张卡 (多 child, 巨型整图类别性消失) ----
 
     @Test
-    fun `strip factory keeps whole-image row with pinned height`() {
+    fun `strip factory uses fixed-height today pages`() {
         val svc = widgetSource("ScrollStripService.kt").readText()
         val body = svc.substringAfter("override fun onDataSetChanged")
-        // v3 契约保留: 单 child 整图是 OPPO 真机唯一被证明可滚的架构 (v1 多行切片
-        // extent 冻结翻车在先) — 修巨卡不靠推翻 v3, 靠收回 viewport 量测自由
+        // v9.2 契约: Today 条带 = 多个固定 viewport 高的页 (pageOffsetsDp 分页,
+        // 末页贴底) — launcher 不再被要求量测/滚动一个超高单 child (v9.1 窄容器
+        // 「只显两节+下滑空白」根因); 行高仍显式钉死 (v3 量测自由零容忍保留)。
         assertTrue(
-            "v3 单 child 整图契约必须保留 (strips = listOf(full))",
-            Regex("strips\\s*=\\s*listOf\\(full\\)").containsMatchIn(body)
+            "Today 条带必须按 pageOffsetsDp 分页",
+            body.contains("pageOffsetsDp") && body.contains("pages = offsets.map")
         )
-        // 行高照 v3 契约仍须显式钉死 (launcher 量测自由零容忍)
+        assertTrue(
+            "Today 每页高度必须等于当前 widget viewport",
+            body.contains("wDp.toFloat(), hDp.toFloat()") && body.contains("pageOffsetDp = offset")
+        )
         assertTrue(
             "行高仍须 setViewLayoutHeight 显式钉死 (v3 契约保留)",
             svc.contains("setViewLayoutHeight")
@@ -192,8 +196,8 @@ class TodayOverflowGeometryTest {
             !body.contains("stripHeaderless")
         )
         assertTrue(
-            "v9.1 overflow 壳图按全展开 contentH 渲染 (与 ScrollStripService 条带同参, 丢行根除)",
-            Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*contentH,").containsMatchIn(body)
+            "v9.2 overflow 壳图按 viewport hDp 渲染 (与条带第一页同参, 滚动位 0 一致)",
+            Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),").containsMatchIn(body)
         )
         val xml = File(layoutDir(), "widget_today_overflow.xml")
         assertFalse(

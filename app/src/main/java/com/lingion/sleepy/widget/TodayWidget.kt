@@ -403,7 +403,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     )
                 } else {
                     val shell = WidgetBitmapRenderers.renderToday(
-                        context, data, wDp.toFloat(), contentH, variant
+                        context, data, wDp.toFloat(), hDp.toFloat(), variant
                     )
                     RemoteViewsWidgetHelper.pushScrollable(
                         context, awm, id, TAG,
@@ -452,7 +452,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 // 条带不带去头标记 (缺省带头) → 长图从头部标题起 = 壳图同参, 滚动位 0
                 // 首屏与静态渲染逐像素一致 (与 !navEnabled overflow 分支逐字节同构)。
                 val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), contentH, variant
+                    context, data, wDp.toFloat(), hDp.toFloat(), variant
                 )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
