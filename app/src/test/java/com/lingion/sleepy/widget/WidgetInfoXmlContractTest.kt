@@ -15,13 +15,8 @@ import javax.xml.parsers.DocumentBuilderFactory
  *
  * 锁三层接线闭环:
  * 1. Manifest 里注册的每个 appwidget receiver 都带 meta-data 指向一个 *_widget_info.xml;
- * 2. 每个 info XML 都声明 android:configure=".widget.WidgetConfigureActivity"
- *    → 添加时的 auto-finish(R5) 与桌面长按"编辑"的二次配置入口(R4) 才有路由目标;
- * 3. 每个 info XML 的 android:widgetFeatures 都含 reconfigurable
- *    → 启动器才会显示长按"编辑/重新配置"菜单项。没有这个 flag, WidgetConfigureActivity
- *    只在添加时被拉起(且立即 auto-finish), 用户永远进不了换绑页 — R4 承诺落空。
- *    (依据: AppWidgetProviderInfo.WIDGET_FEATURE_RECONFIGURABLE javadoc —
- *    "The widget can be reconfigured anytime after it is bound by starting the configure activity")
+ * 2. 每个 info XML 都不声明 android:configure，添加到桌面时不弹白页;
+ * 3. 每个 info XML 的 android:widgetFeatures 都含 reconfigurable，保留桌面长按编辑能力。
  */
 class WidgetInfoXmlContractTest {
 
@@ -93,13 +88,20 @@ class WidgetInfoXmlContractTest {
         }
     }
 
-    /** R4/R5: 每个变体的配置路由必须指向 WidgetConfigureActivity */
+    /**
+     * 添加组件时不得弹出强制配置页(白屏闪烁)。
+     * 所有现有变体首屏已自动绑定默认课表,无内容可让用户在首次添加时填写;
+     * 长按 → 编辑入口仍走应用内 WidgetEditScreen。所以这里强制不允许
+     * 任何 info XML 声明 `android:configure`。
+     */
     @Test
-    fun `every info xml routes configure to WidgetConfigureActivity`() {
+    fun `no info xml declares android configure - add-to-home must be transparent`() {
         infoXmls.forEach { (name, root) ->
             assertEquals(
-                "$name must declare android:configure",
-                ".widget.WidgetConfigureActivity",
+                "$name must NOT declare android:configure " +
+                    "(it pops a white configure activity on add; the in-app " +
+                    "WidgetEditScreen handles reconfigure instead)",
+                "",
                 root.getAttribute("android:configure")
             )
         }
