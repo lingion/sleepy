@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Today overflow v6 (2026-09-10 用户定稿: 装不下时顶栏 = 三键 ‹ 当前日期 ›):
+     竖排同级结构 — 顶栏行 (真实视图, 可点) 在上, ListView 在下, 界线分明不重叠。
+     v4 翻车根因 = 顶栏覆盖层与 ListView z 序叠压 (巨箭头/透明/内容消失);
+     v6 顶栏与列表是 LinearLayout 竖排兄弟 (WeekList 证明 ListView 安全,
+     静态档证明真实视图顶栏安全 → 兄弟组合 = 两个已证安全模式的合成)。
+     顶栏标题 weight=1 + ellipsize → 三键结构上永不被挤出 (用户: 这样总装得下了吧)。
+     无壳图层: 卡片底色由根容器圆角裁剪 + header/list setBackgroundColor 同 scheme 补齐,
+     条带底图圆角与周围同色 → 视觉不可见。 -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_overflow_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@drawable/widget_scroll_clip"
+    android:outlineProvider="background"
+    android:clipToOutline="true">
+
+    <!-- 顶栏行 36dp = NAV_HEADER_H_DP 渲染器口径; 按钮 40x28dp = 视图即点击热区 -->
+    <LinearLayout
+        android:id="@+id/widget_today_header"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="10dp"
+        android:paddingEnd="10dp">
+
+        <ImageView
+            android:id="@+id/widget_today_nav_prev"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
+            android:clickable="true"
+            android:contentDescription="@string/today_nav_prev_day" />
+
+        <!-- 中键 = 当前显示日期, 点按 = 回到今天 (三键定稿的第三键收进日期文本)。
+             weight=1 吃掉全部剩余宽: 窄卡上标题截断而不是把 › 挤出可视区。 -->
+        <TextView
+            android:id="@+id/widget_today_nav_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp"
+            android:gravity="center"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:textStyle="bold"
+            android:textSize="13sp"
+            android:contentDescription="@string/today_nav_back_to_today" />
+
+        <ImageView
+            android:id="@+id/widget_today_nav_next"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
+            android:clickable="true"
+            android:contentDescription="@string/today_nav_next_day" />
+    </LinearLayout>
+
+    <ListView
+        android:id="@+id/widget_strip_list"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp"
+        android:scrollbars="none"
+        android:cacheColorHint="@android:color/transparent"
+        android:listSelector="@android:color/transparent"
+        android:contentDescription="@string/widget_week_grid_label" />
+</LinearLayout>

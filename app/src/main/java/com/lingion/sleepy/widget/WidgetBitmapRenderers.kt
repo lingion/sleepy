@@ -176,14 +176,20 @@ object WidgetBitmapRenderers {
      *
      * pageOffsetDp > 0 时从内容纵轴该偏移起画 (v4 翻页遗留机制, 现调用方恒传默认
      * 0; 行原子切片逻辑保留备用)。默认 0 = 现有调用点逐字节不变。
+     *
+     * v6: emptyHeader=true 时 24dp 头部前进量默认仍保留 (空档, 供真实视图顶栏覆盖
+     * 的静态档用); headerSpace=true 把这 24dp 整段删掉 — 条带长图从第一行课程直接
+     * 起 (overflow 竖排布局里顶栏是上方独立行, 位图不需要头部空档)。
+     * 静态档缺省 false 逐字节不变。
      */
     fun renderToday(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR,
         emptyHeader: Boolean = false,
-        pageOffsetDp: Float = 0f
+        pageOffsetDp: Float = 0f,
+        headerSpace: Boolean = false
     ): Bitmap {
-        return renderTodayRegular(context, data, wDp, hDp, emptyHeader, pageOffsetDp)
+        return renderTodayRegular(context, data, wDp, hDp, emptyHeader, pageOffsetDp, headerSpace)
     }
 
     /**
@@ -293,7 +299,8 @@ object WidgetBitmapRenderers {
      */
     private fun renderTodayRegular(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
-        emptyHeader: Boolean, pageOffsetDp: Float = 0f
+        emptyHeader: Boolean, pageOffsetDp: Float = 0f,
+        headerSpace: Boolean = false
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -359,7 +366,9 @@ object WidgetBitmapRenderers {
             }
         }
 
-        y += 24f * density
+        // v6 headerSpace: 条带长图不要头部空档 (顶栏在布局里是上方独立行) → 24dp 前进量整段跳过。
+        // 各状态行 (无课表/学期外/无课/课程列表) 都在 y+=24 之后定位 → 只需跳过这次前进。
+        if (!headerSpace) y += 24f * density
 
         if (!data.hasTable) {
             p.color = s.onSurface
@@ -478,10 +487,12 @@ object WidgetBitmapRenderers {
      * Today 内容全展开高度(dp) — 可滚动条带渲染用。
      * 纯计算零绘制; 布局常量逐一镜像 renderToday (改那边必须同步这边)。
      * v7.10.11: 冲突分栏行高按最高栏堆叠数算(与 renderToday 分栏镜像)。
+     * v6 headerSpace: true 时头部 24dp 前进量不计 (条带去头, 顶栏是布局独立行),
+     * 与 renderToday(headerSpace=true) 逐常量镜像。
      */
-    fun todayContentHeightDp(data: WidgetData): Float {
-        // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24
-        var h = 14f + 24f
+    fun todayContentHeightDp(data: WidgetData, headerSpace: Boolean = false): Float {
+        // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24 (headerSpace 时只 pad)
+        var h = if (headerSpace) 14f else 14f + 24f
         if (!data.hasTable) return h + 20f          // "去创建课表" 一行
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 学期状态 + 提示行
         if (data.courses.isEmpty()) return h + 22f + 14f  // 无课标题 + 休息副行
