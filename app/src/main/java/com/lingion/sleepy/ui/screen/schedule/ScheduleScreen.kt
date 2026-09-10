@@ -122,7 +122,7 @@ fun ScheduleScreen(
                     .padding(horizontal = 16.dp, vertical = 12.dp)
             ) {
                 EmptyState(
-                    modifier = Modifier.align(Alignment.TopCenter),
+                    modifier = Modifier.align(Alignment.Center),
                     onGoImport = onGoImport,
                     onCreateTable = onCreateTable
                 )
