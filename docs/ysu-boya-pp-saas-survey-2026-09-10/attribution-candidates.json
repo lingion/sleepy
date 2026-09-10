@@ -1,0 +1,26 @@
+[
+  {
+    "project": "qnxg/hnu_query",
+    "author": "qnxg",
+    "license_or_None": "AGPL-3.0",
+    "role_in_verification": "搜索命中 yjsxt 关键词; 湖南大学研究生系统客户端, 佐证研究生系统生态, 非博雅协议"
+  },
+  {
+    "project": "qnxg/weihuda_backend",
+    "author": "qnxg",
+    "license_or_None": null,
+    "role_in_verification": "搜索命中 yjsxt 关键词; 系统映射后端, 佐证 yjsxt 命名空间, 非博雅协议"
+  },
+  {
+    "project": "heriec/suda-yjs-shedule",
+    "author": "heriec",
+    "license_or_None": null,
+    "role_in_verification": "苏州大学研究生课表导入脚本, NEGATIVE 反例: iframe HTML 表格路线, 域名 jyjxxt.yjs.suda.edu.cn 与博雅无关"
+  },
+  {
+    "project": "dlutor/chaoxingbook",
+    "author": "dlutor",
+    "license_or_None": "MIT",
+    "role_in_verification": "仓库名与超星 vendor 家族同名, 内容无博雅研究生平台协议证据"
+  }
+]

@@ -1,0 +1,38 @@
+[
+  {
+    "full_name": "qnxg/hnu_query",
+    "stars": 18,
+    "lang": "Rust",
+    "license": "AGPL-3.0",
+    "default_branch": "main",
+    "archived": false,
+    "relevance": "GitHub code search hit yjsxt; HNU graduate-system client, not boya_pp"
+  },
+  {
+    "full_name": "qnxg/weihuda_backend",
+    "stars": 0,
+    "lang": "Rust",
+    "license": null,
+    "default_branch": "master",
+    "archived": false,
+    "relevance": "GitHub code search hit yjsxt; backend system mapping, not boya_pp"
+  },
+  {
+    "full_name": "heriec/suda-yjs-shedule",
+    "stars": 0,
+    "lang": "JavaScript",
+    "license": null,
+    "default_branch": "main",
+    "archived": false,
+    "relevance": "Graduate schedule importer; public endpoint is jyjxxt.yjs.suda.edu.cn, not boya_pp"
+  },
+  {
+    "full_name": "dlutor/chaoxingbook",
+    "stars": 10,
+    "lang": null,
+    "license": "MIT",
+    "default_branch": "master",
+    "archived": false,
+    "relevance": "GitHub repository search hit chaoxingbook; generic Chaoxing material, no boya_pp protocol"
+  }
+]
