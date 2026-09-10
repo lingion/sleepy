@@ -420,28 +420,15 @@ object WidgetBitmapRenderers {
         // v4 翻页: 行是原子单元 (冲突分栏行不可拦腰切)。先按全展开 y 推进一遍算出
         // 每行的 [top, bottom) px 区间, 落在 [offset, offset+页可视高) 的行才画;
         // 绘制时 y = rowTop − offset — 行内相对布局与全展开渲染逐像素一致。
+        // v8: 行几何单一真值 — span 起点随 headerSpace 参数化 (旧硬编码 14+24 = 去头
+        // 条带顶部 24dp 死带 + 末行被可见过滤丢弃的镜像失配根因)。
         val offsetPx = pageOffsetDp * density
-        val pageContentHpx = h * 1f  // 位图高即视口高; 内容区 = 视口 − 顶 pad − 标题行前进 − 底 pad
-        val contentTopPx = (14f + 24f) * density
-        val pageVisiblePx = h - contentTopPx - 14f * density
+        val contentTopPx = TodayRowGeometry.contentTopDp(headerSpace) * density
+        val pageVisiblePx = h - contentTopPx - TodayRowGeometry.PAD_BOTTOM_DP * density
         data class RowSpan(val row: com.lingion.sleepy.util.ConflictLayoutEngine.WeekLaneRow,
                            val topPx: Float, val bottomPx: Float)
-        val spans = ArrayList<RowSpan>(laneRows.size)
-        run {
-            var sy = contentTopPx  // pad + 标题行前进 (与旧绘制循环起点同源)
-            laneRows.forEach { row ->
-                if (row.laneCount == 1) {
-                    spans += RowSpan(row, sy, sy + rowH)
-                    sy += rowH + rowGap
-                } else {
-                    val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
-                        .maxOf { it.size }.coerceAtLeast(1)
-                    val rowTotal = maxStack * rowH + (maxStack - 1) * stackGap
-                    spans += RowSpan(row, sy, sy + rowTotal)
-                    sy += rowTotal + rowGap
-                }
-            }
-        }
+        val spans = TodayRowGeometry.rowSpans(data.courses, headerSpace)
+            .map { RowSpan(it.row, it.topDp * density, it.bottomDp * density) }
         val visible = spans.filter { it.bottomPx > offsetPx && it.topPx < offsetPx + pageVisiblePx }
         visible.forEach { span ->
             val row = span.row
@@ -491,26 +478,13 @@ object WidgetBitmapRenderers {
      * 与 renderToday(headerSpace=true) 逐常量镜像。
      */
     fun todayContentHeightDp(data: WidgetData, headerSpace: Boolean = false): Float {
-        // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24 (headerSpace 时只 pad)
-        var h = if (headerSpace) 14f else 14f + 24f
-        if (!data.hasTable) return h + 20f          // "去创建课表" 一行
-        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 学期状态 + 提示行
-        if (data.courses.isEmpty()) return h + 22f + 14f  // 无课标题 + 休息副行
-        val rowH = 38f
-        val rowGap = 10f
-        val stackGap = 3f
-        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
-        for (row in laneRows) {
-            if (row.laneCount == 1) {
-                h += rowH + rowGap
-            } else {
-                val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
-                    .maxOf { it.size }.coerceAtLeast(1)
-                h += maxStack * rowH + (maxStack - 1) * stackGap + rowGap
-            }
-        }
-        h += 14f                                    // 底部 pad
-        return h
+        // 空态分支沿用旧口径 (单行状态文本 + 各自 pad)
+        if (!data.hasTable) return TodayRowGeometry.contentTopDp(headerSpace) + 20f
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE)
+            return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
+        if (data.courses.isEmpty()) return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
+        // v8: 行几何单一真值 — 与 renderTodayRegular 同调 TodayRowGeometry (镜像失配根除)
+        return TodayRowGeometry.contentHeightDp(data.courses, headerSpace)
     }
 
     // ── 今日导航顶栏按钮 (issue #24: 低对比圆角矩形 + 三角形图标) ──

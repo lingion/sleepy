@@ -5,6 +5,7 @@ import android.appwidget.AppWidgetManager
 import android.appwidget.AppWidgetProvider
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.util.TypedValue
@@ -539,6 +540,17 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     shellBitmap = shell,
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
                     configureViews = { views ->
+                        // v8 巨型卡片根因修复: v7 的条带 ListView 卡在 weight=1 FrameLayout
+                        // 里 = viewport 高度落回 ColorOS 量测自由 (v2 wrap_content 翻车同源,
+                        // 量错 → 单 child 整图行被放大成"巨卡"盖住内容)。服务端按已知几何
+                        // 显式钉死滚动层高 (hDp − bar 36dp), launcher 失去量测权 —
+                        // 与 v3 钉行高同一哲学, 补上 v3 没覆盖的 viewport 一环。
+                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                            views.setViewLayoutHeight(
+                                com.lingion.sleepy.R.id.widget_overflow_scroll,
+                                shellH, TypedValue.COMPLEX_UNIT_DIP
+                            )
+                        }
                         configureTodayOverflow(context, views, id, receiverClass!!, data, wDp)
                     },
                     stripHeaderless = true,

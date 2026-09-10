@@ -73,12 +73,16 @@ class ScrollStripService : RemoteViewsService() {
             // 原渲染器 + 内容全展开高度 (ceil 到整数 dp, 长图不缺行)
             val contentHdp: Float
             val full: Bitmap
+            var rowCount = -1
             when (scope) {
                 SCOPE_TODAY -> {
                     val d = TodayWidgetReceiver.loadDataSync(context, widgetId)
                     // v6: emptyHeader 只为静态档覆盖顶栏存在; v6 overflow 布局顶栏是
                     // 上方独立行 → 条带同时去头且不留 24dp 空档 (headerSpace)。
+                    // v8: 内容高经 TodayRowGeometry 单一真值 (与渲染同调, 镜像失配根除);
+                    // rowCount 进取证日志 — 真机 logcat 直接核对 content vs rows。
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
+                    rowCount = TodayRowGeometry.rowSpans(d.courses, emptyHeader).size
                     val renderH = ceil(contentHdp)
                     full = WidgetBitmapRenderers.renderToday(
                         context, d, wDp.toFloat(), renderH, emptyHeader = emptyHeader,
@@ -108,7 +112,7 @@ class ScrollStripService : RemoteViewsService() {
             }
             strips = listOf(full)
             android.util.Log.d("ScrollStrip",
-                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${full.height / density}dp wholeImage=1")
+                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${full.height / density}dp rows=$rowCount wholeImage=1")
         }
 
         /** count 恒等 strips.size — stale/异常路径空 adapter (count=0) 绝不触 getViewAt 越界。 */

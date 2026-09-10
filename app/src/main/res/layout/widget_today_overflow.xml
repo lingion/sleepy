@@ -55,8 +55,12 @@
             android:contentDescription="@string/today_nav_next_day" />
     </LinearLayout>
 
-    <!-- 滚动层 = widget_scroll_twoday 逐行同构: 壳图 + 条带 ListView -->
+    <!-- 滚动层 = widget_scroll_twoday 逐行同构: 壳图 + 条带 ListView。
+         v8: 服务端 setViewLayoutHeight 显式钉死本容器高 (hDp − bar 36dp) —
+         weight=1 的量测自由就是 ColorOS「巨型卡片」根因 (v2 翻车同源),
+         钉死后 launcher 对 viewport 无量测权; 0dp 兜底仅 API<31 (真机不在列)。 -->
     <FrameLayout
+        android:id="@+id/widget_overflow_scroll"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1">
@@ -72,6 +76,7 @@
             android:id="@+id/widget_strip_list"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:overScrollMode="never"
             android:divider="@null"
             android:dividerHeight="0dp"
             android:scrollbars="none"
