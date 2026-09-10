@@ -125,31 +125,35 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 调用方: v5 overflow 复刻 WeekList 双层同构 (shell + ListView, 无覆盖层) ----
+    // ---- 调用方: v6 overflow 竖排同级 (三键顶栏行 + ListView 行, 界限分明不叠压) ----
 
     @Test
-    fun `today nav overflow replicates weeklist scroll structure`() {
+    fun `today nav overflow uses v6 sibling layout with three-button header`() {
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow")
         assertTrue(
-            "v5 overflow 必须走 pushScrollable (竖排滑动)",
+            "v6 overflow 必须走 pushScrollable (竖排滑动)",
             body.contains("pushScrollable")
         )
         assertTrue(
-            "v5 overflow 必须复用 widget_scroll_today (WeekList 同款布局, shell+ListView)",
-            body.contains("widget_scroll_today")
+            "v6 overflow 必须用 widget_today_overflow (竖排同级布局)",
+            body.contains("widget_today_overflow")
         )
         assertTrue(
-            "v5 overflow 条带必须含头 (stripHeaderless 缺省 false, 与 shell 逐像素对齐)",
-            !body.contains("stripHeaderless = true")
+            "v6 overflow 无壳图层 (覆盖层/叠压是 ColorOS 腐坏源, 底色走 setBackgroundColor)",
+            body.contains("shellBitmap = null")
         )
         assertTrue(
-            "v5 overflow 禁翻页残留 (TodayPagerCore 已删)",
+            "v6 overflow 条带去头不留空档 (顶栏是布局独立行)",
+            body.contains("stripHeaderless = true")
+        )
+        assertTrue(
+            "v6 overflow 禁翻页残留 (TodayPagerCore 已删)",
             !body.contains("TodayPagerCore")
         )
         assertTrue(
-            "v5 overflow shell 必须带头渲染 (顶栏视觉画进位图, emptyHeader 缺省)",
-            !body.contains("emptyHeader = true")
+            "v6 overflow 顶栏走 configureTodayOverflow (三键, 非静态档四件套)",
+            body.contains("configureTodayOverflow")
         )
         // 取证标签: 所有元素 drawn or not 全打标 — spacer 也要有 (静态分支仍在用)
         val nav = src.substringAfter("fun configureTodayNav(")
@@ -158,6 +162,59 @@ class ScrollStripWholeImageTest {
             "configureTodayNav 必须给 spacer 打标签",
             nav.contains("widget_spacer_l") && nav.contains("widget_spacer_r")
         )
+    }
+
+    @Test
+    fun `overflow layout is vertical siblings never z-overlay`() {
+        // v6 结构铁律: 顶栏行与 ListView 是 LinearLayout vertical 竖排兄弟,
+        // 禁 FrameLayout 叠压 (v4 巨箭头/透明/内容消失的 ColorOS 腐坏根因)
+        val xml = layoutFile("widget_today_overflow.xml").readText()
+        assertTrue(
+            "根容器须 LinearLayout vertical",
+            Regex("LinearLayout[^>]*android:orientation=\"vertical\"").containsMatchIn(xml)
+        )
+        assertTrue(
+            "禁 FrameLayout 叠压 (z 序覆盖层 = ColorOS 腐坏源)",
+            !xml.contains("<FrameLayout")
+        )
+        // 顶栏行: 三键顺序 prev < title < next, 按钮恒 40x28dp
+        val iPrev = xml.indexOf("widget_today_nav_prev")
+        val iTitle = xml.indexOf("widget_today_nav_title")
+        val iNext = xml.indexOf("widget_today_nav_next")
+        assertTrue("三键顺序 prev<title<next", iPrev >= 0 && iPrev < iTitle && iTitle < iNext)
+        assertTrue("按钮口径 40dp/28dp 保留", xml.contains("40dp") && xml.contains("28dp"))
+        assertTrue("顶栏高 36dp (NAV_HEADER_H_DP 口径)", xml.contains("36dp"))
+        // 中键日期: weight=1 吃满剩余宽 → 三键结构上永不被挤出 (用户: 总装得下了吧)
+        val titleBlock = xml.substring(xml.indexOf("widget_today_nav_title"), xml.indexOf("widget_today_nav_next"))
+        assertTrue("标题须 weight=1", titleBlock.contains("layout_weight=\"1\""))
+        assertTrue("标题须 ellipsize (窄卡截断而非挤出 ›)", titleBlock.contains("ellipsize"))
+        // ListView 占满剩余高 (weight=1) + 禁裸 View (@RemoteView 白名单)
+        assertFalse("禁裸 <View>", Regex("<View\\b").containsMatchIn(xml))
+        val listBlock = xml.substring(xml.indexOf("widget_strip_list"))
+        assertTrue("ListView 须 weight=1 吃满剩余高", listBlock.contains("layout_weight=\"1\""))
+    }
+
+    @Test
+    fun `overflow header configures three-button zones with labels`() {
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("fun configureTodayOverflow(")
+            .substringBefore("/** 顶栏标题")
+        // 三键 PendingIntent: prev/next 翻天, 日期键回到今天
+        assertTrue("prev→ACTION_PREV_DAY", body.contains("ACTION_PREV_DAY"))
+        assertTrue("next→ACTION_NEXT_DAY", body.contains("ACTION_NEXT_DAY"))
+        assertTrue("日期键→ACTION_RESET_DAY (三键定稿: 无独立回到今天键)",
+            body.contains("ACTION_RESET_DAY"))
+        // 全元素取证标签
+        assertTrue("顶栏容器打标", body.contains("overflow header v6"))
+        assertTrue("列表打标", body.contains("overflow list v6"))
+        assertTrue("日期键打标 (date=…tap=back-to-today)", body.contains("tap=back-to-today"))
+        assertTrue("prev 打标", body.contains("prev 40x28dp"))
+        assertTrue("next 打标", body.contains("next 40x28dp"))
+        // 底色补齐: 无壳图层 → header/list 同 scheme setBackgroundColor
+        assertTrue("header 底色 setBackgroundColor", body.contains("setBackgroundColor"))
+        assertTrue("list 底色 setBackgroundColor (无壳层, 底色不能靠位图)",
+            body.substringAfter("widget_strip_list", "").contains("setBackgroundColor") ||
+                Regex("setInt\\([^)]*widget_strip_list[^)]*,\\s*\"setBackgroundColor\"").containsMatchIn(body))
     }
 
     @Test

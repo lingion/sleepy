@@ -76,10 +76,13 @@ class ScrollStripService : RemoteViewsService() {
             when (scope) {
                 SCOPE_TODAY -> {
                     val d = TodayWidgetReceiver.loadDataSync(context, widgetId)
-                    contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d)
+                    // v6: emptyHeader 只为静态档覆盖顶栏存在; v6 overflow 布局顶栏是
+                    // 上方独立行 → 条带同时去头且不留 24dp 空档 (headerSpace)。
+                    contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
                     val renderH = ceil(contentHdp)
                     full = WidgetBitmapRenderers.renderToday(
-                        context, d, wDp.toFloat(), renderH, emptyHeader = emptyHeader
+                        context, d, wDp.toFloat(), renderH, emptyHeader = emptyHeader,
+                        headerSpace = emptyHeader
                     )
                 }
                 SCOPE_TWODAY -> {
