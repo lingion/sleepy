@@ -22,6 +22,11 @@ import org.junit.Test
  */
 class IrregularPrecisionTest {
 
+    /** 占位行权重可见下限 — 与 TimeTableUtils.PLACEHOLDER_MIN_WEIGHT 同值契约。 */
+    private companion object {
+        const val PLACEHOLDER_MIN_WEIGHT = 0.36f
+    }
+
     private val tj = """[{"node":1,"start":"08:00","end":"08:45"},
         {"node":2,"start":"08:55","end":"09:40"},{"node":3,"start":"09:50","end":"10:35"},
         {"node":4,"start":"10:45","end":"11:30"},{"node":5,"start":"11:40","end":"12:25"},
@@ -46,8 +51,9 @@ class IrregularPrecisionTest {
         assertEquals(2, clusters[0].courses.size)
     }
 
-    /** 占位行 = 16:45-16:50 只有 5 分钟, 行高必须按分钟加权: 5min/45min ≈ 0.111 行, 不是整行。
-     *  实现落点: RenderSlotPlan.slotWeights — 每行权重(该行分钟数 / 相邻标准行分钟数), 占位行 < 1。 */
+    /** 占位行 = 16:45-16:50 只有 5 分钟, 行高按分钟加权但带可见下限:
+     *  5min/45min ≈ 0.111 裸比例 → 被下限 0.36 顶起(渲染层扣 gap/padding 后须剩可见内容);
+     *  仍 < 1(不整行拉满)。实现落点: RenderSlotPlan.slotWeights。 */
     @Test
     fun placeholderRowHeight_weightedByMinutes_notFullRow() {
         val irr = c(1, 8, 1, true, "16:40", "16:50")
@@ -57,9 +63,41 @@ class IrregularPrecisionTest {
         val idx = plan.slots.indexOf(ph[0])
         val weight: Float? = plan.let { p -> p.slotWeights?.getOrNull(idx) }
         assertEquals(
-            "占位行 5 分钟应只占 5/45 ≈ 0.111 标准行高, 不是整行",
-            5f / 45f, weight!!, 0.01f
+            "占位行权重 = max(5/45, 0.36) = 0.36 — 可见下限, 且 < 1 不整行",
+            maxOf(5f / 45f, TimeTableUtils.PLACEHOLDER_MIN_WEIGHT), weight!!, 0.001f
         )
+    }
+
+    /** 用户报障 2026-09-10: 5 分钟占位行加权后 6.2dp − gapH − padding ≤ 0,
+     *  时间文字挤没了, 时间轴上只剩一条 ~2dp 色条 = 肉眼隐形。
+     *  权重必须带可见下限(够渲染一行 micro 时间文字 ≈ 0.36 行), 行高与 y 同源仍自洽。 */
+    @Test
+    fun placeholderRowWeight_hasMinVisibleFloor_notInvisible() {
+        val irr = c(1, 8, 1, true, "16:40", "16:50")
+        val plan = TimeTableUtils.buildRenderSlotPlan(listOf(irr), tj)
+        val ph = plan.slots.filter { it.isPlaceholder }
+        assertEquals(1, ph.size)
+        val idx = plan.slots.indexOf(ph[0])
+        val weight: Float? = plan.let { p -> p.slotWeights?.getOrNull(idx) }
+        // 5min/45min = 0.111 → 被下限顶起; 20min/45min = 0.444 → 下限不咬
+        assertEquals(PLACEHOLDER_MIN_WEIGHT, weight!!, 0.001f)
+    }
+
+    /** 占位行下限不破坏时间轴自洽: y 前缀和与行高同源(同一 ws 数组), 权重和只增不减; 占位行 ∈ [0.36, 1)。 */
+    @Test
+    fun placeholderFloor_keepsAxisConsistent_sumMatches() {
+        val irr = c(1, 8, 1, true, "16:40", "16:50")
+        val plan = TimeTableUtils.buildRenderSlotPlan(listOf(irr), tj)
+        val ws = plan.slotWeights!!
+        // 12 标准行(权重恒 1) + 1 占位行(权重 = max(5/45, 0.36) = 0.36) = 12.36
+        assertEquals(12f + TimeTableUtils.PLACEHOLDER_MIN_WEIGHT, ws.sum(), 0.001f)
+        // 占位行权重仍 < 1(不整行拉满) 且 ≥ 下限
+        plan.slots.forEachIndexed { i, s ->
+            if (s.isPlaceholder) {
+                assert(ws[i] >= PLACEHOLDER_MIN_WEIGHT)
+                assert(ws[i] < 1f)
+            }
+        }
     }
 
     /** 16:40 在 renderSlots 加权坐标系里仍落在节 8 内 40/45 处 (时间→像素单调一致)。 */
