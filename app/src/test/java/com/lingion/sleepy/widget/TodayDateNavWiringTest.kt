@@ -159,12 +159,12 @@ class TodayDateNavWiringTest {
         // pushTodayData 静态 = 真实视图顶栏容器 (bitmap 头部留白防双重标题)
         assertTrue("pushTodayData 必须用 widget_today_nav_static 静态容器",
             src.contains("widget_today_nav_static"))
-        assertTrue("pushTodayData overflow 必须用 widget_scroll_today_nav",
-            src.contains("widget_scroll_today_nav"))
+        assertTrue("v4 overflow 禁引用已删的 widget_scroll_today_nav (ColorOS 滚动全线翻车)",
+            !src.contains("widget_scroll_today_nav"))
         assertTrue("nav 静态分支必须 emptyHeader=true (bitmap 头部留白)",
             src.contains("emptyHeader = true"))
-        assertTrue("overflow 条带必须 stripHeaderless=true (条带长图去头)",
-            src.contains("stripHeaderless = true"))
+        assertTrue("v4 overflow 必须经 TodayPagerCore 手动切页",
+            src.contains("TodayPagerCore"))
         assertTrue("pushTodayData 必须调 configureTodayNav",
             src.contains("configureTodayNav"))
     }
@@ -185,7 +185,7 @@ class TodayDateNavWiringTest {
         // android.view.View 无 @RemoteView 注解 → 裸 <View> 在 launcher inflate 必炸
         // → 「载入窗口小组件时出现问题」(v1.0.53 回归: 两个今日变体都走 nav 布局,
         //   周课表布局无裸 View 所以只有今日挂)。
-        listOf("widget_today_nav_static.xml", "widget_scroll_today_nav.xml").forEach { name ->
+        listOf("widget_today_nav_static.xml").forEach { name ->
             val xml = layoutFile(name).readText()
             assertFalse(
                 "$name 禁止裸 <View> (无 @RemoteView 注解, launcher 端 inflate 抛异常)",

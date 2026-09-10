@@ -136,7 +136,7 @@ class TodayDateNavHeaderWiringTest {
 
     @Test
     fun `nav header layouts declare 36dp strip with spacers and sizes`() {
-        listOf("widget_today_nav_static.xml", "widget_scroll_today_nav.xml").forEach { name ->
+        listOf("widget_today_nav_static.xml").forEach { name ->
             val xml = layoutFile(name).readText()
             assertTrue("$name 缺顶栏容器 widget_today_header", xml.contains("widget_today_header"))
             assertTrue("$name 顶栏高须 36dp (NAV_HEADER_H_DP 口径)", xml.contains("36dp"))

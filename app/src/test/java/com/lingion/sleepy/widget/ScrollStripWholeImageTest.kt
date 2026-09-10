@@ -92,26 +92,14 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 壳图层: 今日导航滚动布局必须删除 (双图层重影根因) ----
+    // ---- 壳图层: 今日导航滚动布局 v4 已整体删除 (滚动方案废弃) ----
 
     @Test
-    fun `nav scroll layout has no shell layer`() {
-        val xml = layoutFile("widget_scroll_today_nav.xml").readText()
-        assertFalse(
-            "widget_scroll_today_nav 禁壳图 widget_shell (整图行自身带圆角背景, 壳=重影层)",
-            xml.contains("widget_shell")
-        )
+    fun `nav scroll layout removed in v4 pager architecture`() {
+        val lay = File(".").resolve("app/src/main/res/layout/widget_scroll_today_nav.xml")
         assertTrue(
-            "滚动容器 root 须有 id 供 adb 取证",
-            xml.contains("widget_scroll_root")
-        )
-        assertTrue(
-            "ListView 必须保留 (滚动本体)",
-            xml.contains("widget_strip_list")
-        )
-        assertTrue(
-            "顶栏必须保留 (36dp 真实视图导航)",
-            xml.contains("widget_today_header")
+            "widget_scroll_today_nav.xml 必须已删 (v4 手动翻页, 无 ListView 滚动)",
+            !lay.exists()
         )
     }
 
@@ -137,15 +125,27 @@ class ScrollStripWholeImageTest {
         )
     }
 
-    // ---- 调用方: 今日导航 overflow 路径不设壳 ----
+    // ---- 调用方: v4 overflow 走静态整图 + 手动翻页, 无滚动服务 ----
 
     @Test
-    fun `today nav overflow passes null shell`() {
+    fun `today nav overflow uses static pager not scroll service`() {
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow")
         assertTrue(
-            "今日导航 overflow 必须 shellBitmap = null (布局已无壳)",
-            body.contains("shellBitmap = null")
+            "v4 overflow 必须渲染进 widget_today_nav_static (无 ListView)",
+            body.contains("widget_today_nav_static")
+        )
+        assertTrue(
+            "v4 overflow 必须经 TodayPagerCore 切页",
+            body.contains("TodayPagerCore")
+        )
+        assertTrue(
+            "v4 overflow 禁再走 pushScrollable (ColorOS ListView 滚动全线翻车)",
+            !body.contains("pushScrollable")
+        )
+        assertTrue(
+            "v4 overflow 禁引用已删的 widget_scroll_today_nav",
+            !body.contains("widget_scroll_today_nav")
         )
         // 取证标签: 所有元素 drawn or not 全打标 — spacer 也要有
         val nav = src.substringAfter("fun configureTodayNav(")
@@ -158,7 +158,7 @@ class ScrollStripWholeImageTest {
 
     @Test
     fun `nav layouts label every element including spacers and root`() {
-        listOf("widget_today_nav_static.xml", "widget_scroll_today_nav.xml").forEach { name ->
+        listOf("widget_today_nav_static.xml").forEach { name ->
             val xml = layoutFile(name).readText()
             assertTrue("$name spacer 左须有 id", xml.contains("widget_spacer_l"))
             assertTrue("$name spacer 右须有 id", xml.contains("widget_spacer_r"))
