@@ -173,13 +173,19 @@ object WidgetBitmapRenderers {
      * 在 emptyHeader=true 时整体不画(标题/右侧槽位/‹›小箭头全跳过, y 前进量保留 →
      * 内容纵坐标与带头模式逐像素一致) — 今日导航版用真实 RemoteViews 视图(TextView+按钮)
      * 覆盖顶栏, bitmap 头部必须留白, 否则双重标题; WeekGrid 最小档/旧调用方默认 false 不受影响。
+     *
+     * v4 手动翻页: pageOffsetDp > 0 时从内容纵轴该偏移起画一页 (drawCourse 行起点
+     * 跳过 offset 之前、末尾裁掉 offset+可视内容高之后的部分)。课程行 y 推进循环
+     * 里按整行过滤 — 行是原子 (冲突分栏行不可拦腰切), 起始偏移以上的整行跳过,
+     * 以下的画到页底为止。默认 0 = 现有调用点逐字节不变。
      */
     fun renderToday(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR,
-        emptyHeader: Boolean = false
+        emptyHeader: Boolean = false,
+        pageOffsetDp: Float = 0f
     ): Bitmap {
-        return renderTodayRegular(context, data, wDp, hDp, emptyHeader)
+        return renderTodayRegular(context, data, wDp, hDp, emptyHeader, pageOffsetDp)
     }
 
     /**
@@ -289,7 +295,7 @@ object WidgetBitmapRenderers {
      */
     private fun renderTodayRegular(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
-        emptyHeader: Boolean
+        emptyHeader: Boolean, pageOffsetDp: Float = 0f
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -403,21 +409,45 @@ object WidgetBitmapRenderers {
 
         val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
         val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
-        laneRows.forEach { row ->
+        val stackGap = 3f * density
+        // v4 翻页: 行是原子单元 (冲突分栏行不可拦腰切)。先按全展开 y 推进一遍算出
+        // 每行的 [top, bottom) px 区间, 落在 [offset, offset+页可视高) 的行才画;
+        // 绘制时 y = rowTop − offset — 行内相对布局与全展开渲染逐像素一致。
+        val offsetPx = pageOffsetDp * density
+        val pageContentHpx = h * 1f  // 位图高即视口高; 内容区 = 视口 − 顶 pad − 标题行前进 − 底 pad
+        val contentTopPx = (14f + 24f) * density
+        val pageVisiblePx = h - contentTopPx - 14f * density
+        data class RowSpan(val row: com.lingion.sleepy.util.ConflictLayoutEngine.WeekLaneRow,
+                           val topPx: Float, val bottomPx: Float)
+        val spans = ArrayList<RowSpan>(laneRows.size)
+        run {
+            var sy = contentTopPx  // pad + 标题行前进 (与旧绘制循环起点同源)
+            laneRows.forEach { row ->
+                if (row.laneCount == 1) {
+                    spans += RowSpan(row, sy, sy + rowH)
+                    sy += rowH + rowGap
+                } else {
+                    val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
+                        .maxOf { it.size }.coerceAtLeast(1)
+                    val rowTotal = maxStack * rowH + (maxStack - 1) * stackGap
+                    spans += RowSpan(row, sy, sy + rowTotal)
+                    sy += rowTotal + rowGap
+                }
+            }
+        }
+        val visible = spans.filter { it.bottomPx > offsetPx && it.topPx < offsetPx + pageVisiblePx }
+        visible.forEach { span ->
+            val row = span.row
+            val y = span.topPx - offsetPx
             if (row.laneCount == 1) {
                 drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
                     fontSizeSp = 12f, colorless = colorless, displayMode = displayMode,
                     groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
                     useAlias = useAlias)
-                y += rowH + rowGap
             } else {
                 val laneGap = 5f * density
                 val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
-                val stackGap = 3f * density
-                // 行高 = 最高栏(栏内课数最多)的总高 — 各栏共享行起点,行尾对齐
-                val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
-                    .maxOf { it.size }.coerceAtLeast(1)
-                val laneRowTotalH = maxStack * rowH + (maxStack - 1) * stackGap
+                val laneRowTotalH = span.bottomPx - span.topPx
                 repeat(row.laneCount) { li ->
                     val laneX = pad + li * (laneW + laneGap)
                     // 栏间浅细竖线(与 App 分栏同语义)
@@ -440,7 +470,6 @@ object WidgetBitmapRenderers {
                         if (ci < laneCourses.size - 1) ly += stackGap
                     }
                 }
-                y += laneRowTotalH + rowGap
             }
         }
 
