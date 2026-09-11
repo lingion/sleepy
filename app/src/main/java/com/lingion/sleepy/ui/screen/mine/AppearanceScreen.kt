@@ -17,8 +17,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -32,7 +34,10 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -43,10 +48,12 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.SectionHeader
+import com.lingion.sleepy.ui.theme.CustomSchemeDeriver
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.ui.theme.ThemePreset
 import com.lingion.sleepy.ui.theme.ThemePresets
+import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.util.AppPrefs
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
@@ -68,6 +75,12 @@ fun AppearanceScreen(
     val colors = SleepyTheme.colors
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
     val selectedMode = themeMode
+
+    // 自定义主题编辑器 overlay(创建时 editingTheme=null;微调时载入草稿)
+    var showEditor by remember { mutableStateOf(false) }
+    var editingTheme by remember { mutableStateOf<com.lingion.sleepy.data.CustomTheme?>(null) }
+    // 编辑器保存/删除后刷新网格列表
+    var customListVersion by remember { mutableIntStateOf(0) }
 
     // 选主题/模式后立即刷小组件: 之前只写 SP 不刷 widget → 小组件不跟主题变
     val widgetScope = remember { CoroutineScope(SupervisorJob() + Dispatchers.Default) }
@@ -110,19 +123,39 @@ fun AppearanceScreen(
                 )
             }
 
-            // 2 列网格 5 套预设
+            // 2 列网格 5 套预设 + 新建卡 + 自定义主题卡(混排,奇数补空位)
             item {
-                val presets = ThemePresets.all
+                val customThemes = remember(customListVersion) { CustomThemeStore.getAll(context) }
+                // 网格单元序列:5 预设卡 → 新建卡 → 各自定义卡
+                val cells: List<ThemeGridCell> = buildList {
+                    ThemePresets.all.forEach { add(ThemeGridCell.Preset(it)) }
+                    add(ThemeGridCell.NewTheme)
+                    customThemes.forEach { add(ThemeGridCell.Custom(it)) }
+                }
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    presets.chunked(2).forEach { row ->
+                    cells.chunked(2).forEach { row ->
                         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                            row.forEach { p ->
+                            row.forEach { cell ->
                                 Box(Modifier.weight(1f)) {
-                                    PresetThemeCard(
-                                        preset = p,
-                                        selected = currentKey == p.key,
-                                        onClick = { AppPrefs.setThemeKey(context, p.key); refreshWidgets() }
-                                    )
+                                    when (cell) {
+                                        is ThemeGridCell.Preset -> PresetThemeCard(
+                                            preset = cell.preset,
+                                            selected = currentKey == cell.preset.key,
+                                            onClick = { AppPrefs.setThemeKey(context, cell.preset.key); refreshWidgets() }
+                                        )
+                                        is ThemeGridCell.NewTheme -> NewThemeCard(
+                                            onClick = { showEditor = true; editingTheme = null }
+                                        )
+                                        is ThemeGridCell.Custom -> CustomThemeCard(
+                                            theme = cell.theme,
+                                            selected = currentKey == ThemePresets.CUSTOM_KEY_PREFIX + cell.theme.id,
+                                            onClick = {
+                                                AppPrefs.setThemeKey(context, ThemePresets.CUSTOM_KEY_PREFIX + cell.theme.id)
+                                                refreshWidgets()
+                                            },
+                                            onEdit = { showEditor = true; editingTheme = cell.theme }
+                                        )
+                                    }
                                 }
                             }
                             if (row.size == 1) Box(Modifier.weight(1f))
@@ -161,6 +194,41 @@ fun AppearanceScreen(
             }
         }
     }
+
+    // 编辑器 overlay — 全屏覆盖在外观页之上(仿其他 overlay 页的层叠样式)
+    if (showEditor) {
+        CustomThemeEditorScreen(
+            editing = editingTheme,
+            nextThemeNumber = remember(customListVersion) { CustomThemeStore.getAll(context).size + 1 },
+            onBack = { showEditor = false; editingTheme = null },
+            onSaved = { saved ->
+                CustomThemeStore.save(context, saved)
+                customListVersion++
+                showEditor = false
+                editingTheme = null
+                // 若保存的主题正被应用(编辑既有主题),刷新小组件
+                if (currentKey == ThemePresets.CUSTOM_KEY_PREFIX + saved.id) refreshWidgets()
+            },
+            onDeleted = { id ->
+                CustomThemeStore.delete(context, id)
+                customListVersion++
+                // 删除的正是当前应用主题 → 写回 default(与 unknown-key 回落语义一致)
+                if (currentKey == ThemePresets.CUSTOM_KEY_PREFIX + id) {
+                    AppPrefs.setThemeKey(context, ThemePresets.KEY_DEFAULT)
+                    refreshWidgets()
+                }
+                showEditor = false
+                editingTheme = null
+            }
+        )
+    }
+}
+
+/** 网格单元 — 预设卡 / 新建卡 / 自定义卡 混排 */
+private sealed interface ThemeGridCell {
+    data class Preset(val preset: ThemePreset) : ThemeGridCell
+    data object NewTheme : ThemeGridCell
+    data class Custom(val theme: com.lingion.sleepy.data.CustomTheme) : ThemeGridCell
 }
 
 // ── 以下复制自 ThemeColorScreen ──
@@ -217,4 +285,108 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
 @Composable
 private fun ColorSwatch(color: Color) {
     Box(Modifier.size(28.dp).clip(SleepyTheme.shapes.small).background(color))
+}
+
+/** 「新建主题」卡 — 与 PresetThemeCard 同尺寸,虚线圆圈 + 加号 */
+@Composable
+private fun NewThemeCard(onClick: () -> Unit) {
+    val colors = SleepyTheme.colors
+    Surface(
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        color = colors.surfaceContainer, shape = SleepyTheme.shapes.large
+    ) {
+        Column(
+            modifier = Modifier.padding(16.dp).fillMaxWidth().height(96.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
+            DashedCircleWithPlus(size = 44.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
+            Spacer(Modifier.height(8.dp))
+            Text(
+                stringResource(R.string.theme_new),
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+                color = colors.onSurface
+            )
+        }
+    }
+}
+
+/** 虚线圆圈 + 中心加号 — Canvas PathEffect.dashPathEffect 画圆环,onSurface 描边自动适配深浅 */
+@Composable
+private fun DashedCircleWithPlus(size: androidx.compose.ui.unit.Dp, strokeColor: Color, tint: Color) {
+    Box(
+        modifier = Modifier.size(size),
+        contentAlignment = Alignment.Center
+    ) {
+        androidx.compose.foundation.Canvas(modifier = Modifier.fillMaxSize()) {
+            val stroke = 1.5.dp.toPx()
+            val radius = (this.size.minDimension - stroke) / 2f
+            drawCircle(
+                color = strokeColor,
+                radius = radius,
+                style = androidx.compose.ui.graphics.drawscope.Stroke(
+                    width = stroke,
+                    pathEffect = androidx.compose.ui.graphics.PathEffect.dashPathEffect(
+                        intervals = floatArrayOf(6.dp.toPx(), 5.dp.toPx())
+                    )
+                )
+            )
+        }
+        Icon(
+            androidx.compose.material.icons.Icons.Outlined.Add,
+            contentDescription = stringResource(R.string.theme_new),
+            tint = tint,
+            modifier = Modifier.size(size / 2)
+        )
+    }
+}
+
+/** 自定义主题卡 — 呈现与 PresetThemeCard 一致(三色板+名称+选中对勾),右侧小设置图标进微调编辑器 */
+@Composable
+private fun CustomThemeCard(
+    theme: com.lingion.sleepy.data.CustomTheme,
+    selected: Boolean,
+    onClick: () -> Unit,
+    onEdit: () -> Unit
+) {
+    val colors = SleepyTheme.colors
+    // 卡片色板预览按当前深浅模式派生(与 PresetThemeCard 的探针逻辑一致)
+    val isDark = colors.background.red < 0.5f
+    val scheme = remember(theme, isDark) { CustomSchemeDeriver.derive(theme, isDark) }
+    val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
+    Surface(
+        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
+        color = bgColor, shape = SleepyTheme.shapes.large
+    ) {
+        Column(Modifier.padding(16.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                ColorSwatch(scheme.primary)
+                ColorSwatch(scheme.secondary)
+                ColorSwatch(scheme.tertiary)
+            }
+            Spacer(Modifier.height(12.dp))
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(
+                    theme.name.ifBlank { stringResource(R.string.theme_new) },
+                    style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
+                    color = colors.onSurface,
+                    maxLines = 1,
+                    overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
+                    modifier = Modifier.weight(1f)
+                )
+                if (selected) {
+                    Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                    Spacer(Modifier.width(4.dp))
+                }
+                IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = stringResource(R.string.theme_custom_edit),
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
+            }
+        }
+    }
 }
