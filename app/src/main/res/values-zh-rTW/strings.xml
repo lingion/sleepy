@@ -300,8 +300,8 @@
     <string name="settings_week_two_column_days">按天對半分</string>
     <string name="settings_week_two_column_balance">按課程數平衡</string>
     <string name="settings_week_hide_empty">週視圖隱藏無課日</string>
-    <string name="settings_week_alias">週視圖課程名</string>
-    <string name="settings_grid_alias">網格視圖課程名</string>
+    <string name="settings_week_alias">週視圖顯示別名</string>
+    <string name="settings_grid_alias">網格視圖顯示別名</string>
     <string name="settings_name_original">原名</string>
     <string name="settings_name_alias">別名</string>
     <string name="settings_show_date">網格視圖表頭顯示日期</string>

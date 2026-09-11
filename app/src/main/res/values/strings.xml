@@ -349,8 +349,8 @@
     <string name="settings_week_two_column_balance">按课程数平衡</string>
     <string name="settings_week_hide_empty">周视图隐藏无课日</string>
     <!-- issue#26 课程别名 -->
-    <string name="settings_week_alias">周视图课程名</string>
-    <string name="settings_grid_alias">网格视图课程名</string>
+    <string name="settings_week_alias">周视图显示别名</string>
+    <string name="settings_grid_alias">网格视图显示别名</string>
     <string name="settings_name_original">原名</string>
     <string name="settings_name_alias">别名</string>
     <string name="settings_show_date">网格视图表头显示日期</string>

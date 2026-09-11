@@ -306,8 +306,8 @@
     <string name="settings_week_two_column_days">Split days evenly</string>
     <string name="settings_week_two_column_balance">Balance by course count</string>
     <string name="settings_week_hide_empty">Hide empty days in week view</string>
-    <string name="settings_week_alias">Week view course names</string>
-    <string name="settings_grid_alias">Grid view course names</string>
+    <string name="settings_week_alias">Show alias in week view</string>
+    <string name="settings_grid_alias">Show alias in grid view</string>
     <string name="settings_name_original">Original</string>
     <string name="settings_name_alias">Alias</string>
     <string name="settings_show_date">Show dates in grid header</string>

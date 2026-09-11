@@ -300,8 +300,8 @@
     <string name="settings_week_two_column_days">Reparto fijo de días</string>
     <string name="settings_week_two_column_balance">Equilibrar por cursos</string>
     <string name="settings_week_hide_empty">Ocultar días vacíos en la vista semanal</string>
-    <string name="settings_week_alias">Nombres en la vista semanal</string>
-    <string name="settings_grid_alias">Nombres en la vista de cuadrícula</string>
+    <string name="settings_week_alias">Mostrar alias en la vista semanal</string>
+    <string name="settings_grid_alias">Mostrar alias en la vista de cuadrícula</string>
     <string name="settings_name_original">Original</string>
     <string name="settings_name_alias">Alias</string>
     <string name="settings_show_date">Fechas en el encabezado de la cuadrícula</string>
