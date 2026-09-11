@@ -143,4 +143,48 @@ class RowKeyDifferTest {
         assertEquals("", diff.toUpdate[0].color)
         assertEquals("新", diff.toUpdate[0].note)
     }
+
+    /** 用户报障 2026-09-11: 别名无法保存 — fieldsDiffer 漏比 alias, 改别名 diff 判"相同"跳过 update */
+    @Test fun `只改别名 → 该行走 update 保留 id, 不删不插`() {
+        val server = listOf(
+            course(id = 1, room = "A")
+        )
+        val draft = listOf(
+            course(id = 1, room = "A").copy(alias = "高数(强化)")
+        )
+        val diff = RowKeyDiffer.diff(draft, server)
+        assertEquals(emptyList<CourseEntity>(), diff.toInsert)
+        assertEquals(emptyList<Long>(), diff.toDelete)
+        assertEquals(1, diff.toUpdate.size)
+        assertEquals(1L, diff.toUpdate[0].id)
+        assertEquals("高数(强化)", diff.toUpdate[0].alias)
+    }
+
+    /** 别名清空也是变更 — 空回退原名(CourseDisplayUtil), 但存量行必须同步清掉 */
+    @Test fun `别名清空 → 该行走 update 写回空串`() {
+        val server = listOf(
+            course(id = 1, room = "A").copy(alias = "高数(强化)")
+        )
+        val draft = listOf(
+            course(id = 1, room = "A").copy(alias = "")
+        )
+        val diff = RowKeyDiffer.diff(draft, server)
+        assertEquals(emptyList<Long>(), diff.toDelete)
+        assertEquals(1, diff.toUpdate.size)
+        assertEquals("", diff.toUpdate[0].alias)
+    }
+
+    /** 相同别名不动 — diff 空(别让修补把跳过路径打穿成全量 update) */
+    @Test fun `别名相同 → diff 空`() {
+        val server = listOf(
+            course(id = 1, room = "A").copy(alias = "高数(强化)")
+        )
+        val draft = listOf(
+            course(id = 1, room = "A").copy(alias = "高数(强化)")
+        )
+        val diff = RowKeyDiffer.diff(draft, server)
+        assertEquals(emptyList<CourseEntity>(), diff.toInsert)
+        assertEquals(emptyList<CourseEntity>(), diff.toUpdate)
+        assertEquals(emptyList<Long>(), diff.toDelete)
+    }
 }
