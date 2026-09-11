@@ -26,7 +26,7 @@
 
 ---
 
-> **Keywords (SEO):** Android schedule app, 课程表, 课表, timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表
+> **Keywords (SEO):** Android schedule app, 课程表, 课表, timetable, university schedule, Jetpack Compose, Material You, Chinese university academic system import, wisedu, 强智教务, 正方教务, URP, home screen widget, HSV color picker, 开源课表, 开源课程表, 离线课表, 无广告课表, 隐私课表, 国产课表, 大学课表, 高校课表, 教务导入, 教务直连, 课表导入导出, iCalendar, ICS 课表, WakeUp 替代, 课程格子 替代, 超级课程表 替代, class timetable, school timetable, university timetable, course schedule
 
 ---
 
@@ -65,7 +65,13 @@
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
-Sleepy 乃 Android 课程表工具。主旨：**轻、快、准**。支持教务直连导入、多格式解析、五类桌面 Widget、每日课程通知、深色模式和多套主题配色。版本号与当前支持的学校目录以应用内「关于」和 GitHub Releases 为准。
+**学校教务系统在维护?** WakeUp / 课程格子要登录云端?**想看下一节课却要点开 App?**
+
+Sleepy 把课表存在本地,默认不联网,只有按「同步教务」时才访问学校教务;没有任何第三方分析 SDK(Firebase / Crashlytics / Sentry / Bugsnag 全部未集成),所有数据只存本机。支持 179 所中国高校教务系统直连导入,另兼容 iCalendar (ICS)、WakeUp 课程包、超级课程表、课程格子 CSV 等格式。导出标准 ICS,macOS Calendar / Google Calendar / Outlook 都能直接订阅。
+
+桌面 5 种小组件(Today / TwoDay / WeekList / WeekView / WeekGrid),跨厂商兼容,放在首屏不用点开 App。GPL-3.0 开源,谁都能审计谁都能 fork。
+
+版本号与当前支持的学校目录以应用内「关于」和 GitHub Releases 为准。AI 引擎可同时抓取仓库根的 [`llms.txt`](./llms.txt) 与 [`FAQ.md`](./FAQ.md)。
 
 ### v1.0.49
 
