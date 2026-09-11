@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a> · <a href="docs/adapt-kit/README.md">Add your university</a>
+  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">All versions</a> · <a href="docs/adapt-kit/README.md">Add your university</a>
 </p>
 
 ---
@@ -66,15 +66,6 @@
 | Languages | zh-CN · zh-TW · en · ja · es |
 
 Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. It supports direct import from university academic systems (JW), multi-format parsing, five home-screen widget types, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases.
-
-### v1.0.49
-
-- Added direct import entries for Guangdong Medical University, Guangzhou Medical University, and Jilin Business and Technology College.
-- Added the `sleepy-v1` native plain-text import/export format while keeping the existing formats.
-- Added ChaoXing personal timetable parsing, including week-run splitting, consecutive-period merging, and HTML field cleanup.
-- Corrected 60 school catalog entries and removed dead or duplicate entries while keeping the catalog at 179 schools.
-- Fixed Wuhan University of Technology login routing and added collector retries and collection logs.
-- Added a dedicated open-source acknowledgements page listing 83 upstream projects (9 cross-school + 74 per-school, across 32 school cards) and their licenses.
 
 ---
 

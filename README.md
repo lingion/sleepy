@@ -21,7 +21,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/releases">Download APK</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a>
+  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">全部版本</a> · <a href="docs/adapt-kit/README.md">让你的学校支持教务直连</a>
 </p>
 
 ---
@@ -72,15 +72,6 @@ Sleepy 把课表存在本地,默认不联网,只有按「同步教务」时才�
 桌面 5 种小组件(Today / TwoDay / WeekList / WeekView / WeekGrid),跨厂商兼容,放在首屏不用点开 App。GPL-3.0 开源,谁都能审计谁都能 fork。
 
 版本号与当前支持的学校目录以应用内「关于」和 GitHub Releases 为准。AI 引擎可同时抓取仓库根的 [`llms.txt`](./llms.txt) 与 [`FAQ.md`](./FAQ.md)。
-
-### v1.0.49
-
-- 新增广东医科大学、广州医科大学和吉林工商学院教务直连。
-- 新增 `sleepy-v1` 原生纯文本导入导出格式，旧格式继续保留。
-- 新增超星综合教务个人课表解析，支持周次拆分、连续节次合并和 HTML 字段清理。
-- 修正 179 所学校目录中的 60 条入口或协议记录，并处理死链和重复条目。
-- 武汉理工大学入口改走 `forceCas`，导入前自动切换学生角色；采集器增加重试和采集日志。
-- 关于页新增独立的开源声明页面，列出 83 个上游项目（9 跨校普适 + 74 单校，分布于 32 张学校卡）及许可证。
 
 ---
 

@@ -13,7 +13,9 @@ import org.junit.Test
  *   - 先 GET serverconfig.json (相对) 失败 .catch 回退 /dist/serverconfig.json (免鉴权
  *     静态资源) 发现各校部署可不同的 ApiUrl 前缀 (禁硬编码 /njwhd),
  *   - 取 sessionStorage.Token 作 `token` 头,
- *   - POST {ApiUrl}/student/curriculum?week=&kbjcmsid=,
+ *   - POST {ApiUrl}/teachingWeek 拿周数列表, 再并行逐周 POST
+ *     {ApiUrl}/student/curriculum?week=N&kbjcmsid= (week= 空 = 当前周, 只抓当前周
+ *     会丢掉仅在后续周出现的课), 合并 {weeks:[…]} 组合源,
  *   - credentials:'include' 保会话,
  *   - code=='401' 识别登录过期 (传输层状态路由, 非协议字段解码),
  *   - 经 __sleepyBridge.onWiseduResult 以 {ok,data} 信封回传, Kotlin 路由到
@@ -59,9 +61,14 @@ class JwQzAppWebViewContractTest {
         assertTrue("必须从 sessionStorage 取 Token", js.contains("sessionStorage.getItem('Token')"))
         assertTrue("必须带 token 请求头", js.contains("'token': token") || js.contains("\"token\": token"))
 
-        // 3. POST 课表端点 + 会话
-        assertTrue("必须 POST /student/curriculum?week=&kbjcmsid=",
-            js.contains("/student/curriculum?week=&kbjcmsid="))
+        // 3. POST 课表端点 + 会话 — 逐周循环 (week= 空 只回当前周, 后续周课整门丢)
+        assertTrue("必须 POST /student/curriculum (带 week 参数)",
+            js.contains("/student/curriculum?week="))
+        assertTrue("必须先取 /teachingWeek 周数列表",
+            js.contains("/teachingWeek"))
+        assertTrue("必须按周数循环抓取 (week=' + w)",
+            Regex("""week='\s*\+\s*w""").containsMatchIn(js))
+        assertTrue("必须合并多周响应成 {weeks:[…]} 组合源", js.contains("weeks:"))
         assertTrue("必须 method:'POST'", js.contains("method:'POST'"))
         assertTrue("必须 credentials:'include'", js.contains("credentials:'include'"))
 

@@ -221,4 +221,70 @@ class JwQzAppParserTest {
         val ads = courses.first { it.name == "广告策划与创意" }
         assertEquals("完整房号楼栋+房号", "Z5-117", ads.room)
     }
+
+
+    // ===== 逐周合并形态 (2026-09-11 用户反馈: week= 空 只回当前周, 后续周课程整门丢失) =====
+
+    /** 构造单周响应: data:[{date:[…], courses:[…]}] — week=N 时学校端只回该周出现的课。 */
+    private fun weekPayload(week: Int, coursesJson: String): String = """
+        {"code":"1","Msg":"success~","data":[{"date":[
+            {"xqmc":"一","mxrq":"2026-09-07","zc":"$week","xqid":"1","rq":"07"}],
+         "courses":[$coursesJson]}],"needClassName":1,"needClassRoomNub":1}
+    """.trimIndent()
+
+    @Test
+    fun `merged multi-week source - dedupes identical rows across week responses`() {
+        // 同一门课 (10 节大课, classWeek "1-4,6-19") 在 20 次周请求里各出现一次,
+        // 行内容完全一致 → 只展开一次 (20 JwCourse 而非 40)
+        val row = """{"courseName":"大学物理","teacherName":"张三",
+            "classroomNub":"Z5-117","classTime":"10304","classWeek":"1-4,6-19",
+            "classWeekDetails":",1,2,3,4,6,7,8,9,10,11,12,13,14,15,16,17,18,19"}"""
+        val source = """{"weeks":[${(1..20).joinToString(",") { w ->
+            weekPayload(w, row)
+        }}]}"""
+        val courses = JwQzAppParser(source).generateCourseList()
+        assertEquals("20 周响应里同一行只保留一份", 2, courses.size)
+        assertEquals(1, courses[0].startWeek)
+        assertEquals(4, courses[0].endWeek)
+        assertEquals(6, courses[1].startWeek)
+        assertEquals(19, courses[1].endWeek)
+    }
+
+    @Test
+    fun `merged multi-week source - keeps course that only appears in a later week`() {
+        // 只在第 8-10 周上的课: 当前周 (week=1) 响应里根本没有 →
+        // 旧逻辑 (只取 data.firstOrNull) 整门丢失, 新逻辑必须捞到
+        val w1 = weekPayload(1, """{"courseName":"高等数学","teacherName":"李四",
+            "classroomNub":"J2-201","classTime":"20102","classWeek":"1-19",
+            "classWeekDetails":",1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19"}""")
+        val w8 = weekPayload(8, """{"courseName":"大学物理实验","teacherName":"王五",
+            "classroomNub":"S1-302","classTime":"50506","classWeek":"8-10",
+            "classWeekDetails":",8,9,10"}""")
+        val source = """{"weeks":[$w1,$w8]}"""
+        val courses = JwQzAppParser(source).generateCourseList()
+        val names = courses.map { it.name }.toSet()
+        assertTrue(
+            "只存在于后续周的课必须被保留 (旧 firstOrNull 逻辑整门丢失): got $names",
+            "大学物理实验" in names
+        )
+        val lab = courses.filter { it.name == "大学物理实验" }
+        assertEquals(1, lab.size)
+        assertEquals(8, lab[0].startWeek)
+        assertEquals(10, lab[0].endWeek)
+    }
+
+    @Test
+    fun `legacy single-payload source - data array without weeks wrapper still parses`() {
+        // 旧形态 (直接 POST 单响应 / 采集包 fixture) 不回归
+        val courses = JwQzAppParser(loadFixture()).generateCourseList()
+        assertEquals(20, courses.size)
+    }
+
+    @Test
+    fun `empty weeks array and non-object elements are skipped`() {
+        val source = """{"weeks":[]}"""
+        assertTrue(JwQzAppParser(source).generateCourseList().isEmpty())
+        val junk = """{"weeks":[null,"x",3,{"data":{"courses":[]}}]}"""
+        assertTrue(JwQzAppParser(junk).generateCourseList().isEmpty())
+    }
 }
