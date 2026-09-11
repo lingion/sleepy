@@ -36,7 +36,7 @@ cd sleepy
    ./gradlew :app:lintDebug
    ```
 
-   教务适配另跑该校 fixture 测试；改 WebView 内 JS 正则的，跨语言 invariant 测试必须在且绿。
+   教务适配另跑该校 fixture 测试；改 WebView 内 JS 正则的，还必须同步通过对应的 `*WebViewContractTest`（如 `JwNeuWebViewContractTest`、`HfutPortalEams5WebViewContractTest`）。这类测试锁的是：同一条解析规则会同时出现在网页注入的 JS 和 Kotlin 两侧，两边写得不一致时页面表现和导入结果就对不上，contract 测试保证"两边写的是同一条规则"。
 
 4. PR 描述写清动机和行为变化；关联 issue 用 `ref #N`（不用 `Fixes #N`，由维护者合并后统一关闭）。
 
