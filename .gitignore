@@ -32,6 +32,8 @@ q*.json
 docs/sop/release-sop.md
 docs/sop/jw-cross-verify-sop.md
 docs/sop/commit-sop.md
+# 全功能基线标准 — 纯本地,永不上传(2026-09-10 用户定版:功能增删必同步此文档)
+docs/sop/feature-baseline.md
 
 # User-private workflow policies (internal only, never push)
 # 分支规范与内部贡献流程属于用户私有信息，仅存本地，禁止 push。
