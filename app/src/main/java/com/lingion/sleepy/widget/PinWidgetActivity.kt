@@ -1,8 +1,6 @@
 package com.lingion.sleepy.widget
 
-import android.app.PendingIntent
 import android.appwidget.AppWidgetManager
-import android.content.ComponentName
 import android.content.Intent
 import android.os.Bundle
 import android.util.Log
@@ -25,13 +23,10 @@ class PinWidgetActivity : ComponentActivity() {
 
         val awm = AppWidgetManager.getInstance(this)
         val supported = awm.isRequestPinAppWidgetSupported
-        val type = intent.getStringExtra(EXTRA_WIDGET) ?: "weekgrid"
-        val cn = when (type) {
-            "today" -> ComponentName(this, TodayWidgetReceiver::class.java)
-            "twoday" -> ComponentName(this, TwoDayWidgetReceiver::class.java)
-            "weeklist" -> ComponentName(this, WeekListWidgetReceiver::class.java)
-            else -> ComponentName(this, WeekGridWidgetProvider::class.java)
-        }
+        val type = intent.getStringExtra(EXTRA_WIDGET)
+        // 路由表派生自 ALL_WIDGET_VARIANTS（10/10 变体全覆盖），解析在 PinWidgetRouting（纯函数可测）。
+        // 各厂商 requestPinAppWidget 行为差异见 docs/widget-vendor-specs/INDEX.md。
+        val cn = android.content.ComponentName(this, PinWidgetRouting.resolveClass(type))
         Log.d("PinWidget", "supported=$supported, provider=$cn")
 
         if (supported) {
