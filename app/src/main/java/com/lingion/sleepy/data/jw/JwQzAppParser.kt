@@ -13,8 +13,14 @@ import kotlinx.serialization.json.jsonPrimitive
  * 采集包实锤)。与其它 [JwParser] 子类不同: source 不是 HTML, 而是移动端 JSON API 的
  * 响应体 —
  *
- *   POST {ApiUrl}/student/curriculum?week=&kbjcmsid=   header: token: <JWT>
+ *   POST {ApiUrl}/student/curriculum?week=N&kbjcmsid=   header: token: <JWT>
  *   → {"code":"1","Msg":"success~","data":[{date:[…7 天],courses:[…]}],needClassName,needClassRoomNub}
+ *
+ * 端点一次只回一周: week= 空 = 当前教学周, week=N = 指定周; 响应 data 恒单元素,
+ * courses 只列该周出现的课 (classWeek 仍是全学期位图)。抓取侧 (QZ_APP_FETCH_JS)
+ * 先取 /teachingWeek 周数列表再并行逐周拉取, 合并成 {"weeks":[<单次响应>, …]}
+ * 组合源; 本 parser 遍历全部周元素, 完全相同的行只展开一次 — 只取当前周会让
+ * 仅在后续周出现的课整门丢失 (2026-09-11 学校学生反馈实锤)。
  *
  * 抓取方式: WebView 登录 SPA 后, JwWebViewLoginScreen 注入 QZ_APP_FETCH_JS 先 GET
  * /dist/serverconfig.json (免鉴权) 发现 ApiUrl, 再带 sessionStorage.Token 请求课表;
@@ -37,6 +43,8 @@ import kotlinx.serialization.json.jsonPrimitive
  *
  * 未登录形态 {"code":"401","Msg":"非法访问：/student/curriculum"} → data 非数组 →
  * emptyList (Registry 按 0 课空学期处理, 真实登录态由 WebView 会话保证)。
+ * 401 识别在 JS 传输层完成 (禁解码协议字段的跨语言 invariant 不受影响:
+ * weeks 信封的组装与逐元素透传都不是字段解码)。
  */
 class JwQzAppParser(source: String) : JwParser(source) {
 
@@ -44,39 +52,62 @@ class JwQzAppParser(source: String) : JwParser(source) {
 
     override fun generateCourseList(): List<JwCourse> {
         val root = json.parseToJsonElement(source).jsonObject
-        val data = (root["data"] as? kotlinx.serialization.json.JsonArray) ?: return emptyList()
-        val grid = data.firstOrNull() as? kotlinx.serialization.json.JsonObject
-        val rows = (grid?.get("courses") as? kotlinx.serialization.json.JsonArray) ?: return emptyList()
-
+        val grids = extractGrids(root)
+        val seen = mutableSetOf<String>()
         val result = mutableListOf<JwCourse>()
-        for (el in rows) {
-            if (el !is kotlinx.serialization.json.JsonObject) continue
-            val o = el
-            fun str(k: String): String = o[k]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
+        for (grid in grids) {
+            val rows = (grid["courses"] as? kotlinx.serialization.json.JsonArray) ?: continue
+            for (el in rows) {
+                if (el !is kotlinx.serialization.json.JsonObject) continue
+                // 逐周抓取后同一行课会在每周响应里重复出现 (classWeek 是全学期位图),
+                // 完全相同的行只展开一次; 字段有任何差异的行都保留, 不猜并集
+                val dedupKey = el.toString()
+                if (!seen.add(dedupKey)) continue
+                val o = el
+                fun str(k: String): String = o[k]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
 
-            val name = str("courseName")
-            if (name.isBlank()) continue
-            val teacher = str("teacherName")
-            val room = sequenceOf(str("classroomNub"), str("classroomName"), str("location"))
-                .firstOrNull { it.isNotBlank() } ?: ""
-            val timeSpec = parseClassTime(str("classTime")) ?: continue
-            val weeks = parseWeekSpec(str("classWeek").ifBlank { str("classWeekDetails") })
+                val name = str("courseName")
+                if (name.isBlank()) continue
+                val teacher = str("teacherName")
+                val room = sequenceOf(str("classroomNub"), str("classroomName"), str("location"))
+                    .firstOrNull { it.isNotBlank() } ?: ""
+                val timeSpec = parseClassTime(str("classTime")) ?: continue
+                val weeks = parseWeekSpec(str("classWeek").ifBlank { str("classWeekDetails") })
 
-            for ((sw, ew, type) in weekRuns(weeks)) {
-                result += JwCourse(
-                    name = name,
-                    room = room,
-                    teacher = teacher,
-                    day = timeSpec.first,
-                    startNode = timeSpec.second,
-                    endNode = timeSpec.third,
-                    startWeek = sw,
-                    endWeek = ew,
-                    type = type,
-                )
+                for ((sw, ew, type) in weekRuns(weeks)) {
+                    result += JwCourse(
+                        name = name,
+                        room = room,
+                        teacher = teacher,
+                        day = timeSpec.first,
+                        startNode = timeSpec.second,
+                        endNode = timeSpec.third,
+                        startWeek = sw,
+                        endWeek = ew,
+                        type = type,
+                    )
+                }
             }
         }
         return result
+    }
+
+    /**
+     * 提取课表网格 (含 courses 数组的对象) 列表。
+     * 旧形态: source 就是单次 POST 响应, data[0] 唯一元素。
+     * 逐周合并形态 (QZ_APP_FETCH_JS 循环 teachingWeek 周数逐周抓取后合并):
+     * {"weeks":[<单次响应>, …]} — 每个元素只含该周出现的课, 全部遍历,
+     * 否则只在后续周出现的课整门丢失。
+     */
+    private fun extractGrids(root: kotlinx.serialization.json.JsonObject): List<kotlinx.serialization.json.JsonObject> {
+        val weeks = root["weeks"] as? kotlinx.serialization.json.JsonArray
+        if (weeks != null) {
+            return weeks.mapNotNull { it as? kotlinx.serialization.json.JsonObject }
+                .mapNotNull { (it["data"] as? kotlinx.serialization.json.JsonArray) }
+                .flatMap { data -> data.mapNotNull { it as? kotlinx.serialization.json.JsonObject } }
+        }
+        val data = root["data"] as? kotlinx.serialization.json.JsonArray ?: return emptyList()
+        return data.mapNotNull { it as? kotlinx.serialization.json.JsonObject }
     }
 
     /**

@@ -854,21 +854,55 @@ const val QZ_APP_FETCH_JS = """
       .then(function(cfg){
         var apiUrl = String(cfg.ApiUrl || '').replace(/\/+$/,'');
         if (!apiUrl) { throw new Error('serverconfig.json 缺 ApiUrl'); }
-        return fetch(apiUrl + '/student/curriculum?week=&kbjcmsid=', {
-          method:'POST',
-          credentials:'include',
-          headers: { 'token': token }
-        });
+        return apiUrl;
       })
-      .then(function(r){ return r.text(); })
-      .then(function(text){
-        var expired = false;
-        try { expired = JSON.parse(text).code == '401'; } catch(e) {}
-        if (expired) {
-          post({ok:false, err:'登录已过期: 请重新登录后再点导入'});
-          return;
-        }
-        post({ok:true, data: text});
+      .then(function(apiUrl){
+        var call = function(path){
+          return fetch(apiUrl + path, {
+            method:'POST',
+            credentials:'include',
+            headers: { 'token': token }
+          }).then(function(r){ return r.text(); });
+        };
+        // 课表端点一次只回一周 (week= 空 = 当前教学周, data 单元素);
+        // 只抓当前周会丢掉仅在后续周出现的课 — 先取 teachingWeek 周数列表,
+        // 再并行逐周拉取合并 (与燕大 boya_pp 逐周方案同构)
+        return call('/teachingWeek').then(function(twText){
+          var weekNums = [];
+          try {
+            var tw = JSON.parse(twText);
+            if (tw && tw.code != '401' && tw.data && tw.data.length) {
+              for (var i = 0; i < tw.data.length; i++) {
+                var n = parseInt(tw.data[i].week, 10);
+                if (n >= 1 && n <= 30) weekNums.push(n);
+              }
+            }
+          } catch(e) {}
+          if (!weekNums.length) weekNums = [1];
+          var expired = false;
+          var reqs = weekNums.map(function(w){
+            return call('/student/curriculum?week=' + w + '&kbjcmsid=')
+              .then(function(text){
+                try { if (JSON.parse(text).code == '401') expired = true; } catch(e) {}
+                return text;
+              })
+              .catch(function(){ return null; });
+          });
+          return Promise.all(reqs).then(function(texts){
+            if (expired) {
+              post({ok:false, err:'登录已过期: 请重新登录后再点导入'});
+              return;
+            }
+            var ok = texts.filter(function(t){ return t !== null; });
+            if (!ok.length) {
+              post({ok:false, err:'课表接口无响应: 请确认已登录并进入课表页'});
+              return;
+            }
+            post({ok:true, data: JSON.stringify({weeks: ok.map(function(t){
+              try { return JSON.parse(t); } catch(e) { return null; }
+            }).filter(function(j){ return j !== null; })})});
+          });
+        });
       })
       .catch(function(e){
         post({ok:false, err:String(e && e.message || e)});
