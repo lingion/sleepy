@@ -18,11 +18,13 @@ import org.junit.Test
 class SepXrwStripInterceptorContractTest {
 
     private val screen: String = sequenceOf(
+        java.io.File("src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
         java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
         java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
     ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load JwWebViewLoginScreen.kt source")
 
     private val interceptor: String = sequenceOf(
+        java.io.File("src/main/java/com/lingion/sleepy/ui/screen/imports/SepXrwStripInterceptor.kt"),
         java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/SepXrwStripInterceptor.kt"),
         java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/SepXrwStripInterceptor.kt"),
     ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load SepXrwStripInterceptor.kt source")
