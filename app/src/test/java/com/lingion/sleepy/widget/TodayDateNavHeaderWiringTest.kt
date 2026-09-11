@@ -79,10 +79,10 @@ class TodayDateNavHeaderWiringTest {
         val svc = widgetSource("ScrollStripService.kt").readText()
         assertTrue("服务端须读 EXTRA_EMPTY_HEADER",
             svc.contains("EXTRA_EMPTY_HEADER") && svc.contains("getBooleanExtra"))
-        // v10: emptyHeader 进 SCOPE_TODAY 语义 = 行起点参数 (rowSpans headerSpace) —
-        // 行位图本身无头, 透传形态从渲染参数变为几何参数
-        assertTrue("SCOPE_TODAY 条带须消费 emptyHeader (行几何起点)",
-            Regex("rowSpans\\(d\\.courses, emptyHeader\\)").containsMatchIn(svc))
+        // v11: 条带 = 整张长图 (v9.1 形态回归), emptyHeader 透传给渲染器 — 条带头部随
+        // 内容滚, 滚动位 0 与壳图逐像素一致 (头部空档让位给真实视图顶栏)。
+        assertTrue("SCOPE_TODAY 条带须透传 emptyHeader 给渲染器",
+            svc.contains("emptyHeader = emptyHeader"))
         val helper = widgetSource("RemoteViewsWidgetHelper.kt").readText()
         assertTrue("pushScrollable 须带 stripHeaderless 参数并 putExtra",
             helper.contains("stripHeaderless") && helper.contains("EXTRA_EMPTY_HEADER"))

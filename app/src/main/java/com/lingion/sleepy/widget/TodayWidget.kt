@@ -431,8 +431,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         pushGen = pushGen
                     )
                 } else {
+                    // v11: 壳图按全展开 contentH 渲染 (与条带同参, v9.1 契约) —
+                    // v9.2 传 hDp 后壳图只画首屏是页面旋转产物, 单 child 长图恢复后
+                    // 壳图必须也全展开 (壳图在底层, 只有滚动位 0 可见, 高一点无副作用)
                     val shell = WidgetBitmapRenderers.renderToday(
-                        context, data, wDp.toFloat(), hDp.toFloat(), variant
+                        context, data, wDp.toFloat(), contentH, variant
                     )
                     RemoteViewsWidgetHelper.pushScrollable(
                         context, awm, id, TAG,
@@ -480,8 +483,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 // 在真机仍翻车 (巨卡), 一并退场 — 回到同台 OPPO 一直正常的 TwoDay 形态。
                 // 条带不带去头标记 (缺省带头) → 长图从头部标题起 = 壳图同参, 滚动位 0
                 // 首屏与静态渲染逐像素一致 (与 !navEnabled overflow 分支逐字节同构)。
+                // v11: 壳图也按 contentH 渲染 (与 ScrollStripService 条带同参) —
+                // 滚动位 0 时壳图与条带首屏逐像素一致; 滚动后壳图被 ListView 覆盖
+                // (ListView match_parent 容器), 壳图"多余"的高成为滚动可见区。
                 val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), hDp.toFloat(), variant
+                    context, data, wDp.toFloat(), contentH, variant
                 )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,
@@ -490,7 +496,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     scopeExtra = ScrollStripService.StripFactory.SCOPE_TODAY,
                     pushGen = pushGen
                 )
-                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH shell=${contentH}dp (v9.1 TwoDay同构, 壳图按全展开)")
+                Log.d(TAG, "pushTodayData scroll id=$id ${wDp}x${hDp}dp content=$contentH shell=${contentH}dp (v9.1+v11 形态, 单 child 整长图)")
             }
         }
 

@@ -105,33 +105,22 @@ class ScrollStripService : RemoteViewsService() {
             // 原渲染器 + 内容全展开高度 (ceil 到整数 dp, 长图不缺行)
             val contentHdp: Float
             var full: Bitmap? = null
-            var pages: List<Bitmap>? = null
             var rowCount = -1
             when (scope) {
                 SCOPE_TODAY -> {
                     val d = TodayWidgetReceiver.loadDataSync(context, widgetId)
-                    // v10 逐行子项: 条带 = 每课程行一张行位图 (rowSpans 驱动,
-                    // getCount = 行数) — 滑动 = launcher 原生 ListView 滚动, 每节课
-                    // 只出现一次、永远完整。v9 固定视口分页在轻微溢出场景产出跨缝
-                    // 重复内容 (3 节课 + 26dp 溢出: 末页贴底把前 2 节再画一遍 =
-                    // 用户看到的「半节 + 拼图」), 分页模型整体退场。
-                    val spans = TodayRowGeometry.rowSpans(d.courses, emptyHeader)
+                    // v11: 撤回 v10 逐行子项 — 在 OPPO 真机上三症状同根(无法拖动 +
+                    // 双层错位叠影 + TopBar 被覆盖), 实锤 v1 多 child extent 冻结
+                    // 复发。回归 v9.1 形态 = 单 child 整张不透明长图,与 TwoDay/
+                    // WeekList 同构 (同台 OPPO 一直正常)。条带与壳图同源坐标系 →
+                    // 滚动位 0 首屏与壳图逐像素一致。
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
-                    rowCount = spans.size
-                    val rendered = ArrayList<Bitmap>(spans.size)
-                    for (span in spans) {
-                        // 世代闸逐行 (v9.3 保留): resize 拖拽期间中间尺寸不必跑完
-                        // 全部行 — 世代已变即提前退出省整轮渲染。
-                        if (genBefore > 0 && WidgetResizeCore.isStale(widgetId, genBefore)) {
-                            android.util.Log.d("ScrollStrip", "skip stale mid-render id=$widgetId gen=$genBefore row=${span.rowIndex}/${spans.size}")
-                            return
-                        }
-                        rendered += WidgetBitmapRenderers.renderTodayRow(
-                            context, d, wDp.toFloat(), span
-                        )
-                    }
-                    pages = rendered
-                    full = rendered.firstOrNull()
+                    rowCount = TodayRowGeometry.rowSpans(d.courses, emptyHeader).size
+                    val renderH = ceil(contentHdp)
+                    full = WidgetBitmapRenderers.renderToday(
+                        context, d, wDp.toFloat(), renderH,
+                        emptyHeader = emptyHeader, headerSpace = emptyHeader
+                    )
                 }
                 SCOPE_TWODAY -> {
                     val d = TwoDayWidgetReceiver.loadDataSync(context, widgetId)
@@ -147,7 +136,6 @@ class ScrollStripService : RemoteViewsService() {
                 }
                 else -> return
             }
-            val newStrips = pages ?: listOf(full!!)
 
             // 世代闸第二道: 渲染是重活, commit 前再验一次 — 期间落了新触发就丢弃
             // (旧 strips 原地保留 = launcher 端 ListView 继续显示上一份完整内容, 不闪空)。
@@ -155,10 +143,9 @@ class ScrollStripService : RemoteViewsService() {
                 android.util.Log.d("ScrollStrip", "skip stale strips id=$widgetId gen=$genBefore")
                 return
             }
-            strips = newStrips
-            val firstStrip = newStrips.first()
+            strips = listOf(full!!)
             android.util.Log.d("ScrollStrip",
-                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${firstStrip.height / density}dp rows=$rowCount strips=${newStrips.size}")
+                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${full!!.height / density}dp rows=$rowCount wholeImage=1")
         }
 
         /**

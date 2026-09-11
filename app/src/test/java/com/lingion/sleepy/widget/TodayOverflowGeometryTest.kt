@@ -139,24 +139,25 @@ class TodayOverflowGeometryTest {
         assertEquals("去头内容高 = 14 起点 + 行 79 + 底 pad 14 (末行后无 gap)", 14f + 79f + 14f, headerH, 0.01f)
     }
 
-    // ---- 修复 2: 条带行 = 每课程行一张卡 (多 child, 巨型整图类别性消失) ----
+    // ---- 修复 2 (v9.1 形态回归): 条带 = 单 child 整张不透明长图 ----
 
     @Test
-    fun `strip factory renders one row item per course row`() {
+    fun `strip factory renders single full-content bitmap not row items`() {
+        // v11 契约: Today 条带 = 一张全展开不透明长图 (与 TwoDay/WeekList 同构),
+        // 整图一次画完。v10 逐行子项在 OPPO 上复发 v1 extent 冻结 + 透明位图叠加
+        // 错位 + 第一行覆盖壳图标题 → 三症状同根; 回归单 child 整长图。
         val svc = widgetSource("ScrollStripService.kt").readText()
         val body = svc.substringAfter("fun onDataSetChangedInner")
-        // v10 契约: Today 条带 = 每课程行一个子项 (rowSpans 驱动) — 分页模型删除,
-        // 滑动 = launcher 原生 ListView 滚动, 每行位图 = renderTodayRow 单行渲染。
         assertTrue(
-            "Today 条带必须按 rowSpans 逐行产出子项",
-            body.contains("TodayRowGeometry.rowSpans") && body.contains("renderTodayRow")
+            "Today 条带必须调 renderToday 出整张位图 (v9.1 形态回归)",
+            body.contains("WidgetBitmapRenderers.renderToday(") && !body.contains("renderTodayRow")
         )
         assertTrue(
-            "行位图渲染必须用当前 widget 宽度",
-            body.contains("wDp.toFloat()")
+            "条带位图必须按 todayContentHeightDp 全展开高度画",
+            body.contains("todayContentHeightDp")
         )
         assertTrue(
-            "行高仍须 setViewLayoutHeight 显式钉死 (v3 契约保留)",
+            "行高仍须 setViewLayoutHeight 显式钉死 (v3 契约保留, 整图位图也要给 launcher 行高)",
             svc.contains("setViewLayoutHeight")
         )
     }
@@ -172,7 +173,7 @@ class TodayOverflowGeometryTest {
         )
     }
 
-    // ---- v9.3: binder 线程防御 + 续页无头 + 逐页世代闸 ----
+    // ---- binder 线程防御 (v9.3 保留) ----
 
     @Test
     fun `getViewAt and getCount snapshot strips and never throw on binder thread`() {
@@ -199,55 +200,60 @@ class TodayOverflowGeometryTest {
     @Test
     fun `onDataSetChanged wraps binder entry in try catch with safe fallback`() {
         // loadDataSync / renderToday 任何 throw (OOM / createBitmap 0px …) 在 binder
-        // 线程裸抛 = 杀进程。锁法: try/catch 包体, 失败路径落单页安全回退。
+        // 线程裸抛 = 杀进程。锁法: try/catch 包体, 失败路径落空白单页安全回退。
         val svc = widgetSource("ScrollStripService.kt").readText()
         val body = svc.substringAfter("override fun onDataSetChanged")
         assertTrue("onDataSetChanged 必须 try/catch 包体 (binder 线程防御边界)", body.contains("try"))
         assertTrue(
-            "失败路径必须有安全回退页 (strips = listOf) 而非留旧值裸奔",
+            "失败路径必须有安全回退页 (strips = emptyList) 而非留旧值裸奔",
             Regex("catch \\([^)]*Throwable").containsMatchIn(body)
         )
     }
 
     @Test
-    fun `generation checked between row renders`() {
-        // resize 拖拽期间每次中间尺寸都跑完整个 N 行渲染才被末道闸丢弃 — 锁法:
-        // 行循环体内 (for span in spans … renderTodayRow) 再查一次 isStale,
-        // 中途世代变更即提前退出。锚点 = 循环体本身 (禁退化成全文 grep)。
+    fun `generation gate is two-stage around single full-content render`() {
+        // v11 回到单 child 整图渲染 (不再逐行), 世代闸从「行循环内」简化为
+        // 渲染前后两道闸 (resize 拖拽期间任一阶段世代变更即丢弃)。锁法:
+        // 服务端必须同时有"读尺寸前"和"commit 前"两道 isStale 闸, 行循环不再存在。
         val svc = widgetSource("ScrollStripService.kt").readText()
-        val loop = svc.substringAfter("for (span in spans)")
-            .substringBefore("strips = newRows")
+        val body = svc.substringAfter("fun onDataSetChangedInner")
+            .substringBefore("override fun getCount")
+        // 行循环应已退场
+        assertFalse(
+            "v11 不再有 for span in spans 逐行子项渲染 (回归整图单 child)",
+            body.contains("for (span in spans)")
+        )
         assertTrue(
-            "行循环体内必须再查 isStale (逐行世代闸, 拖拽期中间尺寸即停)",
-            loop.contains("isStale")
+            "v11 整图渲染保留两道 isStale 闸 (读尺寸前 + commit 前)",
+            Regex("WidgetResizeCore\\.isStale[^)]*\\)").findAll(body).count() >= 2
         )
     }
 
     @Test
     fun `nav overflow branch is byte-identical to non-nav overflow pattern`() {
-        // v9 定稿: Today overflow = TwoDay overflow 同构 (壳图按整卡尺寸渲染 + 条带
-        // 带头, 头部画进长图随内容滚)。v7/v8 的 bar 行/去头条带/viewport 钉高整体退场。
+        // v11 定稿: Today overflow = TwoDay overflow 同构 (壳图按 contentH 全展开
+        // 渲染 + 条带带头, 头部画进长图随内容滚)。v9.x 分页/v10 逐行子项都已退场。
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         assertTrue(
-            "v9 overflow 必须走 pushScrollable (竖排滑动)",
+            "v11 overflow 必须走 pushScrollable (竖排滑动)",
             body.contains("pushScrollable")
         )
         assertTrue(
-            "v9 overflow 必须用 widget_scroll_today (与 !navEnabled overflow 同一布局)",
+            "v11 overflow 必须用 widget_scroll_today (与 !navEnabled overflow 同一布局)",
             body.contains("widget_scroll_today")
         )
         assertTrue(
-            "v9 overflow 禁 bar 行布局 (widget_today_overflow 已删)",
+            "v11 overflow 禁 bar 行布局 (widget_today_overflow 已删)",
             !body.contains("widget_today_overflow")
         )
         assertTrue(
-            "v9 overflow 条带必须带头 (stripHeaderless=false = TwoDay 行为, 头部随内容滚)",
+            "v11 overflow 条带必须带头 (stripHeaderless=false = TwoDay 行为, 头部随内容滚)",
             !body.contains("stripHeaderless")
         )
         assertTrue(
-            "v9.2 overflow 壳图按 viewport hDp 渲染 (与条带第一页同参, 滚动位 0 一致)",
-            Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),").containsMatchIn(body)
+            "v11 overflow 壳图按 contentH 全展开渲染 (v9.1 契约, 与条带同参)",
+            Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*contentH,").containsMatchIn(body)
         )
         val xml = File(layoutDir(), "widget_today_overflow.xml")
         assertFalse(
@@ -266,17 +272,22 @@ class TodayOverflowGeometryTest {
         error("layout dir not found")
     }
 
-    // ---- v9.3: 续页无头契约 (页 0 例外) + API26-30 行高退化说明 ----
+    // ---- v11: 整图带头契约 (单 child 长图带壳图同参头部) + API26-30 行高退化说明 ----
 
     @Test
-    fun `continuation pages render headerless and page zero keeps header`() {
-        // v10: 无分页 → 无续页。条带行位图由 renderTodayRow 产出, 从不画头 —
-        // 服务端锁法: SCOPE_TODAY 行渲染必须走 renderTodayRow (无头单行位图)。
+    fun `strip long bitmap keeps header param parity with shell`() {
+        // v11: 条带 = 整张长图 (不再有续页概念)。条带与壳图同参: emptyHeader 透传
+        // 给渲染器, headerSpace = emptyHeader 同值 (条带头部随内容滚, 滚动位 0 与壳图
+        // 逐像素一致 — v9.1 契约)。
         val svc = widgetSource("ScrollStripService.kt").readText()
         val todayBody = svc.substringAfter("SCOPE_TODAY ->").substringBefore("SCOPE_TWODAY ->")
         assertTrue(
-            "条带行必须经 renderTodayRow 产出 (行位图无头语义)",
-            todayBody.contains("renderTodayRow")
+            "条带长图渲染必须透传 emptyHeader (与壳图同参)",
+            todayBody.contains("emptyHeader = emptyHeader")
+        )
+        assertTrue(
+            "条带长图渲染必须 headerSpace = emptyHeader (v6 条带坐标系契约)",
+            todayBody.contains("headerSpace = emptyHeader")
         )
         // 渲染端锁法在 TodayOverflowScrollParityTest (header block guard 回归 emptyHeader 单条件)。
     }

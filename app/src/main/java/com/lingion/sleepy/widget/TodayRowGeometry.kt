@@ -80,9 +80,14 @@ object TodayRowGeometry {
             ?: contentTopDp(headerSpace) + PAD_BOTTOM_DP
 
     /**
-     * v10: pageOffsetsDp / MAX_PAGES 已删除 — 固定视口分页模型整体退场。
-     * 分页在轻微溢出场景产出跨缝重复内容 (3 节课 + 26dp 溢出 → 末页贴底把前面
-     * 的课再画一遍 = 用户看到的「半节 + 拼图」)。条带改为逐行子项 (ScrollStripService
-     * 按 rowSpans 每行一张 renderTodayRow 位图), 滑动 = launcher 原生 ListView 滚动。
+     * v11: 分页模型 (v9.x pageOffsetsDp / MAX_PAGES) 与逐行子项 (v10 renderTodayRow)
+     * 两者都已退场, 仅留 rowSpans/rowHeightDp 作为 Today 渲染几何唯一真值。
+     *
+     * 真实机翻车链: v9.x 固定视口分页 = 轻微溢出场景跨缝重复 (用户原话: 「3 节课
+     * 只看到 2 节半 + 拖到底末页把前 2 节又画了一遍」); v10 逐行子项 = 多 child 在
+     * OPPO launcher 上复发了 v1 extent 冻结 (无法拖动) + 透明背景叠加壳图错位 +
+     * 第一行覆盖标题区 TopBar 消失 — 三症状同根。回归 v9.1: 单 child 整张不透明长图,
+     * 与 TwoDay/WeekList 同构 (同台 OPPO 一直正常), 整图一次画到底, 滚动 = launcher
+     * 原生 ListView 在单 child 上完成, 不再有分页不再有多子项。
      */
 }

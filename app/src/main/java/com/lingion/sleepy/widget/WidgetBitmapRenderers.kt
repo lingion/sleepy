@@ -174,8 +174,11 @@ object WidgetBitmapRenderers {
      * 内容纵坐标与带头模式逐像素一致) — 今日导航版用真实 RemoteViews 视图(TextView+按钮)
      * 覆盖顶栏, bitmap 头部必须留白, 否则双重标题; WeekGrid 最小档/旧调用方默认 false 不受影响。
      *
-     * v10: pageOffsetDp 参数删除 — 分页模型整体退场 (固定视口分页在轻微溢出场景
-     * 产出跨缝重复内容), 可滚动场景由条带逐行子项 (renderTodayRow) 承载。
+     * v11 (今天真机翻车后撤回 v10): 回归 v9.1 形态 = 单 child 整张长图 + launcher
+     * 原生 ListView 滚动 (TwoDay/WeekList 同构一直正常)。v10 试过的"逐行子项 =
+     * 每行一张透明位图"在 OPPO 上复发了 v1 extent 冻结 (无拖动) + 双层错位叠影 +
+     * 第一行压住壳图标题导致 TopBar 消失 — 三症状同根,都是多 child 整错的。
+     * 滚动模型自此回 v9.1: 整张不透明长图, 一张位图 = 一条 ListView 子项。
      *
      * v6: emptyHeader=true 时 24dp 头部前进量默认仍保留 (空档, 供真实视图顶栏覆盖
      * 的静态档用); headerSpace=true 把这 24dp 整段删掉 — 条带长图从第一行课程直接
@@ -187,7 +190,7 @@ object WidgetBitmapRenderers {
         variant: WidgetVariant = WidgetVariant.REGULAR,
         emptyHeader: Boolean = false,
         headerSpace: Boolean = false
-    ): Bitmap = renderTodayRegular(context, data, wDp, hDp, emptyHeader, 0f, headerSpace)
+    ): Bitmap = renderTodayRegular(context, data, wDp, hDp, emptyHeader, headerSpace)
 
     /**
      * Today 状态内容判定 (纯 JVM 可测) — 无课表 / 学期外 / 无课。
@@ -302,11 +305,11 @@ object WidgetBitmapRenderers {
     }
 
     /**
-     * Today 全量排版 — 静态单屏渲染器 (v10: offset 参数删除, 恒 0)
+     * Today 全量排版 — 原 renderToday 函数体原样改名迁入(REGULAR 档逐字节不变保证)
      */
     private fun renderTodayRegular(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
-        emptyHeader: Boolean, @Suppress("UNUSED_PARAMETER") pageOffsetDp: Float,
+        emptyHeader: Boolean,
         headerSpace: Boolean
     ): Bitmap {
         val density = context.resources.displayMetrics.density
@@ -418,6 +421,9 @@ object WidgetBitmapRenderers {
         // v7.10.11: 冲突分栏 — 与 App 今日页/周视图同一引擎(weekLaneRows),
         // 冲突区域一行内并排(栏间浅细竖线), 同栏课纵向堆叠, 无冲突课整宽。
         // 栏内多课时该行实际高度由最高栏决定(各栏 y 游标独立推进后再取 max 对齐)。
+        // v11 撤回 v10 逐行子项 (OPPO extent 冻结/叠影/TopBar 覆盖三症状同根):
+        // 渲染器回归 v9.1 — 一次画完整展开长图, 调用方保证 h=全展开高。
+        // v8: 行几何单一真值 — span 起点随 headerSpace 参数化。
         val rowH = 38f * density
         val rowGap = 10f * density  // 课程胶囊间距放大(用户反馈太紧凑)
         val rowW = w - pad * 2
@@ -425,96 +431,45 @@ object WidgetBitmapRenderers {
         val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses)
         val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
         val stackGap = 3f * density
-        // v10: 渲染器回归纯静态单屏 — 无 offset 无可见性过滤 (分页模型整体退场,
-        // 用户定稿: 「任意一个视角, 用户看到的都是完整的课」)。可滚动场景由条带
-        // 逐行子项 (renderTodayRow) 承载, 滑动 = launcher 原生 ListView 滚动。
-        // v8 行几何单一真值保留: 起点随 headerSpace 参数化。
         val spans = TodayRowGeometry.rowSpans(data.courses, headerSpace)
         spans.forEach { span ->
-            drawLaneRow(canvas, p, span.row, data, pad, span.topDp * density, rowW, rowH,
-                s, density, sepColor, stackGap, colorless, displayMode, useAlias)
-        }
-
-        return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
-    }
-
-    /**
-     * 画一行课程 (v10 自 renderTodayRegular 提取) — 无冲突课整宽 (12sp), 冲突行
-     * 分栏并排 (10sp, 栏间浅细竖线, 栏内纵向堆叠)。y = 行顶 px (调用方已减 offset)。
-     * 渲染语义与提取前逐字节一致 (drawCourse 参数、字号、栏宽公式全部原样)。
-     */
-    private fun drawLaneRow(
-        canvas: Canvas, p: Paint,
-        row: com.lingion.sleepy.util.ConflictLayoutEngine.WeekLaneRow,
-        data: WidgetData, pad: Float, y: Float, rowW: Float, rowH: Float,
-        s: Scheme, density: Float, sepColor: Int, stackGap: Float,
-        colorless: Boolean, displayMode: String, useAlias: Boolean
-    ) {
-        if (row.laneCount == 1) {
-            drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
-                fontSizeSp = 12f, colorless = colorless, displayMode = displayMode,
-                groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
-                useAlias = useAlias)
-        } else {
-            val laneGap = 5f * density
-            val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
-            val laneRowTotalH = TodayRowGeometry.rowHeightDp(row) * density
-            repeat(row.laneCount) { li ->
-                val laneX = pad + li * (laneW + laneGap)
-                // 栏间浅细竖线(与 App 分栏同语义)
-                if (li > 0) {
-                    val sepX = laneX - laneGap / 2f
-                    val keepColor = p.color
-                    p.color = sepColor
-                    canvas.drawRect(sepX - 0.5f * density, y, sepX + 0.5f * density,
-                        y + laneRowTotalH, p)
-                    p.color = keepColor
-                }
-                val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
-                var ly = y
-                laneCourses.forEachIndexed { ci, laneCourse ->
-                    drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
-                        fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
-                        groupRows = data.courses.filter { it.groupId == laneCourse.groupId },
-                        useAlias = useAlias)
-                    ly += rowH
-                    if (ci < laneCourses.size - 1) ly += stackGap
+            val row = span.row
+            val y = span.topDp * density
+            if (row.laneCount == 1) {
+                drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
+                    fontSizeSp = 12f, colorless = colorless, displayMode = displayMode,
+                    groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
+                    useAlias = useAlias)
+            } else {
+                val laneGap = 5f * density
+                val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
+                val laneRowTotalH = (span.bottomDp - span.topDp) * density
+                repeat(row.laneCount) { li ->
+                    val laneX = pad + li * (laneW + laneGap)
+                    // 栏间浅细竖线(与 App 分栏同语义)
+                    if (li > 0) {
+                        val sepX = laneX - laneGap / 2f
+                        val keepColor = p.color
+                        p.color = sepColor
+                        canvas.drawRect(sepX - 0.5f * density, y, sepX + 0.5f * density,
+                            y + laneRowTotalH, p)
+                        p.color = keepColor
+                    }
+                    val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
+                    var ly = y
+                    laneCourses.forEachIndexed { ci, laneCourse ->
+                        drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
+                            fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
+                            groupRows = data.courses.filter { it.groupId == laneCourse.groupId },
+                            useAlias = useAlias)
+                        ly += rowH
+                        if (ci < laneCourses.size - 1) ly += stackGap
+                    }
                 }
             }
         }
-    }
 
-    /**
-     * v10 逐行渲染入口 — 条带每个子项 = 一行课程 (无冲突 1 行 38dp; 冲突行按最高栏
-     * 堆叠数)。行位图: 宽 = widget 宽, 高 = 行真实 dp + 底 gap (ROW_GAP_DP), 圆角背景
-     * 透明 (只画课程胶囊), 从不画头 (头部属于壳图)。滑动语义 = launcher 原生
-     * ListView 逐行滚动, 每节课只出现一次、永远完整 — v9 分页模型的「跨缝重复」
-     * (3 节课溢出 26dp → 末页把前 2 节再画一遍) 结构性根除。
-     */
-    fun renderTodayRow(
-        context: Context, data: WidgetData, wDp: Float,
-        row: TodayRowGeometry.RowSpan
-    ): Bitmap {
-        val density = context.resources.displayMetrics.density
-        val w = (wDp * density).toInt()
-        val pad = 14f * density
-        val rowH = 38f * density
-        val stackGap = 3f * density
-        val rowTotalH = TodayRowGeometry.rowHeightDp(row.row) * density
-        // 行高 = 行真实高 + 行间距 (列表项间隙视觉与整图渲染逐像素一致)
-        val h = (rowTotalH + TodayRowGeometry.ROW_GAP_DP * density).toInt().coerceAtLeast(1)
-        val s = scheme(context, data.themeKey, data.isDark)
-        val colorless = AppPrefs.isWidgetColorless(context)
-        val useAlias = AppPrefs.isWidgetUseAlias(context)
-        val displayMode = AppPrefs.getDisplayMode(context)
-        val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000
-
-        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
-        val canvas = Canvas(bmp)
-        val p = Paint(Paint.ANTI_ALIAS_FLAG)
-        drawLaneRow(canvas, p, row.row, data, pad, 0f, w - pad * 2, rowH,
-            s, density, sepColor, stackGap, colorless, displayMode, useAlias)
-        return bmp
+        return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
     }
 
     /**
@@ -523,11 +478,14 @@ object WidgetBitmapRenderers {
      * v7.10.11: 冲突分栏行高按最高栏堆叠数算(与 renderToday 分栏镜像)。
      * v6 headerSpace: true 时头部 24dp 前进量不计 (条带去头, 顶栏是布局独立行),
      * 与 renderToday(headerSpace=true) 逐常量镜像。
-     * v9.3: 状态内容 (无课表/学期外/无课) 报单页高度 (顶 pad 之内, ≤ 任何 sane
-     * viewport) — 状态分支画固定 y, 报为可翻页内容 = 条带产出 N 张同图根因。
+     * v11: 状态内容 (无课表/学期外/无课) 走单行估算, 与渲染器 status 分支对得上。
      */
     fun todayContentHeightDp(data: WidgetData, headerSpace: Boolean = false): Float {
-        if (isTodayStatusContent(data)) return TodayRowGeometry.contentTopDp(headerSpace)
+        // 空态分支沿用旧口径 (单行状态文本 + 各自 pad)
+        if (!data.hasTable) return TodayRowGeometry.contentTopDp(headerSpace) + 20f
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE)
+            return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
+        if (data.courses.isEmpty()) return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
         // v8: 行几何单一真值 — 与 renderTodayRegular 同调 TodayRowGeometry (镜像失配根除)
         return TodayRowGeometry.contentHeightDp(data.courses, headerSpace)
     }
