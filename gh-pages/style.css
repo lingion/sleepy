@@ -1,0 +1,37 @@
+:root{
+  --bg:#0e0e10; --bg-2:#161618;
+  --fg:#e8e8ea; --fg-mute:#9a9a9f; --fg-dim:#6b6b70;
+  --accent:#d4a35f; --accent-2:#f0c987;
+  --line:#2a2a2e;
+  --code-bg:#1a1a1c; --code-fg:#d4d4d8;
+  --link:#7ab7d4; --link-h:#a8d4ea;
+  --serif:"Source Serif Pro","Noto Serif CJK SC","Songti SC",Georgia,serif;
+  --sans:-apple-system,BlinkMacSystemFont,"Inter","PingFang SC","Microsoft YaHei","Hiragino Sans GB",sans-serif;
+  --mono:"JetBrains Mono","SF Mono",Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:var(--bg);color:var(--fg);font-family:var(--sans);line-height:1.65;font-size:16px}
+.wrap{max-width:780px;margin:0 auto;padding:48px 24px 96px}
+a{color:var(--link);text-decoration:none;border-bottom:1px dotted var(--link)}
+a:hover{color:var(--link-h);border-bottom-style:solid}
+h1,h2,h3{font-family:var(--serif);font-weight:600;color:var(--fg);letter-spacing:-.005em}
+h1{font-size:38px;line-height:1.25;margin:0 0 8px}
+h2{font-size:24px;line-height:1.35;margin:48px 0 12px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+h3{font-size:18px;margin:24px 0 8px}
+.subtitle{color:var(--fg-mute);font-size:14px;margin:0 0 32px}
+p{margin:0 0 14px}
+ul,ol{padding-left:22px;margin:0 0 18px}
+li{margin:0 0 4px}
+strong{color:var(--fg)}
+code{font-family:var(--mono);background:var(--code-bg);color:var(--code-fg);padding:1px 6px;border-radius:3px;font-size:14px}
+pre{background:var(--code-bg);color:var(--code-fg);padding:16px 18px;border-radius:6px;overflow-x:auto;border:1px solid var(--line);font-size:13px;line-height:1.55}
+pre code{background:transparent;padding:0}
+blockquote{margin:18px 0;padding:8px 18px;border-left:3px solid var(--accent);background:var(--bg-2);color:var(--fg-mute);font-style:italic}
+hr{border:0;border-top:1px solid var(--line);margin:32px 0}
+.q{background:var(--bg-2);padding:14px 18px;margin:0 0 14px;border-radius:0 6px 6px 0;border-left:3px solid var(--accent)}
+.q p{margin:0}
+@media(max-width:560px){
+  .wrap{padding:28px 18px 56px}
+  h1{font-size:30px}
+  h2{font-size:20px}
+}

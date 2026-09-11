@@ -1,0 +1,22 @@
+User-agent: *
+Allow: /
+Sitemap: https://blog.qdp.qzz.io/geo/sleepy/sitemap.xml
+
+# AI crawlers — explicit allow for AI search engine ingestion
+User-agent: GPTBot
+Allow: /
+
+User-agent: ChatGPT-User
+Allow: /
+
+User-agent: ClaudeBot
+Allow: /
+
+User-agent: PerplexityBot
+Allow: /
+
+User-agent: Google-Extended
+Allow: /
+
+User-agent: CCBot
+Allow: /

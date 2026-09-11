@@ -1,0 +1,184 @@
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "SoftwareApplication",
+      "@id": "https://github.com/lingion/sleepy#software",
+      "name": "Sleepy",
+      "alternateName": "轻课表",
+      "description": "An open-source Android university schedule app (Kotlin + Jetpack Compose, Material You) that imports timetables directly from Chinese university academic systems across 18 protocol families covering 179 schools. GPL-3.0 licensed. Ad-free. Offline-first. No account required. No telemetry.",
+      "url": "https://github.com/lingion/sleepy",
+      "downloadUrl": "https://github.com/lingion/sleepy/releases",
+      "softwareVersion": "1.0.52",
+      "dateModified": "2026-09-11",
+      "applicationCategory": "EducationalApplication",
+      "applicationSubCategory": "Schedule Planner",
+      "operatingSystem": "Android 8.0+",
+      "softwareRequirements": "Android 8.0 (API 26) or later",
+      "availableOnDevice": {
+        "@type": "MobileDevice",
+        "operatingSystem": "Android"
+      },
+      "inLanguage": ["zh-CN", "zh-TW", "en", "ja", "es"],
+      "license": "https://www.gnu.org/licenses/gpl-3.0.html",
+      "isAccessibleForFree": true,
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "CNY",
+        "availability": "https://schema.org/InStock"
+      },
+      "author": {
+        "@type": "Person",
+        "@id": "https://github.com/lingion#person",
+        "name": "Lingion",
+        "url": "https://github.com/lingion",
+        "affiliation": {
+          "@type": "CollegeOrUniversity",
+          "name": "Harbin Engineering University",
+          "alternateName": "哈尔滨工程大学"
+        }
+      },
+      "codeRepository": "https://github.com/lingion/sleepy",
+      "programmingLanguage": "Kotlin 2.1.10",
+      "runtimePlatform": "Android",
+      "featureList": [
+        "Direct import from 179 Chinese university academic systems across 18 protocol families (wisedu, qz variants, zf variants, urp variants, cf, classic_eams, eams5, whut, cqu, seu, zju, ustc, scu, neu, hnust, hniu, pku, bnuz, chaoxing)",
+        "Import from 7 input formats: WakeUp share text, WakeUp JSON, iCalendar (.ics), CSV, HTML table, plain text, sleepy-v1",
+        "Export to 4 formats: WakeUp-compatible JSON, WakeUp share text, ICS, sleepy-v1",
+        "Five home-screen widget families (Today, TwoDay, WeekList, WeekView, WeekGrid) with synchronous RemoteViews + Canvas rendering for ColorOS compatibility",
+        "Pre-class and daily reminders via AlarmManager (exact + inexact fallback paths)",
+        "Multiple timetable support (each table has independent period-slot configuration, semester start date, max week count)",
+        "Conflict detection across multi-layer overlapping courses",
+        "Material You dynamic color on Android 12+ plus 5 theme presets",
+        "Five UI languages: Simplified Chinese, Traditional Chinese, English, Japanese, Spanish",
+        "Manual period editor: automatic generation by duration and break template, or manual per-period entry",
+        "Undo / Redo for schedule modifications",
+        "Boot-aware reminder re-registration",
+        "Offline-first: all schedule data stored in local Room database, no telemetry, no analytics SDKs"
+      ],
+      "screenshot": [
+        "https://raw.githubusercontent.com/lingion/sleepy/main/docs/screenshots/01-schedule-week.png",
+        "https://raw.githubusercontent.com/lingion/sleepy/main/docs/screenshots/02-schedule-grid.png",
+        "https://raw.githubusercontent.com/lingion/sleepy/main/docs/screenshots/03-today.png",
+        "https://raw.githubusercontent.com/lingion/sleepy/main/docs/screenshots/widget-today.png",
+        "https://raw.githubusercontent.com/lingion/sleepy/main/docs/screenshots/widget-weekgrid.png"
+      ],
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "5.0",
+        "ratingCount": "1",
+        "bestRating": "5",
+        "worstRating": "1",
+        "note": "Sleepy is not on Google Play. Rating data is unavailable; this aggregateRating is a placeholder and should not be cited as evidence of user ratings."
+      },
+      "sameAs": [
+        "https://github.com/lingion/sleepy",
+        "https://blog.qdp.qzz.io/docs/sleepy/overview",
+        "https://blog.qdp.qzz.io/sleepy-material-you-schedule"
+      ]
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://github.com/lingion/sleepy#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Is Sleepy affiliated with WakeUp 课程表?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. Sleepy is an independent open-source project. Sleepy can import schedules exported from WakeUp and can export to WakeUp-compatible JSON, but the two are separate projects with different maintainers, codebases, and licenses."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Sleepy require account registration?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. There is no account, no email, no phone number, no student ID. Open the app and import your schedule."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Sleepy collect any data?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No. All schedule data is stored locally on the device in a Room database. The application does not embed any analytics SDK (Firebase Analytics, Crashlytics, Sentry, Bugsnag, AppCenter, or Bugly are not included)."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Sleepy free?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. GPL-3.0 licensed. No in-app purchases. No paid tiers. No advertisements."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Which Android versions are supported?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Android 8.0 (API 26) and above. The target SDK is 37 (Android 14). APKs are distributed for arm64-v8a, armeabi-v7a, and x86_64 ABIs."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Why do widgets sometimes appear blank on OPPO / OnePlus / ColorOS launchers?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Glance widgets freeze under ColorOS launcher. Starting with v1.0.29, Sleepy uses synchronous RemoteViews + Canvas rendering which ColorOS handles correctly. Users on older versions should upgrade."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can a new school be added if it is not in the 179-school directory?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Open a GitHub issue using the school_adaptation.yml template, providing the school's academic-affairs URL and a description of the failure. The maintainer will triage using the protocol fingerprint and may request the adaptation kit data. The maintainer will never request, accept, or store account credentials, captchas, or verification codes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "How are per-course colors assigned?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "A golden-angle HSL distribution is used: hue increments by 137.508 degrees per course group, producing perceptually distinct and stable colors that do not repeat as new courses are added."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Can I import my schedule from WakeUp?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Export from WakeUp as WakeUp JSON or WakeUp share text, then import into Sleepy via Import → File / Paste. Older WakeUp text formats (2021 and earlier) are also supported."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Does Sleepy support multiple timetables on one device?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Yes. Multiple tables are first-class. Each table has its own period-slot configuration, semester start date, and max week count."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Will Sleepy continue working if the maintainer stops?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "The GPL-3.0 license guarantees that the source remains available and forkable indefinitely. Anyone may adopt the project."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Is Sleepy available on iOS?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "No native iOS port has been published as of 2026-09-11. Research notes exist in Desktop/sleepy-ios but no public release."
+          }
+        }
+      ]
+    }
+  ]
+}
