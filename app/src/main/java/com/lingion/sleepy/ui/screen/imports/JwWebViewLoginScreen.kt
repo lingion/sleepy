@@ -97,6 +97,7 @@ fun JwWebViewLoginScreen(
     val fetchFormatErrorMsg = stringResource(R.string.jw_fetch_format_error)
     val fetchFailedFmt = stringResource(R.string.jw_fetch_failed)
     val pageNotLoadedMsg = stringResource(R.string.jw_page_not_loaded)
+    val sepPortalHintMsg = stringResource(R.string.jw_err_ucas_sep_portal)
     val fetchTimeoutMsg = stringResource(R.string.jw_fetch_timeout)
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
 
@@ -302,6 +303,15 @@ fun JwWebViewLoginScreen(
                     // T7: DFS frame 抓取 + ready 重试, 决策在 JVM 层(可测可日志)
                     captureWithRetry(wv, 0) { r ->
                         Log.d("JwWebView", "captured frame=${r.selectedFramePath} anchors=${r.matchedAnchors} status=${r.status}")
+                        // #18: UCAS 入口是 SEP 门户, 学生登录后常停在 SEP 应用列表页点导入
+                        // (还没跳到 xkgo 课表页) → hint 换成精确动线指引, Activity 对
+                        // WRONG_PAGE 且 hint 非空时优先展示 hint
+                        val hint = if (r.status == FrameCaptureStatus.WRONG_PAGE &&
+                            school.type == JwProtocol.TYPE_UCAS &&
+                            (wv.url ?: "").contains("sep.ucas.ac.cn")
+                        ) {
+                            sepPortalHintMsg
+                        } else r.diagnosticHint
                         when (r.status) {
                             FrameCaptureStatus.OK, FrameCaptureStatus.EMPTY_SEMESTER ->
                                 onHtmlCaptured(r.html, school, emptyList(), "")   // 0 课交给 Activity 按空学期文案报
@@ -311,7 +321,7 @@ fun JwWebViewLoginScreen(
                             FrameCaptureStatus.IFRAME_NAV_PENDING,
                             FrameCaptureStatus.WRONG_PAGE,
                             FrameCaptureStatus.UNKNOWN ->
-                                onCaptureError(r.status, r.diagnosticHint)    // 不走 onHtmlCaptured, 避免伪"0 课"
+                                onCaptureError(r.status, hint)    // 不走 onHtmlCaptured, 避免伪"0 课"
                         }
                     }
                 }

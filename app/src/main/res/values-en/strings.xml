@@ -372,6 +372,7 @@
     <string name="jw_err_container_empty_after_delay">Timetable area found but not fully loaded yet. Wait until the timetable is fully displayed, then tap "Import this page" again</string>
     <string name="jw_err_iframe_nav_pending">The timetable frame has not started loading. Wait until the timetable is fully displayed, then tap "Import this page" again</string>
     <string name="jw_err_wrong_page">This page is not the timetable page. Please log in and open your personal timetable first</string>
+    <string name="jw_err_ucas_sep_portal">You are still on the UCAS SEP portal page. After signing in, open "Course Selection System" from the app list, then import on the timetable page</string>
     <string name="jw_err_session_expired">Session expired. Please log in again on the page, then tap "Import this page"</string>
     <string name="jw_err_empty_semester">No courses this semester. Please confirm the correct semester is selected; image-based timetables cannot be imported</string>
     <string name="jw_import_success">Successfully imported %1$d courses</string>

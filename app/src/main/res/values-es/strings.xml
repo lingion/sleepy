@@ -366,6 +366,7 @@
     <string name="jw_err_container_empty_after_delay">Se encontró el área del horario pero aún no está cargada. Espere a que se muestre completamente y vuelva a tocar «Importar esta página»</string>
     <string name="jw_err_iframe_nav_pending">El marco del horario aún no ha comenzado a cargar. Espere a que se muestre completamente y vuelva a tocar «Importar esta página»</string>
     <string name="jw_err_wrong_page">Esta página no es la página del horario. Inicie sesión y abra su horario personal primero</string>
+    <string name="jw_err_ucas_sep_portal">Todavía está en el portal SEP de la UCAS. Tras iniciar sesión, abra "Sistema de Selección de Cursos" en la lista de aplicaciones e importe en la página del horario</string>
     <string name="jw_err_session_expired">Sesión caducada. Inicie sesión de nuevo en la página y vuelva a tocar «Importar esta página»</string>
     <string name="jw_err_empty_semester">No hay cursos este semestre. Confirme que seleccionó el semestre correcto; los horarios en imagen no se pueden importar</string>
     <string name="jw_import_success">%1$d cursos importados exitosamente</string>

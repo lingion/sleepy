@@ -480,6 +480,7 @@
     <string name="jw_err_container_empty_after_delay">课表区域已找到但内容尚未加载完成，请等待页面完整显示课表后再次点「导入此页」</string>
     <string name="jw_err_iframe_nav_pending">课表框架尚未开始加载，请等待页面完整显示课表后再点「导入此页」</string>
     <string name="jw_err_wrong_page">当前页面不是课表页，请先登录并进入「个人课表」页面</string>
+    <string name="jw_err_ucas_sep_portal">您还停在中国科学院大学 SEP 门户页。请登录后在应用列表里点「选课系统」，进入课表页后再点导入</string>
     <string name="jw_err_session_expired">登录已过期，请在页面中重新登录后再点「导入此页」</string>
     <string name="jw_err_empty_semester">本学期暂无课程，请确认已选择正确学期；若课表为图片形式将无法导入</string>
     <!-- T9 导入失败诊断文案 -->

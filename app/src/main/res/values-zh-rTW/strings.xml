@@ -366,6 +366,7 @@
     <string name="jw_err_container_empty_after_delay">課表區域已找到但內容尚未載入完成，請等待頁面完整顯示課表後再次點「匯入此頁」</string>
     <string name="jw_err_iframe_nav_pending">課表框架尚未開始載入，請等待頁面完整顯示課表後再點「匯入此頁」</string>
     <string name="jw_err_wrong_page">目前頁面不是課表頁，請先登入並進入「個人課表」頁面</string>
+    <string name="jw_err_ucas_sep_portal">您還停在中國科學院大學 SEP 入口頁。請登入後在應用列表裡點「選課系統」，進入課表頁後再點匯入</string>
     <string name="jw_err_session_expired">登入已逾期，請在頁面中重新登入後再點「匯入此頁」</string>
     <string name="jw_err_empty_semester">本學期暫無課程，請確認已選擇正確學期；若課表為圖片形式將無法匯入</string>
     <string name="jw_import_success">成功匯入 %1$d 門課程</string>

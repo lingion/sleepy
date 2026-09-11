@@ -323,7 +323,10 @@ class JwImportActivity : ComponentActivity() {
                                         FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED -> getString(R.string.jw_err_cross_domain_iframe, hint)
                                         FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY -> getString(R.string.jw_err_container_empty_after_delay)
                                         FrameCaptureStatus.IFRAME_NAV_PENDING          -> getString(R.string.jw_err_iframe_nav_pending)
-                                        FrameCaptureStatus.WRONG_PAGE                  -> getString(R.string.jw_err_wrong_page)
+                                        // #18: UCAS SEP 门户页上的导入, LoginScreen 已把 hint 换成
+                                        // 精确动线指引 (jw_err_ucas_sep_portal), 非空则优先展示
+                                        FrameCaptureStatus.WRONG_PAGE ->
+                                            hint.ifBlank { getString(R.string.jw_err_wrong_page) }
                                         FrameCaptureStatus.SESSION_EXPIRED             -> getString(R.string.jw_err_session_expired)
                                         else                                           -> getString(R.string.jw_parse_empty)
                                     }
