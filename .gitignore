@@ -37,9 +37,9 @@ docs/sop/feature-baseline.md
 
 # User-private workflow policies (internal only, never push)
 # 分支规范与内部贡献流程属于用户私有信息，仅存本地，禁止 push。
-# 对外贡献者规范后续单独提供公开版 PR 指南。
+# 2026-09-11: 对外公开版 CONTRIBUTING.md 入库; 内部机密版改名 CONTRIBUTING-INTERNAL.md。
 BRANCHING.md
-CONTRIBUTING.md
+CONTRIBUTING-INTERNAL.md
 
 # Superpowers SDD workflow artifacts (local only, never push)
 # AI 工作流的 spec/design/task 产物只在本地保留,禁止入库。
