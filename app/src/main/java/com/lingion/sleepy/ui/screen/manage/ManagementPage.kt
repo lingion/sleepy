@@ -18,6 +18,7 @@ import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.Share
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -50,6 +51,7 @@ fun ManagementPage(
     onCreateNewTableRequested: () -> Unit,
     onManualAdd: () -> Unit,
     onEditCurrentTable: () -> Unit,
+    onExportRequested: () -> Unit = {},
     onImported: () -> Unit,
     viewModel: ScheduleViewModel = viewModel(),
     autoShowImportSheet: Boolean = false
@@ -114,7 +116,7 @@ fun ManagementPage(
                 }
             }
 
-            // 管理按钮（4 个：导入 / 新建 / 手动添加 / 编辑）
+            // 管理按钮（5 个：导入 / 新建 / 手动添加 / 编辑 / 导出）
             item {
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     ManageCard(
@@ -140,6 +142,12 @@ fun ManagementPage(
                         title = stringResource(R.string.manage_edit_current),
                         subtitle = stringResource(R.string.manage_edit_current_sub),
                         onClick = onEditCurrentTable
+                    )
+                    ManageCard(
+                        icon = Icons.Outlined.Share,
+                        title = stringResource(R.string.manage_export),
+                        subtitle = stringResource(R.string.manage_export_sub),
+                        onClick = onExportRequested
                     )
                 }
             }

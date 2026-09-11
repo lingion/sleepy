@@ -33,6 +33,8 @@
     <string name="manage_new_table_sub">Crear un horario vacío, añadir cursos manualmente</string>
     <string name="manage_edit_current">Editar actual</string>
     <string name="manage_edit_current_sub">Editar nombre, fechas y horarios</string>
+    <string name="manage_export">Exportar horario actual</string>
+    <string name="manage_export_sub">Compartir como nativo / JSON WakeUp / ICS / texto</string>
     <string name="manage_manual_add">Añadir curso</string>
     <string name="manage_manual_add_sub">Añadir un curso al horario actual</string>
     <string name="table_info">Inicio: %1$s  |  Semana %2$d  |  %3$d cursos</string>

@@ -38,6 +38,8 @@
     <string name="manage_new_table_sub">Create a blank schedule, add courses manually</string>
     <string name="manage_edit_current">Edit Current</string>
     <string name="manage_edit_current_sub">Edit name, dates, and time slots</string>
+    <string name="manage_export">Export current timetable</string>
+    <string name="manage_export_sub">Share as Native / WakeUp JSON / ICS / text</string>
     <string name="manage_manual_add">Add Course</string>
     <string name="manage_manual_add_sub">Add a course directly to current schedule</string>
     <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d courses</string>
