@@ -231,6 +231,40 @@ class JwWebViewFrameCaptureTest {
         assertTrue(r.matchedAnchors.contains("kbgrid_table_0"))
     }
 
+    // ---------- case #18: UCAS personSchedule 无锚点容器 ----------
+
+    @Test
+    fun `ucas personSchedule grid without generic anchors is captured by title+coursetime fingerprints`() {
+        // 真实页面 (v1.2 采集包): 容器 <table class='table table-striped…'> 不含任何
+        // ANCHORS 集 id=/class=, 旧逻辑全无锚点 → WRONG_PAGE, App 内导入死路
+        val html = res("ucas_person_schedule.html")
+        assertTrue("前置: 真页面确实不含通用锚点", FrameTraversalTree.findAnchors(html).isEmpty())
+        assertTrue("前置: title 个人课表", html.lowercase().contains("<title>个人课表</title>"))
+        assertTrue("前置: 课程格详情链接", html.lowercase().contains("/course/coursetime/"))
+        val snaps = FrameSnapshot.fromJson(json(
+            f("(top)", "https://xkgo.ucas.ac.cn:3000/course/personSchedule", 0, emptyList(), html)
+        ))
+        val r = FrameTraversalTree.selectBestFrame(snaps)
+        assertEquals("双指纹 (个人课表 title + coursetime 链接) 必须救活为 OK",
+            FrameCaptureStatus.OK, r.status)
+        assertTrue(r.matchedAnchors.contains("ucas-personSchedule"))
+        // 抓到的 HTML 必须能被 JwUcasParser 认出 (confidence >= 90 才会被 registry 选中)
+        val conf = com.lingion.sleepy.data.jw.JwUcasParser(r.html).confidence()
+        assertTrue("JwUcasParser confidence 应 >=90, got $conf", conf >= 90)
+    }
+
+    @Test
+    fun `sep portal page without coursetime links stays WRONG_PAGE`() {
+        // SEP 门户页 (登录后应用列表): 无 coursetime 链接, 不能被 UCAS 双指纹误吸
+        val html = """<!DOCTYPE html><html><head><title>SEP 教育业务接入平台</title></head>
+            <body><div id="appStore"><table class='table table-striped'><tr><td>应用列表</td></tr></table></div></body></html>"""
+        val snaps = FrameSnapshot.fromJson(json(
+            f("(top)", "https://sep.ucas.ac.cn/appStore", 0, emptyList(), html)
+        ))
+        val r = FrameTraversalTree.selectBestFrame(snaps)
+        assertEquals(FrameCaptureStatus.WRONG_PAGE, r.status)
+    }
+
     // ---------- fromJson 容错 ----------
 
     @Test

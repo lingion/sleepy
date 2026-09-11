@@ -291,6 +291,30 @@ object FrameTraversalTree {
             )
         }
 
+        // ②b UCAS personSchedule 网格页: 容器是通用 bootstrap class (table-striped…),
+        //    无任何 id=/class= 锚点命中 ANCHORS 集 (case #18)。以页面双指纹识别:
+        //    <title>个人课表 + 课程格详情链接 /course/coursetime/ — 与 JwUcasParser
+        //    HTML 路径 confidence 锚一致。SEP 门户页无这两特征, 不误吸。
+        val ucasFrame = reachable
+            .filter { f ->
+                val html = f.outerHTML ?: return@filter false
+                val lower = html.lowercase()
+                lower.contains("<title>个人课表</title>") &&
+                    lower.contains("/course/coursetime/")
+            }
+            .maxByOrNull { it.depth }
+        if (ucasFrame != null) {
+            return FrameCaptureResult(
+                selectedFramePath = ucasFrame.parentPath + (ucasFrame.frameName ?: ""),
+                html = ucasFrame.outerHTML ?: "",
+                matchedAnchors = listOf("ucas-personSchedule"),
+                status = FrameCaptureStatus.OK,
+                blockedFrames = blocked,
+                maxDepthReached = maxDepthReached,
+                skippedFrames = skipped
+            )
+        }
+
         // ④ 全部可达 frame 均无锚点
         //  - 任一可达 frame looksLikeLoginPage → SESSION_EXPIRED
         //    多个 frame 同时命中时取最深的(顶层 frameset 可能因注释/说明文字含弱指纹词,
