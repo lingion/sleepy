@@ -313,4 +313,97 @@ class JwUcasParserTest {
         assertEquals(JwUcasParser.TYPE_DEFAULT, courses[0].type)
         assertEquals(7 to 7, courses[1].startWeek to courses[1].endWeek)
     }
+
+    // ---- issue #18 报告人真实采集包回放 (0906 v1.1 / 0908 v1.2) ----
+
+    private fun readRealGrid(name: String): String =
+        javaClass.classLoader!!.getResourceAsStream("jw/fixtures/ucas/$name")!!
+            .bufferedReader().use { it.readText() }
+
+    private fun readRealDetail(id: String): String =
+        javaClass.classLoader!!.getResourceAsStream("jw/fixtures/ucas/real-detail-0908/coursetime_$id.html")!!
+            .bufferedReader().use { it.readText() }
+
+    /** 0908 包 11 个详情页的课程号 (与网格页 coursetime 链接一一对应) */
+    private val realDetailIds = listOf(
+        "313613", "313853", "314215", "315574", "315601",
+        "315625", "315663", "315751", "315821", "316019", "319037"
+    )
+
+    @Test fun `real 0906 grid page hits UCAS confidence gate and yields courses`() {
+        // v1.1 采集器包: 无详情页, 网格页必须能被认出 (>=90 才会被 registry 选中)
+        val html = readRealGrid("person-schedule.real-0906.html")
+        val parser = JwUcasParser(html)
+        assertTrue("confidence 应 >=90, got ${parser.confidence()}", parser.confidence() >= 90)
+        val courses = parser.generateCourseList()
+        // 0906 网格页实有 13 门课 (含 AI for Science 方法与磐石平台应用 / 网络攻防基础)
+        assertTrue("课程数应 >=13, got ${courses.size}", courses.size >= 13)
+    }
+
+    @Test fun `real 0908 grid plus 11 real detail pages gives exact weeks`() {
+        // v1.2 采集器包: 网格 + 11 真实详情页 → 组合源, exact-week
+        val grid = readRealGrid("person-schedule.real-0908.html")
+        val urls = JwUcasParser.extractDetailUrls(grid)
+        assertEquals(11, urls.size)
+        val combined = buildString {
+            append(grid)
+            for (url in urls) {
+                val id = url.substringAfterLast('/')
+                append("\n")
+                append(JwUcasParser.DETAIL_MARKER_OPEN + url + "-->\n")
+                append(readRealDetail(id))
+                append("\n")
+                append(JwUcasParser.DETAIL_MARKER_CLOSE)
+                append("\n")
+            }
+        }
+        val parser = JwUcasParser(combined)
+        assertTrue("confidence 应 >=90, got ${parser.confidence()}", parser.confidence() >= 90)
+        val courses = parser.generateCourseList()
+        // 0908 网格页 11 门课; 每门课的周次必须来自详情页 (非 1..16 占位)
+        assertTrue("课程数应 >=11, got ${courses.size}", courses.size >= 11)
+        // 抽查真实边界 (取自 coursetime_313613 Web安全技术):
+        // 周二第3、4节 周次 2、3、4、5、7、8、9、10、11、12 → 第6周空缺 → splitWeekRuns 拆 [2-5, 7-12]
+        val webSec = courses.filter { it.name == "Web安全技术" }
+        assertTrue("Web安全技术 应有多段: ${webSec.size}", webSec.size >= 4)
+        val tueRuns = webSec.filter { it.day == 2 }
+            .map { it.startWeek * 100 + it.endWeek }.sorted()
+        assertEquals(listOf(205, 712), tueRuns)
+        // 周四第3、4节 周次 2、3、4、6、7、8、9、10、11 → 第5周空缺 → [2-4, 6-11]
+        val thuRuns = webSec.filter { it.day == 4 }
+            .map { it.startWeek * 100 + it.endWeek }.sorted()
+        assertEquals(listOf(204, 611), thuRuns)
+        val sun = webSec.first { it.day == 7 }
+        assertEquals(3, sun.startWeek)
+        assertEquals(3, sun.endWeek)
+        // 抽查 coursetime_314215 计算机体系结构: 周一 10,11,12 节, 2..20 周
+        val arch = courses.first { it.name == "计算机体系结构" }
+        assertEquals(1, arch.day)
+        assertEquals(2, arch.startWeek)
+        assertEquals(20, arch.endWeek)
+        // 所有课都不得是占位周次 (详情页可用的组合源里 fallback 不应触发)
+        val provisional = courses.filter { it.startWeek == 1 && it.endWeek == 16 }
+        assertTrue("不应有占位周次课: ${provisional.map { it.name }}", provisional.isEmpty())
+    }
+
+    @Test fun `real 0908 grid alone still falls back to provisional weeks`() {
+        // 只有网格页 (无详情) 时走 fallback 占位 1..16 — 报告人 0906 采集器场景
+        val html = readRealGrid("person-schedule.real-0908.html")
+        val parser = JwUcasParser(html)
+        val courses = parser.generateCourseList()
+        assertTrue(courses.isNotEmpty())
+        assertTrue(
+            "无详情时全部应为 1..16 占位: ${courses.filter { it.startWeek != 1 || it.endWeek != 16 }.map { it.name }}",
+            courses.all { it.startWeek == 1 && it.endWeek == 16 }
+        )
+    }
+
+    @Test fun `real 0906 grid detail urls match expected course ids`() {
+        val html = readRealGrid("person-schedule.real-0906.html")
+        val urls = JwUcasParser.extractDetailUrls(html)
+        // 0906 网格页 12 个链接, 含 313611 (0908 包没有此课)
+        assertEquals(12, urls.size)
+        assertTrue(urls.any { it.endsWith("/coursetime/313611") })
+        assertTrue(urls.all { it.startsWith("https://xkcts.ucas.ac.cn:8443/course/coursetime/") })
+    }
 }

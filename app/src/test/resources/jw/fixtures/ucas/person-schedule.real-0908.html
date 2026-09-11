@@ -1,0 +1,599 @@
+<html><head>
+    <title>个人课表</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="renderer" content="webkit">
+<link href="/static/stylelib/base.css" rel="stylesheet" type="text/css">
+<link href="/static/stylelib/responsive.css" rel="stylesheet" type="text/css">
+<!-- // plugins css -->
+<link href="/static/stylelib/plugins/font-awesome/font-awesome.css" rel="stylesheet" type="text/css">
+<link href="/static/stylelib/plugins/iealert/style.css" rel="stylesheet" type="text/css">
+<link href="/static/jquery-chosen/1.5.1/chosen.css" rel="stylesheet" type="text/css">
+<!-- // theme css -->
+<link href="/static/stylelib/theme_wblue/screen.css" rel="stylesheet" type="text/css">
+<link href="/static/stylelib/theme_default/routing.css" rel="stylesheet" type="text/css">
+<link href="/static/stylelib/theme_wblue/my_responsive.css" rel="stylesheet" type="text/css">
+<!-- Le HTML5 shim, for IE6-8 support of HTML5 elements -->
+<!--[if lt IE 9]>
+<script src="/static/stylelib/plugins/html5shiv.js"></script>
+<![endif]-->
+<script src="/static/stylelib/jquery-1.12.4.min.js"></script>
+
+    <script src="/static/i18n/messages.js"></script>
+
+
+<script src="/static/stylelib/jquery-migrate-1.4.1.min.js"></script>
+<script src="/static/stylelib/base.js"></script>
+<script src="/static/stylelib/plugins/iealert/iealert.js"></script>
+<script src="/static/stylelib/plugins/jquery.nicescroll.min.js"></script>
+<!--common script for all pages-->
+<script src="/static/stylelib/theme_default/global.js"></script>
+<script src="/static/stylelib/plugins/sco.modal.js"></script>
+<script src="/static/stylelib/plugins/jquery.placeholder.min.js"></script>
+<script type="text/javascript" src="/static/My97DatePicker/WdatePicker.js"></script><link href="/static/My97DatePicker/skin/WdatePicker.css" rel="stylesheet" type="text/css">
+<link href="/static/jquery-select2/4.0.2/css/select2.min.css" rel="stylesheet">
+<script src="/static/jquery-select2/4.0.2/js/select2.min.js" type="text/javascript"></script>
+<script src="/static/jquery-chosen/1.5.1/chosen.jquery.js"></script>
+<link href="/static/jquery-validation/1.15.0/dist/jquery.validate.min.css" rel="stylesheet">
+<script src="/static/jquery-validation/1.15.0/dist/jquery.validate.min.js" type="text/javascript"></script>
+
+<script src="/static/jquery-validation/1.15.0/dist/localization/messages_zh.min.js"></script>
+
+<script src="/static/jquery-form/jquery.form.js" type="text/javascript"></script>
+<link href="/static/jquery-jbox/2.3/Skins/Bootstrap/jbox.min.css" rel="stylesheet">
+<script src="/static/jquery-jbox/2.3/jquery.jBox-2.3.min.js" type="text/javascript"></script>
+<script src="/static/common/sumreg.js" type="text/javascript"></script>
+<link href="/static/common/sumreg.css" rel="stylesheet" type="text/css">
+
+<link rel="shortcut icon" href="/favicon.ico">
+
+    <link href="/static/yselect/font-awesome.min.css" rel="stylesheet" type="text/css">
+    <link href="/static/yselect/ySelect.css" rel="stylesheet" type="text/css">
+    <script src="/static/yselect/ySelect.js"></script>
+</head>
+<body>
+ <div id="header" class="navbar navbar-inverse navbar-fixed-top">
+      <div class="navbar-inner">
+          <div class="container-fluid">
+              <a id="edu_logo" target="_top" class="brand" href="https://sep.ucas.ac.cn/portal/site/105">
+                <img src="https://sep.ucas.ac.cn//resources/images/edu_cloud.png">
+              </a><!--//logo:end-->
+              <a id="logo" class="brand" href="#">
+                <span>选课系统</span>
+              </a><!--//site_name:end-->
+               <!-- //系统菜单 -->
+                      <div class="b-select-system">
+                          <a href="#" class="bss-btn">
+                              <i class="icon-angle-down"></i>
+                              <span>选择其他系统</span>
+                          </a>
+                          <div class="bss-menu" tabindex="5000" style="overflow: hidden; outline: none;">
+                              <ul>
+  	    						<li>
+  									<a target="_top" class="https://sep.ucas.ac.cn/portal/site/105" href="https://sep.ucas.ac.cn/portal/site/105">
+  		    							<img alt="" src="https://sep.ucas.ac.cn/access/img/site/105.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'">
+  		    							<h5>SEP</h5>
+  									</a>
+  	    						</li>
+                                  <li>
+                                      <a href="javascript:;"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/e4767af4-38f9-4b15-b869-f0eb45280686.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>选课系统</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/520"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/resources/images/app-default-icon2.png"> 
+                                         <h5>图书馆云打印</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/416"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/c11e1a91-5f47-4fff-a6cf-aea6b78f816a.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>网上办事大厅</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/405"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/resources/images/app-default-icon2.png"> 
+                                         <h5>就业管理</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/573"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/14cb0447-c6dd-4eec-a6dd-636ca8a84526.jpg" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>综合缴费平台</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/441"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/75fbeebb-db19-473b-845f-c7d2cbd79ddb.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>国科大在线</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/1"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/1.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>学籍管理</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/377"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/9cf4e520-d4e4-44f6-99f8-ced801dc3f25.PNG" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>文献下载</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/217"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/eb2834ba-e971-4e5c-bc61-673fbbcaf1e4.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>所级教务</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/221"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/221.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>培养指导</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/10"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/10.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>学位管理</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/282"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/91e650cb-fa5f-4d75-b0ca-635d9b382240.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>奖助管理</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/306"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/9d73e90b-1162-4716-b176-81d1011813fd.PNG" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>学籍变动审核</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/255"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/bea5429e-3e12-4807-8456-25712a542bda.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>正版软件</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/491"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/ada1bf74-3bf6-400f-9df3-5dbb4f4699ea.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>四六级报名</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/515"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/e9e9bcec-deb5-4e42-b7ec-d01575484655.jpg" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>研修间预约</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/299"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/87f717aa-492c-4fd8-aa7e-96815973d631.PNG" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>校园支付</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/531"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/resources/images/app-default-icon2.png"> 
+                                         <h5>交叉学院校内选拔报名</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/567"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/2ec4ca45-ed8c-4de5-9efc-7bcf47aef9af.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>团委二课</h5> 
+                                     </a>
+                                  </li>
+                                  <li>
+                                      <a href="https://sep.ucas.ac.cn//portal/site/311"> 
+                                         <img alt="" src="https://sep.ucas.ac.cn/access/img/site/30afe984-f56a-4984-b063-4a37277bfb2f.png" onerror="this.src='https://sep.ucas.ac.cn/resources/images/app-default-icon2.png'"> 
+                                         <h5>校园生活缴费</h5> 
+                                     </a>
+                                  </li>
+                              </ul>
+                          </div>
+                      </div><!--//b-select-system:end-->
+  
+  
+                      <!-- //顶部菜单按钮(除pc端外显示).btn-navbar  -->
+                      <a class="b-top-toggle-menu btn-navbar" data-toggle="collapse" data-target=".nav-collapse" href="javascript:void(0);">
+                          <i class="icon-align-justify"></i>
+                      </a>
+  
+                      <!-- //顶部提醒 -->
+                      <div id="taskInfo" class="b-top-remind hidden-phone">
+                      </div><!--//b-top-remind:end-->
+                      <div class="b-top-nav">
+                      	<ul class="nav top-menu">
+                      		<li class="btnav-info"><a href="https://sep.ucas.ac.cn/wx" class="dropdown-toggle" target="_blank">网络中心微信服务通道</a></li>
+                      		<li class="btnav-info" style="width:170px;"><a href="#" class="dropdown-toggle" style="display:inline-block;line-height:20px;position: relative;top: -8px;color:#8B0000;font-weight: bold;">本平台为互联网非密平台，严禁处理、传输国家秘密。</a></li>
+                      	</ul>
+                      </div>
+                      <!-- //顶部左侧链接与菜单 -->
+                      <div class="b-top-nav">
+                          <ul class="nav pull-right top-menu">
+                              <li class="btnav-info" title="当前用户所在单位">
+ 中国科学院计算技术研究所                             </li>
+                            <li class="btnav-menu dropdown" title="切换角色">
+                             	<a href="#" class="dropdown-toggle" data-toggle="dropdown">
+                               	<i class="icon-user"></i> 学生角色
+                               	<b class="caret"></b>
+                               </a>
+                               	<ul class="dropdown-menu">
+                                         <li><a href="https://sep.ucas.ac.cn//portal/site/524/2412"><i class="icon-user-md"></i> 学生角色</a></li>
+                                  </ul>
+                           </li>
+                             <li class="btnav-info"> 
+                                <a>
+**卓                             
+</a>
+                              </li>
+                              <li><a href="https://sep.ucas.ac.cn//logout" title="退出系统"><i class="icon-off"></i></a></li>
+                          </ul>
+                      </div><!--//b-top-nav:end-->
+          </div><!--//container:end-->
+      </div><!--//container-fluid:end-->
+  </div><!--//header:end-->
+ <style type="text/css">
+@media (max-width: 979px) {
+  .b-select-system .bss-menu {
+    position: fixed !important;
+    top: 60px !important;
+    left: 0 !important;
+    right: 0 !important;
+    bottom: 0 !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    z-index: 3001 !important;
+    -webkit-overflow-scrolling: touch;
+  }
+  .b-select-system .bss-menu ul {
+    margin-top: 20px;
+    margin-bottom: 100px !important;
+    padding: 20px;
+  }
+}
+</style>
+<script type="text/javascript">
+(function(){
+  if(typeof jQuery==='undefined')return;
+  $(window).on('load',function(){
+    var $btn=$('.b-select-system .bss-btn');
+    var btnEl=$btn[0];
+    if(btnEl){
+      $btn.off('click');
+      var evts=jQuery._data(btnEl,'events');
+      if(evts&&evts.click)evts.click=[];
+    }
+    var isMobile=('ontouchstart' in window)||(navigator.maxTouchPoints>0);
+    var isSystemMenu=false;
+    $btn.on('click',function(){
+      var bssmenu=$(this).next();
+      var bss=$(this).parent();
+      if(bssmenu.is(':visible')){
+        bss.removeClass('open');
+        if(isMobile){bssmenu.hide();}else{bssmenu.slideUp(200);}
+        isSystemMenu=false;
+      }else{
+        bss.addClass('open');
+        if(isMobile){bssmenu.css('height','').show();}else{bssmenu.slideDown(200);}
+        $('.b-top-nav .dropdown').removeClass('open');
+        $('.b-top-nav .dropdown-menu').hide();
+        isSystemMenu=true;
+      }
+      return false;
+    });
+    $(document).on('click',function(){
+      if(isSystemMenu){
+        $('.b-select-system').removeClass('open');
+        if(isMobile){$('.b-select-system .bss-menu').hide();}else{$('.b-select-system .bss-menu').slideUp(100);}
+        isSystemMenu=false;
+      }
+    });
+  });
+})();
+</script>
+
+
+<style type="text/css">
+    .pull-right > li > .dropdown-menu, .nav > li > .dropdown-menu.pull-right {
+        right: 0;
+        left: auto;
+    }
+    .nav > li {
+        float: left;
+        padding-left: 10px;
+    }
+    .dropdown-menu {
+        min-width:30px
+    }
+</style>
+<ul class="nav pull-right top-menu m-btn-back">
+
+    
+    <li class="btnav-menu">
+        <a href="http://inc.ucas.ac.cn/home/info/467ed160-1fe8-436a-994d-235206b33628/3d223558-53a2-4c56-9456-25d79d6317e9" target="_blank" title="帮助指南">
+        <span>帮助指南</span>
+        </a>
+    </li>
+    <li class="btnav-menu dropdown">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown" title="语言">
+        <span>语言</span>
+        </a>
+        <ul class="dropdown-menu">
+            <li><a href="?locale=ch"><i class=""></i> 中文</a></li>
+            <li><a href="?locale=en"><i class=""></i> English</a></li>
+        </ul>
+    </li>
+</ul>
+<!--<c:if test="${not empty _alertMsg }">
+    <script type="text/javascript">
+        alert('${_alertMsg}');
+    </script>
+</c:if>--><div id="main-menu" class="row-fluid">
+    <div class="b-sidebar-scroll" tabindex="5001" style="overflow: hidden; outline: none;">
+        <div id="sidebar" class="nav-collapse collapse">
+            <ul class="b-sidebar-menu">
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>通知公告</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/2A170AE9B036ACF1AD619C4F335108235E7EDEA78698096149B9F63FF791B118" target="">通知公告</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>学期课表</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/44F025882C7045DAE8D43814AB688EFB54523731206D8998E5A27459AACBF2B4038B30DEDFFABB52" target="">学期课表</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item active">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>选修课程</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class="active"><a href="/courseManage/main" target="">院系课程选课</a></li>
+                            
+                                <li class=""><a href="/courseManageSj/main" target="">所级课程选课</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/87B962125CB2D0C6FA8E3B03082C9D8BDA07DEF7528C7ADCBE4FD4B3DF3B6E70B520565C40B3964BC1A254588DC10E8E" target="">已选课程</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D5DFE7135DD4A2656B51602A2257AEC525BF030532646BD5C4566E52E90DE5B04881F724CE60E7C004A2CB37E57A56CBF3DC23C60721D280" target="">选课学分预警</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/0240809119D2C9A09DD2F01ABC9D36EBB58CD84ADE71E16DCA35B51665CB69D5B8FA038F2E8D640D" target="">增退选课、变更学位课申请</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/E98A1885005DF13D7B72661B474F3FE4975D5FE396C502C1813247DDA19FE845" target="">重修申请</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>评估课程</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/927B4CDA83B578FD7E4FBD3333963C0817C8258F517D4DA28E819D3EF9DCA5012B7BF6E148434568" target="">2026年夏季学期</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>查询成绩</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/076D9F68AAB31056EAFA1576835EFD40020296F486D6045DA90D1A32947162F7" target="">所有成绩</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/076D9F68AAB31056D2194778195ACC9AF54B9182307D4C123CE561E60E08634E" target="">Program10成绩</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>科学前沿讲座</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D1E139BBACDB5C0D6007556B678039F03A261EAA4EF314CBC7179C0333B4D0A0" target="">讲座通知</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D1E139BBACDB5C0D4CC87B9E8B1230DCC5A65F0437EEDF4B8F05FDB0D2FE5AF89180ACC4D4AF950D" target="">讲座预告</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D1E139BBACDB5C0DD8DAAB91804BF07D11CFF3165641B6CB1A828773FBFB33BE498622162C52500B" target="">听讲情况</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>人文讲座</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D1E139BBACDB5C0D5365C2931D15861A226A1D3C656D5EEC5A7117A7AB5A0765FD8BF6F5A7F35C2E" target="">讲座通知</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D1E139BBACDB5C0D5365C2931D15861A4889683DEEC81DC0B3B0E2A2E4DAA5C5B3DB79491B9088FD80982B109F653C09" target="">讲座预告</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/D1E139BBACDB5C0D5365C2931D15861A2136A3E4B6CD781007BB56121A35C7681687B5853E69E66572F1D382ED92FD84" target="">报名及听课记录</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>Program-10</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795E48DABF541E9C21D70D42200A74F16DA280020872D0523EB95FCA075DD5212089" target="">介绍项目</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795E183D0C5F07008DBD2E29AA3453D83EE72B23796B5481698C336F39216F13F18E" target="">注册项目</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795E6EFD086898D501D8C335EEE386BD4A76A21B27926C2B2BEFBEABA7AC40F8B581CDC6E9D4E12BF218" target="">院系课程选课</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795E526C5A4FD22C52196BB5FD7D8F71D09B30B13BAF4BEACECF13052B69CE595401" target="">注销项目</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795EB512C344CF65639E9382FEFFDEFF6D4B9E2CAF469A1CBD6EC1910C9A4E7E986B" target="">打印选课单</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795E586C0054FC16E6CD21904F1AD62B61556C4E0BBD68567E71AAE00FD77C1F5CAF" target="">评估项目</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7BF9F28C5E45795E338E35B0E7D5DC610CE546FFD2BFF249EE043750CFFD03D168AC1343D2CD3DD1" target="">下载申请表</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>讲义调查问卷</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/957E0EA198D87C8797CD2298498A0259B9A07155866CD1092FDE9E95F79FAC8E" target="">讲义调查问卷</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/7AA3D4E590DD70B0056E1759C0C27B874899C7A94FA0A18E25CED4FB3C2967840819A8C1481E20C7F8964610E69BF852" target="">使用说明</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>成绩单申请</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/BB426F6BAADF78440E79CA505EEB7C2BE3D526F40A918BDAB47BC1DC03196DD057EE5F5D86949E448E90EF9DD6B539FE" target="">自助打印成绩单申请</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/BB426F6BAADF78440E79CA505EEB7C2B816C5BA5EE7DB0FEEBE1D3AAA1B41D85E8F3DB87F98557B50FEC22B2AE87D387252438E735019F88" target="">电子成绩单申请</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>免修免考及慕课认定</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/ED69B79D6410E0FCB982AD2DBD1B00A5B64445D2DB3D00A4F9A624438959906B426909A35FD503C5" target="">通知</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/ED69B79D6410E0FCA1E5FFC7BED03D88F86DEC0F6CA4EB039B84844ED0B645192FE0E7DC6295BD0D" target="">报名</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/ED69B79D6410E0FCD98C39EB7D712AEC2F178626A193B1AE6BF200A5BE54798A9B54BC2314B0D31C" target="">认定结果查询</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>高年级学生报名</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/8E336D92E5EFBF24B2054C8FE3562F00A99DD4DE6CFA7AAB757952E1070B1F4216CE66F4667421E629C0932567051883" target="">报名</a></li>
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/8E336D92E5EFBF242EE6B448A3247FD1D025156561F4BD699551DA9E1CC18AD17EE9E0377FAF2266" target="">进程查询</a></li>
+                            
+                        </ul>
+                    </li>
+                
+                    <li class="bsm-item ">
+                        <a class="bsmi-btn" href="#">
+                            <i class="icon-qrcode"></i>
+                            <span>缓考申请</span>
+                            <span class="arrow"></span>
+                        </a>
+                        <ul class="bsmi-sub">
+                            
+                                <li class=""><a href="http://sep.ucas.ac.cn/portal/site/226/xs/1/4B64D2043B1FF06DA7C211EB6C73CA1B601E7C79A0EE891C51CAAAEA8F9EB2C2" target="">缓考申请</a></li>
+                            
+                        </ul>
+                    </li>
+                
+            </ul>
+        </div>
+    </div>
+</div>
+<script type="text/javascript">
+    $(document).ready(function() {
+        $(".b-sidebar-scroll, .b-select-system .bss-menu").niceScroll({styler:"fb",cursorcolor:"#0066cc", cursorwidth: '0', background: '#f0f0f0', cursorborderradius: '5', cursorborder: ''});
+    });
+</script>
+<div id="main-content">
+    <div class="container-fluid">
+        <div class="row-fluid">
+            <div class="span12">
+                <h2 id="page-title"><span>2026年秋季学期的个人课表</span></h2>
+            </div><!--span*:end-->
+        </div>
+        <div class="m-cbox m-lgray">
+            <div class="mc-head">
+                <h4>
+                    <span class="mch-smenu-btn"><i class="icon-reorder"></i></span>
+                    2026年秋季学期的个人课表
+                </h4>
+                <div class="mch-tool">
+                    <a href="#" class="mcht-zoom-btn"><i class="icon-chevron-down"></i></a>
+                </div>
+            </div>
+
+            <div class="mc-body">
+                <div class="alert alert-error">
+                    提示：点击课程名称可以查看具体时间地点安排<br>
+                    秋季学期《硕士学位英语(慕课学习)》课程学习时间为2026年9月7日-2026年12月7日24:00。
+秋季学期《工程伦理(慕课)》课程学习时间为2026年9月14日-2026年11月22日24:00。
+                </div>
+                <table class="table table-striped table-bordered table-advance table-hover"><thead> <tr><th>节次/星期</th> <th>星期一</th> <th>星期二</th>  <th>星期三</th>  <th>星期四</th>  <th>星期五</th>  <th>星期六</th>  <th>星期日</th> </tr></thead><tbody><tr><th>1</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315751" target="_blank">新时代中国特色社会主义理论与实践</a></div></td><td></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315663" target="_blank">羽毛球</a></div></td><td></td><td></td></tr><tr><th>2</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315751" target="_blank">新时代中国特色社会主义理论与实践</a></div></td><td></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315663" target="_blank">羽毛球</a></div></td><td></td><td></td></tr><tr><th>3</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315751" target="_blank">新时代中国特色社会主义理论与实践</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313613" target="_blank">Web安全技术</a></div></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313613" target="_blank">Web安全技术</a></div></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313613" target="_blank">Web安全技术</a></div></td></tr><tr><th>4</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315751" target="_blank">新时代中国特色社会主义理论与实践</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313613" target="_blank">Web安全技术</a></div></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313613" target="_blank">Web安全技术</a></div></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313613" target="_blank">Web安全技术</a></div></td></tr><tr><th>5</th><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315625" target="_blank">学术道德与学术写作规范-通论</a></div></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/316019" target="_blank">机器学习</a></div></td><td></td><td></td></tr><tr><th>6</th><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315625" target="_blank">学术道德与学术写作规范-通论</a></div></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/316019" target="_blank">机器学习</a></div></td><td></td><td></td></tr><tr><th>7</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313853" target="_blank">操作系统高级教程</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/319037" target="_blank">生成式模型与科学智能应用</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313853" target="_blank">操作系统高级教程</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/319037" target="_blank">生成式模型与科学智能应用</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/316019" target="_blank">机器学习</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313853" target="_blank">操作系统高级教程</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/319037" target="_blank">生成式模型与科学智能应用</a></div></td></tr><tr><th>8</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313853" target="_blank">操作系统高级教程</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/319037" target="_blank">生成式模型与科学智能应用</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313853" target="_blank">操作系统高级教程</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/319037" target="_blank">生成式模型与科学智能应用</a></div></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/313853" target="_blank">操作系统高级教程</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/319037" target="_blank">生成式模型与科学智能应用</a></div></td></tr><tr><th>9</th><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><th>10</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/314215" target="_blank">计算机体系结构</a></div></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315601" target="_blank">婚姻与继承法</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315821" target="_blank">自然辩证法概论</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315574" target="_blank">学术道德与学术写作规范-分论</a></div></td><td></td><td></td></tr><tr><th>11</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/314215" target="_blank">计算机体系结构</a></div></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315601" target="_blank">婚姻与继承法</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315821" target="_blank">自然辩证法概论</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315574" target="_blank">学术道德与学术写作规范-分论</a></div></td><td></td><td></td></tr><tr><th>12</th><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/314215" target="_blank">计算机体系结构</a></div></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315601" target="_blank">婚姻与继承法</a></div></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315821" target="_blank">自然辩证法概论</a></div></td><td></td><td></td><td></td></tr><tr><th>13</th><td></td><td></td><td></td><td><div><a href="https://xkcts.ucas.ac.cn:8443/course/coursetime/315821" target="_blank">自然辩证法概论</a></div></td><td></td><td></td><td></td></tr></tbody></table>
+            </div>
+
+    </div>
+</div>
+<div id="footer">
+    <div class="container-fluid">
+        © 中国科学院大学，网络信息中心.
+    </div>
+</div>
+
+</div><div id="ascrail2000" class="nicescroll-rails" style="width: 0px; z-index: 1031; background: rgb(240, 240, 240); cursor: default; position: fixed; top: 0px; left: 1178px; height: 120px; display: none;"><div style="position: relative; top: 0px; float: right; width: 0px; height: 0px; background-color: rgb(0, 102, 204); background-clip: padding-box;"></div></div><div id="ascrail2000-hr" class="nicescroll-rails" style="height: 0px; z-index: 1031; background: rgb(240, 240, 240); top: 120px; left: 0px; position: fixed; cursor: default; display: none;"><div style="position: relative; top: 0px; height: 0px; width: 0px; background-color: rgb(0, 102, 204); background-clip: padding-box;"></div></div><div id="ascrail2001" class="nicescroll-rails" style="width: 0px; z-index: 100; background: rgb(240, 240, 240); cursor: default; position: fixed; top: 60px; left: 180px; height: 560px; opacity: 0;"><div style="position: relative; top: 0px; float: right; width: 0px; height: 357px; background-color: rgb(0, 102, 204); background-clip: padding-box;"></div></div><div id="ascrail2001-hr" class="nicescroll-rails" style="height: 0px; z-index: 100; background: rgb(240, 240, 240); top: 620px; left: 0px; position: fixed; cursor: default; display: none; width: 180px; opacity: 0;"><div style="position: relative; top: 0px; height: 0px; width: 180px; background-color: rgb(0, 102, 204); background-clip: padding-box;"></div></div><div id="__sleepy_btn_wrap" style="position: fixed; right: 18px; bottom: 18px; z-index: 2147483647;"><button disabled="" style="background: rgb(45, 164, 78); color: rgb(255, 255, 255); border: 0px; border-radius: 10px; padding: 14px 22px; font-size: 16px; font-weight: bold; cursor: pointer; box-shadow: rgba(0, 0, 0, 0.4) 0px 6px 24px;">正在打包,请不要关闭页面…</button></div><div id="__sleepy_log_wrap" style="position: fixed; right: 18px; bottom: 86px; z-index: 2147483647; width: 340px; max-height: 260px; overflow-y: auto; background: rgba(20, 20, 25, 0.92); color: rgb(221, 221, 221); border-radius: 10px; padding: 10px 12px; font: 12px / 1.6 monospace; box-shadow: rgba(0, 0, 0, 0.4) 0px 6px 24px; display: block;"><div style="font-weight: bold; color: rgb(255, 255, 255); margin-bottom: 6px; cursor: pointer; user-select: none;">📋 采集日志</div><div id="__sleepy_log_body" style="display: block;"><div style="color: rgb(100, 181, 246);">[22:25:15] 收到采集指令 — 打包开始</div></div></div></body></html>
