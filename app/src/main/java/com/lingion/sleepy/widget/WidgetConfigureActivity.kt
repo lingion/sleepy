@@ -45,16 +45,19 @@ class WidgetConfigureActivity : ComponentActivity() {
 
         // First-add path: write sentinel binding (follow default) and
         // finish OK. Pure SharedPreferences write — no DB, no runBlocking.
-        // Defer finish to after the current frame (decorView.post) so stubborn
-        // third-party launchers (lawnchair, OEM forks) that inspect activity
-        // state in onActivityResult still see a fully-resumed activity.
+        // Defer finish 600ms: OPPO ColorOS launcher 启动 configure 是异步的
+        // (bind 已建 binding, result 回调后补)。decorView.post 一帧即 finish
+        // 时 result 可能在 OPPO 的 add 流程处理前送达 → add 被回滚 →
+        // "拖到桌面上直接就没了" (2026-09-10 真机报告) + 模拟器 id=6 僵尸
+        // binding 复现 (binding 在但 launcher 树从未 apply RemoteViews)。
+        // 600ms 给足 launcher 侧 result 处理的裕量, 用户不可感知 (无 UI)。
         val existingBinding = WidgetBindingStore.get(this, appWidgetId)
         if (WidgetConfigureCore.isFirstAdd(existingBinding)) {
             WidgetBindingStore.put(this, appWidgetId, WidgetConfigureCore.FIRST_ADD_BINDING)
-            Log.i(TAG, "first-add: wrote sentinel binding for $appWidgetId, finishing OK")
-            window.decorView.post {
+            Log.i(TAG, "first-add: wrote sentinel binding for $appWidgetId, finishing OK in 600ms")
+            window.decorView.postDelayed({
                 if (!isFinishing) finishWithResult(Activity.RESULT_OK)
-            }
+            }, 600L)
             return
         }
 

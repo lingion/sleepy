@@ -15,6 +15,14 @@ import java.time.LocalDate
  */
 object TodayDateNavStore {
 
+    /**
+     * 读改写互斥锁 — shift/remove 是「读全量 → 改一条 → clear+重写全量」的非原子
+     * 三步; 两个 nav 广播 (快速 prev/next 双 tap) 各自 goAsync 协程并发进入时,
+     * 后写者会用自己读到的旧全量覆盖前者的推进 → 丢一次翻页。全部写路径过这把锁
+     * 串行化后, 双 tap 两次推进都落盘。
+     */
+    private val writeLock = Any()
+
     /** 读取 prefs 解析出该 widget 应渲染的日期 (无状态 → today)。 */
     fun target(context: Context, widgetId: Int, today: LocalDate): LocalDate {
         val entry = read(context, widgetId)
@@ -24,18 +32,22 @@ object TodayDateNavStore {
 
     /** 把日期推进 ±deltaDays (锚点刷新为 today); 钳制在 Core.MAX_ABS_OFFSET_DAYS 内。 */
     fun shift(context: Context, widgetId: Int, today: LocalDate, deltaDays: Long) {
-        val entry = read(context, widgetId)
-        val newEntry = TodayDateNavCore.shift(entry, today.toEpochDay(), deltaDays)
-        val raw = loadAll(context).toMutableMap()
-        TodayDateNavCore.write(raw, widgetId, newEntry)
-        saveAll(context, raw)
+        synchronized(writeLock) {
+            val entry = read(context, widgetId)
+            val newEntry = TodayDateNavCore.shift(entry, today.toEpochDay(), deltaDays)
+            val raw = loadAll(context).toMutableMap()
+            TodayDateNavCore.write(raw, widgetId, newEntry)
+            saveAll(context, raw)
+        }
     }
 
     /** 重置为「今天」 — 删除该 widget 的两条 prefs key (语义上等价「无导航态」)。 */
     fun remove(context: Context, widgetId: Int) {
-        val raw = loadAll(context).toMutableMap()
-        TodayDateNavCore.delete(raw, widgetId)
-        saveAll(context, raw)
+        synchronized(writeLock) {
+            val raw = loadAll(context).toMutableMap()
+            TodayDateNavCore.delete(raw, widgetId)
+            saveAll(context, raw)
+        }
     }
 
     private fun read(context: Context, widgetId: Int): TodayDateNavCore.Entry? =

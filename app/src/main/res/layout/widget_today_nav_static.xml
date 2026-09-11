@@ -6,6 +6,7 @@
      fixing the tiny-tap-area complaint. clipToOutline clips the opaque header
      background to the 20dp rounded corners (radius matches renderer). -->
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_scroll_root"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/widget_scroll_clip"
@@ -48,6 +49,7 @@
             android:contentDescription="@string/today_nav_prev_day" />
 
         <LinearLayout
+            android:id="@+id/widget_spacer_l"
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />
@@ -62,6 +64,7 @@
             android:textSize="11sp" />
 
         <LinearLayout
+            android:id="@+id/widget_spacer_r"
             android:layout_width="0dp"
             android:layout_height="1dp"
             android:layout_weight="1" />

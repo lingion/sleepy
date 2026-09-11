@@ -8,10 +8,14 @@ import android.content.Intent
 import android.util.Log
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.ExistingWorkPolicy
+import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.time.Duration
+import java.time.LocalDateTime
 import java.util.concurrent.TimeUnit
 
 /**
@@ -25,16 +29,46 @@ import java.util.concurrent.TimeUnit
  * （华为/荣耀/小米/OPPO/vivo/魅族/三星启动器的约束清单 + 已落地/明确不做对照表）。
  * 本类是"同步广播秒刷"规则的实现点 — 该规则同时解决 OPPO Glance 冻结与
  * HyperOS 去定时刷新后的兜底（WorkManager 周期任务）。
+ *
+ * 跨天兜底: 15-min periodic 在 00:00 后最长可晚 15+ 分钟才刷 (doze 更久) →
+ *   [notifyDataChanged] 每次都把一个单次任务排到下一个本地午夜 ([nextMidnightDelayMillis]),
+ *   唯一名 REPLACE 幂等重排; 午夜 worker 走同一条 notifyDataChanged → 链自续,
+ *   跨 00:00 后立刻显示新的一天 (时区变化会打断挂钟对齐, 由下次任意刷新重新对齐)。
  */
 object WidgetUpdater {
 
     private const val TAG = "WidgetUpdater"
     private const val WORK_NAME = "sleepy_widget_update"
+    private const val MIDNIGHT_WORK_NAME = "sleepy_widget_midnight_update"
     private const val REPEAT_MINUTES = 15L
 
     /** All widget providers receiving the synchronous refresh broadcast. */
     internal val remoteViewsReceiverClasses: List<Class<out AppWidgetProvider>> =
         ALL_WIDGET_VARIANTS.map { it.receiverClass }
+
+    /** 距下一个本地午夜的毫秒数 — 恒 >0 (午夜整点 = 整 24h), 纯函数可 JVM 单测。 */
+    internal fun nextMidnightDelayMillis(now: LocalDateTime): Long {
+        val nextMidnight = now.toLocalDate().plusDays(1).atStartOfDay()
+        return Duration.between(now, nextMidnight).toMillis()
+    }
+
+    /**
+     * 排一个到下个午夜的刷新单次任务 (幂等): 唯一名 + REPLACE → 任意刷新路径重复
+     * 调用只保留最新对齐结果, 链不重复不分叉。
+     */
+    private fun armMidnightRefresh(context: Context) {
+        val delay = nextMidnightDelayMillis(LocalDateTime.now())
+        val request = OneTimeWorkRequestBuilder<WidgetUpdateWorker>()
+            .setConstraints(Constraints.Builder().build())
+            .setInitialDelay(delay, TimeUnit.MILLISECONDS)
+            .build()
+        WorkManager.getInstance(context).enqueueUniqueWork(
+            MIDNIGHT_WORK_NAME,
+            ExistingWorkPolicy.REPLACE,
+            request
+        )
+    }
+
     /** 注册定期刷新（幂等） */
     fun schedule(context: Context) {
         val request = PeriodicWorkRequestBuilder<WidgetUpdateWorker>(
@@ -86,5 +120,8 @@ object WidgetUpdater {
                 }
             }
         }
+        // 跨天链: 广播全部落地后重新对齐下一晚 (放 withContext 外 — worker 取消信号
+        // 不会打断已提交的 WorkManager 排程; 午夜 worker 走本函数 → 链自续)。
+        runCatching { armMidnightRefresh(context) }
     }
 }

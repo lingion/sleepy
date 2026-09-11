@@ -173,14 +173,34 @@ object WidgetBitmapRenderers {
      * 在 emptyHeader=true 时整体不画(标题/右侧槽位/‹›小箭头全跳过, y 前进量保留 →
      * 内容纵坐标与带头模式逐像素一致) — 今日导航版用真实 RemoteViews 视图(TextView+按钮)
      * 覆盖顶栏, bitmap 头部必须留白, 否则双重标题; WeekGrid 最小档/旧调用方默认 false 不受影响。
+     *
+     * v11 (今天真机翻车后撤回 v10): 回归 v9.1 形态 = 单 child 整张长图 + launcher
+     * 原生 ListView 滚动 (TwoDay/WeekList 同构一直正常)。v10 试过的"逐行子项 =
+     * 每行一张透明位图"在 OPPO 上复发了 v1 extent 冻结 (无拖动) + 双层错位叠影 +
+     * 第一行压住壳图标题导致 TopBar 消失 — 三症状同根,都是多 child 整错的。
+     * 滚动模型自此回 v9.1: 整张不透明长图, 一张位图 = 一条 ListView 子项。
+     *
+     * v6: emptyHeader=true 时 24dp 头部前进量默认仍保留 (空档, 供真实视图顶栏覆盖
+     * 的静态档用); headerSpace=true 把这 24dp 整段删掉 — 条带长图从第一行课程直接
+     * 起 (overflow 竖排布局里顶栏是上方独立行, 位图不需要头部空档)。
+     * 静态档缺省 false 逐字节不变。
      */
     fun renderToday(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR,
-        emptyHeader: Boolean = false
-    ): Bitmap {
-        return renderTodayRegular(context, data, wDp, hDp, emptyHeader)
-    }
+        emptyHeader: Boolean = false,
+        headerSpace: Boolean = false
+    ): Bitmap = renderTodayRegular(context, data, wDp, hDp, emptyHeader, headerSpace)
+
+    /**
+     * Today 状态内容判定 (纯 JVM 可测) — 无课表 / 学期外 / 无课。
+     * 与 renderTodayRegular 的三个提前 return 分支逐一对应:
+     * 这些内容在固定 y 画状态行, 无可翻页的行轴 → 强制 pageOffset=0。
+     */
+    fun isTodayStatusContent(data: WidgetData): Boolean =
+        !data.hasTable ||
+            data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE ||
+            data.courses.isEmpty()
 
     /**
      * 小档纯文本行(渲染与单测共用单一事实来源)。空课表/学期外也各有对应一行。
@@ -289,7 +309,8 @@ object WidgetBitmapRenderers {
      */
     private fun renderTodayRegular(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
-        emptyHeader: Boolean
+        emptyHeader: Boolean,
+        headerSpace: Boolean
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -319,6 +340,7 @@ object WidgetBitmapRenderers {
         // 标题行 — emptyHeader=true 时整体不画: 今日导航版顶栏用真实 RemoteViews 视图
         // (TextView 标题 + 三角按钮) 覆盖, bitmap 头部留白防双重标题; y 前进量保留 →
         // 内容纵坐标与带头渲染逐像素一致。WeekGrid 最小档等旧调用方 (false) 逐字节不变。
+        // v10: pageOffset 守卫删除 (无分页无续页, 守卫回归 emptyHeader 单条件)。
         if (!emptyHeader) {
             val header = todayHeaderParts(
                 data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate
@@ -355,7 +377,9 @@ object WidgetBitmapRenderers {
             }
         }
 
-        y += 24f * density
+        // v6 headerSpace: 条带长图不要头部空档 (顶栏在布局里是上方独立行) → 24dp 前进量整段跳过。
+        // 各状态行 (无课表/学期外/无课/课程列表) 都在 y+=24 之后定位 → 只需跳过这次前进。
+        if (!headerSpace) y += 24f * density
 
         if (!data.hasTable) {
             p.color = s.onSurface
@@ -397,27 +421,29 @@ object WidgetBitmapRenderers {
         // v7.10.11: 冲突分栏 — 与 App 今日页/周视图同一引擎(weekLaneRows),
         // 冲突区域一行内并排(栏间浅细竖线), 同栏课纵向堆叠, 无冲突课整宽。
         // 栏内多课时该行实际高度由最高栏决定(各栏 y 游标独立推进后再取 max 对齐)。
+        // v11 撤回 v10 逐行子项 (OPPO extent 冻结/叠影/TopBar 覆盖三症状同根):
+        // 渲染器回归 v9.1 — 一次画完整展开长图, 调用方保证 h=全展开高。
+        // v8: 行几何单一真值 — span 起点随 headerSpace 参数化。
         val rowH = 38f * density
         val rowGap = 10f * density  // 课程胶囊间距放大(用户反馈太紧凑)
         val rowW = w - pad * 2
 
         val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
         val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
-        laneRows.forEach { row ->
+        val stackGap = 3f * density
+        val spans = TodayRowGeometry.rowSpans(data.courses, headerSpace)
+        spans.forEach { span ->
+            val row = span.row
+            val y = span.topDp * density
             if (row.laneCount == 1) {
                 drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
                     fontSizeSp = 12f, colorless = colorless, displayMode = displayMode,
                     groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
                     useAlias = useAlias)
-                y += rowH + rowGap
             } else {
                 val laneGap = 5f * density
                 val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
-                val stackGap = 3f * density
-                // 行高 = 最高栏(栏内课数最多)的总高 — 各栏共享行起点,行尾对齐
-                val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
-                    .maxOf { it.size }.coerceAtLeast(1)
-                val laneRowTotalH = maxStack * rowH + (maxStack - 1) * stackGap
+                val laneRowTotalH = (span.bottomDp - span.topDp) * density
                 repeat(row.laneCount) { li ->
                     val laneX = pad + li * (laneW + laneGap)
                     // 栏间浅细竖线(与 App 分栏同语义)
@@ -440,7 +466,6 @@ object WidgetBitmapRenderers {
                         if (ci < laneCourses.size - 1) ly += stackGap
                     }
                 }
-                y += laneRowTotalH + rowGap
             }
         }
 
@@ -451,28 +476,18 @@ object WidgetBitmapRenderers {
      * Today 内容全展开高度(dp) — 可滚动条带渲染用。
      * 纯计算零绘制; 布局常量逐一镜像 renderToday (改那边必须同步这边)。
      * v7.10.11: 冲突分栏行高按最高栏堆叠数算(与 renderToday 分栏镜像)。
+     * v6 headerSpace: true 时头部 24dp 前进量不计 (条带去头, 顶栏是布局独立行),
+     * 与 renderToday(headerSpace=true) 逐常量镜像。
+     * v11: 状态内容 (无课表/学期外/无课) 走单行估算, 与渲染器 status 分支对得上。
      */
-    fun todayContentHeightDp(data: WidgetData): Float {
-        // 标题区: pad(14) + 标题行(24) — 与 renderToday: y=pad; y+=24
-        var h = 14f + 24f
-        if (!data.hasTable) return h + 20f          // "去创建课表" 一行
-        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 学期状态 + 提示行
-        if (data.courses.isEmpty()) return h + 22f + 14f  // 无课标题 + 休息副行
-        val rowH = 38f
-        val rowGap = 10f
-        val stackGap = 3f
-        val laneRows = com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(data.courses, data.timeJson)
-        for (row in laneRows) {
-            if (row.laneCount == 1) {
-                h += rowH + rowGap
-            } else {
-                val maxStack = row.courses.groupBy { row.laneOf[it.id] }.values
-                    .maxOf { it.size }.coerceAtLeast(1)
-                h += maxStack * rowH + (maxStack - 1) * stackGap + rowGap
-            }
-        }
-        h += 14f                                    // 底部 pad
-        return h
+    fun todayContentHeightDp(data: WidgetData, headerSpace: Boolean = false): Float {
+        // 空态分支沿用旧口径 (单行状态文本 + 各自 pad)
+        if (!data.hasTable) return TodayRowGeometry.contentTopDp(headerSpace) + 20f
+        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE)
+            return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
+        if (data.courses.isEmpty()) return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
+        // v8: 行几何单一真值 — 与 renderTodayRegular 同调 TodayRowGeometry (镜像失配根除)
+        return TodayRowGeometry.contentHeightDp(data.courses, headerSpace)
     }
 
     // ── 今日导航顶栏按钮 (issue #24: 低对比圆角矩形 + 三角形图标) ──

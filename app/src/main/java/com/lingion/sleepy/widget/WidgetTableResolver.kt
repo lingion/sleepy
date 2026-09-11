@@ -18,13 +18,23 @@ object WidgetTableResolver {
     suspend fun resolveCurrentTable(): TimeTableEntity? {
         val repo = SleepyApp.get().repository
         val all = repo.getAllTables()
-        // 优先：默认表且有课
-        val def = all.firstOrNull { it.isDefault }
-            ?.takeIf { runCatching { repo.getCourses(it.id).isNotEmpty() }.getOrDefault(false) }
-        if (def != null) return def
-        // 次选：任意有课的表（课程数最多）
-        return all.maxByOrNull { runCatching { repo.getCourses(it.id).size }.getOrDefault(0) }
-            ?.takeIf { runCatching { repo.getCourses(it.id).isNotEmpty() }.getOrDefault(false) }
+        // 单遍解析: 每张表的课程列表只物化一次 (课程数与「是否有课」同源),
+        // 不再默认表检查 + maxByOrNull + takeIf 各读一遍 = 每表 2-3x 列表物化。
+        // 选择语义与旧三步逐位一致:
+        //   1. 第一个「默认表且有课」直接用 (defaultHit, firstOrNull 口径);
+        //   2. 否则课程数最多的表 (并列取先出现者, maxByOrNull 口径), 全空 → null。
+        var best: TimeTableEntity? = null
+        var bestCount = -1
+        var defaultHit: TimeTableEntity? = null
+        for (table in all) {
+            val count = runCatching { repo.getCourses(table.id).size }.getOrDefault(0)
+            if (table.isDefault && count > 0 && defaultHit == null) defaultHit = table
+            if (count > bestCount) {
+                best = table
+                bestCount = count
+            }
+        }
+        return defaultHit ?: best.takeIf { bestCount > 0 }
     }
 
     /**

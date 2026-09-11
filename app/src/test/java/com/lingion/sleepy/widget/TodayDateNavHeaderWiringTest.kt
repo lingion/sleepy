@@ -79,7 +79,9 @@ class TodayDateNavHeaderWiringTest {
         val svc = widgetSource("ScrollStripService.kt").readText()
         assertTrue("服务端须读 EXTRA_EMPTY_HEADER",
             svc.contains("EXTRA_EMPTY_HEADER") && svc.contains("getBooleanExtra"))
-        assertTrue("SCOPE_TODAY 条带须透传 emptyHeader",
+        // v11: 条带 = 整张长图 (v9.1 形态回归), emptyHeader 透传给渲染器 — 条带头部随
+        // 内容滚, 滚动位 0 与壳图逐像素一致 (头部空档让位给真实视图顶栏)。
+        assertTrue("SCOPE_TODAY 条带须透传 emptyHeader 给渲染器",
             svc.contains("emptyHeader = emptyHeader"))
         val helper = widgetSource("RemoteViewsWidgetHelper.kt").readText()
         assertTrue("pushScrollable 须带 stripHeaderless 参数并 putExtra",
@@ -87,6 +89,130 @@ class TodayDateNavHeaderWiringTest {
         // WeekGrid 最小档 overflow 条带仍带头 - 缺省 false = 既有调用方零改动契约
         assertTrue("缺省必须 false",
             helper.contains("stripHeaderless: Boolean = false"))
+    }
+
+    @Test
+    fun `nav fit measurement honors font scale`() {
+        // sp 文本跟随系统字体缩放: Paint textSize 必须乘 fontScale,
+        // 否则大字体设备 (fontScale>1 常见) 实测文本比测量宽 → fitsNavTodayFourChar
+        // 漏判 → nav_next 又被挤成第二行巨钮。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("private fun fitsNavTodayFourChar(\n            context: Context")
+            .ifEmpty { src.substringAfter("context: Context, titleText: String, wDp: Int") }
+        assertTrue("nav fit Android 入口必须读 configuration.fontScale",
+            body.contains("fontScale"))
+        assertTrue("Paint textSize 须 sp*density*fontScale 构造",
+            body.contains("fontScale"))
+    }
+
+    @Test
+    fun `nav header tier degrades inside configureTodayNav`() {
+        // 真机根因 (OPPO 148dp 窄档, 2026-09-09): 满标题+两字「今天」固定宽 ≈187dp
+        // > 148dp → LinearLayout 横向溢出, nav_next 被推出可视区。旧判定只到两字档,
+        // 装不下无路可退 → 必须用 navHeaderTier 逐档降级 (去星期 → 隐藏 nav_today)。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("fun configureTodayNav(")
+            .substringBefore("/** 顶栏标题")
+        assertTrue("configureTodayNav 必须走 navHeaderTier 降级判定",
+            body.contains("navHeaderTier("))
+        assertTrue("SHORT_TITLE 档必须标题去星期 (dateOnlyTitle)",
+            body.contains("dateOnlyTitle"))
+        assertTrue("HIDE_TODAY 档必须隐藏 nav_today (prev/next 保留)",
+            body.contains("HIDE_TODAY"))
+        assertTrue("隐藏判定必须保留 isToday 短路 (今日不显回到今天)",
+            body.contains("data.isToday"))
+    }
+
+    @Test
+    fun `nav tier measures localized resources not hardcoded literals`() {
+        // 2026-09-10 locale 契约: 文案来自 R.string.today_nav_back_to_today /
+        // today_nav_today_short (英 "Back to today" / 西 "Volver a hoy" / 日 "今日に戻る"),
+        // 旧纯函数硬编码「回到今天/今天」→ 非 zh locale 宽度估错、档位判错。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val tierEntry = src.substringAfter("internal fun navHeaderTier(")
+            .substringBefore("private fun navHeaderTier(")
+        val fitsEntry = src.substringAfter("internal fun fitsNavTodayFourChar(")
+            .substringBefore("private fun fitsNavTodayFourChar(")
+        assertFalse(
+            "navHeaderTier 纯函数禁硬编码「回到今天」字面量 (须走注入串)",
+            tierEntry.contains("回到今天")
+        )
+        assertFalse(
+            "navHeaderTier 纯函数禁硬编码「今天」度量字面量 (注入串替代)",
+            Regex("""required\([^)]*"今天"\)""").containsMatchIn(tierEntry)
+        )
+        assertFalse(
+            "fitsNavTodayFourChar 纯函数禁硬编码「回到今天」字面量 (须走注入串)",
+            fitsEntry.contains("回到今天")
+        )
+        assertTrue(
+            "navHeaderTier 须注入 navTodayFull/navTodayShort 资源串",
+            tierEntry.contains("navTodayFull") && tierEntry.contains("navTodayShort")
+        )
+        assertTrue(
+            "fitsNavTodayFourChar 须注入 navTodayFull 资源串",
+            fitsEntry.contains("navTodayFull")
+        )
+        val androidEntry = src.substringAfter("private fun navHeaderTier(\n            context: Context")
+            .ifEmpty { src.substringAfter("context: Context, fullTitle: String, dateOnlyTitle: String") }
+        assertTrue(
+            "Android 入口须用 context.getString 取真实资源串",
+            src.contains("R.string.today_nav_back_to_today") &&
+                src.contains("R.string.today_nav_today_short")
+        )
+    }
+
+    @Test
+    fun `nav tier decision receives isToday visibility`() {
+        // 2026-09-10: nav_today 在 isToday 时必 GONE — tier 判定不得为一颗看不见的
+        // 按钮预算宽度 (窄档上无谓牺牲标题)。判定入参必须带可见性。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val callBody = src.substringAfter("val tier = navHeaderTier(")
+            .substringBefore(")")
+        assertTrue(
+            "configureTodayNav 调 navHeaderTier 必须传 navTodayVisible = !data.isToday",
+            callBody.contains("navTodayVisible = !data.isToday")
+        )
+    }
+
+    @Test
+    fun `computeSizeDp passes orientation hint from min width and height`() {
+        // 2026-09-10 方向契约: OPTION_APPWIDGET_SIZES 在横竖双向 widget 上返回两份,
+        // 纯宽度优先会取横份 — 竖放 (常态) 时 shell 按横份画 → fitXY 强拉变形。
+        // computeSizeDp 必须把 MIN_WIDTH/MIN_HEIGHT (当前 cell 口径) 作为 hint 传入。
+        val src = widgetSource("RemoteViewsWidgetHelper.kt").readText()
+        val body = src.substringAfter("fun computeSizeDp(")
+            .substringBefore("fun <T> renderAndPush(")
+        assertTrue(
+            "computeSizeDp 须读 OPTION_APPWIDGET_MIN_WIDTH 作方向 hint",
+            body.contains("OPTION_APPWIDGET_MIN_WIDTH")
+        )
+        assertTrue(
+            "computeSizeDp 须读 OPTION_APPWIDGET_MIN_HEIGHT 作方向 hint",
+            body.contains("OPTION_APPWIDGET_MIN_HEIGHT")
+        )
+        assertTrue(
+            "pickSizeDp 调用须带 hint 实参",
+            Regex("pickSizeDp\\([^)]*hint").containsMatchIn(body)
+        )
+    }
+
+    @Test
+    fun `header text pushed in sp units matching fontScale-aware measurement`() {
+        // 2026-09-10 一致性契约: 渲染 setTextViewTextSize 走 COMPLEX_UNIT_SP (跟随
+        // fontScale), 与测量端 sp*density*fontScale 同口径 — 旧 DIP 推送使渲染
+        // 不随 fontScale, 测量端却乘 fontScale → 大字档位过度降级。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("fun configureTodayNav(")
+            .substringBefore("/** 顶栏标题")
+        assertFalse(
+            "nav 标题/nav_today 禁 COMPLEX_UNIT_DIP 推送 (与 fontScale 感知测量不一致)",
+            body.contains("COMPLEX_UNIT_DIP")
+        )
+        assertTrue(
+            "nav 文本尺寸须 COMPLEX_UNIT_SP 推送 (与测量同口径)",
+            body.contains("COMPLEX_UNIT_SP")
+        )
     }
 
     @Test
@@ -104,7 +230,7 @@ class TodayDateNavHeaderWiringTest {
 
     @Test
     fun `nav header layouts declare 36dp strip with spacers and sizes`() {
-        listOf("widget_today_nav_static.xml", "widget_scroll_today_nav.xml").forEach { name ->
+        listOf("widget_today_nav_static.xml").forEach { name ->
             val xml = layoutFile(name).readText()
             assertTrue("$name 缺顶栏容器 widget_today_header", xml.contains("widget_today_header"))
             assertTrue("$name 顶栏高须 36dp (NAV_HEADER_H_DP 口径)", xml.contains("36dp"))
@@ -120,5 +246,22 @@ class TodayDateNavHeaderWiringTest {
             assertTrue("$name 顶栏顺序须 title<prev<today<next",
                 iTitle < iPrev && iPrev < iToday && iToday < iNext)
         }
+    }
+
+    @Test
+    fun `configure activity declares empty taskAffinity and delayed auto-finish`() {
+        // 2026-09-10 真机+模拟器实证: 拖放添加时 launcher 经 ProxyActivityStarter 启动 configure,
+        // 缺省 affinity 下 ActivityRecord 被丢弃 → CanceledException → add 回滚 → "小组件无法添加"。
+        // 守卫: manifest 须 taskAffinity="" 且 first-add auto-finish 须延迟 (≥300ms), 禁回退一帧 post。
+        val mf = findUpward("app/src/main/AndroidManifest.xml").readText()
+        val block = mf.substringAfter("WidgetConfigureActivity")
+            .substringBefore("/>")
+        assertTrue("configure 须 android:taskAffinity=\"\"", block.contains("android:taskAffinity=\"\""))
+        val cfg = widgetSource("WidgetConfigureActivity.kt").readText()
+        assertTrue("first-add finish 须 postDelayed ≥300ms (一帧 post 在 launcher result 回调前送达)",
+            Regex("postDelayed\\(\\s*\\{[^}]*finishWithResult", RegexOption.DOT_MATCHES_ALL)
+                .containsMatchIn(cfg))
+        assertFalse("禁回退到一帧 decorView.post 直 finish (竞态根因)",
+            cfg.contains("decorView.post {"))
     }
 }

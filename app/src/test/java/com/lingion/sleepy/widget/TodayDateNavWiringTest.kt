@@ -159,12 +159,14 @@ class TodayDateNavWiringTest {
         // pushTodayData 静态 = 真实视图顶栏容器 (bitmap 头部留白防双重标题)
         assertTrue("pushTodayData 必须用 widget_today_nav_static 静态容器",
             src.contains("widget_today_nav_static"))
-        assertTrue("pushTodayData overflow 必须用 widget_scroll_today_nav",
-            src.contains("widget_scroll_today_nav"))
+        assertTrue("v4/v5/v6 均禁引用已删的 widget_scroll_today_nav (真实视图覆盖层 = ColorOS 腐坏源)",
+            !src.contains("widget_scroll_today_nav"))
         assertTrue("nav 静态分支必须 emptyHeader=true (bitmap 头部留白)",
             src.contains("emptyHeader = true"))
-        assertTrue("overflow 条带必须 stripHeaderless=true (条带长图去头)",
-            src.contains("stripHeaderless = true"))
+        assertTrue("v9 overflow 必须竖排滑动 (pushScrollable + TwoDay 同构滚动层, 头部随内容滚)",
+            src.contains("pushScrollable") && src.contains("widget_scroll_today"))
+        assertTrue("v5 翻页机制必须已删净 (TodayPagerCore 废弃)",
+            !src.contains("TodayPagerCore") && !src.contains("ACTION_PREV_PAGE"))
         assertTrue("pushTodayData 必须调 configureTodayNav",
             src.contains("configureTodayNav"))
     }
@@ -185,7 +187,7 @@ class TodayDateNavWiringTest {
         // android.view.View 无 @RemoteView 注解 → 裸 <View> 在 launcher inflate 必炸
         // → 「载入窗口小组件时出现问题」(v1.0.53 回归: 两个今日变体都走 nav 布局,
         //   周课表布局无裸 View 所以只有今日挂)。
-        listOf("widget_today_nav_static.xml", "widget_scroll_today_nav.xml").forEach { name ->
+        listOf("widget_today_nav_static.xml").forEach { name ->
             val xml = layoutFile(name).readText()
             assertFalse(
                 "$name 禁止裸 <View> (无 @RemoteView 注解, launcher 端 inflate 抛异常)",
@@ -239,8 +241,31 @@ class TodayDateNavWiringTest {
     }
 
     @Test
-    fun `WeekGrid minimum variant reuses pushTodayData without nav zones (scope guard)`() {
-        // issue #24 范围铁律: 日期导航只在每日小组件。WeekGrid 最小档复用 pushTodayData
+    fun `push commit points guard against stale generations`() {
+        // resize 稳定性: 渲染在后台协程, resize 拖拽期间系统连发 OPTIONS_CHANGED。
+        // 旧尺寸任务若后完成会覆盖新内容且无人纠正 → commit 前必须校验世代号。
+        val helper = widgetSource("RemoteViewsWidgetHelper.kt").readText()
+        assertTrue("pushScrollable commit 前须校验世代号 (WidgetResizeCore.isStale)",
+            helper.substringAfter("fun pushScrollable").contains("WidgetResizeCore.isStale"))
+        assertTrue("renderAndPush commit 前也须校验 (WeekGrid 最小档 overflow 同样受益)",
+            helper.substringAfter("fun renderAndPush").contains("WidgetResizeCore.isStale"))
+        val today = widgetSource("TodayWidget.kt").readText()
+        assertTrue("Today receiver 三个触发点 (onUpdate/optionsChanged/nav) 须先 bump 世代",
+            today.contains("WidgetResizeCore.bump"))
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        assertTrue("条带工厂 onDataSetChanged 也须按世代丢弃过期重算",
+            svc.contains("WidgetResizeCore"))
+    }
+
+    @Test
+    fun `onDeleted clears resize generation for widget id reuse`() {
+        val today = widgetSource("TodayWidget.kt").readText()
+        assertTrue("onDeleted 必须清世代号 (widget id 被系统复用后旧世代不得干扰新实例)",
+            today.contains("WidgetResizeCore.remove"))
+    }
+
+    @Test
+    fun `WeekGrid minimum variant reuses pushTodayData without nav zones (scope guard)`() {        // issue #24 范围铁律: 日期导航只在每日小组件。WeekGrid 最小档复用 pushTodayData
         // 管线, 但不得获得导航布局/点击区 — 守卫 WeekGrid 侧零沾染。
         val grid = widgetSource("WeekGridWidgetProvider.kt").readText()
         assertFalse("WeekGrid 不得引用 widget_today_nav_static",
