@@ -426,7 +426,7 @@
     <string name="date_long_format">%1$d月%2$d日</string>
     <string name="notif_title">今日課程 — %1$s %2$s</string>
     <string name="notif_text">點擊查看今日課程安排</string>
-    <string name="theme_name_default">預設淡紫</string>
+    <string name="theme_name_default">淡紫</string>
     <string name="theme_name_spring">春綠</string>
     <string name="theme_name_ocean">海藍</string>
     <string name="theme_name_peach">蜜桃粉</string>
