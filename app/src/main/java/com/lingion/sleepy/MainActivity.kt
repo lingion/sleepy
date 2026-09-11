@@ -461,7 +461,10 @@ private fun MainTabs(
             // pendingImportText != null 是另一路 (外部 app 分享课表文本进来) 的既有自动弹层, 语义不同并存。
             val autoOnce = MainActivity.autoShowImportOnceState.value
             if (autoOnce) MainActivity.autoShowImportOnceState.value = false
-            ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { pushOverlay(OverlayScreen.EditTable) }, onImported = { setCurrentTab(Tab.Schedule) })
+            ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable, onManualAdd = { pushOverlay(OverlayScreen.AddCourse) }, onEditCurrentTable = { pushOverlay(OverlayScreen.EditTable) },
+                // v7.10.16w 用户 2026-09-10: 导入完成留在管理页 — 此前硬跳课表页(周/网格),
+                // 打断"复制副本→追加导入→继续操作"的管理动线。当前课表摘要卡就地刷新可见。
+                onImported = { /* 留在管理页, 摘要卡就地刷新 */ })
         }
         Tab.Mine -> MineScreen(
             onOpenAllTables = { pushOverlay(OverlayScreen.AllTables) },

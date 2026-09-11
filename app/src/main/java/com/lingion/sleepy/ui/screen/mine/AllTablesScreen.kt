@@ -89,8 +89,9 @@ fun AllTablesScreen(
                         .background(if (isCurrent) colors.primaryContainer else colors.surfaceContainer)
                         .noRippleClickable {
                             if (!isCurrent) {
+                                // v7.10.16w 用户 2026-09-10: 选表后留在本页(选中态就地高亮),
+                                // 不再强制弹回 — 用户可能还要复制/编辑其他副本。返回键/← 离开。
                                 viewModel.selectTable(table.id)
-                                onBack()
                             }
                         }
                         .padding(14.dp),
