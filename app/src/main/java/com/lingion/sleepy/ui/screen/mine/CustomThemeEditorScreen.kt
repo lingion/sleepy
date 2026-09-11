@@ -63,7 +63,7 @@ import kotlin.random.Random
  * 草稿语义:全部改动只改内存草稿 [draft],底部「保存」才落 CustomThemeStore。
  * 主色生成整套的邻近色逻辑:secondary = 色相 +40°、tertiary = 色相 −40°
  * (M3 邻近色思想:同主题氛围内拉开间隔,避免互补色刺眼),表面用该色相低 chroma。
- * 删除区(errorContainer 整宽色块,全 app 纯色块禁 BorderStroke)→ 确认对话框。
+ * 删除区(errorContainer 整宽色块,全 app 纯色块禁描边)→ 确认对话框。
  */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
