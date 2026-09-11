@@ -33,20 +33,7 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/01-schedule-week.png" width="30%">
-  <img src="docs/screenshots/02-schedule-grid.png" width="30%">
-  <img src="docs/screenshots/03-today.png" width="30%">
-</p>
-<p align="center">
-  <img src="docs/screenshots/widget-weekgrid.png" width="22%">
-  <img src="docs/screenshots/widget-weeklist.png" width="22%">
-  <img src="docs/screenshots/widget-today.png" width="22%">
-  <img src="docs/screenshots/widget-twoday.png" width="22%">
-</p>
-<p align="center">
-  <img src="docs/screenshots/22-reminder.png" width="30%">
-  <img src="docs/screenshots/20-import-bottomsheet.png" width="30%">
-  <img src="docs/screenshots/21-about.png" width="30%">
+  <img src="docs/screenshots/00-overview.webp">
 </p>
 
 <p align="center">
