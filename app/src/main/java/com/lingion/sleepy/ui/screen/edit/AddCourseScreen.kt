@@ -369,15 +369,22 @@ fun AddCourseScreen(
             }
             // issue#23: 新建槽位 / 槽位时间编辑先在编辑页暂存, 课程落库成功后再写回课表 timeJson。
             // 顺序串接保证一次添加多个槽位时编号连续且方向元数据不丢失。
+            // v7.10.16v 撤回: 课程行 + timeJson 写回是一个动作 — beginBatch 让快照
+            // 固定在动作前, 撤回一次整步回退(否则第二写覆盖快照, 只回退一半)。
             val table = currentTable ?: repo.getTable(tableId)
             if (table != null && (pendingEdgeInserts.isNotEmpty() || pendingEdgeEdits.isNotEmpty())) {
-                val withInserts = pendingEdgeInserts.fold(table.timeJson) { json, insert ->
-                    TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
+                com.lingion.sleepy.data.undo.UndoManager.beginBatch()
+                try {
+                    val withInserts = pendingEdgeInserts.fold(table.timeJson) { json, insert ->
+                        TimeTableUtils.insertEdgeNode(json, insert.edgeClass, insert.start, insert.end)
+                    }
+                    val updated = pendingEdgeEdits.fold(withInserts) { json, edit ->
+                        TimeTableUtils.updateEdgeNodeTimes(json, edit.node, edit.start, edit.end)
+                    }
+                    if (updated != table.timeJson) viewModel.updateTable(table.copy(timeJson = updated))
+                } finally {
+                    com.lingion.sleepy.data.undo.UndoManager.endBatch()
                 }
-                val updated = pendingEdgeEdits.fold(withInserts) { json, edit ->
-                    TimeTableUtils.updateEdgeNodeTimes(json, edit.node, edit.start, edit.end)
-                }
-                if (updated != table.timeJson) viewModel.updateTable(table.copy(timeJson = updated))
             }
             onSaved()
         }
