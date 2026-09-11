@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import androidx.activity.compose.BackHandler
 import androidx.core.graphics.toColorInt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -76,6 +77,11 @@ fun CustomThemeEditorScreen(
     onDeleted: (String) -> Unit
 ) {
     val colors = SleepyTheme.colors
+
+    // 系统返回手势: 编辑器是 AppearanceScreen 内部 overlay(不在 MainActivity overlayStack),
+    // 不拦截的话返回键会命中外层 handler 把整个外观页弹掉。此处拦截先关编辑器回外观页
+    // (Compose BackHandler 后组合者优先生效)。
+    BackHandler { onBack() }
 
     // ── 草稿:所有改动只动这里,保存才落盘 ──
     val defaultName = stringResource(R.string.theme_custom_default_name, nextThemeNumber)
@@ -243,6 +249,7 @@ fun CustomThemeEditorScreen(
 
     // ── 取色器弹窗(公共组件) ──
     pickingRole?.let { role ->
+        BackHandler { pickingRole = null }
         ColorPickerDialog(
             initialHex = when (role) {
                 ROLE_PRIMARY -> draft.primary
@@ -282,7 +289,9 @@ fun CustomThemeEditorScreen(
     }
 
     // ── 删除确认 ──
+    // 返回分层: 弹层开着时返回先关弹层(后组合的 BackHandler 优先), 都没开才退出编辑器
     if (showDeleteConfirm) {
+        BackHandler { showDeleteConfirm = false }
         AlertDialog(
             onDismissRequest = { showDeleteConfirm = false },
             title = { Text(stringResource(R.string.theme_editor_delete_confirm), color = colors.onSurface) },

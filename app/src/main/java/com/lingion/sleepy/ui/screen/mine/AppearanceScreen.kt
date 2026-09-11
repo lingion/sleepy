@@ -287,27 +287,18 @@ private fun ColorSwatch(color: Color) {
     Box(Modifier.size(28.dp).clip(SleepyTheme.shapes.small).background(color))
 }
 
-/** 「新建主题」卡 — 与 PresetThemeCard 同尺寸,虚线圆圈 + 加号 */
+/** 「新建主题」入口 — 裸虚线圆圈+加号,无卡片无背景无文字(2026-09-11 用户定稿) */
 @Composable
 private fun NewThemeCard(onClick: () -> Unit) {
     val colors = SleepyTheme.colors
-    Surface(
-        modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
-        color = colors.surfaceContainer, shape = SleepyTheme.shapes.large
+    Box(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(96.dp)
+            .noRippleClickable(onClick),
+        contentAlignment = Alignment.Center
     ) {
-        Column(
-            modifier = Modifier.padding(16.dp).fillMaxWidth().height(96.dp),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center
-        ) {
-            DashedCircleWithPlus(size = 44.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
-            Spacer(Modifier.height(8.dp))
-            Text(
-                stringResource(R.string.theme_new),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium),
-                color = colors.onSurface
-            )
-        }
+        DashedCircleWithPlus(size = 40.dp, strokeColor = colors.onSurface, tint = colors.onSurface)
     }
 }
 
