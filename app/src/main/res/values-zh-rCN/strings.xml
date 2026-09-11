@@ -36,6 +36,8 @@
     <string name="manage_new_table_sub">创建一张空白课表，手动添加课程</string>
     <string name="manage_edit_current">编辑当前课表</string>
     <string name="manage_edit_current_sub">编辑当前课表名称、日期、节次时间</string>
+    <string name="manage_export">导出当前课表</string>
+    <string name="manage_export_sub">以原生格式 / WakeUp JSON / ICS / 文本分享</string>
     <string name="manage_manual_add">手动添加课程</string>
     <string name="manage_manual_add_sub">直接添加一门课程到当前课表</string>
     <string name="table_info">开始日期: %1$s  |  第%2$d周  |  %3$d门课</string>

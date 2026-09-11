@@ -33,6 +33,8 @@
     <string name="manage_new_table_sub">建立一張空白課表，手動新增課程</string>
     <string name="manage_edit_current">編輯目前課表</string>
     <string name="manage_edit_current_sub">編輯課表名稱、日期、節次時間</string>
+    <string name="manage_export">匯出目前課表</string>
+    <string name="manage_export_sub">以原生格式 / WakeUp JSON / ICS / 文字分享</string>
     <string name="manage_manual_add">手動新增課程</string>
     <string name="manage_manual_add_sub">直接新增一門課程到目前課表</string>
     <string name="table_info">開始日期: %1$s  |  第%2$d週  |  %3$d門課</string>
