@@ -500,16 +500,25 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * [appWidgetId] is plumbed through so a per-widget binding can override
          * the app-wide default table; receivers fall back to
          * [WidgetTableResolver.resolveCurrentTable] when no binding exists.
+         *
+         * now 只取一次贯穿全程 (nav target 解析 + isToday 同口径): 两次独立 now()
+         * 在跨午夜渲染时会把 nav target 算在昨天、isToday 判在今天 = 单次渲染口径分裂。
          */
-        fun loadDataSync(context: Context, appWidgetId: Int): WidgetData =
-            loadDataForDate(context, appWidgetId, TodayDateNavStore.target(context, appWidgetId, LocalDate.now()))
+        fun loadDataSync(context: Context, appWidgetId: Int): WidgetData {
+            val now = LocalDate.now()
+            return loadDataForDate(
+                context, appWidgetId,
+                TodayDateNavStore.target(context, appWidgetId, now), now
+            )
+        }
 
         /**
-         * 指定日期版数据加载 (issue #24 StackView 翻页卡工厂用) — [target] 由调用方给出
-         * (loadDataSync 传导航锚定日, StackView 卡工厂传卡面日期)。
+         * 指定日期版数据加载 — [target] 由调用方给出 (loadDataSync 传导航锚定日,
+         * 翻页卡工厂传卡面日期); [today] 必须同源自调用方 (禁内部再取第二次 now)。
          */
-        fun loadDataForDate(context: Context, appWidgetId: Int, target: LocalDate): WidgetData {
-            val today = LocalDate.now()
+        fun loadDataForDate(
+            context: Context, appWidgetId: Int, target: LocalDate, today: LocalDate
+        ): WidgetData {
             val dayOfWeek = DateUtils.todayDayOfWeek(target)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)

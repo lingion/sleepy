@@ -19,7 +19,10 @@ object DateUtils {
 
     fun semesterStatus(startDate: String, maxWeek: Int, today: LocalDate = LocalDate.now()): SemesterStatus {
         return try {
-            val start = LocalDate.parse(startDate, dateFormat)
+            // 与 currentWeek 同一归一口径: 非周一 startDate 必须落到所在周周一,
+            // 否则 raw 比较与周数计算劈叉 (issue #5 类: startDate=周二, currentWeek
+            // 说第 2 周而 semesterStatus 说「未开始」)
+            val start = mondayOf(LocalDate.parse(startDate, dateFormat))
             when {
                 today.isBefore(start) -> SemesterStatus.BEFORE_START
                 ChronoUnit.DAYS.between(start, today) / 7 + 1 > maxWeek -> SemesterStatus.AFTER_END
