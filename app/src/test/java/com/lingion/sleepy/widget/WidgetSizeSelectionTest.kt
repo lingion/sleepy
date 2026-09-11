@@ -28,11 +28,12 @@ class WidgetSizeSelectionTest {
     // ---- 多份 SIZES: 定向选择 (portrait/landscape 两份) ----
 
     @Test
-    fun `prefers widest entry when sizes list has both orientations`() {
-        // 竖 120x300 (面积 36000) vs 横 320x140 (面积 44800) — 面积法会选横,
-        // 但本契约选"宽最大" (320x140): 内容按宽排版, 高度不足走滚动分支。
+    fun `no hint defaults to portrait entry for genuine orientation pairs`() {
+        // 竖 120x300 vs 横 320x140 = 真方向对 (宽度不接近): 旧"宽度优先"契约返回横份,
+        // 但竖放 (常态) 的实际 cell 是竖份 — shell 按横份画 → launcher fitXY 强拉变形。
+        // 无摆放 hint 时默认竖放, 取竖态 (h>=w) 份。
         val picked = WidgetSizeCore.pickSizeDp(listOf(120f to 300f, 320f to 140f))
-        assertEquals(320f to 140f, picked)
+        assertEquals(120f to 300f, picked)
     }
 
     @Test
@@ -52,6 +53,62 @@ class WidgetSizeSelectionTest {
     fun `empty or all-invalid sizes yield null`() {
         assertEquals(null, WidgetSizeCore.pickSizeDp(emptyList()))
         assertEquals(null, WidgetSizeCore.pickSizeDp(listOf(0f to 0f)))
+    }
+
+    // ---- 摆放 hint (OPTION_APPWIDGET_MIN_WIDTH/HEIGHT 口径) 定向 ----
+
+    @Test
+    fun `hint portrait picks portrait entry from genuine orientation pair`() {
+        // MIN_W×MIN_H = 竖放 cell (80x250): 竖 120x300 才是当前方向, 横 320x140 丢弃
+        assertEquals(
+            120f to 300f,
+            WidgetSizeCore.pickSizeDp(listOf(120f to 300f, 320f to 140f), hint = 80f to 250f)
+        )
+    }
+
+    @Test
+    fun `hint landscape picks landscape entry`() {
+        // MIN_W×MIN_H = 横放 cell (300x100): 横份才对
+        assertEquals(
+            320f to 140f,
+            WidgetSizeCore.pickSizeDp(listOf(120f to 300f, 320f to 140f), hint = 300f to 100f)
+        )
+    }
+
+    @Test
+    fun `mirror pair ignores hint and keeps smaller-height tie-break`() {
+        // 宽度接近 (±2dp) = 同方向 OEM 镜像: 与旧契约一致取高度小者, hint 不扰动
+        assertEquals(
+            200f to 100f,
+            WidgetSizeCore.pickSizeDp(listOf(200f to 100f, 200f to 200f), hint = 200f to 100f)
+        )
+        // ±2dp 容差边界: 201 vs 199 差 2dp 仍算镜像 → 高度小者 (100)
+        assertEquals(
+            201f to 100f,
+            WidgetSizeCore.pickSizeDp(listOf(201f to 100f, 199f to 200f), hint = 199f to 200f)
+        )
+    }
+
+    // ---- >2 份 SIZES (折叠态/多 cell launcher 会塞 3+ 份) ----
+
+    @Test
+    fun `more than two entries picks best for hint not blind top-2`() {
+        // 4 份: 竖两档 + 横两档。hint=竖放 cell → 落与 cell 最贴合的竖档 (100x220 距
+        // (80,250) 最近), 旧 top-2-of-width-sort 直接取横 320x140 (sort 后前二都是横份)。
+        val sizes = listOf(120f to 300f, 100f to 220f, 320f to 140f, 240f to 110f)
+        assertEquals(100f to 220f, WidgetSizeCore.pickSizeDp(sizes, hint = 80f to 250f))
+        assertEquals(320f to 140f, WidgetSizeCore.pickSizeDp(sizes, hint = 300f to 100f))
+    }
+
+    @Test
+    fun `more than two entries without hint defaults to portrait-ish entry`() {
+        // 无 hint 默认竖放: 取 h>=w 份里与"典型竖放"最贴合者 — 契约: 禁盲取宽度冠军
+        val sizes = listOf(120f to 300f, 100f to 220f, 320f to 140f)
+        val picked = WidgetSizeCore.pickSizeDp(sizes)
+        assertTrue(
+            "无 hint 时须取竖态 (h>=w) 份, 实取 $picked",
+            picked!!.second >= picked.first
+        )
     }
 
     // ---- 回退: API<31 或 launcher 未给 SIZES ----

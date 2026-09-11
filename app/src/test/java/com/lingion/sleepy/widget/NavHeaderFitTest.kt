@@ -2,6 +2,7 @@ package com.lingion.sleepy.widget
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
@@ -20,6 +21,11 @@ import org.junit.Test
  * ≈187dp > 148dp → LinearLayout 横向溢出, nav_next 被推出可视区 (层级中消失)。
  * 旧判定只决定四字/两字, 两字也装不下时无降级 → 必须补标题去星期 (TIER_SHORT_TITLE)
  * 与隐藏 nav_today (TIER_HIDE_TODAY) 两档。契约: 全程真实度量, 无固定 dp 阈值。
+ *
+ * 2026-09-10 locale 契约升级: nav_today 文案来自 R.string 资源 (英 "Back to today" /
+ * 西 "Volver a hoy" / 日 "今日に戻る"), 旧纯函数硬编码「回到今天/今天」字面量度量
+ * → 非 zh locale 宽度估错。tier/fits 改为注入 navTodayFull/navTodayShort 两串
+ * (Android 入口传 context.getString), 本测试全部走注入串。
  */
 class NavHeaderFitTest {
 
@@ -42,6 +48,7 @@ class NavHeaderFitTest {
         assertTrue(
             TodayWidgetReceiver.fitsNavTodayFourChar(
                 density = 2f, wDp = 400, titleText = "9/12 · 周六",
+                navTodayFull = "回到今天", navTodayShort = "今天",
                 titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
             )
         )
@@ -54,6 +61,7 @@ class NavHeaderFitTest {
         assertFalse(
             TodayWidgetReceiver.fitsNavTodayFourChar(
                 density = 2f, wDp = 80, titleText = "9/12 · 周六",
+                navTodayFull = "回到今天", navTodayShort = "今天",
                 titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
             )
         )
@@ -65,6 +73,7 @@ class NavHeaderFitTest {
         assertTrue(
             TodayWidgetReceiver.fitsNavTodayFourChar(
                 density = 2f, wDp = 0, titleText = "9/12 · 周六",
+                navTodayFull = "回到今天", navTodayShort = "今天",
                 titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
             )
         )
@@ -79,14 +88,61 @@ class NavHeaderFitTest {
         assertTrue(
             TodayWidgetReceiver.fitsNavTodayFourChar(
                 density = 1f, wDp = 277, titleText = "9/12 · 周六",
+                navTodayFull = "回到今天", navTodayShort = "今天",
                 titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
             )
         )
         assertFalse(
             TodayWidgetReceiver.fitsNavTodayFourChar(
                 density = 1f, wDp = 276, titleText = "9/12 · 周六",
+                navTodayFull = "回到今天", navTodayShort = "今天",
                 titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
             )
+        )
+    }
+
+    // ── locale 契约 (2026-09-10): 注入串参与判定 ──
+
+    @Test
+    fun `english locale long label changes tier boundary`() {
+        // 英文 "Back to today"(14字) 远宽于「回到今天」(4字): 窄档上 FULL 档应直接装不下
+        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
+        // full: 10+117+4+40+(6+154+6)+40+10 = 387 > 330 → 装不下 (旧硬编码会误判 FULL)
+        assertEquals(
+            NavTier.TWO_CHAR,
+            tier(1f, 330, "9/12 · 周六", "9/12",
+                navFull = "Back to today", navShort = "Today",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+        )
+    }
+
+    // ── isToday 契约 (2026-09-10): nav_today 将被 GONE 时预算不得计入其宽度 ──
+
+    @Test
+    fun `isToday gone frees width so full title keeps four-char budget slot`() {
+        // 今日态 nav_today 必 GONE: 预算只剩 标题+两钮 = 10+104+4+40+40+10 = 208。
+        // wDp=215: 旧判定 (计「今天」22dp+12margin → 242 > 215) 会降到 SHORT_TITLE
+        // (去星期), 实际 FULL 恰好装得下 → 不为一颗看不见的按钮牺牲标题。
+        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
+        assertEquals(
+            NavTier.FULL,
+            tier(1f, 215, "9/8 · 周二", "9/8",
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) },
+                navTodayVisible = false)
+        )
+    }
+
+    @Test
+    fun `not-today still budgets nav_today width`() {
+        // 导航态 (isToday=false): nav_today 可见, 同宽 215dp 装不下满配 → 降档路径不变
+        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
+        assertNotEquals(
+            NavTier.FULL,
+            tier(1f, 215, "9/8 · 周二", "9/8",
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) },
+                navTodayVisible = true)
         )
     }
 
@@ -95,11 +151,14 @@ class NavHeaderFitTest {
     /** 降级档位: 数值序 = 恓牲度递增。 */
     private fun tier(
         density: Float, wDp: Int, fullTitle: String, dateOnly: String,
-        titleMeasure: (String) -> Float, navTodayMeasure: (String) -> Float
+        navFull: String, navShort: String,
+        titleM: (String) -> Float, navM: (String) -> Float,
+        navTodayVisible: Boolean = true
     ): NavTier =
         TodayWidgetReceiver.navHeaderTier(
             density, wDp, fullTitle, dateOnly,
-            titleMeasure = titleMeasure, navTodayMeasure = navTodayMeasure
+            navTodayFull = navFull, navTodayShort = navShort, navTodayVisible = navTodayVisible,
+            titleMeasure = titleM, navTodayMeasure = navM
         )
 
     @Test
@@ -108,7 +167,8 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.FULL,
             tier(2f, 400, "9/12 · 周六", "9/12",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 
@@ -118,7 +178,8 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.FULL,
             tier(2f, 0, "9/12 · 周六", "9/12",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 
@@ -130,7 +191,8 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.TWO_CHAR,
             tier(1f, 255, "9/12 · 周六", "9/12",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 
@@ -144,7 +206,8 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.HIDE_TODAY,
             tier(1f, 148, "9/8 · 周二", "9/8",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 
@@ -155,7 +218,8 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.SHORT_TITLE,
             tier(1f, 200, "9/12 · 周六", "9/12",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 
@@ -166,7 +230,8 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.HIDE_TODAY,
             tier(1f, 120, "9/12 · 周六", "9/12",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 
@@ -177,12 +242,14 @@ class NavHeaderFitTest {
         assertEquals(
             NavTier.SHORT_TITLE,
             tier(1f, 241, "9/8 · 周二", "9/8",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
         assertEquals(
             NavTier.TWO_CHAR,
             tier(1f, 242, "9/8 · 周二", "9/8",
-                { tp.measureText(it) }, { np.measureText(it) })
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
     }
 }

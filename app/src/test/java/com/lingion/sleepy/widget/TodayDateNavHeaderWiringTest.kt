@@ -122,6 +122,98 @@ class TodayDateNavHeaderWiringTest {
     }
 
     @Test
+    fun `nav tier measures localized resources not hardcoded literals`() {
+        // 2026-09-10 locale 契约: 文案来自 R.string.today_nav_back_to_today /
+        // today_nav_today_short (英 "Back to today" / 西 "Volver a hoy" / 日 "今日に戻る"),
+        // 旧纯函数硬编码「回到今天/今天」→ 非 zh locale 宽度估错、档位判错。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val tierEntry = src.substringAfter("internal fun navHeaderTier(")
+            .substringBefore("private fun navHeaderTier(")
+        val fitsEntry = src.substringAfter("internal fun fitsNavTodayFourChar(")
+            .substringBefore("private fun fitsNavTodayFourChar(")
+        assertFalse(
+            "navHeaderTier 纯函数禁硬编码「回到今天」字面量 (须走注入串)",
+            tierEntry.contains("回到今天")
+        )
+        assertFalse(
+            "navHeaderTier 纯函数禁硬编码「今天」度量字面量 (注入串替代)",
+            Regex("""required\([^)]*"今天"\)""").containsMatchIn(tierEntry)
+        )
+        assertFalse(
+            "fitsNavTodayFourChar 纯函数禁硬编码「回到今天」字面量 (须走注入串)",
+            fitsEntry.contains("回到今天")
+        )
+        assertTrue(
+            "navHeaderTier 须注入 navTodayFull/navTodayShort 资源串",
+            tierEntry.contains("navTodayFull") && tierEntry.contains("navTodayShort")
+        )
+        assertTrue(
+            "fitsNavTodayFourChar 须注入 navTodayFull 资源串",
+            fitsEntry.contains("navTodayFull")
+        )
+        val androidEntry = src.substringAfter("private fun navHeaderTier(\n            context: Context")
+            .ifEmpty { src.substringAfter("context: Context, fullTitle: String, dateOnlyTitle: String") }
+        assertTrue(
+            "Android 入口须用 context.getString 取真实资源串",
+            src.contains("R.string.today_nav_back_to_today") &&
+                src.contains("R.string.today_nav_today_short")
+        )
+    }
+
+    @Test
+    fun `nav tier decision receives isToday visibility`() {
+        // 2026-09-10: nav_today 在 isToday 时必 GONE — tier 判定不得为一颗看不见的
+        // 按钮预算宽度 (窄档上无谓牺牲标题)。判定入参必须带可见性。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val callBody = src.substringAfter("val tier = navHeaderTier(")
+            .substringBefore(")")
+        assertTrue(
+            "configureTodayNav 调 navHeaderTier 必须传 navTodayVisible = !data.isToday",
+            callBody.contains("navTodayVisible = !data.isToday")
+        )
+    }
+
+    @Test
+    fun `computeSizeDp passes orientation hint from min width and height`() {
+        // 2026-09-10 方向契约: OPTION_APPWIDGET_SIZES 在横竖双向 widget 上返回两份,
+        // 纯宽度优先会取横份 — 竖放 (常态) 时 shell 按横份画 → fitXY 强拉变形。
+        // computeSizeDp 必须把 MIN_WIDTH/MIN_HEIGHT (当前 cell 口径) 作为 hint 传入。
+        val src = widgetSource("RemoteViewsWidgetHelper.kt").readText()
+        val body = src.substringAfter("fun computeSizeDp(")
+            .substringBefore("fun <T> renderAndPush(")
+        assertTrue(
+            "computeSizeDp 须读 OPTION_APPWIDGET_MIN_WIDTH 作方向 hint",
+            body.contains("OPTION_APPWIDGET_MIN_WIDTH")
+        )
+        assertTrue(
+            "computeSizeDp 须读 OPTION_APPWIDGET_MIN_HEIGHT 作方向 hint",
+            body.contains("OPTION_APPWIDGET_MIN_HEIGHT")
+        )
+        assertTrue(
+            "pickSizeDp 调用须带 hint 实参",
+            Regex("pickSizeDp\\([^)]*hint").containsMatchIn(body)
+        )
+    }
+
+    @Test
+    fun `header text pushed in sp units matching fontScale-aware measurement`() {
+        // 2026-09-10 一致性契约: 渲染 setTextViewTextSize 走 COMPLEX_UNIT_SP (跟随
+        // fontScale), 与测量端 sp*density*fontScale 同口径 — 旧 DIP 推送使渲染
+        // 不随 fontScale, 测量端却乘 fontScale → 大字档位过度降级。
+        val src = widgetSource("TodayWidget.kt").readText()
+        val body = src.substringAfter("fun configureTodayNav(")
+            .substringBefore("/** 顶栏标题")
+        assertFalse(
+            "nav 标题/nav_today 禁 COMPLEX_UNIT_DIP 推送 (与 fontScale 感知测量不一致)",
+            body.contains("COMPLEX_UNIT_DIP")
+        )
+        assertTrue(
+            "nav 文本尺寸须 COMPLEX_UNIT_SP 推送 (与测量同口径)",
+            body.contains("COMPLEX_UNIT_SP")
+        )
+    }
+
+    @Test
     fun `renderer nav triangle is low-contrast and glyph-free`() {
         val src = widgetSource("WidgetBitmapRenderers.kt").readText()
         val body = src.substringAfter("fun renderNavTriangle")

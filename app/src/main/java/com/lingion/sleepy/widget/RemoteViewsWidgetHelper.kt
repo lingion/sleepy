@@ -27,31 +27,37 @@ object RemoteViewsWidgetHelper {
     /**
      * 从 AppWidgetOptions 算出 widget 当前真实尺寸(dp)。
      * API31+: OPTION_APPWIDGET_SIZES 定向选择 (纯函数见 [WidgetSizeCore.pickSizeDp] —
-     * 横竖两份时面积最大 ≠ 当前方向, 旧 maxByOrNull 面积法在横向面积更大时选错方向)。
+     * 横竖两份时面积最大 ≠ 当前方向; 以 MIN_WIDTH/MIN_HEIGHT (当前 cell 口径) 为
+     * 摆放 hint 解析方向, 旧"宽度优先"在真方向对上永远取横份)。
      * 回退: MIN_W × MIN_H 同源边界 (API29/30 javadoc: MIN=当前下界; 旧 MIN_W×MAX_H
      * 混拼上下界会把 1 行 widget 画成 5 行长图)。
      */
     fun computeSizeDp(opts: android.os.Bundle): Pair<Int, Int> {
         var wDp = 0
         var hDp = 0
+        // 摆放 hint: MIN_WIDTH/MIN_HEIGHT = 当前 cell 宽高下界 (dp), 方向判据同源
+        val hintW = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH)
+        val hintH = opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             // 类型化重载 getParcelableArrayList(key, Class) 是 API 33 新增,
             //   API 31/32 调用会 NoSuchMethodError → 守卫必须用 TIRAMISU 而非 S
             opts.getParcelableArrayList(
                 AppWidgetManager.OPTION_APPWIDGET_SIZES, SizeF::class.java
             )?.map { it.width to it.height }
-                ?.let { picked -> WidgetSizeCore.pickSizeDp(picked)?.let { wDp = it.first.toInt(); hDp = it.second.toInt() } }
+                ?.let { picked -> WidgetSizeCore.pickSizeDp(picked, hintW.toFloat() to hintH.toFloat())
+                    ?.let { wDp = it.first.toInt(); hDp = it.second.toInt() } }
         } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
             // API 31/32: OPTION_APPWIDGET_SIZES 已存在但只有无类型重载(开发期过时警告, 运行时安全)
             @Suppress("DEPRECATION", "UncheckedCast")
             val legacy = opts.getParcelableArrayList<SizeF>(AppWidgetManager.OPTION_APPWIDGET_SIZES)
             legacy?.map { it.width to it.height }
-                ?.let { picked -> WidgetSizeCore.pickSizeDp(picked)?.let { wDp = it.first.toInt(); hDp = it.second.toInt() } }
+                ?.let { picked -> WidgetSizeCore.pickSizeDp(picked, hintW.toFloat() to hintH.toFloat())
+                    ?.let { wDp = it.first.toInt(); hDp = it.second.toInt() } }
         }
         if (wDp <= 0 || hDp <= 0) {
             val fb = WidgetSizeCore.fallbackSizeDp(
-                opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_WIDTH),
-                opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MIN_HEIGHT),
+                hintW,
+                hintH,
                 opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_WIDTH),
                 opts.getInt(AppWidgetManager.OPTION_APPWIDGET_MAX_HEIGHT)
             )

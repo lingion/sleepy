@@ -7,31 +7,53 @@ package com.lingion.sleepy.widget
  * 面积最大 ≠ 当前方向 (横 320x140 面积 > 竖 120x300) — 选错方向则 shell bitmap
  * 按错误宽高画, launcher fitXY 强拉 → 内容变形。
  *
- * 策略: 宽度优先 — 渲染宽度决定顶栏排版/换行, 宽度对了一半以上;
- * 高度选偏小无妨 (高度不足自动进滚动分支, 视觉仍正确), 选偏大才会把滚动内容压扁。
- * 因此同宽时取面积大者 (更高), 不同宽时取宽度大者 — 但两份尺寸宽度差只有
- * launcher 横竖排版的镜像关系时, 宽度大者对应横放; 用户竖放 (常态) 时另一份才对。
- * 结论: 在"宽度接近"的两份里取高度小者 (高度小 = 竖态短边正确, 滚动分支兜底)。
+ * 策略 (2026-09-10 方向契约): 用摆放 hint (OPTION_APPWIDGET_MIN_WIDTH/MIN_HEIGHT,
+ * 当前 cell 的宽高下界) 解析当前方向, 不再宽度优先 — 旧行为在真方向对上永远取宽者
+ * (= 横份), 竖放 (常态) 全部拿到横 w/h。判定序:
+ *   1. 宽度接近 (±2dp) 的镜像对 → 与 hint 无关, 取高度小者 (滚动分支兜底);
+ *   2. 有 hint → 取与 hint 长宽比同向 (portrait/landscape) 且贴合 hint 的份;
+ *   3. 无 hint → 默认竖放, 取 h>=w 的份。
+ * hint 贴合度 = 两边差的最小绝对值 (与当前 cell 最近), 而非面积 — 折叠态/多 cell
+ * launcher 可能给 3+ 份, 逐份比较不丢弃任何候选。
  */
 object WidgetSizeCore {
 
-    /** 尺寸候选 (宽, 高) dp。 */
-    fun pickSizeDp(sizes: List<Pair<Float, Float>>): Pair<Float, Float>? {
+    private const val MIRROR_TOLERANCE_DP = 2f
+
+    /** 尺寸候选 (宽, 高) dp; [hint] = 当前 cell (宽, 高) dp, 缺省 null。 */
+    fun pickSizeDp(
+        sizes: List<Pair<Float, Float>>,
+        hint: Pair<Float, Float>? = null
+    ): Pair<Float, Float>? {
         val valid = sizes.filter { (w, h) -> w > 0f && h > 0f }
         if (valid.isEmpty()) return null
         if (valid.size == 1) return valid[0]
-        // 排序: 宽度降序; 同宽 (±2dp 容差, 视为同一方向的镜像尺寸) 时高度升序
-        val sorted = valid.sortedWith(
-            compareByDescending<Pair<Float, Float>> { it.first }
-                .thenBy { it.second }
-        )
-        val (first, second) = sorted
-        return if (kotlin.math.abs(first.first - second.first) <= 2f) {
+        // 镜像判据用宽度接近的两份 (排序仅用于取"最宽 vs 次宽"作对参照)
+        val sortedByWidth = valid.sortedByDescending { it.first }
+        val widest = sortedByWidth.first()
+        val second = sortedByWidth[1]
+        val mirrorPair = valid.size == 2 &&
+            kotlin.math.abs(widest.first - second.first) <= MIRROR_TOLERANCE_DP
+        if (mirrorPair) {
             // 宽度接近 = 同一方向两份 (OEM 镜像) — 取高度小者, 高度不足滚动分支兜底
-            if (first.second <= second.second) first else second
-        } else {
-            first
+            return if (widest.second <= second.second) widest else second
         }
+        val hDp = hint?.takeIf { it.first > 0f && it.second > 0f }
+        return valid.minWithOrNull(
+            if (hDp != null) {
+                // 有 hint: 与当前 cell 两边差之和最小者 (贴合度); 同距取面积小者
+                // (高度选偏小走滚动分支安全, 选偏大会压扁内容)
+                compareBy<Pair<Float, Float>> {
+                    kotlin.math.abs(it.first - hDp.first) + kotlin.math.abs(it.second - hDp.second)
+                }.thenBy { it.first * it.second }
+            } else {
+                // 无 hint 默认竖放: h>=w 的份里取宽度最大 (排版空间优先);
+                // 全是横态 (h<w) 时取高度最小 (滚动分支兜底)
+                compareBy<Pair<Float, Float>> { if (it.second >= it.first) 0 else 1 }
+                    .thenByDescending { it.first }
+                    .thenBy { it.second }
+            }
+        )
     }
 
     /**
