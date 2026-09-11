@@ -250,6 +250,7 @@
         <!-- 教务直连导入 Activity (v1.0.8 新增) -->
         <activity
             android:name=".ui.screen.imports.JwImportActivity"
+            android:configChanges="orientation|screenSize|uiMode"
             android:exported="false"
             android:label="教务直连导入"
             android:theme="@style/Theme.Sleepy" />

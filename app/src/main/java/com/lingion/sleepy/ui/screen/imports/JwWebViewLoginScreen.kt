@@ -23,6 +23,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Computer
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -40,6 +41,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
@@ -64,6 +66,11 @@ import kotlinx.coroutines.launch
 
 /** fetch JS 注入超时: 教务宕机时 20s 无桥回调即报超时, 禁无限 pending。 */
 private const val FETCH_TIMEOUT_MS = 20_000L
+
+/** Chrome 121 / Windows 10 桌面 UA — 无 Android; Safari 等 iPhone 词汇, 触发门户桌面版布局 */
+private const val DESKTOP_USER_AGENT =
+    "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) " +
+        "Chrome/121.0.0.0 Safari/537.36"
 
 /**
  * 教务 WebView 登录页
@@ -90,6 +97,9 @@ fun JwWebViewLoginScreen(
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
     var webViewRef by remember { mutableStateOf<WebView?>(null) }
+    // #18: 桌面 UA 开关 — true 时重建 WebView 用 Chrome 桌面 UA
+    var desktopUa by remember { mutableStateOf(false) }
+    var uaSwitchReload by remember { mutableStateOf(0) }
     val logToken = remember { java.util.concurrent.atomic.AtomicLong(0) }
     val webviewNotReadyMsg = stringResource(R.string.jw_webview_not_ready)
     val fetchingMsg = stringResource(R.string.jw_fetching)
@@ -185,6 +195,21 @@ fun JwWebViewLoginScreen(
                     }
                 },
                 actions = {
+                    // #18: 部分门户 (UCAS SEP 等) 手机 UA 下不显示"个人课表"入口,
+                    // 桌面 UA 可见。切换 = 销毁重建 WebView (UA 只在创建期生效),
+                    // 同步保留 cookie (CookieManager 全局共享) 与当前 URL
+                    IconButton(
+                        onClick = {
+                            desktopUa = !desktopUa
+                            uaSwitchReload++   // 触发 JwWebView 重建 (UA 创建期生效)
+                        },
+                        enabled = webViewRef != null
+                    ) {
+                        Icon(
+                            Icons.Outlined.Computer,
+                            contentDescription = stringResource(R.string.jw_toggle_desktop_ua)
+                        )
+                    }
                     IconButton(
                         onClick = { webViewRef?.reload() },
                         enabled = webViewRef != null
@@ -337,6 +362,8 @@ fun JwWebViewLoginScreen(
             JwWebView(
                 url = school.url.ifBlank { "https://www.baidu.com" },
                 school = school,
+                desktopUa = desktopUa,
+                recreateKey = uaSwitchReload,
                 onProgressChange = { p -> progress = p },
                 onWebViewCreated = { wv -> webViewRef = wv },
                 onHtmlCaptured = { html -> onHtmlCaptured(html, school, emptyList(), "") },
@@ -369,15 +396,21 @@ fun JwWebViewLoginScreen(
 private fun JwWebView(
     url: String,
     school: JwSchoolInfo,
+    desktopUa: Boolean,
+    recreateKey: Int,
     onProgressChange: (Int) -> Unit,
     onWebViewCreated: (WebView) -> Unit,
     onHtmlCaptured: (String) -> Unit,
     onWiseduResult: (String) -> Unit = {}
 ) {
-    AndroidView(
+    // key 含 recreateKey: UA 切换时销毁重建 WebView (userAgentString 仅创建期可靠,
+    // 部分页面在 onPageStarted 后改 UA 不回读); CookieManager 全局共享, 登录态不丢
+    var lastUrl by remember { mutableStateOf(url) }
+    key(recreateKey) {
+        AndroidView(
         modifier = Modifier.fillMaxSize(),
         factory = { context ->
-            val schoolHost = url.toUri().host.orEmpty()
+            val schoolHost = lastUrl.toUri().host.orEmpty()
             WebView(context).apply {
                 layoutParams = ViewGroup.LayoutParams(
                     ViewGroup.LayoutParams.MATCH_PARENT,
@@ -396,6 +429,12 @@ private fun JwWebView(
                     setSupportZoom(true)
                     builtInZoomControls = true
                     displayZoomControls = false
+                    if (desktopUa) {
+                        // Chrome 桌面 UA (Windows 掩去 Android/iPhone 词汇,
+                        // 触发门户的桌面版布局 — UCAS SEP 应用列表含"个人课表"入口)
+                        userAgentString = DESKTOP_USER_AGENT
+                        useWideViewPort = true
+                    }
                 }
                 // 正常 WebView 配置
                 settings.databaseEnabled = true
@@ -411,14 +450,16 @@ private fun JwWebView(
                 webViewClient = JwWebViewClientBuilder.build(
                     webView = this,
                     school = school,
-                ) { url ->
-                    Log.d("JwWebView", "onPageFinished url=$url")
+                ) { finished ->
+                    Log.d("JwWebView", "onPageFinished url=$finished")
+                    lastUrl = finished ?: url
                 }
-                loadUrl(url)
+                loadUrl(lastUrl)
                 onWebViewCreated(this)
             }
         }
     )
+        }
 }
 
 @Composable
