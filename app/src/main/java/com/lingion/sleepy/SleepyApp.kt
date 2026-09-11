@@ -56,6 +56,10 @@ class SleepyApp : Application() {
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             WidgetUpdater.notifyDataChanged(this@SleepyApp)
         }
+        // 15-min periodic 兜底 (KEEP 幂等): 午夜自续链是单次任务, 强杀进程会清掉,
+        // periodic 是唯一能复活它的自主驱动 — schedule() 此前零调用方 (7ecb554 起断链),
+        // 恢复挂载使 WidgetUpdater 头注释的兜底描述重新为真。
+        WidgetUpdater.schedule(this@SleepyApp)
         // 后台预取节假日数据
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
             try { HolidayManager.preload(this@SleepyApp) } catch (_: Throwable) {}
