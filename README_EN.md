@@ -33,7 +33,7 @@
 ## Screenshots
 
 <p align="center">
-  <img src="docs/screenshots/00-overview.webp">
+  <img src="docs/screenshots/00-overview.png">
 </p>
 
 <p align="center">
