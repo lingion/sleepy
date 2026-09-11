@@ -135,6 +135,8 @@ class ScheduleViewModel : ViewModel() {
     /**
      * v7.10.15 创建课表副本 — 全量复制表配置+课程, 新副本不接管默认表也不切选中,
      * 命名沿用导入路径的去重规则(原名+"2"/"3"...)。
+     * v7.10.16w: 建表+插课是一个撤回动作 — beginBatch 保首快照, 撤回一次整步回退
+     * (此前两步写两次覆盖快照, 撤回只删掉课程行留下空表壳)。
      */
     fun duplicateTable(id: Long) {
         viewModelScope.launch {
@@ -144,13 +146,18 @@ class ScheduleViewModel : ViewModel() {
             var index = 2
             var name = "${source.name}2"
             while (name in existingNames) { index++; name = "${source.name}$index" }
-            val newId = repo.insertTable(
-                source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis())
-            )
-            if (courses.isNotEmpty()) {
-                // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑
-                val groupMap = courses.associate { it.groupId to java.util.UUID.randomUUID().toString() }
-                repo.insertCourses(courses.map { it.copy(id = 0, groupId = groupMap[it.groupId] ?: it.groupId, tableId = newId) })
+            com.lingion.sleepy.data.undo.UndoManager.beginBatch()
+            try {
+                val newId = repo.insertTable(
+                    source.copy(id = 0, name = name, isDefault = false, createdAt = System.currentTimeMillis())
+                )
+                if (courses.isNotEmpty()) {
+                    // groupId 整组映射到新 UUID — 同一门课的节次共享新组 ID, 副本内仍可整组编辑
+                    val groupMap = courses.associate { it.groupId to java.util.UUID.randomUUID().toString() }
+                    repo.insertCourses(courses.map { it.copy(id = 0, groupId = groupMap[it.groupId] ?: it.groupId, tableId = newId) })
+                }
+            } finally {
+                com.lingion.sleepy.data.undo.UndoManager.endBatch()
             }
             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(com.lingion.sleepy.SleepyApp.get())
         }
