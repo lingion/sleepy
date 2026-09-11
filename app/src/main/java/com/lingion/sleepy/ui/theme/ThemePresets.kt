@@ -26,6 +26,13 @@ object ThemePresets {
     const val KEY_SLATE = "slate"
     const val KEY_SYSTEM = "system"
 
+    /**
+     * 自定义主题 KEY 前缀 — AppPrefs.KEY_THEME 存 "custom:<uuid>"。
+     * App(SleepyThemeProvider)与 widget(resolveSchemePublic)按此前缀识别并走
+     * CustomSchemeDeriver 同一派生函数;id 读不到(已删)双端一致回落 Default。
+     */
+    const val CUSTOM_KEY_PREFIX = "custom:"
+
     /** 默认淡紫 — 保留 v1.0.6 行为 */
     val Default = ThemePreset(
         key = KEY_DEFAULT,
