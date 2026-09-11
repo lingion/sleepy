@@ -1,64 +1,35 @@
-# Contributor Covenant Code of Conduct
+# 行为准则 / Code of Conduct
 
-## Our Pledge
+本仓库的社区空间（issue、Pull Request、Discussion）遵循以下准则。改编自 [Contributor Covenant](https://www.contributor-covenant.org) 2.0。
 
-We as members, contributors, and leaders pledge to make participation in our
-community a harassment-free experience for everyone, regardless of age, body
-size, visible or invisible disability, ethnicity, sex characteristics, gender
-identity and expression, level of experience, education, socio-economic status,
-nationality, personal appearance, race, religion, or sexual identity
-and orientation.
+## 我们的承诺
 
-We pledge to act and interact in ways that contribute to an open, welcoming,
-diverse, inclusive, and healthy community.
+无论经验水平、背景如何，任何人在这几个社区空间里参与讨论，都不应受到骚扰或人身攻击。
 
-## Our Standards
+## 期望的行为
 
-Examples of behavior that contributes to a positive environment for our
-community include:
+- 对事不对人：讨论代码、协议、方案，不评价贡献者本人
+- 尊重不同意见：适配方案有分歧时摆事实（抓包、页面结构、测试结果），不比嗓门
+- 接受并善用批评：代码被指出问题就修，指出别人问题时给出可操作的改进
+- 误了事就认：道歉、修正、翻篇
 
-* Demonstrating empathy and kindness toward other people
-* Being respectful of differing opinions, viewpoints, and experiences
-* Giving and gracefully accepting constructive feedback
-* Accepting responsibility and apologizing to those affected by our mistakes,
-  and learning from the experience
-* Focusing on what is best not just for us as individuals, but for the
-  overall community
+## 不可接受的行为
 
-Examples of unacceptable behavior include:
+- 人身攻击、嘲讽、阴阳怪气
+- 骚扰他人（公开或私信）
+- 未经同意公开他人的私人信息（真实姓名、学号、邮箱、课表等）——**教务数据属于个人信息，issue 附采集包时请先脱敏**，维护者发现未脱敏附件会代为处理
+- 发布与项目无关的广告、引流内容
+- 其他任何在专业场合会被视为不当的言行
 
-* The use of sexualized language or imagery, and sexual attention or
-  advances of any kind
-* Trolling, insulting or derogatory comments, and personal or political attacks
-* Public or private harassment
-* Publishing others' private information, such as a physical or email
-  address, without their explicit permission
-* Other conduct which could reasonably be considered inappropriate in a
-  professional setting
+## 适用范围
 
-## Enforcement Responsibilities
+本准则适用于本仓库的全部社区空间：issue、Pull Request、Discussion，以及在这些场合代表本项目发言的行为。
 
-Community leaders are responsible for clarifying and enforcing our standards of
-acceptable behavior and will take appropriate and fair corrective action in
-response to any behavior that they deem inappropriate, threatening, offensive,
-or harmful.
+## 执行
 
-## Scope
+遇到违反准则的行为，通过 lingion@hrbeu.edu.cn 私下联系维护者。所有投诉都会被及时、公正地处理，并保护举报人隐私。
 
-This Code of Conduct applies within all community spaces, and also applies when
-an individual is officially representing the community in public spaces.
-Examples of our community spaces include GitHub issues, discussions, and pull
-requests.
-
-## Enforcement
-
-Instances of abusive, harassing, or otherwise unacceptable behavior may be
-reported to the community leader responsible for enforcement at
-lingion@hrbeu.edu.cn.
-All complaints will be reviewed and investigated promptly and fairly.
-
-All community leaders are obligated to respect the privacy and security of the
-reporter of any incident.
+本仓库目前由个人维护，执行措施的最终解释权在维护者。
 
 ## Attribution
 
@@ -66,11 +37,4 @@ This Code of Conduct is adapted from the [Contributor Covenant][homepage],
 version 2.0, available at
 https://www.contributor-covenant.org/version/2/0/code_of_conduct.html.
 
-Community Impact Guidelines were inspired by [Mozilla's code of conduct
-enforcement ladder](https://github.com/mozilla/diversity).
-
 [homepage]: https://www.contributor-covenant.org
-
-For answers to common questions about this code of conduct, see the FAQ at
-https://www.contributor-covenant.org/faq. Translations are available at
-https://www.contributor-covenant.org/translations.
