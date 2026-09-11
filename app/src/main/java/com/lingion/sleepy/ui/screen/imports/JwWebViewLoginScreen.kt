@@ -24,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Computer
+import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -205,9 +206,14 @@ fun JwWebViewLoginScreen(
                         },
                         enabled = webViewRef != null
                     ) {
+                        // 图标随状态切换: 当前手机 UA → 显示 Computer (点了变桌面);
+                        // 当前桌面 UA → 显示 PhoneAndroid (点了回手机)
                         Icon(
-                            Icons.Outlined.Computer,
-                            contentDescription = stringResource(R.string.jw_toggle_desktop_ua)
+                            if (desktopUa) Icons.Outlined.PhoneAndroid else Icons.Outlined.Computer,
+                            contentDescription = stringResource(
+                                if (desktopUa) R.string.jw_toggle_mobile_ua
+                                else R.string.jw_toggle_desktop_ua
+                            )
                         )
                     }
                     IconButton(

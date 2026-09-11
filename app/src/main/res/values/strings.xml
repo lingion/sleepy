@@ -514,6 +514,7 @@
     <string name="jw_fetch_no_courses">抓取成功但未解析到课程：请确认页面已显示本学期课表且学期选择正确</string>
     <string name="jw_refresh">刷新当前页面</string>
     <string name="jw_toggle_desktop_ua">切换桌面版网页</string>
+    <string name="jw_toggle_mobile_ua">切换手机版网页</string>
 
     <!-- School Select -->
     <string name="select_school">选择学校</string>

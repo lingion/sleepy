@@ -385,6 +385,7 @@
     <string name="jw_fetch_no_courses">抓取成功但未解析到課程：請確認頁面已顯示本學期課表且學期選擇正確</string>
     <string name="jw_refresh">刷新當前頁面</string>
     <string name="jw_toggle_desktop_ua">切換桌面版網頁</string>
+    <string name="jw_toggle_mobile_ua">切換手機版網頁</string>
 
     <!-- School Select -->
     <string name="select_school">選擇學校</string>

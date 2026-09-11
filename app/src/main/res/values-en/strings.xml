@@ -391,6 +391,7 @@
     <string name="jw_fetch_no_courses">Fetched successfully but no courses were parsed: make sure the page shows this semester\'s timetable and the semester is correct</string>
     <string name="jw_refresh">Refresh</string>
     <string name="jw_toggle_desktop_ua">Toggle desktop version of website</string>
+    <string name="jw_toggle_mobile_ua">Toggle mobile version of website</string>
 
     <!-- School Select -->
     <string name="select_school">Select School</string>

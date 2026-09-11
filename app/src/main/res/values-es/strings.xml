@@ -385,6 +385,7 @@
     <string name="jw_fetch_no_courses">Se obtuvo correctamente pero no se encontraron cursos: asegúrese de que la página muestre el horario del semestre actual y que el semestre sea correcto</string>
     <string name="jw_refresh">Refresh</string>
     <string name="jw_toggle_desktop_ua">Cambiar a la versión de escritorio del sitio</string>
+    <string name="jw_toggle_mobile_ua">Cambiar a la versión móvil del sitio</string>
 
     <!-- School Select -->
     <string name="select_school">Seleccionar escuela</string>
