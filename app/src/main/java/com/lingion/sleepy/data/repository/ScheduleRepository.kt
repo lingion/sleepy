@@ -274,9 +274,12 @@ class ScheduleRepository(private val db: AppDatabase) {
      *   - toUpdate 行按 id 批量覆盖(保留 RowKey)
      *   - toInsert 行批量新增(id=0 让 Room 自增)
      *
-     * 调用前必须已 `captureForUndo`([UndoManager] 单条写默认触发,复合动作入口见 [beginBatch])。
+     * v7.10.16v 撤回修复(用户 2026-09-10 报"编辑课程后没有撤回按钮"): 本方法自带
+     * [captureForUndo] — issue#22 接手时原契约"调用前必须已 capture"无任何调用方
+     * 履行, 编辑课程从此不产生快照。
      */
     suspend fun applyDiff(tableId: Long, diff: DiffResult) {
+        captureForUndo()
         if (diff.toDelete.isNotEmpty()) courseDao.deleteByIds(diff.toDelete)
         if (diff.toUpdate.isNotEmpty()) courseDao.updateAll(diff.toUpdate)
         if (diff.toInsert.isNotEmpty()) courseDao.insertAll(diff.toInsert)
