@@ -42,6 +42,36 @@ class StringsKeyParityTest {
         "settings_course_colorless_sub"
     )
 
+    /**
+     * 自定义主题系统新增 string key(2026-09-11,feat/theme-custom-color)。
+     * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
+     */
+    private val customThemeKeys = listOf(
+        "theme_new",
+        "theme_custom_edit",
+        "theme_custom_name_label",
+        "theme_custom_default_name",
+        "theme_editor_random",
+        "theme_editor_random_desc",
+        "theme_editor_from_seed",
+        "theme_editor_from_seed_desc",
+        "theme_editor_manual",
+        "theme_editor_manual_desc",
+        "theme_role_primary",
+        "theme_role_primary_desc",
+        "theme_role_secondary",
+        "theme_role_secondary_desc",
+        "theme_role_tertiary",
+        "theme_role_tertiary_desc",
+        "theme_role_surface",
+        "theme_role_surface_desc",
+        "theme_editor_preview",
+        "theme_editor_preview_card_title",
+        "theme_editor_preview_card_room",
+        "theme_editor_delete_confirm",
+        "theme_editor_delete_confirm_body"
+    )
+
     private val basePath: File = sequenceOf(
         File("app/src/main/res"),
         File("src/main/res")
@@ -66,6 +96,19 @@ class StringsKeyParityTest {
                 "$locale/strings.xml has no <string> entries",
                 text.contains("<string")
             )
+        }
+    }
+
+    @Test
+    fun custom_theme_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in customThemeKeys) {
+                assertTrue(
+                    "custom theme key \"$key\" missing in $locale/strings.xml",
+                    text.contains("name=\"$key\"")
+                )
+            }
         }
     }
 

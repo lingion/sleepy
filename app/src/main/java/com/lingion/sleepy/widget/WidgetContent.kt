@@ -75,6 +75,9 @@ data class WidgetScheme(
  * themeKey == "system" 时走 Material You 动态取色(dynamicLightColorScheme / dynamicDarkColorScheme),
  *   与 [com.lingion.sleepy.ui.theme.SleepyThemeProvider] 的处理对齐 — 之前 widget 把 "system"
  *   当未知 key → ThemePresets.byKey 返回 Default(紫色) → 小组件永远紫色, 不跟随系统壁纸取色。
+ * themeKey 以 "custom:" 开头时走用户自定义主题:CustomThemeStore 读种子 →
+ *   CustomSchemeDeriver 派生(与 App 同一派生函数, 禁复制算法); id 读不到(已删)
+ *   → 回落 Default, 与 App 端 unknown-key 语义一致。
  */
 internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boolean): WidgetScheme {
     // "跟随系统" 主题 → Material You 动态取色 (API 31+), 低版本降级 Default
@@ -97,6 +100,17 @@ internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boo
             outline = dyn.outline, outlineVariant = dyn.outlineVariant, scrim = dyn.scrim,
             error = dyn.error, onError = dyn.onError, errorContainer = dyn.errorContainer, onErrorContainer = dyn.onErrorContainer
         )
+    } else if (themeKey.startsWith(ThemePresets.CUSTOM_KEY_PREFIX)) {
+        // 用户自定义主题 → 同源派生(App 端 SleepyThemeProvider 同一函数)
+        val custom = com.lingion.sleepy.data.CustomThemeStore.getById(
+            context, themeKey.removePrefix(ThemePresets.CUSTOM_KEY_PREFIX)
+        )
+        if (custom != null) {
+            com.lingion.sleepy.ui.theme.CustomSchemeDeriver.derive(custom, isDark)
+        } else {
+            // 已删/损坏 → 回落默认淡紫,与 App 端 unknown-key 语义一致
+            ThemePresets.byKey(ThemePresets.KEY_DEFAULT).let { if (isDark) it.dark else it.light }
+        }
     } else {
         val preset = ThemePresets.byKey(themeKey)
         if (isDark) preset.dark else preset.light

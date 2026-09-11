@@ -391,17 +391,60 @@ fun SleepyThemeProvider(
 
     // "跟随系统" 走 Material You 动态取色（API 31+）；低版本降级到默认。
     // 其他 5 套用预设的 light/dark scheme。
+    // "custom:<id>" 走用户自定义主题:CustomThemeStore 读种子 → CustomSchemeDeriver
+    //   派生整套深浅 scheme(与 widget resolveSchemePublic 同一派生函数);已删 id
+    //   读不到 → 回落 Default(与 unknown-key 语义一致)。
     val dynamicAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
-    val preset = if (themeKey == ThemePresets.KEY_SYSTEM && dynamicAvailable) {
-        null  // 标记走 dynamic 分支
-    } else {
-        ThemePresets.byKey(themeKey)
+    val customScheme: WakeUpColorScheme? = if (themeKey.startsWith(ThemePresets.CUSTOM_KEY_PREFIX)) {
+        com.lingion.sleepy.data.CustomThemeStore.getById(context, themeKey.removePrefix(ThemePresets.CUSTOM_KEY_PREFIX))
+            ?.let { CustomSchemeDeriver.derive(it, darkTheme) }
+            // 已删/损坏的自定义主题 → 回落默认淡紫
+            ?: CustomSchemeDeriver.derive(com.lingion.sleepy.data.CustomTheme(
+                id = "", name = "", primary = "#6750A4", secondary = "#625B71",
+                tertiary = "#7D5260", surfaceHue = 265.0, surfaceChroma = 8.0, createdAt = 0L
+            ), darkTheme)
+    } else null
+
+    val preset = when {
+        themeKey.startsWith(ThemePresets.CUSTOM_KEY_PREFIX) -> ThemePresets.byKey(null) // custom 走下方 customScheme 分支
+        themeKey == ThemePresets.KEY_SYSTEM && dynamicAvailable -> null  // 标记走 dynamic 分支
+        else -> ThemePresets.byKey(themeKey)
     }
 
     // 合并两个分支（preset vs dynamic）到同一个 content() 调用位置，
     //   防止 Compose 因 if/else 树结构变化而丢失 AppRoot 的 remember 状态。
     //   之前 preset==null 走 early return → content() 在不同树位置 → 切换时状态丢失。
-    val (wakeColors, palette, m3Scheme) = if (preset == null) {
+    val (wakeColors, palette, m3Scheme) = when {
+        customScheme != null -> {
+            val wc = customScheme
+            val m3 = if (darkTheme) {
+                darkColorScheme(
+                    primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
+                    secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
+                    tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
+                    background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
+                    surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
+                    surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
+                    surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
+                    outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
+                    error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
+                )
+            } else {
+                lightColorScheme(
+                    primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
+                    secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
+                    tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
+                    background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
+                    surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
+                    surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
+                    surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
+                    outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
+                    error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
+                )
+            }
+            Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3)
+        }
+        preset == null -> {
         // dynamic 取色 — API 31+ Material You (preset==null 仅在 dynamicAvailable(S/31)+ 时成立,
         // lint 需要显式版本守卫才能识别 dynamicDarkColorScheme/dynamicLightColorScheme 的 API 31 要求)
         val m3Dynamic = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -444,8 +487,9 @@ fun SleepyThemeProvider(
             onErrorContainer = m3Dynamic.onErrorContainer
         )
         Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3Dynamic)
-    } else {
-        val wc = if (darkTheme) preset.dark else preset.light
+    }
+        else -> {
+            val wc = if (darkTheme) preset.dark else preset.light
         val m3 = if (darkTheme) {
             darkColorScheme(
                 primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
@@ -471,7 +515,8 @@ fun SleepyThemeProvider(
                 error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
             )
         }
-        Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3)
+            Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3)
+        }
     }
 
     CompositionLocalProvider(
