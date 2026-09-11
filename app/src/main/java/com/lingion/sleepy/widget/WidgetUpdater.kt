@@ -20,6 +20,11 @@ import java.util.concurrent.TimeUnit
  * — 对全部 10 个已注册 receiver 广播 APPWIDGET_UPDATE(系统级刷新)
  *   普通和小尺寸变体都是同步 RemoteViews AppWidgetProvider → 秒刷,不受 OPPO 冻结影响
  * — WorkManager 每 15 分钟兜底刷新
+ *
+ * 跨厂商兼容事实底座: docs/widget-vendor-specs/INDEX.md
+ * （华为/荣耀/小米/OPPO/vivo/魅族/三星启动器的约束清单 + 已落地/明确不做对照表）。
+ * 本类是"同步广播秒刷"规则的实现点 — 该规则同时解决 OPPO Glance 冻结与
+ * HyperOS 去定时刷新后的兜底（WorkManager 周期任务）。
  */
 object WidgetUpdater {
 
