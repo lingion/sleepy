@@ -37,6 +37,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -126,7 +127,9 @@ fun SchoolSelectScreen(
     viewModel: JwImportViewModel = viewModel()
 ) {
     val schools by viewModel.schools.collectAsState()
-    var query by remember { mutableStateOf("") }
+    // 搜索词 rememberSaveable: 选校进 WebView 再返回, 列表滚动位置由 JwImportActivity
+    // stage 分支的 SaveableStateProvider 恢复, 搜索词也要跟着回来(remember 会随覆盖销毁)
+    var query by rememberSaveable { mutableStateOf("") }
     val colors = SleepyTheme.colors
     val scope = rememberCoroutineScope()
 

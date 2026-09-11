@@ -33,6 +33,8 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.Saver
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -84,7 +86,14 @@ fun GeneralSettingsScreen(
     )
 
     // 课程显示 / 小组件设置项状态
-    var expandedSections by remember { mutableStateOf(emptySet<String>()) }
+    // 折叠展开态跨页保真: AppRoot 经 SaveableStateProvider 恢复本页时, 折叠卡展开集
+    // 也按原样回来(Set 非内建 Bundle 类型, 用显式 Saver 转 ArrayList<String> 存取)。
+    var expandedSections by rememberSaveable(
+        stateSaver = Saver<Set<String>, ArrayList<String>>(
+            save = { ArrayList(it) },
+            restore = { it.toSet() }
+        )
+    ) { mutableStateOf(setOf<String>()) }
     fun toggleSection(key: String) {
         expandedSections = if (key in expandedSections) expandedSections - key else expandedSections + key
     }

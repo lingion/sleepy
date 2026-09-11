@@ -31,6 +31,8 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -85,6 +87,11 @@ class JwImportActivity : ComponentActivity() {
                 val jwViewModel: JwImportViewModel = viewModel()
                 val scheduleViewModel: ScheduleViewModel = viewModel()
                 val scope = rememberCoroutineScope()
+                // 返回恢复精确页面状态: stage 条件组合使被覆盖页(如学校选择页)整体离开
+                // 组合树, 滚动位置/搜索词全部销毁。各 stage 分支内容包独立 key 的
+                // SaveableStateProvider(key = stage 类名), WebView 登录返回学校列表时
+                // 列表滚动位置与 rememberSaveable 态原样恢复。
+                val saveableStateHolder: SaveableStateHolder = rememberSaveableStateHolder()
 
                 var selectedSchool by remember { mutableStateOf<JwSchoolInfo?>(null) }
                 var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
@@ -117,7 +124,7 @@ class JwImportActivity : ComponentActivity() {
                         if (school == null) {
                             stage = Stage.WebViewLogin
                             parsedCourses = emptyList()
-                        } else {
+                        } else saveableStateHolder.SaveableStateProvider("ConfigureConfirm") {
                         val colors = SleepyTheme.colors
                         var confirmError by remember { mutableStateOf<String?>(null) }
                         AlertDialog(
@@ -231,28 +238,30 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         )
-                        } // end else (school != null)
+                        } // end else (school != null) — SaveableStateProvider("ConfigureConfirm")
                     }
 
                     stage is Stage.SelectSchool -> {
-                        SchoolSelectScreen(
-                            onSchoolSelected = { school ->
-                                if (school.url.isBlank()) {
-                                    errorMsg = getString(R.string.jw_no_url)
-                                    return@SchoolSelectScreen
-                                }
-                                selectedSchool = school
-                                stage = Stage.WebViewLogin
-                            },
-                            onBack = { finish() }
-                        )
+                        saveableStateHolder.SaveableStateProvider("SelectSchool") {
+                            SchoolSelectScreen(
+                                onSchoolSelected = { school ->
+                                    if (school.url.isBlank()) {
+                                        errorMsg = getString(R.string.jw_no_url)
+                                        return@SchoolSelectScreen
+                                    }
+                                    selectedSchool = school
+                                    stage = Stage.WebViewLogin
+                                },
+                                onBack = { finish() }
+                            )
+                        }
                     }
 
                     stage is Stage.WebViewLogin -> {
                         val school = selectedSchool
                         if (school == null) {
                             stage = Stage.SelectSchool
-                        } else {
+                        } else saveableStateHolder.SaveableStateProvider("WebViewLogin") {
                             JwWebViewLoginScreen(
                                 school = school,
                                 onHtmlCaptured = { html, sch, periods, termStartDate ->
@@ -334,7 +343,7 @@ class JwImportActivity : ComponentActivity() {
                                 },
                                 onBack = { stage = Stage.SelectSchool }
                             )
-                        }
+                        } // end SaveableStateProvider("WebViewLogin") (school != null)
                     }
                 }
 
