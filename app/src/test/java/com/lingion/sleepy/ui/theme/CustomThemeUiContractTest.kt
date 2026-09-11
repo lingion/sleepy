@@ -81,6 +81,17 @@ class CustomThemeUiContractTest {
         )
     }
 
+    /** 契约 4c: 单元序列必须 预设→自定义→加号 — 加号永远排在整个网格末尾,
+     *  禁插在预设与自定义卡之间(2026-09-11 用户定稿:自定义卡与预设紧密堆积) */
+    @Test
+    fun theme_grid_orders_plus_sign_last() {
+        val presetAdd = Regex("""ThemePresets\.all\.forEach \{ add\(ThemeGridCell\.Preset\(it\)\) \}\s*\n\s*customThemes\.forEach \{ add\(ThemeGridCell\.Custom\(it\)\) \}\s*\n\s*add\(ThemeGridCell\.NewTheme\)""")
+        assertTrue(
+            "Theme grid cells must be presets -> customs -> NewTheme (plus sign always last)",
+            presetAdd.containsMatchIn(appearanceSource)
+        )
+    }
+
     /** 契约 4b: 自定义卡选中判定用 custom:<id> 完整键,禁裸 id 误命中预设 */
     @Test
     fun custom_card_selection_uses_prefixed_key() {

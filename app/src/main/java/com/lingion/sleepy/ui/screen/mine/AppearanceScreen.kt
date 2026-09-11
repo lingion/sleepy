@@ -126,11 +126,12 @@ fun AppearanceScreen(
             // 2 列网格 5 套预设 + 新建卡 + 自定义主题卡(混排,奇数补空位)
             item {
                 val customThemes = remember(customListVersion) { CustomThemeStore.getAll(context) }
-                // 网格单元序列:5 预设卡 → 新建卡 → 各自定义卡
+                // 网格单元序列:5 预设卡 → 各自定义卡 → 加号永远最后(2026-09-11 用户定稿:
+                // 自定义卡与预设卡同列紧密堆积,加号只排在整个网格末尾)
                 val cells: List<ThemeGridCell> = buildList {
                     ThemePresets.all.forEach { add(ThemeGridCell.Preset(it)) }
-                    add(ThemeGridCell.NewTheme)
                     customThemes.forEach { add(ThemeGridCell.Custom(it)) }
+                    add(ThemeGridCell.NewTheme)
                 }
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     cells.chunked(2).forEach { row ->
