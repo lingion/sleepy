@@ -9,22 +9,18 @@ import java.io.File
 import java.time.LocalDate
 
 /**
- * v9.3 overflow scroll parity (2026-09-10 v9.2 真机复盘接续):
+ * v10 overflow scroll 架构 (2026-09-11 用户定稿, 分页模型整体退场):
  *
- * v9.1 复盘 (壳图/条带尺寸分裂) 之后, v9.2 把条带改成多页固定 viewport, 但窗与
- * 步长口径混搭: pageOffsetsDp 步长 = viewport − 52dp chrome, 而每页位图是完整
- * viewport 高、行按 raw crop 坐标 (y = topPx − offsetPx) 画 → 页间重叠 52dp
- * (跨缝行两页各画一遍) + 每页底部 52dp 空带; 头部块只看 emptyHeader → 第 2 页起
- * 每页重复画 ‹›/标题/右侧槽位。
+ * v9.2/v9.3 的固定视口分页在「轻微溢出」场景产出跨缝重复内容: 3 节课 + 26dp 溢出 →
+ * 页 0 显示 2.5 节, 末页为贴底把前 2 节再显示一遍 — 用户看到的是「半节 + 拼图」,
+ * 不是课程列表。用户定稿: 「任意一个视角, 用户看到的都是完整的课」。
  *
- * v9.3 锁死契约:
- * 1. 页 = 虚拟长条的完整 viewport 窗: 渲染端行窗 topPx < offsetPx + h (完整位图高),
- *    pageOffsetsDp 步长 = viewportHeightDp、末页钳到 contentH − viewport。
- *    页 0 (offset=0) 与静态壳图同参同函数 = 逐像素一致。
- * 2. 头部块 emptyHeader && pageOffsetDp<=0 双条件守卫 — 续页无头 (raw crop 语义)。
- * 3. pageOffsetsDp 退化 viewport 单页兜底 + 页数封顶 (MAX_PAGES), 封顶后末页仍贴底。
- * 4. 状态内容 (无课表/学期外/无课) 强制单页 — 状态分支画固定 y, 分页只产出 N 张同图。
- * 5. renderTodayRegular 行窗表达式只引用 spans / offsetPx / h (局部量)。
+ * v10 契约:
+ * 1. 条带 = 每课程行一个子项 (rowSpans 驱动, getCount = 行数) — 滑动由 launcher
+ *    原生 ListView 处理, 每节课只出现一次、永远完整, 无页无缝。
+ * 2. pageOffsetsDp / MAX_PAGES / 可见性过滤 / pageOffset 守卫全部删除。
+ * 3. 行位图由 renderTodayRow 产出 (单行、无头、行高 = 行真实 dp)。
+ * 4. 壳图仍按 viewport hDp 渲染 (首屏兜底)。
  */
 class TodayOverflowScrollParityTest {
 
@@ -40,12 +36,12 @@ class TodayOverflowScrollParityTest {
 
     @Test
     fun `today nav overflow shell renders full content height not widget container`() {
-        // v9.2: 壳图尺寸 = hDp (首屏页), 条带分页后每页同高。
+        // v10: 壳图尺寸 = hDp (首屏视口), 条带逐行子项 (每行 = 一门/一组冲突课)。
         val src = widgetSource("TodayWidget.kt").readText()
         val body = src.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         assertTrue("nav overflow 走 pushScrollable", body.contains("pushScrollable"))
         assertTrue(
-            "v9.2: nav overflow 壳图按 hDp 渲染",
+            "v10: nav overflow 壳图按 hDp 渲染",
             Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),").containsMatchIn(body)
         )
         // !navEnabled 分支也同源
@@ -58,116 +54,73 @@ class TodayOverflowScrollParityTest {
 
     @Test
     fun `overflow scroll parity shell and strip share same renderToday size parameter`() {
-        // v9.2: 壳图和第一条带页都使用 viewport 高度 hDp；后续页通过 offset 分页。
+        // v10: 壳图按 viewport hDp 渲染 (首屏), 条带改逐行子项 — 滑动语义交给
+        // launcher 原生 ListView, 无分页参数。
         val today = widgetSource("TodayWidget.kt").readText()
         val navBody = today.substringAfter("Today 系 overflow").substringBefore("fun loadDataSync")
         val nonNavBody = today.substringAfter("!navEnabled").substringBefore("} else if (contentH")
-        // v9.2: 壳图与第一条带页都是 viewport 高度 hDp; 后续页通过 pageOffsetsDp 分页。
         val shellPattern = Regex("renderToday\\(\\s*context,\\s*data,\\s*wDp\\.toFloat\\(\\),\\s*hDp\\.toFloat\\(\\),")
-        assertTrue("nav overflow 壳图渲染高 = hDp (v9.2)", shellPattern.containsMatchIn(navBody))
-        assertTrue("!navEnabled overflow 壳图渲染高 = hDp (v9.2)",
+        assertTrue("nav overflow 壳图渲染高 = hDp (v10)", shellPattern.containsMatchIn(navBody))
+        assertTrue("!navEnabled overflow 壳图渲染高 = hDp (v10)",
             shellPattern.containsMatchIn(nonNavBody))
-        val strip = widgetSource("ScrollStripService.kt").readText()
-        val stripBody = strip.substringAfter("SCOPE_TODAY ->").substringBefore("SCOPE_TWODAY ->")
-        assertTrue(
-            "条带必须按 pageOffsetsDp 分页",
-            stripBody.contains("pageOffsetsDp") && stripBody.contains("pageOffsetDp = offset")
-        )
-        assertTrue(
-            "条带每页高度 = hDp (与壳图首屏同参)",
-            stripBody.contains("wDp.toFloat(), hDp.toFloat()") && stripBody.contains("pageOffsetDp = offset")
-        )
     }
 
     @Test
     fun `renderTodayRegular row window uses full bitmap height not chrome-subtracted viewport`() {
-        // v9.3 核心修复 1: 行窗必须是完整位图高 — 每页 = 虚拟长条的完整 viewport 窗
-        // (raw crop), 禁再把窗扣掉 52dp chrome (v9.2 页间重叠 52dp + 页底空带根因)。
+        // v10: renderTodayRegular 回归单屏渲染器 (offset 恒 0) — 分页窗口概念删除,
+        // 可见性过滤由条带逐行子项天然完成, 渲染器不再过滤行。
         val src = widgetSource("WidgetBitmapRenderers.kt").readText()
         val body = src.substringAfter("fun renderTodayRegular(")
             .substringAfter("): Bitmap")
             .substringBefore("private fun renderTodayCompact")
         assertFalse(
-            "禁 chrome 扣减窗 (v9.2 混搭口径: 页重叠 + 空带根因)",
+            "禁 chrome 扣减窗 (v9.2 混搭口径根因, v10 整体退场)",
             body.contains("pageVisiblePx")
         )
-        // filter 行: 仅引用 spans / offsetPx / h (完整位图高, 局部量, 无外部常量)
-        val filterLine = body.substringAfter("val visible =").substringBefore("\n").trim()
-        assertTrue(
-            "visible filter 表达式仅引用 spans/offsetPx/h (无外部常量)",
-            "spans" in filterLine && "offsetPx" in filterLine && Regex("\\bh\\b") in filterLine
+        assertFalse(
+            "v10 渲染器禁可见性过滤 (条带逐行子项, 每行完整渲染)",
+            body.contains("val visible = spans.filter")
         )
     }
 
     @Test
     fun `header block skips continuation pages via pageOffset guard`() {
-        // v9.3 核心修复 2: 头部块 (‹› + 标题 + 右侧槽位) 只在页 0 画 — 续页是 raw
-        // crop, 再画头 = 每页重复标题 (v9.2 头部只看 emptyHeader 的根因)。
+        // v10: 头部块守卫回归 emptyHeader 单条件 — 无分页, 无续页概念;
+        // 条带行位图由 renderTodayRow 产出 (从不画头)。
         val src = widgetSource("WidgetBitmapRenderers.kt").readText()
         val body = src.substringAfter("fun renderTodayRegular(")
             .substringAfter("): Bitmap")
             .substringBefore("private fun renderTodayCompact")
-        assertTrue(
-            "头部块守卫必须双条件 emptyHeader && pageOffsetDp<=0 (续页无头)",
+        assertFalse(
+            "v10 禁 pageOffset 守卫 (分页删除, 头部守卫回归 emptyHeader 单条件)",
             body.contains("pageOffsetDp <= 0f") || body.contains("pageOffsetDp <= 0.0f")
         )
     }
 
     @Test
-    fun `pageOffsetsDp generates fixed-viewport pages aligned to content bottom`() {
-        // v9.3 核心: 页 = 完整 viewport 窗; 步长 = viewportHeightDp (v9.2 是可视行高);
-        // 末页 offset 钳到 contentH − viewport (末页贴底); 页 0 恒 offset=0 (壳图同参)。
-        // 锁法: 直接验证 pageOffsetsDp 几何 (纯 JVM 可测)。
-        val hDp = 281f
-        val contentH = 618f  // 模拟器实测 logcat 数据
-        val offsets = TodayRowGeometry.pageOffsetsDp(contentH, hDp, headerSpace = true)
-        assertEquals("首页恒 offset=0", 0f, offsets.first(), 0.01f)
-        assertTrue("内容超出视口时页数 >= 2", offsets.size >= 2)
-        // 每页 offset 增量 = viewport 高 281 (完整窗推进, 零重叠)
-        for (i in 1 until offsets.size - 1) {
-            val step = offsets[i] - offsets[i - 1]
-            assertEquals("页 $i 步长必须 = viewport 高 281 (raw crop 窗, 零重叠)", 281f, step, 0.01f)
-        }
-        // 末页 = contentH − viewport (贴底)
-        assertEquals(
-            "末页 offset 必须对齐内容底 (maxOffset = contentH − viewport)",
-            contentH - hDp,
-            offsets.last(),
-            0.01f
+    fun `paging geometry is deleted - strip items are per-course rows`() {
+        // v10 (2026-09-11 用户定稿): 「页」概念整体删除 — 固定视口分页在轻微溢出场景
+        // 产出跨缝重复内容 (3 节课 + 26dp 溢出: 页 0 显示 2.5 节, 页 1 贴底把 1/2 节
+        // 再显示一遍 = 用户看到的「半节 + 拼图」)。正常列表语义 = 每行一个子项,
+        // 滑动由 launcher ListView 原生处理, 每节课只出现一次、永远完整。
+        // 锁法: pageOffsetsDp / MAX_PAGES 必须不存在 (纯 JVM 反射)。
+        val geoClass = TodayRowGeometry::class.java
+        val methodNames = geoClass.declaredMethods.map { it.name }
+        assertFalse(
+            "pageOffsetsDp 必须删除 (分页模型整体退场)",
+            "pageOffsetsDp" in methodNames
         )
-        // 内容装得下: 1 页即可
-        val small = TodayRowGeometry.pageOffsetsDp(120f, 281f, headerSpace = true)
-        assertEquals("装得下时只一页", listOf(0f), small)
-    }
-
-    @Test
-    fun `pageOffsetsDp caps page count and never loops in 1dp steps`() {
-        // v9.3 核心修复 3: 页数封顶 — 退化 viewport 不再 coerceAtLeast(1f) 后按 1dp
-        // 步进产出 O(contentH) 张位图; 单页兜底 + MAX_PAGES 上限, 封顶后末页仍贴底。
-        // 1. 装不下一行课的退化视口 → 单页 (禁 1dp 步进死循环)
-        val degenerate = TodayRowGeometry.pageOffsetsDp(600f, 30f, headerSpace = false)
-        assertEquals("退化视口 (30dp 装不下一行) 必须单页兜底", listOf(0f), degenerate)
-        // 2. 正常视口但内容极长 → 页数 ≤ MAX_PAGES, 且末页仍贴底 (maxOffset)
-        val contentH = 20000f
-        val offsets = TodayRowGeometry.pageOffsetsDp(contentH, 281f, headerSpace = true)
-        val maxPages = TodayRowGeometry.MAX_PAGES
-        assertTrue("MAX_PAGES 常量必须 >= 2 (确实能分多页)", maxPages >= 2)
-        assertTrue(
-            "页数 ${offsets.size} 必须封顶 MAX_PAGES=$maxPages",
-            offsets.size <= maxPages
-        )
-        assertEquals(
-            "封顶后末页仍必须贴底",
-            contentH - 281f,
-            offsets.last(),
-            0.01f
+        assertFalse(
+            "MAX_PAGES 必须删除 (页数封顶随分页模型一起退场)",
+            geoClass.declaredFields.any { it.name == "MAX_PAGES" }
         )
     }
 
     @Test
     fun `status content forces single page`() {
-        // v9.3 核心修复 4: 状态分支 (无课表/学期外/无课) 内容是固定 y 的状态行,
-        // 分页只产出 N 张同图 — 行为锁死 (纯 JVM 可测):
+        // v9.3 修复 4 保留 (v10 语义更新): 状态分支 (无课表/学期外/无课) 不进条带 —
+        // 状态内容高度 ≤ 任何 sane viewport, 静态/overflow 闸门自然走单页静态路径。
+        // 行为锁死 (纯 JVM 可测):
         // 1. isTodayStatusContent 三态全真 (无课表 / 学期外 / 无课), 有课表有课时假
         val base = com.lingion.sleepy.data.entity.CourseEntity(
             id = 1L, groupId = "a", tableId = 1L, courseName = "甲",
@@ -192,20 +145,34 @@ class TodayOverflowScrollParityTest {
             "无课必须判状态内容",
             WidgetBitmapRenderers.isTodayStatusContent(withCourse.copy(courses = emptyList()))
         )
-        // 2. 状态内容的分页序列恒单页 (pageOffsetsDp 用单页高度算, 恒 [0])
+        // 2. 状态内容的内容高度口径 = 顶 pad 单行 (≤ 任何 sane viewport → 永走静态路径)
         val statusH = WidgetBitmapRenderers.todayContentHeightDp(withCourse.copy(courses = emptyList()))
-        assertEquals(
-            "状态内容只产单页 offset 序列",
-            listOf(0f),
-            TodayRowGeometry.pageOffsetsDp(statusH, 100f, headerSpace = true)
-        )
-        // 3. 渲染入口闸: pageOffsetDp>0 对状态内容强制归零 (条带端防御性透传也归零)
-        val renderers = widgetSource("WidgetBitmapRenderers.kt").readText()
-        val renderToday = renderers.substringAfter("fun renderToday(")
-            .substringBefore("fun todayCompactTexts")
         assertTrue(
-            "renderToday 入口必须对状态内容强制 pageOffset=0 (单页兜底闸)",
-            renderToday.contains("isTodayStatusContent") && renderToday.contains("effectiveOffset")
+            "状态内容高度必须 ≤ 顶 pad + 一行 + 底 pad (永不溢出)",
+            statusH <= TodayRowGeometry.contentTopDp(false) + TodayRowGeometry.ROW_H_DP + TodayRowGeometry.PAD_BOTTOM_DP
+        )
+    }
+
+    @Test
+    fun `strip rows are per-course-row items not viewport pages`() {
+        // v10 核心契约: SCOPE_TODAY 条带 = 每行一张行位图 (getCount = 行数),
+        // 禁再按 viewport 切页。锁法: ScrollStripService 的 SCOPE_TODAY 分支必须
+        // 逐行渲染 (rowSpans → 每行 renderTodayRow), 不得出现 pageOffsetsDp 调用。
+        val strip = widgetSource("ScrollStripService.kt").readText()
+        val todayBody = strip.substringAfter("SCOPE_TODAY ->").substringBefore("SCOPE_TWODAY ->")
+        assertTrue(
+            "条带必须逐行渲染 (TodayRowGeometry.rowSpans 驱动)",
+            todayBody.contains("TodayRowGeometry.rowSpans") && todayBody.contains("renderTodayRow")
+        )
+        assertFalse(
+            "条带禁再调 pageOffsetsDp (分页模型删除)",
+            todayBody.contains("pageOffsetsDp")
+        )
+        // 渲染端: 必须存在逐行渲染入口 renderTodayRow (单行位图, rowH = 行真实 dp 高)
+        val renderers = widgetSource("WidgetBitmapRenderers.kt").readText()
+        assertTrue(
+            "必须提供逐行渲染入口 renderTodayRow",
+            renderers.contains("fun renderTodayRow(")
         )
     }
 }

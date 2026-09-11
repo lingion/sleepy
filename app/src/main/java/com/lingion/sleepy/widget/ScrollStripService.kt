@@ -110,34 +110,25 @@ class ScrollStripService : RemoteViewsService() {
             when (scope) {
                 SCOPE_TODAY -> {
                     val d = TodayWidgetReceiver.loadDataSync(context, widgetId)
-                    // v6: emptyHeader 只为静态档覆盖顶栏存在; v6 overflow 布局顶栏是
-                    // 上方独立行 → 条带同时去头且不留 24dp 空档 (headerSpace)。
-                    // v8: 内容高经 TodayRowGeometry 单一真值 (与渲染同调, 镜像失配根除);
-                    // rowCount 进取证日志 — 真机 logcat 直接核对 content vs rows。
+                    // v10 逐行子项: 条带 = 每课程行一张行位图 (rowSpans 驱动,
+                    // getCount = 行数) — 滑动 = launcher 原生 ListView 滚动, 每节课
+                    // 只出现一次、永远完整。v9 固定视口分页在轻微溢出场景产出跨缝
+                    // 重复内容 (3 节课 + 26dp 溢出: 末页贴底把前 2 节再画一遍 =
+                    // 用户看到的「半节 + 拼图」), 分页模型整体退场。
+                    val spans = TodayRowGeometry.rowSpans(d.courses, emptyHeader)
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
-                    rowCount = TodayRowGeometry.rowSpans(d.courses, emptyHeader).size
-                    val renderH = ceil(contentHdp)
-                    // v9.3 修复: 每页 = 虚拟长条的完整 viewport raw crop 窗 —
-                    // pageOffsetsDp 整窗步进 (零重叠), 末页钳到内容底; 渲染端行窗
-                    // = 完整位图高 (v9.2 窗/步长混搭口径的页重叠+空带根因已根除)。
-                    // 状态内容 (无课表/学期外/无课) 恒单页 (todayContentHeightDp
-                    // 只报顶 pad 高 + renderToday 入口闸双保险)。
-                    val offsets = TodayRowGeometry.pageOffsetsDp(renderH, hDp.toFloat(), emptyHeader)
-                    var idx = 0
-                    val rendered = ArrayList<Bitmap>(offsets.size)
-                    for (offset in offsets) {
-                        // 世代闸逐页 (v9.3): resize 拖拽期间每个中间尺寸都曾跑完全部
-                        // N 页才被末道闸丢弃 — 页间再查, 世代已变即提前退出省整轮渲染。
+                    rowCount = spans.size
+                    val rendered = ArrayList<Bitmap>(spans.size)
+                    for (span in spans) {
+                        // 世代闸逐行 (v9.3 保留): resize 拖拽期间中间尺寸不必跑完
+                        // 全部行 — 世代已变即提前退出省整轮渲染。
                         if (genBefore > 0 && WidgetResizeCore.isStale(widgetId, genBefore)) {
-                            android.util.Log.d("ScrollStrip", "skip stale mid-render id=$widgetId gen=$genBefore page=$idx/${offsets.size}")
+                            android.util.Log.d("ScrollStrip", "skip stale mid-render id=$widgetId gen=$genBefore row=${span.rowIndex}/${spans.size}")
                             return
                         }
-                        rendered += WidgetBitmapRenderers.renderToday(
-                            context, d, wDp.toFloat(), hDp.toFloat(),
-                            emptyHeader = emptyHeader, pageOffsetDp = offset,
-                            headerSpace = emptyHeader
+                        rendered += WidgetBitmapRenderers.renderTodayRow(
+                            context, d, wDp.toFloat(), span
                         )
-                        idx++
                     }
                     pages = rendered
                     full = rendered.firstOrNull()

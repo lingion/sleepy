@@ -142,19 +142,18 @@ class TodayOverflowGeometryTest {
     // ---- 修复 2: 条带行 = 每课程行一张卡 (多 child, 巨型整图类别性消失) ----
 
     @Test
-    fun `strip factory uses fixed-height today pages`() {
+    fun `strip factory renders one row item per course row`() {
         val svc = widgetSource("ScrollStripService.kt").readText()
         val body = svc.substringAfter("fun onDataSetChangedInner")
-        // v9.3 契约: Today 条带 = 多个固定 viewport 高的页 (pageOffsetsDp 分页,
-        // 末页贴底) — 每页 = 虚拟长条的完整 viewport raw crop 窗 (v9.3 修复 v9.2
-        // 步长混搭口径的页重叠/空带); 行高仍显式钉死 (v3 量测自由零容忍保留)。
+        // v10 契约: Today 条带 = 每课程行一个子项 (rowSpans 驱动) — 分页模型删除,
+        // 滑动 = launcher 原生 ListView 滚动, 每行位图 = renderTodayRow 单行渲染。
         assertTrue(
-            "Today 条带必须按 pageOffsetsDp 分页",
-            body.contains("pageOffsetsDp") && body.contains("pageOffsetDp = offset")
+            "Today 条带必须按 rowSpans 逐行产出子项",
+            body.contains("TodayRowGeometry.rowSpans") && body.contains("renderTodayRow")
         )
         assertTrue(
-            "Today 每页高度必须等于当前 widget viewport",
-            body.contains("wDp.toFloat(), hDp.toFloat()")
+            "行位图渲染必须用当前 widget 宽度",
+            body.contains("wDp.toFloat()")
         )
         assertTrue(
             "行高仍须 setViewLayoutHeight 显式钉死 (v3 契约保留)",
@@ -211,15 +210,15 @@ class TodayOverflowGeometryTest {
     }
 
     @Test
-    fun `generation checked between page renders`() {
-        // resize 拖拽期间每次中间尺寸都跑完整个 N 页渲染才被末道闸丢弃 — 锁法:
-        // 页循环体内 (for offset in offsets … renderToday) 再查一次 isStale,
+    fun `generation checked between row renders`() {
+        // resize 拖拽期间每次中间尺寸都跑完整个 N 行渲染才被末道闸丢弃 — 锁法:
+        // 行循环体内 (for span in spans … renderTodayRow) 再查一次 isStale,
         // 中途世代变更即提前退出。锚点 = 循环体本身 (禁退化成全文 grep)。
         val svc = widgetSource("ScrollStripService.kt").readText()
-        val loop = svc.substringAfter("for (offset in offsets)")
-            .substringBefore("pages = rendered")
+        val loop = svc.substringAfter("for (span in spans)")
+            .substringBefore("strips = newRows")
         assertTrue(
-            "页循环体内必须再查 isStale (逐页世代闸, 拖拽期中间尺寸即停)",
+            "行循环体内必须再查 isStale (逐行世代闸, 拖拽期中间尺寸即停)",
             loop.contains("isStale")
         )
     }
@@ -271,17 +270,15 @@ class TodayOverflowGeometryTest {
 
     @Test
     fun `continuation pages render headerless and page zero keeps header`() {
-        // 页 0 与静态壳图同参同函数 (offset=0, 头部在图里) = 逐像素一致;
-        // 条带页 >= 1 由 ScrollStripService 显式传 pageOffsetDp>0 → 渲染端跳头部。
-        // 服务端锁法: pages map 必须 pageOffsetDp = offset (v9.3 起 offset>0 页无头)。
+        // v10: 无分页 → 无续页。条带行位图由 renderTodayRow 产出, 从不画头 —
+        // 服务端锁法: SCOPE_TODAY 行渲染必须走 renderTodayRow (无头单行位图)。
         val svc = widgetSource("ScrollStripService.kt").readText()
         val todayBody = svc.substringAfter("SCOPE_TODAY ->").substringBefore("SCOPE_TWODAY ->")
         assertTrue(
-            "条带每页必须透传 pageOffsetDp = offset (续页无头闸在渲染端, 服务端不得吞 offset)",
-            todayBody.contains("pageOffsetDp = offset")
+            "条带行必须经 renderTodayRow 产出 (行位图无头语义)",
+            todayBody.contains("renderTodayRow")
         )
-        // 渲染端锁法在 TodayOverflowScrollParityTest (header block skips continuation
-        // pages): emptyHeader && pageOffsetDp <= 0f 双条件。
+        // 渲染端锁法在 TodayOverflowScrollParityTest (header block guard 回归 emptyHeader 单条件)。
     }
 
     @Test
