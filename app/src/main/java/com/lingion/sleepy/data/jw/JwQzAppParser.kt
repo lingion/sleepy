@@ -71,21 +71,24 @@ class JwQzAppParser(source: String) : JwParser(source) {
                 val teacher = str("teacherName")
                 val room = sequenceOf(str("classroomNub"), str("classroomName"), str("location"))
                     .firstOrNull { it.isNotBlank() } ?: ""
-                val timeSpec = parseClassTime(str("classTime")) ?: continue
+                val timeSpecs = parseClassTime(str("classTime"))
+                if (timeSpecs.isEmpty()) continue
                 val weeks = parseWeekSpec(str("classWeek").ifBlank { str("classWeekDetails") })
 
-                for ((sw, ew, type) in weekRuns(weeks)) {
-                    result += JwCourse(
-                        name = name,
-                        room = room,
-                        teacher = teacher,
-                        day = timeSpec.first,
-                        startNode = timeSpec.second,
-                        endNode = timeSpec.third,
-                        startWeek = sw,
-                        endWeek = ew,
-                        type = type,
-                    )
+                for ((day, startNode, endNode) in timeSpecs) {
+                    for ((sw, ew, type) in weekRuns(weeks)) {
+                        result += JwCourse(
+                            name = name,
+                            room = room,
+                            teacher = teacher,
+                            day = day,
+                            startNode = startNode,
+                            endNode = endNode,
+                            startWeek = sw,
+                            endWeek = ew,
+                            type = type,
+                        )
+                    }
                 }
             }
         }
@@ -111,17 +114,39 @@ class JwQzAppParser(source: String) : JwParser(source) {
     }
 
     /**
-     * classTime "10304" → (day=1, start=3, end=4)。
-     * 首位 = 星期 (1-7, 禁 0); 后 4 位 = 起止节各 2 位补零; 非数字/长度不足 → null。
+     * classTime 编码 → [(day, start, end)] 列表 (一行课可含多段)。
+     *
+     * 已知形态 (2026-09-11 学生采集包实锤):
+     *   "10304"     → [(1, 3, 4)]            周一 3-4 节 (5 位 = 星期 + 一组起止)
+     *   "301020304" → [(3, 1, 2), (3, 3, 4)] 周三 1-2 + 3-4 连堂两段
+     *   首位 = 星期 (1-7, 禁 0); 其余每 2 位一对 = (start, end) 补零节次,
+     *   相邻对首尾相接的连堂合并不拆 (3-4 与 5-6 → 3-6 不发生: SPA 网格以
+     *   每对独立格子渲染, 保持逐对 = SPA 行为; weekNoteDetail "301,302,…"
+     *   与逐对节次一致)。
+     * 非数字 / 长度不足 (偶数位) / 节次非法 → emptyList。
      */
-    internal fun parseClassTime(v: String): Triple<Int, Int, Int>? {
-        if ((v.length != 3 && v.length != 5) || v.any { it < '0' || it > '9' }) return null
+    internal fun parseClassTime(v: String): List<Triple<Int, Int, Int>> {
+        if (v.isEmpty() || v.any { it < '0' || it > '9' }) return emptyList()
         val day = v[0] - '0'
-        if (day !in 1..7) return null
-        val start = v.substring(1, 3).toIntOrNull() ?: return null
-        val end = if (v.length == 5) v.substring(3, 5).toIntOrNull() ?: return null else start
-        if (start < 1 || end < start) return null
-        return Triple(day, start, end)
+        if (day !in 1..7) return emptyList()
+        val rest = v.substring(1)
+        if (rest.length % 2 != 0) return emptyList()
+        if (rest.isEmpty()) return emptyList()
+        // 每 4 位 = (start, end) 各 2 位; 剩 2 位 = 单节 (start == end)
+        val specs = mutableListOf<Triple<Int, Int, Int>>()
+        var i = 0
+        while (i < rest.length) {
+            val start = rest.substring(i, i + 2).toIntOrNull() ?: return emptyList()
+            val end = if (i + 4 <= rest.length) {
+                rest.substring(i + 2, i + 4).toIntOrNull() ?: return emptyList()
+            } else {
+                start
+            }
+            if (start < 1 || end < start) return emptyList()
+            specs += Triple(day, start, end)
+            i += 4
+        }
+        return specs
     }
 
     /**

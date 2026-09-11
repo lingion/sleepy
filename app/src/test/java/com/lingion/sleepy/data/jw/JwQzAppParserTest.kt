@@ -43,17 +43,22 @@ class JwQzAppParserTest {
     fun `classTime decode invariant`() {
         // "10304" → 周一 3-4 节 (day=1, startNode=3, endNode=4)
         val p = JwQzAppParser("")
-        assertEquals(Triple(1, 3, 4), p.parseClassTime("10304"))
-        assertEquals(Triple(7, 1, 1), p.parseClassTime("701"))   // 单节也合法 (长度 3)
-        assertEquals(Triple(2, 11, 12), p.parseClassTime("21112"))
-        // 非法形态: 长度 4 (允许 3 或 5, 拒 4), 非数字, day 越界, end<start
-        assertNull("长度 4 拒", p.parseClassTime("1034"))
-        assertNull("非数字拒", p.parseClassTime("1030a"))
-        assertNull("day=0 拒", p.parseClassTime("0304"))
-        assertNull("day=8 拒", p.parseClassTime("8304"))
-        assertNull("end<start 拒", p.parseClassTime("14213"))
-        assertNull("空串拒", p.parseClassTime(""))
-        assertNull("负号拒", p.parseClassTime("-10304"))
+        assertEquals(listOf(Triple(1, 3, 4)), p.parseClassTime("10304"))
+        assertEquals(listOf(Triple(7, 1, 1)), p.parseClassTime("701"))   // 单节 (长度 3)
+        assertEquals(listOf(Triple(2, 11, 12)), p.parseClassTime("21112"))
+        // 9 位连堂两段 (2026-09-11 学生采集包: ITMC 周三 1-2 + 3-4)
+        assertEquals(
+            listOf(Triple(3, 1, 2), Triple(3, 3, 4)),
+            p.parseClassTime("301020304")
+        )
+        // 非法形态: 偶数剩余位 (数字对不完整), 非数字, day 越界, end<start
+        assertTrue("长度 4 拒 (01+34 半对)", p.parseClassTime("1034").isEmpty())
+        assertTrue("非数字拒", p.parseClassTime("1030a").isEmpty())
+        assertTrue("day=0 拒", p.parseClassTime("0304").isEmpty())
+        assertTrue("day=8 拒", p.parseClassTime("8304").isEmpty())
+        assertTrue("end<start 拒", p.parseClassTime("14213").isEmpty())
+        assertTrue("空串拒", p.parseClassTime("").isEmpty())
+        assertTrue("负号拒", p.parseClassTime("-10304").isEmpty())
     }
 
     @Test
@@ -286,5 +291,63 @@ class JwQzAppParserTest {
         assertTrue(JwQzAppParser(source).generateCourseList().isEmpty())
         val junk = """{"weeks":[null,"x",3,{"data":{"courses":[]}}]}"""
         assertTrue(JwQzAppParser(junk).generateCourseList().isEmpty())
+    }
+
+
+    // ===== 多周合并 + 连堂多段 classTime (2026-09-11 学生三周采集包实锤) =====
+
+    private fun loadMultiweekFixture(): String {
+        val stream = javaClass.classLoader?.getResourceAsStream(
+            "jw/fixtures/qz_app/curriculum.multiweek.sample.json"
+        )
+        assertNotNull("fixture jw/fixtures/qz_app/curriculum.multiweek.sample.json 应存在", stream)
+        return stream!!.bufferedReader().use { it.readText() }
+    }
+
+    @Test
+    fun `multiweek real captures - 9 courses 29 JwCourse no loss`() {
+        val courses = JwQzAppParser(loadMultiweekFixture()).generateCourseList()
+        assertEquals(29, courses.size)
+        val names = courses.map { it.name }.toSet()
+        assertEquals(
+            "9 门课全保留 (ITMC 曾因 9 位 classTime 被丢)",
+            setOf(
+                "ITMC市场营销沙盘模拟（二）",
+                "商务数据分析",
+                "客户关系管理",
+                "广告策划与创意",
+                "数字营销",
+                "消费行为分析",
+                "短视频策划与制作",
+                "管理学",
+                "财务管理（市场营销专业）",
+            ),
+            names,
+        )
+    }
+
+    @Test
+    fun `multiweek real captures - ITMC two back-to-back segments on Wednesday`() {
+        val courses = JwQzAppParser(loadMultiweekFixture()).generateCourseList()
+        val itmc = courses.filter { it.name == "ITMC市场营销沙盘模拟（二）" }
+        // classTime "301020304" = 周三 1-2 + 3-4 两段; classWeek 11-19 → 2 段周次 = 2 JwCourse
+        val segs = itmc.map { Triple(it.day, it.startNode, it.endNode) }.toSet()
+        assertEquals("周三 1-2 与 3-4 两段都在", setOf(Triple(3, 1, 2), Triple(3, 3, 4)), segs)
+        itmc.forEach {
+            assertEquals("周次 11-19", 11, it.startWeek)
+            assertEquals(19, it.endWeek)
+        }
+    }
+
+    @Test
+    fun `multiweek real captures - cross-week duplicate rows collapsed, distinct rooms kept`() {
+        val courses = JwQzAppParser(loadMultiweekFixture()).generateCourseList()
+        // 广告策划与创意: 周一3-4 (Z5-117) + 周二5-6 (Z5-103, 7-15) — 两行不同教室都保留
+        val ad117 = courses.filter { it.name == "广告策划与创意" && it.room == "Z5-117" }
+        val ad103 = courses.filter { it.name == "广告策划与创意" && it.room == "Z5-103" }
+        assertTrue("Z5-117 行保留", ad117.isNotEmpty())
+        assertTrue("Z5-103 行保留 (只在 7-15 周响应出现)", ad103.isNotEmpty())
+        assertEquals(7, ad103[0].startWeek)
+        assertEquals(15, ad103[0].endWeek)
     }
 }
