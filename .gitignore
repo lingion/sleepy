@@ -46,3 +46,5 @@ CONTRIBUTING.md
 # 2026-09-09 task-7-report.md 误入库已移除,整目录兜底忽略。
 .superpowers/
 
+# 设计文档 — 纯本地,永不上传(2026-09-11 用户定版)
+docs/sop/design/
