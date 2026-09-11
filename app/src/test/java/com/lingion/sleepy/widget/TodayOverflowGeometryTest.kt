@@ -144,17 +144,17 @@ class TodayOverflowGeometryTest {
     @Test
     fun `strip factory uses fixed-height today pages`() {
         val svc = widgetSource("ScrollStripService.kt").readText()
-        val body = svc.substringAfter("override fun onDataSetChanged")
-        // v9.2 契约: Today 条带 = 多个固定 viewport 高的页 (pageOffsetsDp 分页,
-        // 末页贴底) — launcher 不再被要求量测/滚动一个超高单 child (v9.1 窄容器
-        // 「只显两节+下滑空白」根因); 行高仍显式钉死 (v3 量测自由零容忍保留)。
+        val body = svc.substringAfter("fun onDataSetChangedInner")
+        // v9.3 契约: Today 条带 = 多个固定 viewport 高的页 (pageOffsetsDp 分页,
+        // 末页贴底) — 每页 = 虚拟长条的完整 viewport raw crop 窗 (v9.3 修复 v9.2
+        // 步长混搭口径的页重叠/空带); 行高仍显式钉死 (v3 量测自由零容忍保留)。
         assertTrue(
             "Today 条带必须按 pageOffsetsDp 分页",
-            body.contains("pageOffsetsDp") && body.contains("pages = offsets.map")
+            body.contains("pageOffsetsDp") && body.contains("pageOffsetDp = offset")
         )
         assertTrue(
             "Today 每页高度必须等于当前 widget viewport",
-            body.contains("wDp.toFloat(), hDp.toFloat()") && body.contains("pageOffsetDp = offset")
+            body.contains("wDp.toFloat(), hDp.toFloat()")
         )
         assertTrue(
             "行高仍须 setViewLayoutHeight 显式钉死 (v3 契约保留)",
@@ -170,6 +170,57 @@ class TodayOverflowGeometryTest {
         assertTrue(
             "SCOPE_TODAY 内容高必须经 TodayRowGeometry (与渲染同一真值, 禁 todayContentHeightDp 旁路)",
             body.contains("TodayRowGeometry")
+        )
+    }
+
+    // ---- v9.3: binder 线程防御 + 续页无头 + 逐页世代闸 ----
+
+    @Test
+    fun `getViewAt and getCount snapshot strips and never throw on binder thread`() {
+        // onDataSetChanged 与 getViewAt 是独立 binder 池线程 — strips 是可变 var,
+        // wholesale 重赋值期间 getViewAt(position) 可拿旧 size 炸 ArrayIndexOutOfBounds
+        // (杀进程级)。锁法: 先局部 snapshot, 再越界判空回退, 禁裸 strips[position]。
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        val viewAt = svc.substringAfter("override fun getViewAt").substringBefore("override fun getLoadingView")
+        assertTrue(
+            "getViewAt 必须先取局部 snapshot (禁裸读可变 var strips)",
+            viewAt.contains("val snapshot = strips") || viewAt.contains("val snapshot = this.strips")
+        )
+        assertTrue(
+            "getViewAt 必须越界判空回退 (binder 线程禁 throw)",
+            Regex("position >= snapshot\\.size").containsMatchIn(viewAt)
+        )
+        val count = svc.substringAfter("override fun getCount").substringBefore("override fun getViewAt")
+        assertTrue(
+            "getCount 必须同 pattern snapshot (与 getViewAt 同源, 禁裸 strips.size)",
+            count.contains("val snapshot = strips") || count.contains("val snapshot = this.strips")
+        )
+    }
+
+    @Test
+    fun `onDataSetChanged wraps binder entry in try catch with safe fallback`() {
+        // loadDataSync / renderToday 任何 throw (OOM / createBitmap 0px …) 在 binder
+        // 线程裸抛 = 杀进程。锁法: try/catch 包体, 失败路径落单页安全回退。
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        val body = svc.substringAfter("override fun onDataSetChanged")
+        assertTrue("onDataSetChanged 必须 try/catch 包体 (binder 线程防御边界)", body.contains("try"))
+        assertTrue(
+            "失败路径必须有安全回退页 (strips = listOf) 而非留旧值裸奔",
+            Regex("catch \\([^)]*Throwable").containsMatchIn(body)
+        )
+    }
+
+    @Test
+    fun `generation checked between page renders`() {
+        // resize 拖拽期间每次中间尺寸都跑完整个 N 页渲染才被末道闸丢弃 — 锁法:
+        // 页循环体内 (for offset in offsets … renderToday) 再查一次 isStale,
+        // 中途世代变更即提前退出。锚点 = 循环体本身 (禁退化成全文 grep)。
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        val loop = svc.substringAfter("for (offset in offsets)")
+            .substringBefore("pages = rendered")
+        assertTrue(
+            "页循环体内必须再查 isStale (逐页世代闸, 拖拽期中间尺寸即停)",
+            loop.contains("isStale")
         )
     }
 
@@ -214,6 +265,39 @@ class TodayOverflowGeometryTest {
             dir = dir.parentFile
         }
         error("layout dir not found")
+    }
+
+    // ---- v9.3: 续页无头契约 (页 0 例外) + API26-30 行高退化说明 ----
+
+    @Test
+    fun `continuation pages render headerless and page zero keeps header`() {
+        // 页 0 与静态壳图同参同函数 (offset=0, 头部在图里) = 逐像素一致;
+        // 条带页 >= 1 由 ScrollStripService 显式传 pageOffsetDp>0 → 渲染端跳头部。
+        // 服务端锁法: pages map 必须 pageOffsetDp = offset (v9.3 起 offset>0 页无头)。
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        val todayBody = svc.substringAfter("SCOPE_TODAY ->").substringBefore("SCOPE_TWODAY ->")
+        assertTrue(
+            "条带每页必须透传 pageOffsetDp = offset (续页无头闸在渲染端, 服务端不得吞 offset)",
+            todayBody.contains("pageOffsetDp = offset")
+        )
+        // 渲染端锁法在 TodayOverflowScrollParityTest (header block skips continuation
+        // pages): emptyHeader && pageOffsetDp <= 0f 双条件。
+    }
+
+    @Test
+    fun `strip row layout documents pre-API31 degradation`() {
+        // API26-30: setViewLayoutHeight 是 API31+ — 行高兜底固定 dp 无法跟随每页位图高。
+        // 已评估的替代 (RemoteViews 无 per-row API, match_parent 在 OPPO 上重现量错高
+        // 翻车) 均不可行 → 保留固定 dp 兜底 + 注释显式声明退化, 禁静默。
+        val xml = layoutFile("widget_scroll_row.xml").readText()
+        assertTrue(
+            "API<31 行高退化必须在布局注释里显式声明 (禁静默退化)",
+            xml.contains("API") && xml.contains("31")
+        )
+        assertTrue(
+            "行高必须有固定 dp 兜底 (ScrollStripWholeImageTest 同契约保留)",
+            Regex("layout_height=\"\\d+dp\"").containsMatchIn(xml)
+        )
     }
 
     // ---- 修复 3: overscroll stretch 禁用 (Android 12+ 纵向拉伸 = 跟手巨卡) ----

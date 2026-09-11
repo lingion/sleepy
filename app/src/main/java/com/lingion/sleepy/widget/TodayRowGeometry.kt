@@ -80,22 +80,35 @@ object TodayRowGeometry {
             ?: contentTopDp(headerSpace) + PAD_BOTTOM_DP
 
     /**
-     * v9.2 固定高页 offset 序列 — 条带每个 child 高度恒等于容器可视高,
-     * 末页对齐内容底部 (offset 钳到 maxOffset), 不再依赖 launcher 对单个
-     * 超高 child 的量测/滚动处理 (v9.1 窄容器「只显两节+滚动空白」根因)。
-     * 可视行高 = 容器高 − 内容顶 pad − 底 pad; 一页都装不下 (clamp) 时
-     * 至少给 1dp 防死循环。
+     * 条带页数硬上限 — onDataSetChanged 在 binder 线程同步渲染全部页, 无上限的
+     * offset 序列 = 失控的位图分配 (v9.2 退化视口 1dp 步进 → O(contentH) 张的根因)。
+     */
+    const val MAX_PAGES = 20
+
+    /**
+     * v9.3 固定高页 offset 序列 — 条带每个 child 高度恒等于容器视口高, 每页 =
+     * 虚拟长条 (行按 raw 内容坐标画) 的完整视口 raw crop 窗: 步长 = viewportHeightDp
+     * (整窗推进, 页间零重叠), 末页 offset 钳到 contentH − viewport (贴底),
+     * 页 0 恒 offset=0 (与壳图逐像素同参)。不再依赖 launcher 对单个超高 child 的
+     * 量测/滚动处理 (v9.1 窄容器「只显两节+滚动空白」根因)。
+     *
+     * v9.2 翻车: 步长错用可视行高 (viewport − 顶 pad − 底 pad) 而每页位图是完整
+     * viewport 高 → 页间重叠 52dp (跨缝行两页各画一遍) + 每页底部 52dp 空带。
+     *
+     * 退化视口 (连一行课 = 顶 pad + 行高 + 底 pad 都装不下) 单页兜底 —
+     * v9.2 coerceAtLeast(1f) 后按 1dp 步进 = 失控页数根因; 另以 MAX_PAGES 封顶,
+     * 封顶后末页仍钳到 maxOffset (贴底语义不破)。
      */
     fun pageOffsetsDp(contentHeightDp: Float, viewportHeightDp: Float, headerSpace: Boolean): List<Float> {
         if (contentHeightDp <= viewportHeightDp) return listOf(0f)
-        val visibleHeight = (viewportHeightDp - contentTopDp(headerSpace) - PAD_BOTTOM_DP)
-            .coerceAtLeast(1f)
-        val maxOffset = (contentHeightDp - visibleHeight).coerceAtLeast(0f)
+        val minViewport = contentTopDp(headerSpace) + PAD_BOTTOM_DP + ROW_H_DP
+        if (viewportHeightDp < minViewport) return listOf(0f)
+        val maxOffset = (contentHeightDp - viewportHeightDp).coerceAtLeast(0f)
         val offsets = ArrayList<Float>()
         var offset = 0f
-        while (offset < maxOffset) {
+        while (offset < maxOffset && offsets.size < MAX_PAGES - 1) {
             offsets += offset
-            offset += visibleHeight
+            offset += viewportHeightDp
         }
         if (offsets.isEmpty() || offsets.last() != maxOffset) offsets += maxOffset
         return offsets

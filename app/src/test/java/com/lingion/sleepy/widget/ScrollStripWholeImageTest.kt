@@ -79,8 +79,9 @@ class ScrollStripWholeImageTest {
             svc.contains("TypedValue.COMPLEX_UNIT_DIP")
         )
         assertTrue(
-            "getCount 必须恒等 strips.size (空 adapter 安全: stale/异常路径 strips 为空 → count=0 不触 getViewAt; 写死 1 = 越界崩溃)",
-            Regex("getCount\\(\\)[^=]*=\\s*strips\\.size").containsMatchIn(svc)
+            "getCount 必须恒等 strips.size (空 adapter 安全: stale/异常路径 strips 为空 → count=0 不触 getViewAt; 写死 1 = 越界崩溃); v9.3 起读法 = 局部 snapshot (binder 线程防撕裂)",
+            Regex("getCount\\(\\)[^=]*=\\s*strips\\.size").containsMatchIn(svc) ||
+                Regex("getCount\\(\\)[\\s\\S]*?val snapshot = strips[\\s\\S]*?snapshot\\.size").containsMatchIn(svc)
         )
         assertTrue(
             "世代闸必须保留 (isStale 双道校验, resize 竞态防御不回退)",

@@ -49,6 +49,14 @@ class ScrollStripService : RemoteViewsService() {
         private val scope = intent.getStringExtra(EXTRA_SCOPE) ?: SCOPE_TODAY
         // 长图是否去头 (今日导航版 true: 真实视图顶栏覆盖 ListView 之上, 长图再画标题=双重标题)
         private val emptyHeader = intent.getBooleanExtra(EXTRA_EMPTY_HEADER, false)
+
+        /**
+         * 条带页位图 — onDataSetChanged (binder 线程 A) 整表重赋值, getViewAt
+         * (binder 线程 B) 按下标读。RemoteViewsService 对两者无互斥 → 读取侧必须
+         * 先取局部 snapshot 再下标 (v9.3: 裸 strips[position] 撞上收缩重赋值 =
+         * ArrayIndexOutOfBounds 杀进程根因)。
+         */
+        @Volatile
         private var strips: List<Bitmap> = emptyList()
 
         override fun onCreate() {}
@@ -57,7 +65,31 @@ class ScrollStripService : RemoteViewsService() {
             // 长图经 createBitmap 共享像素缓冲时严禁 recycle, 交 GC 统一回收。
         }
 
+        /**
+         * 空白安全回退行 — binder 线程防御边界: 任何渲染异常/越界都退到这里,
+         * 绝不向 binder 线程抛 (RemoteViewsFactory 未捕获异常 = 杀进程)。
+         * 不 recycle 共享像素 (同 onDestroy 注释)。
+         */
+        private fun blankRowViews(position: Int, total: Int): RemoteViews =
+            RemoteViews(context.packageName, R.layout.widget_scroll_row).apply {
+                setOnClickFillInIntent(R.id.widget_row_bitmap, Intent())
+                setContentDescription(
+                    R.id.widget_row_bitmap, "whole ${position + 1}/$total $scope id=$widgetId blank"
+                )
+            }
+
         override fun onDataSetChanged() {
+            try {
+                onDataSetChangedInner()
+            } catch (e: Throwable) {
+                // binder 线程防御边界 (v9.3): loadDataSync / createBitmap(0px) / OOM
+                // 任何 throw 裸抛 = 杀进程。落空白单页, launcher 端至少不闪旧内容之外的东西。
+                android.util.Log.e("ScrollStrip", "onDataSetChanged failed id=$widgetId", e)
+                strips = emptyList()
+            }
+        }
+
+        private fun onDataSetChangedInner() {
             val awm = AppWidgetManager.getInstance(context)
             val opts = awm.getAppWidgetOptions(widgetId)
             val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
@@ -85,20 +117,30 @@ class ScrollStripService : RemoteViewsService() {
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
                     rowCount = TodayRowGeometry.rowSpans(d.courses, emptyHeader).size
                     val renderH = ceil(contentHdp)
-                    // v9.2 修复: 窄高容器里 launcher 对一个超高 child 的滚动处理
-                    // 不可靠 (实测只显首屏约两节, 下滑即空)。改成多页固定高: 每页
-                    // height=hDp, 用 pageOffsetDp 让可见过滤只看这一页; 末页
-                    // offset 对齐内容底 (TodayRowGeometry.pageOffsetsDp 钳到
-                    // maxOffset)。壳图是首屏高度, 与第一页逐像素一致。
+                    // v9.3 修复: 每页 = 虚拟长条的完整 viewport raw crop 窗 —
+                    // pageOffsetsDp 整窗步进 (零重叠), 末页钳到内容底; 渲染端行窗
+                    // = 完整位图高 (v9.2 窗/步长混搭口径的页重叠+空带根因已根除)。
+                    // 状态内容 (无课表/学期外/无课) 恒单页 (todayContentHeightDp
+                    // 只报顶 pad 高 + renderToday 入口闸双保险)。
                     val offsets = TodayRowGeometry.pageOffsetsDp(renderH, hDp.toFloat(), emptyHeader)
-                    pages = offsets.map { offset ->
-                        WidgetBitmapRenderers.renderToday(
+                    var idx = 0
+                    val rendered = ArrayList<Bitmap>(offsets.size)
+                    for (offset in offsets) {
+                        // 世代闸逐页 (v9.3): resize 拖拽期间每个中间尺寸都曾跑完全部
+                        // N 页才被末道闸丢弃 — 页间再查, 世代已变即提前退出省整轮渲染。
+                        if (genBefore > 0 && WidgetResizeCore.isStale(widgetId, genBefore)) {
+                            android.util.Log.d("ScrollStrip", "skip stale mid-render id=$widgetId gen=$genBefore page=$idx/${offsets.size}")
+                            return
+                        }
+                        rendered += WidgetBitmapRenderers.renderToday(
                             context, d, wDp.toFloat(), hDp.toFloat(),
                             emptyHeader = emptyHeader, pageOffsetDp = offset,
                             headerSpace = emptyHeader
                         )
+                        idx++
                     }
-                    full = pages.first()
+                    pages = rendered
+                    full = rendered.firstOrNull()
                 }
                 SCOPE_TWODAY -> {
                     val d = TwoDayWidgetReceiver.loadDataSync(context, widgetId)
@@ -114,6 +156,7 @@ class ScrollStripService : RemoteViewsService() {
                 }
                 else -> return
             }
+            val newStrips = pages ?: listOf(full!!)
 
             // 世代闸第二道: 渲染是重活, commit 前再验一次 — 期间落了新触发就丢弃
             // (旧 strips 原地保留 = launcher 端 ListView 继续显示上一份完整内容, 不闪空)。
@@ -121,18 +164,30 @@ class ScrollStripService : RemoteViewsService() {
                 android.util.Log.d("ScrollStrip", "skip stale strips id=$widgetId gen=$genBefore")
                 return
             }
-            strips = pages ?: listOf(full!!)
-            val firstStrip = strips.first()
+            strips = newStrips
+            val firstStrip = newStrips.first()
             android.util.Log.d("ScrollStrip",
-                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${firstStrip.height / density}dp rows=$rowCount strips=${strips.size}")
+                "scope=$scope id=$widgetId ${wDp}x${hDp}dp content=${contentHdp}dp render=${firstStrip.height / density}dp rows=$rowCount strips=${newStrips.size}")
         }
 
-        /** count 恒等 strips.size — stale/异常路径空 adapter (count=0) 绝不触 getViewAt 越界。 */
-        override fun getCount(): Int = strips.size
+        /**
+         * count 恒等 strips.size — stale/异常路径空 adapter (count=0) 绝不触
+         * getViewAt 越界; 读法与 getViewAt 同 pattern (局部 snapshot, 同源无撕裂)。
+         */
+        override fun getCount(): Int {
+            val snapshot = strips
+            return snapshot.size
+        }
 
-        override fun getViewAt(position: Int): RemoteViews =
-            RemoteViews(context.packageName, R.layout.widget_scroll_row).apply {
-                val bmp = strips[position]
+        override fun getViewAt(position: Int): RemoteViews {
+            // v9.3: onDataSetChanged 与 getViewAt 是独立 binder 池线程 — 先取局部
+            // snapshot, 越界回退空白行, 绝不在 binder 线程 throw (杀进程)。
+            val snapshot = strips
+            if (position < 0 || position >= snapshot.size) {
+                return blankRowViews(position, snapshot.size)
+            }
+            val bmp = snapshot[position]
+            return RemoteViews(context.packageName, R.layout.widget_scroll_row).apply {
                 setImageViewBitmap(R.id.widget_row_bitmap, bmp)
                 // v3 核心: 行高显式钉死 = 位图真实 dp 高。launcher 端 ListView 直接
                 // 拿到确定值, 无 wrap_content 量测 (v2 量错高根因), 无 48dp 切片
@@ -146,11 +201,12 @@ class ScrollStripService : RemoteViewsService() {
                 }
                 // 真机取证标签 (adb uiautomator 可读): 位图实际像素高也带上
                 setContentDescription(
-                    R.id.widget_row_bitmap, "whole ${position + 1}/${strips.size} $scope id=$widgetId bmp=${bmp.width}x${bmp.height}"
+                    R.id.widget_row_bitmap, "whole ${position + 1}/${snapshot.size} $scope id=$widgetId bmp=${bmp.width}x${bmp.height}"
                 )
                 // 空 Intent 合并进 ListView 的 PendingIntentTemplate (打开 app)
                 setOnClickFillInIntent(R.id.widget_row_bitmap, Intent())
             }
+        }
 
         override fun getLoadingView(): RemoteViews? = null
 

@@ -189,8 +189,21 @@ object WidgetBitmapRenderers {
         pageOffsetDp: Float = 0f,
         headerSpace: Boolean = false
     ): Bitmap {
-        return renderTodayRegular(context, data, wDp, hDp, emptyHeader, pageOffsetDp, headerSpace)
+        // v9.3: 状态内容 (无课表/学期外/无课) 强制单页 — 状态分支画固定 y,
+        // 分页只会产出 N 张同图; 单页兜底闸在这里, 条带端无须逐 scope 重复。
+        val effectiveOffset = if (isTodayStatusContent(data)) 0f else pageOffsetDp
+        return renderTodayRegular(context, data, wDp, hDp, emptyHeader, effectiveOffset, headerSpace)
     }
+
+    /**
+     * Today 状态内容判定 (纯 JVM 可测) — 无课表 / 学期外 / 无课。
+     * 与 renderTodayRegular 的三个提前 return 分支逐一对应:
+     * 这些内容在固定 y 画状态行, 无可翻页的行轴 → 强制 pageOffset=0。
+     */
+    fun isTodayStatusContent(data: WidgetData): Boolean =
+        !data.hasTable ||
+            data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE ||
+            data.courses.isEmpty()
 
     /**
      * 小档纯文本行(渲染与单测共用单一事实来源)。空课表/学期外也各有对应一行。
@@ -330,7 +343,10 @@ object WidgetBitmapRenderers {
         // 标题行 — emptyHeader=true 时整体不画: 今日导航版顶栏用真实 RemoteViews 视图
         // (TextView 标题 + 三角按钮) 覆盖, bitmap 头部留白防双重标题; y 前进量保留 →
         // 内容纵坐标与带头渲染逐像素一致。WeekGrid 最小档等旧调用方 (false) 逐字节不变。
-        if (!emptyHeader) {
+        // v9.3: 续页 (pageOffsetDp > 0) 同样不画 — 每页是虚拟长条的完整 viewport raw
+        // crop, 再画头 = 第 2 页起每页重复一份 ‹›/标题/右侧槽位 (v9.2 只看 emptyHeader
+        // 的根因)。页 0 (offset=0) 与静态壳图同参同函数, 逐像素一致。
+        if (!emptyHeader && pageOffsetDp <= 0f) {
             val header = todayHeaderParts(
                 data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate
             ) { ctx.getString(it) }
@@ -418,18 +434,18 @@ object WidgetBitmapRenderers {
         val sepColor = (s.onSurface and 0x00FFFFFF) or 0x4D000000  // 30% 黑(浅色主题下=浅灰细线)
         val stackGap = 3f * density
         // v4 翻页: 行是原子单元 (冲突分栏行不可拦腰切)。先按全展开 y 推进一遍算出
-        // 每行的 [top, bottom) px 区间, 落在 [offset, offset+页可视高) 的行才画;
+        // 每行的 [top, bottom) px 区间, 落在 [offset, offset+位图全高) 的行才画;
         // 绘制时 y = rowTop − offset — 行内相对布局与全展开渲染逐像素一致。
         // v8: 行几何单一真值 — span 起点随 headerSpace 参数化 (旧硬编码 14+24 = 去头
         // 条带顶部 24dp 死带 + 末行被可见过滤丢弃的镜像失配根因)。
+        // v9.3: 窗 = 完整位图高 h (每页 = 虚拟长条的完整 viewport raw crop) —
+        // v9.2 窗扣 52dp chrome 而页位图是全 viewport 高 → 页间重叠 + 页底空带根因。
         val offsetPx = pageOffsetDp * density
-        val contentTopPx = TodayRowGeometry.contentTopDp(headerSpace) * density
-        val pageVisiblePx = h - contentTopPx - TodayRowGeometry.PAD_BOTTOM_DP * density
         data class RowSpan(val row: com.lingion.sleepy.util.ConflictLayoutEngine.WeekLaneRow,
                            val topPx: Float, val bottomPx: Float)
         val spans = TodayRowGeometry.rowSpans(data.courses, headerSpace)
             .map { RowSpan(it.row, it.topDp * density, it.bottomDp * density) }
-        val visible = spans.filter { it.bottomPx > offsetPx && it.topPx < offsetPx + pageVisiblePx }
+        val visible = spans.filter { it.bottomPx > offsetPx && it.topPx < offsetPx + h }
         visible.forEach { span ->
             val row = span.row
             val y = span.topPx - offsetPx
@@ -476,13 +492,11 @@ object WidgetBitmapRenderers {
      * v7.10.11: 冲突分栏行高按最高栏堆叠数算(与 renderToday 分栏镜像)。
      * v6 headerSpace: true 时头部 24dp 前进量不计 (条带去头, 顶栏是布局独立行),
      * 与 renderToday(headerSpace=true) 逐常量镜像。
+     * v9.3: 状态内容 (无课表/学期外/无课) 报单页高度 (顶 pad 之内, ≤ 任何 sane
+     * viewport) — 状态分支画固定 y, 报为可翻页内容 = 条带产出 N 张同图根因。
      */
     fun todayContentHeightDp(data: WidgetData, headerSpace: Boolean = false): Float {
-        // 空态分支沿用旧口径 (单行状态文本 + 各自 pad)
-        if (!data.hasTable) return TodayRowGeometry.contentTopDp(headerSpace) + 20f
-        if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE)
-            return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
-        if (data.courses.isEmpty()) return TodayRowGeometry.contentTopDp(headerSpace) + 22f + 14f
+        if (isTodayStatusContent(data)) return TodayRowGeometry.contentTopDp(headerSpace)
         // v8: 行几何单一真值 — 与 renderTodayRegular 同调 TodayRowGeometry (镜像失配根除)
         return TodayRowGeometry.contentHeightDp(data.courses, headerSpace)
     }

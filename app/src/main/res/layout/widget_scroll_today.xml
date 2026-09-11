@@ -14,6 +14,10 @@
         android:layout_height="match_parent"
         android:scaleType="fitXY"
         android:adjustViewBounds="false" />
+    <!-- v9.3 已知退化 (评估后不修): resize 拖拽期间 host view 连续变化, 壳图只按
+         最后 commit 尺寸渲染 → 拖拽中途 fitXY 会短暂拉伸旧壳, 新 commit 落地即恢复。
+         根因是 commit-vs-drag 时序 (世代闸刻意丢弃中间提交), 非任何 scaleType 可解:
+         fitCenter 会把旧壳缩出黑边, 更差。世代闸收敛语义保留, 在此留档。 -->
     <ListView
         android:id="@+id/widget_strip_list"
         android:overScrollMode="never"
