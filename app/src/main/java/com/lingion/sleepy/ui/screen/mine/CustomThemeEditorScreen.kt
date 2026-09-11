@@ -1,5 +1,6 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import androidx.core.graphics.toColorInt
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -337,7 +338,7 @@ private fun ActionEntry(
 private fun RoleRow(title: String, desc: String, swatchHex: String, onClick: () -> Unit) {
     val colors = SleepyTheme.colors
     val swatch = remember(swatchHex) {
-        runCatching { Color(android.graphics.Color.parseColor(swatchHex)) }
+        runCatching { Color(swatchHex.toColorInt()) }
             .getOrDefault(colors.surfaceVariant)
     }
     Row(

@@ -677,7 +677,6 @@
     <string name="theme_mode_system">深浅色跟随系统</string>
     <string name="theme_mode_light">浅色</string>
     <string name="theme_mode_dark">深色</string>
-        <string name="theme_custom_section">自定义主题</string>
     <string name="theme_new">新建主题</string>
     <string name="theme_custom_edit">编辑主题</string>
     <string name="theme_custom_name_label">主题名称</string>

@@ -451,7 +451,6 @@
     <string name="theme_mode_system">深淺色跟隨系統</string>
     <string name="theme_mode_light">淺色</string>
     <string name="theme_mode_dark">深色</string>
-        <string name="theme_custom_section">自訂主題</string>
     <string name="theme_new">新增主題</string>
     <string name="theme_custom_edit">編輯主題</string>
     <string name="theme_custom_name_label">主題名稱</string>

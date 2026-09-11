@@ -451,7 +451,6 @@
     <string name="theme_mode_system">明暗はシステムに従う</string>
     <string name="theme_mode_light">ライト</string>
     <string name="theme_mode_dark">ダーク</string>
-        <string name="theme_custom_section">カスタムテーマ</string>
     <string name="theme_new">新しいテーマ</string>
     <string name="theme_custom_edit">テーマを編集</string>
     <string name="theme_custom_name_label">テーマ名</string>

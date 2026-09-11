@@ -1,6 +1,7 @@
 package com.lingion.sleepy.data
 
 import android.content.Context
+import androidx.core.content.edit
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -134,9 +135,7 @@ object CustomThemeStore {
 
     private fun saveAll(ctx: Context, themes: List<CustomTheme>) {
         ctx.getSharedPreferences(CustomThemeCore.PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .putString(CustomThemeCore.KEY_THEMES, CustomThemeCore.toJson(themes))
-            .apply()
+            .edit { putString(CustomThemeCore.KEY_THEMES, CustomThemeCore.toJson(themes)) }
     }
 
     fun getAll(ctx: Context): List<CustomTheme> = loadAll(ctx)

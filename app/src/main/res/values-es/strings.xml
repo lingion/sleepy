@@ -451,7 +451,6 @@
     <string name="theme_mode_system">Automático (claro/oscuro)</string>
     <string name="theme_mode_light">Claro</string>
     <string name="theme_mode_dark">Oscuro</string>
-        <string name="theme_custom_section">Temas personalizados</string>
     <string name="theme_new">Nuevo tema</string>
     <string name="theme_custom_edit">Editar tema</string>
     <string name="theme_custom_name_label">Nombre del tema</string>

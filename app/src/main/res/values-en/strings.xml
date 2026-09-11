@@ -457,7 +457,6 @@
     <string name="theme_mode_system">Auto (light/dark)</string>
     <string name="theme_mode_light">Light</string>
     <string name="theme_mode_dark">Dark</string>
-        <string name="theme_custom_section">Custom themes</string>
     <string name="theme_new">New theme</string>
     <string name="theme_custom_edit">Edit theme</string>
     <string name="theme_custom_name_label">Theme name</string>

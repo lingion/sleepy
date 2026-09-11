@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component
 
+import androidx.core.graphics.toColorInt
 import androidx.compose.foundation.Canvas
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
@@ -52,7 +54,7 @@ fun ColorPickerDialog(
     // 解析初始 HSV
     val initialHSV = remember {
         val hsv = FloatArray(3)
-        val rgb = runCatching { android.graphics.Color.parseColor(initialHex) }
+        val rgb = runCatching { initialHex.toColorInt() }
             .getOrDefault(0xFF6750A4.toInt())
         android.graphics.Color.colorToHSV(rgb, hsv)
         hsv
