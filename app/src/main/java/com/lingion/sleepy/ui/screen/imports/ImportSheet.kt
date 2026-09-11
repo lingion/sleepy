@@ -1353,9 +1353,16 @@ private suspend fun applyImportPreview(
                 onError(context.getString(R.string.import_all_conflict))
                 return
             }
-            // v7.10.12 三层闸门(追加模式) — 合并现有课+新课后按区域数栏, 超 2 栏的课剔除;
-            // 全被剔除则报错, 部分剔除则提示跳过了哪些天的课
-            val survivors = dropThreeLayerCourses(preview.existingCourses, cleanCourses)
+            // v7.10.16x 三层闸门改相对判定(用户 2026-09-10 报"预览 8 门全不冲突,
+            // 仅追加不冲突却 toast 全部冲突"): 旧 dropThreeLayerCourses 用
+            // daysExceedingTwoLanes **绝对**判定 — 目标表本来就有超层天(此前追加过
+            // 冲突课表)时, 那天上的无辜候选全剔, 误报全冲突。与 AppendAsNew
+            // (v7.10.16j)同规: 只剔**让某天新超 2 层**的候选(因它而恶化才拦),
+            // 原表已有超层不再连坐。
+            val survivors = cleanCourses.filter { cand ->
+                com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(preview.existingCourses + cand) ==
+                    com.lingion.sleepy.util.ConflictLayoutEngine.daysExceedingTwoLanes(preview.existingCourses)
+            }
             if (survivors.isEmpty()) {
                 onError(context.getString(R.string.import_all_conflict))
                 return
@@ -1482,10 +1489,12 @@ private suspend fun applyImportPreview(
 }
 
 /**
- * v7.10.12 三层冲突闸门(导入路径) — keepers 保持不变, 候选逐门试探:
- * 加入后若使其所在 day 的 chainGroups 分组数 > 2 则剔除该候选。
- * 策略: 导入数据服从闸门(超层课不入库), 现有课永不动。
+ * [已废止 v7.10.16x] 旧三层冲突闸门(追加路径唯一调用方已改相对判定, 与
+ * AppendAsNew v7.10.16j 同规) — 保留函数体便于回溯, 不再有调用方。
+ * 旧策略"导入数据服从闸门(超层课不入库)"在绝对判定下会连坐原表已有超层天
+ * 上的无辜候选, 即 2026-09-10 用户报的"预览全不冲突→追加报全冲突"根因。
  */
+@Suppress("unused")
 private fun dropThreeLayerCourses(
     keepers: List<com.lingion.sleepy.data.entity.CourseEntity>,
     candidates: List<com.lingion.sleepy.data.entity.CourseEntity>
