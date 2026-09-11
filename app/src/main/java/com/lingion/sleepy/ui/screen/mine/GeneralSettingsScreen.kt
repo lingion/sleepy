@@ -192,38 +192,6 @@ fun GeneralSettingsScreen(
                 )
             }
 
-            // issue#26 课程别名: 周视图场景 原名/别名 二选一
-            item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_week_alias),
-                    options = listOf(
-                        stringResource(R.string.settings_name_original),
-                        stringResource(R.string.settings_name_alias)
-                    ),
-                    selectedKey = if (weekUseAlias) 1 else 0,
-                    onSelect = { i ->
-                        val v = i == 1
-                        weekUseAlias = v; AppPrefs.setWeekUseAlias(context, v)
-                    }
-                )
-            }
-
-            // issue#26 课程别名: 网格场景 原名/别名 二选一
-            item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_grid_alias),
-                    options = listOf(
-                        stringResource(R.string.settings_name_original),
-                        stringResource(R.string.settings_name_alias)
-                    ),
-                    selectedKey = if (gridUseAlias) 1 else 0,
-                    onSelect = { i ->
-                        val v = i == 1
-                        gridUseAlias = v; AppPrefs.setGridUseAlias(context, v)
-                    }
-                )
-            }
-
             // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
             item {
                 SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
@@ -330,6 +298,19 @@ fun GeneralSettingsScreen(
                         label = stringResource(R.string.settings_week_hide_empty),
                         checked = weekHideEmptyDays,
                         onCheckedChange = { weekHideEmptyDays = it; AppPrefs.setWeekHideEmptyDays(context, it) }
+                    )
+                    // issue#26 课程别名: 周视图/网格场景 原名/别名 二选一, 关=原名 开=别名(自独立卡挪入, 行为零变化)
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_week_alias),
+                        checked = weekUseAlias,
+                        onCheckedChange = { weekUseAlias = it; AppPrefs.setWeekUseAlias(context, it) }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_grid_alias),
+                        checked = gridUseAlias,
+                        onCheckedChange = { gridUseAlias = it; AppPrefs.setGridUseAlias(context, it) }
                     )
                     // 表头日期 — 网格视图列头 + 小组件列头共用的开关
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
