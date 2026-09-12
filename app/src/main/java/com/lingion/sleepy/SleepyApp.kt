@@ -67,7 +67,7 @@ class SleepyApp : Application() {
     }
 
     /**
-     * 系统【运行时】切换深/浅色模式时联动刷新小组件。
+     * 系统【运行时】切换深/浅色模式或系统字体缩放 (fontScale) 时联动刷新小组件。
      *
      * Android 原生行为:configuration change 会让系统重发 APPWIDGET_UPDATE 给所有 widget。
      * 历史上 OPPO ColorOS 上 Glance 版 widget(Today/WeekList/TwoDay)因
@@ -76,15 +76,24 @@ class SleepyApp : Application() {
      *
      * 这里主动调 notifyDataChanged() 广播 APPWIDGET_UPDATE,强制全部 5 个
      * RemoteViews widget 重渲染,确保跟随系统主题。
+     *
+     * fontScale (issue#31 P3「字体遮盖箭头」残余): 顶栏档位 (navHeaderTier) 与
+     * bitmap 都在推送时定格 — 用户事后调大系统字体, launcher 会用新字号重 inflate
+     * 顶栏 TextView (sp 随宿主缩放), 但我们的档位判定/图不会自动重算, 最长要等
+     * 15-min periodic 兜底, 期间大字文本可能挤压箭头。fontScale 一变立即全量重推
+     * = 判定与实测同字体口径。
      */
     private var lastNightMode: Int = -1
+    private var lastFontScale: Float = -1f
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
-        // 仅夜间模式变化(深/浅色切换)才触发刷新,避免屏幕旋转等无谓刷新
+        // 仅夜间模式或字体缩放变化才触发刷新,避免屏幕旋转等无谓刷新
         val curNight = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
-        if (curNight != lastNightMode) {
+        val curFontScale = newConfig.fontScale
+        if (curNight != lastNightMode || curFontScale != lastFontScale) {
             lastNightMode = curNight
+            lastFontScale = curFontScale
             CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                 try {
                     WidgetUpdater.notifyDataChanged(this@SleepyApp)
