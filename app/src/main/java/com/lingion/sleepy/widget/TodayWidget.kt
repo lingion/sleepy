@@ -188,22 +188,6 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     com.lingion.sleepy.R.id.widget_today_header,
                     "header GONE tier=HIDE_NAV w=$wDp"
                 )
-                // 真实根因 (#31 P1 v1.0.55 真机复测): MagicOS launcher 端把 prev/next
-                // 当独立可点击元素保留, 即便父容器 GONE 也接 PendingIntent — 用户看到
-                // 两个 < > 形状以为是翻页按钮, 点了无反应 = 困惑 = 看似「箭头还在」。
-                // HIDE_NAV 档下把 prev/next 重绑成 tapIntent (开 App), 让 launcher 端
-                // 无论是否尊重 GONE, 行为都收敛到「点哪都是开 App」。
-                val tap = PendingIntent.getActivity(
-                    context, WidgetRoutes.tapRequestCode(widgetId),
-                    WidgetRoutes.tapIntent(context),
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                views.setOnClickPendingIntent(
-                    com.lingion.sleepy.R.id.widget_today_nav_prev, tap
-                )
-                views.setOnClickPendingIntent(
-                    com.lingion.sleepy.R.id.widget_today_nav_next, tap
-                )
                 return
             }
             views.setViewVisibility(
@@ -517,8 +501,15 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 val shell = WidgetBitmapRenderers.renderToday(
                     context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
                 )
+                // SMALL (2×2) 用专用布局 — 只画日期 TextView, 无 prev/next 三角形
+                // (issue#31 P1 v1.0.55 真机复测: MagicOS launcher 把 prev/next 当独立可点击
+                // 元素保留, 即便父容器 GONE 也接 PendingIntent, 用户看到 < > 以为是翻页。
+                // 2×2 是妥协结果 (用户定稿), 切换按钮直接去掉, 任何位置点按都开 App)。
+                val isSmall = variant == WidgetVariant.SMALL
                 val views = android.widget.RemoteViews(
-                    context.packageName, com.lingion.sleepy.R.layout.widget_today_nav_static
+                    context.packageName,
+                    if (isSmall) com.lingion.sleepy.R.layout.widget_today_small_nav
+                    else com.lingion.sleepy.R.layout.widget_today_nav_static
                 )
                 views.setImageViewBitmap(com.lingion.sleepy.R.id.widget_bitmap, shell)
                 val tap = PendingIntent.getActivity(
@@ -532,7 +523,35 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     com.lingion.sleepy.R.id.widget_bitmap,
                     "static ${wDp}x${hDp}dp content=$contentH id=$id"
                 )
-                configureTodayNav(context, views, id, receiverClass!!, data, wDp)
+                if (isSmall) {
+                    // SMALL (2×2) 专用: 只画日期标题 (居中), 无 prev/next/spacer/nav_today,
+                    // 整面 click = 开 App。configureTodayNav 不能走 — 它会给不存在的
+                    // view 设 click, RemoteViews 抛 ActionNotFoundException。
+                    val smallTitle = navTitle(
+                        data,
+                        DateUtils.localizedDay(data.date.dayOfWeek.value, context)
+                    )
+                    views.setTextViewText(
+                        com.lingion.sleepy.R.id.widget_today_nav_title, smallTitle
+                    )
+                    views.setTextViewTextSize(
+                        com.lingion.sleepy.R.id.widget_today_nav_title,
+                        TypedValue.COMPLEX_UNIT_SP, 13f
+                    )
+                    views.setTextColor(
+                        com.lingion.sleepy.R.id.widget_today_nav_title,
+                        WidgetBitmapRenderers.todayNavHeaderColors(context, data).title
+                    )
+                    views.setOnClickPendingIntent(
+                        com.lingion.sleepy.R.id.widget_today_nav_title, tap
+                    )
+                    views.setContentDescription(
+                        com.lingion.sleepy.R.id.widget_today_nav_title,
+                        "small $smallTitle ${wDp}x${hDp}dp"
+                    )
+                } else {
+                    configureTodayNav(context, views, id, receiverClass!!, data, wDp)
+                }
                 if (WidgetResizeCore.isStale(id, pushGen)) {
                     Log.d(TAG, "skip stale static push id=$id gen=$pushGen")
                     return

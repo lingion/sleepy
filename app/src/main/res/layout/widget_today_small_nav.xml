@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Today widget · SMALL (2×2) 静态布局 — 仅日期标题, 无 prev/next 三角形。
+     issue#31 P1 v1.0.55 真机复测: MagicOS launcher 端把 prev/next 当独立可点击
+     元素保留, 用户看到两个 < > 形状以为是翻页按钮, 点了无反应 = 困惑 = 「箭头还在」。
+     2×2 是妥协结果, 切换按钮去掉 (issue#31 用户定稿): 整条 header 只画日期
+     TextView, 任何位置点按都开 App, 与 bitmap 整面一致 — 无歧义。 -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/widget_scroll_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/widget_scroll_clip"
+    android:outlineProvider="background"
+    android:clipToOutline="true">
+
+    <ImageView
+        android:id="@+id/widget_bitmap"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:scaleType="fitXY"
+        android:adjustViewBounds="false"
+        android:contentDescription="@string/widget_today_small_label" />
+
+    <!-- 仅日期标题 — 居中, 36dp 高。点哪都开 App, 无翻页键、无回到今天键 -->
+    <TextView
+        android:id="@+id/widget_today_nav_title"
+        android:layout_width="match_parent"
+        android:layout_height="36dp"
+        android:gravity="center"
+        android:singleLine="true"
+        android:ellipsize="end"
+        android:textStyle="bold"
+        android:textSize="13sp" />
+</FrameLayout>
