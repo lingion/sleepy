@@ -43,6 +43,7 @@ class ScrollStripService : RemoteViewsService() {
             const val SCOPE_TODAY = "today"
             const val SCOPE_TWODAY = "twoday"
             const val SCOPE_WEEKLIST = "weeklist"
+            const val SCOPE_WEEKVIEW = "weekview"
         }
 
         private val widgetId = intent.getIntExtra(EXTRA_WIDGET_ID, -1)
@@ -133,6 +134,16 @@ class ScrollStripService : RemoteViewsService() {
                     contentHdp = WidgetBitmapRenderers.weekListContentHeightDp(context, d)
                     val renderH = ceil(contentHdp)
                     full = WidgetBitmapRenderers.renderWeekList(context, d, wDp.toFloat(), renderH)
+                }
+                SCOPE_WEEKVIEW -> {
+                    // issue#31 荣耀 4×5: 周视图内容超出 → 条带全展开长图 (课程数不裁 5)
+                    val d = WeekViewWidgetReceiver.loadDataSync(context, widgetId)
+                    contentHdp = WidgetBitmapRenderers.weekViewContentHeightDp(context, d, wDp.toFloat())
+                    val renderH = ceil(contentHdp)
+                    full = WidgetBitmapRenderers.renderWeekView(
+                        context, d, wDp.toFloat(), renderH,
+                        maxCoursesPerDay = Int.MAX_VALUE
+                    )
                 }
                 else -> return
             }

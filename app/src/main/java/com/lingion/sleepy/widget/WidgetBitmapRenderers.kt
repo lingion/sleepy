@@ -667,6 +667,59 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * issue#31: 周视图全展开内容高度 (dp) — 推送闸 (contentH ≤ hDp?) 与
+     * SCOPE_WEEKVIEW 条带长图共用同一函数 (口径分裂 = 壳图/条带错位)。
+     *
+     * 与 renderWeekViewRegular 排版逐项对应 (visibleDays 收窄由调用方先行:
+     * 推送闸读设置过滤; 条带工厂同参):
+     *   [状态行 16] + 列内: 标题 12+14 + chip(有课时) 14+4 + 课程行 (行高 + 3dp 间隔)
+     * 课程行高 = fontMetrics(9sp) — 与渲染同源, 无常量漂移。外层 pad 6×2。
+     */
+    fun weekViewContentHeightDp(context: Context, data: WeekData, wDp: Float): Float {
+        val outerPad = 6f
+        if (!data.hasTable) return outerPad * 2 + 20f
+        val visibleDays = AppPrefs.getVisibleDays(context)
+        val shownDays = if (visibleDays.isEmpty()) data.days
+            else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
+        if (shownDays.isEmpty()) return outerPad * 2 + 20f
+        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) 16f else 0f
+        val density = context.resources.displayMetrics.density
+        val p = android.graphics.Paint().apply {
+            textSize = 9f * density
+            typeface = android.graphics.Typeface.create(android.graphics.Typeface.DEFAULT, android.graphics.Typeface.NORMAL)
+        }
+        val fm = p.fontMetrics
+        val lineH = (fm.descent - fm.ascent) / density
+        // 列宽与渲染器同式 (wDp - pad*2 - gap*(n-1)) / n — 换行数依赖列宽,
+        // 宽度不同高度不同, 必须同参 (壳图/条带/闸门三方一致)
+        val colGap = 4f
+        val colW = (wDp - outerPad * 2 - colGap * (shownDays.size - 1)) / shownDays.size
+        val textPad = 4f
+        val maxTextWidth = colW - textPad * 2
+        val colH = shownDays.maxOf { day ->
+            var cy = statusH + 12f + 14f
+            if (day.courses.isNotEmpty()) {
+                cy += 14f + 4f
+                // 课程块: 行数与渲染器 wrapMax2Lines 同式 (别名口径也同源), 
+                // 行 = 1..2 行; 课程间 3dp 间隔 (含尾课收尾 3dp, 与渲染 idx==last 分支一致)
+                val useAlias = AppPrefs.isWidgetUseAlias(context)
+                day.courses.forEachIndexed { idx, course ->
+                    val name = CourseDisplayUtil.displayName(course, useAlias)
+                    val lines = wrapMax2Lines(name, p, maxTextWidth * density)
+                    cy += lines.size * lineH
+                    cy += 3f
+                    if (idx < day.courses.size - 1) {
+                        // 分隔线开关只影响线本身 1dp 的位置, 两侧半 gap 之和恒等 courseGap
+                        // (渲染: sep ? gap/2+line+gap/2 : gap — 垂直总高相同)
+                    }
+                }
+            }
+            cy
+        }
+        return outerPad * 2 + colH
+    }
+
+    /**
      * WeekList 小档纯文本行(渲染与单测共用单一事实来源)。
      * 状态资源与 renderWeekListRegular 各分支逐一对应:
      *   无课表→widget_create_schedule · 学期外→semester_not_started/semester_ended
@@ -964,13 +1017,15 @@ object WidgetBitmapRenderers {
      */
     fun renderWeekView(
         context: Context, data: WeekData, wDp: Float, hDp: Float,
-        variant: WidgetVariant = WidgetVariant.REGULAR
+        variant: WidgetVariant = WidgetVariant.REGULAR,
+        /** 每列课程上限 — 静态 face 保持 5 门裁切; 条带全展开长图传 Int.MAX_VALUE (#31) */
+        maxCoursesPerDay: Int = 5
     ): Bitmap {
         if (variant == WidgetVariant.SMALL && wDp < 150f) {
-            return renderWeekViewCompact(context, data, wDp, hDp)
+            return renderWeekViewCompact(context, data, wDp, hDp, maxCoursesPerDay)
         }
         // SMALL 但容器被拖大 ≥150dp → 内部升档回全量排版(设计第三节决策)
-        return renderWeekViewRegular(context, data, wDp, hDp)
+        return renderWeekViewRegular(context, data, wDp, hDp, maxCoursesPerDay)
     }
 
     /**
@@ -978,7 +1033,10 @@ object WidgetBitmapRenderers {
      * Regular 函数体零改动, compact 走数据侧换列: 先按用户"显示星期"设置收窄可选池
      * (避免 Regular 内 shownDays 交集为空落到"去创建课表"兜底文案), 再选 compact 列。
      */
-    private fun renderWeekViewCompact(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
+    private fun renderWeekViewCompact(
+        context: Context, data: WeekData, wDp: Float, hDp: Float,
+        maxCoursesPerDay: Int = 5
+    ): Bitmap {
         val todayDow = LocalDate.now().dayOfWeek.value
         // visibleDays 同 Regular 档读法(决策 D5-12): 用户设置决定可选列池, 空集回退全周防御
         val visibleDays = AppPrefs.getVisibleDays(context)
@@ -988,13 +1046,16 @@ object WidgetBitmapRenderers {
         val compactData = data.copy(
             days = data.days.filter { it.dayOfWeek in compactDows }.sortedBy { it.dayOfWeek }
         )
-        return renderWeekViewRegular(context, compactData, wDp, hDp)
+        return renderWeekViewRegular(context, compactData, wDp, hDp, maxCoursesPerDay)
     }
 
     /**
      * WeekView 全量排版 — 原 renderWeekView 函数体原样改名迁入(REGULAR 档逐字节不变保证)
      */
-    private fun renderWeekViewRegular(context: Context, data: WeekData, wDp: Float, hDp: Float): Bitmap {
+    private fun renderWeekViewRegular(
+        context: Context, data: WeekData, wDp: Float, hDp: Float,
+        maxCoursesPerDay: Int = 5
+    ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
         val h = (hDp * density).toInt()
@@ -1097,7 +1158,7 @@ object WidgetBitmapRenderers {
                 val courseGap = 3f * density  // 3dp (原2dp太紧, workflow验证阶段推荐3dp对齐胶囊版)
                 val fm = p.fontMetrics
                 val lineH = fm.descent - fm.ascent
-                val courses = day.courses.take(5)
+                val courses = day.courses.take(maxCoursesPerDay)
                 courses.forEachIndexed { idx, course ->
                     val name = CourseDisplayUtil.displayName(course, useAlias)
                     // today → onPrimaryContainer@0.82alpha, 其他 → onSurfaceVariant
