@@ -25,8 +25,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/chromedp/cdproto/dom"
 	"github.com/chromedp/cdproto/network"
+	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/runtime"
+	cdtarget "github.com/chromedp/cdproto/target"
 	"github.com/chromedp/chromedp"
 )
 
@@ -51,17 +54,34 @@ type reqRec struct {
 }
 
 type Collector struct {
-	recs       map[network.RequestID]*reqRec
-	order      []network.RequestID
-	urlSeen    map[string]bool
-	urlSrc     map[string][]string
-	xnxq       string
-	gnmkdm     string
-	log        *logHub
-	outcomes   *outcomeSummary
-	redirects  []string // 重定向逐跳记录 "跳N: GET url → HTTP 302 Location: …" (G4: CAS→教务的 302 链是登录态排障命脉)
-	snapshots  []entry  // 用户点「再拍一帧」攒下的增量快照 (G7: 交互后 DOM/存储变化是 week 参数排障的关键证据)
-	snapSeq    int      // 增量快照序号
+	recs        map[reqKey]*reqRec
+	order       []reqKey
+	urlSeen     map[string]bool
+	urlSrc      map[string][]string
+	xnxq        string
+	gnmkdm      string
+	log         *logHub
+	outcomes    *outcomeSummary
+	redirects   []string           // 重定向逐跳记录 "跳N: GET url → HTTP 302 Location: …" (G4: CAS→教务的 302 链是登录态排障命脉)
+	snapshots   []entry            // 用户点「再拍一帧」攒下的增量快照 (G7: 交互后 DOM/存储变化是 week 参数排障的关键证据)
+	snapSeq     int                // 增量快照序号
+	tabs        map[int]*tabState  // 全部被监听标签页 (G12)
+	tabSeq      int                // 下一个 tab 的序号
+	tmu         sync.Mutex         // 保护 tabs/tabSeq + 事件回调并发
+	bodyFetchCh chan bodyFetchTask // 响应体即时抓取队列 (事件回调只投递不阻塞)
+}
+
+// reqKey = RequestID 复合键。RequestID 只在单个 tab(session)内唯一,
+// 跨 tab 直接用会互相覆盖 (G12 实测: HEU wdkb 开新 tab, 主 tab 的 ID 撞车丢数据)。
+type reqKey struct {
+	tab int
+	rid network.RequestID
+}
+
+// tabState 一个被监听的标签页 (初始 tab + 用户 window.open 出来的新 tab)。
+type tabState struct {
+	seq int
+	ctx context.Context // chromedp context bound to this target's session
 }
 
 // logHub 采集日志中枢 — 一处记录,三处消费:
@@ -237,13 +257,16 @@ func (h *logHub) Counts() (errs, warns int) {
 }
 
 func NewCollector() *Collector {
-	return &Collector{
-		recs:     map[network.RequestID]*reqRec{},
+	c := &Collector{
+		recs:     map[reqKey]*reqRec{},
 		urlSeen:  map[string]bool{},
 		urlSrc:   map[string][]string{},
 		log:      newLogHub(),
 		outcomes: newOutcomeSummary(),
+		tabs:     map[int]*tabState{},
 	}
+	c.bodyFetchCh = c.startBodyFetcher()
+	return c
 }
 
 // respHeadersOf 把 CDP 响应头压成逐行文本 (G3)。全量保留 (用户取向: 噪音无所谓);
@@ -413,6 +436,12 @@ func (c *Collector) minedStr() string {
 }
 
 func (c *Collector) onEvent(ev interface{}) {
+	c.onEventTab(0, ev)
+}
+
+// onEventTab 处理指定 tab 的事件 (tab=0 为主标签页)。
+// tabSeq 参数把 RequestID 隔离到各自 tab 的键空间 (G12)。
+func (c *Collector) onEventTab(tabSeq int, ev interface{}) {
 	switch e := ev.(type) {
 	case *network.EventRequestWillBeSent:
 		// G4: 重定向逐跳记录 — 302 链 (CAS SSO → 教务) 是登录态排障的命脉,
@@ -440,16 +469,17 @@ func (c *Collector) onEvent(ev interface{}) {
 			}
 			r.postData = sb.String()
 		}
-		if _, dup := c.recs[e.RequestID]; !dup {
-			c.order = append(c.order, e.RequestID)
+		k := reqKey{tab: tabSeq, rid: e.RequestID}
+		if _, dup := c.recs[k]; !dup {
+			c.order = append(c.order, k)
 		}
-		c.recs[e.RequestID] = r
+		c.recs[k] = r
 		if !c.urlSeen[r.url] {
 			c.urlSeen[r.url] = true
 			c.urlSrc[r.url] = append(c.urlSrc[r.url], "网络请求 "+r.method)
 		}
 	case *network.EventResponseReceived:
-		if r := c.recs[e.RequestID]; r != nil {
+		if r := c.recs[reqKey{tab: tabSeq, rid: e.RequestID}]; r != nil {
 			r.status = e.Response.Status
 			r.mimeType = e.Response.MimeType
 			r.respHeaders = respHeadersOf(e.Response.Headers) // G3: 全量响应头 (Set-Cookie 只留名)
@@ -465,11 +495,22 @@ func (c *Collector) onEvent(ev interface{}) {
 			}
 		}
 	case *network.EventLoadingFinished:
-		if r := c.recs[e.RequestID]; r != nil {
+		k := reqKey{tab: tabSeq, rid: e.RequestID}
+		if r := c.recs[k]; r != nil {
 			r.done = true
+			// G12: 响应体即时抓取 — 打包时刻才调 GetResponseBody 时,
+			// Chrome 的网络缓冲早把先前的资源逐出了 (HEU 实测 40 条
+			// "No resource with given identifier")。加载完成瞬间抓,
+			// 一次成功; 失败留待打包时刻兜底重试。
+			// 必须异步投递: chromedp 文档明言事件回调内禁止阻塞/跑 Action —
+			// 回调由 Target.run 的消息循环同步调用, 在里面 Run 会自己等
+			// 自己派发的响应 = 死锁 (HEU 实测: 主循环整个冻住)。
+			if r.status >= 200 && r.status < 300 && !looksBinary(r.url) && !isLogout(r.url) {
+				c.queueBodyFetch(tabSeq, k, r)
+			}
 		}
 	case *network.EventLoadingFailed:
-		if r := c.recs[e.RequestID]; r != nil {
+		if r := c.recs[reqKey{tab: tabSeq, rid: e.RequestID}]; r != nil {
 			r.failed = true
 			r.failureText = e.ErrorText
 			if r.status == 0 {
@@ -488,6 +529,70 @@ func (c *Collector) onEvent(ev interface{}) {
 				c.log.Log(level, "%s %s (%s)", outcomeLabel(category), shortURL(r.url), e.ErrorText)
 			}
 		}
+	}
+}
+
+// bodyFetchQueue 响应体即时抓取的任务队列 (G12)。
+// onEventTab 由 chromedp 的 Target.run 消息循环同步调用, 在回调里直接
+// chromedp.Run(GetResponseBody) = 等自己派发的响应, 必死锁 (HEU 实测)。
+// 所以事件回调只投递, 专职 worker goroutine 消费执行。
+type bodyFetchTask struct {
+	tabSeq int
+	k      reqKey
+	r      *reqRec
+}
+
+func (c *Collector) startBodyFetcher() chan bodyFetchTask {
+	ch := make(chan bodyFetchTask, 4096)
+	go func() {
+		for t := range ch {
+			c.fetchBodyInto(t.tabSeq, t.k, t.r)
+		}
+	}()
+	return ch
+}
+
+func (c *Collector) queueBodyFetch(tabSeq int, k reqKey, r *reqRec) {
+	select {
+	case c.bodyFetchCh <- bodyFetchTask{tabSeq: tabSeq, k: k, r: r}:
+	default:
+		// 队列满 = 浏览器狂刷请求, 放弃即时抓, 打包兜底还能试
+	}
+}
+
+// fetchBodyInto 取响应体并入库内存记录 (必须在非事件回调 goroutine 调用)。
+// tabSeq 定位该请求所属 tab 的 CDP 会话 — GetResponseBody 必须发到原 session,
+// 发错 session 会得到 "No resource with given identifier found"。
+func (c *Collector) fetchBodyInto(tabSeq int, k reqKey, r *reqRec) {
+	c.tmu.Lock()
+	ts := c.tabs[tabSeq]
+	c.tmu.Unlock()
+	if ts == nil {
+		return
+	}
+	var body []byte
+	err := chromedp.Run(ts.ctx, chromedp.ActionFunc(func(ictx context.Context) error {
+		b, err := network.GetResponseBody(k.rid).Do(ictx)
+		if err != nil {
+			return err
+		}
+		body = b
+		return nil
+	}))
+	if err != nil && retryable(err) {
+		time.Sleep(300 * time.Millisecond)
+		err = chromedp.Run(ts.ctx, chromedp.ActionFunc(func(ictx context.Context) error {
+			b, err := network.GetResponseBody(k.rid).Do(ictx)
+			if err != nil {
+				return err
+			}
+			body = b
+			return nil
+		}))
+	}
+	if err == nil && len(body) > 0 {
+		r.body = string(body)
+		c.mineValues(r.body)
 	}
 }
 
@@ -1199,6 +1304,8 @@ func main() {
 		opts = append(opts,
 			chromedp.Flag("remote-debugging-address", "127.0.0.1"),
 			chromedp.Flag("remote-debugging-port", "9333"),
+			// Chrome 111+ 默认拒绝带 Origin 头的 WS 连接,外部脚本驱动必须放行
+			chromedp.Flag("remote-allow-origins", "*"),
 		)
 	}
 	allocCtx, allocCancel := chromedp.NewExecAllocator(context.Background(), opts...)
@@ -1209,7 +1316,68 @@ func main() {
 	defer timeoutCancel()
 
 	c := NewCollector()
-	chromedp.ListenTarget(browserCtx, func(ev interface{}) { c.onEvent(ev) })
+	// 主 tab (seq 0) 注册进 tabs 表, 事件统一走 onEventTab 分发
+	c.tmu.Lock()
+	c.tabs[0] = &tabState{seq: 0, ctx: browserCtx}
+	c.tmu.Unlock()
+	chromedp.ListenTarget(browserCtx, func(ev interface{}) { c.onEventTab(0, ev) })
+
+	// G12: 新标签页监听 — 门户点课表常用 window.open 开新 tab,
+	// 只挂初始 tab 会把新 tab 里的全部课表请求丢光 (HEU 实测翻车)。
+	// discoverTabs 由主循环每轮调用 (串行, 避免并发 Run 的坑):
+	// Target.getTargets 发现未附加的 page target → attach + 挂独立
+	// listener + 注入采集按钮; 网络事件汇入同一张请求表 (tab 前缀隔离
+	// RequestID), 打包时一并入库。
+	attached := map[cdtarget.ID]bool{}
+	var discoverTabs = func() {
+		var infos []*cdtarget.Info
+		if err := chromedp.Run(browserCtx, chromedp.ActionFunc(func(ictx context.Context) error {
+			var err error
+			infos, err = cdtarget.GetTargets().Do(ictx)
+			return err
+		})); err != nil {
+			return
+		}
+		for _, info := range infos {
+			if info.Type != "page" || attached[info.TargetID] || info.Attached {
+				continue
+			}
+			if info.URL == "" || !strings.HasPrefix(info.URL, "http") {
+				// target 刚创建 URL 还没赋值 — 下一轮再 attach (刷新决策需要 URL)
+				continue
+			}
+			attached[info.TargetID] = true
+			tabCtx, _ := chromedp.NewContext(browserCtx, chromedp.WithTargetID(info.TargetID))
+			tabCtx, tabCancel := context.WithCancel(tabCtx)
+			c.tmu.Lock()
+			c.tabSeq++
+			seq := c.tabSeq
+			c.tabs[seq] = &tabState{seq: seq, ctx: tabCtx}
+			c.tmu.Unlock()
+			fmt.Printf("  (检测到新标签页,已附加监听: %s)\n", string(info.TargetID)[:8])
+			// network.Enable 必须发到新 session 才会开始收该 tab 的网络事件
+			_ = chromedp.Run(tabCtx, network.Enable(), page.Enable(), dom.Enable())
+			c.log.Log("step", "新标签页已附加监听 (%s…) — %s", string(info.TargetID)[:8], shortURL(info.URL))
+			chromedp.ListenTarget(tabCtx, func(ev interface{}) { c.onEventTab(seq, ev) })
+			// 新 tab 的 URL 记入总表 — 打包阶段 (资源重取/详情导航) 才知道有这一页
+			if !c.urlSeen[info.URL] {
+				c.urlSeen[info.URL] = true
+				c.urlSrc[info.URL] = append(c.urlSrc[info.URL], "新标签页")
+			}
+			// 错过首秒请求的补救: attach 前页面已把静态资源+数据 API 全拉完了,
+			// network.Enable 是从 attach 才生效的。刷新一帧 — 只读查询页无副作用,
+			// 重载后所有请求在监听下重新发生 (等价于"先开 F12 再访问")。
+			// 登录页等提交型页面不会走到这: 它们打开时不产生子 tab。
+			if err := chromedp.Run(tabCtx, chromedp.Reload()); err == nil {
+				c.log.Log("info", "已刷新新标签页以完整捕获请求 — %s", shortURL(info.URL))
+			}
+			injectBtn(tabCtx)
+			go func(cancel context.CancelFunc) {
+				<-browserCtx.Done()
+				cancel()
+			}(tabCancel)
+		}
+	}
 
 	fmt.Println()
 	fmt.Println("正在启动浏览器…")
@@ -1265,15 +1433,28 @@ func main() {
 			return
 		default:
 		}
-		var done bool
-		_ = chromedp.Run(browserCtx, chromedp.Evaluate(`typeof __sleepyDone !== 'undefined' && __sleepyDone === true`, &done))
-		if done {
-			break
+		// G12: 逐 tab 轮询 — done 检测/按钮补挂/快照轮询都要覆盖新 tab
+		discoverTabs()
+		c.tmu.Lock()
+		tabList := make([]*tabState, 0, len(c.tabs))
+		for _, ts := range c.tabs {
+			tabList = append(tabList, ts)
 		}
-		c.pollSnapshots(browserCtx) // G7: 「再拍一帧」按钮 — 交互后增量快照
+		c.tmu.Unlock()
+		for _, ts := range tabList {
+			var done bool
+			if err := chromedp.Run(ts.ctx, chromedp.Evaluate(`typeof __sleepyDone !== 'undefined' && __sleepyDone === true`, &done)); err != nil {
+				continue // tab 已关
+			}
+			if done {
+				goto packaged
+			}
+			c.pollSnapshots(ts.ctx) // G7: 「再拍一帧」按钮 — 交互后增量快照
+			injectBtn(ts.ctx)       // 页面跳转会清掉按钮,每次循环补挂(幂等)
+		}
 		time.Sleep(700 * time.Millisecond)
-		injectBtn(browserCtx) // 页面跳转会清掉按钮,每次循环补挂(幂等)
 	}
+packaged:
 
 	fmt.Println()
 	fmt.Println("收到采集指令,正在打包(页面文件多时需要一两分钟,别关窗口)…")
@@ -1592,40 +1773,19 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	fmt.Printf("  网络请求共 %d 个,正在取响应体…\n", len(c.order))
 	netOK := 0
 	netErr := 0
-	for idx, rid := range c.order {
-		r := c.recs[rid]
+	for idx, k := range c.order {
+		r := c.recs[k]
 		if r == nil || isLogout(r.url) {
 			continue
 		}
-		// 响应体:loadingFinished 且非失败,CDP 直取(同源跨源都行,这是 CDP 的优势)
-		if r.done && !r.failed && r.status >= 200 && r.status < 300 && !looksBinary(r.url) {
-			var body string
-			err := chromedp.Run(ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-				b, err := network.GetResponseBody(rid).Do(ictx)
-				if err != nil {
-					return err
-				}
-				body = string(b)
-				return nil
-			}))
-			if err != nil && retryable(err) {
-				// GetResponseBody 偶发 "No data for requested resource" — 稍候重试一次
-				time.Sleep(500 * time.Millisecond)
-				err = chromedp.Run(ctx, chromedp.ActionFunc(func(ictx context.Context) error {
-					b, err := network.GetResponseBody(rid).Do(ictx)
-					if err != nil {
-						return err
-					}
-					body = string(b)
-					return nil
-				}))
-			}
-			if err == nil && body != "" {
-				r.body = body
-				c.mineValues(body)
-			} else if err != nil {
+		// G12: 响应体已在 EventLoadingFinished 时即时抓 (fetchBodyInto);
+		// 这里只对即抓失败/漏抓的兜底重试。GetResponseBody 必须发回原 tab
+		// 的 session — 发到主 tab 会得到 "No resource with given identifier"。
+		if r.done && !r.failed && r.status >= 200 && r.status < 300 && !looksBinary(r.url) && r.body == "" {
+			c.fetchBodyInto(k.tab, k, r)
+			if r.body == "" {
 				netErr++
-				c.log.Log("warn", "响应体获取失败 %s (%v)", shortURL(r.url), err)
+				c.log.Log("warn", "响应体获取失败 %s (tab%d, 缓冲已逐出)", shortURL(r.url), k.tab)
 			}
 		}
 		if r.body == "" && r.postData == "" {
