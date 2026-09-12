@@ -347,12 +347,9 @@ object WidgetBitmapRenderers {
             ) { ctx.getString(it) }
             val titleX = pad
             val rightX = w - pad
-            p.color = s.onSurfaceVariant
-            p.textSize = 16f * density
-            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-            canvas.drawText("‹", pad, y + 13f * density, p)
-            val arrowW = p.measureText("›")
-            canvas.drawText("›", w - pad - arrowW, y + 13f * density, p)
+            // issue#31 荣耀 2×2: 裸 ‹› glyph 已删 (v5 翻页时代遗留, 无色块无点击区,
+            // 用户误当按钮去点)。真实按钮 = nav_static 布局的 prev/next ImageView
+            // (renderNavTriangle 三角 + PendingIntent, issue#24 两天功能)。
             // 标题 (右侧槽位存在时按需截断)
             p.color = s.primary
             p.textSize = 13f * density
