@@ -26,6 +26,8 @@ import (
 	"time"
 
 	"github.com/chromedp/cdproto/dom"
+	cdpbrowser "github.com/chromedp/cdproto/browser"
+	"github.com/chromedp/cdproto/log"
 	"github.com/chromedp/cdproto/network"
 	"github.com/chromedp/cdproto/page"
 	"github.com/chromedp/cdproto/runtime"
@@ -33,7 +35,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const version = "v1.3"
+const version = "v1.4"
 
 // ---------------- 网络捕获 ----------------
 
@@ -51,6 +53,10 @@ type reqRec struct {
 	failureText string
 	body        string // 取回的响应体
 	order       int
+
+	// G13: 大 POST 体兜底 — 事件内联超限(HasPostData 但 entries 空)时标记,
+	// 打包阶段走 GetRequestPostData 补抓。
+	postDataMissing bool
 }
 
 type Collector struct {
@@ -69,6 +75,14 @@ type Collector struct {
 	tabSeq      int                // 下一个 tab 的序号
 	tmu         sync.Mutex         // 保护 tabs/tabSeq + 事件回调并发
 	bodyFetchCh chan bodyFetchTask // 响应体即时抓取队列 (事件回调只投递不阻塞)
+
+	// ---- G13 全域捕获 ----
+	consoleEntries []consoleEntry               // console/log/runtime 三源日志
+	wsConns        map[network.RequestID]*wsRec // WebSocket 连接帧记录
+	extraInfoText  map[reqKey]string            // RequestWillBeSentExtraInfo 脱敏后的请求头文本
+	downloadRecs   []downloadRec                // 浏览器下载元信息
+	downloadDir    string                       // 下载落盘目录
+	iframeAttached map[cdtarget.ID]bool         // 已附加监听的 OOPIF iframe
 }
 
 // reqKey = RequestID 复合键。RequestID 只在单个 tab(session)内唯一,
@@ -264,6 +278,10 @@ func NewCollector() *Collector {
 		log:      newLogHub(),
 		outcomes: newOutcomeSummary(),
 		tabs:     map[int]*tabState{},
+		// G13
+		wsConns:        map[network.RequestID]*wsRec{},
+		extraInfoText:  map[reqKey]string{},
+		iframeAttached: map[cdtarget.ID]bool{},
 	}
 	c.bodyFetchCh = c.startBodyFetcher()
 	return c
@@ -442,6 +460,40 @@ func (c *Collector) onEvent(ev interface{}) {
 // onEventTab 处理指定 tab 的事件 (tab=0 为主标签页)。
 // tabSeq 参数把 RequestID 隔离到各自 tab 的键空间 (G12)。
 func (c *Collector) onEventTab(tabSeq int, ev interface{}) {
+	// G13 事件先分流 (console/WS/下载/请求头/iframe attach 不吃 network 分支)
+	switch e := ev.(type) {
+	case *network.EventRequestWillBeSentExtraInfo:
+		c.handleExtraInfo(tabSeq, e.RequestID, e)
+		return
+	case *network.EventWebSocketCreated, *network.EventWebSocketFrameSent,
+		*network.EventWebSocketFrameReceived, *network.EventWebSocketFrameError:
+		c.handleWSEvent(tabSeq, ev)
+		return
+	case *cdpbrowser.EventDownloadWillBegin:
+		c.handleDownloadWillBegin(e)
+		return
+	case *cdpbrowser.EventDownloadProgress:
+		c.handleDownloadProgress(e)
+		return
+	case *log.EventEntryAdded:
+		if e.Entry != nil {
+			c.handleConsoleEvent(string(e.Entry.Level), string(e.Entry.Source), e.Entry.URL, e.Entry.Text)
+		}
+		return
+	case *runtime.EventConsoleAPICalled:
+		if len(e.Args) > 0 {
+			var parts []string
+			for _, a := range e.Args {
+				parts = append(parts, consoleArgText(a))
+			}
+			c.handleConsoleEvent(string(e.Type), "console-api", "", strings.Join(parts, " "))
+		}
+		return
+	case *consoleEntryAdded: // 测试注入
+		c.handleConsoleEvent(e.e.level, e.e.source, e.e.url, e.e.text)
+		return
+	}
+
 	switch e := ev.(type) {
 	case *network.EventRequestWillBeSent:
 		// G4: 重定向逐跳记录 — 302 链 (CAS SSO → 教务) 是登录态排障的命脉,
@@ -468,6 +520,10 @@ func (c *Collector) onEventTab(tabSeq int, ev interface{}) {
 				sb.WriteString(p.Bytes)
 			}
 			r.postData = sb.String()
+		} else if e.Request.HasPostData {
+			// G13: 体超事件内联上限 (MaxPostDataSize), 事件不带 entries —
+			// 打包阶段 GetRequestPostData 兜底
+			r.postDataMissing = true
 		}
 		k := reqKey{tab: tabSeq, rid: e.RequestID}
 		if _, dup := c.recs[k]; !dup {
@@ -1355,8 +1411,12 @@ func main() {
 			c.tabs[seq] = &tabState{seq: seq, ctx: tabCtx}
 			c.tmu.Unlock()
 			fmt.Printf("  (检测到新标签页,已附加监听: %s)\n", string(info.TargetID)[:8])
-			// network.Enable 必须发到新 session 才会开始收该 tab 的网络事件
-			_ = chromedp.Run(tabCtx, network.Enable(), page.Enable(), dom.Enable())
+			// G13: 新 tab 同样要全域捕获 (缓存禁用/大体量/日志域), 不能裸 network.Enable
+			if err := c.enableCapture(tabCtx); err != nil {
+				c.log.Log("warn", "新标签页全域捕获初始化失败: %v", err)
+			}
+			_ = chromedp.Run(tabCtx, page.Enable(), dom.Enable())
+			applyUserAgentOverride(tabCtx)
 			c.log.Log("step", "新标签页已附加监听 (%s…) — %s", string(info.TargetID)[:8], shortURL(info.URL))
 			chromedp.ListenTarget(tabCtx, func(ev interface{}) { c.onEventTab(seq, ev) })
 			// 新 tab 的 URL 记入总表 — 打包阶段 (资源重取/详情导航) 才知道有这一页
@@ -1381,12 +1441,29 @@ func main() {
 
 	fmt.Println()
 	fmt.Println("正在启动浏览器…")
+	// G13: 主 tab 全域捕获 (缓存禁用/大体量 POST/console/请求头域) + 下载捕获
+	// + OOPIF autoAttach + 可选移动端 UA。任何一项失败只记警告, 不阻断采集。
+	if err := c.enableCapture(browserCtx); err != nil {
+		c.log.Log("warn", "全域捕获初始化失败(退化为普通监听): %v", err)
+	}
+	if err := c.enableDownloads(browserCtx); err != nil {
+		c.log.Log("warn", "下载捕获不可用: %v", err)
+	}
+	if err := applyUserAgentOverride(browserCtx); err != nil {
+		c.log.Log("warn", "UA 伪装设置失败: %v", err)
+	}
+	if ua := uaOverrideFromEnv(); ua != "" {
+		fmt.Println("(已按 SLEEPY_COLLECTOR_UA 伪装 UA:", ua, ")")
+	}
+	if err := setupAutoAttach(browserCtx); err != nil {
+		c.log.Log("warn", "iframe 自动附加不可用(跨源 iframe 内请求可能漏抓): %v", err)
+	}
+	chromedp.ListenTarget(browserCtx, c.handleAutoAttach(browserCtx))
 	// 初始打开教务网址: 偶发 DNS/网络抖动会在这里失败 — 自动重试 2 次,
 	// 都不行再放弃 (校DNS偶发抽风是"第一次不行第二次好"的常见根因)
 	var navErr error
 	for attempt := 1; attempt <= 3; attempt++ {
 		err = chromedp.Run(browserCtx,
-			network.Enable(),
 			chromedp.Navigate(target),
 			chromedp.WaitVisible("body", chromedp.ByQuery),
 		)
@@ -1642,6 +1719,10 @@ type collectionSummary struct {
 	WeekReplayAPIs       int                     `json:"week_replay_apis"`
 	WeekReplayEntries    int                     `json:"week_replay_entries"`
 	DetailNavigation     detailNavigationSummary `json:"detail_navigation"`
+	Downloads            int                     `json:"downloads"`
+	WebSocketConns       int                     `json:"websocket_conns"`
+	ConsoleEntries       int                     `json:"console_entries"`
+	HAREntries           int                     `json:"har_entries"`
 	Outcomes             []outcomeGroup          `json:"outcomes"`
 }
 
@@ -1788,11 +1869,26 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 				c.log.Log("warn", "响应体获取失败 %s (tab%d, 缓冲已逐出)", shortURL(r.url), k.tab)
 			}
 		}
-		if r.body == "" && r.postData == "" {
+		// G13: 大 POST 体兜底 — 事件内联超限的, 打包时刻经 GetRequestPostData 补抓
+		if r.postData == "" && r.postDataMissing {
+			c.fetchMissingPostData(k.tab, k, r)
+			if r.postData == "" {
+				r.postDataMissing = true // 仍取不到, 标记留着 (meta 里说明)
+			}
+		}
+		if r.body == "" && r.postData == "" && !r.postDataMissing {
 			continue // 纯静态资源没取到体的,3-res 阶段会重取
 		}
 		head := fmt.Sprintf("METHOD: %s\nURL: %s\nSTATUS: %d\nCONTENT-TYPE: %s\nFRAME: %s\n",
 			r.method, r.url, r.status, r.mimeType, r.frameID)
+		// G13: 真实上线请求头 (ExtraInfo, 凭据值脱敏) — XRW/token 头名与
+		// 浏览器自动补的头只在这里可见
+		c.tmu.Lock()
+		xtra := c.extraInfoText[k]
+		c.tmu.Unlock()
+		if xtra != "" {
+			head += "REQUEST-HEADERS:\n" + xtra + "\n"
+		}
 		// G3: 全量响应头 (Set-Cookie 只留名) — token/XRW 类自定义头是排协议的半张图
 		if r.respHeaders != "" {
 			head += "RESPONSE-HEADERS:\n" + r.respHeaders + "\n"
@@ -1801,6 +1897,8 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		content := head
 		if r.postData != "" {
 			content += "-------- 请求体 --------\n" + r.postData + "\n"
+		} else if r.postDataMissing {
+			content += "-------- 请求体: 超大体量, 浏览器已不保留原文 --------\n"
 		}
 		if r.body != "" {
 			if jp := jsonpPrefix(r.body); jp != "" { // G10: JSONP 包裹标记
@@ -1810,6 +1908,9 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			}
 		}
 		meta := fmt.Sprintf("%s %s → HTTP %d · %s", r.method, r.url, r.status, r.mimeType)
+		if r.postDataMissing && r.postData == "" {
+			meta += " · 请求体超限未捕获"
+		}
 		name := fmt.Sprintf("%03d_%s_", idx+1, r.method)
 		// 4-net-live 占包体大头; 扣掉 reservedBytes 给 6-logs/INDEX (WHUT issue#15 的包
 		// 被 umi.js 等大响应挤掉诊断日志, 适配时两眼一抹黑)
@@ -2066,6 +2167,32 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	}
 	c.log.FlushPanel(ctx)
 
+	// ---- 6c. G13 全域捕获入包: 下载文件 / console / WebSocket / Cookie 全貌 / HAR ----
+	dlEntries := c.downloadEntries(2 << 20)
+	for _, e := range dlEntries {
+		p.add(p.uniq(e.path), e.meta, string(e.data))
+	}
+	if len(dlEntries) > 0 {
+		c.log.Log("ok", "下载文件入包 %d (4-downloads/)", len(dlEntries))
+	}
+	consoleTxt := c.consoleText()
+	if !strings.HasPrefix(consoleTxt, "(无)") {
+		p.add(p.uniq("6-logs/console.txt"), "浏览器 console/log 全量 (页面报错=接口排障第一现场)", consoleTxt)
+	}
+	wsTxt := c.wsLogText()
+	if !strings.HasPrefix(wsTxt, "(无)") {
+		p.add(p.uniq("6-logs/websockets.txt"), "WebSocket 建连与逐帧记录 (新版一网通办走 WS 推课表)", wsTxt)
+	}
+	p.add(p.uniq("6-logs/cookies-full.txt"), "全量 Cookie 元数据 (名/域/路径/到期/安全位; 值永不入包)", c.collectAllCookies(ctx))
+
+	// HAR 导出: DevTools/Charles 直接打开回放, 接口形为一目了然
+	recsForHAR := collectorRecs(c)
+	harText, harN := buildHAR(recsForHAR, 2<<20)
+	if harN > 0 {
+		p.add(p.uniq("6-logs/capture.har"), fmt.Sprintf("HAR 1.2 全量请求回放 (%d entries) — 拖进 Chrome DevTools Network 面板即可回放", harN), harText)
+		c.log.Log("info", "HAR 导出 %d entries (6-logs/capture.har)", harN)
+	}
+
 	// ---- 7. 日志与清单 ----
 	c.log.Log("step", "写诊断日志与清单")
 	var logLines []string
@@ -2123,6 +2250,12 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		},
 		Outcomes: groups,
 	}
+	summaryDoc.Downloads = len(dlEntries)
+	c.tmu.Lock()
+	summaryDoc.WebSocketConns = len(c.wsConns)
+	summaryDoc.ConsoleEntries = len(c.consoleEntries)
+	c.tmu.Unlock()
+	summaryDoc.HAREntries = harN
 	summaryJSON, _ := json.MarshalIndent(summaryDoc, "", "  ")
 	p.add(p.uniq("6-logs/collection-summary.json"), "机器可读采集结果汇总", string(summaryJSON)+"\n")
 	errCount, warnCount := c.log.Counts()
@@ -2145,9 +2278,9 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	idx.WriteString("Cookie 名(只有名字,没有值): " + strings.Join(cookieNames, ", ") + "\n\n")
 	idx.WriteString("== 概况 ==\n" + statLine + "\n\n== 目录说明 ==\n")
 	idx.WriteString("1-dom/ 页面DOM · 2-inline/ 内联代码+下拉选项 · 3-res/ 重取的资源文件\n")
-	idx.WriteString("4-net-live/ CDP捕获的请求(含响应头+响应体) · 4-detail-nav/ 详情页导航捕获(跨源+同源) · 4-net-replay/ 已观察 POST 接口重放(withparam=带参数)\n")
-	idx.WriteString("4-net-replay-weeks/ 周参数枚举重放(week=1..25) · 3-res-weeks/ GET 周参数枚举\n")
-	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志(collect-log=过程日志, redirects=重定向链, response-headers=API响应头, period-time-apis=节次时间类接口) · extra/ 子目录=「再拍一帧」增量快照\n\n== 文件清单(路径 | 说明) ==\n")
+	idx.WriteString("4-net-live/ CDP捕获的请求(含请求头[脱敏]+响应头+响应体) · 4-detail-nav/ 详情页导航捕获(跨源+同源) · 4-net-replay/ 已观察 POST 接口重放(withparam=带参数)\n")
+	idx.WriteString("4-net-replay-weeks/ 周参数枚举重放(week=1..25) · 3-res-weeks/ GET 周参数枚举 · 4-downloads/ 浏览器下载文件(导出课表 xls 等)\n")
+	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志(collect-log=过程日志, redirects=重定向链, response-headers=API响应头, period-time-apis=节次时间类接口, console=页面报错, websockets=WS帧, cookies-full=Cookie元数据[无值], capture.har=HAR回放文件) · extra/ 子目录=「再拍一帧」增量快照\n\n== 文件清单(路径 | 说明) ==\n")
 	for _, e := range p.entries {
 		idx.WriteString(e.path + "  |  " + e.meta + "\n")
 	}
