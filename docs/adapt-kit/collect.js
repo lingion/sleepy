@@ -1,5 +1,5 @@
 // ============================================================
-// Sleepy 课表适配采集脚本 v3.0 —— 全量捕获 + ZIP 打包
+// Sleepy 课表适配采集脚本 v3.1 —— 全量捕获 + ZIP 打包
 // ============================================================
 // 用法: 登录教务系统 → 打开"我的课表"页面 → F12 打开控制台
 //       → 粘贴本文件全部内容回车 → 点右下角面板绿色按钮
@@ -7,10 +7,11 @@
 //
 // 采集内容(不区分教务系统类型,看到什么收什么,相关无关一律全存):
 //   1-dom/        每个页面、每个 iframe 的完整 DOM(课表渲染结果也在这里)
-//   2-inline/     页面里所有内联 <script> / <style> 源码
+//   2-inline/     页面里所有内联 <script> / <style> 源码 + 下拉选项(学期/周次候选集)
 //   3-res/        页面加载过的所有 HTML/CSS/JS/JSON 文件,逐个重新抓取完整内容
-//   4-net-live/   粘贴脚本之后页面发出的每一个请求:URL+请求体+响应体
+//   4-net-live/   粘贴脚本之后页面发出的每一个请求:URL+请求体+响应体(含响应头)
 //   4-net-replay/ 粘贴之前已发出的数据接口:自动重放拿响应(含带参数二次重试)
+//   4-net-replay-weeks/ 周参数枚举重放(week=1..25,治"一次只回一周"接口)
 //   5-storage/    localStorage / sessionStorage 键值
 //   6-logs/       浏览器完整网络日志、发现的一切 URL、抓取失败清单
 //   INDEX.txt     全包清单:每个文件是什么、从哪来的
@@ -21,7 +22,7 @@
   'use strict';
   if (window.__SLEEPY_KIT__) { console.log('[sleepy] 本页已经挂过采集器了,不要重复粘贴'); return; }
   window.__SLEEPY_KIT__ = {
-    version: 'v3.0', net: [], urls: {}, apiUrls: {},
+    version: 'v3.1', net: [], urls: {}, apiUrls: {}, hdrs: {},
     entries: [], seen: {}, pathSeen: {}, bodySeen: {}, usedBytes: 0, mined: {}
   };
   var K = window.__SLEEPY_KIT__;
@@ -31,6 +32,7 @@
   var MAX_NET = 400;                       // 实时录制上限
   var MAX_REFETCH = 200;                   // 资源重取上限
   var MAX_REPLAY2 = 40;                    // 带参数重试上限
+  var MAX_WEEKS = 25;                      // 周参数枚举上限
 
   var enc = new TextEncoder();
   function bytesOf(s) { return enc.encode(s); }
@@ -151,6 +153,7 @@
     if (a && sameOrigin(a)) K.apiUrls[a] = true;
     refreshPanel();
   }
+  // 响应头全量转字符串 (Set-Cookie 只留名字,值丢弃 — 与隐私铁律一致)
   function instrument(win) {
     return safe(function () {
       var of = win.fetch;
@@ -166,8 +169,17 @@
           });
           return of.apply(this, arguments).then(function (res) {
             safe(function () {
-              var ct = '';
+              var ct = '', hdr = [];
               try { ct = res.headers.get('content-type') || ''; } catch (e) {}
+              try {
+                if (res.headers && res.headers.forEach) {
+                  res.headers.forEach(function (v, n) {
+                    if (/^set-cookie$/i.test(n)) { v = String(v).split('\n').map(function (s) { return s.split('=')[0] + '=(值省略)'; }).join('; '); }
+                    hdr.push(n + ': ' + v);
+                  });
+                }
+              } catch (e) {}
+              K.hdrs[url] = hdr.join('\n');
               var rec = function (t) { recordNet({ via: 'fetch', method: method, url: url, reqBody: body, status: res.status, contentType: ct, body: t }); };
               res.clone().text().then(rec).catch(function () { rec('(响应体读取失败)'); });
             });
@@ -189,8 +201,19 @@
           safe(function () {
             self.addEventListener('load', function () {
               safe(function () {
-                var ct = '', t = '';
+                var ct = '', t = '', hdr = [];
                 try { ct = self.getResponseHeader('content-type') || ''; } catch (e) {}
+                try {
+                  var hs = self.getAllResponseHeaders ? self.getAllResponseHeaders() : '';
+                  hs.trim().split(/\r?\n/).forEach(function (line) {
+                    var ci = line.indexOf(':');
+                    if (ci <= 0) return;
+                    var n = line.slice(0, ci).trim(), v = line.slice(ci + 1).trim();
+                    if (/^set-cookie$/i.test(n)) { v = v.split('=')[0] + '=(值省略)'; }
+                    hdr.push(n + ': ' + v);
+                  });
+                } catch (e) {}
+                if (hdr.length) K.hdrs[self.__su || ''] = hdr.join('\n');
                 try { t = self.responseText; } catch (e) { t = '(响应体不可读,可能是二进制)'; }
                 recordNet({ via: 'xhr', method: self.__sm, url: self.__su, reqBody: b == null ? '' : String(b), status: self.status, contentType: ct, body: t });
               });
@@ -268,6 +291,19 @@
         n++;
         addEntry(uniqPath('2-inline/' + labelToPath(label) + '_style' + n + '.css'), label + ' 内联样式', t);
       });
+    });
+    // 学期/周次下拉枚举: 学期参数候选集的直接证据 (接口报错文本挖参只是运气)
+    safe(function () {
+      var sels = [];
+      doc.querySelectorAll('select').forEach(function (s, si) {
+        var opts = [];
+        s.querySelectorAll('option').forEach(function (o) {
+          opts.push({ v: o.getAttribute('value') || '', t: (o.textContent || '').trim().slice(0, 60) });
+        });
+        if (opts.length) sels.push({ sel: si, name: s.getAttribute('name') || '', id: s.id || '', opts: opts });
+      });
+      if (sels.length) addEntry(uniqPath('2-inline/' + labelToPath(label) + '_selects.json'),
+        label + ' 下拉选项(学期/周次参数候选集)', JSON.stringify(sels, null, 2));
     });
     safe(function () {
       ['sessionStorage', 'localStorage'].forEach(function (sn) {
@@ -405,11 +441,105 @@
   }
   function storeReplay(r, tag) {
     if (r.note || r.status === 0 || !r.text || r.text.length < 5) return false;
+    var jp = '';
+    safe(function () { var m = r.text.match(/^\s*([A-Za-z_$][\w$]*)\s*\(\s*[\[{]/); if (m) jp = m[1]; }); // JSONP 包裹标记
     return !!addEntry(
       uniqPath(urlToPath('4-net-replay' + (tag ? '-withparam' : ''), r.u, extFromCt(r.ct, r.u))),
       '接口重放' + (tag ? '(带参数 ' + tag + ')' : '(空体)') + ' POST ' + r.u + ' · HTTP ' + r.status + ' · ' + (r.ct || '?')
+      + (jp ? ' [JSONP 包裹: ' + jp + '(...)]' : '')
       + (looksLikeError(r.text) ? '(参数报错:报错文本说明该接口要什么参数)' : ''),
       r.text);
+  }
+  // ---------- 6.5 周参数枚举重放: "一次只回一周"接口治本 ----------
+  // qz_app curriculum?week=N 实锤: 只抓当前周丢后续周课 (2026-09-11)。
+  // 识别 week/zc/weekIndex/zhouci 类参数后按 1..25 枚举; 体参数与 query 参数都覆盖。
+  var WEEK_NAMES = ['week', 'zc', 'weekindex', 'zhouci', 'xq'];
+  function findWeekInQuery(u) {
+    var i = u.indexOf('?');
+    if (i < 0) return null;
+    var segs = u.slice(i + 1).split('&');
+    for (var j = 0; j < segs.length; j++) {
+      var eq = segs[j].indexOf('=');
+      if (eq > 0 && WEEK_NAMES.indexOf(segs[j].slice(0, eq).toLowerCase()) !== -1)
+        return { name: segs[j].slice(0, eq), cur: segs[j].slice(eq + 1) };
+    }
+    return null;
+  }
+  function findWeekInBody(b) {
+    var segs = String(b || '').split('&');
+    for (var j = 0; j < segs.length; j++) {
+      var eq = segs[j].indexOf('=');
+      if (eq > 0 && WEEK_NAMES.indexOf(segs[j].slice(0, eq).toLowerCase()) !== -1)
+        return { name: segs[j].slice(0, eq), cur: segs[j].slice(eq + 1) };
+      if (eq < 0 && WEEK_NAMES.indexOf(segs[j].toLowerCase()) !== -1)
+        return { name: segs[j], cur: '' };
+    }
+    return null;
+  }
+  function replayWeeks(progressCb) {
+    var done = 0, ok = 0;
+    var seen = {}, tasks = [];
+    K.net.forEach(function (e) {
+      if (!e.url || !sameOrigin(absUrl(e.url)) || /logout|tuichu/i.test(e.url)) return;
+      if (e.via === 'route') return;
+      var key = e.method + ' ' + e.url;
+      if (seen[key]) return;
+      var hit = findWeekInQuery(e.url) || findWeekInBody(e.reqBody);
+      if (hit) { seen[key] = 1; tasks.push({ e: e, hit: hit }); }
+    });
+    var chain = Promise.resolve();
+    tasks.forEach(function (task) {
+      var hit = task.hit, e = task.e;
+      chain = chain.then(function () {
+        var chainW = Promise.resolve();
+        for (var w = 1; w <= MAX_WEEKS; w++) (function (w) {
+          chainW = chainW.then(function () {
+            done++;
+            if (progressCb && w % 5 === 0) progressCb(done);
+            return new Promise(function (resolve) {
+              if (e.via === 'xhr' || e.method === 'POST') {
+                // 体参数替换
+                var base = String(e.reqBody || '');
+                var replaced = null;
+                var segs = base.split('&');
+                for (var j = 0; j < segs.length; j++) {
+                  var eq = segs[j].indexOf('=');
+                  if ((eq > 0 && segs[j].slice(0, eq).toLowerCase() === hit.name) || (eq < 0 && segs[j].toLowerCase() === hit.name)) {
+                    segs[j] = segs[j].slice(0, Math.max(eq, segs[j].length)) + '=' + w;
+                    replaced = segs.join('&');
+                    break;
+                  }
+                }
+                if (replaced == null) replaced = base ? base + '&' + hit.name + '=' + w : hit.name + '=' + w;
+                postProbe(e.url, replaced).then(function (r) {
+                  if (!r.note && r.status !== 0 && r.text && r.text.length >= 5 && !looksLikeError(r.text)) {
+                    if (addEntry(uniqPath(urlToPath('4-net-replay-weeks-week' + w, e.url, extFromCt(r.ct, e.url))),
+                      '周参数枚举 ' + hit.name + '=' + w + ' POST ' + e.url + ' · HTTP ' + r.status, r.text)) ok++;
+                  }
+                  resolve();
+                });
+              } else {
+                // GET query 替换
+                var segs2 = e.url.slice(e.url.indexOf('?') + 1).split('&');
+                for (var j2 = 0; j2 < segs2.length; j2++) {
+                  var eq2 = segs2[j2].indexOf('=');
+                  if (eq2 > 0 && segs2[j2].slice(0, eq2).toLowerCase() === hit.name) { segs2[j2] = hit.name + '=' + w; break; }
+                }
+                fetchOne(e.url.slice(0, e.url.indexOf('?') + 1) + segs2.join('&')).then(function (r) {
+                  if (!r.note && r.status === 200 && r.text && r.text.length > 20) {
+                    if (addEntry(uniqPath(urlToPath('3-res-weeks-week' + w, e.url, extFromCt(r.ct, e.url))),
+                      '周参数枚举 ' + hit.name + '=' + w + ' GET ' + e.url + ' · HTTP ' + r.status, r.text)) ok++;
+                  }
+                  resolve();
+                });
+              }
+            });
+          });
+        })(w);
+        return chainW;
+      });
+    });
+    return chain.then(function () { return { ok: ok, apis: tasks.length }; });
   }
   function replayApis(progressCb) {
     var apis = Object.keys(K.apiUrls).filter(function (u) { return !LOGOUT_RE.test(u); }).slice(0, 100);
@@ -483,10 +613,11 @@
     L.push('');
     L.push('== 目录说明 ==');
     L.push('1-dom/        页面与 iframe 的完整 DOM(课表如已渲染,数据也在里面)');
-    L.push('2-inline/     页面内联 <script>/<style> 源码');
+    L.push('2-inline/     页面内联 <script>/<style> 源码 + 下拉选项(学期/周次候选集)');
     L.push('3-res/        页面加载过的 HTML/CSS/JS/JSON 文件原样重取');
-    L.push('4-net-live/   粘贴脚本后页面发出的请求(含请求体+响应体)');
+    L.push('4-net-live/   粘贴脚本后页面发出的请求(含请求体+响应头+响应体)');
     L.push('4-net-replay/ 粘贴前已发出接口的重放响应(withparam=带参数二次重试)');
+    L.push('4-net-replay-weeks/ 周参数枚举重放(week=1..25,治"一次只回一周")');
     L.push('5-storage/    localStorage/sessionStorage');
     L.push('6-logs/       浏览器网络日志 / 发现的 URL / 失败清单');
     L.push('');
@@ -556,11 +687,21 @@
           });
         })
         .then(function (rr) {
-          // 实时录制的请求逐个入库
+          return replayWeeks(function () {
+            if (btn) btn.textContent = '枚举周参数重放中…';
+          }).then(function (rw) {
+            rr.weeksOk = rw.ok; rr.weeksApis = rw.apis;
+            return rr;
+          });
+        })
+        .then(function (rr) {
+          // 实时录制的请求逐个入库 (含响应头, Set-Cookie 只留名)
           K.net.forEach(function (e, i) {
             var head = 'VIA: ' + e.via + '\nMETHOD: ' + e.method + '\nURL: ' + e.url
               + '\nSTATUS: ' + e.status + '\nCONTENT-TYPE: ' + (e.contentType || '?')
               + '\nTIME: ' + (e.time || '') + '\n';
+            if (K.hdrs[e.url]) head += 'RESPONSE-HEADERS:\n' + K.hdrs[e.url] + '\n';
+            head += '\n';
             var body = '';
             if (e.reqBody) body += '-------- 请求体 --------\n' + e.reqBody + '\n';
             if (e.body) body += '-------- 响应体 (' + e.body.length + ' 字符) --------\n' + e.body;
@@ -573,6 +714,7 @@
           addEntry(uniqPath('6-logs/failed.txt'), '未能抓到内容的地址',
             rr.skipped.length ? rr.skipped.join('\n') : '(无,全部成功)');
           var statLine = '文件 ' + K.entries.length + ' 个 · 重取资源 ' + rr.ok + ' · 接口重放入包 ' + rr.replayOk
+            + ' · 周参数枚举入包 ' + (rr.weeksOk || 0) + ' (接口 ' + (rr.weeksApis || 0) + ' 个)'
             + ' · 实时录制 ' + K.net.length + ' · 自动发现参数 ' + JSON.stringify(rr.mined || {});
           addEntry(uniqPath('INDEX.txt'), '包清单', buildIndex(statLine));
           var zip = buildZip(K.entries.map(function (f) { return { name: f.path, data: f.data }; }));
