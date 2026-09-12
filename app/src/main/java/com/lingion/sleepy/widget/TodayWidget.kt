@@ -33,6 +33,8 @@ import java.time.LocalDate
  */
 /** 顶栏降级档位 — 真机窄档 (SIZES=148dp) 实测两字也装不下, 必须再降两级。 */
 internal enum class NavTier {
+    /** 装不下完整顶栏 (date-only 标题+两钮) — 整条导航 GONE, bitmap 全高 (issue#31 2×2 定案) */
+    HIDE_NAV,
     /** 满标题「M/D · 周X」+「回到今天」 */
     FULL,
     /** 满标题 +「今天」两字 */
@@ -175,6 +177,21 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 context, fullTitle, dateOnlyTitle, wDp,
                 navTodayFull = navTodayFull, navTodayShort = navTodayShort,
                 navTodayVisible = !data.isToday
+            )
+            // issue#31 荣耀 2×2 定案: 整条导航装不下 → header GONE (bitmap 全高,
+            // 无导航键 — 留着只会被标题压住/挤出界, 点哪都是开 App = 歧义)。
+            if (tier == NavTier.HIDE_NAV) {
+                views.setViewVisibility(
+                    com.lingion.sleepy.R.id.widget_today_header, android.view.View.GONE
+                )
+                views.setContentDescription(
+                    com.lingion.sleepy.R.id.widget_today_header,
+                    "header GONE tier=HIDE_NAV w=$wDp"
+                )
+                return
+            }
+            views.setViewVisibility(
+                com.lingion.sleepy.R.id.widget_today_header, android.view.View.VISIBLE
             )
             val titleText = if (tier >= NavTier.SHORT_TITLE) dateOnlyTitle else fullTitle
             views.setTextViewText(
@@ -336,8 +353,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * 固定件 ≈187dp > 148dp → LinearLayout 横向溢出, nav_next 被推出可视区
          * (uiautomator 层级中消失)。旧判定只到"两字"档, 装不下时无路可退。
          *
-         * 降级序 (恓牲度递增, 与用户定稿一致: 先去星期, 不到万不得已不隐藏功能):
+         * 降级序 (恓牲度递增, 与用户定稿一致: 先去星期, 不到万不得已不隐藏功能;
+         * issue#31 荣耀 2×2 定案: 顶栏整体装不下时连 prev/next 一起撤 —
+         * 「切换按钮去掉, 留着反而多了点歧义」):
          *   FULL → TWO_CHAR → SHORT_TITLE(去星期) → HIDE_TODAY(隐藏回到今天)
+         *   → HIDE_NAV(整条导航 GONE, bitmap 全高, 点按开 App)
          * 每档按当档文案真实测量; prev/next 按钮 40dp×2 + padding 20dp + margins
          * 10dp 是不可压缩底座 (spacer weight=1 可压到 0)。
          */
@@ -362,12 +382,16 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             if (!navTodayVisible) {
                 if (requiredNoToday(fullTitle) <= wDp) return NavTier.FULL
                 if (requiredNoToday(dateOnlyTitle) <= wDp) return NavTier.SHORT_TITLE
-                return NavTier.HIDE_TODAY
+                return NavTier.HIDE_NAV
             }
             if (required(fullTitle, navTodayFull) <= wDp) return NavTier.FULL
             if (required(fullTitle, navTodayShort) <= wDp) return NavTier.TWO_CHAR
             if (required(dateOnlyTitle, navTodayShort) <= wDp) return NavTier.SHORT_TITLE
-            return NavTier.HIDE_TODAY
+            // date-only + 两字 nav_today 也装不下 → 最后试 date-only + 隐藏 nav_today,
+            // 再不行整条导航 GONE (issue#31: 2×2 上标题压箭头/箭头出界, 点按全部落到
+            // 底层 bitmap = "点箭头开 App")
+            if (requiredNoToday(dateOnlyTitle) <= wDp) return NavTier.HIDE_TODAY
+            return NavTier.HIDE_NAV
         }
 
         /** Android Context 入口 — 真实 Paint (含 fontScale) + 资源串注入纯函数判定档位。 */
@@ -449,6 +473,31 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 // Today 系静态分支 — bitmap(emptyHeader 留白顶栏) + 真实视图顶栏 (issue #24)
                 // v8.1 口径: 静态档 bitmap 画 24dp 头部空档 (headerSpace=false), 闸门用
                 // contentH(同口径) ≤ hDp — 与渲染逐字节一致
+                // issue#31 荣耀 2×2: 顶栏整体装不下 (HIDE_NAV) → bitmap 带头部画满
+                // (emptyHeader=false), 无真实视图顶栏, 无导航键 — 点按开 App。
+                val navReceiver = receiverClass
+                val tierForGate = if (navReceiver != null &&
+                    TodayWidgetReceiver::class.java.isAssignableFrom(navReceiver)
+                ) navHeaderTier(
+                    context, navTitle(data, DateUtils.localizedDay(data.date.dayOfWeek.value, context)),
+                    data.dateLabel, wDp,
+                    navTodayFull = context.getString(com.lingion.sleepy.R.string.today_nav_back_to_today),
+                    navTodayShort = context.getString(com.lingion.sleepy.R.string.today_nav_today_short),
+                    navTodayVisible = !data.isToday
+                ) else NavTier.HIDE_NAV
+                if (tierForGate == NavTier.HIDE_NAV) {
+                    RemoteViewsWidgetHelper.renderAndPush(
+                        context, awm, id, TAG,
+                        loadData = { data },
+                        renderBitmap = { d, w, h ->
+                            WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
+                        },
+                        layoutRes = com.lingion.sleepy.R.layout.widget_bitmap_container,
+                        pushGen = pushGen
+                    )
+                    Log.d(TAG, "pushTodayData static-fullface id=$id ${wDp}x${hDp}dp content=$contentH (HIDE_NAV — 顶栏 GONE, #31 定案)")
+                    return
+                }
                 val shell = WidgetBitmapRenderers.renderToday(
                     context, data, wDp.toFloat(), hDp.toFloat(), variant, emptyHeader = true
                 )

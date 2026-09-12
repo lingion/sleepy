@@ -226,10 +226,11 @@ class NavHeaderFitTest {
     @Test
     fun `tier hide today keeps nav buttons and date-only title`() {
         val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // 极窄: date-only 也装不下 → 隐藏 nav_today (prev/next 保留)
+        // HIDE_TODAY 档: date-only「9/12」+两钮 = 156dp 装得下, 但满标题/去星期+nav_today
+        // 都装不下 → 隐藏 nav_today (prev/next 保留)。(#31 后 HIDE_NAV 兜底更窄: <156dp)
         assertEquals(
             NavTier.HIDE_TODAY,
-            tier(1f, 120, "9/12 · 周六", "9/12",
+            tier(1f, 160, "9/12 · 周六", "9/12",
                 navFull = "回到今天", navShort = "今天",
                 titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
         )
@@ -250,6 +251,46 @@ class NavHeaderFitTest {
             tier(1f, 242, "9/8 · 周二", "9/8",
                 navFull = "回到今天", navShort = "今天",
                 titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+        )
+    }
+
+    // ── issue#31 荣耀 2×2 定案: 装不下完整顶栏 → 整条导航 GONE (HIDE_NAV) ──
+    // 用户定稿 (#31): 「2×2 是妥协的结果…我本来是打算把这个切换按钮去掉的,
+    // 现在还留着, 反而多了点歧义, 我会改掉」。降级序末端再退一档: date-only
+    // 标题+两钮都装不下 → 整条 header 隐藏 (bitmap 全高, 点按开 App)。
+
+    @Test
+    fun `tier hide nav when even date-only title plus arrows cannot fit`() {
+        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
+        // date-only「9/8」= 3字×13 = 39; requiredNoToday = 10+39+4+40+40+10 = 143
+        // wDp=142 → 装不下 → HIDE_NAV (整条导航 GONE)
+        assertEquals(
+            NavTier.HIDE_NAV,
+            tier(1f, 142, "9/8 · 周二", "9/8",
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+        )
+        // 143 = 恰好装下 → HIDE_TODAY (标题+两钮保留)
+        assertEquals(
+            NavTier.HIDE_TODAY,
+            tier(1f, 143, "9/8 · 周二", "9/8",
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+        )
+    }
+
+    @Test
+    fun `tier hide nav fallback also applies when navToday visible`() {
+        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
+        // navTodayVisible=true 分支同样有 HIDE_NAV 兜底: required(dateOnly 9/8=39, 今天=22)
+        // = 10+39+4+40+(6+22+6)+40+10 = 177 > 142, requiredNoToday(9/8)=143 > 142
+        // → 整条导航 GONE (不是 HIDE_TODAY)
+        assertEquals(
+            NavTier.HIDE_NAV,
+            tier(1f, 142, "9/8 · 周二", "9/8",
+                navFull = "回到今天", navShort = "今天",
+                titleM = { tp.measureText(it) }, navM = { np.measureText(it) },
+                navTodayVisible = true)
         )
     }
 }
