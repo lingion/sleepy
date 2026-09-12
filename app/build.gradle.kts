@@ -13,7 +13,7 @@ android {
         applicationId = "com.lingion.sleepy"
         minSdk = 26
         targetSdk = 37
-        versionCode = 58
+        versionCode = 59
         versionName = "1.0.54"
         vectorDrawables { useSupportLibrary = true }
         androidResources {
