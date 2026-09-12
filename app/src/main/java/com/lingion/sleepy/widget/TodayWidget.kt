@@ -188,6 +188,22 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     com.lingion.sleepy.R.id.widget_today_header,
                     "header GONE tier=HIDE_NAV w=$wDp"
                 )
+                // 真实根因 (#31 P1 v1.0.55 真机复测): MagicOS launcher 端把 prev/next
+                // 当独立可点击元素保留, 即便父容器 GONE 也接 PendingIntent — 用户看到
+                // 两个 < > 形状以为是翻页按钮, 点了无反应 = 困惑 = 看似「箭头还在」。
+                // HIDE_NAV 档下把 prev/next 重绑成 tapIntent (开 App), 让 launcher 端
+                // 无论是否尊重 GONE, 行为都收敛到「点哪都是开 App」。
+                val tap = PendingIntent.getActivity(
+                    context, WidgetRoutes.tapRequestCode(widgetId),
+                    WidgetRoutes.tapIntent(context),
+                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                )
+                views.setOnClickPendingIntent(
+                    com.lingion.sleepy.R.id.widget_today_nav_prev, tap
+                )
+                views.setOnClickPendingIntent(
+                    com.lingion.sleepy.R.id.widget_today_nav_next, tap
+                )
                 return
             }
             views.setViewVisibility(
