@@ -15,13 +15,13 @@ Sleepy 是 Android App,只能运行 Android AppWidget 体系。下列“厂商�
 | 厂商 | 子目录 | 关键坑 |
 |---|---|---|
 | 小米 HyperOS | [xiaomi/](./xiaomi/) | `:widgetProvider` 独立进程 ≤35M,曝光刷新(去掉定时刷新),不支持 fork |
-| 荣耀 MagicOS | [honor/](./honor/) | 锁屏小组件独立推送路径,桌面小组件走 Android 原生,主题包渠道独立 |
+| 荣耀 MagicOS | [honor/](./honor/) | 锁屏小组件独立推送路径,桌面小组件走 Android 原生,主题包渠道独立;新增 appwidget-dev-notes (#31 实锤 configure 回滚修复 + pin 矩阵) |
 | OPPO ColorOS | [oppo/](./oppo/) | 历史 Glance 冻结问题 (已有 memory),主题组件 SDK 是独立通道 |
-| vivo OriginOS | [vivo/](./vivo/) | 原子组件基于原生 + meta-data,挂件内存/GIF 性能受限 |
+| vivo OriginOS | [vivo/](./vivo/) | 原子组件基于原生 + meta-data,挂件内存/GIF 性能受限;新增 atomic-widget-dev-notes (pin 无 SDK 完全无效 + 内存上限实锤) |
 | 魅族 Flyme | [meizu/](./meizu/) | 无独立厂商 SDK,走 Android 原生 |
-| 三星 OneUI | [samsung/](./samsung/) | 无独立厂商 SDK,走 Android 原生;Good Lock 仅做主题增强 |
-| 跨厂商经验 | [_cross-vendor/](./_cross-vendor/) | CSDN 14K 实战总结 (小米/vivo/华为/OPPO 适配差异) |
-| 华为 HarmonyOS | — | 见下方“不在适配范围”说明 |
+| 三星 OneUI | [samsung/](./samsung/) | 无独立厂商 SDK,走 Android 原生;新增 appwidget-dev-notes (pin 弹框+空间不足开新页,折叠屏/外屏 cell 差异) |
+| 跨厂商经验 | [_cross-vendor/](./_cross-vendor/) | CSDN 14K 实战总结 (小米/vivo/华为/OPPO 适配差异);新增 remoteviews-limits (bitmap 内存 1.5× 屏 / GL 4096 静默失败 / fontScale 遮挡 / pin 矩阵总表) |
+| 华为 HarmonyOS | [huawei/](./huawei/) | 三档分界:EMUI/HarmonyOS 2-4 (安卓内核) = AppWidget 可用 AOSP 行为;NEXT 服务卡片 = 独立生态不可达 (appwidget-android-core) |
 
 ## 证据等级约定
 
