@@ -6,24 +6,28 @@ import org.junit.Test
 
 /**
  * 主题「跟随系统」会话内跟随契约 — 用户报障:
- *   ColorOS(OPPO) 系统级主题管理切深浅色, Sleepy 内「深浅色跟随系统」不跟随;
- *   通知栏/快速设置切系统深浅同样不跟随。手动点模式卡片(浅色/深色/跟随系统)则一切正常。
+ *   ColorOS(OPPO) 系统级主题管理切深浅色, 通知栏/快速设置切系统深浅,
+ *   widget 能跟随变色但软件界面不变色。手动点模式卡片(浅色/深色/跟随系统)则一切正常。
  *
- * 根因: MainActivity 声明 android:configChanges="uiMode"(系统切深浅时 Activity 不重建),
- *   而 setContent 里 dark 状态是无 key 的 remember { mutableStateOf(...) } —
- *   初始化只跑一次, 之后系统 uiMode 变化只会让 isSystemInDarkTheme() 的 systemDark
- *   重组出新值, 但下游 dark 未绑该 key, 永远停在首帧取值(会话内冻结),
- *   直到用户手动碰模式卡片(applyTheme 路径)或冷启动。
+ * 根因: MainActivity 声明 android:configChanges="uiMode", 系统切深浅时 Activity
+ *   不重建。Compose 的 isSystemInDarkTheme() 依赖 Activity 的 Configuration 快照,
+ *   但 configChanges=uiMode 时 Android 更新 Resources.configuration 而不触发
+ *   Compose recomposition — systemDark 永远停在首帧值, 即使 remember(systemDark)
+ *   也无果(key 从未变化)。widget 能随是因为 Application.onConfigurationChanged
+ *   回调通知远程视图重绘。
  *
- * 修复契约(结构锁定; 先例: BackRestoreSaveableContractTest —
+ * 修复: 用 mutableStateOf(uiMode) 承接 Activity.onConfigurationChanged 的推送 →
+ *   该 State 变化触发 Compose recomposition → systemDark 派生新值 →
+ *   remember(systemDark) 重新计算 dark。
+ *
+ * 契约(结构锁定; 先例: BackRestoreSaveableContractTest —
  * 仓库无 Robolectric/Compose UI 测试, 声明式接线读源头文件等价于读编译产物):
- *   1. dark 状态必须 remember(systemDark) — systemDark 一变(不管来自
- *      ColorOS 主题管理注入、通知栏切换还是任何 uiMode 来源), dark 立即按
+ *   1. dark 状态必须 remember(systemDark) — systemDark 一变, dark 立即按
  *      AppPrefs.isDarkMode(ctx, 新systemDark) 重算;
- *   2. 手动路径保留: onThemeModeChange → applyTheme() 重算 dark 的接线不得移除
- *      (模式切换当帧即生效, 不能等 systemDark 变);
- *   3. 固定浅色/深色模式不受影响: isDarkMode 对 light/dark 返回常量,
- *      systemDark 变化重算结果不变(此为行为论证, 结构上由契约 1 天然覆盖)。
+ *   2. systemDark 必须由 onConfigurationChanged 可观察的 State 驱动, 而非
+ *      isSystemInDarkTheme() 直接调用(后者在 configChanges=uiMode 下不会 recomposition);
+ *   3. 手动路径保留: onThemeModeChange → applyTheme() 重算接线不得移除;
+ *   4. 固定浅色/深色模式不受影响: isDarkMode 对 light/dark 返回常量.
  */
 class ThemeFollowSystemContractTest {
 
@@ -45,7 +49,7 @@ class ThemeFollowSystemContractTest {
         ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load AndroidManifest.xml")
     }
 
-    /** 契约 1: dark 必须以 systemDark 为 remember key — 会话内系统 uiMode 变化即时重算 */
+        /** 契约 1: dark 必须以 systemDark 为 remember key — 会话内系统 uiMode 变化即时重算 */
     @Test
     fun dark_state_is_keyed_on_systemDark() {
         assertTrue(
@@ -68,6 +72,48 @@ class ThemeFollowSystemContractTest {
             "dark initializer must call AppPrefs.isDarkMode(this@MainActivity, systemDark) " +
                 "so each systemDark flip re-derives from the live system value",
             m != null
+        )
+    }
+
+    /** 契约 1 新增: systemDark 必须由 onConfigurationChanged 可观察的 State 驱动 —
+     * isSystemInDarkTheme() 在 configChanges="uiMode" 下不会 recomposition, 故必须
+     * 通过 State 承接 onConfigurationChanged 的推送。断言:
+     *   a) 存在 mutableStateOf<uiMode> 字段 (composition-observed)
+     *   b) onConfigurationChanged 覆写更新该 State
+     *   c) systemDark 派生自该 State (非直接调用 isSystemInDarkTheme()) */
+    @Test
+    fun systemDark_is_driven_by_configuration_change_state() {
+        // a) State 字段存在且类型为 Int (uiMode mask)
+        val stateField = Regex("""private\s+val\s+\w+\s*=\s*mutableStateOf\(""")
+        assertTrue(
+            "MainActivity must hold a mutableStateOf tracking uiMode for recomposition " +
+                "when configChanges=\"uiMode\" prevents Activity recreation / Compose recomposition",
+            stateField.containsMatchIn(mainSource)
+        )
+        // b) onConfigurationChanged 覆写存在且更新 State
+        assertTrue(
+            "MainActivity must override onConfigurationChanged",
+            Regex("""override\s+fun\s+onConfigurationChanged\(""").containsMatchIn(mainSource)
+        )
+        val onConfigBody = Regex("""override\s+fun\s+onConfigurationChanged\([^)]*\)[^}]*\}""")
+            .find(mainSource)?.value
+            ?: ""
+        assertTrue(
+            "onConfigurationChanged must write to the uiMode state (e.g. .value = ... uiMode)",
+            Regex("""\.value\s*=\s*\w+\.uiMode\s+and\s+Configuration\.UI_MODE_NIGHT_MASK""")
+                .containsMatchIn(onConfigBody)
+        )
+        // c) systemDark 派生自 State, 而非直接 isSystemInDarkTheme()
+        assertFalse(
+            "systemDark must NOT use isSystemInDarkTheme() directly — it never recompositions " +
+                "under configChanges=\"uiMode\"; must derive from the observed state instead",
+            Regex("""systemDark\s*=\s*androidx\.compose\.foundation\.isSystemInDarkTheme\(\)""")
+                .containsMatchIn(mainSource)
+        )
+        assertTrue(
+            "systemDark must be derived from the configuration-change-tracked state",
+            Regex("""val\s+systemDark\s*=\s*\(.*==\s*Configuration\.UI_MODE_NIGHT_YES\)""")
+                .containsMatchIn(mainSource)
         )
     }
 

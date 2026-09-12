@@ -2,6 +2,7 @@ package com.lingion.sleepy
 
 import android.content.Context
 import android.content.Intent
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -101,6 +102,21 @@ class MainActivity : ComponentActivity() {
     private val editingCourseFromIntent = MutableStateFlow<CourseEntity?>(null)
     val editingCourseFlow: StateFlow<CourseEntity?> = editingCourseFromIntent.asStateFlow()
 
+    // systemDark 变化信号: configChanges="uiMode" 不重建 Activity, Compose 的
+    // isSystemInDarkTheme() 不会自行 recomposition。覆盖 onConfigurationChanged,
+    // 把最新 uiMode 推入此 State 触发重组 — dark 即随 systemDark 实时重算。
+    // 初始值取当前配置, 避免冷启时闪一次。
+    // ponytail: MutableStateOf<Int> + onConfigurationChanged is the standard
+    // pattern for theme changes under configChanges="uiMode"; no per-account lock needed.
+    private val uiNightModeState = mutableStateOf(
+        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    )
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        uiNightModeState.value = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -112,10 +128,11 @@ class MainActivity : ComponentActivity() {
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
         setContent {
-            val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
+            // uiNightModeState.value 变化(composition-observed) → systemDark 重算 →
+            // dirty 指派给 remember(systemDark) 触发 dark 重算; 此前 isSystemInDarkTheme()
+            // 在 configChanges="uiMode" 场景下不会 recomposition, dark 冻结在首帧值。
+            val systemDark = (uiNightModeState.value == Configuration.UI_MODE_NIGHT_YES)
             var themeMode by remember { mutableStateOf(AppPrefs.getThemeMode(this@MainActivity)) }
-            // systemDark 作 remember key: 系统深浅变化(uiMode 注入/通知栏切换)会话内即时重算 dark —
-            // 无 key 的话 configChanges="uiMode" 不重建 Activity, dark 冻结在首帧值
             var dark by remember(systemDark) { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity, systemDark)) }
             fun applyTheme() { dark = AppPrefs.isDarkMode(this@MainActivity, systemDark) }
             val deepLinkCourse by editingCourseFlow.collectAsState()

@@ -1,11 +1,12 @@
 package com.lingion.sleepy.ui.screen.imports
 
+import android.content.res.Configuration
 import android.os.Bundle
 import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -72,12 +73,21 @@ import com.lingion.sleepy.R
  */
 class JwImportActivity : ComponentActivity() {
 
+    // configChanges="uiMode" 不重建 Activity → isSystemInDarkTheme() 不 recomposition
+    private val uiNightModeState = mutableStateOf(
+        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    )
+
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        uiNightModeState.value = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         setContent {
-            // 跟随 app 主题设置(此前硬编码 default+只跟系统深色,选春绿/海蓝后此页不跟随)
-            val systemDark = isSystemInDarkTheme()
+            val systemDark = uiNightModeState.value == Configuration.UI_MODE_NIGHT_YES
             val dark = remember(systemDark) {
                 AppPrefs.isDarkMode(this@JwImportActivity, systemDark)
             }
