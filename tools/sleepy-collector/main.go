@@ -30,7 +30,7 @@ import (
 	"github.com/chromedp/chromedp"
 )
 
-const version = "v1.2"
+const version = "v1.3"
 
 // ---------------- 网络捕获 ----------------
 
@@ -42,7 +42,8 @@ type reqRec struct {
 	status      int64
 	mimeType    string
 	frameID     string
-	done        bool // loadingFinished 收到,可取响应体
+	respHeaders string // 响应头逐行 "Name: value" (G3: token/XRW/Location 等自定义头是排协议的半张图)
+	done        bool   // loadingFinished 收到,可取响应体
 	failed      bool
 	failureText string
 	body        string // 取回的响应体
@@ -50,14 +51,17 @@ type reqRec struct {
 }
 
 type Collector struct {
-	recs     map[network.RequestID]*reqRec
-	order    []network.RequestID
-	urlSeen  map[string]bool
-	urlSrc   map[string][]string
-	xnxq     string
-	gnmkdm   string
-	log      *logHub
-	outcomes *outcomeSummary
+	recs       map[network.RequestID]*reqRec
+	order      []network.RequestID
+	urlSeen    map[string]bool
+	urlSrc     map[string][]string
+	xnxq       string
+	gnmkdm     string
+	log        *logHub
+	outcomes   *outcomeSummary
+	redirects  []string // 重定向逐跳记录 "跳N: GET url → HTTP 302 Location: …" (G4: CAS→教务的 302 链是登录态排障命脉)
+	snapshots  []entry  // 用户点「再拍一帧」攒下的增量快照 (G7: 交互后 DOM/存储变化是 week 参数排障的关键证据)
+	snapSeq    int      // 增量快照序号
 }
 
 // logHub 采集日志中枢 — 一处记录,三处消费:
@@ -242,6 +246,35 @@ func NewCollector() *Collector {
 	}
 }
 
+// respHeadersOf 把 CDP 响应头压成逐行文本 (G3)。全量保留 (用户取向: 噪音无所谓);
+// Set-Cookie 的值按隐私铁律剥掉只留名字 (包内 Cookie 恒只有名字, 见 INDEX 自查提示)。
+func respHeadersOf(headers network.Headers) string {
+	if len(headers) == 0 {
+		return ""
+	}
+	names := make([]string, 0, len(headers))
+	for k := range headers {
+		names = append(names, k)
+	}
+	sort.Strings(names)
+	var lines []string
+	for _, k := range names {
+		v := fmt.Sprintf("%v", headers[k])
+		if strings.EqualFold(k, "set-cookie") {
+			// 多个 Set-Cookie 可能合并成一个值; 只保留 cookie 名, 丢弃属值
+			var parts []string
+			for _, seg := range strings.Split(v, "\n") {
+				if eq := strings.Index(seg, "="); eq > 0 {
+					parts = append(parts, strings.TrimSpace(seg[:eq])+"=(值省略)")
+				}
+			}
+			v = strings.Join(parts, "; ")
+		}
+		lines = append(lines, k+": "+v)
+	}
+	return strings.Join(lines, "\n")
+}
+
 var logoutWords = []string{"logout", "signout", "log_off", "logoff", "tuichu", "zhuxiao"}
 
 func isLogout(u string) bool {
@@ -268,6 +301,87 @@ func looksBinary(u string) bool {
 
 var semRe = regexp.MustCompile(`["=:\s](\d{4}-\d{4}-\d{1,2})[",\s]`)
 var gnmRe = regexp.MustCompile(`gnmkdm['":=\s]+\[?([A-Z]?\d{4,5})\]?`)
+
+// weekParamRe 识别周类参数名 (G1): URL query 或表单体里的"第几周"。
+// 实锤: qz_app 移动教务 curriculum?week=N 一次只回一周 (2026-09-11 HEBZYHJ
+// 只抓当前周丢 2 课) — 枚举重放前必须先认出哪些接口吃周参数。
+var weekParamRe = regexp.MustCompile(`(?i)(^|[?&_"'])((week)|(zc)|(weekindex)|(zhouci)|(weeknumber)|(wk))(['"=&:|\s]|$)`)
+
+// periodParamRe 识别节次时间/学期起始日接口 (G6): chaoxing getZclistByXnxq /
+// CQU time-pattern / EAMS5 起始日 — 分离接口漏采 = 导入后时间列空白。
+var periodParamRe = regexp.MustCompile(`(?i)(kssj|jssj|time.?pattern|sectiontime|period|startdate|termbegin|term.?begin|firstday|xqszd|xnxq|semester|term)`)
+
+// findWeekParam 在表单体或 URL query 里找出周参数的 (名字, 当前值)。
+// 找不到返回 nil。名字保留原样 (重放时按原名发)。
+func findWeekParam(u, body string) (string, string) {
+	// 先看表单体 form-urlencoded
+	if i := strings.Index(strings.ToLower(body), "week"); i >= 0 || strings.Contains(strings.ToLower(body), "zc=") {
+		for _, seg := range strings.Split(body, "&") {
+			if eq := strings.Index(seg, "="); eq > 0 {
+				name := strings.ToLower(seg[:eq])
+				if weekParamRe.MatchString(name) || name == "zc" || name == "week" ||
+					name == "weekindex" || name == "zhouci" || name == "xq" {
+					return seg[:eq], seg[eq+1:]
+				}
+			}
+		}
+	}
+	// 再看 URL query
+	if i := strings.Index(u, "?"); i >= 0 {
+		for _, seg := range strings.Split(u[i+1:], "&") {
+			if eq := strings.Index(seg, "="); eq > 0 {
+				name := strings.ToLower(seg[:eq])
+				if name == "week" || name == "zc" || name == "weekindex" || name == "zhouci" || name == "xq" {
+					return seg[:eq], seg[eq+1:]
+				}
+			}
+		}
+	}
+	return "", ""
+}
+
+// mineRedirectTarget 从重定向 Location 里顺带挖参数 (登录回跳常带学期码)。
+func (c *Collector) mineRedirectTarget(loc string) {
+	c.mineValues(loc)
+}
+
+// replaceFormParam 把 form-urlencoded 体里 name 参数的值替换为 newV (G1)。
+// 参数不存在时返回原体 (调用方据此追加而非替换)。
+func replaceFormParam(body, name, newV string) string {
+	segs := strings.Split(body, "&")
+	found := false
+	for i, seg := range segs {
+		if eq := strings.Index(seg, "="); eq > 0 && seg[:eq] == name {
+			segs[i] = seg[:eq] + "=" + newV
+			found = true
+		} else if seg == name { // 值为空的 "name" 段
+			segs[i] = seg + "=" + newV
+			found = true
+		}
+	}
+	if !found {
+		return body
+	}
+	return strings.Join(segs, "&")
+}
+
+// replaceURLParam 替换 URL query 里 name 参数的值并重编码 (G8)。
+func replaceURLParam(u, name, newV string) string {
+	i := strings.Index(u, "?")
+	if i < 0 {
+		return u
+	}
+	base, query := u[:i], u[i+1:]
+	segs := strings.Split(query, "&")
+	for j, seg := range segs {
+		if eq := strings.Index(seg, "="); eq > 0 && seg[:eq] == name {
+			segs[j] = seg[:eq] + "=" + urlEscape(newV)
+		} else if seg == name {
+			segs[j] = seg + "=" + urlEscape(newV)
+		}
+	}
+	return base + "?" + strings.Join(segs, "&")
+}
 
 // mineValues 从接口响应里挖参数值。只看短响应:参数报错文本很短;
 // 大 JSON 里的学期码本来就带在数据里,不需要从里面猜。
@@ -301,6 +415,17 @@ func (c *Collector) minedStr() string {
 func (c *Collector) onEvent(ev interface{}) {
 	switch e := ev.(type) {
 	case *network.EventRequestWillBeSent:
+		// G4: 重定向逐跳记录 — 302 链 (CAS SSO → 教务) 是登录态排障的命脉,
+		// 只看最终 URL 会把"会话在哪一跳丢的"问题变成盲猜。
+		if e.RedirectResponse != nil {
+			rr := e.RedirectResponse
+			c.redirects = append(c.redirects,
+				fmt.Sprintf("HTTP %d %s\n  → Location: %s\n  响应头: %s",
+					rr.Status, e.Request.URL, rr.URL, strings.ReplaceAll(respHeadersOf(rr.Headers), "\n", "; ")))
+			if loc := rr.Headers["location"]; loc != nil {
+				c.mineRedirectTarget(fmt.Sprintf("%v", loc))
+			}
+		}
 		r := &reqRec{
 			requestID: e.RequestID,
 			url:       e.Request.URL,
@@ -327,6 +452,7 @@ func (c *Collector) onEvent(ev interface{}) {
 		if r := c.recs[e.RequestID]; r != nil {
 			r.status = e.Response.Status
 			r.mimeType = e.Response.MimeType
+			r.respHeaders = respHeadersOf(e.Response.Headers) // G3: 全量响应头 (Set-Cookie 只留名)
 			// HTTP 错误/重定向异常 → 日志 (静态资源 4xx 噪音大, 只记 API 类)
 			if e.Response.Status >= 400 && isAPILike(r.url) {
 				category := "http_failure"
@@ -380,8 +506,10 @@ type replayPlan struct {
 	Method string
 }
 
-// planDetailCaptures deliberately accepts only cross-origin, document-like links.
-// A page-context fetch would be CORS constrained; direct tab navigation is not.
+// planDetailCaptures accepts document-like course/schedule links regardless of
+// origin (G5): UCAS 型跨源详情页与 BJTU 型同源详情页都需要导航采集 — 新标签
+// 导航复用同一浏览器会话, 又不受页面 fetch 的 CORS 限制, 没理由排除同源。
+// 同源链接去重后与 4-net-live 的响应体天然一致, 多抓不亏 (用户取向: 噪音无所谓)。
 func planDetailCaptures(mainURL string, links []string) []capturePlan {
 	plans := make([]capturePlan, 0)
 	seen := map[string]bool{}
@@ -403,13 +531,15 @@ func isNavigationCandidate(mainURL, candidate string) bool {
 	if err != nil || (u.Scheme != "https" && u.Scheme != "http") || u.Host == "" {
 		return false
 	}
-	if sameOrigin(mainURL, candidate) || isLogout(candidate) || looksBinary(candidate) {
+	// 排除主页面自身 (导航回自己 = 死循环白费一个标签页) 与 logout/binary
+	if u.String() == mainURL || isLogout(candidate) || looksBinary(candidate) {
 		return false
 	}
 	p := strings.ToLower(u.Path)
 	return strings.Contains(p, "course") || strings.Contains(p, "schedule") ||
 		strings.Contains(p, "timetable") || strings.Contains(p, "detail") ||
-		strings.Contains(p, "lesson") || strings.Contains(p, "class")
+		strings.Contains(p, "lesson") || strings.Contains(p, "class") ||
+		strings.Contains(p, "coursetime") || strings.Contains(p, "xkct")
 }
 
 // replayCandidates preserves the evidence from real browser traffic. It never
@@ -840,6 +970,23 @@ func looksError(t string) bool {
 		strings.Contains(t, `"code":"1"`)
 }
 
+// jsonpPrefix 探测 JSONP 包裹 (G10): 响应是 callback({...}); 形态时标记进 meta,
+// 适配者才知道要剥壳再解析。返回 callback 名, 非 JSONP 返回空串。
+var jsonpRe = regexp.MustCompile(`^\s*([A-Za-z_$][\w$]*)\s*\(\s*[\[{]`)
+
+func jsonpPrefix(t string) string {
+	m := jsonpRe.FindStringSubmatch(t)
+	if m == nil {
+		return ""
+	}
+	// JSONP 以 ");" 或 ");" 变体收尾才算数 (防把 "if(x){...}" 之类误判)
+	trimmed := strings.TrimRight(t, " \t\r\n")
+	if !strings.HasSuffix(trimmed, ")") && !strings.HasSuffix(trimmed, ");") {
+		return ""
+	}
+	return m[1]
+}
+
 // ---------------- 浏览器端 JS 片段 ----------------
 
 const jsStorage = `JSON.stringify((function(){
@@ -880,6 +1027,21 @@ const jsLinks = `JSON.stringify((function(){
   document.querySelectorAll('a[href],iframe[src],form[action]').forEach(function(el){
     var h = el.getAttribute('href')||el.getAttribute('src')||el.getAttribute('action')||'';
     if ((h.indexOf('http')===0 || h.charAt(0)==='/') && !seen[h]) { seen[h]=1; out.push(el.baseURI ? new URL(h, el.baseURI).href : h); }
+  });
+  return out;
+})())`
+
+// jsSelects 学期/周次下拉枚举 (G2): 学期参数候选集常在 <select><option> 里,
+// 接口报错文本挖参只是运气 — 把全部 select 的 name/id + option(value,text)
+// 原样存下来, 适配者一眼看到学期码全集。
+const jsSelects = `JSON.stringify((function(){
+  var out = [];
+  document.querySelectorAll('select').forEach(function(s, si){
+    var opts = [];
+    s.querySelectorAll('option').forEach(function(o){
+      opts.push({v: o.getAttribute('value')||'', t: (o.textContent||'').trim().slice(0,60)});
+    });
+    if (opts.length) out.push({sel: si, name: s.getAttribute('name')||'', id: s.id||'', opts: opts});
   });
   return out;
 })())`
@@ -963,7 +1125,7 @@ const btnJS = `(function(){
   if (!document.body) return 'nobody';
   var d = document.createElement('div');
   d.id = '__sleepy_btn_wrap';
-  d.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:2147483647;';
+  d.style.cssText = 'position:fixed;right:18px;bottom:18px;z-index:2147483647;display:flex;gap:10px;';
   var b = document.createElement('button');
   b.textContent = '✓ 课表没问题,一键采集打包';
   b.style.cssText = 'background:#2da44e;color:#fff;border:0;border-radius:10px;padding:14px 22px;'
@@ -973,6 +1135,14 @@ const btnJS = `(function(){
     window.__sleepyDone = true;
   };
   d.appendChild(b);
+  // G7: 再拍一帧 — 点了"下一周"/切学期/切 tab 之后拍增量快照,
+  // 交互后 DOM/存储的变化是周参数与学期参数排障的直接证据。
+  var s = document.createElement('button');
+  s.textContent = '再拍一帧';
+  s.style.cssText = 'background:#57606a;color:#fff;border:0;border-radius:10px;padding:14px 16px;'
+    + 'font-size:14px;cursor:pointer;box-shadow:0 6px 24px rgba(0,0,0,.4);';
+  s.onclick = function(){ window.__sleepySnap = (window.__sleepySnap||0) + 1; };
+  d.appendChild(s);
   document.body.appendChild(d);
   return 'injected';
 })()`
@@ -986,6 +1156,8 @@ func main() {
 	fmt.Println()
 	fmt.Println("浏览器已打开。请在窗口里登录教务系统,进入你的课表页面。")
 	fmt.Println("登录后:把页面上能勾的复选框、能展开的栏目(周次、单双周、任课教师、教室备注之类)全勾上全展开 — 拿全了适配器才能少问,缺字段只能等你补一份新包。")
+	fmt.Println("课表有「上一周/下一周」或学期切换的话:切几周再点灰色「再拍一帧」按钮,每个状态都拍一下 — 很多学校的接口一次只回一周,拍全了课才不会少。")
+	fmt.Println("登录卡住/验证码过不去也照点采集 — 登录页本身就是排障的重要证据。")
 	fmt.Println("账号下如果不止一个课表页(本学期 / 下学期 / 补退选 / 重修 / 辅修),每个页都重复一次登录+展开+点按钮,各打一个包,别合并。")
 	fmt.Println("看到课表后,点页面右下角绿色按钮「一键采集打包」;")
 	fmt.Println("找不到按钮的话,回到这个黑色窗口按一次回车也行。")
@@ -1070,6 +1242,8 @@ func main() {
 	injectBtn(browserCtx)
 	fmt.Println("浏览器已打开。请在窗口里登录教务系统,进入你的课表页面。")
 	fmt.Println("登录后:把页面上能勾的复选框、能展开的栏目(周次、单双周、任课教师、教室备注之类)全勾上全展开 — 拿全了适配器才能少问,缺字段只能等你补一份新包。")
+	fmt.Println("课表有「上一周/下一周」或学期切换的话:切几周再点灰色「再拍一帧」按钮,每个状态都拍一下。")
+	fmt.Println("登录卡住/验证码过不去也照点采集 — 登录页本身就是排障的重要证据。")
 	fmt.Println("账号下如果不止一个课表页(本学期 / 下学期 / 补退选 / 重修 / 辅修),每个页都重复一次登录+展开+点按钮,各打一个包,别合并。")
 	fmt.Println("看到课表后,点页面右下角绿色按钮「一键采集打包」;")
 	fmt.Println("找不到按钮的话,回到这个黑色窗口按一次回车也行。")
@@ -1096,6 +1270,7 @@ func main() {
 		if done {
 			break
 		}
+		c.pollSnapshots(browserCtx) // G7: 「再拍一帧」按钮 — 交互后增量快照
 		time.Sleep(700 * time.Millisecond)
 		injectBtn(browserCtx) // 页面跳转会清掉按钮,每次循环补挂(幂等)
 	}
@@ -1171,6 +1346,80 @@ func injectBtn(ctx context.Context) {
 	_ = chromedp.Run(ctx, chromedp.Evaluate(btnJS, &r))
 }
 
+// takeSnapshot 响应「再拍一帧」按钮 (G7): 抓当前 DOM + 存储 + URL + select 选项,
+// 存进 c.snapshots, 打包时按 1-dom/extra/ 与 5-storage/extra/ 入包。
+// 按钮计数清零, 下一轮轮询继续攒。页面跳转后 __sleepySnap 归零由重注入兜底。
+func (c *Collector) takeSnapshot(ctx context.Context) {
+	c.snapSeq++
+	seq := c.snapSeq
+	var url, html, storJSON, selJSON string
+	_ = chromedp.Run(ctx,
+		chromedp.Evaluate(`location.href`, &url),
+		chromedp.Evaluate(`document.documentElement.outerHTML`, &html),
+		chromedp.Evaluate(jsStorage, &storJSON),
+		chromedp.Evaluate(jsSelects, &selJSON),
+	)
+	c.log.Log("info", "增量快照 #%d — %s", seq, shortURL(url))
+	if html != "" {
+		c.snapshots = append(c.snapshots, entry{
+			path: fmt.Sprintf("1-dom/extra/snapshot%02d_page.html", seq),
+			meta: fmt.Sprintf("增量快照 #%d DOM (交互后) · %s", seq, url),
+			data: []byte(html),
+		})
+	}
+	var stor map[string]map[string]string
+	if json.Unmarshal([]byte(storJSON), &stor) == nil {
+		for _, kind := range []string{"sessionStorage", "localStorage"} {
+			m := stor[kind]
+			if len(m) == 0 {
+				continue
+			}
+			var lines []string
+			for k, v := range m {
+				if len(v) > 4096 {
+					v = v[:4096] + "...[截断]"
+				}
+				lines = append(lines, k+" = "+v)
+			}
+			sort.Strings(lines)
+			c.snapshots = append(c.snapshots, entry{
+				path: fmt.Sprintf("5-storage/extra/snapshot%02d_%s.txt", seq, kind),
+				meta: fmt.Sprintf("增量快照 #%d %s (交互后)", seq, kind),
+				data: []byte(strings.Join(lines, "\n")),
+			})
+		}
+	}
+	var sels []map[string]interface{}
+	if json.Unmarshal([]byte(selJSON), &sels) == nil && len(sels) > 0 {
+		b, _ := json.MarshalIndent(sels, "", "  ")
+		c.snapshots = append(c.snapshots, entry{
+			path: fmt.Sprintf("2-inline/extra/snapshot%02d_selects.json", seq),
+			meta: fmt.Sprintf("增量快照 #%d 下拉选项 (学期/周次候选集)", seq),
+			data: b,
+		})
+	}
+	// 顺带把此刻 URL 上的参数记下 (week= 参数切换的直观证据)
+	if i := strings.Index(url, "?"); i >= 0 {
+		c.snapshots = append(c.snapshots, entry{
+			path: fmt.Sprintf("6-logs/extra/snapshot%02d_url.txt", seq),
+			meta: "增量快照 #" + fmt.Sprint(seq) + " 页面 URL (含切换后的 query 参数)",
+			data: []byte(url),
+		})
+	}
+}
+
+// pollSnapshots 检查按钮计数, 有新点击就拍快照并清零计数。
+func (c *Collector) pollSnapshots(ctx context.Context) {
+	var want int
+	if err := chromedp.Run(ctx, chromedp.Evaluate(`window.__sleepySnap||0`, &want)); err != nil {
+		return
+	}
+	for c.snapSeq < want {
+		c.takeSnapshot(ctx)
+	}
+	_ = chromedp.Run(ctx, chromedp.Evaluate(`window.__sleepySnap = 0; 1`, nil))
+}
+
 func waitEnter() {
 	fmt.Print("(按回车关闭) ")
 	fmt.Scanln()
@@ -1207,6 +1456,10 @@ type collectionSummary struct {
 	RequestsSeen         int                     `json:"requests_seen"`
 	LiveBodiesCaptured   int                     `json:"live_bodies_captured"`
 	ResponseBodyFailures int                     `json:"response_body_failures"`
+	Redirects            int                     `json:"redirects"`
+	Snapshots            int                     `json:"snapshots"`
+	WeekReplayAPIs       int                     `json:"week_replay_apis"`
+	WeekReplayEntries    int                     `json:"week_replay_entries"`
 	DetailNavigation     detailNavigationSummary `json:"detail_navigation"`
 	Outcomes             []outcomeGroup          `json:"outcomes"`
 }
@@ -1314,6 +1567,22 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 			p.add(p.uniq(fmt.Sprintf("2-inline/top_%s%02d.%s", kind, i+1, ext)), "内联 "+kind, x["text"])
 		}
 	}
+	// G2: 学期/周次下拉枚举 — 学期参数候选集的直接证据
+	var selJSON string
+	_ = chromedp.Run(ctx, chromedp.Evaluate(jsSelects, &selJSON))
+	var sels []map[string]interface{}
+	if json.Unmarshal([]byte(selJSON), &sels) == nil && len(sels) > 0 {
+		b, _ := json.MarshalIndent(sels, "", "  ")
+		p.add(p.uniq("2-inline/top_selects.json"), "页面全部 <select> 下拉的 name/id + option(value,text) — 学期/周次参数候选集", string(b))
+		c.log.Log("info", "下拉选项 %d 组 (学期/周次候选集)", len(sels))
+	}
+	// G7: 用户点「再拍一帧」攒下的增量快照入包 (真实交互后的 DOM/存储/URL)
+	for _, s := range c.snapshots {
+		p.add(p.uniq(s.path), s.meta, string(s.data))
+	}
+	if len(c.snapshots) > 0 {
+		c.log.Log("ok", "增量快照入包 %d 条 (交互后 DOM/存储/URL)", len(c.snapshots))
+	}
 	c.log.FlushPanel(ctx) // 面板: "页面状态采集" 完成
 
 	// ---- 2. CDP 捕获的网络请求:取响应体并入库 ----
@@ -1362,14 +1631,23 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		if r.body == "" && r.postData == "" {
 			continue // 纯静态资源没取到体的,3-res 阶段会重取
 		}
-		head := fmt.Sprintf("METHOD: %s\nURL: %s\nSTATUS: %d\nCONTENT-TYPE: %s\nFRAME: %s\n\n",
+		head := fmt.Sprintf("METHOD: %s\nURL: %s\nSTATUS: %d\nCONTENT-TYPE: %s\nFRAME: %s\n",
 			r.method, r.url, r.status, r.mimeType, r.frameID)
+		// G3: 全量响应头 (Set-Cookie 只留名) — token/XRW 类自定义头是排协议的半张图
+		if r.respHeaders != "" {
+			head += "RESPONSE-HEADERS:\n" + r.respHeaders + "\n"
+		}
+		head += "\n"
 		content := head
 		if r.postData != "" {
 			content += "-------- 请求体 --------\n" + r.postData + "\n"
 		}
 		if r.body != "" {
-			content += fmt.Sprintf("-------- 响应体 (%d 字符) --------\n%s", len(r.body), r.body)
+			if jp := jsonpPrefix(r.body); jp != "" { // G10: JSONP 包裹标记
+				content += fmt.Sprintf("-------- 响应体 (%d 字符) [JSONP 包裹: %s(...)] --------\n%s", len(r.body), jp, r.body)
+			} else {
+				content += fmt.Sprintf("-------- 响应体 (%d 字符) --------\n%s", len(r.body), r.body)
+			}
 		}
 		meta := fmt.Sprintf("%s %s → HTTP %d · %s", r.method, r.url, r.status, r.mimeType)
 		name := fmt.Sprintf("%03d_%s_", idx+1, r.method)
@@ -1553,6 +1831,81 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	c.log.Log("ok", "接口重放入包 %d (候选 %d)", replayOK, len(apis))
 	c.log.FlushPanel(ctx)
 
+	// ---- 6b. 周参数枚举重放 (G1/G8) ----
+	// "端点一次只回一周"的接口 (qz_app curriculum?week=N 实锤: 只抓当前周丢
+	// 后续周课), 包里只有当前周 — 识别 week/zc/weekIndex/zhouci 类参数后
+	// 按 1..25 枚举重放。POST 走体参数, GET 走 query 参数, 都覆盖。
+	fmt.Println("  正在枚举周参数重放…")
+	c.log.Log("step", "周参数枚举重放 (week=1..25)")
+	weekOK := 0
+	weekAPIs := 0
+	seenWeekAPI := map[string]bool{}
+	for _, rid := range c.order {
+		r := c.recs[rid]
+		if r == nil || isLogout(r.url) || !sameOrigin(mainURL, r.url) {
+			continue
+		}
+		if r.method != "POST" && r.method != "GET" {
+			continue
+		}
+		name, cur := findWeekParam(r.url, r.postData)
+		if name == "" || seenWeekAPI[r.method+" "+r.url] {
+			continue
+		}
+		seenWeekAPI[r.method+" "+r.url] = true
+		weekAPIs++
+		c.log.Log("info", "发现周参数 %s=%s @ %s %s — 枚举 1..25", name, cur, r.method, shortURL(r.url))
+		for w := 1; w <= 25; w++ {
+			wstr := fmt.Sprintf("%d", w)
+			var resp string
+			var reqURL, reqBody string
+			if r.method == "POST" {
+				// 体里替换周参数, 其余参数原样保留 (编码形态跟随原体)
+				reqBody = replaceFormParam(r.postData, name, wstr)
+				if reqBody == r.postData {
+					reqBody = r.postData + "&" + name + "=" + wstr
+				}
+				if ob := r.postData; looksBase64Body(ob) {
+					reqBody = base64.StdEncoding.EncodeToString([]byte(reqBody))
+				}
+				reqURL = r.url
+				if err := evalAsyncRetry(ctx, postJS(r.url, reqBody), &resp, 2); err != nil {
+					continue
+				}
+			} else {
+				// GET: query 参数替换 (URL 编码由 replaceURLParam 处理)
+				reqURL = replaceURLParam(r.url, name, wstr)
+				if err := evalAsyncRetry(ctx, fetchJS(reqURL), &resp, 2); err != nil {
+					continue
+				}
+			}
+			var fr struct {
+				Status int64  `json:"s"`
+				CT     string `json:"ct"`
+				Body   string `json:"b"`
+			}
+			if json.Unmarshal([]byte(resp), &fr) != nil || len(fr.Body) < 5 {
+				continue
+			}
+			c.mineValues(fr.Body)
+			tag := fmt.Sprintf("week%02d", w)
+			dir := "4-net-replay-weeks"
+			if r.method == "GET" {
+				dir = "3-res-weeks"
+			}
+			if p.add(p.uniq(urlToPath(dir+"-"+tag, reqURL, extOf(fr.CT, reqURL))),
+				fmt.Sprintf("周参数枚举 %s=%d %s %s · HTTP %d", name, w, r.method, reqURL, fr.Status), fr.Body) {
+				weekOK++
+			}
+		}
+	}
+	if weekAPIs > 0 {
+		c.log.Log("ok", "周参数枚举: %d 个接口 × 25 周, 入包 %d", weekAPIs, weekOK)
+	} else {
+		c.log.Log("info", "未发现周类参数 (week/zc/weekIndex) — 枚举重放跳过")
+	}
+	c.log.FlushPanel(ctx)
+
 	// ---- 7. 日志与清单 ----
 	c.log.Log("step", "写诊断日志与清单")
 	var logLines []string
@@ -1567,6 +1920,32 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		urlLines = append(urlLines, strings.Join(c.urlSrc[u], " | ")+" | "+u)
 	}
 	p.add(p.uniq("6-logs/all-urls.txt"), "发现的一切 URL 及来源", strings.Join(urlLines, "\n"))
+	// G4: 重定向逐跳链 — "会话在哪一跳丢的"直接看这里
+	if len(c.redirects) > 0 {
+		p.add(p.uniq("6-logs/redirects.txt"), "重定向逐跳链 (302 Location 链 + 响应头, CAS→教务排障命脉)",
+			strings.Join(c.redirects, "\n\n"))
+	}
+	// G3: API 类响应头汇总 — token/XRW 类自定义头一眼可见
+	var hdrLines []string
+	for _, rid := range c.order {
+		if r := c.recs[rid]; r != nil && r.respHeaders != "" && isAPILike(r.url) {
+			hdrLines = append(hdrLines, fmt.Sprintf("== %s %s (HTTP %d) ==\n%s", r.method, r.url, r.status, r.respHeaders))
+		}
+	}
+	if len(hdrLines) > 0 {
+		p.add(p.uniq("6-logs/response-headers.txt"), "API 类响应的 HTTP 头汇总 (Set-Cookie 只留名)", strings.Join(hdrLines, "\n\n"))
+	}
+	// G6: 节次时间/学期起始日类接口在 all-urls 基础上单列标记
+	var periodLines []string
+	for _, u := range allURLs {
+		if periodParamRe.MatchString(u) {
+			periodLines = append(periodLines, u)
+		}
+	}
+	if len(periodLines) > 0 {
+		p.add(p.uniq("6-logs/period-time-apis.txt"), "疑似节次时间/学期参数接口 (kssj/jssj/time-pattern/startDate/xnxq 类) — 导入后时间列空白先查这里",
+			strings.Join(periodLines, "\n"))
+	}
 	// 采集过程日志 (终端/面板同源的完整记录; 适配者复盘用)
 	groups := c.outcomes.groups()
 	summaryDoc := collectionSummary{
@@ -1574,6 +1953,10 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 		RequestsSeen:         len(c.order),
 		LiveBodiesCaptured:   netOK,
 		ResponseBodyFailures: netErr,
+		Redirects:            len(c.redirects),
+		Snapshots:            len(c.snapshots),
+		WeekReplayAPIs:       weekAPIs,
+		WeekReplayEntries:    weekOK,
 		DetailNavigation: detailNavigationSummary{
 			Candidates: len(planDetailCaptures(mainURL, links)), Success: detailOK,
 			SessionExpired: detailSessionExpired, Failed: detailFailed,
@@ -1585,25 +1968,26 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	errCount, warnCount := c.log.Counts()
 	p.add(p.uniq("6-logs/collect-log.txt"), "采集过程日志(含进度与错误, 终端与页面面板同源)", c.log.Text())
 
-	summary := fmt.Sprintf("打包完成: 请求入库 %d · 响应体获取失败 %d · 详情导航 %d/%d · 资源重取 %d · 接口重放入包 %d · 参数 %s · 错误 %d 警告 %d",
-		netOK, netErr, detailOK, len(planDetailCaptures(mainURL, links)), resOK, replayOK, c.minedStr(), errCount, warnCount)
+	summary := fmt.Sprintf("打包完成: 请求入库 %d · 响应体获取失败 %d · 详情导航 %d/%d · 资源重取 %d · 接口重放入包 %d · 周枚举 %d · 参数 %s · 错误 %d 警告 %d",
+		netOK, netErr, detailOK, len(planDetailCaptures(mainURL, links)), resOK, replayOK, weekOK, c.minedStr(), errCount, warnCount)
 	if errCount > 0 {
 		c.log.Log("warn", "%s", summary)
 	} else {
 		c.log.Log("ok", "%s", summary)
 	}
 
-	statLine := fmt.Sprintf("文件 %d 个 · 请求入库 %d · 响应体获取失败 %d · 详情导航 %d/%d · 资源重取 %d · 接口重放入包 %d · 自动发现参数 %s · 错误 %d · 警告 %d",
-		len(p.entries), netOK, netErr, detailOK, len(planDetailCaptures(mainURL, links)), resOK, replayOK, c.minedStr(), errCount, warnCount)
+	statLine := fmt.Sprintf("文件 %d 个 · 请求入库 %d · 响应体获取失败 %d · 详情导航 %d/%d · 资源重取 %d · 接口重放入包 %d · 周枚举入包 %d · 增量快照 %d · 重定向 %d 跳 · 自动发现参数 %s · 错误 %d · 警告 %d",
+		len(p.entries), netOK, netErr, detailOK, len(planDetailCaptures(mainURL, links)), resOK, replayOK, weekOK, len(c.snapshots), len(c.redirects), c.minedStr(), errCount, warnCount)
 	var idx strings.Builder
 	idx.WriteString("Sleepy 课表采集包 (sleepy-collector " + version + ")\n")
 	idx.WriteString("生成时间: " + time.Now().Format("2006-01-02 15:04:05") + "\n")
 	idx.WriteString("页面: " + mainURL + "\n标题: " + title + "\nUser-Agent: " + ua + "\n")
 	idx.WriteString("Cookie 名(只有名字,没有值): " + strings.Join(cookieNames, ", ") + "\n\n")
 	idx.WriteString("== 概况 ==\n" + statLine + "\n\n== 目录说明 ==\n")
-	idx.WriteString("1-dom/ 页面DOM · 2-inline/ 内联代码 · 3-res/ 重取的资源文件\n")
-	idx.WriteString("4-net-live/ CDP捕获的请求(含响应体) · 4-detail-nav/ 跨域详情页导航捕获 · 4-net-replay/ 已观察 POST 接口重放(withparam=带参数)\n")
-	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志(6-logs/collect-log.txt 是采集过程日志)\n\n== 文件清单(路径 | 说明) ==\n")
+	idx.WriteString("1-dom/ 页面DOM · 2-inline/ 内联代码+下拉选项 · 3-res/ 重取的资源文件\n")
+	idx.WriteString("4-net-live/ CDP捕获的请求(含响应头+响应体) · 4-detail-nav/ 详情页导航捕获(跨源+同源) · 4-net-replay/ 已观察 POST 接口重放(withparam=带参数)\n")
+	idx.WriteString("4-net-replay-weeks/ 周参数枚举重放(week=1..25) · 3-res-weeks/ GET 周参数枚举\n")
+	idx.WriteString("5-storage/ 浏览器存储 · 6-logs/ 日志(collect-log=过程日志, redirects=重定向链, response-headers=API响应头, period-time-apis=节次时间类接口) · extra/ 子目录=「再拍一帧」增量快照\n\n== 文件清单(路径 | 说明) ==\n")
 	for _, e := range p.entries {
 		idx.WriteString(e.path + "  |  " + e.meta + "\n")
 	}
