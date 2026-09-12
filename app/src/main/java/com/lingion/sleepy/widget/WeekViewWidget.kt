@@ -26,32 +26,17 @@ open class WeekViewWidgetReceiver : AppWidgetProvider() {
     open val variantHint: WidgetVariant = WidgetVariant.REGULAR
 
     private fun push(context: Context, awm: AppWidgetManager, id: Int) {
-        // SMALL 变体: compact 分支内部还有 150dp 升档闸, 这里直接传 variant
+        // SMALL 变体: compact 分支内部还有 150dp 升档闸, 这里直接传 variant。
+        // 用户定稿: 滚动只有 today/twoday 两个形态有 — weekview 恒静态,
+        // 🚫接 pushScrollable (2026-09-12 ba52bde 误接, 用户纠正后撤回)。
         val variant = variantHint
-        val data = loadDataSync(context, id)
-        val opts = awm.getAppWidgetOptions(id)
-        val (wDp, hDp) = RemoteViewsWidgetHelper.computeSizeDp(opts)
-        // issue#31 荣耀 4×5: 内容超出容器 → pushScrollable (WeekList v1.0.36 同构),
-        // 条带全展开长图不裁 5 门; 旧实现无闸 = 永远静态裁切 (显示不完全 + 不能滚)。
-        val contentH = WidgetBitmapRenderers.weekViewContentHeightDp(context, data, wDp.toFloat())
-        if (contentH <= hDp) {
-            RemoteViewsWidgetHelper.renderAndPush(
-                context, awm, id, TAG,
-                loadData = { data },
-                renderBitmap = { d, w, h ->
-                    WidgetBitmapRenderers.renderWeekView(context, d, w, h, variant)
-                }
-            )
-        } else {
-            // 超出 — 可滚动: 壳图 = 原渲染器按容器尺寸画 (首屏), 条带 = 全展开长图
-            val shell = WidgetBitmapRenderers.renderWeekView(context, data, wDp.toFloat(), hDp.toFloat(), variant)
-            RemoteViewsWidgetHelper.pushScrollable(
-                context, awm, id, TAG,
-                layoutRes = com.lingion.sleepy.R.layout.widget_scroll_weeklist,
-                shellBitmap = shell,
-                scopeExtra = ScrollStripService.StripFactory.SCOPE_WEEKVIEW
-            )
-        }
+        RemoteViewsWidgetHelper.renderAndPush(
+            context, awm, id, TAG,
+            loadData = { loadDataSync(context, id) },
+            renderBitmap = { data, wDp, hDp ->
+                WidgetBitmapRenderers.renderWeekView(context, data, wDp, hDp, variant)
+            }
+        )
     }
 
     override fun onUpdate(context: Context, awm: AppWidgetManager, ids: IntArray) {
