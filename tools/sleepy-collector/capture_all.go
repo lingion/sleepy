@@ -9,6 +9,7 @@ package main
 
 import (
 	"context"
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"net/url"
@@ -28,6 +29,24 @@ import (
 )
 
 // ---------------- 配置读取 ----------------
+
+// transportDecode 解 CDP 传输层编码: PostDataEntry.bytes 声明为 binary 类型,
+// JSON 传输按 base64。合法 base64 → 解码; 否则原样返回 (防御异常形态)。
+func transportDecode(s string) string {
+	if s == "" || len(s)%4 != 0 {
+		return s
+	}
+	for _, c := range s {
+		if !(c >= 'A' && c <= 'Z' || c >= 'a' && c <= 'z' || c >= '0' && c <= '9' || c == '+' || c == '/' || c == '=' || c == '\n' || c == '\r') {
+			return s
+		}
+	}
+	dec, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return s
+	}
+	return string(dec)
+}
 
 // uaOverrideFromEnv 移动端 UA 伪装开关 (SLEEPY_COLLECTOR_UA)。
 // 强智 qz_app 等移动教务 H5 端点校验 UA, 桌面 Chrome 的 UA 会被服务端拒。
@@ -623,9 +642,16 @@ func buildHAR(recs []*reqRec, maxBodyBytes int) (string, int) {
 			}
 		}
 		if r.postData != "" {
+			postText := r.postData
+			if len(postText) > maxBodyBytes {
+				// 截断必须双向做: 只截响应体不截请求体的话, 3MB POST 会把
+				// HAR JSON 撑爆单文件配额拦腰斩断 (E2E 靶场实锤), DevTools
+				// 直接打不开。截断标记用合法文本, 保持 JSON 可解析。
+				postText = postText[:maxBodyBytes] + "...[truncated]"
+			}
 			req.PostData = &harPostData{
 				MimeType: guessPostMimeType(r.postData),
-				Text:     r.postData,
+				Text:     postText,
 			}
 		}
 		e.Request = req

@@ -517,7 +517,13 @@ func (c *Collector) onEventTab(tabSeq int, ev interface{}) {
 		if e.Request.HasPostData && len(e.Request.PostDataEntries) > 0 {
 			var sb strings.Builder
 			for _, p := range e.Request.PostDataEntries {
-				sb.WriteString(p.Bytes)
+				// CDP PostDataEntry.bytes 是 binary 类型 — JSON 传输层按 base64
+				// 编码, 必须先解掉。不解的话包里所有 POST 体都是 base64 天书
+				// (E2E 靶场实锤: 页面发 "a=1&b=2", 包里存 "YT0xJmI9Mg==")。
+				// 注意: 解掉传输编码后剩下的才是业务形态; 校方自己的业务级
+				// base64 (WHUT 型) 会再次出现在明文里, looksBase64Body 判的
+				// 是那一层, 两层编码互不干扰。
+				sb.WriteString(transportDecode(p.Bytes))
 			}
 			r.postData = sb.String()
 		} else if e.Request.HasPostData {
@@ -2185,9 +2191,12 @@ func (c *Collector) packageAll(ctx context.Context) (string, error) {
 	}
 	p.add(p.uniq("6-logs/cookies-full.txt"), "全量 Cookie 元数据 (名/域/路径/到期/安全位; 值永不入包)", c.collectAllCookies(ctx))
 
-	// HAR 导出: DevTools/Charles 直接打开回放, 接口形为一目了然
+	// HAR 导出: DevTools/Charles 直接打开回放, 接口形为一目了然。
+	// 体内限 64KB — 大体在 4-net-live 里有全量, HAR 只承担"回放接口形态";
+	// 限太小会让 HAR 总长顶到 packer 单文件上限再被拦腰斩断成非法 JSON
+	// (E2E 靶场两轮实锤)。
 	recsForHAR := collectorRecs(c)
-	harText, harN := buildHAR(recsForHAR, 2<<20)
+	harText, harN := buildHAR(recsForHAR, 64<<10)
 	if harN > 0 {
 		p.add(p.uniq("6-logs/capture.har"), fmt.Sprintf("HAR 1.2 全量请求回放 (%d entries) — 拖进 Chrome DevTools Network 面板即可回放", harN), harText)
 		c.log.Log("info", "HAR 导出 %d entries (6-logs/capture.har)", harN)
