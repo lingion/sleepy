@@ -114,7 +114,9 @@ class MainActivity : ComponentActivity() {
         setContent {
             val systemDark = androidx.compose.foundation.isSystemInDarkTheme()
             var themeMode by remember { mutableStateOf(AppPrefs.getThemeMode(this@MainActivity)) }
-            var dark by remember { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity, systemDark)) }
+            // systemDark 作 remember key: 系统深浅变化(uiMode 注入/通知栏切换)会话内即时重算 dark —
+            // 无 key 的话 configChanges="uiMode" 不重建 Activity, dark 冻结在首帧值
+            var dark by remember(systemDark) { mutableStateOf(AppPrefs.isDarkMode(this@MainActivity, systemDark)) }
             fun applyTheme() { dark = AppPrefs.isDarkMode(this@MainActivity, systemDark) }
             val deepLinkCourse by editingCourseFlow.collectAsState()
             val themeKey by AppPrefs.themeKeyFlow(this@MainActivity).collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
