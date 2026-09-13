@@ -118,9 +118,11 @@ class ScrollStripService : RemoteViewsService() {
                     contentHdp = WidgetBitmapRenderers.todayContentHeightDp(d, headerSpace = emptyHeader)
                     rowCount = TodayRowGeometry.rowSpans(d.courses, emptyHeader).size
                     val renderH = ceil(contentHdp)
+                    // 条带无可点按钮 — 「回到今天」文字不画 (与壳图同参, 用户 2026-09-13 定稿)
                     full = WidgetBitmapRenderers.renderToday(
                         context, d, wDp.toFloat(), renderH,
-                        emptyHeader = emptyHeader, headerSpace = emptyHeader
+                        emptyHeader = emptyHeader, headerSpace = emptyHeader,
+                        showBackToToday = false
                     )
                 }
                 SCOPE_TWODAY -> {

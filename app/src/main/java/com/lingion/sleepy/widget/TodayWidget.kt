@@ -427,7 +427,12 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         context, awm, id, TAG,
                         loadData = { data },
                         renderBitmap = { d, w, h ->
-                            WidgetBitmapRenderers.renderToday(context, d, w, h, variant)
+                            // HIDE_NAV fullface: 顶栏整体 GONE, 无任何按钮 — 「回到今天」
+                            // 有交互语义, 点不了就不该出现 (用户 2026-09-13: 要么能点
+                            // 要么不存在)。日期标题无交互语义保留。
+                            WidgetBitmapRenderers.renderToday(
+                                context, d, w, h, variant, showBackToToday = false
+                            )
                         },
                         layoutRes = com.lingion.sleepy.R.layout.widget_bitmap_container,
                         pushGen = pushGen
@@ -473,7 +478,8 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 // 滚动位 0 时壳图与条带首屏逐像素一致; 滚动后壳图被 ListView 覆盖
                 // (ListView match_parent 容器), 壳图"多余"的高成为滚动可见区。
                 val shell = WidgetBitmapRenderers.renderToday(
-                    context, data, wDp.toFloat(), contentH, variant
+                    context, data, wDp.toFloat(), contentH, variant,
+                    showBackToToday = false
                 )
                 RemoteViewsWidgetHelper.pushScrollable(
                     context, awm, id, TAG,

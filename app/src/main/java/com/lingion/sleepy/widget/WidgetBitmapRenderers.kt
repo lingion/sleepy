@@ -189,8 +189,9 @@ object WidgetBitmapRenderers {
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         variant: WidgetVariant = WidgetVariant.REGULAR,
         emptyHeader: Boolean = false,
-        headerSpace: Boolean = false
-    ): Bitmap = renderTodayRegular(context, data, wDp, hDp, emptyHeader, headerSpace)
+        headerSpace: Boolean = false,
+        showBackToToday: Boolean = true
+    ): Bitmap = renderTodayRegular(context, data, wDp, hDp, emptyHeader, headerSpace, showBackToToday)
 
     /**
      * Today 状态内容判定 (纯 JVM 可测) — 无课表 / 学期外 / 无课。
@@ -239,11 +240,12 @@ object WidgetBitmapRenderers {
      */
     fun todayHeaderParts(
         data: WidgetData, dayName: String, showDate: Boolean,
-        resolve: (Int) -> String
+        resolve: (Int) -> String,
+        showBackToToday: Boolean = true
     ): TodayHeaderParts {
         val title = if (data.isToday) "${resolve(R.string.today_today)} · $dayName"
                     else "${data.dateLabel} · $dayName"
-        return if (!data.isToday) {
+        return if (!data.isToday && showBackToToday) {
             TodayHeaderParts(title, resolve(R.string.today_nav_back_to_today), true)
         } else if (showDate) {
             TodayHeaderParts(title, data.dateLabel, false)
@@ -310,7 +312,8 @@ object WidgetBitmapRenderers {
     private fun renderTodayRegular(
         context: Context, data: WidgetData, wDp: Float, hDp: Float,
         emptyHeader: Boolean,
-        headerSpace: Boolean
+        headerSpace: Boolean,
+        showBackToToday: Boolean = true
     ): Bitmap {
         val density = context.resources.displayMetrics.density
         val w = (wDp * density).toInt()
@@ -343,8 +346,10 @@ object WidgetBitmapRenderers {
         // v10: pageOffset 守卫删除 (无分页无续页, 守卫回归 emptyHeader 单条件)。
         if (!emptyHeader) {
             val header = todayHeaderParts(
-                data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate
-            ) { ctx.getString(it) }
+                data, DateUtils.localizedDay(data.date.dayOfWeek.value, ctx), showDate,
+                resolve = { ctx.getString(it) },
+                showBackToToday = showBackToToday
+            )
             val titleX = pad
             val rightX = w - pad
             // issue#31 荣耀 2×2: 裸 ‹› glyph 已删 (v5 翻页时代遗留, 无色块无点击区,

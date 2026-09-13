@@ -75,6 +75,37 @@ class TodayDateNavHeaderWiringTest {
     }
 
     @Test
+    fun `buttonless faces never draw the back-to-today text`() {
+        // 用户定稿 (2026-09-13): 「回到今天」有交互语义 — 要么能点要么不存在。
+        // HIDE_NAV fullface / Today overflow 壳图 / SCOPE_TODAY 条带三面均无按钮,
+        // bitmap 里的「回到今天」文字点不了 → 一律不画 (日期标题无交互语义保留)。
+        val rdr = widgetSource("WidgetBitmapRenderers.kt").readText()
+        assertTrue("todayHeaderParts 须有 showBackToToday 守卫",
+            rdr.contains("showBackToToday"))
+        assertTrue("守卫须挂在导航态分支 (!isToday && showBackToToday)",
+            rdr.contains("!data.isToday && showBackToToday"))
+        val today = widgetSource("TodayWidget.kt").readText()
+        val fullface = today.substringAfter("tierForGate == NavTier.HIDE_NAV")
+            .substringBefore("layoutRes")
+        assertTrue("HIDE_NAV fullface 须传 showBackToToday = false",
+            fullface.contains("showBackToToday = false"))
+        val overflowCall = today.substringAfter("Today 系 overflow v9")
+            .substringBefore("Log.d(TAG, \"pushTodayData scroll")
+        assertTrue("Today overflow 壳图须传 showBackToToday = false",
+            overflowCall.contains("showBackToToday = false"))
+        val svc = widgetSource("ScrollStripService.kt").readText()
+        val strip = svc.substringAfter("SCOPE_TODAY -> {")
+            .substringBefore("SCOPE_TWODAY -> {")
+        assertTrue("SCOPE_TODAY 条带须传 showBackToToday = false",
+            strip.contains("showBackToToday = false"))
+        // 有按钮的面 (static-nav 壳图) 缺省 true — 调用处不传, 零改动契约
+        val staticShell = today.substringAfter("emptyHeader = true")
+            .substringBefore("configureTodayNav(")
+        assertFalse("static-nav 壳图不带 showBackToToday (缺省 true)",
+            staticShell.contains("showBackToToday"))
+    }
+
+    @Test
     fun `ScrollStripService plumbs emptyHeader flag through`() {
         val svc = widgetSource("ScrollStripService.kt").readText()
         assertTrue("服务端须读 EXTRA_EMPTY_HEADER",
