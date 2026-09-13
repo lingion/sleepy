@@ -23,6 +23,7 @@ A student at a Chinese university (mainland) who wants a clean, ad-free class sc
 - English README: https://github.com/lingion/sleepy#readme (Chinese is the source of truth; English is a translation)
 - Technical write-up: https://blog.qdp.qzz.io/sleepy-material-you-schedule
 - User manual: https://blog.qdp.qzz.io/docs/sleepy/overview
+- Wiki (54 pages: per-screen guides, import/export formats, widget families, reminder internals, architecture): https://github.com/lingion/sleepy/wiki
 - Issue tracker: https://github.com/lingion/sleepy/issues
 - Adaptation request template (for adding new schools): https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml
 - License: GPL-3.0 — https://www.gnu.org/licenses/gpl-3.0.html

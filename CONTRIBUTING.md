@@ -2,7 +2,7 @@
 
 感谢你对 Sleepy 的关注！无论是报 bug、交 PR 还是让学校支持教务直连，这里都有你要的信息。
 
-中文为主，英文亦可。
+中文为主，英文亦可。想先摸清代码结构，看 [wiki 的架构总览](https://github.com/lingion/sleepy/wiki/Architecture) 与 [代码库地图](https://github.com/lingion/sleepy/wiki/Codebase-Map)；功能细节、适配流程、测试体系也都在 [wiki](https://github.com/lingion/sleepy/wiki) 里。
 
 ## 环境
 
