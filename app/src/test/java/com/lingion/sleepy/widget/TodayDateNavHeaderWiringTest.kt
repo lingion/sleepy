@@ -117,61 +117,49 @@ class TodayDateNavHeaderWiringTest {
             body.contains("navHeaderTier("))
         assertTrue("SHORT_TITLE 档必须标题去星期 (dateOnlyTitle)",
             body.contains("dateOnlyTitle"))
-        assertTrue("HIDE_TODAY 档必须隐藏 nav_today (prev/next 保留)",
-            body.contains("HIDE_TODAY"))
+        assertTrue("HIDE_TITLE 档必须隐藏标题 (prev/refresh/next 三钮保留)",
+            body.contains("HIDE_TITLE"))
         assertTrue("隐藏判定必须保留 isToday 短路 (今日不显回到今天)",
             body.contains("data.isToday"))
     }
 
     @Test
     fun `nav tier measures localized resources not hardcoded literals`() {
-        // 2026-09-10 locale 契约: 文案来自 R.string.today_nav_back_to_today /
-        // today_nav_today_short (英 "Back to today" / 西 "Volver a hoy" / 日 "今日に戻る"),
-        // 旧纯函数硬编码「回到今天/今天」→ 非 zh locale 宽度估错、档位判错。
+        // 2×2 刷新按钮定稿: nav_today 是图标按钮, 无文字宽度可量 — 旧
+        // fitsNavTodayFourChar/TWO_CHAR 判定作废删除; tier 标题按实际串测量。
         val src = widgetSource("TodayWidget.kt").readText()
         val tierEntry = src.substringAfter("internal fun navHeaderTier(")
             .substringBefore("private fun navHeaderTier(")
-        val fitsEntry = src.substringAfter("internal fun fitsNavTodayFourChar(")
-            .substringBefore("private fun fitsNavTodayFourChar(")
         assertFalse(
-            "navHeaderTier 纯函数禁硬编码「回到今天」字面量 (须走注入串)",
+            "fitsNavTodayFourChar 必须已删 (nav_today 是图标, 无文字宽度可量)",
+            src.contains("fitsNavTodayFourChar")
+        )
+        assertFalse(
+            "navHeaderTier 纯函数禁硬编码「回到今天」字面量",
             tierEntry.contains("回到今天")
         )
         assertFalse(
-            "navHeaderTier 纯函数禁硬编码「今天」度量字面量 (注入串替代)",
-            Regex("""required\([^)]*"今天"\)""").containsMatchIn(tierEntry)
-        )
-        assertFalse(
-            "fitsNavTodayFourChar 纯函数禁硬编码「回到今天」字面量 (须走注入串)",
-            fitsEntry.contains("回到今天")
-        )
-        assertTrue(
-            "navHeaderTier 须注入 navTodayFull/navTodayShort 资源串",
-            tierEntry.contains("navTodayFull") && tierEntry.contains("navTodayShort")
-        )
-        assertTrue(
-            "fitsNavTodayFourChar 须注入 navTodayFull 资源串",
-            fitsEntry.contains("navTodayFull")
+            "NavTier 不得残留 TWO_CHAR/HIDE_TODAY (文本判定作废)",
+            src.contains("TWO_CHAR") || src.contains("HIDE_TODAY")
         )
         val androidEntry = src.substringAfter("private fun navHeaderTier(\n            context: Context")
             .ifEmpty { src.substringAfter("context: Context, fullTitle: String, dateOnlyTitle: String") }
         assertTrue(
-            "Android 入口须用 context.getString 取真实资源串",
-            src.contains("R.string.today_nav_back_to_today") &&
-                src.contains("R.string.today_nav_today_short")
+            "navHeaderTier 须按实际串测量标题 (titleMeasure 注入)",
+            tierEntry.contains("titleMeasure")
         )
     }
 
     @Test
     fun `nav tier decision receives isToday visibility`() {
-        // 2026-09-10: nav_today 在 isToday 时必 GONE — tier 判定不得为一颗看不见的
+        // 2026-09-10: refresh 按钮在 isToday 时必 GONE — tier 判定不得为一颗看不见的
         // 按钮预算宽度 (窄档上无谓牺牲标题)。判定入参必须带可见性。
         val src = widgetSource("TodayWidget.kt").readText()
         val callBody = src.substringAfter("val tier = navHeaderTier(")
             .substringBefore(")")
         assertTrue(
-            "configureTodayNav 调 navHeaderTier 必须传 navTodayVisible = !data.isToday",
-            callBody.contains("navTodayVisible = !data.isToday")
+            "configureTodayNav 调 navHeaderTier 必须传 refreshVisible = !data.isToday",
+            callBody.contains("refreshVisible = !data.isToday")
         )
     }
 
@@ -226,6 +214,29 @@ class TodayDateNavHeaderWiringTest {
         assertFalse("按钮禁文字 glyph (用户要三角形图标)", body.contains("drawText"))
         assertTrue("renderToday 须有 emptyHeader 参数",
             src.contains("emptyHeader: Boolean = false"))
+    }
+
+    @Test
+    fun `renderer nav refresh matches triangle style and pushes as image bitmap`() {
+        // 2×2 刷新按钮定稿: renderNavRefresh 与 renderNavTriangle 同风格
+        // (surfaceVariant 圆角底 + onSurfaceVariant 图标), configureTodayNav 须
+        // setImageViewBitmap 推送 (nav_today 是 ImageView, 不再是 TextView)。
+        val src = widgetSource("WidgetBitmapRenderers.kt").readText()
+        val body = src.substringAfter("fun renderNavRefresh")
+            .substringBefore("data class TodayNavHeaderColors")
+        assertTrue("低对比: surfaceVariant 圆角矩形底", body.contains("surfaceVariant"))
+        assertTrue("低对比: onSurfaceVariant 刷新图标", body.contains("onSurfaceVariant"))
+        assertFalse("按钮禁文字 glyph", body.contains("drawText"))
+        assertTrue("尺寸须同 NAV_BUTTON 口径",
+            body.contains("NAV_BUTTON_W_DP") && body.contains("NAV_BUTTON_H_DP"))
+        val today = widgetSource("TodayWidget.kt").readText()
+        val navBody = today.substringAfter("fun configureTodayNav(")
+            .substringBefore("/** 顶栏标题")
+        assertTrue("configureTodayNav 须 setImageViewBitmap 推送刷新按钮",
+            navBody.contains("setImageViewBitmap") &&
+                navBody.contains("renderNavRefresh"))
+        assertFalse("nav_today 不再走 setTextViewText (文字判定作废)",
+            navBody.contains("today_nav_today_short"))
     }
 
     @Test

@@ -22,8 +22,9 @@
         android:contentDescription="@string/widget_week_grid_label" />
 
     <!-- Header strip 36dp = NAV_HEADER_H_DP renderer constant. Title flush left,
-         prev button hugs title, back-to-today centered between buttons via
-         equal-weight spacers (Space lacks @RemoteView, banned). -->
+         prev button hugs title, refresh button centered between buttons via
+         equal-weight spacers (Space lacks @RemoteView, banned).
+         Refresh button = 40x28dp ImageView (same as prev/next), tap = back to today. -->
     <LinearLayout
         android:id="@+id/widget_today_header"
         android:layout_width="match_parent"
@@ -54,14 +55,14 @@
             android:layout_height="1dp"
             android:layout_weight="1" />
 
-        <TextView
+        <ImageView
             android:id="@+id/widget_today_nav_today"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="40dp"
+            android:layout_height="28dp"
             android:layout_marginStart="6dp"
             android:layout_marginEnd="6dp"
-            android:textStyle="bold"
-            android:textSize="11sp" />
+            android:clickable="true"
+            android:contentDescription="@string/today_nav_back_to_today" />
 
         <LinearLayout
             android:id="@+id/widget_spacer_r"
