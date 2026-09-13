@@ -39,11 +39,15 @@ object JwWebViewClientBuilder {
      * @param webView 已创建好的 WebView (主线程传入)。仅用于一次性读 userAgent,
      *                装配完成后不持有。
      * @param school 学校信息 — 决定 interceptor 装配 + 提取 schoolHost。
+     * @param desktopMode 桌面 UA 模式 (issue #18 PCUA)。true 时 SEP 域页面在
+     *                    onPageFinished 后注入 viewport 覆盖 JS (钉布局宽 1024px,
+     *                    触发 Bootstrap 桌面分支 — UA 字符串本身对布局零影响)。
      * @param onPageFinished onPageFinished 回调。
      */
     fun build(
         webView: WebView,
         school: JwSchoolInfo,
+        desktopMode: Boolean = false,
         onPageFinished: (String?) -> Unit = {},
     ): WebViewClient {
         // 主线程读: settings.userAgentString 是 main-thread-only API, 只能在工厂期一次捕获。
@@ -55,7 +59,8 @@ object JwWebViewClientBuilder {
             schoolHost = schoolHost,
         )
         val interceptors = assembleInterceptors(school)
-        return JwWebViewClientImpl(interceptors, ctx, schoolHost, onPageFinished)
+        val desktopViewport = desktopMode && school.url.contains(UCAS_DOMAIN, ignoreCase = true)
+        return JwWebViewClientImpl(interceptors, ctx, schoolHost, desktopViewport, onPageFinished)
     }
 
     /**
@@ -85,6 +90,7 @@ private class JwWebViewClientImpl(
     private val interceptors: List<JwRequestInterceptor>,
     private val ctx: JwInterceptorContext,
     private val schoolHost: String,
+    private val desktopViewport: Boolean,
     private val onPageFinished: (String?) -> Unit,
 ) : WebViewClient() {
 
@@ -116,5 +122,19 @@ private class JwWebViewClientImpl(
 
     override fun onPageFinished(view: WebView?, url: String?) {
         onPageFinished(url)
+        // issue #18 PCUA 修复: 桌面模式 + SEP 域 → 页面加载完后注入 viewport 覆盖,
+        // 把 layout viewport 钉到 1024px 触发 @media (min-width: 980px) 桌面分支
+        // (侧栏展开)。UA 字符串对 Bootstrap 布局零影响, viewport 是唯一杠杆。
+        // onPageFinished 主线程回调, evaluateJavascript 主线程约束满足。
+        // 双注入 (立即 + 300ms 重注入): chromium 对 meta 变更的重排时机不定
+        // (SO 19953717 模式 — 重复注入), 第二次兜底 SPA 迟挂的 meta 重写。
+        if (desktopViewport && url != null &&
+            url.toUri().host.orEmpty().equals("sep.ucas.ac.cn", ignoreCase = true)
+        ) {
+            view?.evaluateJavascript(DESKTOP_VIEWPORT_JS, null)
+            view?.postDelayed({
+                view.evaluateJavascript(DESKTOP_VIEWPORT_JS, null)
+            }, 300)
+        }
     }
 }

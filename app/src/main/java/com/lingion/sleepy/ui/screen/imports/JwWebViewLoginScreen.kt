@@ -74,6 +74,28 @@ private const val DESKTOP_USER_AGENT =
         "Chrome/121.0.0.0 Safari/537.36"
 
 /**
+ * 桌面模式 viewport 覆盖 JS (issue #18 PCUA 不生效修复)。
+ *
+ * 根因 (2026-09-13 实锤): SEP 门户的移动/桌面布局 = Bootstrap 2 响应式 CSS 纯宽度驱动 —
+ * `@media (max-width: 979px)` 侧栏收起 / `@media (min-width: 980px)` 侧栏展开, 布局宽度
+ * 来自页面 `<meta name="viewport" content="width=device-width">` (= 手机屏宽 ~411dp <
+ * 980px, 永远命中移动分支)。UA 字符串对布局零影响 (双 UA curl 同为 16027 字节同构
+ * HTML), isMobile JS 判定也是触屏 (`ontouchstart`/maxTouchPoints) 非 UA — 换桌面 UA
+ * 不改变任何一条布局分支。
+ *
+ * 修复: 桌面模式注入本 JS 把 layout viewport 钉到 1024px → `@media (min-width: 980px)`
+ * 命中 → 桌面布局 (侧栏展开, "选课系统"入口可见)。注入时机 = onPageFinished (SEP 每次导航
+ * — 登录页/portal/xkgo 302 链每跳都触发)。仅 SEP 域注入: xkgo 课表页手机宽度已可用
+ * (报告人横屏导入成功实证), 不动。
+ */
+internal const val DESKTOP_VIEWPORT_JS =
+    "(function(){var m=document.querySelector('meta[name=\"viewport\"]');" +
+        "if(m){m.setAttribute('content','width=1024');}" +
+        "else{m=document.createElement('meta');m.setAttribute('name','viewport');" +
+        "m.setAttribute('content','width=1024');document.head.appendChild(m);}" +
+        "setTimeout(function(){window.scrollTo(0,0);},0);})()"
+
+/**
  * 教务 WebView 登录页
  *
  * 实现细节（参考 dIT8Zv/WakeupSchedule_BUPT (Apache-2.0) WebViewLoginFragment.kt）：
@@ -436,8 +458,8 @@ private fun JwWebView(
                     builtInZoomControls = true
                     displayZoomControls = false
                     if (desktopUa) {
-                        // Chrome 桌面 UA (Windows 掩去 Android/iPhone 词汇,
-                        // 触发门户的桌面版布局 — UCAS SEP 应用列表含"个人课表"入口)
+                        // Chrome 桌面 UA — SEP 布局对 UA 零差异, 真正的桌面布局由
+                        // onPageFinished 后的 viewport 覆盖 JS (DESKTOP_VIEWPORT_JS) 触发
                         userAgentString = DESKTOP_USER_AGENT
                         useWideViewPort = true
                     }
@@ -456,6 +478,7 @@ private fun JwWebView(
                 webViewClient = JwWebViewClientBuilder.build(
                     webView = this,
                     school = school,
+                    desktopMode = desktopUa,
                 ) { finished ->
                     Log.d("JwWebView", "onPageFinished url=$finished")
                     lastUrl = finished ?: url
