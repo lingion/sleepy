@@ -21,7 +21,7 @@ Sleepy 是 Android App,只能运行 Android AppWidget 体系。下列“厂商�
 | 魅族 Flyme | [meizu/](./meizu/) | 无独立厂商 SDK,走 Android 原生 |
 | 三星 OneUI | [samsung/](./samsung/) | 无独立厂商 SDK,走 Android 原生;新增 appwidget-dev-notes (pin 弹框+空间不足开新页,折叠屏/外屏 cell 差异) |
 | 跨厂商经验 | [_cross-vendor/](./_cross-vendor/) | CSDN 14K 实战总结 (小米/vivo/华为/OPPO 适配差异);新增 remoteviews-limits (bitmap 内存 1.5× 屏 / GL 4096 静默失败 / fontScale 遮挡 / pin 矩阵总表) |
-| 华为 HarmonyOS | [huawei/](./huawei/) | 三档分界:EMUI/HarmonyOS 2-4 (安卓内核) = AppWidget 可用 AOSP 行为;NEXT 服务卡片 = 独立生态不可达 (appwidget-android-core) |
+| 华为 HarmonyOS | [huawei/](./huawei/) | 三档分界:EMUI/HarmonyOS 2-4 (安卓内核) = AppWidget 可用 AOSP 行为;NEXT 服务卡片 = 独立生态不可达 (appwidget-android-core);新增 formkit-service-cards (Form Kit 全量:postCardAction 三事件/刷新四路/form_config 字段) + launcher-behavior (桌面入口/万象小组件 8 类) + theme-darkmode (深色模式无单应用开关,跟随=app 自身策略) + dev-portal-overview (SPA 墙+DevEco/CLI 下载渠道) + next-apk-compat (NEXT 仅 HAP,卓易通容器) + gaps (文档中心 SPA 抓取缺口) |
 
 ## 证据等级约定
 
