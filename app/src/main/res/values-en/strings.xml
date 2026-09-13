@@ -225,6 +225,15 @@
     <string name="course_room">Room</string>
     <string name="course_note">Note (optional)</string>
     <string name="course_color">Color</string>
+    <string name="color_use_different">Use different colors</string>
+    <string name="color_follow_group">Follow group color</string>
+    <string name="change_group_color">Change group color</string>
+    <string name="color_group_auto">Auto (golden angle)</string>
+    <string name="group_color_confirm_title">Change group color</string>
+    <string name="group_color_confirm_msg">The group color applies to every slot in this course that follows the group color.</string>
+    <string name="color_auto">Auto</string>
+    <string name="color_custom">Custom</string>
+    <string name="color_refresh">Shuffle auto color</string>
     <string name="week_range">Week Range</string>
     <string name="week_range_sub">Default week range for the course; use \"Apply to all slots\" to overwrite every slot</string>
     <string name="start_week">Start Week</string>

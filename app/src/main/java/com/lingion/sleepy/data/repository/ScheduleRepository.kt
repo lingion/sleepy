@@ -288,6 +288,26 @@ class ScheduleRepository(private val db: AppDatabase) {
         onDataChanged()
     }
 
+    /**
+     * 改组色(issue#22 spec §6.2 "改组色"按钮的落库路径):
+     * 把选中色写到同 groupId 所有 colorMode=GROUP 行的 color 字段。
+     *
+     * 只动 GROUP 行 — AUTO 行 hue 源来自组色源(groupSourceColorHex),组色变则
+     * 自动行跟着变(spec §5.2"组色变则自动跟随"),不需要写;CUSTOM 行独立色不跟组。
+     * 落所有 GROUP 行而非只落最小 id 行:groupSourceColorHex 取同组 GROUP 模式
+     * 最小 id 行的 color,任一 GROUP 行带上色即成立;全组写一致值还能避免
+     * RowKeyDiffer 把"只改了最小 id 行"之外的 GROUP 行 diff 出假更新。
+     */
+    suspend fun setGroupSourceColor(tableId: Long, groupId: String, hex: String) {
+        captureForUndo()
+        if (groupId.isBlank()) return
+        val group = courseDao.getByGroupId(tableId, groupId)
+            .filter { it.colorMode == com.lingion.sleepy.data.entity.CourseColorMode.GROUP }
+        if (group.isEmpty()) return
+        courseDao.updateAll(group.map { it.copy(color = hex) })
+        onDataChanged()
+    }
+
     suspend fun countCourses(tableId: Long): Int = courseDao.countByTable(tableId)
 
     suspend fun totalCourseCount(): Int = courseDao.totalCount()
