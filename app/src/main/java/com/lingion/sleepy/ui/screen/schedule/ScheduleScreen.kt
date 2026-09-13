@@ -220,11 +220,19 @@ fun ScheduleScreen(
                 }
             }
 
-            // ViewModel 变化（TopBar 箭头/下拉菜单点击）→ 同步 Pager
+            // ViewModel 变化（TopBar 箭头/下拉菜单点击 / 切表）→ 同步 Pager
+            // ponytail: syncingFromState 阻止 scrollToPage 期间 currentPage 回调反向
+            // 触发 changeWeek, 否侧切表 A→B 异步重置 selectedWeek 即导致 Pager 滚动↔
+            // ViewModel 双打反向同步 → 多周之间闪烁反复跳变 (Realme OS 复现, ColorOS 同源)
             LaunchedEffect(state.selectedWeek) {
                 val targetPage = (state.selectedWeek - 1).coerceIn(0, pagerMaxWeek - 1)
                 if (pagerState.currentPage != targetPage) {
-                    pagerState.scrollToPage(targetPage)
+                    syncingFromState = true
+                    try {
+                        pagerState.scrollToPage(targetPage)
+                    } finally {
+                        syncingFromState = false
+                    }
                 }
             }
 
