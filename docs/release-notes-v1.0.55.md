@@ -40,6 +40,7 @@ The school entry pointed at jw.ecupl.edu.cn, a Sudy portal that isn't a教务系
 ## Fixes
 
 - Replaced the back-to-today text on the 2×2 today widget with a real refresh-icon button that returns to today (issue #31).
+- On faces without buttons (a 2×2 widget squeezed below the nav row's minimum width, or content taller than the widget), the back-to-today text is no longer drawn — an element that can't be tapped doesn't belong on screen. The date title stays.
 - Removed the bare ‹ › glyphs from the 2×2 today widget header (issue #31).
 - Rebound the prev/next tap intents so arrows switch weeks on MagicOS instead of opening the app (issue #31).
 - Hide the whole widget header nav row when it can't fit, instead of shrinking it (issue #31).
@@ -58,11 +59,11 @@ The school entry pointed at jw.ecupl.edu.cn, a Sudy portal that isn't a教务系
 
 ## Verification
 
-- Tests: focused (SchedulePagerSyncRace, SepXrw strip/interceptor, ThemeFollowSystem, CustomThemeCardVisualParity, NavHeaderFit, CourseColorUtil) + full suite: 1714 tests / 0 failures / 0 errors
+- Tests: focused (SchedulePagerSyncRace, SepXrw strip/interceptor, ThemeFollowSystem, CustomThemeCardVisualParity, NavHeaderFit, CourseColorUtil) + full suite: 1715 tests / 0 failures / 0 errors
 - APK SHA-256:
-  - arm64-v8a: 031d5513726f4f842541b975c3392d615d5c8996263b47416f5eaf967ca61c50
-  - armeabi-v7a: 10ded8268fe489193e6e6b3b67c5ff16c12a58aa11d4f6d42864299c57e7359c
-  - x86_64: caea20c0471fd0952d835cbacf9041c5c88c6a613003bf8a51ba9a39028a38e1
+  - arm64-v8a: 57a5ba750f2b1c9c6529df1b1650827ea87c5a50e04a4241312d5434b3bab09c
+  - armeabi-v7a: c1eecaba0d3eb536a0252bd47590b2b9825edff9a5d5f295324d1d3d21a549b5
+  - x86_64: 16f7fe93edffba35b8aee8bd3d8dec66e59e28bbe29f24923f53658405b8a253
 - Build: versionName 1.0.55 / versionCode 61
 
 ---
@@ -109,6 +110,7 @@ The school entry pointed at jw.ecupl.edu.cn, a Sudy portal that isn't a教务系
 ## 修复
 
 - 2×2 今日小组件的回到今天文字换成真实刷新图标按钮,点击回到今天(issue #31)。
+- 无按钮的面上(2×2 小组件缩到导航行最小宽度以下,或内容超高时)不再画「回到今天」文字——点不了的元素不该出现在屏幕上。日期标题保留。
 - 删除 2×2 今日小组件头部的裸 ‹ › 字形(issue #31)。
 - 重绑 prev/next 点按意图,MagicOS 上箭头翻周不再打开 app(issue #31)。
 - 头部导航行放不下时整行隐藏,不再缩小(issue #31)。
@@ -127,9 +129,9 @@ The school entry pointed at jw.ecupl.edu.cn, a Sudy portal that isn't a教务系
 
 ## 验证
 
-- 测试:定向(SchedulePagerSyncRace / SepXrw 拦截器 / ThemeFollowSystem / CustomThemeCardVisualParity / NavHeaderFit / CourseColorUtil)+ 全量 1714 例:0 失败 / 0 错误
+- 测试:定向(SchedulePagerSyncRace / SepXrw 拦截器 / ThemeFollowSystem / CustomThemeCardVisualParity / NavHeaderFit / CourseColorUtil)+ 全量 1715 例:0 失败 / 0 错误
 - APK SHA-256:
-  - arm64-v8a: 031d5513726f4f842541b975c3392d615d5c8996263b47416f5eaf967ca61c50
-  - armeabi-v7a: 10ded8268fe489193e6e6b3b67c5ff16c12a58aa11d4f6d42864299c57e7359c
-  - x86_64: caea20c0471fd0952d835cbacf9041c5c88c6a613003bf8a51ba9a39028a38e1
+  - arm64-v8a: 57a5ba750f2b1c9c6529df1b1650827ea87c5a50e04a4241312d5434b3bab09c
+  - armeabi-v7a: c1eecaba0d3eb536a0252bd47590b2b9825edff9a5d5f295324d1d3d21a549b5
+  - x86_64: 16f7fe93edffba35b8aee8bd3d8dec66e59e28bbe29f24923f53658405b8a253
 - 构建:versionName 1.0.55 / versionCode 61
