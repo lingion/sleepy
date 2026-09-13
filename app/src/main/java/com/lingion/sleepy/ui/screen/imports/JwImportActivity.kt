@@ -73,10 +73,11 @@ import com.lingion.sleepy.R
  */
 class JwImportActivity : ComponentActivity() {
 
-    // configChanges="uiMode" 不重建 Activity → isSystemInDarkTheme() 不 recomposition
-    private val uiNightModeState = mutableStateOf(
-        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-    )
+    // configChanges="uiMode" 不重建 Activity → isSystemInDarkTheme() 不 recomposition。
+    // 初始值在 onCreate 赋 — 属性初始化器读 resources 会在构造函数阶段执行,
+    // 此时 attachBaseContext 未调, resources 访问 NPE → 启动秒崩(v1.0.55 翻车点)。
+    private val uiNightModeState: androidx.compose.runtime.MutableState<Int> =
+        androidx.compose.runtime.mutableStateOf(Configuration.UI_MODE_NIGHT_UNDEFINED)
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -85,6 +86,8 @@ class JwImportActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        uiNightModeState.value =
+            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         enableEdgeToEdge()
         setContent {
             val systemDark = uiNightModeState.value == Configuration.UI_MODE_NIGHT_YES

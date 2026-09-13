@@ -80,13 +80,16 @@ class ThemeFollowSystemContractTest {
      * 通过 State 承接 onConfigurationChanged 的推送。断言:
      *   a) 存在 mutableStateOf<uiMode> 字段 (composition-observed)
      *   b) onConfigurationChanged 覆写更新该 State
-     *   c) systemDark 派生自该 State (非直接调用 isSystemInDarkTheme()) */
+     *   c) systemDark 派生自该 State (非直接调用 isSystemInDarkTheme())
+     *   d) 初始值赋值在 onCreate 内 — 属性初始化器读 resources 在构造函数阶段
+     *      执行, attachBaseContext 未调, resources 访问 NPE → 启动秒崩
+     *      (v1.0.55 测试包翻车点, 禁止回归) */
     @Test
     fun systemDark_is_driven_by_configuration_change_state() {
         // a) State 字段存在且类型为 Int (uiMode mask)
-        val stateField = Regex("""private\s+val\s+\w+\s*=\s*mutableStateOf\(""")
+        val stateField = Regex("""private\s+val\s+\w+:\s*androidx\.compose\.runtime\.MutableState<Int>\s*=""")
         assertTrue(
-            "MainActivity must hold a mutableStateOf tracking uiMode for recomposition " +
+            "MainActivity must hold a MutableState<Int> tracking uiMode for recomposition " +
                 "when configChanges=\"uiMode\" prevents Activity recreation / Compose recomposition",
             stateField.containsMatchIn(mainSource)
         )
@@ -114,6 +117,42 @@ class ThemeFollowSystemContractTest {
             "systemDark must be derived from the configuration-change-tracked state",
             Regex("""val\s+systemDark\s*=\s*\(.*==\s*Configuration\.UI_MODE_NIGHT_YES\)""")
                 .containsMatchIn(mainSource)
+        )
+        // d) 初始值必须在 onCreate 内赋值: 属性初始化器读 resources = 构造函数阶段
+        //    访问 = attachBaseContext 未调 = NPE 秒崩。断言 onCreate 体内有
+        //    uiNightModeState.value = resources.configuration.uiMode 赋值,
+        //    且字段声明体不含 resources 读取。
+        val onCreateBody = Regex("""override\s+fun\s+onCreate\(savedInstanceState:\s*Bundle\?\)[\s\S]{0,2000}""")
+            .find(mainSource)?.value ?: ""
+        assertTrue(
+            "onCreate must seed uiNightModeState from resources.configuration (after " +
+                "attachBaseContext) — property initializers run in the constructor where " +
+                "resources is not yet attached (v1.0.55 launch crash)",
+            Regex("""uiNightModeState\.value\s*=\s*\n?\s*resources\.configuration\.uiMode\s+and\s+Configuration\.UI_MODE_NIGHT_MASK""")
+                .containsMatchIn(onCreateBody)
+        )
+    }
+
+    /** 契约 5 (JwImportActivity 同修): 教务导入页同款 configChanges="uiMode" 声明,
+     * 同款 State 驱动 + onCreate 种值, 禁止属性初始化器读 resources。 */
+    @Test
+    fun jwImportActivity_follows_same_contract() {
+        val jwSource: String = loadSource("ui/screen/imports/JwImportActivity.kt")
+        assertTrue(
+            "JwImportActivity must override onConfigurationChanged writing the uiMode state",
+            Regex("""override\s+fun\s+onConfigurationChanged\([^)]*\)[\s\S]{0,300}?\.value\s*=\s*newConfig\.uiMode""")
+                .containsMatchIn(jwSource)
+        )
+        assertFalse(
+            "JwImportActivity must NOT read resources in a property initializer (constructor " +
+                "runs before attachBaseContext → NPE)",
+            Regex("""private\s+val\s+uiNightModeState\s*=\s*mutableStateOf\(\s*\n?\s*resources\.""")
+                .containsMatchIn(jwSource)
+        )
+        assertTrue(
+            "JwImportActivity onCreate must seed uiNightModeState from resources.configuration",
+            Regex("""uiNightModeState\.value\s*=\s*\n?\s*resources\.configuration\.uiMode""")
+                .containsMatchIn(jwSource)
         )
     }
 

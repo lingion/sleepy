@@ -105,12 +105,11 @@ class MainActivity : ComponentActivity() {
     // systemDark 变化信号: configChanges="uiMode" 不重建 Activity, Compose 的
     // isSystemInDarkTheme() 不会自行 recomposition。覆盖 onConfigurationChanged,
     // 把最新 uiMode 推入此 State 触发重组 — dark 即随 systemDark 实时重算。
-    // 初始值取当前配置, 避免冷启时闪一次。
-    // ponytail: MutableStateOf<Int> + onConfigurationChanged is the standard
-    // pattern for theme changes under configChanges="uiMode"; no per-account lock needed.
-    private val uiNightModeState = mutableStateOf(
-        resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
-    )
+    // 初始值在 onCreate 赋(取当前配置, 避免冷启时闪一次) — 属性初始化器读
+    // resources 会在构造函数阶段执行, 此时 attachBaseContext 未调, resources
+    // 访问 NPE → 启动秒崩(v1.0.55 测试包翻车点)。
+    private val uiNightModeState: androidx.compose.runtime.MutableState<Int> =
+        androidx.compose.runtime.mutableStateOf(Configuration.UI_MODE_NIGHT_UNDEFINED)
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
@@ -120,6 +119,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
+        // uiNightModeState 初始值: attachBaseContext 已完成, resources 可安全访问
+        uiNightModeState.value =
+            resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK
         com.lingion.sleepy.util.UpdateManager.cleanOldApk(this)
         enableEdgeToEdge()
         // 高刷新率(流畅优先): 按开关把窗口钉到屏幕最高刷率, 不表态会被省电逻辑限 60Hz
