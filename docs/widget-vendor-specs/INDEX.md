@@ -1,8 +1,9 @@
 # 大陆主流启动器 / 小组件厂商规范速查
 
 > 目录目的: 把 Sleepy 小组件在大陆主要厂商启动器 (华为/荣耀/小米/OPPO/vivo/魅族/三星) 的官方能力边界与适配要求落到本地,作为后续“单组件、跨厂商兼容”适配工作的事实底座。
-> 抓取时间: 2026-09-10
+> 抓取时间: 2026-09-10 初版 · 2026-09-13 全量扩充 (64 文件, 7 agent 并行抓取)
 > 抓取原则: 优先厂商官方页 → 备份社区/CSDN/IT之家二次核实。纯 JS 渲染/登录墙的厂商页用社区内容补齐,每文件头部首行即标注证据等级。
+> SPA 破口实录: vivo=`webapi/doc/info?id=` · 魅族=`apiopen.flyme.cn/api/web/v1/doc-wiki/detail?id=` · 荣耀=Googlebot UA · 三星=静态 HTML 直抓 · 华为 developer.huawei.com=JS 墙未破(用消费者支持页+OpenHarmony 文档补)
 
 ## 适配目标澄清
 
@@ -12,16 +13,87 @@ Sleepy 是 Android App,只能运行 Android AppWidget 体系。下列“厂商�
 
 ## 目录
 
-| 厂商 | 子目录 | 关键坑 |
+### 文件索引 (2026-09-13 全量, 每文件首行标注 evidence 等级与源URL)
+
+| 厂商 | 文件 | 内容 |
 |---|---|---|
-| 小米 HyperOS | [xiaomi/](./xiaomi/) | `:widgetProvider` 独立进程 ≤35M,曝光刷新(去掉定时刷新),不支持 fork |
-| 荣耀 MagicOS | [honor/](./honor/) | 锁屏小组件独立推送路径,桌面小组件走 Android 原生,主题包渠道独立;新增 appwidget-dev-notes (#31 实锤 configure 回滚修复 + pin 矩阵) |
-| OPPO ColorOS | [oppo/](./oppo/) | 历史 Glance 冻结问题 (已有 memory),主题组件 SDK 是独立通道 |
-| vivo OriginOS | [vivo/](./vivo/) | 原子组件基于原生 + meta-data,挂件内存/GIF 性能受限;新增 atomic-widget-dev-notes (pin 无 SDK 完全无效 + 内存上限实锤) |
-| 魅族 Flyme | [meizu/](./meizu/) | 无独立厂商 SDK,走 Android 原生 |
-| 三星 OneUI | [samsung/](./samsung/) | 无独立厂商 SDK,走 Android 原生;新增 appwidget-dev-notes (pin 弹框+空间不足开新页,折叠屏/外屏 cell 差异) |
-| 跨厂商经验 | [_cross-vendor/](./_cross-vendor/) | CSDN 14K 实战总结 (小米/vivo/华为/OPPO 适配差异);新增 remoteviews-limits (bitmap 内存 1.5× 屏 / GL 4096 静默失败 / fontScale 遮挡 / pin 矩阵总表) |
-| 华为 HarmonyOS | [huawei/](./huawei/) | 三档分界:EMUI/HarmonyOS 2-4 (安卓内核) = AppWidget 可用 AOSP 行为;NEXT 服务卡片 = 独立生态不可达 (appwidget-android-core);新增 formkit-service-cards (Form Kit 全量:postCardAction 三事件/刷新四路/form_config 字段) + launcher-behavior (桌面入口/万象小组件 8 类) + theme-darkmode (深色模式无单应用开关,跟随=app 自身策略) + dev-portal-overview (SPA 墙+DevEco/CLI 下载渠道) + next-apk-compat (NEXT 仅 HAP,卓易通容器) + gaps (文档中心 SPA 抓取缺口) |
+| 华为 HarmonyOS | [huawei/appwidget-android-core.md](./huawei/appwidget-android-core.md) | EMUI/HarmonyOS 2-4 安卓内核档 AppWidget AOSP 行为 |
+| | [huawei/formkit-service-cards.md](./huawei/formkit-service-cards.md) | Form Kit 全量: postCardAction 三事件/刷新四路(定时偏差30min机制)/form_config 字段 |
+| | [huawei/launcher-behavior.md](./huawei/launcher-behavior.md) | 桌面入口(服务卡片→窗口小工具)/万象小组件 8 类 (evidence=B) |
+| | [huawei/theme-darkmode.md](./huawei/theme-darkmode.md) | 深色模式无单应用开关, 跟随=app 自身策略 |
+| | [huawei/dev-portal-overview.md](./huawei/dev-portal-overview.md) | SPA 墙现状 + DevEco/CLI 下载渠道 |
+| | [huawei/next-apk-compat.md](./huawei/next-apk-compat.md) | NEXT 仅 HAP, 卓易通容器兼容 Android APK |
+| | [huawei/gaps.md](./huawei/gaps.md) | 文档中心 SPA 抓取缺口 |
+| 荣耀 MagicOS | [honor/dev-portal-overview.md](./honor/dev-portal-overview.md) | 门户总览 + 与华为 HMS 的边界 |
+| | [honor/launcher-behavior.md](./honor/launcher-behavior.md) | 桌面/负一屏网格规格 + YOYO 建议卡片 |
+| | [honor/darkmode-behavior.md](./honor/darkmode-behavior.md) | 深色 #262626 禁纯黑 + 按压反馈分模式 + 开发者双套色值路线 |
+| | [honor/android16-adaptation.md](./honor/android16-adaptation.md) | MagicOS 10 / Android 16 适配要求与版本映射 |
+| | [honor/appmarket-review.md](./honor/appmarket-review.md) | 应用市场上架与安全审核 |
+| | [honor/appwidget-dev-notes.md](./honor/appwidget-dev-notes.md) | #31 实锤 configure 回滚修复 + pin 矩阵 |
+| | [honor/lockscreen-widget-rollout.md](./honor/lockscreen-widget-rollout.md) | 锁屏小组件独立推送路径 |
+| | [honor/theme-widget-user-guide.md](./honor/theme-widget-user-guide.md) | 主题包渠道 (独立生态) |
+| | [honor/gaps.md](./honor/gaps.md) | 抓取缺口 |
+| 小米 HyperOS | [xiaomi/tech-spec.md](./xiaomi/tech-spec.md) | `:widgetProvider` 独立进程 ≤35M/曝光刷新/禁 fork |
+| | [xiaomi/design-spec.md](./xiaomi/design-spec.md) | 小米小部件设计规范 |
+| | [xiaomi/qa-faq.md](./xiaomi/qa-faq.md) | 常见问题 (清数据广播时机等) |
+| | [xiaomi/dev-portal-overview.md](./xiaomi/dev-portal-overview.md) | 开发者平台总览 |
+| | [xiaomi/launcher-behavior.md](./xiaomi/launcher-behavior.md) | 桌面行为 |
+| | [xiaomi/darkmode-behavior.md](./xiaomi/darkmode-behavior.md) | 强制深色 + 智能反色白名单体系 |
+| | [xiaomi/background-restrictions.md](./xiaomi/background-restrictions.md) | 后台限制 |
+| | [xiaomi/appstore-review.md](./xiaomi/appstore-review.md) | 应用商店审核 |
+| | [xiaomi/gaps.md](./xiaomi/gaps.md) | 抓取缺口 |
+| OPPO ColorOS | [oppo/dev-portal-overview.md](./oppo/dev-portal-overview.md) | 门户总览 |
+| | [oppo/appstore-review.md](./oppo/appstore-review.md) | 应用审核规范 (10004/10071 原文) |
+| | [oppo/coloros-android-app-adaptation.md](./oppo/coloros-android-app-adaptation.md) | ColorOS 对 Android App 的适配要求 |
+| | [oppo/coloros-theme-component-dev.md](./oppo/coloros-theme-component-dev.md) | 主题组件 (物光引擎 11377/11378) |
+| | [oppo/darkmode-behavior.md](./oppo/darkmode-behavior.md) | 深色模式行为 |
+| | [oppo/oneplus-realme-diffs.md](./oppo/oneplus-realme-diffs.md) | OxygenOS/realmeUI 同源差异 |
+| | [oppo/shelf-launcher-behavior.md](./oppo/shelf-launcher-behavior.md) | 负一屏/桌面行为 |
+| | [oppo/theme-component-dev-notes.md](./oppo/theme-component-dev-notes.md) | 主题组件开发笔记 (历史) |
+| vivo OriginOS | [vivo/dev-portal-overview.md](./vivo/dev-portal-overview.md) | 门户 + 文档树 API 全量 |
+| | [vivo/launcher-behavior.md](./vivo/launcher-behavior.md) | 华容网格/原子组件全族 833-850/物理滑动/分屏小窗 |
+| | [vivo/darkmode-behavior.md](./vivo/darkmode-behavior.md) | 深色 #202020/白名单/资源同名配对/预览图双套 |
+| | [vivo/background-restrictions.md](./vivo/background-restrictions.md) | 公平运行内存 (四家统一 PSS/3 秒 Binder 回调) |
+| | [vivo/appstore-review.md](./vivo/appstore-review.md) | 审核规范 v2026-07-28/SLA/金标认证 |
+| | [vivo/theme-store-widgets.md](./vivo/theme-store-widgets.md) | 妙玩组件/蓝河卡片/原子通知 + 五条 widget 通道边界 |
+| | [vivo/atomic-widget-dev-notes.md](./vivo/atomic-widget-dev-notes.md) | pin 无 SDK 完全无效 + 内存上限实锤 |
+| | [vivo/desktop-widget-painpoints.md](./vivo/desktop-widget-painpoints.md) | 桌面挂件痛点 (社区, evidence=C 系) |
+| | [vivo/gaps.md](./vivo/gaps.md) | 6 条 gap 详录 |
+| 魅族 Flyme | [meizu/flyme-docs-index.md](./meizu/flyme-docs-index.md) | 20 篇官方 API 原文逐篇索引 (apiopen.flyme.cn 破口) |
+| | [meizu/appstore-review.md](./meizu/appstore-review.md) | 审核规范/发布流程/下架/备案/年龄分级 |
+| | [meizu/launcher-behavior.md](./meizu/launcher-behavior.md) | 桌面/插件/Aicy 纵览 (负一屏接受三方 AppWidget) |
+| | [meizu/darkmode-behavior.md](./meizu/darkmode-behavior.md) | 深色模式跟随 (evidence=B) |
+| | [meizu/flyme-open-portal.md](./meizu/flyme-open-portal.md) | 门户首页存档 (初版) |
+| | [meizu/gaps.md](./meizu/gaps.md) | 4 条 gap |
+| 三星 OneUI | [samsung/oneui-overview.md](./samsung/oneui-overview.md) | One UI 总览 (初版) |
+| | [samsung/darkmode-behavior.md](./samsung/darkmode-behavior.md) | 唯一完整深色模式官方规范: 双向对比度 + #0072de/#3e91ff 双值 |
+| | [samsung/largescreen-foldable.md](./samsung/largescreen-foldable.md) | 600/840dp 窗口分级/分栏比例表/Flex mode/cover-main 连续性 |
+| | [samsung/launcher-behavior.md](./samsung/launcher-behavior.md) | One UI 7 网格变化 (4x5/5x5 移除, 三方 widget 不自动加标签) |
+| | [samsung/galaxystore-review.md](./samsung/galaxystore-review.md) | Seller Portal 入驻 + 分发指南硬条款 |
+| | [samsung/dex-large-screen.md](./samsung/dex-large-screen.md) | DeX: widget-only 应用 Not supported, manifest 禁声明 touchscreen |
+| | [samsung/appwidget-dev-notes.md](./samsung/appwidget-dev-notes.md) | pin 弹框+空间不足开新页, 折叠屏/外屏 cell 差异 |
+| | [samsung/gaps.md](./samsung/gaps.md) | 4 条 gap |
+| 跨厂商 | [_cross-vendor/appwidget-core-official.md](./_cross-vendor/appwidget-core-official.md) | Android AppWidget 官方核心约束 (developer.android.com 原文) |
+| | [_cross-vendor/darktheme-official.md](./_cross-vendor/darktheme-official.md) | Android 深色主题官方 (uiMode/configChanges/isSystemInDarkTheme) |
+| | [_cross-vendor/remoteviews-official-limits.md](./_cross-vendor/remoteviews-official-limits.md) | RemoteViews 官方上限 |
+| | [_cross-vendor/remoteviews-limits.md](./_cross-vendor/remoteviews-limits.md) | bitmap 1.5× 屏/GL 4096/fontScale/pin 矩阵总表 (社区) |
+| | [_cross-vendor/background-refresh-survival.md](./_cross-vendor/background-refresh-survival.md) | 后台刷新存活 |
+| | [_cross-vendor/rom-framework-mods.md](./_cross-vendor/rom-framework-mods.md) | ROM 框架魔改 |
+| | [_cross-vendor/appwidget-china-adapt.md](./_cross-vendor/appwidget-china-adapt.md) | CSDN 14K 实战总结 |
+| | [_cross-vendor/gaps.md](./_cross-vendor/gaps.md) | 缺口补录 |
+
+### 厂商 × 关键坑速查
+
+| 厂商 | 关键坑 |
+|---|---|
+| 小米 HyperOS | `:widgetProvider` 独立进程 ≤35M, 曝光刷新(去掉定时刷新), 不支持 fork; 强制深色白名单体系 |
+| 荣耀 MagicOS | 锁屏小组件独立推送; 卡片深色禁纯黑 #262626; 开发者双套色值路线; Android 16 适配映射 |
+| OPPO ColorOS | 历史 Glance 冻结 (OplusHansManager); 主题组件=物光引擎独立通道; OxygenOS/realmeUI 同源 |
+| vivo OriginOS | 原子组件平台审核 (`requestPinAppWidget` 一键加桌需审核); 桌面内存 ≤10M/被动刷新 ≥12h/Bitmap 100K 大数据线; 公平运行内存 3 秒 Binder 回调 |
+| 魅族 Flyme | 无 AppWidget 专属规范 (60+ 篇无); 负一屏 Aicy 纵览官方接受三方 AppWidget (超级课程表先例) |
+| 三星 OneUI | One UI 7 网格 4x5/5x5 移除; 三方 widget 不自动加标签; DeX 对 widget-only 应用 Not supported; manifest 禁声明 touchscreen |
+| 华为 HarmonyOS | 三档分界: EMUI/HarmonyOS 2-4 = AppWidget AOSP 行为; NEXT 服务卡片 = 独立生态不可达; NEXT 仅 HAP |
+| 跨厂商 | RemoteViews bitmap 1.5× 屏 / GL 4096 静默失败 / fontScale 遮挡; 后台刷新存活; pin 矩阵总表 |
 
 ## 证据等级约定
 
