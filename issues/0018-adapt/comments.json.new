@@ -1,1 +1,92 @@
-[{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5563272784","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5563272784","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5563272784,"node_id":"IC_kwDOS8keYs8AAAABS5jOUA","user":{"login":"lingion","id":165679819,"node_id":"U_kgDOCeASyw","avatar_url":"https://avatars.githubusercontent.com/u/165679819?v=4","gravatar_id":"","url":"https://api.github.com/users/lingion","html_url":"https://github.com/lingion","followers_url":"https://api.github.com/users/lingion/followers","following_url":"https://api.github.com/users/lingion/following{/other_user}","gists_url":"https://api.github.com/users/lingion/gists{/gist_id}","starred_url":"https://api.github.com/users/lingion/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/lingion/subscriptions","organizations_url":"https://api.github.com/users/lingion/orgs","repos_url":"https://api.github.com/users/lingion/repos","events_url":"https://api.github.com/users/lingion/events{/privacy}","received_events_url":"https://api.github.com/users/lingion/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-07T00:13:28Z","updated_at":"2026-09-07T00:13:28Z","body":"收到中科院大学的适配请求。你提供的教务地址是 `xkgo.ucas.ac.cn:3000/course/personSchedule`，采集包也收到了。\n\n你提供的课程里没有详细周次，这不是你的问题，是我这边的抓取工具没有把这部分数据正确取出来。我正在用其他公开项目做交叉验证，继续适配中科院大学的教务系统。","author_association":"OWNER","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5563272784/reactions","total_count":0,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":0},"performed_via_github_app":null,"minimized":null},{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5572263275","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5572263275","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5572263275,"node_id":"IC_kwDOS8keYs8AAAABTCH9aw","user":{"login":"damifan3","id":118594746,"node_id":"U_kgDOBxGcug","avatar_url":"https://avatars.githubusercontent.com/u/118594746?v=4","gravatar_id":"","url":"https://api.github.com/users/damifan3","html_url":"https://github.com/damifan3","followers_url":"https://api.github.com/users/damifan3/followers","following_url":"https://api.github.com/users/damifan3/following{/other_user}","gists_url":"https://api.github.com/users/damifan3/gists{/gist_id}","starred_url":"https://api.github.com/users/damifan3/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/damifan3/subscriptions","organizations_url":"https://api.github.com/users/damifan3/orgs","repos_url":"https://api.github.com/users/damifan3/repos","events_url":"https://api.github.com/users/damifan3/events{/privacy}","received_events_url":"https://api.github.com/users/damifan3/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-07T14:41:03Z","updated_at":"2026-09-07T14:41:33Z","body":"> 收到中科院大学的适配请求。你提供的教务地址是 `xkgo.ucas.ac.cn:3000/course/personSchedule`，采集包也收到了。\n> \n> 你提供的课程里没有详细周次，这不是你的问题，是我这边的抓取工具没有把这部分数据正确取出来。我正在用其他公开项目做交叉验证，继续适配中科院大学的教务系统。\n\n原html中，点击课表中的每个课程，进去就是详细周次。\n似乎你的打包工具会将整个网页递归打包，按理说应该有每个课程的详细周次","author_association":"NONE","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5572263275/reactions","total_count":0,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":0},"performed_via_github_app":null,"minimized":null},{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5573459220","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5573459220","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5573459220,"node_id":"IC_kwDOS8keYs8AAAABTDQ9FA","user":{"login":"lingion","id":165679819,"node_id":"U_kgDOCeASyw","avatar_url":"https://avatars.githubusercontent.com/u/165679819?v=4","gravatar_id":"","url":"https://api.github.com/users/lingion","html_url":"https://github.com/lingion","followers_url":"https://api.github.com/users/lingion/followers","following_url":"https://api.github.com/users/lingion/following{/other_user}","gists_url":"https://api.github.com/users/lingion/gists{/gist_id}","starred_url":"https://api.github.com/users/lingion/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/lingion/subscriptions","organizations_url":"https://api.github.com/users/lingion/orgs","repos_url":"https://api.github.com/users/lingion/repos","events_url":"https://api.github.com/users/lingion/events{/privacy}","received_events_url":"https://api.github.com/users/lingion/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-07T16:32:38Z","updated_at":"2026-09-07T16:32:38Z","body":"你说得对，课程详情页里确实有详细周次。上一个版本的采集器本身存在抓取问题，可能导致课程详情中的周次没有被完整采集，这不是你的采集包或操作问题。\n\n如果方便的话，麻烦你重新下载最新的采集器 v1.2，登录课表后重新采集一次，再把新的采集包发到这个 issue。v1.2 已针对上一版本抓不到课程周次的问题进行了修复，我会根据新的采集包继续确认解析结果。谢谢！","author_association":"OWNER","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5573459220/reactions","total_count":0,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":0},"performed_via_github_app":null,"minimized":null},{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5586739148","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5586739148","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5586739148,"node_id":"IC_kwDOS8keYs8AAAABTP7fzA","user":{"login":"damifan3","id":118594746,"node_id":"U_kgDOBxGcug","avatar_url":"https://avatars.githubusercontent.com/u/118594746?v=4","gravatar_id":"","url":"https://api.github.com/users/damifan3","html_url":"https://github.com/damifan3","followers_url":"https://api.github.com/users/damifan3/followers","following_url":"https://api.github.com/users/damifan3/following{/other_user}","gists_url":"https://api.github.com/users/damifan3/gists{/gist_id}","starred_url":"https://api.github.com/users/damifan3/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/damifan3/subscriptions","organizations_url":"https://api.github.com/users/damifan3/orgs","repos_url":"https://api.github.com/users/damifan3/repos","events_url":"https://api.github.com/users/damifan3/events{/privacy}","received_events_url":"https://api.github.com/users/damifan3/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-08T14:28:31Z","updated_at":"2026-09-08T14:28:31Z","body":"> 你说得对，课程详情页里确实有详细周次。上一个版本的采集器本身存在抓取问题，可能导致课程详情中的周次没有被完整采集，这不是你的采集包或操作问题。\n> \n> 如果方便的话，麻烦你重新下载最新的采集器 v1.2，登录课表后重新采集一次，再把新的采集包发到这个 issue。v1.2 已针对上一版本抓不到课程周次的问题进行了修复，我会根据新的采集包继续确认解析结果。谢谢！\n\n[sleepy-adapt-0908-222517.zip](https://github.com/user-attachments/files/31961383/sleepy-adapt-0908-222517.zip)","author_association":"NONE","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5586739148/reactions","total_count":1,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":1},"performed_via_github_app":null,"minimized":null},{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5588601279","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5588601279","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5588601279,"node_id":"IC_kwDOS8keYs8AAAABTRtJvw","user":{"login":"lingion","id":165679819,"node_id":"U_kgDOCeASyw","avatar_url":"https://avatars.githubusercontent.com/u/165679819?v=4","gravatar_id":"","url":"https://api.github.com/users/lingion","html_url":"https://github.com/lingion","followers_url":"https://api.github.com/users/lingion/followers","following_url":"https://api.github.com/users/lingion/following{/other_user}","gists_url":"https://api.github.com/users/lingion/gists{/gist_id}","starred_url":"https://api.github.com/users/lingion/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/lingion/subscriptions","organizations_url":"https://api.github.com/users/lingion/orgs","repos_url":"https://api.github.com/users/lingion/repos","events_url":"https://api.github.com/users/lingion/events{/privacy}","received_events_url":"https://api.github.com/users/lingion/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-08T16:39:55Z","updated_at":"2026-09-08T16:39:55Z","body":"收到，这次的包很完整，详情页数据都齐了，感谢配合！\n\nUCAS 的适配已经完成，周次按教务详情页里的真实周次导入，带洞、单双周这些情况都处理了。v1.0.52 正在收尾，发布后在这里说一声。\n","author_association":"OWNER","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5588601279/reactions","total_count":0,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":0},"performed_via_github_app":null,"minimized":null},{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5594009579","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5594009579","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5594009579,"node_id":"IC_kwDOS8keYs8AAAABTW3P6w","user":{"login":"lingion","id":165679819,"node_id":"U_kgDOCeASyw","avatar_url":"https://avatars.githubusercontent.com/u/165679819?v=4","gravatar_id":"","url":"https://api.github.com/users/lingion","html_url":"https://github.com/lingion","followers_url":"https://api.github.com/users/lingion/followers","following_url":"https://api.github.com/users/lingion/following{/other_user}","gists_url":"https://api.github.com/users/lingion/gists{/gist_id}","starred_url":"https://api.github.com/users/lingion/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/lingion/subscriptions","organizations_url":"https://api.github.com/users/lingion/orgs","repos_url":"https://api.github.com/users/lingion/repos","events_url":"https://api.github.com/users/lingion/events{/privacy}","received_events_url":"https://api.github.com/users/lingion/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-09T00:44:35Z","updated_at":"2026-09-09T00:44:35Z","body":"v1.0.52 发布了:https://github.com/lingion/sleepy/releases/tag/v1.0.52\n\nUCAS 周次按详情页的真实周次导入,带洞、单双周都按教务数据走,就在这一版里。装上后哪门课的周次不对,直接在这里说。\n","author_association":"OWNER","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5594009579/reactions","total_count":0,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":0},"performed_via_github_app":null,"minimized":null},{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5594558789","html_url":"https://github.com/lingion/sleepy/issues/18#issuecomment-5594558789","issue_url":"https://api.github.com/repos/lingion/sleepy/issues/18","id":5594558789,"node_id":"IC_kwDOS8keYs8AAAABTXYxRQ","user":{"login":"damifan3","id":118594746,"node_id":"U_kgDOBxGcug","avatar_url":"https://avatars.githubusercontent.com/u/118594746?v=4","gravatar_id":"","url":"https://api.github.com/users/damifan3","html_url":"https://github.com/damifan3","followers_url":"https://api.github.com/users/damifan3/followers","following_url":"https://api.github.com/users/damifan3/following{/other_user}","gists_url":"https://api.github.com/users/damifan3/gists{/gist_id}","starred_url":"https://api.github.com/users/damifan3/starred{/owner}{/repo}","subscriptions_url":"https://api.github.com/users/damifan3/subscriptions","organizations_url":"https://api.github.com/users/damifan3/orgs","repos_url":"https://api.github.com/users/damifan3/repos","events_url":"https://api.github.com/users/damifan3/events{/privacy}","received_events_url":"https://api.github.com/users/damifan3/received_events","type":"User","user_view_type":"public","site_admin":false},"created_at":"2026-09-09T01:51:53Z","updated_at":"2026-09-09T01:52:42Z","body":"教务直连时发生错误。\n浏览器中第一次进入https://xkgo.ucas.ac.cn:3000/course/personSchedule 会提示登录失败\n\n<img width=\"1147\" height=\"383\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/54a56bb0-947e-4241-b16d-e750af8bfb15\" />\n\n点击请重新登录，可跳转sep账号登录，https://sep.ucas.ac.cn/?loginFrom=/appStore\n但是sleepy中点击请重新登录直接报错：{\"code\":401,\"msg\":\"未登录或会话已过期\",\"toUrl\":\"/\"}","author_association":"NONE","pin":null,"reactions":{"url":"https://api.github.com/repos/lingion/sleepy/issues/comments/5594558789/reactions","total_count":0,"+1":0,"-1":0,"laugh":0,"hooray":0,"confused":0,"heart":0,"rocket":0,"eyes":0},"performed_via_github_app":null,"minimized":null}]
+[
+  {
+    "body": "收到中科院大学的适配请求。你提供的教务地址是 `xkgo.ucas.ac.cn:3000/course/personSchedule`，采集包也收到了。\n\n你提供的课程里没有详细周次，这不是你的问题，是我这边的抓取工具没有把这部分数据正确取出来。我正在用其他公开项目做交叉验证，继续适配中科院大学的教务系统。",
+    "created": "2026-09-07T00:13:28Z",
+    "id": 5563272784,
+    "user": "lingion"
+  },
+  {
+    "body": "> 收到中科院大学的适配请求。你提供的教务地址是 `xkgo.ucas.ac.cn:3000/course/personSchedule`，采集包也收到了。\n> \n> 你提供的课程里没有详细周次，这不是你的问题，是我这边的抓取工具没有把这部分数据正确取出来。我正在用其他公开项目做交叉验证，继续适配中科院大学的教务系统。\n\n原html中，点击课表中的每个课程，进去就是详细周次。\n似乎你的打包工具会将整个网页递归打包，按理说应该有每个课程的详细周次",
+    "created": "2026-09-07T14:41:03Z",
+    "id": 5572263275,
+    "user": "damifan3"
+  },
+  {
+    "body": "你说得对，课程详情页里确实有详细周次。上一个版本的采集器本身存在抓取问题，可能导致课程详情中的周次没有被完整采集，这不是你的采集包或操作问题。\n\n如果方便的话，麻烦你重新下载最新的采集器 v1.2，登录课表后重新采集一次，再把新的采集包发到这个 issue。v1.2 已针对上一版本抓不到课程周次的问题进行了修复，我会根据新的采集包继续确认解析结果。谢谢！",
+    "created": "2026-09-07T16:32:38Z",
+    "id": 5573459220,
+    "user": "lingion"
+  },
+  {
+    "body": "> 你说得对，课程详情页里确实有详细周次。上一个版本的采集器本身存在抓取问题，可能导致课程详情中的周次没有被完整采集，这不是你的采集包或操作问题。\n> \n> 如果方便的话，麻烦你重新下载最新的采集器 v1.2，登录课表后重新采集一次，再把新的采集包发到这个 issue。v1.2 已针对上一版本抓不到课程周次的问题进行了修复，我会根据新的采集包继续确认解析结果。谢谢！\n\n[sleepy-adapt-0908-222517.zip](https://github.com/user-attachments/files/31961383/sleepy-adapt-0908-222517.zip)",
+    "created": "2026-09-08T14:28:31Z",
+    "id": 5586739148,
+    "user": "damifan3"
+  },
+  {
+    "body": "收到，这次的包很完整，详情页数据都齐了，感谢配合！\n\nUCAS 的适配已经完成，周次按教务详情页里的真实周次导入，带洞、单双周这些情况都处理了。v1.0.52 正在收尾，发布后在这里说一声。\n",
+    "created": "2026-09-08T16:39:55Z",
+    "id": 5588601279,
+    "user": "lingion"
+  },
+  {
+    "body": "v1.0.52 发布了:https://github.com/lingion/sleepy/releases/tag/v1.0.52\n\nUCAS 周次按详情页的真实周次导入,带洞、单双周都按教务数据走,就在这一版里。装上后哪门课的周次不对,直接在这里说。\n",
+    "created": "2026-09-09T00:44:35Z",
+    "id": 5594009579,
+    "user": "lingion"
+  },
+  {
+    "body": "教务直连时发生错误。\n浏览器中第一次进入https://xkgo.ucas.ac.cn:3000/course/personSchedule 会提示登录失败\n\n<img width=\"1147\" height=\"383\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/54a56bb0-947e-4241-b16d-e750af8bfb15\" />\n\n点击请重新登录，可跳转sep账号登录，https://sep.ucas.ac.cn/?loginFrom=/appStore\n但是sleepy中点击请重新登录直接报错：{\"code\":401,\"msg\":\"未登录或会话已过期\",\"toUrl\":\"/\"}",
+    "created": "2026-09-09T01:51:53Z",
+    "id": 5594558789,
+    "user": "damifan3"
+  },
+  {
+    "body": "你 9 号报的问题修了,随 [v1.0.53](https://github.com/lingion/sleepy/releases/tag/v1.0.53) 发布,升级重试即可。\n\n两个改动:入口改指 SEP 门户(sep.ucas.ac.cn),不再直接打开报\"登录失败\"的那个页面;SEP 域的 X-Requested-With 请求头在 WebView 里剥掉,你看到的 `{\"code\":401,\"msg\":\"未登录或会话已过期\"}` 就是这个头触发的。现在打开是正常的 SEP 登录表单,登录后继续走课表提取。\n\n我没有国科大账号,如果登录后提取还有问题,发我一份报错截图或采集包。",
+    "created": "2026-09-11T12:26:07Z",
+    "id": 5634410948,
+    "user": "lingion"
+  },
+  {
+    "body": "1. 难以进入课表页面，因为我们学校页面有bug，手机UI没有查看个人课表按钮\n有如下可选解决思路：\n- 加入使用电脑UA的功能按钮\n- 适配横评，现在进入横屏会退出网页，直接退回到sleepy的选择学校页面。\n\n2. 即使进入课表页面也无法导入\n<img width=\"1378\" height=\"702\" alt=\"Image\" src=\"https://github.com/user-attachments/assets/2af28a87-f48f-4600-b98e-6d6cc6274e01\" />\n\n当前页面不是课表页，请先登录并进入「个人课表」页面",
+    "created": "2026-09-11T12:51:35Z",
+    "id": 5634694296,
+    "user": "damifan3"
+  },
+  {
+    "body": "两条都收到了，逐条说：\n\n**1. 手机上进不去课表页（SEP 移动版没有\"个人课表\"入口）**\n\n你观察是对的，SEP 门户按设备出不同版本，手机版把课表入口藏了。修复了两个点，都在下一版：\n\n- 登录页顶栏加了一个「桌面版网页」切换按钮（显示器图标）。点它之后页面按电脑版重载，SEP 就会显示完整的应用列表，「选课系统」入口能看到。登录状态在切换时保持，不用重新登录。\n- 横屏直接退回选择学校页的问题也修了：之前旋转屏幕会把导入流程整个重建，现在横竖屏随便转，登录和页面状态都保持。\n\n**2. 进了课表页还是提示\"当前页面不是课表页\"**\n\n这个是我们的问题，已修。课表页本身的表格结构和常规教务系统不一样，导入功能没认出来，把正常页面误判成了错误页面。识别已补上。\n\n**修好后的完整流程**：登录 SEP → 点顶栏桌面版按钮 → 应用列表里点「选课系统」→ 进到个人课表页 → 点导入。哪一步再卡住，告诉我卡在哪一屏、提示什么，我接着对。\n\nPS 新版本还未发布 我会尽快上线通知你。",
+    "created": "2026-09-11T13:58:42Z",
+    "id": 5635515156,
+    "user": "lingion"
+  },
+  {
+    "body": "补充说明一下版本状态：上面提到的几处修复目前还没有发布，当前最新的 v1.0.53 里没有这些改动，所以现在升级是验证不到的，之前说\"下一版\"指的就是还没发的那一版。\n\n这些修复会随下一个版本一起发布。发布后我会在这里说一声，到时候你升级到新版本，再按之前给的步骤走一遍就行：登录 SEP → 进应用列表点「选课系统」→ 到课表页面 → 点导入。\n\n在那之前不用做任何操作。",
+    "created": "2026-09-11T14:12:31Z",
+    "id": 5635725953,
+    "user": "lingion"
+  },
+  {
+    "body": "发布了:[v1.0.54](https://github.com/lingion/sleepy/releases/tag/v1.0.54)。\n\n升级后按之前说的步骤走一遍:登录 SEP → 进应用列表点「选课系统」→ 到课表页面 → 点导入。\n\n这版包含你报的两处:网格页里那两种额外链接形态现在按指纹识别,用你当时发的采集包做了回放验证;SEP 门户页也给路径指引了。如果导入过程中还有报错,截图发我。",
+    "created": "2026-09-11T23:46:10Z",
+    "id": 5641913220,
+    "user": "lingion"
+  },
+  {
+    "body": "还有一个小问题：\n右上角点击PCUA，刷新页面后还是安卓UI，没有变成PCUI，没有起作用",
+    "created": "2026-09-12T13:51:45Z",
+    "id": 5646297047,
+    "user": "damifan3"
+  },
+  {
+    "body": "> 还有一个小问题：\n> 右上角点击PCUA，刷新页面后还是安卓UI，没有变成PCUI，没有起作用\n\n收到，这是否意味着导入已经成功？感谢你的支持，下一个版本我会继续排查 UA 切换功能。",
+    "created": "2026-09-12T14:01:07Z",
+    "id": 5646343779,
+    "user": "lingion"
+  },
+  {
+    "body": "> > 还有一个小问题：\n> > 右上角点击PCUA，刷新页面后还是安卓UI，没有变成PCUI，没有起作用\n> \n> 收到，这是否意味着导入已经成功？感谢你的支持，下一个版本我会继续排查 UA 切换功能。\n\n是的，通过横屏的方式导入成功了，感谢您的开发",
+    "created": "2026-09-12T14:27:27Z",
+    "id": 5646501451,
+    "user": "damifan3"
+  }
+]

@@ -198,4 +198,55 @@ class SepXrwStripInterceptorContractTest {
                 .containsMatchIn(interceptor)
         )
     }
+
+    // ---------- 桌面 viewport 覆盖 (issue #18 PCUA 修复, 2026-09-13) ----------
+
+    @Test
+    fun desktopViewport_jsMustBeDeclaredInScreenFile() {
+        // viewport 覆盖 JS 常量必须存在于 JwWebViewLoginScreen.kt —
+        // UA 字符串对 SEP Bootstrap 布局零影响, viewport 钉宽是桌面布局唯一杠杆
+        assertTrue(
+            "DESKTOP_VIEWPORT_JS constant must be declared in JwWebViewLoginScreen.kt",
+            screen.contains("DESKTOP_VIEWPORT_JS")
+        )
+        assertTrue(
+            "DESKTOP_VIEWPORT_JS must pin the layout viewport to a desktop-width (>980px)",
+            Regex("""width=1024""").containsMatchIn(screen)
+        )
+    }
+
+    @Test
+    fun desktopViewport_builderMustPassDesktopModeToClient() {
+        // screen 调用 build 必须传 desktopMode; builder 必须把它传给 JwWebViewClientImpl
+        assertTrue(
+            "Screen must pass desktopMode = desktopUa to JwWebViewClientBuilder.build",
+            Regex("""desktopMode\s*=\s*desktopUa""").containsMatchIn(screen)
+        )
+        assertTrue(
+            "Builder must forward desktopViewport into JwWebViewClientImpl",
+            Regex("""JwWebViewClientImpl\([^)]*desktopViewport""", RegexOption.DOT_MATCHES_ALL)
+                .containsMatchIn(builder)
+        )
+    }
+
+    @Test
+    fun desktopViewport_injectionGatedOnSepDomainAndDesktopMode() {
+        // onPageFinished 注入必须同时满足 desktopViewport + sep.ucas.ac.cn 域 —
+        // xkgo 课表页手机宽度已可用 (报告人横屏导入实证), 禁全局注入
+        assertTrue(
+            "Builder onPageFinished must gate viewport injection on desktopViewport flag",
+            Regex("""if\s*\(desktopViewport && url != null""").containsMatchIn(builder)
+        )
+        assertTrue(
+            "Builder onPageFinished must gate viewport injection on sep.ucas.ac.cn host",
+            Regex("""sep\.ucas\.ac\.cn""", RegexOption.IGNORE_CASE).containsMatchIn(
+                // 只看 onPageFinished 之后的注入段
+                builder.substringAfter("onPageFinished(view: WebView?, url: String?)")
+            )
+        )
+        assertTrue(
+            "Builder onPageFinished must evaluateJavascript DESKTOP_VIEWPORT_JS",
+            Regex("""evaluateJavascript\(DESKTOP_VIEWPORT_JS""").containsMatchIn(builder)
+        )
+    }
 }
