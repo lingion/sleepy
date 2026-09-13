@@ -64,6 +64,13 @@ object CourseColorUtil {
         course.color.isNotBlank() && !course.color.equals(SENTINEL_COLOR, ignoreCase = true)
 
     /**
+     * hex-only 版哨兵判定 — 无实体上下文的调用方(改组色 UI 显示组色源)取用,
+     * 判定口径与 [hasCustomColor] 完全一致,哨兵值仍收敛到 SENTINEL_COLOR 单点。
+     */
+    fun hasCustomColorHex(hex: String): Boolean =
+        hex.isNotBlank() && !hex.equals(SENTINEL_COLOR, ignoreCase = true)
+
+    /**
      * 明暗探针 — 读 CoursePalette.primary 亮度（原四副本中 isPaletteDark 的唯一收敛点）。
      * 注意: 只能用 CoursePalette（亮=0xFFEADDFF / 暗=0xFF4F378B），不能用 WakeUpColorScheme.primary
      * （亮色=0xFF6750A4 加权亮度 0.38 会被误判为暗色）。

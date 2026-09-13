@@ -229,6 +229,15 @@
     <string name="course_room">地点 / 教室</string>
     <string name="course_note">备注（可选）</string>
     <string name="course_color">颜色</string>
+    <string name="color_use_different">使用不同颜色</string>
+    <string name="color_follow_group">跟随组色</string>
+    <string name="change_group_color">改组色</string>
+    <string name="color_group_auto">自动（黄金角）</string>
+    <string name="group_color_confirm_title">确认修改组色</string>
+    <string name="group_color_confirm_msg">组色会影响本课程所有跟随组色的节次。</string>
+    <string name="color_auto">自动</string>
+    <string name="color_custom">自定义</string>
+    <string name="color_refresh">换自动色</string>
     <string name="week_range">周次范围</string>
     <string name="week_range_sub">整门课的默认周次；用「应用到所有时段」批量覆盖各时段</string>
     <string name="start_week">起始周</string>

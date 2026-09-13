@@ -81,6 +81,7 @@ import com.lingion.sleepy.ui.component.TimePickerField
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.ConflictDetailReporter
+import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.weekRangesOverlap
@@ -237,6 +238,13 @@ fun AddCourseScreen(
     // v7.10.16u: 保存时冲突明细(非阻塞) — 弹窗完整列出撞车细节, 用户「仍然保存」放行
     // rememberSaveable: 旋转/配置变更时 Activity 重建, remember 会丢明细列表导致弹窗消失
     var pendingConflictDetails by rememberSaveable { mutableStateOf<List<String>>(emptyList()) }
+    // 改组色弹层状态(issue#22 spec §6.2 恢复): 编辑模式才有组色源, 新建模式无组
+    var showGroupColorPicker by remember { mutableStateOf(false) }
+    // 组色源色值: 同组 colorMode=GROUP 中 id 最小行的 color — UI 显示 + 改组色弹层初值。
+    // 编辑回填 LaunchedEffect 里更新;新建模式恒空串(显示"自动(黄金角)",不显示改组色入口)
+    var groupSourceColorHex by remember { mutableStateOf("") }
+    // 改组色两段式: 调色盘选中 → 暂存 → 确认对话框(spec §6.3"组色会影响本组所有跟随组色的节次")→ 落库
+    var pendingGroupColorHex by remember { mutableStateOf<String?>(null) }
 
     val meetingBlocks = remember(editingCourse?.id) {
         mutableStateListOf(initialMeetingBlock(editingCourse))
@@ -249,6 +257,8 @@ fun AddCourseScreen(
             val tid = state.selectedTableId ?: return@LaunchedEffect
             val groupCourses = SleepyApp.get().repository.getGroupCourses(tid, eg.groupId)
             if (groupCourses.isNotEmpty()) {
+                // 组色源: 同组 colorMode=GROUP 中 id 最小行的 color (CourseColorUtil 单点)
+                groupSourceColorHex = CourseColorUtil.groupSourceColorHex(groupCourses)
                 val slots = groupSlotsForEdit(groupCourses)
                 meetingBlocks.clear()
                 var bid = 1
@@ -419,6 +429,53 @@ fun AddCourseScreen(
                 TextButton(onClick = { pendingConflictDetails = emptyList() }) {
                     Text(stringResource(R.string.conflict_detail_go_back))
                 }
+            }
+        )
+    }
+
+    // ── 改组色弹层(issue#22 spec §6.2/§6.3 恢复): 调色盘 + 全组影响确认 ──
+    // 编辑模式才弹(新建模式无 groupId, showGroupColorPicker 永远不会置 true)
+    if (showGroupColorPicker) {
+        ColorPickerDialog(
+            initialHex = groupSourceColorHex.ifBlank { "#FF6750A4" },
+            onConfirm = { hex ->
+                showGroupColorPicker = false
+                pendingGroupColorHex = hex
+            },
+            onDismiss = { showGroupColorPicker = false }
+        )
+    }
+    pendingGroupColorHex?.let { hex ->
+        AlertDialog(
+            onDismissRequest = { pendingGroupColorHex = null },
+            title = { Text(stringResource(R.string.group_color_confirm_title)) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        GroupColorSwatch(hex = hex)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Text(hex, style = MaterialTheme.typography.bodySmall)
+                    }
+                    Text(stringResource(R.string.group_color_confirm_msg), style = MaterialTheme.typography.bodySmall)
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    val gid = editingCourse?.groupId
+                    val tid = state.selectedTableId
+                    pendingGroupColorHex = null
+                    if (gid != null && tid != null) {
+                        scope.launch {
+                            SleepyApp.get().repository.setGroupSourceColor(tid, gid, hex)
+                            // 组色源变了 → 刷新编辑回填的组色源显示
+                            val fresh = SleepyApp.get().repository.getGroupCourses(tid, gid)
+                            if (fresh.isNotEmpty()) groupSourceColorHex = CourseColorUtil.groupSourceColorHex(fresh)
+                        }
+                    }
+                }) { Text(stringResource(R.string.action_confirm)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingGroupColorHex = null }) { Text(stringResource(R.string.cancel)) }
             }
         )
     }
@@ -610,6 +667,8 @@ fun AddCourseScreen(
                     maxStd = maxStd,
                     timeJson = effectiveTimeJson,
                     candidates = TimeTableUtils.edgeCandidates(effectiveTimeJson),
+                    groupSourceColorHex = groupSourceColorHex,
+                    onChangeGroupColor = { showGroupColorPicker = true },
                     onRemove = { meetingBlocks.remove(block) },
                     onPickEdge = { edgePickTarget = block },
                     onEditSlot = { node, s, e -> slotEditTarget = SlotEditTarget(node, s, e) },
@@ -1044,6 +1103,8 @@ private fun MeetingBlockEditor(
     maxStd: Int,
     timeJson: String,
     candidates: List<TimeTableUtils.EdgeCandidate>,
+    groupSourceColorHex: String,
+    onChangeGroupColor: () -> Unit,
     onRemove: () -> Unit,
     onPickEdge: () -> Unit,
     onEditSlot: (node: Int, start: String, end: String) -> Unit,
@@ -1217,8 +1278,12 @@ private fun MeetingBlockEditor(
             colors = fieldColors
         )
 
-        // 颜色 — 三态(GROUP 跟组 / AUTO 自动 / CUSTOM 自定义)
-        ColorSection(block = block)
+        // 颜色 — 三态(GROUP 跟组 / AUTO 自动 / CUSTOM 自定义) + GROUP 模式组色行
+        ColorSection(
+            block = block,
+            groupSourceColorHex = groupSourceColorHex,
+            onChangeGroupColor = onChangeGroupColor
+        )
 
         if (issues.isNotEmpty()) {
             Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
@@ -1594,11 +1659,17 @@ private fun SlotEditDialog(
 }
 
 /** issue#22: 颜色三态 — 开关 OFF = 跟组色(GROUP);开关 ON 后可切 AUTO/CUSTOM
- *  - GROUP(默认): colorState 留空,渲染按 groupId hash 取统一色
+ *  - GROUP(默认): colorState 留空,渲染按组色源取统一色
  *  - AUTO: 同 GROUP 但色相按块序号 + 黄金角(137.508°)发散,自动换色
- *  - CUSTOM: 用户在 ColorPickerDialog 里挑的固定 hex */
+ *  - CUSTOM: 用户在 ColorPickerDialog 里挑的固定 hex
+ *  spec §6.1/§6.2 恢复(用户 2026-09-13 指令"整组颜色也要可以选择"): GROUP 模式下
+ *  显示"跟随组色 [色块] [改组色]"行 — 改组色弹调色盘+全组确认对话框,只写组色源。 */
 @Composable
-private fun ColorSection(block: MeetingBlockDraft) {
+private fun ColorSection(
+    block: MeetingBlockDraft,
+    groupSourceColorHex: String,
+    onChangeGroupColor: () -> Unit
+) {
     val colors = SleepyTheme.colors
     val useDifferent = block.colorModeState != com.lingion.sleepy.data.entity.CourseColorMode.GROUP
     var showColorPicker by remember { mutableStateOf(false) }
@@ -1632,6 +1703,26 @@ private fun ColorSection(block: MeetingBlockDraft) {
                         }
                     }
                 )
+            }
+        }
+        if (!useDifferent) {
+            // spec §6.1 GROUP 模式行: 跟随组色 [色块] [改组色]
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                GroupColorSwatch(hex = groupSourceColorHex)
+                Spacer(modifier = Modifier.width(8.dp))
+                Text(
+                    text = if (CourseColorUtil.hasCustomColorHex(groupSourceColorHex)) groupSourceColorHex
+                    else stringResource(R.string.color_group_auto),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = colors.onSurfaceVariant
+                )
+                Spacer(modifier = Modifier.weight(1f))
+                TextButton(onClick = onChangeGroupColor) {
+                    Text(stringResource(R.string.change_group_color))
+                }
             }
         }
         if (useDifferent) {
@@ -1677,6 +1768,24 @@ private fun ColorSection(block: MeetingBlockDraft) {
             onDismiss = { showColorPicker = false }
         )
     }
+}
+
+/** GROUP 模式组色色块 — 有自定义组色显示色块, 无则显示 AUTO 黄金角中性色 */
+@Composable
+private fun GroupColorSwatch(hex: String) {
+    val hasCustom = CourseColorUtil.hasCustomColorHex(hex)
+    val swatchColor: Color = if (hasCustom) {
+        runCatching { Color(android.graphics.Color.parseColor(hex)) }
+            .getOrDefault(SleepyTheme.colors.surfaceVariant)
+    } else {
+        SleepyTheme.colors.surfaceVariant
+    }
+    Box(
+        modifier = Modifier
+            .size(20.dp)
+            .clip(androidx.compose.foundation.shape.CircleShape)
+            .background(swatchColor)
+    )
 }
 
 @Composable

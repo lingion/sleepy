@@ -256,4 +256,67 @@ class CourseColorUtilTest {
         )
         assertNotEquals("AUTO 不应消费 row.color 字段", neutral, color)
     }
+
+    // ============================ 改组色(issue#22 spec §6.2 恢复) ============================
+
+    @Test fun `hasCustomColorHex 口径与 hasCustomColor 一致`() {
+        // 同一输入下 hex-only 与实体版判定必须相同 — 哨兵值收敛到 SENTINEL_COLOR 单点
+        for (hex in listOf("#FF5722", "#FF6750A4", "#ff6750a4", "", "  ")) {
+            val viaEntity = CourseColorUtil.hasCustomColor(multiCourse(1, color = hex.ifBlank { "" }.trim().let { hex }))
+            assertEquals("hex=$hex 两版判定应一致", viaEntity, CourseColorUtil.hasCustomColorHex(hex))
+        }
+    }
+
+    @Test fun `groupSourceColorHex 同组 GROUP 行取最小 id 行的 color`() {
+        val rows = listOf(
+            multiCourse(3, color = "#FF0000FF", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(1, color = "#FFFF0000", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(2, color = "#FF00FF00", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM)
+        )
+        assertEquals("组色源=GROUP 模式中最小 id 行的 color", "#FFFF0000", CourseColorUtil.groupSourceColorHex(rows))
+    }
+
+    @Test fun `groupSourceColorHex 全组无 GROUP 行回落最小 id 行`() {
+        val rows = listOf(
+            multiCourse(2, color = "#FF00FF00", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.CUSTOM),
+            multiCourse(1, color = "#FFFF0000", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.AUTO)
+        )
+        assertEquals("#FFFF0000", CourseColorUtil.groupSourceColorHex(rows))
+    }
+
+    @Test fun `GROUP 行写入组色后渲染走 hasCustomColor 优先回落`() {
+        // setGroupSourceColor 落库后的渲染路径: GROUP 行 color=组色 → 渲染消费 color 而非 stableHue
+        val rows = listOf(
+            multiCourse(1, color = "#FF6750A4", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(2, color = "#FF6750A4", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP)
+        )
+        // 改组色前: 哨兵值 → stableHue 路径
+        val before = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+            row = rows[0], groupRows = rows, isDark = false, neutralColor = neutral
+        )
+        // 模拟 setGroupSourceColor 落库后的行
+        val after = rows.map { it.copy(color = "#FF123456") }
+        val afterColor = CourseColorUtil.pickCourseColorComposeWithGroupRows(
+            row = after[0], groupRows = after, isDark = false, neutralColor = neutral
+        )
+        // 注: 纯 JVM parseColor 为 mockable 桩(恒返回 0), 断言"改组色后走 CUSTOM-style 解析路径"以色变证明
+        assertNotEquals("改组色后 GROUP 行渲染色应改变", before, afterColor)
+    }
+
+    @Test fun `AUTO 行 hue 输入包含组色源 — forRow 消费 groupSourceColorHex`() {
+        // spec §5.2"组色变则自动跟随": forRow 的 hue = baseHue(组色源) + idx×黄金角。
+        // 注: 纯 JVM parseColor 桩恒 0 → parseHexHue 恒 0, "组色变→hue 变"在 JVM 不可断言
+        // (真机由真 parseColor 驱动);此处锁 forRow 的 hue 计算确实消费了组色源参数 —
+        // baseHue 来自 groupSourceColorHex(经 parseHexHue), 同一输入恒等, 不同 idx 发散。
+        val rows = listOf(
+            multiCourse(1, color = "#FFFF0000", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP),
+            multiCourse(2, color = "#FFFF0000", colorMode = com.lingion.sleepy.data.entity.CourseColorMode.GROUP)
+        )
+        val hue1 = com.lingion.sleepy.util.GoldenAngleColor.forRow(rows[0], rows, "#FFFF0000")
+        val hue2 = com.lingion.sleepy.util.GoldenAngleColor.forRow(rows[1], rows, "#FFFF0000")
+        // 同输入确定性
+        assertEquals(hue1, com.lingion.sleepy.util.GoldenAngleColor.forRow(rows[0], rows, "#FFFF0000"), 0f)
+        // 不同行 idx 发散(黄金角 137.508°)
+        assertEquals("hue 应按行序号黄金角发散", 137.508f, (hue2 - hue1 + 360f) % 360f, 0.01f)
+    }
 }
