@@ -569,8 +569,8 @@
   {
     "sortKey": "H",
     "name": "华东政法大学",
-    "url": "https://jw.ecupl.edu.cn/jwapp",
-    "type": "wisedu",
+    "url": "https://jwxt.ecupl.edu.cn/eams/",
+    "type": "classic_eams",
     "aliases": [
       "ecupl"
     ],
