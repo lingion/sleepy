@@ -195,7 +195,7 @@ class TodayDateNavWiringTest {
             )
             mapOf(
                 "widget_today_nav_title" to "TextView",
-                "widget_today_nav_today" to "TextView",
+                "widget_today_nav_today" to "ImageView",
                 "widget_today_nav_prev" to "ImageView",
                 "widget_today_nav_next" to "ImageView",
             ).forEach { (id, expect) ->
@@ -207,8 +207,9 @@ class TodayDateNavWiringTest {
                 assertEquals("$name 的 $id 必须用 $expect (RemoteViews 白名单类)",
                     expect, tag)
             }
-            // prev/next 大点击区 (40x28dp = 视图尺寸 = 热区)
-            listOf("widget_today_nav_prev", "widget_today_nav_next").forEach { id ->
+            // prev/refresh/next 大点击区 (40x28dp = 视图尺寸 = 热区; refresh 按钮 2×2 定稿)
+            listOf("widget_today_nav_prev", "widget_today_nav_next",
+                "widget_today_nav_today").forEach { id ->
                 val idIdx = xml.indexOf("android:id=\"@+id/$id\"")
                 val blockEnd = xml.indexOf('>', idIdx)
                 val block = xml.substring(xml.lastIndexOf('<', idIdx), blockEnd + 1)

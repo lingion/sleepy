@@ -530,6 +530,50 @@ object WidgetBitmapRenderers {
     }
 
     /**
+     * 刷新图标按钮 (回到今天) — 与 [renderNavTriangle] 同风格: surfaceVariant 圆角底
+     * + onSurfaceVariant 弧形箭头 (270° 圆弧 + 顺时针箭头尖, 12 点方向入口)。
+     * 尺寸同 NAV_BUTTON_W_DP/NAV_BUTTON_H_DP, 视图本身即点击区。
+     */
+    fun renderNavRefresh(context: Context, data: WidgetData): Bitmap {
+        val density = context.resources.displayMetrics.density
+        val w = (NAV_BUTTON_W_DP * density).toInt()
+        val h = (NAV_BUTTON_H_DP * density).toInt()
+        val s = scheme(context, data.themeKey, data.isDark)
+        val bmp = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val c = Canvas(bmp)
+        val p = Paint(Paint.ANTI_ALIAS_FLAG)
+
+        // 低对比圆角矩形底 — 与 prev/next 同规格同呼吸空隙
+        p.color = s.surfaceVariant
+        c.drawRoundRect(RectF(4f * density, 3f * density, w - 4f * density, h - 3f * density),
+            7f * density, 7f * density, p)
+
+        // 刷新弧 — 270° 圆弧开口朝 12 点方向, 线帽圆头
+        val cx = w / 2f
+        val cy = h / 2f
+        val r = 5.5f * density
+        val arcRect = RectF(cx - r, cy - r, cx + r, cy + r)
+        p.color = s.onSurfaceVariant
+        p.style = Paint.Style.STROKE
+        p.strokeWidth = 2f * density
+        p.strokeCap = Paint.Cap.ROUND
+        c.drawArc(arcRect, -90f, 270f, false, p)
+
+        // 箭头尖 — 弧终点 (12 点方向) 顺时针箭头
+        val tipX = cx
+        val tipY = cy - r
+        val path = android.graphics.Path().apply {
+            moveTo(tipX + 3.5f * density, tipY - 1f * density)
+            lineTo(tipX - 2.5f * density, tipY - 1f * density)
+            lineTo(tipX, tipY + 3f * density)
+            close()
+        }
+        p.style = Paint.Style.FILL
+        c.drawPath(path, p)
+        return bmp
+    }
+
+    /**
      * 今日导航顶栏运行时配色 — 顶栏真实视图 (标题/动作文字/背景) 与卡面 bitmap 同一 scheme
      * 取色 (单一事实来源), 防止 TextView 与 Canvas 渲染色彩漂移。
      */

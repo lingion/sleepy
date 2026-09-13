@@ -1,31 +1,22 @@
 package com.lingion.sleepy.widget
 
 import org.junit.Assert.assertEquals
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertNotEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /**
- * 纯 JVM 测试: 顶栏三级降级判定 [TodayWidgetReceiver.navHeaderTier]
- * 与「回到今天/今天」容量判定 [TodayWidgetReceiver.fitsNavTodayFourChar]
- * 的 fontScale 语义 (Android-free — Paint 用 mock 尺寸序列注入)。
+ * 纯 JVM 测试: 顶栏降级判定 [TodayWidgetReceiver.navHeaderTier] 的 2×2 刷新按钮定稿语义
+ * (Android-free — Paint 用 mock 尺寸序列注入)。
  *
- * 背景: XML 里 nav_title 是 textSize=13sp — sp 跟随系统字体缩放 (fontScale)。
- * 旧实现 Paint 用 13f*density 硬构 (fontScale=1 假设), 用户开大字
- * (fontScale=1.3 常见) 时实测文本比测量宽 30% → 顶栏实际装不下却判"装得下"
- * → nav_next 又被挤成第二行巨钮 (原 bug 在大字体窄屏复现)。
+ * 2×2 刷新按钮定稿 (用户 2026-09-13): 「回到今天/今天」文字在窄档被裁点不了, 换成
+ * 真实刷新按钮 (40×28dp, 与 prev/next 同规格, 视图即点击区) — 恓牲序改为标题先退:
+ *   FULL → SHORT_TITLE(去星期) → HIDE_TITLE(标题 GONE, 三钮保留) → HIDE_NAV
+ * 旧 TWO_CHAR/HIDE_TODAY 档与 fitsNavTodayFourChar 判定随之作废删除
+ * (nav_today 不再是文本, 无文字宽度可量)。
  *
- * 真机根因 (OPPO PKX110, 2026-09-09 uiautomator 坐标取证):
- * SIZES=148dp 实际渲染 129.7dp 的窄档上,「9/8 · 周二」+两钮+「今天」固定宽
- * ≈187dp > 148dp → LinearLayout 横向溢出, nav_next 被推出可视区 (层级中消失)。
- * 旧判定只决定四字/两字, 两字也装不下时无降级 → 必须补标题去星期 (TIER_SHORT_TITLE)
- * 与隐藏 nav_today (TIER_HIDE_TODAY) 两档。契约: 全程真实度量, 无固定 dp 阈值。
- *
- * 2026-09-10 locale 契约升级: nav_today 文案来自 R.string 资源 (英 "Back to today" /
- * 西 "Volver a hoy" / 日 "今日に戻る"), 旧纯函数硬编码「回到今天/今天」字面量度量
- * → 非 zh locale 宽度估错。tier/fits 改为注入 navTodayFull/navTodayShort 两串
- * (Android 入口传 context.getString), 本测试全部走注入串。
+ * 预算常量 (dp): padStart10 + title + margin4 + prev40 + (6+refresh40+6) + next40 + padEnd10
+ * refresh GONE (isToday): 6+6 margin 与 refresh 40 一起消失。
+ * 三钮固定件 (标题 GONE): 10 + 4 + 40×3 + 10 = 144dp。
  */
 class NavHeaderFitTest {
 
@@ -34,263 +25,93 @@ class NavHeaderFitTest {
         fun measureText(s: String): Float = s.length * pxAtConstruction
     }
 
-    private fun makePaints(density: Float, fontScale: Float): Pair<RecordingPaint, RecordingPaint> {
-        // 与实现的构造公式镜像: textSize = (sp 值) * density * fontScale
-        return RecordingPaint(13f * density * fontScale) to RecordingPaint(11f * density * fontScale)
-    }
-
-    // ── 旧契约保持: 四字/两字判定 ──
-
-    @Test
-    fun `wide widget fits four-char even with big font scale`() {
-        val (tp, np) = makePaints(density = 2f, fontScale = 1.3f)
-        // 400dp 宽 + 大字 (required≈325dp): 装得下
-        assertTrue(
-            TodayWidgetReceiver.fitsNavTodayFourChar(
-                density = 2f, wDp = 400, titleText = "9/12 · 周六",
-                navTodayFull = "回到今天", navTodayShort = "今天",
-                titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
-            )
-        )
-    }
-
-    @Test
-    fun `narrow widget with big font scale must fall back to two-char`() {
-        val (tp, np) = makePaints(density = 2f, fontScale = 1.3f)
-        // 80dp (1-2 列) + 大字: 四字必装不下 → 必须 false (旧公式按 fontScale=1 算会漏判)
-        assertFalse(
-            TodayWidgetReceiver.fitsNavTodayFourChar(
-                density = 2f, wDp = 80, titleText = "9/12 · 周六",
-                navTodayFull = "回到今天", navTodayShort = "今天",
-                titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
-            )
-        )
-    }
-
-    @Test
-    fun `unknown width defaults to four-char safe path`() {
-        val (tp, np) = makePaints(density = 2f, fontScale = 1f)
-        assertTrue(
-            TodayWidgetReceiver.fitsNavTodayFourChar(
-                density = 2f, wDp = 0, titleText = "9/12 · 周六",
-                navTodayFull = "回到今天", navTodayShort = "今天",
-                titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
-            )
-        )
-    }
-
-    @Test
-    fun `boundary exactly required width fits`() {
-        // stub: 每字符宽 = sp 值 px (density=1, fontScale=1)
-        // titleW = 9字×13 = 117dp; navToday 四字 = 4×11 = 44dp
-        // required = 10+117+4+40+(6+44+6)+40+10 = 277 → wDp=277 恰好装下, 276 装不下
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        assertTrue(
-            TodayWidgetReceiver.fitsNavTodayFourChar(
-                density = 1f, wDp = 277, titleText = "9/12 · 周六",
-                navTodayFull = "回到今天", navTodayShort = "今天",
-                titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
-            )
-        )
-        assertFalse(
-            TodayWidgetReceiver.fitsNavTodayFourChar(
-                density = 1f, wDp = 276, titleText = "9/12 · 周六",
-                navTodayFull = "回到今天", navTodayShort = "今天",
-                titleMeasure = { tp.measureText(it) }, navTodayMeasure = { np.measureText(it) }
-            )
-        )
-    }
-
-    // ── locale 契约 (2026-09-10): 注入串参与判定 ──
-
-    @Test
-    fun `english locale long label changes tier boundary`() {
-        // 英文 "Back to today"(14字) 远宽于「回到今天」(4字): 窄档上 FULL 档应直接装不下
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // full: 10+117+4+40+(6+154+6)+40+10 = 387 > 330 → 装不下 (旧硬编码会误判 FULL)
-        assertEquals(
-            NavTier.TWO_CHAR,
-            tier(1f, 330, "9/12 · 周六", "9/12",
-                navFull = "Back to today", navShort = "Today",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-    }
-
-    // ── isToday 契约 (2026-09-10): nav_today 将被 GONE 时预算不得计入其宽度 ──
-
-    @Test
-    fun `isToday gone frees width so full title keeps four-char budget slot`() {
-        // 今日态 nav_today 必 GONE: 预算只剩 标题+两钮 = 10+104+4+40+40+10 = 208。
-        // wDp=215: 旧判定 (计「今天」22dp+12margin → 242 > 215) 会降到 SHORT_TITLE
-        // (去星期), 实际 FULL 恰好装得下 → 不为一颗看不见的按钮牺牲标题。
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        assertEquals(
-            NavTier.FULL,
-            tier(1f, 215, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) },
-                navTodayVisible = false)
-        )
-    }
-
-    @Test
-    fun `not-today still budgets nav_today width`() {
-        // 导航态 (isToday=false): nav_today 可见, 同宽 215dp 装不下满配 → 降档路径不变
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        assertNotEquals(
-            NavTier.FULL,
-            tier(1f, 215, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) },
-                navTodayVisible = true)
-        )
-    }
-
-    // ── 三级降级 (真机窄档根因修复) ──
-
-    /** 降级档位: 数值序 = 恓牲度递增。 */
     private fun tier(
         density: Float, wDp: Int, fullTitle: String, dateOnly: String,
-        navFull: String, navShort: String,
-        titleM: (String) -> Float, navM: (String) -> Float,
-        navTodayVisible: Boolean = true
-    ): NavTier =
-        TodayWidgetReceiver.navHeaderTier(
-            density, wDp, fullTitle, dateOnly,
-            navTodayFull = navFull, navTodayShort = navShort, navTodayVisible = navTodayVisible,
-            titleMeasure = titleM, navTodayMeasure = navM
-        )
+        titleM: (String) -> Float = { it.length * 13f * density },
+        refreshVisible: Boolean = true
+    ): NavTier = TodayWidgetReceiver.navHeaderTier(
+        density, wDp, fullTitle, dateOnly,
+        titleMeasure = titleM, refreshVisible = refreshVisible
+    )
+
+    // ── FULL 档: 宽 widget 满标题 + 刷新按钮 ──
 
     @Test
-    fun `tier wide widget keeps full title and four-char`() {
-        val (tp, np) = makePaints(density = 2f, fontScale = 1f)
+    fun `wide widget keeps full title and refresh button`() {
+        // req(full=9字) = 10+117+4+40+52+40+10 = 273 ≤ 400
+        assertEquals(NavTier.FULL, tier(1f, 400, "9/12 · 周六", "9/12"))
+    }
+
+    @Test
+    fun `unknown width defaults to full safe path`() {
+        assertEquals(NavTier.FULL, tier(1f, 0, "9/12 · 周六", "9/12"))
+    }
+
+    @Test
+    fun `four-by-three real width keeps full title`() {
+        // 4×3 ≈ 250dp: req(full=104) = 10+104+4+40+52+40+10 = 260 > 250 → SHORT_TITLE?
+        // 周六 2 字 + 9/12: 真实 13sp 宽 ~100dp → 256 > 250 边界; date-only 39 → 191 ≤ 250
+        // 用 mock 精确断言 SHORT_TITLE 分支
+        assertEquals(NavTier.SHORT_TITLE, tier(1f, 250, "9/12 · 周六", "9/12"))
+    }
+
+    // ── SHORT_TITLE 档: 标题去星期 ──
+
+    @Test
+    fun `drops weekday when date-only plus refresh fits`() {
+        // req(dateOnly=4字=52) = 10+52+4+40+52+40+10 = 208 ≤ 210
+        assertEquals(NavTier.SHORT_TITLE, tier(1f, 210, "9/12 · 周六", "9/12"))
+    }
+
+    // ── HIDE_TITLE 档 (2×2 主形态): 标题 GONE, 三钮保留 ──
+
+    @Test
+    fun `narrow 2x2 hides title but keeps all three buttons`() {
+        // 2×2 = 148dp (SIZES 口径): req(dateOnly=39)=195 > 148 → HIDE_TITLE,
+        // 三钮固定件 144 ≤ 148 ✓ — 回到今天刷新按钮恒可点 (用户定稿)
+        assertEquals(NavTier.HIDE_TITLE, tier(1f, 148, "9/8 · 周二", "9/8"))
+    }
+
+    @Test
+    fun `hide title boundary is exact at three-button fixed width`() {
+        // 三钮固定件 144dp: 143 装不下 → HIDE_NAV; 144 恰好 → HIDE_TITLE
+        assertEquals(NavTier.HIDE_TITLE, tier(1f, 144, "9/8 · 周二", "9/8"))
+        assertEquals(NavTier.HIDE_NAV, tier(1f, 143, "9/8 · 周二", "9/8"))
+    }
+
+    // ── isToday: refresh GONE, 预算不含 refresh+margin ──
+
+    @Test
+    fun `isToday frees refresh budget so full title keeps slot`() {
+        // reqNoRefresh(full=104) = 10+104+4+40+40+10 = 208 ≤ 215
         assertEquals(
             NavTier.FULL,
-            tier(2f, 400, "9/12 · 周六", "9/12",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+            tier(1f, 215, "9/8 · 周二", "9/8", refreshVisible = false)
         )
     }
 
     @Test
-    fun `tier unknown width keeps full title`() {
-        val (tp, np) = makePaints(density = 2f, fontScale = 1f)
-        assertEquals(
-            NavTier.FULL,
-            tier(2f, 0, "9/12 · 周六", "9/12",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-    }
-
-    @Test
-    fun `tier four-char does not fit but two-char does → two-char keeps full title`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // required(四字) = 10+117+4+40+(6+44+6)+40+10 = 277; required(两字) = 255
-        // wDp=255: 四字装不下, 两字 + 完整标题恰好装得下 → TWO_CHAR
-        assertEquals(
-            NavTier.TWO_CHAR,
-            tier(1f, 255, "9/12 · 周六", "9/12",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-    }
-
-    @Test
-    fun `tier real-device narrow width drops weekday first`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // 真机 148dp 档 (OPPO SIZES 口径): 「9/8 · 周二」(8字×13=104) + 今天(22)
-        //   full: 10+104+4+40+(6+22+6)+40+10 = 242 > 148 → 连两字+满标题都溢出
-        //   date-only 「9/8」(3字×13=39): 10+39+4+40+(6+22+6)+40+10 = 177 > 148 仍溢出?
-        //   → 本例连 L3 都不够 → HIDE_TODAY (148dp 实机档: nav_today 必须隐藏)
-        assertEquals(
-            NavTier.HIDE_TODAY,
-            tier(1f, 148, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-    }
-
-    @Test
-    fun `tier drops weekday when short title plus two-char fits`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // 满标题 8字×13=104 → 242 > 200; date-only 3字×13=39 → 10+39+4+40+34+40+10=177 ≤ 200
+    fun `isToday narrow still falls to hide nav when two buttons cannot fit`() {
+        // reqNoRefresh(dateOnly=39) = 143 ≤ 148 → SHORT_TITLE (今日态两钮形态)
         assertEquals(
             NavTier.SHORT_TITLE,
-            tier(1f, 200, "9/12 · 周六", "9/12",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+            tier(1f, 148, "9/8 · 周二", "9/8", refreshVisible = false)
         )
-    }
-
-    @Test
-    fun `tier hide today keeps nav buttons and date-only title`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // HIDE_TODAY 档: date-only「9/12」+两钮 = 156dp 装得下, 但满标题/去星期+nav_today
-        // 都装不下 → 隐藏 nav_today (prev/next 保留)。(#31 后 HIDE_NAV 兜底更窄: <156dp)
+        // 142: 两钮也装不下 → HIDE_NAV
         assertEquals(
-            NavTier.HIDE_TODAY,
-            tier(1f, 160, "9/12 · 周六", "9/12",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
+            NavTier.HIDE_NAV,
+            tier(1f, 142, "9/8 · 周二", "9/8", refreshVisible = false)
         )
     }
 
+    // ── fontScale: 标题测量随注入 Paint 走 ──
+
     @Test
-    fun `tier boundary between two-char and short title is exact`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // 「9/8 · 周二」=8字×13=104; required(两字) = 10+104+4+40+34+40+10 = 242
+    fun `big font scale widens title and degrades tier`() {
+        // fontScale=1.3: title 13×1.3≈17dp/字 → full 9字=152 → req=269 > 260 → 降档
         assertEquals(
             NavTier.SHORT_TITLE,
-            tier(1f, 241, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-        assertEquals(
-            NavTier.TWO_CHAR,
-            tier(1f, 242, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-    }
-
-    // ── issue#31 荣耀 2×2 定案: 装不下完整顶栏 → 整条导航 GONE (HIDE_NAV) ──
-    // 用户定稿 (#31): 「2×2 是妥协的结果…我本来是打算把这个切换按钮去掉的,
-    // 现在还留着, 反而多了点歧义, 我会改掉」。降级序末端再退一档: date-only
-    // 标题+两钮都装不下 → 整条 header 隐藏 (bitmap 全高, 点按开 App)。
-
-    @Test
-    fun `tier hide nav when even date-only title plus arrows cannot fit`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // date-only「9/8」= 3字×13 = 39; requiredNoToday = 10+39+4+40+40+10 = 143
-        // wDp=142 → 装不下 → HIDE_NAV (整条导航 GONE)
-        assertEquals(
-            NavTier.HIDE_NAV,
-            tier(1f, 142, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-        // 143 = 恰好装下 → HIDE_TODAY (标题+两钮保留)
-        assertEquals(
-            NavTier.HIDE_TODAY,
-            tier(1f, 143, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) })
-        )
-    }
-
-    @Test
-    fun `tier hide nav fallback also applies when navToday visible`() {
-        val (tp, np) = makePaints(density = 1f, fontScale = 1f)
-        // navTodayVisible=true 分支同样有 HIDE_NAV 兜底: required(dateOnly 9/8=39, 今天=22)
-        // = 10+39+4+40+(6+22+6)+40+10 = 177 > 142, requiredNoToday(9/8)=143 > 142
-        // → 整条导航 GONE (不是 HIDE_TODAY)
-        assertEquals(
-            NavTier.HIDE_NAV,
-            tier(1f, 142, "9/8 · 周二", "9/8",
-                navFull = "回到今天", navShort = "今天",
-                titleM = { tp.measureText(it) }, navM = { np.measureText(it) },
-                navTodayVisible = true)
+            tier(1.3f, 260, "9/12 · 周六", "9/12", titleM = { it.length * (13f * 1.3f) })
         )
     }
 }
