@@ -176,28 +176,64 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             // issue#31 荣耀 2×2 定案: 整条导航装不下 → header GONE (bitmap 全高,
             // 无导航键 — 留着只会被标题压住/挤出界, 点哪都是开 App = 歧义)。
             if (tier == NavTier.HIDE_NAV) {
+                // HIDE_NAV 极端档 (三颗 40dp 钮物理放不下, <144dp) — 用户 2026-09-13 定稿:
+                // 极端情况也要「回到今天」按钮 (40dp 一颗任何 2×2 都装得下)。
+                // 未翻页 (isToday=true) 无回今天语义 → 整条 GONE (pushTodayData 走 fullface,
+                // 不进本分支的带按钮路径); 翻到别天 → 只显示回今天按钮, 标题/翻页键 GONE。
+                if (data.isToday) {
+                    views.setViewVisibility(
+                        com.lingion.sleepy.R.id.widget_today_header, android.view.View.GONE
+                    )
+                    views.setContentDescription(
+                        com.lingion.sleepy.R.id.widget_today_header,
+                        "header GONE tier=HIDE_NAV isToday=true w=$wDp"
+                    )
+                    // 真实根因 (#31 P1 v1.0.55 真机复测): MagicOS launcher 端把 prev/next
+                    // 当独立可点击元素保留, 即便父容器 GONE 也接 PendingIntent — 用户看到
+                    // 两个 < > 形状以为是翻页按钮, 点了无反应 = 困惑 = 看似「箭头还在」。
+                    // HIDE_NAV 档下把 prev/next 重绑成 tapIntent (开 App), 让 launcher 端
+                    // 无论是否尊重 GONE, 行为都收敛到「点哪都是开 App」。
+                    val tap = PendingIntent.getActivity(
+                        context, WidgetRoutes.tapRequestCode(widgetId),
+                        WidgetRoutes.tapIntent(context),
+                        PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+                    )
+                    views.setOnClickPendingIntent(
+                        com.lingion.sleepy.R.id.widget_today_nav_prev, tap
+                    )
+                    views.setOnClickPendingIntent(
+                        com.lingion.sleepy.R.id.widget_today_nav_next, tap
+                    )
+                    return
+                }
+                // 翻到别天: header VISIBLE, 只显示回今天按钮
                 views.setViewVisibility(
-                    com.lingion.sleepy.R.id.widget_today_header, android.view.View.GONE
+                    com.lingion.sleepy.R.id.widget_today_header, android.view.View.VISIBLE
+                )
+                views.setViewVisibility(
+                    com.lingion.sleepy.R.id.widget_today_nav_title, android.view.View.GONE
+                )
+                views.setViewVisibility(
+                    com.lingion.sleepy.R.id.widget_today_nav_prev, android.view.View.GONE
+                )
+                views.setViewVisibility(
+                    com.lingion.sleepy.R.id.widget_today_nav_next, android.view.View.GONE
+                )
+                // 回今天按钮 (真实可点, 40×28dp) — 极端档主形态
+                views.setImageViewBitmap(
+                    com.lingion.sleepy.R.id.widget_today_nav_today,
+                    WidgetBitmapRenderers.renderNavRefresh(context, data)
+                )
+                views.setContentDescription(
+                    com.lingion.sleepy.R.id.widget_today_nav_today,
+                    "refresh 40x28dp back-to-today extreme-narrow tier=$tier"
+                )
+                views.setViewVisibility(
+                    com.lingion.sleepy.R.id.widget_today_nav_today, android.view.View.VISIBLE
                 )
                 views.setContentDescription(
                     com.lingion.sleepy.R.id.widget_today_header,
-                    "header GONE tier=HIDE_NAV w=$wDp"
-                )
-                // 真实根因 (#31 P1 v1.0.55 真机复测): MagicOS launcher 端把 prev/next
-                // 当独立可点击元素保留, 即便父容器 GONE 也接 PendingIntent — 用户看到
-                // 两个 < > 形状以为是翻页按钮, 点了无反应 = 困惑 = 看似「箭头还在」。
-                // HIDE_NAV 档下把 prev/next 重绑成 tapIntent (开 App), 让 launcher 端
-                // 无论是否尊重 GONE, 行为都收敛到「点哪都是开 App」。
-                val tap = PendingIntent.getActivity(
-                    context, WidgetRoutes.tapRequestCode(widgetId),
-                    WidgetRoutes.tapIntent(context),
-                    PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
-                )
-                views.setOnClickPendingIntent(
-                    com.lingion.sleepy.R.id.widget_today_nav_prev, tap
-                )
-                views.setOnClickPendingIntent(
-                    com.lingion.sleepy.R.id.widget_today_nav_next, tap
+                    "header VISIBLE refresh-only tier=HIDE_NAV w=$wDp"
                 )
                 return
             }
@@ -412,8 +448,10 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                 // Today 系静态分支 — bitmap(emptyHeader 留白顶栏) + 真实视图顶栏 (issue #24)
                 // v8.1 口径: 静态档 bitmap 画 24dp 头部空档 (headerSpace=false), 闸门用
                 // contentH(同口径) ≤ hDp — 与渲染逐字节一致
-                // issue#31 荣耀 2×2: 顶栏整体装不下 (HIDE_NAV) → bitmap 带头部画满
-                // (emptyHeader=false), 无真实视图顶栏, 无导航键 — 点按开 App。
+                // issue#31 荣耀 2×2: 顶栏整体装不下 (HIDE_NAV) — 极端档不再整条 GONE:
+                // 未翻页 (isToday=true, 无回到今天语义) → bitmap 带头部画满 (无按钮);
+                // 翻到别天 (isToday=false) → 回今天按钮显示在顶栏 (用户 2026-09-13 定稿:
+                // 极端情况也要回到今天按钮, 40dp 一颗任何 2×2 都装得下)。
                 val navReceiver = receiverClass
                 val tierForGate = if (navReceiver != null &&
                     TodayWidgetReceiver::class.java.isAssignableFrom(navReceiver)
@@ -422,7 +460,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     data.dateLabel, wDp,
                     refreshVisible = !data.isToday
                 ) else NavTier.HIDE_NAV
-                if (tierForGate == NavTier.HIDE_NAV) {
+                if (tierForGate == NavTier.HIDE_NAV && data.isToday) {
                     RemoteViewsWidgetHelper.renderAndPush(
                         context, awm, id, TAG,
                         loadData = { data },
@@ -437,7 +475,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         layoutRes = com.lingion.sleepy.R.layout.widget_bitmap_container,
                         pushGen = pushGen
                     )
-                    Log.d(TAG, "pushTodayData static-fullface id=$id ${wDp}x${hDp}dp content=$contentH (HIDE_NAV — 顶栏 GONE, #31 定案)")
+                    Log.d(TAG, "pushTodayData static-fullface id=$id ${wDp}x${hDp}dp content=$contentH (HIDE_NAV 未翻页 — 无回今天语义, 无按钮)")
                     return
                 }
                 val shell = WidgetBitmapRenderers.renderToday(

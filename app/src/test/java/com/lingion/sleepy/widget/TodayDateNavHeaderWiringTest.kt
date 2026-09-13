@@ -77,7 +77,7 @@ class TodayDateNavHeaderWiringTest {
     @Test
     fun `buttonless faces never draw the back-to-today text`() {
         // 用户定稿 (2026-09-13): 「回到今天」有交互语义 — 要么能点要么不存在。
-        // HIDE_NAV fullface / Today overflow 壳图 / SCOPE_TODAY 条带三面均无按钮,
+        // HIDE_NAV fullface (未翻页) / Today overflow 壳图 / SCOPE_TODAY 条带均无按钮,
         // bitmap 里的「回到今天」文字点不了 → 一律不画 (日期标题无交互语义保留)。
         val rdr = widgetSource("WidgetBitmapRenderers.kt").readText()
         assertTrue("todayHeaderParts 须有 showBackToToday 守卫",
@@ -89,6 +89,18 @@ class TodayDateNavHeaderWiringTest {
             .substringBefore("layoutRes")
         assertTrue("HIDE_NAV fullface 须传 showBackToToday = false",
             fullface.contains("showBackToToday = false"))
+        // 极端档 (HIDE_NAV) 翻到别天 → 回今天按钮显示 (真实可点) — 用户 2026-09-13 定稿:
+        // fullface 闸门须带 isToday 守卫 (未翻页才走 fullface, 翻到别天走按钮)
+        assertTrue("fullface 闸门须带 data.isToday 守卫",
+            today.substringAfter("tierForGate == NavTier.HIDE_NAV &&")
+                .substringBefore("RemoteViewsWidgetHelper.renderAndPush")
+                .contains("data.isToday"))
+        val navExtreme = today.substringAfter("if (tier == NavTier.HIDE_NAV) {")
+            .substringBefore("views.setViewVisibility(\n                com.lingion.sleepy.R.id.widget_today_header, android.view.View.VISIBLE")
+        assertTrue("极端档翻到别天须显示回今天按钮 (renderNavRefresh)",
+            today.substringAfter("极端档主形态")
+                .substringBefore("views.setContentDescription(\n                    com.lingion.sleepy.R.id.widget_today_header")
+                .contains("renderNavRefresh"))
         val overflowCall = today.substringAfter("Today 系 overflow v9")
             .substringBefore("Log.d(TAG, \"pushTodayData scroll")
         assertTrue("Today overflow 壳图须传 showBackToToday = false",
