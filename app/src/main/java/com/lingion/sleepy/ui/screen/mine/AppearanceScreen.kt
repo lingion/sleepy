@@ -333,7 +333,10 @@ private fun DashedCircleWithPlus(size: androidx.compose.ui.unit.Dp, strokeColor:
     }
 }
 
-/** 自定义主题卡 — 呈现与 PresetThemeCard 一致(三色板+名称+选中对勾),右侧小设置图标进微调编辑器 */
+/** 自定义主题卡 — 与 PresetThemeCard 完全同构(三色板+名称+选中对勾,大小一模一样)。
+ *  edit 图标在色板行右端: 色块包裹(可点性可见) + 与第一行 3 色块同行对齐
+ *  (2026-09-13 用户定稿: 裸图标贴主题名旁 = 不知道点哪, 24dp IconButton 嵌名称行
+ *  还把卡片撑得比预设卡高) */
 @Composable
 private fun CustomThemeCard(
     theme: com.lingion.sleepy.data.CustomTheme,
@@ -351,10 +354,27 @@ private fun CustomThemeCard(
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
                 ColorSwatch(scheme.primary)
                 ColorSwatch(scheme.secondary)
                 ColorSwatch(scheme.tertiary)
+                Spacer(Modifier.weight(1f))
+                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 24dp 嵌 28dp 色板行不撑高
+                Box(
+                    modifier = Modifier
+                        .size(24.dp)
+                        .clip(SleepyTheme.shapes.small)
+                        .background(colors.surfaceContainerHighest)
+                        .noRippleClickable(onEdit),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        Icons.Outlined.Edit,
+                        contentDescription = stringResource(R.string.theme_custom_edit),
+                        tint = colors.onSurfaceVariant,
+                        modifier = Modifier.size(16.dp)
+                    )
+                }
             }
             Spacer(Modifier.height(12.dp))
             Row(verticalAlignment = Alignment.CenterVertically) {
@@ -368,15 +388,6 @@ private fun CustomThemeCard(
                 )
                 if (selected) {
                     Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
-                    Spacer(Modifier.width(4.dp))
-                }
-                IconButton(onClick = onEdit, modifier = Modifier.size(24.dp)) {
-                    Icon(
-                        Icons.Outlined.Edit,
-                        contentDescription = stringResource(R.string.theme_custom_edit),
-                        tint = colors.onSurfaceVariant,
-                        modifier = Modifier.size(16.dp)
-                    )
                 }
             }
         }
