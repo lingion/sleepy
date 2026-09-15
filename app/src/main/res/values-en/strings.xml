@@ -312,6 +312,8 @@
     <string name="settings_grid_sub_none_sub">Grid cards show course name only</string>
     <string name="settings_pill">Home display</string>
     <string name="settings_pill_scale">Grid view zoom</string>
+    <string name="settings_grid_auto_hide_evening">Hide empty evening periods</string>
+    <string name="settings_grid_auto_hide_evening_sub">Hide periods from 18:00 when there are no evening classes all term</string>
     <string name="settings_pill_week_scale">Week view zoom</string>
     <string name="settings_pill_corner">Card corners</string>
     <string name="settings_week_two_column">Two-column week view</string>

@@ -297,6 +297,8 @@
     <string name="settings_grid_sub_none_sub">Las tarjetas solo muestran el nombre</string>
     <string name="settings_pill">Ajustes de pantalla de inicio</string>
     <string name="settings_pill_scale">Zoom de la vista de cuadrícula</string>
+    <string name="settings_grid_auto_hide_evening">Ocultar periodos nocturnos vacíos</string>
+    <string name="settings_grid_auto_hide_evening_sub">Oculta los periodos desde las 18:00 si no hay clases nocturnas en todo el semestre</string>
     <string name="settings_pill_week_scale">Zoom de la vista semanal</string>
     <string name="settings_pill_corner">Esquinas de tarjetas</string>
     <string name="settings_week_two_column">Vista semanal en dos columnas</string>

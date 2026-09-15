@@ -214,8 +214,20 @@ object TimeTableUtils {
      * 渲染层按 isPlaceholder 分支)。渲染期合成物, 绝不写回 timeJson —
      * 与用户手建边缘节点(insertEdgeNode)机制严格无关。
      */
-    fun buildRenderSlotPlan(courses: List<com.lingion.sleepy.data.entity.CourseEntity>, timeJson: String): RenderSlotPlan {
-        val base = timeSlotsFor(timeJson)
+    fun buildRenderSlotPlan(courses: List<com.lingion.sleepy.data.entity.CourseEntity>, timeJson: String): RenderSlotPlan =
+        buildRenderSlotPlan(courses, timeJson, timeSlotsFor(timeJson))
+
+    /**
+     * Same render-plan construction, but with a caller-selected base slot list.
+     * The cards view uses this to apply viewport policies (such as hiding empty
+     * evening slots) before synthesising irregular-time placeholder rows.
+     */
+    fun buildRenderSlotPlan(
+        courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
+        timeJson: String,
+        baseSlots: List<TimeSlot>
+    ): RenderSlotPlan {
+        val base = baseSlots
         if (base.isEmpty()) return RenderSlotPlan(base)
 
         // 每个空隙 = (左节 end, 右节 start)。课的结束时间终止在空隙内 =

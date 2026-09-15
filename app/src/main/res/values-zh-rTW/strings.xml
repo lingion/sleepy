@@ -297,6 +297,8 @@
     <string name="settings_grid_sub_none_sub">網格卡片只顯示課程名</string>
     <string name="settings_pill">主頁顯示設定</string>
     <string name="settings_pill_scale">網格檢視縮放</string>
+    <string name="settings_grid_auto_hide_evening">自動收起空白晚間</string>
+    <string name="settings_grid_auto_hide_evening_sub">整個學期沒有晚課時隱藏 18:00 後的節次</string>
     <string name="settings_pill_week_scale">週檢視縮放</string>
     <string name="settings_pill_corner">卡片圓角</string>
     <string name="settings_week_two_column">週視圖兩欄顯示</string>

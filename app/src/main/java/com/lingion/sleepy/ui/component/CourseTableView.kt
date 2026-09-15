@@ -22,6 +22,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberUpdatedState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -34,6 +35,7 @@ import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -48,6 +50,7 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.input.pointer.pointerInput
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTextStyle
@@ -59,8 +62,10 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.TimetableViewportPolicy
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
+import kotlin.math.abs
 
 /**
  * 时段定义 — 5 个时段（对应 HTML 里的 5 个 slot-row）
@@ -103,6 +108,7 @@ data class TimeSlot(
 @Composable
 fun CardsGridView(
     courses: List<CourseEntity>,
+    allCourses: List<CourseEntity> = courses,
     timeSlots: List<TimeSlot>,
     visibleDays: Set<Int> = (1..7).toSet(),
     showDate: Boolean = false,
@@ -121,13 +127,46 @@ fun CardsGridView(
     onRotationStep: (String, Int) -> Unit = { _, _ -> },     // (clusterKey, step)
     // 用户反馈 2026-09-09: 非常规课跨节次空隙时按当前课程集合合成渲染期占位节次,
     // 比例定位基于扩展后的槽位表。null = 不合成(旧调用方兼容)。
-    timeJson: String? = null
+    timeJson: String? = null,
+    rowHeightScale: Float = 1f,
+    onRowHeightScaleChange: (Float) -> Unit = {},
+    autoHideEmptyEvening: Boolean = true
 ) {
     val colors = SleepyTheme.colors
-    // 渲染槽位表: 有 timeJson 且存在跨空隙非常规课 → 标准 12 节 + 占位行; 否则原表
-    val renderPlan = remember(timeSlots, timeJson, courses) {
-        if (timeJson != null) TimeTableUtils.buildRenderSlotPlan(courses, timeJson)
-        else TimeTableUtils.RenderSlotPlan(timeSlots)
+    // 设置页改 scale / cornerRatio 后强制 recompose
+    var prefVersion by remember { mutableIntStateOf(0) }
+    LaunchedEffect(Unit) {
+        AppPrefs.changeBus.filter {
+            it == AppPrefs.KEY_GRID_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO ||
+                it == AppPrefs.KEY_GRID_USE_ALIAS ||
+                it == AppPrefs.KEY_GRID_AUTO_HIDE_EMPTY_EVENING
+        }.collect { prefVersion++ }
+    }
+    val context = LocalContext.current
+    val effectiveAutoHideEmptyEvening = autoHideEmptyEvening &&
+        AppPrefs.isGridAutoHideEmptyEvening(context)
+
+    val visibleSlotResult = remember(
+        allCourses,
+        timeSlots,
+        visibleDays,
+        timeJson,
+        effectiveAutoHideEmptyEvening,
+        prefVersion
+    ) {
+        TimetableViewportPolicy.selectVisibleSlots(
+            allCourses = allCourses,
+            timeSlots = timeSlots,
+            visibleDays = visibleDays,
+            timeJson = timeJson,
+            autoHideEmptyEvening = effectiveAutoHideEmptyEvening
+        )
+    }
+    val baseSlots = visibleSlotResult.slots
+    // 先裁剪稳定的学期级基础槽位，再为当前周的非常规时间课程合成占位行。
+    val renderPlan = remember(baseSlots, timeJson, courses) {
+        if (timeJson != null) TimeTableUtils.buildRenderSlotPlan(courses, timeJson, baseSlots)
+        else TimeTableUtils.RenderSlotPlan(baseSlots)
     }
     val renderSlots = renderPlan.slots
     val maxNode = renderSlots.maxOfOrNull { it.nodeEnd } ?: 12
@@ -141,42 +180,17 @@ fun CardsGridView(
     //   调用方需先判 >= 0 再绘;cardY 那侧 .coerceAtLeast(0) 兜底防负坐标。
     fun slotIndexOf(node: Int): Int = renderSlots.indexOfFirst { it.nodeStart == node }
 
-    // 设置页改 scale / cornerRatio 后强制 recompose
-    var prefVersion by remember { mutableIntStateOf(0) }
-    LaunchedEffect(Unit) {
-        AppPrefs.changeBus.filter {
-            it == AppPrefs.KEY_GRID_SCALE || it == AppPrefs.KEY_GRID_CORNER_RATIO ||
-                it == AppPrefs.KEY_GRID_USE_ALIAS
-        }.collect { prefVersion++ }
-    }
-
     // issue#8 网格整体缩放: 0.7~1.3, 字号/行高/间距/圆角/内边距等比联动
     // (12节连堂课表缩到 0.7 可一屏放下; 只影响本 Cards 视图, 小组件与列表视图不受影响)
-    val scale = AppPrefs.getGridScale(androidx.compose.ui.platform.LocalContext.current)
-    val cornerRatio = AppPrefs.getGridCornerRatio(androidx.compose.ui.platform.LocalContext.current)
+    val scale = AppPrefs.getGridScale(context)
+    val cornerRatio = AppPrefs.getGridCornerRatio(context)
     val d = { v: Float -> (v * scale).dp }
 
     // 布局常量（全 dp, 乘 scale）
     val headH = d(52f)
     val timeW = d(68f)
-    val slotH = d(52f)
     val gapH = d(4f)
     val gapW = d(5f)
-    val rowH = slotH + gapH
-
-    // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
-    // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
-    // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp;
-    // rowWeightAt(i) = 第 i 行权重(标准行恒 1, 占位行 < 1); 无权重 = 全标准行。
-    fun yOfRows(r: Float): Dp {
-        val ws = renderPlan.slotWeights ?: return rowH * r
-        var acc = 0f
-        val full = r.toInt().coerceAtMost(ws.size)
-        for (i in 0 until full) acc += ws[i]
-        if (full < ws.size && r > full) acc += ws[full] * (r - full)
-        return rowH * acc
-    }
-    fun rowHeightAt(i: Int): Dp = rowH * (renderPlan.slotWeights?.getOrNull(i) ?: 1f)
 
     val gridBgShape = SleepyTheme.shapes.large
 
@@ -187,6 +201,37 @@ fun CardsGridView(
             .padding(d(8f))
     ) {
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
+            // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
+            val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
+            val availableGridHeight = (maxHeight - headH - gapH - navExtra)
+                .value
+                .coerceAtLeast(0f)
+            val fitRowHeight = TimetableViewportPolicy.fitRowHeightDp(
+                availableGridHeightDp = availableGridHeight,
+                slotWeights = renderPlan.slotWeights,
+                slotCount = renderSlots.size,
+                contentScale = scale
+            )
+            val rowHeightDp = TimetableViewportPolicy.manualRowHeightDp(
+                fitRowHeightDp = fitRowHeight,
+                verticalScale = rowHeightScale,
+                contentScale = scale
+            )
+            val rowH = rowHeightDp.dp
+
+            // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
+            // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
+            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp;
+            fun yOfRows(r: Float): Dp {
+                val ws = renderPlan.slotWeights ?: return rowH * r
+                var acc = 0f
+                val full = r.toInt().coerceAtMost(ws.size)
+                for (i in 0 until full) acc += ws[i]
+                if (full < ws.size && r > full) acc += ws[full] * (r - full)
+                return rowH * acc
+            }
+            fun rowHeightAt(i: Int): Dp = rowH * (renderPlan.slotWeights?.getOrNull(i) ?: 1f)
+
             // 算出每列宽度 (dp)
             val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
             // issue#23: grid 高度按 renderSlots 行数算(maxNode 已不反映边缘节点总数)——
@@ -196,14 +241,21 @@ fun CardsGridView(
 
             val scrollState = rememberScrollState()
 
-            // Dock 悬浮底栏: 滚动尾部多留 Dock 总高, 最后 ≤maxNode 节的卡片能滚到 Dock 上方
-            val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
-
-            Column(
+            Box(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .verticalScroll(scrollState)
+                    .fillMaxSize()
+                    .verticalResizeGesture(
+                        fitRowHeightDp = fitRowHeight,
+                        currentRowHeightDp = rowHeightDp,
+                        contentScale = scale,
+                        onRowHeightScaleChange = onRowHeightScaleChange
+                    )
             ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(scrollState)
+                ) {
                 // ---- 表头：自然 Compose Row ----
                 Row(
                     modifier = Modifier.fillMaxWidth().height(headH),
@@ -373,7 +425,85 @@ fun CardsGridView(
                         )
                     }
                 }
-                if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
+                    if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
+                }
+            }
+        }
+    }
+}
+
+private fun Modifier.verticalResizeGesture(
+    fitRowHeightDp: Float,
+    currentRowHeightDp: Float,
+    contentScale: Float,
+    onRowHeightScaleChange: (Float) -> Unit
+): Modifier {
+    return composed {
+        val latestFitRowHeight by rememberUpdatedState(fitRowHeightDp)
+        val latestRowHeight by rememberUpdatedState(currentRowHeightDp)
+        val latestScale by rememberUpdatedState(contentScale)
+        val latestOnChange by rememberUpdatedState(onRowHeightScaleChange)
+
+        pointerInput(Unit) {
+            awaitPointerEventScope {
+                var startVerticalSpan: Float? = null
+                var startHorizontalSpan = 0f
+                var startRowHeightDp = latestRowHeight
+                var locked = false
+
+                while (true) {
+                    val event = awaitPointerEvent()
+                    val pressed = event.changes.filter { it.pressed }
+                    if (pressed.size >= 2) {
+                        val first = pressed[0].position
+                        val second = pressed[1].position
+                        val verticalSpan = abs(first.y - second.y)
+                        val horizontalSpan = abs(first.x - second.x)
+                        if (startVerticalSpan == null) {
+                            startVerticalSpan = verticalSpan.coerceAtLeast(1f)
+                            startHorizontalSpan = horizontalSpan
+                            startRowHeightDp = latestRowHeight
+                        }
+
+                        if (!locked && TimetableViewportPolicy.locksVerticalResize(
+                                startVerticalSpan = startVerticalSpan!!,
+                                currentVerticalSpan = verticalSpan,
+                                startHorizontalSpan = startHorizontalSpan,
+                                currentHorizontalSpan = horizontalSpan
+                            )
+                        ) {
+                            locked = true
+                        }
+
+                        if (locked) {
+                            val minRow = TimetableViewportPolicy.MIN_ROW_DP * latestScale.coerceIn(0.7f, 1.3f)
+                            val maxRow = TimetableViewportPolicy.MAX_ROW_DP * latestScale.coerceIn(0.7f, 1.3f)
+                            val nextRowHeight = TimetableViewportPolicy.rowHeightFromVerticalSpan(
+                                startRowHeightDp = startRowHeightDp,
+                                startVerticalSpan = startVerticalSpan!!,
+                                currentVerticalSpan = verticalSpan,
+                                minRowHeightDp = latestFitRowHeight.coerceAtLeast(minRow),
+                                maxRowHeightDp = maxRow
+                            )
+                            latestOnChange(
+                                (nextRowHeight / latestFitRowHeight.coerceAtLeast(1f)).coerceAtLeast(1f)
+                            )
+                            event.changes.forEach { it.consume() }
+                        } else {
+                            val verticalDelta = abs(verticalSpan - startVerticalSpan!!)
+                            val horizontalDelta = abs(horizontalSpan - startHorizontalSpan)
+                            // 双指明确横向展开/合拢时不改变高度，也不让 Pager 抢走这次手势。
+                            if (horizontalDelta >= TimetableViewportPolicy.VERTICAL_GESTURE_THRESHOLD_DP &&
+                                horizontalDelta > verticalDelta * TimetableViewportPolicy.VERTICAL_DOMINANCE_RATIO
+                            ) {
+                                event.changes.forEach { it.consume() }
+                            }
+                        }
+                    } else {
+                        startVerticalSpan = null
+                        locked = false
+                    }
+                }
             }
         }
     }

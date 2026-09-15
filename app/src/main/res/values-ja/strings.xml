@@ -297,6 +297,8 @@
     <string name="settings_grid_sub_none_sub">グリッドカードは授業名のみ表示</string>
     <string name="settings_pill">ホーム表示設定</string>
     <string name="settings_pill_scale">グリッド表示の拡大率</string>
+    <string name="settings_grid_auto_hide_evening">空いている夜間コマを自動で隠す</string>
+    <string name="settings_grid_auto_hide_evening_sub">学期全体に夜間授業がない場合、18:00以降のコマを隠します</string>
     <string name="settings_pill_week_scale">週表示の拡大率</string>
     <string name="settings_pill_corner">カードの角丸</string>
     <string name="settings_week_two_column">週ビュー2列表示</string>

@@ -46,6 +46,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
@@ -107,6 +108,9 @@ fun ScheduleScreen(
     val displayMode = remember { AppPrefs.getDisplayMode(context) }
     val showDate = remember { AppPrefs.isShowDate(context) }
     val visibleDays = remember { AppPrefs.getVisibleDays(context) }
+    // 纵向行高只属于当前课表页面会话；离开后重新进入自动适配。
+    var rowHeightScale by remember(state.selectedTableId) { mutableFloatStateOf(1f) }
+    val autoHideEmptyEvening = AppPrefs.isGridAutoHideEmptyEvening(context)
 
     val hasTable = state.tables.isNotEmpty()
     val hasCourses = state.courses.isNotEmpty()
@@ -271,6 +275,7 @@ fun ScheduleScreen(
                     )
                     ViewMode.Cards -> CardsGridView(
                         courses = weekCourses,
+                        allCourses = state.courses,
                         timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
                         visibleDays = visibleDays,
                         showDate = showDate,
@@ -287,7 +292,10 @@ fun ScheduleScreen(
                         },
                         // 用户反馈 2026-09-09: 非常规课跨节次空隙 → 渲染期合成占位节次,
                         // 比例定位与聚簇都基于扩展后的槽位表(真实分钟语义)
-                        timeJson = state.currentTable?.timeJson
+                        timeJson = state.currentTable?.timeJson,
+                        rowHeightScale = rowHeightScale,
+                        onRowHeightScaleChange = { rowHeightScale = it },
+                        autoHideEmptyEvening = autoHideEmptyEvening
                     )
                 }
             }

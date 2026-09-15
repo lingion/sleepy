@@ -101,6 +101,7 @@ fun GeneralSettingsScreen(
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
     var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
     var weekScale by remember { mutableStateOf(AppPrefs.getWeekScale(context)) }
+    var autoHideEmptyEvening by remember { mutableStateOf(AppPrefs.isGridAutoHideEmptyEvening(context)) }
     var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
@@ -244,6 +245,16 @@ fun GeneralSettingsScreen(
                             )
                         )
                     }
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_grid_auto_hide_evening),
+                        subtitle = stringResource(R.string.settings_grid_auto_hide_evening_sub),
+                        checked = autoHideEmptyEvening,
+                        onCheckedChange = {
+                            autoHideEmptyEvening = it
+                            AppPrefs.setGridAutoHideEmptyEvening(context, it)
+                        }
+                    )
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     Text(text = stringResource(R.string.settings_pill_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 4.dp))
                     Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
