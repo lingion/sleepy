@@ -88,7 +88,11 @@ private const val MAX_YEAR = 2049
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun HolidaySettingsScreen(onBack: () -> Unit, tableId: Long? = null) {
+fun HolidaySettingsScreen(
+    onBack: () -> Unit,
+    tableId: Long? = null,
+    viewModel: com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel = androidx.lifecycle.viewmodel.compose.viewModel()
+) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -114,6 +118,8 @@ fun HolidaySettingsScreen(onBack: () -> Unit, tableId: Long? = null) {
         val id = tableId ?: return
         AppPrefs.updateHolidayMakeupDay(context, id, date, sourceDayOfWeek)
         makeupDays = AppPrefs.getHolidayMakeupDays(context, id)
+        // issue#44: 通知 ScheduleViewModel 重新拉映射, 课表/今日/widget 立即按新值取课
+        viewModel.refreshMakeup()
     }
 
     /** 保存(新增或替换同 id)一段覆盖 */

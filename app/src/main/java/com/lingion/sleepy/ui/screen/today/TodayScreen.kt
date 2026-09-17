@@ -59,7 +59,8 @@ fun TodayScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val today = LocalDate.now()
-    val dayOfWeek = DateUtils.todayDayOfWeek(today)
+    // issue#44: 调休日按映射星期取课, 未映射走自然星期
+    val dayOfWeek = state.courseDayFor(today)
     val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
     // 学期外感知: BEFORE_START/AFTER_END 时今日课不按周过滤展示
     val semesterStatus = state.currentTable?.let {
