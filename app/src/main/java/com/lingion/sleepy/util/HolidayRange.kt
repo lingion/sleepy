@@ -17,6 +17,14 @@ data class HolidayRange(
     val sourceKey: String?
 )
 
+/**
+ * issue#44 调休映射: 具体日期 → 该天按哪个星期几取课。
+ *
+ * 补班日数据只说明"这天要上课", 不说明"上星期几的课"(各校自己定, API 无此字段),
+ * 因此映射只由用户手选, 默认空 = 不映射(按自然星期取课)。
+ */
+data class MakeupDay(val date: LocalDate, val sourceDayOfWeek: Int)
+
 /** 网络段 + 用户段合并纯函数集(无 Context/网络) */
 object HolidayRangeOps {
     /** 用户删除段的哨兵类型: 该段整体抹掉 */
@@ -111,6 +119,44 @@ object HolidayRangeOps {
             )
         }
         return arr.toString()
+    }
+
+    // ===== issue#44 调休映射 =====
+
+    /**
+     * 某天应"按星期几取课"。命中映射 → 映射目标; 未命中 → 自然星期。
+     * 同日期后出现的映射覆盖先前(与 [decodeMakeupDays] 去重语义一致)。
+     */
+    fun resolveCourseDay(date: LocalDate, mappings: List<MakeupDay>): Int {
+        val hit = mappings.lastOrNull { it.date == date } ?: return date.dayOfWeek.value
+        return hit.sourceDayOfWeek
+    }
+
+    /** 映射列表 → JSON 数组 */
+    fun encodeMakeupDays(mappings: List<MakeupDay>): String {
+        val arr = JSONArray()
+        for (m in mappings) {
+            arr.put(
+                JSONObject()
+                    .put("date", dateFormat.format(m.date))
+                    .put("sourceDayOfWeek", m.sourceDayOfWeek)
+            )
+        }
+        return arr.toString()
+    }
+
+    /** JSON → 映射列表(坏行/越界星期跳过; 同日期只留最后一条; 解析失败返回空) */
+    fun decodeMakeupDays(json: String): List<MakeupDay> {
+        val arr = try { JSONArray(json) } catch (_: Exception) { return emptyList() }
+        val byDate = linkedMapOf<LocalDate, MakeupDay>()
+        for (i in 0 until arr.length()) {
+            val obj = try { arr.getJSONObject(i) } catch (_: Exception) { continue }
+            val date = try { LocalDate.parse(obj.optString("date", ""), dateFormat) } catch (_: Exception) { continue }
+            val dow = obj.optInt("sourceDayOfWeek", -1)
+            if (dow !in 1..7) continue
+            byDate[date] = MakeupDay(date, dow)
+        }
+        return byDate.values.sortedBy { it.date }
     }
 
     /** JSON → 用户段列表(坏行跳过, start>end 跳过, 类型不认跳过, 解析失败返回空) */

@@ -645,6 +645,40 @@ object AppPrefs {
         sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
     }
 
+    // ===== issue#44 调休映射（按课表隔离）=====
+
+    /**
+     * 调休映射按课表 ID 单独存 key — 各校补法不同(同一天 A 校补周四、B 校补周一),
+     * 全局一份会跨表套错。删表时可整键删除。
+     */
+    private fun makeupKey(tableId: Long) = "holiday_makeup_days_$tableId"
+
+    /** 某课表的调休映射; 无表/未设置 = 空(全部按自然星期取课) */
+    fun getHolidayMakeupDays(ctx: Context, tableId: Long): List<com.lingion.sleepy.util.MakeupDay> =
+        com.lingion.sleepy.util.HolidayRangeOps.decodeMakeupDays(sp(ctx).getString(makeupKey(tableId), "[]") ?: "[]")
+
+    fun setHolidayMakeupDays(ctx: Context, tableId: Long, mappings: List<com.lingion.sleepy.util.MakeupDay>) {
+        sp(ctx).edit().putString(makeupKey(tableId), com.lingion.sleepy.util.HolidayRangeOps.encodeMakeupDays(mappings)).apply()
+    }
+
+    /** 设/改某天映射; [sourceDayOfWeek] = null → 清除该天(回到自然星期) */
+    fun updateHolidayMakeupDay(
+        ctx: Context,
+        tableId: Long,
+        date: java.time.LocalDate,
+        sourceDayOfWeek: Int?
+    ) {
+        require(sourceDayOfWeek == null || sourceDayOfWeek in 1..7) { "sourceDayOfWeek must be 1..7" }
+        val next = getHolidayMakeupDays(ctx, tableId).filterNot { it.date == date }.toMutableList()
+        if (sourceDayOfWeek != null) next.add(com.lingion.sleepy.util.MakeupDay(date, sourceDayOfWeek))
+        setHolidayMakeupDays(ctx, tableId, next.sortedBy { it.date })
+    }
+
+    /** 删表时清掉该表映射 */
+    fun clearHolidayMakeupDays(ctx: Context, tableId: Long) {
+        sp(ctx).edit().remove(makeupKey(tableId)).apply()
+    }
+
     // ===== 启动检查更新开关 =====
 
     fun isUpdateCheckEnabled(ctx: Context): Boolean =
