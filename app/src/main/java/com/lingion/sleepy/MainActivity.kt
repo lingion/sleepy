@@ -361,7 +361,10 @@ private fun AppRoot(
     }
     if (topOverlay() == OverlayScreen.Holiday) {
         saveableStateHolder.SaveableStateProvider("Holiday") {
-            HolidaySettingsScreen(onBack = { popOverlay() })
+            HolidaySettingsScreen(
+                onBack = { popOverlay() },
+                tableId = mainVm.state.value.currentTable?.id
+            )
         }
         return
     }
