@@ -25,7 +25,7 @@ internal object WidgetCompactWindow {
         todayFirst: Boolean,
     ): List<DayData> = WidgetBitmapRenderers.compactWindowDates(today, todayFirst).map { date ->
         // issue#44: 调休映射后取课
-        val dow = MakeupCourseDayHelper.effectiveDayOfWeek(context, tableId, date)
+        val dow = HolidayTransferHelper.effectiveDayOfWeek(context, tableId, date)
         val week = DateUtils.currentWeek(startDate, date)
         val afterEnd = DateUtils.semesterStatus(startDate, maxWeek, date) == DateUtils.SemesterStatus.AFTER_END
         val visible = if (afterEnd) emptyList()

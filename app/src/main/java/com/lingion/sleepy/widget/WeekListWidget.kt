@@ -174,7 +174,7 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                         val days = (1..7).map { dayOfWeek ->
                             val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
                             // issue#44: 取课按调休映射
-                            val courseDow = MakeupCourseDayHelper.effectiveDayOfWeek(context, table.id, date)
+                            val courseDow = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, date)
                             val all = repo.getCoursesByDayOnce(table.id, courseDow)
                             val visible = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
                                 all.filter { it.inWeek(week) }.sortedBy { it.startNode }

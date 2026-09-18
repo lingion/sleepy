@@ -135,7 +135,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         val orphanCourseIds = courseDao.getByTable(id).map { it.id }
         tableDao.deleteById(id)
         // issue#44: 同步清该表调休映射(SharedPreferences 孤儿 key 防残留)
-        try { AppPrefs.clearHolidayMakeupDays(SleepyApp.get(), id) } catch (_: Exception) {}
+        try { AppPrefs.clearHolidayTransfers(SleepyApp.get(), id) } catch (_: Exception) {}
         if (orphanCourseIds.isNotEmpty()) {
             SleepyApp.get().notificationScheduler.cancelCourseAlarms(orphanCourseIds)
         }

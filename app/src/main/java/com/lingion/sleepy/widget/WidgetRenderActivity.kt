@@ -84,7 +84,7 @@ class WidgetRenderActivity : Activity() {
             "today" -> {
                 val today = java.time.LocalDate.now()
                 val table = WidgetTableResolver.resolveCurrentTable()
-                val dayOfWeek = MakeupCourseDayHelper.effectiveDayOfWeek(this, table?.id, today)
+                val dayOfWeek = HolidayTransferHelper.effectiveDayOfWeek(this, table?.id, today)
                 val courses = if (table != null) {
                     val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
                     val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dayOfWeek)
@@ -110,7 +110,7 @@ class WidgetRenderActivity : Activity() {
                     val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
                     listOf(today, tomorrow).map { date ->
                         // issue#44: 调休映射后取课
-                        val dow = MakeupCourseDayHelper.effectiveDayOfWeek(this, table.id, date)
+                        val dow = HolidayTransferHelper.effectiveDayOfWeek(this, table.id, date)
                         val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
                         val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
                         DayData(date = date, dayOfWeek = dow, courses = visible, timeJson = table.timeJson)

@@ -271,11 +271,11 @@ fun ScheduleScreen(
                 // 周日(补周四)列显示周四的课。渲染期替身, 不写库; 未映射日期原样。
                 val renderCourses = run {
                     val start = state.currentTable?.startDate
-                    val mappings = state.makeupDays
-                    if (start.isNullOrBlank() || mappings.isEmpty()) weekCourses
+                    val transfers = state.transfers
+                    if (start.isNullOrBlank() || transfers.isEmpty()) weekCourses
                     else {
                         fun displayDayOf(date: java.time.LocalDate): Int =
-                            com.lingion.sleepy.util.HolidayRangeOps.resolveCourseDay(date, mappings)
+                            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
                         val daySwap: Map<Int, Int> = (1..7).mapNotNull { d ->
                             val natural = try {
                                 com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d).dayOfWeek.value
@@ -292,8 +292,10 @@ fun ScheduleScreen(
                         }
                     }
                 }
-                // 计算本周哪些天是节假日/周末(灰显用)
-                val greyDays by produceState<Set<Int>>(emptySet(), page, state.currentTable?.startDate) {
+                // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
+                val greyDays by produceState<Set<Int>>(
+                    emptySet(), page, state.currentTable?.startDate, state.transfers
+                ) {
                     val start = state.currentTable?.startDate
                     if (start.isNullOrBlank()) {
                         value = emptySet()
@@ -301,7 +303,9 @@ fun ScheduleScreen(
                         val greySet = mutableSetOf<Int>()
                         for (day in 1..7) {
                             val date = DateUtils.dateOfWeek(start, page + 1, day)
-                            if (HolidayManager.shouldGrey(context, date)) greySet.add(day)
+                            if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
+                                greySet.add(day)
+                            }
                         }
                         value = greySet
                     }

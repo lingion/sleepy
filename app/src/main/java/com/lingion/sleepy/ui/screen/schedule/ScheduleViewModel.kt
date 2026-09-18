@@ -10,7 +10,7 @@ import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayRangeOps
-import com.lingion.sleepy.util.MakeupDay
+import com.lingion.sleepy.util.HolidayTransferEntry
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -37,7 +37,7 @@ data class ScheduleState(
     /** issue#40: 当前表绑定的独立时间节次表(null=未绑定/悬空, 渲染回退旧兼容列) */
     val effectivePeriodTable: com.lingion.sleepy.data.entity.PeriodTableEntity? = null,
     /** issue#44: 当前表的调休映射; 切换课表/写盘后由 VM 刷新 */
-    val makeupDays: List<MakeupDay> = emptyList()
+    val transfers: List<HolidayTransferEntry> = emptyList()
 ) {
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(selectedWeek) }
@@ -54,9 +54,9 @@ data class ScheduleState(
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
 
-    /** issue#44: 给定日期实际应"按星期几取课"; 命中映射=替代星期, 未命中=自然星期 */
-    fun courseDayFor(date: LocalDate): Int =
-        HolidayRangeOps.resolveCourseDay(date, makeupDays)
+    /** issue#44: 给定日期实际应"按星期几取课"; 命中映射=targetDate 星期, 未命中=自然星期 */
+    fun transferDayFor(date: LocalDate): Int =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
 }
 
 class ScheduleViewModel : ViewModel() {
@@ -116,8 +116,8 @@ class ScheduleViewModel : ViewModel() {
     private fun loadCourses(tableId: Long) {
         // 取消旧协程，避免多个 observeCourses 同时写 state.courses 互相覆盖
         coursesJob?.cancel()
-        // issue#44: 拉一次该表调休映射; 设置页改完走 refreshMakeup 主动刷
-        _state.update { it.copy(makeupDays = AppPrefs.getHolidayMakeupDays(SleepyApp.get(), tableId)) }
+        // issue#44: 拉一次该表调休映射; 设置页改完走 refreshTransfer 主动刷
+        _state.update { it.copy(transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), tableId)) }
         coursesJob = viewModelScope.launch {
             // issue#40: 课程流与绑定时间节次表流合并 — 时间节次表改动会 emit 新值,
             // 所有绑定课表立即按新作息解释节次(设计 §5.2 立即全部同步), 课程行不重算
@@ -402,9 +402,9 @@ class ScheduleViewModel : ViewModel() {
      * issue#44: 设置页保存调休映射后, 通知 VM 重新拉当前表的映射。
      * 现有 courses 列表不需重查, 只需刷新 dayFor() 的真源, 一次 reload 即生效。
      */
-    fun refreshMakeup() {
+    fun refreshTransfer() {
         val id = _state.value.selectedTableId ?: return
-        _state.update { it.copy(makeupDays = AppPrefs.getHolidayMakeupDays(SleepyApp.get(), id)) }
+        _state.update { it.copy(transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), id)) }
     }
 
     fun addEmptyCourse() {

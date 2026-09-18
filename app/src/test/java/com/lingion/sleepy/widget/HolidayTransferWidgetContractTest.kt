@@ -7,7 +7,7 @@ import org.junit.Test
  * issue#44 调休映射合约锁: widget / 通知必须用共享 helper,
  * 不能直接取 date.dayOfWeek.value 或 DateUtils.todayDayOfWeek。
  */
-class HolidayMakeupWidgetContractTest {
+class HolidayTransferWidgetContractTest {
 
     private fun src(rel: String): String = sequenceOf(
         java.io.File("app/$rel"),
@@ -31,7 +31,7 @@ class HolidayMakeupWidgetContractTest {
         consumers.forEach { rel ->
             val text = src(rel)
             assertTrue(
-                "$rel must use MakeupCourseDayHelper.effectiveDayOfWeek (or VM courseDayFor)",
+                "$rel must use HolidayTransferHelper.effectiveDayOfWeek (or VM courseDayFor)",
                 text.contains("effectiveDayOfWeek")
             )
         }

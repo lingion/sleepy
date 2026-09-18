@@ -184,8 +184,8 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                         val week = DateUtils.currentWeek(table.startDate, today)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
                         // issue#44: 调休映射后取课, 未映射=自然星期
-                        val todayDow = MakeupCourseDayHelper.effectiveDayOfWeek(context, table.id, today)
-                        val tomorrowDow = MakeupCourseDayHelper.effectiveDayOfWeek(context, table.id, tomorrow)
+                        val todayDow = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, today)
+                        val tomorrowDow = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, tomorrow)
                         // 学期外不展示课程 — 与 App 今日页同语义
                         val todayCourses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
                             repo.getCoursesByDayOnce(table.id, todayDow)

@@ -18,12 +18,20 @@ data class HolidayRange(
 )
 
 /**
- * issue#44 调休映射: 具体日期 → 该天按哪个星期几取课。
+ * issue#44 调休映射: 放假日 → 该天的课调到哪个补班日去上。
  *
- * 补班日数据只说明"这天要上课", 不说明"上星期几的课"(各校自己定, API 无此字段),
- * 因此映射只由用户手选, 默认空 = 不映射(按自然星期取课)。
+ * sourceDate = 被放假挪走课的那天(放假日, 通常有课)
+ * targetDate = 补班日(国家安排的"上班"日, 该天上 sourceDate 星期几的课)
+ * segmentId  = 所属节假日段(展示归属, 不参与判定)
+ *
+ * API 只给"哪天补班", 不给"补的谁的课"(各校自定), 因此映射由用户手选,
+ * 默认空 = 不映射(该天按自然星期取课)。
  */
-data class MakeupDay(val date: LocalDate, val sourceDayOfWeek: Int)
+data class HolidayTransferEntry(
+    val sourceDate: LocalDate,
+    val targetDate: LocalDate,
+    val segmentId: String
+)
 
 /** 网络段 + 用户段合并纯函数集(无 Context/网络) */
 object HolidayRangeOps {
@@ -121,42 +129,71 @@ object HolidayRangeOps {
         return arr.toString()
     }
 
-    // ===== issue#44 调休映射 =====
+    // ===== issue#44 调休映射(第二轮: 放假日 → 补班日) =====
 
-    /**
-     * 某天应"按星期几取课"。命中映射 → 映射目标; 未命中 → 自然星期。
-     * 同日期后出现的映射覆盖先前(与 [decodeMakeupDays] 去重语义一致)。
-     */
-    fun resolveCourseDay(date: LocalDate, mappings: List<MakeupDay>): Int {
-        val hit = mappings.lastOrNull { it.date == date } ?: return date.dayOfWeek.value
-        return hit.sourceDayOfWeek
-    }
+    /** 映射纯函数集(无 Context); 互斥写入由 AppPrefs 组合本对象完成 */
+    object HolidayTransferOps {
 
-    /** 映射列表 → JSON 数组 */
-    fun encodeMakeupDays(mappings: List<MakeupDay>): String {
-        val arr = JSONArray()
-        for (m in mappings) {
-            arr.put(
-                JSONObject()
-                    .put("date", dateFormat.format(m.date))
-                    .put("sourceDayOfWeek", m.sourceDayOfWeek)
-            )
+        /** 某放假日是否已有映射; 有 → 该 entry, 无 → null */
+        fun transferFor(date: LocalDate, transfers: List<HolidayTransferEntry>): HolidayTransferEntry? =
+            transfers.lastOrNull { it.sourceDate == date }
+
+        /**
+         * 某天应"按星期几取课": 命中映射 → targetDate 的自然星期; 未命中 → 当天自然星期。
+         * 补班日(如 1/4 周日)上的是被调走那天的课, 网格该列排 sourceDate 星期几的课。
+         */
+        fun effectiveDayOfWeek(date: LocalDate, transfers: List<HolidayTransferEntry>): Int {
+            val hit = transferFor(date, transfers) ?: return date.dayOfWeek.value
+            return hit.targetDate.dayOfWeek.value
         }
-        return arr.toString()
-    }
 
-    /** JSON → 映射列表(坏行/越界星期跳过; 同日期只留最后一条; 解析失败返回空) */
-    fun decodeMakeupDays(json: String): List<MakeupDay> {
-        val arr = try { JSONArray(json) } catch (_: Exception) { return emptyList() }
-        val byDate = linkedMapOf<LocalDate, MakeupDay>()
-        for (i in 0 until arr.length()) {
-            val obj = try { arr.getJSONObject(i) } catch (_: Exception) { continue }
-            val date = try { LocalDate.parse(obj.optString("date", ""), dateFormat) } catch (_: Exception) { continue }
-            val dow = obj.optInt("sourceDayOfWeek", -1)
-            if (dow !in 1..7) continue
-            byDate[date] = MakeupDay(date, dow)
+        /**
+         * 互斥写(核心不变量): 一个 targetDate 一天只能上一次课 —
+         * 写入 [newEntry] 前先移除同 targetDate 的既有条目(后选覆盖前选),
+         * 同 sourceDate 的旧条目也一并替换。返回可直接落盘的新列表。
+         */
+        fun withTargetExclusivity(
+            existing: List<HolidayTransferEntry>,
+            newEntry: HolidayTransferEntry
+        ): List<HolidayTransferEntry> =
+            (existing.filterNot {
+                it.targetDate == newEntry.targetDate || it.sourceDate == newEntry.sourceDate
+            } + newEntry).sortedBy { it.sourceDate }
+
+        /**
+         * 失效判定: sourceDate 不在当年放假日集合(段被数据源改掉/学校另行通知)。
+         * 失效 entry 数据保留, UI 灰显提示, 用户手清。
+         */
+        fun isOrphanFor(entry: HolidayTransferEntry, yearHolidayDates: Set<LocalDate>): Boolean =
+            entry.sourceDate !in yearHolidayDates
+
+        /** 映射列表 → JSON 数组 */
+        fun encodeTransfers(transfers: List<HolidayTransferEntry>): String {
+            val arr = JSONArray()
+            for (t in transfers) {
+                arr.put(
+                    JSONObject()
+                        .put("sourceDate", dateFormat.format(t.sourceDate))
+                        .put("targetDate", dateFormat.format(t.targetDate))
+                        .put("segmentId", t.segmentId)
+                )
+            }
+            return arr.toString()
         }
-        return byDate.values.sortedBy { it.date }
+
+        /** JSON → 映射列表(坏行跳过; 同 sourceDate 只留最后一条; 解析失败返回空) */
+        fun decodeTransfers(json: String): List<HolidayTransferEntry> {
+            val arr = try { JSONArray(json) } catch (_: Exception) { return emptyList() }
+            val bySource = linkedMapOf<LocalDate, HolidayTransferEntry>()
+            for (i in 0 until arr.length()) {
+                val obj = try { arr.getJSONObject(i) } catch (_: Exception) { continue }
+                val src = try { LocalDate.parse(obj.optString("sourceDate", ""), dateFormat) } catch (_: Exception) { continue }
+                val dst = try { LocalDate.parse(obj.optString("targetDate", ""), dateFormat) } catch (_: Exception) { continue }
+                val seg = obj.optString("segmentId", "")
+                bySource[src] = HolidayTransferEntry(src, dst, seg)
+            }
+            return bySource.values.sortedBy { it.sourceDate }
+        }
     }
 
     /** JSON → 用户段列表(坏行跳过, start>end 跳过, 类型不认跳过, 解析失败返回空) */
