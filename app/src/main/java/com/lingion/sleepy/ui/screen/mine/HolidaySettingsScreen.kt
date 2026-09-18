@@ -118,8 +118,16 @@ fun HolidaySettingsScreen(
         val id = tableId ?: return
         AppPrefs.updateHolidayMakeupDay(context, id, date, sourceDayOfWeek)
         makeupDays = AppPrefs.getHolidayMakeupDays(context, id)
-        // issue#44: 通知 ScheduleViewModel 重新拉映射, 课表/今日/widget 立即按新值取课
+        // issue#44: 通知 ScheduleViewModel 重新拉映射, 课表/今日页立即按新值取课;
+        // widget(所有实例) + 课前闹钟/每日摘要 同步重排(均为 suspend, 走调度器协程)
         viewModel.refreshMakeup()
+        val app = context.applicationContext
+        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch {
+            try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app) } catch (_: Throwable) {}
+            try {
+                (app as? com.lingion.sleepy.SleepyApp)?.notificationScheduler?.scheduleAll()
+            } catch (_: Throwable) {}
+        }
     }
 
     /** 保存(新增或替换同 id)一段覆盖 */
