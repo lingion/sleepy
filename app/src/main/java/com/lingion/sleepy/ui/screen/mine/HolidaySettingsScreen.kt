@@ -635,11 +635,10 @@ private fun HolidayTransferRow(
     dayNames: Array<String>,
     onPick: (LocalDate?) -> Unit
 ) {
-    // 用户 2026-09-18 四次定稿: Material3 ExposedDropdownMenuBox, 但展开层不落默认白菜单 —
-    // containerColor = 母格当前色(蓝格=蓝菜单, 灰格=灰菜单), shape = 母格同款圆角(SleepyTheme.shapes.medium),
-    // 视觉 = 母格自己长高, 一体同色, 不是两个东西叠着。
-    // 第 0 行 = 灰底行(代表空白状态, 点击 = 清空该映射回未设置); 候选从第 1 行正常开始:
-    // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜) ② 无 ③ 其他日期…
+    // 用户 2026-09-18 五次定稿: Material3 ExposedDropdownMenuBox —
+    // 第 0 行 = 日期行 = 锚字段(母格自己), 菜单从锚字段正下方贴着向下展开(topToAnchorBottom),
+    // 容器色 = 母格色、圆角 = 母格同款 → 视觉 = 母格原地长高, 一体同色同弧度, 不是两个东西叠着。
+    // 菜单内候选项 = 第 1 行起: ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜) ② 无 ③ 其他日期…
     val colors = SleepyTheme.colors
     val leftLabel = remember(date, dayNames) {
         "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
@@ -707,28 +706,15 @@ private fun HolidayTransferRow(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuOpen)
                 }
             }
-            // 浮层菜单: 锚在 anchor 字段正下方(向下展开), 宽度 = anchor 字段宽;
-            // 容器色 = 母格色(targetColor)、圆角 = 母格同款 shapes.medium → 与母格一体同色同弧度
+            // 浮层菜单: 第 0 行 = 日期行(锚字段自己), 菜单从它正下方贴着向下展开 —
+            // 容器色 = 母格色(targetColor)、圆角 = 母格同款 shapes.medium → 格子+菜单一体同色同弧度
             ExposedDropdownMenu(
                 expanded = menuOpen,
                 onDismissRequest = { menuOpen = false },
                 shape = SleepyTheme.shapes.medium,
                 containerColor = targetColor
             ) {
-                // 第 0 行: 灰底空白行 = 空白状态按钮 (点击 = 清空该映射回未设置);
-                // MenuItemColors 无容器色 → 灰底用行内 Box 背景实现, 与菜单容器色独立
-                DropdownMenuItem(
-                    text = {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .background(colors.surfaceContainerHighest)
-                                .padding(horizontal = 12.dp, vertical = 14.dp)
-                        ) { Text("") }
-                    },
-                    onClick = { onPick(null); menuOpen = false },
-                    contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
-                )
+                // 第 1 行起 = 候选项。第 0 行不在菜单里 — 它就是锚字段(日期行)本身
                 // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
                 workdayDates.forEach { wd ->
                     DropdownMenuItem(
