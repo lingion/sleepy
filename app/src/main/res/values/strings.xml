@@ -413,9 +413,14 @@
     <string name="holiday_workday_badge">补班</string>
     <string name="settings_holiday_title">节假日调休设置</string>
     <string name="holiday_makeup_title">调休日按哪天上课</string>
-    <string name="holiday_makeup_subtitle">每张课表单独设置。未设置的补班日照常显示当天课表，不会替你猜。</string>
-    <string name="holiday_makeup_unset">未设置</string>
+    <string name="holiday_makeup_subtitle">每张课表单独设置。未设置的放假日按当天星期取课，不会替你猜。</string>
+    <string name="holiday_makeup_unset">无</string>
     <string name="holiday_makeup_no_table">请先创建课表，再设置调休</string>
+    <string name="holiday_transfer_pick_other">其他日期…</string>
+    <string name="holiday_transfer_orphan_title">失效的映射</string>
+    <string name="holiday_transfer_orphan_hint">对应的放假日已不存在（改年份或删除假期段后残留），可手动清除。</string>
+    <string name="holiday_transfer_clear">清除</string>
+    <string name="holiday_transfer_editable_segments_title">可编辑假期段</string>
     <string name="settings_holiday_weekend">周末课程灰显</string>
     <string name="settings_holiday_weekend_sub">自动将周六、周日的课程显示为灰色</string>
     <string name="settings_holiday_style">灰显样式</string>

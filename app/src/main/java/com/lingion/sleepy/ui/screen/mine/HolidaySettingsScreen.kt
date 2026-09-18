@@ -16,6 +16,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.Refresh
@@ -41,6 +42,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -106,27 +108,32 @@ fun HolidaySettingsScreen(
     var loadJob by remember { mutableStateOf<Job?>(null) }
     var overrides by remember { mutableStateOf(AppPrefs.getHolidayRanges(context)) }
     var editing by remember { mutableStateOf<EditingTarget?>(null) }
-    // issue#44 调休映射(按课表): 选一次刷一次, 空 = 该日按自然星期取课
-    var makeupDays by remember(tableId) {
-        mutableStateOf(tableId?.let { AppPrefs.getHolidayMakeupDays(context, it) } ?: emptyList())
+    // issue#44 调休映射(按课表, 放假日→补班日): 空 = 该放假日按自然星期取课。
+    // 卡内课表切换用局部 activeTableId — 只切"正在编辑哪张表", 不动全局选中课表。
+    var activeTableId by remember(tableId) { mutableStateOf(tableId) }
+    var transfers by remember(activeTableId) {
+        mutableStateOf(activeTableId?.let { AppPrefs.getHolidayTransfers(context, it) } ?: emptyList())
     }
+    val vmState by viewModel.state.collectAsState()
+    val dayNames = remember { context.resources.getStringArray(com.lingion.sleepy.R.array.day_names) }
 
     fun reload() { overrides = AppPrefs.getHolidayRanges(context) }
 
-    /** 设/清某补班日的"按星期几取课"; tableId 为空不落盘(卡已隐藏, 此为双保险) */
-    fun saveMakeupDay(date: LocalDate, sourceDayOfWeek: Int?) {
-        val id = tableId ?: return
-        AppPrefs.updateHolidayMakeupDay(context, id, date, sourceDayOfWeek)
-        makeupDays = AppPrefs.getHolidayMakeupDays(context, id)
-        // issue#44: 通知 ScheduleViewModel 重新拉映射, 课表/今日页立即按新值取课;
-        // widget(所有实例) + 课前闹钟/每日摘要 同步重排(均为 suspend, 走调度器协程)
-        viewModel.refreshMakeup()
-        val app = context.applicationContext
-        kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch {
-            try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app) } catch (_: Throwable) {}
-            try {
-                (app as? com.lingion.sleepy.SleepyApp)?.notificationScheduler?.scheduleAll()
-            } catch (_: Throwable) {}
+    /** 设/清某放假日的"调到哪天上课"; 表 id 为空不落盘(卡已隐藏, 此为双保险) */
+    fun saveTransfer(sourceDate: LocalDate, targetDate: LocalDate?, segmentId: String) {
+        val id = activeTableId ?: return
+        AppPrefs.updateHolidayTransfer(context, id, sourceDate, targetDate, segmentId)
+        transfers = AppPrefs.getHolidayTransfers(context, id)
+        // issue#44: 映射是按表存的, 只有改到当前选中的那张表才需要刷新课表页/widget/闹钟
+        if (id == tableId) {
+            viewModel.refreshTransfer()
+            val app = context.applicationContext
+            kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch {
+                try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app) } catch (_: Throwable) {}
+                try {
+                    (app as? com.lingion.sleepy.SleepyApp)?.notificationScheduler?.scheduleAll()
+                } catch (_: Throwable) {}
+            }
         }
     }
 
@@ -332,7 +339,7 @@ fun HolidaySettingsScreen(
             }
 
             item {
-                // issue#44 调休说明卡: 每张课表一份; 选择器挂在下方"补班日"逐日行上。
+                // issue#44 调休说明卡: 说明 + 卡内课表切换(局部 activeTableId, 不动全局选中)
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
@@ -352,6 +359,16 @@ fun HolidaySettingsScreen(
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant
                     )
+                    if (tableId != null && vmState.tables.size > 1) {
+                        Spacer(Modifier.height(4.dp))
+                        SegmentedSwitcher(
+                            options = vmState.tables.map { it.id to it.name },
+                            selected = activeTableId,
+                            onSelect = { id -> activeTableId = id },
+                            modifier = Modifier.fillMaxWidth(),
+                            containerColor = colors.surfaceContainerHighest
+                        )
+                    }
                 }
             }
 
@@ -380,39 +397,40 @@ fun HolidaySettingsScreen(
                 val workdaySegments = merged.active.filter { it.type == HolidayManager.TYPE_TRANSFER_WORKDAY }
 
                 if (holidaySegments.isNotEmpty()) {
-                    item { SectionHeader(stringResource(R.string.holiday_list_holidays)) }
-                    item {
-                        HolidayRangeListCard(
-                            segments = holidaySegments,
-                            userRangeIds = userRangeIds,
-                            onEdit = { editing = resolveEditTarget(it, userRangeIds) }
-                        )
-                    }
-                }
-                if (workdaySegments.isNotEmpty()) {
-                    item { SectionHeader(stringResource(R.string.holiday_list_workdays)) }
-                    item {
-                        HolidayRangeListCard(
-                            segments = workdaySegments,
-                            userRangeIds = userRangeIds,
-                            showWorkdayBadge = true,
-                            onEdit = { editing = resolveEditTarget(it, userRangeIds) }
-                        )
-                    }
-                    // issue#44: 逐补班日挂"按星期几取课"选择器; 一天一行, 禁整段共享一个映射
-                    val makeupDates = workdaySegments
-                        .flatMap { seg -> generateSequence(seg.startDate) { if (it < seg.endDate) it.plusDays(1) else null } }
-                        .distinct()
-                        .sorted()
-                    if (tableId != null && makeupDates.isNotEmpty()) {
+                    // issue#44 第二轮: 节卡树状视图 — 每个放假日一行, 行尾右格选补班日。
+                    // 段编辑是次要路径, 折叠到下方"可编辑假期段"卡(默认收起)。
+                    holidaySegments.forEach { seg ->
                         item {
-                            HolidayMakeupDayCard(
-                                dates = makeupDates,
-                                makeupDays = makeupDays,
-                                onPick = { date, sourceDow -> saveMakeupDay(date, sourceDow) }
+                            HolidayTransferCard(
+                                segment = seg,
+                                transfers = transfers,
+                                workdayDates = workdaySegments
+                                    .flatMap { s -> generateSequence(s.startDate) { if (it < s.endDate) it.plusDays(1) else null } }
+                                    .distinct()
+                                    .sorted(),
+                                dayNames = dayNames,
+                                onPick = { source, target -> saveTransfer(source, target, seg.id) }
                             )
                         }
                     }
+                    // 孤儿映射: sourceDate 已不在今年任何放假日段里(改年份/换数据源后残留)。
+                    // 不删 — 灰卡列出, 行尾"清除"手动处理 (用户决定 C1)
+                    val yearDates = holidaySegments
+                        .flatMap { s -> generateSequence(s.startDate) { if (it < s.endDate) it.plusDays(1) else null } }
+                        .toSet()
+                    val orphanEntries = transfers.filter { it.sourceDate !in yearDates }.sortedBy { it.sourceDate }
+                    if (orphanEntries.isNotEmpty()) {
+                        item {
+                            HolidayOrphanCard(
+                                entries = orphanEntries,
+                                dayNames = dayNames,
+                                onClear = { source -> saveTransfer(source, null, "orphan") }
+                            )
+                        }
+                    }
+                }
+                if (workdaySegments.isNotEmpty() || holidaySegments.isNotEmpty()) {
+                    item { EditableSegmentsCard(segments = merged.active, userRangeIds = userRangeIds, onEdit = { editing = resolveEditTarget(it, userRangeIds) }) }
                 }
                 if (merged.removed.isNotEmpty()) {
                     item { SectionHeader(stringResource(R.string.holiday_removed_section)) }
@@ -489,82 +507,291 @@ private fun segmentDateLabel(seg: HolidayRange): String =
         "${DateUtils.shortDateSlash(seg.startDate)} – ${DateUtils.shortDateSlash(seg.endDate)}"
     }
 
+
 /**
- * issue#44 调休映射卡: 逐日一个"按星期几取课"选择器。
- * - 初始空: 不写盘 = 不映射(自然星期)
- * - 选值: 落盘 + 立即刷新[makeupDays]
- * - 选"未设置": 删除该日映射
+ * issue#44 调休映射卡: 一个放假日段一张卡。每行 = 一个放假日 → 右侧灰圆角格。
+ * 右侧下拉菜单固定三项: ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜 — 即使用户已经有 N 天映射,
+ * 其它天照列)② 无(清除)③ 其他日期…(弹系统 DatePickerDialog)。
+ * 同目标日互斥: 已在 AppPrefs.updateHolidayTransfer → withTargetExclusivity 落实; 选同一 targetDate
+ * 会自动把之前选它的那行回灰。UI 不禁用任何项, 不打扰用户操作。
+ * 孤儿行(sourceDate 不在今年放假日集合里)直接灰 + 提示"对应放假日已不存在", 单击清掉。
  */
 @Composable
-private fun HolidayMakeupDayCard(
-    dates: List<LocalDate>,
-    makeupDays: List<com.lingion.sleepy.util.MakeupDay>,
-    onPick: (LocalDate, Int?) -> Unit
+private fun HolidayTransferCard(
+    segment: HolidayRange,
+    transfers: List<com.lingion.sleepy.util.HolidayTransferEntry>,
+    workdayDates: List<LocalDate>,
+    dayNames: Array<String>,
+    onPick: (LocalDate, LocalDate?) -> Unit
 ) {
     val colors = SleepyTheme.colors
-    val context = androidx.compose.ui.platform.LocalContext.current
-    val dayNames = remember { context.resources.getStringArray(com.lingion.sleepy.R.array.day_names) }
-    val unsetLabel = stringResource(R.string.holiday_makeup_unset)
+    val title = segment.name.ifBlank { DateUtils.shortDateSlash(segment.startDate) }
+    val subtitle = segmentDateLabel(segment)
+    val dates = remember(segment) {
+        generateSequence(segment.startDate) { if (it < segment.endDate) it.plusDays(1) else null }
+            .toList()
+    }
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             .background(colors.surfaceContainer)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        dates.forEachIndexed { index, date ->
-            val mapped = makeupDays.firstOrNull { it.date == date }?.sourceDayOfWeek
-            var menuOpen by remember(date) { mutableStateOf(false) }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .noRippleClickable { menuOpen = true }
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})",
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = colors.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                Box {
-                    Text(
-                        text = if (mapped == null) unsetLabel else dayNames[mapped - 1],
-                        style = MaterialTheme.typography.bodyMedium,
-                        color = if (mapped == null) colors.onSurfaceVariant else colors.primary
-                    )
-                    DropdownMenu(
-                        expanded = menuOpen,
-                        onDismissRequest = { menuOpen = false },
-                        containerColor = colors.surfaceContainerHighest
-                    ) {
-                        DropdownMenuItem(
-                            text = { Text(unsetLabel) },
-                            leadingIcon = { RadioButton(selected = mapped == null, onClick = null) },
-                            onClick = { onPick(date, null); menuOpen = false }
-                        )
-                        (1..7).forEach { d ->
-                            DropdownMenuItem(
-                                text = { Text(dayNames[d - 1]) },
-                                leadingIcon = { RadioButton(selected = mapped == d, onClick = null) },
-                                onClick = { onPick(date, d); menuOpen = false }
-                            )
-                        }
-                    }
-                }
-                Spacer(Modifier.width(8.dp))
-                Icon(
-                    Icons.Outlined.ExpandMore,
-                    contentDescription = null,
-                    tint = colors.onSurfaceVariant,
-                    modifier = Modifier.size(20.dp)
-                )
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Column(Modifier.weight(1f)) {
+                Text(title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+                Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
-            if (index != dates.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+            // 表切换在上方说明卡一处即可 — 每张节日卡再放一个 = 同屏 N 个同款切换器
+        }
+        dates.forEach { date ->
+            HolidayTransferRow(
+                date = date,
+                targetDate = transfers.lastOrNull { it.sourceDate == date }?.targetDate,
+                workdayDates = workdayDates,
+                dayNames = dayNames,
+                onPick = { picked -> onPick(date, picked) }
+            )
         }
     }
 }
+
+/**
+ * 失效映射卡: 孤儿 entries 的收纳处 — sourceDate 已不在今年任何放假日段里
+ * (用户改年份/删段/数据源变动后残留)。不自动删, 灰色列出 + 行尾"清除"手动处理。
+ */
+@Composable
+private fun HolidayOrphanCard(
+    entries: List<com.lingion.sleepy.util.HolidayTransferEntry>,
+    dayNames: Array<String>,
+    onClear: (LocalDate) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.large)
+            .background(colors.surfaceContainer)
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(4.dp)
+    ) {
+        Text(
+            text = stringResource(R.string.holiday_transfer_orphan_title),
+            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.onSurfaceVariant
+        )
+        Text(
+            text = stringResource(R.string.holiday_transfer_orphan_hint),
+            style = MaterialTheme.typography.bodySmall,
+            color = colors.onSurfaceVariant
+        )
+        entries.forEach { entry ->
+            Row(
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${DateUtils.shortDateSlash(entry.sourceDate)} → ${DateUtils.shortDateSlash(entry.targetDate)}" +
+                        " (${dayNames[entry.targetDate.dayOfWeek.value - 1]})",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = colors.onSurfaceVariant,
+                    modifier = Modifier.weight(1f)
+                )
+                Button(
+                    onClick = { onClear(entry.sourceDate) },
+                    modifier = Modifier.height(SleepyTheme.Buttons.regularHeight),
+                    shape = SleepyTheme.Buttons.shape,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colors.secondaryContainer,
+                        contentColor = colors.onSecondaryContainer
+                    )
+                ) { Text(stringResource(R.string.holiday_transfer_clear)) }
+            }
+        }
+    }
+}
+
+@Composable
+private fun HolidayTransferRow(
+    date: LocalDate,
+    targetDate: LocalDate?,
+    workdayDates: List<LocalDate>,
+    dayNames: Array<String>,
+    onPick: (LocalDate?) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    val leftLabel = remember(date, dayNames) {
+        "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
+    }
+    val rightLabel = remember(targetDate, dayNames) {
+        if (targetDate == null) "—"
+        else "${DateUtils.shortDateSlash(targetDate)} (${dayNames[targetDate.dayOfWeek.value - 1]})"
+    }
+    val pickOtherLabel = stringResource(R.string.holiday_transfer_pick_other)
+    val noMappingLabel = stringResource(R.string.holiday_makeup_unset)
+    var menuOpen by remember(date) { mutableStateOf(false) }
+    var showDatePicker by remember(date) { mutableStateOf(false) }
+    val datePickerState = androidx.compose.material3.rememberDatePickerState()
+
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .noRippleClickable { menuOpen = true }
+            .padding(vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(
+            text = leftLabel,
+            style = MaterialTheme.typography.bodyLarge,
+            color = colors.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            Icons.AutoMirrored.Outlined.ArrowForward,
+            contentDescription = null,
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.width(10.dp))
+        // 右侧目标格: 灰圆角矩形(未映射) 或 primaryContainer 色块(已映射) — 纯色块无描边
+        Box(
+            modifier = Modifier
+                .clip(SleepyTheme.shapes.medium)
+                .background(if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer)
+                .padding(horizontal = 14.dp, vertical = 8.dp)
+        ) {
+            Text(
+                text = rightLabel,
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                color = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
+            )
+        }
+        Spacer(Modifier.width(6.dp))
+        Icon(
+            androidx.compose.material.icons.Icons.Outlined.ExpandMore,
+            contentDescription = null,
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+    }
+    if (menuOpen) {
+        androidx.compose.material3.DropdownMenu(
+            expanded = menuOpen,
+            onDismissRequest = { menuOpen = false },
+            containerColor = colors.surfaceContainerHighest
+        ) {
+            // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜 — 用户原话:
+            //    "有他妈 1 万天的补班日, 你把 1 万天给我放到这个列表里面")
+            workdayDates.forEach { wd ->
+                androidx.compose.material3.DropdownMenuItem(
+                    text = {
+                        Text("${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})")
+                    },
+                    onClick = {
+                        onPick(wd); menuOpen = false
+                    }
+                )
+            }
+            androidx.compose.material3.HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+            // ② 无: 清除该日映射
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text(noMappingLabel) },
+                onClick = {
+                    onPick(null); menuOpen = false
+                }
+            )
+            // ③ 其他日期: 弹系统 DatePickerDialog
+            androidx.compose.material3.DropdownMenuItem(
+                text = { Text(pickOtherLabel) },
+                onClick = {
+                    menuOpen = false
+                    showDatePicker = true
+                }
+            )
+        }
+    }
+    if (showDatePicker) {
+        androidx.compose.material3.DatePickerDialog(
+            onDismissRequest = { showDatePicker = false },
+            confirmButton = {
+                androidx.compose.material3.Button(
+                    onClick = {
+                        datePickerState.selectedDateMillis?.let { millis ->
+                            val picked = java.time.Instant.ofEpochMilli(millis)
+                                .atZone(java.time.ZoneId.of("Asia/Shanghai"))
+                                .toLocalDate()
+                            onPick(picked)
+                        }
+                        showDatePicker = false
+                    },
+                    shape = SleepyTheme.shapes.medium
+                ) { Text(stringResource(R.string.ok), maxLines = 1) }
+            },
+            dismissButton = {
+                androidx.compose.material3.Button(
+                    onClick = { showDatePicker = false },
+                    shape = SleepyTheme.shapes.medium,
+                    colors = androidx.compose.material3.ButtonDefaults.buttonColors(
+                        containerColor = colors.secondaryContainer,
+                        contentColor = colors.onSecondaryContainer
+                    )
+                ) { Text(stringResource(R.string.cancel), maxLines = 1) }
+            }
+        ) {
+            androidx.compose.material3.DatePicker(state = datePickerState)
+        }
+    }
+}
+
+/**
+ * 可编辑假期段折叠卡: 默认收起, 标题行点开复用 HolidayRangeListCard (与原版本同形态)。
+ * 这是"段增删/重命名"次要路径, 日常用户几乎不用 — 故收纳到折叠里。
+ */
+@Composable
+private fun EditableSegmentsCard(
+    segments: List<HolidayRange>,
+    userRangeIds: Set<String>,
+    onEdit: (HolidayRange) -> Unit
+) {
+    val colors = SleepyTheme.colors
+    var expanded by remember { mutableStateOf(false) }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.large)
+            .background(colors.surfaceContainer)
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .noRippleClickable { expanded = !expanded }
+                .padding(horizontal = 16.dp, vertical = 12.dp),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            Text(
+                text = stringResource(R.string.holiday_transfer_editable_segments_title),
+                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                color = colors.onSurface,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                if (expanded) androidx.compose.material.icons.Icons.Outlined.ExpandMore else androidx.compose.material.icons.Icons.Outlined.ChevronRight,
+                contentDescription = null,
+                tint = colors.onSurfaceVariant
+            )
+        }
+        if (expanded) {
+            HolidayRangeListCard(
+                segments = segments,
+                userRangeIds = userRangeIds,
+                onEdit = onEdit
+            )
+        }
+    }
+}
+
 
 /** 段列表卡: 名称 + 自定义 badge(若是用户段) + 补班 badge(可选) + 起止日期; 行点击进入编辑 */
 @Composable

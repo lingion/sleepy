@@ -6,8 +6,8 @@ import org.junit.Test
 
 /**
  * issue#44 调休映射设置页契约锁(源码扫描):
- * 设置页必须按课表读写映射、选择器必须空默认(禁猜测预填)、
- * 未建表时禁写哨兵 ID、MainActivity 必须把当前课表 ID 传进来。
+ * 设置页必须按课表读写映射、下拉候选 = 全量官方补班日(扁平不分组)+无+其他日期、
+ * 默认灰格不预填猜测、无表时禁写哨兵 ID、MainActivity 必须把当前课表 ID 传进来。
  */
 class HolidaySettingsContractTest {
 
@@ -19,25 +19,65 @@ class HolidaySettingsContractTest {
 
     private val screen = src("src/main/java/com/lingion/sleepy/ui/screen/mine/HolidaySettingsScreen.kt")
     private val main = src("src/main/java/com/lingion/sleepy/MainActivity.kt")
+    private val prefs = src("src/main/java/com/lingion/sleepy/util/AppPrefs.kt")
 
     @Test
     fun screen_readsAndWrites_mappings_per_table() {
-        assertTrue(screen.contains("getHolidayMakeupDays"))
-        assertTrue(screen.contains("updateHolidayMakeupDay"))
+        assertTrue(screen.contains("getHolidayTransfers"))
+        assertTrue(screen.contains("updateHolidayTransfer"))
         assertTrue(screen.contains("tableId"))
     }
 
     @Test
-    fun screen_selector_defaults_to_unset_not_a_guess() {
-        // 选择器必须带"未设置"选项; 禁预填任何猜测星期
-        assertTrue(screen.contains("holiday_makeup_unset"))
-        assertFalse(screen.contains("sourceDayOfWeek = 1)"))
+    fun dropdown_lists_all_workdays_then_none_then_other() {
+        // 下拉三项固定顺序: 官方补班日全量 → 无 → 其他日期; 不分组/不禁用
+        assertTrue(screen.contains("workdayDates.forEach"))
+        val noneIdx = screen.indexOf("noMappingLabel)")
+        val otherIdx = screen.indexOf("pickOtherLabel)")
+        assertTrue("dropdown must contain 无 (noMappingLabel)", noneIdx > 0)
+        assertTrue("dropdown must contain 其他日期 (pickOtherLabel)", otherIdx > 0)
+        assertTrue(
+            "official workdays must be listed above 无/其他日期",
+            screen.indexOf("workdayDates.forEach") < noneIdx && screen.indexOf("workdayDates.forEach") < otherIdx
+        )
+    }
+
+    @Test
+    fun workday_candidates_never_filtered_or_disabled() {
+        // 用户原话: 有多少补班日就列多少, 不猜不筛选不禁用
+        assertFalse(screen.contains("enabled = false"))
+    }
+
+    @Test
+    fun mutual_exclusion_enforced_in_prefs_not_ui() {
+        // 目标日互斥在落盘层(withTargetExclusivity)落实, UI 不禁用选项
+        assertTrue(prefs.contains("withTargetExclusivity"))
+    }
+
+    @Test
+    fun orphan_entries_rendered_with_hint_not_deleted() {
+        // 孤儿映射 = sourceDate 不在放假日集合; 灰卡+提示+手动清除, 禁自动删
+        assertTrue(screen.contains("HolidayOrphanCard"))
+        assertTrue(screen.contains("holiday_transfer_orphan_title"))
+    }
+
+    @Test
+    fun table_switcher_bound_to_activeTableId_not_selectTable() {
+        // 卡内表切换只改"正在编辑哪张表"(activeTableId), 不动全局选中课表;
+        // 唯一切换器的 onSelect 必须绑 activeTableId
+        assertTrue(
+            Regex("""SegmentedSwitcher\([\s\S]{0,300}?onSelect = \{ id -> activeTableId = id \}""").containsMatchIn(screen)
+        )
+        assertTrue(
+            "table switcher must not drive viewModel.selectTable",
+            !Regex("""SegmentedSwitcher\([\s\S]{0,300}?viewModel\.selectTable""").containsMatchIn(screen)
+        )
     }
 
     @Test
     fun screen_blocks_mapping_without_a_table() {
         // 无表: 只读展示, 不写哨兵 tableId=0
-        assertFalse(screen.contains("updateHolidayMakeupDay(context, 0"))
+        assertFalse(screen.contains("updateHolidayTransfer(context, 0"))
         assertTrue(screen.contains("holiday_makeup_no_table"))
     }
 

@@ -670,7 +670,12 @@
     <string name="settings_holiday_title">祝日・週末のグレー表示</string>
     <string name="holiday_makeup_title">振替出勤日の授業曜日</string>
     <string name="holiday_makeup_subtitle">時間割ごとに設定します。未設定の振替出勤日はその曜日自体の時間割を表示し、自動で推測しません。</string>
-    <string name="holiday_makeup_unset">未設定</string>
+    <string name="holiday_makeup_unset">なし</string>
+    <string name="holiday_transfer_pick_other">その他の日付…</string>
+    <string name="holiday_transfer_orphan_title">無効な振替設定</string>
+    <string name="holiday_transfer_orphan_hint">対応する休日が存在しなくなりました（年切り替えや期間削除の残り）。手動で削除できます。</string>
+    <string name="holiday_transfer_clear">削除</string>
+    <string name="holiday_transfer_editable_segments_title">編集可能な休暇期間</string>
     <string name="holiday_makeup_no_table">設定の前に時間割を作成してください</string>
     <string name="settings_holiday_weekend">週末の授業をグレー表示</string>
     <string name="settings_holiday_weekend_sub">土曜日と日曜日の授業を自動的に灰色で表示</string>

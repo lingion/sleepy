@@ -670,7 +670,12 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="settings_holiday_title">Atenuar cursos en festivos</string>
     <string name="holiday_makeup_title">Asignación de días de recuperación</string>
     <string name="holiday_makeup_subtitle">Se configura por horario. Los días de recuperación sin asignar conservan su propio horario; no se hacen suposiciones.</string>
-    <string name="holiday_makeup_unset">Sin asignar</string>
+    <string name="holiday_makeup_unset">Ninguno</string>
+    <string name="holiday_transfer_pick_other">Otra fecha…</string>
+    <string name="holiday_transfer_orphan_title">Asignaciones caducadas</string>
+    <string name="holiday_transfer_orphan_hint">El día festivo ya no existe (residuo tras cambiar de año o eliminar un tramo). Borra manualmente.</string>
+    <string name="holiday_transfer_clear">Borrar</string>
+    <string name="holiday_transfer_editable_segments_title">Tramos editables</string>
     <string name="holiday_makeup_no_table">Crea un horario antes de configurar días de recuperación</string>
     <string name="settings_holiday_weekend">Atenuar cursos del fin de semana</string>
     <string name="settings_holiday_weekend_sub">Mostrar automáticamente en gris los cursos del sábado y domingo</string>

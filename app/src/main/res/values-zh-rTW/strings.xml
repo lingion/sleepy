@@ -670,7 +670,12 @@
     <string name="settings_holiday_title">假日課程灰顯</string>
     <string name="holiday_makeup_title">補班日依哪天上課</string>
     <string name="holiday_makeup_subtitle">每張課表個別設定。未設定的補班日照常顯示當天課表，不會替你猜測。</string>
-    <string name="holiday_makeup_unset">未設定</string>
+    <string name="holiday_makeup_unset">無</string>
+    <string name="holiday_transfer_pick_other">其他日期…</string>
+    <string name="holiday_transfer_orphan_title">失效的對應</string>
+    <string name="holiday_transfer_orphan_hint">對應的放假日已不存在（改年份或刪除假期段後殘留），可手動清除。</string>
+    <string name="holiday_transfer_clear">清除</string>
+    <string name="holiday_transfer_editable_segments_title">可編輯假期段</string>
     <string name="holiday_makeup_no_table">請先建立課表，再設定補班日</string>
     <string name="settings_holiday_weekend">週末課程灰顯</string>
     <string name="settings_holiday_weekend_sub">自動將週六、週日的課程顯示為灰色</string>

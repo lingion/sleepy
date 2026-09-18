@@ -685,7 +685,12 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="settings_holiday_title">Holiday make-up schedule</string>
     <string name="holiday_makeup_title">Make-up day class source</string>
     <string name="holiday_makeup_subtitle">Set per timetable. Unmapped make-up days keep their own schedule — nothing is guessed.</string>
-    <string name="holiday_makeup_unset">Not set</string>
+    <string name="holiday_makeup_unset">None</string>
+    <string name="holiday_transfer_pick_other">Other date…</string>
+    <string name="holiday_transfer_orphan_title">Expired mappings</string>
+    <string name="holiday_transfer_orphan_hint">The holiday day no longer exists (left over after a year switch or segment deletion). Clear manually.</string>
+    <string name="holiday_transfer_clear">Clear</string>
+    <string name="holiday_transfer_editable_segments_title">Editable holiday segments</string>
     <string name="holiday_makeup_no_table">Create a timetable before setting make-up days</string>
     <string name="settings_holiday_weekend">Dim weekend courses</string>
     <string name="settings_holiday_weekend_sub">Automatically show Saturday and Sunday courses in gray</string>
