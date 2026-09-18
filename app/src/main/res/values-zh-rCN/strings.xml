@@ -403,6 +403,7 @@
     <string name="holiday_makeup_subtitle">每张课表单独设置。未设置的放假日按当天星期取课，不会替你猜。</string>
     <string name="holiday_makeup_unset">无</string>
     <string name="holiday_transfer_pick_other">其他日期…</string>
+    <string name="holiday_transfer_edit_segment">编辑本假期段</string>
     <string name="holiday_transfer_orphan_title">失效的映射</string>
     <string name="holiday_transfer_orphan_hint">对应的放假日已不存在（改年份或删除假期段后残留），可手动清除。</string>
     <string name="holiday_transfer_clear">清除</string>

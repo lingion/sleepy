@@ -672,6 +672,7 @@
     <string name="holiday_makeup_subtitle">每張課表個別設定。未設定的補班日照常顯示當天課表，不會替你猜測。</string>
     <string name="holiday_makeup_unset">無</string>
     <string name="holiday_transfer_pick_other">其他日期…</string>
+    <string name="holiday_transfer_edit_segment">編輯本假期段</string>
     <string name="holiday_transfer_orphan_title">失效的對應</string>
     <string name="holiday_transfer_orphan_hint">對應的放假日已不存在（改年份或刪除假期段後殘留），可手動清除。</string>
     <string name="holiday_transfer_clear">清除</string>

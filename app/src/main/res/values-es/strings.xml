@@ -672,6 +672,7 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="holiday_makeup_subtitle">Se configura por horario. Los días de recuperación sin asignar conservan su propio horario; no se hacen suposiciones.</string>
     <string name="holiday_makeup_unset">Ninguno</string>
     <string name="holiday_transfer_pick_other">Otra fecha…</string>
+    <string name="holiday_transfer_edit_segment">Editar este periodo</string>
     <string name="holiday_transfer_orphan_title">Asignaciones caducadas</string>
     <string name="holiday_transfer_orphan_hint">El día festivo ya no existe (residuo tras cambiar de año o eliminar un tramo). Borra manualmente.</string>
     <string name="holiday_transfer_clear">Borrar</string>

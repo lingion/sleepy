@@ -687,6 +687,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="holiday_makeup_subtitle">Set per timetable. Unmapped make-up days keep their own schedule — nothing is guessed.</string>
     <string name="holiday_makeup_unset">None</string>
     <string name="holiday_transfer_pick_other">Other date…</string>
+    <string name="holiday_transfer_edit_segment">Edit this holiday segment</string>
     <string name="holiday_transfer_orphan_title">Expired mappings</string>
     <string name="holiday_transfer_orphan_hint">The holiday day no longer exists (left over after a year switch or segment deletion). Clear manually.</string>
     <string name="holiday_transfer_clear">Clear</string>

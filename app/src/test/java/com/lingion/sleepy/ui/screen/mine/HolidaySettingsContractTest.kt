@@ -6,8 +6,9 @@ import org.junit.Test
 
 /**
  * issue#44 调休映射设置页契约锁(源码扫描):
- * 设置页必须按课表读写映射、下拉候选 = 全量官方补班日(扁平不分组)+无+其他日期、
- * 默认灰格不预填猜测、无表时禁写哨兵 ID、MainActivity 必须把当前课表 ID 传进来。
+ * 设置页必须按课表读写映射、每个放假日卡 = 行 + 最右编辑按钮、
+ * 右格用 Material3 ExposedDropdownMenuBox(原地长高 + 浮层)、候选三项固定顺序、
+ * 默认空无预填、无表时禁写哨兵 ID、MainActivity 必须把当前课表 ID 传进来。
  */
 class HolidaySettingsContractTest {
 
@@ -29,11 +30,35 @@ class HolidaySettingsContractTest {
     }
 
     @Test
+    fun dropdown_uses_material3_exposed_dropdown() {
+        // 用户 2026-09-18 三次定稿: 用 Material3 ExposedDropdownMenuBox —
+        // TextField 本体 = 右格(原地变高, 浮层, 第一行为空),
+        // 候选 = 补班日全量→无→其他日期
+        assertTrue(
+            "right cell must use Material3 ExposedDropdownMenuBox",
+            screen.contains("ExposedDropdownMenuBox")
+        )
+        assertTrue(
+            "TextField anchor inside the cell",
+            screen.contains("menuAnchor")
+        )
+    }
+
+    @Test
+    fun dropdown_starts_with_blank_row() {
+        // 用户原话: 第一行不选任何东西, 完全是空的作为空白状态
+        assertTrue(
+            "ExposedDropdownMenu must declare its first item as empty/blank",
+            Regex("""DropdownMenuItem\([\s\S]{0,200}?text\s*=\s*\{\s*Text\(""""") .containsMatchIn(screen)
+        )
+    }
+
+    @Test
     fun dropdown_lists_all_workdays_then_none_then_other() {
-        // 展开列表三项固定顺序: 官方补班日全量 → 无 → 其他日期; 不分组/不禁用
+        // 展开列表固定顺序: 官方补班日全量 → 无 → 其他日期; 不分组/不禁用
         val workdaysIdx = screen.indexOf("workdayDates.forEach")
-        val noneIdx = screen.indexOf("ExpandOptionRow(text = noMappingLabel")
-        val otherIdx = screen.indexOf("ExpandOptionRow(text = pickOtherLabel")
+        val noneIdx = screen.indexOf("noMappingLabel)")
+        val otherIdx = screen.indexOf("pickOtherLabel)")
         assertTrue("must contain 补班日候选循环", workdaysIdx > 0)
         assertTrue("must contain 无 (noMappingLabel)", noneIdx > 0)
         assertTrue("must contain 其他日期 (pickOtherLabel)", otherIdx > 0)
@@ -50,32 +75,36 @@ class HolidaySettingsContractTest {
     }
 
     @Test
-    fun target_cell_opens_raised_popup_same_width() {
-        // 用户 2026-09-18 二次定稿: 点右格 → 弹出"同一个矩形变高"的浮层
-        // (宽度不变、左上角与格子重合、抬高一个图层 = Popup), 禁同图层 inline 撑开,
-        // 禁 DropdownMenu 别处弹菜单
-        assertTrue(
-            "must open a raised-layer Popup (抬高一个图层)",
-            screen.contains("Popup(")
-        )
-        assertTrue(
-            "popup must anchor top-left to the cell (视觉=格子自己变高)",
-            screen.contains("CellGrowPopupProvider")
-        )
+    fun no_in_place_inline_expansion_or_custom_popup() {
+        // ExposedDropdownMenuBox 已经做"原地长高 + 浮层", 不要再叠 inline 撑开或自造 Popup
         assertFalse(
-            "inline AnimatedVisibility expansion is banned",
+            "in-place AnimatedVisibility is banned (ExposedDropdownMenuBox already handles it)",
             screen.contains("AnimatedVisibility(")
         )
         assertFalse(
-            "DropdownMenu popup is banned",
-            screen.contains("DropdownMenu")
+            "custom Popup layer is banned (ExposedDropdownMenuBox is the canonical control)",
+            screen.contains("androidx.compose.ui.window.Popup(")
         )
     }
 
     @Test
-    fun mutual_exclusion_enforced_in_prefs_not_ui() {
-        // 目标日互斥在落盘层(withTargetExclusivity)落实, UI 不禁用选项
-        assertTrue(prefs.contains("withTargetExclusivity"))
+    fun each_segment_row_has_edit_button() {
+        // 用户 2026-09-18 四次定稿: 每个放假日行(每个段)最右加一个编辑按钮
+        // (编辑段本身起止/名称); 自定义补班日去最下面单独添加按钮
+        assertTrue(
+            "HolidayTransferCard must expose an edit affordance on the segment row",
+            screen.contains("HolidayTransferCard") &&
+                screen.contains("onEditSegment")
+        )
+    }
+
+    @Test
+    fun add_button_at_bottom_for_custom_segments() {
+        // 用户原话: 想要添加自定义补班日, 就去最下面那个按钮去添加
+        assertTrue(
+            "FilledTonalButton at the bottom of the page for adding custom segments",
+            screen.contains("holiday_add_entry")
+        )
     }
 
     @Test
@@ -86,9 +115,12 @@ class HolidaySettingsContractTest {
     }
 
     @Test
+    fun mutual_exclusion_enforced_in_prefs_not_ui() {
+        assertTrue(prefs.contains("withTargetExclusivity"))
+    }
+
+    @Test
     fun table_switcher_bound_to_activeTableId_not_selectTable() {
-        // 卡内表切换只改"正在编辑哪张表"(activeTableId), 不动全局选中课表;
-        // 唯一切换器的 onSelect 必须绑 activeTableId
         assertTrue(
             Regex("""SegmentedSwitcher\([\s\S]{0,300}?onSelect = \{ id -> activeTableId = id \}""").containsMatchIn(screen)
         )
@@ -100,7 +132,6 @@ class HolidaySettingsContractTest {
 
     @Test
     fun screen_blocks_mapping_without_a_table() {
-        // 无表: 只读展示, 不写哨兵 tableId=0
         assertFalse(screen.contains("updateHolidayTransfer(context, 0"))
         assertTrue(screen.contains("holiday_makeup_no_table"))
     }

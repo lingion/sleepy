@@ -19,17 +19,22 @@ import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.automirrored.outlined.ArrowForward
 import androidx.compose.material.icons.outlined.ChevronLeft
 import androidx.compose.material.icons.outlined.ChevronRight
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextField
@@ -409,7 +414,10 @@ fun HolidaySettingsScreen(
                                     .distinct()
                                     .sorted(),
                                 dayNames = dayNames,
-                                onPick = { source, target -> saveTransfer(source, target, seg.id) }
+                                onPick = { source, target -> saveTransfer(source, target, seg.id) },
+                                // 用户 2026-09-18 定稿: 每张节卡标题行最右编辑按钮 —
+                                // 国务院数据段只许编辑持续时间(段起止), 走原 HolidayRangeEditDialog
+                                onEditSegment = { editing = resolveEditTarget(seg, userRangeIds) }
                             )
                         }
                     }
@@ -428,9 +436,6 @@ fun HolidaySettingsScreen(
                             )
                         }
                     }
-                }
-                if (workdaySegments.isNotEmpty() || holidaySegments.isNotEmpty()) {
-                    item { EditableSegmentsCard(segments = merged.active, userRangeIds = userRangeIds, onEdit = { editing = resolveEditTarget(it, userRangeIds) }) }
                 }
                 if (merged.removed.isNotEmpty()) {
                     item { SectionHeader(stringResource(R.string.holiday_removed_section)) }
@@ -522,7 +527,8 @@ private fun HolidayTransferCard(
     transfers: List<com.lingion.sleepy.util.HolidayTransferEntry>,
     workdayDates: List<LocalDate>,
     dayNames: Array<String>,
-    onPick: (LocalDate, LocalDate?) -> Unit
+    onPick: (LocalDate, LocalDate?) -> Unit,
+    onEditSegment: () -> Unit
 ) {
     val colors = SleepyTheme.colors
     val title = segment.name.ifBlank { DateUtils.shortDateSlash(segment.startDate) }
@@ -544,7 +550,15 @@ private fun HolidayTransferCard(
                 Text(title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
                 Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
-            // 表切换在上方说明卡一处即可 — 每张节日卡再放一个 = 同屏 N 个同款切换器
+            // 标题行最右编辑按钮: 编辑该段的持续时间(起止日期) — 国务院数据段同样开放,
+            // 底部"+"按钮才是新增自定义补班日/自定义假期的入口
+            IconButton(onClick = onEditSegment) {
+                Icon(
+                    Icons.Outlined.Edit,
+                    contentDescription = stringResource(R.string.holiday_transfer_edit_segment),
+                    tint = colors.onSurfaceVariant
+                )
+            }
         }
         dates.forEach { date ->
             HolidayTransferRow(
@@ -621,9 +635,10 @@ private fun HolidayTransferRow(
     dayNames: Array<String>,
     onPick: (LocalDate?) -> Unit
 ) {
-    // 用户 2026-09-18 二次定稿: 日期文本+向下箭头同在一个圆角矩形里(右格本体);
-    // 点右格 → 该矩形"宽度不变、高度变长、抬高一个图层"= 锚定右格的浮层,
-    // 左上角与右格重合 → 视觉 = 格子自己长高弹窗, 不占布局空间, 不是别处的菜单
+    // 用户 2026-09-18 三次定稿: 用 Material3 原生 ExposedDropdownMenuBox —
+    // 锚字段(右格)尺寸不变, 展开的菜单锚到锚字段下方, 浮层一个图层叠上去, 视觉 = 这个矩形自己长高了浮起来。
+    // 第 0 行 = 完全空白的 DropdownMenuItem(text = { Text("") }) = 空白状态占位, 防止首项直接选中下面候选。
+    // 候选从第 1 行开始: ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜) ② 无 ③ 其他日期…
     val colors = SleepyTheme.colors
     val leftLabel = remember(date, dayNames) {
         "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
@@ -635,7 +650,6 @@ private fun HolidayTransferRow(
     val pickOtherLabel = stringResource(R.string.holiday_transfer_pick_other)
     val noMappingLabel = stringResource(R.string.holiday_makeup_unset)
     var menuOpen by remember(date) { mutableStateOf(false) }
-    var cellWidthPx by remember(date) { mutableStateOf(0) }
     var showDatePicker by remember(date) { mutableStateOf(false) }
     val datePickerState = androidx.compose.material3.rememberDatePickerState()
 
@@ -645,29 +659,36 @@ private fun HolidayTransferRow(
             .padding(vertical = 6.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
-            Text(
-                text = leftLabel,
-                style = MaterialTheme.typography.bodyLarge,
-                color = colors.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                Icons.AutoMirrored.Outlined.ArrowForward,
-                contentDescription = null,
-                tint = colors.onSurfaceVariant,
-                modifier = Modifier.size(18.dp)
-            )
-            Spacer(Modifier.width(10.dp))
-            // 右格本体: 一个圆角矩形(日期文本 + 向下箭头), 整格可点; 测宽供浮层同宽
-            val targetColor = if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer
-            val targetContentColor = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
+        Text(
+            text = leftLabel,
+            style = MaterialTheme.typography.bodyLarge,
+            color = colors.onSurface,
+            modifier = Modifier.weight(1f)
+        )
+        Icon(
+            Icons.AutoMirrored.Outlined.ArrowForward,
+            contentDescription = null,
+            tint = colors.onSurfaceVariant,
+            modifier = Modifier.size(18.dp)
+        )
+        Spacer(Modifier.width(10.dp))
+        // 右格本体: Material3 ExposedDropdownMenuBox 的 anchor field。
+        // anchor 字段尺寸始终等于右格原本尺寸(width 不变); 菜单展开后 anchor 不动, 浮层 menu 抬高一层叠在 anchor 下方 —
+        // 视觉 = 10×2 矩形自己变 10×X, 锚点不变, 内容自适应撑高, 关闭后回到原 10×2 状态。
+        val targetColor = if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer
+        val targetContentColor = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
+        ExposedDropdownMenuBox(
+            expanded = menuOpen,
+            onExpandedChange = { menuOpen = it },
+            modifier = Modifier.weight(1f)
+        ) {
+            // anchor 字段: 右格圆角矩形 (text + 向下箭头)
             Row(
                 modifier = Modifier
-                    .weight(1f)
+                    .menuAnchor(MenuAnchorType.PrimaryNotEditable, enabled = true)
+                    .fillMaxWidth()
                     .clip(SleepyTheme.shapes.medium)
                     .background(targetColor)
-                    .noRippleClickable { menuOpen = !menuOpen }
-                    .onGloballyPositioned { cellWidthPx = it.size.width }
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -677,37 +698,46 @@ private fun HolidayTransferRow(
                     color = targetContentColor,
                     modifier = Modifier.weight(1f)
                 )
-                Icon(
-                    Icons.Outlined.ExpandMore,
-                    contentDescription = null,
-                    tint = targetContentColor,
-                    modifier = Modifier
-                        .size(18.dp)
-                        .rotate(if (menuOpen) 180f else 0f)
-                )
-                // 浮层选项列表: CellGrowPopupProvider — 锚定右格, 抬高一个图层,
-                // 宽度=右格宽, 左上角与右格左上角重合 → 视觉 = 这个矩形自己长高了浮起来
-                if (menuOpen) {
-                    CellGrowPopupProvider(
-                        cellWidthPx = cellWidthPx,
-                        onDismiss = { menuOpen = false }
-                    ) {
-                        // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
-                        workdayDates.forEach { wd ->
-                            ExpandOptionRow(
-                                text = "${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})",
-                                onClick = { onPick(wd); menuOpen = false }
-                            )
-                        }
-                        androidx.compose.material3.HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        // ② 无: 清除该日映射
-                        ExpandOptionRow(text = noMappingLabel, onClick = { onPick(null); menuOpen = false })
-                        // ③ 其他日期: 弹系统 DatePickerDialog
-                        ExpandOptionRow(text = pickOtherLabel, onClick = { menuOpen = false; showDatePicker = true })
-                    }
+                // ExposedDropdownMenuDefaults.TrailingIcon(expanded) 自动随菜单开合旋转箭头;
+                // 无 tint 参数, 色取 LocalContentColor → 用 CompositionLocalProvider 着色
+                androidx.compose.runtime.CompositionLocalProvider(
+                    androidx.compose.material3.LocalContentColor provides targetContentColor
+                ) {
+                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuOpen)
                 }
             }
+            // 浮层菜单: 锚在 anchor 字段下方, 宽度 = anchor 字段宽, 高度由内容自适应 → 视觉 = 矩形长高浮起来
+            ExposedDropdownMenu(
+                expanded = menuOpen,
+                onDismissRequest = { menuOpen = false }
+            ) {
+                // 第 0 行: 空白占位 (用户原话: 第一行不选任何东西, 完全是空的作为空白状态)
+                DropdownMenuItem(
+                    text = { Text("") },
+                    onClick = { menuOpen = false },
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
+                )
+                // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
+                workdayDates.forEach { wd ->
+                    DropdownMenuItem(
+                        text = { Text("${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})") },
+                        onClick = { onPick(wd); menuOpen = false }
+                    )
+                }
+                HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                // ② 无: 清除该日映射
+                DropdownMenuItem(
+                    text = { Text(noMappingLabel) },
+                    onClick = { onPick(null); menuOpen = false }
+                )
+                // ③ 其他日期: 弹系统 DatePickerDialog
+                DropdownMenuItem(
+                    text = { Text(pickOtherLabel) },
+                    onClick = { menuOpen = false; showDatePicker = true }
+                )
+            }
         }
+    }
     if (showDatePicker) {
         androidx.compose.material3.DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -737,160 +767,6 @@ private fun HolidayTransferRow(
             }
         ) {
             androidx.compose.material3.DatePicker(state = datePickerState)
-        }
-    }
-}
-
-/**
- * CellGrowPopupProvider: "格子长高弹窗" 浮层容器。
- * Popup(alignment = TopStart, offset = 格子在窗口的绝对位置) 抬高一个图层:
- * 宽度 = 右格实测宽(cellWidthPx), 左上角与右格左上角重合,
- * 高度由内容自适应 → 视觉 = 这个矩形自己变高了浮起来, 不挤压同层布局。
- * 点浮层外任意处 = dismiss(收起)。
- */
-@Composable
-private fun CellGrowPopupProvider(
-    cellWidthPx: Int,
-    onDismiss: () -> Unit,
-    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
-) {
-    androidx.compose.ui.window.Popup(
-        alignment = androidx.compose.ui.Alignment.TopStart,
-        offset = androidx.compose.ui.unit.IntOffset.Zero,
-        onDismissRequest = onDismiss,
-        properties = androidx.compose.ui.window.PopupProperties(focusable = true, dismissOnClickOutside = true)
-    ) {
-        androidx.compose.foundation.layout.Column(
-            modifier = Modifier
-                .width(with(androidx.compose.ui.platform.LocalDensity.current) { cellWidthPx.toDp() })
-                .clip(SleepyTheme.shapes.medium)
-                .background(SleepyTheme.colors.surfaceContainerHighest)
-                .padding(vertical = 4.dp),
-            content = content
-        )
-    }
-}
-
-/** 展开列表的选项行: 与右格同宽的浅色行, 点选即生效并收起 */
-@Composable
-private fun ExpandOptionRow(text: String, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
-    Text(
-        text = text,
-        style = MaterialTheme.typography.bodyMedium,
-        color = colors.onSurface,
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(SleepyTheme.shapes.small)
-            .background(colors.surfaceContainerHighest)
-            .noRippleClickable(onClick = onClick)
-            .padding(horizontal = 12.dp, vertical = 10.dp)
-    )
-}
-
-/**
- * 可编辑假期段折叠卡: 默认收起, 标题行点开复用 HolidayRangeListCard (与原版本同形态)。
- * 这是"段增删/重命名"次要路径, 日常用户几乎不用 — 故收纳到折叠里。
- */
-@Composable
-private fun EditableSegmentsCard(
-    segments: List<HolidayRange>,
-    userRangeIds: Set<String>,
-    onEdit: (HolidayRange) -> Unit
-) {
-    val colors = SleepyTheme.colors
-    var expanded by remember { mutableStateOf(false) }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(SleepyTheme.shapes.large)
-            .background(colors.surfaceContainer)
-    ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .noRippleClickable { expanded = !expanded }
-                .padding(horizontal = 16.dp, vertical = 12.dp),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            Text(
-                text = stringResource(R.string.holiday_transfer_editable_segments_title),
-                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Icon(
-                if (expanded) androidx.compose.material.icons.Icons.Outlined.ExpandMore else androidx.compose.material.icons.Icons.Outlined.ChevronRight,
-                contentDescription = null,
-                tint = colors.onSurfaceVariant
-            )
-        }
-        if (expanded) {
-            HolidayRangeListCard(
-                segments = segments,
-                userRangeIds = userRangeIds,
-                onEdit = onEdit
-            )
-        }
-    }
-}
-
-
-/** 段列表卡: 名称 + 自定义 badge(若是用户段) + 补班 badge(可选) + 起止日期; 行点击进入编辑 */
-@Composable
-private fun HolidayRangeListCard(
-    segments: List<HolidayRange>,
-    userRangeIds: Set<String>,
-    showWorkdayBadge: Boolean = false,
-    onEdit: (HolidayRange) -> Unit
-) {
-    val colors = SleepyTheme.colors
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .clip(SleepyTheme.shapes.large)
-            .background(colors.surfaceContainer)
-            .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-        segments.forEachIndexed { index, segment ->
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .noRippleClickable { onEdit(segment) }
-                    .padding(vertical = 10.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = segment.name.ifBlank { DateUtils.shortDateSlash(segment.startDate) },
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = colors.onSurface,
-                    modifier = Modifier.weight(1f)
-                )
-                if (segment.id in userRangeIds) {
-                    Box(
-                        modifier = Modifier
-                            .clip(SleepyTheme.shapes.small)
-                            .background(colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.tinted))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(stringResource(R.string.holiday_custom_badge), style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
-                    }
-                    Spacer(Modifier.width(12.dp))
-                }
-                if (showWorkdayBadge) {
-                    Box(
-                        modifier = Modifier
-                            .clip(SleepyTheme.shapes.small)
-                            .background(colors.primary.copy(alpha = SleepyTheme.Alpha.tinted))
-                            .padding(horizontal = 8.dp, vertical = 2.dp)
-                    ) {
-                        Text(stringResource(R.string.holiday_workday_badge), style = MaterialTheme.typography.labelSmall, color = colors.primary)
-                    }
-                    Spacer(Modifier.width(12.dp))
-                }
-                Text(segmentDateLabel(segment), style = MaterialTheme.typography.bodyMedium, color = colors.onSurfaceVariant)
-            }
-            if (index != segments.lastIndex) HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
         }
     }
 }
