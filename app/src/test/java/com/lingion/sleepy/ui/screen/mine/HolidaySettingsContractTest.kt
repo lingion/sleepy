@@ -50,16 +50,24 @@ class HolidaySettingsContractTest {
     }
 
     @Test
-    fun target_cell_expands_in_place_no_popup() {
-        // 用户 2026-09-18 定稿: 右格 = 日期文本+向下箭头同在一个圆角矩形里;
-        // 点它是原地向下长高展开选项列表(AnimatedVisibility), 禁 DropdownMenu
-        // 在界面其他位置弹出 popup
+    fun target_cell_opens_raised_popup_same_width() {
+        // 用户 2026-09-18 二次定稿: 点右格 → 弹出"同一个矩形变高"的浮层
+        // (宽度不变、左上角与格子重合、抬高一个图层 = Popup), 禁同图层 inline 撑开,
+        // 禁 DropdownMenu 别处弹菜单
         assertTrue(
-            "expansion must use in-place AnimatedVisibility grow",
+            "must open a raised-layer Popup (抬高一个图层)",
+            screen.contains("Popup(")
+        )
+        assertTrue(
+            "popup must anchor top-left to the cell (视觉=格子自己变高)",
+            screen.contains("CellGrowPopupProvider")
+        )
+        assertFalse(
+            "inline AnimatedVisibility expansion is banned",
             screen.contains("AnimatedVisibility(")
         )
         assertFalse(
-            "DropdownMenu popup is banned — cell must expand in place",
+            "DropdownMenu popup is banned",
             screen.contains("DropdownMenu")
         )
     }

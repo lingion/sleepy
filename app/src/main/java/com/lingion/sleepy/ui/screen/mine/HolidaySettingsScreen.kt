@@ -51,6 +51,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -620,8 +621,9 @@ private fun HolidayTransferRow(
     dayNames: Array<String>,
     onPick: (LocalDate?) -> Unit
 ) {
-    // 用户 2026-09-18 定稿形态: 日期文本+向下箭头同在一个圆角矩形里(右格本体);
-    // 点右格原地向下长高展开选项列表(同宽), 禁别处弹 popup
+    // 用户 2026-09-18 二次定稿: 日期文本+向下箭头同在一个圆角矩形里(右格本体);
+    // 点右格 → 该矩形"宽度不变、高度变长、抬高一个图层"= 锚定右格的浮层,
+    // 左上角与右格重合 → 视觉 = 格子自己长高弹窗, 不占布局空间, 不是别处的菜单
     val colors = SleepyTheme.colors
     val leftLabel = remember(date, dayNames) {
         "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
@@ -633,19 +635,16 @@ private fun HolidayTransferRow(
     val pickOtherLabel = stringResource(R.string.holiday_transfer_pick_other)
     val noMappingLabel = stringResource(R.string.holiday_makeup_unset)
     var menuOpen by remember(date) { mutableStateOf(false) }
+    var cellWidthPx by remember(date) { mutableStateOf(0) }
     var showDatePicker by remember(date) { mutableStateOf(false) }
     val datePickerState = androidx.compose.material3.rememberDatePickerState()
 
-    Column(
+    Row(
         modifier = Modifier
             .fillMaxWidth()
             .padding(vertical = 6.dp),
-        verticalArrangement = Arrangement.spacedBy(0.dp)
+        verticalAlignment = Alignment.CenterVertically
     ) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-        ) {
             Text(
                 text = leftLabel,
                 style = MaterialTheme.typography.bodyLarge,
@@ -659,7 +658,7 @@ private fun HolidayTransferRow(
                 modifier = Modifier.size(18.dp)
             )
             Spacer(Modifier.width(10.dp))
-            // 右格本体: 一个圆角矩形(日期文本 + 向下箭头), 整格可点 — 原地展开
+            // 右格本体: 一个圆角矩形(日期文本 + 向下箭头), 整格可点; 测宽供浮层同宽
             val targetColor = if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer
             val targetContentColor = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
             Row(
@@ -668,6 +667,7 @@ private fun HolidayTransferRow(
                     .clip(SleepyTheme.shapes.medium)
                     .background(targetColor)
                     .noRippleClickable { menuOpen = !menuOpen }
+                    .onGloballyPositioned { cellWidthPx = it.size.width }
                     .padding(horizontal = 14.dp, vertical = 8.dp),
                 verticalAlignment = Alignment.CenterVertically
             ) {
@@ -685,36 +685,29 @@ private fun HolidayTransferRow(
                         .size(18.dp)
                         .rotate(if (menuOpen) 180f else 0f)
                 )
-            }
-        }
-        // 原地展开: 与右格同宽, 向下长高列出选项(不弹 popup)
-        androidx.compose.animation.AnimatedVisibility(
-            visible = menuOpen,
-            enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
-            exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
-        ) {
-            Column(
-                modifier = Modifier
-                    .padding(start = (10.dp + 18.dp + 14.dp + 14.dp))
-                    .fillMaxWidth()
-                    .padding(top = 4.dp),
-                verticalArrangement = Arrangement.spacedBy(2.dp)
-            ) {
-                // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
-                workdayDates.forEach { wd ->
-                    ExpandOptionRow(
-                        text = "${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})",
-                        onClick = { onPick(wd); menuOpen = false }
-                    )
+                // 浮层选项列表: CellGrowPopupProvider — 锚定右格, 抬高一个图层,
+                // 宽度=右格宽, 左上角与右格左上角重合 → 视觉 = 这个矩形自己长高了浮起来
+                if (menuOpen) {
+                    CellGrowPopupProvider(
+                        cellWidthPx = cellWidthPx,
+                        onDismiss = { menuOpen = false }
+                    ) {
+                        // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
+                        workdayDates.forEach { wd ->
+                            ExpandOptionRow(
+                                text = "${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})",
+                                onClick = { onPick(wd); menuOpen = false }
+                            )
+                        }
+                        androidx.compose.material3.HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                        // ② 无: 清除该日映射
+                        ExpandOptionRow(text = noMappingLabel, onClick = { onPick(null); menuOpen = false })
+                        // ③ 其他日期: 弹系统 DatePickerDialog
+                        ExpandOptionRow(text = pickOtherLabel, onClick = { menuOpen = false; showDatePicker = true })
+                    }
                 }
-                androidx.compose.material3.HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                // ② 无: 清除该日映射
-                ExpandOptionRow(text = noMappingLabel, onClick = { onPick(null); menuOpen = false })
-                // ③ 其他日期: 弹系统 DatePickerDialog(用户已批准的 picker, 不算 random popup)
-                ExpandOptionRow(text = pickOtherLabel, onClick = { menuOpen = false; showDatePicker = true })
             }
         }
-    }
     if (showDatePicker) {
         androidx.compose.material3.DatePickerDialog(
             onDismissRequest = { showDatePicker = false },
@@ -745,6 +738,36 @@ private fun HolidayTransferRow(
         ) {
             androidx.compose.material3.DatePicker(state = datePickerState)
         }
+    }
+}
+
+/**
+ * CellGrowPopupProvider: "格子长高弹窗" 浮层容器。
+ * Popup(alignment = TopStart, offset = 格子在窗口的绝对位置) 抬高一个图层:
+ * 宽度 = 右格实测宽(cellWidthPx), 左上角与右格左上角重合,
+ * 高度由内容自适应 → 视觉 = 这个矩形自己变高了浮起来, 不挤压同层布局。
+ * 点浮层外任意处 = dismiss(收起)。
+ */
+@Composable
+private fun CellGrowPopupProvider(
+    cellWidthPx: Int,
+    onDismiss: () -> Unit,
+    content: @Composable androidx.compose.foundation.layout.ColumnScope.() -> Unit
+) {
+    androidx.compose.ui.window.Popup(
+        alignment = androidx.compose.ui.Alignment.TopStart,
+        offset = androidx.compose.ui.unit.IntOffset.Zero,
+        onDismissRequest = onDismiss,
+        properties = androidx.compose.ui.window.PopupProperties(focusable = true, dismissOnClickOutside = true)
+    ) {
+        androidx.compose.foundation.layout.Column(
+            modifier = Modifier
+                .width(with(androidx.compose.ui.platform.LocalDensity.current) { cellWidthPx.toDp() })
+                .clip(SleepyTheme.shapes.medium)
+                .background(SleepyTheme.colors.surfaceContainerHighest)
+                .padding(vertical = 4.dp),
+            content = content
+        )
     }
 }
 
