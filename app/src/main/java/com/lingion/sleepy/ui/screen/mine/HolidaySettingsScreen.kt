@@ -24,8 +24,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
@@ -52,6 +50,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -621,6 +620,8 @@ private fun HolidayTransferRow(
     dayNames: Array<String>,
     onPick: (LocalDate?) -> Unit
 ) {
+    // 用户 2026-09-18 定稿形态: 日期文本+向下箭头同在一个圆角矩形里(右格本体);
+    // 点右格原地向下长高展开选项列表(同宽), 禁别处弹 popup
     val colors = SleepyTheme.colors
     val leftLabel = remember(date, dayNames) {
         "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
@@ -635,81 +636,83 @@ private fun HolidayTransferRow(
     var showDatePicker by remember(date) { mutableStateOf(false) }
     val datePickerState = androidx.compose.material3.rememberDatePickerState()
 
-    Row(
+    Column(
         modifier = Modifier
             .fillMaxWidth()
-            .noRippleClickable { menuOpen = true }
             .padding(vertical = 6.dp),
-        verticalAlignment = Alignment.CenterVertically
+        verticalArrangement = Arrangement.spacedBy(0.dp)
     ) {
-        Text(
-            text = leftLabel,
-            style = MaterialTheme.typography.bodyLarge,
-            color = colors.onSurface,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            Icons.AutoMirrored.Outlined.ArrowForward,
-            contentDescription = null,
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier.size(18.dp)
-        )
-        Spacer(Modifier.width(10.dp))
-        // 右侧目标格: 灰圆角矩形(未映射) 或 primaryContainer 色块(已映射) — 纯色块无描边
-        Box(
-            modifier = Modifier
-                .clip(SleepyTheme.shapes.medium)
-                .background(if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer)
-                .padding(horizontal = 14.dp, vertical = 8.dp)
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically
         ) {
             Text(
-                text = rightLabel,
-                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
-                color = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
+                text = leftLabel,
+                style = MaterialTheme.typography.bodyLarge,
+                color = colors.onSurface,
+                modifier = Modifier.weight(1f)
             )
-        }
-        Spacer(Modifier.width(6.dp))
-        Icon(
-            androidx.compose.material.icons.Icons.Outlined.ExpandMore,
-            contentDescription = null,
-            tint = colors.onSurfaceVariant,
-            modifier = Modifier.size(18.dp)
-        )
-    }
-    if (menuOpen) {
-        androidx.compose.material3.DropdownMenu(
-            expanded = menuOpen,
-            onDismissRequest = { menuOpen = false },
-            containerColor = colors.surfaceContainerHighest
-        ) {
-            // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜 — 用户原话:
-            //    "有他妈 1 万天的补班日, 你把 1 万天给我放到这个列表里面")
-            workdayDates.forEach { wd ->
-                androidx.compose.material3.DropdownMenuItem(
-                    text = {
-                        Text("${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})")
-                    },
-                    onClick = {
-                        onPick(wd); menuOpen = false
-                    }
+            Icon(
+                Icons.AutoMirrored.Outlined.ArrowForward,
+                contentDescription = null,
+                tint = colors.onSurfaceVariant,
+                modifier = Modifier.size(18.dp)
+            )
+            Spacer(Modifier.width(10.dp))
+            // 右格本体: 一个圆角矩形(日期文本 + 向下箭头), 整格可点 — 原地展开
+            val targetColor = if (targetDate == null) colors.surfaceContainerHighest else colors.primaryContainer
+            val targetContentColor = if (targetDate == null) colors.onSurfaceVariant else colors.onPrimaryContainer
+            Row(
+                modifier = Modifier
+                    .weight(1f)
+                    .clip(SleepyTheme.shapes.medium)
+                    .background(targetColor)
+                    .noRippleClickable { menuOpen = !menuOpen }
+                    .padding(horizontal = 14.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = rightLabel,
+                    style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
+                    color = targetContentColor,
+                    modifier = Modifier.weight(1f)
+                )
+                Icon(
+                    Icons.Outlined.ExpandMore,
+                    contentDescription = null,
+                    tint = targetContentColor,
+                    modifier = Modifier
+                        .size(18.dp)
+                        .rotate(if (menuOpen) 180f else 0f)
                 )
             }
-            androidx.compose.material3.HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-            // ② 无: 清除该日映射
-            androidx.compose.material3.DropdownMenuItem(
-                text = { Text(noMappingLabel) },
-                onClick = {
-                    onPick(null); menuOpen = false
+        }
+        // 原地展开: 与右格同宽, 向下长高列出选项(不弹 popup)
+        androidx.compose.animation.AnimatedVisibility(
+            visible = menuOpen,
+            enter = androidx.compose.animation.expandVertically() + androidx.compose.animation.fadeIn(),
+            exit = androidx.compose.animation.shrinkVertically() + androidx.compose.animation.fadeOut()
+        ) {
+            Column(
+                modifier = Modifier
+                    .padding(start = (10.dp + 18.dp + 14.dp + 14.dp))
+                    .fillMaxWidth()
+                    .padding(top = 4.dp),
+                verticalArrangement = Arrangement.spacedBy(2.dp)
+            ) {
+                // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)
+                workdayDates.forEach { wd ->
+                    ExpandOptionRow(
+                        text = "${DateUtils.shortDateSlash(wd)} (${dayNames[wd.dayOfWeek.value - 1]})",
+                        onClick = { onPick(wd); menuOpen = false }
+                    )
                 }
-            )
-            // ③ 其他日期: 弹系统 DatePickerDialog
-            androidx.compose.material3.DropdownMenuItem(
-                text = { Text(pickOtherLabel) },
-                onClick = {
-                    menuOpen = false
-                    showDatePicker = true
-                }
-            )
+                androidx.compose.material3.HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                // ② 无: 清除该日映射
+                ExpandOptionRow(text = noMappingLabel, onClick = { onPick(null); menuOpen = false })
+                // ③ 其他日期: 弹系统 DatePickerDialog(用户已批准的 picker, 不算 random popup)
+                ExpandOptionRow(text = pickOtherLabel, onClick = { menuOpen = false; showDatePicker = true })
+            }
         }
     }
     if (showDatePicker) {
@@ -743,6 +746,23 @@ private fun HolidayTransferRow(
             androidx.compose.material3.DatePicker(state = datePickerState)
         }
     }
+}
+
+/** 展开列表的选项行: 与右格同宽的浅色行, 点选即生效并收起 */
+@Composable
+private fun ExpandOptionRow(text: String, onClick: () -> Unit) {
+    val colors = SleepyTheme.colors
+    Text(
+        text = text,
+        style = MaterialTheme.typography.bodyMedium,
+        color = colors.onSurface,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(SleepyTheme.shapes.small)
+            .background(colors.surfaceContainerHighest)
+            .noRippleClickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 10.dp)
+    )
 }
 
 /**

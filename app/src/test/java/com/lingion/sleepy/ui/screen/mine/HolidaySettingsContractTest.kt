@@ -30,15 +30,16 @@ class HolidaySettingsContractTest {
 
     @Test
     fun dropdown_lists_all_workdays_then_none_then_other() {
-        // 下拉三项固定顺序: 官方补班日全量 → 无 → 其他日期; 不分组/不禁用
-        assertTrue(screen.contains("workdayDates.forEach"))
-        val noneIdx = screen.indexOf("noMappingLabel)")
-        val otherIdx = screen.indexOf("pickOtherLabel)")
-        assertTrue("dropdown must contain 无 (noMappingLabel)", noneIdx > 0)
-        assertTrue("dropdown must contain 其他日期 (pickOtherLabel)", otherIdx > 0)
+        // 展开列表三项固定顺序: 官方补班日全量 → 无 → 其他日期; 不分组/不禁用
+        val workdaysIdx = screen.indexOf("workdayDates.forEach")
+        val noneIdx = screen.indexOf("ExpandOptionRow(text = noMappingLabel")
+        val otherIdx = screen.indexOf("ExpandOptionRow(text = pickOtherLabel")
+        assertTrue("must contain 补班日候选循环", workdaysIdx > 0)
+        assertTrue("must contain 无 (noMappingLabel)", noneIdx > 0)
+        assertTrue("must contain 其他日期 (pickOtherLabel)", otherIdx > 0)
         assertTrue(
             "official workdays must be listed above 无/其他日期",
-            screen.indexOf("workdayDates.forEach") < noneIdx && screen.indexOf("workdayDates.forEach") < otherIdx
+            workdaysIdx < noneIdx && workdaysIdx < otherIdx
         )
     }
 
@@ -46,6 +47,21 @@ class HolidaySettingsContractTest {
     fun workday_candidates_never_filtered_or_disabled() {
         // 用户原话: 有多少补班日就列多少, 不猜不筛选不禁用
         assertFalse(screen.contains("enabled = false"))
+    }
+
+    @Test
+    fun target_cell_expands_in_place_no_popup() {
+        // 用户 2026-09-18 定稿: 右格 = 日期文本+向下箭头同在一个圆角矩形里;
+        // 点它是原地向下长高展开选项列表(AnimatedVisibility), 禁 DropdownMenu
+        // 在界面其他位置弹出 popup
+        assertTrue(
+            "expansion must use in-place AnimatedVisibility grow",
+            screen.contains("AnimatedVisibility(")
+        )
+        assertFalse(
+            "DropdownMenu popup is banned — cell must expand in place",
+            screen.contains("DropdownMenu")
+        )
     }
 
     @Test
