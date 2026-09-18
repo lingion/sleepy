@@ -668,6 +668,10 @@
     <string name="holiday_list_workdays">振替出勤日</string>
     <string name="holiday_workday_badge">出勤日</string>
     <string name="settings_holiday_title">祝日・週末のグレー表示</string>
+    <string name="holiday_makeup_title">振替出勤日の授業曜日</string>
+    <string name="holiday_makeup_subtitle">時間割ごとに設定します。未設定の振替出勤日はその曜日自体の時間割を表示し、自動で推測しません。</string>
+    <string name="holiday_makeup_unset">未設定</string>
+    <string name="holiday_makeup_no_table">設定の前に時間割を作成してください</string>
     <string name="settings_holiday_weekend">週末の授業をグレー表示</string>
     <string name="settings_holiday_weekend_sub">土曜日と日曜日の授業を自動的に灰色で表示</string>
     <string name="settings_holiday_style">表示スタイル</string>
