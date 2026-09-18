@@ -1,71 +1,82 @@
-# v1.0.56 七项需求 todo
+# 调休映射·放假日视角日期树 UI — Todo
 
-分支 feat/v1.0.56-seven · worktree /private/tmp/sleepy-v1056-wt · 主仓不动
+分支 feat/holiday-makeup-mapping · worktree /tmp/sleepy-makeup-wt · 主仓不动
 
-## Phase 1 基建
+## Phase 1 数据层 + 解析层
 
-- [x] T1 改名「作息表」(17键×6 locale + feature-baseline.md) — 984fd59c
-  - Accept: 全库 grep 无「节次时间表/时间节次表」UI 文案;assembleDebug 绿
-  - Verify: grep 清零 + parity test 绿 + 主仓本地 feature-baseline.md 已同步
-  - Files: 6×strings.xml(en=Bell schedule/ja=時程表/es=Horario de períodos)
-- [x] T2 全局唯一名基建 — 8d6a2a45
-  - Accept: TimeTableUtils.isTableNameTaken(全域查,excludeId排己)+suggestUniqueName(顺延2/3/4,兼容"(2)"形态)
-  - Verify: UniqueTableNameTest 12红→绿
-  - Files: TimeTableUtils.kt, UniqueTableNameTest.kt(UI接线随各屏任务落)
-- [x] T3 捏放→实验室开关 — 6539ee38
-  - Accept: KEY_GRID_PINCH_ZOOM 默认 false;关=捏不动(手势不挂),开=现行为;实验室多一行开关;存量行高不清
-  - Verify: GridPinchZoomKeyTest 3项 + assembleDebug + 全量1915测试绿; 模拟器验证随 T12
-  - Files: AppPrefs.kt, GeneralSettingsScreen.kt, CourseTableView.kt, ScheduleScreen.kt, 6×strings
-- [x] T4 语言折叠 — 语言折叠卡(默认收起,行为原样)
-  - Accept: 默认收起只显当前语言;展开 5 项;选择后收起;跨页恢复
-  - Verify: 模拟器
-  - Files: GeneralSettingsScreen.kt
+- [ ] T1 新模型 HolidayTransferEntry + 编解码 + 互斥写
+  - Accept: `data class HolidayTransferEntry(val sourceDate: LocalDate, val targetDate: LocalDate, val segmentId: String)`;`HolidayTransferOps.encode/decodeList` (纯函数, 坏行跳过); `AppPrefs.getHolidayTransfers(ctx, tableId)` / `setHolidayTransfers`; `AppPrefs.setHolidayTransfer(ctx, tableId, source, target, seg)` 自动按 targetDate 互斥清同表其他条目; `clearHolidayTransfers(ctx, tableId)` 删表清; prefs key `holiday_transfer_<tableId>`
+  - Verify: `HolidayTransferOpsTest` 8 用例(编解码坏行/同日期重复/顺序/空表/互斥/越界)全红→绿; `AppPrefsHolidayTransferTest` 5 用例(读写/同事务互斥/clear 全清)全红→绿; 旧 `MakeupDay` 全仓 grep = 0
+  - Files: HolidayRange.kt(新增 HolidayTransferOps + HolidayTransferEntry), AppPrefs.kt(替换 setHolidayMakeupDay 等), HolidayTransferOpsTest.kt, AppPrefsHolidayTransferTest.kt
+- [ ] T2 渲染期解析: transferFor + effectiveDayOfWeek + isOrphanFor
+  - Accept: `transferFor(date, transfers, holidays)` 命中=该 entry, 未命中=null; `effectiveDayOfWeek(date, transfers, holidays, segmentByDate)` 命中取 targetDate.dayOfWeek, 未命中取自然星期; `isOrphanFor(entry, holidays)` = sourceDate ∉ holidays
+  - Verify: `HolidayTransferResolverTest` 10 用例 (含跨节/同 target 互斥覆盖/失效行/同源日多条冲突) 全红→绿
+  - Files: HolidayRange.kt (扩展 HolidayTransferOps), HolidayTransferResolverTest.kt
+- [ ] T3 shouldGrey 联动: 命中映射的放假日永不灰
+  - Accept: `HolidayManager.shouldGrey(ctx, date, transfers)` 命中映射→false; `decideGrey` 入参加 `transfers` 走 false 短路; 默认旧行为(transfers=空)不变
+  - Verify: `HolidayGreyTransferTest` 6 用例 (有映射/无映射/周末补班/忽略补班日开关) 全红→绿
+  - Files: HolidayManager.kt (shouldGrey + decideGrey), HolidayGreyTransferTest.kt
 
+## Checkpoint A (T1–T3): 全测试绿 · assembleDebug 绿
 
-## Checkpoint A(T2-T4): 编译+全测试绿 ✅(assembleDebug 绿, 1915 单测 0 失败)
+## Phase 2 VM + 渲染 + widget 全替换
 
-## Phase 2 第三 Tab
+- [ ] T4 ScheduleScreen / TodayScreen 走新解析器
+  - Accept: `ScheduleViewModel.state.transfers` 替 `makeupDays`; `transferDayFor(date)` 替 `courseDayFor(date)`; ScheduleScreen 网格 daySwap 用新 `effectiveDayOfWeek`; TodayScreen 今日日 = `state.transferDayFor(today)`; 渲染期替身语义保持(行 day 字段改写, 不写库)
+  - Verify: `HolidayTransferScheduleContractTest` 锁 ScheduleScreen `daySwap` 仍存在 + TodayScreen 仍走 `transferDayFor`; 旧 `resolveCourseDay`/`courseDayFor` 全仓 grep = 0; 手动模拟器: 元旦卡设 1/4 → 1/4 列显示 1/1 (周四) 课
+  - Files: ScheduleViewModel.kt, ScheduleScreen.kt, TodayScreen.kt, HolidayTransferScheduleContractTest.kt
+- [ ] T5 widget 8 变体全替换 + MakeupCourseDayHelper 重写
+  - Accept: `HolidayTransferHelper.effectiveDayOfWeek(ctx, tableId, date, holidays, segmentByDate)` 替 `MakeupCourseDayHelper`; 8 变体 (Today/TwoDay/WeekGrid/WeekList/WeekView/WidgetCompactWindow/WidgetRenderActivity/WeekGridWidgetProvider) 全部走新 helper; `MakeupCourseDayHelper.kt` 删除
+  - Verify: `HolidayTransferWidgetContractTest` 锁 8 变体 + CompactWindow + RenderActivity 全调新 helper; 旧 `MakeupCourseDayHelper` grep = 0
+  - Files: MakeupCourseDayHelper.kt (改名 + 重写), TodayWidget.kt, TwoDayWidget.kt, WeekGridWidgetProvider.kt, WeekListWidget.kt, WeekViewWidget.kt, WidgetCompactWindow.kt, WidgetRenderActivity.kt, HolidayTransferWidgetContractTest.kt
+- [ ] T6 闹钟 + 每日摘要走新解析器
+  - Accept: `CourseNotificationScheduler.scheduleAll/scheduleCourseAlarm` 取课用新 helper; 摘要节点构建用 `effectiveDayOfWeek(date, transfers, holidays)`
+  - Verify: 闹钟 contract 测试锁 scheduler 走新 helper; 旧 `resolveCourseDay` 全仓 grep = 0
+  - Files: CourseNotificationScheduler.kt
 
-- [x] T5 TimeSlotEditor 三 Tab 组件化 — 8ba89c47
-  - Accept: 新可选参数(periodTables 列表/selectedId/ onSelect/排除id);不传=旧两Tab;新 Tab 列表 UI(未绑定+全部,复用 BindOptionRow 风格)
-  - Verify: 编译+现有 TimeSlotEditor 相关测试零回归
-  - Files: TimeSlotEditor.kt
-- [x] T6 四调用点接线 — a66b36e2
-  - Accept: EditTable 拆绑定卡(未绑定/选中态原语义进 Tab);JW 确认框/导入预览框/作息表编辑页(排除自己,选中=取入内容)全有第三Tab
-  - Verify: 编译+模拟器四屏逐个点
-  - Files: EditTableScreen.kt, JwImportActivity.kt, ImportSheet.kt, PeriodTableEditScreen.kt, 6×strings
+## Checkpoint B (T4–T6): assembleDebug 绿 · 8 widget + 今日 + 闹钟语义自洽
 
-## Checkpoint B(T5-T6): 编译+全测试绿 ✅(模拟器四屏人工验证随 T12 统一)
+## Phase 3 UI 重建
 
-## Phase 3 管理流
+- [ ] T7 节卡 + 右格下拉 + 失效行 + 课表下拉 + 段编辑折叠
+  - Accept:
+    - 每张 public_holiday 段一张卡;卡头=节日名+课表下拉(SegmentedSwitcher 风格)
+    - 卡内每行 `[M月d日(周X)] [→] [右格:灰空 / 填日期]`
+    - 点右格下拉:`[全部补班日(按日期)] [无] [其他日期…]`,固定三项,无 disable
+    - 选"其他日期…"弹 DatePickerDialog → 确认 → 当 targetDate 落库
+    - 失效行灰底 + 提示文案 + 可点清除
+    - 段编辑折叠到 "可编辑假期段" 折叠卡(默认收起), 保留原弹窗逻辑
+    - 无课表提示卡保留原 `holiday_makeup_no_table`
+  - Verify: `HolidayTransferSettingsContractTest` 锁下拉项顺序、卡头课表下拉、失效行渲染、段编辑折叠默认收起; UI 模拟器三段(元旦/春节/国庆)各设一映射 + 跨节互斥 + 失效映射呈现
+  - Files: HolidaySettingsScreen.kt (大幅重写), HolidayTransferSettingsContractTest.kt
+- [ ] T8 删旧字段 + strings 替换 + i18n 全套 + feature-baseline 同步
+  - Accept:
+    - 旧 prefs key `holiday_makeup_days_<id>` 全删
+    - `MakeupDay` 类 / `holiday_makeup_days_<tableId>` 相关 prefs 函数全删
+    - 旧 strings `holiday_makeup_*` 改名 `holiday_transfer_*`(4 键×6 locale = 24 项 + 新增 5 键 `holiday_transfer_no_workday_option / holiday_transfer_orphan_hint / holiday_transfer_other_date / holiday_transfer_edit_segments / holiday_transfer_no_table_segment_card`)
+    - feature-baseline.md §5.4.b/§11/§12/§J 同步(调休映射章节)
+    - `StringsKeyParityTest` 把新 key 加进 parity 清单
+  - Verify: `grep -rn 'holiday_makeup\|MakeupDay' app/` = 0; `assembleDebug` 绿; lint 与基线对照只允许新增 5 键引发的 MissingTranslation; `feature-baseline.md` 调休章节与代码一致
+  - Files: 6×strings.xml, AppPrefs.kt, HolidayRange.kt, HolidaySettingsScreen.kt, feature-baseline.md, StringsKeyParityTest.kt
 
-- [x] T7 管理页:新建作息表卡+删除键挪编辑页
-  - Accept: 卡序 导入/新建课表/新建作息表/手动/编辑/导出;列表行=编辑+复制;删除键在编辑页底部(已保存才显),拦截弹窗保留
-  - Verify: 编译+模拟器
-  - Files: ManagementPage.kt, PeriodTablesScreen.kt, PeriodTableEditScreen.kt, MainActivity.kt(接线), 6×strings
-- [x] T8 复制作息表弹窗
-  - Accept: 复制→命名弹窗(预填顺延 2/3/4 可编辑,实时查重标错)→确认才建,留管理页;编辑页 TopBar 复制键同步改弹窗
-  - Verify: 编译+单测(顺延逻辑)+模拟器
-  - Files: PeriodTablesScreen.kt, PeriodTableEditScreen.kt, ScheduleViewModel/Repository, 6×strings
+## Checkpoint C (T7–T8): UI 全链绿 · 全测试绿 · 模拟器三场景实测
 
-## Phase 4 导入导出
+## Phase 4 收口
 
-- [x] T9 纯作息导入
-  - Accept: sleepy-v1 P块无C行 → 独立确认弹窗(名称预填顺延+可改+查重)→确认=insertPeriodTable+提示,不建课表
-  - Verify: 单测(解析0课程+periodTable非空判定)+模拟器全链
-  - Files: ImportSheet.kt, 6×strings
-- [x] T10 混合导入自动建作息表
-  - Accept: sleepy-v1 P+C 与 WakeUp JSON tableInfo.time → 自动建作息表(同名,撞名顺延,预览框可见后缀)+建课表+绑定;导入确认框第三Tab默认选中解析出的表
-  - Verify: 单测+模拟器
-  - Files: ImportSheet.kt, JwImportViewModel.kt/JwImportActivity.kt, 6×strings
-- [x] T11 作息表单独导出
-  - Accept: 编辑页分享键→格式选择(sleepy-v1 文本/JSON)→shareText;导出的纯作息文本可被 T9 路径吃回(往返)
-  - Verify: 单测(导出体格式+parser 吃回)+模拟器往返
-  - Files: SleepyNativeExporter.kt, PeriodTableEditScreen.kt, 6×strings
+- [ ] T9 全量测试 + lint + 契约锁补全 + feature-baseline 校
+  - Accept: 单测全跑 (基线 1980 + 新增 ≥35 = ≥2015) 绿; lint 与基线 a453b5f7 仅允许 i18n 新增项; 11 取课点契约锁 (ScheduleScreen/TodayScreen/8 widget/闹钟) 全检; README/feature-baseline 一致
+  - Verify: `./gradlew :app:testDebugUnitTest :app:lintDebug` 全绿; 11 取课点 grep 全调新 helper
+  - Files: test 全套
 
-## Phase 5 收口
+## 验收(用户原话 vs 实现行为)
 
-- [x] T12 全量验证(模拟器人工验证待用户)
-  - Accept: assembleDebug 0 err;testDebugUnitTest 全绿;lint 新增 0;feature-baseline.md §5.2/相关节同步七项
-  - Verify: 三命令输出留证
-  - Files: docs/sop/feature-baseline.md
+- "默认不填,但是给用户,用户要是点开了右边这个映射的话,可以自动有一个这个默认的一个选项" → 右格灰空,下拉首段"全部补班日"(全集)
+- "不能把多天都绑到同一天上面,如果他这一天选了的话,那就得其他两个就没得选了,你得让用户去选其他日期" → 互斥按目标日,后选覆盖前选,前选行视觉回灰
+- "点开这个灰色的小方块,小圆角矩形,然后展开来先是 1 月 4 号,然后第二行是无,然后第三行是其他日期" → 下拉三段固定顺序: ①官方补班日(全集,按日期) ②无 ③其他日期
+- "用户点其他日期的话,然后就给他弹出来系统的那个选其他日期的那个窗口" → 系统 DatePickerDialog
+- "多个补课的也是让用户自己填,然后有哪些官方补课日,就是放到这个默认这个默认的下拉菜单里" → 多个官方补班日全列在下拉首段
+- "如果没有的话,也允许用户去选其他的日期" → "其他日期"项始终存在
+- "跨课程表,那也是每一个课程表有自己的一个调休安排,每一个课程表都要自己进行设置" → 卡头课表下拉切课表, 按 (tableId) 隔离存储
+- "互斥肯定是跨天互斥的,是按天算的" → 互斥按 targetDate,跨节也生效
+- "节卡标题就是原来怎么做,现在就怎么做" → 复用现有 HolidayRangeListCard 标题渲染逻辑, 段编辑折叠保留
+- "把多天都绑到同一天上面" 误解纠正: 用户最终确认是 "后选覆盖前选,前选行回灰";允许源日不同但目标日相同(只要时间序上晚选覆盖)
