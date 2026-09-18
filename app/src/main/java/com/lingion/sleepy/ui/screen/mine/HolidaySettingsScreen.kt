@@ -635,10 +635,11 @@ private fun HolidayTransferRow(
     dayNames: Array<String>,
     onPick: (LocalDate?) -> Unit
 ) {
-    // 用户 2026-09-18 三次定稿: 用 Material3 原生 ExposedDropdownMenuBox —
-    // 锚字段(右格)尺寸不变, 展开的菜单锚到锚字段下方, 浮层一个图层叠上去, 视觉 = 这个矩形自己长高了浮起来。
-    // 第 0 行 = 完全空白的 DropdownMenuItem(text = { Text("") }) = 空白状态占位, 防止首项直接选中下面候选。
-    // 候选从第 1 行开始: ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜) ② 无 ③ 其他日期…
+    // 用户 2026-09-18 四次定稿: Material3 ExposedDropdownMenuBox, 但展开层不落默认白菜单 —
+    // containerColor = 母格当前色(蓝格=蓝菜单, 灰格=灰菜单), shape = 母格同款圆角(SleepyTheme.shapes.medium),
+    // 视觉 = 母格自己长高, 一体同色, 不是两个东西叠着。
+    // 第 0 行 = 灰底行(代表空白状态, 点击 = 清空该映射回未设置); 候选从第 1 行正常开始:
+    // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜) ② 无 ③ 其他日期…
     val colors = SleepyTheme.colors
     val leftLabel = remember(date, dayNames) {
         "${DateUtils.shortDateSlash(date)} (${dayNames[date.dayOfWeek.value - 1]})"
@@ -706,15 +707,26 @@ private fun HolidayTransferRow(
                     ExposedDropdownMenuDefaults.TrailingIcon(expanded = menuOpen)
                 }
             }
-            // 浮层菜单: 锚在 anchor 字段下方, 宽度 = anchor 字段宽, 高度由内容自适应 → 视觉 = 矩形长高浮起来
+            // 浮层菜单: 锚在 anchor 字段正下方(向下展开), 宽度 = anchor 字段宽;
+            // 容器色 = 母格色(targetColor)、圆角 = 母格同款 shapes.medium → 与母格一体同色同弧度
             ExposedDropdownMenu(
                 expanded = menuOpen,
-                onDismissRequest = { menuOpen = false }
+                onDismissRequest = { menuOpen = false },
+                shape = SleepyTheme.shapes.medium,
+                containerColor = targetColor
             ) {
-                // 第 0 行: 空白占位 (用户原话: 第一行不选任何东西, 完全是空的作为空白状态)
+                // 第 0 行: 灰底空白行 = 空白状态按钮 (点击 = 清空该映射回未设置);
+                // MenuItemColors 无容器色 → 灰底用行内 Box 背景实现, 与菜单容器色独立
                 DropdownMenuItem(
-                    text = { Text("") },
-                    onClick = { menuOpen = false },
+                    text = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .background(colors.surfaceContainerHighest)
+                                .padding(horizontal = 12.dp, vertical = 14.dp)
+                        ) { Text("") }
+                    },
+                    onClick = { onPick(null); menuOpen = false },
                     contentPadding = androidx.compose.foundation.layout.PaddingValues(0.dp)
                 )
                 // ① 当年所有官方补班日(扁平全量, 升序, 不分组/不禁用/不猜)

@@ -46,11 +46,30 @@ class HolidaySettingsContractTest {
 
     @Test
     fun dropdown_starts_with_blank_row() {
-        // 用户原话: 第一行不选任何东西, 完全是空的作为空白状态
+        // 用户原话: 第一行是灰的空白状态按钮(text 为空串 Text("")), 下一行起正常展现候选
         assertTrue(
-            "ExposedDropdownMenu must declare its first item as empty/blank",
-            Regex("""DropdownMenuItem\([\s\S]{0,200}?text\s*=\s*\{\s*Text\(""""") .containsMatchIn(screen)
+            "first dropdown item must be blank (Text(\"\") in its text block)",
+            Regex("""DropdownMenuItem\([\s\S]{0,360}?Text\(""\)""").containsMatchIn(screen)
         )
+    }
+
+    @Test
+    fun menu_container_follows_cell_color_and_corner() {
+        // 用户原话: 展开整个菜单都是高亮色, 跟随母容器圆角矩形弧度
+        assertTrue("menu container must use the cell color",
+            screen.contains("containerColor = targetColor"))
+        assertTrue("menu corner must match the cell shape",
+            screen.contains("shape = SleepyTheme.shapes.medium"))
+    }
+
+    @Test
+    fun blank_row_is_grey_button_that_clears_mapping() {
+        // 用户原话: 第 0 行是灰的代表这一个按钮是灰色的 (text 内灰底 Box + onClick 清空映射)
+        val greyBg = screen.indexOf("background(colors.surfaceContainerHighest)")
+        val clear = screen.indexOf("onPick(null)")
+        assertTrue("row 0 must carry a grey Box background", greyBg > 0)
+        assertTrue("row 0 must clear the mapping on click",
+            clear > 0 && clear - greyBg in 1..400)
     }
 
     @Test
