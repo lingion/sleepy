@@ -198,14 +198,16 @@ open class WeekViewWidgetReceiver : AppWidgetProvider() {
                         // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
                             val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
-                            val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                            // issue#44: 列标题=自然星期; 取课按调休映射(未映射=本格自己星期)
+                            val courseDow = MakeupCourseDayHelper.effectiveDayOfWeek(context, table.id, date)
+                            val all = repo.getCoursesByDayOnce(table.id, courseDow)
                             val visible = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
                                 all.filter { it.inWeek(week) }.sortedBy { it.startNode }
                             DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
                         }
                         // 最小档三天窗口 (2026-09-15 用户令): 真实日期, 上下周打通
                         val compactWindow = WidgetCompactWindow.build(
-                            repo, table.id, table.timeJson, table.startDate, table.maxWeek,
+                            context, repo, table.id, table.timeJson, table.startDate, table.maxWeek,
                             today, WidgetCompactWindowStore.isTodayFirst(context, appWidgetId)
                         )
                         WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status, compactWindow = compactWindow)

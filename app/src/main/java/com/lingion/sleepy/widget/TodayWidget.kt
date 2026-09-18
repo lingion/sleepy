@@ -450,7 +450,6 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
         fun loadDataForDate(
             context: Context, appWidgetId: Int, target: LocalDate, today: LocalDate
         ): WidgetData {
-            val dayOfWeek = DateUtils.todayDayOfWeek(target)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
@@ -467,7 +466,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                     } else {
                         val week = DateUtils.currentWeek(table.startDate, target)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, target)
-                        val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                        // issue#44: 调休映射后取课, 未映射=自然星期
+                        val dow = MakeupCourseDayHelper.effectiveDayOfWeek(context, table.id, target)
+                        val all = repo.getCoursesByDayOnce(table.id, dow)
                         // 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
                         val visible = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
                             all.filter { it.inWeek(week) }.sortedBy { it.startNode }

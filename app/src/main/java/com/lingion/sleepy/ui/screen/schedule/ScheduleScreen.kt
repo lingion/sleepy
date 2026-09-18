@@ -267,6 +267,31 @@ fun ScheduleScreen(
                         val tj = state.effectiveCurrentTable?.timeJson
                         if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
                     }
+                // issue#44 调休改写: 本页各天日期若命中调休映射, 该天在网格里改按映射目标星期渲染 —
+                // 周日(补周四)列显示周四的课。渲染期替身, 不写库; 未映射日期原样。
+                val renderCourses = run {
+                    val start = state.currentTable?.startDate
+                    val mappings = state.makeupDays
+                    if (start.isNullOrBlank() || mappings.isEmpty()) weekCourses
+                    else {
+                        fun displayDayOf(date: java.time.LocalDate): Int =
+                            com.lingion.sleepy.util.HolidayRangeOps.resolveCourseDay(date, mappings)
+                        val daySwap: Map<Int, Int> = (1..7).mapNotNull { d ->
+                            val natural = try {
+                                com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d).dayOfWeek.value
+                            } catch (_: Exception) { null } ?: return@mapNotNull null
+                            val display = displayDayOf(
+                                com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d)
+                            )
+                            if (display != natural) natural to display else null
+                        }.toMap()
+                        if (daySwap.isEmpty()) weekCourses
+                        else weekCourses.map { c ->
+                            val mapped = daySwap[c.day]
+                            if (mapped == null || mapped == c.day) c else c.copy(day = mapped)
+                        }
+                    }
+                }
                 // 计算本周哪些天是节假日/周末(灰显用)
                 val greyDays by produceState<Set<Int>>(emptySet(), page, state.currentTable?.startDate) {
                     val start = state.currentTable?.startDate
@@ -283,7 +308,7 @@ fun ScheduleScreen(
                 }
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
-                        courses = weekCourses,
+                        courses = renderCourses,
                         visibleDays = visibleDays,
                         displayMode = displayMode,
                         timeJson = state.effectiveCurrentTable?.timeJson ?: "",
@@ -291,7 +316,7 @@ fun ScheduleScreen(
                         greyDays = greyDays
                     )
                     ViewMode.Cards -> CardsGridView(
-                        courses = weekCourses,
+                        courses = renderCourses,
                         allCourses = state.courses,
                         timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
                         visibleDays = visibleDays,

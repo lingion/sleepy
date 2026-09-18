@@ -37,4 +37,24 @@ class HolidayMakeupScheduleContractTest {
         // 单一真源: VM 装载/刷新时调, 设置页保存后也调 VM.refreshMakeup
         assertTrue(scheduleVm.contains("getHolidayMakeupDays"))
     }
+
+    // ===== 行为锁: 周日(2026-10-11)补周四 → 周日列渲染周四的课 =====
+
+    @Test
+    fun resolve_sunday_to_thursday_semantics() {
+        val sunday = LocalDate.of(2026, 10, 11)
+        val mappings = listOf(com.lingion.sleepy.util.MakeupDay(sunday, 4))
+        assertEquals(4, com.lingion.sleepy.util.HolidayRangeOps.resolveCourseDay(sunday, mappings))
+        // 未映射的下一个周日按自然星期
+        assertEquals(7, com.lingion.sleepy.util.HolidayRangeOps.resolveCourseDay(sunday.plusDays(7), mappings))
+    }
+
+    @Test
+    fun schedule_screen_rewrites_render_day_from_mapping() {
+        // 网格渲染层必须存在"调休改写 day"逻辑(渲染期替身, 不写库)
+        val screen = src("src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleScreen.kt")
+        assertTrue(screen.contains("issue#44 调休改写"))
+        assertTrue(screen.contains("renderCourses"))
+        assertTrue(screen.contains("daySwap"))
+    }
 }

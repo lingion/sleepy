@@ -1,5 +1,6 @@
 package com.lingion.sleepy.widget
 
+import android.content.Context
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.DateUtils
 import java.time.LocalDate
@@ -14,6 +15,7 @@ import java.time.LocalDate
 internal object WidgetCompactWindow {
 
     suspend fun build(
+        context: Context,
         repo: ScheduleRepository,
         tableId: Long,
         timeJson: String,
@@ -22,7 +24,8 @@ internal object WidgetCompactWindow {
         today: LocalDate,
         todayFirst: Boolean,
     ): List<DayData> = WidgetBitmapRenderers.compactWindowDates(today, todayFirst).map { date ->
-        val dow = date.dayOfWeek.value
+        // issue#44: 调休映射后取课
+        val dow = MakeupCourseDayHelper.effectiveDayOfWeek(context, tableId, date)
         val week = DateUtils.currentWeek(startDate, date)
         val afterEnd = DateUtils.semesterStatus(startDate, maxWeek, date) == DateUtils.SemesterStatus.AFTER_END
         val visible = if (afterEnd) emptyList()
