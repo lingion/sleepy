@@ -25,7 +25,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +41,10 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 /**
+ * [intentional custom] 官方 M3 无「分组标题+折叠卡+单选行+开关行」组合件;
+ * 本文件 = Sleepy 设置页领域封装, 内部全部消费官方组件(Switch/Icon/AnimatedVisibility),
+ * 颜色/形状/字体全部走 MaterialTheme 官方 token。
+ *
  * 设置页公共卡片组件 — 自 AppearanceScreen 抽出(外观/通用两页共用):
  * SectionHeader 分组标题 / SettingsCard 折叠卡 / DisplayModeOption 单选项 / SettingToggleRow 开关行。
  * SettingsFlatCard: 不折叠的平铺卡 — 内容只是简单选择或单个开关的设置项专用(用户 2026-09-03 指令:
@@ -181,6 +184,6 @@ fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean)
                 Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }
