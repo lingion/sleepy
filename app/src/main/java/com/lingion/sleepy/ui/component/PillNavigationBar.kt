@@ -96,7 +96,7 @@ fun PillNavigationBar(
     modifier: Modifier = Modifier,
     dock: Boolean = false
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val count = items.size.coerceAtLeast(1)
     val pillHalf = with(density) { 32.dp.toPx() }
@@ -270,7 +270,7 @@ private fun DockNavigationBar(
     items: List<PillNavItemSpec>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
-    colors: com.lingion.sleepy.ui.theme.WakeUpColorScheme,
+    colors: androidx.compose.material3.ColorScheme,
     density: androidx.compose.ui.unit.Density,
     onBarGeometry: (Float, Float, Boolean) -> Unit,
     modifier: Modifier = Modifier

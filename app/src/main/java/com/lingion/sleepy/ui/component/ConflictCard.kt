@@ -452,7 +452,7 @@ fun ConflictClusterCard(
     modifier: Modifier = Modifier
 ) {
     val palette = SleepyTheme.palette
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val cardShape = SleepyTheme.shapes.medium
 
@@ -971,7 +971,7 @@ private fun ConflictCourseCard(
     groupRows: List<CourseEntity> = listOf(course)
 ) {
     val palette = SleepyTheme.palette
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
     val bg = CourseColorUtil.pickCourseColorComposeWithGroupRows(
@@ -1064,7 +1064,7 @@ private fun ConflictCourseCard(
  */
 @Composable
 private fun ConflictBadge(hiddenCount: Int, onClick: () -> Unit, modifier: Modifier = Modifier) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val single = hiddenCount in 0..9
     Box(
         modifier = modifier
@@ -1102,7 +1102,7 @@ private fun ConflictCoursePickerDialog(
     onDismiss: () -> Unit,
     onPick: (Long) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         titleContentColor = colors.onSurface,

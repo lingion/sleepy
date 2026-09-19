@@ -361,7 +361,7 @@ private fun TableSwitcherDialog(
     onSelect: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         titleContentColor = colors.onSurface,
@@ -427,7 +427,7 @@ private fun TopBar(
     onAddCourse: () -> Unit,
     onShare: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // 实时计算当前实际周（不依赖 state.currentWeek — 用户可能切到了别的周）
     val actualWeek = remember(startDate) {
         if (startDate.isBlank()) 1 else DateUtils.currentWeek(startDate)
@@ -598,7 +598,7 @@ private fun WeekNavButton(
     onClick: () -> Unit,
     contentDescriptionRes: Int? = null
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .size(32.dp)
@@ -622,7 +622,7 @@ private fun NoCourseState(
     onAddCourse: () -> Unit,
     onImport: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -667,7 +667,7 @@ private fun EmptyState(
     onGoImport: () -> Unit = {},
     onCreateTable: () -> Unit = {}
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = modifier
             .padding(horizontal = 22.dp)

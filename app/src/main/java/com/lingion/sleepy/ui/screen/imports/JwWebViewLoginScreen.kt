@@ -115,7 +115,7 @@ fun JwWebViewLoginScreen(
     onBack: () -> Unit,
     viewModel: JwImportViewModel = viewModel()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
@@ -233,7 +233,7 @@ fun JwWebViewLoginScreen(
                         Text(
                             text = JwProtocol.displayName(school.type),
                             style = MaterialTheme.typography.bodySmall,
-                            color = SleepyTheme.colors.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -534,7 +534,7 @@ private fun JwWebView(
 
 @Composable
 private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()

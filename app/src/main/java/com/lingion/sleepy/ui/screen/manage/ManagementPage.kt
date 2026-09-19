@@ -66,7 +66,7 @@ fun ManagementPage(
     autoShowImportSheet: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
     val scope = androidx.compose.runtime.rememberCoroutineScope()
     val table = state.currentTable
@@ -206,7 +206,7 @@ private fun ManageCard(
     subtitle: String,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()

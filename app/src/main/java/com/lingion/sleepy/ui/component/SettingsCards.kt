@@ -50,7 +50,7 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @Composable
 fun SectionHeader(title: String, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
         Text(title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onBackground)
         if (subtitle != null) {
@@ -62,7 +62,7 @@ fun SectionHeader(title: String, subtitle: String? = null) {
 
 @Composable
 fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         label = "settings-arrow"
@@ -112,7 +112,7 @@ fun SettingsFlatCard(
     onSelect: (Int) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -159,7 +159,7 @@ fun SettingsFlatCard(
 
 @Composable
 fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
@@ -173,7 +173,7 @@ fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClic
 
 @Composable
 fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)

@@ -42,12 +42,12 @@ object WidgetEditScheduleSection : WidgetEditSection {
             Text(
                 text = stringResource(titleRes),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = SleepyTheme.colors.onSurface
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.padding(top = 8.dp))
             Surface(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
-                color = SleepyTheme.colors.surfaceContainer,
+                color = MaterialTheme.colorScheme.surfaceContainer,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column(modifier = Modifier.padding(vertical = 4.dp)) {
@@ -74,8 +74,8 @@ object WidgetEditScheduleSection : WidgetEditSection {
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .background(
-                    if (selected) SleepyTheme.colors.primaryContainer
-                    else SleepyTheme.colors.surfaceContainer
+                    if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainer
                 )
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -83,14 +83,14 @@ object WidgetEditScheduleSection : WidgetEditSection {
             Text(
                 text = stringResource(R.string.widget_edit_default_label),
                 style = MaterialTheme.typography.bodyLarge,
-                color = SleepyTheme.colors.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
             if (selected) {
                 Icon(
                     imageVector = Icons.Outlined.Check,
                     contentDescription = stringResource(R.string.selected),
-                    tint = SleepyTheme.colors.primary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }
@@ -103,8 +103,8 @@ object WidgetEditScheduleSection : WidgetEditSection {
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .background(
-                    if (selected) SleepyTheme.colors.primaryContainer
-                    else SleepyTheme.colors.surfaceContainer
+                    if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceContainer
                 )
                 .padding(horizontal = 16.dp, vertical = 14.dp),
             verticalAlignment = Alignment.CenterVertically
@@ -112,7 +112,7 @@ object WidgetEditScheduleSection : WidgetEditSection {
             Text(
                 text = tableName,
                 style = MaterialTheme.typography.bodyLarge,
-                color = SleepyTheme.colors.onSurface,
+                color = MaterialTheme.colorScheme.onSurface,
                 modifier = Modifier.weight(1f)
             )
             if (selected) {
@@ -120,7 +120,7 @@ object WidgetEditScheduleSection : WidgetEditSection {
                 Icon(
                     imageVector = Icons.Outlined.Check,
                     contentDescription = stringResource(R.string.selected),
-                    tint = SleepyTheme.colors.primary
+                    tint = MaterialTheme.colorScheme.primary
                 )
             }
         }

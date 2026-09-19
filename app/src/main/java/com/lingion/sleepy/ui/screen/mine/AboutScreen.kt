@@ -75,7 +75,7 @@ import kotlinx.coroutines.launch
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
@@ -585,7 +585,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
 
 @Composable
 private fun InfoCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -600,7 +600,7 @@ private fun InfoCard(content: @Composable () -> Unit) {
 /** 冷启动检查到新版可用时在「关于」顶部展示的横幅, 点击跳 Releases tag 页 */
 @Composable
 private fun UpdateBanner(version: String, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier

@@ -87,7 +87,7 @@ fun ExportScreen(
     val allPeriodTables by viewModel.allPeriodTables.collectAsState()
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val snackbarHostState = remember { SnackbarHostState() }
 
     // 导出目标 — 本地选择, 不污染主页 selectedTableId/widget 默认表。
@@ -394,7 +394,7 @@ fun ExportScreen(
 /** 展开框行 — 课表/作息表共用视觉(选中态 primaryContainer 色块+对勾, 禁描边规则) */
 @Composable
 private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -438,7 +438,7 @@ internal fun ExportItem(
     subtitle: String,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()

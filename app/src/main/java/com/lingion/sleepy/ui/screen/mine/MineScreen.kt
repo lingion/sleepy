@@ -61,7 +61,7 @@ fun MineScreen(
     onOpenAbout: () -> Unit = {}
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -156,7 +156,7 @@ fun MineScreen(
 
 @Composable
 private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -172,7 +172,7 @@ private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
 
 @Composable
 private fun StatItem(value: String, label: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = value, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = colors.primary)
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
@@ -182,7 +182,7 @@ private fun StatItem(value: String, label: String) {
 @Composable
 // isLast / trailing 死参数已删（函数体从未读取 isLast; trailing 无任何调用方传值）
 private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -201,7 +201,7 @@ private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit =
 
 @Composable
 private fun Divider(vertical: Boolean = false) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
     else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
 }

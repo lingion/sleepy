@@ -59,7 +59,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LicenseScreen(onBack: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val expanded = remember { mutableStateMapOf<String, Boolean>() }
 
     Scaffold(
@@ -221,7 +221,7 @@ private fun AttributionCard(
     onToggle: () -> Unit,
     expandedContent: (@Composable () -> Unit)? = null
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     LicenseCard {
         Row(
             modifier = Modifier
@@ -273,7 +273,7 @@ private fun AttributionCard(
 
 @Composable
 private fun SectionHeader(text: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -284,7 +284,7 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun LicenseCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()

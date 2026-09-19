@@ -111,7 +111,7 @@ fun ImportSheet(
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -603,7 +603,7 @@ private fun ImportMethodRow(
     trailing: ImageVector? = null,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -646,7 +646,7 @@ private fun ImportMethodRow(
 
 @Composable
 private fun FormatRow(name: String, desc: String, onDetail: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -700,7 +700,7 @@ private enum class ImportFormat {
  */
 @Composable
 private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
 
     val titleRes = when (format) {
@@ -906,7 +906,7 @@ private fun ImportPreviewDialog(
     onDismiss: () -> Unit,
     onApply: (ImportApplyMode) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         titleContentColor = colors.onSurface,
@@ -1217,7 +1217,7 @@ private fun PreviewMetricCard(
 
 @Composable
 private fun PreviewInfoRow(label: String, value: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
         Text(text = value, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
@@ -1240,7 +1240,7 @@ private fun ImportConfirmDialog(
     selectedPeriodTableId: Long? = null,
     onSelectPeriodTable: (Long?) -> Unit = {}
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val fieldColors = SleepyTheme.fieldColors()
     var rows by remember(timeJson) {

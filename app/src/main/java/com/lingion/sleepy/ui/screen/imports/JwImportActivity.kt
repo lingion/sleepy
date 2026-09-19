@@ -249,7 +249,7 @@ class JwImportActivity : ComponentActivity() {
                             stage = Stage.WebViewLogin
                             parsedCourses = emptyList()
                         } else saveableStateHolder.SaveableStateProvider("ConfigureConfirm") {
-                        val colors = SleepyTheme.colors
+                        val colors = MaterialTheme.colorScheme
                         var confirmError by remember { mutableStateOf<String?>(null) }
                         AlertDialog(
                             onDismissRequest = { requestExit() },
@@ -539,7 +539,7 @@ class JwImportActivity : ComponentActivity() {
                     ) {
                         Card(
                             colors = CardDefaults.cardColors(
-                                containerColor = SleepyTheme.colors.errorContainer
+                                containerColor = MaterialTheme.colorScheme.errorContainer
                             )
                         ) {
                             // #27: 可当场关闭,不必退出页面
@@ -549,7 +549,7 @@ class JwImportActivity : ComponentActivity() {
                                     modifier = Modifier
                                         .fillMaxWidth()
                                         .padding(16.dp),
-                                    color = SleepyTheme.colors.onErrorContainer
+                                    color = MaterialTheme.colorScheme.onErrorContainer
                                 )
                                 TextButton(
                                     onClick = { errorMsg = null },

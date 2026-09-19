@@ -42,7 +42,7 @@ fun PeriodTableShareSheet(
 ) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(

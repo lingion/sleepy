@@ -84,7 +84,7 @@ fun EditTableScreen(
     val state by viewModel.state.collectAsState()
     // issue#40: 全部时间节次表(换绑选择器数据源 §4.3)
     val allPeriodTables by viewModel.allPeriodTables.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -450,7 +450,7 @@ fun EditTableScreen(
 
 @Composable
 private fun CardSection(title: String, subtitle: String, content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()

@@ -56,7 +56,7 @@ fun DialogActionButtons(
     confirmEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val availableWidth = maxWidth.value

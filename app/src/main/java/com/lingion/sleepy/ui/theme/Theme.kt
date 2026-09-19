@@ -303,10 +303,9 @@ object SleepyTextStyle {
 
 /** 全局访问入口 */
 object SleepyTheme {
-    val colors: WakeUpColorScheme
-        @Composable
-        @ReadOnlyComposable
-        get() = LocalWakeUpColors.current
+    // [intentional custom] colors 桥已下线(2026-09-19 M3 迁移阶段 1):
+    // Compose UI 层一律直读 MaterialTheme.colorScheme; WakeUpColorScheme 只作
+    // ThemePresets/CustomSchemeDeriver 的派生数据模型与 widget 桥的输入保留。
 
     val palette: CoursePalette
         @Composable
@@ -359,7 +358,7 @@ object SleepyTheme {
      *  挡键盘, 但视觉上必须和普通字段一模一样, 不能显灰。 */
     @Composable
     fun fieldColors(): TextFieldColors {
-        val c = colors
+        val c = MaterialTheme.colorScheme
         return TextFieldDefaults.colors(
             focusedTextColor = c.onSurface,
             unfocusedTextColor = c.onSurface,

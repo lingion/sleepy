@@ -134,7 +134,7 @@ fun CourseDetailSheet(
                             onClick = { onEdit(course) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = SleepyTheme.shapes.large,
-                            colors = ButtonDefaults.buttonColors(containerColor = SleepyTheme.colors.primary)
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text(stringResource(R.string.course_detail_edit_course))
                         }
@@ -158,7 +158,7 @@ private fun DefaultTopPickerSection(
     onDefaultTopChanged: ((clusterKey: String, layerRepId: Long?) -> Unit)?
 ) {
     val context = LocalContext.current
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     // 簇键:公式唯一真值在引擎(v7.10.16p) — 与 ConflictClusterCard / topOverrides 同源
     val clusterKey = ConflictLayoutEngine.conflictClusterKey(cluster)
@@ -238,7 +238,7 @@ private fun DefaultTopPickerSection(
 
 @Composable
 private fun SheetHeader(title: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -260,7 +260,7 @@ private fun SheetHeader(title: String) {
 
 @Composable
 private fun TimeChip(text: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Text(
         text = text,
         style = MaterialTheme.typography.labelMedium,
@@ -274,7 +274,7 @@ private fun TimeChip(text: String) {
 
 @Composable
 private fun DetailRow(key: String, value: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(12.dp),

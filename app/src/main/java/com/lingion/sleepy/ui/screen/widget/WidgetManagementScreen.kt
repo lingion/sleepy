@@ -48,7 +48,7 @@ fun WidgetManagementScreen(
 ) {
     val vm = remember { WidgetManagementViewModel() }
     val items by vm.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Scaffold(
         containerColor = colors.background,
@@ -110,7 +110,7 @@ fun WidgetManagementScreen(
 
 @Composable
 private fun PlacedWidgetRow(item: PlacedWidgetItem, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Card(
         modifier = Modifier
             .fillMaxWidth()

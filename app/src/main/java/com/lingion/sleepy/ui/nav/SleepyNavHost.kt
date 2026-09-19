@@ -370,7 +370,7 @@ private fun MainRoute(
     if (!navDock) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = SleepyTheme.colors.background,
+            containerColor = MaterialTheme.colorScheme.background,
             bottomBar = {
                 PillNavigationBar(
                     items = navItems,
@@ -404,7 +404,7 @@ private fun MainRoute(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SleepyTheme.colors.background)
+                .background(MaterialTheme.colorScheme.background)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ) {
             androidx.compose.runtime.CompositionLocalProvider(

@@ -61,7 +61,7 @@ fun SmartPeriodEditor(
     onConfigChange: (SmartPeriodConfig) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val n = (config.totalPeriods - 1).coerceAtLeast(0)
     val assigns = config.effectiveAssignments()
 
@@ -205,7 +205,7 @@ private fun BreakGroupSection(
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val groupColor = if (breakOption.isLong) colors.primary else colors.tertiary
     val n = (totalPeriods - 1).coerceAtLeast(0)
 
@@ -298,7 +298,7 @@ private fun PositionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val bg = if (selected) groupColor else colors.surfaceContainerHigh
     val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
     Box(
@@ -323,7 +323,7 @@ private fun PreviewList(
     config: SmartPeriodConfig,
     assigns: List<Int?>
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val rows = config.derive()
     val transMins = config.effectiveTransitionMinutes()
     val shortBreakLabel = stringResource(R.string.short_break)

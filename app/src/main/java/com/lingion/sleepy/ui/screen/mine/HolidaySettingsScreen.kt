@@ -85,7 +85,7 @@ private const val MAX_YEAR = 2049
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HolidaySettingsScreen(onBack: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -430,7 +430,7 @@ private fun HolidayRangeListCard(
     showWorkdayBadge: Boolean = false,
     onEdit: (HolidayRange) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -487,7 +487,7 @@ private fun HolidayRemovedCard(
     segments: List<HolidayRange>,
     onRestore: (HolidayRange) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -541,7 +541,7 @@ private fun HolidayRangeEditDialog(
     onSave: (HolidayRange) -> Unit,
     onDelete: (HolidayRange) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     var name by remember(target) { mutableStateOf(target.name) }
     var startText by remember(target) { mutableStateOf(target.startDate.toString()) }
     var endText by remember(target) { mutableStateOf(target.endDate.toString()) }
