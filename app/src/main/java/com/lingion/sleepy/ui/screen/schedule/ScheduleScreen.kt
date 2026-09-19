@@ -41,7 +41,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -646,17 +646,17 @@ private fun NoCourseState(
             onClick = onAddCourse,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text(stringResource(R.string.schedule_manual_first), color = colors.onPrimary)
+            Text(stringResource(R.string.schedule_manual_first))
         }
-        Button(
+        // [intentional custom] FilledTonalButton + ctaHeight: 官方变体自带动效/形状,
+        // 仅保留 Sleepy 的 56dp CTA 高度档位(官方无此 token)。
+        FilledTonalButton(
             onClick = onImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
-            Text(stringResource(R.string.schedule_go_manage), color = colors.onSecondaryContainer)
+            Text(stringResource(R.string.schedule_go_manage))
         }
     }
 }
@@ -692,18 +692,17 @@ private fun EmptyState(
             onClick = onGoImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text(stringResource(R.string.schedule_empty_import), color = colors.onPrimary)
+            Text(stringResource(R.string.schedule_empty_import))
         }
         // 副按钮 = 手动创建第一张课表 (建表流, 非加课 — 无表载体时"创建第一门课"无从谈起)
-        Button(
+        // [intentional custom] FilledTonalButton + ctaHeight: 同上, 仅保留 56dp CTA 档位。
+        FilledTonalButton(
             onClick = onCreateTable,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
-            Text(stringResource(R.string.schedule_empty_create_table), color = colors.onSecondaryContainer)
+            Text(stringResource(R.string.schedule_empty_create_table))
         }
     }
 }

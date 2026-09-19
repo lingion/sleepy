@@ -134,7 +134,6 @@ fun CourseDetailSheet(
                             onClick = { onEdit(course) },
                             modifier = Modifier.fillMaxWidth(),
                             shape = SleepyTheme.shapes.large,
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                         ) {
                             Text(stringResource(R.string.course_detail_edit_course))
                         }

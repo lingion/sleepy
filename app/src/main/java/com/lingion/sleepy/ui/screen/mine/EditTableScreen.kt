@@ -361,6 +361,8 @@ fun EditTableScreen(
             // 最后一张表也可删 — ScheduleScreen 的真空态(EmptyState)兜底)
             if (pendingNewTableId == null) {
                 item {
+                    // [intentional custom] 官方 Button 无 error 语义变体; 沿用 errorContainer
+                    // 色块 = Sleepy 视觉语言(同 AddCourseScreen 删除键)。
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),

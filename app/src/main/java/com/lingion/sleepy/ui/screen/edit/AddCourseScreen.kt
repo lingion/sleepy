@@ -37,6 +37,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -635,7 +636,7 @@ fun AddCourseScreen(
                         ) { endWeek = it }
                     }
                     // 显式应用 — 不再隐式下发，由用户一键覆盖所有时段
-                    Button(
+                    FilledTonalButton(
                         onClick = {
                             meetingBlocks.forEach { b ->
                                 b.startWeek = startWeek
@@ -644,9 +645,8 @@ fun AddCourseScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
                     ) {
-                        Text(stringResource(R.string.apply_to_all_slots), color = colors.onSecondaryContainer)
+                        Text(stringResource(R.string.apply_to_all_slots))
                     }
                 }
             }
@@ -701,7 +701,7 @@ fun AddCourseScreen(
 
             // 新增时段按钮
             item {
-                Button(
+                FilledTonalButton(
                     onClick = {
                         meetingBlocks.add(
                             MeetingBlockDraft(
@@ -720,11 +720,10 @@ fun AddCourseScreen(
                     },
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                     shape = SleepyTheme.Buttons.shape,
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
                 ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, tint = colors.onSecondaryContainer)
+                    Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.add_slot), color = colors.onSecondaryContainer)
+                    Text(stringResource(R.string.add_slot))
                 }
             }
 
@@ -747,6 +746,8 @@ fun AddCourseScreen(
                 item {
                     var showDeleteConfirm by remember { mutableStateOf(false) }
 
+                    // [intentional custom] 官方 Button 无 error 语义变体(MD3 规范删除动作用
+                    // TextButton+error 文字色); 此处沿用 errorContainer 色块 = Sleepy 视觉语言。
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),

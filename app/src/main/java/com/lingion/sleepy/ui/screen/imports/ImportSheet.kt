@@ -308,7 +308,6 @@ fun ImportSheet(
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         enabled = !isLoading && inputText.isNotBlank(),
                         shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(
                             text = if (isLoading) stringResource(R.string.import_parsing) else stringResource(R.string.import_preview),
@@ -1121,7 +1120,6 @@ private fun ImportPreviewDialog(
                         onClick = { onApply(ImportApplyMode.ImportAsNew) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = SleepyTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(stringResource(R.string.import_as_new), maxLines = 1)
                     }
@@ -1134,7 +1132,6 @@ private fun ImportPreviewDialog(
                             onClick = { onApply(ImportApplyMode.AppendNonConflict) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_only), maxLines = 1)
                         }
@@ -1142,7 +1139,6 @@ private fun ImportPreviewDialog(
                             onClick = { onApply(ImportApplyMode.ImportAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
@@ -1167,7 +1163,6 @@ private fun ImportPreviewDialog(
                             onClick = { onApply(ImportApplyMode.AppendAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_as_new), maxLines = 1)
                         }

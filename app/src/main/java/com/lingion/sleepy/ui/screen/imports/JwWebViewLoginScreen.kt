@@ -27,7 +27,6 @@ import androidx.compose.material.icons.outlined.Computer
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -559,14 +558,13 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
             onClick = onCapture,
             enabled = enabled,
             shape = SleepyTheme.shapes.extraLarge,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
             Icon(
                 imageVector = Icons.Outlined.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.padding(end = 6.dp)
             )
-            Text(stringResource(R.string.jw_import_page), color = colors.onPrimary)
+            Text(stringResource(R.string.jw_import_page))
         }
     }
 }
