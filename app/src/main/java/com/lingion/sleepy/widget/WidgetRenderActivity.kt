@@ -49,6 +49,8 @@ class WidgetRenderActivity : Activity() {
         Log.d(TAG, "rendering widget=$which, size=${wDp}x${hDp}dp")
 
         // FrameLayout: 居中 ImageView 展示 widget bitmap
+        // [intentional custom] 调试 Activity 截图底板, 非 widget 主题色 —
+        // 与 widget RemoteViews 走 resolveSchemePublic 派生的实际底色无关。
         val root = FrameLayout(this).apply {
             setBackgroundColor(0xFF1A1A2E.toInt())
         }
