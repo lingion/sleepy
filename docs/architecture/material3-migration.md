@@ -46,8 +46,8 @@
 | # | 阶段 | 改动面 | 视觉 | 自研残留 | 验收 | 状态 |
 |---|------|--------|------|----------|------|------|
 | 0 | 准备 — 文档 + 基线 | 0(只产文档) | 0 | 无 | 测试 1993/1993 绿; debug APK 成功 | ✅ |
-| 1 | `SleepyTheme.colors` 双桥下线, Compose UI 直读 `MaterialTheme.colorScheme` | 44 文件 + 181 处引用 | 0 | Widget/Preset 内部仍走 `WakeUpColorScheme` | 视觉一致; `SleepyTheme.colors` 引用 0 | 进行中 |
-| 2 | 自研按钮/卡片 → 官方 `Button` / `FilledTonalButton` / `Card` / `ListItem` | SettingsCards 主调用点 + 设置页 | 微小 | 无 | 视觉差异 ≤ 1 token 单位; 原契约测试绿 | 待办 |
+| 1 | `SleepyTheme.colors` 双桥下线, Compose UI 直读 `MaterialTheme.colorScheme` | 44 文件 + 181 处引用 | 0 | Widget/Preset 内部仍走 `WakeUpColorScheme` | 视觉一致; `SleepyTheme.colors` 引用 0 | ✅ 1c066fb6 |
+| 2 | 自研按钮/卡片 → 官方 `Button` / `FilledTonalButton` / `Card` / `ListItem` | SettingsCards 主调用点 + 设置页 | 微小 | errorContainer 删除键薄层 | 2044 测试绿; 薄层已标记 | ✅ b3cefa58 + b02986c1 |
 | 3 | `SegmentedSwitcher` → `SingleChoiceSegmentedButtonRow`(待用户确认) | 4 调用点 | 中(扫色消失) | 薄层保留 | 用户确认后落地 | 待用户确认 |
 | 4 | `SettingsCards` 自研折叠卡 → `ListItem` + `Card` + `AnimatedVisibility` | 设置子页 + about 页 | 微小 | 无 | `SettingsCard`/`SettingsFlatCard` 删除 | 待办 |
 | 5 | `ModalBottomSheet` / `AlertDialog` / `DialogActionButtons` 标准化 | 5 个 sheet/dialog | 微小 | `DialogActionButtons` 内部换官方 Button | 弹窗动效走 `MotionScheme` 默认值 | 待办 |
@@ -83,8 +83,8 @@
 ## 5. 当前进度
 
 - [x] 阶段 0 — 准备(worktree 建好 @ main/d50223a0, 1993 单测 + assembleDebug 全绿, 文档落进 `docs/architecture/`)
-- [ ] 阶段 1 — `SleepyTheme.colors` 双桥下线
-- [ ] 阶段 2 — Button/Card 标准化
+- [x] 阶段 1 — `SleepyTheme.colors` 双桥下线 (1c066fb6, 2044 测试绿)
+- [x] 阶段 2 — Button/Card 标准化 (b3cefa58 按钮 + b02986c1 卡片/弹窗, 薄层已标记)
 - [ ] 阶段 3 — SegmentedButton 迁移(等用户确认)
 - [ ] 阶段 4 — ListItem 替换 SettingsCard
 - [ ] 阶段 5 — BottomSheet/Dialog 标准化
