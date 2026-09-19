@@ -427,6 +427,8 @@ private fun TopBar(
     onAddCourse: () -> Unit,
     onShare: () -> Unit
 ) {
+    // [intentional custom] 官方 TopAppBar 槽位只有导航/标题/动作, 无「居中翻周器+周选择
+    // 菜单+撤回/确认并排」布局; 此工作栏 = Sleepy 课表领域形态, 保留薄层。
     val colors = MaterialTheme.colorScheme
     // 实时计算当前实际周（不依赖 state.currentWeek — 用户可能切到了别的周）
     val actualWeek = remember(startDate) {
