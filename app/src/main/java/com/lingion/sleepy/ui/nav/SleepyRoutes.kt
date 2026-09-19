@@ -2,12 +2,13 @@ package com.lingion.sleepy.ui.nav
 
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.FastOutSlowInEasing
+import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
-import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavBackStackEntry
@@ -96,50 +97,49 @@ val periodEditArgs = listOf(
 /**
  * MD3E 共享轴(shared axis)过渡 — 前进沿 X 轴推入,返回反向抽出。
  *
- * 弹簧取自 MotionScheme.expressive(): 位移走 spatial 通道(Expressive 默认
- * dampingRatio 0.8 / stiffness 380,允许轻微过冲),透明度走 effects 通道
- * (1.0 / 1600,不过冲)。位移量取 1/4 屏宽而非整屏: 上一页保持可见,方向感更明确,
- * 也跟预测性返回的手势跟手幅度对得上。
+ * 2026-09-20 用户反馈: 原实现用 MotionScheme.expressive() 的 spatial spring
+ * (dampingRatio 0.8 / stiffness 380, 允许过冲) 做位移 + 1/4 屏位移幅度,
+ *   (1) 暗色主题下过渡中途两侧露出固定米白 splash_background (#FFFAF8F2) + 居中 logo
+ *       → 改 splash 暗色变体 (values-night/colors.xml) + 缩小位移幅度
+ *   (2) 快速进/返回时页面左右扭动 — 原 enter 1/4 + exit -1/8 不对称
+ *       → 改对称 enter+exit 均为 1/6 屏
+ *   (3) 矩形向中心缩小 + 卡很久 — spring 0.8 过冲 + predictive back 系统动画叠加
+ *       → 改 tween(220, FastOutSlowInEasing) 取代 spring, 不过冲不叠加
+ *
+ * 位移方向: 前 enter 来自右侧 +1/6, exit 退到左侧 -1/6 (对称)。
+ * 返回 popEnter/popExit 镜像 (来自左侧 -1/6, 退到右侧 +1/6)。
  *
  * 必须在 AppRoot 组合期求值再捕获进 NavHost 的 transition lambda —
  * 那个 lambda 不是 composable 上下文,不能就地读 MaterialTheme。
  */
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun sleepySharedAxisEnter(): EnterTransition {
-    val motion = MaterialTheme.motionScheme
     return slideInHorizontally(
-        initialOffsetX = { it / 4 },
-        animationSpec = motion.defaultSpatialSpec<IntOffset>(),
-    ) + fadeIn(motion.defaultEffectsSpec<Float>())
+        initialOffsetX = { it / 6 },
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+    ) + fadeIn(tween(durationMillis = 110, easing = LinearEasing))
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun sleepySharedAxisExit(): ExitTransition {
-    val motion = MaterialTheme.motionScheme
     return slideOutHorizontally(
-        targetOffsetX = { -it / 8 },
-        animationSpec = motion.defaultSpatialSpec<IntOffset>(),
-    ) + fadeOut(motion.defaultEffectsSpec<Float>())
+        targetOffsetX = { -it / 6 },
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+    ) + fadeOut(tween(durationMillis = 220, easing = LinearEasing))
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun sleepySharedAxisPopEnter(): EnterTransition {
-    val motion = MaterialTheme.motionScheme
     return slideInHorizontally(
-        initialOffsetX = { -it / 8 },
-        animationSpec = motion.defaultSpatialSpec<IntOffset>(),
-    ) + fadeIn(motion.defaultEffectsSpec<Float>())
+        initialOffsetX = { -it / 6 },
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+    ) + fadeIn(tween(durationMillis = 110, easing = LinearEasing))
 }
 
-@OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 fun sleepySharedAxisPopExit(): ExitTransition {
-    val motion = MaterialTheme.motionScheme
     return slideOutHorizontally(
-        targetOffsetX = { it / 4 },
-        animationSpec = motion.defaultSpatialSpec<IntOffset>(),
-    ) + fadeOut(motion.defaultEffectsSpec<Float>())
+        targetOffsetX = { it / 6 },
+        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
+    ) + fadeOut(tween(durationMillis = 220, easing = LinearEasing))
 }
