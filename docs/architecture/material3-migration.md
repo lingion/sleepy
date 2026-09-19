@@ -92,3 +92,37 @@
 - [ ] 阶段 7 — Widget 颜色基线统一
 - [ ] 阶段 8 — 测试与回归
 - [ ] 阶段 9 — 文档/清理
+
+---
+
+## 6. 阶段 8 实测证据 (2026-09-19)
+
+- **单测:** `./gradlew :app:testDebugUnitTest` → `tests=2044 failures=0 errors=0`
+- **release 编译:** `./gradlew :app:assembleRelease` → BUILD SUCCESSFUL (3m 39s, 49 tasks)
+- **debug 编译:** `./gradlew :app:assembleDebug` → BUILD SUCCESSFUL
+- **emulator-5556 冷启动冒烟:** MainActivity 启动 → Mine → 外观与主题 → 春绿预设切换 → 深色模式 → 切回 Mine tab, 全程 pidof 稳定, logcat `FATAL EXCEPTION` = 0
+- **widget 渲染验证:** WidgetRenderActivity today/weeklist/weekgrid 三档启动 → UI tree 含 `Widget Preview` → logcat `render failed` = 0
+- **截图存档:**
+  - `m3-screenshots/smoke-light-schedule-empty.png` — 浅色主题空课表页(主题派生基线)
+  - `m3-screenshots/smoke-dark-appearance-spring-green.png` — 春绿预设 + 深色模式设置页
+  - `m3-screenshots/smoke-widget-today-render.png` — Today widget bitmap 渲染
+
+## 7. 最终交付状态
+
+主分支 baseline `d50223a0` 之前的「M3 迁移底座」(MaterialExpressiveTheme + MotionScheme.expressive() + Navigation Compose + 自适应 NavBar/Rail + 共享轴过渡)已就位; feat/m3-pure-official-migration 上 9 条 commit 完成了 SleepyTheme.colors 双桥下线、按钮/卡片/弹窗标准化、Widget 同源派生、Theme 三分支收敛。
+
+**薄层自研汇总(全部带 intentional-custom 块注释):**
+1. `PillNavigationBar(dock=true)` — iOS 26 floating tab bar 语义, 官方无
+2. `PillNavigationBar(dock=false)` — 跟手不弹的 thumb 扫色动效
+3. `SegmentedSwitcher` — 整块圆角色块 + 扫色 thumb(用户两次重申色块, 禁描边)
+4. `SettingsCard`/`SettingsFlatCard` — 折叠卡/平铺卡组合件, 官方无 Accordion
+5. `DialogActionButtons` — 色块按钮 + 宽度自适应换行(用户明确「裸 TextButton 无背景看不出可点」)
+6. `ConflictCard` — 冲突簇布局引擎, 官方无等价物
+7. `ColorPickerDialog` — HSV 取色器, 官方无
+8. `SleepyThumbSpring` — 跟手不弹 spring(MediumLow 拖沓, expressive 带回弹不合用)
+9. `WakeUpColorScheme` 数据类 — widget 桥派生输入(RemoteViews 拿不到 Compose Color)
+10. `SleepyThemeProvider` WakeUpColorScheme→m3Scheme 映射 — widget/preview 桥派生函数
+11. `ScheduleScreen TopBar` — 居中翻周器+周选择+撤回/确认并排, TopAppBar 槽位无等价
+12. `WidgetRenderActivity` 0xFF1A1A2E 截图底板 — 调试 Activity 非主题色
+
+**分支策略:** feat/m3-pure-official-migration worktree 已落地, push 待用户批准(release-sop §6)。
