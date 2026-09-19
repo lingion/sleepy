@@ -3,6 +3,7 @@ package com.lingion.sleepy
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -119,6 +120,23 @@ class MainActivity : ComponentActivity() {
     // 访问 NPE → 启动秒崩(v1.0.55 测试包翻车点)。
     private val uiNightModeState: androidx.compose.runtime.MutableState<Int> =
         androidx.compose.runtime.mutableStateOf(Configuration.UI_MODE_NIGHT_UNDEFINED)
+
+    override fun onPostResume() {
+        super.onPostResume()
+        // 系统返回/最近任务的窗口快照动画若回看 windowBackground, 会露出
+        // Theme.Sleepy.Splash 的"纯色+居中 logo"启动底衬(in-app 返回时表现为
+        // "矩形缩小+空白背景+中间 logo"视觉残留)。首帧绘制后把底衬降级为纯色,
+        // 与启动页同色, 用户无感; logo 只在真正的冷启动首屏出现。
+        // OneShotPreDrawListener: 首帧 onDraw 前触发一次, 此时启动页使命已完成。
+        androidx.core.view.OneShotPreDrawListener.add(
+            window.decorView
+        ) {
+            window.setBackgroundDrawable(
+                ColorDrawable(getColor(com.lingion.sleepy.R.color.splash_background))
+            )
+            true
+        }
+    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
