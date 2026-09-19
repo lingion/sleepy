@@ -105,12 +105,10 @@ private class JwWebViewClientImpl(
     ): WebResourceResponse? {
         // 遍历 interceptor 链: 第一个 handles() 匹配的拦截, 其余跳过。
         // 不触碰 view.* — view 参数保留只为接口签名, 实际不调用任何 view 方法。
-        for (interceptor in interceptors) {
-            if (interceptor.handles(request)) {
-                return interceptor.handle(request, ctx)
-            }
-        }
-        return null
+        val response = interceptors.firstOrNull { it.handles(request) }?.handle(request, ctx)
+        // 诊断会话记录 — chromium bg thread, JwDiagnosticSession 内部线程安全
+        JwDiagnosticSession.recordRequest(request, response)
+        return response
     }
 
     override fun onReceivedSslError(

@@ -643,6 +643,12 @@
     <string name="notif_room_unknown">教室不明</string>
     <string name="reminder_banner_sub">通知バーに授業前のバナーを表示</string>
     <string name="reminder_banner_title">バナーリマインダー</string>
+    <string name="jw_error_dialog_title">インポート中に問題が発生しました</string>
+    <string name="jw_diag_export_btn">診断パッケージをエクスポート</string>
+    <string name="jw_diag_exporting">診断パッケージを生成中…</string>
+    <string name="jw_diag_export_saved">Download/Sleepy/教务日志/%1$s に保存しました</string>
+    <string name="jw_diag_export_failed">パッケージの生成に失敗: %1$s</string>
+    <string name="jw_diag_export_chooser">診断パッケージを共有</string>
     <string name="reminder_before_class_preview">例：次の授業 高等数学 08:00 @ 教学棟A101</string>
     <string name="reminder_before_class_preview_dynamic">例：%1$s、次の授業は「%2$s」、%3$s、教室%4$s%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">例：通知対象の授業はありません。</string>

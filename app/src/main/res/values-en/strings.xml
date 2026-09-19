@@ -653,6 +653,12 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="notif_room_unknown">Unknown room</string>
     <string name="reminder_banner_sub">Show a before-class banner in the notification bar</string>
     <string name="reminder_banner_title">Banner Reminder</string>
+    <string name="jw_error_dialog_title">Import Problem</string>
+    <string name="jw_diag_export_btn">Export Diagnostic Package</string>
+    <string name="jw_diag_exporting">Generating diagnostic package…</string>
+    <string name="jw_diag_export_saved">Saved to Download/Sleepy/教务日志/%1$s</string>
+    <string name="jw_diag_export_failed">Failed to generate package: %1$s</string>
+    <string name="jw_diag_export_chooser">Share Diagnostic Package</string>
     <string name="reminder_before_class_preview">Example: Next class Advanced Math at 08:00 in Building A101</string>
     <string name="reminder_before_class_preview_dynamic">Example: %1$s — next class: %2$s at %3$s in %4$s%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">Example: No upcoming classes to remind you about.</string>

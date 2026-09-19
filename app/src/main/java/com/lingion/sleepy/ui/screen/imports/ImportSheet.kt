@@ -198,11 +198,27 @@ fun ImportSheet(
         }
     }
 
-    LaunchedEffect(errorMsg) {
-        errorMsg?.let {
-            snackbar.showSnackbar(it)
-            errorMsg = null
-        }
+    // 2026-09-18 用户: 报错必须统一弹窗(不再是 Snackbar 一闪即逝) — 文件导入场景
+    // 无 WebView/dump 可导, 单确定按钮。成功/状态类提示仍走 snackbar 不动。
+    if (errorMsg != null) {
+        AlertDialog(
+            onDismissRequest = { errorMsg = null },
+            title = { Text(stringResource(R.string.jw_error_dialog_title)) },
+            text = {
+                Text(
+                    text = errorMsg!!,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 320.dp)
+                        .verticalScroll(rememberScrollState())
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { errorMsg = null }) {
+                    Text(stringResource(R.string.jw_err_dismiss))
+                }
+            }
+        )
     }
 
     ModalBottomSheet(

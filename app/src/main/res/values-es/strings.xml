@@ -643,6 +643,12 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="notif_room_unknown">Aula desconocida</string>
     <string name="reminder_banner_sub">Mostrar un banner antes de clase en la barra de notificaciones</string>
     <string name="reminder_banner_title">Recordatorio en banner</string>
+    <string name="jw_error_dialog_title">Problema de importación</string>
+    <string name="jw_diag_export_btn">Exportar paquete de diagnóstico</string>
+    <string name="jw_diag_exporting">Generando paquete de diagnóstico…</string>
+    <string name="jw_diag_export_saved">Guardado en Download/Sleepy/教务日志/%1$s</string>
+    <string name="jw_diag_export_failed">Error al generar el paquete: %1$s</string>
+    <string name="jw_diag_export_chooser">Compartir paquete de diagnóstico</string>
     <string name="reminder_before_class_preview">Ejemplo: Próxima clase Cálculo Avanzado a las 08:00 en Edificio A101</string>
     <string name="reminder_before_class_preview_dynamic">Ejemplo: %1$s: próxima clase %2$s a las %3$s en %4$s%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">Ejemplo: No hay próximas clases que recordar.</string>

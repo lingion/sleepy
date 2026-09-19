@@ -50,7 +50,9 @@ data class FrameCaptureResult(
     /** 被跳过的无锚点 frame 名列表(诊断用) */
     val skippedFrames: List<String> = emptyList(),
     /** 用户可读诊断片段(不含学号/Cookie/HTML 原文 — 隐私红线) */
-    val diagnosticHint: String = ""
+    val diagnosticHint: String = "",
+    /** 全部可达 frame 的 (路径名, outerHTML) — 2026-09-18 排查包对齐桌面 collector 1-dom/ 全帧落盘 */
+    val allFrames: List<Pair<String, String>> = emptyList()
 )
 
 data class FrameSnapshot(
@@ -268,6 +270,10 @@ object FrameTraversalTree {
         val blocked = findBlockedFrames(snapshots)
         val reachable = snapshots.frames.filter { it.outerHTML != null && it.depth <= maxDepth }
         val maxDepthReached = snapshots.frames.maxOfOrNull { it.depth } ?: 0
+        // 全帧 outerHTML — 排查包 1-dom/ 对齐桌面 collector (每个可达 frame 一个 html 文件)
+        val allFrames = reachable.map { f ->
+            (f.parentPath + (f.frameName ?: "(top)")).joinToString("_") to (f.outerHTML ?: "")
+        }
         // 硬指纹 logout-redirect 先于锚点 + 先于 looksLikeLoginPage 评分 (见 helper doc)
         val logoutFrame = findLogoutRedirectFrame(snapshots, maxDepth)
         if (logoutFrame != null) {
@@ -279,7 +285,8 @@ object FrameTraversalTree {
                 blockedFrames = blocked,
                 maxDepthReached = maxDepthReached,
                 skippedFrames = emptyList(),
-                diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」"
+                diagnosticHint = "检测到登录页/会话过期特征(${logoutFrame.frameName ?: "(top)"} 含 logout.aspx 跳转脚本)，请重新登录后再点「导入此页」",
+                allFrames = allFrames
             )
         }
         // ②③ 候选
@@ -294,7 +301,8 @@ object FrameTraversalTree {
                 status = FrameCaptureStatus.OK,
                 blockedFrames = blocked,
                 maxDepthReached = maxDepthReached,
-                skippedFrames = skipped
+                skippedFrames = skipped,
+                allFrames = allFrames
             )
         }
 
@@ -318,7 +326,8 @@ object FrameTraversalTree {
                 status = FrameCaptureStatus.OK,
                 blockedFrames = blocked,
                 maxDepthReached = maxDepthReached,
-                skippedFrames = skipped
+                skippedFrames = skipped,
+                allFrames = allFrames
             )
         }
 
@@ -337,7 +346,8 @@ object FrameTraversalTree {
                 blockedFrames = blocked,
                 maxDepthReached = maxDepthReached,
                 skippedFrames = skipped,
-                diagnosticHint = "检测到登录页/会话过期特征(frame=${loginFrame.frameName ?: "(top)"})，请重新登录后再点「导入此页」"
+                diagnosticHint = "检测到登录页/会话过期特征(frame=${loginFrame.frameName ?: "(top)"})，请重新登录后再点「导入此页」",
+                allFrames = allFrames
             )
         }
         //  - 存在 blocked frame → CROSS_DOMAIN_IFRAME_BLOCKED
@@ -350,7 +360,8 @@ object FrameTraversalTree {
                 blockedFrames = blocked,
                 maxDepthReached = maxDepthReached,
                 skippedFrames = skipped,
-                diagnosticHint = blocked.joinToString("、")
+                diagnosticHint = blocked.joinToString("、"),
+                allFrames = allFrames
             )
         }
         //  - 否则 WRONG_PAGE (空壳 iframe 由调用方 captureWithRetry 按重试情况升格 IFRAME_NAV_PENDING)
@@ -362,7 +373,8 @@ object FrameTraversalTree {
             blockedFrames = blocked,
             maxDepthReached = maxDepthReached,
             skippedFrames = skipped,
-            diagnosticHint = if (reachable.isEmpty()) "页面无可读 frame" else "当前页面未检测到课表容器"
+            diagnosticHint = if (reachable.isEmpty()) "页面无可读 frame" else "当前页面未检测到课表容器",
+            allFrames = allFrames
         )
     }
 

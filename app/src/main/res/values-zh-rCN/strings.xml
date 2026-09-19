@@ -599,6 +599,12 @@
     <string name="reminder_daily_title">每日提醒</string>
     <string name="reminder_daily_sub">每天定时推送今日摘要与明日预告</string>
     <string name="reminder_daily_time_label">今日摘要时间</string>
+    <string name="jw_error_dialog_title">导入遇到问题</string>
+    <string name="jw_diag_export_btn">导出排查全量包</string>
+    <string name="jw_diag_exporting">正在生成排查包…</string>
+    <string name="jw_diag_export_saved">排查包已存到 Download/Sleepy/教务日志/%1$s</string>
+    <string name="jw_diag_export_failed">排查包生成失败：%1$s</string>
+    <string name="jw_diag_export_chooser">分享排查包</string>
     <string name="reminder_daily_preview">示例：今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课</string>
     <string name="reminder_preview_today_date">今日 %1$s（%2$s）</string>
     <string name="reminder_preview_tomorrow_date">明日 %1$s（%2$s）</string>

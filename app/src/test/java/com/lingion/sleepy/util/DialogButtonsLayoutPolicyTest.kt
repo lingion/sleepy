@@ -19,6 +19,7 @@ class DialogButtonsLayoutPolicyTest {
     /** labelLarge 14sp 下一个 CJK 字 ≈ 14dp + 按钮左右内边距 32dp (M3 Button contentPadding)。 */
     private companion object {
         const val FONT_DP_PER_CJK_CHAR = 14f
+        const val FONT_DP_PER_CHAR = 14f
         const val BUTTON_H_PADDING_DP = 32f
         const val ROW_GAP_DP = 8f
     }
@@ -84,5 +85,29 @@ class DialogButtonsLayoutPolicyTest {
         val w7 = DialogButtonsLayoutPolicy.buttonTextWidth("退出并保留草稿", FONT_DP_PER_CJK_CHAR, BUTTON_H_PADDING_DP)
         assertEquals(4 * FONT_DP_PER_CJK_CHAR + BUTTON_H_PADDING_DP, w4, 0.01f)
         assertEquals(7 * FONT_DP_PER_CJK_CHAR + BUTTON_H_PADDING_DP, w7, 0.01f)
+    }
+
+    /** 横排不能再等分: 长标签必须得到更多宽度, 否则 Android Text 会自动换行。 */
+    @Test
+    fun horizontalWeights_areProportionalToRequiredButtonWidths() {
+        val widths = DialogButtonsLayoutPolicy.requiredButtonWidths(
+            labels = listOf("知道了", "导出排查全量包"),
+            fontDpPerChar = FONT_DP_PER_CJK_CHAR,
+            buttonHPaddingDp = BUTTON_H_PADDING_DP
+        )
+        assertTrue("长按钮必须比短按钮获得更大 weight", widths[1] > widths[0])
+        assertEquals(3 * FONT_DP_PER_CJK_CHAR + BUTTON_H_PADDING_DP, widths[0], 0.01f)
+        assertEquals(7 * FONT_DP_PER_CHAR + BUTTON_H_PADDING_DP, widths[1], 0.01f)
+    }
+
+    /** 权重必须按需求宽度归一化, 供 Compose Row.weight 使用。 */
+    @Test
+    fun horizontalWeights_sumToOne_andPreserveRatio() {
+        val weights = DialogButtonsLayoutPolicy.normalizedWeights(
+            listOf("知道了", "导出排查全量包"), FONT_DP_PER_CHAR, BUTTON_H_PADDING_DP
+        )
+        assertEquals(1f, weights.sum(), 0.001f)
+        assertEquals((3 * FONT_DP_PER_CHAR + BUTTON_H_PADDING_DP) /
+            (7 * FONT_DP_PER_CHAR + BUTTON_H_PADDING_DP), weights[0] / weights[1], 0.001f)
     }
 }

@@ -66,6 +66,13 @@ fun DialogActionButtons(
         val availableWidth = maxWidth.value
         val labels = listOfNotNull(dismissText, thirdText, confirmText)
         val horizontal = DialogActionsLayoutPolicyBridge.fit(labels, availableWidth)
+        // 2026-09-18 用户: "一行能搞定的就一行" — 横排等分 weight(1f) 会把长标签
+        // 键压到必需宽以下 → Text 自动换行。权重必须按各键必需宽比例分配,
+        // 短键(「知道了」)少占, 长键(「导出排查全量包」)多占, 每键 ≥ 必需宽。
+        val weights = DialogButtonsLayoutPolicy.normalizedWeights(
+            labels, DialogActionsLayoutPolicyBridge.LABEL_LARGE_FONT_DP_PER_CJK_CHAR
+        )
+        var wi = 0
 
         if (horizontal) {
             Row(
@@ -78,7 +85,7 @@ fun DialogActionButtons(
                         onClick = onDismiss,
                         container = colors.secondaryContainer,
                         content = colors.onSecondaryContainer,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(weights[wi++])
                     )
                 }
                 if (thirdText != null) {
@@ -87,7 +94,7 @@ fun DialogActionButtons(
                         onClick = onThird,
                         container = if (thirdDestructive) colors.errorContainer else colors.secondaryContainer,
                         content = if (thirdDestructive) colors.onErrorContainer else colors.onSecondaryContainer,
-                        modifier = Modifier.weight(1f)
+                        modifier = Modifier.weight(weights[wi++])
                     )
                 }
                 BlockButton(
@@ -96,7 +103,7 @@ fun DialogActionButtons(
                     enabled = confirmEnabled,
                     container = if (destructive) colors.errorContainer else colors.primary,
                     content = if (destructive) colors.onErrorContainer else colors.onPrimary,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier.weight(weights[wi++])
                 )
             }
         } else {
@@ -156,6 +163,14 @@ private fun BlockButton(
         )
     ) {
         // 2026-09-16 用户: 文字必须完整展示 — 竖排降级保证宽度, 不设 maxLines 截断
-        Text(text, style = MaterialTheme.typography.labelLarge, fontWeight = FontWeight.Medium)
+        // 2026-09-18 用户: "一行能搞定的就一行" — softWrap=false 强制单行; 横排已按
+        // 必需宽比例分配权重(每键 ≥ 文字宽), 竖排全宽更装得下, 两者都不会截断。
+        Text(
+            text,
+            style = MaterialTheme.typography.labelLarge,
+            fontWeight = FontWeight.Medium,
+            softWrap = false,
+            maxLines = 1
+        )
     }
 }

@@ -643,6 +643,12 @@
     <string name="notif_room_unknown">未知教室</string>
     <string name="reminder_banner_sub">在系統通知欄顯示課前橫幅</string>
     <string name="reminder_banner_title">橫幅提醒</string>
+    <string name="jw_error_dialog_title">匯入遇到問題</string>
+    <string name="jw_diag_export_btn">匯出排查全量包</string>
+    <string name="jw_diag_exporting">正在產生排查包…</string>
+    <string name="jw_diag_export_saved">排查包已存到 Download/Sleepy/教务日志/%1$s</string>
+    <string name="jw_diag_export_failed">排查包產生失敗：%1$s</string>
+    <string name="jw_diag_export_chooser">分享排查包</string>
     <string name="reminder_before_class_preview">範例：下節課 高等數學 於 08:00 在 教學樓A101 上課</string>
     <string name="reminder_before_class_preview_dynamic">範例：%1$s，下節課是「%2$s」，於 %3$s 在 %4$s 上課%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">範例：未來沒有可提醒的課程。</string>

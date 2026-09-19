@@ -24,7 +24,8 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Snackbar
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
@@ -57,16 +58,20 @@ import com.lingion.sleepy.data.jw.JwSchoolInfo
 import com.lingion.sleepy.data.jw.UcasDetailFetch
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
+import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
+import android.webkit.WebView
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import androidx.compose.runtime.rememberCoroutineScope
 import com.lingion.sleepy.R
 import kotlinx.serialization.encodeToString
@@ -126,6 +131,10 @@ class JwImportActivity : ComponentActivity() {
                 var stage by remember { mutableStateOf<Stage>(Stage.SelectSchool) }
                 var errorMsg by remember { mutableStateOf<String?>(null) }
                 var statusMsg by remember { mutableStateOf<String?>(null) }
+                val statusSnackbarHostState = remember { SnackbarHostState() }
+                // 排查全量包导出: 错误弹窗点"导出排查全量包"按钮后由 JwCaptureDump 落 zip
+                var lastCaptureResult by remember { mutableStateOf<FrameCaptureResult?>(null) }
+                var webViewForDump by remember { mutableStateOf<WebView?>(null) }
                 // #27: 红条此前只置不清,报错后必须退出页面才消失。阶段一切换即清零。
                 LaunchedEffect(stage) { errorMsg = null }
                 var importFinished by remember { mutableStateOf(false) }
@@ -172,6 +181,124 @@ class JwImportActivity : ComponentActivity() {
                     val result = reduceExitDraftState(exitDraftState, ExitDraftEvent.RequestExit)
                     exitDraftState = result.state
                     if (result.outcome == ExitDraftOutcome.FinishDirectly) finish()
+                }
+                // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
+                // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
+                fun exportDiagnosticDump(school: JwSchoolInfo?) {
+                    val result = lastCaptureResult ?: run {
+                        statusMsg = getString(R.string.jw_diag_export_failed, "无抓取记录")
+                        return
+                    }
+                    statusMsg = getString(R.string.jw_diag_exporting)
+                    val wv = webViewForDump
+                    val ctx = this
+                    scope.launch {
+                        // 现场抓取辅助 — 页面还在, 弹窗不关页: DOM 清单 + Storage + Links
+                        // 三段 JS 顺序跑 (同 main thread 串行, evaluateJavascript 回调顺序有保)
+                        suspend fun evalJs(js: String): String? = wv?.let { webView ->
+                            withContext(Dispatchers.Main) {
+                                suspendCancellableCoroutine { cont ->
+                                    webView.evaluateJavascript(js) { raw ->
+                                        cont.resumeWith(
+                                            Result.success(
+                                                if (raw.isNullOrEmpty() || raw == "null") null
+                                                else runCatching {
+                                                    org.json.JSONTokener(raw).nextValue().toString()
+                                                }.getOrNull()
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                        val inventoryJson = evalJs(DOM_INVENTORY_JS)
+                        val storageJson = evalJs(STORAGE_JS)
+                        val linksJson = evalJs(LINKS_JS)
+                        // 页面运行时真实 fetch/XHR 记录，和资源重取分开保存。
+                        val networkLiveSnapshot = wv?.let { webView ->
+                            withContext(Dispatchers.Main) {
+                                suspendCancellableCoroutine { cont ->
+                                    webView.evaluateJavascript(DIAGNOSTIC_NETWORK_SNAPSHOT_JS) { raw ->
+                                        if (cont.isActive) cont.resumeWith(Result.success(raw))
+                                    }
+                                }
+                            }
+                        }
+                        val networkReplayJson = wv?.let { webView ->
+                            withContext(Dispatchers.Main) {
+                                withTimeoutOrNull(30_000L) {
+                                    suspendCancellableCoroutine { cont ->
+                                        val bridge = DiagnosticReplayBridge { json ->
+                                            webView.removeJavascriptInterface("__sleepyDiagBridge")
+                                            if (cont.isActive) cont.resumeWith(Result.success(json))
+                                        }
+                                        webView.addJavascriptInterface(bridge, "__sleepyDiagBridge")
+                                        webView.evaluateJavascript(DIAGNOSTIC_NETWORK_EXPORT_JS, null)
+                                        // invokeOnCancellation 在任意线程触发 — WebView API 必须 main.post
+                                        cont.invokeOnCancellation {
+                                            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                                runCatching { webView.removeJavascriptInterface("__sleepyDiagBridge") }
+                                            }
+                                        }
+                                    }
+                                }.also { webView.removeJavascriptInterface("__sleepyDiagBridge") }
+                            }
+                        }
+                        // evaluateJavascript 不等待 Promise; 资源重取通过一次性 JS bridge 回传。
+                        val resourceReplayJson = wv?.let { webView ->
+                            withContext(Dispatchers.Main) {
+                                withTimeoutOrNull(16_000L) {
+                                    suspendCancellableCoroutine { cont ->
+                                        val bridge = DiagnosticReplayBridge { json ->
+                                            webView.removeJavascriptInterface("__sleepyDiagBridge")
+                                            if (cont.isActive) cont.resumeWith(Result.success(json))
+                                        }
+                                        webView.addJavascriptInterface(bridge, "__sleepyDiagBridge")
+                                        webView.evaluateJavascript(RESOURCE_REPLAY_JS, null)
+                                        // invokeOnCancellation 在任意线程触发 — WebView API 必须 main.post
+                                        cont.invokeOnCancellation {
+                                            android.os.Handler(android.os.Looper.getMainLooper()).post {
+                                                runCatching { webView.removeJavascriptInterface("__sleepyDiagBridge") }
+                                            }
+                                        }
+                                    }
+                                }.also {
+                                    // JS has its own 15s deadline; this also covers pages where the
+                                    // injected interface is unavailable and no callback can arrive.
+                                    webView.removeJavascriptInterface("__sleepyDiagBridge")
+                                }
+                            }
+                        }
+                        // Cookie 全量值 — CookieManager 主线程约束(部分 ROM), 与 JS 段同在 Main 取
+                        val cookiesFull: String? = wv?.let { webView ->
+                            withContext(Dispatchers.Main) {
+                                runCatching {
+                                    android.webkit.CookieManager.getInstance()
+                                        .getCookie(webView.url)?.takeIf { it.isNotEmpty() }
+                                }.getOrNull()
+                            }
+                        }
+                        val dumpResult = withContext(Dispatchers.IO) {
+                            if (school == null) {
+                                JwCaptureDump.DumpResult.Fail("未选择学校")
+                            } else {
+                                JwCaptureDump.exportDump(
+                                    ctx, school, result, inventoryJson,
+                                    cookiesFull, storageJson, linksJson, resourceReplayJson,
+                                    networkReplayJson ?: networkLiveSnapshot
+                                )
+                            }
+                        }
+                        when (dumpResult) {
+                            is JwCaptureDump.DumpResult.Ok -> {
+                                statusMsg = getString(R.string.jw_diag_export_saved, dumpResult.zipName)
+                                JwCaptureDump.share(ctx, dumpResult.zipName, dumpResult.uri)
+                            }
+                            is JwCaptureDump.DumpResult.Fail -> {
+                                statusMsg = getString(R.string.jw_diag_export_failed, dumpResult.reason)
+                            }
+                        }
+                    }
                 }
                 fun handleExitChoice(choice: ExitDraftChoice) {
                     val result = reduceExitDraftState(exitDraftState, ExitDraftEvent.Choose(choice))
@@ -500,9 +627,9 @@ class JwImportActivity : ComponentActivity() {
                                         }
                                     }
                                 },
-                                onCaptureError = { status, hint ->
-                                    Log.w("JwImport", "capture failed status=$status hint=$hint")
-                                    errorMsg = when (status) {
+                                onCaptureError = { result, hint ->
+                                    Log.w("JwImport", "capture failed status=${result.status} hint=$hint")
+                                    errorMsg = when (result.status) {
                                         FrameCaptureStatus.CROSS_DOMAIN_IFRAME_BLOCKED -> getString(R.string.jw_err_cross_domain_iframe, hint)
                                         FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY -> getString(R.string.jw_err_container_empty_after_delay)
                                         FrameCaptureStatus.IFRAME_NAV_PENDING          -> getString(R.string.jw_err_iframe_nav_pending)
@@ -513,9 +640,12 @@ class JwImportActivity : ComponentActivity() {
                                         FrameCaptureStatus.SESSION_EXPIRED             -> getString(R.string.jw_err_session_expired)
                                         else                                           -> getString(R.string.jw_parse_empty)
                                     }
+                                    // 保留 FrameCaptureResult 给 JwErrorDialog 导出按钮
+                                    lastCaptureResult = result
                                     statusMsg = null
                                 },
-                                onBack = { requestExit() }
+                                onBack = { requestExit() },
+                                onWebViewReady = { wv -> webViewForDump = wv }
                             )
                         } // end SaveableStateProvider("WebViewLogin") (school != null)
                     }
@@ -529,49 +659,53 @@ class JwImportActivity : ComponentActivity() {
                     )
                 }
 
-                // 错误与状态提示：直接显示在中央 errorMsg + 底部 statusMsg
+                // 错误提示统一 AlertDialog 双按钮 (2026-09-18 用户: 全 app 报错必须是弹窗,
+                // 确定 + 导出排查全量包 — 学生把包发给开发者, 免来回截图问诊)
                 errorMsg?.let { msg ->
-                    Box(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(32.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Card(
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.errorContainer
-                            )
-                        ) {
-                            // #27: 可当场关闭,不必退出页面
+                    val dumpSchool = parsedSchool ?: selectedSchool
+                    AlertDialog(
+                        onDismissRequest = { errorMsg = null },
+                        title = { Text(getString(R.string.jw_error_dialog_title)) },
+                        text = {
                             Column {
                                 Text(
                                     text = msg,
                                     modifier = Modifier
                                         .fillMaxWidth()
-                                        .padding(16.dp),
-                                    color = MaterialTheme.colorScheme.onErrorContainer
+                                        .heightIn(max = 320.dp)
+                                        .verticalScroll(rememberScrollState()),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
-                                TextButton(
-                                    onClick = { errorMsg = null },
-                                    modifier = Modifier.align(Alignment.End)
-                                ) {
-                                    Text(getString(R.string.jw_err_dismiss))
-                                }
+                                Spacer(Modifier.height(20.dp))
+                                // 导出(第三位 secondary) / 确定(confirm 位 primary)
+                                // #27: 确定只关弹窗, 不退出页面 — 用户改完环境可当场重试
+                                DialogActionButtons(
+                                    confirmText = getString(R.string.jw_err_dismiss),
+                                    onConfirm = { errorMsg = null },
+                                    thirdText = getString(R.string.jw_diag_export_btn),
+                                    onThird = { exportDiagnosticDump(dumpSchool) },
+                                )
                             }
-                        }
-                    }
+                        },
+                        confirmButton = {},
+                        dismissButton = {}
+                    )
                 }
-                statusMsg?.let { msg ->
-                    Box(
-                        modifier = Modifier.fillMaxSize(),
-                        contentAlignment = Alignment.BottomCenter
-                    ) {
-                        Snackbar(
-                            modifier = Modifier.padding(16.dp)
-                        ) {
-                            Text(msg)
-                        }
-                    }
+                LaunchedEffect(statusMsg) {
+                    val msg = statusMsg ?: return@LaunchedEffect
+                    statusSnackbarHostState.currentSnackbarData?.dismiss()
+                    statusSnackbarHostState.showSnackbar(msg)
+                    // Snackbar 自带短时生命周期；结束后清空状态，避免提示永久占据底部。
+                    statusMsg = null
+                }
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.BottomCenter
+                ) {
+                    SnackbarHost(
+                        hostState = statusSnackbarHostState,
+                        modifier = Modifier.padding(16.dp)
+                    )
                 }
             }
         }
