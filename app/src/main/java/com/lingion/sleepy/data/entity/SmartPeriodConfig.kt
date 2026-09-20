@@ -26,7 +26,28 @@ data class SmartPeriodConfig(
     val totalPeriods: Int = 12,
     val breaks: List<BreakOption> = emptyList(),
     val transitionAssignments: List<Int?> = emptyList(),
+    val durations: List<DurationOption> = emptyList(),
+    val periodAssignments: List<Int?> = emptyList(),
 ) {
+    /**
+     * 取每个 period 的 duration 索引（带范围保护 + 默认填充）。
+     * null 或越界表示使用主课程时长 [periodMinutes]。
+     */
+    fun effectivePeriodAssignments(): List<Int?> {
+        val n = totalPeriods.coerceAtLeast(0)
+        val base = periodAssignments.take(n)
+        return base.map { value ->
+            if (value != null && value in durations.indices) value else null
+        } + List((n - base.size).coerceAtLeast(0)) { null }
+    }
+
+    /** 每个 period 的实际分钟数，未分配时使用主课程时长。 */
+    fun effectivePeriodMinutes(): List<Int> {
+        return effectivePeriodAssignments().map { index ->
+            if (index != null && index in durations.indices) durations[index].minutes else periodMinutes
+        }
+    }
+
     /**
      * 取每个 transition 的 break 索引（带范围保护 + 默认填充）
      * 长度 = max(0, totalPeriods - 1)
@@ -57,12 +78,13 @@ data class SmartPeriodConfig(
     fun derive(): List<TimeSlotRow> {
         val rows = mutableListOf<TimeSlotRow>()
         val transMins = effectiveTransitionMinutes()
+        val periodMins = effectivePeriodMinutes()
         val (h0, m0) = parseStart()
         var curH = h0
         var curM = m0
         for (i in 0 until totalPeriods) {
             val startStr = "%02d:%02d".format(curH, curM)
-            curM += periodMinutes
+            curM += periodMins[i]
             curH += curM / 60
             curM %= 60
             val endStr = "%02d:%02d".format(curH, curM)
@@ -98,5 +120,30 @@ data class BreakOption(
         if (!label.isNullOrBlank()) return label
         val prefix = if (isLong) "大课间" else "小课间"
         return "$prefix $minutes 分钟"
+    }
+}
+
+@Serializable
+data class DurationOption(
+    val minutes: Int,
+    val isLong: Boolean = false,
+    val label: String? = null,
+) {
+    fun displayLabel(index: Int): String {
+        if (!label.isNullOrBlank()) return label
+        val prefix = if (isLong) "长课时" else "短课时"
+        return "$prefix $minutes 分钟"
+    }
+}
+
+/** Remap assignments after removing one duration group. */
+fun remapDurationAssignmentsAfterDeletion(
+    assignments: List<Int?>,
+    deletedIndex: Int,
+): List<Int?> = assignments.map { value ->
+    when {
+        value == deletedIndex -> null
+        value != null && value > deletedIndex -> value - 1
+        else -> value
     }
 }

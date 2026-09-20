@@ -133,6 +133,58 @@ class SmartPeriodConfigTest {
     }
 
     @Test
+    fun `old JSON defaults new duration fields`() {
+        val cfg = kotlinx.serialization.json.Json.decodeFromString<SmartPeriodConfig>(
+            """{"startTime":"08:00","periodMinutes":45,"totalPeriods":2,"breaks":[],"transitionAssignments":[]}"""
+        )
+
+        assertEquals(emptyList<DurationOption>(), cfg.durations)
+        assertEquals(emptyList<Int?>(), cfg.periodAssignments)
+        assertEquals(listOf("08:00" to "08:45", "08:45" to "09:30"), cfg.derive().map { it.start to it.end })
+    }
+
+    @Test
+    fun `derive - mixed primary and assigned durations`() {
+        val cfg = SmartPeriodConfig(
+            startTime = "08:00",
+            periodMinutes = 45,
+            totalPeriods = 3,
+            durations = listOf(DurationOption(30, isLong = false)),
+            periodAssignments = listOf(null, 0, null)
+        )
+
+        assertEquals(listOf("08:00" to "08:45", "08:45" to "09:15", "09:15" to "10:00"), cfg.derive().map { it.start to it.end })
+        assertEquals(listOf(45, 30, 45), cfg.effectivePeriodMinutes())
+    }
+
+    @Test
+    fun `invalid duration assignment falls back to primary duration`() {
+        val cfg = SmartPeriodConfig(
+            periodMinutes = 45,
+            totalPeriods = 3,
+            durations = listOf(DurationOption(30)),
+            periodAssignments = listOf(5, -1, null, 0)
+        )
+
+        assertEquals(listOf(null, null, null), cfg.effectivePeriodAssignments())
+        assertEquals(listOf(45, 45, 45), cfg.effectivePeriodMinutes())
+    }
+
+    @Test
+    fun `deleting duration group remaps later assignments`() {
+        val assignments = listOf<Int?>(0, 2, 1, null)
+
+        assertEquals(listOf<Int?>(0, 1, null, null), remapDurationAssignmentsAfterDeletion(assignments, deletedIndex = 1))
+    }
+
+    @Test
+    fun `duration option display label uses custom or length-aware default`() {
+        assertEquals("午休", DurationOption(60, isLong = true, label = "午休").displayLabel(2))
+        assertEquals("短课时 30 分钟", DurationOption(30).displayLabel(0))
+        assertEquals("长课时 45 分钟", DurationOption(45, isLong = true).displayLabel(1))
+    }
+
+    @Test
     fun `total periods minimum 1`() {
         val cfg = SmartPeriodConfig(totalPeriods = 1)
         val rows = cfg.derive()
