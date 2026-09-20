@@ -131,26 +131,18 @@ fun EditTableScreen(
         }
     }
     // v1.0.16 自动模式配置（编辑当前课表时使用）
+    // issue#23 Task 4: 已存配置仍能 derive 出当前行 → 原样保留; 否则从当前行重推断;
+    // 行不可推断 → 最简默认兜底(旧行为)。
     val smartConfig = remember(table.id, effectivePeriodTable?.id, timeJson) {
+        val stored = com.lingion.sleepy.ui.component.decodeSmartPeriodConfig(
+            effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson
+        )
         mutableStateOf(
-            // 如果表里已存 smartConfigJson，反序列化恢复；否则从现有 slotRows 推断初始值
-            if ((effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson).isNotBlank()) {
-                try {
-                    Json.decodeFromString<SmartPeriodConfig>(
-                        effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson
-                    )
-                } catch (e: Exception) {
-                    SmartPeriodConfig(
-                        totalPeriods = slotRows.size.coerceAtLeast(1),
-                        startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                    )
-                }
-            } else {
-                SmartPeriodConfig(
+            com.lingion.sleepy.ui.component.resolveAutoPeriodConfig(slotRows.toList(), stored)
+                ?: SmartPeriodConfig(
                     totalPeriods = slotRows.size.coerceAtLeast(1),
                     startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
                 )
-            }
         )
     }
 
