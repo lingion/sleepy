@@ -112,6 +112,26 @@ class ResolveAutoPeriodConfigContractTest {
     }
 
     @Test
+    fun `manual to auto sync preserves edge rows while replacing standard rows`() {
+        val before = row(0, "07:00", "07:30", EdgeClass.Before)
+        val first = row(1, "08:00", "08:45")
+        val after = row(4, "22:00", "23:00", EdgeClass.After)
+        val existing = listOf(before, first, after)
+        val derived = listOf(
+            row(1, "08:10", "08:55"),
+            row(2, "09:05", "09:50")
+        )
+
+        val synced = mergeAutoRows(existing, derived)
+
+        assertEquals(
+            listOf(before, derived[0], after, derived[1]),
+            synced
+        )
+        assertEquals(listOf(EdgeClass.Before, null, EdgeClass.After, null), synced.map { it.edgeClass })
+    }
+
+    @Test
     fun `edge rows are excluded from inference and from derive match`() {
         val standard = listOf(
             row(1, "08:00", "08:45"),
@@ -155,6 +175,16 @@ class ResolveAutoPeriodConfigContractTest {
         // config stored must return the same instance (no silent re-inference).
         val rowsForEdited = edited.derive().map { TimeSlotRow(it.node, it.start, it.end) }
         assertSame(edited, resolveAutoPeriodConfig(rowsForEdited, edited))
+    }
+
+    @Test
+    fun `duplicate standard nodes return null without throwing`() {
+        val rows = listOf(
+            row(1, "08:00", "08:45"),
+            row(1, "08:55", "09:40")
+        )
+
+        assertNull(resolveAutoPeriodConfig(rows, SmartPeriodConfig(totalPeriods = 2)))
     }
 
     @Test
