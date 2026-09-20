@@ -44,9 +44,9 @@ class TimeTableUtilsInferenceTest {
 
         requireNotNull(config)
         assertEquals(45, config.periodMinutes)
-        assertEquals(listOf(DurationOption(30), DurationOption(50)), config.durations)
+        assertEquals(listOf(DurationOption(30, isLong = false), DurationOption(50, isLong = true)), config.durations)
         assertEquals(listOf<Int?>(null, null, 0, null, null, 1), config.periodAssignments)
-        assertEquals(listOf(BreakOption(10), BreakOption(60)), config.breaks)
+        assertEquals(listOf(BreakOption(10, isLong = false), BreakOption(60, isLong = true)), config.breaks)
         assertEquals(listOf<Int?>(0, 0, 0, 1, 0), config.transitionAssignments)
         assertEquals(rows.map { it.start to it.end }, config.derive().map { it.start to it.end })
     }
@@ -64,7 +64,7 @@ class TimeTableUtilsInferenceTest {
 
         requireNotNull(config)
         assertEquals(30, config.periodMinutes)
-        assertEquals(listOf(DurationOption(45)), config.durations)
+        assertEquals(listOf(DurationOption(45, isLong = true)), config.durations)
         assertEquals(listOf<Int?>(null, 0, 0, null), config.periodAssignments)
         assertEquals(listOf(BreakOption(10)), config.breaks)
         assertEquals(listOf<Int?>(0, 0, 0), config.transitionAssignments)
@@ -117,6 +117,13 @@ class TimeTableUtilsInferenceTest {
         assertNull(TimeTableUtils.inferSmartPeriodConfig(listOf(row(1, "08:00", "08:45"), row(2, "08:40", "09:20"))))
         assertNull(TimeTableUtils.inferSmartPeriodConfig(listOf(row(1, "08:00", "08:45"), row(3, "08:55", "09:40"))))
         assertNull(TimeTableUtils.inferSmartPeriodConfig(listOf(row(0, "07:00", "07:30", TimeTableUtils.EdgeClass.Before))))
+    }
+
+    @Test
+    fun `blank standard times are rejected instead of inferred`() {
+        assertNull(TimeTableUtils.inferSmartPeriodConfig(listOf(row(1, "", ""))))
+        assertNull(TimeTableUtils.inferSmartPeriodConfig(listOf(row(1, "08:00", ""))))
+        assertNull(TimeTableUtils.inferSmartPeriodConfig(listOf(row(1, "08:00", "08:45"), row(2, "", "09:40"))))
     }
 
     @Test

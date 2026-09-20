@@ -364,7 +364,10 @@ object TimeTableUtils {
         val durationMinutes = parsed.map { it.duration }.distinct().filter { it != primaryMinutes }
         val previousDurationByMinutes = previous?.durations.orEmpty().associateBy { it.minutes }
         val durations = durationMinutes.map { minutes ->
-            previousDurationByMinutes[minutes] ?: DurationOption(minutes)
+            previousDurationByMinutes[minutes] ?: DurationOption(
+                minutes = minutes,
+                isLong = minutes > primaryMinutes
+            )
         }
         val durationIndex = durations.withIndex().associate { it.value.minutes to it.index }
         val periodAssignments = parsed.map { row -> durationIndex[row.duration] }
@@ -374,7 +377,12 @@ object TimeTableUtils {
         }
         val breakMinutes = transitionMinutes.filter { it > 0 }.distinct()
         val previousBreakByMinutes = previous?.breaks.orEmpty().associateBy { it.minutes }
-        val breaks = breakMinutes.map { minutes -> previousBreakByMinutes[minutes] ?: BreakOption(minutes) }
+        val breaks = breakMinutes.map { minutes ->
+            previousBreakByMinutes[minutes] ?: BreakOption(
+                minutes = minutes,
+                isLong = minutes > (breakMinutes.minOrNull() ?: minutes)
+            )
+        }
         val breakIndex = breaks.withIndex().associate { it.value.minutes to it.index }
         val transitionAssignments = transitionMinutes.map { breakIndex[it] }
 
