@@ -726,6 +726,11 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="period_time_range">Período %1$s  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 min continuo</string>
     <string name="break_continuous_n">  ↓ %1$d min %2$s</string>
+    <string name="duration_assign_hint">Asignación de duraciones (toca para cambiar)</string>
+    <string name="short_duration">Duración corta</string>
+    <string name="long_duration">Duración larga</string>
+    <string name="duration_min_one_period">Necesitas al menos 1 período para asignar duraciones</string>
+    <string name="duration_period_n">%1$d min %2$s</string>
     <string name="add_label">Añadir %1$s</string>
     <string name="mode_manual">Modo manual</string>
     <string name="mode_auto">Modo automático</string>
