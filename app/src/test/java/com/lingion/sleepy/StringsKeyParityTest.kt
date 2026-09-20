@@ -119,11 +119,36 @@ class StringsKeyParityTest {
         "period_table_bind_preview_body"
     )
 
+    /**
+     * issue#23 混合课时自动模式新增 string key (2026-09-20, sdd/task-3)。
+     * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
+     */
+    private val mixedDurationKeys = listOf(
+        "duration_assign_hint",
+        "short_duration",
+        "long_duration",
+        "duration_min_one_period",
+        "duration_period_n"
+    )
+
     @Test
     fun all_six_locale_dirs_exist() {
         for (locale in localeDirs) {
             val dir = File(basePath, locale)
             assertTrue("Missing locale dir $locale", dir.isDirectory)
+        }
+    }
+
+    @Test
+    fun mixed_duration_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in mixedDurationKeys) {
+                assertTrue(
+                    "mixed duration key \"$key\" missing in $locale/strings.xml",
+                    text.contains("name=\"$key\"")
+                )
+            }
         }
     }
 
