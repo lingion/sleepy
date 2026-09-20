@@ -128,23 +128,16 @@ fun PeriodTableEditScreen(
             addAll(TimeTableUtils.parseTimeSlotRows(periodTable.timeJson))
         }
     }
+    // issue#23 Task 4: 已存配置仍能 derive 出当前行 → 原样保留; 否则从当前行重推断;
+    // 行不可推断 → 最简默认兜底(旧行为)。
     val smartConfig = remember(periodTable.id, periodTable.smartConfigJson) {
+        val stored = com.lingion.sleepy.ui.component.decodeSmartPeriodConfig(periodTable.smartConfigJson)
         mutableStateOf(
-            if (periodTable.smartConfigJson.isNotBlank()) {
-                try {
-                    Json.decodeFromString<SmartPeriodConfig>(periodTable.smartConfigJson)
-                } catch (e: Exception) {
-                    SmartPeriodConfig(
-                        totalPeriods = slotRows.size.coerceAtLeast(1),
-                        startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                    )
-                }
-            } else {
-                SmartPeriodConfig(
+            com.lingion.sleepy.ui.component.resolveAutoPeriodConfig(slotRows.toList(), stored)
+                ?: SmartPeriodConfig(
                     totalPeriods = slotRows.size.coerceAtLeast(1),
                     startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
                 )
-            }
         )
     }
 
@@ -284,18 +277,14 @@ fun PeriodTableEditScreen(
                                     val imported = TimeTableUtils.parseTimeSlotRows(picked.timeJson)
                                     slotRows.clear()
                                     slotRows.addAll(imported)
-                                    smartConfig.value = if (picked.smartConfigJson.isNotBlank()) {
-                                        try {
-                                            Json.decodeFromString<SmartPeriodConfig>(picked.smartConfigJson)
-                                        } catch (_: Exception) {
-                                            smartConfig.value
-                                        }
-                                    } else {
-                                        SmartPeriodConfig(
-                                            totalPeriods = imported.size.coerceAtLeast(1),
-                                            startTime = imported.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                                        )
-                                    }
+                                    // issue#23 Task 4: 取入后配置对齐同一规则 —— 取入表的配置
+                                    // 仍 derive 得到取入行 → 保留; 否则从取入行重推断; 不可推断
+                                    // → 维持当前配置。
+                                    val importedStored = com.lingion.sleepy.ui.component
+                                        .decodeSmartPeriodConfig(picked.smartConfigJson)
+                                    smartConfig.value = com.lingion.sleepy.ui.component
+                                        .resolveAutoPeriodConfig(imported, importedStored)
+                                        ?: smartConfig.value
                                 }
                             )
                         }
