@@ -26,6 +26,9 @@
     <string name="schedule_share_table">分享課表</string>
     <string name="exit_press_back_again">再按一次返回退出</string>
     <string name="schedule_current_week">第 %1$d 週</string>
+    <string name="schedule_next_week">下週課表</string>
+    <string name="schedule_weekend">正在週末</string>
+    <string name="schedule_week_ended">本週課表已結束</string>
     <string name="schedule_no_course_today">今天沒有課</string>
 
     <string name="import_title">匯入課表/作息表</string>
@@ -311,6 +314,8 @@
     <string name="settings_grid_evening_start">晚間起始時間</string>
     <string name="settings_grid_adaptive_height">課表自適應行高</string>
     <string name="settings_grid_adaptive_height_sub">按可用高度自動縮放行高，優先完整顯示課表</string>
+    <string name="settings_auto_next_week">本週結束後自動顯示下週</string>
+    <string name="settings_auto_next_week_sub">本週沒有剩餘課程時，在 App 和小工具自動顯示下週課表</string>
     <string name="settings_grid_pinch_zoom">雙指捏放調整行高</string>
     <string name="settings_grid_pinch_zoom_sub">在課表上用雙指上下捏放改變行高；關閉後不可捏放</string>
     <string name="settings_lab">實驗室</string>

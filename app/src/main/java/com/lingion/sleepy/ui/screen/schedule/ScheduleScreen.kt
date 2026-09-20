@@ -75,6 +75,9 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.WeekDisplayContext
+import com.lingion.sleepy.util.WeekDisplayResolver
+import com.lingion.sleepy.util.WeekDisplayStatus
 
 // 非 private: MainActivity(AppRoot 会话层)需以本类型注入 viewMode —
 // 会话内切视图/编辑课程 overlay 往返/切 tab 往返都不丢(启动默认仍由 AppRoot 初始化时读 AppPrefs)。
@@ -156,6 +159,7 @@ fun ScheduleScreen(
                 currentWeek = state.selectedWeek,
                 maxWeek = state.currentTable?.maxWeek ?: 20,
                 startDate = state.currentTable?.startDate ?: "",
+                displayContext = state.weekDisplayContext,
                 onSwitchTable = { showTableSwitcher = true },
                 onUndo = {
                     undoScope.launch {
@@ -413,6 +417,7 @@ private fun TopBar(
     currentWeek: Int,
     maxWeek: Int,
     startDate: String,
+    displayContext: WeekDisplayContext?,
     onSwitchTable: () -> Unit,
     onUndo: () -> Unit,
     scaleUncommitted: Boolean,
@@ -427,12 +432,16 @@ private fun TopBar(
 ) {
     val colors = SleepyTheme.colors
     // 实时计算当前实际周（不依赖 state.currentWeek — 用户可能切到了别的周）
-    val actualWeek = remember(startDate) {
+    val actualWeek = displayContext?.actualWeek ?: remember(startDate) {
         if (startDate.isBlank()) 1 else DateUtils.currentWeek(startDate)
     }
     var menuOpen by remember { mutableStateOf(false) }
     val isOnActual = currentWeek == actualWeek
-    val semesterStatus = DateUtils.semesterStatus(startDate, maxWeek)
+    val semesterStatus = displayContext?.semesterStatus
+        ?: DateUtils.semesterStatus(startDate, maxWeek)
+    val displayStatus = displayContext?.let {
+        WeekDisplayResolver.statusForSelectedWeek(it, currentWeek)
+    } ?: WeekDisplayStatus.NORMAL
 
     Row(
         modifier = Modifier
@@ -493,9 +502,14 @@ private fun TopBar(
                     else -> 0
                 }
                 Text(
-                    text = if (statusRes == 0)
-                        stringResource(R.string.schedule_current_week, currentWeek)
-                    else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
+                    text = when (displayStatus) {
+                        WeekDisplayStatus.NEXT_WEEK -> stringResource(R.string.schedule_next_week)
+                        WeekDisplayStatus.WEEKEND_CURRENT -> stringResource(R.string.schedule_weekend)
+                        WeekDisplayStatus.CURRENT_ENDED -> stringResource(R.string.schedule_week_ended)
+                        WeekDisplayStatus.NORMAL -> if (statusRes == 0)
+                            stringResource(R.string.schedule_current_week, currentWeek)
+                        else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
+                    },
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                     modifier = Modifier

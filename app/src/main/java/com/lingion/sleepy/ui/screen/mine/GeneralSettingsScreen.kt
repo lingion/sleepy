@@ -109,6 +109,7 @@ fun GeneralSettingsScreen(
     var gridAdaptiveHeight by remember { mutableStateOf(AppPrefs.isGridAdaptiveHeight(context)) }
     // v1.0.56 T3: 双指捏放行高(实验室, 默认关)
     var gridPinchZoom by remember { mutableStateOf(AppPrefs.isGridPinchZoom(context)) }
+    var autoNextWeek by remember { mutableStateOf(AppPrefs.isAutoNextWeek(context)) }
     // v1.0.56 T4: 语言折叠卡展开态 — 默认收起; 选择语言即 recreate 重建, 会话态足够
     var languageExpanded by remember { mutableStateOf(false) }
     var eveningStart by remember { mutableStateOf(AppPrefs.getGridEveningStart(context)) }
@@ -806,6 +807,17 @@ fun GeneralSettingsScreen(
                             )
                         }
                     }
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_auto_next_week),
+                        subtitle = stringResource(R.string.settings_auto_next_week_sub),
+                        checked = autoNextWeek,
+                        onCheckedChange = {
+                            autoNextWeek = it
+                            AppPrefs.setAutoNextWeek(context, it)
+                            refreshWidgets()
+                        }
+                    )
                 }
             }
         }

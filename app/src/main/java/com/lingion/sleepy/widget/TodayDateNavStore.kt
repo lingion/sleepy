@@ -30,6 +30,10 @@ object TodayDateNavStore {
         return LocalDate.ofEpochDay(epoch)
     }
 
+    /** true 表示用户曾经手动翻过日期；自动周末切换不得覆盖这类导航态。 */
+    fun hasNavigation(context: Context, widgetId: Int): Boolean =
+        read(context, widgetId) != null
+
     /** 把日期推进 ±deltaDays (锚点刷新为 today); 钳制在 Core.MAX_ABS_OFFSET_DAYS 内。 */
     fun shift(context: Context, widgetId: Int, today: LocalDate, deltaDays: Long) {
         synchronized(writeLock) {

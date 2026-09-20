@@ -28,6 +28,9 @@
     <string name="schedule_share_table">分享课表</string>
     <string name="exit_press_back_again">再按一次返回退出</string>
     <string name="schedule_current_week">第 %1$d 周</string>
+    <string name="schedule_next_week">下周课表</string>
+    <string name="schedule_weekend">正在周末</string>
+    <string name="schedule_week_ended">本周课表已结束</string>
     <string name="schedule_no_course_today">今天没有课哦</string>
 
     <!-- Import / Manage -->
@@ -353,6 +356,8 @@
     <string name="settings_grid_evening_start">晚间起始时间</string>
     <string name="settings_grid_adaptive_height">课表自适应行高</string>
     <string name="settings_grid_adaptive_height_sub">按可用高度自动缩放行高，优先完整显示课表</string>
+    <string name="settings_auto_next_week">当周结束自动显示下周</string>
+    <string name="settings_auto_next_week_sub">当本周没有剩余课程时，主界面和小组件自动显示下周课表</string>
     <string name="settings_grid_pinch_zoom">双指捏放调整行高</string>
     <string name="settings_grid_pinch_zoom_sub">在课表上用双指上下捏放改变行高；关闭后不可捏放</string>
     <string name="settings_lab">实验室</string>

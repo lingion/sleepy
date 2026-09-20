@@ -31,6 +31,9 @@
     <string name="schedule_share_table">Share Schedule</string>
     <string name="exit_press_back_again">Press back again to exit</string>
     <string name="schedule_current_week">Week %1$d</string>
+    <string name="schedule_next_week">Next week</string>
+    <string name="schedule_weekend">Weekend</string>
+    <string name="schedule_week_ended">This week has ended</string>
     <string name="schedule_no_course_today">No classes today</string>
 
     <string name="import_title">Import Timetable/Bell Schedule</string>
@@ -328,6 +331,8 @@
     <string name="settings_grid_evening_start">Evening starts at</string>
     <string name="settings_grid_adaptive_height">Adaptive timetable row height</string>
     <string name="settings_grid_adaptive_height_sub">Scale row heights to fit the timetable on screen</string>
+    <string name="settings_auto_next_week">Show next week when this week ends</string>
+    <string name="settings_auto_next_week_sub">Show next week in the app and widgets when no classes remain this week</string>
     <string name="settings_grid_pinch_zoom">Pinch to resize rows</string>
     <string name="settings_grid_pinch_zoom_sub">Use a two-finger vertical pinch on the timetable to change row height; disabled when off</string>
     <string name="settings_lab">Lab</string>

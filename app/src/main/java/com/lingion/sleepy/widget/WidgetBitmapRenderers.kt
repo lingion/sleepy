@@ -15,6 +15,7 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -25,6 +26,13 @@ import kotlin.math.roundToInt
  * 4 个 widget 复用同一份 scheme，色彩与 app 主题一致。
  */
 object WidgetBitmapRenderers {
+
+    private fun weekDisplayText(context: Context, status: WeekDisplayStatus): String? = when (status) {
+        WeekDisplayStatus.NEXT_WEEK -> context.getString(R.string.schedule_next_week)
+        WeekDisplayStatus.WEEKEND_CURRENT -> context.getString(R.string.schedule_weekend)
+        WeekDisplayStatus.CURRENT_ENDED -> context.getString(R.string.schedule_week_ended)
+        WeekDisplayStatus.NORMAL -> null
+    }
 
     // ── Scheme 颜色（与 WidgetContent.resolveSchemePublic 一致） ──
     // 死代码清理: cPrimary…cPractice 9 个课程色字段与 surface 字段赋值后从未被渲染消费
@@ -245,17 +253,25 @@ object WidgetBitmapRenderers {
     fun todayHeaderParts(
         data: WidgetData, dayName: String, showDate: Boolean,
         resolve: (Int) -> String,
-        showBackToToday: Boolean = true
+        showBackToToday: Boolean = true,
+        weekDisplayStatus: WeekDisplayStatus = data.weekDisplayStatus
     ): TodayHeaderParts {
+        val statusText = when (weekDisplayStatus) {
+            WeekDisplayStatus.NEXT_WEEK -> resolve(R.string.schedule_next_week)
+            WeekDisplayStatus.WEEKEND_CURRENT -> resolve(R.string.schedule_weekend)
+            WeekDisplayStatus.CURRENT_ENDED -> resolve(R.string.schedule_week_ended)
+            WeekDisplayStatus.NORMAL -> null
+        }
         val title = if (data.isToday) "${resolve(R.string.today_today)} · $dayName"
                     else "${data.dateLabel} · $dayName"
+        val displayTitle = statusText?.let { "$it · $dayName" } ?: title
         return if (!data.isToday && showBackToToday) {
-            TodayHeaderParts(title, resolve(R.string.today_nav_back_to_today), true)
+            TodayHeaderParts(displayTitle, resolve(R.string.today_nav_back_to_today), true)
         } else if (showDate && data.isToday) {
-            TodayHeaderParts(title, data.dateLabel, false)
+            TodayHeaderParts(displayTitle, data.dateLabel, false)
         } else {
             // 导航态的日期已在 title 中；showBackToToday=false 时也不得再画第二份日期。
-            TodayHeaderParts(title, null, false)
+            TodayHeaderParts(displayTitle, null, false)
         }
     }
 
@@ -622,6 +638,7 @@ object WidgetBitmapRenderers {
         var h = 12f                                 // pad (2026-09-14c: 顶部标签行已删)
         if (!data.hasTable || data.days.isEmpty()) return h + 20f
         if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) return h + 22f + 14f  // 状态 + 提示
+        if (data.weekDisplayStatus != WeekDisplayStatus.NORMAL) h += 22f
         // 最高一列决定整体高度; 每列: 列头(20) + 冲突分行课程 / "无课程"一行
         val colH = data.days.maxOf { day ->
             if (day.courses.isEmpty()) return@maxOf 20f + 16f
@@ -653,7 +670,8 @@ object WidgetBitmapRenderers {
             else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
         if (shownDays.isEmpty()) return outerPad * 2 + 20f
         // 学期外状态行: 顶部全宽 +16dp (renderWeekList 学期外段)
-        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) 16f else 0f
+        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE ||
+            data.weekDisplayStatus != WeekDisplayStatus.NORMAL) 16f else 0f
         // 最高一列: [状态行] + 标题(12+14) + chip 行(14+6) + 课程行 (16+3)*n
         val colH = shownDays.maxOf { day ->
             var cy = statusH + 12f + 14f
@@ -685,7 +703,8 @@ object WidgetBitmapRenderers {
         val shownDays = if (visibleDays.isEmpty()) data.days
             else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
         if (shownDays.isEmpty()) return outerPad * 2 + 20f
-        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) 16f else 0f
+        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE ||
+            data.weekDisplayStatus != WeekDisplayStatus.NORMAL) 16f else 0f
         val density = context.resources.displayMetrics.density
         val p = android.graphics.Paint().apply {
             textSize = 9f * density
@@ -805,7 +824,6 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        val todayDow = LocalDate.now().dayOfWeek.value
         val colGap = 4f * density
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
@@ -823,12 +841,22 @@ object WidgetBitmapRenderers {
             canvas.drawText(statusText, (w - stw) / 2f, outerPad + 10f * density, p)
             colTop = outerPad + 16f * density
         }
+        if (data.semesterStatus == DateUtils.SemesterStatus.IN_RANGE) {
+            weekDisplayText(SleepyApp.get(), data.weekDisplayStatus)?.let { statusText ->
+                p.color = s.onSurfaceVariant
+                p.textSize = 10f * density
+                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                val stw = p.measureText(statusText)
+                canvas.drawText(statusText, (w - stw) / 2f, outerPad + 10f * density, p)
+                colTop = outerPad + 16f * density
+            }
+        }
 
         // 列数随 visibleDays 变化 (原硬编码 7 列)
         for (i in shownDays.indices) {
             val day = shownDays[i]
             val x = outerPad + i * (colW + colGap)
-            val isToday = day.dayOfWeek == todayDow
+            val isToday = day.isToday
             val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
 
             // 列背景
@@ -962,15 +990,20 @@ object WidgetBitmapRenderers {
      */
     fun weekGridMinimumTodayData(data: WeekData, today: LocalDate): WidgetData {
         val timeJson = data.days.firstOrNull()?.timeJson ?: ""
-        val todayDay = data.days.firstOrNull { it.dayOfWeek == today.dayOfWeek.value }
+        val targetDate = if (data.weekDisplayStatus == WeekDisplayStatus.NEXT_WEEK) {
+            data.days.minByOrNull { it.date }?.date ?: today
+        } else today
+        val todayDay = data.days.firstOrNull { it.date == targetDate }
         return WidgetData(
-            date = today,
+            date = targetDate,
             courses = todayDay?.courses ?: emptyList(),
             timeJson = timeJson,
             hasTable = data.hasTable,
             isDark = data.isDark,
             themeKey = data.themeKey,
-            semesterStatus = data.semesterStatus
+            semesterStatus = data.semesterStatus,
+            isToday = targetDate == today,
+            weekDisplayStatus = data.weekDisplayStatus
         )
     }
 
@@ -1071,7 +1104,6 @@ object WidgetBitmapRenderers {
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
         }
 
-        val todayDow = LocalDate.now().dayOfWeek.value
         val colGap = 4f * density
         val dayCount = shownDays.size
         val colW = (innerW - colGap * (dayCount - 1)) / dayCount
@@ -1089,12 +1121,22 @@ object WidgetBitmapRenderers {
             canvas.drawText(statusText, (w - stw) / 2f, outerPad + 10f * density, p)
             colTop = outerPad + 16f * density
         }
+        if (data.semesterStatus == DateUtils.SemesterStatus.IN_RANGE) {
+            weekDisplayText(SleepyApp.get(), data.weekDisplayStatus)?.let { statusText ->
+                p.color = s.onSurfaceVariant
+                p.textSize = 10f * density
+                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                val stw = p.measureText(statusText)
+                canvas.drawText(statusText, (w - stw) / 2f, outerPad + 10f * density, p)
+                colTop = outerPad + 16f * density
+            }
+        }
 
         // 列数随 visibleDays 变化 (原硬编码 7 列)
         for (i in shownDays.indices) {
             val day = shownDays[i]
             val x = outerPad + i * (colW + colGap)
-            val isToday = day.dayOfWeek == todayDow
+            val isToday = day.isToday
             val cardBg = if (isToday) s.primaryContainer else s.surfaceContainer
 
             // 列背景
@@ -1260,6 +1302,14 @@ object WidgetBitmapRenderers {
             p.typeface = Typeface.DEFAULT
             canvas.drawText(ctx.getString(R.string.today_semester_out_hint), pad, y + 11f * density, p)
             return bmp.apply { eraseColor(Color.TRANSPARENT); Canvas(this).drawBitmap(c, 0f, 0f, null) }
+        }
+
+        weekDisplayText(ctx, data.weekDisplayStatus)?.let { statusText ->
+            p.color = s.onSurface
+            p.textSize = 13f * density
+            p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+            canvas.drawText(statusText, pad, y + 15f * density, p)
+            y += 22f * density
         }
 
         // 左右两栏: 每天一列, 中间竖直分隔
