@@ -5,6 +5,6 @@
     <style name="NightAdjusted.Theme.Sleepy" parent="android:Theme.Material.NoActionBar" />
 
     <style name="NightAdjusted.Theme.Sleepy.Splash" parent="Theme.SplashScreen">
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightStatusBar">false</item>
     </style>
 </resources>
