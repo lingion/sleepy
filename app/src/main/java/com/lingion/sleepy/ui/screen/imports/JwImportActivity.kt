@@ -493,21 +493,23 @@ class JwImportActivity : ComponentActivity() {
                                             // 本地 9 月首一推断会差一周), 用户仍可在确认页修改
                                             configStartDate = termStartDate
                                             configTimeJson = ""
+                                            // issue#23 T5: seed both live confirmation state and draft
+                                            // persistence from the same inference result. Incomplete rows
+                                            // retain the simple fallback and remain on manual validation.
+                                            val inferredSmartConfig =
+                                                TimeTableUtils.inferSmartPeriodConfig(newRows)
+                                                    ?: SmartPeriodConfig(
+                                                        totalPeriods = newRows.size.coerceAtLeast(1),
+                                                        startTime = newRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                                                    )
+                                            configSmartConfig = inferredSmartConfig
                                             val snapshot = JwImportDraftSnapshot(
                                                 school = sch,
                                                 courses = courses,
                                                 periods = newRows.map { JwImportDraftPeriod(it.node, it.start, it.end) },
                                                 termStartDate = termStartDate,
                                                 tableName = getString(R.string.jw_import_title, sch.name),
-                                                // issue#23 T5: 草稿快照携带从解析行推断出的配置 —
-                                                // 推断失败(缺时间/畸形)退回最简默认, 由确认页校验兜底。
-                                                smartConfigJson = Json.encodeToString(
-                                                    TimeTableUtils.inferSmartPeriodConfig(newRows)
-                                                        ?: SmartPeriodConfig(
-                                                            totalPeriods = newRows.size.coerceAtLeast(1),
-                                                            startTime = newRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                                                        )
-                                                ),
+                                                smartConfigJson = Json.encodeToString(inferredSmartConfig),
                                             )
                                             draftId = withContext(Dispatchers.IO) {
                                                 draftRepository.save(snapshot, sourceType = "jw", sourceUrl = sch.url)

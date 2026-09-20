@@ -148,6 +148,18 @@ class ImportDraftWiringContractTest {
                 """TimeTableUtils\.inferSmartPeriodConfig\(\s*newRows\s*\)"""
             ).containsMatchIn(src),
         )
+        assertTrue(
+            "JwImportActivity 新解析路径必须同步更新 live configSmartConfig",
+            Regex(
+                """val inferredSmartConfig\s*=.*?configSmartConfig\s*=\s*inferredSmartConfig""",
+                RegexOption.DOT_MATCHES_ALL,
+            ).containsMatchIn(src),
+        )
+        assertTrue(
+            "JwImportActivity snapshot 必须与 live config 使用同一个 inferredSmartConfig",
+            Regex("""smartConfigJson\s*=\s*Json\.encodeToString\(inferredSmartConfig\)""")
+                .containsMatchIn(src),
+        )
         // 旧 fresh SmartPeriodConfig() 形态不允许出现在四个 seed site
         assertNull(
             "草稿恢复种子点不应再写裸 SmartPeriodConfig() 默认",
