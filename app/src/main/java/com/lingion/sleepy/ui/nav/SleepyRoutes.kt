@@ -4,12 +4,16 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.FastOutSlowInEasing
 import androidx.compose.animation.core.LinearEasing
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleOut
 import androidx.compose.animation.slideInHorizontally
 import androidx.compose.animation.slideOutHorizontally
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.TransformOrigin
 import androidx.compose.ui.unit.IntOffset
 import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavType
@@ -95,51 +99,86 @@ val periodEditArgs = listOf(
 )
 
 /**
- * MD3E 共享轴(shared axis)过渡 — 前进沿 X 轴推入,返回反向抽出。
+ * MD3E 共享轴(shared axis)过渡 + 官方推荐 pop 缩放。
  *
- * 2026-09-20 用户反馈: 原实现用 MotionScheme.expressive() 的 spatial spring
- * (dampingRatio 0.8 / stiffness 380, 允许过冲) 做位移 + 1/4 屏位移幅度,
- *   (1) 暗色主题下过渡中途两侧露出固定米白 splash_background (#FFFAF8F2) + 居中 logo
- *       → 改 splash 暗色变体 (values-night/colors.xml) + 缩小位移幅度
- *   (2) 快速进/返回时页面左右扭动 — 原 enter 1/4 + exit -1/8 不对称
- *       → 改对称 enter+exit 均为 1/6 屏
- *   (3) 矩形向中心缩小 + 卡很久 — spring 0.8 过冲 + predictive back 系统动画叠加
- *       → 改 tween(220, FastOutSlowInEasing) 取代 spring, 不过冲不叠加
+ * 2026-09-20 用户反馈链 (5 轮):
+ *   - d7fc9421: 修暗色闪白 + slide 不对称 → spring 过冲卡顿。
+ *   - da3a6335: 关 enableOnBackInvokedCallback 治"矩形缩小+logo 残留" — 但同时
+ *     把 predictive-back 返回预览也关了 (用户反馈"返回预览没了吗?")。
+ *   - B 方案 (本轮): 重开 predictive-back=true, popExit 改为官方示例
+ *     scaleOut(0.92, TransformOrigin(0.5,0.5)) + spring(NoBouncy, MediumLow),
+ *     popEnter = None 让目标页原地不动。
+ *   - 用户再次反馈 "返回预览出现白底+中间 logo": 根因不是 transition, 是
+ *     windowBackground。Theme.Sleepy.Splash 在整个应用窗口生命周期内挂着
+ *     "纯色 + 居中 launcher 图标" layer-list, 系统 EMUI predictive-back 预演
+ *     缩略图、最近任务快照、Activity 切换预览都直接拿它当 backdrop。PreDraw
+ *     降级修不到系统快照 (快照发生在 PreDraw 切换之前/之时)。
  *
- * 位移方向: 前 enter 来自右侧 +1/6, exit 退到左侧 -1/6 (对称)。
- * 返回 popEnter/popExit 镜像 (来自左侧 -1/6, 退到右侧 +1/6)。
+ * **NIA 模式迁移 (最终方案)**: 仿照 google/nowinandroid 的 splash 切换做法 —
+ *   - 启动主题 parent=Theme.SplashScreen (androidx core-splashscreen) +
+ *     windowSplashScreenBackground=纯色 + windowSplashScreenAnimatedIcon=
+ *     launcher 图标 + postSplashScreenTheme=Theme.Sleepy
+ *   - installSplashScreen() 完成后 androidx 内部立即切到运行时主题, 整个
+ *     进程生命周期内窗口背景归零, 系统任何预览都拿不到 logo 残留。
+ *   - night-adjusted 拆分 (values/ + values-night/ 各自重声明父主题与状态栏,
+ *     共用属性挂中间层, 不被 night 侧覆盖重置) — 同 NIA NightAdjusted.Theme。
+ *   - 删除 PreDraw/ColorDrawable 降级 hack (随窗口底衬一起归零)。
+ *   - 删 drawable/splash_background.xml (无引用)。
+ *   - 运行时主题 Theme.Sleepy 仍是 Theme.Material.Light.NoActionBar 系,
+ *     Compose 用 SleepyThemeProvider 整套重画, 不依赖任何 windowBackground。
+ *
+ * 过渡动作 (本文件 B 方案, 不动):
+ *   - 进子页 (forward): slideIn+slideOut ±1/8 屏, tween(220, FastOutSlowIn),
+ *     110ms fadeIn, 推入感强。
+ *   - 返回 (pop): scaleOut(0.92, center) + spring(MediumLow, NoBouncy) +
+ *     fadeOut(220); popEnter = None (目标页不重画)。
+ *   与 google/nowinandroid 与官方 developer.android.com/develop/ui/compose/
+ *   system/predictive-back-setup "Add custom in-app animation" 示例一致。
  *
  * 必须在 AppRoot 组合期求值再捕获进 NavHost 的 transition lambda —
  * 那个 lambda 不是 composable 上下文,不能就地读 MaterialTheme。
  */
+private const val ForwardDuration = 220
+private const val ForwardFadeIn = 110
+private const val ForwardOffsetFraction = 8  // 1/8 屏 — 比之前 1/6 更轻, 推入感更强但不抢戏
+
+// scaleOut spring: 不回弹, stiffness 偏低 → 收尾平滑, 不会有 M3 expressive spatial
+// 那种"快速回弹"造成的视觉抖动感
+private val popExitSpring = spring<Float>(
+    dampingRatio = Spring.DampingRatioNoBouncy,
+    stiffness = Spring.StiffnessMediumLow,
+)
+
 @Composable
 fun sleepySharedAxisEnter(): EnterTransition {
     return slideInHorizontally(
-        initialOffsetX = { it / 6 },
-        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-    ) + fadeIn(tween(durationMillis = 110, easing = LinearEasing))
+        initialOffsetX = { it / ForwardOffsetFraction },
+        animationSpec = tween(durationMillis = ForwardDuration, easing = FastOutSlowInEasing),
+    ) + fadeIn(tween(durationMillis = ForwardFadeIn, easing = LinearEasing))
 }
 
 @Composable
 fun sleepySharedAxisExit(): ExitTransition {
     return slideOutHorizontally(
-        targetOffsetX = { -it / 6 },
-        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-    ) + fadeOut(tween(durationMillis = 220, easing = LinearEasing))
+        targetOffsetX = { -it / ForwardOffsetFraction },
+        animationSpec = tween(durationMillis = ForwardDuration, easing = FastOutSlowInEasing),
+    ) + fadeOut(tween(durationMillis = ForwardDuration, easing = LinearEasing))
 }
 
+// pop: 目标页 (Home) 原地不动画 (None), 退出页向屏幕中心缩小 + 淡出。
+// 官方文档示例 popExit = scaleOut(0.92, TransformOrigin(0.5, 0.5));
+// popEnter = None。Android 14+ 系统 predictive-back 手势进度由 NavHost 内部
+// SeekableTransitionState 驱动这套过渡, 自动支持侧滑预览。
 @Composable
 fun sleepySharedAxisPopEnter(): EnterTransition {
-    return slideInHorizontally(
-        initialOffsetX = { -it / 6 },
-        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-    ) + fadeIn(tween(durationMillis = 110, easing = LinearEasing))
+    return EnterTransition.None
 }
 
 @Composable
 fun sleepySharedAxisPopExit(): ExitTransition {
-    return slideOutHorizontally(
-        targetOffsetX = { it / 6 },
-        animationSpec = tween(durationMillis = 220, easing = FastOutSlowInEasing),
-    ) + fadeOut(tween(durationMillis = 220, easing = LinearEasing))
+    return scaleOut(
+        targetScale = 0.92f,
+        animationSpec = popExitSpring,
+        transformOrigin = TransformOrigin(0.5f, 0.5f),
+    ) + fadeOut(tween(durationMillis = ForwardDuration, easing = LinearEasing))
 }
