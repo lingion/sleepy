@@ -57,6 +57,11 @@ fun resolveAutoPeriodConfig(
     stored: SmartPeriodConfig?
 ): SmartPeriodConfig? {
     val standard = rows.filter { it.edgeClass == null }.sortedBy { it.node }
+    if (standard.isEmpty() || standard.first().node != 1 ||
+        standard.map { it.node } != (1..standard.size).toList()
+    ) {
+        return TimeTableUtils.inferSmartPeriodConfig(standard, stored)
+    }
     if (stored != null) {
         val derived = stored.derive()
         val matches = derived.size == standard.size && derived.withIndex().all { (i, d) ->
@@ -65,6 +70,25 @@ fun resolveAutoPeriodConfig(
         if (matches) return stored
     }
     return TimeTableUtils.inferSmartPeriodConfig(standard, stored)
+}
+
+/** Replace standard rows with automatic output while retaining manual edge rows. */
+fun mergeAutoRows(
+    existingRows: List<TimeSlotRow>,
+    derivedStandardRows: List<TimeSlotRow>
+): List<TimeSlotRow> {
+    var nextStandard = 0
+    val merged = existingRows.mapNotNull { row ->
+        if (row.edgeClass != null) {
+            row
+        } else {
+            derivedStandardRows.getOrNull(nextStandard++)
+        }
+    }.toMutableList()
+    if (nextStandard < derivedStandardRows.size) {
+        merged += derivedStandardRows.drop(nextStandard)
+    }
+    return merged
 }
 
 /** smartConfigJson -> config(null = 空串/损坏); 两处编辑页 seed 共用 */
@@ -110,7 +134,7 @@ fun TimeSlotEditor(
     // 否则保存时 timeJson 用的还是旧的手动 rows，导致"保存的不是自动模式数据"。
     LaunchedEffect(mode, smartConfig) {
         if (mode == Mode.Auto) {
-            onRowsChange(smartConfig.derive())
+            onRowsChange(mergeAutoRows(rows, smartConfig.derive()))
         }
     }
 
