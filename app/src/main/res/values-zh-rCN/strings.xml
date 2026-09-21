@@ -610,6 +610,14 @@
     <string name="reminder_fluid_field_room">上课地点</string>
     <string name="reminder_fluid_field_teacher">任课老师</string>
     <string name="reminder_fluid_note">点击通知后可展开课程详情。具体是否显示为流体云/超级岛由手机系统、通知权限和厂商服务资格决定。</string>
+    <string name="reminder_experimental_tag">实验</string>
+    <string name="reminder_fluid_status_title">流体云 / 超级岛状态</string>
+    <string name="reminder_fluid_status_notification_required">需要通知权限才能开启此功能</string>
+    <string name="reminder_fluid_status_unknown">无法直接读取流体云 / 超级岛的授权状态。点击下方按钮跳转到通知设置，确认系统权限。</string>
+    <string name="reminder_fluid_status_enabled">已开启流体云 / 超级岛授权</string>
+    <string name="reminder_fluid_status_settings_required">需要先在系统设置中开启流体云 / 超级岛授权</string>
+    <string name="reminder_fluid_status_not_supported">当前设备系统不支持流体云 / 超级岛</string>
+    <string name="reminder_fluid_go_to_settings">去设置</string>
     <string name="reminder_pick_time">选择提醒时间</string>
     <string name="action_confirm">确定</string>
     <string name="action_cancel">取消</string>

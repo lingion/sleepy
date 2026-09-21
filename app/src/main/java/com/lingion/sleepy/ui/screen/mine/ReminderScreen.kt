@@ -6,6 +6,8 @@ import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -44,6 +46,7 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -55,15 +58,22 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.widget.notification.VendorLiveNotificationCapability
+import com.lingion.sleepy.widget.notification.VendorCapabilityState
+import com.lingion.sleepy.widget.notification.detectLiveCardVendor
+import com.lingion.sleepy.widget.notification.vendorAdapterFor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -87,6 +97,22 @@ fun ReminderScreen(onBack: () -> Unit) {
     var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
+    var fluidCapability by remember { mutableStateOf<VendorLiveNotificationCapability?>(null) }
+    var showFluidCapabilityDialog by remember { mutableStateOf(false) }
+    var pendingFluidPermission by remember { mutableStateOf(false) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+
+    fun inspectFluidCapability() {
+        fluidCapability = vendorAdapterFor(detectLiveCardVendor()).inspect(context)
+    }
+
+    DisposableEffect(lifecycleOwner, fluidEnabled) {
+        val observer = LifecycleEventObserver { _, event ->
+            if (event == Lifecycle.Event.ON_RESUME && fluidEnabled) inspectFluidCapability()
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
+    }
 
     // debounce：分钟输入停止 500ms 后才持久化并重排提醒，
     //   避免每敲一键就触发一次全量 cancelAll + scheduleAll（查库 + 重排全部闹钟）。
@@ -104,9 +130,22 @@ fun ReminderScreen(onBack: () -> Unit) {
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            masterEnabled = true
-            AppPrefs.setReminderEnabled(context, true)
-            SleepyApp.get().notificationScheduler.scheduleAll()
+            if (pendingFluidPermission) {
+                pendingFluidPermission = false
+                fluidEnabled = true
+                AppPrefs.setBeforeClassFluidEnabled(context, true)
+                SleepyApp.get().notificationScheduler.scheduleAll()
+                inspectFluidCapability()
+                showFluidCapabilityDialog = true
+            } else {
+                masterEnabled = true
+                AppPrefs.setReminderEnabled(context, true)
+                SleepyApp.get().notificationScheduler.scheduleAll()
+            }
+        } else if (pendingFluidPermission) {
+            pendingFluidPermission = false
+            fluidEnabled = false
+            AppPrefs.setBeforeClassFluidEnabled(context, false)
         } else {
             // Permission denied → revert to off
             masterEnabled = false
@@ -388,11 +427,30 @@ fun ReminderScreen(onBack: () -> Unit) {
                             ReminderToggleRow(
                                 title = stringResource(R.string.reminder_fluid_title),
                                 subtitle = stringResource(R.string.reminder_fluid_sub),
+                                tag = stringResource(R.string.reminder_experimental_tag),
                                 checked = fluidEnabled,
                                 onCheckedChange = {
-                                    fluidEnabled = it
-                                    AppPrefs.setBeforeClassFluidEnabled(context, it)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    if (!it) {
+                                        fluidEnabled = false
+                                        AppPrefs.setBeforeClassFluidEnabled(context, false)
+                                        SleepyApp.get().notificationScheduler.scheduleAll()
+                                    } else {
+                                        val permissionGranted = Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                                            ContextCompat.checkSelfPermission(
+                                                context,
+                                                Manifest.permission.POST_NOTIFICATIONS
+                                            ) == PackageManager.PERMISSION_GRANTED
+                                        if (permissionGranted) {
+                                            fluidEnabled = true
+                                            AppPrefs.setBeforeClassFluidEnabled(context, true)
+                                            SleepyApp.get().notificationScheduler.scheduleAll()
+                                            inspectFluidCapability()
+                                            showFluidCapabilityDialog = true
+                                        } else {
+                                            pendingFluidPermission = true
+                                            permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                                        }
+                                    }
                                 }
                             )
                             if (fluidEnabled) {
@@ -467,6 +525,43 @@ fun ReminderScreen(onBack: () -> Unit) {
         }
     }
 
+    if (showFluidCapabilityDialog && fluidCapability != null) {
+        val capability = fluidCapability!!
+        AlertDialog(
+            onDismissRequest = { showFluidCapabilityDialog = false },
+            title = { Text(stringResource(R.string.reminder_fluid_status_title)) },
+            text = {
+                Text(
+                    text = when (capability.state) {
+                        VendorCapabilityState.NOTIFICATION_PERMISSION_REQUIRED ->
+                            stringResource(R.string.reminder_fluid_status_notification_required)
+                        VendorCapabilityState.UNKNOWN ->
+                            stringResource(R.string.reminder_fluid_status_unknown)
+                        VendorCapabilityState.ENABLED ->
+                            stringResource(R.string.reminder_fluid_status_enabled)
+                        VendorCapabilityState.DISABLED,
+                        VendorCapabilityState.SETTINGS_REQUIRED ->
+                            stringResource(R.string.reminder_fluid_status_settings_required)
+                        VendorCapabilityState.NOT_SUPPORTED ->
+                            stringResource(R.string.reminder_fluid_status_not_supported)
+                    },
+                    color = colors.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    launchVendorNotificationSettings(context, capability)
+                    showFluidCapabilityDialog = false
+                }) { Text(stringResource(R.string.reminder_fluid_go_to_settings)) }
+            },
+            dismissButton = {
+                TextButton(onClick = { showFluidCapabilityDialog = false }) {
+                    Text(stringResource(R.string.action_cancel))
+                }
+            }
+        )
+    }
+
     // Time picker dialog
     if (showTimePicker) {
         val parts = dailyTime.split(":")
@@ -508,7 +603,13 @@ fun ReminderScreen(onBack: () -> Unit) {
 }
 
 @Composable
-private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
+private fun ReminderToggleRow(
+    title: String,
+    subtitle: String,
+    tag: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
     val colors = SleepyTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp),
@@ -516,7 +617,21 @@ private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+                if (tag != null) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = tag,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(colors.primary.copy(alpha = 0.12f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
         // 补主题色：之前无 colors 参数走默认 Material3 蓝，与同屏三个主开关不一致
@@ -528,6 +643,21 @@ private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean,
                 checkedTrackColor = colors.primary
             )
         )
+    }
+}
+
+private fun launchVendorNotificationSettings(
+    context: android.content.Context,
+    capability: VendorLiveNotificationCapability
+) {
+    vendorAdapterFor(capability.vendor).settingsIntents(context).forEach { intent ->
+        if (intent.resolveActivity(context.packageManager) == null) return@forEach
+        try {
+            context.startActivity(intent)
+            return
+        } catch (_: android.content.ActivityNotFoundException) {
+            // ROM-specific settings can disappear between resolution and launch.
+        }
     }
 }
 
