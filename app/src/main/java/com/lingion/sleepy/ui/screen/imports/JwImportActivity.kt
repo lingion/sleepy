@@ -758,53 +758,58 @@ class JwImportActivity : ComponentActivity() {
                 ) {
                     // 导出原子进度卡 — 2026-09-21 用户: 每步在哪+百分之多少, 禁黑箱等待。
                     // 非 null 期间悬浮展示, 终态(成功分享/失败)清零消失。
-                    dumpProgress?.let { progress ->
-                        val colors = MaterialTheme.colorScheme
-                        Card(
-                            modifier = Modifier
-                                .padding(16.dp)
-                                .fillMaxWidth(),
-                            colors = CardDefaults.cardColors(
-                                containerColor = colors.surfaceContainerHigh
-                            ),
-                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
-                        ) {
-                            Column(modifier = Modifier.padding(16.dp)) {
-                                Text(
-                                    text = getString(
-                                        R.string.jw_diag_progress_step,
-                                        progress.stepsDone + 1,
-                                        progress.totalCount
-                                    ),
-                                    style = MaterialTheme.typography.labelLarge,
-                                    color = colors.onSurfaceVariant
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    text = stringResource(progress.stage.labelRes),
-                                    style = MaterialTheme.typography.titleSmall,
-                                    color = colors.onSurface
-                                )
-                                Spacer(Modifier.height(8.dp))
-                                LinearProgressIndicator(
-                                    progress = { progress.percent / 100f },
-                                    modifier = Modifier.fillMaxWidth(),
-                                    color = colors.primary,
-                                    trackColor = colors.surfaceContainer
-                                )
-                                Spacer(Modifier.height(4.dp))
-                                Text(
-                                    text = getString(R.string.jw_diag_progress_percent, progress.percent),
-                                    style = MaterialTheme.typography.labelMedium,
-                                    color = colors.onSurfaceVariant
-                                )
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        dumpProgress?.let { progress ->
+                            val colors = MaterialTheme.colorScheme
+                            Card(
+                                modifier = Modifier
+                                    .padding(horizontal = 16.dp)
+                                    .fillMaxWidth(),
+                                colors = CardDefaults.cardColors(
+                                    containerColor = colors.surfaceContainerHigh
+                                ),
+                                elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                            ) {
+                                Column(modifier = Modifier.padding(16.dp)) {
+                                    Text(
+                                        text = getString(
+                                            R.string.jw_diag_progress_step,
+                                            progress.stepsDone + 1,
+                                            progress.totalCount
+                                        ),
+                                        style = MaterialTheme.typography.labelLarge,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = stringResource(progress.stage.labelRes),
+                                        style = MaterialTheme.typography.titleSmall,
+                                        color = colors.onSurface
+                                    )
+                                    Spacer(Modifier.height(8.dp))
+                                    LinearProgressIndicator(
+                                        progress = { progress.percent / 100f },
+                                        modifier = Modifier.fillMaxWidth(),
+                                        color = colors.primary,
+                                        trackColor = colors.surfaceContainer
+                                    )
+                                    Spacer(Modifier.height(4.dp))
+                                    Text(
+                                        text = getString(R.string.jw_diag_progress_percent, progress.percent),
+                                        style = MaterialTheme.typography.labelMedium,
+                                        color = colors.onSurfaceVariant
+                                    )
+                                }
                             }
                         }
+                        SnackbarHost(
+                            hostState = statusSnackbarHostState,
+                            modifier = Modifier.padding(16.dp)
+                        )
                     }
-                    SnackbarHost(
-                        hostState = statusSnackbarHostState,
-                        modifier = Modifier.padding(16.dp)
-                    )
                 }
             }
         }
