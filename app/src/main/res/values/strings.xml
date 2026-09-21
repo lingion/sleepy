@@ -743,6 +743,7 @@
     <string name="about_update_check">自动检查更新</string>
     <string name="about_update_check_detail">启动时自动检查 GitHub Releases, 发现新版本会在「关于」页顶部提示</string>
     <string name="about_update_available">新版 %1$s 可用,点此查看</string>
+    <string name="about_update_dismiss">关闭更新提示</string>
     <string name="theme_name_default">淡紫</string>
     <string name="theme_name_spring">春绿</string>
     <string name="theme_name_ocean">海蓝</string>
@@ -813,6 +814,11 @@
     <string name="period_time_range">第%1$s节  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 分钟连续</string>
     <string name="break_continuous_n">  ↓ %1$d 分钟 %2$s</string>
+    <string name="duration_assign_hint">课程时长分配（点击切换）</string>
+    <string name="short_duration">短课时</string>
+    <string name="long_duration">长课时</string>
+    <string name="duration_min_one_period">至少 1 节才能分配课程时长</string>
+    <string name="duration_period_n">%1$d 分钟 %2$s</string>
     <string name="add_label">添加%1$s</string>
     <string name="mode_manual">手动模式</string>
     <string name="mode_auto">自动模式</string>

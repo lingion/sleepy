@@ -1,13 +1,28 @@
 package com.lingion.sleepy.ui.nav
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,6 +41,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import android.widget.Toast
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -45,6 +61,7 @@ import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
+import com.lingion.sleepy.util.UpdateNotifier
 import com.lingion.sleepy.ui.screen.mine.LicenseScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodTablesScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodTableEditScreen
@@ -95,6 +112,7 @@ internal fun SleepyNavHost(
     onCreateNewTable: () -> Unit,
 ) {
     val session = navigator.session
+    val updateNoticeVisible by UpdateNotifier.noticeVisible.collectAsState()
 
     // 共享轴过渡:必须先在 composable 上下文求值,再把结果作为对象传入 NavHost
     // 的 transition lambda(那个 lambda 不是 composable 上下文,无法就地读
@@ -150,6 +168,7 @@ internal fun SleepyNavHost(
                 scheduleViewMode = scheduleViewMode,
                 onScheduleViewModeChange = onScheduleViewModeChange,
                 onCreateNewTable = onCreateNewTable,
+                updateNoticeVisible = updateNoticeVisible,
             )
         }
 
@@ -272,6 +291,7 @@ internal fun SleepyNavHost(
             AboutScreen(
                 onBack = { nav.popBackStack() },
                 onOpenLicense = { navigator.openLicense() },
+                updateNoticeVisible = updateNoticeVisible,
             )
         }
 
@@ -334,6 +354,7 @@ internal fun SleepyNavHost(
  * 返回键处理:栈空(在 MAIN 上)才接管 — 切到课表页 + 双击退出。
  * 其它页面的返回由 NavHost 自动 pop 处理,这里不拦(拦了反而把栈 pop 错)。
  */
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 private fun MainRoute(
     currentTab: Tab,
@@ -346,8 +367,9 @@ private fun MainRoute(
     scheduleViewMode: ViewMode,
     onScheduleViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit,
+    updateNoticeVisible: Boolean,
 ) {
-    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
+    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine) }
     val holder: SaveableStateHolder = rememberSaveableStateHolder()
     val nav = navigator.navController
 
@@ -367,20 +389,27 @@ private fun MainRoute(
         }
     }
 
-    if (!navDock) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = SleepyTheme.colors.background,
-            bottomBar = {
-                PillNavigationBar(
-                    items = navItems,
-                    selectedIndex = currentTab.ordinal,
-                    onSelect = { setCurrentTab(Tab.entries[it]) },
-                    dock = false,
-                )
-            },
-        ) { padding ->
-            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    // issue#45 ③横屏/平板: 自研 PillNavigationBar 无此形态,官方 NavigationRail 有 → 用官方。
+    // 官方 NavigationBar/NavigationRail 有 → 贴底用官方 NavigationBar。
+    // 官方没有悬浮药丸 Dock → Compact 且 navDock=true 时保留自研 PillNavigationBar(dock=true)。
+    val activity = ctxForExit as? android.app.Activity
+    val sizeClass = activity?.let { calculateWindowSizeClass(it) }
+    val isCompact = sizeClass == null || sizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+
+    if (!isCompact) {
+        // ③ 中/大屏: 官方 NavigationRail + 主内容 Row
+        Row(modifier = Modifier.fillMaxSize().background(SleepyTheme.colors.background)) {
+            NavigationRail {
+                Tab.entries.forEach { tab ->
+                    NavigationRailItem(
+                        selected = currentTab == tab,
+                        onClick = { setCurrentTab(tab) },
+                        icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
+                        label = { Text(stringResource(tab.labelRes)) },
+                    )
+                }
+            }
+            Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 MainTabs(
                     currentTab = currentTab,
                     setCurrentTab = setCurrentTab,
@@ -391,10 +420,12 @@ private fun MainRoute(
                     onViewModeChange = onScheduleViewModeChange,
                     onCreateNewTable = onCreateNewTable,
                     holder = holder,
+                    updateNoticeVisible = updateNoticeVisible,
                 )
             }
         }
-    } else {
+    } else if (navDock) {
+        // Compact + 悬浮 Dock: 官方无此形态 → 保留自研 PillNavigationBar(dock=true)
         var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
         var dockOverlayPx by remember { mutableStateOf(0) }
         val densityForDock = LocalDensity.current
@@ -421,6 +452,7 @@ private fun MainRoute(
                         onViewModeChange = onScheduleViewModeChange,
                         onCreateNewTable = onCreateNewTable,
                         holder = holder,
+                        updateNoticeVisible = updateNoticeVisible,
                     )
                 }
             }
@@ -437,5 +469,60 @@ private fun MainRoute(
                 )
             }
         }
+    } else {
+        // Compact + 贴底: 官方有 NavigationBar → 用官方(替自研贴底形态)
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = SleepyTheme.colors.background,
+            bottomBar = {
+                NavigationBar {
+                    Tab.entries.forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentTab == tab,
+                            onClick = { setCurrentTab(tab) },
+                            icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
+                            label = { Text(stringResource(tab.labelRes)) },
+                        )
+                    }
+                }
+            },
+        ) { padding ->
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                MainTabs(
+                    currentTab = currentTab,
+                    setCurrentTab = setCurrentTab,
+                    navigator = navigator,
+                    mainVm = mainVm,
+                    mainScope = mainScope,
+                    viewMode = scheduleViewMode,
+                    onViewModeChange = onScheduleViewModeChange,
+                    onCreateNewTable = onCreateNewTable,
+                    holder = holder,
+                    updateNoticeVisible = updateNoticeVisible,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 官方 NavigationBar / NavigationRail 的 tab 图标 — Mine 且有更新提醒时右上角画主题色小圆点。
+ * 三种导航形态(贴底/Rail/悬浮 Dock)与自研 PillNavigationBar 共用同一 noticeVisible 状态。
+ */
+@Composable
+private fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean) {
+    val colors = SleepyTheme.colors
+    if (!showUpdateDot) {
+        Icon(tab.icon, contentDescription = null)
+        return
+    }
+    Box {
+        Icon(tab.icon, contentDescription = null)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(7.dp)
+                .background(colors.primary, androidx.compose.foundation.shape.CircleShape)
+        )
     }
 }

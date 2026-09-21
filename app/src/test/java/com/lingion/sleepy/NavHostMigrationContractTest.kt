@@ -276,4 +276,44 @@ class NavHostMigrationContractTest {
             )
         }
     }
+
+    // ─── issue#45 ③ 自适应导航: 官方有→官方, 官方无→保留自研 Dock ───
+    @Test
+    fun mainRoute_uses_official_nav_where_official_exists_and_keeps_self_dock() {
+        val route = balancedBlock(navHostSrc, "private fun MainRoute(", maxChars = 8000)
+
+        // ③ 横屏/平板: 必须按 WindowWidthSizeClass 分支, 非 Compact 用官方 NavigationRail
+        assertTrue(
+            "MainRoute 必须按 WindowWidthSizeClass.Compact 分支(横屏适配)",
+            Regex("""WindowWidthSizeClass\.Compact""").containsMatchIn(route)
+        )
+        assertTrue(
+            "非 Compact 必须用官方 NavigationRail(官方有此形态)",
+            Regex("""NavigationRail\s*\{""").containsMatchIn(route)
+        )
+        assertTrue(
+            "NavigationRail 必须用官方 NavigationRailItem",
+            Regex("""NavigationRailItem\(""").containsMatchIn(route)
+        )
+
+        // 贴底: 官方有 NavigationBar → 用官方, 不得再用自研 PillNavigationBar 贴底形态
+        assertTrue(
+            "Compact 贴底必须用官方 NavigationBar",
+            Regex("""NavigationBar\s*\{""").containsMatchIn(route)
+        )
+        assertTrue(
+            "Compact 贴底必须用官方 NavigationBarItem",
+            Regex("""NavigationBarItem\(""").containsMatchIn(route)
+        )
+        assertFalse(
+            "贴底形态已改官方 NavigationBar, 不得残留 PillNavigationBar(dock = false)",
+            Regex("""dock\s*=\s*false""").containsMatchIn(route)
+        )
+
+        // 悬浮 Dock: 官方无此形态 → 必须保留自研 PillNavigationBar(dock = true)
+        assertTrue(
+            "官方无悬浮药丸 Dock, 必须保留自研 PillNavigationBar(dock = true)",
+            Regex("""PillNavigationBar\([\s\S]*?dock\s*=\s*true""").containsMatchIn(route)
+        )
+    }
 }

@@ -773,6 +773,11 @@
     <string name="period_time_range">第%1$s节  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 分钟连续</string>
     <string name="break_continuous_n">  ↓ %1$d 分钟 %2$s</string>
+    <string name="duration_assign_hint">课程时长分配（点击切换）</string>
+    <string name="short_duration">短课时</string>
+    <string name="long_duration">长课时</string>
+    <string name="duration_min_one_period">至少 1 节才能分配课程时长</string>
+    <string name="duration_period_n">%1$d 分钟 %2$s</string>
     <string name="add_label">添加%1$s</string>
     <string name="mode_manual">手动模式</string>
     <string name="mode_auto">自动模式</string>

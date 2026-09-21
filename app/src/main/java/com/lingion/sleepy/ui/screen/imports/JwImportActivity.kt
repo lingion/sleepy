@@ -61,6 +61,7 @@ import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
+import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
@@ -148,7 +149,13 @@ class JwImportActivity : ComponentActivity() {
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
                 // issue#28 P2: 自动模式"添加课间"的状态 — 旧代码没传 smartConfig/
                 // onSmartConfigChange, 落到默认 no-op 回调, 点击无效。
-                var configSmartConfig by remember { mutableStateOf(SmartPeriodConfig()) }
+                // issue#23 T5: 初值统一走共享推断(此刻行还为空 → null → 保底默认);
+                // 真正的播种发生在解析出 rows / 草稿恢复两个入口。
+                var configSmartConfig by remember {
+                    mutableStateOf(
+                        TimeTableUtils.inferSmartPeriodConfig(configRows) ?: SmartPeriodConfig()
+                    )
+                }
                 // v1.0.56 T6: 第三 Tab 绑定选择 — null=未绑定(用教务解析出的节次); 落库时同步 periodTableId
                 var configBindPeriodTableId by remember { mutableStateOf<Long?>(null) }
                 // 用户可改的导入课表名; 初值 = "教务导入 - {学校名}"; 留空 = 沿用初值
@@ -356,9 +363,17 @@ class JwImportActivity : ComponentActivity() {
                         TimeTableUtils.TimeSlotRow(it.node, it.start, it.end)
                     }
                     configTimeJson = TimeTableUtils.buildTimeJsonFromRows(configRows)
-                    configSmartConfig = snapshot.smartConfigJson.takeIf { it.isNotBlank() }
+                    // issue#23 T5: 草稿已存配置仍能 derive 出恢复的行 → 原样保留;
+                    // 缺失/损坏 → 从恢复行重推断; 行不可推断(不完整/畸形) → 保底默认,
+                    // TimeSlotEditor 内保持手动模式 + 既有校验兜底, 不写猜测值。
+                    val restoredStored = snapshot.smartConfigJson.takeIf { it.isNotBlank() }
                         ?.let { runCatching { Json.decodeFromString<SmartPeriodConfig>(it) }.getOrNull() }
-                        ?: SmartPeriodConfig()
+                    configSmartConfig = resolveAutoPeriodConfig(
+                        configRows, restoredStored
+                    ) ?: SmartPeriodConfig(
+                        totalPeriods = configRows.size.coerceAtLeast(1),
+                        startTime = configRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                    )
                     // v1.0.56 T10: 默认选中「本次导入自动建作息表」(合成 id=-1)
                     configBindPeriodTableId = -1L
                     exitDraftState = exitDraftState.copy(activeImport = true)
@@ -615,13 +630,23 @@ class JwImportActivity : ComponentActivity() {
                                             // 本地 9 月首一推断会差一周), 用户仍可在确认页修改
                                             configStartDate = termStartDate
                                             configTimeJson = ""
+                                            // issue#23 T5: seed both live confirmation state and draft
+                                            // persistence from the same inference result. Incomplete rows
+                                            // retain the simple fallback and remain on manual validation.
+                                            val inferredSmartConfig =
+                                                TimeTableUtils.inferSmartPeriodConfig(newRows)
+                                                    ?: SmartPeriodConfig(
+                                                        totalPeriods = newRows.size.coerceAtLeast(1),
+                                                        startTime = newRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                                                    )
+                                            configSmartConfig = inferredSmartConfig
                                             val snapshot = JwImportDraftSnapshot(
                                                 school = sch,
                                                 courses = courses,
                                                 periods = newRows.map { JwImportDraftPeriod(it.node, it.start, it.end) },
                                                 termStartDate = termStartDate,
                                                 tableName = getString(R.string.jw_import_title, sch.name),
-                                                smartConfigJson = Json.encodeToString(SmartPeriodConfig()),
+                                                smartConfigJson = Json.encodeToString(inferredSmartConfig),
                                             )
                                             draftId = withContext(Dispatchers.IO) {
                                                 draftRepository.save(snapshot, sourceType = "jw", sourceUrl = sch.url)

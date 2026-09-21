@@ -758,6 +758,11 @@
     <string name="period_time_range">第%1$s時限  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0分連続</string>
     <string name="break_continuous_n">  ↓ %1$d分 %2$s</string>
+    <string name="duration_assign_hint">時限割り当て（タップで切替）</string>
+    <string name="short_duration">短時間</string>
+    <string name="long_duration">長時間</string>
+    <string name="duration_min_one_period">時限を割り当てるには最低1時限必要</string>
+    <string name="duration_period_n">%1$d分 %2$s</string>
     <string name="add_label">%1$sを追加</string>
     <string name="mode_manual">手動モード</string>
     <string name="mode_auto">自動モード</string>

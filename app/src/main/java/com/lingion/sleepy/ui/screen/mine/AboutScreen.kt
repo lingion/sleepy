@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Button
@@ -74,7 +75,11 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
+fun AboutScreen(
+    onBack: () -> Unit,
+    onOpenLicense: () -> Unit = {},
+    updateNoticeVisible: Boolean = false
+) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -227,18 +232,19 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = colors.background
     ) { innerPadding ->
-        // 远端有新版可用时: 整页底色轻刷主题色(alpha 5%) + 顶部 banner 提示, 关 Toggle 后两者一起消失
+        // 远端有新版可用且未被关闭时: 整页底色轻刷主题色(alpha 5%) + 顶部 banner 提示,
+        // 横幅叉掉 / 关 Toggle 后两者一起消失, 主导航小圆点与 Mine 行高亮同状态
         val highlightColor = colors.primary.copy(alpha = 0.05f)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(if (updateAvailable != null) highlightColor else colors.background)
+                .background(if (updateNoticeVisible) highlightColor else colors.background)
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 顶部 banner: 仅 updateAvailable != null 时渲染, 点击跳 Releases tag 页
-            if (updateAvailable != null) {
+            // 顶部 banner: 仅提醒可见时渲染, 点击跳 Releases tag 页, 叉号按版本关闭提醒
+            if (updateNoticeVisible && updateAvailable != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 UpdateBanner(
                     version = updateAvailable!!.version,
@@ -246,7 +252,8 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse("https://gh.qdp.qzz.io/lingion/sleepy/releases/tag/v${updateAvailable!!.version}"))
                         )
-                    }
+                    },
+                    onDismiss = { UpdateNotifier.dismiss(updateAvailable!!.version, context) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -599,7 +606,11 @@ private fun InfoCard(content: @Composable () -> Unit) {
 
 /** 冷启动检查到新版可用时在「关于」顶部展示的横幅, 点击跳 Releases tag 页 */
 @Composable
-private fun UpdateBanner(version: String, onClick: () -> Unit) {
+private fun UpdateBanner(
+    version: String,
+    onClick: () -> Unit,
+    onDismiss: () -> Unit,
+) {
     val colors = SleepyTheme.colors
     Row(
         verticalAlignment = Alignment.CenterVertically,
@@ -607,27 +618,40 @@ private fun UpdateBanner(version: String, onClick: () -> Unit) {
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             .background(colors.primary.copy(alpha = 0.12f))
-            .noRippleClickable(onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
     ) {
-        Icon(
-            imageVector = Icons.Outlined.NewReleases,
-            contentDescription = null,
-            tint = colors.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = stringResource(R.string.about_update_available, "v$version"),
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = colors.primary,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-            contentDescription = null,
-            tint = colors.primary,
-            modifier = Modifier.size(18.dp)
-        )
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .noRippleClickable(onClick),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.NewReleases,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = stringResource(R.string.about_update_available, "v$version"),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = colors.primary,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        IconButton(onClick = onDismiss) {
+            Icon(
+                imageVector = Icons.Outlined.Close,
+                contentDescription = stringResource(R.string.about_update_dismiss),
+                tint = colors.primary,
+            )
+        }
     }
 }

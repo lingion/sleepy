@@ -18,6 +18,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
@@ -56,7 +57,7 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
  * 底栏单项数据。v2 起组件内部要管理 thumb 滑块几何(目标位置/逐字符扫过变色),
  * content lambda 拿不到子项坐标, API 从 { PillNavItem(...) } 改为数据驱动。
  */
-data class PillNavItemSpec(val icon: ImageVector, val label: String)
+data class PillNavItemSpec(val icon: ImageVector, val label: String, val badge: Boolean = false)
 
 /**
  * Dock(悬浮)模式下主内容需要的额外底部滚动余量 — 让最后一项能滚到 Dock 上方完全可见
@@ -226,12 +227,22 @@ fun PillNavigationBar(
                             },
                         contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = item.icon,
-                            contentDescription = null,
-                            tint = lerp(colors.onSurfaceVariant, colors.onSurface, iconCov),
-                            modifier = Modifier.size(20.dp)
-                        )
+                        Box {
+                            Icon(
+                                imageVector = item.icon,
+                                contentDescription = null,
+                                tint = lerp(colors.onSurfaceVariant, colors.onSurface, iconCov),
+                                modifier = Modifier.size(20.dp)
+                            )
+                            if (item.badge) {
+                                Box(
+                                    Modifier
+                                        .align(Alignment.TopEnd)
+                                        .size(7.dp)
+                                        .background(colors.primary, CircleShape)
+                                )
+                            }
+                        }
                     }
                     Text(
                         text = item.label,
@@ -365,12 +376,22 @@ private fun DockNavigationBar(
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center
                 ) {
-                    Icon(
-                        imageVector = item.icon,
-                        contentDescription = null,
-                        tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
-                        modifier = Modifier.size(24.dp)
-                    )
+                    Box {
+                        Icon(
+                            imageVector = item.icon,
+                            contentDescription = null,
+                            tint = lerp(colors.onSurfaceVariant, colors.onSecondaryContainer, iconCov),
+                            modifier = Modifier.size(24.dp)
+                        )
+                        if (item.badge) {
+                            Box(
+                                Modifier
+                                    .align(Alignment.TopEnd)
+                                    .size(7.dp)
+                                    .background(colors.primary, CircleShape)
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(2.dp))
                     Text(
                         text = item.label,

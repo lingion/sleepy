@@ -83,6 +83,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
+import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -1267,14 +1268,16 @@ private fun ImportConfirmDialog(
     }
     // issue#28 P2: 自动模式状态必须真实持有并回传 — 旧代码没传 smartConfig/
     // onSmartConfigChange, 落到默认 no-op, "添加课间"点了没有任何反应。
-    // 初值从导入解析出的行播种(节次数+首节开始, 与 EditTableScreen 同规),
-    // 否则切自动模式会瞬间被 08:00/45min 默认覆盖, 用户感知为"自动模式也是坏的"。
+    // issue#23 T5: 初值 = 共享推断从导入解析出的行播种(45 分钟主时长 + 混合时长组
+    // 一并识别, 与 EditTableScreen/PeriodTableEditScreen 同规); 行不可推断
+    // (缺时间/畸形/断号) → 最简默认兜底, TimeSlotEditor 保持手动模式 + 既有校验。
     var smartConfig by remember {
         mutableStateOf(
-            SmartPeriodConfig(
-                totalPeriods = rows.size.coerceAtLeast(1),
-                startTime = rows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-            )
+            resolveAutoPeriodConfig(rows.toList(), null)
+                ?: SmartPeriodConfig(
+                    totalPeriods = rows.size.coerceAtLeast(1),
+                    startTime = rows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                )
         )
     }
     var errorMsg by remember { mutableStateOf<String?>(null) }

@@ -1,5 +1,8 @@
 package com.lingion.sleepy.util
 
+import com.lingion.sleepy.data.entity.BreakOption
+import com.lingion.sleepy.data.entity.DurationOption
+import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.ui.component.TimeSlot
 import org.json.JSONArray
@@ -325,6 +328,74 @@ object TimeTableUtils {
         /** Non-null only for nodes created by the manual-course edge controls. */
         val edgeClass: EdgeClass? = null
     )
+
+    /**
+     * Infer an automatic schedule configuration from manually edited standard rows.
+     * Edge rows are deliberately ignored; callers can retain them in manual mode.
+     */
+    fun inferSmartPeriodConfig(
+        rows: List<TimeSlotRow>,
+        previous: SmartPeriodConfig? = null
+    ): SmartPeriodConfig? {
+        val standard = rows.filter { it.edgeClass == null }.sortedBy { it.node }
+        if (standard.isEmpty() || standard.first().node != 1 ||
+            standard.map { it.node } != (1..standard.size).toList()
+        ) return null
+
+        data class ParsedRow(val row: TimeSlotRow, val start: LocalTime, val end: LocalTime, val duration: Int)
+        val parsed = standard.map { row ->
+            val start = runCatching { LocalTime.parse(row.start.trim()) }.getOrNull() ?: return null
+            val end = runCatching { LocalTime.parse(row.end.trim()) }.getOrNull() ?: return null
+            if (end <= start) return null
+            ParsedRow(row, start, end, ChronoUnit.MINUTES.between(start, end).toInt())
+        }
+        for (i in 1 until parsed.size) {
+            if (parsed[i].start < parsed[i - 1].end) return null
+        }
+
+        fun <T> mode(values: List<T>): T = values
+            .groupingBy { it }.eachCount()
+            .entries
+            .sortedWith(compareByDescending<Map.Entry<T, Int>> { it.value }
+                .thenBy { values.indexOf(it.key) })
+            .first().key
+
+        val primaryMinutes = mode(parsed.map { it.duration })
+        val durationMinutes = parsed.map { it.duration }.distinct().filter { it != primaryMinutes }
+        val previousDurationByMinutes = previous?.durations.orEmpty().associateBy { it.minutes }
+        val durations = durationMinutes.map { minutes ->
+            previousDurationByMinutes[minutes] ?: DurationOption(
+                minutes = minutes,
+                isLong = minutes > primaryMinutes
+            )
+        }
+        val durationIndex = durations.withIndex().associate { it.value.minutes to it.index }
+        val periodAssignments = parsed.map { row -> durationIndex[row.duration] }
+
+        val transitionMinutes = (1 until parsed.size).map { i ->
+            ChronoUnit.MINUTES.between(parsed[i - 1].end, parsed[i].start).toInt()
+        }
+        val breakMinutes = transitionMinutes.filter { it > 0 }.distinct()
+        val previousBreakByMinutes = previous?.breaks.orEmpty().associateBy { it.minutes }
+        val breaks = breakMinutes.map { minutes ->
+            previousBreakByMinutes[minutes] ?: BreakOption(
+                minutes = minutes,
+                isLong = minutes > (breakMinutes.minOrNull() ?: minutes)
+            )
+        }
+        val breakIndex = breaks.withIndex().associate { it.value.minutes to it.index }
+        val transitionAssignments = transitionMinutes.map { breakIndex[it] }
+
+        return SmartPeriodConfig(
+            startTime = parsed.first().start.toString().substring(0, 5),
+            periodMinutes = primaryMinutes,
+            totalPeriods = parsed.size,
+            breaks = breaks,
+            transitionAssignments = transitionAssignments,
+            durations = durations,
+            periodAssignments = periodAssignments
+        )
+    }
 
     /** timeJson -> 编辑 rows (按数组顺序) */
     fun parseTimeSlotRows(timeJson: String): List<TimeSlotRow> = try {
