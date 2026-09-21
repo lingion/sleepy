@@ -196,9 +196,10 @@ class CourseNotificationScheduler(private val context: Context) {
         if (!AppPrefs.isBeforeClassEnabled(app)) return
         val minutes = AppPrefs.getBeforeClassMinutes(app)
         val today = LocalDate.now()
-        val dow = DateUtils.todayDayOfWeek(today)
-
         val table = resolveCurrentTable()
+        val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table?.id, today)
+
+
         android.util.Log.d("CourseScheduler", "table=${table?.id}:${table?.name} start=${table?.startDate} today=$today dow=$dow")
         if (table == null) return
         val week = DateUtils.currentWeek(table.startDate, today)
@@ -280,8 +281,8 @@ class CourseNotificationScheduler(private val context: Context) {
         if (!AppPrefs.isBeforeClassFluidEnabled(app)) return
         val minutes = AppPrefs.getBeforeClassMinutes(app)
         val today = LocalDate.now()
-        val dow = DateUtils.todayDayOfWeek(today)
         val table = resolveCurrentTable() ?: return
+        val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table.id, today)
         val week = DateUtils.currentWeek(table.startDate, today)
         // 防呆: 学期范围外不触发流体云(钳制周数会误匹配第 1 周的课)
         if (DateUtils.semesterStatus(table.startDate, table.maxWeek, today) != DateUtils.SemesterStatus.IN_RANGE) return
@@ -412,8 +413,10 @@ private suspend fun sendScheduleSummary(
     targetDate: LocalDate,
     isTomorrowPreview: Boolean
 ) {
-    val dow = DateUtils.todayDayOfWeek(targetDate)
     val table = com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()
+    val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(
+        context.applicationContext, table?.id, targetDate
+    )
     val dayOfMonth = targetDate.dayOfMonth
 
     val courses = if (table == null) {

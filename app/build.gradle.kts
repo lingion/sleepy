@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.Test
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -88,6 +90,10 @@ kotlin {
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
         )
     }
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty("sleepy.test.root", rootDir.absolutePath)
 }
 
 dependencies {

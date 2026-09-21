@@ -261,6 +261,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
+        currentTableId = mainVm.state.value.currentTable?.id,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {

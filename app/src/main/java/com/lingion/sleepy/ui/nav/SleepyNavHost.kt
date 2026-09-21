@@ -113,6 +113,7 @@ internal fun SleepyNavHost(
     deepLinkCourse: CourseEntity?,
     onDeepLinkConsumed: () -> Unit,
     mainVm: ScheduleViewModel,
+    currentTableId: Long?,
     mainScope: CoroutineScope,
     onCreateNewTable: () -> Unit,
     pillBarState: PillBarState,
@@ -159,6 +160,7 @@ internal fun SleepyNavHost(
                 setCurrentTab = setCurrentTab,
                 navigator = navigator,
                 mainVm = mainVm,
+                currentTableId = currentTableId,
                 mainScope = mainScope,
                 navDock = navDock,
                 onNavDockChange = onNavDockChange,
@@ -268,7 +270,7 @@ internal fun SleepyNavHost(
         entry<SleepyRoute.Holiday> {
             HolidaySettingsScreen(
                 onBack = { navigator.pop() },
-                tableId = mainVm.state.value.currentTable?.id,
+                tableId = currentTableId,
                 viewModel = mainVm
             )
         }
@@ -356,6 +358,7 @@ private fun MainRoute(
     setCurrentTab: (Tab) -> Unit,
     navigator: SleepyNavigator,
     mainVm: ScheduleViewModel,
+    currentTableId: Long?,
     mainScope: CoroutineScope,
     navDock: Boolean,
     onNavDockChange: (Boolean) -> Unit,

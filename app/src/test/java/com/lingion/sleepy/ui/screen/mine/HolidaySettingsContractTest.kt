@@ -13,10 +13,11 @@ import org.junit.Test
 class HolidaySettingsContractTest {
 
     private fun src(rel: String): String = sequenceOf(
+        System.getProperty("sleepy.test.root")?.let { java.io.File(it, "app/$rel") },
         java.io.File("app/$rel"),
         java.io.File("/tmp/sleepy-makeup-wt/app/$rel"),
         java.io.File("/Users/lingion_k/sleepy/app/$rel")
-    ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load $rel")
+    ).filterNotNull().firstOrNull { it.isFile }?.readText() ?: error("Unable to load $rel")
 
     private val screen = src("src/main/java/com/lingion/sleepy/ui/screen/mine/HolidaySettingsScreen.kt")
     private val main = src("src/main/java/com/lingion/sleepy/MainActivity.kt")
@@ -148,10 +149,21 @@ class HolidaySettingsContractTest {
 
     @Test
     fun main_activity_passes_current_table_id() {
+        // Navigation 3 迁移后: MainActivity 把当前课表 ID 作为 SleepyNavHost 参数下发,
+        // NavHost 里 HolidaySettingsScreen(tableId = currentTableId) — 语义等价。
         assertTrue(
             Regex(
-                """HolidaySettingsScreen\([\s\S]{0,160}?tableId\s*=\s*mainVm\.state\.value\.currentTable\?\.id"""
+                """currentTableId\s*=\s*mainVm\.state\.value\.currentTable\?\.id"""
             ).containsMatchIn(main)
+        )
+        assertTrue(
+            Regex(
+                """HolidaySettingsScreen\([\s\S]{0,160}?tableId\s*=\s*currentTableId"""
+            ).containsMatchIn(
+                java.io.File(
+                    System.getProperty("sleepy.test.root"), "app/src/main/java/com/lingion/sleepy/ui/nav/SleepyNavHost.kt"
+                ).readText()
+            )
         )
     }
 }

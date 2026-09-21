@@ -13,10 +13,11 @@ import java.time.LocalDate
 class HolidayTransferScheduleContractTest {
 
     private fun src(rel: String): String = sequenceOf(
+        System.getProperty("sleepy.test.root")?.let { java.io.File(it, "app/$rel") },
         java.io.File("app/$rel"),
         java.io.File("/tmp/sleepy-makeup-wt/app/$rel"),
         java.io.File("/Users/lingion_k/sleepy/app/$rel")
-    ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load $rel")
+    ).filterNotNull().firstOrNull { it.isFile }?.readText() ?: error("Unable to load $rel")
 
     private val todayScreen = src("src/main/java/com/lingion/sleepy/ui/screen/today/TodayScreen.kt")
     private val scheduleVm = src("src/main/java/com/lingion/sleepy/ui/screen/schedule/ScheduleViewModel.kt")
