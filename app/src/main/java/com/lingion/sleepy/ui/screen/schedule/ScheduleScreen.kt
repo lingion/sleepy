@@ -503,9 +503,7 @@ private fun TopBar(
                 }
                 Text(
                     text = when (displayStatus) {
-                        WeekDisplayStatus.NEXT_WEEK -> stringResource(R.string.schedule_next_week)
-                        WeekDisplayStatus.WEEKEND_CURRENT -> stringResource(R.string.schedule_weekend)
-                        WeekDisplayStatus.CURRENT_ENDED -> stringResource(R.string.schedule_week_ended)
+                        WeekDisplayStatus.NEAREST_BUSY_DAY -> stringResource(R.string.schedule_nearest_busy_day)
                         WeekDisplayStatus.NORMAL -> if (statusRes == 0)
                             stringResource(R.string.schedule_current_week, currentWeek)
                         else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"

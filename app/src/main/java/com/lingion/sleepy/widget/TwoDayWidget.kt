@@ -179,8 +179,8 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                         TwoDayData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
                         val table = source.table
-                        val dates = if (source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEXT_WEEK) {
-                            listOf(source.dateFor(1), source.dateFor(2))
+                        val dates = if (source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY) {
+                            listOf(source.display.targetDate, source.display.targetDate.plusDays(1))
                         } else listOf(today, tomorrow)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, dates.first())
                         val days = dates.map { date ->

@@ -260,9 +260,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             ) {
                 val ctx = SleepyApp.get()
                 val label = when (data.weekDisplayStatus) {
-                    com.lingion.sleepy.util.WeekDisplayStatus.NEXT_WEEK -> ctx.getString(R.string.schedule_next_week)
-                    com.lingion.sleepy.util.WeekDisplayStatus.WEEKEND_CURRENT -> ctx.getString(R.string.schedule_weekend)
-                    com.lingion.sleepy.util.WeekDisplayStatus.CURRENT_ENDED -> ctx.getString(R.string.schedule_week_ended)
+                    com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY -> ctx.getString(R.string.schedule_nearest_busy_day)
                     com.lingion.sleepy.util.WeekDisplayStatus.NORMAL -> ctx.getString(R.string.no_course)
                 }
                 p.textAlign = Paint.Align.CENTER
@@ -302,9 +300,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             } else if (data.semesterStatus == DateUtils.SemesterStatus.IN_RANGE) {
                 val ctx2 = SleepyApp.get()
                 val text = when (data.weekDisplayStatus) {
-                    com.lingion.sleepy.util.WeekDisplayStatus.NEXT_WEEK -> ctx2.getString(R.string.schedule_next_week)
-                    com.lingion.sleepy.util.WeekDisplayStatus.WEEKEND_CURRENT -> ctx2.getString(R.string.schedule_weekend)
-                    com.lingion.sleepy.util.WeekDisplayStatus.CURRENT_ENDED -> ctx2.getString(R.string.schedule_week_ended)
+                    com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY -> ctx2.getString(R.string.schedule_nearest_busy_day)
                     com.lingion.sleepy.util.WeekDisplayStatus.NORMAL -> null
                 }
                 if (text != null) {

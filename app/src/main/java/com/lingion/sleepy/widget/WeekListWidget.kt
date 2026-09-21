@@ -169,7 +169,7 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                         WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
                         val table = source.table
-                        val week = source.display.displayWeek
+                        val week = source.display.targetWeek
                         val status = source.display.semesterStatus
                         // 学期前: 钳制周=1, 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
@@ -182,8 +182,8 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                         val compactWindow = WidgetCompactWindow.build(
                             repo, table.id, table.timeJson, table.startDate, table.maxWeek,
                             today, WidgetCompactWindowStore.isTodayFirst(context, appWidgetId),
-                            displayWeek = source.display.displayWeek.takeIf {
-                                source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEXT_WEEK
+                            displayWeek = source.display.targetWeek.takeIf {
+                                source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
                             }
                         )
                         WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status, compactWindow = compactWindow, weekDisplayStatus = source.display.status)

@@ -442,7 +442,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             return loadDataForDate(
                 context, appWidgetId,
                 TodayDateNavStore.target(context, appWidgetId, now), now,
-                autoNextWeek = !manualNavigation
+                autoNearestBusyDay = !manualNavigation
             )
         }
 
@@ -455,7 +455,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             appWidgetId: Int,
             target: LocalDate,
             today: LocalDate,
-            autoNextWeek: Boolean = false
+            autoNearestBusyDay: Boolean = false
         ): WidgetData {
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
@@ -469,11 +469,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         WidgetData(date = target, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey, isToday = target == today)
                     } else {
                         val table = source.table
-                        val effectiveTarget = if (autoNextWeek &&
-                            source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEXT_WEEK
-                        ) {
-                            source.dateFor(1)
-                        } else target
+                        val effectiveTarget = if (autoNearestBusyDay &&
+                            source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
+                        ) source.display.targetDate else target
                         val effectiveDayOfWeek = DateUtils.todayDayOfWeek(effectiveTarget)
                         val week = DateUtils.currentWeek(table.startDate, effectiveTarget)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, effectiveTarget)

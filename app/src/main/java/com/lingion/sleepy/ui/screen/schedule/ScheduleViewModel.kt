@@ -89,7 +89,7 @@ class ScheduleViewModel : ViewModel() {
         loadTables()
         viewModelScope.launch {
             AppPrefs.changeBus
-                .filter { it == AppPrefs.KEY_AUTO_NEXT_WEEK }
+                .filter { it == AppPrefs.KEY_NEAREST_BUSY_DAY }
                 .collect { recalculateWeekDisplay() }
         }
         viewModelScope.launch {
@@ -154,7 +154,7 @@ class ScheduleViewModel : ViewModel() {
                                 now = LocalDateTime.now(),
                                 courses = courses,
                                 timeJson = it.timeJson,
-                                enabled = AppPrefs.isAutoNextWeek(SleepyApp.get())
+                                enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
                             )
                         }
                         val week = displayContext?.actualWeek ?: 1
@@ -165,8 +165,8 @@ class ScheduleViewModel : ViewModel() {
                             courses = courses,
                             currentWeek = week,
                             selectedWeek = when {
-                                !st.initialWeekSettled -> displayContext?.displayWeek ?: week
-                                !st.weekSelectionManual -> displayContext?.displayWeek ?: week
+                                !st.initialWeekSettled -> displayContext?.targetWeek ?: week
+                                !st.weekSelectionManual -> displayContext?.targetWeek ?: week
                                 else -> st.selectedWeek
                             },
                             weekDisplayContext = displayContext,
@@ -428,10 +428,10 @@ class ScheduleViewModel : ViewModel() {
             now = LocalDateTime.now(),
             courses = current.courses,
             timeJson = table.timeJson,
-            enabled = AppPrefs.isAutoNextWeek(SleepyApp.get())
+            enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
         )
         _state.update {
-            val selected = if (it.weekSelectionManual) it.selectedWeek else context.displayWeek
+            val selected = if (it.weekSelectionManual) it.selectedWeek else context.targetWeek
             if (it.currentWeek == context.actualWeek &&
                 it.weekDisplayContext == context &&
                 it.selectedWeek == selected

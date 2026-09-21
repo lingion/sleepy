@@ -28,9 +28,7 @@ import kotlin.math.roundToInt
 object WidgetBitmapRenderers {
 
     private fun weekDisplayText(context: Context, status: WeekDisplayStatus): String? = when (status) {
-        WeekDisplayStatus.NEXT_WEEK -> context.getString(R.string.schedule_next_week)
-        WeekDisplayStatus.WEEKEND_CURRENT -> context.getString(R.string.schedule_weekend)
-        WeekDisplayStatus.CURRENT_ENDED -> context.getString(R.string.schedule_week_ended)
+        WeekDisplayStatus.NEAREST_BUSY_DAY -> context.getString(R.string.schedule_nearest_busy_day)
         WeekDisplayStatus.NORMAL -> null
     }
 
@@ -257,9 +255,7 @@ object WidgetBitmapRenderers {
         weekDisplayStatus: WeekDisplayStatus = data.weekDisplayStatus
     ): TodayHeaderParts {
         val statusText = when (weekDisplayStatus) {
-            WeekDisplayStatus.NEXT_WEEK -> resolve(R.string.schedule_next_week)
-            WeekDisplayStatus.WEEKEND_CURRENT -> resolve(R.string.schedule_weekend)
-            WeekDisplayStatus.CURRENT_ENDED -> resolve(R.string.schedule_week_ended)
+            WeekDisplayStatus.NEAREST_BUSY_DAY -> resolve(R.string.schedule_nearest_busy_day)
             WeekDisplayStatus.NORMAL -> null
         }
         val title = if (data.isToday) "${resolve(R.string.today_today)} · $dayName"
@@ -990,7 +986,7 @@ object WidgetBitmapRenderers {
      */
     fun weekGridMinimumTodayData(data: WeekData, today: LocalDate): WidgetData {
         val timeJson = data.days.firstOrNull()?.timeJson ?: ""
-        val targetDate = if (data.weekDisplayStatus == WeekDisplayStatus.NEXT_WEEK) {
+        val targetDate = if (data.weekDisplayStatus == WeekDisplayStatus.NEAREST_BUSY_DAY) {
             data.days.minByOrNull { it.date }?.date ?: today
         } else today
         val todayDay = data.days.firstOrNull { it.date == targetDate }
