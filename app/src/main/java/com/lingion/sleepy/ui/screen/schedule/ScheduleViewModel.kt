@@ -7,17 +7,24 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.repository.ScheduleRepository
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.WeekDisplayContext
+import com.lingion.sleepy.util.WeekDisplayResolver
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class ScheduleState(
     val tables: List<TimeTableEntity> = emptyList(),
@@ -25,6 +32,9 @@ data class ScheduleState(
     val courses: List<CourseEntity> = emptyList(),
     val currentWeek: Int = 1,
     val selectedWeek: Int = 1,
+    val weekDisplayContext: WeekDisplayContext? = null,
+    /** true = 用户手动选周；false = 跟随自动展示周。 */
+    val weekSelectionManual: Boolean = false,
     /** false=首次加载(本周), true=用户/系统已选定周 — 课程变更时 selectedWeek 不再被重置 */
     val initialWeekSettled: Boolean = false,
     val nodesPerDay: Int = 12,
@@ -77,6 +87,17 @@ class ScheduleViewModel : ViewModel() {
 
     init {
         loadTables()
+        viewModelScope.launch {
+            AppPrefs.changeBus
+                .filter { it == AppPrefs.KEY_NEAREST_BUSY_DAY }
+                .collect { recalculateWeekDisplay() }
+        }
+        viewModelScope.launch {
+            while (isActive) {
+                delay(60_000)
+                recalculateWeekDisplay()
+            }
+        }
     }
 
     private fun loadTables() {
@@ -89,7 +110,14 @@ class ScheduleViewModel : ViewModel() {
                     if (tables.isEmpty()) {
                         // 没有课表就老实空着，不强行造占位表。
                         // selectedTableId = null，UI 走空态。
-                        _state.update { it.copy(tables = emptyList(), selectedTableId = null) }
+                        _state.update {
+                            it.copy(
+                                tables = emptyList(),
+                                selectedTableId = null,
+                                weekDisplayContext = null,
+                                weekSelectionManual = false
+                            )
+                        }
                         return@collect
                     }
                     val selectedId = _state.value.selectedTableId
@@ -119,14 +147,29 @@ class ScheduleViewModel : ViewModel() {
                         val rawTable = st.tables.find { it.id == tableId }
                         // 水合: 绑定存在时 nodesPerDay/timeJson/smartConfigJson 以时间节次表为准
                         val table = rawTable?.hydratedWith(periodTable)
-                        val week = table?.let { DateUtils.currentWeek(it.startDate) } ?: 1
+                        val displayContext = table?.let {
+                            WeekDisplayResolver.resolve(
+                                startDate = it.startDate,
+                                maxWeek = it.maxWeek,
+                                now = LocalDateTime.now(),
+                                courses = courses,
+                                timeJson = it.timeJson,
+                                enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
+                            )
+                        }
+                        val week = displayContext?.actualWeek ?: 1
                         // v7.10.16s: 只更新真实周(currentWeek, 供"回到本周"), 不再重置 selectedWeek —
                         // 用户在第 x 周编辑/删课, 保存回来仍停在 x 周(此前被拽回真实周=跳回第一周体验)。
                         // 首次加载(initial=true)仍落真实周, 保持原行为
                         st.copy(
                             courses = courses,
                             currentWeek = week,
-                            selectedWeek = if (st.initialWeekSettled) st.selectedWeek else week,
+                            selectedWeek = when {
+                                !st.initialWeekSettled -> displayContext?.targetWeek ?: week
+                                !st.weekSelectionManual -> displayContext?.targetWeek ?: week
+                                else -> st.selectedWeek
+                            },
+                            weekDisplayContext = displayContext,
                             initialWeekSettled = true,
                             nodesPerDay = table?.nodesPerDay ?: 12,
                             effectivePeriodTable = periodTable
@@ -145,7 +188,14 @@ class ScheduleViewModel : ViewModel() {
     fun selectTable(id: Long) {
         manualSelectDone = true
         // 切表 = 新学期语境, 周选择回到该表真实周(initialWeekSettled 复位, loadCourses 重新落周)
-        _state.update { it.copy(selectedTableId = id, initialWeekSettled = false) }
+        _state.update {
+            it.copy(
+                selectedTableId = id,
+                initialWeekSettled = false,
+                weekSelectionManual = false,
+                weekDisplayContext = null
+            )
+        }
         loadCourses(id)
         // 切表后同步数据库 isDefault，使小组件严格跟随 App 当前选中表（widget 按默认表解析）
         viewModelScope.launch {
@@ -366,7 +416,31 @@ class ScheduleViewModel : ViewModel() {
         // 防呆: 下限 1, 上限 maxWeek — 之前只有下限, 右箭头可以无限翻出学期范围外
         val maxWeek = _state.value.currentTable?.maxWeek ?: 20
         if (week < 1 || week > maxWeek) return
-        _state.update { it.copy(selectedWeek = week) }
+        _state.update { it.copy(selectedWeek = week, weekSelectionManual = true) }
+    }
+
+    private fun recalculateWeekDisplay() {
+        val current = _state.value
+        val table = current.effectiveCurrentTable ?: return
+        val context = WeekDisplayResolver.resolve(
+            startDate = table.startDate,
+            maxWeek = table.maxWeek,
+            now = LocalDateTime.now(),
+            courses = current.courses,
+            timeJson = table.timeJson,
+            enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
+        )
+        _state.update {
+            val selected = if (it.weekSelectionManual) it.selectedWeek else context.targetWeek
+            if (it.currentWeek == context.actualWeek &&
+                it.weekDisplayContext == context &&
+                it.selectedWeek == selected
+            ) it else it.copy(
+                currentWeek = context.actualWeek,
+                weekDisplayContext = context,
+                selectedWeek = selected
+            )
+        }
     }
 
     /**

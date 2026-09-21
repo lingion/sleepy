@@ -1,0 +1,71 @@
+{
+  "school": "江西中医药大学",
+  "slug": "jxutcm",
+  "retrieved_at": "2026-09-19",
+  "queries": [
+    {"kind":"A","query":"江西中医药大学 教务","total_count":0},
+    {"kind":"B","query":"Jiangxi University of Chinese Medicine schedule stars:>0","total_count":0},
+    {"kind":"C","query":"JXUTCM course OR jwgl OR timetable OR schedule","total_count":4},
+    {"kind":"D","query":"jiaowu.jxutcm.edu.cn extension:kt","total_count":0}
+  ],
+  "candidates": [
+    {
+      "full_name":"q1123421666/jxutcm",
+      "stars":0,
+      "lang":"JavaScript",
+      "updated_at":"2021-02-07T02:46:38Z",
+      "pushed_at":"2021-02-07T02:46:34Z",
+      "description":null,
+      "html_url":"https://github.com/q1123421666/jxutcm",
+      "default_branch":"master",
+      "archived":false,
+      "license":null,
+      "selection_reason":"repository name acronym query",
+      "protocol_relevance":"screened"
+    },
+    {
+      "full_name":"Wenswell/jxutcm-net-auto-click",
+      "stars":0,
+      "lang":null,
+      "updated_at":"2023-01-27T22:18:35Z",
+      "pushed_at":"2019-11-10T14:50:36Z",
+      "description":"Automatic login to campus network, only for Jxutcm and Telecom, etc.",
+      "html_url":"https://github.com/Wenswell/jxutcm-net-auto-click",
+      "default_branch":"master",
+      "archived":true,
+      "license":null,
+      "selection_reason":"repository name acronym query",
+      "protocol_relevance":"screened"
+    },
+    {
+      "full_name":"iihcy/JXUTCM_DAS",
+      "stars":0,
+      "lang":"Python",
+      "updated_at":"2019-08-25T02:56:48Z",
+      "pushed_at":"2019-08-25T02:56:44Z",
+      "description":null,
+      "html_url":"https://github.com/iihcy/JXUTCM_DAS",
+      "default_branch":"master",
+      "archived":false,
+      "license":null,
+      "selection_reason":"repository name acronym query",
+      "protocol_relevance":"screened"
+    },
+    {
+      "full_name":"iihcy/JXUTCM_BestFeature",
+      "stars":0,
+      "lang":"Python",
+      "updated_at":"2019-08-25T02:45:20Z",
+      "pushed_at":"2019-08-25T02:45:18Z",
+      "description":null,
+      "html_url":"https://github.com/iihcy/JXUTCM_BestFeature",
+      "default_branch":"master",
+      "license":null,
+      "selection_reason":"repository name acronym query",
+      "protocol_relevance":"screened"
+    }
+  ],
+  "candidate_count":4,
+  "attribution_count":4,
+  "note":"候选全量保留；均未提供 cf_new/NTSS 课表端点或字段直接证据。"
+}

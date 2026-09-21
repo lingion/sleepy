@@ -38,6 +38,33 @@ object DialogButtonsLayoutPolicy {
             (labels.size - 1) * rowGapDp
         return totalNeeded <= availableWidthDp
     }
+
+    /**
+     * 横排每键的必需按钮宽(text 宽 = 字符数×单字宽 + 水平内边距)。
+     * 2026-09-18 用户: "一行能搞定的就一行" — 横排时若按 weight(1f) 等分,
+     * 长标签键分到的宽度 < 必需宽 → Text 自动换行成两行。所以横排必须按
+     * 必需宽比例分配, 让每键至少拿到自己的必需宽。
+     */
+    fun requiredButtonWidths(
+        labels: List<String>,
+        fontDpPerChar: Float,
+        buttonHPaddingDp: Float = BUTTON_H_PADDING_DP
+    ): List<Float> = labels.map { buttonTextWidth(it, fontDpPerChar, buttonHPaddingDp) }
+
+    /**
+     * Compose Row.weight 用的归一化权重 = 必需宽 / 总必需宽 (和恒 1)。
+     * 等分是错的: 权重比必须等于宽度需求比。
+     */
+    fun normalizedWeights(
+        labels: List<String>,
+        fontDpPerChar: Float,
+        buttonHPaddingDp: Float = BUTTON_H_PADDING_DP
+    ): List<Float> {
+        val widths = requiredButtonWidths(labels, fontDpPerChar, buttonHPaddingDp)
+        val total = widths.sum()
+        if (total <= 0f || widths.isEmpty()) return widths.map { 1f / maxOf(widths.size, 1) }
+        return widths.map { it / total }
+    }
 }
 
 /**

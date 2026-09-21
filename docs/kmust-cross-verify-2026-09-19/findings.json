@@ -1,0 +1,9 @@
+[
+  {
+    "full_name": "linling-zy/kust-schedule",
+    "classification": "INDIRECT",
+    "protocol": "KUST unified portal",
+    "reused_code": false,
+    "finding": "The candidate confirms the school target and Kotlin ecosystem. Endpoint and response-field decisions are based on the captured portal package."
+  }
+]

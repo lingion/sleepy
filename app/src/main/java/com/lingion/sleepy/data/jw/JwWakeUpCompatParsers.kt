@@ -203,53 +203,205 @@ private object WakeUpCompat {
         }
     }
 
-    /** XJU dgData: #ctl00_contentParent_dgData; th 首行检测 星期日/星期一 顺序→sundayFirst 翻转 day; td 索引+1=day (node td 占 index 0); "｛名(周次)[教师：X,地点：Y]｝" 以"；"分条、"、"分周次. */
+    /** XJU dgData: 兼容两种表头形态。
+     *  - 形态 A: th="节次|周X" 无时间列, 节次=阿拉伯数字, 单元格 "｛名(周次)[教师:X,地点:Y]｝"
+     *  - 形态 B (真实 Gwork 学期课表信息查询, 2026-09-17 用户报修): th="时间|节次|周X",
+     *    时间列 rowspan=4, 节次=中文数字"一"..."十二", 课程名在花括号**外**,
+     *    单元格 "名｛周次[教师:X,地点:Y]｝", 课程行用 rowspan 跨节次合并.
+     *  通用通路: 还原 (col, row) 网格, rowspan 残留补齐, 映射 (day, node). */
     fun parseXju(source: String): List<JwCourse> {
-        val table = Jsoup.parse(source).selectFirst("#ctl00_contentParent_dgData") ?: Jsoup.parse(source).selectFirst("#contentParent_dgData") ?: return emptyList()
+        val table = Jsoup.parse(source).selectFirst("#ctl00_contentParent_dgData")
+            ?: Jsoup.parse(source).selectFirst("#contentParent_dgData")
+            ?: return emptyList()
         val rows = table.select("tr")
         if (rows.isEmpty()) return emptyList()
         val ths = rows.first()!!.select("th")
         if (ths.isEmpty()) return emptyList()
-        val sunIdx = ths.indexOfFirst { it.text().contains("星期日") }
-        val monIdx = ths.indexOfFirst { it.text().contains("星期一") }
-        val sundayFirst = sunIdx >= 0 && monIdx >= 0 && sunIdx < monIdx
+        val firstDayIdx = ths.indexOfFirst { Regex("星期[一二三四五六日天]").containsMatchIn(it.text()) }
+        if (firstDayIdx < 0) return emptyList()
+        val firstDayLabel = ths[firstDayIdx].text()
+        val dayOfFirstCol = when {
+            firstDayLabel.contains("星期一") -> 1
+            firstDayLabel.contains("星期二") -> 2
+            firstDayLabel.contains("星期三") -> 3
+            firstDayLabel.contains("星期四") -> 4
+            firstDayLabel.contains("星期五") -> 5
+            firstDayLabel.contains("星期六") -> 6
+            else -> 7
+        }
+
+        fun nodeLabelToInt(raw: String): Int? {
+            val trimmed = raw.trim()
+            trimmed.toIntOrNull()?.let { if (it in 1..20) return it }
+            val cn = mapOf(
+                "一" to 1, "二" to 2, "三" to 3, "四" to 4, "五" to 5, "六" to 6,
+                "七" to 7, "八" to 8, "九" to 9, "十" to 10, "十一" to 11, "十二" to 12
+            )
+            cn[trimmed]?.let { return it }
+            // 形态 A 行标 "第1-2节": 取区间起点 (连堂由 rowspan/垂直合并补足终点)
+            Regex("""第(\d+)\s*[-–~]\s*\d+节""").find(trimmed)?.groupValues?.get(1)?.toIntOrNull()?.let {
+                if (it in 1..20) return it
+            }
+            return null
+        }
+
+        val dataRows = rows.drop(1)
+
+        // 第一遍: rowIdx → 节次号 (行内第一个 align=center 数字/中文数字 td)
+        val rowToNode = IntArray(dataRows.size) { 0 }
+        var lastNode = 0
+        for ((rowIdx, row) in dataRows.withIndex()) {
+            var thisNode = 0
+            for (td in row.select("td")) {
+                if (td.attr("align").lowercase() == "center") {
+                    val n = nodeLabelToInt(td.text().trim())
+                    if (n != null) { thisNode = n; break }
+                }
+            }
+            if (thisNode == 0) thisNode = lastNode else lastNode = thisNode
+            rowToNode[rowIdx] = thisNode
+        }
+
+        // 第二遍: (col, rowIdx) → text (数据格)
+        // 关键: 每行的 col 游标必须先跳过"上方 rowspan 残留占据的列" — 否则带时间列/rowspan 的
+        // 课表会错位 (e.g. rowIdx=2 上一行的 "上午" rowspan=4 仍占 col 0; 行内首个 td 应落在 col 1)
+        val cellText = HashMap<Pair<Int, Int>, String>()
+        // colExpire[col] = baseRow + rs - 1; 走到该行时本列从 occupied 移除
+        val colExpire = HashMap<Int, Int>()
+        for ((rowIdx, row) in dataRows.withIndex()) {
+            val occupiedNow = colExpire.filterValues { it >= rowIdx }.keys.toHashSet()
+            var col = 0
+            for (td in row.select("td")) {
+                val cs = td.attr("colspan").toIntOrNull() ?: 1
+                val rs = td.attr("rowspan").toIntOrNull() ?: 1
+                while (col in occupiedNow) col += 1
+                val isCenter = td.attr("align").lowercase() == "center"
+                val raw = td.text().replace(' ', ' ').replace('{', '｛').replace('}', '｝').trim()
+                for (i in 0 until cs) {
+                    val c = col + i
+                    if (!isCenter && raw.isNotEmpty()) {
+                        // 课程格: 写入本行; rowspan>1 时向下方 (rs-1) 行延展同文本 (连堂)
+                        cellText[c to rowIdx] = raw
+                        for (k in 1 until rs) cellText[c to (rowIdx + k)] = raw
+                    }
+                    if (rs > 1) colExpire[c] = rowIdx + rs - 1
+                }
+                col += cs
+            }
+        }
+
+        // 写入 (day, node) 网格 — col 是从"第一个数据列"起算的; dayOfFirstCol 是该列对应的星期.
+        // 但我们的 cellText[col] 是从 col=0 起算的, col=0/1 可能是「时间」「节次」等非日列.
+        // 推断"第一个日列的 col 索引": 取 th 行里第一个"星期X" th 的 col 索引. th 列总数 = ths.size.
+        val firstDayCol = ths.indexOfFirst { Regex("星期[一二三四五六日天]").containsMatchIn(it.text()) }
+        val grid = HashMap<Pair<Int, Int>, String>()
+        for ((key, raw) in cellText) {
+            val (col, rowIdx) = key
+            if (raw.isEmpty()) continue
+            val node = rowToNode[rowIdx]
+            if (node !in 1..20) continue
+            if (col < firstDayCol) continue // 时间/节次列, 跳过
+            val dayColIdx = col - firstDayCol
+            val day = ((dayOfFirstCol - 1 + dayColIdx) % 7) + 1
+            grid[day to node] = raw
+        }
+        if (grid.isEmpty()) return emptyList()
+
+        // 合并连续相同文本的相邻 (day, node) → rowspan
         return buildList {
-            for (row in rows.drop(1)) {
-                val tds = row.select("td")
-                var node = 1
-                for ((col, td) in tds.withIndex()) {
-                    if (td.attr("align").lowercase(Locale.ROOT) == "center") {
-                        node = Regex("\\d+").find(td.text())?.value?.toIntOrNull() ?: node
-                        continue
-                    }
-                    var day = col
-                    if (sundayFirst) day = if (day == 1) 7 else day - 1
-                    val rowspan = td.attr("rowspan").toIntOrNull() ?: 1
-                    val text = td.text().replace("{", "｛").replace("}", "｝")
-                    for (entry in text.split("；", ";")) {
-                        val trimmed = entry.trim()
-                        if (trimmed.startsWith("｛")) {
-                            val inner = trimmed.trim('｛', '｝')
-                            val name = inner.substringBefore('(').trim()
-                            val weeksSection = Regex("\\(([^)]*)\\)").find(inner)?.groupValues?.get(1) ?: continue
-                            val bracket = Regex("\\[([^\\]]*)\\]").find(inner)?.groupValues?.get(1).orEmpty()
-                            val teacher = Regex("教师[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
-                            val room = Regex("地点[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
-                            for (weekEntry in weeksSection.split('、', '，', ',')) {
-                                parseWeekTokens(weekEntry).forEach { (from, to, type) ->
-                                    add(JwCourse(name, room, teacher, day, node, node + rowspan - 1, from, to, type))
-                                }
-                            }
-                        } else if (trimmed.isNotBlank()) {
-                            val name = trimmed.substringBefore('(').trim()
-                            val nums = Regex("\\d+").findAll(trimmed).map { it.value.toInt() }.toList()
-                            if (name.isNotBlank()) add(JwCourse(name, "", "", day, node, node + rowspan - 1, nums.firstOrNull() ?: 1, nums.getOrNull(1) ?: 20, 0))
-                        }
-                    }
+            val emitted = HashSet<Pair<Int, Int>>()
+            for (node in 1..20) {
+                for (day in 1..7) {
+                    if ((day to node) in emitted) continue
+                    val raw = grid[day to node] ?: continue
+                    if (raw.isEmpty()) continue
+                    var endNode = node
+                    while (endNode + 1 <= 20 && grid[day to (endNode + 1)] == raw) endNode += 1
+                    for (k in node..endNode) emitted += day to k
+                    for (course in extractXjuCourses(raw, day, node, endNode)) add(course)
                 }
             }
         }
     }
+
+    /** 把单格文本切成 JwCourse 列表。优先匹配形态 B「名｛周次[教师:…,地点:…],…｝」,
+     *  回退形态 A「｛名(周次)[教师:…,地点:…]｝」(旧 fixture). */
+    private fun extractXjuCourses(cellText: String, day: Int, startNode: Int, endNode: Int): List<JwCourse> {
+        val out = mutableListOf<JwCourse>()
+        if (cellText.isEmpty()) return out
+        val blocks = cellText.split("；", ";").map { it.trim() }.filter { it.isNotEmpty() }
+        for (block in blocks) {
+            if (block.contains("｛")) {
+                val braceRegex = Regex("｛([^｝]+)｝")
+                val matches = braceRegex.findAll(block).toList()
+                if (matches.isNotEmpty()) {
+                    // 先检测形态 A: 块整体以｛开头, 内含 (周次) + [教师/地点] — 此时"花括号前"无内容
+                    val firstInner = matches.first().groupValues[1]
+                    val namePrefix = block.substring(0, matches.first().range.first).trim()
+                    val isLegacy = namePrefix.isEmpty() && firstInner.contains('(') && firstInner.contains('[')
+                    if (isLegacy) {
+                        // 形态 A: 课程名在第一个 ( 之前, 周次在第一个 ( 里, 教师/地点在第一个 [ ]
+                        val name = firstInner.substringBefore('(').trim()
+                        val weeksSection = Regex("\\(([^)]*)\\)").find(firstInner)?.groupValues?.get(1).orEmpty()
+                        val bracket = Regex("\\[([^\\]]*)\\]").find(firstInner)?.groupValues?.get(1).orEmpty()
+                        val teacher = Regex("教师[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+                        val room = Regex("地点[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+                        for (weekEntry in weeksSection.split('、', '，', ',')) {
+                            parseWeekTokens(weekEntry).forEach { (from, to, type) ->
+                                out += JwCourse(name, room, teacher, day, startNode, endNode, from, to, type)
+                            }
+                        }
+                        continue
+                    }
+                    // 形态 B: 花括号前是课程名, 内含周次 + [教师/地点]
+                    val name = namePrefix
+                    for (m in matches) {
+                        val inner = m.groupValues[1]
+                        parseXjuWeeksWithBrackets(inner).forEach { (from, to, teacher, room) ->
+                            out += JwCourse(name, room, teacher, day, startNode, endNode, from, to, 0)
+                        }
+                    }
+                    continue
+                }
+            }
+            if (block.startsWith("｛") && block.endsWith("｝")) {
+                val inner = block.trim('｛', '｝')
+                val name = inner.substringBefore('(').trim()
+                val weeksSection = Regex("\\(([^)]*)\\)").find(inner)?.groupValues?.get(1) ?: continue
+                val bracket = Regex("\\[([^\\]]*)\\]").find(inner)?.groupValues?.get(1).orEmpty()
+                val teacher = Regex("教师[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+                val room = Regex("地点[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+                for (weekEntry in weeksSection.split('、', '，', ',')) {
+                    parseWeekTokens(weekEntry).forEach { (from, to, type) ->
+                        out += JwCourse(name, room, teacher, day, startNode, endNode, from, to, type)
+                    }
+                }
+            } else if (block.isNotBlank()) {
+                val name = block.substringBefore('(').substringBefore('｛').trim()
+                val nums = Regex("\\d+").findAll(block).map { it.value.toInt() }.toList()
+                if (name.isNotBlank()) out += JwCourse(name, "", "", day, startNode, endNode, nums.firstOrNull() ?: 1, nums.getOrNull(1) ?: 20, 0)
+            }
+        }
+        return out
+    }
+
+    /** 形态 B 块内解析: "12-19周[教师:孙冬璞,地点:待定]" */
+    private fun parseXjuWeeksWithBrackets(inner: String): List<XjuWeekSlot> {
+        val bracket = Regex("\\[([^\\]]*)\\]").find(inner)?.groupValues?.get(1).orEmpty()
+        val teacher = Regex("教师[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+        val room = Regex("地点[:：]([^,，\\]]*)").find(bracket)?.groupValues?.get(1)?.trim().orEmpty()
+        val beforeBracket = inner.substringBefore('[')
+        val out = mutableListOf<XjuWeekSlot>()
+        for (token in beforeBracket.split('、', '，', ',')) {
+            parseWeekTokens(token).forEach { (from, to, _) ->
+                out += XjuWeekSlot(from, to, teacher, room)
+            }
+        }
+        return out
+    }
+
+    private data class XjuWeekSlot(val from: Int, val to: Int, val teacher: String, val room: String)
+
 
     /** Suda DataGrid1/MainWork_DataGrid1: th 行含 星期X 跳过; 数据行 align=center td=node 行标, 其余 td 索引+1=day; 单元格 "课程:"-名, "(x)"-教师(非辅讲), "主讲教师:"-教师, "第a-b周[单/双]"(以;/,分). */
     fun parseSuda(source: String): List<JwCourse> {

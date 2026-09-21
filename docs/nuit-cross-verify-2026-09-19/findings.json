@@ -1,0 +1,9 @@
+[
+  {
+    "full_name": "3056810551/nuit-class-schedule",
+    "classification": "DIRECT",
+    "protocol": "Wisedu NUIT",
+    "reused_code": false,
+    "finding": "The repository independently confirms the Wisedu course-field family. Parser behavior is implemented from the captured response shape and normalized to JwCourse."
+  }
+]

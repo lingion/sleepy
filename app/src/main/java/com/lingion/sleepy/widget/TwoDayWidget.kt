@@ -183,33 +183,29 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
             val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
             return try {
                 runBlocking {
-                    val app = SleepyApp.get()
-                    val repo = app.repository
-                    val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
-                        ?: WidgetTableResolver.resolveCurrentTable()
-                    if (table == null) {
+                    val source = WidgetWeekDataLoader.resolve(appWidgetId)
+                    if (source == null) {
                         TwoDayData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
-                        val week = DateUtils.currentWeek(table.startDate, today)
-                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
-                        val todayDow = today.dayOfWeek.value
-                        val tomorrowDow = tomorrow.dayOfWeek.value
-                        // 学期外不展示课程 — 与 App 今日页同语义
-                        val todayCourses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
-                            repo.getCoursesByDayOnce(table.id, todayDow)
-                                .filter { it.inWeek(week) }.sortedBy { it.startNode }
-                        val tomorrowCourses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
-                            repo.getCoursesByDayOnce(table.id, tomorrowDow)
-                                .filter { it.inWeek(week) }.sortedBy { it.startNode }
+                        val table = source.table
+                        val dates = if (source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY) {
+                            listOf(source.display.targetDate, source.display.targetDate.plusDays(1))
+                        } else listOf(today, tomorrow)
+                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, dates.first())
+                        val days = dates.map { date ->
+                            val week = DateUtils.currentWeek(table.startDate, date)
+                            val dow = date.dayOfWeek.value
+                            val courses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList()
+                                else source.coursesFor(dow, week)
+                            DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = table.timeJson)
+                        }
                         TwoDayData(
-                            days = listOf(
-                                DayData(date = today, dayOfWeek = todayDow, courses = todayCourses, timeJson = table.timeJson),
-                                DayData(date = tomorrow, dayOfWeek = tomorrowDow, courses = tomorrowCourses, timeJson = table.timeJson)
-                            ),
+                            days = days,
                             hasTable = true,
                             isDark = isDark,
                             themeKey = themeKey,
-                            semesterStatus = status
+                            semesterStatus = status,
+                            weekDisplayStatus = source.display.status
                         )
                     }
                 }

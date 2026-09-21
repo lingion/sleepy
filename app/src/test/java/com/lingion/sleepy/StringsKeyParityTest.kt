@@ -119,16 +119,52 @@ class StringsKeyParityTest {
         "period_table_bind_preview_body"
     )
 
+    private val tomorrowReminderKeys = listOf(
+        "reminder_tomorrow_time_label",
+        "reminder_tomorrow_preview",
+        "reminder_daily_today_toggle_title",
+        "reminder_daily_today_toggle_sub",
+        "reminder_tomorrow_toggle_title",
+        "reminder_tomorrow_toggle_sub",
+        "notif_tomorrow_title",
+        "notif_tomorrow_title_no_course"
+    )
+
+    private val reminderPreviewKeys = listOf(
+        "reminder_preview_today_date",
+        "reminder_preview_tomorrow_date",
+        "reminder_preview_date",
+        "reminder_preview_teacher",
+        "reminder_daily_preview_dynamic",
+        "reminder_daily_preview_dynamic_no_course",
+        "reminder_before_class_preview_dynamic",
+        "reminder_before_class_preview_dynamic_no_course"
+    )
+
     /**
-     * issue#23 混合课时自动模式新增 string key (2026-09-20, sdd/task-3)。
-     * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
+     * 编辑课程的时段卡头摘要 (2026-09-18)。
+     * 摘要分成「日历范围」与「上课详情」两行，所有显示片段都必须可本地化。
      */
-    private val mixedDurationKeys = listOf(
-        "duration_assign_hint",
-        "short_duration",
-        "long_duration",
-        "duration_min_one_period",
-        "duration_period_n"
+    private val editCourseSlotSummaryKeys = listOf(
+        "slot_summary_week_single",
+        "slot_summary_week_range",
+        "slot_summary_period_single",
+        "slot_summary_period_range",
+        "slot_summary_time_range",
+        "slot_summary_teacher",
+        "slot_summary_room"
+    )
+
+    /**
+     * 已删除的键 (PR48 落地调整 2026-09-17): 每日提醒区改单卡母子布局,
+     * 独立「提醒开关」卡取消, 总开关并入卡头。反向锁: 任何 locale 复活
+     * 这些键 = 布局回退信号 (UI 已无消费方, 残留键会被 UnusedResources
+     * lint 命中, 且文案与新布局语义冲突)。
+     */
+    private val removedReminderKeys = listOf(
+        "reminder_daily_switches_title",
+        "reminder_daily_master_toggle_title",
+        "reminder_daily_master_toggle_sub"
     )
 
     @Test
@@ -140,19 +176,6 @@ class StringsKeyParityTest {
     }
 
     @Test
-    fun mixed_duration_keys_present_in_all_six_locales() {
-        for (locale in localeDirs) {
-            val text = File(basePath, "$locale/strings.xml").readText()
-            for (key in mixedDurationKeys) {
-                assertTrue(
-                    "mixed duration key \"$key\" missing in $locale/strings.xml",
-                    text.contains("name=\"$key\"")
-                )
-            }
-        }
-    }
-
-    @Test
     fun period_table_keys_present_in_all_six_locales() {
         for (locale in localeDirs) {
             val text = File(basePath, "$locale/strings.xml").readText()
@@ -160,6 +183,57 @@ class StringsKeyParityTest {
                 assertTrue(
                     "period table key \"$key\" missing in $locale/strings.xml",
                     text.contains("name=\"$key\"")
+                )
+            }
+        }
+    }
+
+    @Test
+    fun tomorrow_reminder_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in tomorrowReminderKeys) {
+                assertTrue("$locale missing $key", text.contains("name=\"$key\""))
+            }
+        }
+    }
+
+    @Test
+    fun reminder_preview_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in reminderPreviewKeys) {
+                assertTrue("$locale missing $key", text.contains("name=\"$key\""))
+            }
+        }
+    }
+
+    @Test
+    fun edit_course_slot_summary_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in editCourseSlotSummaryKeys) {
+                assertTrue(
+                    "edit-course slot summary key \"$key\" missing in $locale/strings.xml",
+                    text.contains("name=\"$key\"")
+                )
+            }
+            assertTrue(
+                "obsolete selected_days key resurrected in $locale/strings.xml",
+                !text.contains("name=\"selected_days\"")
+            )
+        }
+    }
+
+    @Test
+    fun removed_reminder_keys_stay_deleted_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in removedReminderKeys) {
+                assertTrue(
+                    "removed key \"$key\" resurrected in $locale/strings.xml — " +
+                        "PR48 单卡母子布局已无该键消费方, 复活=布局回退信号",
+                    !text.contains("name=\"$key\"")
                 )
             }
         }

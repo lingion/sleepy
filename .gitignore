@@ -10,6 +10,8 @@ local.properties
 .idea/
 captures/
 
+*.hprof
+
 # IDE
 .vscode/
 *.swp

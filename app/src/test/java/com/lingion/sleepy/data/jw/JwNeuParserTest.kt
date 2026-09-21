@@ -264,4 +264,106 @@ class JwNeuParserTest {
         assertTrue("must contain arrangedList anchor, was $features",
             features.any { it.contains("arrangedList", ignoreCase = true) })
     }
+
+    // BUAA byxt.buaa.edu.cn (2026-09-19): cellDetail 是周次/教师/地点主通道,
+    // titleDetail 仅作地点补充行 ("上课地点: ...")。该样本组复用 NEU parser
+    // 形态 — 9 仓 cross-verified (fontlos/buaa-api + BUAASubnet/UBAA +
+    // CoolwindHF/buaa2wakeup 等)。
+    private fun loadBuaaByxtJson(): String =
+        File("src/test/resources/jw/fixtures/neu/buaa-byxt.sample.json").readText(Charsets.UTF_8)
+
+    @Test
+    fun `parses BUAA byxt cellDetail teacher-week-连续 - 高等数学`() {
+        val course = JwNeuParser(loadBuaaByxtJson()).generateCourseList()
+            .first { it.name == "高等数学" }
+        assertEquals("王教授", course.teacher)
+        assertEquals("沙河校区主M101", course.room)
+        assertEquals(1, course.day)
+        assertEquals(1, course.startNode)
+        assertEquals(2, course.endNode)
+        assertEquals(1, course.startWeek)
+        assertEquals(16, course.endWeek)
+        assertEquals(0, course.type)
+    }
+
+    @Test
+    fun `parses BUAA byxt cellDetail teacher-week-离散周 展开为 8 行`() {
+        val lab = JwNeuParser(loadBuaaByxtJson()).generateCourseList()
+            .filter { it.name == "数据结构实验" }
+        assertEquals(8, lab.size)
+        assertEquals("张老师", lab[0].teacher)
+        assertEquals("沙河校区计算机楼401", lab[0].room)
+        assertEquals(5, lab[0].day)
+        assertEquals(7, lab[0].startNode)
+        assertEquals(8, lab[0].endNode)
+        val weeks = lab.map { it.startWeek }.sorted()
+        assertEquals(listOf(2, 4, 6, 8, 10, 12, 14, 16), weeks)
+        assertTrue(lab.all { it.startWeek == it.endWeek })
+    }
+
+    @Test
+    fun `parses BUAA byxt cellDetail 双周 - 端点修正 type=2 起点偶数化`() {
+        val eng = JwNeuParser(loadBuaaByxtJson()).generateCourseList()
+            .first { it.name == "英语口语" }
+        assertEquals("Smith", eng.teacher)
+        assertEquals(2, eng.day)
+        assertEquals(9, eng.startNode)
+        assertEquals(10, eng.endNode)
+        assertEquals(2, eng.startWeek)  // 端点修正: 双周起点须偶数
+        assertEquals(16, eng.endWeek)
+        assertEquals(2, eng.type)
+    }
+
+    @Test
+    fun `extractTeacherFromCellDetail prefers cellDetail over weeksAndTeachers`() {
+        // weeksAndTeachers 给空串 (BUAA 部分班次 teacher 字段为空, cellDetail 兜底)
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "X",
+              "dayOfWeek": 3,
+              "beginSection": 1,
+              "endSection": 2,
+              "placeName": "教室A",
+              "weeksAndTeachers": "",
+              "cellDetail": [
+                {"text": "李老师[3-8周]"},
+                {"text": "教室A"}
+              ],
+              "titleDetail": ["汇总", "上课地点：学院路校区/教室A"]
+            }]
+          }
+        }
+        """.trimIndent()
+        val courses = JwNeuParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("李老师", courses[0].teacher)
+        assertEquals("教室A", courses[0].room)
+        assertEquals(3, courses[0].startWeek)
+        assertEquals(8, courses[0].endWeek)
+    }
+
+    @Test
+    fun `extractCellDetailPairs falls back to placeName when cellDetail empty`() {
+        // cellDetail 全空 + weeksAndTeachers 无 weeks — 兜底 placeName + 1-16周
+        val json = """
+        {
+          "datas": {
+            "arrangedList": [{
+              "courseName": "Y",
+              "dayOfWeek": 4,
+              "beginSection": 5,
+              "endSection": 6,
+              "placeName": "教室B",
+              "weeksAndTeachers": "",
+              "titleDetail": ["汇总"]
+            }]
+          }
+        }
+        """.trimIndent()
+        val courses = JwNeuParser(json).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("教室B", courses[0].room)
+    }
 }

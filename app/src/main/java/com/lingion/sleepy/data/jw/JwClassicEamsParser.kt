@@ -46,6 +46,9 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
     )
 
     override fun generateCourseList(): List<JwCourse> {
+        if (source.contains("newActivity(") && source.contains("addActivityByTime(")) {
+            return timeActivities()
+        }
         val unitCount = unitCountFromPage() ?: return emptyList()
         val out = mutableListOf<JwCourse>()
 
@@ -72,6 +75,43 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
             }
         }
         return out
+    }
+
+    private data class TimeActivity(
+        val teacher: String,
+        val name: String,
+        val room: String,
+        val weeks: List<Int>,
+    )
+
+    private fun timeActivities(): List<JwCourse> {
+        val links = Regex("""addActivityByTime\(activity\s*,\s*(\d+)\s*,\s*(\d+)\s*,\s*(\d+)\s*\)""").findAll(source).toList()
+        return links.mapNotNull { link ->
+            val activityStart = source.substring(0, link.range.first).lastIndexOf("newActivity(")
+            if (activityStart < 0) return@mapNotNull null
+            val args = splitArgs(source, activityStart + "newActivity(".length).first
+            if (args.size < 8) return@mapNotNull null
+            val activity = TimeActivity(
+                teacher = unquote(args[1]),
+                name = unquote(args[3]),
+                room = unquote(args[5]),
+                weeks = bitmapToWeeks(args[7].trim()),
+            )
+            val day = link.groupValues[1].toIntOrNull() ?: return@mapNotNull null
+            val start = timeToNode(link.groupValues[2].toIntOrNull() ?: return@mapNotNull null)
+            val end = timeToNode(link.groupValues[3].toIntOrNull() ?: return@mapNotNull null)
+            activity.weeks.map { week -> JwCourse(activity.name, activity.room, activity.teacher, day, start, end, week, week) }
+        }.flatten()
+    }
+
+    private fun timeToNode(minutes: Int): Int = when {
+        minutes <= 900 -> 1
+        minutes <= 1010 -> 3
+        minutes <= 1170 -> 5
+        minutes <= 1330 -> 7
+        minutes <= 1450 -> 9
+        minutes <= 1615 -> 11
+        else -> 13
     }
 
     /** 页面 var unitCount = N; — 拿不到返回 null (硬失败, 别猜默认值) */
@@ -129,8 +169,8 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
                 val p = im.groupValues[2]
                 if (d.isNotEmpty() && p.isNotEmpty()) {
                     indexPairs += d.toInt() to p.toInt()
-                } else {
-                    val linear = im.groupValues[3].toInt()
+                } else if (im.groupValues[3].isNotEmpty()) {
+                    val linear = im.groupValues[3].toIntOrNull() ?: continue
                     indexPairs += linear / unitCount to linear % unitCount
                 }
             }
@@ -202,8 +242,13 @@ class JwClassicEamsParser(source: String) : JwParser(source) {
      * 位图 → 周列表。下标 0 占位, 下标 i=1 即第 i 周 (勿 +1, 四源同证)。
      * 超长位图 (53/54 位) 天然兼容。
      */
-    private fun bitmapToWeeks(bitmap: String): List<Int> =
-        bitmap.mapIndexedNotNull { i, ch -> if (i >= 1 && ch == '1') i else null }
+    private fun bitmapToWeeks(bitmap: String): List<Int> {
+        if (bitmap.length > 20 && bitmap.any { it == '8' || it == '9' }) {
+            val value = bitmap.toLongOrNull() ?: return emptyList()
+            return (1..63).filter { value and (1L shl (it - 1)) != 0L }
+        }
+        return bitmap.mapIndexedNotNull { i, ch -> if (i >= 1 && ch == '1') i else null }
+    }
 
     /** index 对 (0基) → (day, startNode, endNode): 排序后连续节次合并成连堂 */
     private fun mergeConsecutiveNodes(pairs: List<Pair<Int, Int>>): Triple<Int, Int, Int> {

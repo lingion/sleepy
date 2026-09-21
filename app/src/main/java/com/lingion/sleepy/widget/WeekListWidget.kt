@@ -56,7 +56,8 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
         } else WidgetBitmapRenderers.weekListContentHeightDp(context, data)
         val shownDays = if (visibleDays.isEmpty()) data.days
             else data.days.filter { it.dayOfWeek in visibleDays }.sortedBy { it.dayOfWeek }
-        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE) 16f else 0f
+        val statusH = if (data.semesterStatus != DateUtils.SemesterStatus.IN_RANGE ||
+            data.weekDisplayStatus != com.lingion.sleepy.util.WeekDisplayStatus.NORMAL) 16f else 0f
         val wins = if (!forceScroll && !compactFace && data.hasTable && shownDays.isNotEmpty() &&
             data.days.any { it.courses.isNotEmpty() }
         ) computeWeekListWindows(shownDays, hDp.toFloat(), statusH) else null
@@ -172,27 +173,29 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                 runBlocking {
                     val app = SleepyApp.get()
                     val repo = app.repository
-                    val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
-                        ?: WidgetTableResolver.resolveCurrentTable()
-                    if (table == null) {
+                    val source = WidgetWeekDataLoader.resolve(appWidgetId)
+                    if (source == null) {
                         WeekData(days = emptyList(), hasTable = false, isDark = isDark, themeKey = themeKey)
                     } else {
-                        val week = DateUtils.currentWeek(table.startDate, today)
-                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, today)
+                        val table = source.table
+                        val week = source.display.targetWeek
+                        val status = source.display.semesterStatus
                         // 学期前: 钳制周=1, 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
-                            val date = DateUtils.dateOfWeekDay(today, dayOfWeek)
-                            val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                            val date = source.dateFor(dayOfWeek)
                             val visible = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
-                                all.filter { it.inWeek(week) }.sortedBy { it.startNode }
+                                source.coursesFor(dayOfWeek, week)
                             DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
                         }
                         // 最小档三天窗口 (2026-09-15 用户令): 真实日期, 上下周打通
                         val compactWindow = WidgetCompactWindow.build(
                             repo, table.id, table.timeJson, table.startDate, table.maxWeek,
-                            today, WidgetCompactWindowStore.isTodayFirst(context, appWidgetId)
+                            today, WidgetCompactWindowStore.isTodayFirst(context, appWidgetId),
+                            displayWeek = source.display.targetWeek.takeIf {
+                                source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
+                            }
                         )
-                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status, compactWindow = compactWindow)
+                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status, compactWindow = compactWindow, weekDisplayStatus = source.display.status)
                     }
                 }
             } catch (_: Throwable) {

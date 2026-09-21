@@ -28,6 +28,15 @@ object JwProtocol {
     const val TYPE_QZ_BR = "qz_br"
     const val TYPE_QZ_WITH_NODE = "qz_with_node"
     const val TYPE_CF = "cf"
+
+    /**
+     * 新青果 NTSS (青果/乘方新版, FullCalendar 形态, /new/student/xsgrkb/week.page)。
+     * 页面 DOM 无课表数据, 课程行由 POST /new/student/xsgrkb/getCalendarWeekDatas
+     * 按周返回; 节次时间在页面 businessHours JSON; 开学日 /new/xlxx/getDatesOfWeek。
+     * WebView 内逐周并行抓取 (CF_NEW_FETCH_JS) 合并, JwCfNewParser 解析。
+     * 首校: 江西中医药大学 (jiaowu.jxutcm.edu.cn, 2026-09 采集包实锤)。
+     */
+    const val TYPE_CF_NEW = "cf_new"
     const val TYPE_PKU = "pku"
     const val TYPE_BNUZ = "bnuz"
     const val TYPE_LOGIN = "login"
@@ -233,6 +242,8 @@ object JwProtocol {
      * (Apache-2.0); 代码自写。
      */
     const val TYPE_CLASSIC_EAMS = "classic_eams"
+    const val TYPE_KUST = "kust"
+    const val TYPE_NUIT = "nuit"
 
     /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
@@ -249,8 +260,8 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_BOYA_PP, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
-        TYPE_CF, TYPE_HNUST, TYPE_HNIU,
+        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_BOYA_PP, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_KUST, TYPE_NUIT, TYPE_PKU, TYPE_BNUZ,
+        TYPE_CF, TYPE_CF_NEW, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_BJTU, TYPE_YETHAN,
         TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
@@ -273,6 +284,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "正方教务"
         TYPE_URP, TYPE_URP_NEW -> "URP 教务"
         TYPE_CF -> "青果教务"
+        TYPE_CF_NEW -> "青果教务（新版）"
         TYPE_PKU -> "北京大学"
         TYPE_BNUZ -> "北师珠"
         TYPE_KINGO_NEW -> "新青果/金智教务"
@@ -291,6 +303,8 @@ object JwProtocol {
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_EAMS5 -> "合工大教务 (EAMS5)"
         TYPE_CLASSIC_EAMS -> "金智教务（经典 EAMS）"
+        TYPE_KUST -> "昆明理工大学门户"
+        TYPE_NUIT -> "广东东软学院教务"
         TYPE_SEU -> "东南大学"
         TYPE_ZJU -> "浙江大学"
         TYPE_USTC -> "中国科学技术大学"
@@ -319,12 +333,12 @@ object JwProtocol {
         TYPE_CHAOXING -> "chaoxing"
         TYPE_BOYA_PP -> "other"
         TYPE_EAMS5 -> "eams5"
-        TYPE_CLASSIC_EAMS -> "other"
+        TYPE_CLASSIC_EAMS, TYPE_KUST, TYPE_NUIT -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"
         TYPE_BJTU -> "other"
         TYPE_YETHAN -> "other"
         TYPE_HNUST, TYPE_HNIU -> "hnust"
-        TYPE_CF -> "cf"
+        TYPE_CF, TYPE_CF_NEW -> "cf"
         TYPE_PKU, TYPE_BNUZ -> "other"
         else -> "other"
     }

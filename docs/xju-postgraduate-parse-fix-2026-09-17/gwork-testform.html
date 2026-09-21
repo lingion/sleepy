@@ -1,0 +1,423 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head><link href="../../App_Themes/Gwork/StyleSheet.css" type="text/css" rel="stylesheet" /><script src='/js/gwork.js' type='text/javascript'></script><title>
+    学期课表信息查询
+</title><link rel="stylesheet" type="text/css" href="/js/jqueryeasyui/etongui.css" />
+    <script type="text/javascript" src="/js/jquery/jquery.js"></script>
+    <script type="text/javascript" src="/js/jqueryeasyui/jquery.easyui.min.js"></script>
+    <script type="text/javascript" src="/js/lhgdialog/lhgdialog.min.js"></script>
+    <script type="text/javascript">
+        $(document).ready(function () { if (typeof (initForm) == "function") { initForm() } })
+        $(document).ready(function () { if (typeof (reload) == "function") { reload() } })
+
+    </script>
+    <meta charset="UTF-8">
+    <script type="text/javascript">
+        function initForm() {
+            $('#hykTermCalender').linkbutton({
+                plain: true
+            });
+            $('#lnkToWord').linkbutton({
+                iconCls: 'icon-word',
+                plain: true
+            });
+        }
+
+    </script>
+</head>
+<body>
+<form method="post" action="StuCourseQuery.aspx?EID=[SANITIZED]&amp;UID=[SANITIZED]" id="Form1">
+    <div class="aspNetHidden">
+        <input type="hidden" name="__EVENTTARGET" id="__EVENTTARGET" value="" />
+        <input type="hidden" name="__EVENTARGUMENT" id="__EVENTARGUMENT" value="" />
+        <input type="hidden" name="__LASTFOCUS" id="__LASTFOCUS" value="" />
+        <input type="hidden" name="__VIEWSTATE" id="__VIEWSTATE" value="[SANITIZED-VIEWSTATE]" />
+    </div>
+
+    <script type="text/javascript">
+        //<![CDATA[
+        var theForm = document.forms['Form1'];
+        if (!theForm) {
+            theForm = document.Form1;
+        }
+        function __doPostBack(eventTarget, eventArgument) {
+            if (!theForm.onsubmit || (theForm.onsubmit() != false)) {
+                theForm.__EVENTTARGET.value = eventTarget;
+                theForm.__EVENTARGUMENT.value = eventArgument;
+                theForm.submit();
+            }
+        }
+        //]]>
+    </script>
+
+
+    <script src="/WebResource.axd?d=5d5KGRMAyLvBqg6D0Z6Xhj3Bik0iH8Qt5h7ZqLwbqRWMcG_QNGx9uHHYTzhIEQhPxWH_P8u88WPt72kX0&amp;t=634773912100000000" type="text/javascript"></script>
+
+
+    <script src="/ScriptResource.axd?d=FQWkYsiSAHUVziwgOnpsc3O8ySbOkzC0OBs14YvwPMBOwRi-2vbJf4lFKPjhooHsdfa0xs8CTpd_miA1Td0lzXIZB7zl03Sn_skuSuYRjj81QGMGZy1oUmM7rvRug0yA6R9FTkxYy5L_6GmGv1fGWIUpRGk1&amp;t=6119e399" type="text/javascript"></script>
+    <script src="/ScriptResource.axd?d=RdziBK-BFzt2fvkdDFAhFBR29ktNBNQHONPM2UB6eYaLEJHX1gHEcG79GsTpKBigfgHn-cd8XoaekV7ALhBibs5xlax0e0KNWYG4_yHbatjvu0POArt8--VpQGah79pogl_3KMv8f9ayPMYxyJ9XaWElU7BH0sB2hRUPuQ2&amp;t=6119e399" type="text/javascript"></script>
+    <div class="aspNetHidden">
+
+        <input type="hidden" name="__VIEWSTATEENCRYPTED" id="__VIEWSTATEENCRYPTED" value="" />
+        <input type="hidden" name="__EVENTVALIDATION" id="__EVENTVALIDATION" value="[SANITIZED-EVENTVALIDATION]" />
+    </div>
+    <script type="text/javascript">
+        //<![CDATA[
+        Sys.WebForms.PageRequestManager._initialize('ctl00$ScriptManager1', 'Form1', ['tctl00$contentParent$UpdatePanel1','contentParent_UpdatePanel1','tctl00$contentParent$UpdatePanel2','contentParent_UpdatePanel2'], ['ctl00$contentParent$lnkToWord','lnkToWord','ctl00$contentParent$drpXq','contentParent_drpXq'], [], 90, 'ctl00');
+        //]]>
+    </script>
+
+
+    <div style="font-size: 18pt; font-family: 楷体,楷体_GB2312; color: #067ab4; width: 100%; margin-top:20px; margin-bottom:0px; text-align: center;"  >
+        学期课表信息查询
+    </div>
+
+    <div  id="parId" style="padding: 20px; overflow: auto">
+
+    <span id="contentParent_UpdatePanel1">
+            <table class="formTop" style="width: 100%;">
+                <tr>
+                    <td>
+                        学期：<select name="ctl00$contentParent$drpXq" onchange="javascript:setTimeout(&#39;__doPostBack(\&#39;ctl00$contentParent$drpXq\&#39;,\&#39;\&#39;)&#39;, 0)" id="contentParent_drpXq">
+	<option value="38">2023-2024春学期</option>
+	<option selected="selected" value="37">2023-2024秋学期</option>
+	<option value="36">2022-2023春学期</option>
+	<option value="35">2022-2023秋学期</option>
+	<option value="34">2021-2022春学期</option>
+	<option value="33">2021-2022秋学期</option>
+	<option value="32">2020-2021春学期</option>
+	<option value="31">2020-2021秋学期</option>
+	<option value="30">2019-2020春学期</option>
+	<option value="29">2019-2020秋学期</option>
+	<option value="28">2018-2019春学期</option>
+	<option value="27">2018-2019秋学期</option>
+	<option value="26">2017-2018春学期</option>
+	<option value="25">2017-2018秋学期</option>
+	<option value="24">2016-2017春学期</option>
+	<option value="23">2016-2017秋学期</option>
+	<option value="22">2015-2016春学期</option>
+	<option value="21">2015-2016秋学期</option>
+	<option value="20">2014-2015春学期</option>
+	<option value="19">2014-2015秋学期</option>
+	<option value="18">2013-2014春学期</option>
+	<option value="17">2013-2014秋学期</option>
+	<option value="16">2012-2013春学期</option>
+	<option value="15">2012-2013秋学期</option>
+	<option value="14">2011-2012春学期</option>
+	<option value="13">2011-2012秋学期</option>
+	<option value="12">2010-2011春学期</option>
+	<option value="11">2010-2011秋学期</option>
+	<option value="10">2009-2010春学期</option>
+	<option value="9">2009-2010秋学期</option>
+	<option value="8">2008-2009春学期</option>
+	<option value="7">2008-2009秋学期</option>
+	<option value="6">2007-2008春学期</option>
+	<option value="5">2007-2008秋学期</option>
+	<option value="4">2006-2007春学期</option>
+	<option value="3">2006-2007秋学期</option>
+	<option value="2">2005-2006春学期</option>
+	<option value="1">2005-2006秋学期</option>
+	<option value="0">2004-2005春学期</option>
+	<option value="-1">2004-2005秋学期</option>
+	<option value="-2">2003-2004春学期</option>
+	<option value="-3">2003-2004秋学期</option>
+	<option value="-4">2002-2003春学期</option>
+	<option value="-5">2002-2003秋学期</option>
+
+</select>
+                    </td>
+                    <td align="right">
+                        <a id="hykTermCalender" title="教学日历信息" class="none" onclick="$.dialog({lock:true,content: &#39;url:/PublicPage/TermCalender.aspx?EID=[SANITIZED]&amp;UID=[SANITIZED]&#39;,id:&#39;ClassStudent&#39;,title:&#39;教学日历信息查询&#39;,min:false,max:true,drag:true,resize:true,width: &#39;600px&#39;,height: &#39;440px&#39;});" href="javascript:void(0)">教学日历</a>
+                        <a id="hykDownload"></a>
+                        <a onclick="$.dialog.tips(&#39;正在处理...&#39;,1000,&#39;loading.gif&#39;);" id="lnkToWord" class="none" href="javascript:__doPostBack(&#39;ctl00$contentParent$lnkToWord&#39;,&#39;&#39;)">导出</a>
+                    </td>
+                </tr>
+            </table>
+        </span>
+        <span id="contentParent_UpdatePanel2">
+        <div>
+	<table class="Grid_Line" cellspacing="0" cellpadding="5" rules="all" border="1" id="contentParent_dgData" style="width:100%;border-collapse:collapse;">
+		<tr style="height:25px;white-space:nowrap;">
+			<th align="center" scope="col" style="width:20px;">时间</th><th align="center" scope="col" style="width:30px;">节次</th><th scope="col">星期一</th><th scope="col">星期二</th><th scope="col">星期三</th><th scope="col">星期四</th><th scope="col">星期五</th><th scope="col">星期六</th><th scope="col">星期日</th>
+		</tr><tr style="height:25px;">
+			<td align="center" rowspan="4" style="width:20px;">
+                            上午
+                        </td><td align="center" style="width:30px;">一</td><td rowspan="1">
+
+                        </td><td rowspan="1">
+
+                        </td><td rowspan="1">
+
+                        </td><td rowspan="1">
+
+                        </td><td rowspan="1">
+
+                        </td><td rowspan="1">
+
+                        </td><td rowspan="1">
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">二</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">三</td><td>
+
+                        </td><td>
+
+                        </td><td rowspan="2">
+                            高级算法设计与分析1班｛12-19周[教师:孙冬璞,地点:待定]｝
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">四</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" rowspan="4" style="width:20px;">
+                            下午
+                        </td><td align="center" style="width:30px;">五</td><td rowspan="2">
+                            高级算法设计与分析1班｛12-19周[教师:孙冬璞,地点:待定]｝
+                        </td><td rowspan="2">
+                            机器学习1班｛3-10周[教师:陈晨,地点:待定]｝
+                        </td><td rowspan="1">
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">六</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">七</td><td rowspan="1">
+
+                        </td><td rowspan="2">
+                            组合数学1班｛4-11周[教师:高峻,地点:待定]｝
+                        </td><td>
+
+                        </td><td rowspan="2">
+                            机器学习1班｛3-10周[教师:陈晨,地点:待定]｝
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">八</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" rowspan="4" style="width:20px;">
+                            晚上
+                        </td><td align="center" style="width:30px;">九</td><td>
+
+                        </td><td rowspan="1">
+
+                        </td><td>
+
+                        </td><td rowspan="2">
+                            组合数学1班｛4-11周[教师:高峻,地点:待定]｝
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">十</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">十一</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td rowspan="1">
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr><tr style="height:25px;">
+			<td align="center" style="width:30px;">十二</td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td><td>
+
+                        </td>
+		</tr>
+	</table>
+</div>
+            <table id="contentParent_Roominfo" class="tbline" style="width: 100%">
+	<tr>
+		<td style=" height: 35px; text-align:center;border-left: 1px solid #7F9DB9;border-right: 1px solid #7F9DB9;">
+                        <span style="font-weight: normal; font-size: 12pt; color: #067ab4; font-family: 黑体;">
+                            未 安 排 具 体 时 间 的 课 表</span>
+                    </td>
+	</tr>
+</table>
+
+            <div>
+	<table class="Grid_Line" cellspacing="0" rules="all" border="1" id="contentParent_dgData2" style="background-color:White;width:100%;border-collapse:collapse;">
+		<tr style="height:25px;white-space:nowrap;">
+			<th align="center" scope="col">班级名称</th><th align="center" scope="col">课程名称</th><th align="center" scope="col">任课教师</th><th align="center" scope="col">选课人数</th><th align="center" scope="col">计划人数</th>
+		</tr><tr style="height:25px;">
+			<td align="center">学术英语写作18班</td><td align="center">学术英语写作</td><td align="center">徐明琦</td><td align="center">46</td><td align="center">70</td>
+		</tr><tr style="height:25px;">
+			<td align="center">中国特色社会主义理论与实践8班</td><td align="center">中国特色社会主义理论与实践</td><td align="center">叶丽</td><td align="center">122</td><td align="center">150</td>
+		</tr><tr style="height:25px;">
+			<td align="center">习近平新时代中国特色社会主义思想概论7班</td><td align="center">习近平新时代中国特色社会主义思想概论</td><td align="center">戴心睿</td><td align="center">122</td><td align="center">150</td>
+		</tr><tr style="height:25px;">
+			<td align="center">自然辩证法及其工程应用2班</td><td align="center">自然辩证法及其工程应用</td><td align="center">王宇</td><td align="center">103</td><td align="center">150</td>
+		</tr><tr style="height:25px;">
+			<td align="center">矩阵分析及其工程应用3班</td><td align="center">矩阵分析及其工程应用</td><td align="center">孟桂芝</td><td align="center">80</td><td align="center">120</td>
+		</tr>
+	</table>
+</div>
+        </span>
+        <table class="formBottom" style="width: 100%">
+            <tr>
+                <td style="height: 10px" />
+            </tr>
+            <tr>
+                <td style="text-align: left; height: 25px; color: #067ab4">
+                    上午：
+                    <span id="contentParent_dgListSw" style="font-size:12px;"><span style="color:#067AB4;">
+                        第一节：</span>8:00-8:45
+                    </span><span style="color:#067AB4;">
+                        第二节：</span>8:50-9:35
+                    </span><span style="color:#067AB4;">
+                        第三节：</span>9:50-10:35
+                    </span><span style="color:#067AB4;">
+                        第四节：</span>10:40-11:25
+                    </span></span>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left; height: 25px; color: #067ab4">
+                    下午：
+                    <span id="contentParent_dgListXw" style="font-size:12px;"><span style="color:#067AB4;">
+                        第五节：</span>13:30-14:15
+                    </span><span style="color:#067AB4;">
+                        第六节：</span>14:20-15:05
+                    </span><span style="color:#067AB4;">
+                        第七节：</span>15:30-16:15
+                    </span><span style="color:#067AB4;">
+                        第八节：</span>16:20-17:05
+                    </span></span>
+                </td>
+            </tr>
+            <tr>
+                <td style="text-align: left; height: 25px; color: #067ab4">
+                    晚上：
+                    <span id="contentParent_dgListWs" style="font-size:12px;"><span style="color:#067AB4;">
+                        第九节：</span>18:10-18:55
+                    </span><span style="color:#067AB4;">
+                        第十节：</span>19:00-19:45
+                    </span><span style="color:#067AB4;">
+                        第十一节：</span>19:50-20:35
+                    </span><span style="color:#067AB4;">
+                        第十二节：</span>20:40-21:25
+                    </span></span>
+                </td>
+            </tr>
+        </table>
+
+    </div>
+</form>
+<script type="text/javascript">
+    function initH() {
+        $('#parId').height(getTotalHeight() - 90);
+    };
+    initH();
+    $(window).resize(function () {
+        initH();
+    });
+</script>
+</body>
+</html>
+
+--- PASS: TestRevLeftCourse (0.84s)
+PASS
+
+Process finished with the exit code 0

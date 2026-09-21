@@ -35,11 +35,11 @@ class XjuPostgraduateAdmissionTest {
     }
 
     @Test
-    fun `main assets schools json count gate 340`() {
+    fun `main assets schools json count gate 341`() {
         val main = String(javaClass.classLoader!!.getResource("jw/schools.json")!!.readBytes())
         // 计数闸双副本同值（主副本由 JwJouAdaptationTest 锁 1:1, 这里锁总数）
         val count = JwImportViewModel.parseSchoolsJson(main).size
-        assertEquals("2026-09-16 收录新疆大学（研究生, xju_post Gwork 族）→ 340", 340, count)
+        assertEquals("2026-09-19 四校适配（NWUPL/LIXIN/KMUST/NUIT）→ 345", 345, count)
     }
 
     // ---------- ② URL 判型 ----------
@@ -202,5 +202,86 @@ class XjuPostgraduateAdmissionTest {
         val courses = JwXjuParser(html).generateCourseList()
         assertTrue("一格两课应拆出 ≥1 条", courses.isNotEmpty())
         courses.forEach { assertEquals(1, it.day) }
+    }
+
+    // ---------- ⑤ 真实"学期课表信息查询"页 — 2026-09-17 用户报修 ----------
+    @Test
+    fun `real gwork 学期课表信息查询 page parses courses with time-band header and chinese node labels`() {
+        val html = javaClass.classLoader?.getResourceAsStream("jw_fixtures/xju-postgraduate-real-gwork.html")
+            ?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+        assertNotNull("real-shape fixture 必须存在", html)
+        val courses = JwXjuParser(html!!).generateCourseList()
+        assertTrue("真实 Gwork 课表页应至少解析出 3 门课, 实得 ${courses.size}", courses.size >= 3)
+
+        val gaoSuan = courses.first { it.name == "高级算法设计与分析1班" }
+        assertEquals("高级算法设计与分析1班 应在星期三", 3, gaoSuan.day)
+        assertEquals("节次三=第3节起(12行真实表头)", 3, gaoSuan.startNode)
+        assertEquals("rowspan=2 → 第3-4节连堂", 4, gaoSuan.endNode)
+        assertEquals("孙冬璞", gaoSuan.teacher)
+        assertEquals(12, gaoSuan.startWeek)
+        assertEquals(19, gaoSuan.endWeek)
+        // 高级算法同时出现在周一第5-6节 (下午第1段)
+        val gaoSuan2 = courses.filter { it.name == "高级算法设计与分析1班" }
+            .first { it.day == 1 && it.startNode == 5 }
+        assertEquals(6, gaoSuan2.endNode)
+        assertEquals("孙冬璞", gaoSuan2.teacher)
+
+        val ml = courses.first { it.name == "机器学习1班" }
+        assertEquals("机器学习1班 应在星期二", 2, ml.day)
+        assertEquals(5, ml.startNode)
+        assertEquals(6, ml.endNode)
+        assertEquals("陈晨", ml.teacher)
+        assertEquals(3, ml.startWeek)
+        assertEquals(10, ml.endWeek)
+        // 机器学习同时出现在周四第7-8节
+        val ml2 = courses.filter { it.name == "机器学习1班" }
+            .first { it.day == 4 && it.startNode == 7 }
+        assertEquals(8, ml2.endNode)
+        assertEquals("陈晨", ml2.teacher)
+
+        val cms = courses.first { it.name == "组合数学1班" }
+        assertEquals("组合数学1班 应在星期二", 2, cms.day)
+        assertEquals(7, cms.startNode)
+        assertEquals(8, cms.endNode)
+        assertEquals("高峻", cms.teacher)
+        assertEquals(4, cms.startWeek)
+        assertEquals(11, cms.endWeek)
+        // 组合数学同时出现在周四第9-10节 (晚上段)
+        val cms2 = courses.filter { it.name == "组合数学1班" }
+            .first { it.day == 4 && it.startNode == 9 }
+        assertEquals(10, cms2.endNode)
+        assertEquals("高峻", cms2.teacher)
+        assertEquals(4, cms2.startWeek)
+        assertEquals(11, cms2.endWeek)
+
+        // 真实页含 6 个独立课程位 (3 课 × 2 时段); 一格多课由 xju fullwidth semicolon 测试覆盖
+        assertTrue("解析数应包含 6 条 (3 课 × 2 时段)", courses.size >= 6)
+    }
+
+    @Test
+    fun `real form B page inside PageFrame iframe is selected and parsed end to end`() {
+        // 整链锁: 真实用户到达路径 = frameset(Default.aspx) + PageFrame(StuCourseQuery.aspx 形态 B)
+        // 帧捕获 (_dgdata 尾子串锚) → selectBestFrame → JwXjuParser 形态 B 网格还原
+        val realHtml = javaClass.classLoader?.getResourceAsStream("jw_fixtures/xju-postgraduate-real-gwork.html")
+            ?.bufferedReader(Charsets.UTF_8)?.use { it.readText() }
+        assertNotNull("real-shape fixture 必须存在", realHtml)
+        val top = """<html><head><title>新疆大学研究生培养管理信息系统</title></head><body>
+            <iframe id="PageFrame" name="PageFrame"></iframe></body></html>"""
+        val snapshots = com.lingion.sleepy.ui.screen.imports.FrameSnapshot.fromJson(
+            """{"ok":true,"url":"https://yjspy.xju.edu.cn/Gstudent/Default.aspx","depth":8,"frames":[
+                {"name":"(top)","src":"https://yjspy.xju.edu.cn/Gstudent/Default.aspx","depth":0,"path":[],"html":${org.json.JSONObject.quote(top)},"blocked":""},
+                {"name":"PageFrame","src":"https://yjspy.xju.edu.cn/Gstudent/Course/StuCourseQuery.aspx","depth":1,"path":["PageFrame"],"html":${org.json.JSONObject.quote(realHtml!!)},"blocked":""}
+            ]}"""
+        )
+        val r = com.lingion.sleepy.ui.screen.imports.FrameTraversalTree.selectBestFrame(snapshots)
+        assertEquals("形态 B 真实页必须被 dgData 锚选中", com.lingion.sleepy.ui.screen.imports.FrameCaptureStatus.OK, r.status)
+        assertTrue(r.matchedAnchors.isNotEmpty())
+        val courses = JwXjuParser(r.html).generateCourseList()
+        assertTrue("抓到的形态 B frame HTML 必须解析出 ≥6 条课, 实得 ${courses.size}", courses.size >= 6)
+        // 抽验端到端不换样: 帧捕获送进 parser 后 位置/教师 仍准确
+        val gaoSuan = courses.first { it.name == "高级算法设计与分析1班" }
+        assertEquals(3, gaoSuan.day)
+        assertEquals(3, gaoSuan.startNode)
+        assertEquals("孙冬璞", gaoSuan.teacher)
     }
 }

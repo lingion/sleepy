@@ -185,6 +185,8 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
     // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
     // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
     val modes = if (hasPeriodTableTab) Mode.entries else listOf(Mode.Manual, Mode.Auto)
+    // 2026-09-20 用户(节次编辑器轨道与卡片同色隐形): 本组件嵌在 surfaceContainer 卡片里,
+    // 轨道默认色与卡片同色 → 包裹块不可见。与 SettingsFlatCard 同款降一级保对比。
     SegmentedSwitcher(
         options = modes.map {
             it to stringResource(
@@ -197,7 +199,8 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
         },
         selected = current,
         onSelect = onChange,
-        modifier = Modifier.fillMaxWidth()
+        modifier = Modifier.fillMaxWidth(),
+        containerColor = SleepyTheme.colors.surfaceContainerHighest
     )
 }
 

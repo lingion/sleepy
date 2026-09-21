@@ -1,0 +1,19 @@
+{
+  "date": "2026-09-17",
+  "ticket": "新疆大学依然显示识别不了",
+  "root_cause": [
+    "旧 parseXju 假定形态 A (th=节次|周X, 阿拉伯节次, ｛名(周次)[教师:…,地点:…]｝)",
+    "真实 学期课表信息查询 页为形态 B: th=时间|节次|周X, 时间列 rowspan=4 (上午/下午/晚上), 节次=中文数字一..十二, 课程名在花括号外, 课程行 rowspan=2 连堂",
+    "四个错位叠加: 日列偏移2 / rowspan 残留致列漂移 / 中文节次全识别失败 / 花括号文法不命中 → 解析 0 课"
+  ],
+  "evidence": [
+    "docs/xju-postgraduate-parse-fix-2026-09-17/real-dgdata-table.html — 真实抓取 12 行课表 (sanitized)",
+    "docs/xju-postgraduate-parse-fix-2026-09-17/gwork-testform.html — 真实抓取整页 (VIEWSTATE/EVENTVALIDATION/EID/UID 已脱敏)"
+  ],
+  "fix": "JwWakeUpCompatParsers.kt::parseXju 重写: 节点识别支持中文数字+阿拉伯+第N-M节; (col,row) 网格还原跟踪 rowspan/colspan 残留; 首日列从 th 推导; extractXjuCourses 自动分形态 A/B; 连堂 rowspan 延展+垂直同文本合并",
+  "family_judgment": "Gwork 研究生族 yjspy 形态 B — 依据真实 DOM 结构判定 (数维判定不靠仓名), 同族旁证 eduData-GoBack(hrbust Pg)/shiguang_warehouse(UPC/CUG)/SCAU-Grad(jiefing)",
+  "test_lock": "XjuPostgraduateAdmissionTest#real gwork 学期课表信息查询 page parses courses with time-band header and chinese node labels — 锁 6 (day,node) 节段 + 教师/周次",
+  "red_green": "revert 修复 → 1 failed (新测试) → restore → 11/11 green; 全套件 1965/1965; lint 38/434/1 = pre-existing 基线零新增",
+  "attribution_delta": 0,
+  "push": false
+}

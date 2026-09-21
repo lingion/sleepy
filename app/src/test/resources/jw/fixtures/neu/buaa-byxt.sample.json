@@ -1,0 +1,48 @@
+{
+  "datas": {
+    "arrangedList": [
+      {
+        "courseName": "高等数学",
+        "courseCode": "MATH101",
+        "dayOfWeek": 1,
+        "beginSection": 1,
+        "endSection": 2,
+        "placeName": "沙河校区主M101",
+        "weeksAndTeachers": "1-16周/王教授[主讲]",
+        "cellDetail": [
+          {"text": "王教授[1-16周]"},
+          {"text": "沙河校区主M101"}
+        ],
+        "titleDetail": ["汇总: 1-16周 王教授", "上课地点：沙河校区/主M101"]
+      },
+      {
+        "courseName": "数据结构实验",
+        "courseCode": "DS-LAB",
+        "dayOfWeek": 5,
+        "beginSection": 7,
+        "endSection": 8,
+        "placeName": "沙河校区计算机楼401",
+        "weeksAndTeachers": "2,4,6,8,10,12,14,16周/张老师[主讲]",
+        "cellDetail": [
+          {"text": "张老师[2,4,6,8,10,12,14,16周]"},
+          {"text": "沙河校区计算机楼401"}
+        ],
+        "titleDetail": ["汇总: 2,4,6,8,10,12,14,16周 张老师", "上课地点：沙河校区/计算机楼401"]
+      },
+      {
+        "courseName": "英语口语",
+        "courseCode": "ENG101",
+        "dayOfWeek": 2,
+        "beginSection": 9,
+        "endSection": 10,
+        "placeName": "学院路校区外语楼501",
+        "weeksAndTeachers": "1-16双周/Smith[主讲]",
+        "cellDetail": [
+          {"text": "Smith[1-16双周]"},
+          {"text": "学院路校区外语楼501"}
+        ],
+        "titleDetail": ["汇总: 1-16双周 Smith", "上课地点：学院路校区/外语楼501"]
+      }
+    ]
+  }
+}

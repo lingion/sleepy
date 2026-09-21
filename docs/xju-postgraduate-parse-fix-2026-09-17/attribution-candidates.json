@@ -1,0 +1,8 @@
+{
+  "note": "2026-09-17 解析修复轮 — 0 新候选, 沿用 2026-09-16 收录轮致谢 (已在 LicenseScreen 卡片)",
+  "candidates": [
+    {"project": "huhu415/eduData-GoBack", "author": "huhu415", "license_or_None": null, "role_in_verification": "Gwork 研究生系统同款链路实锤; 已致谢, 本轮沿用"},
+    {"project": "XingHeYuZhuan/shiguang_warehouse", "author": "XingHeYuZhuan", "license_or_None": "MIT", "role_in_verification": "UPC/CUG Gwork 族 dgData 文法旁证; 已致谢, 本轮沿用"},
+    {"project": "jiefing/SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "author": "jiefing", "license_or_None": null, "role_in_verification": "Gwork 族控件命名旁证; 已致谢, 本轮沿用"}
+  ]
+}

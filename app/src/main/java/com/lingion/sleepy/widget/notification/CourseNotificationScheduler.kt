@@ -47,10 +47,12 @@ class CourseNotificationScheduler(private val context: Context) {
         // Request codes for PendingIntent discrimination
         private const val RC_DAILY = 1
         private const val RC_BEFORE_CLASS_SCHEDULER = 2
+        private const val RC_TOMORROW_DAILY = 3
         private const val RC_BEFORE_CLASS_BASE = 100 // + courseId offset
 
         // Notification IDs
         const val NOTIFY_DAILY = 1001
+        const val NOTIFY_TOMORROW_DAILY = 1002
         const val NOTIFY_BEFORE_CLASS_BASE = 2000 // + courseId offset
     }
 
@@ -66,7 +68,12 @@ class CourseNotificationScheduler(private val context: Context) {
             if (!AppPrefs.isReminderEnabled(prefs)) return@launch
 
             if (AppPrefs.isDailyReminderEnabled(prefs)) {
-                scheduleDaily()
+                if (AppPrefs.isTodayReminderEnabled(prefs)) {
+                    scheduleDaily()
+                }
+                if (AppPrefs.isTomorrowReminderEnabled(prefs)) {
+                    scheduleTomorrowReminder()
+                }
             }
             if (AppPrefs.isBeforeClassEnabled(prefs)) {
                 scheduleBeforeClassDaily()
@@ -81,6 +88,7 @@ class CourseNotificationScheduler(private val context: Context) {
 
         // Cancel daily
         alarmManager.cancel(buildPendingIntent(RC_DAILY, DailyNotifyReceiver::class.java))
+        alarmManager.cancel(buildPendingIntent(RC_TOMORROW_DAILY, TomorrowNotifyReceiver::class.java))
 
         // Cancel before-class scheduler
         alarmManager.cancel(buildPendingIntent(RC_BEFORE_CLASS_SCHEDULER, BeforeClassScheduleReceiver::class.java))
@@ -120,18 +128,39 @@ class CourseNotificationScheduler(private val context: Context) {
     // ==================== Daily ====================
 
     private fun scheduleDaily() {
-        val timeStr = AppPrefs.getDailyReminderTime(context)
+        scheduleDailyAlarm(
+            timeStr = AppPrefs.getDailyReminderTime(context),
+            fallbackHour = 7,
+            fallbackMinute = 0,
+            pending = buildPendingIntent(RC_DAILY, DailyNotifyReceiver::class.java)
+        )
+    }
+
+    private fun scheduleTomorrowReminder() {
+        scheduleDailyAlarm(
+            timeStr = AppPrefs.getTomorrowReminderTime(context),
+            fallbackHour = 22,
+            fallbackMinute = 0,
+            pending = buildPendingIntent(RC_TOMORROW_DAILY, TomorrowNotifyReceiver::class.java)
+        )
+    }
+
+    private fun scheduleDailyAlarm(
+        timeStr: String,
+        fallbackHour: Int,
+        fallbackMinute: Int,
+        pending: PendingIntent
+    ) {
         val parts = timeStr.split(":")
         // 钳制到合法范围，避免破损 pref（"07:60"、负数、空值）触发 DateTimeException 崩溃
-        val hour = (parts.getOrNull(0)?.toIntOrNull() ?: 7).coerceIn(0, 23)
-        val minute = (parts.getOrNull(1)?.toIntOrNull() ?: 0).coerceIn(0, 59)
+        val hour = (parts.getOrNull(0)?.toIntOrNull() ?: fallbackHour).coerceIn(0, 23)
+        val minute = (parts.getOrNull(1)?.toIntOrNull() ?: fallbackMinute).coerceIn(0, 59)
 
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        val pending = buildPendingIntent(RC_DAILY, DailyNotifyReceiver::class.java)
 
         val target = LocalTime.of(hour, minute)
         var next = LocalDate.now().atTime(target)
-        if (LocalTime.now().isAfter(target)) next = next.plusDays(1)
+        if (!LocalTime.now().isBefore(target)) next = next.plusDays(1)
         val epoch = next.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
 
         setRepeatingAlarm(alarmManager, epoch, AlarmManager.INTERVAL_DAY, pending)
@@ -340,76 +369,113 @@ class CourseNotificationScheduler(private val context: Context) {
 
 // ==================== Receivers ====================
 
-/**
- * Daily summary notification — fires at user-chosen time.
- * Content: "今日{X}号 您有{N}节课 第一节课{courseName}于{HH}时{MM}分在{room}上课"
- */
+/** Same-day schedule summary — fires at the user-chosen morning/daytime time. */
 class DailyNotifyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!hasNotifPermission(context)) return
-        if (!AppPrefs.isReminderEnabled(context) || !AppPrefs.isDailyReminderEnabled(context)) return
+        if (!AppPrefs.isReminderEnabled(context) ||
+            !AppPrefs.isDailyReminderEnabled(context) ||
+            !AppPrefs.isTodayReminderEnabled(context)
+        ) return
 
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            sendDailyNotification(context)
+            sendScheduleSummary(
+                context = context,
+                targetDate = LocalDate.now(),
+                isTomorrowPreview = false
+            )
         }
     }
+}
 
-    private suspend fun sendDailyNotification(context: Context) {
-        val today = LocalDate.now()
-        val dow = DateUtils.todayDayOfWeek(today)
+/** Previous-evening schedule preview — follows the same no-course behavior as the same-day summary. */
+class TomorrowNotifyReceiver : BroadcastReceiver() {
+    override fun onReceive(context: Context, intent: Intent) {
+        if (!hasNotifPermission(context)) return
+        if (!AppPrefs.isReminderEnabled(context) ||
+            !AppPrefs.isDailyReminderEnabled(context) ||
+            !AppPrefs.isTomorrowReminderEnabled(context)
+        ) return
 
-        val table = com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()
-        val dayOfMonth = today.dayOfMonth
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            sendScheduleSummary(
+                context = context,
+                targetDate = LocalDate.now().plusDays(1),
+                isTomorrowPreview = true
+            )
+        }
+    }
+}
 
-        val title: String
-        val text: String
+private suspend fun sendScheduleSummary(
+    context: Context,
+    targetDate: LocalDate,
+    isTomorrowPreview: Boolean
+) {
+    val dow = DateUtils.todayDayOfWeek(targetDate)
+    val table = com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()
+    val dayOfMonth = targetDate.dayOfMonth
 
-        if (table == null) {
-            title = context.getString(R.string.notif_daily_title_no_course, dayOfMonth)
-            text = context.getString(R.string.notif_daily_text_no_course)
+    val courses = if (table == null) {
+        emptyList()
+    } else {
+        val week = DateUtils.currentWeek(table.startDate, targetDate)
+        val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, targetDate) ==
+            DateUtils.SemesterStatus.IN_RANGE
+        if (!inSemester) {
+            emptyList()
         } else {
-            val week = DateUtils.currentWeek(table.startDate, today)
-            // 防呆: 学期范围外不发"今日有课"摘要(钳制周数会误匹配第 1 周的课)
-            val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, today) == DateUtils.SemesterStatus.IN_RANGE
-            val courses = if (!inSemester) emptyList() else SleepyApp.get().repository
+            SleepyApp.get().repository
                 .getCoursesByDayOnce(table.id, dow)
                 .filter { it.inWeek(week) }
                 .sortedBy { it.startNode }
+        }
+    }
 
-            if (courses.isEmpty()) {
-                title = context.getString(R.string.notif_daily_title_no_course, dayOfMonth)
-                text = context.getString(R.string.notif_daily_text_no_course)
+    val title: String
+    val text: String
+    if (courses.isEmpty()) {
+        title = context.getString(
+            if (isTomorrowPreview) R.string.notif_tomorrow_title_no_course else R.string.notif_daily_title_no_course,
+            dayOfMonth
+        )
+        text = context.getString(
+            if (isTomorrowPreview) R.string.notif_tomorrow_text_no_course
+            else R.string.notif_daily_text_no_course
+        )
+    } else {
+        title = context.getString(
+            if (isTomorrowPreview) R.string.notif_tomorrow_title else R.string.notif_daily_title,
+            dayOfMonth,
+            courses.size
+        )
+        val first = courses.first()
+        val firstTime = getCourseStartTime(first, requireNotNull(table))
+        val firstRoom = first.room.ifBlank { context.getString(R.string.notif_room_unknown) }
+        text = context.getString(R.string.notif_daily_text_first, first.courseName, firstTime, firstRoom)
+    }
+
+    val notif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_DAILY)
+        .setSmallIcon(R.drawable.ic_notification_time)
+        .setContentTitle(title)
+        .setContentText(text)
+        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+        .setContentIntent(openAppIntent(context))
+        .setAutoCancel(true)
+        .build()
+
+    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
+        == PackageManager.PERMISSION_GRANTED
+    ) {
+        NotificationManagerCompat.from(context).notify(
+            if (isTomorrowPreview) {
+                CourseNotificationScheduler.NOTIFY_TOMORROW_DAILY
             } else {
-                title = context.getString(R.string.notif_daily_title, dayOfMonth, courses.size)
-
-                // Build first course info
-                val first = courses.first()
-                val firstTime = getCourseStartTime(first, table)
-                val firstRoom = first.room.ifBlank { context.getString(R.string.notif_room_unknown) }
-                text = context.getString(R.string.notif_daily_text_first,
-                    first.courseName, firstTime, firstRoom)
-            }
-        }
-
-        val notif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_DAILY)
-            .setSmallIcon(R.drawable.ic_notification_time)
-            .setContentTitle(title)
-            .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(openAppIntent(context))
-            .setAutoCancel(true)
-            .build()
-
-        // Lint MissingPermission + 运行时兜底: onReceive 里虽已校验, 但本函数在 IO 协程执行,
-        //   协程窗口期内权限可能被用户撤销 → post 前内联 checkSelfPermission 再兜底一次
-        //   (lint 只识别 ContextCompat.checkSelfPermission 标准模式, 不穿透自定义 helper)
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-            == PackageManager.PERMISSION_GRANTED
-        ) {
-            NotificationManagerCompat.from(context)
-                .notify(CourseNotificationScheduler.NOTIFY_DAILY, notif)
-        }
+                CourseNotificationScheduler.NOTIFY_DAILY
+            },
+            notif
+        )
     }
 }
 

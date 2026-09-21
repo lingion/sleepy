@@ -376,6 +376,11 @@
             android:name=".widget.notification.DailyNotifyReceiver"
             android:exported="false" />
 
+        <!-- Previous-evening course summary alarm target -->
+        <receiver
+            android:name=".widget.notification.TomorrowNotifyReceiver"
+            android:exported="false" />
+
         <!-- Widget course-boundary refresh alarm target (design §5) -->
         <receiver
             android:name=".widget.WidgetBoundaryReceiver"

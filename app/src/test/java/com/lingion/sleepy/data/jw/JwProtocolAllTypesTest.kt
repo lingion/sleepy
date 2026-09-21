@@ -19,6 +19,13 @@ class JwProtocolAllTypesTest {
     }
 
     @Test
+    fun `ALL_TYPES contains cf_new`() {
+        assertTrue(JwProtocol.ALL_TYPES.contains(JwProtocol.TYPE_CF_NEW))
+        assertEquals("青果教务（新版）", JwProtocol.displayName(JwProtocol.TYPE_CF_NEW))
+        assertEquals("cf", JwProtocol.category(JwProtocol.TYPE_CF_NEW))
+    }
+
+    @Test
     fun `ALL_TYPES contains hnust and hniu`() {
         assertTrue(JwProtocol.ALL_TYPES.contains(JwProtocol.TYPE_HNUST))
         assertTrue(JwProtocol.ALL_TYPES.contains(JwProtocol.TYPE_HNIU))

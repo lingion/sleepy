@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import android.Manifest
+import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -38,7 +39,6 @@ import androidx.compose.material3.TimePicker
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.RadioButton
@@ -61,14 +61,163 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
+import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 import com.lingion.sleepy.util.AppPrefs
+import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.widget.WidgetTableResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import java.time.LocalDate
+import java.time.LocalTime
+import java.time.format.DateTimeFormatter
+
+private enum class DailyReminderTimeTarget { Today, Tomorrow }
+
+/** 真实课表存在时，提醒设置页用来生成示例的最小数据集。 */
+private data class ReminderSchedulePreview(
+    val today: ReminderDayPreview,
+    val tomorrow: ReminderDayPreview,
+    val nextClass: ReminderCoursePreview?
+)
+
+private data class ReminderDayPreview(
+    val date: LocalDate,
+    val courses: List<CourseEntity>,
+    val firstCourse: ReminderCoursePreview?
+)
+
+private data class ReminderCoursePreview(
+    val date: LocalDate,
+    val course: CourseEntity,
+    val startTime: String
+)
+
+private suspend fun loadReminderSchedulePreview(): ReminderSchedulePreview? = withContext(Dispatchers.IO) {
+    val table = runCatching { WidgetTableResolver.resolveCurrentTable() }.getOrNull() ?: return@withContext null
+    val allCourses = runCatching {
+        SleepyApp.get().repository.getCourses(table.id)
+    }.getOrNull()?.takeIf { it.isNotEmpty() } ?: return@withContext null
+    val nodes = TimeTableUtils.parseNodes(table.timeJson)
+    val today = LocalDate.now()
+
+    fun coursesOn(date: LocalDate): List<CourseEntity> {
+        if (DateUtils.semesterStatus(table.startDate, table.maxWeek, date) != DateUtils.SemesterStatus.IN_RANGE) {
+            return emptyList()
+        }
+        val week = DateUtils.currentWeek(table.startDate, date)
+        return allCourses
+            .filter { it.day == DateUtils.todayDayOfWeek(date) && it.inWeek(week) }
+            .sortedWith(compareBy<CourseEntity> { courseStartTime(it, nodes) ?: LocalTime.MAX }.thenBy { it.startNode })
+    }
+
+    fun dayPreview(date: LocalDate): ReminderDayPreview {
+        val courses = coursesOn(date)
+        val first = courses.firstOrNull()?.let { course ->
+            ReminderCoursePreview(
+                date = date,
+                course = course,
+                startTime = courseStartTime(course, nodes)?.format(PREVIEW_TIME_FORMAT) ?: "--:--"
+            )
+        }
+        return ReminderDayPreview(date = date, courses = courses, firstCourse = first)
+    }
+
+    var nextClass: ReminderCoursePreview? = null
+    val searchDays = table.maxWeek.coerceAtLeast(1) * 7 + 7
+    for (offset in 0..searchDays) {
+        val date = today.plusDays(offset.toLong())
+        val candidate = coursesOn(date)
+            .mapNotNull { course ->
+                val start = courseStartTime(course, nodes) ?: return@mapNotNull null
+                if (offset == 0 && !start.isAfter(LocalTime.now())) return@mapNotNull null
+                ReminderCoursePreview(date, course, start.format(PREVIEW_TIME_FORMAT))
+            }
+            .minByOrNull { it.startTime }
+        if (candidate != null) {
+            nextClass = candidate
+            break
+        }
+    }
+
+    ReminderSchedulePreview(
+        today = dayPreview(today),
+        tomorrow = dayPreview(today.plusDays(1)),
+        nextClass = nextClass
+    )
+}
+
+private fun courseStartTime(course: CourseEntity, nodes: List<TimeTableUtils.NodeTime>): LocalTime? {
+    if (course.ownTime && course.startTime.isNotBlank()) {
+        return runCatching {
+            LocalTime.parse(course.startTime, DateTimeFormatter.ofPattern("H:mm"))
+        }.getOrNull()
+    }
+    return nodes.find { it.node == course.startNode }?.start
+}
+
+private val PREVIEW_TIME_FORMAT: DateTimeFormatter = DateTimeFormatter.ofPattern("HH:mm")
+
+private fun buildDailyPreviewText(
+    context: Context,
+    day: ReminderDayPreview,
+    dateLabelRes: Int
+): String {
+    val dateLabel = context.getString(
+        dateLabelRes,
+        DateUtils.shortDateSlash(day.date),
+        DateUtils.localizedDay(day.date.dayOfWeek.value, context)
+    )
+    val first = day.firstCourse ?: return context.getString(
+        R.string.reminder_daily_preview_dynamic_no_course,
+        dateLabel
+    )
+    val courseName = first.course.courseName.ifBlank { context.getString(R.string.default_course_name) }
+    val room = first.course.room.ifBlank { context.getString(R.string.notif_room_unknown) }
+    val teacher = first.course.teacher.trim().takeIf { it.isNotEmpty() }?.let {
+        context.getString(R.string.reminder_preview_teacher, it)
+    }.orEmpty()
+    return context.getString(
+        R.string.reminder_daily_preview_dynamic,
+        dateLabel,
+        day.courses.size,
+        courseName,
+        first.startTime,
+        room,
+        teacher
+    )
+}
+
+private fun buildBeforeClassPreviewText(
+    context: Context,
+    preview: ReminderSchedulePreview
+): String {
+    val next = preview.nextClass ?: return context.getString(R.string.reminder_before_class_preview_dynamic_no_course)
+    val dateLabel = context.getString(
+        R.string.reminder_preview_date,
+        DateUtils.shortDateSlash(next.date),
+        DateUtils.localizedDay(next.date.dayOfWeek.value, context)
+    )
+    val courseName = next.course.courseName.ifBlank { context.getString(R.string.default_course_name) }
+    val room = next.course.room.ifBlank { context.getString(R.string.notif_room_unknown) }
+    val teacher = next.course.teacher.trim().takeIf { it.isNotEmpty() }?.let {
+        context.getString(R.string.reminder_preview_teacher, it)
+    }.orEmpty()
+    return context.getString(
+        R.string.reminder_before_class_preview_dynamic,
+        dateLabel,
+        courseName,
+        next.startTime,
+        room,
+        teacher
+    )
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -78,15 +227,34 @@ fun ReminderScreen(onBack: () -> Unit) {
 
     var masterEnabled by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
     var dailyEnabled by remember { mutableStateOf(AppPrefs.isDailyReminderEnabled(context)) }
+    var todayEnabled by remember { mutableStateOf(AppPrefs.isTodayReminderEnabled(context)) }
     var dailyTime by remember { mutableStateOf(AppPrefs.getDailyReminderTime(context)) }
+    var tomorrowEnabled by remember { mutableStateOf(AppPrefs.isTomorrowReminderEnabled(context)) }
+    var tomorrowTime by remember { mutableStateOf(AppPrefs.getTomorrowReminderTime(context)) }
     var beforeClassEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassEnabled(context)) }
     var beforeClassMinutes by remember { mutableStateOf(AppPrefs.getBeforeClassMinutes(context)) }
-    var showTimePicker by remember { mutableStateOf(false) }
+    var timePickerTarget by remember { mutableStateOf<DailyReminderTimeTarget?>(null) }
     var minutesInput by remember { mutableStateOf(beforeClassMinutes.toString()) }
     var fluidEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassFluidEnabled(context)) }
     var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
+    var schedulePreview by remember { mutableStateOf<ReminderSchedulePreview?>(null) }
+
+    // 示例只读取当前课表，不参与提醒调度；无可分析课表时保留资源中的通用示例。
+    LaunchedEffect(Unit) {
+        schedulePreview = loadReminderSchedulePreview()
+    }
+
+    val todayPreviewText = schedulePreview?.let {
+        buildDailyPreviewText(context, it.today, R.string.reminder_preview_today_date)
+    } ?: stringResource(R.string.reminder_daily_preview)
+    val tomorrowPreviewText = schedulePreview?.let {
+        buildDailyPreviewText(context, it.tomorrow, R.string.reminder_preview_tomorrow_date)
+    } ?: stringResource(R.string.reminder_tomorrow_preview)
+    val beforeClassPreviewText = schedulePreview?.let {
+        buildBeforeClassPreviewText(context, it)
+    } ?: stringResource(R.string.reminder_before_class_preview)
 
     // debounce：分钟输入停止 500ms 后才持久化并重排提醒，
     //   避免每敲一键就触发一次全量 cancelAll + scheduleAll（查库 + 重排全部闹钟）。
@@ -217,35 +385,32 @@ fun ReminderScreen(onBack: () -> Unit) {
 
             // Sub-settings — only visible when master is on
             if (masterEnabled) {
-                // Daily reminder
+                // Daily reminder — single card with parent switch in header + expandable sub items
                 item {
                     ReminderCard {
                         Row(
                             modifier = Modifier.fillMaxWidth().padding(4.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                                IconBox(icon = Icons.Outlined.AccessTime, color = colors.primary)
-                                Spacer(modifier = Modifier.size(12.dp))
-                                Column {
-                                    Text(
-                                        text = stringResource(R.string.reminder_daily_title),
-                                        style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
-                                        color = colors.onSurface
-                                    )
-                                    Text(
-                                        text = stringResource(R.string.reminder_daily_sub),
-                                        style = MaterialTheme.typography.bodySmall,
-                                        color = colors.onSurfaceVariant
-                                    )
-                                }
+                            IconBox(icon = Icons.Outlined.AccessTime, color = colors.primary)
+                            Spacer(modifier = Modifier.size(12.dp))
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.reminder_daily_title),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    color = colors.onSurface
+                                )
+                                Text(
+                                    text = stringResource(R.string.reminder_daily_sub),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant
+                                )
                             }
                             Switch(
                                 checked = dailyEnabled,
-                                onCheckedChange = { on ->
-                                    dailyEnabled = on
-                                    AppPrefs.setDailyReminderEnabled(context, on)
+                                onCheckedChange = { enabled ->
+                                    dailyEnabled = enabled
+                                    AppPrefs.setDailyReminderEnabled(context, enabled)
                                     SleepyApp.get().notificationScheduler.scheduleAll()
                                 },
                                 colors = SwitchDefaults.colors(
@@ -257,32 +422,48 @@ fun ReminderScreen(onBack: () -> Unit) {
 
                         if (dailyEnabled) {
                             SubDivider()
-                            // Time picker row
-                            Row(
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .noRippleClickable { showTimePicker = true }
-                                    .padding(vertical = 12.dp, horizontal = 4.dp),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
-                            ) {
-                                Text(
-                                    text = stringResource(R.string.reminder_daily_time_label),
-                                    style = MaterialTheme.typography.bodyMedium,
-                                    color = colors.onSurface
-                                )
-                                Text(
-                                    text = dailyTime,
-                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
-                                    color = colors.primary
-                                )
-                            }
-                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_daily_today_toggle_title),
+                                subtitle = stringResource(R.string.reminder_daily_today_toggle_sub),
+                                checked = todayEnabled,
+                                onCheckedChange = { enabled ->
+                                    todayEnabled = enabled
+                                    AppPrefs.setTodayReminderEnabled(context, enabled)
+                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                }
+                            )
+                            ReminderTimeRow(
+                                label = stringResource(R.string.reminder_daily_time_label),
+                                time = dailyTime,
+                                onClick = { timePickerTarget = DailyReminderTimeTarget.Today }
+                            )
                             Text(
-                                text = stringResource(R.string.reminder_daily_preview),
+                                text = todayPreviewText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant,
-                                modifier = Modifier.padding(start = 52.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
+                                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp, end = 4.dp)
+                            )
+                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_tomorrow_toggle_title),
+                                subtitle = stringResource(R.string.reminder_tomorrow_toggle_sub),
+                                checked = tomorrowEnabled,
+                                onCheckedChange = { enabled ->
+                                    tomorrowEnabled = enabled
+                                    AppPrefs.setTomorrowReminderEnabled(context, enabled)
+                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                }
+                            )
+                            ReminderTimeRow(
+                                label = stringResource(R.string.reminder_tomorrow_time_label),
+                                time = tomorrowTime,
+                                onClick = { timePickerTarget = DailyReminderTimeTarget.Tomorrow }
+                            )
+                            Text(
+                                text = tomorrowPreviewText,
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.padding(start = 4.dp, top = 4.dp, bottom = 8.dp, end = 4.dp)
                             )
                         }
                     }
@@ -368,7 +549,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                             }
                             SubDivider()
                             Text(
-                                text = stringResource(R.string.reminder_before_class_preview),
+                                text = beforeClassPreviewText,
                                 style = MaterialTheme.typography.bodySmall,
                                 color = colors.onSurfaceVariant,
                                 modifier = Modifier.padding(start = 52.dp, top = 8.dp, bottom = 8.dp, end = 4.dp)
@@ -467,16 +648,20 @@ fun ReminderScreen(onBack: () -> Unit) {
         }
     }
 
-    // Time picker dialog
-    if (showTimePicker) {
-        val parts = dailyTime.split(":")
+    // The same picker edits either daily-summary time without duplicating its behavior.
+    timePickerTarget?.let { target ->
+        val selectedTime = when (target) {
+            DailyReminderTimeTarget.Today -> dailyTime
+            DailyReminderTimeTarget.Tomorrow -> tomorrowTime
+        }
+        val parts = selectedTime.split(":")
         val timeState = rememberTimePickerState(
-            initialHour = parts.getOrNull(0)?.toIntOrNull() ?: 7,
+            initialHour = parts.getOrNull(0)?.toIntOrNull() ?: if (target == DailyReminderTimeTarget.Today) 7 else 22,
             initialMinute = parts.getOrNull(1)?.toIntOrNull() ?: 0,
             is24Hour = true
         )
         AlertDialog(
-            onDismissRequest = { showTimePicker = false },
+            onDismissRequest = { timePickerTarget = null },
             title = { Text(stringResource(R.string.reminder_pick_time)) },
             text = {
                 androidx.compose.foundation.layout.Column(verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)) {
@@ -489,13 +674,22 @@ fun ReminderScreen(onBack: () -> Unit) {
                         onConfirm = {
                             val h = String.format("%02d", timeState.hour)
                             val m = String.format("%02d", timeState.minute)
-                            dailyTime = "$h:$m"
-                            AppPrefs.setDailyReminderTime(context, dailyTime)
+                            val newTime = "$h:$m"
+                            when (target) {
+                                DailyReminderTimeTarget.Today -> {
+                                    dailyTime = newTime
+                                    AppPrefs.setDailyReminderTime(context, newTime)
+                                }
+                                DailyReminderTimeTarget.Tomorrow -> {
+                                    tomorrowTime = newTime
+                                    AppPrefs.setTomorrowReminderTime(context, newTime)
+                                }
+                            }
                             SleepyApp.get().notificationScheduler.scheduleAll()
-                            showTimePicker = false
+                            timePickerTarget = null
                         },
                         dismissText = stringResource(R.string.action_cancel),
-                        onDismiss = { showTimePicker = false }
+                        onDismiss = { timePickerTarget = null }
                     )
                 }
             },
@@ -503,6 +697,26 @@ fun ReminderScreen(onBack: () -> Unit) {
             dismissButton = {},
             titleContentColor = colors.onSurface,
             textContentColor = colors.onSurfaceVariant
+        )
+    }
+}
+
+@Composable
+private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
+    val colors = SleepyTheme.colors
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .noRippleClickable(onClick = onClick)
+            .padding(vertical = 12.dp, horizontal = 4.dp),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Text(label, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
+        Text(
+            text = time,
+            style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.Medium),
+            color = colors.primary
         )
     }
 }

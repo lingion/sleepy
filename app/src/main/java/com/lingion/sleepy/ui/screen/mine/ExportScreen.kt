@@ -310,8 +310,10 @@ fun ExportScreen(
                                         table.name, table.startDate, table.maxWeek, table.nodesPerDay,
                                         table.timeJson, courses,
                                         // issue#40 §6: 绑定了独立时间节次表时携带 P 区块(共享关系可往返)
-                                        periodTable = state.effectivePeriodTable
-                                            ?.takeIf { table.periodTableId == it.id }
+                                        periodTable = state.tables
+                                            .firstOrNull { it.id == table.id }
+                                            ?.periodTableId
+                                            ?.let { boundId -> allPeriodTables.find { it.id == boundId } }
                                             ?.let {
                                                 SleepyNativeExporter.PeriodTableExport(
                                                     id = it.id, name = it.name,

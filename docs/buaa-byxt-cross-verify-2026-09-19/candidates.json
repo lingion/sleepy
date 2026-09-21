@@ -1,0 +1,102 @@
+[
+  {
+    "repo": "fontlos/buaa-api",
+    "license": "MIT",
+    "language": "Rust",
+    "endpoint_evidence": "/jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do",
+    "role": "endpoint 存在性 + body 形态 (campusCode=\"\" 直传, 不走 getMyScheduledCampus.do)"
+  },
+  {
+    "repo": "BUAASubnet/UBAA",
+    "license": "MIT",
+    "language": "Kotlin",
+    "stars": 245,
+    "endpoint_evidence": "/jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do",
+    "role": "协议层 + schedule 端点对照 (Android 客户端实锤)"
+  },
+  {
+    "repo": "CoolwindHF/buaa2wakeup",
+    "license": "MIT",
+    "language": "Python",
+    "endpoint_evidence": "本科 jwapp homeapp 课表格式",
+    "role": " WakeUp 导出格式对照, 印证 arrangedList 字段形态"
+  },
+  {
+    "repo": "awesome-buaa-cs/buaa-curriculum",
+    "license": null,
+    "language": "Markdown",
+    "endpoint_evidence": "API.md 文档化同一 endpoint",
+    "role": "endpoint 形态旁证"
+  },
+  {
+    "repo": "cantBeFoundGroup/OpenBUAA",
+    "license": null,
+    "language": "Python",
+    "endpoint_evidence": "AasApi 封装形态",
+    "role": "AasApi 适配旁证"
+  },
+  {
+    "repo": "el-ev/BUAA-ics-gen",
+    "license": "MIT",
+    "language": "Python",
+    "endpoint_evidence": "titleDetail[] 周数串提取",
+    "role": "titleDetail 周数提取参考"
+  },
+  {
+    "repo": "Krignd/KAgenda",
+    "license": null,
+    "language": "Kotlin",
+    "endpoint_evidence": "WebScheduleEngine + cellDetail 解析",
+    "role": "cellDetail 解析对照 (Android Kotlin 形态)"
+  },
+  {
+    "repo": "Yiki21/iclass_buaa_tui",
+    "license": "GPL-3.0",
+    "language": "Rust",
+    "stars": 13,
+    "endpoint_evidence": "/jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do",
+    "role": "getMyScheduleDetail 字段集确认 (Rust TUI 与 Kotlin 仓交叉印证)"
+  },
+  {
+    "repo": "Lidozs55/BUAAer-Smart-Schedule-on-electron",
+    "license": null,
+    "language": "Vue",
+    "endpoint_evidence": "teachingSchedule 端点对照",
+    "role": "Electron 桌面端形态旁证"
+  },
+  {
+    "repo": "WhXcjm/buaa-byxt-aischedule",
+    "license": "GPL-3.0",
+    "language": "JavaScript",
+    "endpoint_evidence": "parser.js 小爱适配形态",
+    "role": "小爱 parser 字段解析对照"
+  },
+  {
+    "repo": "MeanZhang/buaa-ai-schedule",
+    "license": "MIT",
+    "language": "JavaScript",
+    "endpoint_evidence": "archived, 本科老版形态",
+    "role": "本科老版 形态旁证"
+  },
+  {
+    "repo": "Alyssumira/BUAA-Schedule",
+    "license": "MIT",
+    "language": "Kotlin",
+    "endpoint_evidence": "cellDetail 教师周次 + titleDetail 上课地点",
+    "role": "双字段形态参考 (cellDetail 教师周次 / titleDetail 地点)"
+  },
+  {
+    "repo": "lyy1119/BuaaScheduleRender",
+    "license": "MIT",
+    "language": "Go",
+    "endpoint_evidence": "GSMIS (gsmis.buaa.edu.cn) 周次位图",
+    "role": "研究生系统周次形态参考 (GSMIS 本身不在本任务 scope, 仅算法形态借鉴)"
+  },
+  {
+    "repo": "zjafb/BUAA-Hangzhou-Schedule",
+    "license": "MIT",
+    "language": "JavaScript",
+    "endpoint_evidence": "BUAASubnet/UBAA fork, 杭州国际校区形态",
+    "role": "UBAA fork, 杭州校区旁证 (证明同协议覆盖多校区)"
+  }
+]

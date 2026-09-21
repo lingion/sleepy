@@ -46,6 +46,7 @@
     <string name="schedule_share_table">時間割を共有</string>
     <string name="exit_press_back_again">もう一度戻るボタンを押すと終了します</string>
     <string name="schedule_current_week">第 %1$d 週</string>
+    <string name="schedule_nearest_busy_day">直近の授業日</string>
     <string name="schedule_no_course_today">今日は授業がありません</string>
 
     <string name="import_title">時間割・時程表をインポート</string>
@@ -252,6 +253,13 @@
     <string name="meeting_slots">時限</string>
     <string name="meeting_slots_sub">任意の数の時限を追加できます。各時限で複数の曜日を選択可能</string>
     <string name="slot_n">時限 %1$d</string>
+    <string name="slot_summary_week_single">第%1$d週</string>
+    <string name="slot_summary_week_range">第%1$d～%2$d週</string>
+    <string name="slot_summary_period_single">%1$d限</string>
+    <string name="slot_summary_period_range">%1$d～%2$d限（全%3$d限）</string>
+    <string name="slot_summary_time_range">%1$s～%2$s</string>
+    <string name="slot_summary_teacher">担当：%1$s</string>
+    <string name="slot_summary_room">教室：%1$s</string>
     <string name="slot_week_range">週範囲</string>
     <string name="slot_week_order">コマ %1$d の開始週は終了週より後にはできません</string>
     <string name="apply_to_all_slots">すべてのコマに適用</string>
@@ -286,7 +294,6 @@
     <string name="fix_issues_first">最初にこれらの問題を修正してください</string>
     <string name="more_unexpanded">他に %1$d 件あります</string>
     <string name="create_course_btn">作成</string>
-    <string name="selected_days">選択中：%1$s</string>
     <string name="time_format_hint">形式 HH:mm</string>
 
     <string name="mine_title">マイ</string>
@@ -545,7 +552,7 @@
 
 跨校基盤的プロジェクト:WakeUp Schedule (YZune, Apache-2.0) および WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) — 12 種類の教育システムパーサー(強智系・旧正方・URP・青果・湖南科技大学等)と中間データ構造のリファレンス実装;WakeupSchedule_Kotlin (Apache-2.0) クラシック金智 EAMS;cqu.js(時光課程表重慶大学アダプタ)重慶大学ポータル REST;shiguang_warehouse (XingHeYuZhuan, MIT) 武漢理工大学 kcbcxby・クラシック EAMS・新正方グリッドビュー;zfn_api (openschoolcn, MPL-2.0) と FlowCourse (jiaweiyaya, GPL-3.0) 新正方 kbList 形式のクロスバリデーション;iwut (TokenTeam, AGPL-3.0、プロトコル形式のみ参考) 武漢理工大学のコマ割りマッピング;「上课」shangkeschedule (qiqqqqq517, Apache-2.0) と WakeUp Schedule 学校登録データは、リスト照合に活用。
 
-単校プロジェクト（1 校 1 カード、展開で明細）—— 合肥工業大学 HFUT:HFUT-Schedule (Chiu-xaH, MIT)、HfutOpenApi (BoynChan, MIT)、hfut_schedule_hacker (Aoi-cn)、django-hfut-auth (elonzh, MIT)、hfut-api (hfut-soft-ware)、hfut-api (SnowingFox)、hfut_api_service (onlineG2)、HFUTer (BrikerMan)、HFUTICS (ssyu0808)、AiSchedule-for-hfut (imnuke, GPL-3.0)、AISchedule (HualiNox)、classduck (luyishui);東南大学 SEU:SEUTimetable (sakimidare, Apache-2.0)、Aetik-yue/hormone、luzy99/SEUAutoLogin;浙江大学 ZJU:zju-ical-py (Xecades, LGPL-2.1);中国科学技術大学 USTC:USTC-timetable-to-ics (1970633640)、ustc-course-timetable (HowardZorn, GPL-3.0)、ustc-timetable (kirsh1, AGPL-3.0);四川大学 SCU:ScuTimetable (Z-P-J);東北部大学 NEU:neu_wisedu2wakeup (CreamPig233)、PopulusYang/NeuTimetable、neucn/elise、RekaYOO/NEU-JWXT-Toolkit、PeterPtroc/neu-jwxt-to-wakeup、leavesvv-source/NEU-Timetable;重慶大学 CQU:321CQU/pymycqu、BillYang2016/CQU-class2ics、haowang02/CourseMonitor、LengerHu/CQU_classtabletoics、Hagb/cqu_timetable_new、VayneDuan/CQU-Grade-Monitor、weearc/cm-http-api、barryZZJ/course_to_calander_converter;武漢理工大学 WHUT:courseTable (acm910);電子科技大学 UESTC:MilLoong/UESTC-EAMS-Helper-App、MilLoong/UESTC-EAMS-Helper-Python、KaranocaVe/UESTCJWCWatchdog、whtsky/uestc-eams-cleartimeout-userscript、Sunmxt/UESTC-EAMS;広東工業大学 GDUT:N0tExpectErr0r/GDUT-ClassTimeTable、Richard-Zheng/GDUT-Schedule-ng、StarArchive/gdut-course-frontend、StarArchive/gdut-course-backend、HoneQ7/GDUT_iOS_Timetable;広東財経大学 GDUFE:jkgeekJack/Android-GDUFE-JWC-SDK-1.0.0、Kiteio/GDUFE-wrapper;広東金融学院 GDUf:Kiteio/Punica、gduf-finmind;広東外語外貿大学 GDUFS:yongjianzheng/Gdufszhushou、Crazioker/agency;広東医科大学 GDMU:ユーザー提供のキャプチャで zf_new プロトコル確定 (新正方 zftal-ui-v5 素 /kbcx/ パス)、docs/release-notes-v1.0.49.md 参照;長沙理工大学 CSUST:zHElEARN/CSUSTKit、CreaMakers/EduSpider、timeisthe/CSUSTDataGet、Julius-lq/EduAdminSystem、JS-CAUTION/csust-course-schedule;北京郵電大学 BUPT:helium777/bupt-course-grab、JmPotato/BUPT-Grader、Seizzzz/Auto-Login-BUPT;北京大学 PKU:zhongxinghong/PKUAutoElective、thezzisu/pku-elective、Hovennnnn/PKUAutoElective2023、Lihhan/AutoElective_4_PKU、AuYang261/PKU_Elective_Toolset;北京化工大学 BUCT:MarkYangKp/ZhengFangJY;中国科学院大学 UCAS:ldiex/UCAS_Course_Schedule_Convertor (Python, 13 節次 + 選課周次マッピング)、Hurray0/UCAS_GET_Course (Python, xkgo.ucas.ac.cn 選課取得スクリプト)、cld378632668/ucas_course_tool (Java, UCAS コースユーティリティ)、GentleCP/UCAS-Helper (TypeScript, UCAS コース/成績ヘルパー)、wirsbf/TraintimePda-UCAS (Dart, SEP ログインチェーンの CDP 取得 2026-09: 303 チェーン + JSESSIONID 単一 cookie + slogin RSA フォーム)、tbjuechen/sep-api (Python MIT, 非公式 SEP API クライアント);北京航空航天大学 BUAA:APassbyDreg/BUAA_JW_Utils (Python 工具集, ieas2.1 选课 + 评教 URL 锚点)、SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend (Python, jwxt-7001.e2.buaa.edu.cn/ieas2.1/kbcx/queryGrkb 课表 endpoint 实锤)、fondoger/buaa-teacher-evaluation (MIT, 一键评教 sso.buaa.edu.cn CAS)、Cauchy1412/BUAAGetCourse (Python 抢课脚本)、KKRainbow/JWOneShotEval (PHP, 校内 IP 锚点等价);北京林業大学 BJFU:Bloomberg2000/bjfu_course_ics_generator、Bloomberg2000/bjfu_util.py;安徽大学 AHU:Tonyseth/AHU_JW_GPA_Calculator、Ahu_Plus (abydym, GPL-3.0);東北林業大学 NEFU:bboy-xp/nefu-crawler、heyMahalo/crouse_select;東華大学 DHU:tk.dcmmcc、Bad-086/DHU_CourseMonitor;雲南財経大学 YNUFE:NINIYOYYO/ynufe-campus-app、MiaoWuNYA/ynufeRealLogin;北京理工大学 BIT:BIT-Login (BIT101-dev);北京信息科技大学 BISTU:iBistu (ProjektMing);安徽建築大学 AHU-JZ:JdaAssist (CH4019, MIT);重慶邮电大学移通学院 CQYTU:CQYTZFCheckScores (xM3GAN, Apache-2.0);華南農業大学 SCAU:ScheduleXParser_SCAU (greyovo);斉魯工業大学 QLU:JW-spider (Zhy423310825);渤海大学 BHU:BohaiServiceDome (joun233);東北石油大学 NEPU:WeNEPU (cutiechi);南京理工大学 NUST:HeraldStudentCurriculum (idailylife);北京交通大学 BJTU:bjtu_mis_Android (wan300, MIT);BJTU-MIS-HarmonyOS (Anyes666, MIT);BJTUselfService (HFDLYS, MIT);bjtu-cli (fish2lab);BJTUselfService-macOS (fish2lab);BJTU-course-assistant (s1y4x1);ZiuChen/userscript (MIT);BJTU-iCalendar-Generator (ymzhang-cs, MIT);bjtu-timetable (Moliseeee);BJTU-course-autoget-program (hyskr);BjtuCoursePlatform (57Darling02);bjtuDean (jlytwhx, MIT);bjtubox_python (jlytwhx);Campus-Mate (Orien233);BJTU-STU-MCP (ymzhang-cs);CourseRobber (xschur);Futuremind-BJTU;BJTU_ezRate (Yukikasu, MIT);bjtu_teaching_assessment (xxxand, MIT);BJTU-script (Coconut00);BJTU-CC (aooxin);CourseTable (etherealviator, MIT);ZF-Assistant (mcdona1d);Greasy Fork 430918 北交大iCalender课表生成;江蘇海洋大学 JOU:醬海帯 jianghaidai (sunjingquan, クローズドソース参考, プロトコル分析のみ)、JOU-Campus-Guide (sunjingquan)、jou_course_bot (brodamndamn)、Wehhit-server (dengjj)、Wehhit (zqy1)、Grain (LeeReindeer, GPL-3.0)、家計簿 finance (GeorgeLeoo)、finance-server (GeorgeLeoo)、JStore (GeorgeLeoo)、RSSHub jou ルート (RSSHub, MIT)。燕山大学 YSU / boya_pp: LzBsA (github.com/LzBsA, 元のプロトコル対応)、qnxg/hnu_query (AGPL-3.0)、qnxg/weihuda_backend (qnxg)、heriec/suda-yjs-shedule (heriec)、dlutor/chaoxingbook (MIT)。西南交通大學 SWJTU：AmaneSuzuha000/SWJTU_Login (YHXT CAS + ytoken cookie + common API 直接證據)、1-nuo/swjtu-course-grabber (ytoken 请求头 + JWT sub 學號 + SM2 選課加密)、Arex-lbb/auto-course-grabber (JWT + SM2 + A0422 失效碼)、1837634311/SWJTU-Course-Management-Script (GPL-3.0, TMS/vatuu 反向證據)、HackSwjtu/Postime (MIT, 老教務網反向證據)、lpzams/swjtu-course-crawler (旧 vatuu 反向證據)、949144093/SWJTU-JiaoWuAutoLogin (旧 vatuu 反向證據)、kakasearch/course_download (旧 vatuu 反向證據)、zx1411057234/VatuuSpider (旧 vatuu 反向證據)、kashaku/no-vatuu-evaluation (旧 vatuu 反向證據)、Joe-create-star/swjtu-dektx-reminder (MIT, OCW/YETHAN 多租戶旁證)。WakeUp protocol family cross-verification (2026-09): Dawn-Course (HF-CYGG, GPL-3.0), WakeUp_SHU (ershiyidian), CourseHelper (jiangyiqi99, GPL-3.0), aischedule-lit-kingosoft (icepie, MIT), XiaoAISchedule_hebust (web1n), ai-schedule-chaoxing (moeshin, MIT), tzvcst-schedule-chaoxing (Sittymin, AGPL-3.0), xiaoai-shuwei-course (ZKJJaker, negative evidence), jxufe-auto-evaluate (wzj1122, MIT), KINGOSOFT-LOGIN (52funny), xiaoaiSchedule (xiaxiaoyu8), mi-schedule (Kou-JunHao, MIT), AISchedule-xjsf (ltxhhz, MIT), AIScheduleSCAU (greyovo), MI_AI_Course_Schedule (ceresOPA), AISchedule-QiangZhi (MyLikeGirl), classpush (sungithub270, GPL-3.0), XiaoAiScheduleOfSUOT (trueWangSyutung), XiaoAiCurriculumSchedule (LukeJean), getICS (Konata09), WITClassScheduleToCalendar (DOROMOLLL, MIT), CrawlerCourseTable (canliture), SYU_KINGGOClassSel (XTAI9), hait_AICourseTable (zzzsq1), AIShedule_cqwu (cqwu-ehall, AGPL-3.0), WakeUpSchedule (Daydream357, MIT), shike-android (sw7943604-del), shiguang_Tester (XingHeYuZhuan, MIT), dutsso (yuanyuanzijin), pub-docs (zfman, Qingguo API docs), eduData-GoBack (huhu415)、SCAU-Grad-Automatically-Fill-Evaluation-Form-JS (jiefing, Gworkファミリーのコントロール命名の傍証), NUISTTable (zyc-816).</string>    <string name="about_license_detail">ライセンスと謝辞</string>
+単校プロジェクト（1 校 1 カード、展開で明細）—— 合肥工業大学 HFUT:HFUT-Schedule (Chiu-xaH, MIT)、HfutOpenApi (BoynChan, MIT)、hfut_schedule_hacker (Aoi-cn)、django-hfut-auth (elonzh, MIT)、hfut-api (hfut-soft-ware)、hfut-api (SnowingFox)、hfut_api_service (onlineG2)、HFUTer (BrikerMan)、HFUTICS (ssyu0808)、AiSchedule-for-hfut (imnuke, GPL-3.0)、AISchedule (HualiNox)、classduck (luyishui);東南大学 SEU:SEUTimetable (sakimidare, Apache-2.0)、Aetik-yue/hormone、luzy99/SEUAutoLogin;浙江大学 ZJU:zju-ical-py (Xecades, LGPL-2.1);中国科学技術大学 USTC:USTC-timetable-to-ics (1970633640)、ustc-course-timetable (HowardZorn, GPL-3.0)、ustc-timetable (kirsh1, AGPL-3.0);四川大学 SCU:ScuTimetable (Z-P-J);東北部大学 NEU:neu_wisedu2wakeup (CreamPig233)、PopulusYang/NeuTimetable、neucn/elise、RekaYOO/NEU-JWXT-Toolkit、PeterPtroc/neu-jwxt-to-wakeup、leavesvv-source/NEU-Timetable;重慶大学 CQU:321CQU/pymycqu、BillYang2016/CQU-class2ics、haowang02/CourseMonitor、LengerHu/CQU_classtabletoics、Hagb/cqu_timetable_new、VayneDuan/CQU-Grade-Monitor、weearc/cm-http-api、barryZZJ/course_to_calander_converter;武漢理工大学 WHUT:courseTable (acm910);電子科技大学 UESTC:MilLoong/UESTC-EAMS-Helper-App、MilLoong/UESTC-EAMS-Helper-Python、KaranocaVe/UESTCJWCWatchdog、whtsky/uestc-eams-cleartimeout-userscript、Sunmxt/UESTC-EAMS;広東工業大学 GDUT:N0tExpectErr0r/GDUT-ClassTimeTable、Richard-Zheng/GDUT-Schedule-ng、StarArchive/gdut-course-frontend、StarArchive/gdut-course-backend、HoneQ7/GDUT_iOS_Timetable;広東財経大学 GDUFE:jkgeekJack/Android-GDUFE-JWC-SDK-1.0.0、Kiteio/GDUFE-wrapper;広東金融学院 GDUf:Kiteio/Punica、gduf-finmind;広東外語外貿大学 GDUFS:yongjianzheng/Gdufszhushou、Crazioker/agency;広東医科大学 GDMU:ユーザー提供のキャプチャで zf_new プロトコル確定 (新正方 zftal-ui-v5 素 /kbcx/ パス)、docs/release-notes-v1.0.49.md 参照;長沙理工大学 CSUST:zHElEARN/CSUSTKit、CreaMakers/EduSpider、timeisthe/CSUSTDataGet、Julius-lq/EduAdminSystem、JS-CAUTION/csust-course-schedule;北京郵電大学 BUPT:helium777/bupt-course-grab、JmPotato/BUPT-Grader、Seizzzz/Auto-Login-BUPT;北京大学 PKU:zhongxinghong/PKUAutoElective、thezzisu/pku-elective、Hovennnnn/PKUAutoElective2023、Lihhan/AutoElective_4_PKU、AuYang261/PKU_Elective_Toolset;北京化工大学 BUCT:MarkYangKp/ZhengFangJY;中国科学院大学 UCAS:ldiex/UCAS_Course_Schedule_Convertor (Python, 13 節次 + 選課周次マッピング)、Hurray0/UCAS_GET_Course (Python, xkgo.ucas.ac.cn 選課取得スクリプト)、cld378632668/ucas_course_tool (Java, UCAS コースユーティリティ)、GentleCP/UCAS-Helper (TypeScript, UCAS コース/成績ヘルパー)、wirsbf/TraintimePda-UCAS (Dart, SEP ログインチェーンの CDP 取得 2026-09: 303 チェーン + JSESSIONID 単一 cookie + slogin RSA フォーム)、tbjuechen/sep-api (Python MIT, 非公式 SEP API クライアント);北京航空航天大学 BUAA:APassbyDreg/BUAA_JW_Utils (Python 工具集, ieas2.1 选课 + 评教 URL 锚点)、SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend (Python, jwxt-7001.e2.buaa.edu.cn/ieas2.1/kbcx/queryGrkb 课表 endpoint 实锤)、fondoger/buaa-teacher-evaluation (MIT, 一键评教 sso.buaa.edu.cn CAS)、Cauchy1412/BUAAGetCourse (Python 抢课脚本)、KKRainbow/JWOneShotEval (PHP, 校内 IP 錨点等価);BUAA byxt.buaa.edu.cn 2026-09-19 跨倉検証 (新增/復用):fontlos/buaa-api (Rust, MIT);BUAASubnet/UBAA (Kotlin, MIT, 245★, 協議層 + schedule 端點對照);CoolwindHF/buaa2wakeup (Python, MIT, 本科 jwapp 課表格式對照);awesome-buaa-cs/buaa-curriculum (API.md 旁證);cantBeFoundGroup/OpenBUAA (Python, AasApi 形態);el-ev/BUAA-ics-gen (Python, MIT, titleDetail 週數提取參考);Krignd/KAgenda (Kotlin, WebScheduleEngine 鉤子設計 + cellDetail 解析對照);Yiki21/iclass_buaa_tui (Rust, GPL-3.0, 13★, getMyScheduleDetail 欄位集確認);Lidozs55/BUAAer-Smart-Schedule-on-electron (Vue, teachingSchedule 端點對照);WhXcjm/buaa-byxt-aischedule (JS, GPL-3.0, 小愛適配 parser.js 教研形態);MeanZhang/buaa-ai-schedule (archived, MIT, 本科老版 形態旁證);Alyssumira/BUAA-Schedule (Kotlin, MIT, cellDetail 教師週次 + titleDetail 上課地點 雙形態參考);lyy1119/BuaaScheduleRender (Go, MIT, GSMIS 週次點陣圖算法參考);zjafb/BUAA-Hangzhou-Schedule (MIT, UBAA fork, 杭州キャンパス旁証);北京林業大学 BJFU:Bloomberg2000/bjfu_course_ics_generator、Bloomberg2000/bjfu_util.py;安徽大学 AHU:Tonyseth/AHU_JW_GPA_Calculator、Ahu_Plus (abydym, GPL-3.0);東北林業大学 NEFU:bboy-xp/nefu-crawler、heyMahalo/crouse_select;東華大学 DHU:tk.dcmmcc、Bad-086/DHU_CourseMonitor;雲南財経大学 YNUFE:NINIYOYYO/ynufe-campus-app、MiaoWuNYA/ynufeRealLogin;北京理工大学 BIT:BIT-Login (BIT101-dev);北京信息科技大学 BISTU:iBistu (ProjektMing);安徽建築大学 AHU-JZ:JdaAssist (CH4019, MIT);重慶邮电大学移通学院 CQYTU:CQYTZFCheckScores (xM3GAN, Apache-2.0);華南農業大学 SCAU:ScheduleXParser_SCAU (greyovo);斉魯工業大学 QLU:JW-spider (Zhy423310825);渤海大学 BHU:BohaiServiceDome (joun233);東北石油大学 NEPU:WeNEPU (cutiechi);南京理工大学 NUST:HeraldStudentCurriculum (idailylife);北京交通大学 BJTU:bjtu_mis_Android (wan300, MIT);BJTU-MIS-HarmonyOS (Anyes666, MIT);BJTUselfService (HFDLYS, MIT);bjtu-cli (fish2lab);BJTUselfService-macOS (fish2lab);BJTU-course-assistant (s1y4x1);ZiuChen/userscript (MIT);BJTU-iCalendar-Generator (ymzhang-cs, MIT);bjtu-timetable (Moliseeee);BJTU-course-autoget-program (hyskr);BjtuCoursePlatform (57Darling02);bjtuDean (jlytwhx, MIT);bjtubox_python (jlytwhx);Campus-Mate (Orien233);BJTU-STU-MCP (ymzhang-cs);CourseRobber (xschur);Futuremind-BJTU;BJTU_ezRate (Yukikasu, MIT);bjtu_teaching_assessment (xxxand, MIT);BJTU-script (Coconut00);BJTU-CC (aooxin);CourseTable (etherealviator, MIT);ZF-Assistant (mcdona1d);Greasy Fork 430918 北交大iCalender课表生成;江蘇海洋大学 JOU:醬海帯 jianghaidai (sunjingquan, クローズドソース参考, プロトコル分析のみ)、JOU-Campus-Guide (sunjingquan)、jou_course_bot (brodamndamn)、Wehhit-server (dengjj)、Wehhit (zqy1)、Grain (LeeReindeer, GPL-3.0)、家計簿 finance (GeorgeLeoo)、finance-server (GeorgeLeoo)、JStore (GeorgeLeoo)、RSSHub jou ルート (RSSHub, MIT)。燕山大学 YSU / boya_pp: LzBsA (github.com/LzBsA, 元のプロトコル対応)、qnxg/hnu_query (AGPL-3.0)、qnxg/weihuda_backend (qnxg)、heriec/suda-yjs-shedule (heriec)、dlutor/chaoxingbook (MIT)。西南交通大學 SWJTU：AmaneSuzuha000/SWJTU_Login (YHXT CAS + ytoken cookie + common API 直接證據)、1-nuo/swjtu-course-grabber (ytoken 请求头 + JWT sub 學號 + SM2 選課加密)、Arex-lbb/auto-course-grabber (JWT + SM2 + A0422 失效碼)、1837634311/SWJTU-Course-Management-Script (GPL-3.0, TMS/vatuu 反向證據)、HackSwjtu/Postime (MIT, 老教務網反向證據)、lpzams/swjtu-course-crawler (旧 vatuu 反向證據)、949144093/SWJTU-JiaoWuAutoLogin (旧 vatuu 反向證據)、kakasearch/course_download (旧 vatuu 反向證據)、zx1411057234/VatuuSpider (旧 vatuu 反向證據)、kashaku/no-vatuu-evaluation (旧 vatuu 反向證據)、Joe-create-star/swjtu-dektx-reminder (MIT, OCW/YETHAN 多租戶旁證)。WakeUp protocol family cross-verification (2026-09): Dawn-Course (HF-CYGG, GPL-3.0), WakeUp_SHU (ershiyidian), CourseHelper (jiangyiqi99, GPL-3.0), aischedule-lit-kingosoft (icepie, MIT), XiaoAISchedule_hebust (web1n), ai-schedule-chaoxing (moeshin, MIT), tzvcst-schedule-chaoxing (Sittymin, AGPL-3.0), xiaoai-shuwei-course (ZKJJaker, negative evidence), jxufe-auto-evaluate (wzj1122, MIT), KINGOSOFT-LOGIN (52funny), xiaoaiSchedule (xiaxiaoyu8), mi-schedule (Kou-JunHao, MIT), AISchedule-xjsf (ltxhhz, MIT), AIScheduleSCAU (greyovo), MI_AI_Course_Schedule (ceresOPA), AISchedule-QiangZhi (MyLikeGirl), classpush (sungithub270, GPL-3.0), XiaoAiScheduleOfSUOT (trueWangSyutung), XiaoAiCurriculumSchedule (LukeJean), getICS (Konata09), WITClassScheduleToCalendar (DOROMOLLL, MIT), CrawlerCourseTable (canliture), SYU_KINGGOClassSel (XTAI9), hait_AICourseTable (zzzsq1), AIShedule_cqwu (cqwu-ehall, AGPL-3.0), WakeUpSchedule (Daydream357, MIT), shike-android (sw7943604-del), shiguang_Tester (XingHeYuZhuan, MIT), dutsso (yuanyuanzijin), pub-docs (zfman, Qingguo API docs), eduData-GoBack (huhu415)、SCAU-Grad-Automatically-Fill-Evaluation-Form-JS (jiefing, Gworkファミリーのコントロール命名の傍証), NUISTTable (zyc-816); 4校プロトコル横断検証: dream2333/NWUPL-Pure-EMS、linling-zy/kust-schedule、3056810551/nuit-class-schedule。</string>    <string name="about_license_detail">ライセンスと謝辞</string>
     <string name="license_page_title">ライセンスと謝辞</string>
     <string name="license_gpl_section">ライセンス</string>
     <string name="license_gpl_body">Sleepy はオープンソースのスマート時間割アプリです。ソースコードは GNU General Public License v3.0 の下で公開されています。誰でも自由に使用、改変、配布できます。GitHub での貢献を歓迎します。</string>
@@ -624,25 +631,48 @@
     <string name="notif_channel_before_class">授業前リマインダー</string>
     <string name="notif_channel_before_class_desc">各授業の開始前に次の授業情報を通知します</string>
     <string name="notif_channel_daily">毎日の時間割リマインダー</string>
-    <string name="notif_channel_daily_desc">指定した時刻に毎日の授業サマリーを通知します</string>
+    <string name="notif_channel_daily_desc">指定した時刻に当日または翌日の授業サマリーを通知します</string>
     <string name="notif_channel_fluid">Fluid Cloud / Super Island</string>
     <string name="notif_channel_fluid_desc">授業前に展開可能なリアルタイム授業カードを表示</string>
     <string name="notif_daily_text_first">最初の授業：%1$s %2$s @ %3$s</string>
     <string name="notif_daily_text_no_course">ゆっくり休んで、一日を楽しんでください！</string>
     <string name="notif_daily_title">今日は %1$d 日、授業は %2$d コマです</string>
+    <string name="notif_tomorrow_title">明日は %1$d 日、授業は %2$d コマです</string>
     <string name="notif_daily_title_no_course">今日は %1$d 日、授業はありません</string>
+    <string name="notif_tomorrow_title_no_course">明日は %1$d 日、授業はありません</string>
+    <string name="notif_tomorrow_text_no_course">明日は授業がありません。ゆっくり休んでください!</string>
     <string name="notif_room_unknown">教室不明</string>
     <string name="reminder_banner_sub">通知バーに授業前のバナーを表示</string>
     <string name="reminder_banner_title">バナーリマインダー</string>
+    <string name="jw_error_dialog_title">インポート中に問題が発生しました</string>
+    <string name="jw_diag_export_btn">診断パッケージをエクスポート</string>
+    <string name="jw_diag_exporting">診断パッケージを生成中…</string>
+    <string name="jw_diag_export_saved">Download/Sleepy/教务日志/%1$s に保存しました</string>
+    <string name="jw_diag_export_failed">パッケージの生成に失敗: %1$s</string>
+    <string name="jw_diag_export_chooser">診断パッケージを共有</string>
     <string name="reminder_before_class_preview">例：次の授業 高等数学 08:00 @ 教学棟A101</string>
+    <string name="reminder_before_class_preview_dynamic">例：%1$s、次の授業は「%2$s」、%3$s、教室%4$s%5$s</string>
+    <string name="reminder_before_class_preview_dynamic_no_course">例：通知対象の授業はありません。</string>
     <string name="reminder_before_class_sub">各授業の開始前に次の授業情報をリマインド</string>
     <string name="reminder_before_class_title">授業前リマインダー</string>
     <string name="reminder_before_minutes_label">事前</string>
     <string name="reminder_before_minutes_unit">分</string>
     <string name="reminder_daily_preview">例：今日 15 日、授業は 3 コマ。最初の授業 高等数学 08:00 @ 教学棟A101</string>
-    <string name="reminder_daily_sub">指定した時刻に毎日の授業サマリーを通知</string>
-    <string name="reminder_daily_time_label">リマインダー時刻</string>
+    <string name="reminder_preview_today_date">今日 %1$s（%2$s）</string>
+    <string name="reminder_preview_tomorrow_date">明日 %1$s（%2$s）</string>
+    <string name="reminder_preview_date">%1$s（%2$s）</string>
+    <string name="reminder_preview_teacher">、担当：%1$s</string>
+    <string name="reminder_daily_preview_dynamic">例：%1$s、授業は%2$dコマ。最初の授業は「%3$s」、%4$s、教室%5$s%6$s</string>
+    <string name="reminder_daily_preview_dynamic_no_course">例：%1$s、授業はありません。</string>
+    <string name="reminder_daily_sub">毎日のサマリーと翌日のプレビューを設定</string>
+    <string name="reminder_daily_time_label">今日のサマリー時刻</string>
     <string name="reminder_daily_title">毎日リマインダー</string>
+    <string name="reminder_tomorrow_time_label">明日のプレビュー時刻</string>
+    <string name="reminder_tomorrow_preview">例：明日 16 日、授業は 3 コマ。最初の授業 高等数学 08:00 @ 教学棟A101</string>
+    <string name="reminder_daily_today_toggle_title">今日のサマリー</string>
+    <string name="reminder_daily_today_toggle_sub">指定時刻に今日の授業サマリーを通知</string>
+    <string name="reminder_tomorrow_toggle_title">明日のプレビュー</string>
+    <string name="reminder_tomorrow_toggle_sub">前夜に明日の授業サマリーを通知</string>
     <string name="reminder_fluid_field_name">授業名</string>
     <string name="reminder_fluid_field_room">教室</string>
     <string name="reminder_fluid_field_teacher">担当教員</string>
@@ -666,6 +696,8 @@
     <string name="today_semester_out_hint">学期範囲外のため、授業は参考です</string>
     <string name="settings_vert_punct">ウィジェット縦書き記号</string>
     <string name="settings_vert_punct_sub">ウィジェットでコマ名を縦書き表示する際、（）《》などを縦書き用の字形に置き換えます（実験的機能）</string>
+    <string name="settings_nearest_busy_day">授業がないとき直近の授業日を表示</string>
+    <string name="settings_nearest_busy_day_sub">今日の授業が終わったとき、アプリとウィジェットに直近の授業日を表示します</string>
     <string name="settings_widget">ウィジェット設定</string>
     <string name="settings_widget_colorless">ウィジェットの授業色を統一</string>
     <string name="settings_widget_colorless_sub">ウィジェットのコマ背景色だけを中立色に統一。アプリ内やカスタム色には影響しません</string>
@@ -780,7 +812,7 @@
     <string name="period_table_copy_dialog_title">時程表をコピー</string>
     <string name="period_table_name_label">時程表名</string>
     <string name="period_table_delete_confirm">時程表を削除</string>
-    <string name="period_table_delete_msg_body">時程表「%1$s」を削除しますか？この操作は取り消せます。</string>
+    <string name="period_table_delete_msg_body">時程表「%1$s」を削除しますか？</string>
     <string name="period_table_delete_blocked">%1$d 件の時間割が使用中です。先に切り替えてください</string>
     <string name="period_table_bind_label">時程表</string>
     <string name="period_table_unbound">未バインド（この時間割の時限を使用）</string>

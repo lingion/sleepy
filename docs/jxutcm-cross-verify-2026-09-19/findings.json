@@ -1,0 +1,50 @@
+[
+  {
+    "repo_name":"q1123421666/jxutcm",
+    "stars":0,
+    "default_branch":"master",
+    "license":null,
+    "license_source":null,
+    "relevant_files":[{"path":"README.md","purpose":"项目说明","lines_with_protocol":[]}],
+    "studentId_extraction_approach":null,
+    "exact_regex_or_code_snippet":null,
+    "verdict":"NEGATIVE",
+    "verdict_reason":"README 与根目录显示为合成大西瓜类 JavaScript 游戏，未见教务入口、课表端点或 NTSS 字段。"
+  },
+  {
+    "repo_name":"Wenswell/jxutcm-net-auto-click",
+    "stars":0,
+    "default_branch":"master",
+    "license":null,
+    "license_source":null,
+    "relevant_files":[{"path":"README.md","purpose":"校园网自动登录说明","lines_with_protocol":[]}],
+    "studentId_extraction_approach":null,
+    "exact_regex_or_code_snippet":null,
+    "verdict":"INDIRECT",
+    "verdict_reason":"项目确认与 JXUTCM/校园网络有关，但用途是校园网自动登录，不是教务课表协议；不能佐证 cf_new。"
+  },
+  {
+    "repo_name":"iihcy/JXUTCM_DAS",
+    "stars":0,
+    "default_branch":"master",
+    "license":null,
+    "license_source":null,
+    "relevant_files":[{"path":"Start_interface.py","purpose":"数据分析项目入口","lines_with_protocol":[]},{"path":"Second_interface.py","purpose":"数据分析项目入口","lines_with_protocol":[]}],
+    "studentId_extraction_approach":null,
+    "exact_regex_or_code_snippet":null,
+    "verdict":"NEGATIVE",
+    "verdict_reason":"根目录是 Python 数据分析/回归/聚类文件，未见教务登录、课表 API 或 NTSS 字段。"
+  },
+  {
+    "repo_name":"iihcy/JXUTCM_BestFeature",
+    "stars":0,
+    "default_branch":"master",
+    "license":null,
+    "license_source":null,
+    "relevant_files":[],
+    "studentId_extraction_approach":null,
+    "exact_regex_or_code_snippet":null,
+    "verdict":"NULL_EVIDENCE",
+    "verdict_reason":"仓库未提供 README，根目录为 Dermatology/Evaluation/RBuild/WYHXB 数据分析目录，未发现教务协议证据。"
+  }
+]

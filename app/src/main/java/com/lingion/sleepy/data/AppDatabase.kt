@@ -15,7 +15,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class],
-    version = 8,                            // 7 → 8: 独立时间节次表 (issue#40; v7 已被 issue#39 import_drafts 占用)
+    version = 9,                            // 8 → 9: C2 绑定前快照, 解绑恢复 (issue#40)
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

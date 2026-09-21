@@ -69,6 +69,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -1133,7 +1134,6 @@ private fun MeetingBlockEditor(
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
     val colors = SleepyTheme.colors
-    val context = LocalContext.current
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1161,19 +1161,18 @@ private fun MeetingBlockEditor(
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+            verticalAlignment = Alignment.Top
         ) {
-            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Column(
+                modifier = Modifier.weight(1f),
+                verticalArrangement = Arrangement.spacedBy(3.dp)
+            ) {
                 Text(
                     text = title,
                     style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                     color = colors.onSurface
                 )
-                Text(
-                    text = if (block.days.isEmpty()) stringResource(R.string.select_at_least_one_day) else stringResource(R.string.selected_days, block.days.sorted().joinToString(" / ") { DateUtils.localizedDay(it, context) }),
-                    style = MaterialTheme.typography.labelSmall,
-                    color = colors.onSurfaceVariant
-                )
+                MeetingBlockSummary(block = block, timeJson = timeJson)
             }
             if (canRemove) {
                 IconButton(onClick = onRemove) {
@@ -1319,6 +1318,91 @@ private fun MeetingBlockEditor(
             }
         }
     }
+}
+
+/**
+ * 卡头采用两行可扫读摘要：
+ * 1. 上课日 + 周次范围 + 周次类型；
+ * 2. 节次/自定时间 + 已填写的老师和地点。
+ *
+ * 摘要直接读取 [MeetingBlockDraft] 的 Compose 状态，因此用户修改下面任一字段时会立即更新。
+ */
+@Composable
+private fun MeetingBlockSummary(block: MeetingBlockDraft, timeJson: String) {
+    val colors = SleepyTheme.colors
+    val context = LocalContext.current
+
+    val daysText = if (block.days.isEmpty()) {
+        stringResource(R.string.select_at_least_one_day)
+    } else {
+        block.days.sorted().joinToString(" / ") { DateUtils.localizedDay(it, context) }
+    }
+    val weekRangeText = if (block.startWeek == block.endWeek) {
+        stringResource(R.string.slot_summary_week_single, block.startWeek)
+    } else {
+        stringResource(R.string.slot_summary_week_range, block.startWeek, block.endWeek)
+    }
+    val weekTypeText = when (block.weekType) {
+        1 -> stringResource(R.string.week_odd)
+        2 -> stringResource(R.string.week_even)
+        3 -> stringResource(R.string.week_custom)
+        else -> stringResource(R.string.week_every)
+    }
+    val calendarSummary = listOf(daysText, weekRangeText, weekTypeText).joinToString(" · ")
+
+    val effectiveRange = block.effectiveRange(timeJson)
+    val timingSummary = when {
+        block.isIrregularTime -> stringResource(
+            R.string.slot_summary_time_range,
+            block.startTime.ifBlank { "--:--" },
+            block.endTime.ifBlank { "--:--" }
+        )
+        block.isIrregularNode -> {
+            val nodeText = stringResource(R.string.edge_node_label, block.selectedEdgeNode)
+            if (effectiveRange == null) {
+                nodeText
+            } else {
+                "$nodeText · " + stringResource(
+                    R.string.slot_summary_time_range,
+                    effectiveRange.first,
+                    effectiveRange.second
+                )
+            }
+        }
+        block.step <= 1 -> stringResource(R.string.slot_summary_period_single, block.startNode)
+        else -> stringResource(
+            R.string.slot_summary_period_range,
+            block.startNode,
+            block.startNode + block.step - 1,
+            block.step
+        )
+    }
+    val teacherSummary = if (block.teacherState.isBlank()) {
+        null
+    } else {
+        stringResource(R.string.slot_summary_teacher, block.teacherState.trim())
+    }
+    val roomSummary = if (block.roomState.isBlank()) {
+        null
+    } else {
+        stringResource(R.string.slot_summary_room, block.roomState.trim())
+    }
+    val detailSummary = listOfNotNull(timingSummary, teacherSummary, roomSummary).joinToString(" · ")
+
+    Text(
+        text = calendarSummary,
+        style = MaterialTheme.typography.labelSmall,
+        color = colors.onSurfaceVariant,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
+    Text(
+        text = detailSummary,
+        style = MaterialTheme.typography.bodySmall,
+        color = colors.onSurfaceVariant,
+        maxLines = 2,
+        overflow = TextOverflow.Ellipsis
+    )
 }
 
 /** 非常规选项折叠栏 (用户反馈 2026-09-09): 「非常规节次」「非常规时间」两个开关

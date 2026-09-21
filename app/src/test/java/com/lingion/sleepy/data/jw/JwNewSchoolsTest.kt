@@ -178,10 +178,12 @@ class JwNewSchoolsTest {
             assertEquals("经典 EAMS 条目 $n 必须恰好 1 条", 1, parsed.count { it.name == n })
         }
 
-        // 2026-09-06 北航收录 (issue #18 type=qz_ieas, ieas2.1 协议族)
+        // 2026-09-06 北航收录 (issue #18 type=qz_ieas, ieas2.1 协议族);
+        // 2026-09-19 协议升级 byxt.buaa.edu.cn = 金智 jwapp homeapp (用户实测旧 jwxt
+        // 已下线, 新系统 9 仓 cross-verified) → type=neu 复用 NEU homeapp 通路
         val buaa = parsed.single { it.name == "北京航空航天大学" }
-        assertEquals("qz_ieas", buaa.type)
-        assertEquals("https://jwxt.buaa.edu.cn:7001/ieas2.1", buaa.url)
+        assertEquals("neu", buaa.type)
+        assertEquals("https://byxt.buaa.edu.cn/jwapp/sys/homeapp/index.do", buaa.url)
         assertTrue("至少含 buaa 别名", buaa.aliases.any { it == "buaa" })
         assertTrue("至少含 北航 别名", buaa.aliases.any { it == "北航" })
     }
@@ -217,7 +219,8 @@ class JwNewSchoolsTest {
             JwProtocol.TYPE_EAMS5, JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU,
             JwProtocol.TYPE_USTC, JwProtocol.TYPE_SCU, JwProtocol.TYPE_NEU, JwProtocol.TYPE_BJTU,
             JwProtocol.TYPE_WHUT, JwProtocol.TYPE_CLASSIC_EAMS, JwProtocol.TYPE_YETHAN,
-            JwProtocol.TYPE_XJU_POST
+            JwProtocol.TYPE_XJU_POST, JwProtocol.TYPE_CF_NEW,
+            JwProtocol.TYPE_KUST, JwProtocol.TYPE_NUIT
         )
         val pendingTypes = listOf(
             "com.lingion.sleepy.data.jw.JwChengFangParser" to "cf",

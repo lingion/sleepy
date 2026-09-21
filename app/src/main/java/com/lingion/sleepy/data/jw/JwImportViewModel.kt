@@ -320,7 +320,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 || Regex("""/http/[0-9a-f]+/""").containsMatchIn(u)
                 || u.contains(".webvpn.") -> {
                 when {
-                    u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
+                    u.contains("jw.nuit.edu.cn") -> JwProtocol.TYPE_NUIT
+            u.contains("i.kust.edu.cn") || u.contains("kust.edu.cn") || u.contains("kmust.edu.cn") -> JwProtocol.TYPE_KUST
+            u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
                     u.contains("jwglxt")
                         || u.matches(Regex(""".*/xtgl(/|$).*"""))
                         || u.contains("/kbcx/")
@@ -342,9 +344,25 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             }
 
             // ① WISEDU — 金智 jwapp 微应用，URL 唯一锚点，优先级最高
+            u.contains("jw.nuit.edu.cn") -> JwProtocol.TYPE_NUIT
+            u.contains("i.kust.edu.cn") || u.contains("kust.edu.cn") || u.contains("kmust.edu.cn") -> JwProtocol.TYPE_KUST
+            // ①a2 BUAA 新本研教务 byxt.buaa.edu.cn — 金智 jwapp homeapp 族 (2026-09-19 9 仓
+            //    cross-verified: fontlos/buaa-api + BUAASubnet/UBAA + CoolwindHF/buaa2wakeup +
+            //    cantBeFoundGroup/OpenBUAA + el-ev/BUAA-ics-gen 等, 同一端点
+            //    /jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do → datas.arrangedList)。
+            //    协议与东北大学 TYPE_NEU 同族同字段形态, 复用 NEU parser; 旧 jwxt.buaa.edu.cn
+            //    (强智 iEAS) 走下方 ②b 分支不变。必须先于通用 /jwapp/ 分支 (否则被吸进 TYPE_WISEDU,
+            //    WISEDU_FETCH_JS 走 wdkb/xskcb.do 通道拿不到 arrangedList 必空课表)。
+            u.contains("byxt.buaa.edu.cn") -> JwProtocol.TYPE_NEU
+
             u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
 
-            // ①a EAMS5 — supwisdom 平台（issue #25）：此前整条判型链无任何 EAMS5 锚点，
+            // ①a classic EAMS — server-rendered course table entry points.
+            // Both NWUPL and LIXIN expose the same TaskActivity family behind different paths.
+            u.contains("coursetableforstd")
+                || u.contains("/edu/lesson/std/timetable") -> JwProtocol.TYPE_CLASSIC_EAMS
+
+            // ①b EAMS5 — supwisdom 平台（issue #25）：此前整条判型链无任何 EAMS5 锚点，
             //    连正确的 jxglstu 课表 URL 都判 null 走通用抓取必 0 课。
             //    锚点三件套: host (jxglstu / jw.ahu / jwxt.cumtb) + 路径级 /eams5-student/ +
             //    supwisdom 唯一路径约定 /for-std/（斜杠包围, forum-standard 不误命中）。
@@ -408,6 +426,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 || u.contains("zhjw.smu")
                 || u.contains("jxgl.wyu")
                 || u.contains("jw.hbmu") -> JwProtocol.TYPE_CF
+
+            // ⑦a CF_NEW — 新青果 NTSS (FullCalendar 形态): /new/student/xsgrkb 唯一路径锚点
+            u.contains("/new/student/xsgrkb") -> JwProtocol.TYPE_CF_NEW
 
             // ⑦b CHAOXING — 超星综合教务 (xsd=学生端 path, queryKbForGrdb 个人课表接口)
             u.matches(Regex(".*/xsd(/|$).*"))
@@ -473,7 +494,11 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     || lower.contains("logon.do")
                     || lower.contains("randomcode") -> JwProtocol.TYPE_QZ
 
-                // ④ WISEDU — 业务回调路径
+                // ④ NUIT/KUST JSON portal fingerprints
+                lower.contains("classdateandplace") -> JwProtocol.TYPE_NUIT
+                lower.contains("queryaweekschedule") || lower.contains("resultsjsonarr") -> JwProtocol.TYPE_KUST
+
+                // ⑤ WISEDU — 业务回调路径
                 lower.contains("/jwapp/sys/")
                     || (lower.contains("authserver/login") && lower.contains("execution=")) -> JwProtocol.TYPE_WISEDU
 
@@ -482,6 +507,13 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     || lower.contains("sm3web.js")
                     || lower.contains("urpnova")
                     || lower.contains("/js/login/login.js") -> JwProtocol.TYPE_URP_NEW
+
+                // ⑦a CF_NEW — 新青果 NTSS: 课表页脚本路径特征, 必须先于 ⑦ CF
+                //    (NTSS 页脚可能同含乘方字样, 路径锚点更窄更准)
+                lower.contains("/new/student/xsgrkb")
+                        || lower.contains("getcalendarweekdatas")
+                        || lower.contains("ntsscalendar") -> JwProtocol.TYPE_CF_NEW
+
 
                 // ⑥ URP — displayTag 老 URP
                 lower.contains("displaytag")
@@ -554,6 +586,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             if (lower.contains("/checkcode")) hits += "/checkCode"
             if (lower.contains("乘方教务")) hits += "乘方教务"
             if (lower.contains("乘方科技")) hits += "乘方科技"
+            if (lower.contains("/new/student/xsgrkb")) hits += "/new/student/xsgrkb"
+            if (lower.contains("getcalendarweekdatas")) hits += "getCalendarWeekDatas"
+            if (lower.contains("ntsscalendar")) hits += "ntsscalendar"
             if (lower.contains("iaaa.pku.edu.cn")) hits += "iaaa.pku.edu.cn"
             if (lower.contains("pku.edu.cn")) hits += "pku.edu.cn"
             if (lower.contains("北京大学选课系统")) hits += "北京大学选课系统"

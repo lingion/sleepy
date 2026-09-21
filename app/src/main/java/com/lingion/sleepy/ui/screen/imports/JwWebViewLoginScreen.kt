@@ -111,8 +111,9 @@ internal const val DESKTOP_VIEWPORT_JS =
 fun JwWebViewLoginScreen(
     school: JwSchoolInfo,
     onHtmlCaptured: (html: String, school: JwSchoolInfo, periods: List<Triple<Int, String, String>>, termStartDate: String) -> Unit,
-    onCaptureError: (status: FrameCaptureStatus, hint: String) -> Unit,
+    onCaptureError: (result: FrameCaptureResult, hint: String) -> Unit,
     onBack: () -> Unit,
+    onWebViewReady: ((WebView) -> Unit)? = null,
     viewModel: JwImportViewModel = viewModel()
 ) {
     val colors = SleepyTheme.colors
@@ -142,7 +143,12 @@ fun JwWebViewLoginScreen(
             if (obj.optBoolean("ok", false)) {
                 val data = obj.optString("data", "")
                 if (data.isBlank()) {
-                    scope.launch { snackbar.showSnackbar(fetchFailedNoResponseMsg) }
+                    onCaptureError(
+                        FrameCaptureResult(null, "", emptyList(),
+                            status = FrameCaptureStatus.UNKNOWN,
+                            diagnosticHint = fetchFailedNoResponseMsg),
+                        fetchFailedNoResponseMsg,
+                    )
                 } else {
                     // 解析 periods 数组（节次时间）
                     val periods = mutableListOf<Triple<Int, String, String>>()
@@ -193,11 +199,22 @@ fun JwWebViewLoginScreen(
                 }
             } else {
                 val err = obj.optString("err", "")
-                scope.launch { snackbar.showSnackbar(fetchFailedFmt.format(err.ifBlank { pageNotLoadedMsg })) }
+                val msg = fetchFailedFmt.format(err.ifBlank { pageNotLoadedMsg })
+                onCaptureError(
+                    FrameCaptureResult(null, "", emptyList(),
+                        status = FrameCaptureStatus.UNKNOWN,
+                        diagnosticHint = msg),
+                    msg,
+                )
             }
         } catch (e: Exception) {
             Log.e("JwWebView", "parse wisedu result failed", e)
-            scope.launch { snackbar.showSnackbar(fetchFormatErrorMsg) }
+            onCaptureError(
+                FrameCaptureResult(null, "", emptyList(),
+                    status = FrameCaptureStatus.UNKNOWN,
+                    diagnosticHint = fetchFormatErrorMsg),
+                fetchFormatErrorMsg,
+            )
         }
     }
 
@@ -213,7 +230,12 @@ fun JwWebViewLoginScreen(
         wv.postDelayed({
             if (!answered) {
                 Log.w("JwWebView", "fetch js timeout token=$beginToken")
-                scope.launch { snackbar.showSnackbar(fetchTimeoutMsg) }
+                onCaptureError(
+                    FrameCaptureResult(null, "", emptyList(),
+                        status = FrameCaptureStatus.CONTAINER_EMPTY_AFTER_DELAY,
+                        diagnosticHint = fetchTimeoutMsg),
+                    fetchTimeoutMsg,
+                )
             }
         }, FETCH_TIMEOUT_MS)
     }
@@ -292,7 +314,12 @@ fun JwWebViewLoginScreen(
                     val wv = webViewRef
                     if (wv == null) {
                         Log.w("JwWebView", "capture tapped but webViewRef is null")
-                        scope.launch { snackbar.showSnackbar(webviewNotReadyMsg) }
+                        onCaptureError(
+                            FrameCaptureResult(null, "", emptyList(),
+                                status = FrameCaptureStatus.UNKNOWN,
+                                diagnosticHint = webviewNotReadyMsg),
+                            webviewNotReadyMsg,
+                        )
                         return@CaptureBar
                     }
                     val url = wv.url ?: ""
@@ -309,6 +336,14 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, NEU_FETCH_JS)
                         return@CaptureBar
                     }
+                    if (school.type == JwProtocol.TYPE_NUIT) {
+                        evaluateFetchWithTimeout(wv, NUIT_FETCH_JS)
+                        return@CaptureBar
+                    }
+                    if (school.type == JwProtocol.TYPE_KUST) {
+                        evaluateFetchWithTimeout(wv, KUST_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // SWJTU YETHAN 逐专平台：CAS 登录后从 localStorage 取 ytoken，
                     // 同源 GET 课表 JSON；不发送采集包中的真实 token。
                     if (school.type == JwProtocol.TYPE_YETHAN) {
@@ -320,6 +355,16 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, CQU_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 新青果 NTSS (江西中医药大学等, /new/student/xsgrkb): 课表数据只在
+                    // FullCalendar 的 getCalendarWeekDatas JSON 接口里, 页面 HTML 无课程数据。
+                    // WebView 内逐周并行 POST 1..22 周合并 (每行自带全学期周次串,
+                    // JwCfNewParser 按唯一键去重), businessHours 节次时间与
+                    // getDatesOfWeek 开学日随 payload 回传。
+                    if (school.type == JwProtocol.TYPE_CF_NEW) {
+                        evaluateFetchWithTimeout(wv, CF_NEW_FETCH_JS)
+                        return@CaptureBar
+                    }
+
                     // WHUT（武汉理工）：金智 jwapp 变体 — kcbcxby 微应用三段 fetch
                     // (currentUser 学号+学期 → cxjcs 开学日期/总周数 → jcjcx 节次映射 → cxxskcb 课表)
                     if (school.type == JwProtocol.TYPE_WHUT) {
@@ -405,7 +450,7 @@ fun JwWebViewLoginScreen(
                             FrameCaptureStatus.IFRAME_NAV_PENDING,
                             FrameCaptureStatus.WRONG_PAGE,
                             FrameCaptureStatus.UNKNOWN ->
-                                onCaptureError(r.status, hint)    // 不走 onHtmlCaptured, 避免伪"0 课"
+                                onCaptureError(r, hint)    // 不走 onHtmlCaptured, 避免伪"0 课"
                         }
                     }
                 }
@@ -426,7 +471,8 @@ fun JwWebViewLoginScreen(
                 onProgressChange = { p -> progress = p },
                 onWebViewCreated = { wv -> webViewRef = wv },
                 onHtmlCaptured = { html -> onHtmlCaptured(html, school, emptyList(), "") },
-                onWiseduResult = handleWiseduResult
+                onWiseduResult = handleWiseduResult,
+                onWebViewReady = onWebViewReady
             )
 
             if (progress in 1..99) {
@@ -450,6 +496,18 @@ fun JwWebViewLoginScreen(
     }
 }
 
+/** 下载实体抓取 — 共享有界池(daemon 线程), 避免每条下载泄漏一个核心线程。 */
+private val DOWNLOAD_FETCH_EXECUTOR =
+    java.util.concurrent.Executors.newFixedThreadPool(
+        2,
+        { r ->
+            java.lang.Thread(r, "sleepy-jw-download").apply {
+                isDaemon = true
+                priority = Thread.MIN_PRIORITY
+            }
+        },
+    )
+
 @SuppressLint("SetJavaScriptEnabled")
 @Composable
 private fun JwWebView(
@@ -460,7 +518,8 @@ private fun JwWebView(
     onProgressChange: (Int) -> Unit,
     onWebViewCreated: (WebView) -> Unit,
     onHtmlCaptured: (String) -> Unit,
-    onWiseduResult: (String) -> Unit = {}
+    onWiseduResult: (String) -> Unit = {},
+    onWebViewReady: ((WebView) -> Unit)? = null
 ) {
     // key 含 recreateKey: UA 切换时销毁重建 WebView (userAgentString 仅创建期可靠,
     // 部分页面在 onPageStarted 后改 UA 不回读); CookieManager 全局共享, 登录态不丢
@@ -477,6 +536,8 @@ private fun JwWebView(
                 )
                 // wisedu (金智) 协议：注册 JS 桥，async fetch 课表 JSON 完成后回调
                 addJavascriptInterface(WiseduBridge(onWiseduResult), "__sleepyBridge")
+                // 诊断桥常驻；页面内 recorder 只观察网络，不替换请求或响应。
+                addJavascriptInterface(DiagnosticNetworkBridge(), "__sleepyNetworkBridge")
                 settings.apply {
                     javaScriptEnabled = true
                     javaScriptCanOpenWindowsAutomatically = true
@@ -497,25 +558,56 @@ private fun JwWebView(
                 }
                 // 正常 WebView 配置
                 settings.databaseEnabled = true
+                setDownloadListener { downloadUrl, userAgent, contentDisposition, mimeType, contentLength ->
+                    // 实体抓取 — 桌面 collector 4-downloads/ 对标: 下载文件字节落诊断包
+                    // (导出 xls/ics 课表文件本身是协议证据)。后台线程 GET, 带 Cookie。
+                    // 单次记录: 元数据 + 字节合并到一条 (避免 manifest 重复/body 索引错位)。
+                    // 共享有界池 (daemon 线程), 不用 newSingleThreadExecutor — 那会每条下载泄漏一个核心线程。
+                    DOWNLOAD_FETCH_EXECUTOR.execute {
+                        val body = runCatching {
+                            val conn = java.net.URL(downloadUrl).openConnection() as java.net.HttpURLConnection
+                            conn.connectTimeout = 10_000
+                            conn.readTimeout = 15_000
+                            conn.instanceFollowRedirects = true
+                            android.webkit.CookieManager.getInstance().getCookie(downloadUrl)?.let {
+                                conn.setRequestProperty("Cookie", it)
+                            }
+                            if (userAgent?.isNotBlank() == true) conn.setRequestProperty("User-Agent", userAgent)
+                            conn.connect()
+                            if (conn.responseCode !in 200..299) null
+                            else conn.inputStream.use { ins -> ins.readNBytes(2 * 1024 * 1024) }
+                        }.getOrNull()
+                        JwDiagnosticSession.recordDownload(
+                            downloadUrl, userAgent, contentDisposition, mimeType, contentLength, body
+                        )
+                    }
+                }
                 webChromeClient = object : android.webkit.WebChromeClient() {
                     override fun onProgressChanged(view: WebView?, newProgress: Int) {
                         onProgressChange(newProgress)
                     }
                     override fun onConsoleMessage(msg: android.webkit.ConsoleMessage?): Boolean {
                         Log.d("JwWebView", "console[${msg?.messageLevel()}]: ${msg?.message()}")
+                        JwDiagnosticSession.recordConsole(msg)
                         return true
                     }
+
                 }
-                webViewClient = JwWebViewClientBuilder.build(
+                JwDiagnosticSession.resetSession()
+        evaluateJavascript(DIAGNOSTIC_NETWORK_INSTALL_JS, null)
+        webViewClient = JwWebViewClientBuilder.build(
                     webView = this,
                     school = school,
                     desktopMode = desktopUa,
                 ) { finished ->
                     Log.d("JwWebView", "onPageFinished url=$finished")
                     lastUrl = finished ?: url
+                    // Install after every navigation: page scripts may replace fetch/XHR globals.
+                    evaluateJavascript(DIAGNOSTIC_NETWORK_INSTALL_JS, null)
                 }
                 loadUrl(lastUrl)
                 onWebViewCreated(this)
+                onWebViewReady?.invoke(this)
             }
         }
     )
@@ -706,6 +798,48 @@ private const val WISEDU_FETCH_JS = """
  * 课表页面没有可供 HTML parser 使用的课程数据。登录态下依次取得当前学期、可用校区，
  * 再向 getMyScheduleDetail.do 提交表单；返回的 datas.arrangedList 由 JwNeuParser 解析。
  */
+private const val NUIT_FETCH_JS = """
+(function(){
+  fetch('/jwapp/sys/homeapp/api/home/currentUser.do',{credentials:'include'})
+    .then(function(r){return r.json();})
+    .then(function(u){
+      var term=u&&u.datas&&u.datas.welcomeInfo&&u.datas.welcomeInfo.xnxqdm;
+      if(!term) throw new Error('无法识别当前学期');
+      return fetch('/jwapp/sys/homeapp/api/home/student/courses.do?termCode='+encodeURIComponent(term),{credentials:'include'});
+    })
+    .then(function(r){return r.text();})
+    .then(function(data){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true,data:data}));})
+    .catch(function(e){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,err:String(e)}));});
+})();
+"""
+
+private const val KUST_FETCH_JS = """
+(function(){
+  fetch('/api/uppcard/kbsz/queryAllTerm',{credentials:'include'})
+    .then(function(r){return r.json();})
+    .then(function(terms){
+      var list=terms&&terms.data||[]; var term=list[0]&&list[0].XNXQ;
+      if(!term) throw new Error('无法识别昆明理工学期');
+      return fetch('/api/uppcard/kbsz/queryAWeekSchedule?XNXQ='+encodeURIComponent(term),{credentials:'include'});
+    })
+    .then(function(r){return r.text();})
+    .then(function(data){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true,data:data}));})
+    .catch(function(e){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,err:String(e)}));});
+})();
+"""
+
+/**
+ * 东北大学 (jwxt.neu.edu.cn) 金智新版教务的课表 JSON 抓取。
+ *
+ * 课表页面没有可供 HTML parser 使用的课程数据。登录态下依次取得当前学期、可用校区，
+ * 再向 getMyScheduleDetail.do 提交表单；返回的 datas.arrangedList 由 JwNeuParser 解析。
+ *
+ * 兼容北京航空航天大学新本研教务 (byxt.buaa.edu.cn, 2026-09-19 9 仓 cross-verified)：
+ *   协议层同源 (金智 jwapp homeapp family), 但 BUAA 在 21/21 仓均 campusCode=""
+ *   直接 POST 不取校区端点 (该端点 byxt 可能不暴露或返回非预期)。按 host 分流,
+ *   NEU 走完整三步 (currentUser → campus → schedule), byxt 走两步
+ *   (currentUser → schedule, campusCode 留空)。
+ */
 const val NEU_FETCH_JS = """
 (function(){
   function finish(payload) {
@@ -726,18 +860,42 @@ const val NEU_FETCH_JS = """
     });
   }
 
+  // 兼容 NEU + byxt.buaa.edu.cn 同协议族 (金智 jwapp homeapp)
+  var NEU_HOSTS = ['jwxt.neu.edu.cn', 'byxt.buaa.edu.cn'];
+
   try {
     var hostname = (location.hostname || '').toLowerCase();
-    if (hostname !== 'jwxt.neu.edu.cn') {
-      finish({ok:false, err:'请先完成登录并进入东北大学教务系统后再点导入'});
+    var isSupportedHost = NEU_HOSTS.indexOf(hostname) >= 0;
+    if (!isSupportedHost) {
+      finish({ok:false, err:'请先完成登录并进入教务系统 (东北大学 / 北京航空航天大学新本研) 后再点导入'});
       return;
     }
+
+    // BUAA byxt.buaa.edu.cn: campusCode='' 直接 POST, 不取 getMyScheduledCampus
+    //   9 仓实锤 (fontlos/buaa-api + BUAASubnet/UBAA + CoolwindHF/buaa2wakeup +
+    //   cantBeFoundGroup/OpenBUAA + el-ev/BUAA-ics-gen + Krignd/KAgenda +
+    //   Yiki21/iclass_buaa_tui + Lidozs55/BUAAer + Alyssumira/BUAA-Schedule),
+    //   该端点在 byxt 未公开/不返回有效 campus 列表。
+    var isBuaaByxt = hostname === 'byxt.buaa.edu.cn';
 
     fetchJson('/jwapp/sys/homeapp/api/home/currentUser.do')
     .then(function(userData) {
       var termCode = userData && userData.datas && userData.datas.welcomeInfo &&
         userData.datas.welcomeInfo.xnxqdm;
       if (!termCode) throw new Error('当前用户信息中没有学期代码，请重新登录后重试');
+
+      if (isBuaaByxt) {
+        var bodyBuaa = 'termCode=' + encodeURIComponent(String(termCode)) +
+          '&campusCode=&type=term';
+        return fetchJson('/jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With':'XMLHttpRequest'
+          },
+          body:bodyBuaa
+        });
+      }
 
       return fetchJson(
         '/jwapp/sys/homeapp/api/home/student/getMyScheduledCampus.do?termCode=' +
@@ -855,6 +1013,8 @@ private const val YETHAN_FETCH_JS = """
  * CQU（重庆大学门户）fetch 脚本：Bearer token 取自 localStorage。
  */
 private const val CQU_FETCH_JS = """
+(function(){
+  try {
     if (location.hostname.indexOf('cqu.edu.cn') < 0) {
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录并进入重庆大学门户后再点导入'}));
       return;
@@ -1761,6 +1921,26 @@ private class WiseduBridge(private val onResult: (String) -> Unit) {
     }
 }
 
+/** 页面内网络 recorder 的批量结果桥。记录本身留在 JS，避免每个请求跨 bridge。 */
+internal class DiagnosticNetworkBridge {
+    @android.webkit.JavascriptInterface
+    fun onNetworkRecord(json: String) {
+        // The recorder is intentionally pull-based; this callback is a compatibility hook
+        // for pages that choose to flush incrementally. The authoritative export uses pull.
+        JwDiagnosticSession.recordJsNetwork(json)
+    }
+}
+
+/** 导出诊断资源重取结果的 JS 桥；每次导出创建一次，避免跨页面串包。 */
+internal class DiagnosticReplayBridge(private val onResult: (String) -> Unit) {
+    private val main = android.os.Handler(android.os.Looper.getMainLooper())
+
+    @android.webkit.JavascriptInterface
+    fun onReplayResult(json: String) {
+        main.post { onResult(json) }
+    }
+}
+
 /**
  * SSL 豁免注册表: 仅对学校 URL 的注册域 (含其子域) 放行自签/私有 CA 证书 —
  * 部分高校教务确用私有 CA。除此之外的 SSL 错误一律 cancel (中间人防护)。
@@ -1838,6 +2018,271 @@ private const val CAPTURE_FRAMES_JS_TEMPLATE = """
   walk(window, 0, [], out);
   return JSON.stringify({ok:true, url:location.href, depth:maxDepth, frames:out});
 })
+"""
+
+/**
+ * 排查包专用 — DOM 可点元素清单 (issue #45 现场报告反循)。
+ * 失败弹窗触发点 evaluateJavascript(本 JS) — 报告学生当时看的页面。
+ * 输出 JSON: {url, items:[{tag, id, name, type, text, onclick, href, disabled, hidden}], counts:{byTag:{}}}
+ * 不跨 frame (与 CAPTURE_FRAMES_JS 配套, 后者在 frames/ 落 outerHTML)
+ * 不动登录密码字段 — 1B 完全不脱敏,字段原文保留供排查 EID/UID 异常。
+ */
+const val DOM_INVENTORY_JS = """
+(function(){
+  function safe(t){return t==null?'':String(t);}
+  function cls(el){return el && el.className ? String(el.className) : '';}
+  function attrs(el){
+    var o = {};
+    try {
+      var attrs = el.attributes || [];
+      for (var i=0;i<attrs.length;i++){
+        var a = attrs[i];
+        if (a && a.specified !== false) o[a.name] = safe(a.value).slice(0,200);
+      }
+    } catch(e){}
+    return o;
+  }
+  var CLICKABLE = ['a','button','input','select','textarea','label'];
+  var items = [];
+  var byTag = {};
+  for (var i=0;i<CLICKABLE.length;i++){
+    var tag = CLICKABLE[i];
+    var nodes;
+    try { nodes = document.getElementsByTagName(tag); } catch(e){ nodes = []; }
+    for (var j=0;j<nodes.length;j++){
+      var el = nodes[j];
+      var rect = null;
+      try { rect = el.getBoundingClientRect(); } catch(e){}
+      if (rect && (rect.width===0 && rect.height===0)) continue;  // 跳过零尺寸隐藏控件
+      var text = '';
+      try { text = (el.innerText || el.textContent || el.value || '').replace(/\\s+/g,' ').trim().slice(0,120); } catch(e){}
+      items.push({
+        tag: tag,
+        id: safe(el.id),
+        name: safe(el.name),
+        type: safe(el.type),
+        text: text,
+        cls: cls(el),
+        href: el.getAttribute ? safe(el.getAttribute('href')) : '',
+        onclick: el.getAttribute ? safe(el.getAttribute('onclick')) : '',
+        disabled: !!el.disabled,
+        hidden: !!el.hidden || safe(el.style && el.style.display)==='none',
+        rect: rect ? {x:Math.round(rect.x),y:Math.round(rect.y),w:Math.round(rect.width),h:Math.round(rect.height)} : null,
+        attrs: attrs(el)
+      });
+    }
+    byTag[tag] = nodes.length;
+  }
+  return JSON.stringify({url:location.href, total:items.length, byTag:byTag, items:items});
+})
+"""
+
+/**
+ * 排查包专用 — Web Storage 全量 (2026-09-18 用户: 排查包信息量对齐桌面 collector 5-storage/)。
+ * sessionStorage + localStorage 全键值, 1B 不脱敏 — 学号/token 明文恰是排查材料。
+ * 不跨 frame (storage 按 origin 隔离, 当前文档 origin 即可)。
+ */
+const val STORAGE_JS = """
+(function(){
+  var out = {sessionStorage:{}, localStorage:{}, url:location.href};
+  ['sessionStorage','localStorage'].forEach(function(sn){
+    try {
+      var st = window[sn]; var m = {};
+      if (st) { for (var i=0;i<st.length;i++){ var k=st.key(i); try{ m[k]=String(st.getItem(k)); }catch(e){} } }
+      out[sn] = m;
+    } catch(e) {}
+  });
+  return JSON.stringify(out);
+})
+"""
+
+/**
+ * 排查包专用 — 页面链接/表单动作全集 (对标桌面 collector jsLinks/jsSelects)。
+ * a[href]/iframe[src]/form[action] 绝对化 → 适配者看导航面; select 枚举 → 学期码全集。
+ */
+const val LINKS_JS = """
+(function(){
+  function abs(h){ try { return new URL(h, location.href).href; } catch(e){ return h; } }
+  var seen={}, links=[];
+  var els=document.querySelectorAll('a[href],iframe[src],form[action]');
+  for (var i=0;i<els.length;i++){
+    var h=els[i].getAttribute('href')||els[i].getAttribute('src')||els[i].getAttribute('action')||'';
+    if ((h.indexOf('http')===0||h.charAt(0)==='/') && !seen[h]) { seen[h]=1; links.push(abs(h)); }
+  }
+  var selects=[];
+  var ss=document.querySelectorAll('select');
+  for (var s=0;s<ss.length;s++){
+    var opts=[];
+    var os=ss[s].querySelectorAll('option');
+    for (var o=0;o<os.length;o++){
+      opts.push({v: os[o].getAttribute('value')||'', t: (os[o].textContent||'').trim().slice(0,60)});
+    }
+    if (opts.length) selects.push({sel:s, name:ss[s].getAttribute('name')||'', id:ss[s].id||'', opts:opts});
+  }
+  return JSON.stringify({url:location.href, links:links, selects:selects});
+})
+"""
+
+/**
+ * Passive runtime network recorder. It preserves native fetch/XHR behavior and records only
+ * what the page itself can observe. Bodies are intentionally retained unredacted for diagnosis.
+ */
+internal const val DIAGNOSTIC_NETWORK_INSTALL_JS = """
+(function(){
+  if (window.__sleepyDiagNetworkInstalled) return;
+  window.__sleepyDiagNetworkInstalled = true;
+  var rows = window.__sleepyDiagNetworkRecords = [];
+  var MAX_ROWS = 500, MAX_BODY = 512 * 1024;
+  function trim(v){ v = v == null ? '' : String(v); return v.length > MAX_BODY ? v.slice(0, MAX_BODY) + '\\n[truncated]' : v; }
+  function headers(h){ var o={}; try { h && h.forEach(function(v,k){o[k]=v;}); } catch(e) {} return o; }
+  function push(x){ x.ts = Date.now(); rows.push(x); if(rows.length > MAX_ROWS) rows.shift(); }
+  function instrument(win){
+    try {
+      if (!win || win.__sleepyDiagNetworkFramed) return;
+      win.__sleepyDiagNetworkFramed = true;
+      var nf = win.fetch;
+      if (nf) win.fetch = function(input, init){
+        var reqUrl = typeof input === 'string' ? input : (input && input.url) || '';
+        var method = (init && init.method) || (input && input.method) || 'GET';
+        var reqBody = init && init.body != null ? String(init.body) : '';
+        var reqHeaders = {};
+        try { if (input && input.headers) reqHeaders = headers(input.headers); } catch(e) {}
+        try { if (init && init.headers) { var ih = headers(init.headers); for (var hk in ih) reqHeaders[hk]=ih[hk]; } } catch(e) {}
+        return nf.apply(this, arguments).then(function(r){
+          var x={source:'fetch',url:r.url || reqUrl,finalUrl:r.url || reqUrl,method:String(method).toUpperCase(),requestBody:trim(reqBody),requestHeaders:reqHeaders,status:r.status,ok:r.ok,responseHeaders:headers(r.headers),frame:win===window?'top':'frame'};
+          try { x.redirected=!!r.redirected; } catch(e) {}
+          return r.clone().text().then(function(b){ x.responseBody=trim(b); push(x); return r; },function(e){x.error=String(e);push(x);return r;});
+        }, function(e){ push({source:'fetch',url:reqUrl,method:String(method).toUpperCase(),requestBody:trim(reqBody),status:0,error:String(e),frame:win===window?'top':'frame'}); throw e; });
+      };
+      var NX = win.XMLHttpRequest;
+      if (NX) {
+        var open = NX.prototype.open, send = NX.prototype.send, setHeader = NX.prototype.setRequestHeader;
+        NX.prototype.open = function(method,url){ this.__sleepyDiag={method:String(method||'GET').toUpperCase(),url:String(url||''),headers:{}}; return open.apply(this,arguments); };
+        NX.prototype.setRequestHeader = function(k,v){ if(this.__sleepyDiag) this.__sleepyDiag.headers[k]=String(v); return setHeader.apply(this,arguments); };
+        NX.prototype.send = function(body){ var xhr=this, meta=this.__sleepyDiag || {method:'GET',url:''}; meta.requestBody=trim(body == null ? '' : body); function done(){ var x={source:'xhr',url:meta.url,finalUrl:meta.url,method:meta.method,requestBody:meta.requestBody,status:0,requestHeaders:meta.headers,frame:win===window?'top':'frame'}; try{x.status=xhr.status;x.responseHeaders=xhr.getAllResponseHeaders();x.responseBody=trim(typeof xhr.responseText==='string'?xhr.responseText:'');}catch(e){x.error=String(e);} push(x); } this.addEventListener('loadend',done,{once:true}); return send.apply(this,arguments); };
+      }
+    } catch(e) {}
+  }
+  instrument(window);
+  // 同源 iframe 立即 instrument (XJU PageFrame / HEBZYHJ qz 等 frameset 教务)
+  try { for (var i=0;i<window.frames.length;i++) instrument(window.frames[i]); } catch(e) {}
+  // 迟加载的子帧 — setInterval 兜底, 适配 history API 重置的 frame
+  setInterval(function(){
+    try { for (var j=0;j<window.frames.length;j++) instrument(window.frames[j]); } catch(e) {}
+  }, 1500);
+})();
+"""
+
+internal const val DIAGNOSTIC_NETWORK_SNAPSHOT_JS = """
+(function(){ try { return JSON.stringify({live:window.__sleepyDiagNetworkRecords || []}); } catch(e) { return '{\"live\":[]}'; } })()
+"""
+
+internal const val DIAGNOSTIC_NETWORK_EXPORT_JS = """
+(function(){
+  var live = window.__sleepyDiagNetworkRecords || [];
+  var same = function(u){ try{return new URL(u,location.href).origin===location.origin;}catch(e){return false;} };
+  var replaceParam = function(text,name,value){
+    var re = new RegExp('([?&]' + name + '=|(^|&)'+name+'=)([^&]*)','i');
+    return re.test(text) ? text.replace(re,function(_,p){return p+encodeURIComponent(value);}) : text;
+  };
+  var weekOf = function(r){
+    var s=(r.url||'')+'\n'+(r.requestBody||'');
+    var m=s.match(/(?:^|[?&\s])((?:week|zc|weekIndex|zhouci|xq))=([^&\s]*)/i);
+    return m ? {name:m[1],value:m[2]} : null;
+  };
+  var call = function(url, method, body, headers){
+    var opts={method:method,credentials:'include',cache:'no-store'};
+    if(method==='POST'){opts.body=body||''; opts.headers=headers||{'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8'};}
+    return fetch(url,opts).then(function(r){return r.text().then(function(b){return {url:r.url||url,method:method,status:r.status,body:b,headers:(function(){var o={};try{r.headers.forEach(function(v,k){o[k]=v;});}catch(e){}return o;})()};});}).catch(function(e){return {url:url,method:method,status:0,error:String(e)};});
+  };
+  var replay = [];
+  var jobs=[];
+  for(var i=0;i<live.length && jobs.length<40;i++){
+    var r=live[i]; if(!r||!same(r.url)||!r.url||r.source==='resource') continue;
+    if(String(r.method).toUpperCase()==='POST') jobs.push(call(r.url,'POST',r.requestBody||'',r.requestHeaders||{}));
+  }
+  Promise.all(jobs).then(function(rs){ replay=rs; flushWeeks(replay); },function(){ flushWeeks(replay); });
+
+  var weekState = [];
+  function flushWeeks(replay){
+    var seen={};
+    for(var i=0;i<live.length && Object.keys(seen).length<10;i++){
+      var r=live[i], w=weekOf(r); if(!r||!w||!same(r.url)) continue;
+      var key=r.method+' '+r.url+' '+w.name; if(seen[key]) continue; seen[key]=1;
+      weekState.push({key:key,r:r,name:w.name});
+    }
+    // 周重放必须串行(对齐桌面 collector): 校务服务器对 10 API × 25 周并发 = 风控/封禁风险。
+    // 链式 reduce 逐个请求, 单项失败不影响后续。
+    var tasks=[];
+    weekState.forEach(function(ws){
+      for(var n=1;n<=25;n++){
+        var r=ws.r, method=String(r.method).toUpperCase();
+        var u=r.url, b=r.requestBody||'';
+        if(method==='POST') b=replaceParam(b,ws.name,String(n)); else u=replaceParam(u,ws.name,String(n));
+        (function(week, weekName, weekMethod, weekUrl, weekBody){
+          tasks.push(function(){
+            return call(weekUrl,weekMethod,weekBody,ws.r.requestHeaders||{}).then(function(res){
+              res.week=week; res.name=weekName; res.url=res.url || weekUrl; return res;
+            }).catch(function(e){return {week:week,name:weekName,method:weekMethod,url:weekUrl,status:0,error:String(e)};});
+          });
+        })(n, ws.name, method, u, b);
+      }
+    });
+    tasks.reduce(function(p,fn){
+      return p.then(function(rs){ return fn().then(function(r){ rs.push(r); return rs; }); });
+    }, Promise.resolve([])).then(function(rs){
+      try { __sleepyDiagBridge.onReplayResult(JSON.stringify({live:live,replay:replay,weeks:rs})); } catch(e) {}
+    }, function(){
+      try { __sleepyDiagBridge.onReplayResult(JSON.stringify({live:live,replay:replay,weeks:[]})); } catch(e) {}
+    });
+  }
+})()
+"""
+
+/**
+ * 排查包专用 — 重取页面已经加载过的同源文本资源。
+ * 只重放 GET, 使用浏览器缓存和当前 Cookie; 不重放 POST/表单写操作。
+ * 每项保留 url/status/mime/body 或 error, 失败项不能被伪造为成功响应。
+ * evaluateJavascript 不等待 Promise, 所以最终 JSON 经一次性 JS bridge 回传。
+ */
+const val RESOURCE_REPLAY_JS = """
+(function(){
+  var entries=[];
+  var seen={};
+  var resources=[];
+  try { resources=performance.getEntriesByType('resource') || []; } catch(e) {}
+  resources.push({name:location.href, initiatorType:'document'});
+  function sameOrigin(u){ try { return new URL(u,location.href).origin===location.origin; } catch(e){ return false; } }
+  function abs(u){ try { return new URL(u,location.href).href; } catch(e){ return String(u||''); } }
+  function one(u){
+    u=abs(u);
+    if (!u || seen[u] || !sameOrigin(u)) return Promise.resolve();
+    seen[u]=1;
+    var controller = window.AbortController ? new AbortController() : null;
+    var timer = controller ? setTimeout(function(){controller.abort();},5000) : null;
+    var opts={method:'GET',credentials:'include',cache:'force-cache'};
+    if (controller) opts.signal=controller.signal;
+    return fetch(u,opts)
+      .then(function(r){
+        return r.text().then(function(body){
+          entries.push({url:u,status:r.status,mime:r.headers.get('content-type')||'',body:body});
+        });
+      })
+      .catch(function(e){ entries.push({url:u,status:0,mime:'',error:String(e)}); })
+      .then(function(){ if (timer) clearTimeout(timer); });
+  }
+  var jobs=[];
+  for (var i=0;i<resources.length;i++) {
+    var u=resources[i] && resources[i].name;
+    if (u) jobs.push(one(u));
+  }
+  function done(){
+    try { __sleepyDiagBridge.onReplayResult(JSON.stringify(entries)); } catch(e) {}
+  }
+  var all = Promise.all(jobs);
+  var totalTimer = setTimeout(function(){ done(); },15000);
+  all.then(function(){ clearTimeout(totalTimer); done(); },function(){ clearTimeout(totalTimer); done(); });
+})()
 """
 
 /** 单次抓取: evaluateJavascript → FrameSnapshot.fromJson → selectBestFrame。回调已在主线程。 */

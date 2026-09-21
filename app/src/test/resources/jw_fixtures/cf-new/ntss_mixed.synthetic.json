@@ -1,0 +1,32 @@
+{
+  "sleepyCfNtss": true,
+  "xnxqdm": "202601",
+  "startDate": "2026-09-07",
+  "periods": [
+    {"node": 1, "start": "08:30:00", "end": "09:15:00"},
+    {"node": 2, "start": "09:25", "end": "10:10"},
+    {"node": 3, "start": "10:30", "end": "11:15"},
+    {"node": 4, "start": "11:25", "end": "12:10"}
+  ],
+  "weeks": [
+    {
+      "week": 0,
+      "rows": [
+        {"kcbh":"M001","kcmc":"高等数学","teaxms":"张老师","jxcdmc":"A101","xq":"1","ps":"01","pe":"02","qssj":"08:30:00","jssj":"10:10:00","zc":"1","jxbmc":"一班"},
+        {"kcbh":"M001","kcmc":"高等数学","teaxms":"张老师","jxcdmc":"A101","xq":"1","ps":"01","pe":"02","qssj":"08:30:00","jssj":"10:10:00","zc":"2","jxbmc":"一班"},
+        {"kcbh":"M001","kcmc":"高等数学","teaxms":"张老师","jxcdmc":"A101","xq":"1","ps":"01","pe":"02","qssj":"08:30:00","jssj":"10:10:00","zc":"3","jxbmc":"一班"},
+        {"kcbh":"P002","kcmc":"操作系统","teaxms":"李老师","jxcdmc":"B202","xq":"2","ps":"","pe":"","qssj":"08:30","jssj":"10:10","zc":"1-3,5","jxbmc":"二班"},
+        {"kcbh":"R003","kcmc":"体育","teaxms":"王老师","jxcdmc":"","bapjxcd":"1","xq":"3","ps":"03","pe":"03","qssj":"10:30","jssj":"11:15","zc":"2","jxbmc":""},
+        {"kcbh":"X004","kcmc":"","teaxms":"无效","jxcdmc":"C303","xq":"4","ps":"01","pe":"01","zc":"1"},
+        {"kcbh":"X005","kcmc":"非法星期","teaxms":"无效","jxcdmc":"C304","xq":"星期一","ps":"01","pe":"01","zc":"1"},
+        {"kcbh":"X006","kcmc":"无时间映射","teaxms":"无效","jxcdmc":"C305","xq":"4","ps":"","pe":"","qssj":"23:59","jssj":"23:59","zc":"1"}
+      ]
+    },
+    {
+      "week": 4,
+      "rows": [
+        {"kcbh":"W007","kcmc":"逐周回退","teaxms":"赵老师","jxcdmc":"D404","xq":"5","ps":"04","pe":"04","qssj":"11:25","jssj":"12:10","zc":"","jxbmc":"四班"}
+      ]
+    }
+  ]
+}

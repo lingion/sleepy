@@ -1,0 +1,26 @@
+[
+  {
+    "project":"q1123421666/jxutcm",
+    "author":"q1123421666",
+    "license_or_None":"无 LICENSE",
+    "role_in_verification":"检索触达；非协议证据"
+  },
+  {
+    "project":"Wenswell/jxutcm-net-auto-click",
+    "author":"Wenswell",
+    "license_or_None":"无 LICENSE",
+    "role_in_verification":"检索触达；校园网自动登录，与教务协议无关"
+  },
+  {
+    "project":"iihcy/JXUTCM_DAS",
+    "author":"iihcy",
+    "license_or_None":"无 LICENSE",
+    "role_in_verification":"检索触达；数据分析项目，无教务端点"
+  },
+  {
+    "project":"iihcy/JXUTCM_BestFeature",
+    "author":"iihcy",
+    "license_or_None":"无 LICENSE",
+    "role_in_verification":"检索触达；无 README，根目录无教务证据"
+  }
+]

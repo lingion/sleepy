@@ -199,11 +199,27 @@ fun ImportSheet(
         }
     }
 
-    LaunchedEffect(errorMsg) {
-        errorMsg?.let {
-            snackbar.showSnackbar(it)
-            errorMsg = null
-        }
+    // 2026-09-18 用户: 报错必须统一弹窗(不再是 Snackbar 一闪即逝) — 文件导入场景
+    // 无 WebView/dump 可导, 单确定按钮。成功/状态类提示仍走 snackbar 不动。
+    if (errorMsg != null) {
+        AlertDialog(
+            onDismissRequest = { errorMsg = null },
+            title = { Text(stringResource(R.string.jw_error_dialog_title)) },
+            text = {
+                Text(
+                    text = errorMsg!!,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(max = 320.dp)
+                        .verticalScroll(rememberScrollState())
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { errorMsg = null }) {
+                    Text(stringResource(R.string.jw_err_dismiss))
+                }
+            }
+        )
     }
 
     ModalBottomSheet(
@@ -564,6 +580,7 @@ fun ImportSheet(
                 },
                 selectedPeriodTableId = confirmedBindPeriodTableId,
                 onSelectPeriodTable = { confirmedBindPeriodTableId = it },
+                periodTableTimeJsonById = allPeriodTables.associate { it.id to it.timeJson },
                 onConfirm = {
                     val mode = pendingMode ?: return@ImportConfirmDialog
                     val currentPreview = preview ?: return@ImportConfirmDialog
@@ -1239,7 +1256,9 @@ private fun ImportConfirmDialog(
     // v1.0.56 T6: 第三 Tab「作息表」— 绑定现有作息表直接用; null=未绑定(用解析出的节次)
     periodTableOptions: List<com.lingion.sleepy.ui.component.PeriodTableOption> = emptyList(),
     selectedPeriodTableId: Long? = null,
-    onSelectPeriodTable: (Long?) -> Unit = {}
+    onSelectPeriodTable: (Long?) -> Unit = {},
+    // id -> timeJson, 绑表时确认校验/落库以表 timeJson 为真源 (用户反馈 2026-09-20 误报修复)
+    periodTableTimeJsonById: Map<Long, String> = emptyMap()
 ) {
     val colors = SleepyTheme.colors
     val context = LocalContext.current
@@ -1288,7 +1307,9 @@ private fun ImportConfirmDialog(
                     onValueChange = onStartDateChange,
                     label = stringResource(R.string.import_week_start),
                     modifier = Modifier.fillMaxWidth(),
-                    isError = errorMsg != null
+                    // 只在日期错误时标红; 节次错误标到节次区(2026-09-20 反馈: 节次错也标日期框误导)
+                    isError = errorMsg != null && (startDate.isBlank() ||
+                        !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(startDate))
                 )
                 if (errorMsg != null) {
                     Text(
@@ -1332,13 +1353,20 @@ private fun ImportConfirmDialog(
                             errorMsg = context.getString(R.string.start_date_format)
                             return@DialogActionButtons
                         }
-                        val emptyRows = rows.filter { it.start.isBlank() || it.end.isBlank() }
+                        // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
+                        // 旧代码无条件校验手动 rows, 解析源没回节次时间 → 误报「第 X 节时间不能为空」(用户反馈 2026-09-20)
+                        val effectiveRows = TimeTableUtils.effectiveRowsForConfirm(
+                            manualRows = rows,
+                            bindId = selectedPeriodTableId,
+                            tables = periodTableTimeJsonById.map { it.key to it.value }
+                        )
+                        val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                         if (emptyRows.isNotEmpty()) {
                             errorMsg = context.getString(R.string.slot_time_required, emptyRows.first().node)
                             return@DialogActionButtons
                         }
                         val timeRegex = Regex("""^\d{2}:\d{2}$""")
-                        val invalidRows = rows.filter {
+                        val invalidRows = effectiveRows.filter {
                             !timeRegex.matches(it.start) || !timeRegex.matches(it.end) ||
                             it.start >= it.end
                         }
@@ -1347,7 +1375,7 @@ private fun ImportConfirmDialog(
                             return@DialogActionButtons
                         }
                         errorMsg = null
-                        onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(rows))
+                        onTimeJsonChange(TimeTableUtils.buildTimeJsonFromRows(effectiveRows))
                         onConfirm()
                     },
                     dismissText = stringResource(R.string.back),

@@ -38,7 +38,7 @@ class SchoolsJsonConsistencyTest {
             JwProtocol.TYPE_QZ, JwProtocol.TYPE_QZ_OLD, JwProtocol.TYPE_QZ_CRAZY,
             JwProtocol.TYPE_QZ_BR, JwProtocol.TYPE_QZ_WITH_NODE, JwProtocol.TYPE_QZ_IEAS,
             JwProtocol.TYPE_QZ_APP, JwProtocol.TYPE_UCAS,
-            JwProtocol.TYPE_CF, JwProtocol.TYPE_PKU, JwProtocol.TYPE_BNUZ,
+            JwProtocol.TYPE_CF, JwProtocol.TYPE_CF_NEW, JwProtocol.TYPE_PKU, JwProtocol.TYPE_BNUZ,
             JwProtocol.TYPE_HNUST, JwProtocol.TYPE_HNIU, JwProtocol.TYPE_WISEDU,
             JwProtocol.TYPE_CQU, JwProtocol.TYPE_CHAOXING, JwProtocol.TYPE_BOYA_PP, JwProtocol.TYPE_EAMS5,
             JwProtocol.TYPE_SEU, JwProtocol.TYPE_ZJU, JwProtocol.TYPE_USTC,
@@ -48,6 +48,8 @@ class SchoolsJsonConsistencyTest {
             JwProtocol.TYPE_BJTU,
             JwProtocol.TYPE_YETHAN,
             JwProtocol.TYPE_XJU_POST,
+            JwProtocol.TYPE_KUST,
+            JwProtocol.TYPE_NUIT,
         )
         val bad = loadEntries().filter { it.type != null && it.type !in declared }
         assertEquals("type 未在 JwProtocol 声明的条目: ${bad.map { it.name to it.type }}", 0, bad.size)

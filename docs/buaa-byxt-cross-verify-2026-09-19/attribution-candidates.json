@@ -1,0 +1,38 @@
+{
+  "date": "2026-09-19",
+  "school": "BUAA byxt.buaa.edu.cn",
+  "policy": "SOP 全量纳入: 网上找到 N 个相关仓就致谢 N 个, 不手削候选",
+  "attribution_added": [
+    {"repo": "fontlos/buaa-api", "license": "MIT"},
+    {"repo": "BUAASubnet/UBAA", "license": "MIT", "stars": 245},
+    {"repo": "CoolwindHF/buaa2wakeup", "license": "MIT"},
+    {"repo": "awesome-buaa-cs/buaa-curriculum", "license": null},
+    {"repo": "cantBeFoundGroup/OpenBUAA", "license": null},
+    {"repo": "el-ev/BUAA-ics-gen", "license": "MIT"},
+    {"repo": "Krignd/KAgenda", "license": null},
+    {"repo": "Yiki21/iclass_buaa_tui", "license": "GPL-3.0", "stars": 13},
+    {"repo": "Lidozs55/BUAAer-Smart-Schedule-on-electron", "license": null},
+    {"repo": "WhXcjm/buaa-byxt-aischedule", "license": "GPL-3.0"},
+    {"repo": "MeanZhang/buaa-ai-schedule", "license": "MIT", "note": "archived"},
+    {"repo": "Alyssumira/BUAA-Schedule", "license": "MIT"},
+    {"repo": "lyy1119/BuaaScheduleRender", "license": "MIT", "note": "GSMIS 研究生形态参考"},
+    {"repo": "zjafb/BUAA-Hangzhou-Schedule", "license": "MIT", "note": "UBAA fork, 杭州校区旁证"}
+  ],
+  "already_attributed_before_this_task": [
+    {"repo": "APassbyDreg/BUAA_JW_Utils", "note": "iEAS 旧版"},
+    {"repo": "SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend"},
+    {"repo": "fondoger/buaa-teacher-evaluation", "license": "MIT"},
+    {"repo": "Cauchy1412/BUAAGetCourse"},
+    {"repo": "KKRainbow/JWOneShotEval", "license": "PHP"}
+  ],
+  "files_touched": [
+    "app/src/main/res/values/strings.xml",
+    "app/src/main/res/values-en/strings.xml",
+    "app/src/main/res/values-es/strings.xml",
+    "app/src/main/res/values-ja/strings.xml",
+    "app/src/main/res/values-zh-rCN/strings.xml",
+    "app/src/main/res/values-zh-rTW/strings.xml",
+    "app/src/test/java/com/lingion/sleepy/AboutLicenseAttributionTest.kt"
+  ],
+  "test_gate": "AboutLicenseAttributionTest 6 locales all assert 14 new tokens + license labels"
+}
