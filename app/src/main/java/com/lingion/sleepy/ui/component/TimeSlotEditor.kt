@@ -57,11 +57,6 @@ fun resolveAutoPeriodConfig(
     stored: SmartPeriodConfig?
 ): SmartPeriodConfig? {
     val standard = rows.filter { it.edgeClass == null }.sortedBy { it.node }
-    if (standard.isEmpty() || standard.first().node != 1 ||
-        standard.map { it.node } != (1..standard.size).toList()
-    ) {
-        return TimeTableUtils.inferSmartPeriodConfig(standard, stored)
-    }
     if (stored != null) {
         val derived = stored.derive()
         val matches = derived.size == standard.size && derived.withIndex().all { (i, d) ->
@@ -70,25 +65,6 @@ fun resolveAutoPeriodConfig(
         if (matches) return stored
     }
     return TimeTableUtils.inferSmartPeriodConfig(standard, stored)
-}
-
-/** Replace standard rows with automatic output while retaining manual edge rows. */
-fun mergeAutoRows(
-    existingRows: List<TimeSlotRow>,
-    derivedStandardRows: List<TimeSlotRow>
-): List<TimeSlotRow> {
-    var nextStandard = 0
-    val merged = existingRows.mapNotNull { row ->
-        if (row.edgeClass != null) {
-            row
-        } else {
-            derivedStandardRows.getOrNull(nextStandard++)
-        }
-    }.toMutableList()
-    if (nextStandard < derivedStandardRows.size) {
-        merged += derivedStandardRows.drop(nextStandard)
-    }
-    return merged
 }
 
 /** smartConfigJson -> config(null = 空串/损坏); 两处编辑页 seed 共用 */
@@ -134,7 +110,7 @@ fun TimeSlotEditor(
     // 否则保存时 timeJson 用的还是旧的手动 rows，导致"保存的不是自动模式数据"。
     LaunchedEffect(mode, smartConfig) {
         if (mode == Mode.Auto) {
-            onRowsChange(mergeAutoRows(rows, smartConfig.derive()))
+            onRowsChange(smartConfig.derive())
         }
     }
 
@@ -185,8 +161,6 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
     // 2026-08-25 用户指令: 全 app 统一色块禁描线 — M3 SegmentedButton 是描边风格,
     // 换项目统一的 SegmentedSwitcher (主页周视图/网格同款)
     val modes = if (hasPeriodTableTab) Mode.entries else listOf(Mode.Manual, Mode.Auto)
-    // 2026-09-20 用户(节次编辑器轨道与卡片同色隐形): 本组件嵌在 surfaceContainer 卡片里,
-    // 轨道默认色与卡片同色 → 包裹块不可见。与 SettingsFlatCard 同款降一级保对比。
     SegmentedSwitcher(
         options = modes.map {
             it to stringResource(
@@ -199,8 +173,7 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
         },
         selected = current,
         onSelect = onChange,
-        modifier = Modifier.fillMaxWidth(),
-        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
+        modifier = Modifier.fillMaxWidth()
     )
 }
 
@@ -215,7 +188,7 @@ private fun PeriodTableBindTab(
     selectedId: Long?,
     onSelect: (Long?) -> Unit
 ) {
-    val colors = MaterialTheme.colorScheme
+    val colors = SleepyTheme.colors
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -243,7 +216,7 @@ private fun PeriodTableBindTab(
 /** 选中态=primaryContainer 色块+对勾(UI 纯色块禁描边规则, 与换绑卡 BindOptionRow 同构) */
 @Composable
 private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, subtitle: String? = null) {
-    val colors = MaterialTheme.colorScheme
+    val colors = SleepyTheme.colors
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,7 +258,7 @@ private fun ManualTimeSlotEditor(
     onRowsChange: (List<TimeSlotRow>) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = MaterialTheme.colorScheme
+    val colors = SleepyTheme.colors
 
     Column(modifier = modifier) {
         // Header
@@ -353,7 +326,7 @@ private fun TimeSlotRowItem(
     onEndChange: (String) -> Unit,
     onDelete: () -> Unit
 ) {
-    val colors = MaterialTheme.colorScheme
+    val colors = SleepyTheme.colors
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
