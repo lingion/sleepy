@@ -5,9 +5,10 @@ import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import java.time.LocalDate
 import java.time.LocalDateTime
 
-/** WeekDisplayResolver 的周末、课程结束和边界行为。 */
+/** WeekDisplayResolver 的"最近有课日"行为契约。 */
 class WeekDisplayResolverTest {
 
     private val startDate = "2026-09-14" // Monday, week 1
@@ -53,106 +54,134 @@ class WeekDisplayResolverTest {
     )
 
     @Test
-    fun `disabled keeps actual week even when current week has ended`() {
+    fun `disabled keeps today even when nothing left today`() {
         val result = resolve("2026-09-19T23:00", enabled = false)
 
         assertEquals(1, result.actualWeek)
-        assertEquals(1, result.displayWeek)
+        assertEquals(LocalDate.of(2026, 9, 19), result.targetDate)
         assertEquals(WeekDisplayStatus.NORMAL, result.status)
         assertFalse(result.enabled)
     }
 
     @Test
-    fun `saturday course prevents switching to next week`() {
+    fun `today with class remains today`() {
         val result = resolve(
-            "2026-09-19T07:30",
-            courses = listOf(course(1, day = 6, startTime = "08:00", endTime = "09:00"))
+            "2026-09-14T07:30",
+            courses = listOf(course(1, day = 1, startTime = "08:00", endTime = "09:00"))
         )
 
-        assertEquals(1, result.displayWeek)
+        assertEquals(LocalDate.of(2026, 9, 14), result.targetDate)
+        assertEquals(1, result.targetWeek)
         assertEquals(WeekDisplayStatus.NORMAL, result.status)
-        assertFalse(result.actualWeekEnded)
+        assertTrue(result.todayHasRemaining)
     }
 
     @Test
-    fun `saturday without class does not switch if sunday still has class`() {
+    fun `today after last class still today if later day has class this week`() {
+        // 周一 09:00 上完，周二还有课 → 跳到周二
         val result = resolve(
-            "2026-09-19T12:00",
+            "2026-09-14T09:01",
+            courses = listOf(
+                course(1, day = 1, startTime = "08:00", endTime = "09:00"),
+                course(2, day = 2, startTime = "10:00", endTime = "11:00")
+            )
+        )
+
+        assertEquals(LocalDate.of(2026, 9, 15), result.targetDate)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, result.status)
+    }
+
+    @Test
+    fun `saturday with later sunday class jumps to sunday`() {
+        val result = resolve(
+            "2026-09-19T23:00",
             courses = listOf(course(2, day = 7, startTime = "08:00", endTime = "09:00"))
         )
 
-        assertEquals(1, result.displayWeek)
-        assertEquals(WeekDisplayStatus.NORMAL, result.status)
-        assertFalse(result.actualWeekEnded)
+        assertEquals(LocalDate.of(2026, 9, 20), result.targetDate)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, result.status)
     }
 
     @Test
-    fun `sunday before class ends remains on current week`() {
+    fun `saturday weekend empty jumps to next week monday`() {
+        // 周六周日均无课，最近有课日 = 下周一（第 2 周）
         val result = resolve(
-            "2026-09-20T08:30",
-            courses = listOf(course(3, day = 7, startTime = "08:00", endTime = "10:00"))
+            "2026-09-19T10:01",
+            courses = listOf(course(4, day = 1, startWeek = 2, startTime = "08:00", endTime = "10:00"))
         )
 
-        assertEquals(1, result.displayWeek)
-        assertEquals(WeekDisplayStatus.NORMAL, result.status)
+        assertEquals(LocalDate.of(2026, 9, 21), result.targetDate)
+        assertEquals(2, result.targetWeek)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, result.status)
     }
 
     @Test
-    fun `sunday after last class switches to next week`() {
+    fun `three day gap in the middle of week jumps to first class day`() {
+        // 周一上完，后面周三才有课 → 跳周三
         val result = resolve(
-            "2026-09-20T10:01",
-            courses = listOf(course(4, day = 7, startTime = "08:00", endTime = "10:00"))
+            "2026-09-14T10:00",
+            courses = listOf(
+                course(1, day = 1, startTime = "08:00", endTime = "09:30"),
+                course(2, day = 3, startTime = "14:00", endTime = "15:30")
+            )
         )
 
-        assertEquals(2, result.displayWeek)
-        assertEquals(WeekDisplayStatus.NEXT_WEEK, result.status)
-        assertTrue(result.actualWeekEnded)
+        assertEquals(LocalDate.of(2026, 9, 16), result.targetDate)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, result.status)
     }
 
     @Test
-    fun `weekday after last class switches to next week`() {
-        val result = resolve(
-            "2026-09-18T10:01",
-            courses = listOf(course(5, day = 5, startTime = "08:00", endTime = "10:00"))
-        )
-
-        assertEquals(2, result.displayWeek)
-        assertEquals(WeekDisplayStatus.NEXT_WEEK, result.status)
-    }
-
-    @Test
-    fun `invalid class time is treated as remaining`() {
-        val result = resolve(
-            "2026-09-19T23:00",
-            courses = listOf(course(6, day = 6, startTime = "not-a-time", endTime = "also-invalid"))
-        )
-
-        assertEquals(1, result.displayWeek)
-        assertEquals(WeekDisplayStatus.NORMAL, result.status)
-        assertFalse(result.actualWeekEnded)
-    }
-
-    @Test
-    fun `last semester week never advances beyond max week`() {
+    fun `no class left until next semester stays today`() {
         val result = resolve(
             "2026-09-20T23:00",
             courses = emptyList(),
             maxWeek = 1
         )
 
-        assertEquals(1, result.actualWeek)
-        assertEquals(1, result.displayWeek)
-        assertEquals(WeekDisplayStatus.WEEKEND_CURRENT, result.status)
+        assertEquals(LocalDate.of(2026, 9, 20), result.targetDate)
+        assertEquals(1, result.targetWeek)
+        assertEquals(WeekDisplayStatus.NORMAL, result.status)
     }
 
     @Test
-    fun `course outside current week is ignored`() {
+    fun `course outside current week is ignored for today has remaining`() {
+        // 当前第 1 周，今天周二无第 1 周课（只有第 2 周的课），找最近日应在第 2 周
         val result = resolve(
-            "2026-09-19T23:00",
-            courses = listOf(course(7, day = 6, startWeek = 2, endWeek = 3))
+            "2026-09-15T23:00",
+            courses = listOf(course(7, day = 2, startWeek = 2, endWeek = 3))
         )
 
-        assertEquals(2, result.displayWeek)
-        assertEquals(WeekDisplayStatus.NEXT_WEEK, result.status)
+        assertEquals(LocalDate.of(2026, 9, 22), result.targetDate)
+        assertEquals(2, result.targetWeek)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, result.status)
+    }
+
+    @Test
+    fun `invalid end time keeps today as remaining`() {
+        val result = resolve(
+            "2026-09-14T23:00",
+            courses = listOf(course(6, day = 1, startTime = "not-a-time", endTime = "also-invalid"))
+        )
+
+        assertEquals(LocalDate.of(2026, 9, 14), result.targetDate)
+        assertTrue(result.todayHasRemaining)
+    }
+
+    @Test
+    fun `statusForSelectedWeek mirrors NEAREST_BUSY_DAY only on target week`() {
+        // 周六无课，最近有课日在下周一（第 2 周）；手动选第 1 周(实际周)应回 NORMAL，
+        // 只有停留在自动跳到的第 2 周才显示 NEAREST_BUSY_DAY
+        val ctx = resolve(
+            "2026-09-19T23:00",
+            courses = listOf(course(2, day = 1, startWeek = 2, startTime = "14:00", endTime = "15:30"))
+        )
+
+        assertEquals(2, ctx.targetWeek)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY,
+            WeekDisplayResolver.statusForSelectedWeek(ctx, ctx.targetWeek))
+        assertEquals(WeekDisplayStatus.NORMAL,
+            WeekDisplayResolver.statusForSelectedWeek(ctx, ctx.actualWeek))
+        assertEquals(WeekDisplayStatus.NORMAL,
+            WeekDisplayResolver.statusForSelectedWeek(ctx, 3))
     }
 }

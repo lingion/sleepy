@@ -9,97 +9,66 @@ import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.time.LocalDate
+import java.time.LocalDateTime
 
-/** 主界面/小组件共用展示周契约的纯 JVM 覆盖。 */
+/** 主界面/小组件共用"最近有课日"契约的纯 JVM 覆盖。 */
 class WeekDisplayWidgetContractTest {
-
-    private fun course(day: Int, name: String) = CourseEntity(
-        id = day.toLong(),
-        groupId = "g$day",
-        tableId = 1,
-        courseName = name,
-        day = day,
-        startNode = 1,
-        step = 1,
-        startWeek = 2,
-        endWeek = 3,
-        color = ""
+    private fun course(day: Int, name: String, startWeek: Int = 1) = CourseEntity(
+        id = day.toLong(), groupId = "g$day", tableId = 1, courseName = name,
+        day = day, startNode = 1, step = 1, startWeek = startWeek, endWeek = 3, color = ""
     )
 
     @Test
-    fun `auto next week is opt in by default`() {
-        assertFalse(AppPrefs.DEFAULT_AUTO_NEXT_WEEK)
+    fun `nearest busy day is opt in by default`() {
+        assertFalse(AppPrefs.DEFAULT_NEAREST_BUSY_DAY)
     }
 
     @Test
-    fun `manual return to actual week is labelled weekend`() {
+    fun `resolver selects nearest future class day rather than whole next week`() {
         val context = com.lingion.sleepy.util.WeekDisplayResolver.resolve(
-            startDate = "2026-09-14",
-            maxWeek = 3,
-            now = java.time.LocalDateTime.parse("2026-09-19T23:00"),
-            courses = emptyList(),
+            startDate = "2026-09-14", maxWeek = 3,
+            now = LocalDateTime.parse("2026-09-14T23:00"),
+            courses = listOf(course(3, "周三课程")),
             timeJson = com.lingion.sleepy.util.TimeTableUtils.DEFAULT_TIME_JSON,
             enabled = true
         )
-
-        assertEquals(WeekDisplayStatus.NEXT_WEEK, context.status)
-        assertEquals(
-            WeekDisplayStatus.WEEKEND_CURRENT,
-            com.lingion.sleepy.util.WeekDisplayResolver.statusForSelectedWeek(context, context.actualWeek)
-        )
-        assertEquals(
-            WeekDisplayStatus.NEXT_WEEK,
-            com.lingion.sleepy.util.WeekDisplayResolver.statusForSelectedWeek(context, context.displayWeek)
-        )
+        assertEquals(LocalDate.of(2026, 9, 16), context.targetDate)
+        assertEquals(1, context.targetWeek)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, context.status)
     }
 
     @Test
-    fun `small grid mode uses next monday data instead of today's weekday`() {
-        val monday = LocalDate.of(2026, 9, 21)
+    fun `small grid mode uses nearest busy day instead of today's weekday`() {
+        val target = LocalDate.of(2026, 9, 16)
         val data = WeekData(
             days = listOf(
-                DayData(monday, 1, listOf(course(1, "下周高数")), ""),
-                DayData(monday.plusDays(1), 2, emptyList(), "")
-            ),
-            hasTable = true,
-            weekDisplayStatus = WeekDisplayStatus.NEXT_WEEK
+                DayData(target, 3, listOf(course(3, "周三课程")), ""),
+                DayData(target.plusDays(1), 4, emptyList(), "")
+            ), hasTable = true,
+            weekDisplayStatus = WeekDisplayStatus.NEAREST_BUSY_DAY
         )
-
-        val result = WidgetBitmapRenderers.weekGridMinimumTodayData(
-            data,
-            today = LocalDate.of(2026, 9, 20)
-        )
-
-        assertEquals(monday, result.date)
-        assertEquals(listOf("下周高数"), result.courses.map { it.courseName })
+        val result = WidgetBitmapRenderers.weekGridMinimumTodayData(data, LocalDate.of(2026, 9, 14))
+        assertEquals(target, result.date)
+        assertEquals(listOf("周三课程"), result.courses.map { it.courseName })
         assertFalse(result.isToday)
-        assertEquals(WeekDisplayStatus.NEXT_WEEK, result.weekDisplayStatus)
+        assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, result.weekDisplayStatus)
     }
 
     @Test
-    fun `today header gives next week an actionable status title`() {
+    fun `today header gives nearest busy day an actionable status title`() {
         val data = WidgetData(
-            date = LocalDate.of(2026, 9, 21),
-            courses = emptyList(),
-            timeJson = "",
-            hasTable = true,
-            isToday = false,
-            weekDisplayStatus = WeekDisplayStatus.NEXT_WEEK
+            date = LocalDate.of(2026, 9, 16), courses = emptyList(), timeJson = "",
+            hasTable = true, isToday = false, weekDisplayStatus = WeekDisplayStatus.NEAREST_BUSY_DAY
         )
         val parts = WidgetBitmapRenderers.todayHeaderParts(
-            data = data,
-            dayName = "周一",
-            showDate = true,
-            resolve = { id ->
-                when (id) {
-                    R.string.schedule_next_week -> "下周课表"
-                    R.string.today_nav_back_to_today -> "回到今天"
-                    else -> "其他"
-                }
-            }
+            data, "周三", true,
+            resolve = { id -> when (id) {
+                R.string.schedule_nearest_busy_day -> "最近有课的一天"
+                R.string.today_nav_back_to_today -> "回到今天"
+                else -> "其他"
+            } }
         )
-
-        assertTrue(parts.title.startsWith("下周课表"))
+        assertTrue(parts.title.startsWith("最近有课的一天"))
         assertEquals("回到今天", parts.rightText)
         assertTrue(parts.rightIsAction)
     }
