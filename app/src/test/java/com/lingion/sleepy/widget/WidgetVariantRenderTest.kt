@@ -394,11 +394,13 @@ class WidgetVariantRenderTest {
         assertFalse(mapped.hasTable)
     }
 
-    // ── drawCourse meta 行拆分: 时间一行/地点一行(宽度不够时) ──
+    // ── drawCourse meta 行: 恒单行, 时间/地点各自半宽截断 ──
+    // (用户原话: 长的截断, 不允许元素过长挡住其他的, 不能挤占其他的 →
+    //  旧"放不下拆两行"会让 meta 块总高超过胶囊行高, 竖向盖住相邻行 = 挤占, 已废)
 
     @Test
     fun `courseMetaLines single line fits time and location`() {
-        // 宽度足够 → 保持旧行为: "3-4节 · 教3-101" 一行
+        // 宽度足够 → "3-4节 · 教3-101" 一行
         val lines = WidgetBitmapRenderers.courseMetaLines(
             measure = { _ -> 10f },
             maxWidth = 100f,
@@ -409,15 +411,28 @@ class WidgetVariantRenderTest {
     }
 
     @Test
-    fun `courseMetaLines splits into time line and room line when overflow`() {
-        // 拼行放不下 → 拆两行: 时间/地点
+    fun `courseMetaLines overflow keeps single line with both halves ellipsized`() {
+        // measure=长度×10, " · "=30。combined 13 字=130 > 100 → 溢出:
+        // 半宽 = 50 - 15 = 35 → 时间截到 "3-…", 地点截到 "教3…", 一行
         val lines = WidgetBitmapRenderers.courseMetaLines(
             measure = { t -> t.length * 10f },
-            maxWidth = 50f,
+            maxWidth = 100f,
             timeStr = "3-4节",
             room = "教3-101"
         )
-        assertEquals(listOf("3-4节", "教3-101"), lines)
+        assertEquals(listOf("3-… · 教3…"), lines)
+    }
+
+    @Test
+    fun `courseMetaLines extreme overflow still returns exactly one line`() {
+        // 任何宽度下绝不返回两行(两行 = 总高超行高挤占相邻行)
+        val lines = WidgetBitmapRenderers.courseMetaLines(
+            measure = { t -> t.length * 10f },
+            maxWidth = 10f,
+            timeStr = "3-4节",
+            room = "教3-101"
+        )
+        assertEquals(1, lines.size)
     }
 
     @Test
@@ -429,6 +444,29 @@ class WidgetVariantRenderTest {
             room = ""
         )
         assertEquals(listOf("3-4节"), lines)
+    }
+
+    @Test
+    fun `courseMetaLines no time returns room only`() {
+        // 无时间只有地点 → 不带前导分隔符
+        val lines = WidgetBitmapRenderers.courseMetaLines(
+            measure = { _ -> 10f },
+            maxWidth = 100f,
+            timeStr = "",
+            room = "教3-101"
+        )
+        assertEquals(listOf("教3-101"), lines)
+    }
+
+    @Test
+    fun `courseMetaLines both blank returns empty`() {
+        val lines = WidgetBitmapRenderers.courseMetaLines(
+            measure = { _ -> 10f },
+            maxWidth = 100f,
+            timeStr = "",
+            room = "  "
+        )
+        assertTrue(lines.isEmpty())
     }
 }
 
