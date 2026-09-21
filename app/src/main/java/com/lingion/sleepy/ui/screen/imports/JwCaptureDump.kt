@@ -8,6 +8,7 @@ import android.os.Build
 import android.os.Environment
 import android.provider.MediaStore
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.jw.JwSchoolInfo
 import java.io.File
@@ -494,6 +495,7 @@ object JwCaptureDump {
         }
     }
 
+    @RequiresApi(Build.VERSION_CODES.Q)
     private fun writeToMediaStoreDownloads(ctx: Context, name: String, bytes: ByteArray): Uri? {
         return try {
             val values = ContentValues().apply {

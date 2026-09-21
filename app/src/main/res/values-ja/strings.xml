@@ -585,6 +585,7 @@
     <string name="about_update">更新を確認</string>
     <string name="about_update_checking">更新を確認中…</string>
     <string name="about_update_detail">GitHub が利用できない場合は、自動でミラーにフォールバックします</string>
+    <string name="about_update_dismiss">更新のお知らせを閉じる</string>
     <string name="about_version">バージョン情報</string>
     <string name="about_version_detail">バージョン %1$s（ビルド %2$d）</string>
     <string name="action_cancel">キャンセル</string>

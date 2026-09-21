@@ -585,6 +585,7 @@
     <string name="about_update">取得更新</string>
     <string name="about_update_checking">正在檢查更新…</string>
     <string name="about_update_detail">GitHub 主站不可用時，自動回退鏡像下載</string>
+    <string name="about_update_dismiss">關閉更新提示</string>
     <string name="about_version">版本資訊</string>
     <string name="about_version_detail">版本 %1$s（建構 %2$d）</string>
     <string name="action_cancel">取消</string>

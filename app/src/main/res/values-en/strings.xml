@@ -597,6 +597,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="about_update">Check for Updates</string>
     <string name="about_update_checking">Checking for updates…</string>
     <string name="about_update_detail">If GitHub is unavailable, the app will fall back to the mirror automatically</string>
+    <string name="about_update_dismiss">Dismiss update banner</string>
     <string name="about_version">Version</string>
     <string name="about_version_detail">Version %1$s (Build %2$d)</string>
     <string name="action_cancel">Cancel</string>

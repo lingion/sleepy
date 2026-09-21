@@ -585,6 +585,7 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="about_update">Buscar actualizaciones</string>
     <string name="about_update_checking">Comprobando actualizaciones…</string>
     <string name="about_update_detail">Si GitHub no está disponible, la app recurrirá automáticamente al espejo</string>
+    <string name="about_update_dismiss">Descartar el aviso de actualización</string>
     <string name="about_version">Versión</string>
     <string name="about_version_detail">Versión %1$s (Compilación %2$d)</string>
     <string name="action_cancel">Cancelar</string>
