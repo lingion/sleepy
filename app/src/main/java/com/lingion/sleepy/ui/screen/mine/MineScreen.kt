@@ -58,7 +58,8 @@ fun MineScreen(
     onOpenGeneral: () -> Unit = {},
     onOpenExport: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
-    onOpenAbout: () -> Unit = {}
+    onOpenAbout: () -> Unit = {},
+    updateNoticeVisible: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
     val colors = SleepyTheme.colors
@@ -128,7 +129,12 @@ fun MineScreen(
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
                     Divider()
-                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), onClick = onOpenAbout)
+                    SettingsItem(
+                        icon = Icons.Outlined.Info,
+                        label = stringResource(R.string.about_title),
+                        onClick = onOpenAbout,
+                        highlighted = updateNoticeVisible
+                    )
                 }
             }
 
@@ -181,10 +187,20 @@ private fun StatItem(value: String, label: String) {
 
 @Composable
 // isLast / trailing 死参数已删（函数体从未读取 isLast; trailing 无任何调用方传值）
-private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}, subtitle: String? = null) {
+private fun SettingsItem(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit = {},
+    subtitle: String? = null,
+    highlighted: Boolean = false
+) {
     val colors = SleepyTheme.colors
     Row(
-        modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (highlighted) colors.primary.copy(alpha = 0.10f) else colors.surfaceContainer)
+            .noRippleClickable(onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.size(40.dp).clip(SleepyTheme.shapes.medium).background(colors.primaryContainer), contentAlignment = Alignment.Center) {

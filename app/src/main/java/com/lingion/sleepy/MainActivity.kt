@@ -137,6 +137,7 @@ class MainActivity : ComponentActivity() {
         com.lingion.sleepy.util.HighRefreshRate.apply(this, com.lingion.sleepy.util.AppPrefs.isHighRefresh(this))
         handleDeepLinkIntent(intent)
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
+        com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
         setContent {
             // uiNightModeState.value 变化(composition-observed) → systemDark 重算 →
@@ -277,7 +278,8 @@ internal fun MainTabs(
     viewMode: ViewMode,
     onViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit,
-    holder: SaveableStateHolder
+    holder: SaveableStateHolder,
+    updateNoticeVisible: Boolean = false
 ) {
     // tab 往返滚动位置保真: when 条件组合同样整页移除被切走的 tab, 各 tab 内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
@@ -337,7 +339,8 @@ internal fun MainTabs(
                 onOpenGeneral = { navigator.openGeneral() },
                 onOpenExport = { navigator.openExport() },
                 onOpenReminder = { navigator.openReminder() },
-                onOpenAbout = { navigator.openAbout() })
+                onOpenAbout = { navigator.openAbout() },
+                updateNoticeVisible = updateNoticeVisible)
         }
     }
 }
