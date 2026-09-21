@@ -94,6 +94,9 @@ private data class EditingTarget(val range: HolidayRange, val isNew: Boolean)
 private const val MIN_YEAR = 2005
 private const val MAX_YEAR = 2049
 
+private fun getHolidayTransfers(context: android.content.Context, tableId: Long) =
+    AppPrefs.getHolidayTransfers(context, tableId)
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HolidaySettingsScreen(
@@ -118,7 +121,7 @@ fun HolidaySettingsScreen(
     // 卡内课表切换用局部 activeTableId — 只切"正在编辑哪张表", 不动全局选中课表。
     var activeTableId by remember(tableId) { mutableStateOf(tableId) }
     var transfers by remember(activeTableId) {
-        mutableStateOf(activeTableId?.let { AppPrefs.getHolidayTransfers(context, it) } ?: emptyList())
+        mutableStateOf(activeTableId?.let { getHolidayTransfers(context, it) } ?: emptyList())
     }
     val vmState by viewModel.state.collectAsState()
     val dayNames = remember { context.resources.getStringArray(com.lingion.sleepy.R.array.day_names) }

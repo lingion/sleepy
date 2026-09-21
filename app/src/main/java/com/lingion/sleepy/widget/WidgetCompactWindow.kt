@@ -29,7 +29,9 @@ internal object WidgetCompactWindow {
             WidgetBitmapRenderers.compactWindowDates(today, todayFirst)
         }
         return dates.map { effectiveDate ->
-            val dow = effectiveDate.dayOfWeek.value
+            val dow = HolidayTransferHelper.effectiveDayOfWeek(
+                com.lingion.sleepy.SleepyApp.get(), tableId, effectiveDate
+            )
             val week = displayWeek ?: DateUtils.currentWeek(startDate, effectiveDate)
             val afterEnd = DateUtils.semesterStatus(startDate, maxWeek, effectiveDate) == DateUtils.SemesterStatus.AFTER_END
             val visible = if (afterEnd) emptyList()

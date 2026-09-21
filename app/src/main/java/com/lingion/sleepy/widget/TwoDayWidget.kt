@@ -194,7 +194,7 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, dates.first())
                         val days = dates.map { date ->
                             val week = DateUtils.currentWeek(table.startDate, date)
-                            val dow = date.dayOfWeek.value
+                            val dow = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, date)
                             val courses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList()
                                 else source.coursesFor(dow, week)
                             DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = table.timeJson)

@@ -266,7 +266,11 @@ internal fun SleepyNavHost(
         }
 
         entry<SleepyRoute.Holiday> {
-            HolidaySettingsScreen(onBack = { navigator.pop() })
+            HolidaySettingsScreen(
+                onBack = { navigator.pop() },
+                tableId = mainVm.state.value.currentTable?.id,
+                viewModel = mainVm
+            )
         }
 
         entry<SleepyRoute.Export> {
