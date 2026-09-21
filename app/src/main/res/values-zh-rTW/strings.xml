@@ -652,6 +652,17 @@
     <string name="jw_diag_export_saved">排查包已存到 Download/Sleepy/教务日志/%1$s</string>
     <string name="jw_diag_export_failed">排查包產生失敗：%1$s</string>
     <string name="jw_diag_export_chooser">分享排查包</string>
+    <string name="jw_diag_progress_step">步驟 %1$d / %2$d</string>
+    <string name="jw_diag_progress_percent">%1$d%%</string>
+    <string name="jw_diag_stage_dom_inventory">擷取頁面 DOM 可點元素…</string>
+    <string name="jw_diag_stage_storage">擷取 Web Storage 全鍵值…</string>
+    <string name="jw_diag_stage_links">擷取頁面連結與下拉列舉…</string>
+    <string name="jw_diag_stage_network_snapshot">擷取執行時網路請求快照…</string>
+    <string name="jw_diag_stage_network_replay">網路請求重放（≤30 秒）…</string>
+    <string name="jw_diag_stage_resource_replay">同源資源重取（≤16 秒）…</string>
+    <string name="jw_diag_stage_cookies">擷取 Cookie 全量值…</string>
+    <string name="jw_diag_stage_zip">打包排查全量包…</string>
+    <string name="jw_diag_stage_save_share">存到下載目錄並開啟分享面板…</string>
     <string name="reminder_before_class_preview">範例：下節課 高等數學 於 08:00 在 教學樓A101 上課</string>
     <string name="reminder_before_class_preview_dynamic">範例：%1$s，下節課是「%2$s」，於 %3$s 在 %4$s 上課%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">範例：未來沒有可提醒的課程。</string>

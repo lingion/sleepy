@@ -618,6 +618,17 @@
     <string name="jw_diag_export_saved">排查包已存到 Download/Sleepy/教务日志/%1$s</string>
     <string name="jw_diag_export_failed">排查包生成失败：%1$s</string>
     <string name="jw_diag_export_chooser">分享排查包</string>
+    <string name="jw_diag_progress_step">步骤 %1$d / %2$d</string>
+    <string name="jw_diag_progress_percent">%1$d%%</string>
+    <string name="jw_diag_stage_dom_inventory">抓取页面 DOM 可点元素…</string>
+    <string name="jw_diag_stage_storage">抓取 Web Storage 全键值…</string>
+    <string name="jw_diag_stage_links">抓取页面链接与下拉枚举…</string>
+    <string name="jw_diag_stage_network_snapshot">抓取运行时网络请求快照…</string>
+    <string name="jw_diag_stage_network_replay">网络请求重放（≤30秒）…</string>
+    <string name="jw_diag_stage_resource_replay">同源资源重取（≤16秒）…</string>
+    <string name="jw_diag_stage_cookies">抓取 Cookie 全量值…</string>
+    <string name="jw_diag_stage_zip">打包排查全量包…</string>
+    <string name="jw_diag_stage_save_share">存到下载目录并打开分享面板…</string>
     <string name="reminder_daily_preview">示例：今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课</string>
     <string name="reminder_preview_today_date">今日 %1$s（%2$s）</string>
     <string name="reminder_preview_tomorrow_date">明日 %1$s（%2$s）</string>

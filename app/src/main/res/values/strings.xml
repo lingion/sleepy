@@ -558,6 +558,18 @@
     <string name="jw_diag_export_saved">排查包已存到 Download/Sleepy/教务日志/%1$s</string>
     <string name="jw_diag_export_failed">排查包生成失败：%1$s</string>
     <string name="jw_diag_export_chooser">分享排查包</string>
+    <!-- 排查包导出原子进度 (2026-09-21 用户: 看到每步在哪+百分比, 禁黑箱等待) -->
+    <string name="jw_diag_progress_step">步骤 %1$d / %2$d</string>
+    <string name="jw_diag_progress_percent">%1$d%%</string>
+    <string name="jw_diag_stage_dom_inventory">抓取页面 DOM 可点元素…</string>
+    <string name="jw_diag_stage_storage">抓取 Web Storage 全键值…</string>
+    <string name="jw_diag_stage_links">抓取页面链接与下拉枚举…</string>
+    <string name="jw_diag_stage_network_snapshot">抓取运行时网络请求快照…</string>
+    <string name="jw_diag_stage_network_replay">网络请求重放（≤30s）…</string>
+    <string name="jw_diag_stage_resource_replay">同源资源重取（≤16s）…</string>
+    <string name="jw_diag_stage_cookies">抓取 Cookie 全量值…</string>
+    <string name="jw_diag_stage_zip">打包排查全量包…</string>
+    <string name="jw_diag_stage_save_share">存到下载目录并打开分享面板…</string>
     <!-- T9 导入失败诊断文案 -->
     <string name="jw_diag_session_expired">%1$s 的会话已过期或未登录。请重新登录后停留到「个人课表」页再点抓取</string>
     <string name="jw_diag_no_container">%1$s 的页面未找到课表容器。可能原因：①抓取时机过早课表未加载；②页面为图片课表或跨域 iframe；③教务系统已升级，请反馈开发者</string>
