@@ -27,7 +27,7 @@ class NavHostMigrationContractTest {
         File("src/main/java/com/lingion/sleepy/ui/nav/SleepyNavigator.kt").readText()
     }
     private val routesSrc by lazy {
-        File("src/main/java/com/lingion/sleepy/ui/nav/SleepyRoutes.kt").readText()
+        File("src/main/java/com/lingion/sleepy/ui/nav/SleepyMaterialTransition.kt").readText()
     }
     private val mainSrc by lazy {
         File("src/main/java/com/lingion/sleepy/MainActivity.kt").readText()
@@ -62,29 +62,29 @@ class NavHostMigrationContractTest {
         error("未闭合块: $anchor")
     }
 
-    // ─── EditTable 弃表语义 ───
+    // ─── EditTable 弃表语义 (official navigation3 entry<T> 锚点) ───
 
     @Test
     fun editTable_route_backHandler_drops_pending_table_via_discardNewTable() {
-        val block = balancedBlock(navHostSrc, "composable(Routes.EDIT_TABLE")
+        val block = balancedBlock(navHostSrc, "entry<SleepyRoute.EditTable>")
         // 兜底系统返回:enabled = pending != null(本地状态,不是路由参数)
         assertTrue(
-            "EDIT_TABLE 必须有 BackHandler(enabled = pending != null)",
+            "EditTable 必须有 BackHandler(enabled = pending != null)",
             Regex("""BackHandler\(\s*enabled\s*=\s*pending\s*!=\s*null\s*\)""").containsMatchIn(block)
         )
         assertTrue(
-            "EDIT_TABLE 弃表回调必须调 mainVm.discardNewTable",
+            "EditTable 弃表回调必须调 mainVm.discardNewTable",
             block.contains("mainVm.discardNewTable")
         )
         assertTrue(
-            "EDIT_TABLE 弃表后清 pending = null(防止重复触发)",
+            "EditTable 弃表后清 pending = null(防止重复触发)",
             block.contains("pending = null")
         )
     }
 
     @Test
     fun editTable_pending_is_local_rememberSaveable_not_route_arg() {
-        val block = balancedBlock(navHostSrc, "composable(Routes.EDIT_TABLE")
+        val block = balancedBlock(navHostSrc, "entry<SleepyRoute.EditTable>")
         // pending 必须用本地 rememberSaveable,而非直接拿路由参数
         assertTrue(
             "pending 必须本地化: rememberSaveable + mutableStateOf<Long?>(routePendingNew)",
@@ -94,7 +94,7 @@ class NavHostMigrationContractTest {
         )
         // 兜底注释必须解释为什么不读路由参数(防历史 bug 复发)
         assertTrue(
-            "EDIT_TABLE 必须有『读路由参数会触发历史 bug』类注释",
+            "EditTable 必须有『读路由参数会触发历史 bug』类注释",
             block.contains("路由参数") && block.contains("bug")
         )
     }
@@ -103,17 +103,17 @@ class NavHostMigrationContractTest {
 
     @Test
     fun periodTableEdit_route_backHandler_drops_pending_period_via_discardNewPeriodTable() {
-        val block = balancedBlock(navHostSrc, "composable(Routes.PERIOD_EDIT")
+        val block = balancedBlock(navHostSrc, "entry<SleepyRoute.PeriodEdit>")
         assertTrue(
-            "PERIOD_EDIT 必须有 BackHandler(enabled = unsavedNew)",
+            "PeriodEdit 必须有 BackHandler(enabled = unsavedNew)",
             Regex("""BackHandler\(\s*enabled\s*=\s*unsavedNew\s*\)""").containsMatchIn(block)
         )
         assertTrue(
-            "PERIOD_EDIT 弃表回调必须调 mainVm.discardNewPeriodTable",
+            "PeriodEdit 弃表回调必须调 mainVm.discardNewPeriodTable",
             block.contains("mainVm.discardNewPeriodTable")
         )
         assertTrue(
-            "PERIOD_EDIT 弃表后清 unsavedNew = false",
+            "PeriodEdit 弃表后清 unsavedNew = false",
             block.contains("unsavedNew = false")
         )
     }
@@ -124,42 +124,44 @@ class NavHostMigrationContractTest {
     fun editTable_local_backHandler_registers_after_onBack_navigation_chain() {
         // 导航回调链(主屏 onBack + 各 Tab onBack)先注册,per-route BackHandler 后注册;
         // BackHandler "最后注册者优先" 语义正是需要的:用户在 EditTable 时,本地兜底应赢。
-        // 锁契约:EDIT_TABLE 块的 BackHandler 出现位置晚于 `onBack=` / `popBackStack(`。
-        val block = balancedBlock(navHostSrc, "composable(Routes.EDIT_TABLE")
+        // 锁契约:EditTable 块的 BackHandler 出现位置晚于 `onBack=` 链。
+        val block = balancedBlock(navHostSrc, "entry<SleepyRoute.EditTable>")
         val onBackIdx = block.indexOf("onBack")
         val backHandlerIdx = block.indexOf("BackHandler(enabled = pending != null)")
-        assertTrue("EDIT_TABLE 块内应出现 onBack 链", onBackIdx > 0)
-        assertTrue("EDIT_TABLE 块内应出现本地 BackHandler", backHandlerIdx > 0)
+        assertTrue("EditTable 块内应出现 onBack 链", onBackIdx > 0)
+        assertTrue("EditTable 块内应出现本地 BackHandler", backHandlerIdx > 0)
         assertTrue(
             "本地 BackHandler 必须注册在 onBack 链之后(BackHandler 后注册者优先)",
             backHandlerIdx > onBackIdx
         )
     }
 
-    // ─── B 方案: pop 用 scaleOut, popEnter=None, forward 对称 slide 1/8 ───
+    // ─── Material 动效: pop 用 scaleOut + Center origin, popEnter=None, forward 对称 scale ───
 
     @Test
     fun popExit_uses_scaleOut_with_target_0_92_and_center_transformOrigin() {
-        // issue#45 第二轮 (2026-09-20): 用户选 B 方案 — pop 时退出页向屏幕中心缩放 + 淡出,
-        // 目标页原地不动。这是 Navigation Compose 2.8+ 官方推荐 in-app 返回动画
-        // (developer.android.com/develop/ui/compose/system/predictive-back-setup 示例)。
-        val body = balancedBlock(routesSrc, "fun sleepySharedAxisPopExit")
+        // issue#45 第三轮 (2026-09-21): miuix 弃库 → 官方 navigation3,
+        // Material 动效同样用 scaleIn/Out + TransformOrigin.Center + 0.92,
+        // 完全对齐 Material Motion in-app 返回手势官方示例。
+        val body = balancedBlock(routesSrc, "fun sleepyPopExit")
         assertTrue(
-            "popExit 必须调 scaleOut(0.92f, TransformOrigin(0.5, 0.5)) — 0.92 改 0.85/0.95 都是偏离官方示例",
+            "popExit 必须调 scaleOut(0.92f, TransformOrigin.Center) — 0.92 改 0.85/0.95 都是偏离官方示例",
             Regex(
-                """scaleOut\(\s*targetScale\s*=\s*0\.92f\s*,\s*animationSpec\s*=\s*popExitSpring\s*,\s*transformOrigin\s*=\s*TransformOrigin\(\s*0\.5f\s*,\s*0\.5f\s*\)"""
+                """scaleOut\(\s*animationSpec\s*=\s*forwardTween\s*,\s*targetScale\s*=\s*0\.92f\s*,\s*transformOrigin\s*=\s*TransformOrigin\.Center"""
             ).containsMatchIn(body)
         )
-        // spring 必须不回弹 + 不软,避免 M3 expressive spatial 0.8/380 过冲抖动
-        // popExitSpring 定义在文件顶层(不在函数块内),所以全文件扫描
+        // predictiveCommitTween 是 Material 化后的统一 tween(200ms CubicBezier(0.2,0,0,1)),
+        // 供 predictivePopTransitionSpec 手势释放(commit)时使用;popExit(程序化返回)用
+        // forwardTween。锁:tween 配置必须与 InstallerX Classic 的物理参数对齐
+        // (时长 200ms, CubicBezier 0.2/0/0/1)。
         assertTrue(
-            "popExit 的 spring 必须 DampingRatioNoBouncy + StiffnessMediumLow(不回弹不拖沓)",
-            routesSrc.contains("dampingRatio = Spring.DampingRatioNoBouncy") &&
-                routesSrc.contains("stiffness = Spring.StiffnessMediumLow")
+            "predictive commit 的 tween 必须 PredictiveDuration(200ms)+ CubicBezier(0.2, 0, 0, 1)(InstallerX Classic 物理对齐)",
+            routesSrc.contains("PredictiveDuration: Int = 200") &&
+                routesSrc.contains("CubicBezierEasing(0.2f, 0f, 0f, 1f)")
         )
         assertTrue(
-            "popExit 必须引用顶层 popExitSpring(禁止函数内另起 spring 参数)",
-            body.contains("animationSpec = popExitSpring")
+            "predictivePop 必须引用顶层 predictiveCommitTween(禁止函数内另起 tween 参数)",
+            Regex("""internal val sleepyPredictivePopTransform[\s\S]{0,1200}?predictiveCommitTween""").containsMatchIn(routesSrc)
         )
     }
 
@@ -168,57 +170,64 @@ class NavHostMigrationContractTest {
         // 官方推荐示例 popEnter = EnterTransition.None: 返回时目标页不重画,
         // 退出页独立缩放淡出。sleepy 之前 popEnter 是 slideIn+slideOut+1/6(返回的页面从左侧滑入),
         // 视觉上"两层都动", 与缩放叠加会出现用户吐槽的"卡很久"。
-        val body = balancedBlock(routesSrc, "fun sleepySharedAxisPopEnter")
+        val body = balancedBlock(routesSrc, "fun sleepyPopEnter")
         assertTrue(
             "popEnter 必须返回 EnterTransition.None(目标页原地不动画)",
-            Regex("""fun\s+sleepySharedAxisPopEnter\(\)[\s\S]{0,200}?EnterTransition\.None""").containsMatchIn(routesSrc)
+            Regex("""fun\s+sleepyPopEnter\(\)[\s\S]{0,200}?EnterTransition\.None""").containsMatchIn(routesSrc)
         )
         // 旧 slide 痕迹不能再出现 (滑动位移在 popEnter 路径上)
         assertFalse(
-            "popEnter 路径内不允许出现 slideInHorizontally (B 方案已禁返回滑入)",
+            "popEnter 路径内不允许出现 slideInHorizontally (Material 方案已禁返回滑入)",
             body.contains("slideInHorizontally")
         )
     }
 
     @Test
-    fun forward_enter_exit_use_mirrored_slide_one_eighth_screen_with_220ms_tween() {
-        // 推进 (forward): enter 来自右侧 1/8, exit 退到左侧 1/8, 对称;
-        // tween(220, FastOutSlowInEasing) — 1/4 + 1/8 不对称是 d7fc 那轮的二次翻车点。
-        val enterBody = balancedBlock(routesSrc, "fun sleepySharedAxisEnter")
-        val exitBody = balancedBlock(routesSrc, "fun sleepySharedAxisExit")
+    fun forward_enter_exit_use_mirrored_scale_92_with_220ms_tween() {
+        // 推进 (forward): enter fadeIn + scaleIn(0.92, Center); exit fadeOut + scaleOut(0.92, Center);
+        // tween(220, FastOutSlowInEasing) — 不对称 + spring 是 d7fc 那轮的二次翻车点。
+        val enterBody = balancedBlock(routesSrc, "fun sleepyForwardEnter")
+        val exitBody = balancedBlock(routesSrc, "fun sleepyForwardExit")
         assertTrue(
-            "enter 必须用 slideInHorizontally + initialOffsetX = { it / 8 } (对称推入, 非 1/4 也非 1/6)",
-            Regex("""slideInHorizontally\(\s*initialOffsetX\s*=\s*\{\s*it\s*/\s*ForwardOffsetFraction\s*\}""")
-                .containsMatchIn(enterBody)
+            "forwardEnter 必须用 fadeIn + scaleIn(initialScale = 0.92f, TransformOrigin.Center)",
+            enterBody.contains("fadeIn(forwardFadeInTween)") &&
+                enterBody.contains("scaleIn(") &&
+                enterBody.contains("initialScale = 0.92f") &&
+                enterBody.contains("TransformOrigin.Center")
         )
         assertTrue(
-            "exit 必须用 slideOutHorizontally + targetOffsetX = { -it / 8 } (对称推出)",
-            Regex("""slideOutHorizontally\(\s*targetOffsetX\s*=\s*\{\s*-it\s*/\s*ForwardOffsetFraction\s*\}""")
-                .containsMatchIn(exitBody)
+            "forwardExit 必须用 fadeOut + scaleOut(targetScale = 0.92f, TransformOrigin.Center)",
+            exitBody.contains("fadeOut(forwardTween)") &&
+                exitBody.contains("scaleOut(") &&
+                exitBody.contains("targetScale = 0.92f") &&
+                exitBody.contains("TransformOrigin.Center")
         )
         assertTrue(
-            "enter/exit 必须 tween(220, FastOutSlowInEasing) — 1/4 屏 + spring 是用户实锤翻车组合",
-            enterBody.contains("tween(durationMillis = ForwardDuration, easing = FastOutSlowInEasing)")
+            "enter/exit 必须引用顶层 forwardTween(其定义锁定 220ms + FastOutSlowInEasing)",
+            enterBody.contains("forwardTween") && exitBody.contains("forwardTween") &&
+                routesSrc.contains("durationMillis = ForwardDuration") &&
+                routesSrc.contains("easing = FastOutSlowInEasing")
         )
         assertTrue(
             "fade 速度要锁: enter fadeIn 110ms, exit fadeOut 220ms (避免两块页面同进同出叠影)",
-            enterBody.contains("fadeIn(tween(durationMillis = ForwardFadeIn") &&
-                exitBody.contains("fadeOut(tween(durationMillis = ForwardDuration")
+            enterBody.contains("forwardFadeInTween") &&
+                exitBody.contains("forwardTween") &&
+                routesSrc.contains("durationMillis = ForwardFadeIn") &&
+                routesSrc.contains("durationMillis = ForwardDuration")
         )
     }
 
     @Test
     fun transition_constants_are_top_level_not_buried_in_function_body() {
-        // 锁参数常量化 — 修改位移 / 时长要改一处而非四处。文件名/常量名锁定:
-        // 任何调整必须改 ForwardDuration/ForwardFadeIn/ForwardOffsetFraction 顶层常量。
+        // 锁参数常量化 — 修改时长要改一处而非四处。常量是 internal const val(测试可见):
         listOf(
-            "private const val ForwardDuration",
-            "private const val ForwardFadeIn",
-            "private const val ForwardOffsetFraction",
-            "private val popExitSpring",
+            "internal const val ForwardDuration",
+            "internal const val ForwardFadeIn",
+            "internal const val PredictiveDuration",
+            "predictiveCommitTween",
         ).forEach { ident ->
             assertTrue(
-                "SleepyRoutes.kt 顶层必须暴露过渡参数 $ident(集中调参点, 否则动画散在 4 个函数里)",
+                "SleepyMaterialTransition.kt 顶层必须暴露过渡参数 $ident(集中调参点, 否则动画散在 4 个函数里)",
                 Regex("""$ident\b""").containsMatchIn(routesSrc)
             )
         }
@@ -226,21 +235,22 @@ class NavHostMigrationContractTest {
 
     @Test
     fun manifest_predictive_back_stays_on_when_popExit_is_scaleOut() {
-        // 双重锁定: B 方案依赖 enableOnBackInvokedCallback=true 让系统手势驱动 popExit 缩放;
-        // 这与 NavHostMigrationContractTest::manifest_enables_predictive_back_app_wide 重复,
-        // 单独再锁一次防止任一处 toggle 时互相独立决策 — 两处都开才是 B 方案成立条件。
+        // 双重锁定: Material 方案依赖 enableOnBackInvokedCallback=true 让系统手势驱动
+        // NavDisplay 的 predictivePopTransitionSpec 给出预测性 back 进度; 这与
+        // NavHostMigrationContractTest::manifest_enables_predictive_back_app_wide 重复,
+        // 单独再锁一次防止任一处 toggle 时互相独立决策 — 两处都开才是官方 nav3
+        // predictive-back 链路成立条件。
         assertTrue(
-            "B 方案要求 predictive-back=true(系统手势驱动 popExit 缩放, scaleOut 才生效)",
+            "Material 方案要求 predictive-back=true(系统手势驱动 predictivePopTransform 才生效)",
             Regex(
                 """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
             ).containsMatchIn(manifestSrc)
         )
-        // 反向 — popExit 必须用 scaleOut (如果有人把 predictive-back 关了但忘改 popExit,
-        // 没有系统手势驱动, scaleOut 就只是个静态过渡, 会失去预览语义)
-        val popExitBody = balancedBlock(routesSrc, "fun sleepySharedAxisPopExit")
+        // 反向 — predictivePop 必须用 scaleOut (如果有人把 predictive-back 关了但忘改
+        // predictivePopTransform, 缩放就只是个静态过渡, 会失去预览语义)
         assertTrue(
-            "B 方案成立需要 scaleOut 出现; 切回 slide 必须同步关 predictive-back 并删本测试",
-            popExitBody.contains("scaleOut(")
+            "predictivePop 路径必须出现 scaleOut(切回 slide 必须同步关 predictive-back 并删本测试)",
+            routesSrc.contains("scaleOut(")
         )
     }
 
@@ -382,19 +392,21 @@ class NavHostMigrationContractTest {
 
     @Test
     fun navigator_popToMain_clears_back_stack_to_main() {
-        // popToMain 才是唯一允许清栈回主屏的地方:任意栈→回 main
+        // popToMain 才是唯一允许清栈回主屏的地方:任意栈→回 main。
+        // 官方 nav3: 栈是 NavBackStack(MutableList),清栈 = 逐个 removeAt 直到 Main 是栈底之上的唯一残留。
         assertTrue(
-            "popToMain 必须 popBackStack(Routes.MAIN, inclusive = false) 把栈清回主屏",
+            "popToMain 必须 while 循环 removeAt 清栈,且保留 SleepyRoute.Main",
             Regex(
-                """fun\s+popToMain[\s\S]{0,400}?popBackStack\(\s*Routes\.MAIN\s*,\s*inclusive\s*=\s*false\s*\)"""
-            ).containsMatchIn(navigatorSrc)
+                """fun\s+popToMain[\s\S]{0,400}?removeAt\(backStack\.lastIndex\)"""
+            ).containsMatchIn(navigatorSrc) &&
+                Regex("""fun\s+popToMain[\s\S]{0,400}?SleepyRoute\.Main""").containsMatchIn(navigatorSrc)
         )
     }
 
     @Test
     fun navigator_open_methods_only_use_routes_constants_no_string_literals() {
-        // 14 个 openXxx 入口全部走 Routes 常量,不允许裸字符串。
-        // 多数是表达式体 `fun openX() = push(Routes.X)`,少数是块体。
+        // 14 个 openXxx 入口全部走 SleepyRoute typed 子类,不允许裸字符串。
+        // 多数是表达式体 `fun openX() = push(SleepyRoute.X)`,少数是块体。
         val openFns = Regex("""fun\s+(open\w+)\(""").findAll(navigatorSrc).map { it.groupValues[1] }.toList()
         assertEquals("Navigator 必须有 14 个 openXxx 入口(与原 OverlayScreen 一一对应)", 14, openFns.size)
         openFns.forEach { fn ->
@@ -405,8 +417,8 @@ class NavHostMigrationContractTest {
             val windowEnd = if (nextFn > 0) nextFn else (fnStart + 400).coerceAtMost(navigatorSrc.length)
             val window = navigatorSrc.substring(fnStart, windowEnd)
             assertTrue(
-                "$fn 必须引用 Routes.X 常量(不许裸字符串路由名), 实际片段: ${window.take(120)}",
-                Regex("""Routes\.\w+""").containsMatchIn(window)
+                "$fn 必须引用 SleepyRoute.X typed 子类(不许裸字符串路由名), 实际片段: ${window.take(120)}",
+                Regex("""SleepyRoute\.\w+""").containsMatchIn(window)
             )
         }
     }
@@ -499,18 +511,18 @@ class NavHostMigrationContractTest {
     @Test
     fun every_routes_constant_has_a_composable_destination() {
         // 与 BackRestoreSaveableContractTest 里的同一不变量,这里从 ui/nav 包视角再锁一次。
-        val routesConsts = Regex("""const\s+val\s+(\w+)\s*=\s*[\"']""").findAll(routesSrc)
+        // 官方 nav3 版: SleepyRoute sealed 的每个子类都必须在 NavHost 有 entry<SleepyRoute.X> 注册。
+        // 子类声明在 SleepyRoutes.kt(不是 transition 文件), 所以用 navHostSrc 同目录的独立读取。
+        val routesFileSrc = File("src/main/java/com/lingion/sleepy/ui/nav/SleepyRoutes.kt").readText()
+        val routeTypes = Regex("""@Serializable\s+(?:data\s+)?(?:object|class)\s+(\w+)""").findAll(routesFileSrc)
             .map { it.groupValues[1] }
-            .filter { it != "ARG_TABLE_ID" && it != "ARG_PERIOD_TABLE_ID" &&
-                     it != "ARG_PENDING_NEW" && it != "ARG_PREV_DEFAULT" &&
-                     it != "ARG_PENDING_NEW_PERIOD" && it != "ARG_EDITING" &&
-                     it != "ARG_COURSE_ID" && it != "ARG_HOLIDAY_ID" }
+            .filter { it != "NO_ID" }
             .toList()
-        assertTrue("Routes 至少应有 14 个路由常量", routesConsts.size >= 14)
-        routesConsts.forEach { c ->
+        assertTrue("SleepyRoute 至少应有 14 个 typed 子类, 实际: $routeTypes", routeTypes.size >= 14)
+        routeTypes.forEach { c ->
             assertTrue(
-                "Routes.$c 必须有对应的 composable(Routes.$c 注册",
-                navHostSrc.contains("composable(Routes.$c")
+                "SleepyRoute.$c 必须有对应的 entry<SleepyRoute.$c> 注册",
+                navHostSrc.contains("entry<SleepyRoute.$c>")
             )
         }
     }

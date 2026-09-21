@@ -137,7 +137,7 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
         selected = current,
         onSelect = onChange,
         modifier = Modifier.fillMaxWidth(),
-        containerColor = SleepyTheme.colors.surfaceContainerHighest
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
     )
 }
 
