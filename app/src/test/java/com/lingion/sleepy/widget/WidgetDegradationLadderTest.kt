@@ -38,6 +38,30 @@ class WidgetDegradationLadderTest {
     // ---- WeekGrid 位图几何 (px 口径, 密度无关的档位断言) ----
 
     @Test
+    fun `weekgrid room label stays inside reserve band on short cards`() {
+        val (size, baseline) = WeekGridWidgetProvider.weekGridRoomLabelLayout(
+            cardBottom = 30f,
+            unifiedPad = 4f,
+            roomReserveH = 2f,
+            requestedSize = 5f
+        )
+        assertTrue("room label size must fit reserve band", size <= 2f / 1.1f)
+        assertTrue("room baseline must remain below name area", baseline >= 30f - 4f - size)
+    }
+
+    @Test
+    fun `weekgrid room label keeps requested size when reserve is sufficient`() {
+        val (size, baseline) = WeekGridWidgetProvider.weekGridRoomLabelLayout(
+            cardBottom = 100f,
+            unifiedPad = 4f,
+            roomReserveH = 12f,
+            requestedSize = 6f
+        )
+        assertEquals(6f, size, 0f)
+        assertEquals(100f - 4f - 6f * 0.3f, baseline, 0.001f)
+    }
+
+    @Test
     fun `weekgrid 40dp height falls to color band tier`() {
         for (density in floatArrayOf(2f, 3f)) {
             for (maxNode in listOf(8, 12)) {
