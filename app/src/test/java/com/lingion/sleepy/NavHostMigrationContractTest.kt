@@ -235,22 +235,16 @@ class NavHostMigrationContractTest {
 
     @Test
     fun manifest_predictive_back_stays_on_when_popExit_is_scaleOut() {
-        // 双重锁定: Material 方案依赖 enableOnBackInvokedCallback=true 让系统手势驱动
-        // NavDisplay 的 predictivePopTransitionSpec 给出预测性 back 进度; 这与
-        // NavHostMigrationContractTest::manifest_enables_predictive_back_app_wide 重复,
-        // 单独再锁一次防止任一处 toggle 时互相独立决策 — 两处都开才是官方 nav3
-        // predictive-back 链路成立条件。
+        // 2026-09-20 用户真机 (Mate 30 EMUI) 翻车定稿: OEM 对 in-app BACK 也做
+        // 系统级预测性返回预演(整个任务窗口矩形缩小) → 773ff116 关闭
+        // enableOnBackInvokedCallback, BACK 走经典 KeyEvent 分发。
+        // 本契约随决策反转: manifest 必须=false(防再次打开重蹈 OEM 缩放),
+        // predictivePopTransform 保留 scaleOut 仅供 NavDisplay popTransitionSpec 使用。
         assertTrue(
-            "Material 方案要求 predictive-back=true(系统手势驱动 predictivePopTransform 才生效)",
+            "OEM 真机翻车定稿: predictive-back 必须=false(矩形缩小+logo 残留, 见 773ff116)",
             Regex(
-                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
+                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']false[\"']"""
             ).containsMatchIn(manifestSrc)
-        )
-        // 反向 — predictivePop 必须用 scaleOut (如果有人把 predictive-back 关了但忘改
-        // predictivePopTransform, 缩放就只是个静态过渡, 会失去预览语义)
-        assertTrue(
-            "predictivePop 路径必须出现 scaleOut(切回 slide 必须同步关 predictive-back 并删本测试)",
-            routesSrc.contains("scaleOut(")
         )
     }
 
@@ -323,18 +317,17 @@ class NavHostMigrationContractTest {
 
     @Test
     fun no_oneShotPreDraw_windowBackground_downgrade_in_MainActivity() {
-        // NIA 模式迁移后, 运行时主题已无 logo 底衬, PreDraw 降级 hack (da3a6335) 不再
-        // 需要 — 删了反而清爽。本测试防回滚: 若有人未来又把 logo 底衬挂回 Theme.Sleepy
-        // 或把 Theme.Sleepy.Splash 切回 Theme.Sleepy, 看不见 logo 残留 → 重新引入 hack。
-        // 正确做法是检查 themes.xml, 不是在 MainActivity 里打补丁。
-        assertFalse(
-            "MainActivity 不得 OneShotPreDraw 降级 windowBackground — NIA 模式已修根因 (主题切换), " +
-                "重新引入此 hack 表明底衬又出现 logo, 应回到 themes.xml 修",
+        // 2026-09-20 决策再反转: NIA 模式下系统返回/最近任务的窗口快照仍会回看
+        // windowBackground(纯色+logo), Mate 30 in-app 返回 = "矩形缩小+logo 残留"。
+        // 773ff116 恢复 da3a6335 方案: 首帧后 OneShotPreDraw 把底衬降级为同色纯色。
+        // 本契约锁定该 hack 必须存在(防误删), 且降级色 = splash_background(同色无感)。
+        assertTrue(
+            "MainActivity 必须保留 OneShotPreDraw 首帧后降级 windowBackground (OEM 快照露出 logo, 见 773ff116)",
             mainSrc.contains("OneShotPreDrawListener")
         )
-        assertFalse(
-            "MainActivity 不得 import ColorDrawable — 同上, hack 已删",
-            mainSrc.contains("import android.graphics.drawable.ColorDrawable")
+        assertTrue(
+            "降级底衬必须用 splash_background 纯色(与启动页同色, 用户无感)",
+            mainSrc.contains("splash_background")
         )
     }
 
@@ -444,8 +437,10 @@ class NavHostMigrationContractTest {
 
     @Test
     fun manifest_enables_predictive_back_app_wide() {
-        assertTrue(
-            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"true\"(预测性返回)",
+        // 2026-09-20 决策反转(见 manifest_predictive_back_stays_on_when_popExit_is_scaleOut):
+        // OEM 对 in-app BACK 做系统级预演 → 关闭 predictive-back, 走经典 KeyEvent。
+        assertFalse(
+            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"false\"(OEM 预演翻车定稿)",
             Regex(
                 """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
             ).containsMatchIn(manifestSrc)
