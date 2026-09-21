@@ -490,6 +490,16 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "HeraldStudentCurriculum (idailylife)"
     ),
     PerSchoolEntry(
+        "school-buaa-byxt", "北京航空航天大学 byxt (2026-09)",
+        "fontlos/buaa-api (Rust, MIT)\nBUAASubnet/UBAA (Kotlin, MIT)\nCoolwindHF/buaa2wakeup (Python, MIT)\n" +
+            "awesome-buaa-cs/buaa-curriculum (API.md 旁证)\ncantBeFoundGroup/OpenBUAA (Python)\n" +
+            "el-ev/BUAA-ics-gen (Python, MIT)\nKrignd/KAgenda (Kotlin)\nYiki21/iclass_buaa_tui (Rust, GPL-3.0)\n" +
+            "Lidozs55/BUAAer-Smart-Schedule-on-electron (Vue)\nWhXcjm/buaa-byxt-aischedule (JS, GPL-3.0)\n" +
+            "MeanZhang/buaa-ai-schedule (JS, MIT, archived)\nAlyssumira/BUAA-Schedule (Kotlin, MIT)\n" +
+            "lyy1119/BuaaScheduleRender (Go, MIT, GSMIS 研究生形态参考)\n" +
+            "zjafb/BUAA-Hangzhou-Schedule (MIT, UBAA fork, 杭州校区旁证)"
+    ),
+    PerSchoolEntry(
         "school-bjtu", "北京交通大学 BJTU",
         "bjtu_mis_Android (wan300, MIT)\nBJTU-MIS-HarmonyOS (Anyes666, MIT)\nBJTUselfService (HFDLYS, MIT)\n" +
             "bjtu-cli (fish2lab)\nBJTUselfService-macOS (fish2lab)\nBJTU-course-assistant (s1y4x1)\n" +
@@ -516,6 +526,10 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     PerSchoolEntry(
         "school-wakeup-family", "WakeUp 兼容协议族调研",
         "Dawn-Course (HF-CYGG, GPL-3.0)\nWakeUp_SHU (ershiyidian)\nCourseHelper (jiangyiqi99, GPL-3.0)\naischedule-lit-kingosoft (icepie, MIT)\nXiaoAISchedule_hebust (web1n)\nai-schedule-chaoxing (moeshin, MIT)\ntzvcst-schedule-chaoxing (Sittymin, AGPL-3.0)\nxiaoai-shuwei-course (ZKJJaker, 反向证据)\njxufe-auto-evaluate (wzj1122, MIT)\nKINGOSOFT-LOGIN (52funny)\nxiaoaiSchedule (xiaxiaoyu8)\nmi-schedule (Kou-JunHao, MIT)\nAISchedule-xjsf (ltxhhz, MIT)\nAIScheduleSCAU (greyovo)\nMI_AI_Course_Schedule (ceresOPA)\nAISchedule-QiangZhi (MyLikeGirl)\nclasspush (sungithub270, GPL-3.0)\nXiaoAiScheduleOfSUOT (trueWangSyutung)\nXiaoAiCurriculumSchedule (LukeJean)\ngetICS (Konata09)\nWITClassScheduleToCalendar (DOROMOLLL, MIT)\nCrawlerCourseTable (canliture)\nSYU_KINGGOClassSel (XTAI9)\nhait_AICourseTable (zzzsq1)\nAIShedule_cqwu (cqwu-ehall, AGPL-3.0)\nWakeUpSchedule (Daydream357, MIT)\nshike-android (sw7943604-del)\nshiguang_Tester (XingHeYuZhuan, MIT)\ndutsso (yuanyuanzijin)\npub-docs (zfman, 青果接口文档)\neduData-GoBack (huhu415)\nNUISTTable (zyc-816)\nSCAU-Grad-Automatically-Fill-Evaluation-Form-JS (jiefing, Gwork 族控件命名旁证)"
+    ),
+    PerSchoolEntry(
+        "school-four-school-jw", "四校教务协议交叉验证（2026-09）",
+        "NWUPL: dream2333/NWUPL-Pure-EMS (间接协议旁证)\nLIXIN: classic EAMS 采集形态（未复制代码）\nKMUST: linling-zy/kust-schedule (间接协议旁证, Apache-2.0)\nNUIT: 3056810551/nuit-class-schedule (直接字段旁证, 未复制代码)"
     )
 )
 

@@ -1,5 +1,39 @@
 [
   {
+    "sortKey": "G",
+    "name": "广东东软学院",
+    "url": "http://jw.nuit.edu.cn/jwapp/sys/homeapp/home/index.html?av=&contextPath=/jwapp",
+    "type": "nuit",
+    "aliases": ["nuit"],
+    "sortKeyFull": "guangdongdongruanxueyuan",
+    "enableFetch": true
+  },
+  {
+    "sortKey": "K",
+    "name": "昆明理工大学",
+    "url": "https://i.kust.edu.cn/",
+    "type": "kust",
+    "aliases": ["kmust", "kust"],
+    "sortKeyFull": "kunmingligongdaxue",
+    "enableFetch": true
+  },
+  {
+    "sortKey": "S",
+    "name": "上海立信会计金融学院",
+    "url": "https://lxjw.lixin.edu.cn/edu/lesson/std/timetable!courseTable.action",
+    "type": "classic_eams",
+    "aliases": ["lixin"],
+    "sortKeyFull": "shanghailixinhuijijinrongxueyuan"
+  },
+  {
+    "sortKey": "X",
+    "name": "西北政法大学",
+    "url": "https://tam.nwupl.edu.cn/eams/courseTableForStd.action",
+    "type": "classic_eams",
+    "aliases": ["nwupl"],
+    "sortKeyFull": "xibeizhengfadaxue"
+  },
+  {
     "sortKey": "A",
     "name": "安徽大学",
     "url": "https://jw.ahu.edu.cn/student/for-std/course-table",
@@ -118,8 +152,8 @@
   {
     "sortKey": "B",
     "name": "北京航空航天大学",
-    "url": "https://jwxt.buaa.edu.cn:7001/ieas2.1",
-    "type": "qz_ieas",
+    "url": "https://byxt.buaa.edu.cn/jwapp/sys/homeapp/index.do",
+    "type": "neu",
     "aliases": [
       "buaa",
       "北航"

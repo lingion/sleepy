@@ -335,6 +335,14 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, NEU_FETCH_JS)
                         return@CaptureBar
                     }
+                    if (school.type == JwProtocol.TYPE_NUIT) {
+                        evaluateFetchWithTimeout(wv, NUIT_FETCH_JS)
+                        return@CaptureBar
+                    }
+                    if (school.type == JwProtocol.TYPE_KUST) {
+                        evaluateFetchWithTimeout(wv, KUST_FETCH_JS)
+                        return@CaptureBar
+                    }
                     // SWJTU YETHAN 逐专平台：CAS 登录后从 localStorage 取 ytoken，
                     // 同源 GET 课表 JSON；不发送采集包中的真实 token。
                     if (school.type == JwProtocol.TYPE_YETHAN) {
@@ -788,6 +796,48 @@ private const val WISEDU_FETCH_JS = """
  * 课表页面没有可供 HTML parser 使用的课程数据。登录态下依次取得当前学期、可用校区，
  * 再向 getMyScheduleDetail.do 提交表单；返回的 datas.arrangedList 由 JwNeuParser 解析。
  */
+private const val NUIT_FETCH_JS = """
+(function(){
+  fetch('/jwapp/sys/homeapp/api/home/currentUser.do',{credentials:'include'})
+    .then(function(r){return r.json();})
+    .then(function(u){
+      var term=u&&u.datas&&u.datas.welcomeInfo&&u.datas.welcomeInfo.xnxqdm;
+      if(!term) throw new Error('无法识别当前学期');
+      return fetch('/jwapp/sys/homeapp/api/home/student/courses.do?termCode='+encodeURIComponent(term),{credentials:'include'});
+    })
+    .then(function(r){return r.text();})
+    .then(function(data){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true,data:data}));})
+    .catch(function(e){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,err:String(e)}));});
+})();
+"""
+
+private const val KUST_FETCH_JS = """
+(function(){
+  fetch('/api/uppcard/kbsz/queryAllTerm',{credentials:'include'})
+    .then(function(r){return r.json();})
+    .then(function(terms){
+      var list=terms&&terms.data||[]; var term=list[0]&&list[0].XNXQ;
+      if(!term) throw new Error('无法识别昆明理工学期');
+      return fetch('/api/uppcard/kbsz/queryAWeekSchedule?XNXQ='+encodeURIComponent(term),{credentials:'include'});
+    })
+    .then(function(r){return r.text();})
+    .then(function(data){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:true,data:data}));})
+    .catch(function(e){window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false,err:String(e)}));});
+})();
+"""
+
+/**
+ * 东北大学 (jwxt.neu.edu.cn) 金智新版教务的课表 JSON 抓取。
+ *
+ * 课表页面没有可供 HTML parser 使用的课程数据。登录态下依次取得当前学期、可用校区，
+ * 再向 getMyScheduleDetail.do 提交表单；返回的 datas.arrangedList 由 JwNeuParser 解析。
+ *
+ * 兼容北京航空航天大学新本研教务 (byxt.buaa.edu.cn, 2026-09-19 9 仓 cross-verified)：
+ *   协议层同源 (金智 jwapp homeapp family), 但 BUAA 在 21/21 仓均 campusCode=""
+ *   直接 POST 不取校区端点 (该端点 byxt 可能不暴露或返回非预期)。按 host 分流,
+ *   NEU 走完整三步 (currentUser → campus → schedule), byxt 走两步
+ *   (currentUser → schedule, campusCode 留空)。
+ */
 const val NEU_FETCH_JS = """
 (function(){
   function finish(payload) {
@@ -808,18 +858,42 @@ const val NEU_FETCH_JS = """
     });
   }
 
+  // 兼容 NEU + byxt.buaa.edu.cn 同协议族 (金智 jwapp homeapp)
+  var NEU_HOSTS = ['jwxt.neu.edu.cn', 'byxt.buaa.edu.cn'];
+
   try {
     var hostname = (location.hostname || '').toLowerCase();
-    if (hostname !== 'jwxt.neu.edu.cn') {
-      finish({ok:false, err:'请先完成登录并进入东北大学教务系统后再点导入'});
+    var isSupportedHost = NEU_HOSTS.indexOf(hostname) >= 0;
+    if (!isSupportedHost) {
+      finish({ok:false, err:'请先完成登录并进入教务系统 (东北大学 / 北京航空航天大学新本研) 后再点导入'});
       return;
     }
+
+    // BUAA byxt.buaa.edu.cn: campusCode='' 直接 POST, 不取 getMyScheduledCampus
+    //   9 仓实锤 (fontlos/buaa-api + BUAASubnet/UBAA + CoolwindHF/buaa2wakeup +
+    //   cantBeFoundGroup/OpenBUAA + el-ev/BUAA-ics-gen + Krignd/KAgenda +
+    //   Yiki21/iclass_buaa_tui + Lidozs55/BUAAer + Alyssumira/BUAA-Schedule),
+    //   该端点在 byxt 未公开/不返回有效 campus 列表。
+    var isBuaaByxt = hostname === 'byxt.buaa.edu.cn';
 
     fetchJson('/jwapp/sys/homeapp/api/home/currentUser.do')
     .then(function(userData) {
       var termCode = userData && userData.datas && userData.datas.welcomeInfo &&
         userData.datas.welcomeInfo.xnxqdm;
       if (!termCode) throw new Error('当前用户信息中没有学期代码，请重新登录后重试');
+
+      if (isBuaaByxt) {
+        var bodyBuaa = 'termCode=' + encodeURIComponent(String(termCode)) +
+          '&campusCode=&type=term';
+        return fetchJson('/jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do', {
+          method:'POST',
+          headers:{
+            'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+            'X-Requested-With':'XMLHttpRequest'
+          },
+          body:bodyBuaa
+        });
+      }
 
       return fetchJson(
         '/jwapp/sys/homeapp/api/home/student/getMyScheduledCampus.do?termCode=' +

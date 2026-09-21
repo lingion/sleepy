@@ -320,7 +320,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                 || Regex("""/http/[0-9a-f]+/""").containsMatchIn(u)
                 || u.contains(".webvpn.") -> {
                 when {
-                    u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
+                    u.contains("jw.nuit.edu.cn") -> JwProtocol.TYPE_NUIT
+            u.contains("i.kust.edu.cn") || u.contains("kust.edu.cn") || u.contains("kmust.edu.cn") -> JwProtocol.TYPE_KUST
+            u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
                     u.contains("jwglxt")
                         || u.matches(Regex(""".*/xtgl(/|$).*"""))
                         || u.contains("/kbcx/")
@@ -342,9 +344,25 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             }
 
             // ① WISEDU — 金智 jwapp 微应用，URL 唯一锚点，优先级最高
+            u.contains("jw.nuit.edu.cn") -> JwProtocol.TYPE_NUIT
+            u.contains("i.kust.edu.cn") || u.contains("kust.edu.cn") || u.contains("kmust.edu.cn") -> JwProtocol.TYPE_KUST
+            // ①a2 BUAA 新本研教务 byxt.buaa.edu.cn — 金智 jwapp homeapp 族 (2026-09-19 9 仓
+            //    cross-verified: fontlos/buaa-api + BUAASubnet/UBAA + CoolwindHF/buaa2wakeup +
+            //    cantBeFoundGroup/OpenBUAA + el-ev/BUAA-ics-gen 等, 同一端点
+            //    /jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do → datas.arrangedList)。
+            //    协议与东北大学 TYPE_NEU 同族同字段形态, 复用 NEU parser; 旧 jwxt.buaa.edu.cn
+            //    (强智 iEAS) 走下方 ②b 分支不变。必须先于通用 /jwapp/ 分支 (否则被吸进 TYPE_WISEDU,
+            //    WISEDU_FETCH_JS 走 wdkb/xskcb.do 通道拿不到 arrangedList 必空课表)。
+            u.contains("byxt.buaa.edu.cn") -> JwProtocol.TYPE_NEU
+
             u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
 
-            // ①a EAMS5 — supwisdom 平台（issue #25）：此前整条判型链无任何 EAMS5 锚点，
+            // ①a classic EAMS — server-rendered course table entry points.
+            // Both NWUPL and LIXIN expose the same TaskActivity family behind different paths.
+            u.contains("coursetableforstd")
+                || u.contains("/edu/lesson/std/timetable") -> JwProtocol.TYPE_CLASSIC_EAMS
+
+            // ①b EAMS5 — supwisdom 平台（issue #25）：此前整条判型链无任何 EAMS5 锚点，
             //    连正确的 jxglstu 课表 URL 都判 null 走通用抓取必 0 课。
             //    锚点三件套: host (jxglstu / jw.ahu / jwxt.cumtb) + 路径级 /eams5-student/ +
             //    supwisdom 唯一路径约定 /for-std/（斜杠包围, forum-standard 不误命中）。
@@ -476,7 +494,11 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     || lower.contains("logon.do")
                     || lower.contains("randomcode") -> JwProtocol.TYPE_QZ
 
-                // ④ WISEDU — 业务回调路径
+                // ④ NUIT/KUST JSON portal fingerprints
+                lower.contains("classdateandplace") -> JwProtocol.TYPE_NUIT
+                lower.contains("queryaweekschedule") || lower.contains("resultsjsonarr") -> JwProtocol.TYPE_KUST
+
+                // ⑤ WISEDU — 业务回调路径
                 lower.contains("/jwapp/sys/")
                     || (lower.contains("authserver/login") && lower.contains("execution=")) -> JwProtocol.TYPE_WISEDU
 

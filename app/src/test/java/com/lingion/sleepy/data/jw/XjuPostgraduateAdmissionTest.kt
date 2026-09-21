@@ -39,7 +39,7 @@ class XjuPostgraduateAdmissionTest {
         val main = String(javaClass.classLoader!!.getResource("jw/schools.json")!!.readBytes())
         // 计数闸双副本同值（主副本由 JwJouAdaptationTest 锁 1:1, 这里锁总数）
         val count = JwImportViewModel.parseSchoolsJson(main).size
-        assertEquals("2026-09-19 收录江西中医药大学（本科, cf_new NTSS 族）→ 341", 341, count)
+        assertEquals("2026-09-19 四校适配（NWUPL/LIXIN/KMUST/NUIT）→ 345", 345, count)
     }
 
     // ---------- ② URL 判型 ----------

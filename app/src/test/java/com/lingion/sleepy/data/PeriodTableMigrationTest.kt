@@ -44,6 +44,14 @@ class PeriodTableMigrationTest {
         }
     }
 
+    /** v8 末态 = v6 schema + periodTableId 列 (7→8 迁移的产物), 供 8→9 迁移测试打底 */
+    private fun createV8Schema(conn: Connection) {
+        createV6Schema(conn)
+        MIGRATION_7_8_SCHEMA_STATEMENTS.forEach { sql ->
+            conn.createStatement().use { statement -> statement.execute(sql) }
+        }
+    }
+
     @Test
     fun migration_creates_period_table_schema_and_backfills_each_timetable() {
         val conn = openInMemory()
@@ -107,8 +115,36 @@ class PeriodTableMigrationTest {
     }
 
     @Test
-    fun migration_chain_reaches_database_version_eight() {
-        assertEquals(8, ALL_MIGRATIONS.last().endVersion)
+    fun migration_8_9_adds_pre_bind_snapshot_column_with_empty_default() {
+        val conn = openInMemory()
+        try {
+            createV8Schema(conn)
+            MIGRATION_8_9_STATEMENTS.forEach { sql ->
+                conn.createStatement().use { statement -> statement.execute(sql) }
+            }
+            val columns = mutableSetOf<String>()
+            conn.createStatement().use { st ->
+                st.executeQuery("PRAGMA table_info(time_tables)").use { rows ->
+                    while (rows.next()) columns += rows.getString("name")
+                }
+            }
+            assertTrue("preBindSnapshotJson column must be added", "preBindSnapshotJson" in columns)
+            // 旧行升级后快照列 = 空串(无快照), NOT NULL DEFAULT '' 保证不炸非空约束
+            conn.createStatement().use { st ->
+                st.executeQuery("SELECT preBindSnapshotJson FROM time_tables ORDER BY id").use { rows ->
+                    assertTrue(rows.next()); assertEquals("", rows.getString(1))
+                    assertTrue(rows.next()); assertEquals("", rows.getString(1))
+                }
+            }
+        } finally {
+            conn.close()
+        }
+    }
+
+    @Test
+    fun migration_chain_reaches_database_version_nine() {
+        assertEquals(9, ALL_MIGRATIONS.last().endVersion)
         assertTrue(ALL_MIGRATIONS.any { it.startVersion == 7 && it.endVersion == 8 })
+        assertTrue(ALL_MIGRATIONS.any { it.startVersion == 8 && it.endVersion == 9 })
     }
 }

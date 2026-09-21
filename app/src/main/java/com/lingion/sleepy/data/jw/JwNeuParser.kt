@@ -48,6 +48,8 @@ class JwNeuParser(source: String) : JwParser(source) {
             val end = obj.str("endSection").toIntOrNull() ?: begin
             val weeksAndTeachers = obj.str("weeksAndTeachers")
             val titleDetail = obj["titleDetail"] as? JsonArray
+            val cellDetail = obj["cellDetail"] as? JsonArray
+            val placeName = obj.str("placeName")
             val isLab = name.startsWith("[实]")
             val entries = if (isLab) {
                 // 实验课的接口结构不同：脚本从 titleDetail[1] 取教师，
@@ -55,12 +57,15 @@ class JwNeuParser(source: String) : JwParser(source) {
                 listOf(extractLabWeeksAndRoom(obj, weeksAndTeachers))
             } else {
                 // 普通课程每一条 titleDetail 明细都是独立的周次/地点安排。
-                extractWeeksAndRooms(titleDetail, weeksAndTeachers)
+                // 优先 cellDetail (BUAA byxt 形态), titleDetail (NEU 形态) 兜底。
+                extractWeeksAndRooms(titleDetail, weeksAndTeachers, cellDetail, placeName)
             }
-            val teacher = if (isLab) {
-                extractLabTeacher(titleDetail)
-            } else {
-                extractTeacher(weeksAndTeachers)
+            val teacher = when {
+                isLab -> extractLabTeacher(titleDetail)
+                // cellDetail 有 `教师[周次]` → 首对教师优先; 无则走 NEU "/" 末段
+                extractTeacherFromCellDetail(cellDetail).isNotEmpty() ->
+                    extractTeacherFromCellDetail(cellDetail)
+                else -> extractTeacher(weeksAndTeachers)
             }
             for ((weeksStr, room) in entries) {
                 if (weeksStr.isEmpty()) continue
@@ -97,8 +102,20 @@ class JwNeuParser(source: String) : JwParser(source) {
         return last.replace("[主讲]", "").replace("[主讲 ", "").trim()
     }
 
-    /** Returns every independently scheduled week-range and room in titleDetail[1..]. */
-    internal fun extractWeeksAndRooms(titleDetail: JsonArray?, weeksAndTeachers: String): List<Pair<String, String>> {
+    /**
+     * 优先按 cellDetail 形态（BUAA byxt 9 仓 cross-verified: CoolwindHF/buaa2wakeup +
+     * Alyssumira/BUAA-Schedule + Krignd/KAgenda）取 `教师[周次]` / `地点行` 对；
+     * cellDetail 缺失/不含周次时回退 NEU titleDetail[1..] 的"周数串 教室"形态。
+     */
+    internal fun extractWeeksAndRooms(
+        titleDetail: JsonArray?,
+        weeksAndTeachers: String,
+        cellDetail: JsonArray? = null,
+        placeName: String? = null,
+    ): List<Pair<String, String>> {
+        val byCell = extractCellDetailPairs(cellDetail, placeName)
+        if (byCell.isNotEmpty()) return byCell
+
         val details = mutableListOf<Pair<String, String>>()
         if (titleDetail != null) {
             for (i in 1 until titleDetail.size) {
@@ -117,7 +134,58 @@ class JwNeuParser(source: String) : JwParser(source) {
         }
         if (details.isNotEmpty()) return details
         val fallbackWeeks = weeksAndTeachers.split("/").firstOrNull()?.trim().orEmpty()
-        return listOf(fallbackWeeks to "")
+        if (fallbackWeeks.isNotEmpty()) return listOf(fallbackWeeks to "")
+        // cellDetail/titleDetail/weeksAndTeachers 全空 → placeName 兜底 (整学期 1-16 周)
+        return if (!placeName.isNullOrBlank()) listOf("1-16周" to placeName) else emptyList()
+    }
+
+    /**
+     * 从 cellDetail 提取 (周次, 地点) 配对 — BUAA byxt 形态:
+     *   cellDetail = [{"text": "教师名[1-16周]"}, {"text": "教室名"}, ...]
+     *   - 周次项 = 含 `[数字...周...]` 方括号且首字符为汉字/拉丁字母
+     *   - 地点项 = 余下文本（无方括号周次）, 含校区/楼/教室关键词
+     * 容忍教研形态: cellDetail 单项即可同时含 "曾煜[1周] 沙河主M101"。
+     */
+    private fun extractCellDetailPairs(
+        cellDetail: JsonArray?,
+        placeName: String?,
+    ): List<Pair<String, String>> {
+        if (cellDetail == null || cellDetail.isEmpty()) return emptyList()
+        val teacherWeekPattern = Regex("""([^\[\]]+)\[(\d[^\]]*?周?)\]""")
+        val texts = cellDetail.mapNotNull { (it as? JsonObject) }
+            .map { it.str("text").trim() }
+            .filter { it.isNotEmpty() }
+
+        // 第一趟: 收集全部周次对 (教师[周次] 可能同一行多对)
+        val out = mutableListOf<Pair<String, String>>()
+        for (text in texts) {
+            for (m in teacherWeekPattern.findAll(text)) {
+                val weeks = m.groupValues[2].trim()
+                if (weeks.any { it.isDigit() }) out += weeks to ""
+            }
+        }
+        if (out.isEmpty()) return emptyList()
+
+        // 第二趟: 地点 = 第一条不含周次方括号的文本 (BUAA 形态: cellDetail[1]
+        // 为教室行; 顺序不定, 所以按"非周次行"识别而非位置)
+        val room = texts.firstOrNull { !teacherWeekPattern.containsMatchIn(it) } ?: ""
+        return out.map { it.first to room }
+    }
+
+    /**
+     * 从 cellDetail 取首位教师名 — 与 weeksAndTeachers "/" 末段并列,
+     * cellDetail 形态更可靠 (BUAA byxt 9 仓 cross-verified)。
+     */
+    internal fun extractTeacherFromCellDetail(cellDetail: JsonArray?): String {
+        if (cellDetail == null || cellDetail.isEmpty()) return ""
+        val teacherWeekPattern = Regex("""([^\[\]]+)\[(\d[^\]]*?周?)\]""")
+        for (el in cellDetail) {
+            val obj = el as? JsonObject ?: continue
+            val text = obj.str("text").trim()
+            val m = teacherWeekPattern.find(text) ?: continue
+            return m.groupValues[1].trim()
+        }
+        return ""
     }
 
     /** 实验课的教师规则与上游脚本保持一致：titleDetail[1] 的第二个空白字段。 */

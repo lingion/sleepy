@@ -456,6 +456,30 @@ object TimeTableUtils {
         return rows + TimeSlotRow(nextNode, "", "")
     }
 
+    /**
+     * 确认导入时真正生效的节次行(v1.0.56 T6 绑表/自动建表语义落地)：
+     *
+     * 用户在确认对话框选了「作息表」Tab → bindId 即绑定的作息表 id：
+     *  - bindId > 0 (绑了既有表) → 该表的 timeJson 解析出的 rows 是真源, 手动 rows 仅供参考;
+     *  - bindId == -1 (本次导入自动建表, 合成项) → 用手动 rows, 落库即建;
+     *  - bindId == null (未绑 / 用本表内置) → 用手动 rows。
+     *
+     * 历史上只把 bindId 记下, 校验/落库却无条件走手动 rows, 教务协议没回节次时间时
+     * 手动 rows 全是空 → 误报「第 X 节时间不能为空」(用户反馈 2026-09-20,
+     * P大一上 13 节作息分享导入复现)。此函数是确认流的**唯一真源**,
+     * 校验和落库 timeJson 都从这里拿。
+     */
+    fun effectiveRowsForConfirm(
+        manualRows: List<TimeSlotRow>,
+        bindId: Long?,
+        tables: List<Pair<Long, String>>
+    ): List<TimeSlotRow> {
+        val id = bindId ?: return manualRows
+        if (id <= 0) return manualRows
+        val json = tables.firstOrNull { it.first == id }?.second ?: return manualRows
+        return parseTimeSlotRows(json)
+    }
+
     // ------------------------------------------------------------------
     // 课表外节次 (issue #23 / 用户 2026-09-06 手动课程"非常规"开关)
     //

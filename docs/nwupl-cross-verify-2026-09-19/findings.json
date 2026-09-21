@@ -1,0 +1,9 @@
+[
+  {
+    "full_name": "dream2333/NWUPL-Pure-EMS",
+    "classification": "INDIRECT",
+    "protocol": "classic EAMS",
+    "reused_code": false,
+    "finding": "The repository confirms the school target. The captured TaskActivity shape and page-derived unitCount are the primary implementation evidence."
+  }
+]

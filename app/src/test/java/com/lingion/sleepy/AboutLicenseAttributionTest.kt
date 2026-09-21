@@ -268,6 +268,25 @@ class AboutLicenseAttributionTest {
         Attribution("pub-docs", "zfman"),
         Attribution("eduData-GoBack", "huhu415"),
         Attribution("NUISTTable", "zyc-816"),
+        // 2026-09-19 byxt.buaa.edu.cn (新本研教务, 金智 jwapp homeapp 族) 跨仓验证 13 仓全量纳入
+        Attribution("fontlos/buaa-api", "MIT"),
+        Attribution("BUAASubnet/UBAA", "MIT"),
+        Attribution("CoolwindHF/buaa2wakeup", "MIT"),
+        Attribution("awesome-buaa-cs/buaa-curriculum", ""),
+        Attribution("cantBeFoundGroup/OpenBUAA", ""),
+        Attribution("el-ev/BUAA-ics-gen", "MIT"),
+        Attribution("Krignd/KAgenda", ""),
+        Attribution("Yiki21/iclass_buaa_tui", "GPL-3.0"),
+        Attribution("Lidozs55/BUAAer-Smart-Schedule-on-electron", ""),
+        Attribution("WhXcjm/buaa-byxt-aischedule", "GPL-3.0"),
+        Attribution("MeanZhang/buaa-ai-schedule", "MIT"),
+        Attribution("Alyssumira/BUAA-Schedule", "MIT"),
+        Attribution("lyy1119/BuaaScheduleRender", "MIT"),
+        Attribution("zjafb/BUAA-Hangzhou-Schedule", "MIT"),
+        // 四校教务协议交叉验证（2026-09-19）
+        Attribution("dream2333/NWUPL-Pure-EMS", ""),
+        Attribution("linling-zy/kust-schedule", "Apache-2.0"),
+        Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
     )
 

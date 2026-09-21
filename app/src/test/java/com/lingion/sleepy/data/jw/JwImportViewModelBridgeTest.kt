@@ -98,6 +98,9 @@ class JwImportViewModelBridgeTest {
         assertTrue(js.contains("type=term"))
         assertTrue(js.contains("arrangedList"))
         assertTrue(js.contains("onWiseduResult"))
-        assertTrue(js.contains("hostname !== 'jwxt.neu.edu.cn'"))
+        // 2026-09-19 byxt.buaa.edu.cn 加入同协议族: host 闸从单域名字面量扩为 NEU_HOSTS 白名单数组
+        assertTrue("host 闸必须为 NEU_HOSTS 白名单 (NEU + byxt)",
+            js.contains("NEU_HOSTS = ['jwxt.neu.edu.cn', 'byxt.buaa.edu.cn']"))
+        assertTrue(js.contains("isSupportedHost"))
     }
 }

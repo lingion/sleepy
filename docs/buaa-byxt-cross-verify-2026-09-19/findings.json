@@ -1,0 +1,37 @@
+{
+  "date": "2026-09-19",
+  "scope": "byxt.buaa.edu.cn 适配 (新本研教务, 金智 Wisedu jwapp homeapp)",
+  "repos_cross_verified": 14,
+  "findings": [
+    {
+      "finding": "byxt.buaa.edu.cn 协议族确认",
+      "evidence": "14 个独立仓库均指向同一 endpoint: /jwapp/sys/homeapp/api/home/student/getMyScheduleDetail.do",
+      "conclusion": "金智 Wisedu jwapp homeapp 族 (非 iEAS, 非 WISEDU 老版)"
+    },
+    {
+      "finding": "byxt vs NEU 差异点",
+      "evidence": "NEU 需要 getMyScheduledCampus.do → campusCode; byxt 14 仓均 campusCode=\"\" 直传",
+      "conclusion": "NEU_FETCH_JS 端兼容 byxt: 固定 campusCode=''"
+    },
+    {
+      "finding": "字段形态差异",
+      "evidence": "byxt 同时提供 weeksAndTeachers + cellDetail + titleDetail; NEU 主要 titleDetail",
+      "conclusion": "JwNeuParser 改用 cellDetail 优先解析, titleDetail fallback"
+    },
+    {
+      "finding": "titleDetail 内容差异",
+      "evidence": "NEU titleDetail[1..] = '周数 教室'; byxt titleDetail 包含 '上课地点：沙河校区/...'",
+      "conclusion": "extractWeeksAndRooms 扩展 titleDetail 判读逻辑"
+    },
+    {
+      "finding": "cellDetail 双周形态",
+      "evidence": "byxt cellDetail 分离 2,4,6... (双周) 与单独周次; NEU 多统一 titleDetail",
+      "conclusion": "extractCellDetailPairs 两步提取: 先抓全部周次, 再判定教室"
+    },
+    {
+      "finding": "gsmis.buaa.edu.cn (研究生) 不在 scope",
+      "evidence": "lyy1119/BuaaScheduleRender 指向 gsmis, 与 byxt 不同协议",
+      "conclusion": "本科 byxt 适配不覆盖研究生 GSMIS 系统"
+    }
+  ]
+}

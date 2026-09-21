@@ -30,6 +30,31 @@ class JwProtocolDetectionUnitTest {
                 "https://jwxt.buaa.edu.cn:7001/ieas2.1/kbcx/queryGrkb"))
     }
 
+    @Test
+    fun `byxt BUAA 新本研教务路由到 NEU 协议族`() {
+        // 2026-09-19: byxt.buaa.edu.cn = 金智 jwapp homeapp (9 仓 cross-verified),
+        // 协议与东北大学同族; 旧 jwxt.buaa.edu.cn iEAS 走 ②b 不受影响
+        assertEquals(JwProtocol.TYPE_NEU,
+            JwImportViewModel.detectProtocolFromUrlForTest(
+                "https://byxt.buaa.edu.cn/jwapp/sys/homeapp/index.do"))
+        assertEquals(JwProtocol.TYPE_NEU,
+            JwImportViewModel.detectProtocolFromUrlForTest(
+                "https://byxt.buaa.edu.cn/jwapp/sys/homeapp/home/index.html"))
+        // 不带 /jwapp/ 路径的裸入口也命中 (host 锚点)
+        assertEquals(JwProtocol.TYPE_NEU,
+            JwImportViewModel.detectProtocolFromUrlForTest("https://byxt.buaa.edu.cn/"))
+    }
+
+    @Test
+    fun `jwxt BUAA 旧 iEAS 入口不受 byxt 新分支影响`() {
+        assertEquals(JwProtocol.TYPE_QZ_IEAS,
+            JwImportViewModel.detectProtocolFromUrlForTest(
+                "https://jwxt.buaa.edu.cn:7001/ieas2.1"))
+        assertEquals(JwProtocol.TYPE_QZ_IEAS,
+            JwImportViewModel.detectProtocolFromUrlForTest(
+                "https://jwxt-7001.e2.buaa.edu.cn/ieas2.1/kbcx/queryGrkb"))
+    }
+
     @Test fun `UCAS personSchedule URL selects UCAS parser`() {
         assertEquals(JwProtocol.TYPE_UCAS,
             JwImportViewModel.detectProtocolFromUrlForTest("https://xkgo.ucas.ac.cn:3000/course/personSchedule"))

@@ -56,7 +56,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
-import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -110,10 +109,10 @@ fun PeriodTableEditScreen(
     var pendingSave by remember { mutableStateOf<PeriodTableEntity?>(null) }
     // issue#40: 新建未保存表的丢弃标记 — 用户确认保存后翻 false, 返回不再删行
     var unsavedNew by remember { mutableStateOf(isNewUnsaved) }
-    // v1.0.56 T6: 第三 Tab「作息表」— 作息表编辑页同样有(用户 2026-09-16: 有手动/自动就有第三个)。
-    // 语义 = 取入: 选中另一张作息表, 把它的节次内容拷进当前编辑区(成为本表内容的起点),
-    // 非活绑 — period_tables 自身无绑定字段, 绑定只存在于课表上。排除自己禁自引用。
-    var selectedImportTableId by remember(periodTable.id) { mutableStateOf<Long?>(null) }
+    // 2026-09-20 用户拍板(issue#40 反馈): 作息表编辑页不再有「作息表」第三 Tab。
+    // 旧版选中另一张表=把它的节次拷进编辑区, 但 UI 与课表页的"活绑"第三 Tab 同构,
+    // 用户无法区分「复制当起点」与「绑定」→ issue#40 反馈"作息表里绑作息表, 反人类"。
+    // 复制需求由管理页每行「复制」按钮承担(先命名后建, 语义清晰)。
     // v1.0.56 T7: 删除入口迁入本页 — 确认弹窗 + 绑定拦截提示(从管理页列表行整体搬迁)
     var showDeleteConfirm by remember(periodTable.id) { mutableStateOf(false) }
     var deleteBlockedMsg by remember(periodTable.id) { mutableStateOf<String?>(null) }
@@ -270,33 +269,9 @@ fun PeriodTableEditScreen(
                                     slotRows.addAll(newRows)
                                 },
                                 smartConfig = smartConfig.value,
-                                onSmartConfigChange = { smartConfig.value = it },
-                                // v1.0.56 T6: 第三 Tab「作息表」— 列表排除自己;
-                                // 选中 = 把该表节次取入当前编辑区(取入非活绑)
-                                periodTableOptions = periodTables.map {
-                                    TimeSlotEditorPeriodTableOption(it.id, it.name, it.nodesPerDay)
-                                },
-                                selectedPeriodTableId = selectedImportTableId,
-                                excludePeriodTableId = periodTable.id,
-                                onSelectPeriodTable = { pickedId ->
-                                    selectedImportTableId = pickedId
-                                    val picked = periodTables.find { it.id == pickedId } ?: return@TimeSlotEditor
-                                    val imported = TimeTableUtils.parseTimeSlotRows(picked.timeJson)
-                                    slotRows.clear()
-                                    slotRows.addAll(imported)
-                                    smartConfig.value = if (picked.smartConfigJson.isNotBlank()) {
-                                        try {
-                                            Json.decodeFromString<SmartPeriodConfig>(picked.smartConfigJson)
-                                        } catch (_: Exception) {
-                                            smartConfig.value
-                                        }
-                                    } else {
-                                        SmartPeriodConfig(
-                                            totalPeriods = imported.size.coerceAtLeast(1),
-                                            startTime = imported.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                                        )
-                                    }
-                                }
+                                onSmartConfigChange = { smartConfig.value = it }
+                                // 2026-09-20 用户拍板(issue#40 反馈): 不传 periodTableOptions
+                                // → 只有手动/智慧节次两 Tab, 作息表编辑页不再出现「作息表」Tab
                             )
                         }
                     }

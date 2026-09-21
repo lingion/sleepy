@@ -47,7 +47,16 @@ data class TimeTableEntity(
      * 课程表 → 时间节次表的单向引用; 一张时间节次表可被多张课程表引用。
      * 修改所绑时间表 = 本表立即按新作息解释节次; 课程行 startNode/step 不重算。
      */
-    @ColumnInfo(name = "periodTableId") val periodTableId: Long? = null
+    @ColumnInfo(name = "periodTableId") val periodTableId: Long? = null,
+
+    /**
+     * C2(2026-09-20): 换绑前本表自身作息快照 — 绑定时的 timeJson/nodesPerDay/smartConfigJson
+     * 三元组 JSON 包络({t,n,s}), 解绑时恢复此快照再清空。
+     * 修复 issue#40 用户数据破坏: 旧实现换绑时把目标表内容镜像覆盖本表兼容列,
+     * 解绑后"使用本表作息"读到的是镜像副本, 用户手工作息永久丢失。
+     * 快照仅当 periodTableId 由 null → 非 null 时写入一次; 绑→绑换目标不刷新快照。
+     */
+    @ColumnInfo(name = "preBindSnapshotJson", defaultValue = "") val preBindSnapshotJson: String = ""
 ) {
     /**
      * issue#40 有效时间表水合(设计 §5.1): 绑定存在 → 节次时间/智慧节次/节次数
@@ -63,4 +72,38 @@ data class TimeTableEntity(
             timeJson = periodTable.timeJson,
             smartConfigJson = periodTable.smartConfigJson
         )
+
+    companion object {
+        /**
+         * C2: 首次绑定(null → 非 null)时产出的新实体 — 兼容列不变,
+         * 只写 periodTableId 并把绑定前的 {t,n,s} 三元组存进快照列。
+         */
+        fun snapshotForBind(table: TimeTableEntity, targetId: Long): TimeTableEntity =
+            table.copy(
+                periodTableId = targetId,
+                preBindSnapshotJson = org.json.JSONObject()
+                    .put("t", table.timeJson)
+                    .put("n", table.nodesPerDay)
+                    .put("s", table.smartConfigJson)
+                    .toString()
+            )
+
+        /**
+         * C2: 解绑(非 null → null)时的新实体 — 快照存在则恢复绑定前兼容列再清空;
+         * 快照缺失(空/损坏, 只可能来自旧版本升级/历史脏数据)按原样解绑,
+         * 兼容列保持绑定期间最后一次已知值(旧行为)。
+         */
+        fun restoredForUnbind(table: TimeTableEntity): TimeTableEntity {
+            val snapshot = if (table.preBindSnapshotJson.isBlank()) null
+                else runCatching { org.json.JSONObject(table.preBindSnapshotJson) }.getOrNull()
+            if (snapshot == null) return table.copy(periodTableId = null, preBindSnapshotJson = "")
+            return table.copy(
+                periodTableId = null,
+                nodesPerDay = snapshot.optInt("n", table.nodesPerDay),
+                timeJson = snapshot.optString("t", table.timeJson),
+                smartConfigJson = snapshot.optString("s", table.smartConfigJson),
+                preBindSnapshotJson = ""
+            )
+        }
+    }
 }

@@ -28,6 +28,9 @@ import androidx.sqlite.db.SupportSQLiteDatabase
  *     - 迁移: 每张旧课表生成一张独立时间节次表(继承 timeJson/smartConfigJson/nodesPerDay),
  *       periodTableId 指过去 — 旧用户课表不意外共享同一份作息
  *     - 旧 timeJson/smartConfigJson/nodesPerDay 保留为兼容列(异常回退)
+ *   v8 → v9: C2 换绑前快照 (issue#40, 2026-09-20)
+ *     - 加 time_tables.preBindSnapshotJson (TEXT NOT NULL DEFAULT '')
+ *     - 旧行空串 = 无快照; 解绑回退兼容列(旧镜像语义)仅在快照缺失时兜底
  */
 val MIGRATION_3_4: Migration = object : Migration(3, 4) {
     override fun migrate(db: SupportSQLiteDatabase) {
@@ -95,13 +98,30 @@ val MIGRATION_7_8: Migration = object : Migration(7, 8) {
     }
 }
 
+/**
+ * v8 → v9: C2 换绑不覆盖快照列 (2026-09-20, issue#40 用户数据破坏修复)
+ *   - 加 time_tables.preBindSnapshotJson (TEXT NOT NULL DEFAULT '')
+ *   - 纯加列, 旧行默认空串 = 无快照(未绑过表/旧版本升级, 行为不变)
+ */
+val MIGRATION_8_9: Migration = object : Migration(8, 9) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        MIGRATION_8_9_STATEMENTS.forEach { db.execSQL(it) }
+    }
+}
+
+/** v8→v9 的静态 schema SQL — 迁移契约测试与 Room 共用同一份 */
+internal val MIGRATION_8_9_STATEMENTS: List<String> = listOf(
+    "ALTER TABLE time_tables ADD COLUMN preBindSnapshotJson TEXT NOT NULL DEFAULT ''"
+)
+
 /** 当前已注册的全部 Migration — AppDatabase.Companion.get() 链入 */
 val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_3_4,
     MIGRATION_4_5,
     MIGRATION_5_6,
     MIGRATION_6_7,
-    MIGRATION_7_8
+    MIGRATION_7_8,
+    MIGRATION_8_9
 )
 
 /** issue#26: v5→v6 逐条 SQL — 单一事实来源, CourseAliasMigrationTest 用 sqlite-jdbc 直接执行同一份 */

@@ -1,0 +1,10 @@
+[
+  {
+    "full_name": "linling-zy/kust-schedule",
+    "stars": null,
+    "language": "Kotlin",
+    "license": "Apache-2.0",
+    "status": "indirect",
+    "reason": "school-targeted reference; protocol implementation was independently checked against the captured portal response"
+  }
+]

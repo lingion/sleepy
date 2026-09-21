@@ -404,7 +404,9 @@ class JwImportActivity : ComponentActivity() {
                                         onValueChange = { configStartDate = it; checkpointDraft() },
                                         label = getString(R.string.import_week_start),
                                         modifier = Modifier.fillMaxWidth(),
-                                        isError = confirmError != null
+                                        // 只在日期错误时标红; 节次错误标到节次区(2026-09-20 反馈: 节次错也标日期框误导)
+                                        isError = confirmError != null && (configStartDate.isBlank() ||
+                                            !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(configStartDate))
                                     )
                                     // 用户可改的导入课表名 — 教务直连此前无任何命名入口,
                                     // 硬编码成 "教务导入 - {学校名}" 后用户改名要进课表管理.
@@ -455,12 +457,19 @@ class JwImportActivity : ComponentActivity() {
                                         confirmError = getString(R.string.start_date_format)
                                         return@TextButton
                                     }
-                                    val emptyRows = configRows.filter { it.start.isBlank() || it.end.isBlank() }
+                                    // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
+                                    // 教务协议没回节次时间 → 手动 rows 全空 → 旧代码误报「第 X 节时间不能为空」(用户反馈 2026-09-20)。
+                                    val effectiveRows = TimeTableUtils.effectiveRowsForConfirm(
+                                        manualRows = configRows,
+                                        bindId = configBindPeriodTableId,
+                                        tables = allPeriodTables.map { it.id to it.timeJson }
+                                    )
+                                    val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                                     if (emptyRows.isNotEmpty()) {
                                         confirmError = getString(R.string.slot_time_required, emptyRows.first().node)
                                         return@TextButton
                                     }
-                                    val invalidRows = configRows.filter {
+                                    val invalidRows = effectiveRows.filter {
                                         !Regex("""^\d{2}:\d{2}$""").matches(it.start) || !Regex("""^\d{2}:\d{2}$""").matches(it.end) || it.start >= it.end
                                     }
                                     if (invalidRows.isNotEmpty()) {
@@ -468,21 +477,22 @@ class JwImportActivity : ComponentActivity() {
                                         return@TextButton
                                     }
                                     confirmError = null
-                                    configTimeJson = TimeTableUtils.buildTimeJsonFromRows(configRows)
+                                    configTimeJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
                                     // 落库
                                     statusMsg = getString(R.string.import_parsing)
                                     scope.launch {
                                         try {
-                                            val maxNode = configRows.maxOfOrNull { it.node } ?: 0
+                                            val maxNode = effectiveRows.maxOfOrNull { it.node } ?: 0
                                             // v1.0.56 T10: id=-1 = 本次导入自动建作息表(名字随课表名, VM 内
-                                            // 走全局唯一名顺延); id>0 = 绑定既有表; null = 不建不绑
+                                            // 走全局唯一名顺延); id>0 = 绑定既有表; null = 不建不绑。
+                                            // effectiveRows 已按绑定语义解析(id>0 = 表时间, 否则手动 rows)
                                             val autoPeriodEntity =
-                                                if (configBindPeriodTableId == -1L && configRows.isNotEmpty()) {
+                                                if (configBindPeriodTableId == -1L && effectiveRows.isNotEmpty()) {
                                                     com.lingion.sleepy.data.entity.PeriodTableEntity(
                                                         name = configTableName.ifBlank {
                                                             getString(R.string.jw_import_title, school.name)
                                                         },
-                                                        nodesPerDay = configRows.size,
+                                                        nodesPerDay = effectiveRows.size,
                                                         timeJson = configTimeJson
                                                     )
                                                 } else null

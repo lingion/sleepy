@@ -242,6 +242,8 @@ object JwProtocol {
      * (Apache-2.0); 代码自写。
      */
     const val TYPE_CLASSIC_EAMS = "classic_eams"
+    const val TYPE_KUST = "kust"
+    const val TYPE_NUIT = "nuit"
 
     /**
      * T6 协议识别置信度（仅内部诊断，不进 UI）。
@@ -258,7 +260,7 @@ object JwProtocol {
      *                            qz > qz_crazy > qz_br > qz_with_node > qz_old
      */
     val ALL_TYPES: List<String> = listOf(
-        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_BOYA_PP, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_PKU, TYPE_BNUZ,
+        TYPE_WISEDU, TYPE_CQU, TYPE_CHAOXING, TYPE_BOYA_PP, TYPE_EAMS5, TYPE_CLASSIC_EAMS, TYPE_KUST, TYPE_NUIT, TYPE_PKU, TYPE_BNUZ,
         TYPE_CF, TYPE_CF_NEW, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_BJTU, TYPE_YETHAN,
@@ -301,6 +303,8 @@ object JwProtocol {
         TYPE_HNIU -> "湖南信息职业技术学院"
         TYPE_EAMS5 -> "合工大教务 (EAMS5)"
         TYPE_CLASSIC_EAMS -> "金智教务（经典 EAMS）"
+        TYPE_KUST -> "昆明理工大学门户"
+        TYPE_NUIT -> "广东东软学院教务"
         TYPE_SEU -> "东南大学"
         TYPE_ZJU -> "浙江大学"
         TYPE_USTC -> "中国科学技术大学"
@@ -329,7 +333,7 @@ object JwProtocol {
         TYPE_CHAOXING -> "chaoxing"
         TYPE_BOYA_PP -> "other"
         TYPE_EAMS5 -> "eams5"
-        TYPE_CLASSIC_EAMS -> "other"
+        TYPE_CLASSIC_EAMS, TYPE_KUST, TYPE_NUIT -> "other"
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT -> "other"
         TYPE_BJTU -> "other"
         TYPE_YETHAN -> "other"
