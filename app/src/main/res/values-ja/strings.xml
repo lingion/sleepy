@@ -46,6 +46,7 @@
     <string name="schedule_share_table">時間割を共有</string>
     <string name="exit_press_back_again">もう一度戻るボタンを押すと終了します</string>
     <string name="schedule_current_week">第 %1$d 週</string>
+    <string name="schedule_nearest_busy_day">直近の授業日</string>
     <string name="schedule_no_course_today">今日は授業がありません</string>
 
     <string name="import_title">時間割・時程表をインポート</string>
@@ -695,6 +696,8 @@
     <string name="today_semester_out_hint">学期範囲外のため、授業は参考です</string>
     <string name="settings_vert_punct">ウィジェット縦書き記号</string>
     <string name="settings_vert_punct_sub">ウィジェットでコマ名を縦書き表示する際、（）《》などを縦書き用の字形に置き換えます（実験的機能）</string>
+    <string name="settings_nearest_busy_day">授業がないとき直近の授業日を表示</string>
+    <string name="settings_nearest_busy_day_sub">今日の授業が終わったとき、アプリとウィジェットに直近の授業日を表示します</string>
     <string name="settings_widget">ウィジェット設定</string>
     <string name="settings_widget_colorless">ウィジェットの授業色を統一</string>
     <string name="settings_widget_colorless_sub">ウィジェットのコマ背景色だけを中立色に統一。アプリ内やカスタム色には影響しません</string>

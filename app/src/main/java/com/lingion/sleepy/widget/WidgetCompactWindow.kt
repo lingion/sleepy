@@ -21,12 +21,20 @@ internal object WidgetCompactWindow {
         maxWeek: Int,
         today: LocalDate,
         todayFirst: Boolean,
-    ): List<DayData> = WidgetBitmapRenderers.compactWindowDates(today, todayFirst).map { date ->
-        val dow = date.dayOfWeek.value
-        val week = DateUtils.currentWeek(startDate, date)
-        val afterEnd = DateUtils.semesterStatus(startDate, maxWeek, date) == DateUtils.SemesterStatus.AFTER_END
-        val visible = if (afterEnd) emptyList()
-            else repo.getCoursesByDayOnce(tableId, dow).filter { it.inWeek(week) }.sortedBy { it.startNode }
-        DayData(date = date, dayOfWeek = dow, courses = visible, timeJson = timeJson)
+        displayWeek: Int? = null,
+    ): List<DayData> {
+        val dates = if (displayWeek != null) {
+            (1..3).map { day -> DateUtils.dateOfWeek(startDate, displayWeek, day) }
+        } else {
+            WidgetBitmapRenderers.compactWindowDates(today, todayFirst)
+        }
+        return dates.map { effectiveDate ->
+            val dow = effectiveDate.dayOfWeek.value
+            val week = displayWeek ?: DateUtils.currentWeek(startDate, effectiveDate)
+            val afterEnd = DateUtils.semesterStatus(startDate, maxWeek, effectiveDate) == DateUtils.SemesterStatus.AFTER_END
+            val visible = if (afterEnd) emptyList()
+                else repo.getCoursesByDayOnce(tableId, dow).filter { it.inWeek(week) }.sortedBy { it.startNode }
+            DayData(date = effectiveDate, dayOfWeek = dow, courses = visible, timeJson = timeJson)
+        }
     }
 }

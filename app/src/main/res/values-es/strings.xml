@@ -46,6 +46,7 @@
     <string name="schedule_share_table">Compartir horario</string>
     <string name="exit_press_back_again">Pulsa atrás de nuevo para salir</string>
     <string name="schedule_current_week">Semana %1$d</string>
+    <string name="schedule_nearest_busy_day">Próximo día con clases</string>
     <string name="schedule_no_course_today">No hay clases hoy</string>
 
     <string name="import_title">Importar horario/períodos</string>
@@ -695,6 +696,8 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="today_semester_out_hint">Fuera del rango del semestre: las clases son solo de referencia</string>
     <string name="settings_vert_punct">Puntuación vertical en widgets</string>
     <string name="settings_vert_punct_sub">Cuando los nombres se muestren en vertical en los widgets, cambia ( ) 《 》 por sus formas verticales (experimental)</string>
+    <string name="settings_nearest_busy_day">Mostrar el próximo día con clases si no hay clase</string>
+    <string name="settings_nearest_busy_day_sub">Muestra el día más cercano con clases en la app y los widgets cuando no queden clases hoy</string>
     <string name="settings_widget">Ajustes del widget</string>
     <string name="settings_widget_colorless">Colores uniformes de cursos en widgets</string>
     <string name="settings_widget_colorless_sub">Neutraliza solo los colores de fondo en widgets; no afecta a la app ni colores personalizados</string>

@@ -46,6 +46,7 @@
     <string name="schedule_share_table">Share Schedule</string>
     <string name="exit_press_back_again">Press back again to exit</string>
     <string name="schedule_current_week">Week %1$d</string>
+    <string name="schedule_nearest_busy_day">Next class day</string>
     <string name="schedule_no_course_today">No classes today</string>
 
     <string name="import_title">Import Timetable/Bell Schedule</string>
@@ -705,6 +706,8 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="today_semester_out_hint">Outside the semester range — classes shown for reference</string>
     <string name="settings_vert_punct">Widget vertical punctuation</string>
     <string name="settings_vert_punct_sub">When course names render vertically in widgets, swap ( ) 《 》 for vertical forms (experimental)</string>
+    <string name="settings_nearest_busy_day">Show nearest class day when free</string>
+    <string name="settings_nearest_busy_day_sub">Show the nearest day with classes in the app and widgets when no classes remain today</string>
     <string name="settings_widget">Widget settings</string>
     <string name="settings_widget_colorless">Uniform widget course colors</string>
     <string name="settings_widget_colorless_sub">Neutralize only widget course colors; in-app and custom colors are not affected</string>

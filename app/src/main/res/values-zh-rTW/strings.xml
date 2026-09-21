@@ -46,6 +46,7 @@
     <string name="schedule_share_table">分享課表</string>
     <string name="exit_press_back_again">再按一次返回退出</string>
     <string name="schedule_current_week">第 %1$d 週</string>
+    <string name="schedule_nearest_busy_day">最近有課的一天</string>
     <string name="schedule_no_course_today">今天沒有課</string>
 
     <string name="import_title">匯入課表/作息表</string>
@@ -695,6 +696,8 @@
     <string name="today_semester_out_hint">學期範圍外，課程僅供參考</string>
     <string name="settings_vert_punct">小工具直排標點最佳化</string>
     <string name="settings_vert_punct_sub">小工具課名直排時，將（）《》等橫排符號替換為直排形態（實驗功能）</string>
+    <string name="settings_nearest_busy_day">沒課時顯示最近有課的一天</string>
+    <string name="settings_nearest_busy_day_sub">今天沒有剩餘課程時，主介面和小工具自動顯示最近一個還有課的日子</string>
     <string name="settings_widget">小工具設定</string>
     <string name="settings_widget_colorless">小工具統一課程底色</string>
     <string name="settings_widget_colorless_sub">僅將小工具課程底色統一為中性底色，不影響 App 內和自訂顏色課程</string>

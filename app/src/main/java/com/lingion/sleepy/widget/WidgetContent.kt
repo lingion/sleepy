@@ -6,6 +6,7 @@ import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.ui.theme.ThemePresets
 import com.lingion.sleepy.ui.theme.WakeUpColorScheme
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
 
 /**
@@ -43,7 +44,9 @@ data class WidgetData(
      * 默认 true: 既有调用方 (WidgetRenderActivity 预览 / weekGridMinimumTodayData)
      * 构造的都是今日数据, 不加字段零改动。
      */
-    val isToday: Boolean = true
+    val isToday: Boolean = true,
+    /** 当前展示周状态：下一周/周末返回实际周/本周已结束。 */
+    val weekDisplayStatus: WeekDisplayStatus = WeekDisplayStatus.NORMAL
 ) {
     val dayName: String get() = DateUtils.localizedDay(date.dayOfWeek.value, com.lingion.sleepy.SleepyApp.get())
     val dateLabel: String get() = "${date.monthValue}/${date.dayOfMonth}"
@@ -162,7 +165,9 @@ data class WeekData(
      * (周一「今日居第二位」= 上周日/周一/周二, 各按所在周周次过滤课程)。
      * 空 = 数据源未提供, compact 渲染回退旧 weekViewCompactColumns 口径。
      */
-    val compactWindow: List<DayData> = emptyList()
+    val compactWindow: List<DayData> = emptyList(),
+    /** 当前展示周状态。 */
+    val weekDisplayStatus: WeekDisplayStatus = WeekDisplayStatus.NORMAL
 )
 
 /** 两天视图数据 */
@@ -172,5 +177,7 @@ data class TwoDayData(
     val isDark: Boolean = false,
     val themeKey: String = ThemePresets.KEY_DEFAULT,
     /** 学期状态（v1.0.37）: 学期外时渲染状态文案不渲染课程 */
-    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE
+    val semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE,
+    /** 当前展示周状态。 */
+    val weekDisplayStatus: WeekDisplayStatus = WeekDisplayStatus.NORMAL
 )

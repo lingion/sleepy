@@ -48,6 +48,7 @@
     <string name="schedule_share_table">分享课表</string>
     <string name="exit_press_back_again">再按一次返回退出</string>
     <string name="schedule_current_week">第 %1$d 周</string>
+    <string name="schedule_nearest_busy_day">最近有课的一天</string>
     <string name="schedule_no_course_today">今天没有课哦</string>
 
     <!-- Import / Manage -->
@@ -403,6 +404,8 @@
     <string name="settings_visible_days_sub">取消勾选的星期将在课表页和小组件中隐藏</string>
     <string name="settings_vert_punct">小组件竖排标点优化</string>
     <string name="settings_vert_punct_sub">小组件课名竖排时，将（）《》等横排符号替换为竖排形态（实验功能）</string>
+    <string name="settings_nearest_busy_day">没课时显示最近有课的一天</string>
+    <string name="settings_nearest_busy_day_sub">今天没有剩余课程时，主界面和小组件自动显示最近一个还有课的日子</string>
     <string name="settings_widget">小组件设置</string>
     <string name="settings_widget_colorless">小组件统一课程底色</string>
     <string name="settings_widget_colorless_sub">仅将小组件课程底色统一为中性底色，不影响 App 内和自定义颜色课程</string>

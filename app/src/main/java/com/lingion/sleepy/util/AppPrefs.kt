@@ -76,6 +76,8 @@ object AppPrefs {
     const val KEY_GRID_ROW_SCALE = "grid_row_scale" // float default 1.0 — 双指行高缩放确认值(相对基座; 顶栏 tick 落盘, 撤回回退)
     const val KEY_GRID_PINCH_ZOOM = "grid_pinch_zoom" // bool default false — 实验室: 网格视图双指捏放行高(v1.0.56 默认关, 关=手势不挂; 存量缩放值不清)
     const val DEFAULT_GRID_PINCH_ZOOM = false
+    const val KEY_NEAREST_BUSY_DAY = "nearest_busy_day" // bool default false — 今天没课时自动显示最近一个有课的日子
+    const val DEFAULT_NEAREST_BUSY_DAY = false
     const val KEY_WEEK_SCALE = "week_scale" // float 0.7~1.3 default 1.0 — 周视图整体缩放(与网格视图互相独立, issue#8)
     const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
     const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
@@ -532,6 +534,14 @@ object AppPrefs {
     fun setGridPinchZoom(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_GRID_PINCH_ZOOM, v).apply()
         _changeBus.tryEmit(KEY_GRID_PINCH_ZOOM)
+    }
+
+    fun isNearestBusyDay(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_NEAREST_BUSY_DAY, DEFAULT_NEAREST_BUSY_DAY)
+
+    fun setNearestBusyDay(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_NEAREST_BUSY_DAY, v).apply()
+        _changeBus.tryEmit(KEY_NEAREST_BUSY_DAY)
     }
 
     fun getGridEveningStart(ctx: Context): String =

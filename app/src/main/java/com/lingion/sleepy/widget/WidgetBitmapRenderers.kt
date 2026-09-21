@@ -15,6 +15,7 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -245,17 +246,23 @@ object WidgetBitmapRenderers {
     fun todayHeaderParts(
         data: WidgetData, dayName: String, showDate: Boolean,
         resolve: (Int) -> String,
-        showBackToToday: Boolean = true
+        showBackToToday: Boolean = true,
+        weekDisplayStatus: WeekDisplayStatus = data.weekDisplayStatus
     ): TodayHeaderParts {
+        val statusText = when (weekDisplayStatus) {
+            WeekDisplayStatus.NEAREST_BUSY_DAY -> resolve(R.string.schedule_nearest_busy_day)
+            WeekDisplayStatus.NORMAL -> null
+        }
         val title = if (data.isToday) "${resolve(R.string.today_today)} · $dayName"
                     else "${data.dateLabel} · $dayName"
+        val displayTitle = statusText?.let { "$it · $dayName" } ?: title
         return if (!data.isToday && showBackToToday) {
-            TodayHeaderParts(title, resolve(R.string.today_nav_back_to_today), true)
+            TodayHeaderParts(displayTitle, resolve(R.string.today_nav_back_to_today), true)
         } else if (showDate && data.isToday) {
-            TodayHeaderParts(title, data.dateLabel, false)
+            TodayHeaderParts(displayTitle, data.dateLabel, false)
         } else {
             // 导航态的日期已在 title 中；showBackToToday=false 时也不得再画第二份日期。
-            TodayHeaderParts(title, null, false)
+            TodayHeaderParts(displayTitle, null, false)
         }
     }
 
@@ -962,15 +969,20 @@ object WidgetBitmapRenderers {
      */
     fun weekGridMinimumTodayData(data: WeekData, today: LocalDate): WidgetData {
         val timeJson = data.days.firstOrNull()?.timeJson ?: ""
-        val todayDay = data.days.firstOrNull { it.dayOfWeek == today.dayOfWeek.value }
+        val targetDate = if (data.weekDisplayStatus == WeekDisplayStatus.NEAREST_BUSY_DAY) {
+            data.days.minByOrNull { it.date }?.date ?: today
+        } else today
+        val targetDay = data.days.firstOrNull { it.date == targetDate }
         return WidgetData(
-            date = today,
-            courses = todayDay?.courses ?: emptyList(),
+            date = targetDate,
+            courses = targetDay?.courses ?: emptyList(),
             timeJson = timeJson,
             hasTable = data.hasTable,
             isDark = data.isDark,
             themeKey = data.themeKey,
-            semesterStatus = data.semesterStatus
+            semesterStatus = data.semesterStatus,
+            isToday = targetDate == today,
+            weekDisplayStatus = data.weekDisplayStatus
         )
     }
 
