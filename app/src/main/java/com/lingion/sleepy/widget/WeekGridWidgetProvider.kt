@@ -163,6 +163,23 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
         internal fun weekGridColorBand(slotHPx: Float, density: Float): Boolean =
             slotHPx < (9f * density).roundToInt()
 
+        /**
+         * 教室角标几何钳制 — 标签字号不得超底部预留带, 基线不得越过带外。
+         * 极矮卡上旧代码 roomSize 下限 5dp 可大于预留带, 标签压进竖排课名区 = 挤占。
+         * 返回 (clampedSize, baseline): size ≤ 预留带高, 基线锚定卡底--pad-size×0.3。
+         * 纯函数 — 渲染与单测单一事实来源。
+         */
+        internal fun weekGridRoomLabelLayout(
+            cardBottom: Float,
+            unifiedPad: Float,
+            roomReserveH: Float,
+            requestedSize: Float
+        ): Pair<Float, Float> {
+            val size = requestedSize.coerceAtMost((roomReserveH / 1.1f).coerceAtLeast(0f))
+            val baseline = cardBottom - unifiedPad - size * 0.3f
+            return size to baseline
+        }
+
         fun renderBitmap(context: Context, data: WeekData, wPx: Int, hPx: Int): Bitmap {
             val density = context.resources.displayMetrics.density
             val isDark = data.isDark
@@ -592,9 +609,16 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     }
 
                     // 教室: 底部横排小字角标, 0.62× 字号, 半透明, 按卡片宽截断省略
+                    // (挤占防御: 标签字号/基线钳在 roomReserveH 预留带内, 极矮卡不再压进课名区)
                     if (roomChars.isNotEmpty()) {
                         val roomStr = course.room.filter { it != '\n' && it != ' ' }
-                        val roomSize = (charSize * 0.62f).coerceAtMost(dp(8f).toFloat()).coerceAtLeast(dp(5f).toFloat())
+                        val roomRequested = (charSize * 0.62f).coerceAtMost(dp(8f).toFloat()).coerceAtLeast(dp(5f).toFloat())
+                        val (roomSize, roomCy) = weekGridRoomLabelLayout(
+                            cardBottom = cardRect.bottom,
+                            unifiedPad = unifiedPad,
+                            roomReserveH = roomReserveH,
+                            requestedSize = roomRequested
+                        )
                         p.textSize = roomSize
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                         p.alpha = 160
@@ -604,7 +628,6 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         val roomVisible = if (roomStr.length > maxRoomChars) {
                             roomStr.take(maxRoomChars - 1) + "…"
                         } else roomStr
-                        val roomCy = cardRect.bottom - unifiedPad - roomSize * 0.3f
                         c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
                     }
