@@ -680,6 +680,14 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="reminder_fluid_fields">Contenido principal de la cápsula</string>
     <string name="reminder_fluid_fields_hint">Elige un campo de visualización principal</string>
     <string name="reminder_fluid_note">Toca la notificación para expandir los detalles del curso. Si se muestra como Nube Fluida / Súper Isla depende del sistema del teléfono, los permisos de notificación y la elegibilidad del servicio del fabricante.</string>
+    <string name="reminder_experimental_tag">Experimental</string>
+    <string name="reminder_fluid_status_title">Estado de Nube Fluida / Súper Isla</string>
+    <string name="reminder_fluid_status_notification_required">Se requiere permiso de notificación para activar esta función.</string>
+    <string name="reminder_fluid_status_unknown">No se puede leer directamente el estado de autorización de Nube Fluida / Súper Isla. Use el botón para abrir la configuración de notificaciones y confirmar el permiso del sistema.</string>
+    <string name="reminder_fluid_status_enabled">Nube Fluida / Súper Isla está autorizada.</string>
+    <string name="reminder_fluid_status_settings_required">Abra la configuración del sistema para habilitar Nube Fluida / Súper Isla.</string>
+    <string name="reminder_fluid_status_not_supported">El sistema actual no admite Nube Fluida / Súper Isla.</string>
+    <string name="reminder_fluid_go_to_settings">Ir a ajustes</string>
     <string name="reminder_fluid_sub">Mostrar tarjetas de curso en tiempo real en teléfonos Xiaomi y OPPO compatibles</string>
     <string name="reminder_fluid_title">Nube Fluida / Súper Isla</string>
     <string name="reminder_master_sub">Permitir que Sleepy envíe notificaciones de cursos</string>

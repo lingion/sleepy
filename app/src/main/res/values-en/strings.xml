@@ -690,6 +690,14 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_fields">Capsule Primary Content</string>
     <string name="reminder_fluid_fields_hint">Choose a primary display field</string>
     <string name="reminder_fluid_note">Tap the notification to expand course details. Whether it appears as Fluid Cloud / Super Island depends on the phone system, notification permissions, and manufacturer service eligibility.</string>
+    <string name="reminder_experimental_tag">Experimental</string>
+    <string name="reminder_fluid_status_title">Fluid Cloud / Super Island status</string>
+    <string name="reminder_fluid_status_notification_required">Notification permission is required to enable this feature.</string>
+    <string name="reminder_fluid_status_unknown">The Fluid Cloud / Super Island authorization status cannot be read directly. Use the button below to open notification settings and confirm the system permission.</string>
+    <string name="reminder_fluid_status_enabled">Fluid Cloud / Super Island is authorized.</string>
+    <string name="reminder_fluid_status_settings_required">Open system settings to enable Fluid Cloud / Super Island first.</string>
+    <string name="reminder_fluid_status_not_supported">The current device system does not support Fluid Cloud / Super Island.</string>
+    <string name="reminder_fluid_go_to_settings">Go to settings</string>
     <string name="reminder_fluid_sub">Show real-time course cards on supported Xiaomi and OPPO phones</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
     <string name="reminder_master_sub">Allow Sleepy to send course notifications</string>
