@@ -26,9 +26,7 @@
     <string name="schedule_share_table">Compartir horario</string>
     <string name="exit_press_back_again">Pulsa atrás de nuevo para salir</string>
     <string name="schedule_current_week">Semana %1$d</string>
-    <string name="schedule_next_week">Horario de la próxima semana</string>
-    <string name="schedule_weekend">Fin de semana</string>
-    <string name="schedule_week_ended">Esta semana ha terminado</string>
+    <string name="schedule_nearest_busy_day">Próximo día con clases</string>
     <string name="schedule_no_course_today">No hay clases hoy</string>
 
     <string name="import_title">Importar horario/períodos</string>
@@ -314,8 +312,8 @@
     <string name="settings_grid_evening_start">La noche comienza a las</string>
     <string name="settings_grid_adaptive_height">Altura de fila adaptable del horario</string>
     <string name="settings_grid_adaptive_height_sub">Ajusta la altura de las filas para que el horario quepa en pantalla</string>
-    <string name="settings_auto_next_week">Mostrar la próxima semana al terminar esta</string>
-    <string name="settings_auto_next_week_sub">Muestra la próxima semana en la app y los widgets cuando no queden clases esta semana</string>
+    <string name="settings_nearest_busy_day">Mostrar el próximo día con clases si no hay clase</string>
+    <string name="settings_nearest_busy_day_sub">Muestra el día más cercano con clases en la app y los widgets cuando no queden clases hoy</string>
     <string name="settings_grid_pinch_zoom">Pellizco para ajustar filas</string>
     <string name="settings_grid_pinch_zoom_sub">Pellizco vertical con dos dedos en el horario para cambiar la altura de fila; desactivado si está apagado</string>
     <string name="settings_lab">Laboratorio</string>

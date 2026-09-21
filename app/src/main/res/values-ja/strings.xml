@@ -26,9 +26,7 @@
     <string name="schedule_share_table">時間割を共有</string>
     <string name="exit_press_back_again">もう一度戻るボタンを押すと終了します</string>
     <string name="schedule_current_week">第 %1$d 週</string>
-    <string name="schedule_next_week">来週の時間割</string>
-    <string name="schedule_weekend">週末</string>
-    <string name="schedule_week_ended">今週の授業は終了しました</string>
+    <string name="schedule_nearest_busy_day">直近の授業日</string>
     <string name="schedule_no_course_today">今日は授業がありません</string>
 
     <string name="import_title">時間割・時程表をインポート</string>
@@ -314,8 +312,8 @@
     <string name="settings_grid_evening_start">夜間の開始時刻</string>
     <string name="settings_grid_adaptive_height">時間割の行の高さ自動調整</string>
     <string name="settings_grid_adaptive_height_sub">画面に収まるよう行の高さを自動調整します</string>
-    <string name="settings_auto_next_week">今週終了後に来週を表示</string>
-    <string name="settings_auto_next_week_sub">今週の授業が残っていないとき、アプリとウィジェットに来週の時間割を表示します</string>
+    <string name="settings_nearest_busy_day">授業がないとき直近の授業日を表示</string>
+    <string name="settings_nearest_busy_day_sub">今日の授業が終わったとき、アプリとウィジェットに直近の授業日を表示します</string>
     <string name="settings_grid_pinch_zoom">ピンチで行の高さを調整</string>
     <string name="settings_grid_pinch_zoom_sub">時間割上で2本指の上下ピンチを行の高さ変更に使います。オフでは無効</string>
     <string name="settings_lab">ラボ</string>
