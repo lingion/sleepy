@@ -300,7 +300,7 @@
     <string name="settings_nav_style">Estilo de barra inferior</string>
     <string name="settings_nav_style_docked">Acoplada</string>
     <string name="settings_nav_style_floating">Flotante</string>
-    <string name="settings_section_display">Pantalla</string>
+    <string name="settings_section_display_navigation">Pantalla y navegación</string>
     <string name="settings_language">Idioma / Language</string>
     <string name="settings_display_mode">Visualización de hora</string>
     <string name="settings_display_node">Períodos</string>
@@ -310,7 +310,6 @@
     <string name="settings_start_view">Vista al iniciar</string>
     <string name="settings_start_view_full">Vista semanal</string>
     <string name="settings_start_view_cards">Cuadrícula</string>
-    <string name="settings_start_view_sub">Solo afecta la vista al abrir la app; se puede cambiar en la barra superior del horario</string>
     <string name="settings_grid_sub_info">Detalles de la tarjeta</string>
     <string name="settings_grid_sub_room">Aula</string>
     <string name="settings_grid_sub_room_sub">Muestra el aula bajo el nombre del curso (oculta si no hay)</string>
@@ -529,7 +528,7 @@
     <string name="theme_editor_delete_confirm">¿Eliminar este tema personalizado?</string>
     <string name="theme_editor_delete_confirm_body">Las páginas y widgets que lo usen volverán al tema predeterminado «Lila».</string>
 <string name="appearance_section_theme">Colores del tema</string>
-    <string name="appearance_section_display">Visualización de cursos</string>
+    <string name="appearance_section_schedule_display">Visualización del horario</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
     <string name="update_found_title">Nueva versión v%1$s disponible</string>
@@ -673,11 +672,11 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="schedule_week_prefix">Semana %1$d</string>
     <string name="today_semester_out_hint">Fuera del rango del semestre: las clases son solo de referencia</string>
     <string name="settings_vert_punct">Puntuación vertical en widgets</string>
-    <string name="settings_vert_punct_sub">Cuando los nombres se muestren en vertical en los widgets, cambia ( ) 《 》 por sus formas verticales (experimental)</string>
+    <string name="settings_vert_punct_sub">Cuando los nombres se muestren en vertical en los widgets, cambia ( ) 《 》 por sus formas verticales</string>
     <string name="settings_widget">Ajustes del widget</string>
     <string name="settings_widget_colorless">Colores uniformes de cursos en widgets</string>
     <string name="settings_widget_colorless_sub">Neutraliza solo los colores de fondo en widgets; no afecta a la app ni colores personalizados</string>
-    <string name="settings_course_colorless">Colores uniformes de cápsulas de cursos</string>
+    <string name="settings_course_colorless">Color uniforme de cápsulas en la app</string>
     <string name="settings_course_colorless_sub">Neutraliza solo los colores de las cápsulas en la app; no afecta a widgets ni colores personalizados</string>
     <string name="settings_widget_separator">Separador del widget semanal</string>
     <string name="settings_holiday_holiday">Atenuar festivos oficiales</string>

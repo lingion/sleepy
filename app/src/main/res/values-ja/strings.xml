@@ -300,7 +300,7 @@
     <string name="settings_nav_style">下部バーのスタイル</string>
     <string name="settings_nav_style_docked">下部固定</string>
     <string name="settings_nav_style_floating">フローティング</string>
-    <string name="settings_section_display">画面</string>
+    <string name="settings_section_display_navigation">画面とナビゲーション</string>
     <string name="settings_language">言語 / Language</string>
     <string name="settings_display_mode">時間表示</string>
     <string name="settings_display_node">時限</string>
@@ -310,7 +310,6 @@
     <string name="settings_start_view">起動時の表示</string>
     <string name="settings_start_view_full">週表示</string>
     <string name="settings_start_view_cards">グリッド</string>
-    <string name="settings_start_view_sub">起動時に表示されるビューの設定です。時間割ページ上部でいつでも切り替えできます</string>
     <string name="settings_grid_sub_info">グリッドカードの補足情報</string>
     <string name="settings_grid_sub_room">教室</string>
     <string name="settings_grid_sub_room_sub">コマ名の下に教室を表示（未設定なら非表示）</string>
@@ -529,7 +528,7 @@
     <string name="theme_editor_delete_confirm">このカスタムテーマを削除しますか?</string>
     <string name="theme_editor_delete_confirm_body">使用中のページとウィジェットは既定の「ライラック」に戻ります。</string>
 <string name="appearance_section_theme">テーマカラー</string>
-    <string name="appearance_section_display">授業の表示</string>
+    <string name="appearance_section_schedule_display">時間割の表示</string>
     <string name="appearance_section_widget">ウィジェット</string>
     <string name="about_update_latest">最新バージョン v%1$s です</string>
     <string name="update_found_title">新しいバージョン v%1$s があります</string>
@@ -673,11 +672,11 @@
     <string name="schedule_week_prefix">第 %1$d 週</string>
     <string name="today_semester_out_hint">学期範囲外のため、授業は参考です</string>
     <string name="settings_vert_punct">ウィジェット縦書き記号</string>
-    <string name="settings_vert_punct_sub">ウィジェットでコマ名を縦書き表示する際、（）《》などを縦書き用の字形に置き換えます（実験的機能）</string>
+    <string name="settings_vert_punct_sub">ウィジェットでコマ名を縦書き表示する際、（）《》などを縦書き用の字形に置き換えます</string>
     <string name="settings_widget">ウィジェット設定</string>
     <string name="settings_widget_colorless">ウィジェットの授業色を統一</string>
     <string name="settings_widget_colorless_sub">ウィジェットのコマ背景色だけを中立色に統一。アプリ内やカスタム色には影響しません</string>
-    <string name="settings_course_colorless">アプリ内授業カプセルの色を統一</string>
+    <string name="settings_course_colorless">アプリ内コースカプセルの色を統一</string>
     <string name="settings_course_colorless_sub">アプリ内のコマカプセル色だけを中立色に統一。ウィジェットやカスタム色には影響しません</string>
     <string name="settings_widget_separator">週ウィジェットの区切り線</string>
     <string name="settings_holiday_holiday">祝日の授業をグレー表示</string>

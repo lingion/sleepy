@@ -312,7 +312,7 @@
     <string name="settings_nav_style">Bottom bar style</string>
     <string name="settings_nav_style_docked">Docked</string>
     <string name="settings_nav_style_floating">Floating</string>
-    <string name="settings_section_display">Display</string>
+    <string name="settings_section_display_navigation">Display and navigation</string>
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>
     <string name="settings_display_node">Periods</string>
@@ -322,7 +322,6 @@
     <string name="settings_start_view">Default view on launch</string>
     <string name="settings_start_view_full">Week view</string>
     <string name="settings_start_view_cards">Grid</string>
-    <string name="settings_start_view_sub">Only affects the view shown at launch; switch anytime from the schedule top bar</string>
     <string name="settings_grid_sub_info">Grid card details</string>
     <string name="settings_grid_sub_room">Room</string>
     <string name="settings_grid_sub_room_sub">Show the room under the course name (hidden if none)</string>
@@ -541,7 +540,7 @@
     <string name="theme_editor_delete_confirm">Delete this custom theme?</string>
     <string name="theme_editor_delete_confirm_body">Pages and widgets using it will fall back to the default "Lilac" theme.</string>
 <string name="appearance_section_theme">Theme colors</string>
-    <string name="appearance_section_display">Course display</string>
+    <string name="appearance_section_schedule_display">Schedule display</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">You\'re on the latest version v%1$s</string>
     <string name="update_found_title">New version v%1$s available</string>
@@ -683,11 +682,11 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="schedule_week_prefix">Week %1$d</string>
     <string name="today_semester_out_hint">Outside the semester range — classes shown for reference</string>
     <string name="settings_vert_punct">Widget vertical punctuation</string>
-    <string name="settings_vert_punct_sub">When course names render vertically in widgets, swap ( ) 《 》 for vertical forms (experimental)</string>
+    <string name="settings_vert_punct_sub">When course names render vertically in widgets, swap ( ) 《 》 for vertical forms</string>
     <string name="settings_widget">Widget settings</string>
     <string name="settings_widget_colorless">Uniform widget course colors</string>
     <string name="settings_widget_colorless_sub">Neutralize only widget course colors; in-app and custom colors are not affected</string>
-    <string name="settings_course_colorless">Uniform course-pill colors</string>
+    <string name="settings_course_colorless">Uniform in-app course-pill colors</string>
     <string name="settings_course_colorless_sub">Neutralize only in-app course pill colors; widget and custom colors are not affected</string>
     <string name="settings_widget_separator">Week-widget separator</string>
     <string name="settings_holiday_holiday">Gray out public holidays</string>

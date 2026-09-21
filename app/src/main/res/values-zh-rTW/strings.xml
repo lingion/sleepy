@@ -300,7 +300,7 @@
     <string name="settings_nav_style">底欄樣式</string>
     <string name="settings_nav_style_docked">貼底</string>
     <string name="settings_nav_style_floating">懸浮</string>
-    <string name="settings_section_display">畫面</string>
+    <string name="settings_section_display_navigation">畫面與導覽</string>
     <string name="settings_language">語言 / Language</string>
     <string name="settings_display_mode">課程時間顯示</string>
     <string name="settings_display_node">節次</string>
@@ -310,7 +310,6 @@
     <string name="settings_start_view">啟動預設頁</string>
     <string name="settings_start_view_full">週檢視</string>
     <string name="settings_start_view_cards">網格</string>
-    <string name="settings_start_view_sub">僅影響啟動時進入的檢視，可隨時在課表頁頂部切換</string>
     <string name="settings_grid_sub_info">網格卡片副資訊</string>
     <string name="settings_grid_sub_room">教室</string>
     <string name="settings_grid_sub_room_sub">課程名下方顯示上課地點（無則不顯示）</string>
@@ -529,7 +528,7 @@
     <string name="theme_editor_delete_confirm">刪除這個自訂主題?</string>
     <string name="theme_editor_delete_confirm_body">刪除後使用該主題的頁面與小工具將回落到預設主題「淡紫」。</string>
 <string name="appearance_section_theme">主題色彩</string>
-    <string name="appearance_section_display">課程顯示</string>
+    <string name="appearance_section_schedule_display">課表顯示</string>
     <string name="appearance_section_widget">小工具</string>
     <string name="about_update_latest">目前已是最新版本 v%1$s</string>
     <string name="update_found_title">發現新版本 v%1$s</string>
@@ -673,11 +672,11 @@
     <string name="schedule_week_prefix">第 %1$d 週</string>
     <string name="today_semester_out_hint">學期範圍外，課程僅供參考</string>
     <string name="settings_vert_punct">小工具直排標點最佳化</string>
-    <string name="settings_vert_punct_sub">小工具課名直排時，將（）《》等橫排符號替換為直排形態（實驗功能）</string>
+    <string name="settings_vert_punct_sub">小工具課名直排時，將（）《》等橫排符號替換為直排形態</string>
     <string name="settings_widget">小工具設定</string>
     <string name="settings_widget_colorless">小工具統一課程底色</string>
     <string name="settings_widget_colorless_sub">僅將小工具課程底色統一為中性底色，不影響 App 內和自訂顏色課程</string>
-    <string name="settings_course_colorless">課程膠囊統一底色</string>
+    <string name="settings_course_colorless">App 內課程膠囊統一底色</string>
     <string name="settings_course_colorless_sub">僅將 App 內課程膠囊統一為中性底色，不影響小工具和自訂顏色課程</string>
     <string name="settings_widget_separator">週檢視小工具分隔線</string>
     <string name="settings_holiday_holiday">法定假日課程灰顯</string>

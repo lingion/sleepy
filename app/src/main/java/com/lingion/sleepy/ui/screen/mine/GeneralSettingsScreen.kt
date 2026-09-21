@@ -161,9 +161,9 @@ fun GeneralSettingsScreen(
             contentPadding = androidx.compose.foundation.layout.PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            // ── 分组① 课程显示 ──
+            // ── 分组① 课表显示 (2026-09-21 改名: 与③「画面与导航」拉开边界) ──
             item {
-                SectionHeader(title = stringResource(R.string.appearance_section_display))
+                SectionHeader(title = stringResource(R.string.appearance_section_schedule_display))
             }
 
             // 课程时间显示: 节次 / 时间 — 二选一, 标题行右侧 tab 切换(用户 2026-09-03 指令)
@@ -462,24 +462,9 @@ fun GeneralSettingsScreen(
                 }
             }
 
-            // 启动默认页: full / cards — 二选一, 标题行右侧 tab 切换(仅 App 内偏好, 不涉及小组件, 无需 refreshWidgets)
-            item {
-                SettingsFlatCard(
-                    title = stringResource(R.string.settings_start_view),
-                    options = listOf(
-                        stringResource(R.string.settings_start_view_full),
-                        stringResource(R.string.settings_start_view_cards)
-                    ),
-                    selectedKey = if (startView == "full") 0 else 1,
-                    onSelect = { i ->
-                        val v = if (i == 0) "full" else "cards"
-                        startView = v; AppPrefs.setStartView(context, v)
-                    }
-                )
-            }
-
             // 课程胶囊统一底色: 仅标题 + 右侧开关(用户 2026-09-03 指令: 说明文字去掉; 标题禁两遍),
             // App 侧独立不刷新小组件。
+            // 2026-09-21 标签补主语「App 内」: 与②组「小组件统一课程底色」成对区分(基线 §10 开关命名带主语)。
             // 高度对齐折叠卡收起态: Switch 默认 48dp 最小触摸目标会把行撑高, heightIn(max=32dp)
             // 锁回开关本体高度(触摸目标仍覆盖整行点击区, 不损可用性)
             item {
@@ -563,17 +548,8 @@ fun GeneralSettingsScreen(
                             refreshWidgets()
                         }
                     )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    SettingToggleRow(
-                        label = stringResource(R.string.settings_vert_punct),
-                        subtitle = stringResource(R.string.settings_vert_punct_sub),
-                        checked = vertPunct,
-                        onCheckedChange = {
-                            vertPunct = it
-                            AppPrefs.setVertPunctReplace(context, it)
-                            refreshWidgets()
-                        }
-                    )
+                    // 竖排标点优化已迁实验室组(2026-09-21): 实验功能唯一家门=「实验室」组
+                    // 或带 [实验] 胶囊(提醒页流体云), 禁第三形态
                 }
             }
 
@@ -607,9 +583,25 @@ fun GeneralSettingsScreen(
             // ── 分隔线 ──
             item { HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline)) }
 
-            // ── 分组③ 画面 ──
+            // ── 分组③ 画面与导航 ──
             item {
-                SectionHeader(title = stringResource(R.string.settings_section_display))
+                SectionHeader(title = stringResource(R.string.settings_section_display_navigation))
+            }
+
+            // 启动默认页: App 级启动偏好, 与课程/小组件渲染参数分组
+            item {
+                SettingsFlatCard(
+                    title = stringResource(R.string.settings_start_view),
+                    options = listOf(
+                        stringResource(R.string.settings_start_view_full),
+                        stringResource(R.string.settings_start_view_cards)
+                    ),
+                    selectedKey = if (startView == "full") 0 else 1,
+                    onSelect = { i ->
+                        val v = if (i == 0) "full" else "cards"
+                        startView = v; AppPrefs.setStartView(context, v)
+                    }
+                )
             }
 
             // 高刷新率: 单行卡, 标题+开关(用户 2026-09-04 定版: 大标题「画面」+卡片「高刷新率」无说明)
@@ -679,21 +671,16 @@ fun GeneralSettingsScreen(
                 Column(
                     modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer)
                 ) {
-                    // 折叠头: 语言名 + 当前值 + 展开箭头
+                    // 折叠头: 当前语言值 + 展开箭头(2026-09-21: 组标题已示「语言」, 卡标题禁两遍, 改显当前值)
                     Row(
                         modifier = Modifier.fillMaxWidth().noRippleClickable { languageExpanded = !languageExpanded }.padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
                         Column(modifier = Modifier.weight(1f)) {
                             Text(
-                                text = stringResource(R.string.settings_language),
+                                text = currentLabel,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
                                 color = colors.onSurface
-                            )
-                            Text(
-                                text = currentLabel,
-                                style = MaterialTheme.typography.bodySmall,
-                                color = colors.onSurfaceVariant
                             )
                         }
                         Icon(
@@ -806,6 +793,17 @@ fun GeneralSettingsScreen(
                             )
                         }
                     }
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_vert_punct),
+                        subtitle = stringResource(R.string.settings_vert_punct_sub),
+                        checked = vertPunct,
+                        onCheckedChange = {
+                            vertPunct = it
+                            AppPrefs.setVertPunctReplace(context, it)
+                            refreshWidgets()
+                        }
+                    )
                 }
             }
         }
