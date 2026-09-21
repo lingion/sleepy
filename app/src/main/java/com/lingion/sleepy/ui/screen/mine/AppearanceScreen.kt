@@ -205,10 +205,14 @@ fun AppearanceScreen(
             onSaved = { saved ->
                 CustomThemeStore.save(context, saved)
                 customListVersion++
+                // 保存即应用(2026-09-21 用户反馈): 无条件把 theme_key 落到本次保存的主题 —
+                // themeKeyFlow 只听 sleepy_prefs 的 theme_key, 只写 custom_themes 文件
+                // 不会触发 SleepyThemeProvider 重组, app 配色纹丝不动。新建主题此前更是
+                // "保存了但从没被应用过"。
+                AppPrefs.setThemeKey(context, ThemePresets.CUSTOM_KEY_PREFIX + saved.id)
+                refreshWidgets()
                 showEditor = false
                 editingTheme = null
-                // 若保存的主题正被应用(编辑既有主题),刷新小组件
-                if (currentKey == ThemePresets.CUSTOM_KEY_PREFIX + saved.id) refreshWidgets()
             },
             onDeleted = { id ->
                 CustomThemeStore.delete(context, id)
