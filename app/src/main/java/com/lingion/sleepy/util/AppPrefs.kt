@@ -694,6 +694,53 @@ object AppPrefs {
         sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
     }
 
+    // ===== issue#44 调休映射(按课表隔离, 放假日→补班日) =====
+
+    /**
+     * 调休映射按课表 ID 单独存 key — 各校补法不同(同一天 A 校补周四、B 校补周一),
+     * 全局一份会跨表套错。删表时可整键删除。
+     */
+    private fun transferKey(tableId: Long) = "holiday_transfer_$tableId"
+
+    /** 某课表的调休映射; 无表/未设置 = 空(全部按自然星期取课) */
+    fun getHolidayTransfers(ctx: Context, tableId: Long): List<com.lingion.sleepy.util.HolidayTransferEntry> =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.decodeTransfers(
+            sp(ctx).getString(transferKey(tableId), "[]") ?: "[]"
+        )
+
+    fun setHolidayTransfers(ctx: Context, tableId: Long, transfers: List<com.lingion.sleepy.util.HolidayTransferEntry>) {
+        sp(ctx).edit().putString(
+            transferKey(tableId),
+            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.encodeTransfers(transfers)
+        ).apply()
+    }
+
+    /**
+     * 设/改某放假日的映射; [targetDate] = null → 清除该放假日(回到自然星期)。
+     * 互斥(后选覆盖前选): 写入前移除同 targetDate 的既有条目 — 一天只能上一次课。
+     */
+    fun updateHolidayTransfer(
+        ctx: Context,
+        tableId: Long,
+        sourceDate: java.time.LocalDate,
+        targetDate: java.time.LocalDate?,
+        segmentId: String
+    ) {
+        val ops = com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps
+        val existing = getHolidayTransfers(ctx, tableId)
+        val next = if (targetDate == null) {
+            existing.filterNot { it.sourceDate == sourceDate }
+        } else {
+            ops.withTargetExclusivity(existing, com.lingion.sleepy.util.HolidayTransferEntry(sourceDate, targetDate, segmentId))
+        }
+        setHolidayTransfers(ctx, tableId, next)
+    }
+
+    /** 删表时清掉该表映射 */
+    fun clearHolidayTransfers(ctx: Context, tableId: Long) {
+        sp(ctx).edit().remove(transferKey(tableId)).apply()
+    }
+
     // ===== 启动检查更新开关 =====
 
     fun isUpdateCheckEnabled(ctx: Context): Boolean =

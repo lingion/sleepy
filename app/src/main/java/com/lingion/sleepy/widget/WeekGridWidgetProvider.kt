@@ -769,9 +769,12 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     val map = if (t != null) {
                         val week = DateUtils.currentWeek(t.startDate, today)
                         (1..7).map { dow ->
+                            val date = DateUtils.dateOfWeekDay(today, dow)
+                            // issue#44: 取课按调休映射
+                            val courseDow = HolidayTransferHelper.effectiveDayOfWeek(context, t.id, date)
                             // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                             val courses = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
-                                repo.getCoursesByDayOnce(t.id, dow)
+                                repo.getCoursesByDayOnce(t.id, courseDow)
                                     .filter { it.inWeek(week) }.sortedBy { it.startNode }
                             dow to courses
                         }
