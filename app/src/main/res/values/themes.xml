@@ -1,11 +1,34 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <style name="Theme.Sleepy" parent="android:Theme.Material.Light.NoActionBar">
+    <!-- NIA 式 night-adjusted 拆分: night 侧只重声明父主题 + 状态栏语义,
+         其余属性写在中间层, 两侧共用不被覆盖 (NIA: NightAdjusted.Theme.Nia)。
+         运行时主题: 纯色系, 无任何 logo windowBackground。
+         2026-09-20 定法 (NIA 模式): 启动底衬只属于 Theme.Sleepy.Splash
+         (androidx Theme.SplashScreen 系), installSplashScreen() 后自动
+         postSplashScreenTheme 切到本主题 — 窗口背景归零为默认纯色,
+         系统任何窗口预览 (EMUI predictive back 预演 / 最近任务快照 /
+         Activity 切换缩略图) 都拿不到"白底+居中 logo"残留。
+         此前 Theme.Sleepy.Splash 挂 logo layer-list 当 windowBackground
+         是翻车根源: 底衬挂在整个窗口生命周期上, 返回预览缩的就是它。 -->
+    <style name="NightAdjusted.Theme.Sleepy" parent="android:Theme.Material.Light.NoActionBar">
         <item name="android:statusBarColor">@android:color/transparent</item>
         <item name="android:navigationBarColor">@android:color/transparent</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
     </style>
 
-    <style name="Theme.Sleepy.Splash" parent="Theme.Sleepy">
-        <item name="android:windowBackground">@drawable/splash_background</item>
+    <style name="Theme.Sleepy" parent="NightAdjusted.Theme.Sleepy" />
+
+    <!-- 启动主题 (androidx core-splashscreen): 纯色底 + 居中启动图标。
+         只在冷启动首屏存在, installSplashScreen() 立即切到 Theme.Sleepy。
+         windowSplashScreenBackground 取 values(-night)/colors.xml 的
+         splash_background — 暗色模式自动切深底, 无闪白。
+         注意 parent 不挂 Theme.Sleepy: SplashScreen 系自带窗口底衬与
+         状态栏语义, 沿用旧父链会把 logo 底衬带回运行时窗口。 -->
+    <style name="NightAdjusted.Theme.Sleepy.Splash" parent="Theme.SplashScreen">
+        <item name="windowSplashScreenBackground">@color/splash_background</item>
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_foreground</item>
+        <item name="windowSplashScreenIconBackgroundColor">@color/splash_background</item>
+    </style>
+
+    <style name="Theme.Sleepy.Splash" parent="NightAdjusted.Theme.Sleepy.Splash">
+        <item name="postSplashScreenTheme">@style/Theme.Sleepy</item>
     </style>
 </resources>

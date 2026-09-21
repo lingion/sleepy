@@ -134,7 +134,7 @@ fun SchoolSelectScreen(
     // 搜索词 rememberSaveable: 选校进 WebView 再返回, 列表滚动位置由 JwImportActivity
     // stage 分支的 SaveableStateProvider 恢复, 搜索词也要跟着回来(remember 会随覆盖销毁)
     var query by rememberSaveable { mutableStateOf("") }
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
 
     // 「自定义教务链接」入口 → 聚焦搜索框 + 弹键盘 (用户点入口直接开始输入 URL)
@@ -356,7 +356,7 @@ fun SchoolSelectScreen(
  */
 @Composable
 private fun CustomUrlEntryRow(onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -398,7 +398,7 @@ private fun CustomUrlEntryRow(onClick: () -> Unit) {
 /** Section header — 显示首字母 */
 @Composable
 private fun SectionHeader(letter: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -424,7 +424,7 @@ private fun AlphabetIndexBar(
     onLetterTap: (String) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     var barCoords: LayoutCoordinates? by remember { mutableStateOf(null) }
 
     Box(
@@ -480,7 +480,7 @@ private fun AlphabetIndexBar(
 
 @Composable
 private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // T13: status 分流 — supported+有 URL 才可点; pending/legacy/no-url 不响应
     val isClickable = school.isSupported && school.hasUrl
     Row(
@@ -541,7 +541,7 @@ private fun SchoolRow(school: JwSchoolInfo, onClick: () -> Unit) {
 @Composable
 private fun SchoolStatusBadge(school: JwSchoolInfo) {
     if (school.status == JwSchoolInfo.STATUS_SUPPORTED) return
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val (label, bg, fg) = when (school.status) {
         JwSchoolInfo.STATUS_PENDING -> Triple(
             stringResource(R.string.jw_pending_pending),
@@ -581,7 +581,7 @@ private fun SchoolStatusBadge(school: JwSchoolInfo) {
 
 @Composable
 private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSchoolInfo?, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -641,7 +641,7 @@ private fun UrlDirectRow(url: String, protocolType: String?, matchedSchool: JwSc
 
 @Composable
 private fun EmptyState(isLoading: Boolean) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier.fillMaxSize(),
         contentAlignment = Alignment.Center

@@ -93,7 +93,7 @@ fun TodayScreen(
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(SleepyTheme.colors.background),
+            .background(MaterialTheme.colorScheme.background),
         contentPadding = androidx.compose.foundation.layout.PaddingValues(
             start = 16.dp, end = 16.dp, top = 16.dp, bottom = 16.dp + navExtra
         ),
@@ -133,7 +133,7 @@ fun TodayScreen(
                                             .width(0.5.dp)
                                             .fillMaxHeight()
                                             .background(
-                                                SleepyTheme.colors.onSurface.copy(alpha = SleepyTheme.Alpha.hairline)
+                                                MaterialTheme.colorScheme.onSurface.copy(alpha = SleepyTheme.Alpha.hairline)
                                             )
                                     )
                                 }
@@ -175,7 +175,7 @@ fun TodayScreen(
 
 @Composable
 private fun TodayHeader(date: LocalDate, week: Int, count: Int, semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     Column(
         modifier = Modifier
@@ -244,7 +244,7 @@ private fun Stat(label: String, bg: Color, fg: Color) {
 
 @Composable
 private fun EmptyToday(semesterStatus: DateUtils.SemesterStatus = DateUtils.SemesterStatus.IN_RANGE) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -303,7 +303,7 @@ private fun EmptyToday(semesterStatus: DateUtils.SemesterStatus = DateUtils.Seme
 
 @Composable
 private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onClick: (() -> Unit)? = null, groupRows: List<CourseEntity> = listOf(course)) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val palette = SleepyTheme.palette
     val context = LocalContext.current
     // 统一取色入口 — hue 源自动对齐 groupId（修复原 course.id%360 导致同门课多节次异色+三屏三色）

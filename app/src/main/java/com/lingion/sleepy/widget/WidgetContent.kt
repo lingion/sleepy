@@ -59,17 +59,24 @@ data class WidgetData(
  * 死代码清理: 原 coursePrimary…coursePractice 9 个课程色字段赋值后从未被渲染使用
  * (课程底色实际走 CourseColorUtil 黄金角 HSL), 已随 CoursePalette 死属性一并删除。
  */
+/**
+ * [intentional custom] 小组件 RemoteViews 渲染层拿不到 Compose Color/Context 走不到
+ * MaterialTheme.colorScheme, 故维护一份「与 app M3 scheme 同源派生」的扁平值类型。
+ * 全部由 [resolveSchemePublic] 构造, 不允许默认值 — 历史默认值
+ * (#FDFCFF/#FFFBFE/#6750A4 等) 已被 ThemePresets.LightScheme 取代
+ * (#FEF7FF/同/#6750A4), 默认值即漂移源, 故全部删默认, 强制派生。
+ */
 data class WidgetScheme(
-    val bg: Color = Color(0xFFFDFCFF),
-    val surface: Color = Color(0xFFFFFBFE),
-    val primary: Color = Color(0xFF6750A4),
-    val primaryContainer: Color = Color(0xFFEADDFF),
-    val onPrimaryContainer: Color = Color(0xFF1C1B1F),
-    val onSurface: Color = Color(0xFF1C1B1F),
-    val onSurfaceVariant: Color = Color(0xFF79747E),
-    val surfaceContainer: Color = Color(0xFFF3EDF7),
-    val surfaceVariant: Color = Color(0xFFE7E0EC),
-    val isDark: Boolean = false
+    val bg: Color,
+    val surface: Color,
+    val primary: Color,
+    val primaryContainer: Color,
+    val onPrimaryContainer: Color,
+    val onSurface: Color,
+    val onSurfaceVariant: Color,
+    val surfaceContainer: Color,
+    val surfaceVariant: Color,
+    val isDark: Boolean
 )
 
 /**

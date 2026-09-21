@@ -112,7 +112,7 @@ fun ImportSheet(
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
 
@@ -325,7 +325,6 @@ fun ImportSheet(
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         enabled = !isLoading && inputText.isNotBlank(),
                         shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(
                             text = if (isLoading) stringResource(R.string.import_parsing) else stringResource(R.string.import_preview),
@@ -621,7 +620,7 @@ private fun ImportMethodRow(
     trailing: ImageVector? = null,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -664,7 +663,7 @@ private fun ImportMethodRow(
 
 @Composable
 private fun FormatRow(name: String, desc: String, onDetail: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -718,7 +717,7 @@ private enum class ImportFormat {
  */
 @Composable
 private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
 
     val titleRes = when (format) {
@@ -924,7 +923,7 @@ private fun ImportPreviewDialog(
     onDismiss: () -> Unit,
     onApply: (ImportApplyMode) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         titleContentColor = colors.onSurface,
@@ -1139,7 +1138,6 @@ private fun ImportPreviewDialog(
                         onClick = { onApply(ImportApplyMode.ImportAsNew) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = SleepyTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(stringResource(R.string.import_as_new), maxLines = 1)
                     }
@@ -1152,7 +1150,6 @@ private fun ImportPreviewDialog(
                             onClick = { onApply(ImportApplyMode.AppendNonConflict) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_only), maxLines = 1)
                         }
@@ -1160,7 +1157,6 @@ private fun ImportPreviewDialog(
                             onClick = { onApply(ImportApplyMode.ImportAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
@@ -1185,7 +1181,6 @@ private fun ImportPreviewDialog(
                             onClick = { onApply(ImportApplyMode.AppendAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_as_new), maxLines = 1)
                         }
@@ -1235,7 +1230,7 @@ private fun PreviewMetricCard(
 
 @Composable
 private fun PreviewInfoRow(label: String, value: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
         Text(text = value, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
@@ -1260,7 +1255,7 @@ private fun ImportConfirmDialog(
     // id -> timeJson, 绑表时确认校验/落库以表 timeJson 为真源 (用户反馈 2026-09-20 误报修复)
     periodTableTimeJsonById: Map<Long, String> = emptyMap()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val fieldColors = SleepyTheme.fieldColors()
     var rows by remember(timeJson) {

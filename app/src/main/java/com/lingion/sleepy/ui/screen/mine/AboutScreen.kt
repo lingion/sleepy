@@ -80,7 +80,7 @@ fun AboutScreen(
     onOpenLicense: () -> Unit = {},
     updateNoticeVisible: Boolean = false
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
@@ -592,7 +592,7 @@ fun AboutScreen(
 
 @Composable
 private fun InfoCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -611,7 +611,7 @@ private fun UpdateBanner(
     onClick: () -> Unit,
     onDismiss: () -> Unit,
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier

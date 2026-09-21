@@ -222,7 +222,7 @@ private fun buildBeforeClassPreviewText(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(onBack: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
 
     var masterEnabled by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
@@ -703,7 +703,7 @@ fun ReminderScreen(onBack: () -> Unit) {
 
 @Composable
 private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -723,7 +723,7 @@ private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
 
 @Composable
 private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -756,7 +756,7 @@ private fun fluidPrimaryLabel(context: android.content.Context, primary: String)
 
 @Composable
 private fun ReminderCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -770,7 +770,7 @@ private fun ReminderCard(content: @Composable () -> Unit) {
 
 @Composable
 private fun IconBox(icon: ImageVector, color: androidx.compose.ui.graphics.Color) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     androidx.compose.foundation.layout.Box(
         modifier = Modifier
             .size(36.dp)
@@ -789,7 +789,7 @@ private fun IconBox(icon: ImageVector, color: androidx.compose.ui.graphics.Color
 
 @Composable
 private fun SubDivider() {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     androidx.compose.material3.HorizontalDivider(
         modifier = Modifier.padding(start = 52.dp),
         color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)

@@ -49,12 +49,12 @@ object WidgetEditScrollSection : WidgetEditSection {
             Text(
                 text = stringResource(titleRes),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = SleepyTheme.colors.onSurface
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.padding(top = 8.dp))
             Surface(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
-                color = SleepyTheme.colors.surfaceContainer,
+                color = MaterialTheme.colorScheme.surfaceContainer,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Row(
@@ -71,12 +71,12 @@ object WidgetEditScrollSection : WidgetEditSection {
                         Text(
                             text = stringResource(R.string.widget_scroll_dialog_title),
                             style = MaterialTheme.typography.bodyLarge,
-                            color = SleepyTheme.colors.onSurface
+                            color = MaterialTheme.colorScheme.onSurface
                         )
                         Text(
                             text = stringResource(R.string.widget_edit_scroll_subtitle),
                             style = MaterialTheme.typography.bodySmall,
-                            color = SleepyTheme.colors.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                     Switch(
@@ -112,9 +112,9 @@ object WidgetEditScrollSection : WidgetEditSection {
                 },
                 confirmButton = {},
                 dismissButton = {},
-                containerColor = SleepyTheme.colors.surfaceContainer,
-                titleContentColor = SleepyTheme.colors.onSurface,
-                textContentColor = SleepyTheme.colors.onSurfaceVariant
+                containerColor = MaterialTheme.colorScheme.surfaceContainer,
+                titleContentColor = MaterialTheme.colorScheme.onSurface,
+                textContentColor = MaterialTheme.colorScheme.onSurfaceVariant
             )
         }
     }

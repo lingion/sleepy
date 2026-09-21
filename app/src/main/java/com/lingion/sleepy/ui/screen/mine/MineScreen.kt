@@ -62,7 +62,7 @@ fun MineScreen(
     updateNoticeVisible: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
@@ -162,7 +162,7 @@ fun MineScreen(
 
 @Composable
 private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
@@ -178,7 +178,7 @@ private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
 
 @Composable
 private fun StatItem(value: String, label: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Text(text = value, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = colors.primary)
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
@@ -194,7 +194,7 @@ private fun SettingsItem(
     subtitle: String? = null,
     highlighted: Boolean = false
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -217,7 +217,7 @@ private fun SettingsItem(
 
 @Composable
 private fun Divider(vertical: Boolean = false) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
     else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
 }

@@ -66,7 +66,7 @@ fun PeriodTablesScreen(
     onCreateNew: (Long) -> Unit = onOpenEdit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
     val periodTables by viewModel.allPeriodTables.collectAsState()

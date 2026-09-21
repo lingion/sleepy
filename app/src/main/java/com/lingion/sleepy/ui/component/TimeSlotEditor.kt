@@ -200,7 +200,7 @@ private fun ModeTabSwitch(current: Mode, onChange: (Mode) -> Unit, hasPeriodTabl
         selected = current,
         onSelect = onChange,
         modifier = Modifier.fillMaxWidth(),
-        containerColor = SleepyTheme.colors.surfaceContainerHighest
+        containerColor = MaterialTheme.colorScheme.surfaceContainerHighest
     )
 }
 
@@ -215,7 +215,7 @@ private fun PeriodTableBindTab(
     selectedId: Long?,
     onSelect: (Long?) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -243,7 +243,7 @@ private fun PeriodTableBindTab(
 /** 选中态=primaryContainer 色块+对勾(UI 纯色块禁描边规则, 与换绑卡 BindOptionRow 同构) */
 @Composable
 private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -285,7 +285,7 @@ private fun ManualTimeSlotEditor(
     onRowsChange: (List<TimeSlotRow>) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(modifier = modifier) {
         // Header
@@ -353,7 +353,7 @@ private fun TimeSlotRowItem(
     onEndChange: (String) -> Unit,
     onDelete: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.spacedBy(8.dp),

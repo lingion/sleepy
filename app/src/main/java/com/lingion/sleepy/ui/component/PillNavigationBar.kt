@@ -29,6 +29,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -58,6 +59,23 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
  * content lambda 拿不到子项坐标, API 从 { PillNavItem(...) } 改为数据驱动。
  */
 data class PillNavItemSpec(val icon: ImageVector, val label: String, val badge: Boolean = false)
+
+/**
+ * 底栏 thumb 高亮状态 — 由调用方(AppRoot)在 NavDisplay 之外持有。
+ *
+ * 2026-09-21 用户报障: 底栏在 navigation3 里属于 entry<Main>,push 子页时整个底栏
+ * 被销毁,pop 返回是全新组合 — Animatable 归零后首帧按「thumb 在 0 位」给课表 tab
+ * 上色,几何量测完才 snap 回正确 tab,肉眼可见高亮「从首页挪到目标 tab」。
+ * 状态提升到 entries 之外后,pop 重建时 thumb 位置/覆盖色从第一帧就正确。
+ */
+class PillBarState {
+    val thumbX = Animatable(0f)
+    var thumbPlaced by mutableStateOf(false)
+    var thumbCenter by mutableFloatStateOf(0f)
+    // 上次落位时的 tab 序号 — 重建组合与持久落位一致时禁止任何动画/重定位,
+    // 高亮从首帧起钉死在原位(2026-09-21 用户: 从子页返回时光点不该动)。
+    var placedIndex by mutableIntStateOf(-1)
+}
 
 /**
  * Dock(悬浮)模式下主内容需要的额外底部滚动余量 — 让最后一项能滚到 Dock 上方完全可见
@@ -95,9 +113,10 @@ fun PillNavigationBar(
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
     modifier: Modifier = Modifier,
-    dock: Boolean = false
+    dock: Boolean = false,
+    state: PillBarState = remember { PillBarState() },
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val count = items.size.coerceAtLeast(1)
     val pillHalf = with(density) { 32.dp.toPx() }
@@ -113,29 +132,34 @@ fun PillNavigationBar(
     // 各 tab 文字字符矩形(文本局部坐标, onTextLayout 时缓存 — 非状态, 着色帧顺带读)
     val charRectsCache = remember { mutableMapOf<Int, List<Rect>>() }
 
-    // ── thumb 位移(px 浮点真值, 弹簧驱动; 初次定位 snap, 之后 animate) ──
-    val thumbX = remember { Animatable(0f) }
-    // 逐帧快照: 驱动 icon/label 扫过变色
-    val thumbCenterState = remember { mutableFloatStateOf(0f) }
-    var thumbPlaced by remember { mutableStateOf(false) }
-
-    // 读 pillRootXs/barRoot → 布局变化时重启 effect 重新定目标
+    // 读 pillRootXs/barRoot → 布局变化时重启 effect 重新定目标。
+    // Main entry 从子页返回时会重新组合: 此次组合的首次测量只 snap,不能把同一 tab
+    // 的几何重测误判成 tab 切换,否则高亮会从旁边滑回原位。
+    var laidOutInThisComposition by remember { mutableStateOf(false) }
     val centers = List(count) { pillRootXs[it] + pillHalf - barRootX }
     LaunchedEffect(centers, barLaidOut, selectedIndex) {
         val idx = selectedIndex.coerceIn(0, count - 1)
+        // 组合重建早期的 root 坐标仍是 0/临时值,不能据此重定位持久 thumb。
         if (!barLaidOut || pillRootXs[idx] <= 0f) return@LaunchedEffect
         val target = centers[idx]
-        if (!thumbPlaced) {
-            thumbX.snapTo(target)
-            thumbCenterState.floatValue = target
-            thumbPlaced = true
+        if (state.placedIndex == idx && state.thumbPlaced) {
+            laidOutInThisComposition = true
+            return@LaunchedEffect
+        }
+        if (!laidOutInThisComposition) {
+            state.thumbX.snapTo(target)
+            state.thumbCenter = target
+            state.thumbPlaced = true
+            state.placedIndex = idx
+            laidOutInThisComposition = true
         } else {
-            // 与 SegmentedSwitcher 同参: 高硬度+无回弹, 用户实测 MediumLow 拖沓不跟手
-            thumbX.animateTo(
+            // 只有 selectedIndex 真正变化才走弹簧;同 tab 的重测量永远不动。
+            state.thumbX.animateTo(
                 targetValue = target,
                 animationSpec = SleepyThumbSpring,
-                block = { thumbCenterState.floatValue = value }
+                block = { state.thumbCenter = value }
             )
+            state.placedIndex = idx
         }
     }
 
@@ -152,7 +176,8 @@ fun PillNavigationBar(
             onBarGeometry = { x, y, laid ->
                 barRootX = x; barRootY = y; barLaidOut = laid
             },
-            modifier = modifier
+            modifier = modifier,
+            state = state,
         )
         return
     }
@@ -175,8 +200,8 @@ fun PillNavigationBar(
             Modifier
                 .size(width = 64.dp, height = 32.dp)
                 .graphicsLayer {
-                    alpha = if (thumbPlaced) 1f else 0f
-                    translationX = thumbX.value - pillHalf
+                    alpha = if (state.thumbPlaced) 1f else 0f
+                    translationX = state.thumbX.value - pillHalf
                     translationY = pillRootY - barRootY
                 }
                 .clip(SleepyTheme.shapes.large)
@@ -192,7 +217,7 @@ fun PillNavigationBar(
         ) {
             items.forEachIndexed { i, item ->
                 val isSel = i == selectedIndex
-                val tc = thumbCenterState.floatValue
+                val tc = state.thumbCenter
                 val thumbStart = tc - pillHalf
                 val thumbEnd = tc + pillHalf
 
@@ -281,19 +306,18 @@ private fun DockNavigationBar(
     items: List<PillNavItemSpec>,
     selectedIndex: Int,
     onSelect: (Int) -> Unit,
-    colors: com.lingion.sleepy.ui.theme.WakeUpColorScheme,
+    colors: androidx.compose.material3.ColorScheme,
     density: androidx.compose.ui.unit.Density,
     onBarGeometry: (Float, Float, Boolean) -> Unit,
+    state: PillBarState,
     modifier: Modifier = Modifier
 ) {
     val count = items.size.coerceAtLeast(1)
     val seatHalf = with(density) { (NavDockSpec.itemSeat / 2).toPx() }
     val iconHalf = with(density) { 12.dp.toPx() }
 
-    // thumb 弹簧(与贴底同款: NoBouncy + High stiffness, 实测定参)
-    val thumbX = remember { Animatable(0f) }
-    val thumbCenterState = remember { mutableFloatStateOf(0f) }
-    var thumbPlaced by remember { mutableStateOf(false) }
+    // Dock 与贴底共用外部状态,避免 Main entry 重建时高亮从课表 tab 闪现。
+    // 定宽几何 Seat 中心已知,首帧直接对齐 state.thumbX 与 state.thumbCenter。
 
     val capsuleShape = RoundedCornerShape(percent = 50)
     val glassBg = colors.surfaceContainer.copy(alpha = 0.86f)
@@ -306,17 +330,27 @@ private fun DockNavigationBar(
         }
     }
 
+    var laidOutInThisComposition by remember { mutableStateOf(false) }
     LaunchedEffect(centers, selectedIndex) {
         val idx = selectedIndex.coerceIn(0, count - 1)
         val target = centers[idx]
-        if (!thumbPlaced) {
-            thumbX.snapTo(target); thumbCenterState.floatValue = target; thumbPlaced = true
+        if (state.placedIndex == idx && state.thumbPlaced) {
+            laidOutInThisComposition = true
+            return@LaunchedEffect
+        }
+        if (!laidOutInThisComposition) {
+            state.thumbX.snapTo(target)
+            state.thumbCenter = target
+            state.thumbPlaced = true
+            state.placedIndex = idx
+            laidOutInThisComposition = true
         } else {
-            thumbX.animateTo(
+            state.thumbX.animateTo(
                 targetValue = target,
                 animationSpec = SleepyThumbSpring,
-                block = { thumbCenterState.floatValue = value }
+                block = { state.thumbCenter = value }
             )
+            state.placedIndex = idx
         }
     }
 
@@ -346,8 +380,8 @@ private fun DockNavigationBar(
                 .offset(y = 6.dp)
                 .size(width = NavDockSpec.itemSeat, height = 52.dp)
                 .graphicsLayer {
-                    alpha = if (thumbPlaced) 1f else 0f
-                    translationX = thumbX.value - seatHalf
+                    alpha = if (state.thumbPlaced) 1f else 0f
+                    translationX = state.thumbX.value - seatHalf
                     translationY = 0f
                 }
                 .clip(RoundedCornerShape(percent = 50))
@@ -360,7 +394,7 @@ private fun DockNavigationBar(
         ) {
             items.forEachIndexed { i, item ->
                 val isSel = i == selectedIndex
-                val tc = thumbCenterState.floatValue
+                val tc = state.thumbCenter
                 val iconCov = intervalCoverage(
                     tc - seatHalf, tc + seatHalf,
                     centers[i] - iconHalf, centers[i] + iconHalf

@@ -134,7 +134,7 @@ fun CardsGridView(
     // v1.0.56 T3(实验室): 双指捏放行高总开关, 默认 false = 手势整个不挂(存量缩放值不清)。
     pinchZoomEnabled: Boolean = false
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // 设置页改 scale / cornerRatio 后强制 recompose
     var prefVersion by remember { mutableIntStateOf(0) }
     LaunchedEffect(Unit) {
@@ -583,7 +583,7 @@ private const val PLACEHOLDER_TEXT_REQUIRED_DP = 19f
 
 @Composable
 private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier, cornerRatio: Float = 1f, textFits: Boolean = true, onToggleExpand: (() -> Unit)? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val sd = { v: Float -> (v * scale).dp }
     val shape = RoundedCornerShape(sd(12f * cornerRatio))
     // 渲染期占位节次: 更低调的呈现 — 半透明底, 只显示时间不显示节号
@@ -648,7 +648,7 @@ private fun CourseOverlayCard(
     groupRows: List<CourseEntity> = listOf(course)
 ) {
     val palette = SleepyTheme.palette
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
     // 统一取色入口（决策 D3）— colorless 读取 AppPrefs course_colorless 独立开关
     // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
@@ -746,7 +746,7 @@ private fun CourseOverlayCard(
 
 @Composable
 private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, courseCount: Int, dateStr: String? = null, dayLabel: String = DateUtils.localizedDay(day, androidx.compose.ui.platform.LocalContext.current), modifier: Modifier = Modifier, scale: Float = 1f, cornerRatio: Float = 1f) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val sd = { v: Float -> (v * scale).dp }
     val bg = if (isToday) colors.primaryContainer else colors.surface
     val fg = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else if (isToday) colors.onPrimaryContainer else colors.onSurface
@@ -928,7 +928,7 @@ private fun DaySummaryCell(
     scale: Float = 1f,
     cornerRatio: Float = 1f
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
     val sd = { v: Float -> (v * scale).dp }
     val bg = if (isToday) colors.primaryContainer else colors.surfaceContainer
@@ -1025,7 +1025,7 @@ private fun DetailPanel(
     twoColumnMode: String = "days",
     hideEmptyDays: Boolean = false
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val sd = { v: Float -> (v * scale).dp }
     // issue#8 隐藏无课日 — 单栏/两栏都生效
     val sortedDays = visibleDays.sorted().let {
@@ -1123,7 +1123,7 @@ private fun DayColumn(
     cornerRatio: Float,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val sd = { v: Float -> (v * scale).dp }
 
     Column(
@@ -1164,7 +1164,7 @@ private fun DetailDayCard(
     scale: Float = 1f,
     cornerRatio: Float = 1f
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
     val sd = { v: Float -> (v * scale).dp }
 
@@ -1302,7 +1302,7 @@ private fun LessonRow(
     hideSideLabel: Boolean = false,
     groupRows: List<CourseEntity> = listOf(course)
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val palette = SleepyTheme.palette
     val context = androidx.compose.ui.platform.LocalContext.current
     // issue#26: 周视图场景别名 — 与 colorless 同模式, 叶子直接读场景开关
@@ -1414,7 +1414,7 @@ private fun LessonRow(
 
 @Composable
 fun SectionHead(title: String, action: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,

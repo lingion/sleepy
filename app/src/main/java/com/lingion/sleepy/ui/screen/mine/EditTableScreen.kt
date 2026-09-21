@@ -84,7 +84,7 @@ fun EditTableScreen(
     val state by viewModel.state.collectAsState()
     // issue#40: 全部时间节次表(换绑选择器数据源 §4.3)
     val allPeriodTables by viewModel.allPeriodTables.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
 
@@ -353,6 +353,8 @@ fun EditTableScreen(
             // 最后一张表也可删 — ScheduleScreen 的真空态(EmptyState)兜底)
             if (pendingNewTableId == null) {
                 item {
+                    // [intentional custom] 官方 Button 无 error 语义变体; 沿用 errorContainer
+                    // 色块 = Sleepy 视觉语言(同 AddCourseScreen 删除键)。
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
@@ -442,7 +444,7 @@ fun EditTableScreen(
 
 @Composable
 private fun CardSection(title: String, subtitle: String, content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()

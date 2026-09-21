@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 暗色模式下启动/过渡 windowBackground — 浅色米白在暗色主题下闪白刺眼
+         (2026-09-20 用户反馈: 切换中途左右露出米白 + logo 闪现) -->
+    <color name="splash_background">#FF1C1B1F</color>
+</resources>

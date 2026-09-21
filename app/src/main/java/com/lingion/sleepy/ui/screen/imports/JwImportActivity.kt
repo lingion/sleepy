@@ -391,7 +391,7 @@ class JwImportActivity : ComponentActivity() {
                             stage = Stage.WebViewLogin
                             parsedCourses = emptyList()
                         } else saveableStateHolder.SaveableStateProvider("ConfigureConfirm") {
-                        val colors = SleepyTheme.colors
+                        val colors = MaterialTheme.colorScheme
                         var confirmError by remember { mutableStateOf<String?>(null) }
                         AlertDialog(
                             onDismissRequest = { requestExit() },
@@ -709,7 +709,7 @@ class JwImportActivity : ComponentActivity() {
                                         .fillMaxWidth()
                                         .heightIn(max = 320.dp)
                                         .verticalScroll(rememberScrollState()),
-                                    color = SleepyTheme.colors.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(Modifier.height(20.dp))
                                 // 导出(第三位 secondary) / 确定(confirm 位 primary)

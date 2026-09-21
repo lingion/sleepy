@@ -27,10 +27,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.lingion.sleepy.ui.nav.NavSession
+import com.lingion.sleepy.ui.nav.rememberSleepyNavigator
 import com.lingion.sleepy.ui.nav.SleepyNavHost
+import com.lingion.sleepy.ui.nav.SleepyRoute
 import com.lingion.sleepy.ui.nav.SleepyNavigator
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -51,6 +51,7 @@ import com.lingion.sleepy.ui.screen.imports.JwImportActivity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
+import com.lingion.sleepy.ui.component.PillBarState
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
@@ -230,9 +231,12 @@ private fun AppRoot(
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
-    val nav: NavHostController = rememberNavController()
-    val session = remember { NavSession() }
-    val navigator = remember(nav, session) { SleepyNavigator(nav, session) }
+    val navigator = rememberSleepyNavigator()
+    val nav = navigator.backStack
+    // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
+    // pop 返回时高亮若随 entry 重建,首帧会闪现在课表 tab 再挪回目标 tab
+    // (2026-09-21 用户报障)。放这层后 pop 重建首帧即正确。
+    val pillBarState = remember { PillBarState() }
 
     // 外部导入文本 → 切管理页(与旧实现等价,语义不变)。
     var autoImportTriggered by remember { mutableStateOf(false) }
@@ -265,6 +269,7 @@ private fun AppRoot(
                 navigator.openEditTable(tableId = newId, pendingNew = newId, prevDefault = previousId)
             }
         },
+        pillBarState = pillBarState,
     )
 }
 
@@ -284,7 +289,6 @@ internal fun MainTabs(
     // tab 往返滚动位置保真: when 条件组合同样整页移除被切走的 tab, 各 tab 内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
-    val nav = navigator.navController
     val session = navigator.session
     val draftScope = rememberCoroutineScope()
     when (currentTab) {

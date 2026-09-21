@@ -72,7 +72,7 @@ fun AppearanceScreen(
     onThemeModeChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
     val selectedMode = themeMode
 
@@ -236,7 +236,7 @@ private sealed interface ThemeGridCell {
 
 @Composable
 private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
@@ -260,7 +260,7 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scheme = if (colors.background.red < 0.5f) preset.light else preset.dark
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
@@ -291,7 +291,7 @@ private fun ColorSwatch(color: Color) {
 /** 「新建主题」入口 — 裸虚线圆圈+加号,无卡片无背景无文字(2026-09-11 用户定稿) */
 @Composable
 private fun NewThemeCard(onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -344,7 +344,7 @@ private fun CustomThemeCard(
     onClick: () -> Unit,
     onEdit: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // 卡片色板预览按当前深浅模式派生(与 PresetThemeCard 的探针逻辑一致)
     val isDark = colors.background.red < 0.5f
     val scheme = remember(theme, isDark) { CustomSchemeDeriver.derive(theme, isDark) }

@@ -63,7 +63,7 @@ fun SmartPeriodEditor(
     onConfigChange: (SmartPeriodConfig) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val breakAssigns = config.effectiveAssignments()
     val durationAssigns = config.effectivePeriodAssignments()
 
@@ -268,7 +268,7 @@ private fun BreakGroupSection(
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
-    val groupColor = if (breakOption.isLong) SleepyTheme.colors.primary else SleepyTheme.colors.tertiary
+    val groupColor = if (breakOption.isLong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
     AssignmentGroupSection(
         headerText = breakOption.displayLabel(groupIdx),
         groupColor = groupColor,
@@ -294,7 +294,7 @@ private fun DurationGroupSection(
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
-    val groupColor = if (durationOption.isLong) SleepyTheme.colors.primary else SleepyTheme.colors.tertiary
+    val groupColor = if (durationOption.isLong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
     AssignmentGroupSection(
         headerText = durationOption.displayLabel(groupIdx),
         groupColor = groupColor,
@@ -328,7 +328,7 @@ private fun AssignmentGroupSection(
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -419,7 +419,7 @@ private fun PositionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val bg = if (selected) groupColor else colors.surfaceContainerHigh
     val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
     Box(
@@ -444,7 +444,7 @@ private fun PreviewList(
     config: SmartPeriodConfig,
     assigns: List<Int?>
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val rows = config.derive()
     val transMins = config.effectiveTransitionMinutes()
     val periodMins = config.effectivePeriodMinutes()

@@ -27,7 +27,6 @@ import androidx.compose.material.icons.outlined.Computer
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -116,7 +115,7 @@ fun JwWebViewLoginScreen(
     onWebViewReady: ((WebView) -> Unit)? = null,
     viewModel: JwImportViewModel = viewModel()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
@@ -255,7 +254,7 @@ fun JwWebViewLoginScreen(
                         Text(
                             text = JwProtocol.displayName(school.type),
                             style = MaterialTheme.typography.bodySmall,
-                            color = SleepyTheme.colors.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -616,7 +615,7 @@ private fun JwWebView(
 
 @Composable
 private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -641,14 +640,13 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
             onClick = onCapture,
             enabled = enabled,
             shape = SleepyTheme.shapes.extraLarge,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
             Icon(
                 imageVector = Icons.Outlined.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.padding(end = 6.dp)
             )
-            Text(stringResource(R.string.jw_import_page), color = colors.onPrimary)
+            Text(stringResource(R.string.jw_import_page))
         }
     }
 }

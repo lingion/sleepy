@@ -48,13 +48,12 @@ fun ShareScheduleSheet(
 ) {
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val sheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
-        sheetState = sheetState,
-        containerColor = colors.surface
+        sheetState = sheetState
     ) {
         Column(modifier = Modifier.fillMaxWidth().padding(bottom = 24.dp)) {
             Text(
