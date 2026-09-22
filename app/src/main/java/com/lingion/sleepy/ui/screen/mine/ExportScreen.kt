@@ -87,6 +87,10 @@ fun ExportScreen(
     val allPeriodTables by viewModel.allPeriodTables.collectAsState()
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
+    val periodTablesTitle = stringResource(R.string.period_tables_title)
+    val periodTableNodesCount = stringResource(R.string.period_table_nodes_count)
+    val exportCourseCount = stringResource(R.string.export_course_count)
+    val exportStartDate = stringResource(R.string.export_start_date)
     val colors = MaterialTheme.colorScheme
     val snackbarHostState = remember { SnackbarHostState() }
 
@@ -177,10 +181,10 @@ fun ExportScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = if (selectedPeriodTable != null) {
-                            ctx.getString(R.string.period_tables_title) + " · " +
-                                ctx.getString(R.string.period_table_nodes_count, selectedPeriodTable.nodesPerDay)
+                            periodTablesTitle + " · " +
+                                periodTableNodesCount.format(selectedPeriodTable.nodesPerDay)
                         } else {
-                            "${ctx.getString(R.string.export_course_count, courses.size)} · ${ctx.getString(R.string.export_start_date, table?.startDate ?: "")}"
+                            "${exportCourseCount.format(courses.size)} · ${exportStartDate.format(table?.startDate ?: "")}"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onPrimaryContainer

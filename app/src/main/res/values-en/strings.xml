@@ -885,4 +885,24 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="jw_import_exit_continue">Continue</string>
     <string name="jw_import_exit_keep_draft">Keep draft</string>
     <string name="jw_import_exit_delete_draft">Delete draft</string>
+    <string name="import_three_layers_dropped">Courses on these dates overlap more than two layers and were skipped: %1$s</string>
+    <string name="import_three_layers_kept">Notice: %1$s has courses overlapping more than two layers; they were kept (the schedule does not support column display)</string>
+    <string name="conflict_default_top_title">Choose default pinned course</string>
+    <string name="color_toast_last_group">The last period will follow the group color</string>
+    <string name="import_multi_location_warning">Some courses have multiple locations</string>
+    <string name="import_multi_location_warning_detail">%1$s has %2$d different locations; they will appear as separate periods after import</string>
+    <string name="today_nav_today_short">Today</string>
+    <string name="jw_diag_session_expired">%1$s session expired or is not logged in. Log in again, stay on the personal schedule page, then fetch</string>
+    <string name="jw_diag_no_container">No schedule container was found on %1$s. The page may still be loading, use an image schedule, contain a cross-origin frame, or use an upgraded system</string>
+    <string name="jw_diag_header_no_node">%1$s schedule has no per-period row headers. It may be an image schedule or have merged headers</string>
+    <string name="jw_diag_image_cells">%1$s schedule cells are images and cannot be recognized. Import HTML/CSV or add courses manually</string>
+    <string name="jw_diag_empty_semester">%1$s reports no courses this semester. Check the selected semester</string>
+    <string name="jw_diag_wrong_protocol">The protocol marked for %1$s does not match the page. The school may have switched systems</string>
+    <string name="jw_diag_unknown_empty">%1$s returned no courses for an unknown reason. Retry or report it. Features: %2$s</string>
+    <string name="jw_diag_campus_vpn_hint">This school system may only be reachable on campus. Connect to campus network or VPN</string>
+    <string name="jw_diag_qz_vpn_hint">If QiangZhi does not load, the session may have expired or the network may be restricted</string>
+    <string name="jw_fetch_session_expired">Session expired. Log in again and tap import</string>
+    <string name="jw_fetch_parse_failed">Data was fetched but no courses could be parsed. Open the personal schedule page</string>
+    <string name="jw_fetch_network">Network error. Check your connection and retry</string>
+    <string name="jw_fetch_empty">No courses this semester. Check the selected semester</string>
 </resources>
