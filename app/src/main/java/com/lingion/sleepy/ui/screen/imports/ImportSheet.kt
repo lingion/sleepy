@@ -888,7 +888,7 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
 
 // --- shared types / dialogs (copied from ImportScreen to keep sheet self-contained) ---
 
-private enum class ImportApplyMode {
+internal enum class ImportApplyMode {
     ReplaceCurrent,
     ImportAsNew,
     AppendNonConflict,
@@ -898,12 +898,12 @@ private enum class ImportApplyMode {
     AppendAll
 }
 
-private data class CourseConflict(
+internal data class CourseConflict(
     val incoming: CourseEntity,
     val existing: CourseEntity
 )
 
-private data class ImportPreview(
+internal data class ImportPreview(
     val targetTableId: Long,
     val targetTableName: String,
     val parseResult: ScheduleParser.ParseResult,
@@ -918,11 +918,14 @@ private data class ImportPreview(
 }
 
 @Composable
-private fun ImportPreviewDialog(
+internal fun ImportPreviewDialog(
     preview: ImportPreview,
     onDismiss: () -> Unit,
-    onApply: (ImportApplyMode) -> Unit
+    onApply: (ImportApplyMode) -> Unit,
+    isApplying: Boolean = false
 ) {
+    // Prevent repeated submissions while the selected import is being saved.
+    val apply: (ImportApplyMode) -> Unit = { if (!isApplying) onApply(it) }
     val colors = SleepyTheme.colors
     AlertDialog(
         onDismissRequest = onDismiss,
@@ -1135,7 +1138,8 @@ private fun ImportPreviewDialog(
                 if (preview.targetTableId == 0L) {
                     // 没有任何课表时只允许 "作为新课表导入"
                     Button(
-                        onClick = { onApply(ImportApplyMode.ImportAsNew) },
+                        enabled = !isApplying,
+                        onClick = { apply(ImportApplyMode.ImportAsNew) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = SleepyTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
@@ -1148,7 +1152,8 @@ private fun ImportPreviewDialog(
                         horizontalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
                         Button(
-                            onClick = { onApply(ImportApplyMode.AppendNonConflict) },
+                            enabled = !isApplying,
+                            onClick = { apply(ImportApplyMode.AppendNonConflict) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
                             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
@@ -1156,7 +1161,8 @@ private fun ImportPreviewDialog(
                             Text(stringResource(R.string.import_append_only), maxLines = 1)
                         }
                         Button(
-                            onClick = { onApply(ImportApplyMode.ImportAsNew) },
+                            enabled = !isApplying,
+                            onClick = { apply(ImportApplyMode.ImportAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
                             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
@@ -1170,7 +1176,8 @@ private fun ImportPreviewDialog(
                     ) {
                         // 追加冲突课表 — 危险动作(同格多层), errorContainer 色块底, 与覆盖按钮同款
                         Button(
-                            onClick = { onApply(ImportApplyMode.AppendAll) },
+                            enabled = !isApplying,
+                            onClick = { apply(ImportApplyMode.AppendAll) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
                             colors = ButtonDefaults.buttonColors(
@@ -1181,7 +1188,8 @@ private fun ImportPreviewDialog(
                             Text(stringResource(R.string.import_append_conflict), maxLines = 1)
                         }
                         Button(
-                            onClick = { onApply(ImportApplyMode.AppendAsNew) },
+                            enabled = !isApplying,
+                            onClick = { apply(ImportApplyMode.AppendAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
                             colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
@@ -1192,7 +1200,8 @@ private fun ImportPreviewDialog(
                     // 描线→色块 (2026-08-25 统一指令): 覆盖课表为危险动作,
                     //   errorContainer 色块底 + onErrorContainer 文字
                     Button(
-                        onClick = { onApply(ImportApplyMode.ReplaceCurrent) },
+                        enabled = !isApplying,
+                        onClick = { apply(ImportApplyMode.ReplaceCurrent) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = SleepyTheme.shapes.medium,
                         colors = ButtonDefaults.buttonColors(
@@ -1203,7 +1212,7 @@ private fun ImportPreviewDialog(
                         Text(stringResource(R.string.import_overwrite))
                     }
                 }
-                TextButton(onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
+                TextButton(enabled = !isApplying, onClick = onDismiss, modifier = Modifier.fillMaxWidth()) {
                     Text(stringResource(R.string.cancel), color = colors.onSurfaceVariant)
                 }
             }
@@ -1400,35 +1409,7 @@ private suspend fun buildImportPreview(
     val result = ScheduleParser.parse(text, tableId)
     return result.fold(
         onSuccess = { parseResult ->
-            val repo = SleepyApp.get().repository
-            val existingTable = if (tableId == 0L) null else repo.getTable(tableId)
-            val existingCourses = if (tableId == 0L) emptyList() else repo.getCourses(tableId)
-            val conflicts = if (tableId == 0L) emptyList() else parseResult.courses.mapNotNull { incoming ->
-                existingCourses.firstOrNull { existing -> coursesConflict(incoming, existing) }
-                    ?.let { CourseConflict(incoming = incoming, existing = it) }
-            }
-            // issue#22: 同 groupId 多地点提示文案 — 按 (groupId) 聚合,
-            // 有 ≥2 个非空不同地点时给一句提示,导入后会作为独立节次展示
-            val multiLocWarnings = mutableListOf<String>()
-            parseResult.courses.groupBy { it.groupId }.forEach { (gid, cs) ->
-                if (gid.isBlank()) return@forEach
-                val distinctRooms = cs.map { it.room.trim() }.distinct().filter { it.isNotEmpty() }
-                if (distinctRooms.size >= 2) {
-                    multiLocWarnings += context.getString(
-                        R.string.import_multi_location_warning_detail,
-                        cs.first().courseName,
-                        distinctRooms.size
-                    )
-                }
-            }
-            ImportPreview(
-                targetTableId = tableId,
-                targetTableName = existingTable?.name ?: context.getString(R.string.manage_current_table),
-                parseResult = parseResult,
-                existingCourses = existingCourses,
-                conflicts = conflicts,
-                multiLocationWarnings = multiLocWarnings
-            )
+            buildImportPreview(parseResult, tableId, context)
         },
         onFailure = { e ->
             onError(context.getString(R.string.import_failed, e.message))
@@ -1436,6 +1417,55 @@ private suspend fun buildImportPreview(
         }
     )
 }
+
+internal suspend fun buildImportPreview(
+    parseResult: ScheduleParser.ParseResult,
+    tableId: Long,
+    context: android.content.Context
+): ImportPreview {
+    val repo = SleepyApp.get().repository
+    val existingTable = if (tableId == 0L) null else repo.getTable(tableId)
+    val existingCourses = if (tableId == 0L) emptyList() else repo.getCourses(tableId)
+    // issue#22: 同 groupId 多地点提示文案 — 按 (groupId) 聚合,
+    // 有 ≥2 个非空不同地点时给一句提示,导入后会作为独立节次展示
+    val multiLocWarnings = mutableListOf<String>()
+    parseResult.courses.groupBy { it.groupId }.forEach { (gid, cs) ->
+        if (gid.isBlank()) return@forEach
+        val distinctRooms = cs.map { it.room.trim() }.distinct().filter { it.isNotEmpty() }
+        if (distinctRooms.size >= 2) {
+            multiLocWarnings += context.getString(
+                R.string.import_multi_location_warning_detail,
+                cs.first().courseName,
+                distinctRooms.size
+            )
+        }
+    }
+    return createImportPreview(
+        targetTableId = tableId,
+        targetTableName = existingTable?.name ?: context.getString(R.string.manage_current_table),
+        parseResult = parseResult,
+        existingCourses = existingCourses,
+        multiLocationWarnings = multiLocWarnings
+    )
+}
+
+internal fun createImportPreview(
+    parseResult: ScheduleParser.ParseResult,
+    targetTableId: Long,
+    targetTableName: String,
+    existingCourses: List<CourseEntity>,
+    multiLocationWarnings: List<String> = emptyList()
+): ImportPreview = ImportPreview(
+    targetTableId = targetTableId,
+    targetTableName = targetTableName,
+    parseResult = parseResult,
+    existingCourses = existingCourses,
+    conflicts = parseResult.courses.mapNotNull { incoming ->
+        existingCourses.firstOrNull { existing -> coursesConflict(incoming, existing) }
+            ?.let { CourseConflict(incoming, it) }
+    },
+    multiLocationWarnings = multiLocationWarnings
+)
 
 /**
  * v1.0.56 T9: 纯作息导入 — 只建一张作息表, 不建空课表。
@@ -1468,7 +1498,7 @@ private suspend fun applyPurePeriodImport(
     }
 }
 
-private suspend fun applyImportPreview(
+internal suspend fun applyImportPreview(
     preview: ImportPreview,
     mode: ImportApplyMode,
     confirmedStartDateRaw: String,

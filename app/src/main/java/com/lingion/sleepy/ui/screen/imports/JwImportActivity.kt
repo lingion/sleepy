@@ -138,6 +138,9 @@ class JwImportActivity : ComponentActivity() {
                 // #27: 红条此前只置不清,报错后必须退出页面才消失。阶段一切换即清零。
                 LaunchedEffect(stage) { errorMsg = null }
                 var importFinished by remember { mutableStateOf(false) }
+                var isApplying by remember { mutableStateOf(false) }
+                var importPreview by remember { mutableStateOf<ImportPreview?>(null) }
+                var pendingMode by remember { mutableStateOf(ImportApplyMode.ImportAsNew) }
                 var exitDraftState by remember { mutableStateOf(ExitDraftState()) }
                 // 解析后的课程暂存 + 配置确认状态
                 var parsedCourses by remember { mutableStateOf<List<JwCourse>>(emptyList()) }
@@ -178,9 +181,39 @@ class JwImportActivity : ComponentActivity() {
                 }
 
                 fun requestExit() {
+                    if (isApplying) return
                     val result = reduceExitDraftState(exitDraftState, ExitDraftEvent.RequestExit)
                     exitDraftState = result.state
                     if (result.outcome == ExitDraftOutcome.FinishDirectly) finish()
+                }
+
+                suspend fun completeImport() {
+                    draftId?.let { draftRepository.delete(it) }
+                    importFinished = true
+                    exitDraftState = exitDraftState.copy(activeImport = false)
+                }
+
+                suspend fun applySharedImport(preview: ImportPreview, mode: ImportApplyMode) {
+                    var imported = false
+                    applyImportPreview(
+                        preview = preview.copy(parseResult = preview.parseResult.copy(
+                            timeJson = configTimeJson,
+                            nodesPerDay = maxOf(
+                                preview.parseResult.nodesPerDay,
+                                TimeTableUtils.parseTimeSlotRows(configTimeJson).maxOfOrNull { it.node } ?: 0
+                            )
+                        )),
+                        mode = mode,
+                        confirmedStartDateRaw = configStartDate,
+                        confirmedTableName = configTableName,
+                        confirmedTimeJson = configTimeJson,
+                        context = this@JwImportActivity,
+                        onImported = { imported = true },
+                        onError = { errorMsg = it },
+                        bindPeriodTableId = configBindPeriodTableId?.takeIf { it > 0 }
+                    )
+                    // A rejected append must keep the preview and its recoverable draft.
+                    if (imported) completeImport()
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
                 // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
@@ -362,12 +395,71 @@ class JwImportActivity : ComponentActivity() {
                     // v1.0.56 T10: 默认选中「本次导入自动建作息表」(合成 id=-1)
                     configBindPeriodTableId = -1L
                     exitDraftState = exitDraftState.copy(activeImport = true)
-                    stage = Stage.ConfigureConfirm
+                    stage = Stage.Preview
                 }
 
                 when {
                     importFinished -> {
                         LaunchedEffect(Unit) { finish() }
+                    }
+
+                    stage is Stage.Preview && parsedCourses.isNotEmpty() -> {
+                        LaunchedEffect(parsedCourses) {
+                            try {
+                                val repo = SleepyApp.get().repository
+                                val tables = repo.getAllTables()
+                                val targetId = tables.firstOrNull { it.isDefault }?.id
+                                    ?: tables.firstOrNull()?.id ?: 0L
+                                val effectiveRows = TimeTableUtils.effectiveRowsForConfirm(
+                                    manualRows = configRows,
+                                    bindId = configBindPeriodTableId,
+                                    tables = repo.getAllPeriodTables().map { it.id to it.timeJson }
+                                )
+                                configTimeJson = TimeTableUtils.buildTimeJsonFromRows(
+                                    effectiveRows.filter { it.start.isNotBlank() && it.end.isNotBlank() }
+                                )
+                                importPreview = buildImportPreview(
+                                    parseResult = ScheduleParser.ParseResult(
+                                        tableName = configTableName,
+                                        startDate = configStartDate,
+                                        courses = jwViewModel.toCourseEntities(parsedCourses, targetId, "#FF6750A4"),
+                                        timeJson = configTimeJson,
+                                        nodesPerDay = parsedCourses.maxOf { maxOf(it.startNode, it.endNode) },
+                                        maxWeek = parsedCourses.maxOf { it.endWeek }
+                                    ),
+                                    tableId = targetId,
+                                    context = this@JwImportActivity
+                                )
+                            } catch (e: Exception) {
+                                errorMsg = getString(R.string.jw_parse_failed, e.message ?: "")
+                            }
+                        }
+                        BackHandler { requestExit() }
+                        importPreview?.let { preview ->
+                            ImportPreviewDialog(
+                                preview = preview,
+                                onDismiss = { requestExit() },
+                                isApplying = isApplying,
+                                onApply = { mode ->
+                                    if (isApplying) return@ImportPreviewDialog
+                                    pendingMode = mode
+                                    if (mode == ImportApplyMode.AppendNonConflict || mode == ImportApplyMode.AppendAll) {
+                                        isApplying = true
+                                        scope.launch {
+                                            try {
+                                                applySharedImport(preview, mode)
+                                            } catch (e: Exception) {
+                                                errorMsg = getString(R.string.jw_parse_failed, e.message ?: "")
+                                            } finally {
+                                                isApplying = false
+                                            }
+                                        }
+                                    } else {
+                                        stage = Stage.ConfigureConfirm
+                                    }
+                                }
+                            )
+                        }
                     }
 
                     stage is Stage.ConfigureConfirm && parsedCourses.isNotEmpty() -> {
@@ -452,7 +544,7 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             },
                             confirmButton = {
-                                TextButton(onClick = {
+                                TextButton(enabled = !isApplying, onClick = {
                                     if (configStartDate.isBlank() || !Regex("""^\d{4}-\d{2}-\d{2}$""").matches(configStartDate)) {
                                         confirmError = getString(R.string.start_date_format)
                                         return@TextButton
@@ -480,47 +572,50 @@ class JwImportActivity : ComponentActivity() {
                                     configTimeJson = TimeTableUtils.buildTimeJsonFromRows(effectiveRows)
                                     // 落库
                                     statusMsg = getString(R.string.import_parsing)
+                                    isApplying = true
                                     scope.launch {
                                         try {
-                                            val maxNode = effectiveRows.maxOfOrNull { it.node } ?: 0
-                                            // v1.0.56 T10: id=-1 = 本次导入自动建作息表(名字随课表名, VM 内
-                                            // 走全局唯一名顺延); id>0 = 绑定既有表; null = 不建不绑。
-                                            // effectiveRows 已按绑定语义解析(id>0 = 表时间, 否则手动 rows)
-                                            val autoPeriodEntity =
-                                                if (configBindPeriodTableId == -1L && effectiveRows.isNotEmpty()) {
-                                                    com.lingion.sleepy.data.entity.PeriodTableEntity(
-                                                        name = configTableName.ifBlank {
-                                                            getString(R.string.jw_import_title, school.name)
-                                                        },
-                                                        nodesPerDay = effectiveRows.size,
-                                                        timeJson = configTimeJson
-                                                    )
-                                                } else null
-                                            val tableId = jwViewModel.importAsNewTable(
-                                                courses = parsedCourses,
-                                                tableName = configTableName.ifBlank {
-                                                    getString(R.string.jw_import_title, school.name)
-                                                },
-                                                startDate = configStartDate,
-                                                timeJson = configTimeJson,
-                                                nodesPerDay = maxNode,
-                                                smartConfigJson = Json.encodeToString(configSmartConfig),
-                                                periodTable = autoPeriodEntity
-                                            )
-                                            // v1.0.56 T6: 选了既有作息表 Tab → 导入的课表直接绑定该表(节次以表为准)
-                                            val chosenId = configBindPeriodTableId
-                                            if (chosenId != null && chosenId > 0) {
-                                                scheduleViewModel.bindPeriodTable(tableId, chosenId)
+                                            if (pendingMode == ImportApplyMode.ImportAsNew) {
+                                                val maxNode = effectiveRows.maxOfOrNull { it.node } ?: 0
+                                                // v1.0.56 T10: id=-1 = 本次导入自动建作息表(名字随课表名, VM 内
+                                                // 走全局唯一名顺延); id>0 = 绑定既有表; null = 不建不绑。
+                                                // effectiveRows 已按绑定语义解析(id>0 = 表时间, 否则手动 rows)
+                                                val autoPeriodEntity =
+                                                    if (configBindPeriodTableId == -1L && effectiveRows.isNotEmpty()) {
+                                                        com.lingion.sleepy.data.entity.PeriodTableEntity(
+                                                            name = configTableName.ifBlank {
+                                                                getString(R.string.jw_import_title, school.name)
+                                                            },
+                                                            nodesPerDay = effectiveRows.size,
+                                                            timeJson = configTimeJson
+                                                        )
+                                                    } else null
+                                                val tableId = jwViewModel.importAsNewTable(
+                                                    courses = parsedCourses,
+                                                    tableName = configTableName.ifBlank {
+                                                        getString(R.string.jw_import_title, school.name)
+                                                    },
+                                                    startDate = configStartDate,
+                                                    timeJson = configTimeJson,
+                                                    nodesPerDay = maxNode,
+                                                    smartConfigJson = Json.encodeToString(configSmartConfig),
+                                                    periodTable = autoPeriodEntity
+                                                )
+                                                // v1.0.56 T6: 选了既有作息表 Tab → 导入的课表直接绑定该表(节次以表为准)
+                                                val chosenId = configBindPeriodTableId
+                                                if (chosenId != null && chosenId > 0) {
+                                                    scheduleViewModel.bindPeriodTable(tableId, chosenId)
+                                                }
+                                                completeImport()
+                                            } else {
+                                                applySharedImport(requireNotNull(importPreview), pendingMode)
                                             }
-                                            draftId?.let { draftRepository.delete(it) }
-                                            Log.d("JwImport", "importAsNewTable tableId=$tableId courses=${parsedCourses.size}")
-                                            statusMsg = getString(R.string.jw_import_success, parsedCourses.size)
-                                            importFinished = true
-                                            exitDraftState = exitDraftState.copy(activeImport = false)
                                         } catch (e: Exception) {
                                             Log.e("JwImport", "import failed", e)
                                             errorMsg = getString(R.string.jw_parse_failed, e.message ?: "")
                                             statusMsg = null
+                                        } finally {
+                                            isApplying = false
                                         }
                                     }
                                 }) {
@@ -528,7 +623,10 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             },
                             dismissButton = {
-                                TextButton(onClick = { requestExit() }) {
+                                TextButton(enabled = !isApplying, onClick = {
+                                    importPreview = null
+                                    stage = Stage.Preview
+                                }) {
                                     Text(getString(R.string.back))
                                 }
                             }
@@ -626,7 +724,7 @@ class JwImportActivity : ComponentActivity() {
                                             draftId = withContext(Dispatchers.IO) {
                                                 draftRepository.save(snapshot, sourceType = "jw", sourceUrl = sch.url)
                                             }
-                                            stage = Stage.ConfigureConfirm
+                                            stage = Stage.Preview
                                             // v1.0.56 T10: 默认选中「本次导入自动建作息表」(合成 id=-1)
                                             configBindPeriodTableId = -1L
                                             statusMsg = null
@@ -724,6 +822,7 @@ class JwImportActivity : ComponentActivity() {
     private sealed class Stage {
         object SelectSchool : Stage()
         object WebViewLogin : Stage()
+        object Preview : Stage()
         object ConfigureConfirm : Stage()
     }
 }
