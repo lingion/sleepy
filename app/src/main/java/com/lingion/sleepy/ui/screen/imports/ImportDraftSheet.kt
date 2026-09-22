@@ -48,7 +48,7 @@ fun ImportDraftSheet(
     onDelete: (String) -> Unit,
     sheetState: SheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     ModalBottomSheet(
         onDismissRequest = onDismiss,
@@ -107,7 +107,7 @@ private fun ImportDraftRow(
     onRestore: () -> Unit,
     onDelete: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Row(
         modifier = Modifier

@@ -27,7 +27,6 @@ import androidx.compose.material.icons.outlined.Computer
 import androidx.compose.material.icons.outlined.PhoneAndroid
 import androidx.compose.material.icons.outlined.Refresh
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -116,7 +115,7 @@ fun JwWebViewLoginScreen(
     onWebViewReady: ((WebView) -> Unit)? = null,
     viewModel: JwImportViewModel = viewModel()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
     var progress by remember { mutableStateOf(0) }
@@ -255,7 +254,7 @@ fun JwWebViewLoginScreen(
                         Text(
                             text = JwProtocol.displayName(school.type),
                             style = MaterialTheme.typography.bodySmall,
-                            color = SleepyTheme.colors.onSurfaceVariant
+                            color = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
                 },
@@ -575,7 +574,21 @@ private fun JwWebView(
                             if (userAgent?.isNotBlank() == true) conn.setRequestProperty("User-Agent", userAgent)
                             conn.connect()
                             if (conn.responseCode !in 200..299) null
-                            else conn.inputStream.use { ins -> ins.readNBytes(2 * 1024 * 1024) }
+                            else conn.inputStream.use { ins ->
+                                // readNBytes 是 API 33+; minSdk 26 用 read(byte[]) 循环等价实现 (上限 2MB)
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                    ins.readNBytes(2 * 1024 * 1024)
+                                } else {
+                                    val buf = ByteArray(2 * 1024 * 1024)
+                                    var offset = 0
+                                    while (offset < buf.size) {
+                                        val n = ins.read(buf, offset, buf.size - offset)
+                                        if (n < 0) break
+                                        offset += n
+                                    }
+                                    java.util.Arrays.copyOf(buf, offset)
+                                }
+                            }
                         }.getOrNull()
                         JwDiagnosticSession.recordDownload(
                             downloadUrl, userAgent, contentDisposition, mimeType, contentLength, body
@@ -616,7 +629,7 @@ private fun JwWebView(
 
 @Composable
 private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -641,14 +654,13 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
             onClick = onCapture,
             enabled = enabled,
             shape = SleepyTheme.shapes.extraLarge,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
             Icon(
                 imageVector = Icons.Outlined.CheckCircle,
                 contentDescription = null,
                 modifier = Modifier.padding(end = 6.dp)
             )
-            Text(stringResource(R.string.jw_import_page), color = colors.onPrimary)
+            Text(stringResource(R.string.jw_import_page))
         }
     }
 }

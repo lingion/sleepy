@@ -41,7 +41,9 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.lingion.sleepy.data.entity.BreakOption
+import com.lingion.sleepy.data.entity.DurationOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
+import com.lingion.sleepy.data.entity.remapDurationAssignmentsAfterDeletion
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -61,9 +63,9 @@ fun SmartPeriodEditor(
     onConfigChange: (SmartPeriodConfig) -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
-    val n = (config.totalPeriods - 1).coerceAtLeast(0)
-    val assigns = config.effectiveAssignments()
+    val colors = MaterialTheme.colorScheme
+    val breakAssigns = config.effectiveAssignments()
+    val durationAssigns = config.effectivePeriodAssignments()
 
     // 注意：不能在 Column.verticalScroll() 嵌套 LazyColumn 中，
     // 否则会被检测为"无限垂直约束"导致 IllegalStateException。
@@ -111,6 +113,67 @@ fun SmartPeriodEditor(
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp)
         )
 
+        // 添加 duration
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            AddBreakChip(
+                label = stringResource(R.string.short_duration),
+                color = colors.tertiary,
+                onAdd = { onConfigChange(config.copy(durations = config.durations + DurationOption(30, false))) },
+                modifier = Modifier.weight(1f)
+            )
+            AddBreakChip(
+                label = stringResource(R.string.long_duration),
+                color = colors.primary,
+                onAdd = { onConfigChange(config.copy(durations = config.durations + DurationOption(60, true))) },
+                modifier = Modifier.weight(1f)
+            )
+        }
+
+        // ===== Duration 分组区 =====
+        if (config.durations.isNotEmpty()) {
+            Text(
+                stringResource(R.string.duration_assign_hint),
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Medium,
+                color = colors.onSurface,
+                modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
+            )
+
+            config.durations.forEachIndexed { groupIdx, dur ->
+                DurationGroupSection(
+                    durationOption = dur,
+                    groupIdx = groupIdx,
+                    totalPeriods = config.totalPeriods,
+                    assigns = durationAssigns,
+                    onMinuteChange = { newMin ->
+                        onConfigChange(config.copy(
+                            durations = config.durations.toMutableList().also { it[groupIdx] = it[groupIdx].copy(minutes = newMin) }
+                        ))
+                    },
+                    onToggle = { posIdx ->
+                        val newAssigns = durationAssigns.toMutableList()
+                        val currentlySelected = newAssigns[posIdx] == groupIdx
+                        if (currentlySelected) {
+                            newAssigns[posIdx] = null
+                        } else {
+                            newAssigns[posIdx] = groupIdx
+                        }
+                        onConfigChange(config.copy(periodAssignments = newAssigns))
+                    },
+                    onDelete = {
+                        val newAssigns = remapDurationAssignmentsAfterDeletion(durationAssigns, groupIdx)
+                        onConfigChange(config.copy(
+                            durations = config.durations.toMutableList().also { it.removeAt(groupIdx) },
+                            periodAssignments = newAssigns
+                        ))
+                    }
+                )
+            }
+        }
+
         // 添加 break
         Row(
             modifier = Modifier.fillMaxWidth().padding(bottom = 12.dp),
@@ -145,14 +208,14 @@ fun SmartPeriodEditor(
                     breakOption = br,
                     groupIdx = groupIdx,
                     totalPeriods = config.totalPeriods,
-                    assigns = assigns,
+                    assigns = breakAssigns,
                     onMinuteChange = { newMin ->
                         onConfigChange(config.copy(
                             breaks = config.breaks.toMutableList().also { it[groupIdx] = it[groupIdx].copy(minutes = newMin) }
                         ))
                     },
                     onToggle = { posIdx ->
-                        val newAssigns = assigns.toMutableList()
+                        val newAssigns = breakAssigns.toMutableList()
                         val currentlySelected = newAssigns[posIdx] == groupIdx
                         if (currentlySelected) {
                             newAssigns[posIdx] = null
@@ -166,7 +229,7 @@ fun SmartPeriodEditor(
                         // 之前只把 ==groupIdx 的置 null，breaks.removeAt 后所有 >groupIdx 的
                         // 索引指向错位元素，被 effectiveAssignments 判越界置 null——
                         // 删一个课间组，其后所有课间的分配静默清空。
-                        val newAssigns = assigns.map { v ->
+                        val newAssigns = breakAssigns.map { v ->
                             when {
                                 v == groupIdx -> null
                                 v != null && v > groupIdx -> v - 1
@@ -191,7 +254,7 @@ fun SmartPeriodEditor(
             color = colors.onSurface,
             modifier = Modifier.padding(start = 4.dp, bottom = 6.dp)
         )
-        PreviewList(config = config, assigns = assigns)
+        PreviewList(config = config, assigns = breakAssigns)
     }
 }
 
@@ -205,9 +268,67 @@ private fun BreakGroupSection(
     onToggle: (Int) -> Unit,
     onDelete: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
-    val groupColor = if (breakOption.isLong) colors.primary else colors.tertiary
-    val n = (totalPeriods - 1).coerceAtLeast(0)
+    val groupColor = if (breakOption.isLong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+    AssignmentGroupSection(
+        headerText = breakOption.displayLabel(groupIdx),
+        groupColor = groupColor,
+        slotCount = (totalPeriods - 1).coerceAtLeast(0),
+        assigns = assigns,
+        groupIdx = groupIdx,
+        labelFor = { posIdx -> "${posIdx + 1}.5" },
+        emptyHintResId = R.string.break_min_two_periods,
+        onMinuteChange = onMinuteChange,
+        minuteValue = breakOption.minutes,
+        onToggle = onToggle,
+        onDelete = onDelete
+    )
+}
+
+@Composable
+private fun DurationGroupSection(
+    durationOption: DurationOption,
+    groupIdx: Int,
+    totalPeriods: Int,
+    assigns: List<Int?>,
+    onMinuteChange: (Int) -> Unit,
+    onToggle: (Int) -> Unit,
+    onDelete: () -> Unit
+) {
+    val groupColor = if (durationOption.isLong) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary
+    AssignmentGroupSection(
+        headerText = durationOption.displayLabel(groupIdx),
+        groupColor = groupColor,
+        slotCount = totalPeriods.coerceAtLeast(0),
+        assigns = assigns,
+        groupIdx = groupIdx,
+        labelFor = { posIdx -> "${posIdx + 1}" },
+        emptyHintResId = R.string.duration_min_one_period,
+        onMinuteChange = onMinuteChange,
+        minuteValue = durationOption.minutes,
+        onToggle = onToggle,
+        onDelete = onDelete
+    )
+}
+
+/**
+ * 共享的"分组赋值"编辑器：与 [BreakGroupSection] / [DurationGroupSection] 同构。
+ * 卡片布局、删除-重映射、分钟数字字段全部共用，调用方只负责传 label 渲染器和业务侧事件。
+ */
+@Composable
+private fun AssignmentGroupSection(
+    headerText: String,
+    groupColor: Color,
+    slotCount: Int,
+    assigns: List<Int?>,
+    groupIdx: Int,
+    labelFor: (Int) -> String,
+    emptyHintResId: Int,
+    onMinuteChange: (Int) -> Unit,
+    minuteValue: Int,
+    onToggle: (Int) -> Unit,
+    onDelete: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
 
     Column(
         modifier = Modifier
@@ -229,7 +350,7 @@ private fun BreakGroupSection(
             )
             Spacer(Modifier.width(8.dp))
             Text(
-                breakOption.displayLabel(groupIdx),
+                headerText,
                 style = MaterialTheme.typography.bodyMedium,
                 fontWeight = FontWeight.Medium,
                 color = colors.onSurface,
@@ -238,7 +359,7 @@ private fun BreakGroupSection(
             NumberField(
                 label = "",
                 unit = stringResource(R.string.unit_minutes),
-                value = breakOption.minutes,
+                value = minuteValue,
                 onValueChange = onMinuteChange,
                 modifier = Modifier.width(110.dp)
             )
@@ -253,9 +374,9 @@ private fun BreakGroupSection(
         }
 
         // 位置卡片网格
-        if (n > 0) {
+        if (slotCount > 0) {
             val cardsPerRow = 8
-            val rows = (0 until n).chunked(cardsPerRow)
+            val rows = (0 until slotCount).chunked(cardsPerRow)
             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 rows.forEach { rowIndices ->
                     Row(
@@ -265,7 +386,7 @@ private fun BreakGroupSection(
                         rowIndices.forEach { posIdx ->
                             val selected = assigns.getOrNull(posIdx) == groupIdx
                             PositionCard(
-                                label = "${posIdx + 1}.5",
+                                label = labelFor(posIdx),
                                 selected = selected,
                                 groupColor = groupColor,
                                 onClick = { onToggle(posIdx) },
@@ -281,7 +402,7 @@ private fun BreakGroupSection(
             }
         } else {
             Text(
-                stringResource(R.string.break_min_two_periods),
+                stringResource(emptyHintResId),
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurfaceVariant,
                 modifier = Modifier.padding(vertical = 4.dp)
@@ -298,7 +419,7 @@ private fun PositionCard(
     onClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val bg = if (selected) groupColor else colors.surfaceContainerHigh
     val fg = if (selected) colors.onPrimary else colors.onSurfaceVariant
     Box(
@@ -323,11 +444,15 @@ private fun PreviewList(
     config: SmartPeriodConfig,
     assigns: List<Int?>
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val rows = config.derive()
     val transMins = config.effectiveTransitionMinutes()
+    val periodMins = config.effectivePeriodMinutes()
+    val durationAssigns = config.effectivePeriodAssignments()
     val shortBreakLabel = stringResource(R.string.short_break)
     val longBreakLabel = stringResource(R.string.long_break)
+    val shortDurationLabel = stringResource(R.string.short_duration)
+    val longDurationLabel = stringResource(R.string.long_duration)
     val breakContinuous0 = stringResource(R.string.break_continuous_0)
     if (rows.isEmpty()) {
         Text(stringResource(R.string.empty_placeholder), color = colors.onSurfaceVariant)
@@ -341,21 +466,34 @@ private fun PreviewList(
         verticalArrangement = Arrangement.spacedBy(2.dp)
     ) {
         rows.forEachIndexed { i, slot ->
+            val durationLabel = periodMins.getOrNull(i)?.let { mins ->
+                val idx = durationAssigns.getOrNull(i)
+                if (idx != null && idx in config.durations.indices) {
+                    val isLong = config.durations[idx].isLong
+                    val label = if (isLong) longDurationLabel else shortDurationLabel
+                    " · " + stringResource(R.string.duration_period_n, mins, label)
+                } else null
+            } ?: ""
             Text(
-                stringResource(R.string.period_time_range, slot.node, slot.start, slot.end),
+                stringResource(R.string.period_time_range, slot.node, slot.start, slot.end) + durationLabel,
                 style = MaterialTheme.typography.bodySmall,
                 color = colors.onSurface
             )
             if (i < transMins.size) {
                 val mins = transMins[i]
-                val (text, color) = when {
-                    mins == 0 -> breakContinuous0 to colors.onSurfaceVariant
-                    else -> stringResource(R.string.break_continuous_n, mins, if (assigns[i] != null && assigns[i]!! in config.breaks.indices && config.breaks[assigns[i]!!].isLong) longBreakLabel else shortBreakLabel) to colors.onSurfaceVariant
+                val text = when {
+                    mins == 0 -> breakContinuous0
+                    else -> stringResource(
+                        R.string.break_continuous_n,
+                        mins,
+                        if (assigns[i] != null && assigns[i]!! in config.breaks.indices && config.breaks[assigns[i]!!].isLong) longBreakLabel else shortBreakLabel
+                    )
                 }
+                val textColor = colors.onSurfaceVariant
                 Text(
                     text,
                     style = MaterialTheme.typography.bodySmall,
-                    color = color,
+                    color = textColor,
                     fontWeight = if (mins > 0) FontWeight.Medium else FontWeight.Normal
                 )
             }

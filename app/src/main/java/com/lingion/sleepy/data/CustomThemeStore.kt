@@ -2,6 +2,10 @@ package com.lingion.sleepy.data
 
 import android.content.Context
 import androidx.core.content.edit
+import kotlinx.coroutines.channels.awaitClose
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.callbackFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import org.json.JSONArray
 import org.json.JSONObject
 import java.util.UUID
@@ -137,6 +141,23 @@ object CustomThemeStore {
         ctx.getSharedPreferences(CustomThemeCore.PREFS_NAME, Context.MODE_PRIVATE)
             .edit { putString(CustomThemeCore.KEY_THEMES, CustomThemeCore.toJson(themes)) }
     }
+
+    /**
+     * Emits whenever the serialized custom-theme list changes, including an edit
+     * that keeps the same theme id. The content value is the invalidation token;
+     * callers only need it to trigger a fresh read through [getById].
+     */
+    fun changes(ctx: Context): Flow<String> = callbackFlow {
+        val prefs = ctx.getSharedPreferences(CustomThemeCore.PREFS_NAME, Context.MODE_PRIVATE)
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { sp, key ->
+            if (key == CustomThemeCore.KEY_THEMES) {
+                trySend(sp.getString(CustomThemeCore.KEY_THEMES, null).orEmpty())
+            }
+        }
+        prefs.registerOnSharedPreferenceChangeListener(listener)
+        trySend(prefs.getString(CustomThemeCore.KEY_THEMES, null).orEmpty())
+        awaitClose { prefs.unregisterOnSharedPreferenceChangeListener(listener) }
+    }.distinctUntilChanged()
 
     fun getAll(ctx: Context): List<CustomTheme> = loadAll(ctx)
 

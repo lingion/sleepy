@@ -57,17 +57,20 @@ class BackRestoreSaveableContractTest {
      */
     @Test
     fun every_overlay_route_is_registered_as_a_navhost_destination() {
-        val routes = Regex("""const val ([A-Z_0-9]+)\s*=\s*"([^"]+)""")
+        // 官方 nav3 版: SleepyRoute sealed 的每个子类(除 Main)都必须有 entry<SleepyRoute.X> 注册。
+        // NavDisplay 给每个返回栈条目一套独立 SaveableState(经 SaveableStateHolderNavEntryDecorator),
+        // 被覆盖时保存、弹回时恢复 — 机制本体不变,只是锚点从 composable() 换成 entry<>()。
+        val routes = Regex("""@Serializable\s+(?:data\s+)?(?:object|class)\s+(\w+)""")
             .findAll(routesSource)
-            .map { it.groupValues[1] to it.groupValues[2].substringBefore('?') }
-            .filter { it.first != "MAIN" }
+            .map { it.groupValues[1] }
+            .filter { it != "Main" }
             .toList()
-        assertTrue("Routes 表未解析到任何 overlay 路由", routes.isNotEmpty())
-        routes.forEach { (name, pattern) ->
+        assertTrue("SleepyRoute 表未解析到任何 overlay 路由", routes.isNotEmpty())
+        routes.forEach { name ->
             assertTrue(
-                "路由 $name (\"$pattern\") 必须在 SleepyNavHost 注册 composable(Routes.$name) — " +
+                "路由 SleepyRoute.$name 必须在 SleepyNavHost 注册 entry<SleepyRoute.$name> — " +
                     "漏注册 = 该屏没有独立保存作用域, 返回即丢状态",
-                Regex("""composable\(\s*Routes\.$name\b""").containsMatchIn(navSource)
+                Regex("""entry<SleepyRoute\.$name>""").containsMatchIn(navSource)
             )
         }
     }
@@ -79,7 +82,7 @@ class BackRestoreSaveableContractTest {
      */
     @Test
     fun addCourse_route_is_deliberately_outside_any_saveable_scope() {
-        val block = balancedBlock(navSource, "composable(Routes.ADD_COURSE")
+        val block = balancedBlock(navSource, "entry<SleepyRoute.AddCourse>")
         assertTrue("SleepyNavHost AddCourse 目的地不存在", block.isNotEmpty())
         assertFalse(
             "AddCourse 禁止 SaveableStateProvider(基线 §1.3 编辑会话可丢弃例外, 防恢复空表单重复加课)",
@@ -111,15 +114,18 @@ class BackRestoreSaveableContractTest {
     fun restore_guard_pops_add_course_when_session_is_gone() {
         val guard = balancedBlock(
             navSource,
-            "LaunchedEffect(currentRoute, editingRouteFlag, editingRouteCourseId, deepLinkCourse?.id)",
+            "LaunchedEffect(currentRoute, deepLinkCourse?.id)",
         )
         assertTrue("AddCourse 恢复守卫不存在", guard.isNotEmpty())
         assertTrue(
             "守卫必须在 editing=true 且会话为空时弹掉 add_course",
-            Regex("""session\.editingCourse == null\s*&&\s*deepLinkCourse == null""").containsMatchIn(guard)
+            Regex("""currentRoute\?\.editing == true\s*&&\s*session\.editingCourse == null\s*&&\s*deepLinkCourse == null""").containsMatchIn(guard)
         )
-        assertTrue("守卫必须针对 Routes.ADD_COURSE", guard.contains("Routes.ADD_COURSE"))
-        assertTrue("守卫必须调用 popBackStack", guard.contains("popBackStack"))
+        // currentRoute 的类型判定锚定 AddCourse(上方 val currentRoute = ... as? SleepyRoute.AddCourse)
+        val typedAnchor = Regex("""currentRoute\s*=\s*navigator\.backStack\.lastOrNull\(\)\s*as\?\s*SleepyRoute\.AddCourse""")
+            .containsMatchIn(navSource)
+        assertTrue("守卫必须针对 SleepyRoute.AddCourse(currentRoute 的 as? 判型)", typedAnchor)
+        assertTrue("守卫必须调用 navigator.pop", guard.contains("navigator.pop()"))
     }
 
     /** 从 anchor 起做花括号配平取完整代码块(比非贪婪正则可靠) */

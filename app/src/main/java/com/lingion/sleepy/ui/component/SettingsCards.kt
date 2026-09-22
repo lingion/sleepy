@@ -25,7 +25,6 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -42,6 +41,10 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
 
 /**
+ * [intentional custom] 官方 M3 无「分组标题+折叠卡+单选行+开关行」组合件;
+ * 本文件 = Sleepy 设置页领域封装, 内部全部消费官方组件(Switch/Icon/AnimatedVisibility),
+ * 颜色/形状/字体全部走 MaterialTheme 官方 token。
+ *
  * 设置页公共卡片组件 — 自 AppearanceScreen 抽出(外观/通用两页共用):
  * SectionHeader 分组标题 / SettingsCard 折叠卡 / DisplayModeOption 单选项 / SettingToggleRow 开关行。
  * SettingsFlatCard: 不折叠的平铺卡 — 内容只是简单选择或单个开关的设置项专用(用户 2026-09-03 指令:
@@ -50,7 +53,7 @@ import com.lingion.sleepy.ui.theme.noRippleClickable
 
 @Composable
 fun SectionHeader(title: String, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(Modifier.fillMaxWidth().padding(top = 8.dp)) {
         Text(title, style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onBackground)
         if (subtitle != null) {
@@ -62,7 +65,7 @@ fun SectionHeader(title: String, subtitle: String? = null) {
 
 @Composable
 fun SettingsCard(title: String, expanded: Boolean, onToggle: () -> Unit, content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val arrowRotation by animateFloatAsState(
         targetValue = if (expanded) 180f else 0f,
         label = "settings-arrow"
@@ -112,7 +115,7 @@ fun SettingsFlatCard(
     onSelect: (Int) -> Unit = {},
     content: @Composable ColumnScope.() -> Unit = {}
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(horizontal = 16.dp, vertical = 14.dp),
         verticalArrangement = Arrangement.spacedBy(4.dp)
@@ -159,7 +162,7 @@ fun SettingsFlatCard(
 
 @Composable
 fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(vertical = 10.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = if (selected) colors.primary else colors.onSurface)
@@ -173,7 +176,7 @@ fun DisplayModeOption(label: String, subtitle: String, selected: Boolean, onClic
 
 @Composable
 fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp, horizontal = 4.dp), horizontalArrangement = Arrangement.SpaceBetween, verticalAlignment = Alignment.CenterVertically) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = label, style = MaterialTheme.typography.bodyLarge, color = colors.onSurface)
@@ -181,6 +184,6 @@ fun SettingToggleRow(label: String, checked: Boolean, onCheckedChange: (Boolean)
                 Text(text = subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
             }
         }
-        Switch(checked = checked, onCheckedChange = onCheckedChange, colors = SwitchDefaults.colors(checkedThumbColor = colors.onPrimary, checkedTrackColor = colors.primary))
+        Switch(checked = checked, onCheckedChange = onCheckedChange)
     }
 }

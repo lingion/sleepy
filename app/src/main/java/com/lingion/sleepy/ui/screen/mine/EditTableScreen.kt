@@ -84,9 +84,10 @@ fun EditTableScreen(
     val state by viewModel.state.collectAsState()
     // issue#40: 全部时间节次表(换绑选择器数据源 §4.3)
     val allPeriodTables by viewModel.allPeriodTables.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
 
     // tableId == null means edit current table
     val table = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
@@ -131,26 +132,18 @@ fun EditTableScreen(
         }
     }
     // v1.0.16 自动模式配置（编辑当前课表时使用）
+    // issue#23 Task 4: 已存配置仍能 derive 出当前行 → 原样保留; 否则从当前行重推断;
+    // 行不可推断 → 最简默认兜底(旧行为)。
     val smartConfig = remember(table.id, effectivePeriodTable?.id, timeJson) {
+        val stored = com.lingion.sleepy.ui.component.decodeSmartPeriodConfig(
+            effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson
+        )
         mutableStateOf(
-            // 如果表里已存 smartConfigJson，反序列化恢复；否则从现有 slotRows 推断初始值
-            if ((effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson).isNotBlank()) {
-                try {
-                    Json.decodeFromString<SmartPeriodConfig>(
-                        effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson
-                    )
-                } catch (e: Exception) {
-                    SmartPeriodConfig(
-                        totalPeriods = slotRows.size.coerceAtLeast(1),
-                        startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                    )
-                }
-            } else {
-                SmartPeriodConfig(
+            com.lingion.sleepy.ui.component.resolveAutoPeriodConfig(slotRows.toList(), stored)
+                ?: SmartPeriodConfig(
                     totalPeriods = slotRows.size.coerceAtLeast(1),
                     startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
                 )
-            }
         )
     }
 
@@ -303,7 +296,7 @@ fun EditTableScreen(
                             slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
                             slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = context.getString(R.string.edit_table_validation_error)
+                            error = validationErrorMessage
                             return@Button
                         }
                         error = null
@@ -361,6 +354,8 @@ fun EditTableScreen(
             // 最后一张表也可删 — ScheduleScreen 的真空态(EmptyState)兜底)
             if (pendingNewTableId == null) {
                 item {
+                    // [intentional custom] 官方 Button 无 error 语义变体; 沿用 errorContainer
+                    // 色块 = Sleepy 视觉语言(同 AddCourseScreen 删除键)。
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
@@ -450,7 +445,7 @@ fun EditTableScreen(
 
 @Composable
 private fun CardSection(title: String, subtitle: String, content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()

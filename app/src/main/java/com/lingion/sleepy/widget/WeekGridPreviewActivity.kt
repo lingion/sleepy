@@ -98,7 +98,7 @@ class WeekGridPreviewActivity : ComponentActivity() {
 
     @androidx.compose.runtime.Composable
     private fun TopBarSimple(currentWeek: Int) {
-        val colors = SleepyTheme.colors
+        val colors = MaterialTheme.colorScheme
         androidx.compose.foundation.layout.Row(
             modifier = androidx.compose.ui.Modifier
                 .fillMaxWidth()

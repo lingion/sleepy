@@ -9,6 +9,7 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -44,7 +45,7 @@ fun WidgetEditScreen(
 ) {
     val vm = remember(widgetId) { WidgetEditViewModel(widgetId) }
     val state by vm.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     // To add a new section later, append here — the screen picks it up
     // automatically. Each section must implement WidgetEditSection.

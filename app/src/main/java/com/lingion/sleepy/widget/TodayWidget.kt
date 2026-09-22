@@ -13,6 +13,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.WeekDisplayResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -440,9 +441,11 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          */
         fun loadDataSync(context: Context, appWidgetId: Int): WidgetData {
             val now = LocalDate.now()
+            val manualNavigation = TodayDateNavStore.hasNavigation(context, appWidgetId)
             return loadDataForDate(
                 context, appWidgetId,
-                TodayDateNavStore.target(context, appWidgetId, now), now
+                TodayDateNavStore.target(context, appWidgetId, now), now,
+                autoNearestBusyDay = !manualNavigation
             )
         }
 
@@ -451,9 +454,12 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
          * 翻页卡工厂传卡面日期); [today] 必须同源自调用方 (禁内部再取第二次 now)。
          */
         fun loadDataForDate(
-            context: Context, appWidgetId: Int, target: LocalDate, today: LocalDate
+            context: Context,
+            appWidgetId: Int,
+            target: LocalDate,
+            today: LocalDate,
+            autoNearestBusyDay: Boolean = false
         ): WidgetData {
-            val dayOfWeek = DateUtils.todayDayOfWeek(target)
             val isSystemDark = (context.resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
             val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(context, isSystemDark)
             val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(context)
@@ -461,20 +467,33 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
             Log.d("TodayWidget", "DIAG: isDark=$isDark isSystemDark=$isSystemDark themeMode=$themeMode themeKey=$themeKey")
             return try {
                 runBlocking {
-                    val app = SleepyApp.get()
-                    val repo = app.repository
-                    val table = WidgetTableResolver.resolveBoundTable(appWidgetId)
-                        ?: WidgetTableResolver.resolveCurrentTable()
-                    if (table == null) {
+                    val source = WidgetWeekDataLoader.resolve(appWidgetId)
+                    if (source == null) {
                         WidgetData(date = target, courses = emptyList(), timeJson = TimeTableUtils.DEFAULT_TIME_JSON, hasTable = false, isDark = isDark, themeKey = themeKey, isToday = target == today)
                     } else {
-                        val week = DateUtils.currentWeek(table.startDate, target)
-                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, target)
-                        val all = repo.getCoursesByDayOnce(table.id, dayOfWeek)
+                        val table = source.table
+                        val effectiveTarget = if (autoNearestBusyDay &&
+                            source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
+                        ) source.display.targetDate else target
+                        val effectiveDayOfWeek = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, effectiveTarget)
+                        val week = DateUtils.currentWeek(table.startDate, effectiveTarget)
+                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, effectiveTarget)
                         // 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
                         val visible = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
-                            all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                        WidgetData(date = target, courses = visible, timeJson = table.timeJson, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status, isToday = target == today)
+                            source.coursesFor(effectiveDayOfWeek, week)
+                        WidgetData(
+                            date = effectiveTarget,
+                            courses = visible,
+                            timeJson = table.timeJson,
+                            hasTable = true,
+                            isDark = isDark,
+                            themeKey = themeKey,
+                            semesterStatus = status,
+                            isToday = effectiveTarget == today,
+                            weekDisplayStatus = WeekDisplayResolver.statusForSelectedWeek(
+                                source.display, week
+                            )
+                        )
                     }
                 }
             } catch (_: Throwable) {

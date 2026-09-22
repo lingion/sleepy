@@ -47,7 +47,7 @@ fun UpdateChangelogDialog(
     onCancelDownload: () -> Unit,
     onRetry: (String, String, String) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     when (state) {
         is UpdateUiState.UpdateAvailable, is UpdateUiState.Downloading,
         is UpdateUiState.Failed, is UpdateUiState.Installing -> {

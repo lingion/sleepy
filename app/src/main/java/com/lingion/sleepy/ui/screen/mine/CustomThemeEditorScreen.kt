@@ -76,7 +76,7 @@ fun CustomThemeEditorScreen(
     onSaved: (CustomTheme) -> Unit,
     onDeleted: (String) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     // 系统返回手势: 编辑器是 AppearanceScreen 内部 overlay(不在 MainActivity overlayStack),
     // 不拦截的话返回键会命中外层 handler 把整个外观页弹掉。此处拦截先关编辑器回外观页
@@ -331,7 +331,7 @@ private fun ActionEntry(
     desc: String,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Surface(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).noRippleClickable(onClick),
         color = colors.surfaceContainer, shape = SleepyTheme.shapes.large
@@ -350,7 +350,7 @@ private fun ActionEntry(
 /** 角色行 — 角色名 + 说明 + 当前色块,点击弹取色器 */
 @Composable
 private fun RoleRow(title: String, desc: String, swatchHex: String, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val swatch = remember(swatchHex) {
         runCatching { Color(swatchHex.toColorInt()) }
             .getOrDefault(colors.surfaceVariant)
@@ -375,7 +375,7 @@ private fun RoleRow(title: String, desc: String, swatchHex: String, onClick: () 
  */
 @Composable
 private fun DraftPreview(draft: CustomTheme) {
-    val pageColors = SleepyTheme.colors
+    val pageColors = MaterialTheme.colorScheme
     val isDark = pageColors.background.red < 0.5f
     val scheme = remember(draft, isDark) { CustomSchemeDeriver.derive(draft, isDark) }
 

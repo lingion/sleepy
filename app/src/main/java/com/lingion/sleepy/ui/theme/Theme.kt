@@ -17,8 +17,8 @@ import androidx.compose.material3.lightColorScheme
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
-import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.runtime.staticCompositionLocalOf
+import androidx.compose.runtime.ReadOnlyComposable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.TextStyle
@@ -75,6 +75,55 @@ data class WakeUpColorScheme(
     val errorContainer: Color,
     val onErrorContainer: Color
 )
+
+
+/**
+ * WakeUpColorScheme → M3 ColorScheme: 阶段 9 收敛, 三分支共用一份角色映射,
+ * 角色名与 M3 ColorScheme 完全同名同值, 视觉零差。
+ */
+private fun wakeToM3Scheme(wc: WakeUpColorScheme, dark: Boolean): androidx.compose.material3.ColorScheme =
+    if (dark) {
+        darkColorScheme(
+            primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
+            secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
+            tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
+            background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
+            surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
+            surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
+            surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
+            outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
+            error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
+        )
+    } else {
+        lightColorScheme(
+            primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
+            secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
+            tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
+            background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
+            surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
+            surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
+            surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
+            outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
+            error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
+        )
+    }
+
+/**
+ * M3 ColorScheme → WakeUpColorScheme: dynamic 分支取色后回写 WakeUp 形式供 widget
+ * 桥(WidgetScheme/WakeUpColorScheme 派生)使用, 保持单源派生。
+ */
+private fun m3SchemeToWake(s: androidx.compose.material3.ColorScheme): WakeUpColorScheme =
+    WakeUpColorScheme(
+        primary = s.primary, onPrimary = s.onPrimary, primaryContainer = s.primaryContainer, onPrimaryContainer = s.onPrimaryContainer,
+        secondary = s.secondary, onSecondary = s.onSecondary, secondaryContainer = s.secondaryContainer, onSecondaryContainer = s.onSecondaryContainer,
+        tertiary = s.tertiary, onTertiary = s.onTertiary, tertiaryContainer = s.tertiaryContainer, onTertiaryContainer = s.onTertiaryContainer,
+        background = s.background, onBackground = s.onBackground, surface = s.surface, onSurface = s.onSurface,
+        surfaceVariant = s.surfaceVariant, onSurfaceVariant = s.onSurfaceVariant,
+        surfaceContainerLowest = s.surfaceContainerLowest, surfaceContainerLow = s.surfaceContainerLow,
+        surfaceContainer = s.surfaceContainer, surfaceContainerHigh = s.surfaceContainerHigh, surfaceContainerHighest = s.surfaceContainerHighest,
+        outline = s.outline, outlineVariant = s.outlineVariant, scrim = s.scrim,
+        error = s.error, onError = s.onError, errorContainer = s.errorContainer, onErrorContainer = s.onErrorContainer
+    )
 
 val LightScheme = WakeUpColorScheme(
     primary = Color(0xFF6750A4),
@@ -171,7 +220,6 @@ val DarkCoursePalette = CoursePalette(
     primary = Color(0xFF4F378B)
 )
 
-val LocalWakeUpColors = staticCompositionLocalOf { LightScheme }
 val LocalCoursePalette = staticCompositionLocalOf { LightCoursePalette }
 
 /**
@@ -303,10 +351,9 @@ object SleepyTextStyle {
 
 /** 全局访问入口 */
 object SleepyTheme {
-    val colors: WakeUpColorScheme
-        @Composable
-        @ReadOnlyComposable
-        get() = LocalWakeUpColors.current
+    // [intentional custom] colors 桥已下线(2026-09-19 M3 迁移阶段 1):
+    // Compose UI 层一律直读 MaterialTheme.colorScheme; WakeUpColorScheme 只作
+    // ThemePresets/CustomSchemeDeriver 的派生数据模型与 widget 桥的输入保留。
 
     val palette: CoursePalette
         @Composable
@@ -359,7 +406,7 @@ object SleepyTheme {
      *  挡键盘, 但视觉上必须和普通字段一模一样, 不能显灰。 */
     @Composable
     fun fieldColors(): TextFieldColors {
-        val c = colors
+        val c = MaterialTheme.colorScheme
         return TextFieldDefaults.colors(
             focusedTextColor = c.onSurface,
             unfocusedTextColor = c.onSurface,
@@ -387,8 +434,14 @@ object SleepyTheme {
 fun SleepyThemeProvider(
     darkTheme: Boolean = false,
     themeKey: String = ThemePresets.KEY_DEFAULT,
+    // Invalidation token for edits to the selected custom theme with the same id.
+    // The provider intentionally does not inspect this value; reading it as a parameter
+    // makes Compose re-run the custom-theme lookup when the backing JSON changes.
+    customThemeVersion: String = "",
     content: @Composable () -> Unit
 ) {
+    @Suppress("UNUSED_VARIABLE")
+    val customThemeInvalidation = customThemeVersion
     val context = LocalContext.current
 
     // "跟随系统" 走 Material You 动态取色（API 31+）；低版本降级到默认。
@@ -416,115 +469,26 @@ fun SleepyThemeProvider(
     // 合并两个分支（preset vs dynamic）到同一个 content() 调用位置，
     //   防止 Compose 因 if/else 树结构变化而丢失 AppRoot 的 remember 状态。
     //   之前 preset==null 走 early return → content() 在不同树位置 → 切换时状态丢失。
-    val (wakeColors, palette, m3Scheme) = when {
-        customScheme != null -> {
-            val wc = customScheme
-            val m3 = if (darkTheme) {
-                darkColorScheme(
-                    primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
-                    secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
-                    tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
-                    background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
-                    surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
-                    surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
-                    surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
-                    outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
-                    error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
-                )
-            } else {
-                lightColorScheme(
-                    primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
-                    secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
-                    tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
-                    background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
-                    surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
-                    surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
-                    surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
-                    outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
-                    error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
-                )
-            }
-            Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3)
-        }
+    // 三分支收敛: 先定 WakeUpColorScheme(wc), 再用同一映射函数 wc→m3Scheme。
+    // dynamic 分支 = 官方动态取色返回 ColorScheme, 反向构造 wc 喂后续派生(同源)。
+    val wc: WakeUpColorScheme = when {
+        customScheme != null -> customScheme
         preset == null -> {
-        // dynamic 取色 — API 31+ Material You (preset==null 仅在 dynamicAvailable(S/31)+ 时成立,
-        // lint 需要显式版本守卫才能识别 dynamicDarkColorScheme/dynamicLightColorScheme 的 API 31 要求)
-        val m3Dynamic = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-        } else {
-            // 理论不可达: preset==null 已含 S 守卫; 防御性回退默认 scheme
-            if (darkTheme) darkColorScheme() else lightColorScheme()
+            // dynamic 取色 — API 31+ Material You (preset==null 仅在 dynamicAvailable(S/31)+ 时成立)
+            val m3Dynamic = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+            } else {
+                // 理论不可达: preset==null 已含 S 守卫; 防御性回退默认 scheme
+                if (darkTheme) darkColorScheme() else lightColorScheme()
+            }
+            m3SchemeToWake(m3Dynamic)
         }
-        // 用 dynamic scheme 的值构造 WakeUpColorScheme（课程色退回默认）
-        val wc = WakeUpColorScheme(
-            primary = m3Dynamic.primary,
-            onPrimary = m3Dynamic.onPrimary,
-            primaryContainer = m3Dynamic.primaryContainer,
-            onPrimaryContainer = m3Dynamic.onPrimaryContainer,
-            secondary = m3Dynamic.secondary,
-            onSecondary = m3Dynamic.onSecondary,
-            secondaryContainer = m3Dynamic.secondaryContainer,
-            onSecondaryContainer = m3Dynamic.onSecondaryContainer,
-            tertiary = m3Dynamic.tertiary,
-            onTertiary = m3Dynamic.onTertiary,
-            tertiaryContainer = m3Dynamic.tertiaryContainer,
-            onTertiaryContainer = m3Dynamic.onTertiaryContainer,
-            background = m3Dynamic.background,
-            onBackground = m3Dynamic.onBackground,
-            surface = m3Dynamic.surface,
-            onSurface = m3Dynamic.onSurface,
-            surfaceVariant = m3Dynamic.surfaceVariant,
-            onSurfaceVariant = m3Dynamic.onSurfaceVariant,
-            surfaceContainerLowest = m3Dynamic.surfaceContainerLowest,
-            surfaceContainerLow = m3Dynamic.surfaceContainerLow,
-            surfaceContainer = m3Dynamic.surfaceContainer,
-            surfaceContainerHigh = m3Dynamic.surfaceContainerHigh,
-            surfaceContainerHighest = m3Dynamic.surfaceContainerHighest,
-            outline = m3Dynamic.outline,
-            outlineVariant = m3Dynamic.outlineVariant,
-            scrim = m3Dynamic.scrim,
-            error = m3Dynamic.error,
-            onError = m3Dynamic.onError,
-            errorContainer = m3Dynamic.errorContainer,
-            onErrorContainer = m3Dynamic.onErrorContainer
-        )
-        Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3Dynamic)
+        else -> if (darkTheme) preset.dark else preset.light
     }
-        else -> {
-            val wc = if (darkTheme) preset.dark else preset.light
-        val m3 = if (darkTheme) {
-            darkColorScheme(
-                primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
-                secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
-                tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
-                background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
-                surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
-                surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
-                surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
-                outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
-                error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
-            )
-        } else {
-            lightColorScheme(
-                primary = wc.primary, onPrimary = wc.onPrimary, primaryContainer = wc.primaryContainer, onPrimaryContainer = wc.onPrimaryContainer,
-                secondary = wc.secondary, onSecondary = wc.onSecondary, secondaryContainer = wc.secondaryContainer, onSecondaryContainer = wc.onSecondaryContainer,
-                tertiary = wc.tertiary, onTertiary = wc.onTertiary, tertiaryContainer = wc.tertiaryContainer, onTertiaryContainer = wc.onTertiaryContainer,
-                background = wc.background, onBackground = wc.onBackground, surface = wc.surface, onSurface = wc.onSurface,
-                surfaceVariant = wc.surfaceVariant, onSurfaceVariant = wc.onSurfaceVariant,
-                surfaceContainerLowest = wc.surfaceContainerLowest, surfaceContainerLow = wc.surfaceContainerLow,
-                surfaceContainer = wc.surfaceContainer, surfaceContainerHigh = wc.surfaceContainerHigh, surfaceContainerHighest = wc.surfaceContainerHighest,
-                outline = wc.outline, outlineVariant = wc.outlineVariant, scrim = wc.scrim,
-                error = wc.error, onError = wc.onError, errorContainer = wc.errorContainer, onErrorContainer = wc.onErrorContainer
-            )
-        }
-            Triple(wc, if (darkTheme) DarkCoursePalette else LightCoursePalette, m3)
-        }
-    }
+    val palette = if (darkTheme) DarkCoursePalette else LightCoursePalette
+    val m3Scheme = wakeToM3Scheme(wc, darkTheme)
 
-    CompositionLocalProvider(
-        LocalWakeUpColors provides wakeColors,
-        LocalCoursePalette provides palette
-    ) {
+    CompositionLocalProvider(LocalCoursePalette provides palette) {
         // 系统栏外观随应用主题联动(官方 edge-to-edge 指南): enableEdgeToEdge 是一次性
         // API, onCreate 只调一次时 isAppearanceLightStatusBars 停在启动时的系统深浅判定,
         // 应用内手动切主题后状态栏图标不跟着变(浅色页面+白图标 = 不可见)。

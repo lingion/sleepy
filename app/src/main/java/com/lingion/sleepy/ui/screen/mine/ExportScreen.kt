@@ -87,7 +87,11 @@ fun ExportScreen(
     val allPeriodTables by viewModel.allPeriodTables.collectAsState()
     val ctx = LocalContext.current
     val scope = rememberCoroutineScope()
-    val colors = SleepyTheme.colors
+    val periodTablesTitle = stringResource(R.string.period_tables_title)
+    val periodTableNodesCount = stringResource(R.string.period_table_nodes_count)
+    val exportCourseCount = stringResource(R.string.export_course_count)
+    val exportStartDate = stringResource(R.string.export_start_date)
+    val colors = MaterialTheme.colorScheme
     val snackbarHostState = remember { SnackbarHostState() }
 
     // 导出目标 — 本地选择, 不污染主页 selectedTableId/widget 默认表。
@@ -177,10 +181,10 @@ fun ExportScreen(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = if (selectedPeriodTable != null) {
-                            ctx.getString(R.string.period_tables_title) + " · " +
-                                ctx.getString(R.string.period_table_nodes_count, selectedPeriodTable.nodesPerDay)
+                            periodTablesTitle + " · " +
+                                periodTableNodesCount.format(selectedPeriodTable.nodesPerDay)
                         } else {
-                            "${ctx.getString(R.string.export_course_count, courses.size)} · ${ctx.getString(R.string.export_start_date, table?.startDate ?: "")}"
+                            "${exportCourseCount.format(courses.size)} · ${exportStartDate.format(table?.startDate ?: "")}"
                         },
                         style = MaterialTheme.typography.bodyMedium,
                         color = colors.onPrimaryContainer
@@ -396,7 +400,7 @@ fun ExportScreen(
 /** 展开框行 — 课表/作息表共用视觉(选中态 primaryContainer 色块+对勾, 禁描边规则) */
 @Composable
 private fun PickerRow(title: String, subtitle: String?, isSelected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -440,7 +444,7 @@ internal fun ExportItem(
     subtitle: String,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -72,7 +72,7 @@ fun AppearanceScreen(
     onThemeModeChange: (String) -> Unit = {}
 ) {
     val context = LocalContext.current
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
     val selectedMode = themeMode
 
@@ -204,11 +204,15 @@ fun AppearanceScreen(
             onBack = { showEditor = false; editingTheme = null },
             onSaved = { saved ->
                 CustomThemeStore.save(context, saved)
+                AppPrefs.setThemeKey(context, ThemePresets.CUSTOM_KEY_PREFIX + saved.id)
                 customListVersion++
+                // 保存即应用(2026-09-21 用户反馈): 无条件把 theme_key 落到本次保存的主题 —
+                // themeKeyFlow 只听 sleepy_prefs 的 theme_key, 只写 custom_themes 文件
+                // 不会触发 SleepyThemeProvider 重组, app 配色纹丝不动。新建主题此前更是
+                // "保存了但从没被应用过"。
+                refreshWidgets()
                 showEditor = false
                 editingTheme = null
-                // 若保存的主题正被应用(编辑既有主题),刷新小组件
-                if (currentKey == ThemePresets.CUSTOM_KEY_PREFIX + saved.id) refreshWidgets()
             },
             onDeleted = { id ->
                 CustomThemeStore.delete(context, id)
@@ -236,7 +240,7 @@ private sealed interface ThemeGridCell {
 
 @Composable
 private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
     Surface(
@@ -260,7 +264,7 @@ private fun SystemThemeCard(selected: Boolean, onClick: () -> Unit) {
 
 @Composable
 private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scheme = if (colors.background.red < 0.5f) preset.light else preset.dark
     // 2026-08-25 用户指令: 全 app 纯色块禁描线 — 选中态只用色块层级+对勾表达
     val bgColor = if (selected) colors.primaryContainer else colors.surfaceContainer
@@ -275,9 +279,15 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
                 ColorSwatch(scheme.tertiary)
             }
             Spacer(Modifier.height(12.dp))
+            // ✓槽位恒定 20dp 占位,图标仅在选中时渲染进槽位 —— 真机字体缩放(fontScale<1)
+            // 下 titleSmall 行高会缩到 20dp 以下,条件渲染=选中那刻凭空多一个决定行高的孩子
+            // =选中卡比未选中卡高(2026-09-22 用户实测)。禁改回 raw `if (selected) Icon(...)`。
+            // 不用 alpha(0f) 隐藏:读屏会照常播报"已选中",占位 Box 才是布局+a11y 双正确。
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(preset.nameRes), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium), color = colors.onSurface, modifier = Modifier.weight(1f))
-                if (selected) Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                    if (selected) Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                }
             }
         }
     }
@@ -291,7 +301,7 @@ private fun ColorSwatch(color: Color) {
 /** 「新建主题」入口 — 裸虚线圆圈+加号,无卡片无背景无文字(2026-09-11 用户定稿) */
 @Composable
 private fun NewThemeCard(onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -344,7 +354,7 @@ private fun CustomThemeCard(
     onClick: () -> Unit,
     onEdit: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     // 卡片色板预览按当前深浅模式派生(与 PresetThemeCard 的探针逻辑一致)
     val isDark = colors.background.red < 0.5f
     val scheme = remember(theme, isDark) { CustomSchemeDeriver.derive(theme, isDark) }
@@ -354,15 +364,15 @@ private fun CustomThemeCard(
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ColorSwatch(scheme.primary)
                 ColorSwatch(scheme.secondary)
                 ColorSwatch(scheme.tertiary)
                 Spacer(Modifier.weight(1f))
-                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 24dp 嵌 28dp 色板行不撑高
+                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 28dp 与色板同高, 首行结构与 Preset 卡完全一致不撑高
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(28.dp)
                         .clip(SleepyTheme.shapes.small)
                         .background(colors.surfaceContainerHighest)
                         .noRippleClickable(onEdit),
@@ -386,8 +396,16 @@ private fun CustomThemeCard(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                if (selected) {
-                    Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                // 与预设卡相同:固定 20dp 槽位,避免选中态改变标题行高度。
+                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                    if (selected) {
+                        Icon(
+                            Icons.Outlined.Check,
+                            stringResource(R.string.selected),
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

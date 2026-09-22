@@ -15,6 +15,7 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.WeekDisplayStatus
 import java.time.LocalDate
 import kotlin.math.roundToInt
 
@@ -245,17 +246,23 @@ object WidgetBitmapRenderers {
     fun todayHeaderParts(
         data: WidgetData, dayName: String, showDate: Boolean,
         resolve: (Int) -> String,
-        showBackToToday: Boolean = true
+        showBackToToday: Boolean = true,
+        weekDisplayStatus: WeekDisplayStatus = data.weekDisplayStatus
     ): TodayHeaderParts {
+        val statusText = when (weekDisplayStatus) {
+            WeekDisplayStatus.NEAREST_BUSY_DAY -> resolve(R.string.schedule_nearest_busy_day)
+            WeekDisplayStatus.NORMAL -> null
+        }
         val title = if (data.isToday) "${resolve(R.string.today_today)} · $dayName"
                     else "${data.dateLabel} · $dayName"
+        val displayTitle = statusText?.let { "$it · $dayName" } ?: title
         return if (!data.isToday && showBackToToday) {
-            TodayHeaderParts(title, resolve(R.string.today_nav_back_to_today), true)
+            TodayHeaderParts(displayTitle, resolve(R.string.today_nav_back_to_today), true)
         } else if (showDate && data.isToday) {
-            TodayHeaderParts(title, data.dateLabel, false)
+            TodayHeaderParts(displayTitle, data.dateLabel, false)
         } else {
             // 导航态的日期已在 title 中；showBackToToday=false 时也不得再画第二份日期。
-            TodayHeaderParts(title, null, false)
+            TodayHeaderParts(displayTitle, null, false)
         }
     }
 
@@ -264,6 +271,14 @@ object WidgetBitmapRenderers {
         if (p.measureText(text) <= maxW) return text
         var t = text
         while (t.isNotEmpty() && p.measureText("$t…") > maxW) t = t.dropLast(1)
+        return "$t…"
+    }
+
+    /** ellipsize 的纯函数版 — measure 回调注入, JVM 单测可断言 (courseMetaLines 用) */
+    private fun ellipsizeBy(measure: (String) -> Float, text: String, maxW: Float): String {
+        if (measure(text) <= maxW) return text
+        var t = text
+        while (t.isNotEmpty() && measure("$t…") > maxW) t = t.dropLast(1)
         return "$t…"
     }
 
@@ -962,22 +977,31 @@ object WidgetBitmapRenderers {
      */
     fun weekGridMinimumTodayData(data: WeekData, today: LocalDate): WidgetData {
         val timeJson = data.days.firstOrNull()?.timeJson ?: ""
-        val todayDay = data.days.firstOrNull { it.dayOfWeek == today.dayOfWeek.value }
+        val targetDate = if (data.weekDisplayStatus == WeekDisplayStatus.NEAREST_BUSY_DAY) {
+            data.days.minByOrNull { it.date }?.date ?: today
+        } else today
+        val targetDay = data.days.firstOrNull { it.date == targetDate }
         return WidgetData(
-            date = today,
-            courses = todayDay?.courses ?: emptyList(),
+            date = targetDate,
+            courses = targetDay?.courses ?: emptyList(),
             timeJson = timeJson,
             hasTable = data.hasTable,
             isDark = data.isDark,
             themeKey = data.themeKey,
-            semesterStatus = data.semesterStatus
+            semesterStatus = data.semesterStatus,
+            isToday = targetDate == today,
+            weekDisplayStatus = data.weekDisplayStatus
         )
     }
 
     /**
-     * drawCourse meta 行拆分 — 拼行("时间 · 地点")放不下时拆两行(时间一行/地点一行)。
-     * 文本宽度可加(拼行宽恒 ≥ 两行之和), 拆行永不更差 → 无需收益判定;
-     * 拆开后单行仍超宽的极端场景由渲染端逐行省略号兜底。纯函数 — measure 由调用方注入。
+     * drawCourse meta 行: 恒单行 — 时间与地点各占半宽, 放不下各自省略号截断。
+     *
+     * 旧行为(拼行放不下→拆时间/地点两行)已废: 两行使 meta 块总高超出行高,
+     * drawCourse 垂直居中后块体溢出胶囊, 竖向盖住相邻行/行间隙 —— 正是用户
+     * 「不允许元素过长挡住其他的, 不能挤占其他的」禁的场景。恒单行 → 块高恒定,
+     * 结构上不可能挤占; 长文本在自己半宽槽内截断, 不抢他人空间。
+     * 纯函数 — measure 由调用方注入。
      */
     fun courseMetaLines(
         measure: (String) -> Float,
@@ -985,9 +1009,19 @@ object WidgetBitmapRenderers {
         timeStr: String,
         room: String
     ): List<String> {
-        if (room.isBlank()) return listOf(timeStr)
-        val combined = "$timeStr · $room"
-        return if (measure(combined) <= maxWidth) listOf(combined) else listOf(timeStr, room)
+        val time = timeStr.trim()
+        val place = room.trim()
+        if (time.isBlank() && place.isBlank()) return emptyList()
+        if (place.isBlank()) return listOf(time)
+        if (time.isBlank()) return listOf(place)
+        val combined = "$time · $place"
+        if (measure(combined) <= maxWidth) return listOf(combined)
+        // 溢出 → 同一行内各占一半(分隔符宽度对半摊), 各自截断, 行数不变
+        val sepW = measure(" · ")
+        val halfW = ((maxWidth - sepW) / 2f).coerceAtLeast(0f)
+        return listOf(
+            ellipsizeBy(measure, time, halfW) + " · " + ellipsizeBy(measure, place, halfW)
+        )
     }
 
     /**

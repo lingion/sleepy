@@ -1,6 +1,10 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -59,7 +63,7 @@ import com.lingion.sleepy.ui.theme.SleepyTheme
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LicenseScreen(onBack: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val expanded = remember { mutableStateMapOf<String, Boolean>() }
 
     Scaffold(
@@ -150,7 +154,11 @@ fun LicenseScreen(onBack: () -> Unit) {
                             )
                         }
                     }
-                    AnimatedVisibility(visible = bodyExpanded) {
+                    AnimatedVisibility(
+                        visible = bodyExpanded,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
                         Column(modifier = Modifier.padding(top = 8.dp)) {
                             Text(
                                 text = stringResource(R.string.about_license_body),
@@ -221,7 +229,7 @@ private fun AttributionCard(
     onToggle: () -> Unit,
     expandedContent: (@Composable () -> Unit)? = null
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     LicenseCard {
         Row(
             modifier = Modifier
@@ -262,18 +270,20 @@ private fun AttributionCard(
                 color = colors.onSurfaceVariant
             )
         }
-        if (expanded && expandedContent != null) {
+        AnimatedVisibility(
+            visible = expanded && expandedContent != null,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
             Spacer(modifier = Modifier.height(6.dp))
-            AnimatedVisibility(visible = expanded) {
-                expandedContent()
-            }
+            expandedContent?.invoke()
         }
     }
 }
 
 @Composable
 private fun SectionHeader(text: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Text(
         text = text,
         style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
@@ -284,7 +294,7 @@ private fun SectionHeader(text: String) {
 
 @Composable
 private fun LicenseCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()

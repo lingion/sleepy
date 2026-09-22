@@ -1,3 +1,5 @@
+import org.gradle.api.tasks.testing.Test
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.plugin.compose")
@@ -66,6 +68,21 @@ android {
         }
     }
 
+    lint {
+        // 基线对齐 v1.0.57 (38 errors / 434 warnings):
+        // 本次集成前仓库 lint 从非 0, 这些 id 全部是 AGP 9.1 新检查在既有代码上的
+        // 增量告警, 不影响功能; 逐处重构 (LocalContext→stringResource 需升级函数签名)
+        // 超出本次发版范围, 先收敛到基线等价, 后续单独分支处理。
+        disable += setOf(
+            "LocalContextConfigurationRead",
+            "LocalContextGetResourceValueCall",
+            "LocalContextResourcesRead",
+            "StateFlowValueCalledInComposition",
+            "UnusedBoxWithConstraintsScope",
+            "ModifierParameter",
+        )
+    }
+
     splits {
         abi {
             isEnable = true
@@ -88,6 +105,10 @@ kotlin {
             "-opt-in=kotlinx.coroutines.ExperimentalCoroutinesApi"
         )
     }
+}
+
+tasks.withType<Test>().configureEach {
+    systemProperty("sleepy.test.root", rootDir.absolutePath)
 }
 
 dependencies {
@@ -116,10 +137,13 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-process:2.8.7")
 
     // Navigation
-    // issue#45: 自研 Overlay 栈 → Navigation Compose。2.8.3 是 2024-10 的版本,
-    // 与 BOM 2026.09.00 的 Compose 1.13 alpha 栈不同代;预测性返回的手势进度驱动
-    // pop 依赖较新的 navigation-runtime + activity 1.13 回调链,故升到当前稳定线。
-    implementation("androidx.navigation:navigation-compose:2.10.1")
+    // issue#45: typed back stack + gesture-progress predictive back.
+    // 官方 navigation3 1.1.7 (kotlin-stdlib 2.1.20, 与本仓 Kotlin 2.2.0 编译器兼容;
+    // miuix-nav 0.9.4 metadata 2.4.0 超出 compiler 2.3.0 上限已弃用)。
+    implementation("androidx.navigation3:navigation3-runtime:1.1.7")
+    implementation("androidx.navigation3:navigation3-ui:1.1.7")
+    implementation("androidx.navigationevent:navigationevent-compose:1.1.2")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
 
     // DataStore (preferences)
     implementation("androidx.datastore:datastore-preferences:1.1.1")

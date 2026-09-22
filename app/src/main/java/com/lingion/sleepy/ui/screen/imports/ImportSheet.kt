@@ -15,7 +15,6 @@ import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -83,6 +82,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.data.parser.ScheduleParser
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.TimeSlotEditor
+import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -111,9 +111,13 @@ fun ImportSheet(
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val cannotReadFileMessage = stringResource(R.string.cannot_read_file)
+    val readFailedFormat = stringResource(R.string.read_failed)
+    val importSuccessMessage = stringResource(R.string.import_success)
+    val defaultTableName = stringResource(R.string.default_table_name)
 
     var textExpanded by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
@@ -185,12 +189,12 @@ fun ImportSheet(
                 isLoading = true
                 try {
                     val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
-                        ?: throw Exception(context.getString(R.string.cannot_read_file))
+                        ?: throw Exception(cannotReadFileMessage)
                     preview = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
                     // 注意: 不要在这里 onDismiss() —— sheet 关掉后 preview state 会随之销毁, dialog 永远不弹。
                     // preview != null 时 ImportPreviewDialog 会在 sheet 之上显示; 用户点确认/取消后再清 state。
                 } catch (e: Exception) {
-                    errorMsg = context.getString(R.string.read_failed, e.message)
+                    errorMsg = readFailedFormat.format(e.message)
                 } finally {
                     isLoading = false
                 }
@@ -225,7 +229,6 @@ fun ImportSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
-        BoxWithConstraints {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -324,7 +327,6 @@ fun ImportSheet(
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         enabled = !isLoading && inputText.isNotBlank(),
                         shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(
                             text = if (isLoading) stringResource(R.string.import_parsing) else stringResource(R.string.import_preview),
@@ -398,17 +400,17 @@ fun ImportSheet(
 
         // 错误反馈通道: 上面 errorMsg → snackbar.showSnackbar 依赖此 host,
         // 之前 sheet 内无 host → 导入失败提示被静默吞掉。默认 M3 配色, 与其余 5 处一致。
+        // (原 BoxWithConstraints 包裹层已删: scope 内 maxWidth/maxHeight 从未被消费, lint UnusedBoxWithConstraintsScope)
         SnackbarHost(
             hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         // 导入成功提示: 不再跳编辑课表页(假保存闸), 用 snackbar 明示已落库
         LaunchedEffect(preview, pendingMode) {
             if (preview == null && pendingMode == null && importJustApplied) {
                 importJustApplied = false
-                snackbar.showSnackbar(context.getString(R.string.import_success))
+                snackbar.showSnackbar(importSuccessMessage)
             }
-        }
         }
     }
 
@@ -513,7 +515,7 @@ fun ImportSheet(
                     existingTable?.startDate ?: java.time.LocalDate.now().toString()
                 }
                 confirmedTableName = currentPreview.parseResult.tableName.ifBlank {
-                    existingTable?.name ?: context.getString(R.string.default_table_name)
+                    existingTable?.name ?: defaultTableName
                 }
                 // v7.10.16k 无损合并(用户 2026-09-03「哪个大用哪个, 最完整优先」):
                 // 不再 ifBlank 单选 — 老表作息与导入作息逐节合并, 节次数取双方最大,
@@ -620,7 +622,7 @@ private fun ImportMethodRow(
     trailing: ImageVector? = null,
     onClick: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -663,7 +665,7 @@ private fun ImportMethodRow(
 
 @Composable
 private fun FormatRow(name: String, desc: String, onDetail: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -717,8 +719,9 @@ private enum class ImportFormat {
  */
 @Composable
 private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val aiPromptText = stringResource(R.string.ai_prompt_text)
 
     val titleRes = when (format) {
         ImportFormat.WAKEUP_SHARE -> R.string.format_wakeup_share
@@ -847,7 +850,7 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                 cm.setPrimaryClip(
                                     ClipData.newPlainText(
                                         "prompt",
-                                        context.getString(R.string.ai_prompt_text)
+                                        aiPromptText
                                             .replace("\\n", "\n")
                                             .replace("\\t", "\t")
                                             .replace("&lt;", "<")
@@ -926,7 +929,7 @@ internal fun ImportPreviewDialog(
 ) {
     // Prevent repeated submissions while the selected import is being saved.
     val apply: (ImportApplyMode) -> Unit = { if (!isApplying) onApply(it) }
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         titleContentColor = colors.onSurface,
@@ -1142,7 +1145,6 @@ internal fun ImportPreviewDialog(
                         onClick = { apply(ImportApplyMode.ImportAsNew) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = SleepyTheme.shapes.medium,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                     ) {
                         Text(stringResource(R.string.import_as_new), maxLines = 1)
                     }
@@ -1156,7 +1158,6 @@ internal fun ImportPreviewDialog(
                             onClick = { apply(ImportApplyMode.AppendNonConflict) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_only), maxLines = 1)
                         }
@@ -1165,7 +1166,6 @@ internal fun ImportPreviewDialog(
                             onClick = { apply(ImportApplyMode.ImportAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_as_new), maxLines = 1)
                         }
@@ -1192,7 +1192,6 @@ internal fun ImportPreviewDialog(
                             onClick = { apply(ImportApplyMode.AppendAsNew) },
                             modifier = Modifier.weight(1f),
                             shape = SleepyTheme.shapes.medium,
-                            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
                         ) {
                             Text(stringResource(R.string.import_append_as_new), maxLines = 1)
                         }
@@ -1243,7 +1242,7 @@ private fun PreviewMetricCard(
 
 @Composable
 private fun PreviewInfoRow(label: String, value: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
         Text(text = value, style = MaterialTheme.typography.bodyMedium, color = colors.onSurface)
@@ -1268,22 +1267,28 @@ private fun ImportConfirmDialog(
     // id -> timeJson, 绑表时确认校验/落库以表 timeJson 为真源 (用户反馈 2026-09-20 误报修复)
     periodTableTimeJsonById: Map<Long, String> = emptyMap()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val fieldColors = SleepyTheme.fieldColors()
+    val startDateRequiredMessage = stringResource(R.string.import_start_date_required)
+    val startDateFormatMessage = stringResource(R.string.start_date_format)
+    val slotTimeRequiredFormat = stringResource(R.string.slot_time_required)
+    val slotTimeInvalidFormat = stringResource(R.string.slot_time_invalid)
     var rows by remember(timeJson) {
         mutableStateOf(TimeTableUtils.parseTimeSlotRows(timeJson))
     }
     // issue#28 P2: 自动模式状态必须真实持有并回传 — 旧代码没传 smartConfig/
     // onSmartConfigChange, 落到默认 no-op, "添加课间"点了没有任何反应。
-    // 初值从导入解析出的行播种(节次数+首节开始, 与 EditTableScreen 同规),
-    // 否则切自动模式会瞬间被 08:00/45min 默认覆盖, 用户感知为"自动模式也是坏的"。
+    // issue#23 T5: 初值 = 共享推断从导入解析出的行播种(45 分钟主时长 + 混合时长组
+    // 一并识别, 与 EditTableScreen/PeriodTableEditScreen 同规); 行不可推断
+    // (缺时间/畸形/断号) → 最简默认兜底, TimeSlotEditor 保持手动模式 + 既有校验。
     var smartConfig by remember {
         mutableStateOf(
-            SmartPeriodConfig(
-                totalPeriods = rows.size.coerceAtLeast(1),
-                startTime = rows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-            )
+            resolveAutoPeriodConfig(rows.toList(), null)
+                ?: SmartPeriodConfig(
+                    totalPeriods = rows.size.coerceAtLeast(1),
+                    startTime = rows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                )
         )
     }
     var errorMsg by remember { mutableStateOf<String?>(null) }
@@ -1351,12 +1356,12 @@ private fun ImportConfirmDialog(
                     confirmText = stringResource(R.string.import_confirm),
                     onConfirm = {
                         if (startDate.isBlank()) {
-                            errorMsg = context.getString(R.string.import_start_date_required)
+                            errorMsg = startDateRequiredMessage
                             return@DialogActionButtons
                         }
                         val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
                         if (!dateRegex.matches(startDate)) {
-                            errorMsg = context.getString(R.string.start_date_format)
+                            errorMsg = startDateFormatMessage
                             return@DialogActionButtons
                         }
                         // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
@@ -1368,7 +1373,7 @@ private fun ImportConfirmDialog(
                         )
                         val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                         if (emptyRows.isNotEmpty()) {
-                            errorMsg = context.getString(R.string.slot_time_required, emptyRows.first().node)
+                            errorMsg = slotTimeRequiredFormat.format(emptyRows.first().node)
                             return@DialogActionButtons
                         }
                         val timeRegex = Regex("""^\d{2}:\d{2}$""")
@@ -1377,7 +1382,7 @@ private fun ImportConfirmDialog(
                             it.start >= it.end
                         }
                         if (invalidRows.isNotEmpty()) {
-                            errorMsg = context.getString(R.string.slot_time_invalid, invalidRows.first().node)
+                            errorMsg = slotTimeInvalidFormat.format(invalidRows.first().node)
                             return@DialogActionButtons
                         }
                         errorMsg = null

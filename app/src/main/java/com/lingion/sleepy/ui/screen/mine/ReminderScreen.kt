@@ -222,7 +222,7 @@ private fun buildBeforeClassPreviewText(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ReminderScreen(onBack: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
 
     var masterEnabled by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
@@ -569,6 +569,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                             ReminderToggleRow(
                                 title = stringResource(R.string.reminder_fluid_title),
                                 subtitle = stringResource(R.string.reminder_fluid_sub),
+                                tag = stringResource(R.string.reminder_experimental_tag),
                                 checked = fluidEnabled,
                                 onCheckedChange = {
                                     fluidEnabled = it
@@ -703,7 +704,7 @@ fun ReminderScreen(onBack: () -> Unit) {
 
 @Composable
 private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -722,15 +723,35 @@ private fun ReminderTimeRow(label: String, time: String, onClick: () -> Unit) {
 }
 
 @Composable
-private fun ReminderToggleRow(title: String, subtitle: String, checked: Boolean, onCheckedChange: (Boolean) -> Unit) {
-    val colors = SleepyTheme.colors
+private fun ReminderToggleRow(
+    title: String,
+    subtitle: String,
+    tag: String? = null,
+    checked: Boolean,
+    onCheckedChange: (Boolean) -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 8.dp, horizontal = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
     ) {
         Column(modifier = Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Text(title, style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
+                if (tag != null) {
+                    Spacer(modifier = Modifier.width(6.dp))
+                    Text(
+                        text = tag,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = colors.primary,
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(50))
+                            .background(colors.primary.copy(alpha = 0.12f))
+                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                    )
+                }
+            }
             Text(subtitle, style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
         }
         // 补主题色：之前无 colors 参数走默认 Material3 蓝，与同屏三个主开关不一致
@@ -756,7 +777,7 @@ private fun fluidPrimaryLabel(context: android.content.Context, primary: String)
 
 @Composable
 private fun ReminderCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -770,7 +791,7 @@ private fun ReminderCard(content: @Composable () -> Unit) {
 
 @Composable
 private fun IconBox(icon: ImageVector, color: androidx.compose.ui.graphics.Color) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     androidx.compose.foundation.layout.Box(
         modifier = Modifier
             .size(36.dp)
@@ -789,7 +810,7 @@ private fun IconBox(icon: ImageVector, color: androidx.compose.ui.graphics.Color
 
 @Composable
 private fun SubDivider() {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     androidx.compose.material3.HorizontalDivider(
         modifier = Modifier.padding(start = 52.dp),
         color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline)

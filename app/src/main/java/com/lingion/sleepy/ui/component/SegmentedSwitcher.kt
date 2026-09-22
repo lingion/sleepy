@@ -68,7 +68,7 @@ fun <T> SegmentedSwitcher(
     modifier: Modifier = Modifier,
     containerColor: Color? = null
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val selectedIndex = options.indexOfFirst { it.first == selected }.coerceAtLeast(0)
     val count = options.size
 

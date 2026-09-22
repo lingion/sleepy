@@ -7,7 +7,12 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.repository.ScheduleRepository
+import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayRangeOps
+import com.lingion.sleepy.util.WeekDisplayContext
+import com.lingion.sleepy.util.WeekDisplayResolver
+import com.lingion.sleepy.util.HolidayTransferEntry
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -18,6 +23,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import java.time.LocalDate
+import java.time.LocalDateTime
 
 data class ScheduleState(
     val tables: List<TimeTableEntity> = emptyList(),
@@ -25,6 +31,9 @@ data class ScheduleState(
     val courses: List<CourseEntity> = emptyList(),
     val currentWeek: Int = 1,
     val selectedWeek: Int = 1,
+    val weekDisplayContext: WeekDisplayContext? = null,
+    /** true = 用户手动选周；false = 跟随自动展示周。 */
+    val weekSelectionManual: Boolean = false,
     /** false=首次加载(本周), true=用户/系统已选定周 — 课程变更时 selectedWeek 不再被重置 */
     val initialWeekSettled: Boolean = false,
     val nodesPerDay: Int = 12,
@@ -32,7 +41,9 @@ data class ScheduleState(
     val showCourseDialog: Boolean = false,
     val error: String? = null,
     /** issue#40: 当前表绑定的独立时间节次表(null=未绑定/悬空, 渲染回退旧兼容列) */
-    val effectivePeriodTable: com.lingion.sleepy.data.entity.PeriodTableEntity? = null
+    val effectivePeriodTable: com.lingion.sleepy.data.entity.PeriodTableEntity? = null,
+    /** issue#44: 当前表的调休映射; 切换课表/写盘后由 VM 刷新 */
+    val transfers: List<HolidayTransferEntry> = emptyList()
 ) {
     val currentWeekCourses: List<CourseEntity>
         get() = courses.filter { it.inWeek(selectedWeek) }
@@ -48,6 +59,10 @@ data class ScheduleState(
     /** issue#40: 水合后的当前表 — 节次时间域一律从这里读, 不得直接读 currentTable.timeJson */
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
+
+    /** issue#44: 给定日期实际应"按星期几取课"; 命中映射=targetDate 星期, 未命中=自然星期 */
+    fun transferDayFor(date: LocalDate): Int =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
 }
 
 class ScheduleViewModel : ViewModel() {
@@ -89,7 +104,14 @@ class ScheduleViewModel : ViewModel() {
                     if (tables.isEmpty()) {
                         // 没有课表就老实空着，不强行造占位表。
                         // selectedTableId = null，UI 走空态。
-                        _state.update { it.copy(tables = emptyList(), selectedTableId = null) }
+                        _state.update {
+                            it.copy(
+                                tables = emptyList(),
+                                selectedTableId = null,
+                                weekDisplayContext = null,
+                                weekSelectionManual = false
+                            )
+                        }
                         return@collect
                     }
                     val selectedId = _state.value.selectedTableId
@@ -107,6 +129,8 @@ class ScheduleViewModel : ViewModel() {
     private fun loadCourses(tableId: Long) {
         // 取消旧协程，避免多个 observeCourses 同时写 state.courses 互相覆盖
         coursesJob?.cancel()
+        // issue#44: 拉一次该表调休映射; 设置页改完走 refreshTransfer 主动刷
+        _state.update { it.copy(transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), tableId)) }
         coursesJob = viewModelScope.launch {
             // issue#40: 课程流与绑定时间节次表流合并 — 时间节次表改动会 emit 新值,
             // 所有绑定课表立即按新作息解释节次(设计 §5.2 立即全部同步), 课程行不重算
@@ -119,14 +143,29 @@ class ScheduleViewModel : ViewModel() {
                         val rawTable = st.tables.find { it.id == tableId }
                         // 水合: 绑定存在时 nodesPerDay/timeJson/smartConfigJson 以时间节次表为准
                         val table = rawTable?.hydratedWith(periodTable)
-                        val week = table?.let { DateUtils.currentWeek(it.startDate) } ?: 1
+                        val displayContext = table?.let {
+                            WeekDisplayResolver.resolve(
+                                startDate = it.startDate,
+                                maxWeek = it.maxWeek,
+                                now = LocalDateTime.now(),
+                                courses = courses,
+                                timeJson = it.timeJson,
+                                enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
+                            )
+                        }
+                        val week = displayContext?.actualWeek ?: 1
                         // v7.10.16s: 只更新真实周(currentWeek, 供"回到本周"), 不再重置 selectedWeek —
                         // 用户在第 x 周编辑/删课, 保存回来仍停在 x 周(此前被拽回真实周=跳回第一周体验)。
                         // 首次加载(initial=true)仍落真实周, 保持原行为
                         st.copy(
                             courses = courses,
                             currentWeek = week,
-                            selectedWeek = if (st.initialWeekSettled) st.selectedWeek else week,
+                            selectedWeek = when {
+                                !st.initialWeekSettled -> displayContext?.targetWeek ?: week
+                                !st.weekSelectionManual -> displayContext?.targetWeek ?: week
+                                else -> st.selectedWeek
+                            },
+                            weekDisplayContext = displayContext,
                             initialWeekSettled = true,
                             nodesPerDay = table?.nodesPerDay ?: 12,
                             effectivePeriodTable = periodTable
@@ -145,7 +184,14 @@ class ScheduleViewModel : ViewModel() {
     fun selectTable(id: Long) {
         manualSelectDone = true
         // 切表 = 新学期语境, 周选择回到该表真实周(initialWeekSettled 复位, loadCourses 重新落周)
-        _state.update { it.copy(selectedTableId = id, initialWeekSettled = false) }
+        _state.update {
+            it.copy(
+                selectedTableId = id,
+                initialWeekSettled = false,
+                weekSelectionManual = false,
+                weekDisplayContext = null
+            )
+        }
         loadCourses(id)
         // 切表后同步数据库 isDefault，使小组件严格跟随 App 当前选中表（widget 按默认表解析）
         viewModelScope.launch {
@@ -366,7 +412,28 @@ class ScheduleViewModel : ViewModel() {
         // 防呆: 下限 1, 上限 maxWeek — 之前只有下限, 右箭头可以无限翻出学期范围外
         val maxWeek = _state.value.currentTable?.maxWeek ?: 20
         if (week < 1 || week > maxWeek) return
-        _state.update { it.copy(selectedWeek = week) }
+        _state.update { it.copy(selectedWeek = week, weekSelectionManual = true) }
+    }
+
+    private fun recalculateWeekDisplay() {
+        val current = _state.value
+        val table = current.effectiveCurrentTable ?: return
+        val context = WeekDisplayResolver.resolve(
+            startDate = table.startDate,
+            maxWeek = table.maxWeek,
+            now = LocalDateTime.now(),
+            courses = current.courses,
+            timeJson = table.timeJson,
+            enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
+        )
+        _state.update {
+            val selected = if (it.weekSelectionManual) it.selectedWeek else context.targetWeek
+            it.copy(
+                currentWeek = context.actualWeek,
+                weekDisplayContext = context,
+                selectedWeek = selected
+            )
+        }
     }
 
     /**
@@ -379,12 +446,31 @@ class ScheduleViewModel : ViewModel() {
         return ok
     }
 
+    /**
+     * 2026-09-21 用户令: 取消最近一次撤回(单级 redo)。
+     * 返回 false = 没有可取消的撤回(调用方 toast 提示)。
+     */
+    suspend fun redoLastUndo(): Boolean {
+        val ok = repo.redoLastUndo()
+        if (ok) manualSelectDone = false   // 恢复后选中态交回 default 表(与 undo 同语义)
+        return ok
+    }
+
     fun openCourse(id: Long) {
         _state.update { it.copy(selectedCourseId = id, showCourseDialog = true) }
     }
 
     fun dismissCourseDialog() {
         _state.update { it.copy(showCourseDialog = false) }
+    }
+
+    /**
+     * issue#44: 设置页保存调休映射后, 通知 VM 重新拉当前表的映射。
+     * 现有 courses 列表不需重查, 只需刷新 dayFor() 的真源, 一次 reload 即生效。
+     */
+    fun refreshTransfer() {
+        val id = _state.value.selectedTableId ?: return
+        _state.update { it.copy(transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), id)) }
     }
 
     fun addEmptyCourse() {

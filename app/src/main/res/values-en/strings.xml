@@ -46,6 +46,7 @@
     <string name="schedule_share_table">Share Schedule</string>
     <string name="exit_press_back_again">Press back again to exit</string>
     <string name="schedule_current_week">Week %1$d</string>
+    <string name="schedule_nearest_busy_day">Next class day</string>
     <string name="schedule_no_course_today">No classes today</string>
 
     <string name="import_title">Import Timetable/Bell Schedule</string>
@@ -62,13 +63,20 @@
     <string name="manage_export_sub">Share as Native / WakeUp JSON / ICS / text</string>
     <string name="manage_manual_add">Add Course</string>
     <string name="manage_manual_add_sub">Add a course directly to current schedule</string>
-    <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d courses</string>
+    <string name="table_info">Start: %1$s  |  Week %2$d  |  %3$d arrangements</string>
+    <string name="manage_view_all_tables">View all</string>
+    <string name="course_list_title">Course list</string>
+    <string name="course_list_subtitle">All courses in the current schedule</string>
+    <string name="course_list_empty">No courses in the current schedule</string>
+    <string name="course_list_arrangements">Arrangements: %1$d</string>
     <string name="current_table_week">Current · Week %1$d</string>
     <string name="table_start_date">Start: %1$s</string>
     <string name="all_tables">All Schedules</string>
     <string name="schedule_switch_table">Switch schedule</string>
     <string name="schedule_undo">Undo</string>
     <string name="schedule_undo_none">Nothing to undo</string>
+    <string name="schedule_redo">Redo</string>
+    <string name="schedule_redo_none">Nothing to redo</string>
     <string name="schedule_scale_keep">Keep scale</string>
     <string name="all_tables_new">New Schedule</string>
     <string name="all_tables_duplicate">Duplicate</string>
@@ -86,7 +94,8 @@
     <string name="edit_table_validation_error">Date must be yyyy-MM-dd, time must be HH:mm with start before end</string>
     <string name="edit_table_delete_confirm">Confirm Delete</string>
     <string name="edit_table_delete_msg">Delete schedule \"%1$s\"? This cannot be undone.</string>
-    <string name="edit_table_delete_msg_count">Delete timetable "%1$s"? Its %2$d courses will be deleted too. This cannot be undone.</string>    <string name="default_table_name">Default</string>
+    <string name="edit_table_delete_msg_count">Delete timetable "%1$s"? Its %2$d courses will be deleted too. This cannot be undone.</string>
+    <string name="default_table_name">Default</string>
     <string name="import_paste">Paste Text</string>
     <string name="import_paste_hint">Paste schedule text…</string>
     <string name="import_file">Import from File</string>
@@ -318,7 +327,7 @@
     <string name="settings_nav_style">Bottom bar style</string>
     <string name="settings_nav_style_docked">Docked</string>
     <string name="settings_nav_style_floating">Floating</string>
-    <string name="settings_section_display">Display</string>
+    <string name="settings_section_display_navigation">Display and navigation</string>
     <string name="settings_language">Language</string>
     <string name="settings_display_mode">Time Display</string>
     <string name="settings_display_node">Periods</string>
@@ -328,7 +337,6 @@
     <string name="settings_start_view">Default view on launch</string>
     <string name="settings_start_view_full">Week view</string>
     <string name="settings_start_view_cards">Grid</string>
-    <string name="settings_start_view_sub">Only affects the view shown at launch; switch anytime from the schedule top bar</string>
     <string name="settings_grid_sub_info">Grid card details</string>
     <string name="settings_grid_sub_room">Room</string>
     <string name="settings_grid_sub_room_sub">Show the room under the course name (hidden if none)</string>
@@ -547,7 +555,7 @@
     <string name="theme_editor_delete_confirm">Delete this custom theme?</string>
     <string name="theme_editor_delete_confirm_body">Pages and widgets using it will fall back to the default "Lilac" theme.</string>
 <string name="appearance_section_theme">Theme colors</string>
-    <string name="appearance_section_display">Course display</string>
+    <string name="appearance_section_schedule_display">Schedule display</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">You\'re on the latest version v%1$s</string>
     <string name="update_found_title">New version v%1$s available</string>
@@ -563,7 +571,8 @@
 
 Cross-university foundational projects: WakeUp Schedule (YZune, Apache-2.0) and WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) — reference implementations for twelve educational-system parsers (Qingzhi and variants, legacy Zhengfang, URP, Chengfang, HNUST); WakeupSchedule_Kotlin (Apache-2.0) for classic Wisedu EAMS; the cqu.js adapter from Shiguang Schedule for Chongqing University portal REST; shiguang_warehouse (XingHeYuZhuan, MIT) for WHUT kcbcxby, classic EAMS and new-Zhengfang grid view; zfn_api (openschoolcn, MPL-2.0) and FlowCourse (jiaweiyaya, GPL-3.0) for new-Zhengfang kbList cross-validation; iwut (TokenTeam, AGPL-3.0, protocol shape only) for WHUT section mapping; Shangke Schedule shangkeschedule (qiqqqqq517, Apache-2.0) and WakeUp Schedule school registries used for cross-checking our school list.
 
-Per-school attribution (one card per school, expand to see details) — Hefei University of Technology HFUT: HFUT-Schedule (Chiu-xaH, MIT), HfutOpenApi (BoynChan, MIT), hfut_schedule_hacker (Aoi-cn), django-hfut-auth (elonzh, MIT), hfut-api (hfut-soft-ware), hfut-api (SnowingFox), hfut_api_service (onlineG2), HFUTer (BrikerMan), HFUTICS (ssyu0808), AiSchedule-for-hfut (imnuke, GPL-3.0), AISchedule (HualiNox), classduck (luyishui); Southeast University SEU: SEUTimetable (sakimidare, Apache-2.0), Aetik-yue/hormone, luzy99/SEUAutoLogin; Zhejiang University ZJU: zju-ical-py (Xecades, LGPL-2.1); USTC: USTC-timetable-to-ics (1970633640), ustc-course-timetable (HowardZorn, GPL-3.0), ustc-timetable (kirsh1, AGPL-3.0); Sichuan University SCU: ScuTimetable (Z-P-J); Northeastern University NEU: neu_wisedu2wakeup (CreamPig233), PopulusYang/NeuTimetable, neucn/elise, RekaYOO/NEU-JWXT-Toolkit, PeterPtroc/neu-jwxt-to-wakeup, leavesvv-source/NEU-Timetable; Chongqing University CQU: 321CQU/pymycqu, BillYang2016/CQU-class2ics, haowang02/CourseMonitor, LengerHu/CQU_classtabletoics, Hagb/cqu_timetable_new, VayneDuan/CQU-Grade-Monitor, weearc/cm-http-api, barryZZJ/course_to_calander_converter; Wuhan University of Technology WHUT: courseTable (acm910); UESTC: MilLoong/UESTC-EAMS-Helper-App, MilLoong/UESTC-EAMS-Helper-Python, KaranocaVe/UESTCJWCWatchdog, whtsky/uestc-eams-cleartimeout-userscript, Sunmxt/UESTC-EAMS; Guangdong University of Technology GDUT: N0tExpectErr0r/GDUT-ClassTimeTable, Richard-Zheng/GDUT-Schedule-ng, StarArchive/gdut-course-frontend, StarArchive/gdut-course-backend, HoneQ7/GDUT_iOS_Timetable; Guangdong University of Finance and Economics GDUFE: jkgeekJack/Android-GDUFE-JWC-SDK-1.0.0, Kiteio/GDUFE-wrapper; Guangdong University of Finance GDUf: Kiteio/Punica, gduf-finmind; Guangdong University of Foreign Studies GDUFS: yongjianzheng/Gdufszhushou, Crazioker/agency; Guangdong Medical University GDMU: user-supplied capture package confirmed zf_new protocol (new ZhengFang zftal-ui-v5 bare /kbcx/ path), see docs/release-notes-v1.0.49.md; Changsha University of Science and Technology CSUST: zHElEARN/CSUSTKit, CreaMakers/EduSpider, timeisthe/CSUSTDataGet, Julius-lq/EduAdminSystem, JS-CAUTION/csust-course-schedule; Beijing University of Posts and Telecommunications BUPT: helium777/bupt-course-grab, JmPotato/BUPT-Grader, Seizzzz/Auto-Login-BUPT; Peking University PKU: zhongxinghong/PKUAutoElective, thezzisu/pku-elective, Hovennnnn/PKUAutoElective2023, Lihhan/AutoElective_4_PKU, AuYang261/PKU_Elective_Toolset; Beijing University of Chemical Technology BUCT: MarkYangKp/ZhengFangJY; University of Chinese Academy of Sciences UCAS: ldiex/UCAS_Course_Schedule_Convertor (Python, 13-section + course-week mapping), Hurray0/UCAS_GET_Course (Python, xkgo.ucas.ac.cn course-fetch script), cld378632668/ucas_course_tool (Java, UCAS course utility), GentleCP/UCAS-Helper (TypeScript, UCAS course/grade helper);wirsbf/TraintimePda-UCAS (Dart, SEP login-chain CDP capture 2026-09: 303 chain + single JSESSIONID + RSA slogin form)、tbjuechen/sep-api (Python MIT, unofficial SEP API client); Beihang University BUAA: APassbyDreg/BUAA_JW_Utils (Python toolset, ieas2.1 course-select + evaluation URL anchors), SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend (Python, jwxt-7001.e2.buaa.edu.cn/ieas2.1/kbcx/queryGrkb schedule endpoint), fondoger/buaa-teacher-evaluation (MIT, one-click evaluation via sso.buaa.edu.cn CAS), Cauchy1412/BUAAGetCourse (Python course-grabber script), KKRainbow/JWOneShotEval (PHP, intra-campus IP anchor); BUAA byxt.buaa.edu.cn 2026-09-19 cross-verification (new/reused): fontlos/buaa-api (Rust, MIT); BUAASubnet/UBAA (Kotlin, MIT, 245 stars, protocol layer + schedule endpoint reference); CoolwindHF/buaa2wakeup (Python, MIT, undergraduate jwapp timetable format reference); awesome-buaa-cs/buaa-curriculum (API.md corroboration); cantBeFoundGroup/OpenBUAA (Python, AasApi form); el-ev/BUAA-ics-gen (Python, MIT, titleDetail week extraction reference); Krignd/KAgenda (Kotlin, WebScheduleEngine hook design + cellDetail parsing reference); Yiki21/iclass_buaa_tui (Rust, GPL-3.0, 13 stars, getMyScheduleDetail field set confirmation); Lidozs55/BUAAer-Smart-Schedule-on-electron (Vue, teachingSchedule endpoint reference); WhXcjm/buaa-byxt-aischedule (JS, GPL-3.0, XiaoAI adaptation parser.js research form); MeanZhang/buaa-ai-schedule (archived, MIT, legacy undergraduate form corroboration); Alyssumira/BUAA-Schedule (Kotlin, MIT, cellDetail teacher-weeks + titleDetail location dual-form reference); lyy1119/BuaaScheduleRender (Go, MIT, GSMIS week bitmap algorithm reference); zjafb/BUAA-Hangzhou-Schedule (MIT, UBAA fork, Hangzhou campus corroboration); Beijing Forestry University BJFU: Bloomberg2000/bjfu_course_ics_generator, Bloomberg2000/bjfu_util.py; Anhui University AHU: MoeclubM/AHU-AIO (Dart, new academic REST client, lib/jw/api/jw_api.dart), qiqqqqq517/shangkeschschedule (Apache-2.0) AHU adapter (WebVPN+CAS+get-data protocol family consensus, ahu.js), abydym/Ahu_Plus (GPL-3.0, Kotlin same-stack, JwModels.kt+CourseRepository.kt print-data+get-data dual-track), Landon-3314/AHU-TimeTable (Flutter, academic_course_api_parser.dart print-data activities field mapping), Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript DeepSeek Harness, print-data studentTableVms extraction), MuxYang/AhuCourseSelectCLI (Python course-select CLI, NEGATIVE: course-selection-api protocol family outside EAMS5), Tonyseth/AHU_JW_GPA_Calculator (userscript GPA, INDIRECT), curdbin/AHU-API (Python, NEGATIVE: legacy ZhengFang ASP.NET jw1.ahu.cn/jw2.ahu.cn), UponNoise/AHU_SBI_DMT (Python, NEGATIVE: legacy ZhengFang jwxt3.ahu.edu.cn); Northeast Forestry University NEFU: bboy-xp/nefu-crawler, heyMahalo/crouse_select; Donghua University DHU: tk.dcmmcc, Bad-086/DHU_CourseMonitor; Yunnan University of Finance and Economics YNUFE: NINIYOYYO/ynufe-campus-app, MiaoWuNYA/ynufeRealLogin; Beijing Institute of Technology BIT: BIT-Login (BIT101-dev); Beijing Information Science and Technology University BISTU: iBistu (ProjektMing); Anhui Jianzhu University AHU-JZ: JdaAssist (CH4019, MIT); Chongqing College of Mobile Telecommunications CQYTU: CQYTZFCheckScores (xM3GAN, Apache-2.0); South China Agricultural University SCAU: ScheduleXParser_SCAU (greyovo); Qilu University of Technology QLU: JW-spider (Zhy423310825); Bohai University BHU: BohaiServiceDome (joun233); Northeast Petroleum University NEPU: WeNEPU (cutiechi); Nanjing University of Science and Technology NUST: HeraldStudentCurriculum (idailylife); Beijing Jiaotong University BJTU: bjtu_mis_Android (wan300, MIT); BJTU-MIS-HarmonyOS (Anyes666, MIT); BJTUselfService (HFDLYS, MIT); bjtu-cli (fish2lab); BJTUselfService-macOS (fish2lab); BJTU-course-assistant (s1y4x1); ZiuChen/userscript (MIT); BJTU-iCalendar-Generator (ymzhang-cs, MIT); bjtu-timetable (Moliseeee); BJTU-course-autoget-program (hyskr); BjtuCoursePlatform (57Darling02); bjtuDean (jlytwhx, MIT); bjtubox_python (jlytwhx); Campus-Mate (Orien233); BJTU-STU-MCP (ymzhang-cs); CourseRobber (xschur); Futuremind-BJTU; BJTU_ezRate (Yukikasu, MIT); bjtu_teaching_assessment (xxxand, MIT); BJTU-script (Coconut00); BJTU-CC (aooxin); CourseTable (etherealviator, MIT); ZF-Assistant (mcdona1d); Greasy Fork 430918 北交大iCalender课表生成;Jiangsu Ocean University JOU: jianghaidai (sunjingquan, closed-source reference, protocol analysis only); JOU-Campus-Guide (sunjingquan); jou_course_bot (brodamndamn); Wehhit-server (dengjj); Wehhit (zqy1); Grain (LeeReindeer, GPL-3.0); finance (GeorgeLeoo); finance-server (GeorgeLeoo); JStore (GeorgeLeoo); RSSHub jou routes (RSSHub, MIT). Yanshan University YSU / boya_pp: LzBsA (github.com/LzBsA, original protocol contribution), qnxg/hnu_query (AGPL-3.0), qnxg/weihuda_backend (qnxg), heriec/suda-yjs-shedule (heriec), dlutor/chaoxingbook (MIT). Southwest Jiaotong University SWJTU: AmaneSuzuha000/SWJTU_Login (YHXT CAS + ytoken cookie + common API direct evidence), 1-nuo/swjtu-course-grabber (ytoken header + JWT sub student ID + SM2 course-select encryption), Arex-lbb/auto-course-grabber (JWT + SM2 + A0422 expiry code), 1837634311/SWJTU-Course-Management-Script (GPL-3.0, TMS/vatuu counter-evidence), HackSwjtu/Postime (MIT, legacy academic-network counter-evidence), lpzams/swjtu-course-crawler (legacy vatuu counter-evidence), 949144093/SWJTU-JiaoWuAutoLogin (legacy vatuu counter-evidence), kakasearch/course_download (legacy vatuu counter-evidence), zx1411057234/VatuuSpider (legacy vatuu counter-evidence), kashaku/no-vatuu-evaluation (legacy vatuu counter-evidence), Joe-create-star/swjtu-dektx-reminder (MIT, OCW/YETHAN multi-tenant corroboration).WakeUp protocol family cross-verification (2026-09): Dawn-Course (HF-CYGG, GPL-3.0), WakeUp_SHU (ershiyidian), CourseHelper (jiangyiqi99, GPL-3.0), aischedule-lit-kingosoft (icepie, MIT), XiaoAISchedule_hebust (web1n), ai-schedule-chaoxing (moeshin, MIT), tzvcst-schedule-chaoxing (Sittymin, AGPL-3.0), xiaoai-shuwei-course (ZKJJaker, negative evidence), jxufe-auto-evaluate (wzj1122, MIT), KINGOSOFT-LOGIN (52funny), xiaoaiSchedule (xiaxiaoyu8), mi-schedule (Kou-JunHao, MIT), AISchedule-xjsf (ltxhhz, MIT), AIScheduleSCAU (greyovo), MI_AI_Course_Schedule (ceresOPA), AISchedule-QiangZhi (MyLikeGirl), classpush (sungithub270, GPL-3.0), XiaoAiScheduleOfSUOT (trueWangSyutung), XiaoAiCurriculumSchedule (LukeJean), getICS (Konata09), WITClassScheduleToCalendar (DOROMOLLL, MIT), CrawlerCourseTable (canliture), SYU_KINGGOClassSel (XTAI9), hait_AICourseTable (zzzsq1), AIShedule_cqwu (cqwu-ehall, AGPL-3.0), WakeUpSchedule (Daydream357, MIT), shike-android (sw7943604-del), shiguang_Tester (XingHeYuZhuan, MIT), dutsso (yuanyuanzijin), pub-docs (zfman, Qingguo API docs), eduData-GoBack (huhu415)、SCAU-Grad-Automatically-Fill-Evaluation-Form-JS (jiefing, Gwork-family control naming corroboration), NUISTTable (zyc-816); four-school cross-verification: dream2333/NWUPL-Pure-EMS, linling-zy/kust-schedule, 3056810551/nuit-class-schedule.</string>    <string name="about_license_detail">License &amp; Acknowledgements</string>
+Per-school attribution (one card per school, expand to see details) — Hefei University of Technology HFUT: HFUT-Schedule (Chiu-xaH, MIT), HfutOpenApi (BoynChan, MIT), hfut_schedule_hacker (Aoi-cn), django-hfut-auth (elonzh, MIT), hfut-api (hfut-soft-ware), hfut-api (SnowingFox), hfut_api_service (onlineG2), HFUTer (BrikerMan), HFUTICS (ssyu0808), AiSchedule-for-hfut (imnuke, GPL-3.0), AISchedule (HualiNox), classduck (luyishui); Southeast University SEU: SEUTimetable (sakimidare, Apache-2.0), Aetik-yue/hormone, luzy99/SEUAutoLogin; Zhejiang University ZJU: zju-ical-py (Xecades, LGPL-2.1); USTC: USTC-timetable-to-ics (1970633640), ustc-course-timetable (HowardZorn, GPL-3.0), ustc-timetable (kirsh1, AGPL-3.0); Sichuan University SCU: ScuTimetable (Z-P-J); Northeastern University NEU: neu_wisedu2wakeup (CreamPig233), PopulusYang/NeuTimetable, neucn/elise, RekaYOO/NEU-JWXT-Toolkit, PeterPtroc/neu-jwxt-to-wakeup, leavesvv-source/NEU-Timetable; Chongqing University CQU: 321CQU/pymycqu, BillYang2016/CQU-class2ics, haowang02/CourseMonitor, LengerHu/CQU_classtabletoics, Hagb/cqu_timetable_new, VayneDuan/CQU-Grade-Monitor, weearc/cm-http-api, barryZZJ/course_to_calander_converter; Wuhan University of Technology WHUT: courseTable (acm910); UESTC: MilLoong/UESTC-EAMS-Helper-App, MilLoong/UESTC-EAMS-Helper-Python, KaranocaVe/UESTCJWCWatchdog, whtsky/uestc-eams-cleartimeout-userscript, Sunmxt/UESTC-EAMS; Guangdong University of Technology GDUT: N0tExpectErr0r/GDUT-ClassTimeTable, Richard-Zheng/GDUT-Schedule-ng, StarArchive/gdut-course-frontend, StarArchive/gdut-course-backend, HoneQ7/GDUT_iOS_Timetable; Guangdong University of Finance and Economics GDUFE: jkgeekJack/Android-GDUFE-JWC-SDK-1.0.0, Kiteio/GDUFE-wrapper; Guangdong University of Finance GDUf: Kiteio/Punica, gduf-finmind; Guangdong University of Foreign Studies GDUFS: yongjianzheng/Gdufszhushou, Crazioker/agency; Guangdong Medical University GDMU: user-supplied capture package confirmed zf_new protocol (new ZhengFang zftal-ui-v5 bare /kbcx/ path), see docs/release-notes-v1.0.49.md; Changsha University of Science and Technology CSUST: zHElEARN/CSUSTKit, CreaMakers/EduSpider, timeisthe/CSUSTDataGet, Julius-lq/EduAdminSystem, JS-CAUTION/csust-course-schedule; Beijing University of Posts and Telecommunications BUPT: helium777/bupt-course-grab, JmPotato/BUPT-Grader, Seizzzz/Auto-Login-BUPT; Peking University PKU: zhongxinghong/PKUAutoElective, thezzisu/pku-elective, Hovennnnn/PKUAutoElective2023, Lihhan/AutoElective_4_PKU, AuYang261/PKU_Elective_Toolset; Beijing University of Chemical Technology BUCT: MarkYangKp/ZhengFangJY; University of Chinese Academy of Sciences UCAS: ldiex/UCAS_Course_Schedule_Convertor (Python, 13-section + course-week mapping), Hurray0/UCAS_GET_Course (Python, xkgo.ucas.ac.cn course-fetch script), cld378632668/ucas_course_tool (Java, UCAS course utility), GentleCP/UCAS-Helper (TypeScript, UCAS course/grade helper);wirsbf/TraintimePda-UCAS (Dart, SEP login-chain CDP capture 2026-09: 303 chain + single JSESSIONID + RSA slogin form)、tbjuechen/sep-api (Python MIT, unofficial SEP API client); Beihang University BUAA: APassbyDreg/BUAA_JW_Utils (Python toolset, ieas2.1 course-select + evaluation URL anchors), SE2020-TopUnderstanding/BUAA-Campus-Tools-Backend (Python, jwxt-7001.e2.buaa.edu.cn/ieas2.1/kbcx/queryGrkb schedule endpoint), fondoger/buaa-teacher-evaluation (MIT, one-click evaluation via sso.buaa.edu.cn CAS), Cauchy1412/BUAAGetCourse (Python course-grabber script), KKRainbow/JWOneShotEval (PHP, intra-campus IP anchor); BUAA byxt.buaa.edu.cn 2026-09-19 cross-verification (new/reused): fontlos/buaa-api (Rust, MIT); BUAASubnet/UBAA (Kotlin, MIT, 245 stars, protocol layer + schedule endpoint reference); CoolwindHF/buaa2wakeup (Python, MIT, undergraduate jwapp timetable format reference); awesome-buaa-cs/buaa-curriculum (API.md corroboration); cantBeFoundGroup/OpenBUAA (Python, AasApi form); el-ev/BUAA-ics-gen (Python, MIT, titleDetail week extraction reference); Krignd/KAgenda (Kotlin, WebScheduleEngine hook design + cellDetail parsing reference); Yiki21/iclass_buaa_tui (Rust, GPL-3.0, 13 stars, getMyScheduleDetail field set confirmation); Lidozs55/BUAAer-Smart-Schedule-on-electron (Vue, teachingSchedule endpoint reference); WhXcjm/buaa-byxt-aischedule (JS, GPL-3.0, XiaoAI adaptation parser.js research form); MeanZhang/buaa-ai-schedule (archived, MIT, legacy undergraduate form corroboration); Alyssumira/BUAA-Schedule (Kotlin, MIT, cellDetail teacher-weeks + titleDetail location dual-form reference); lyy1119/BuaaScheduleRender (Go, MIT, GSMIS week bitmap algorithm reference); zjafb/BUAA-Hangzhou-Schedule (MIT, UBAA fork, Hangzhou campus corroboration); Beijing Forestry University BJFU: Bloomberg2000/bjfu_course_ics_generator, Bloomberg2000/bjfu_util.py; Anhui University AHU: MoeclubM/AHU-AIO (Dart, new academic REST client, lib/jw/api/jw_api.dart), qiqqqqq517/shangkeschschedule (Apache-2.0) AHU adapter (WebVPN+CAS+get-data protocol family consensus, ahu.js), abydym/Ahu_Plus (GPL-3.0, Kotlin same-stack, JwModels.kt+CourseRepository.kt print-data+get-data dual-track), Landon-3314/AHU-TimeTable (Flutter, academic_course_api_parser.dart print-data activities field mapping), Zeraora-807/Anhui-Univ-DSH-Tool (TypeScript DeepSeek Harness, print-data studentTableVms extraction), MuxYang/AhuCourseSelectCLI (Python course-select CLI, NEGATIVE: course-selection-api protocol family outside EAMS5), Tonyseth/AHU_JW_GPA_Calculator (userscript GPA, INDIRECT), curdbin/AHU-API (Python, NEGATIVE: legacy ZhengFang ASP.NET jw1.ahu.cn/jw2.ahu.cn), UponNoise/AHU_SBI_DMT (Python, NEGATIVE: legacy ZhengFang jwxt3.ahu.edu.cn); Northeast Forestry University NEFU: bboy-xp/nefu-crawler, heyMahalo/crouse_select; Donghua University DHU: tk.dcmmcc, Bad-086/DHU_CourseMonitor; Yunnan University of Finance and Economics YNUFE: NINIYOYYO/ynufe-campus-app, MiaoWuNYA/ynufeRealLogin; Beijing Institute of Technology BIT: BIT-Login (BIT101-dev); Beijing Information Science and Technology University BISTU: iBistu (ProjektMing); Anhui Jianzhu University AHU-JZ: JdaAssist (CH4019, MIT); Chongqing College of Mobile Telecommunications CQYTU: CQYTZFCheckScores (xM3GAN, Apache-2.0); South China Agricultural University SCAU: ScheduleXParser_SCAU (greyovo); Qilu University of Technology QLU: JW-spider (Zhy423310825); Bohai University BHU: BohaiServiceDome (joun233); Northeast Petroleum University NEPU: WeNEPU (cutiechi); Nanjing University of Science and Technology NUST: HeraldStudentCurriculum (idailylife); Beijing Jiaotong University BJTU: bjtu_mis_Android (wan300, MIT); BJTU-MIS-HarmonyOS (Anyes666, MIT); BJTUselfService (HFDLYS, MIT); bjtu-cli (fish2lab); BJTUselfService-macOS (fish2lab); BJTU-course-assistant (s1y4x1); ZiuChen/userscript (MIT); BJTU-iCalendar-Generator (ymzhang-cs, MIT); bjtu-timetable (Moliseeee); BJTU-course-autoget-program (hyskr); BjtuCoursePlatform (57Darling02); bjtuDean (jlytwhx, MIT); bjtubox_python (jlytwhx); Campus-Mate (Orien233); BJTU-STU-MCP (ymzhang-cs); CourseRobber (xschur); Futuremind-BJTU; BJTU_ezRate (Yukikasu, MIT); bjtu_teaching_assessment (xxxand, MIT); BJTU-script (Coconut00); BJTU-CC (aooxin); CourseTable (etherealviator, MIT); ZF-Assistant (mcdona1d); Greasy Fork 430918 北交大iCalender课表生成;Jiangsu Ocean University JOU: jianghaidai (sunjingquan, closed-source reference, protocol analysis only); JOU-Campus-Guide (sunjingquan); jou_course_bot (brodamndamn); Wehhit-server (dengjj); Wehhit (zqy1); Grain (LeeReindeer, GPL-3.0); finance (GeorgeLeoo); finance-server (GeorgeLeoo); JStore (GeorgeLeoo); RSSHub jou routes (RSSHub, MIT). Yanshan University YSU / boya_pp: LzBsA (github.com/LzBsA, original protocol contribution), qnxg/hnu_query (AGPL-3.0), qnxg/weihuda_backend (qnxg), heriec/suda-yjs-shedule (heriec), dlutor/chaoxingbook (MIT). Southwest Jiaotong University SWJTU: AmaneSuzuha000/SWJTU_Login (YHXT CAS + ytoken cookie + common API direct evidence), 1-nuo/swjtu-course-grabber (ytoken header + JWT sub student ID + SM2 course-select encryption), Arex-lbb/auto-course-grabber (JWT + SM2 + A0422 expiry code), 1837634311/SWJTU-Course-Management-Script (GPL-3.0, TMS/vatuu counter-evidence), HackSwjtu/Postime (MIT, legacy academic-network counter-evidence), lpzams/swjtu-course-crawler (legacy vatuu counter-evidence), 949144093/SWJTU-JiaoWuAutoLogin (legacy vatuu counter-evidence), kakasearch/course_download (legacy vatuu counter-evidence), zx1411057234/VatuuSpider (legacy vatuu counter-evidence), kashaku/no-vatuu-evaluation (legacy vatuu counter-evidence), Joe-create-star/swjtu-dektx-reminder (MIT, OCW/YETHAN multi-tenant corroboration).WakeUp protocol family cross-verification (2026-09): Dawn-Course (HF-CYGG, GPL-3.0), WakeUp_SHU (ershiyidian), CourseHelper (jiangyiqi99, GPL-3.0), aischedule-lit-kingosoft (icepie, MIT), XiaoAISchedule_hebust (web1n), ai-schedule-chaoxing (moeshin, MIT), tzvcst-schedule-chaoxing (Sittymin, AGPL-3.0), xiaoai-shuwei-course (ZKJJaker, negative evidence), jxufe-auto-evaluate (wzj1122, MIT), KINGOSOFT-LOGIN (52funny), xiaoaiSchedule (xiaxiaoyu8), mi-schedule (Kou-JunHao, MIT), AISchedule-xjsf (ltxhhz, MIT), AIScheduleSCAU (greyovo), MI_AI_Course_Schedule (ceresOPA), AISchedule-QiangZhi (MyLikeGirl), classpush (sungithub270, GPL-3.0), XiaoAiScheduleOfSUOT (trueWangSyutung), XiaoAiCurriculumSchedule (LukeJean), getICS (Konata09), WITClassScheduleToCalendar (DOROMOLLL, MIT), CrawlerCourseTable (canliture), SYU_KINGGOClassSel (XTAI9), hait_AICourseTable (zzzsq1), AIShedule_cqwu (cqwu-ehall, AGPL-3.0), WakeUpSchedule (Daydream357, MIT), shike-android (sw7943604-del), shiguang_Tester (XingHeYuZhuan, MIT), dutsso (yuanyuanzijin), pub-docs (zfman, Qingguo API docs), eduData-GoBack (huhu415)、SCAU-Grad-Automatically-Fill-Evaluation-Form-JS (jiefing, Gwork-family control naming corroboration), NUISTTable (zyc-816); four-school cross-verification: dream2333/NWUPL-Pure-EMS, linling-zy/kust-schedule, 3056810551/nuit-class-schedule.</string>
+    <string name="about_license_detail">License &amp; Acknowledgements</string>
     <string name="license_page_title">License &amp; Acknowledgements</string>
     <string name="license_gpl_section">License</string>
     <string name="license_gpl_body">Sleepy is an open-source smart class schedule app. The source code is released under the GNU General Public License v3.0. Anyone is free to use, modify, and distribute this software. Contributions via GitHub are welcome.</string>
@@ -595,6 +604,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="about_update">Check for Updates</string>
     <string name="about_update_checking">Checking for updates…</string>
     <string name="about_update_detail">If GitHub is unavailable, the app will fall back to the mirror automatically</string>
+    <string name="about_update_dismiss">Dismiss update banner</string>
     <string name="about_version">Version</string>
     <string name="about_version_detail">Version %1$s (Build %2$d)</string>
     <string name="action_cancel">Cancel</string>
@@ -659,6 +669,17 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="jw_diag_export_saved">Saved to Download/Sleepy/教务日志/%1$s</string>
     <string name="jw_diag_export_failed">Failed to generate package: %1$s</string>
     <string name="jw_diag_export_chooser">Share Diagnostic Package</string>
+    <string name="jw_diag_progress_step">Step %1$d / %2$d</string>
+    <string name="jw_diag_progress_percent">%1$d%%</string>
+    <string name="jw_diag_stage_dom_inventory">Capturing tappable DOM elements…</string>
+    <string name="jw_diag_stage_storage">Capturing Web Storage key-values…</string>
+    <string name="jw_diag_stage_links">Capturing page links and dropdowns…</string>
+    <string name="jw_diag_stage_network_snapshot">Capturing runtime network snapshot…</string>
+    <string name="jw_diag_stage_network_replay">Replaying network requests (≤30s)…</string>
+    <string name="jw_diag_stage_resource_replay">Re-fetching same-origin resources (≤16s)…</string>
+    <string name="jw_diag_stage_cookies">Capturing full cookie values…</string>
+    <string name="jw_diag_stage_zip">Packaging diagnostic archive…</string>
+    <string name="jw_diag_stage_save_share">Saving to Downloads and opening share sheet…</string>
     <string name="reminder_before_class_preview">Example: Next class Advanced Math at 08:00 in Building A101</string>
     <string name="reminder_before_class_preview_dynamic">Example: %1$s — next class: %2$s at %3$s in %4$s%5$s</string>
     <string name="reminder_before_class_preview_dynamic_no_course">Example: No upcoming classes to remind you about.</string>
@@ -689,6 +710,14 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_fields">Capsule Primary Content</string>
     <string name="reminder_fluid_fields_hint">Choose a primary display field</string>
     <string name="reminder_fluid_note">Tap the notification to expand course details. Whether it appears as Fluid Cloud / Super Island depends on the phone system, notification permissions, and manufacturer service eligibility.</string>
+    <string name="reminder_experimental_tag">Experimental</string>
+    <string name="reminder_fluid_status_title">Fluid Cloud / Super Island status</string>
+    <string name="reminder_fluid_status_notification_required">Notification permission is required to enable this feature.</string>
+    <string name="reminder_fluid_status_unknown">The Fluid Cloud / Super Island authorization status cannot be read directly. Use the button below to open notification settings and confirm the system permission.</string>
+    <string name="reminder_fluid_status_enabled">Fluid Cloud / Super Island is authorized.</string>
+    <string name="reminder_fluid_status_settings_required">Open system settings to enable Fluid Cloud / Super Island first.</string>
+    <string name="reminder_fluid_status_not_supported">The current device system does not support Fluid Cloud / Super Island.</string>
+    <string name="reminder_fluid_go_to_settings">Go to settings</string>
     <string name="reminder_fluid_sub">Show real-time course cards on supported Xiaomi and OPPO phones</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
     <string name="reminder_master_sub">Allow Sleepy to send course notifications</string>
@@ -704,17 +733,19 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="schedule_week_prefix">Week %1$d</string>
     <string name="today_semester_out_hint">Outside the semester range — classes shown for reference</string>
     <string name="settings_vert_punct">Widget vertical punctuation</string>
-    <string name="settings_vert_punct_sub">When course names render vertically in widgets, swap ( ) 《 》 for vertical forms (experimental)</string>
+    <string name="settings_nearest_busy_day">Show nearest class day when free</string>
+    <string name="settings_nearest_busy_day_sub">Show the nearest day with classes in the app and widgets when no classes remain today</string>
+    <string name="settings_vert_punct_sub">When course names render vertically in widgets, swap ( ) 《 》 for vertical forms</string>
     <string name="settings_widget">Widget settings</string>
     <string name="settings_widget_colorless">Uniform widget course colors</string>
     <string name="settings_widget_colorless_sub">Neutralize only widget course colors; in-app and custom colors are not affected</string>
-    <string name="settings_course_colorless">Uniform course-pill colors</string>
+    <string name="settings_course_colorless">Uniform in-app course-pill colors</string>
     <string name="settings_course_colorless_sub">Neutralize only in-app course pill colors; widget and custom colors are not affected</string>
     <string name="settings_widget_separator">Week-widget separator</string>
     <string name="settings_holiday_holiday">Gray out public holidays</string>
     <string name="settings_holiday_holiday_sub">Courses on public holidays (e.g. National Day, Spring Festival) appear gray</string>
-    <string name="settings_holiday_entry_sub">Configure dimming rules and view holiday and make-up day data</string>
-    <string name="holiday_page_title">Holidays &amp; Make-up Days</string>
+    <string name="settings_holiday_entry_sub">Configure dimming rules and make-up day schedules</string>
+    <string name="holiday_page_title">Holiday &amp; Make-up Schedule</string>
     <string name="holiday_data_source">Data source</string>
     <string name="holiday_source_label">unpkg.com/holiday-calendar · CN</string>
     <string name="holiday_data_failed">Failed to fetch holiday data. Check your network and retry</string>
@@ -726,7 +757,17 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="holiday_list_holidays">Public holidays</string>
     <string name="holiday_list_workdays">Make-up workdays</string>
     <string name="holiday_workday_badge">Workday</string>
-    <string name="settings_holiday_title">Holiday course dimming</string>
+    <string name="settings_holiday_title">Holiday make-up schedule</string>
+    <string name="holiday_makeup_title">Make-up day class source</string>
+    <string name="holiday_makeup_subtitle">Set per timetable. Unmapped make-up days keep their own schedule — nothing is guessed.</string>
+    <string name="holiday_makeup_unset">None</string>
+    <string name="holiday_transfer_pick_other">Other date…</string>
+    <string name="holiday_transfer_edit_segment">Edit this holiday segment</string>
+    <string name="holiday_transfer_orphan_title">Expired mappings</string>
+    <string name="holiday_transfer_orphan_hint">The holiday day no longer exists (left over after a year switch or segment deletion). Clear manually.</string>
+    <string name="holiday_transfer_clear">Clear</string>
+    <string name="holiday_transfer_editable_segments_title">Editable holiday segments</string>
+    <string name="holiday_makeup_no_table">Create a timetable before setting make-up days</string>
     <string name="settings_holiday_weekend">Dim weekend courses</string>
     <string name="settings_holiday_weekend_sub">Automatically show Saturday and Sunday courses in gray</string>
     <string name="settings_holiday_style">Dimming style</string>
@@ -765,6 +806,11 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="period_time_range">Period %1$s  %2$s ~ %3$s</string>
     <string name="break_continuous_0">  ↓ 0 min continuous</string>
     <string name="break_continuous_n">  ↓ %1$d min %2$s</string>
+    <string name="duration_assign_hint">Duration assignment (tap to toggle)</string>
+    <string name="short_duration">Short duration</string>
+    <string name="long_duration">Long duration</string>
+    <string name="duration_min_one_period">Need at least 1 period to assign durations</string>
+    <string name="duration_period_n">%1$d min %2$s</string>
     <string name="add_label">Add %1$s</string>
     <string name="mode_manual">Manual mode</string>
     <string name="mode_auto">Auto mode</string>
@@ -839,4 +885,24 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="jw_import_exit_continue">Continue</string>
     <string name="jw_import_exit_keep_draft">Keep draft</string>
     <string name="jw_import_exit_delete_draft">Delete draft</string>
+    <string name="import_three_layers_dropped">Courses on these dates overlap more than two layers and were skipped: %1$s</string>
+    <string name="import_three_layers_kept">Notice: %1$s has courses overlapping more than two layers; they were kept (the schedule does not support column display)</string>
+    <string name="conflict_default_top_title">Choose default pinned course</string>
+    <string name="color_toast_last_group">The last period will follow the group color</string>
+    <string name="import_multi_location_warning">Some courses have multiple locations</string>
+    <string name="import_multi_location_warning_detail">%1$s has %2$d different locations; they will appear as separate periods after import</string>
+    <string name="today_nav_today_short">Today</string>
+    <string name="jw_diag_session_expired">%1$s session expired or is not logged in. Log in again, stay on the personal schedule page, then fetch</string>
+    <string name="jw_diag_no_container">No schedule container was found on %1$s. The page may still be loading, use an image schedule, contain a cross-origin frame, or use an upgraded system</string>
+    <string name="jw_diag_header_no_node">%1$s schedule has no per-period row headers. It may be an image schedule or have merged headers</string>
+    <string name="jw_diag_image_cells">%1$s schedule cells are images and cannot be recognized. Import HTML/CSV or add courses manually</string>
+    <string name="jw_diag_empty_semester">%1$s reports no courses this semester. Check the selected semester</string>
+    <string name="jw_diag_wrong_protocol">The protocol marked for %1$s does not match the page. The school may have switched systems</string>
+    <string name="jw_diag_unknown_empty">%1$s returned no courses for an unknown reason. Retry or report it. Features: %2$s</string>
+    <string name="jw_diag_campus_vpn_hint">This school system may only be reachable on campus. Connect to campus network or VPN</string>
+    <string name="jw_diag_qz_vpn_hint">If QiangZhi does not load, the session may have expired or the network may be restricted</string>
+    <string name="jw_fetch_session_expired">Session expired. Log in again and tap import</string>
+    <string name="jw_fetch_parse_failed">Data was fetched but no courses could be parsed. Open the personal schedule page</string>
+    <string name="jw_fetch_network">Network error. Check your connection and retry</string>
+    <string name="jw_fetch_empty">No courses this semester. Check the selected semester</string>
 </resources>

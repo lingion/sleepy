@@ -15,6 +15,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -57,7 +58,7 @@ fun DatePickerField(
     shape: CornerBasedShape = SleepyTheme.fieldShape,
     isError: Boolean = false
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
     val datePickerState = rememberDatePickerState()
     val fieldColors = SleepyTheme.fieldColors()
@@ -112,8 +113,8 @@ fun DatePickerField(
                     onClick = { showPicker = false },
                     shape = SleepyTheme.shapes.medium,
                     colors = ButtonDefaults.buttonColors(
-                        containerColor = SleepyTheme.colors.secondaryContainer,
-                        contentColor = SleepyTheme.colors.onSecondaryContainer
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                     )
                 ) { Text(stringResource(R.string.cancel), maxLines = 1) }
             }
@@ -135,7 +136,7 @@ fun TimePickerField(
     modifier: Modifier = Modifier,
     shape: CornerBasedShape = SleepyTheme.fieldShape
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     var showPicker by remember { mutableStateOf(false) }
     val timePickerState = rememberTimePickerState(
         initialHour = value.substringBefore(":").toIntOrNull() ?: 8,

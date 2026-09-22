@@ -5,6 +5,7 @@ import com.lingion.sleepy.data.diff.DiffResult
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.undo.UndoManager
+import com.lingion.sleepy.data.undo.UndoSnapshot
 import com.lingion.sleepy.SleepyApp
 import androidx.room.withTransaction
 import com.lingion.sleepy.util.AppPrefs
@@ -27,6 +28,7 @@ class ScheduleRepository(private val db: AppDatabase) {
     // ========== v7.10.16 单级撤回 ==========
 
     val canUndo: Boolean get() = UndoManager.hasSnapshot
+    val canRedo: Boolean get() = UndoManager.hasRedoSnapshot
 
     /**
      * 公开写方法执行前调用 — 拍下改动前的全库状态。
@@ -41,26 +43,59 @@ class ScheduleRepository(private val db: AppDatabase) {
         )
     }
 
+    /** 取一份当前库态 — 内部用: 给 undo / redo 的反向槽用。 */
+    private suspend fun snapshotCurrent(): UndoSnapshot = UndoSnapshot(
+        periodTables = periodTableDao.getAll(),
+        tables = tableDao.getAll(),
+        courses = courseDao.getAll(),
+        defaultTableId = tableDao.getDefault()?.id
+    )
+
+    private suspend fun applySnapshot(snap: UndoSnapshot) {
+        db.withTransaction {
+            courseDao.deleteAll()
+            tableDao.deleteAll()
+            // issue#40: 恢复顺序 period_tables → time_tables → courses。
+            // time_tables.periodTableId 指向 period_tables.id — 先插 periodTables
+            // 保证引用目标先存在; 先课程后课表会触发外键约束闪退。
+            periodTableDao.deleteAll()
+            periodTableDao.insertAll(snap.periodTables)
+            tableDao.insertAll(snap.tables)
+            courseDao.insertAll(snap.courses)
+            snap.defaultTableId?.let { tableDao.setDefault(it) }
+        }
+    }
+
     /** 撤回最近一次改动: 事务内清三表→按外键顺序重插快照→恢复 default → 刷 widget/通知。false = 无可撤回 */
     suspend fun restoreLastSnapshot(): Boolean {
-        val snap = UndoManager.poll() ?: return false
+        val undoSnap = UndoManager.poll() ?: return false
+        // 把"撤回前"库态(=当前库态)落入 redo 槽, 用户点 redo 时再恢复回去。
+        val redoSnap = snapshotCurrent()
         UndoManager.restoring = true
         try {
-            db.withTransaction {
-                courseDao.deleteAll()
-                tableDao.deleteAll()
-                // issue#40: 恢复顺序 period_tables → time_tables → courses。
-                // time_tables.periodTableId 指向 period_tables.id — 先插 periodTables
-                // 保证引用目标先存在; 先课程后课表会触发外键约束闪退。
-                periodTableDao.deleteAll()
-                periodTableDao.insertAll(snap.periodTables)
-                tableDao.insertAll(snap.tables)
-                courseDao.insertAll(snap.courses)
-                snap.defaultTableId?.let { tableDao.setDefault(it) }
-            }
+            applySnapshot(undoSnap)
         } finally {
             UndoManager.restoring = false
         }
+        UndoManager.recordRedo(redoSnap)
+        onDataChanged()
+        pruneDefaultTopPrefs()
+        return true
+    }
+
+    /** 取消最近一次撤回: redo 槽快照恢复回库, undo 槽收回当前库态。false = 无可取消。 */
+    suspend fun redoLastUndo(): Boolean {
+        val redoSnap = UndoManager.pollRedo() ?: return false
+        val undoSnap = snapshotCurrent()
+        UndoManager.restoring = true
+        try {
+            applySnapshot(redoSnap)
+        } finally {
+            UndoManager.restoring = false
+        }
+        // 把"刚恢复到的 redo 起点之前那一刻"重新填回 undo 槽,
+        // 用户再次点撤回应能回到"被我们撤回来的那次修改之前的库态"。
+        UndoManager.reinsertForRedoSymmetry(undoSnap)
         onDataChanged()
         pruneDefaultTopPrefs()
         return true
@@ -134,6 +169,8 @@ class ScheduleRepository(private val db: AppDatabase) {
         //   因此必须在删除前捕获 id 列表，删除后对这些"孤儿 id"显式取消闹钟。
         val orphanCourseIds = courseDao.getByTable(id).map { it.id }
         tableDao.deleteById(id)
+        // issue#44: 同步清该表调休映射(SharedPreferences 孤儿 key 防残留)
+        try { AppPrefs.clearHolidayTransfers(SleepyApp.get(), id) } catch (_: Exception) {}
         if (orphanCourseIds.isNotEmpty()) {
             SleepyApp.get().notificationScheduler.cancelCourseAlarms(orphanCourseIds)
         }

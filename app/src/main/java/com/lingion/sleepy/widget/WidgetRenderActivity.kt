@@ -8,12 +8,6 @@ import android.util.Log
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.ImageView
-import android.widget.LinearLayout
-import android.widget.TextView
-import com.lingion.sleepy.R
-import com.lingion.sleepy.SleepyApp
-import com.lingion.sleepy.data.entity.TimeTableEntity
-import com.lingion.sleepy.util.TimeTableUtils
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
@@ -49,6 +43,8 @@ class WidgetRenderActivity : Activity() {
         Log.d(TAG, "rendering widget=$which, size=${wDp}x${hDp}dp")
 
         // FrameLayout: 居中 ImageView 展示 widget bitmap
+        // [intentional custom] 调试 Activity 截图底板, 非 widget 主题色 —
+        // 与 widget RemoteViews 走 resolveSchemePublic 派生的实际底色无关。
         val root = FrameLayout(this).apply {
             setBackgroundColor(0xFF1A1A2E.toInt())
         }
@@ -77,71 +73,26 @@ class WidgetRenderActivity : Activity() {
     }
 
     private suspend fun renderWidgetBitmap(which: String, wDp: Float, hDp: Float): android.graphics.Bitmap {
-        val isSystemDark = (resources.configuration.uiMode and android.content.res.Configuration.UI_MODE_NIGHT_MASK) == android.content.res.Configuration.UI_MODE_NIGHT_YES
-        val isDark = com.lingion.sleepy.util.AppPrefs.isDarkMode(this, isSystemDark)
-        val themeKey = com.lingion.sleepy.util.AppPrefs.getThemeKey(this)
         return when (which) {
             "today" -> {
-                val today = java.time.LocalDate.now()
-                val dayOfWeek = com.lingion.sleepy.util.DateUtils.todayDayOfWeek(today)
-                val table = WidgetTableResolver.resolveCurrentTable()
-                val courses = if (table != null) {
-                    val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
-                    val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dayOfWeek)
-                    all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                } else emptyList()
+                // issue#44: 数据装载走 loadDataSync → HolidayTransferHelper.effectiveDayOfWeek
                 WidgetBitmapRenderers.renderToday(
                     this,
-                    WidgetData(
-                        date = today,
-                        courses = courses,
-                        timeJson = table?.timeJson ?: TimeTableUtils.DEFAULT_TIME_JSON,
-                        hasTable = table != null,
-                        isDark = isDark, themeKey = themeKey
-                    ),
+                    TodayWidgetReceiver.loadDataSync(this, AppWidgetManager.INVALID_APPWIDGET_ID),
                     wDp, hDp
                 )
             }
             "twoday" -> {
-                val today = java.time.LocalDate.now()
-                val tomorrow = today.plusDays(1)
-                val table = WidgetTableResolver.resolveCurrentTable()
-                val days = if (table != null) {
-                    val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
-                    listOf(today, tomorrow).map { date ->
-                        val dow = date.dayOfWeek.value
-                        val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
-                        val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                        DayData(date = date, dayOfWeek = dow, courses = visible, timeJson = table.timeJson)
-                    }
-                } else emptyList()
                 WidgetBitmapRenderers.renderTwoDay(
                     this,
-                    TwoDayData(
-                        days = days, hasTable = table != null,
-                        isDark = isDark, themeKey = themeKey
-                    ),
+                    TwoDayWidgetReceiver.loadDataSync(this, AppWidgetManager.INVALID_APPWIDGET_ID),
                     wDp, hDp
                 )
             }
             "weeklist" -> {
-                val today = java.time.LocalDate.now()
-                val table = WidgetTableResolver.resolveCurrentTable()
-                val days = if (table != null) {
-                    val week = com.lingion.sleepy.util.DateUtils.currentWeek(table.startDate, today)
-                    (1..7).map { dow ->
-                        val date = com.lingion.sleepy.util.DateUtils.dateOfWeekDay(today, dow)
-                        val all = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
-                        val visible = all.filter { it.inWeek(week) }.sortedBy { it.startNode }
-                        DayData(date = date, dayOfWeek = dow, courses = visible, timeJson = table.timeJson)
-                    }
-                } else emptyList()
                 WidgetBitmapRenderers.renderWeekList(
                     this,
-                    WeekData(
-                        days = days, hasTable = table != null,
-                        isDark = isDark, themeKey = themeKey
-                    ),
+                    WeekListWidgetReceiver.loadDataSync(this, AppWidgetManager.INVALID_APPWIDGET_ID),
                     wDp, hDp
                 )
             }

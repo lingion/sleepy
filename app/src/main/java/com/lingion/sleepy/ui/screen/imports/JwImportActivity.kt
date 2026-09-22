@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -61,6 +62,7 @@ import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.DialogActionButtons
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
+import com.lingion.sleepy.ui.component.resolveAutoPeriodConfig
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.SleepyThemeProvider
@@ -135,6 +137,8 @@ class JwImportActivity : ComponentActivity() {
                 // 排查全量包导出: 错误弹窗点"导出排查全量包"按钮后由 JwCaptureDump 落 zip
                 var lastCaptureResult by remember { mutableStateOf<FrameCaptureResult?>(null) }
                 var webViewForDump by remember { mutableStateOf<WebView?>(null) }
+                // 排查包导出原子进度 (2026-09-21 用户: 每一步在哪+百分之多少, 禁黑箱等待)
+                var dumpProgress by remember { mutableStateOf<DiagDumpProgress?>(null) }
                 // #27: 红条此前只置不清,报错后必须退出页面才消失。阶段一切换即清零。
                 LaunchedEffect(stage) { errorMsg = null }
                 var importFinished by remember { mutableStateOf(false) }
@@ -151,7 +155,13 @@ class JwImportActivity : ComponentActivity() {
                 var configRows by remember { mutableStateOf(emptyList<TimeTableUtils.TimeSlotRow>()) }
                 // issue#28 P2: 自动模式"添加课间"的状态 — 旧代码没传 smartConfig/
                 // onSmartConfigChange, 落到默认 no-op 回调, 点击无效。
-                var configSmartConfig by remember { mutableStateOf(SmartPeriodConfig()) }
+                // issue#23 T5: 初值统一走共享推断(此刻行还为空 → null → 保底默认);
+                // 真正的播种发生在解析出 rows / 草稿恢复两个入口。
+                var configSmartConfig by remember {
+                    mutableStateOf(
+                        TimeTableUtils.inferSmartPeriodConfig(configRows) ?: SmartPeriodConfig()
+                    )
+                }
                 // v1.0.56 T6: 第三 Tab 绑定选择 — null=未绑定(用教务解析出的节次); 落库时同步 periodTableId
                 var configBindPeriodTableId by remember { mutableStateOf<Long?>(null) }
                 // 用户可改的导入课表名; 初值 = "教务导入 - {学校名}"; 留空 = 沿用初值
@@ -217,12 +227,21 @@ class JwImportActivity : ComponentActivity() {
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
                 // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
+                // 每完成一个原子步骤推进一次 dumpProgress — UI 实时显示 步骤 x/n + 百分比。
                 fun exportDiagnosticDump(school: JwSchoolInfo?) {
                     val result = lastCaptureResult ?: run {
                         statusMsg = getString(R.string.jw_diag_export_failed, "无抓取记录")
                         return
                     }
-                    statusMsg = getString(R.string.jw_diag_exporting)
+                    var stepsDone = 0
+                    // 宣布-再执行: 卡片永远显示"正在跑"的段。2026-09-22 用户反馈:
+                    // 旧 advance-after 惯性下执行第 N 段时卡片仍标第 N-1 段名,
+                    // 用户盯着"网络快照"字样却是在跑 30s 重放, 误判死循环。
+                    fun entering(stage: DumpStage) {
+                        dumpProgress = DiagDumpProgress(stage, stepsDone)
+                    }
+                    fun leaveStage() { stepsDone++ }
+                    entering(DumpStage.DomInventory)
                     val wv = webViewForDump
                     val ctx = this
                     scope.launch {
@@ -245,8 +264,14 @@ class JwImportActivity : ComponentActivity() {
                             }
                         }
                         val inventoryJson = evalJs(DOM_INVENTORY_JS)
+                        leaveStage()
+                        entering(DumpStage.Storage)
                         val storageJson = evalJs(STORAGE_JS)
+                        leaveStage()
+                        entering(DumpStage.Links)
                         val linksJson = evalJs(LINKS_JS)
+                        leaveStage()
+                        entering(DumpStage.NetworkSnapshot)
                         // 页面运行时真实 fetch/XHR 记录，和资源重取分开保存。
                         val networkLiveSnapshot = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -257,6 +282,8 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.NetworkReplay)
                         val networkReplayJson = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
                                 withTimeoutOrNull(30_000L) {
@@ -277,6 +304,8 @@ class JwImportActivity : ComponentActivity() {
                                 }.also { webView.removeJavascriptInterface("__sleepyDiagBridge") }
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.ResourceReplay)
                         // evaluateJavascript 不等待 Promise; 资源重取通过一次性 JS bridge 回传。
                         val resourceReplayJson = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -302,6 +331,8 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.Cookies)
                         // Cookie 全量值 — CookieManager 主线程约束(部分 ROM), 与 JS 段同在 Main 取
                         val cookiesFull: String? = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -311,6 +342,8 @@ class JwImportActivity : ComponentActivity() {
                                 }.getOrNull()
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.ZipAssembly)
                         val dumpResult = withContext(Dispatchers.IO) {
                             if (school == null) {
                                 JwCaptureDump.DumpResult.Fail("未选择学校")
@@ -322,12 +355,16 @@ class JwImportActivity : ComponentActivity() {
                                 )
                             }
                         }
+                        leaveStage()
                         when (dumpResult) {
                             is JwCaptureDump.DumpResult.Ok -> {
+                                entering(DumpStage.SaveShare)
+                                dumpProgress = null
                                 statusMsg = getString(R.string.jw_diag_export_saved, dumpResult.zipName)
                                 JwCaptureDump.share(ctx, dumpResult.zipName, dumpResult.uri)
                             }
                             is JwCaptureDump.DumpResult.Fail -> {
+                                dumpProgress = null
                                 statusMsg = getString(R.string.jw_diag_export_failed, dumpResult.reason)
                             }
                         }
@@ -389,9 +426,17 @@ class JwImportActivity : ComponentActivity() {
                         TimeTableUtils.TimeSlotRow(it.node, it.start, it.end)
                     }
                     configTimeJson = TimeTableUtils.buildTimeJsonFromRows(configRows)
-                    configSmartConfig = snapshot.smartConfigJson.takeIf { it.isNotBlank() }
+                    // issue#23 T5: 草稿已存配置仍能 derive 出恢复的行 → 原样保留;
+                    // 缺失/损坏 → 从恢复行重推断; 行不可推断(不完整/畸形) → 保底默认,
+                    // TimeSlotEditor 内保持手动模式 + 既有校验兜底, 不写猜测值。
+                    val restoredStored = snapshot.smartConfigJson.takeIf { it.isNotBlank() }
                         ?.let { runCatching { Json.decodeFromString<SmartPeriodConfig>(it) }.getOrNull() }
-                        ?: SmartPeriodConfig()
+                    configSmartConfig = resolveAutoPeriodConfig(
+                        configRows, restoredStored
+                    ) ?: SmartPeriodConfig(
+                        totalPeriods = configRows.size.coerceAtLeast(1),
+                        startTime = configRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                    )
                     // v1.0.56 T10: 默认选中「本次导入自动建作息表」(合成 id=-1)
                     configBindPeriodTableId = -1L
                     exitDraftState = exitDraftState.copy(activeImport = true)
@@ -468,7 +513,7 @@ class JwImportActivity : ComponentActivity() {
                             stage = Stage.WebViewLogin
                             parsedCourses = emptyList()
                         } else saveableStateHolder.SaveableStateProvider("ConfigureConfirm") {
-                        val colors = SleepyTheme.colors
+                        val colors = MaterialTheme.colorScheme
                         var confirmError by remember { mutableStateOf<String?>(null) }
                         AlertDialog(
                             onDismissRequest = { requestExit() },
@@ -713,13 +758,23 @@ class JwImportActivity : ComponentActivity() {
                                             // 本地 9 月首一推断会差一周), 用户仍可在确认页修改
                                             configStartDate = termStartDate
                                             configTimeJson = ""
+                                            // issue#23 T5: seed both live confirmation state and draft
+                                            // persistence from the same inference result. Incomplete rows
+                                            // retain the simple fallback and remain on manual validation.
+                                            val inferredSmartConfig =
+                                                TimeTableUtils.inferSmartPeriodConfig(newRows)
+                                                    ?: SmartPeriodConfig(
+                                                        totalPeriods = newRows.size.coerceAtLeast(1),
+                                                        startTime = newRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
+                                                    )
+                                            configSmartConfig = inferredSmartConfig
                                             val snapshot = JwImportDraftSnapshot(
                                                 school = sch,
                                                 courses = courses,
                                                 periods = newRows.map { JwImportDraftPeriod(it.node, it.start, it.end) },
                                                 termStartDate = termStartDate,
                                                 tableName = getString(R.string.jw_import_title, sch.name),
-                                                smartConfigJson = Json.encodeToString(SmartPeriodConfig()),
+                                                smartConfigJson = Json.encodeToString(inferredSmartConfig),
                                             )
                                             draftId = withContext(Dispatchers.IO) {
                                                 draftRepository.save(snapshot, sourceType = "jw", sourceUrl = sch.url)
@@ -782,7 +837,7 @@ class JwImportActivity : ComponentActivity() {
                                         .fillMaxWidth()
                                         .heightIn(max = 320.dp)
                                         .verticalScroll(rememberScrollState()),
-                                    color = SleepyTheme.colors.onSurfaceVariant
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                                 Spacer(Modifier.height(20.dp))
                                 // 导出(第三位 secondary) / 确定(confirm 位 primary)
@@ -793,6 +848,53 @@ class JwImportActivity : ComponentActivity() {
                                     thirdText = getString(R.string.jw_diag_export_btn),
                                     onThird = { exportDiagnosticDump(dumpSchool) },
                                 )
+                                // 点击导出后在同一个错误弹窗内向下展开进度区 — 用户不离开
+                                // 当前问题上下文即可看到步骤、阶段文案和百分比。
+                                dumpProgress?.let { progress ->
+                                    val colors = MaterialTheme.colorScheme
+                                    Spacer(Modifier.height(12.dp))
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = colors.surfaceContainerHigh
+                                        ),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                                    ) {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            Text(
+                                                text = getString(
+                                                    R.string.jw_diag_progress_step,
+                                                    progress.stepsDone + 1,
+                                                    progress.totalCount
+                                                ),
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = colors.onSurfaceVariant
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                text = stringResource(progress.stage.labelRes),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                color = colors.onSurface
+                                            )
+                                            Spacer(Modifier.height(8.dp))
+                                            LinearProgressIndicator(
+                                                progress = { progress.percent / 100f },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                color = colors.primary,
+                                                trackColor = colors.surfaceContainer
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                text = getString(
+                                                    R.string.jw_diag_progress_percent,
+                                                    progress.percent
+                                                ),
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = colors.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         },
                         confirmButton = {},

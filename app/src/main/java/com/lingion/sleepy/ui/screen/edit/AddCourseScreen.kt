@@ -37,6 +37,7 @@ import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -193,7 +194,7 @@ fun AddCourseScreen(
     viewModel: ScheduleViewModel = viewModel()
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val currentTable = state.currentTable
@@ -635,7 +636,7 @@ fun AddCourseScreen(
                         ) { endWeek = it }
                     }
                     // 显式应用 — 不再隐式下发，由用户一键覆盖所有时段
-                    Button(
+                    FilledTonalButton(
                         onClick = {
                             meetingBlocks.forEach { b ->
                                 b.startWeek = startWeek
@@ -644,9 +645,8 @@ fun AddCourseScreen(
                         },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                         shape = SleepyTheme.Buttons.shape,
-                        colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
                     ) {
-                        Text(stringResource(R.string.apply_to_all_slots), color = colors.onSecondaryContainer)
+                        Text(stringResource(R.string.apply_to_all_slots))
                     }
                 }
             }
@@ -701,8 +701,11 @@ fun AddCourseScreen(
 
             // 新增时段按钮
             item {
-                Button(
+                FilledTonalButton(
                     onClick = {
+                        // 新时段沿用上一张卡的老师/地点,减少重复输入;
+                        // 时间、星期、周次仍采用新卡默认值,避免误复制上一卡的时段。
+                        val previous = meetingBlocks.lastOrNull()
                         meetingBlocks.add(
                             MeetingBlockDraft(
                                 id = nextBlockId,
@@ -713,18 +716,19 @@ fun AddCourseScreen(
                                 endTime = "11:40",
                                 startWeek = 1,
                                 endWeek = 16,
-                                weekType = 0
+                                weekType = 0,
+                                room = previous?.roomState.orEmpty(),
+                                teacher = previous?.teacherState.orEmpty()
                             )
                         )
                         nextBlockId += 1
                     },
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
                     shape = SleepyTheme.Buttons.shape,
-                    colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
                 ) {
-                    Icon(Icons.Outlined.Add, contentDescription = null, tint = colors.onSecondaryContainer)
+                    Icon(Icons.Outlined.Add, contentDescription = null)
                     Spacer(modifier = Modifier.width(8.dp))
-                    Text(stringResource(R.string.add_slot), color = colors.onSecondaryContainer)
+                    Text(stringResource(R.string.add_slot))
                 }
             }
 
@@ -747,6 +751,8 @@ fun AddCourseScreen(
                 item {
                     var showDeleteConfirm by remember { mutableStateOf(false) }
 
+                    // [intentional custom] 官方 Button 无 error 语义变体(MD3 规范删除动作用
+                    // TextButton+error 文字色); 此处沿用 errorContainer 色块 = Sleepy 视觉语言。
                     Button(
                         onClick = { showDeleteConfirm = true },
                         modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
@@ -1024,7 +1030,7 @@ internal fun irregularOptionsSummary(
 
 @Composable
 private fun ValidationCard(issues: List<ValidationIssue>) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1061,7 +1067,7 @@ private fun CardSection(
     subtitle: String,
     content: @Composable () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1094,7 +1100,7 @@ private fun SwitchRow(
     checked: Boolean,
     onCheckedChange: (Boolean) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth(),
         horizontalArrangement = Arrangement.SpaceBetween,
@@ -1133,7 +1139,7 @@ private fun MeetingBlockEditor(
     onEditSlot: (node: Int, start: String, end: String) -> Unit,
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -1329,7 +1335,7 @@ private fun MeetingBlockEditor(
  */
 @Composable
 private fun MeetingBlockSummary(block: MeetingBlockDraft, timeJson: String) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
 
     val daysText = if (block.days.isEmpty()) {
@@ -1422,7 +1428,7 @@ private fun IrregularOptionsSection(
     onEditSlot: (node: Int, start: String, end: String) -> Unit,
     onDeselectEdge: (releasedNode: Int) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val arrowRotation by animateFloatAsState(
         targetValue = if (block.irregularOptionsExpanded) 180f else 0f,
         label = "irregular-options-arrow"
@@ -1637,7 +1643,7 @@ private fun EdgeCandidatePickerDialog(
     onPickNew: (TimeTableUtils.EdgeCandidate) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.irregular_node_pick)) },
@@ -1649,8 +1655,8 @@ private fun EdgeCandidatePickerDialog(
                             .fillMaxWidth()
                             .clip(SleepyTheme.shapes.medium)
                             .background(
-                                if (c.exists) SleepyTheme.colors.secondaryContainer
-                                else SleepyTheme.colors.surfaceContainerHighest
+                                if (c.exists) MaterialTheme.colorScheme.secondaryContainer
+                                else MaterialTheme.colorScheme.surfaceContainerHighest
                             )
                             .noRippleClickable {
                                 if (c.exists) onPickExisting(c.node) else onPickNew(c)
@@ -1682,8 +1688,8 @@ private fun EdgeCandidatePickerDialog(
                 onClick = onDismiss,
                 shape = SleepyTheme.Buttons.shape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SleepyTheme.colors.secondaryContainer,
-                    contentColor = SleepyTheme.colors.onSecondaryContainer
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             ) { Text(stringResource(R.string.cancel), maxLines = 1) }
         }
@@ -1731,8 +1737,8 @@ private fun NewEdgeSlotDialog(
                 onClick = onDismiss,
                 shape = SleepyTheme.Buttons.shape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SleepyTheme.colors.secondaryContainer,
-                    contentColor = SleepyTheme.colors.onSecondaryContainer
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             ) { Text(stringResource(R.string.cancel), maxLines = 1) }
         }
@@ -1782,8 +1788,8 @@ private fun SlotEditDialog(
                 onClick = onDismiss,
                 shape = SleepyTheme.Buttons.shape,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SleepyTheme.colors.secondaryContainer,
-                    contentColor = SleepyTheme.colors.onSecondaryContainer
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             ) { Text(stringResource(R.string.cancel), maxLines = 1) }
         }
@@ -1798,7 +1804,7 @@ private fun GroupColorSection(
     groupSourceColorHex: String,
     onChangeGroupColor: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(
             text = stringResource(R.string.course_group_color),
@@ -1822,8 +1828,8 @@ private fun GroupColorSection(
                 onClick = onChangeGroupColor,
                 shape = SleepyTheme.shapes.medium,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = SleepyTheme.colors.secondaryContainer,
-                    contentColor = SleepyTheme.colors.onSecondaryContainer
+                    containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                    contentColor = MaterialTheme.colorScheme.onSecondaryContainer
                 )
             ) {
                 Text(stringResource(R.string.change_group_color), style = MaterialTheme.typography.labelMedium)
@@ -1844,7 +1850,7 @@ private fun ColorSection(
     block: MeetingBlockDraft,
     groupSourceColorHex: String
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val useDifferent = block.colorModeState != com.lingion.sleepy.data.entity.CourseColorMode.GROUP
     var showColorPicker by remember { mutableStateOf(false) }
 
@@ -1947,9 +1953,9 @@ private fun GroupColorSwatch(hex: String) {
     val hasCustom = CourseColorUtil.hasCustomColorHex(hex)
     val swatchColor: Color = if (hasCustom) {
         runCatching { Color(android.graphics.Color.parseColor(hex)) }
-            .getOrDefault(SleepyTheme.colors.surfaceVariant)
+            .getOrDefault(MaterialTheme.colorScheme.surfaceVariant)
     } else {
-        SleepyTheme.colors.surfaceVariant
+        MaterialTheme.colorScheme.surfaceVariant
     }
     Box(
         modifier = Modifier
@@ -1964,7 +1970,7 @@ private fun MultiDayPicker(
     selectedDays: Set<Int>,
     onToggleDay: (Int) -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         for (row in listOf((1..4).toList(), (5..7).toList())) {
             Row(
@@ -2057,14 +2063,14 @@ private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
                 .size(32.dp)
                 .clip(androidx.compose.foundation.shape.CircleShape)
                 .background(
-                    if (selected) SleepyTheme.colors.primaryContainer
-                    else SleepyTheme.colors.surfaceVariant
+                    if (selected) MaterialTheme.colorScheme.primaryContainer
+                    else MaterialTheme.colorScheme.surfaceVariant
                 )
         ) {
             Text(
                 text = stringResource(R.string.label_from),
                 fontSize = 11.sp,
-                color = if (selected) SleepyTheme.colors.onPrimaryContainer else SleepyTheme.colors.onSurfaceVariant,
+                color = if (selected) MaterialTheme.colorScheme.onPrimaryContainer else MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.align(Alignment.Center)
             )
         }
@@ -2075,9 +2081,9 @@ private fun AutoColorDot(selected: Boolean, onClick: () -> Unit) {
 private fun CustomColorDot(hex: String?, onClick: () -> Unit) {
     val c = if (hex != null) {
         runCatching { Color(android.graphics.Color.parseColor(hex)) }
-            .getOrDefault(SleepyTheme.colors.surfaceVariant)
+            .getOrDefault(MaterialTheme.colorScheme.surfaceVariant)
     } else {
-        SleepyTheme.colors.surfaceVariant
+        MaterialTheme.colorScheme.surfaceVariant
     }
     // IconButton 包裹 — 裸 32dp 圆点的涟漪半径过小且无 48dp 最小触达区
     IconButton(onClick = onClick) {
@@ -2091,7 +2097,7 @@ private fun CustomColorDot(hex: String?, onClick: () -> Unit) {
                 Text(
                     text = "＋",
                     fontSize = 16.sp,
-                    color = SleepyTheme.colors.onSurfaceVariant,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.align(Alignment.Center)
                 )
             }

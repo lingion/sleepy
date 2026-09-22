@@ -21,6 +21,7 @@ import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.outlined.Redo
 import androidx.compose.material.icons.automirrored.outlined.Undo
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.CalendarMonth
@@ -41,7 +42,7 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -75,6 +76,9 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.WeekDisplayContext
+import com.lingion.sleepy.util.WeekDisplayResolver
+import com.lingion.sleepy.util.WeekDisplayStatus
 
 // 非 private: MainActivity(AppRoot 会话层)需以本类型注入 viewMode —
 // 会话内切视图/编辑课程 overlay 往返/切 tab 往返都不丢(启动默认仍由 AppRoot 初始化时读 AppPrefs)。
@@ -156,6 +160,7 @@ fun ScheduleScreen(
                 currentWeek = state.selectedWeek,
                 maxWeek = state.currentTable?.maxWeek ?: 20,
                 startDate = state.currentTable?.startDate ?: "",
+                displayContext = state.weekDisplayContext,
                 onSwitchTable = { showTableSwitcher = true },
                 onUndo = {
                     undoScope.launch {
@@ -166,12 +171,20 @@ fun ScheduleScreen(
                         }
                     }
                 },
+                onRedo = {
+                    undoScope.launch {
+                        if (!viewModel.redoLastUndo()) {
+                            android.widget.Toast.makeText(
+                                context, R.string.schedule_redo_none, android.widget.Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                },
                 scaleUncommitted = scaleUncommitted,
                 onScaleCommit = {
                     AppPrefs.setGridRowScale(context, rowHeightScale)
                     savedRowScale = rowHeightScale
                 },
-                onScaleReset = { rowHeightScale = savedRowScale },
                 onPrevWeek = { viewModel.changeWeek(state.selectedWeek - 1) },
                 onNextWeek = { viewModel.changeWeek(state.selectedWeek + 1) },
                 onJumpToActual = {
@@ -267,8 +280,35 @@ fun ScheduleScreen(
                         val tj = state.effectiveCurrentTable?.timeJson
                         if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
                     }
-                // 计算本周哪些天是节假日/周末(灰显用)
-                val greyDays by produceState<Set<Int>>(emptySet(), page, state.currentTable?.startDate) {
+                // issue#44 调休改写: 本页各天日期若命中调休映射, 该天在网格里改按映射目标星期渲染 —
+                // 周日(补周四)列显示周四的课。渲染期替身, 不写库; 未映射日期原样。
+                val renderCourses = run {
+                    val start = state.currentTable?.startDate
+                    val transfers = state.transfers
+                    if (start.isNullOrBlank() || transfers.isEmpty()) weekCourses
+                    else {
+                        fun displayDayOf(date: java.time.LocalDate): Int =
+                            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
+                        val daySwap: Map<Int, Int> = (1..7).mapNotNull { d ->
+                            val natural = try {
+                                com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d).dayOfWeek.value
+                            } catch (_: Exception) { null } ?: return@mapNotNull null
+                            val display = displayDayOf(
+                                com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d)
+                            )
+                            if (display != natural) natural to display else null
+                        }.toMap()
+                        if (daySwap.isEmpty()) weekCourses
+                        else weekCourses.map { c ->
+                            val mapped = daySwap[c.day]
+                            if (mapped == null || mapped == c.day) c else c.copy(day = mapped)
+                        }
+                    }
+                }
+                // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
+                val greyDays by produceState<Set<Int>>(
+                    emptySet(), page, state.currentTable?.startDate, state.transfers
+                ) {
                     val start = state.currentTable?.startDate
                     if (start.isNullOrBlank()) {
                         value = emptySet()
@@ -276,14 +316,16 @@ fun ScheduleScreen(
                         val greySet = mutableSetOf<Int>()
                         for (day in 1..7) {
                             val date = DateUtils.dateOfWeek(start, page + 1, day)
-                            if (HolidayManager.shouldGrey(context, date)) greySet.add(day)
+                            if (HolidayManager.shouldGrey(context, date, state.effectiveCurrentTable?.id)) {
+                                greySet.add(day)
+                            }
                         }
                         value = greySet
                     }
                 }
                 when (viewMode) {
                     ViewMode.Full -> FullWeekView(
-                        courses = weekCourses,
+                        courses = renderCourses,
                         visibleDays = visibleDays,
                         displayMode = displayMode,
                         timeJson = state.effectiveCurrentTable?.timeJson ?: "",
@@ -293,7 +335,7 @@ fun ScheduleScreen(
                         greyDays = greyDays
                     )
                     ViewMode.Cards -> CardsGridView(
-                        courses = weekCourses,
+                        courses = renderCourses,
                         allCourses = state.courses,
                         timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
                         visibleDays = visibleDays,
@@ -361,7 +403,7 @@ private fun TableSwitcherDialog(
     onSelect: (Long) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     AlertDialog(
         onDismissRequest = onDismiss,
         titleContentColor = colors.onSurface,
@@ -415,11 +457,12 @@ private fun TopBar(
     currentWeek: Int,
     maxWeek: Int,
     startDate: String,
+    displayContext: WeekDisplayContext?,
     onSwitchTable: () -> Unit,
     onUndo: () -> Unit,
+    onRedo: () -> Unit,
     scaleUncommitted: Boolean,
     onScaleCommit: () -> Unit,
-    onScaleReset: () -> Unit,
     onPrevWeek: () -> Unit,
     onNextWeek: () -> Unit,
     onJumpToActual: () -> Unit,
@@ -427,14 +470,20 @@ private fun TopBar(
     onAddCourse: () -> Unit,
     onShare: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    // [intentional custom] 官方 TopAppBar 槽位只有导航/标题/动作, 无「居中翻周器+周选择
+    // 菜单+撤回/确认并排」布局; 此工作栏 = Sleepy 课表领域形态, 保留薄层。
+    val colors = MaterialTheme.colorScheme
     // 实时计算当前实际周（不依赖 state.currentWeek — 用户可能切到了别的周）
-    val actualWeek = remember(startDate) {
+    val actualWeek = displayContext?.actualWeek ?: remember(startDate) {
         if (startDate.isBlank()) 1 else DateUtils.currentWeek(startDate)
     }
     var menuOpen by remember { mutableStateOf(false) }
     val isOnActual = currentWeek == actualWeek
-    val semesterStatus = DateUtils.semesterStatus(startDate, maxWeek)
+    val semesterStatus = displayContext?.semesterStatus
+        ?: DateUtils.semesterStatus(startDate, maxWeek)
+    val displayStatus = displayContext?.let {
+        WeekDisplayResolver.statusForSelectedWeek(it, currentWeek)
+    } ?: WeekDisplayStatus.NORMAL
 
     Row(
         modifier = Modifier
@@ -448,7 +497,6 @@ private fun TopBar(
         // Box 叠加让三件套对齐全宽正中, 加课/分享绝对定位右缘(用户 2026-09-02)。
         Box(modifier = Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
             // v7.10.14: 最左 logo — 点击弹课表切换弹窗, 右缘操作区(加课/分享)对称位
-            // v7.10.16: logo 右边第二个按钮 = 撤回 — 仅有可撤回快照时才显示(用户 2026-09-03)
             Row(
                 modifier = Modifier.align(Alignment.CenterStart),
                 verticalAlignment = Alignment.CenterVertically
@@ -458,16 +506,22 @@ private fun TopBar(
                     contentDescriptionRes = R.string.schedule_switch_table,
                     onClick = onSwitchTable
                 )
-                val showScaleUndo = com.lingion.sleepy.data.undo.UndoManager.hasSnapshot || scaleUncommitted
-                if (showScaleUndo) {
+                // 2026-09-21 用户令: 撤回/取消撤回合成一个体育场形状(两半圆+中间矩形)胶囊,
+                // 一起出现一起消失, 中间一条淡淡竖线 — TopBar 空间紧张, 单胶囊比两个分立按钮省位。
+                // 无 undo 也无 redo 时整个胶囊隐藏; scale tick 仍独立圆形按钮(语义不同, 不入胶囊)。
+                val hasUndo = com.lingion.sleepy.data.undo.UndoManager.hasSnapshot
+                val hasRedo = com.lingion.sleepy.data.undo.UndoManager.hasRedoSnapshot
+                if (hasUndo || hasRedo) {
                     Spacer(modifier = Modifier.width(6.dp))
-                    WeekNavButton(
-                        icon = Icons.AutoMirrored.Outlined.Undo,
-                        contentDescriptionRes = R.string.schedule_undo,
-                        onClick = { if (scaleUncommitted) onScaleReset() else onUndo() }
+                    UndoRedoCapsule(
+                        showUndo = hasUndo,
+                        showRedo = hasRedo,
+                        onUndo = onUndo,
+                        onRedo = onRedo
                     )
                 }
-                // 2026-09-16 用户令: 捏合未确认时 tick 与撤回并排同尺寸; tick=落盘长期生效(两标同灭), 撤回=回到上次确认值
+                // 2026-09-16 用户令: 捏合未确认时 tick 单列,与数据撤回胶囊互不干涉;
+                // tick=落盘长期生效, 撤回=回到上次确认值(语义不同, 不并入胶囊)。
                 if (scaleUncommitted) {
                     Spacer(modifier = Modifier.width(6.dp))
                     WeekNavButton(
@@ -495,9 +549,12 @@ private fun TopBar(
                     else -> 0
                 }
                 Text(
-                    text = if (statusRes == 0)
-                        stringResource(R.string.schedule_current_week, currentWeek)
-                    else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
+                    text = when (displayStatus) {
+                        WeekDisplayStatus.NEAREST_BUSY_DAY -> stringResource(R.string.schedule_nearest_busy_day)
+                        WeekDisplayStatus.NORMAL -> if (statusRes == 0)
+                            stringResource(R.string.schedule_current_week, currentWeek)
+                        else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
+                    },
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                     modifier = Modifier
@@ -598,7 +655,7 @@ private fun WeekNavButton(
     onClick: () -> Unit,
     contentDescriptionRes: Int? = null
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Box(
         modifier = Modifier
             .size(32.dp)
@@ -616,13 +673,68 @@ private fun WeekNavButton(
     }
 }
 
+/**
+ * 2026-09-21 用户令: 撤回/取消撤回一体胶囊 — 体育场形状(左右半圆+中间矩形),
+ * 撤回左半·取消撤回右半, 中间一条淡淡竖线分隔。两半同现同隐(由调用方保证:
+ * hasUndo||hasRedo 才挂载, 各半按各自有无快照显示/禁用), 省 TopBar 空间。
+ */
+@Composable
+private fun UndoRedoCapsule(
+    showUndo: Boolean,
+    showRedo: Boolean,
+    onUndo: () -> Unit,
+    onRedo: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
+    Row(
+        modifier = Modifier
+            .height(32.dp)
+            .clip(CircleShape)
+            .background(colors.surfaceContainerHigh),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        // 左半: 撤回 — 无可撤回时半透明禁用(占位保形, 双侧共存才像一体胶囊)
+        Box(
+            modifier = Modifier
+                .size(width = 32.dp, height = 32.dp)
+                .noRippleClickable(enabled = showUndo, onClick = onUndo),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.Undo,
+                contentDescription = stringResource(R.string.schedule_undo),
+                tint = colors.onSurfaceVariant.copy(alpha = if (showUndo) 1f else 0.38f)
+            )
+        }
+        // 中缝: 淡淡竖线 — 与图标同色调降透明度, 视觉上"一体两半"
+        Box(
+            modifier = Modifier
+                .size(width = 1.dp, height = 14.dp)
+                .background(colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive))
+        )
+        // 右半: 取消撤回 — 无可重做时半透明禁用
+        Box(
+            modifier = Modifier
+                .size(width = 32.dp, height = 32.dp)
+                .noRippleClickable(enabled = showRedo, onClick = onRedo),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.Redo,
+                contentDescription = stringResource(R.string.schedule_redo),
+                tint = colors.onSurfaceVariant.copy(alpha = if (showRedo) 1f else 0.38f)
+            )
+        }
+    }
+}
+
 @Composable
 private fun NoCourseState(
     tableName: String,
     onAddCourse: () -> Unit,
     onImport: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -646,17 +758,17 @@ private fun NoCourseState(
             onClick = onAddCourse,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text(stringResource(R.string.schedule_manual_first), color = colors.onPrimary)
+            Text(stringResource(R.string.schedule_manual_first))
         }
-        Button(
+        // [intentional custom] FilledTonalButton + ctaHeight: 官方变体自带动效/形状,
+        // 仅保留 Sleepy 的 56dp CTA 高度档位(官方无此 token)。
+        FilledTonalButton(
             onClick = onImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
-            Text(stringResource(R.string.schedule_go_manage), color = colors.onSecondaryContainer)
+            Text(stringResource(R.string.schedule_go_manage))
         }
     }
 }
@@ -667,7 +779,7 @@ private fun EmptyState(
     onGoImport: () -> Unit = {},
     onCreateTable: () -> Unit = {}
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = modifier
             .padding(horizontal = 22.dp)
@@ -692,18 +804,17 @@ private fun EmptyState(
             onClick = onGoImport,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
         ) {
-            Text(stringResource(R.string.schedule_empty_import), color = colors.onPrimary)
+            Text(stringResource(R.string.schedule_empty_import))
         }
         // 副按钮 = 手动创建第一张课表 (建表流, 非加课 — 无表载体时"创建第一门课"无从谈起)
-        Button(
+        // [intentional custom] FilledTonalButton + ctaHeight: 同上, 仅保留 56dp CTA 档位。
+        FilledTonalButton(
             onClick = onCreateTable,
             modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.ctaHeight),
             shape = SleepyTheme.Buttons.shape,
-            colors = ButtonDefaults.buttonColors(containerColor = colors.secondaryContainer)
         ) {
-            Text(stringResource(R.string.schedule_empty_create_table), color = colors.onSecondaryContainer)
+            Text(stringResource(R.string.schedule_empty_create_table))
         }
     }
 }

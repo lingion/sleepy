@@ -3,6 +3,7 @@ package com.lingion.sleepy
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -27,10 +28,10 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveable
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.lingion.sleepy.ui.nav.NavSession
+import com.lingion.sleepy.ui.nav.rememberSleepyNavigator
 import com.lingion.sleepy.ui.nav.SleepyNavHost
+import com.lingion.sleepy.ui.nav.SleepyRoute
 import com.lingion.sleepy.ui.nav.SleepyNavigator
 import kotlinx.coroutines.CoroutineScope
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -51,6 +52,7 @@ import com.lingion.sleepy.ui.screen.imports.JwImportActivity
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
+import com.lingion.sleepy.ui.component.PillBarState
 import androidx.compose.ui.Alignment
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.WindowInsets
@@ -72,6 +74,7 @@ import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
 import com.lingion.sleepy.ui.screen.mine.LicenseScreen
+import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -120,6 +123,17 @@ class MainActivity : ComponentActivity() {
     private val uiNightModeState: androidx.compose.runtime.MutableState<Int> =
         androidx.compose.runtime.mutableStateOf(Configuration.UI_MODE_NIGHT_UNDEFINED)
 
+    override fun onPostResume() {
+        super.onPostResume()
+        // Keep the splash logo out of system window snapshots after the first frame.
+        androidx.core.view.OneShotPreDrawListener.add(window.decorView) {
+            window.setBackgroundDrawable(
+                ColorDrawable(getColor(com.lingion.sleepy.R.color.splash_background))
+            )
+            true
+        }
+    }
+
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         uiNightModeState.value = newConfig.uiMode and Configuration.UI_MODE_NIGHT_MASK
@@ -137,7 +151,11 @@ class MainActivity : ComponentActivity() {
         com.lingion.sleepy.util.HighRefreshRate.apply(this, com.lingion.sleepy.util.AppPrefs.isHighRefresh(this))
         handleDeepLinkIntent(intent)
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
+        com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("mock_update", false)) {
+            com.lingion.sleepy.util.UpdateNotifier.showMockUpdate()
+        }
         setContent {
             // uiNightModeState.value 变化(composition-observed) → systemDark 重算 →
             // dirty 指派给 remember(systemDark) 触发 dark 重算; 此前 isSystemInDarkTheme()
@@ -148,7 +166,15 @@ class MainActivity : ComponentActivity() {
             fun applyTheme() { dark = AppPrefs.isDarkMode(this@MainActivity, systemDark) }
             val deepLinkCourse by editingCourseFlow.collectAsState()
             val themeKey by AppPrefs.themeKeyFlow(this@MainActivity).collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
-            SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
+            // The selected custom theme can be edited in place, so its key does not change.
+            // Subscribe to the custom-theme document as a separate invalidation signal.
+            val customThemesJson by CustomThemeStore.changes(this@MainActivity)
+                .collectAsState(initial = "")
+            SleepyThemeProvider(
+                darkTheme = dark,
+                themeKey = themeKey,
+                customThemeVersion = customThemesJson
+            ) {
                 AppRoot(
                     themeMode = themeMode,
                     onThemeModeChange = { mode ->
@@ -229,9 +255,15 @@ private fun AppRoot(
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
-    val nav: NavHostController = rememberNavController()
-    val session = remember { NavSession() }
-    val navigator = remember(nav, session) { SleepyNavigator(nav, session) }
+    // composition 内读 StateFlow.value 会被 lint(StateFlowValueCalledInComposition)拦:
+    // 快照值不随 flow 更新重组。改订阅, holiday 设置页拿到的 tableId 恒为当前值。
+    val mainState by mainVm.state.collectAsState()
+    val navigator = rememberSleepyNavigator()
+    val nav = navigator.backStack
+    // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
+    // pop 返回时高亮若随 entry 重建,首帧会闪现在课表 tab 再挪回目标 tab
+    // (2026-09-21 用户报障)。放这层后 pop 重建首帧即正确。
+    val pillBarState = remember { PillBarState() }
 
     // 外部导入文本 → 切管理页(与旧实现等价,语义不变)。
     var autoImportTriggered by remember { mutableStateOf(false) }
@@ -256,6 +288,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
+        currentTableId = mainState.currentTable?.id,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {
@@ -264,6 +297,7 @@ private fun AppRoot(
                 navigator.openEditTable(tableId = newId, pendingNew = newId, prevDefault = previousId)
             }
         },
+        pillBarState = pillBarState,
     )
 }
 
@@ -277,12 +311,12 @@ internal fun MainTabs(
     viewMode: ViewMode,
     onViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit,
-    holder: SaveableStateHolder
+    holder: SaveableStateHolder,
+    updateNoticeVisible: Boolean = false
 ) {
     // tab 往返滚动位置保真: when 条件组合同样整页移除被切走的 tab, 各 tab 内容包
     // SaveableStateProvider(currentTab.name) — key 稳定(tab 枚举名), 返回时恢复。
     // 注意: scheduleViewMode 会话态仍由 AppRoot 持有(§1.4 契约), 此处只管组合作用域。
-    val nav = navigator.navController
     val session = navigator.session
     val draftScope = rememberCoroutineScope()
     when (currentTab) {
@@ -300,6 +334,7 @@ internal fun MainTabs(
         }
         Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
             val ctx = LocalContext.current
+            val importCoursesLabel = stringResource(com.lingion.sleepy.R.string.import_courses)
             // 空态导入引导: autoShowImportOnce 置位过 → 本次进管理页自动弹 ImportSheet, 随即消费清零。
             // pendingImportText != null 是另一路 (外部 app 分享课表文本进来) 的既有自动弹层, 语义不同并存。
             val autoOnce = MainActivity.autoShowImportOnceState.value
@@ -310,7 +345,7 @@ internal fun MainTabs(
                 ImportDraft(
                     id = entity.id,
                     name = snapshot.tableName.ifBlank { snapshot.school.name },
-                    details = "${snapshot.courses.size} ${ctx.getString(com.lingion.sleepy.R.string.import_courses)}",
+                    details = "${snapshot.courses.size} $importCoursesLabel",
                 )
             }
             ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable,
@@ -318,6 +353,7 @@ internal fun MainTabs(
                 // 与 PeriodTablesScreen 新建按钮同一套 pendingNew discard 残留语义
                 onCreateNewPeriodTableRequested = { newId -> navigator.createPeriodTableAndEdit(newId) },
                 onManualAdd = { navigator.openAddCourse() }, onEditCurrentTable = { navigator.openEditTable() }, onExportRequested = { navigator.openExport() },
+                onOpenAllTables = { navigator.openAllTables() },
                 drafts = drafts,
                 onRestoreDraft = { id ->
                     ctx.startActivity(Intent(ctx, JwImportActivity::class.java).putExtra(JwImportActivity.EXTRA_DRAFT_ID, id))
@@ -332,12 +368,14 @@ internal fun MainTabs(
         Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
             MineScreen(
                 onOpenAllTables = { navigator.openAllTables() },
+                onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
                 onOpenGeneral = { navigator.openGeneral() },
                 onOpenExport = { navigator.openExport() },
                 onOpenReminder = { navigator.openReminder() },
-                onOpenAbout = { navigator.openAbout() })
+                onOpenAbout = { navigator.openAbout() },
+                updateNoticeVisible = updateNoticeVisible)
         }
     }
 }

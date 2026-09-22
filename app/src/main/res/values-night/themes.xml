@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <!-- 暗色侧: 换深色父主题 (NIA: NightAdjusted.Theme.Nia night 变体同法),
+         状态栏图标浅色; 其余属性 (含启动底衬色) 继承 values/ 侧, 不重声明。 -->
+    <style name="NightAdjusted.Theme.Sleepy" parent="android:Theme.Material.NoActionBar" />
+
+    <style name="NightAdjusted.Theme.Sleepy.Splash" parent="Theme.SplashScreen">
+        <item name="android:windowLightStatusBar">false</item>
+    </style>
+</resources>

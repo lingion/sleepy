@@ -76,6 +76,8 @@ object AppPrefs {
     const val KEY_GRID_ROW_SCALE = "grid_row_scale" // float default 1.0 — 双指行高缩放确认值(相对基座; 顶栏 tick 落盘, 撤回回退)
     const val KEY_GRID_PINCH_ZOOM = "grid_pinch_zoom" // bool default false — 实验室: 网格视图双指捏放行高(v1.0.56 默认关, 关=手势不挂; 存量缩放值不清)
     const val DEFAULT_GRID_PINCH_ZOOM = false
+    const val KEY_NEAREST_BUSY_DAY = "nearest_busy_day" // bool default false — 今天没课时自动显示最近一个有课的日子
+    const val DEFAULT_NEAREST_BUSY_DAY = false
     const val KEY_WEEK_SCALE = "week_scale" // float 0.7~1.3 default 1.0 — 周视图整体缩放(与网格视图互相独立, issue#8)
     const val KEY_GRID_CORNER_RATIO = "grid_corner_ratio" // float 0.0~2.0 default 1.0 — 网格/周视图圆角比例系数(乘基准 12/16dp, issue#8)
     const val KEY_WEEK_TWO_COLUMN = "week_two_column" // bool default false — 周视图两栏开关, issue#8
@@ -87,6 +89,7 @@ object AppPrefs {
     const val KEY_WIDGET_USE_ALIAS = "widget_use_alias" // bool default false — 全部小组件显示别名
     const val KEY_WIDGET_SCROLL_ENABLED = "widget_scroll_enabled" // bool default false — 强制滚动(实验), 默认 FIXED 固定窗口
     const val KEY_UPDATE_CHECK_ENABLED = "update_check_enabled" // bool default true — 启动检查 GitHub releases latest
+    const val KEY_UPDATE_NOTICE_DISMISSED_VERSION = "update_notice_dismissed_version" // string — 关闭该版本更新提醒
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
@@ -286,6 +289,13 @@ object AppPrefs {
 
     fun setNavDock(ctx: Context, value: Boolean) {
         sp(ctx).edit().putBoolean(KEY_NAV_DOCK, value).apply()
+    }
+
+    fun getUpdateNoticeDismissedVersion(ctx: Context): String =
+        sp(ctx).getString(KEY_UPDATE_NOTICE_DISMISSED_VERSION, "").orEmpty()
+
+    fun setUpdateNoticeDismissedVersion(ctx: Context, version: String) {
+        sp(ctx).edit().putString(KEY_UPDATE_NOTICE_DISMISSED_VERSION, version).apply()
     }
 
     // ===== 网格卡片副信息：教室 / 教师 / 无 =====
@@ -534,6 +544,14 @@ object AppPrefs {
         _changeBus.tryEmit(KEY_GRID_PINCH_ZOOM)
     }
 
+    fun isNearestBusyDay(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_NEAREST_BUSY_DAY, DEFAULT_NEAREST_BUSY_DAY)
+
+    fun setNearestBusyDay(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_NEAREST_BUSY_DAY, v).apply()
+        _changeBus.tryEmit(KEY_NEAREST_BUSY_DAY)
+    }
+
     fun getGridEveningStart(ctx: Context): String =
         sp(ctx).getString(KEY_GRID_EVENING_START, "18:00") ?: "18:00"
 
@@ -674,6 +692,53 @@ object AppPrefs {
 
     fun setHolidayRanges(ctx: Context, ranges: List<com.lingion.sleepy.util.HolidayRange>) {
         sp(ctx).edit().putString(KEY_HOLIDAY_OVERRIDES, com.lingion.sleepy.util.HolidayRangeOps.encodeOverrides(ranges)).apply()
+    }
+
+    // ===== issue#44 调休映射(按课表隔离, 放假日→补班日) =====
+
+    /**
+     * 调休映射按课表 ID 单独存 key — 各校补法不同(同一天 A 校补周四、B 校补周一),
+     * 全局一份会跨表套错。删表时可整键删除。
+     */
+    private fun transferKey(tableId: Long) = "holiday_transfer_$tableId"
+
+    /** 某课表的调休映射; 无表/未设置 = 空(全部按自然星期取课) */
+    fun getHolidayTransfers(ctx: Context, tableId: Long): List<com.lingion.sleepy.util.HolidayTransferEntry> =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.decodeTransfers(
+            sp(ctx).getString(transferKey(tableId), "[]") ?: "[]"
+        )
+
+    fun setHolidayTransfers(ctx: Context, tableId: Long, transfers: List<com.lingion.sleepy.util.HolidayTransferEntry>) {
+        sp(ctx).edit().putString(
+            transferKey(tableId),
+            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.encodeTransfers(transfers)
+        ).apply()
+    }
+
+    /**
+     * 设/改某放假日的映射; [targetDate] = null → 清除该放假日(回到自然星期)。
+     * 互斥(后选覆盖前选): 写入前移除同 targetDate 的既有条目 — 一天只能上一次课。
+     */
+    fun updateHolidayTransfer(
+        ctx: Context,
+        tableId: Long,
+        sourceDate: java.time.LocalDate,
+        targetDate: java.time.LocalDate?,
+        segmentId: String
+    ) {
+        val ops = com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps
+        val existing = getHolidayTransfers(ctx, tableId)
+        val next = if (targetDate == null) {
+            existing.filterNot { it.sourceDate == sourceDate }
+        } else {
+            ops.withTargetExclusivity(existing, com.lingion.sleepy.util.HolidayTransferEntry(sourceDate, targetDate, segmentId))
+        }
+        setHolidayTransfers(ctx, tableId, next)
+    }
+
+    /** 删表时清掉该表映射 */
+    fun clearHolidayTransfers(ctx: Context, tableId: Long) {
+        sp(ctx).edit().remove(transferKey(tableId)).apply()
     }
 
     // ===== 启动检查更新开关 =====

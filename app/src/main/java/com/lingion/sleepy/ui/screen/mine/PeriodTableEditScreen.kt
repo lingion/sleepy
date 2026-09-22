@@ -82,9 +82,12 @@ fun PeriodTableEditScreen(
     onBack: () -> Unit,
     viewModel: ScheduleViewModel = viewModel()
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
+    val courseNodeFormat = stringResource(R.string.course_node_format)
+    val deleteBlockedFormat = stringResource(R.string.period_table_delete_blocked)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val scheduleState by viewModel.state.collectAsState()
 
@@ -109,10 +112,8 @@ fun PeriodTableEditScreen(
     var pendingSave by remember { mutableStateOf<PeriodTableEntity?>(null) }
     // issue#40: 新建未保存表的丢弃标记 — 用户确认保存后翻 false, 返回不再删行
     var unsavedNew by remember { mutableStateOf(isNewUnsaved) }
-    // 2026-09-20 用户拍板(issue#40 反馈): 作息表编辑页不再有「作息表」第三 Tab。
-    // 旧版选中另一张表=把它的节次拷进编辑区, 但 UI 与课表页的"活绑"第三 Tab 同构,
-    // 用户无法区分「复制当起点」与「绑定」→ issue#40 反馈"作息表里绑作息表, 反人类"。
-    // 复制需求由管理页每行「复制」按钮承担(先命名后建, 语义清晰)。
+    // 2026-09-20 用户拍板(issue#40 反馈, aa23a443): 作息表编辑页不再有「作息表」第三 Tab。
+    // 绑定只存在于课表→作息表单向; 作息表之间禁绑定/取入, 防循环改写。复制走管理页按钮。
     // v1.0.56 T7: 删除入口迁入本页 — 确认弹窗 + 绑定拦截提示(从管理页列表行整体搬迁)
     var showDeleteConfirm by remember(periodTable.id) { mutableStateOf(false) }
     var deleteBlockedMsg by remember(periodTable.id) { mutableStateOf<String?>(null) }
@@ -127,23 +128,16 @@ fun PeriodTableEditScreen(
             addAll(TimeTableUtils.parseTimeSlotRows(periodTable.timeJson))
         }
     }
+    // issue#23 Task 4: 已存配置仍能 derive 出当前行 → 原样保留; 否则从当前行重推断;
+    // 行不可推断 → 最简默认兜底(旧行为)。
     val smartConfig = remember(periodTable.id, periodTable.smartConfigJson) {
+        val stored = com.lingion.sleepy.ui.component.decodeSmartPeriodConfig(periodTable.smartConfigJson)
         mutableStateOf(
-            if (periodTable.smartConfigJson.isNotBlank()) {
-                try {
-                    Json.decodeFromString<SmartPeriodConfig>(periodTable.smartConfigJson)
-                } catch (e: Exception) {
-                    SmartPeriodConfig(
-                        totalPeriods = slotRows.size.coerceAtLeast(1),
-                        startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
-                    )
-                }
-            } else {
-                SmartPeriodConfig(
+            com.lingion.sleepy.ui.component.resolveAutoPeriodConfig(slotRows.toList(), stored)
+                ?: SmartPeriodConfig(
                     totalPeriods = slotRows.size.coerceAtLeast(1),
                     startTime = slotRows.firstOrNull()?.start?.takeIf { it.isNotBlank() } ?: "08:00"
                 )
-            }
         )
     }
 
@@ -270,8 +264,7 @@ fun PeriodTableEditScreen(
                                 },
                                 smartConfig = smartConfig.value,
                                 onSmartConfigChange = { smartConfig.value = it }
-                                // 2026-09-20 用户拍板(issue#40 反馈): 不传 periodTableOptions
-                                // → 只有手动/智慧节次两 Tab, 作息表编辑页不再出现「作息表」Tab
+                                // 作息表编辑页只允许编辑本表内容; 活绑定仅由课程表→作息表入口提供。
                             )
                         }
                     }
@@ -292,7 +285,7 @@ fun PeriodTableEditScreen(
                             slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
                             slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = context.getString(R.string.edit_table_validation_error)
+                            error = validationErrorMessage
                             return@Button
                         }
                         error = null
@@ -378,7 +371,7 @@ fun PeriodTableEditScreen(
                         val oldT = change.oldTime ?: "?"
                         val newT = change.newTime ?: "?"
                         val nodesTag = if (change.changedNodes.size == 1) {
-                            context.getString(R.string.course_node_format, change.changedNodes.first().toString())
+                            courseNodeFormat.format(change.changedNodes.first().toString())
                         } else {
                             "${change.changedNodes.first()}-${change.changedNodes.last()}"
                         }
@@ -439,7 +432,7 @@ fun PeriodTableEditScreen(
                                     onBack()
                                 } else {
                                     val bound = scheduleState.tables.count { it.periodTableId == periodTable.id }
-                                    deleteBlockedMsg = context.getString(R.string.period_table_delete_blocked, bound)
+                                    deleteBlockedMsg = deleteBlockedFormat.format(bound)
                                 }
                             }
                         },

@@ -53,16 +53,19 @@ import kotlinx.coroutines.launch
 fun MineScreen(
     viewModel: ScheduleViewModel = viewModel(),
     onOpenAllTables: () -> Unit = {},
+    onOpenCourseList: () -> Unit = {},
     onOpenPeriodTables: () -> Unit = {},
     onOpenAppearance: () -> Unit = {},
     onOpenGeneral: () -> Unit = {},
     onOpenExport: () -> Unit = {},
     onOpenReminder: () -> Unit = {},
-    onOpenAbout: () -> Unit = {}
+    onOpenAbout: () -> Unit = {},
+    updateNoticeVisible: Boolean = false
 ) {
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val widgetsRefreshedMessage = stringResource(R.string.mine_refresh_widgets_done)
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
 
@@ -101,8 +104,13 @@ fun MineScreen(
             item {
                 StatsCard(
                     tableCount = state.tables.size,
-                    courseCount = state.courses.distinctBy { it.courseName }.size,
-                    week = state.currentWeek
+                    // 与 CourseListScreen 同口径: 同名课程一组, 空名按 groupId 区分
+                    courseCount = state.courses
+                        .distinctBy { it.courseName.ifBlank { "#${it.groupId}" } }
+                        .size,
+                    week = state.currentWeek,
+                    onOpenTables = onOpenAllTables,
+                    onOpenCourses = onOpenCourseList
                 )
             }
 
@@ -128,7 +136,12 @@ fun MineScreen(
                     Divider()
                     SettingsItem(icon = Icons.Outlined.Tune, label = stringResource(R.string.mine_general), onClick = onOpenGeneral)
                     Divider()
-                    SettingsItem(icon = Icons.Outlined.Info, label = stringResource(R.string.about_title), onClick = onOpenAbout)
+                    SettingsItem(
+                        icon = Icons.Outlined.Info,
+                        label = stringResource(R.string.about_title),
+                        onClick = onOpenAbout,
+                        highlighted = updateNoticeVisible
+                    )
                 }
             }
 
@@ -138,7 +151,7 @@ fun MineScreen(
                     onClick = {
                         scope.launch {
                             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context)
-                            showSnack(context.getString(R.string.mine_refresh_widgets_done))
+                            showSnack(widgetsRefreshedMessage)
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),
@@ -155,25 +168,39 @@ fun MineScreen(
 }
 
 @Composable
-private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
-    val colors = SleepyTheme.colors
+private fun StatsCard(
+    tableCount: Int,
+    courseCount: Int,
+    week: Int,
+    onOpenTables: () -> Unit,
+    onOpenCourses: () -> Unit
+) {
+    val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StatItem(value = tableCount.toString(), label = stringResource(R.string.mine_stat_tables))
+        // 2026-09-21 用户令: 统计格可点 — 表数格→所有课表, 课程格→课程清单页, 周数格静态
+        StatItem(value = tableCount.toString(), label = stringResource(R.string.mine_stat_tables), onClick = onOpenTables)
         Divider(vertical = true)
-        StatItem(value = courseCount.toString(), label = stringResource(R.string.mine_stat_courses))
+        StatItem(value = courseCount.toString(), label = stringResource(R.string.mine_stat_courses), onClick = onOpenCourses)
         Divider(vertical = true)
         StatItem(value = week.toString(), label = stringResource(R.string.mine_stat_week))
     }
 }
 
 @Composable
-private fun StatItem(value: String, label: String) {
-    val colors = SleepyTheme.colors
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+private fun StatItem(value: String, label: String, onClick: (() -> Unit)? = null) {
+    val colors = MaterialTheme.colorScheme
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = if (onClick != null) Modifier
+            .clip(SleepyTheme.shapes.medium)
+            .noRippleClickable(onClick)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+        else Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
         Text(text = value, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = colors.primary)
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
     }
@@ -181,10 +208,20 @@ private fun StatItem(value: String, label: String) {
 
 @Composable
 // isLast / trailing 死参数已删（函数体从未读取 isLast; trailing 无任何调用方传值）
-private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit = {}, subtitle: String? = null) {
-    val colors = SleepyTheme.colors
+private fun SettingsItem(
+    icon: ImageVector,
+    label: String,
+    onClick: () -> Unit = {},
+    subtitle: String? = null,
+    highlighted: Boolean = false
+) {
+    val colors = MaterialTheme.colorScheme
     Row(
-        modifier = Modifier.fillMaxWidth().noRippleClickable(onClick).padding(horizontal = 16.dp, vertical = 14.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(if (highlighted) colors.primary.copy(alpha = 0.10f) else colors.surfaceContainer)
+            .noRippleClickable(onClick)
+            .padding(horizontal = 16.dp, vertical = 14.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(modifier = Modifier.size(40.dp).clip(SleepyTheme.shapes.medium).background(colors.primaryContainer), contentAlignment = Alignment.Center) {
@@ -201,7 +238,7 @@ private fun SettingsItem(icon: ImageVector, label: String, onClick: () -> Unit =
 
 @Composable
 private fun Divider(vertical: Boolean = false) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     if (vertical) androidx.compose.material3.VerticalDivider(Modifier.height(36.dp).width(1.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
     else androidx.compose.material3.HorizontalDivider(Modifier.padding(start = 72.dp), color = colors.outline.copy(alpha = SleepyTheme.Alpha.hairline))
 }

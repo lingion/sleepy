@@ -29,6 +29,7 @@ import androidx.compose.material.icons.outlined.Email
 import androidx.compose.material.icons.outlined.Groups
 import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.material.icons.outlined.Person
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Button
@@ -54,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,10 +76,24 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
-    val colors = SleepyTheme.colors
+fun AboutScreen(
+    onBack: () -> Unit,
+    onOpenLicense: () -> Unit = {},
+    updateNoticeVisible: Boolean = false
+) {
+    val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    // 配置感知读取: LocalConfiguration 随配置变化自动重组, 裸 context.resources 会拿旧值
+    val configuration = LocalConfiguration.current
     val scope = rememberCoroutineScope()
+    val feedbackSubject = stringResource(R.string.about_feedback_email_subject)
+    val feedbackBody = stringResource(R.string.about_feedback_email_body)
+    val noMailAppMessage = stringResource(R.string.about_feedback_no_mail_app)
+    val qqGroupNumber = stringResource(R.string.about_qq_group_number)
+    val qqCopiedMessage = stringResource(R.string.about_qq_copied)
+    val noQqMessage = stringResource(R.string.about_qq_no_qq)
+    val unknownErrorMessage = stringResource(R.string.error_unknown)
+    val latestVersionFormat = stringResource(R.string.about_update_latest)
     var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
     var downloadJob by remember { mutableStateOf<Job?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -90,8 +106,8 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
         androidVersion = AndroidBuild.VERSION.RELEASE ?: AndroidBuild.VERSION.SDK_INT.toString(),
         brand = AndroidBuild.BRAND,
         model = AndroidBuild.MODEL,
-        resolution = "${context.resources.displayMetrics.widthPixels}x${context.resources.displayMetrics.heightPixels}",
-        locale = context.resources.configuration.locales[0].toLanguageTag(),
+        resolution = "${configuration.screenWidthDp}x${configuration.screenHeightDp}",
+        locale = configuration.locales[0].toLanguageTag(),
         isDebug = BuildConfig.DEBUG,
     )
 
@@ -107,19 +123,19 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
 
     fun openEmailFeedback() {
         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(FeedbackComposer.mailtoUri(
-            subject = context.getString(R.string.about_feedback_email_subject),
-            body = context.getString(R.string.about_feedback_email_body),
+            subject = feedbackSubject,
+            body = feedbackBody,
             diag = diagnostic(),
         )))
         if (intent.resolveActivity(context.packageManager) != null) {
             context.startActivity(intent)
         } else {
-            scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.about_feedback_no_mail_app)) }
+            scope.launch { snackbarHostState.showSnackbar(noMailAppMessage) }
         }
     }
 
     fun joinQqGroup() {
-        val group = context.getString(R.string.about_qq_group_number)
+        val group = qqGroupNumber
         context.getSystemService(android.content.ClipboardManager::class.java)
             ?.setPrimaryClip(android.content.ClipData.newPlainText("qq_group", group))
         // 拉起降级链(经查证): 群号直拉群资料卡(show_pslcard→show_pslg)
@@ -146,7 +162,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
         }.isSuccess
         scope.launch {
             snackbarHostState.showSnackbar(
-                context.getString(if (launched) R.string.about_qq_copied else R.string.about_qq_no_qq)
+                if (launched) qqCopiedMessage else noQqMessage
             )
         }
     }
@@ -165,7 +181,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
                         uiState = UpdateUiState.NoUpdate(info.version)
                     }
                 }
-                .onFailure { uiState = UpdateUiState.Failed(it.message ?: context.getString(R.string.error_unknown), isCheckFailure = true) }
+                .onFailure { uiState = UpdateUiState.Failed(it.message ?: unknownErrorMessage, isCheckFailure = true) }
         }
     }
 
@@ -185,7 +201,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
                     uiState = UpdateUiState.UpdateAvailable(version, changelog, url)
                 } else {
                     uiState = UpdateUiState.Failed(
-                        e.message ?: context.getString(R.string.error_unknown), version, changelog, url
+                        e.message ?: unknownErrorMessage, version, changelog, url
                     )
                 }
             }
@@ -199,11 +215,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
     LaunchedEffect(uiState) {
         val current = uiState
         if (current is UpdateUiState.NoUpdate) {
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.about_update_latest, current.version)
-                )
-            }
+            snackbarHostState.showSnackbar(latestVersionFormat.format(current.version))
             uiState = UpdateUiState.Idle
         }
     }
@@ -227,18 +239,19 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         containerColor = colors.background
     ) { innerPadding ->
-        // 远端有新版可用时: 整页底色轻刷主题色(alpha 5%) + 顶部 banner 提示, 关 Toggle 后两者一起消失
+        // 远端有新版可用且未被关闭时: 整页底色轻刷主题色(alpha 5%) + 顶部 banner 提示,
+        // 横幅叉掉 / 关 Toggle 后两者一起消失, 主导航小圆点与 Mine 行高亮同状态
         val highlightColor = colors.primary.copy(alpha = 0.05f)
         Column(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
-                .background(if (updateAvailable != null) highlightColor else colors.background)
+                .background(if (updateNoticeVisible) highlightColor else colors.background)
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 顶部 banner: 仅 updateAvailable != null 时渲染, 点击跳 Releases tag 页
-            if (updateAvailable != null) {
+            // 顶部 banner: 仅提醒可见时渲染, 点击跳 Releases tag 页, 叉号按版本关闭提醒
+            if (updateNoticeVisible && updateAvailable != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 UpdateBanner(
                     version = updateAvailable!!.version,
@@ -246,7 +259,8 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
                         context.startActivity(
                             Intent(Intent.ACTION_VIEW, Uri.parse("https://gh.qdp.qzz.io/lingion/sleepy/releases/tag/v${updateAvailable!!.version}"))
                         )
-                    }
+                    },
+                    onDismiss = { UpdateNotifier.dismiss(updateAvailable!!.version, context) }
                 )
                 Spacer(modifier = Modifier.height(8.dp))
             }
@@ -585,7 +599,7 @@ fun AboutScreen(onBack: () -> Unit, onOpenLicense: () -> Unit = {}) {
 
 @Composable
 private fun InfoCard(content: @Composable () -> Unit) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -599,35 +613,52 @@ private fun InfoCard(content: @Composable () -> Unit) {
 
 /** 冷启动检查到新版可用时在「关于」顶部展示的横幅, 点击跳 Releases tag 页 */
 @Composable
-private fun UpdateBanner(version: String, onClick: () -> Unit) {
-    val colors = SleepyTheme.colors
+private fun UpdateBanner(
+    version: String,
+    onClick: () -> Unit,
+    onDismiss: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
             .fillMaxWidth()
             .clip(SleepyTheme.shapes.large)
             .background(colors.primary.copy(alpha = 0.12f))
-            .noRippleClickable(onClick)
-            .padding(horizontal = 16.dp, vertical = 12.dp)
+            .padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp)
     ) {
-        Icon(
-            imageVector = Icons.Outlined.NewReleases,
-            contentDescription = null,
-            tint = colors.primary,
-            modifier = Modifier.size(20.dp)
-        )
-        Spacer(modifier = Modifier.width(10.dp))
-        Text(
-            text = stringResource(R.string.about_update_available, "v$version"),
-            style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
-            color = colors.primary,
-            modifier = Modifier.weight(1f)
-        )
-        Icon(
-            imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
-            contentDescription = null,
-            tint = colors.primary,
-            modifier = Modifier.size(18.dp)
-        )
+        Row(
+            modifier = Modifier
+                .weight(1f)
+                .noRippleClickable(onClick),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                imageVector = Icons.Outlined.NewReleases,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(20.dp)
+            )
+            Spacer(modifier = Modifier.width(10.dp))
+            Text(
+                text = stringResource(R.string.about_update_available, "v$version"),
+                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                color = colors.primary,
+                modifier = Modifier.weight(1f)
+            )
+            Icon(
+                imageVector = Icons.AutoMirrored.Outlined.OpenInNew,
+                contentDescription = null,
+                tint = colors.primary,
+                modifier = Modifier.size(18.dp)
+            )
+        }
+        IconButton(onClick = onDismiss) {
+            Icon(
+                imageVector = Icons.Outlined.Close,
+                contentDescription = stringResource(R.string.about_update_dismiss),
+                tint = colors.primary,
+            )
+        }
     }
 }

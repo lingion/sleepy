@@ -43,12 +43,12 @@ object WidgetEditCompactWindowSection : WidgetEditSection {
             Text(
                 text = stringResource(titleRes),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                color = SleepyTheme.colors.onSurface
+                color = MaterialTheme.colorScheme.onSurface
             )
             Spacer(modifier = Modifier.padding(top = 8.dp))
             Surface(
                 modifier = Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)),
-                color = SleepyTheme.colors.surfaceContainer,
+                color = MaterialTheme.colorScheme.surfaceContainer,
                 shape = RoundedCornerShape(16.dp)
             ) {
                 Column {
@@ -80,7 +80,7 @@ object WidgetEditCompactWindowSection : WidgetEditSection {
             Text(
                 text = label,
                 style = MaterialTheme.typography.bodyLarge,
-                color = SleepyTheme.colors.onSurface
+                color = MaterialTheme.colorScheme.onSurface
             )
         }
     }

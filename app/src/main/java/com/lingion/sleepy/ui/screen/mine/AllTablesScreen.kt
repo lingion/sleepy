@@ -54,7 +54,7 @@ fun AllTablesScreen(
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     val state by viewModel.state.collectAsState()
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     Scaffold(
         topBar = {

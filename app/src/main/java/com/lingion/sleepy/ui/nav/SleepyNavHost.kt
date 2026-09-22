@@ -1,13 +1,28 @@
 package com.lingion.sleepy.ui.nav
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.windowInsetsPadding
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationRail
+import androidx.compose.material3.NavigationRailItem
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.windowsizeclass.WindowSizeClass
+import androidx.compose.material3.windowsizeclass.ExperimentalMaterial3WindowSizeClassApi
+import androidx.compose.material3.windowsizeclass.WindowWidthSizeClass
+import androidx.compose.material3.windowsizeclass.calculateWindowSizeClass
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -26,18 +41,25 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import android.widget.Toast
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.NavHost
-import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
+import androidx.compose.animation.AnimatedContentTransitionScope
+import androidx.compose.animation.ContentTransform
+import androidx.navigation3.runtime.NavKey
+import androidx.navigation3.runtime.NavBackStack
+import androidx.navigation3.scene.Scene
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
+import androidx.navigation3.ui.NavDisplay
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.NavDockSpec
 import com.lingion.sleepy.ui.component.PillNavigationBar
 import com.lingion.sleepy.ui.component.PillNavItemSpec
+import com.lingion.sleepy.ui.component.PillBarState
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
+import com.lingion.sleepy.ui.screen.mine.CourseListScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
@@ -45,6 +67,7 @@ import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
+import com.lingion.sleepy.util.UpdateNotifier
 import com.lingion.sleepy.ui.screen.mine.LicenseScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodTablesScreen
 import com.lingion.sleepy.ui.screen.mine.PeriodTableEditScreen
@@ -78,7 +101,7 @@ import androidx.activity.compose.BackHandler
 @OptIn(ExperimentalMaterial3ExpressiveApi::class)
 @Composable
 internal fun SleepyNavHost(
-    nav: NavHostController,
+    nav: NavBackStack<NavKey>,
     navigator: SleepyNavigator,
     currentTab: Tab,
     setCurrentTab: (Tab) -> Unit,
@@ -91,32 +114,21 @@ internal fun SleepyNavHost(
     deepLinkCourse: CourseEntity?,
     onDeepLinkConsumed: () -> Unit,
     mainVm: ScheduleViewModel,
+    currentTableId: Long?,
     mainScope: CoroutineScope,
     onCreateNewTable: () -> Unit,
+    pillBarState: PillBarState,
 ) {
     val session = navigator.session
+    val updateNoticeVisible by UpdateNotifier.noticeVisible.collectAsState()
 
-    // 共享轴过渡:必须先在 composable 上下文求值,再把结果作为对象传入 NavHost
-    // 的 transition lambda(那个 lambda 不是 composable 上下文,无法就地读
-    // MaterialTheme.motionScheme)。
-    val enter = sleepySharedAxisEnter()
-    val exit = sleepySharedAxisExit()
-    val popEnter = sleepySharedAxisPopEnter()
-    val popExit = sleepySharedAxisPopExit()
-
-    // 恢复守卫:进程被回收后栈里若有 add_course?editing=true 但会话态 editingCourse
-    // 是 null(故意不持久化的产物,基线 §1.3),把这条路由弹掉,回到主 Tab。
-    // 状态: deepLinkCourse 不消费(由 onDeepLinkConsumed 显式清),session 也不存。
-    val currentRoute = nav.currentBackStackEntry?.destination?.route
-    val editingRouteCourseId = nav.currentBackStackEntry?.arguments?.getLong("courseId") ?: Routes.NO_ID
-    val editingRouteFlag = nav.currentBackStackEntry?.arguments?.getBoolean("editing") ?: false
-    LaunchedEffect(currentRoute, editingRouteFlag, editingRouteCourseId, deepLinkCourse?.id) {
-        if (currentRoute == Routes.ADD_COURSE &&
-            editingRouteFlag &&
-            session.editingCourse == null &&
-            deepLinkCourse == null
-        ) {
-            nav.popBackStack()
+    // Keep typed stack and entry content under the official androidx.navigation3 NavDisplay.
+    // editingCourse is intentionally not saveable. Drop a restored edit key if its
+    // in-memory session is absent, rather than showing an empty editing form.
+    val currentRoute = navigator.backStack.lastOrNull() as? SleepyRoute.AddCourse
+    LaunchedEffect(currentRoute, deepLinkCourse?.id) {
+        if (currentRoute?.editing == true && session.editingCourse == null && deepLinkCourse == null) {
+            navigator.pop()
         }
     }
 
@@ -129,75 +141,80 @@ internal fun SleepyNavHost(
         onDeepLinkConsumed()
     }
 
-    NavHost(
-        navController = nav,
-        startDestination = Routes.MAIN,
-        enterTransition = { enter },
-        exitTransition = { exit },
-        popEnterTransition = { popEnter },
-        popExitTransition = { popExit },
-    ) {
-        // ----------------------------------------------------------------
-        composable(Routes.MAIN) {
+    val predictiveSpec: (AnimatedContentTransitionScope<Scene<NavKey>>, Int) -> ContentTransform =
+        { _, _ -> sleepyPredictivePopTransform }
+
+    NavDisplay(
+        backStack = nav,
+        entryDecorators = listOf(
+            rememberSaveableStateHolderNavEntryDecorator(),
+        ),
+        onBack = { navigator.pop() },
+        transitionSpec = { sleepyForwardTransform },
+        popTransitionSpec = { sleepyPopTransform },
+        predictivePopTransitionSpec = predictiveSpec,
+        entryProvider = entryProvider {
+        entry<SleepyRoute.Main> {
+
             MainRoute(
                 currentTab = currentTab,
                 setCurrentTab = setCurrentTab,
                 navigator = navigator,
                 mainVm = mainVm,
+                currentTableId = currentTableId,
                 mainScope = mainScope,
                 navDock = navDock,
                 onNavDockChange = onNavDockChange,
                 scheduleViewMode = scheduleViewMode,
                 onScheduleViewModeChange = onScheduleViewModeChange,
                 onCreateNewTable = onCreateNewTable,
+                updateNoticeVisible = updateNoticeVisible,
+                pillBarState = pillBarState,
             )
         }
 
-        // ----------------------------------------------------------------
-        composable(Routes.ADD_COURSE, arguments = addCourseArgs) { entry ->
+        entry<SleepyRoute.AddCourse> { key ->
             // 基线 §1.3 例外: 编辑课程会话**不纳入**任何保存作用域。
             // editingCourse 是纯内存态(NavSession), 进程恢复后必为 null, 所以这条
             // 路由被系统恢复出来时上方 LaunchedEffect 会把它弹掉 → 回到主 Tab。
             // 手动新增(editing=false)走空表单, 属正常可恢复路径。
-            // 若哪天给这里补上 SaveableStateProvider, 恢复出的空表单会被用户当成
-            // 正在编辑的课提交 → 重复加课。
-            val courseId = entry.longArg("courseId")
-            val editing = entry.boolArg("editing")
+            val courseId = key.courseId
+            val editing = key.editing
             val editingCourse = remember(editing, courseId, session.editingCourse?.id) {
                 if (editing) session.editingCourse else null
             }
             AddCourseScreen(
                 onBack = {
                     session.clearEditCourse()
-                    if (!nav.popBackStack()) {
+                    if (!navigator.pop()) {
                         // 栈只有 MAIN,直接清课程态即可
                     }
                 },
                 onSaved = {
                     session.clearEditCourse()
-                    if (!nav.popBackStack()) { /* 同上 */ }
+                    if (!navigator.pop()) { /* 同上 */ }
                     setCurrentTab(Tab.Schedule)
                 },
                 editingCourse = editingCourse,
             )
         }
 
-        // ----------------------------------------------------------------
-        composable(Routes.ALL_TABLES) {
+        entry<SleepyRoute.AllTables> {
             AllTablesScreen(
-                onBack = { nav.popBackStack() },
+                onBack = { navigator.pop() },
                 onCreateNewTable = onCreateNewTable,
-                onOpenEditTable = { tableId ->
-                    navigator.openEditTable(tableId = tableId)
-                },
+                onOpenEditTable = { tableId -> navigator.openEditTable(tableId = tableId) },
             )
         }
 
-        // ----------------------------------------------------------------
-        composable(Routes.EDIT_TABLE, arguments = editTableArgs) { entry ->
-            val routeTableId = entry.longArg("tableId")
-            val routePendingNew = entry.longArg("pendingNew")
-            val routePrevDefault = entry.longArg("prevDefault")
+        entry<SleepyRoute.CourseList> {
+            CourseListScreen(onBack = { navigator.pop() })
+        }
+
+        entry<SleepyRoute.EditTable> { key ->
+            val routeTableId = key.tableId.takeUnless { it == SleepyRoute.NO_ID }
+            val routePendingNew = key.pendingNew.takeUnless { it == SleepyRoute.NO_ID }
+            val routePrevDefault = key.prevDefault.takeUnless { it == SleepyRoute.NO_ID }
 
             // 本地 pending 态:用户保存/删除/弃表后清掉,系统返回只看这个。
             // 直接用路由参数会让"保存后按返回又触发弃表"这类历史 bug 复发。
@@ -211,44 +228,43 @@ internal fun SleepyNavHost(
                 val discardId = pending; val fallback = prevDefault
                 pending = null; prevDefault = null
                 if (discardId != null) mainVm.discardNewTable(discardId, fallback)
-                nav.popBackStack()
+                navigator.pop()
             }
 
             EditTableScreen(
                 tableId = routeTableId,
                 pendingNewTableId = pending,
-                onBack = { nav.popBackStack() },
+                onBack = { navigator.pop() },
                 onDiscardPending = {
                     val discardId = pending; val fallback = prevDefault
                     pending = null; prevDefault = null
                     if (discardId != null) mainVm.discardNewTable(discardId, fallback)
-                    nav.popBackStack()
+                    navigator.pop()
                 },
                 onSaved = {
                     pending = null; prevDefault = null
-                    nav.popBackStack()
+                    navigator.pop()
                 },
                 onDeleted = {
                     pending = null; prevDefault = null
-                    nav.popBackStack()
+                    navigator.pop()
                     setCurrentTab(Tab.Schedule)
                 },
             )
         }
 
-        // ----------------------------------------------------------------
-        composable(Routes.APPEARANCE) {
+        entry<SleepyRoute.Appearance> {
             AppearanceScreen(
-                onBack = { nav.popBackStack() },
+                onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
             )
         }
 
         // ----------------------------------------------------------------
-        composable(Routes.GENERAL) {
+        entry<SleepyRoute.General> {
             GeneralSettingsScreen(
-                onBack = { nav.popBackStack() },
+                onBack = { navigator.pop() },
                 onOpenHoliday = { navigator.openHoliday() },
                 onOpenWidgetManagement = { navigator.openWidgetManagement() },
                 navDock = navDock,
@@ -256,56 +272,61 @@ internal fun SleepyNavHost(
             )
         }
 
-        composable(Routes.HOLIDAY) {
-            HolidaySettingsScreen(onBack = { nav.popBackStack() })
-        }
-
-        composable(Routes.EXPORT) {
-            ExportScreen(onBack = { nav.popBackStack() })
-        }
-
-        composable(Routes.REMINDER) {
-            ReminderScreen(onBack = { nav.popBackStack() })
-        }
-
-        composable(Routes.ABOUT) {
-            AboutScreen(
-                onBack = { nav.popBackStack() },
-                onOpenLicense = { navigator.openLicense() },
+        entry<SleepyRoute.Holiday> {
+            HolidaySettingsScreen(
+                onBack = { navigator.pop() },
+                tableId = currentTableId,
+                viewModel = mainVm
             )
         }
 
-        composable(Routes.LICENSE) {
-            LicenseScreen(onBack = { nav.popBackStack() })
+        entry<SleepyRoute.Export> {
+            ExportScreen(onBack = { navigator.pop() })
+        }
+
+        entry<SleepyRoute.Reminder> {
+            ReminderScreen(onBack = { navigator.pop() })
+        }
+
+        entry<SleepyRoute.About> {
+            AboutScreen(
+                onBack = { navigator.pop() },
+                onOpenLicense = { navigator.openLicense() },
+                updateNoticeVisible = updateNoticeVisible,
+            )
+        }
+
+        entry<SleepyRoute.License> {
+            LicenseScreen(onBack = { navigator.pop() })
         }
 
         // ----------------------------------------------------------------
-        composable(Routes.WIDGET_MANAGEMENT) {
+        entry<SleepyRoute.WidgetManagement> {
             WidgetManagementScreen(
-                onBack = { nav.popBackStack() },
+                onBack = { navigator.pop() },
                 onSelect = { widgetId -> navigator.openWidgetEdit(widgetId) },
             )
         }
 
-        composable(Routes.WIDGET_EDIT, arguments = widgetEditArgs) { entry ->
+        entry<SleepyRoute.WidgetEdit> { key ->
             WidgetEditScreen(
-                widgetId = entry.intArg("widgetId"),
-                onBack = { nav.popBackStack() },
+                widgetId = key.widgetId,
+                onBack = { navigator.pop() },
             )
         }
 
         // ----------------------------------------------------------------
-        composable(Routes.PERIOD_TABLES) {
+        entry<SleepyRoute.PeriodTables> {
             PeriodTablesScreen(
-                onBack = { nav.popBackStack() },
+                onBack = { navigator.pop() },
                 onOpenEdit = { periodId -> navigator.openPeriodEdit(periodId, isNew = false) },
                 onCreateNew = { newId -> navigator.createPeriodTableAndEdit(newId) },
             )
         }
 
-        composable(Routes.PERIOD_EDIT, arguments = periodEditArgs) { entry ->
-            val periodId = entry.longArg("periodId") ?: NavSession.NO_ID
-            val routeIsNew = entry.boolArg("isNew")
+        entry<SleepyRoute.PeriodEdit> { key ->
+            val periodId = key.periodId
+            val routeIsNew = key.isNew
             // 镜像 PeriodTableEditScreen 的 unsavedNew 模式:用户保存/弃表后清掉,
             // 系统的返回兜底据此决定是否弃残留行。
             var unsavedNew by rememberSaveable { mutableStateOf(routeIsNew) }
@@ -313,7 +334,7 @@ internal fun SleepyNavHost(
             BackHandler(enabled = unsavedNew) {
                 unsavedNew = false
                 mainVm.discardNewPeriodTable(periodId)
-                nav.popBackStack()
+                navigator.pop()
             }
 
             PeriodTableEditScreen(
@@ -321,11 +342,12 @@ internal fun SleepyNavHost(
                 isNewUnsaved = unsavedNew,
                 onBack = {
                     unsavedNew = false
-                    nav.popBackStack()
+                    navigator.pop()
                 },
             )
         }
-    }
+        }
+    )
 }
 
 /**
@@ -334,23 +356,25 @@ internal fun SleepyNavHost(
  * 返回键处理:栈空(在 MAIN 上)才接管 — 切到课表页 + 双击退出。
  * 其它页面的返回由 NavHost 自动 pop 处理,这里不拦(拦了反而把栈 pop 错)。
  */
+@OptIn(ExperimentalMaterial3WindowSizeClassApi::class)
 @Composable
 private fun MainRoute(
     currentTab: Tab,
     setCurrentTab: (Tab) -> Unit,
     navigator: SleepyNavigator,
     mainVm: ScheduleViewModel,
+    currentTableId: Long?,
     mainScope: CoroutineScope,
     navDock: Boolean,
     onNavDockChange: (Boolean) -> Unit,
     scheduleViewMode: ViewMode,
     onScheduleViewModeChange: (ViewMode) -> Unit,
     onCreateNewTable: () -> Unit,
+    updateNoticeVisible: Boolean,
+    pillBarState: PillBarState,
 ) {
-    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes)) }
+    val navItems = Tab.entries.map { PillNavItemSpec(it.icon, stringResource(it.labelRes), badge = updateNoticeVisible && it == Tab.Mine) }
     val holder: SaveableStateHolder = rememberSaveableStateHolder()
-    val nav = navigator.navController
-
     // 双击退出只在课表页生效;其它 tab 第一次返回回课表页。
     val ctxForExit = LocalContext.current
     var lastBackAt by remember { mutableStateOf(0L) }
@@ -367,20 +391,25 @@ private fun MainRoute(
         }
     }
 
-    if (!navDock) {
-        Scaffold(
-            modifier = Modifier.fillMaxSize(),
-            containerColor = SleepyTheme.colors.background,
-            bottomBar = {
-                PillNavigationBar(
-                    items = navItems,
-                    selectedIndex = currentTab.ordinal,
-                    onSelect = { setCurrentTab(Tab.entries[it]) },
-                    dock = false,
-                )
-            },
-        ) { padding ->
-            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+    // issue#45 ③横屏/平板: 自研 PillNavigationBar 无此形态,官方 NavigationRail 有 → 用官方。
+    // 官方没有悬浮药丸 Dock → Compact 且 navDock=true 时保留自研 PillNavigationBar(dock=true)。
+    val activity = ctxForExit as? android.app.Activity
+    val sizeClass = activity?.let { calculateWindowSizeClass(it) }
+    val isCompact = sizeClass == null || sizeClass.widthSizeClass == WindowWidthSizeClass.Compact
+
+    if (!isCompact) {
+        Row(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+            NavigationRail {
+                Tab.entries.forEach { tab ->
+                    NavigationRailItem(
+                        selected = currentTab == tab,
+                        onClick = { setCurrentTab(tab) },
+                        icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
+                        label = { Text(stringResource(tab.labelRes)) },
+                    )
+                }
+            }
+            Box(modifier = Modifier.fillMaxSize().weight(1f)) {
                 MainTabs(
                     currentTab = currentTab,
                     setCurrentTab = setCurrentTab,
@@ -391,10 +420,12 @@ private fun MainRoute(
                     onViewModeChange = onScheduleViewModeChange,
                     onCreateNewTable = onCreateNewTable,
                     holder = holder,
+                    updateNoticeVisible = updateNoticeVisible,
                 )
             }
         }
-    } else {
+    } else if (navDock) {
+        // Compact + 悬浮 Dock: 官方无此形态 → 保留自研 PillNavigationBar(dock=true)
         var dockExtraDp by remember { mutableStateOf(NavDockSpec.capsuleHeight + NavDockSpec.bottomFloat) }
         var dockOverlayPx by remember { mutableStateOf(0) }
         val densityForDock = LocalDensity.current
@@ -404,7 +435,7 @@ private fun MainRoute(
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .background(SleepyTheme.colors.background)
+                .background(MaterialTheme.colorScheme.background)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ) {
             androidx.compose.runtime.CompositionLocalProvider(
@@ -421,6 +452,7 @@ private fun MainRoute(
                         onViewModeChange = onScheduleViewModeChange,
                         onCreateNewTable = onCreateNewTable,
                         holder = holder,
+                        updateNoticeVisible = updateNoticeVisible,
                     )
                 }
             }
@@ -434,8 +466,64 @@ private fun MainRoute(
                     selectedIndex = currentTab.ordinal,
                     onSelect = { setCurrentTab(Tab.entries[it]) },
                     dock = true,
+                    state = pillBarState,
                 )
             }
         }
+    } else {
+        // Compact + 贴底: 官方有 NavigationBar → 用官方(替自研贴底形态)
+        Scaffold(
+            modifier = Modifier.fillMaxSize(),
+            containerColor = MaterialTheme.colorScheme.background,
+            bottomBar = {
+                NavigationBar {
+                    Tab.entries.forEach { tab ->
+                        NavigationBarItem(
+                            selected = currentTab == tab,
+                            onClick = { setCurrentTab(tab) },
+                            icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
+                            label = { Text(stringResource(tab.labelRes)) },
+                        )
+                    }
+                }
+            },
+        ) { padding ->
+            Box(modifier = Modifier.fillMaxSize().padding(padding)) {
+                MainTabs(
+                    currentTab = currentTab,
+                    setCurrentTab = setCurrentTab,
+                    navigator = navigator,
+                    mainVm = mainVm,
+                    mainScope = mainScope,
+                    viewMode = scheduleViewMode,
+                    onViewModeChange = onScheduleViewModeChange,
+                    onCreateNewTable = onCreateNewTable,
+                    holder = holder,
+                    updateNoticeVisible = updateNoticeVisible,
+                )
+            }
+        }
+    }
+}
+
+/**
+ * 官方 NavigationBar / NavigationRail 的 tab 图标 — Mine 且有更新提醒时右上角画主题色小圆点。
+ * 三种导航形态(贴底/Rail/悬浮 Dock)与自研 PillNavigationBar 共用同一 noticeVisible 状态。
+ */
+@Composable
+private fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean) {
+    val colors = MaterialTheme.colorScheme
+    if (!showUpdateDot) {
+        Icon(tab.icon, contentDescription = null)
+        return
+    }
+    Box {
+        Icon(tab.icon, contentDescription = null)
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopEnd)
+                .size(7.dp)
+                .background(colors.primary, androidx.compose.foundation.shape.CircleShape)
+        )
     }
 }

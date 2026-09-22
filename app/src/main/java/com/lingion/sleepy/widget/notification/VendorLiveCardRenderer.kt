@@ -24,6 +24,7 @@ enum class LiveCardVendor {
     MEIZU,
     HUAWEI,
     HONOR,
+    SAMSUNG,
     GENERIC
 }
 
@@ -38,6 +39,7 @@ fun detectLiveCardVendor(manufacturer: String = Build.MANUFACTURER): LiveCardVen
         "meizu" -> LiveCardVendor.MEIZU
         "huawei" -> LiveCardVendor.HUAWEI
         "honor" -> LiveCardVendor.HONOR
+        "samsung" -> LiveCardVendor.SAMSUNG
         else -> LiveCardVendor.GENERIC
     }
 }
@@ -94,7 +96,8 @@ object VendorLiveCardRenderer {
             LiveCardVendor.VIVO, LiveCardVendor.IQOO -> addVivoExtras(builder, state, contentIntent, context)
             LiveCardVendor.MEIZU -> addMeizuExtras(builder, state, contentIntent, context, themePrimaryArgb)
             LiveCardVendor.OPPO, LiveCardVendor.ONEPLUS, LiveCardVendor.REALME,
-            LiveCardVendor.HUAWEI, LiveCardVendor.HONOR, LiveCardVendor.GENERIC -> Unit
+            LiveCardVendor.HUAWEI, LiveCardVendor.HONOR, LiveCardVendor.SAMSUNG,
+            LiveCardVendor.GENERIC -> Unit
         }
         return builder.build()
     }

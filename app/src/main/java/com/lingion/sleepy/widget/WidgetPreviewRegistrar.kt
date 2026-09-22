@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Build
 import android.widget.RemoteViews
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.lingion.sleepy.R
 
 /**
@@ -23,6 +24,7 @@ object WidgetPreviewRegistrar {
     fun shouldRegisterGeneratedPreview(apiLevel: Int = Build.VERSION.SDK_INT): Boolean =
         apiLevel >= Build.VERSION_CODES.VANILLA_ICE_CREAM
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun register(context: Context): PreviewRegistrationResult {
         if (!shouldRegisterGeneratedPreview()) {
             return PreviewRegistrationResult.UNSUPPORTED_API
@@ -33,11 +35,13 @@ object WidgetPreviewRegistrar {
         ALL_WIDGET_VARIANTS.forEach { variant ->
             val provider = ComponentName(context, variant.receiverClass)
             try {
-                manager.setWidgetPreview(
-                    provider,
-                    AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
-                    RemoteViews(context.packageName, R.layout.widget_bitmap_container)
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    manager.setWidgetPreview(
+                        provider,
+                        AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
+                        RemoteViews(context.packageName, R.layout.widget_bitmap_container)
+                    )
+                }
                 registered++
             } catch (error: RuntimeException) {
                 failed++

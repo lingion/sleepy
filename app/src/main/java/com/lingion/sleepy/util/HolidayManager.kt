@@ -76,8 +76,9 @@ object HolidayManager {
         return date.dayOfWeek.value == 6 || date.dayOfWeek.value == 7
     }
 
-    /** 判断某日期是否应该灰显（根据用户设置，含用户范围化覆盖） */
-    suspend fun shouldGrey(ctx: Context, date: LocalDate): Boolean {
+    /** 判断某日期是否应该灰显（根据用户设置，含用户范围化覆盖）。
+     *  [tableId] 给定时同时查该表调休映射: 命中映射的放假日那天要上课, 永不灰 (issue#44)。 */
+    suspend fun shouldGrey(ctx: Context, date: LocalDate, tableId: Long? = null): Boolean {
         val ranges = AppPrefs.getHolidayRanges(ctx)
         val networkEntries = getYearEntries(ctx, date.year)
         val merged = HolidayRangeOps.mergeSegments(networkEntries, ranges)
@@ -85,13 +86,16 @@ object HolidayManager {
         val workdaysForWeekend = if (AppPrefs.isHolidayGreyWeekend(ctx) && AppPrefs.isHolidayIgnoreWorkday(ctx)) {
             workdays
         } else emptySet()
+        val hasTransfer = tableId != null &&
+            HolidayRangeOps.HolidayTransferOps.transferFor(date, AppPrefs.getHolidayTransfers(ctx, tableId)) != null
         return decideGrey(
             date = date,
             holidays = holidays,
             workdays = workdaysForWeekend,
             greyHoliday = AppPrefs.isHolidayGreyHoliday(ctx),
             greyWeekend = AppPrefs.isHolidayGreyWeekend(ctx),
-            ignoreWorkday = AppPrefs.isHolidayIgnoreWorkday(ctx)
+            ignoreWorkday = AppPrefs.isHolidayIgnoreWorkday(ctx),
+            dateHasTransfer = hasTransfer
         )
     }
 
@@ -205,8 +209,12 @@ object HolidayManager {
         workdays: Set<LocalDate>,
         greyHoliday: Boolean,
         greyWeekend: Boolean,
-        ignoreWorkday: Boolean
+        ignoreWorkday: Boolean,
+        dateHasTransfer: Boolean = false
     ): Boolean {
+        // issue#44: 命中调休映射的放假日 = 那天要上课(上目标日的课), 永不灰
+        if (dateHasTransfer) return false
+
         // 法定节假日（独立开关）
         if (greyHoliday && date in holidays) return true
 

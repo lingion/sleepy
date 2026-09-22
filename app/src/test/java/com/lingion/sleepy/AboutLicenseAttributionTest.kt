@@ -386,6 +386,16 @@ class AboutLicenseAttributionTest {
         }
     }
 
+    @Test
+    fun `license expansion uses the shared enter and exit animations`() {
+        val src = File(basePath.parentFile, "java/com/lingion/sleepy/ui/screen/mine/LicenseScreen.kt")
+            .readText()
+        val animationCount = Regex("enter = expandVertically\\(\\) \\+ fadeIn\\(\\)").findAll(src).count()
+        assertTrue("致谢导语和学校卡都必须使用统一展开动画", animationCount >= 2)
+        assertTrue("致谢收起必须使用 shrinkVertically + fadeOut", src.contains("exit = shrinkVertically() + fadeOut()"))
+        assertTrue("可展开内容必须始终由 AnimatedVisibility 管理,不能用 if 直接移除", src.contains("visible = expanded && expandedContent != null"))
+    }
+
     /** 自检: 统计 token 总数与跨校/单校/贡献者分类 (commit 前打印日志, 漂移检测助手) */
     @Test
     fun `attribution coverage summary`() {

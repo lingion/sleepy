@@ -49,7 +49,7 @@ fun ColorPickerDialog(
     onConfirm: (String) -> Unit,
     onDismiss: () -> Unit
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     // 解析初始 HSV
     val initialHSV = remember {

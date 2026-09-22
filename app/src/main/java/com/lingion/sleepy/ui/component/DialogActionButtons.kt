@@ -21,6 +21,10 @@ import com.lingion.sleepy.util.DialogActionsLayoutPolicyBridge
 import com.lingion.sleepy.util.DialogButtonsLayoutPolicy
 
 /**
+ * [intentional custom] 官方 AlertDialog 的 textButton 槽 = 裸文字按钮; 用户 2026-09-16
+ * 明确「裸 TextButton 无背景看不出可点」→ 色块按钮 + 宽度自适应换行是 Sleepy 领域需求,
+ * 官方无等价组合件, 保留薄层。内部消费官方 Button, 全部官方 token。
+ *
  * 弹窗动作按钮行 — 全 app 弹窗 confirm/dismiss 唯一入口 (2026-09-16 用户:
  * 裸 TextButton 纯文字无背景, 用户看不出是可点的色块, 也不知道按钮边界在哪)。
  *
@@ -56,7 +60,7 @@ fun DialogActionButtons(
     confirmEnabled: Boolean = true,
     modifier: Modifier = Modifier
 ) {
-    val colors = SleepyTheme.colors
+    val colors = MaterialTheme.colorScheme
 
     BoxWithConstraints(modifier = modifier.fillMaxWidth()) {
         val availableWidth = maxWidth.value
