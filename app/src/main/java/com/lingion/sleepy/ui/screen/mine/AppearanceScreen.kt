@@ -204,12 +204,12 @@ fun AppearanceScreen(
             onBack = { showEditor = false; editingTheme = null },
             onSaved = { saved ->
                 CustomThemeStore.save(context, saved)
+                AppPrefs.setThemeKey(context, ThemePresets.CUSTOM_KEY_PREFIX + saved.id)
                 customListVersion++
                 // 保存即应用(2026-09-21 用户反馈): 无条件把 theme_key 落到本次保存的主题 —
                 // themeKeyFlow 只听 sleepy_prefs 的 theme_key, 只写 custom_themes 文件
                 // 不会触发 SleepyThemeProvider 重组, app 配色纹丝不动。新建主题此前更是
                 // "保存了但从没被应用过"。
-                AppPrefs.setThemeKey(context, ThemePresets.CUSTOM_KEY_PREFIX + saved.id)
                 refreshWidgets()
                 showEditor = false
                 editingTheme = null
@@ -358,15 +358,15 @@ private fun CustomThemeCard(
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ColorSwatch(scheme.primary)
                 ColorSwatch(scheme.secondary)
                 ColorSwatch(scheme.tertiary)
                 Spacer(Modifier.weight(1f))
-                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 24dp 嵌 28dp 色板行不撑高
+                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 28dp 与色板同高, 首行结构与 Preset 卡完全一致不撑高
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(28.dp)
                         .clip(SleepyTheme.shapes.small)
                         .background(colors.surfaceContainerHighest)
                         .noRippleClickable(onEdit),
