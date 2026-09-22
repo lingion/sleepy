@@ -434,8 +434,14 @@ object SleepyTheme {
 fun SleepyThemeProvider(
     darkTheme: Boolean = false,
     themeKey: String = ThemePresets.KEY_DEFAULT,
+    // Invalidation token for edits to the selected custom theme with the same id.
+    // The provider intentionally does not inspect this value; reading it as a parameter
+    // makes Compose re-run the custom-theme lookup when the backing JSON changes.
+    customThemeVersion: String = "",
     content: @Composable () -> Unit
 ) {
+    @Suppress("UNUSED_VARIABLE")
+    val customThemeInvalidation = customThemeVersion
     val context = LocalContext.current
 
     // "跟随系统" 走 Material You 动态取色（API 31+）；低版本降级到默认。

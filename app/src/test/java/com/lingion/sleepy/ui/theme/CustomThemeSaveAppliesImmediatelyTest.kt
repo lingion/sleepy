@@ -45,6 +45,16 @@ class CustomThemeSaveAppliesImmediatelyTest {
     private val appearanceSource: String by lazy {
         loadSource("ui/screen/mine/AppearanceScreen.kt")
     }
+    private val mainSource: String by lazy {
+        loadSource("MainActivity.kt")
+    }
+    private val themeSource: String by lazy {
+        loadSource("ui/theme/Theme.kt")
+    }
+    private val storeSource: String by lazy {
+        loadSource("data/CustomThemeStore.kt")
+    }
+
 
     /** 取 AppearanceScreen 的 onSaved lambda 体 — 到下一个 `},` (onDeleted) 为止 */
     private val onSavedLambda: String by lazy {
@@ -66,7 +76,30 @@ class CustomThemeSaveAppliesImmediatelyTest {
         )
     }
 
-    /** 契约 2: onSaved 必须无条件调 refreshWidgets() —
+    /** 契约 2: 同 id 编辑也必须触发 provider 重组。
+     * themeKeyFlow 的 distinctUntilChanged 会吞掉相同 key, 所以必须订阅
+     * custom_themes 文档内容变化作为独立 invalidation 信号。 */
+    @Test
+    fun same_id_custom_theme_edit_invalidates_provider() {
+        assertTrue(
+            "CustomThemeStore must expose changes to the custom_themes document",
+            storeSource.contains("fun changes(ctx: Context): Flow<String>")
+        )
+        assertTrue(
+            "MainActivity must collect custom-theme changes",
+            mainSource.contains("CustomThemeStore.changes(this@MainActivity)")
+        )
+        assertTrue(
+            "MainActivity must pass custom-theme invalidation to SleepyThemeProvider",
+            mainSource.contains("customThemeVersion = customThemesJson")
+        )
+        assertTrue(
+            "SleepyThemeProvider must accept the custom-theme invalidation token",
+            themeSource.contains("customThemeVersion: String")
+        )
+    }
+
+    /** 契约 3: onSaved 必须无条件调 refreshWidgets() —
      *  原实现把 refreshWidgets() 锁在 `if(currentKey == CUSTOM_KEY_PREFIX + saved.id)` 内,
      *  对新建主题这个守卫恒假 → widget 永远不刷。 */
     @Test

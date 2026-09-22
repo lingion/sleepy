@@ -279,9 +279,15 @@ private fun PresetThemeCard(preset: ThemePreset, selected: Boolean, onClick: () 
                 ColorSwatch(scheme.tertiary)
             }
             Spacer(Modifier.height(12.dp))
+            // ✓槽位恒定 20dp 占位,图标仅在选中时渲染进槽位 —— 真机字体缩放(fontScale<1)
+            // 下 titleSmall 行高会缩到 20dp 以下,条件渲染=选中那刻凭空多一个决定行高的孩子
+            // =选中卡比未选中卡高(2026-09-22 用户实测)。禁改回 raw `if (selected) Icon(...)`。
+            // 不用 alpha(0f) 隐藏:读屏会照常播报"已选中",占位 Box 才是布局+a11y 双正确。
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Text(stringResource(preset.nameRes), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.Medium), color = colors.onSurface, modifier = Modifier.weight(1f))
-                if (selected) Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                    if (selected) Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                }
             }
         }
     }
@@ -390,8 +396,16 @@ private fun CustomThemeCard(
                     overflow = androidx.compose.ui.text.style.TextOverflow.Ellipsis,
                     modifier = Modifier.weight(1f)
                 )
-                if (selected) {
-                    Icon(Icons.Outlined.Check, stringResource(R.string.selected), tint = colors.primary, modifier = Modifier.size(20.dp))
+                // 与预设卡相同:固定 20dp 槽位,避免选中态改变标题行高度。
+                Box(Modifier.size(20.dp), contentAlignment = Alignment.Center) {
+                    if (selected) {
+                        Icon(
+                            Icons.Outlined.Check,
+                            stringResource(R.string.selected),
+                            tint = colors.primary,
+                            modifier = Modifier.size(20.dp)
+                        )
+                    }
                 }
             }
         }

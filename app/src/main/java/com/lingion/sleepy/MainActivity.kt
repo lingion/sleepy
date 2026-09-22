@@ -74,6 +74,7 @@ import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
 import com.lingion.sleepy.ui.screen.mine.LicenseScreen
+import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -165,7 +166,15 @@ class MainActivity : ComponentActivity() {
             fun applyTheme() { dark = AppPrefs.isDarkMode(this@MainActivity, systemDark) }
             val deepLinkCourse by editingCourseFlow.collectAsState()
             val themeKey by AppPrefs.themeKeyFlow(this@MainActivity).collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
-            SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
+            // The selected custom theme can be edited in place, so its key does not change.
+            // Subscribe to the custom-theme document as a separate invalidation signal.
+            val customThemesJson by CustomThemeStore.changes(this@MainActivity)
+                .collectAsState(initial = "")
+            SleepyThemeProvider(
+                darkTheme = dark,
+                themeKey = themeKey,
+                customThemeVersion = customThemesJson
+            ) {
                 AppRoot(
                     themeMode = themeMode,
                     onThemeModeChange = { mode ->
