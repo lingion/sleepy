@@ -502,7 +502,12 @@ object JwCaptureDump {
                 put(MediaStore.Downloads.RELATIVE_PATH, "${Environment.DIRECTORY_DOWNLOADS}/$RELATIVE_DIR")
                 put(MediaStore.Downloads.IS_PENDING, 1)
             }
-            val collection = MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            val collection = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                MediaStore.Downloads.getContentUri(MediaStore.VOLUME_EXTERNAL_PRIMARY)
+            } else {
+                @Suppress("DEPRECATION")
+                MediaStore.Files.getContentUri("external")
+            }
             val resolver = ctx.contentResolver
             val uri = resolver.insert(collection, values) ?: return null
             resolver.openOutputStream(uri)?.use { it.write(bytes) } ?: return null

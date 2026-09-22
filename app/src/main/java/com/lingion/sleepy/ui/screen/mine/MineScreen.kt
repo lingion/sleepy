@@ -64,6 +64,7 @@ fun MineScreen(
     val state by viewModel.state.collectAsState()
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val widgetsRefreshedMessage = stringResource(R.string.mine_refresh_widgets_done)
     val scope = rememberCoroutineScope()
     val snackbar = remember { SnackbarHostState() }
 
@@ -144,7 +145,7 @@ fun MineScreen(
                     onClick = {
                         scope.launch {
                             com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(context)
-                            showSnack(context.getString(R.string.mine_refresh_widgets_done))
+                            showSnack(widgetsRefreshedMessage)
                         }
                     },
                     modifier = Modifier.fillMaxWidth().height(SleepyTheme.Buttons.regularHeight),

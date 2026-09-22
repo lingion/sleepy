@@ -56,6 +56,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextDecoration
@@ -82,7 +83,16 @@ fun AboutScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val configuration = LocalConfiguration.current
     val scope = rememberCoroutineScope()
+    val feedbackSubject = stringResource(R.string.about_feedback_email_subject)
+    val feedbackBody = stringResource(R.string.about_feedback_email_body)
+    val noMailAppMessage = stringResource(R.string.about_feedback_no_mail_app)
+    val qqGroupNumber = stringResource(R.string.about_qq_group_number)
+    val qqCopiedMessage = stringResource(R.string.about_qq_copied)
+    val noQqMessage = stringResource(R.string.about_qq_no_qq)
+    val unknownErrorMessage = stringResource(R.string.error_unknown)
+    val latestVersionFormat = stringResource(R.string.about_update_latest)
     var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
     var downloadJob by remember { mutableStateOf<Job?>(null) }
     val snackbarHostState = remember { SnackbarHostState() }
@@ -96,7 +106,7 @@ fun AboutScreen(
         brand = AndroidBuild.BRAND,
         model = AndroidBuild.MODEL,
         resolution = "${context.resources.displayMetrics.widthPixels}x${context.resources.displayMetrics.heightPixels}",
-        locale = context.resources.configuration.locales[0].toLanguageTag(),
+        locale = configuration.locales[0].toLanguageTag(),
         isDebug = BuildConfig.DEBUG,
     )
 
@@ -112,19 +122,19 @@ fun AboutScreen(
 
     fun openEmailFeedback() {
         val intent = Intent(Intent.ACTION_SENDTO, Uri.parse(FeedbackComposer.mailtoUri(
-            subject = context.getString(R.string.about_feedback_email_subject),
-            body = context.getString(R.string.about_feedback_email_body),
+            subject = feedbackSubject,
+            body = feedbackBody,
             diag = diagnostic(),
         )))
         if (intent.resolveActivity(context.packageManager) != null) {
             context.startActivity(intent)
         } else {
-            scope.launch { snackbarHostState.showSnackbar(context.getString(R.string.about_feedback_no_mail_app)) }
+            scope.launch { snackbarHostState.showSnackbar(noMailAppMessage) }
         }
     }
 
     fun joinQqGroup() {
-        val group = context.getString(R.string.about_qq_group_number)
+        val group = qqGroupNumber
         context.getSystemService(android.content.ClipboardManager::class.java)
             ?.setPrimaryClip(android.content.ClipData.newPlainText("qq_group", group))
         // 拉起降级链(经查证): 群号直拉群资料卡(show_pslcard→show_pslg)
@@ -151,7 +161,7 @@ fun AboutScreen(
         }.isSuccess
         scope.launch {
             snackbarHostState.showSnackbar(
-                context.getString(if (launched) R.string.about_qq_copied else R.string.about_qq_no_qq)
+                if (launched) qqCopiedMessage else noQqMessage
             )
         }
     }
@@ -170,7 +180,7 @@ fun AboutScreen(
                         uiState = UpdateUiState.NoUpdate(info.version)
                     }
                 }
-                .onFailure { uiState = UpdateUiState.Failed(it.message ?: context.getString(R.string.error_unknown), isCheckFailure = true) }
+                .onFailure { uiState = UpdateUiState.Failed(it.message ?: unknownErrorMessage, isCheckFailure = true) }
         }
     }
 
@@ -190,7 +200,7 @@ fun AboutScreen(
                     uiState = UpdateUiState.UpdateAvailable(version, changelog, url)
                 } else {
                     uiState = UpdateUiState.Failed(
-                        e.message ?: context.getString(R.string.error_unknown), version, changelog, url
+                        e.message ?: unknownErrorMessage, version, changelog, url
                     )
                 }
             }
@@ -204,11 +214,7 @@ fun AboutScreen(
     LaunchedEffect(uiState) {
         val current = uiState
         if (current is UpdateUiState.NoUpdate) {
-            scope.launch {
-                snackbarHostState.showSnackbar(
-                    context.getString(R.string.about_update_latest, current.version)
-                )
-            }
+            snackbarHostState.showSnackbar(latestVersionFormat.format(current.version))
             uiState = UpdateUiState.Idle
         }
     }

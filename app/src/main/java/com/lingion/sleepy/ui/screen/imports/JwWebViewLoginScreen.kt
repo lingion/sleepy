@@ -574,7 +574,19 @@ private fun JwWebView(
                             if (userAgent?.isNotBlank() == true) conn.setRequestProperty("User-Agent", userAgent)
                             conn.connect()
                             if (conn.responseCode !in 200..299) null
-                            else conn.inputStream.use { ins -> ins.readNBytes(2 * 1024 * 1024) }
+                            else conn.inputStream.use { ins ->
+                                val maxBytes = 2 * 1024 * 1024
+                                val output = java.io.ByteArrayOutputStream(maxBytes)
+                                val buffer = ByteArray(16 * 1024)
+                                var remaining = maxBytes
+                                while (remaining > 0) {
+                                    val read = ins.read(buffer, 0, minOf(buffer.size, remaining))
+                                    if (read < 0) break
+                                    output.write(buffer, 0, read)
+                                    remaining -= read
+                                }
+                                output.toByteArray()
+                            }
                         }.getOrNull()
                         JwDiagnosticSession.recordDownload(
                             downloadUrl, userAgent, contentDisposition, mimeType, contentLength, body

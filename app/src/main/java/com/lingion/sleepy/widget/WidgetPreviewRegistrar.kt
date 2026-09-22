@@ -33,11 +33,13 @@ object WidgetPreviewRegistrar {
         ALL_WIDGET_VARIANTS.forEach { variant ->
             val provider = ComponentName(context, variant.receiverClass)
             try {
-                manager.setWidgetPreview(
-                    provider,
-                    AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
-                    RemoteViews(context.packageName, R.layout.widget_bitmap_container)
-                )
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                    manager.setWidgetPreview(
+                        provider,
+                        AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
+                        RemoteViews(context.packageName, R.layout.widget_bitmap_container)
+                    )
+                }
                 registered++
             } catch (error: RuntimeException) {
                 failed++

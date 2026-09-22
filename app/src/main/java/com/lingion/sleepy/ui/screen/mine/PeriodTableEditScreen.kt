@@ -86,6 +86,9 @@ fun PeriodTableEditScreen(
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
+    val courseNodeFormat = stringResource(R.string.course_node_format)
+    val deleteBlockedFormat = stringResource(R.string.period_table_delete_blocked)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val scheduleState by viewModel.state.collectAsState()
 
@@ -306,7 +309,7 @@ fun PeriodTableEditScreen(
                             slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
                             slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = context.getString(R.string.edit_table_validation_error)
+                            error = validationErrorMessage
                             return@Button
                         }
                         error = null
@@ -392,7 +395,7 @@ fun PeriodTableEditScreen(
                         val oldT = change.oldTime ?: "?"
                         val newT = change.newTime ?: "?"
                         val nodesTag = if (change.changedNodes.size == 1) {
-                            context.getString(R.string.course_node_format, change.changedNodes.first().toString())
+                            courseNodeFormat.format(change.changedNodes.first().toString())
                         } else {
                             "${change.changedNodes.first()}-${change.changedNodes.last()}"
                         }
@@ -453,7 +456,7 @@ fun PeriodTableEditScreen(
                                     onBack()
                                 } else {
                                     val bound = scheduleState.tables.count { it.periodTableId == periodTable.id }
-                                    deleteBlockedMsg = context.getString(R.string.period_table_delete_blocked, bound)
+                                    deleteBlockedMsg = deleteBlockedFormat.format(bound)
                                 }
                             }
                         },

@@ -115,6 +115,10 @@ fun ImportSheet(
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val cannotReadFileMessage = stringResource(R.string.cannot_read_file)
+    val readFailedFormat = stringResource(R.string.read_failed)
+    val importSuccessMessage = stringResource(R.string.import_success)
+    val defaultTableName = stringResource(R.string.default_table_name)
 
     var textExpanded by remember { mutableStateOf(false) }
     var inputText by remember { mutableStateOf("") }
@@ -186,12 +190,12 @@ fun ImportSheet(
                 isLoading = true
                 try {
                     val text = context.contentResolver.openInputStream(it)?.bufferedReader()?.use { r -> r.readText() }
-                        ?: throw Exception(context.getString(R.string.cannot_read_file))
+                        ?: throw Exception(cannotReadFileMessage)
                     preview = buildImportPreview(text, state, context) { msg -> errorMsg = msg }
                     // 注意: 不要在这里 onDismiss() —— sheet 关掉后 preview state 会随之销毁, dialog 永远不弹。
                     // preview != null 时 ImportPreviewDialog 会在 sheet 之上显示; 用户点确认/取消后再清 state。
                 } catch (e: Exception) {
-                    errorMsg = context.getString(R.string.read_failed, e.message)
+                    errorMsg = readFailedFormat.format(e.message)
                 } finally {
                     isLoading = false
                 }
@@ -226,7 +230,6 @@ fun ImportSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
-        BoxWithConstraints {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -398,17 +401,13 @@ fun ImportSheet(
 
         // 错误反馈通道: 上面 errorMsg → snackbar.showSnackbar 依赖此 host,
         // 之前 sheet 内无 host → 导入失败提示被静默吞掉。默认 M3 配色, 与其余 5 处一致。
-        SnackbarHost(
-            hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter)
-        )
+        SnackbarHost(hostState = snackbar)
         // 导入成功提示: 不再跳编辑课表页(假保存闸), 用 snackbar 明示已落库
         LaunchedEffect(preview, pendingMode) {
             if (preview == null && pendingMode == null && importJustApplied) {
                 importJustApplied = false
-                snackbar.showSnackbar(context.getString(R.string.import_success))
+                snackbar.showSnackbar(importSuccessMessage)
             }
-        }
         }
     }
 
@@ -513,7 +512,7 @@ fun ImportSheet(
                     existingTable?.startDate ?: java.time.LocalDate.now().toString()
                 }
                 confirmedTableName = currentPreview.parseResult.tableName.ifBlank {
-                    existingTable?.name ?: context.getString(R.string.default_table_name)
+                    existingTable?.name ?: defaultTableName
                 }
                 // v7.10.16k 无损合并(用户 2026-09-03「哪个大用哪个, 最完整优先」):
                 // 不再 ifBlank 单选 — 老表作息与导入作息逐节合并, 节次数取双方最大,
@@ -718,6 +717,7 @@ private enum class ImportFormat {
 @Composable
 private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
     val colors = MaterialTheme.colorScheme
+    val aiPromptText = stringResource(R.string.ai_prompt_text)
     val context = LocalContext.current
 
     val titleRes = when (format) {
@@ -847,7 +847,7 @@ private fun FormatDetailDialog(format: ImportFormat, onDismiss: () -> Unit) {
                                 cm.setPrimaryClip(
                                     ClipData.newPlainText(
                                         "prompt",
-                                        context.getString(R.string.ai_prompt_text)
+                                        aiPromptText
                                             .replace("\\n", "\n")
                                             .replace("\\t", "\t")
                                             .replace("&lt;", "<")
@@ -1257,6 +1257,10 @@ private fun ImportConfirmDialog(
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val startDateRequiredMessage = stringResource(R.string.import_start_date_required)
+    val startDateFormatMessage = stringResource(R.string.start_date_format)
+    val slotTimeRequiredFormat = stringResource(R.string.slot_time_required)
+    val slotTimeInvalidFormat = stringResource(R.string.slot_time_invalid)
     val fieldColors = SleepyTheme.fieldColors()
     var rows by remember(timeJson) {
         mutableStateOf(TimeTableUtils.parseTimeSlotRows(timeJson))
@@ -1340,12 +1344,12 @@ private fun ImportConfirmDialog(
                     confirmText = stringResource(R.string.import_confirm),
                     onConfirm = {
                         if (startDate.isBlank()) {
-                            errorMsg = context.getString(R.string.import_start_date_required)
+                            errorMsg = startDateRequiredMessage
                             return@DialogActionButtons
                         }
                         val dateRegex = Regex("""^\d{4}-\d{2}-\d{2}$""")
                         if (!dateRegex.matches(startDate)) {
-                            errorMsg = context.getString(R.string.start_date_format)
+                            errorMsg = startDateFormatMessage
                             return@DialogActionButtons
                         }
                         // v1.0.56 T6 修正: 绑了作息表(id>0)时以表的 timeJson 为真源;
@@ -1357,7 +1361,7 @@ private fun ImportConfirmDialog(
                         )
                         val emptyRows = effectiveRows.filter { it.start.isBlank() || it.end.isBlank() }
                         if (emptyRows.isNotEmpty()) {
-                            errorMsg = context.getString(R.string.slot_time_required, emptyRows.first().node)
+                            errorMsg = slotTimeRequiredFormat.format(emptyRows.first().node)
                             return@DialogActionButtons
                         }
                         val timeRegex = Regex("""^\d{2}:\d{2}$""")
@@ -1366,7 +1370,7 @@ private fun ImportConfirmDialog(
                             it.start >= it.end
                         }
                         if (invalidRows.isNotEmpty()) {
-                            errorMsg = context.getString(R.string.slot_time_invalid, invalidRows.first().node)
+                            errorMsg = slotTimeInvalidFormat.format(invalidRows.first().node)
                             return@DialogActionButtons
                         }
                         errorMsg = null

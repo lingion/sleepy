@@ -249,6 +249,7 @@ private fun AppRoot(
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
+    val mainState by mainVm.state.collectAsState()
     val navigator = rememberSleepyNavigator()
     val nav = navigator.backStack
     // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
@@ -279,7 +280,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
-        currentTableId = mainVm.state.value.currentTable?.id,
+        currentTableId = mainState.currentTable?.id,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {
@@ -325,6 +326,7 @@ internal fun MainTabs(
         }
         Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
             val ctx = LocalContext.current
+            val importCoursesLabel = stringResource(com.lingion.sleepy.R.string.import_courses)
             // 空态导入引导: autoShowImportOnce 置位过 → 本次进管理页自动弹 ImportSheet, 随即消费清零。
             // pendingImportText != null 是另一路 (外部 app 分享课表文本进来) 的既有自动弹层, 语义不同并存。
             val autoOnce = MainActivity.autoShowImportOnceState.value
@@ -335,7 +337,7 @@ internal fun MainTabs(
                 ImportDraft(
                     id = entity.id,
                     name = snapshot.tableName.ifBlank { snapshot.school.name },
-                    details = "${snapshot.courses.size} ${ctx.getString(com.lingion.sleepy.R.string.import_courses)}",
+                    details = "${snapshot.courses.size} $importCoursesLabel",
                 )
             }
             ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable,

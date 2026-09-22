@@ -153,7 +153,7 @@ class HolidaySettingsContractTest {
         // NavHost 里 HolidaySettingsScreen(tableId = currentTableId) — 语义等价。
         assertTrue(
             Regex(
-                """currentTableId\s*=\s*mainVm\.state\.value\.currentTable\?\.id"""
+                """currentTableId\s*=\s*(?:mainVm\.state\.value|mainState)\.currentTable\?\.id"""
             ).containsMatchIn(main)
         )
         assertTrue(

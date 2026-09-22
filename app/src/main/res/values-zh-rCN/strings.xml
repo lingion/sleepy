@@ -864,4 +864,27 @@
     <string name="jw_import_exit_continue">继续导入</string>
     <string name="jw_import_exit_keep_draft">保留草稿</string>
     <string name="jw_import_exit_delete_draft">删除草稿</string>
+    <string name="import_three_layers_dropped">以下日期存在超过两层的冲突课程,已跳过:%1$s</string>
+    <string name="import_three_layers_kept">提示:%1$s存在超过两层重叠的课程,已保留</string>
+    <string name="conflict_default_top_title">选择默认置顶课程</string>
+    <string name="color_toast_last_group">最后一节将跟随组色</string>
+    <string name="import_multi_location_warning">部分课程存在多个上课地点</string>
+    <string name="import_multi_location_warning_detail">「%1$s」有 %2$d 个不同上课地点,导入后会作为独立节次展示</string>
+    <string name="today_nav_today_short">今天</string>
+    <string name="jw_diag_session_expired">%1$s 的会话已过期或未登录,请重新登录后停留到个人课表页再抓取</string>
+    <string name="jw_diag_no_container">%1$s 页面未找到课表容器,可能仍在加载或教务系统已升级</string>
+    <string name="jw_diag_header_no_node">%1$s 课表缺少逐节行头</string>
+    <string name="jw_diag_image_cells">%1$s 课表单元格为图片,无法识别,请使用 HTML/CSV 或手动导入</string>
+    <string name="jw_diag_empty_semester">%1$s 页面声明本学期暂无课程,请确认所选学期</string>
+    <string name="jw_diag_wrong_protocol">%1$s 标注协议与实际页面不一致,学校可能已切换教务系统</string>
+    <string name="jw_diag_unknown_empty">%1$s 解析结果为空,请重试或反馈开发者。诊断特征:%2$s</string>
+    <string name="jw_diag_campus_vpn_hint">该校教务系统可能仅校内可访问,请连接校园网或 VPN</string>
+    <string name="jw_diag_qz_vpn_hint">强智无法加载时可能是会话过期或网络受限</string>
+    <string name="jw_fetch_session_expired">会话已过期,请重新登录后再点导入</string>
+    <string name="jw_fetch_parse_failed">已获取数据但未能解析出课程,请进入个人课表页</string>
+    <string name="jw_fetch_network">网络异常,请检查网络连接后重试</string>
+    <string name="jw_fetch_empty">本学期暂无课程,请确认是否选对学期</string>
+    <string name="about_update_dismiss">关闭更新提示</string>
+    <string name="irregular_time_format">非常规开始/结束时间格式应为 HH:mm</string>
+    <string name="irregular_time_order">非常规开始时间必须早于结束时间</string>
 </resources>
