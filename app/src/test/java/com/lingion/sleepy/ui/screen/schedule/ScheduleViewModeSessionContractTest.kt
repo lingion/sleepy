@@ -114,8 +114,9 @@ class ScheduleViewModeSessionContractTest {
             .toList()
         assertTrue("MainTabs call sites not found (NavHost MainRoute / MainActivity)", callSites.size >= 2)
         callSites.forEach { match ->
-            // 取该调用起 800 字符覆盖命名实参区(原 substringBefore(")") 遇 lambda 即截断)
-            val tail = mainSource.substring(match.range.first, match.range.first + 800)
+            // 取该调用起 800 字符覆盖命名实参区(原 substringBefore(")") 遇 lambda 即截断);
+            // 末位调用点可能贴近文件尾, 钳制到 length 防越界。
+            val tail = mainSource.substring(match.range.first, minOf(match.range.first + 800, mainSource.length))
             assertTrue(
                 "Every MainTabs call site must pass viewMode = scheduleViewMode",
                 Regex("""viewMode\s*=\s*scheduleViewMode""").containsMatchIn(tail)

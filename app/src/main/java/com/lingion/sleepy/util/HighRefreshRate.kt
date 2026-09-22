@@ -1,6 +1,7 @@
 package com.lingion.sleepy.util
 
 import android.app.Activity
+import android.os.Build
 import android.view.Display
 
 /**
@@ -17,7 +18,13 @@ object HighRefreshRate {
 
     /** 按开关状态应用; 返回实际生效的刷率(Hz, 0=未设置/不可用) */
     fun apply(activity: Activity, enabled: Boolean): Float {
-        val display: Display = activity.display ?: return 0f
+        // Activity#getDisplay 自 API 30 才稳定; 30 以下走 WindowManager#getDefaultDisplay 兜底
+        val display: Display = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            activity.display
+        } else {
+            @Suppress("DEPRECATION")
+            activity.windowManager.defaultDisplay
+        } ?: return 0f
         val attrs = activity.window.attributes
         if (!enabled) {
             if (attrs.preferredDisplayModeId != 0) {

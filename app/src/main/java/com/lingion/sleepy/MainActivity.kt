@@ -158,6 +158,9 @@ class MainActivity : ComponentActivity() {
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("mock_update", false)) {
+            com.lingion.sleepy.util.UpdateNotifier.showMockUpdate()
+        }
         setContent {
             // uiNightModeState.value 变化(composition-observed) → systemDark 重算 →
             // dirty 指派给 remember(systemDark) 触发 dark 重算; 此前 isSystemInDarkTheme()
@@ -249,6 +252,9 @@ private fun AppRoot(
     var navDock by remember { mutableStateOf(AppPrefs.isNavDock(context)) }
     val mainScope = rememberCoroutineScope()
     val mainVm: ScheduleViewModel = viewModel()
+    // composition 内读 StateFlow.value 会被 lint(StateFlowValueCalledInComposition)拦:
+    // 快照值不随 flow 更新重组。改订阅, holiday 设置页拿到的 tableId 恒为当前值。
+    val mainState by mainVm.state.collectAsState()
     val navigator = rememberSleepyNavigator()
     val nav = navigator.backStack
     // 底栏 thumb 状态提升到 NavDisplay 之外: entry<Main> 在 push 子页时会被销毁,
@@ -279,7 +285,7 @@ private fun AppRoot(
         deepLinkCourse = deepLinkCourse,
         onDeepLinkConsumed = onDeepLinkConsumed,
         mainVm = mainVm,
-        currentTableId = mainVm.state.value.currentTable?.id,
+        currentTableId = mainState.currentTable?.id,
         mainScope = mainScope,
         onCreateNewTable = {
             mainScope.launch {
@@ -343,6 +349,7 @@ internal fun MainTabs(
                 // 与 PeriodTablesScreen 新建按钮同一套 pendingNew discard 残留语义
                 onCreateNewPeriodTableRequested = { newId -> navigator.createPeriodTableAndEdit(newId) },
                 onManualAdd = { navigator.openAddCourse() }, onEditCurrentTable = { navigator.openEditTable() }, onExportRequested = { navigator.openExport() },
+                onOpenAllTables = { navigator.openAllTables() },
                 drafts = drafts,
                 onRestoreDraft = { id ->
                     ctx.startActivity(Intent(ctx, JwImportActivity::class.java).putExtra(JwImportActivity.EXTRA_DRAFT_ID, id))
@@ -357,6 +364,7 @@ internal fun MainTabs(
         Tab.Mine -> holder.SaveableStateProvider(currentTab.name) {
             MineScreen(
                 onOpenAllTables = { navigator.openAllTables() },
+                onOpenCourseList = { navigator.openCourseList() },
                 onOpenPeriodTables = { navigator.openPeriodTables() },
                 onOpenAppearance = { navigator.openAppearance() },
                 onOpenGeneral = { navigator.openGeneral() },

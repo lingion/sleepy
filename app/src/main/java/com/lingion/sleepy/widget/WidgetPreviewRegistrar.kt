@@ -7,6 +7,7 @@ import android.content.Context
 import android.os.Build
 import android.widget.RemoteViews
 import android.util.Log
+import androidx.annotation.RequiresApi
 import com.lingion.sleepy.R
 
 /**
@@ -23,6 +24,7 @@ object WidgetPreviewRegistrar {
     fun shouldRegisterGeneratedPreview(apiLevel: Int = Build.VERSION.SDK_INT): Boolean =
         apiLevel >= Build.VERSION_CODES.VANILLA_ICE_CREAM
 
+    @RequiresApi(Build.VERSION_CODES.VANILLA_ICE_CREAM)
     fun register(context: Context): PreviewRegistrationResult {
         if (!shouldRegisterGeneratedPreview()) {
             return PreviewRegistrationResult.UNSUPPORTED_API

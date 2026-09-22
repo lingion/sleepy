@@ -23,6 +23,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
@@ -136,6 +137,8 @@ class JwImportActivity : ComponentActivity() {
                 // 排查全量包导出: 错误弹窗点"导出排查全量包"按钮后由 JwCaptureDump 落 zip
                 var lastCaptureResult by remember { mutableStateOf<FrameCaptureResult?>(null) }
                 var webViewForDump by remember { mutableStateOf<WebView?>(null) }
+                // 排查包导出原子进度 (2026-09-21 用户: 每一步在哪+百分之多少, 禁黑箱等待)
+                var dumpProgress by remember { mutableStateOf<DiagDumpProgress?>(null) }
                 // #27: 红条此前只置不清,报错后必须退出页面才消失。阶段一切换即清零。
                 LaunchedEffect(stage) { errorMsg = null }
                 var importFinished by remember { mutableStateOf(false) }
@@ -191,12 +194,21 @@ class JwImportActivity : ComponentActivity() {
                 }
                 // 错误弹窗「导出排查全量包」— DOM 可点元素清单点按钮时现抓(页面还在,
                 // 弹窗不关页), zip 组装落 IO 线程, 成功即拉系统分享面板(2A 动线)。
+                // 每完成一个原子步骤推进一次 dumpProgress — UI 实时显示 步骤 x/n + 百分比。
                 fun exportDiagnosticDump(school: JwSchoolInfo?) {
                     val result = lastCaptureResult ?: run {
                         statusMsg = getString(R.string.jw_diag_export_failed, "无抓取记录")
                         return
                     }
-                    statusMsg = getString(R.string.jw_diag_exporting)
+                    var stepsDone = 0
+                    // 宣布-再执行: 卡片永远显示"正在跑"的段。2026-09-22 用户反馈:
+                    // 旧 advance-after 惯性下执行第 N 段时卡片仍标第 N-1 段名,
+                    // 用户盯着"网络快照"字样却是在跑 30s 重放, 误判死循环。
+                    fun entering(stage: DumpStage) {
+                        dumpProgress = DiagDumpProgress(stage, stepsDone)
+                    }
+                    fun leaveStage() { stepsDone++ }
+                    entering(DumpStage.DomInventory)
                     val wv = webViewForDump
                     val ctx = this
                     scope.launch {
@@ -219,8 +231,14 @@ class JwImportActivity : ComponentActivity() {
                             }
                         }
                         val inventoryJson = evalJs(DOM_INVENTORY_JS)
+                        leaveStage()
+                        entering(DumpStage.Storage)
                         val storageJson = evalJs(STORAGE_JS)
+                        leaveStage()
+                        entering(DumpStage.Links)
                         val linksJson = evalJs(LINKS_JS)
+                        leaveStage()
+                        entering(DumpStage.NetworkSnapshot)
                         // 页面运行时真实 fetch/XHR 记录，和资源重取分开保存。
                         val networkLiveSnapshot = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -231,6 +249,8 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.NetworkReplay)
                         val networkReplayJson = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
                                 withTimeoutOrNull(30_000L) {
@@ -251,6 +271,8 @@ class JwImportActivity : ComponentActivity() {
                                 }.also { webView.removeJavascriptInterface("__sleepyDiagBridge") }
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.ResourceReplay)
                         // evaluateJavascript 不等待 Promise; 资源重取通过一次性 JS bridge 回传。
                         val resourceReplayJson = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -276,6 +298,8 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.Cookies)
                         // Cookie 全量值 — CookieManager 主线程约束(部分 ROM), 与 JS 段同在 Main 取
                         val cookiesFull: String? = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -285,6 +309,8 @@ class JwImportActivity : ComponentActivity() {
                                 }.getOrNull()
                             }
                         }
+                        leaveStage()
+                        entering(DumpStage.ZipAssembly)
                         val dumpResult = withContext(Dispatchers.IO) {
                             if (school == null) {
                                 JwCaptureDump.DumpResult.Fail("未选择学校")
@@ -296,12 +322,16 @@ class JwImportActivity : ComponentActivity() {
                                 )
                             }
                         }
+                        leaveStage()
                         when (dumpResult) {
                             is JwCaptureDump.DumpResult.Ok -> {
+                                entering(DumpStage.SaveShare)
+                                dumpProgress = null
                                 statusMsg = getString(R.string.jw_diag_export_saved, dumpResult.zipName)
                                 JwCaptureDump.share(ctx, dumpResult.zipName, dumpResult.uri)
                             }
                             is JwCaptureDump.DumpResult.Fail -> {
+                                dumpProgress = null
                                 statusMsg = getString(R.string.jw_diag_export_failed, dumpResult.reason)
                             }
                         }
@@ -720,6 +750,53 @@ class JwImportActivity : ComponentActivity() {
                                     thirdText = getString(R.string.jw_diag_export_btn),
                                     onThird = { exportDiagnosticDump(dumpSchool) },
                                 )
+                                // 点击导出后在同一个错误弹窗内向下展开进度区 — 用户不离开
+                                // 当前问题上下文即可看到步骤、阶段文案和百分比。
+                                dumpProgress?.let { progress ->
+                                    val colors = MaterialTheme.colorScheme
+                                    Spacer(Modifier.height(12.dp))
+                                    Card(
+                                        modifier = Modifier.fillMaxWidth(),
+                                        colors = CardDefaults.cardColors(
+                                            containerColor = colors.surfaceContainerHigh
+                                        ),
+                                        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+                                    ) {
+                                        Column(modifier = Modifier.padding(16.dp)) {
+                                            Text(
+                                                text = getString(
+                                                    R.string.jw_diag_progress_step,
+                                                    progress.stepsDone + 1,
+                                                    progress.totalCount
+                                                ),
+                                                style = MaterialTheme.typography.labelLarge,
+                                                color = colors.onSurfaceVariant
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                text = stringResource(progress.stage.labelRes),
+                                                style = MaterialTheme.typography.titleSmall,
+                                                color = colors.onSurface
+                                            )
+                                            Spacer(Modifier.height(8.dp))
+                                            LinearProgressIndicator(
+                                                progress = { progress.percent / 100f },
+                                                modifier = Modifier.fillMaxWidth(),
+                                                color = colors.primary,
+                                                trackColor = colors.surfaceContainer
+                                            )
+                                            Spacer(Modifier.height(4.dp))
+                                            Text(
+                                                text = getString(
+                                                    R.string.jw_diag_progress_percent,
+                                                    progress.percent
+                                                ),
+                                                style = MaterialTheme.typography.labelMedium,
+                                                color = colors.onSurfaceVariant
+                                            )
+                                        }
+                                    }
+                                }
                             }
                         },
                         confirmButton = {},

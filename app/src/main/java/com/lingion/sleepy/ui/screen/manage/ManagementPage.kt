@@ -58,6 +58,7 @@ fun ManagementPage(
     onManualAdd: () -> Unit,
     onEditCurrentTable: () -> Unit,
     onExportRequested: () -> Unit = {},
+    onOpenAllTables: () -> Unit = {},
     onImported: () -> Unit,
     drafts: List<ImportDraft> = emptyList(),
     onRestoreDraft: (String) -> Unit = {},
@@ -98,6 +99,7 @@ fun ManagementPage(
             }
 
             // 当前课表摘要
+            // 2026-09-21 用户令: 点当前课表大卡 → 跳「所有课表」页(最符合直觉)
             item {
                 if (table != null) {
                     Column(
@@ -105,20 +107,30 @@ fun ManagementPage(
                             .fillMaxWidth()
                             .clip(SleepyTheme.shapes.large)
                             .background(colors.surfaceContainer)
+                            .noRippleClickable(onOpenAllTables)
                             .padding(16.dp),
                         verticalArrangement = Arrangement.spacedBy(8.dp)
                     ) {
-                        Text(
-                            text = stringResource(R.string.manage_current_table),
-                            style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
-                            color = colors.primary
-                        )
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Text(
+                                text = stringResource(R.string.manage_current_table),
+                                style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
+                                color = colors.primary,
+                                modifier = Modifier.weight(1f)
+                            )
+                            Text(
+                                text = stringResource(R.string.manage_view_all_tables),
+                                style = MaterialTheme.typography.labelMedium,
+                                color = colors.onSurfaceVariant
+                            )
+                        }
                         Text(
                             text = table.name,
                             style = MaterialTheme.typography.titleLarge.copy(fontWeight = FontWeight.SemiBold),
                             color = colors.onSurface
                         )
                         Text(
+                            // 口径统一(2026-09-21): 此处数字 = 上课安排数(时间×节次×周组合), 非课程门数
                             text = stringResource(R.string.table_info, table.startDate, state.currentWeek, state.courses.size),
                             style = MaterialTheme.typography.bodySmall,
                             color = colors.onSurfaceVariant

@@ -226,7 +226,6 @@ fun ImportSheet(
         onDismissRequest = onDismiss,
         sheetState = sheetState,
     ) {
-        BoxWithConstraints {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -398,9 +397,10 @@ fun ImportSheet(
 
         // 错误反馈通道: 上面 errorMsg → snackbar.showSnackbar 依赖此 host,
         // 之前 sheet 内无 host → 导入失败提示被静默吞掉。默认 M3 配色, 与其余 5 处一致。
+        // (原 BoxWithConstraints 包裹层已删: scope 内 maxWidth/maxHeight 从未被消费, lint UnusedBoxWithConstraintsScope)
         SnackbarHost(
             hostState = snackbar,
-            modifier = Modifier.align(Alignment.BottomCenter)
+            modifier = Modifier.align(Alignment.CenterHorizontally)
         )
         // 导入成功提示: 不再跳编辑课表页(假保存闸), 用 snackbar 明示已落库
         LaunchedEffect(preview, pendingMode) {
@@ -408,7 +408,6 @@ fun ImportSheet(
                 importJustApplied = false
                 snackbar.showSnackbar(context.getString(R.string.import_success))
             }
-        }
         }
     }
 

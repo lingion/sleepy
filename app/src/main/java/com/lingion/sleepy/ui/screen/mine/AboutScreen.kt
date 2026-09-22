@@ -55,6 +55,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
@@ -82,6 +83,8 @@ fun AboutScreen(
 ) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    // 配置感知读取: LocalConfiguration 随配置变化自动重组, 裸 context.resources 会拿旧值
+    val configuration = LocalConfiguration.current
     val scope = rememberCoroutineScope()
     var uiState by remember { mutableStateOf<UpdateUiState>(UpdateUiState.Idle) }
     var downloadJob by remember { mutableStateOf<Job?>(null) }
@@ -95,8 +98,8 @@ fun AboutScreen(
         androidVersion = AndroidBuild.VERSION.RELEASE ?: AndroidBuild.VERSION.SDK_INT.toString(),
         brand = AndroidBuild.BRAND,
         model = AndroidBuild.MODEL,
-        resolution = "${context.resources.displayMetrics.widthPixels}x${context.resources.displayMetrics.heightPixels}",
-        locale = context.resources.configuration.locales[0].toLanguageTag(),
+        resolution = "${configuration.screenWidthDp}x${configuration.screenHeightDp}",
+        locale = configuration.locales[0].toLanguageTag(),
         isDebug = BuildConfig.DEBUG,
     )
 

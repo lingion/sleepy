@@ -1086,7 +1086,7 @@ private fun DetailPanel(
                 .padding(sd(12f)),
             verticalArrangement = Arrangement.spacedBy(sd(10f))
         ) {
-            for (day in visibleDays.sorted()) {
+            for (day in sortedDays) {
                 val dayCourses = byDay[day].orEmpty().sortedBy { it.startNode }
                 DetailDayCard(
                     day = day,
