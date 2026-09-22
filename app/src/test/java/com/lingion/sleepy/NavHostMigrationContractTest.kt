@@ -261,14 +261,12 @@ class NavHostMigrationContractTest {
     }
 
     @Test
-    fun manifest_predictive_back_stays_disabled_to_avoid_window_preview_artifacts() {
-        // Activity 窗口层的 predictive-back 预演会复现 splash windowBackground，
-        // 在部分 OEM 上表现为矩形缩放、闪白和居中 logo 残留；保持关闭，
-        // Compose 自己的返回处理仍由 BackHandler/导航栈负责。
+    fun manifest_predictive_back_is_enabled_for_lab_preview() {
+        // 返回预览是实验室功能的基础通路，系统回调必须开启。
         assertTrue(
-            "predictive-back 必须关闭以避免系统窗口预演残留",
+            "predictive-back 必须开启以提供返回预览",
             Regex(
-                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']false[\"']"""
+                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
             ).containsMatchIn(manifestSrc)
         )
     }
@@ -462,13 +460,12 @@ class NavHostMigrationContractTest {
     // ─── Manifest 集成 ───
 
     @Test
-    fun manifest_disables_predictive_back_app_wide() {
-        // 系统窗口预演会在部分 OEM 上复现 splash windowBackground；保持关闭，
-        // 防止返回时出现矩形缩放、闪白和居中 logo 残留。
+    fun manifest_enables_predictive_back_app_wide() {
+        // 系统 predictive-back 是返回预览的入口；窗口底衬在首帧后已降级为纯色。
         assertTrue(
-            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"false\"",
+            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"true\"",
             Regex(
-                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']false[\"']"""
+                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
             ).containsMatchIn(manifestSrc)
         )
     }

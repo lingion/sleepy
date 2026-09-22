@@ -3,6 +3,7 @@ package com.lingion.sleepy
 import android.content.Context
 import android.content.Intent
 import android.content.res.Configuration
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
@@ -120,6 +121,17 @@ class MainActivity : ComponentActivity() {
     // 访问 NPE → 启动秒崩(v1.0.55 测试包翻车点)。
     private val uiNightModeState: androidx.compose.runtime.MutableState<Int> =
         androidx.compose.runtime.mutableStateOf(Configuration.UI_MODE_NIGHT_UNDEFINED)
+
+    override fun onPostResume() {
+        super.onPostResume()
+        // Keep the splash logo out of system window snapshots after the first frame.
+        androidx.core.view.OneShotPreDrawListener.add(window.decorView) {
+            window.setBackgroundDrawable(
+                ColorDrawable(getColor(com.lingion.sleepy.R.color.splash_background))
+            )
+            true
+        }
+    }
 
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
