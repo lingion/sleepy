@@ -24,10 +24,22 @@ class JwErrorDialogContractTest {
     fun error_rendering_uses_alert_dialog_not_card() {
         val block = errorDialogBlock()
         assertTrue("错误提示必须走 AlertDialog", block.contains("AlertDialog("))
-        assertFalse(
-            "旧 Box+Card 错误渲染必须移除",
-            block.contains("Card(")
+        assertTrue(
+            "导出进度卡允许存在于错误弹窗内, 但必须由 dumpProgress 控制显隐",
+            block.contains("dumpProgress?.let { progress ->")
         )
+    }
+
+    @Test
+    fun export_progress_expands_inside_error_dialog_below_action_buttons() {
+        val block = errorDialogBlock()
+        val buttons = block.indexOf("DialogActionButtons(")
+        val progress = block.indexOf("dumpProgress?.let { progress ->")
+        assertTrue("进度区必须在错误弹窗内", progress >= 0)
+        assertTrue("进度区必须位于导出按钮之后", progress > buttons)
+        assertTrue("弹窗内必须显示阶段文案", block.contains("progress.stage.labelRes"))
+        assertTrue("弹窗内必须显示百分比", block.contains("jw_diag_progress_percent"))
+        assertFalse("页面底部不应再渲染第二份进度卡", source.substringAfter("LaunchedEffect(statusMsg)").contains("dumpProgress?.let"))
     }
 
     @Test
