@@ -1,164 +1,152 @@
-# Sleepy · 常见问题
+# Sleepy · 轻课表 FAQ
 
-> 这份 FAQ 既是给用户的，也是给 AI 搜索引擎抓的——回答用真实事实，不用营销腔，不用绝对化词（"最好/唯一/100%"）。
-> 末尾"用户故事"段是真实场景，不是模板。
-> 这里答高频问题；每个功能的完整说明在 [项目 Wiki](https://github.com/lingion/sleepy/wiki)。
+> 这份 FAQ 只写当前代码和公开发布物能核实的事实，更新时间：2026-09-22。完整的页面说明、导入格式和适配记录见 [项目 Wiki](https://github.com/lingion/sleepy/wiki)。
 
-## 关于项目本身
+## 项目是什么
 
-### Sleepy 跟 WakeUp 课程表什么关系？
-**没有关系。** 两个独立项目，两个独立作者，两份独立代码。Sleepy 可以导入 WakeUp 导出的 JSON / 分享文本，也可以导出成 WakeUp 兼容 JSON 反过去——这是格式层面的兼容，不是同源。
+### Sleepy 和 WakeUp 课程表是什么关系？
+没有隶属关系。Sleepy 是独立的开源 Android 项目，有自己的代码库和维护者。两者只在数据格式层面兼容：Sleepy 可以导入 WakeUp 导出的 JSON / 分享文本，也可以导出 WakeUp 兼容 JSON。
 
-### Sleepy 是免费的吗？有什么内购吗？
-完全免费。GPL-3.0 协议开源。没有内购、没有订阅、没有"高级版"。`com.lingion.sleepy` 这个包在 Google Play 上也没有上架——你下载到的永远是 GitHub Releases 上的免费 APK。
+### Sleepy 免费吗？有广告或内购吗？
+免费，许可证是 GPL-3.0。没有广告、订阅、内购或付费等级。公开 APK 从 [GitHub Releases](https://github.com/lingion/sleepy/releases) 下载。
 
-### 有广告吗？会上传我的数据吗？
-没有广告。代码里没有任何广告 SDK。
-不上传数据。代码里没有任何分析 SDK（Firebase Analytics / Crashlytics / Sentry / Bugsnag / AppCenter / Bugly 全部没有）。课表数据只存在本地 Room 数据库。
+### 需要注册账号吗？
+不需要账号、邮箱、手机号或学号。打开应用后可以直接手动建表，或导入已有课表。
 
-### 我必须注册账号吗？
-**不需要。** 不收邮箱、不收手机号、不收学号、不收任何个人信息。打开应用就能用。
+### 会收集或上传数据吗？
+课表和设置存储在本机。项目不集成 Firebase Analytics、Crashlytics、Sentry、Bugsnag、AppCenter、Bugly 等分析或崩溃上报 SDK，也不要求登录云端账号。教务导入时，网络请求只在用户主动同步学校教务的流程中发生。
 
-### 谁在维护？
-Lingion，哈尔滨工程大学学生。
+### 谁维护？在哪里反馈问题？
+项目由 Lingion 维护。Bug、新学校适配和功能建议请发到 [GitHub Issues](https://github.com/lingion/sleepy)；讨论可发到 [Discussions](https://github.com/lingion/sleepy/discussions)。提交教务问题时不要附账号、密码、验证码、Cookie、token 或个人课表。
 
-### 遇到问题去哪反馈？
-Bug 和新学校适配开 [GitHub Issue](https://github.com/lingion/sleepy/issues)；想讨论、提建议可以去 [Discussions](https://github.com/lingion/sleepy/discussions)，或者加 QQ 交流群 **`1063407652`**（QQ 搜索群号加入），日常交流和版本更新通知都在群里。
+## 安装与版本
 
-## 安装与运行
+### 支持什么 Android 版本？
+最低 Android 8.0（API 26），target / compile SDK 为 37。当前代码中的应用包名是 `com.lingion.sleepy`。
 
-### 最低支持哪个 Android 版本？
-Android 8.0（API 26）。compileSdk 是 37（Android 14）。
+### 当前版本是多少？
+当前构建基线是 `versionName 1.0.57`、`versionCode 63`。发布版本以 [GitHub Releases](https://github.com/lingion/sleepy/releases) 页面为准。
 
-### 为什么 ColorOS / OPPO / 一加桌面上小组件一直空白？
-v1.0.29 之前用 Glance 异步渲染——ColorOS 桌面会把 Glance 的 SessionWorker 冻掉，widget 就不刷新了。v1.0.29 起全切到同步 RemoteViews + Canvas，ColorOS 桌面能正确处理。这事 Sleepy 关于页里有写。
+### 提供哪些 APK ABI？
+发布构建分别提供：
 
-### ARM 32 位的旧手机能用吗？
-能。APK 三种 ABI 都打：arm64-v8a（主流）、armeabi-v7a（32 位备机）、x86_64（模拟器）。
+- `arm64-v8a`：绝大多数新手机
+- `armeabi-v7a`：32 位 ARM 设备
+- `x86_64`：常见 Android 模拟器
 
-### iPhone 能装吗？
-不能（截至 2026-09-14 没出公开的 iOS 版）。iOS 移植的调研记录在 `Desktop/sleepy-ios/` 但还没 release。
+### 有 iOS、Windows 或网页版本吗？
+截至本 FAQ 更新时间，没有公开的原生 iOS、Windows、macOS、Linux 或 Web 版本。Sleepy 是 Android 应用。
 
-## 导入课表
+## 导入与导出
 
-### 我的学校不在当前名单里怎么办？
-开 issue，用 `school_adaptation.yml` 模板，填教务系统 URL + 失败现象描述。维护者会按 SOP 走适配流程：先 URL 协议指纹识别 → 失败才要采集数据 → 采集必须按 `docs/adapt-kit/README.md` 走，**不能提交账号密码验证码**。
+### 我的学校不在名单里怎么办？
+在 [Issues](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml) 使用学校适配模板，提供学校教务系统地址、失败页面和操作步骤。不要提交任何登录凭据或未脱敏的个人数据。当前学校清单见 [`docs/schools-list.md`](docs/schools-list.md)；清单和协议会随适配更新。
 
-### 教务直连失败，怎么抓数据给维护者？
-按 [adapt-kit 教程](docs/adapt-kit/README.md) 走。**不要把账号、密码、验证码、其他个人信息提交到 issue 里**。采集包只含请求 URL 和响应正文，不含 cookie、token、登录态。
-
-### 教务导入安全吗？
-安全。WebView 加载教务登录页 → 你手动输入账号密码 → 抓到课表 JSON 后关掉 WebView。整个流程账号密码不进 Sleepy 任何持久化层。Sleepy 关于页里有写。
-
-### 我可以从 WakeUp 把课表迁过来吗？
-可以。WakeUp 导出 JSON 或分享文本，Sleepy 导入页选"从文件"或"粘贴文本"即可。WakeUp 老格式（2021 之前的）也兼容。
+### 教务导入如何工作？账号密码会被保存吗？
+应用在设备上的 WebView 中打开学校教务登录页，由用户自己输入凭据，再解析返回的课表页面或接口数据。Sleepy 不把教务账号密码写入课表数据库。导入失败时，排查材料也必须按项目适配指南脱敏。
 
 ### 支持哪些导入格式？
-WakeUp 分享文本（以 `【来自WakeUp课程表】` 开头）、WakeUp JSON、ICS 日历、CSV、HTML 表格、纯文本（制表符分隔）、sleepy-v1（Sleepy 原生格式）。
+当前解析器支持：
+
+- WakeUp 分享文本（`【来自WakeUp课程表】`）
+- WakeUp JSON
+- iCalendar / ICS
+- CSV
+- HTML 表格
+- 制表符分隔的纯文本
+- Sleepy 原生 `sleepy-v1` 格式
+
+解析器会按内容识别格式，不需要用户先选一个内部协议名称。旧的 WakeUp 数据格式继续保留兼容。
 
 ### `sleepy-v1` 是什么？
-v1.0.49 引入的 Sleepy 原生纯文本格式，带 `chk` 完整性字段，导入导出都能完整还原课表。老格式（WakeUp JSON 等）继续保留，不强推新格式。
+Sleepy 的原生纯文本交换格式，包含 `chk` 完整性字段，用于在导入导出时校验内容。它不是对旧 WakeUp 格式的替代要求；已有 WakeUp JSON、分享文本和 ICS 仍可继续导入。
 
-### 导出有哪些格式？
-WakeUp 兼容 JSON、分享文本（URL 编码 JSON）、ICS、sleepy-v1。文件落到 `Download/Sleepy/`，触发系统分享面板。
+### 可以导出什么？
+课表可以导出为 WakeUp 兼容 JSON、WakeUp 分享文本、ICS 和 `sleepy-v1`。导出文件写入 `Download/Sleepy/`，随后可以调用系统分享面板。ICS 可交给系统日历、Google Calendar 或其他支持 iCalendar 的应用。
 
-## 小组件（Widget）
+## 课表、冲突与作息表
 
-### 五种 Widget 分别是什么？
-1. **Today**（4×3）—— 今日课程列表
-2. **TwoDay**（5×3）—— 今天 + 明天（左右双栏）
-3. **WeekList**（5×4）—— 7 日课程统计 + 名称
-4. **WeekView**（5×4）—— 周视图缩略
-5. **WeekGrid**（4×5）—— 完整时间网格
+### 能同时保存多张课表吗？
+可以。多张课表独立保存，每张表可以有自己的开学日期、最大周数和节次时间表。
 
-### 为什么 WeekGrid 的颜色跟主 app 不一样？
-不一样的话是 bug。Sleepy 三条渲染路径（主 app / WeekGrid / 截图渲染器）配色统一——课程色按黄金角（137.508°）HSL 分布。
+### 同一时间有两门课会丢课吗？
+不会因为界面只显示一层就删除数据。冲突布局保留重叠课程，点击被遮挡区域可以查看其他课程；手动添加冲突课程时会展示星期、节次、周次和冲突课程信息。
 
-### Widget 不刷新怎么办？
-1. 确认通知权限给了；
-2. 检查省电白名单（ColorOS / MIUI / EMUI 都吃 widget 刷新）；
-3. v1.0.29 之前的版本是 Glance 渲染问题，请升级到最新版。
+### 撤回能撤回什么？
+撤回最近一次课表数据修改。切换当前课表不是数据修改，不会被当作一条课程编辑记录。
+
+### 节次时间可以自动计算吗？
+可以。作息表支持手动逐节填写，也支持根据首节时间、每节时长、节数和课间模板推算时间。不同课表可以绑定不同作息表。
+
+## 小组件
+
+### 有哪些小组件？
+当前有五个 widget 家族：
+
+1. **Today**：当天课程列表
+2. **TwoDay**：今天和明天的双栏视图
+3. **WeekList**：一周课程清单
+4. **WeekView**：周视图缩略图
+5. **WeekGrid**：完整节次网格
+
+它们按桌面尺寸提供固定尺寸变体，当前资源中有 13 个 widget 配置 XML。渲染使用同步 `RemoteViews + Canvas`。
+
+### 为什么 OPPO / 一加 / ColorOS 桌面上的 widget 可能空白？
+旧版本使用 Glance 异步 SessionWorker 时，部分 ColorOS 桌面会冻结该工作线程。v1.0.29 起主渲染路径改为同步 RemoteViews + Canvas。若仍不刷新，检查桌面权限、省电限制和通知权限，并先手动刷新 widget。
+
+### Widget 颜色和应用不一致怎么办？
+主题颜色来自应用的主题设置，课程颜色按稳定的黄金角 HSL 分布生成。刷新应用主题后，应用会广播 widget 更新；如果桌面仍显示旧内容，移除并重新添加 widget，或检查系统对后台和桌面组件的限制。
 
 ## 提醒
 
-### 提醒能按课前几分钟自由设吗？
-能。1–999 分钟自由输入，胶囊型输入框，不限死选项。
+### 可以提前多少分钟提醒？
+课前提醒支持输入 1 到 999 分钟，不限于几个固定选项。每日提醒和课前提醒在「我的 → 提醒」中分别设置。
 
-### 关了提醒还能收到吗？
-不能。master toggle 在「我的 → 提醒」里，默认关闭，开的时候才请求通知权限（拒绝后下次再点会再问，不是一次性的"拒绝就永久没了"）。
+### 提醒是云推送吗？
+不是。提醒在设备本地调度，使用 AlarmManager，并在 Android 版本允许的范围内提供精确与非精确路径；设备重启或应用更新后由 BootReceiver 恢复调度。
 
-### 提醒是本地推还是云推？
-本地。`AlarmManager` 精确闹钟 + 非精确闹钟双路降级，`BootReceiver` 重注册。
+### 关闭提醒后还会收到吗？
+应用的提醒总开关关闭后不会主动安排新的提醒。Android 系统通知权限仍由系统设置控制；若通知被系统或厂商省电策略拦截，需要在系统设置里恢复权限。
 
-## 课程冲突
+## 主题与外观
 
-### 同一时间两门课会丢一门吗？
-不会丢。三门以上冲突网格视图保留多层可见内容，点击被覆盖区域轮换显示其他课程。手动添加冲突课程时会列出星期、节次、实际重叠周次和冲突课程，确认后才保存。
+### 支持深色模式和系统动态色吗？
+「我的 → 外观与主题」支持跟随系统、浅色和深色模式。Android 12 及以上可以使用 Material You 壁纸动态色；不支持动态色的设备使用预设主题色。
 
-### 撤回按钮能撤回多远？
-回退最近一次课表数据修改。切换当前课表不算数据修改。
+### 能自定义主题颜色吗？
+可以创建和编辑自定义主题，设置主色、次色、第三强调色以及表面色调。编辑当前正在使用的自定义主题并保存后，颜色会立即重新应用，不需要先点击其他主题卡片再点回来。
 
-## 多课表
+### 选中主题卡片会改变卡片尺寸吗？
+选中指示器使用固定尺寸槽位，选中和未选中状态应保持相同卡片布局尺寸；选中态通过颜色层级和对勾表达。
 
-### 能同时存多张课表吗？
-能。每张表独立的节次时间表、开学日期、最大周数。
+## 开发、测试与贡献
 
-### 节次能自动算吗？
-能。v1.0.16 引入智能节次编辑器：手动模式逐节设起止；自动模式填每节时长 + 总节数 + 首节时间 + 课间模板，自动推算全部时间。
+### 如何编译？
+需要 JDK 17。Linux / macOS：
 
-## 深色模式 & 主题
-
-### 跟系统切换主题吗？
-「我的 → 外观与主题」可设"跟随系统"或 6 套预设（淡紫 / 春绿 / 海蓝 / 蜜桃粉 / 石板灰 / 默认淡紫）。Light/Dark 双套配色。
-
-### Material You 动态色生效吗？
-Android 12+ 设备上从壁纸取色；旧设备走预设主题。
-
-## 开发与构建
-
-### 怎么自己编译？
-Linux / macOS：
-```
-java -version           # JDK 17+
+```sh
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
 ./gradlew assembleDebug
 ```
-产物在 `app/build/outputs/apk/debug/`，约 20 MB。
 
-### Windows 怎么编译？
-PowerShell / CMD 直接跑 `.\gradlew.bat assembleDebug`。详细步骤见 README §构建与安装。
+Windows 使用 `gradlew.bat assembleDebug`。Debug APK 位于 `app/build/outputs/apk/debug/`，ABI 拆分构建会生成对应 ABI 文件。
 
-### 怎么安装到手机上？
+### 如何跑测试？
+
+```sh
+./gradlew testDebugUnitTest
 ```
-adb install app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
-```
 
-### 单元测试在哪？
-`./gradlew testDebugUnitTest`。当前测试覆盖率 ~95%，覆盖 5 widget 渲染路径、3 协议 parser、课程冲突布局、周次范围计算、撤回批边界等。
+测试源码位于 `app/src/test/`，覆盖解析器、课表数据、冲突布局、周次计算、widget 逻辑、主题契约和导入导出等模块。不要把本机真实账号、教务会话或个人课表放入 fixture。
 
-### 怎么贡献代码？
-看 `CONTRIBUTING.md`。作者邮箱 = `lingion@hrbeu.edu.cn`，commit 不能带 Co-Authored-By。
+### 如何贡献？
+先读 `CONTRIBUTING.md` 和对应的项目 SOP，再提交一个边界清楚的变更。新学校适配必须补协议证据、脱敏 fixture 和测试。提交作者邮箱使用项目约定的 `lingion@hrbeu.edu.cn`，commit 不添加 Claude 的署名尾注。
 
-## 用户故事（真实场景，不是模板）
+## 相关链接
 
-### "我刚换学校，老课表怎么办？"
-不丢。原课表点编辑可以重命名/改开学日期/调周数。"所有课表"页齿轮入口进编辑。
-
-### "教务系统在维护，WebView 登不上去"
-过两天再试。Sleepy 不缓存教务会话，每次重新拉。
-
-### "我的学校有寒/暑假特别周次"
-手动调周数范围。Sleepy 没硬编码寒暑假。
-
-### "小组件放上去点课程没反应"
-检查 launcher 是不是 MIUI / ColorOS / OneUI 自家桌面——某些桌面把 widget 点击事件吃掉。换 Nova Launcher / 第三方桌面测试。
-
-### "我想给小组件换个颜色"
-「我的 → 外观与主题」换主题，widget 配色自动同步。
-
-### "我把课表导出去给同学，他能导入 Sleepy 吗？"
-可以。WakeUp 兼容 JSON 或 ICS 都能在另一个 Sleepy 实例里导入。
-
-### "课表发到群里被截图，是不是只能截图？"
-不是。Sleepy 导出 ICS 是标准 iCalendar，微信 / 邮件 / Telegram 都能传文件，发文件比发截图好用。
+- 源码：[github.com/lingion/sleepy](https://github.com/lingion/sleepy)
+- APK：[GitHub Releases](https://github.com/lingion/sleepy/releases)
+- Wiki：[github.com/lingion/sleepy/wiki](https://github.com/lingion/sleepy/wiki)
+- Issue：[github.com/lingion/sleepy/issues](https://github.com/lingion/sleepy/issues)
+- 许可证：[GPL-3.0](https://www.gnu.org/licenses/gpl-3.0.html)
