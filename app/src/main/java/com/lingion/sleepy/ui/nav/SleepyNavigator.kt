@@ -45,6 +45,7 @@ class SleepyNavigator(
     fun openAddCourse(courseId: Long = NavSession.NO_ID, editing: Boolean = false) =
         push(SleepyRoute.AddCourse(courseId, editing))
     fun openAllTables() = push(SleepyRoute.AllTables)
+    fun openCourseList() = push(SleepyRoute.CourseList)
     fun openAppearance() = push(SleepyRoute.Appearance)
     fun openGeneral() = push(SleepyRoute.General)
     fun openHoliday() = push(SleepyRoute.Holiday)
