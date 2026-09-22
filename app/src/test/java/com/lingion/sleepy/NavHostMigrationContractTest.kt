@@ -261,17 +261,14 @@ class NavHostMigrationContractTest {
     }
 
     @Test
-    fun manifest_predictive_back_stays_on_when_popExit_is_scaleOut() {
-        // 2026-09-21 用户拍板: Material 返回预览是花了大代价学的核心体验, 必须恢复 —
-        // 2026-09-20 的关闭决定(da3a6335/773ff116, Mate 30 EMUI 窗口缩放预演)作废。
-        // manifest 必须=true 让 BACK 走 OnBackInvokedCallback/predictive 通路,
-        // in-app Compose 层 predictivePopTransform 才有生效前提。
-        // logo 残留由 Splash 主题 postSplashScreenTheme + 首帧后背景降级兜底(见上方
-        // splash 契约), 不再用关开关这种"一刀切"回退。
+    fun manifest_predictive_back_stays_disabled_to_avoid_window_preview_artifacts() {
+        // Activity 窗口层的 predictive-back 预演会复现 splash windowBackground，
+        // 在部分 OEM 上表现为矩形缩放、闪白和居中 logo 残留；保持关闭，
+        // Compose 自己的返回处理仍由 BackHandler/导航栈负责。
         assertTrue(
-            "predictive-back 已按用户 2026-09-21 决定恢复: enableOnBackInvokedCallback 必须=\"true\"(见 773ff116 历史, 现反转)",
+            "predictive-back 必须关闭以避免系统窗口预演残留",
             Regex(
-                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
+                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']false[\"']"""
             ).containsMatchIn(manifestSrc)
         )
     }
@@ -465,14 +462,13 @@ class NavHostMigrationContractTest {
     // ─── Manifest 集成 ───
 
     @Test
-    fun manifest_enables_predictive_back_app_wide() {
-        // 2026-09-21 反转后本测试回归字面本义: manifest 全局开启 predictive-back,
-        // 与 manifest_predictive_back_stays_on_when_popExit_is_scaleOut 双锚锁 "true",
-        // 防止单测删除/改名后另一条仍守得住。
+    fun manifest_disables_predictive_back_app_wide() {
+        // 系统窗口预演会在部分 OEM 上复现 splash windowBackground；保持关闭，
+        // 防止返回时出现矩形缩放、闪白和居中 logo 残留。
         assertTrue(
-            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"true\"(用户 2026-09-21 恢复返回预览)",
+            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"false\"",
             Regex(
-                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
+                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']false[\"']"""
             ).containsMatchIn(manifestSrc)
         )
     }
