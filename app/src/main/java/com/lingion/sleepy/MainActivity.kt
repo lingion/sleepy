@@ -158,6 +158,9 @@ class MainActivity : ComponentActivity() {
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("mock_update", false)) {
+            com.lingion.sleepy.util.UpdateNotifier.showMockUpdate()
+        }
         setContent {
             // uiNightModeState.value 变化(composition-observed) → systemDark 重算 →
             // dirty 指派给 remember(systemDark) 触发 dark 重算; 此前 isSystemInDarkTheme()

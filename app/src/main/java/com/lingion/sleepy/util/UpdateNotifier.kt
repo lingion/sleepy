@@ -47,6 +47,16 @@ object UpdateNotifier {
         _dismissedVersion.value = version
     }
 
+    /** Debug-only visual fixture; production callers must use [maybeCheckOnStart]. */
+    fun showMockUpdate() {
+        _updateAvailable.value = UpdateInfo(
+            version = "1.0.58",
+            changelog = "## Mock update\\n\\n- 新版本提醒预览\\n- 课程表显示优化",
+            downloadUrl = "https://example.invalid/mock.apk",
+            isUpdateAvailable = true
+        )
+    }
+
     /** MainActivity.onCreate 调用. lifecycleScope 取消时自动中断本次请求. */
     fun maybeCheckOnStart(context: Context, scope: CoroutineScope) {
         if (!AppPrefs.isUpdateCheckEnabled(context)) return

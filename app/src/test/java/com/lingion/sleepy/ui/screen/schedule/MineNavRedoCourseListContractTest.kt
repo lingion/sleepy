@@ -214,6 +214,20 @@ class MineNavRedoCourseListContractTest {
     }
 
     @Test
+    fun `week view filters empty days in single-column detail panel`() {
+        val courseTableView = findUpward(
+            "app/src/main/java/com/lingion/sleepy/ui/component/CourseTableView.kt"
+        ).readText()
+        val sortedDays = Regex("""val sortedDays = visibleDays\.sorted\(\)""")
+            .find(courseTableView)
+            ?: error("DetailPanel sortedDays declaration not found")
+        val singleColumn = courseTableView.indexOf("// 单栏(或两栏下过滤后不足 2 天)")
+        assertTrue("DetailPanel single-column branch must exist", singleColumn >= 0)
+        val loop = courseTableView.indexOf("for (day in sortedDays)", singleColumn)
+        assertTrue("single-column branch must render filtered sortedDays", loop > sortedDays.range.last)
+    }
+
+    @Test
     fun `course list screen renders empty state with course_list_empty`() {
         // grouped.isEmpty 分支必须显示 course_list_empty 文案
         val emptyBranch = Regex(
