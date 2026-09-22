@@ -1,6 +1,10 @@
 package com.lingion.sleepy.ui.screen.mine
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -150,7 +154,11 @@ fun LicenseScreen(onBack: () -> Unit) {
                             )
                         }
                     }
-                    AnimatedVisibility(visible = bodyExpanded) {
+                    AnimatedVisibility(
+                        visible = bodyExpanded,
+                        enter = expandVertically() + fadeIn(),
+                        exit = shrinkVertically() + fadeOut()
+                    ) {
                         Column(modifier = Modifier.padding(top = 8.dp)) {
                             Text(
                                 text = stringResource(R.string.about_license_body),
@@ -262,11 +270,13 @@ private fun AttributionCard(
                 color = colors.onSurfaceVariant
             )
         }
-        if (expanded && expandedContent != null) {
+        AnimatedVisibility(
+            visible = expanded && expandedContent != null,
+            enter = expandVertically() + fadeIn(),
+            exit = shrinkVertically() + fadeOut()
+        ) {
             Spacer(modifier = Modifier.height(6.dp))
-            AnimatedVisibility(visible = expanded) {
-                expandedContent()
-            }
+            expandedContent?.invoke()
         }
     }
 }
