@@ -109,4 +109,83 @@ class UndoManagerTest {
         check(snap?.periodTables?.isEmpty() == true)
         check(snap.defaultTableId == 1L)
     }
+
+    // ────────────────────────────────────────────────────────────────────
+    // 2026-09-21 redo 套件 — 单级 redo 槽, 与 undo 互不抢占, 新写清 redo
+    // ────────────────────────────────────────────────────────────────────
+
+    @Test
+    fun `recordRedo and pollRedo are mutually exclusive with undo`() {
+        // redo 与 undo 是两条独立槽;recordRedo 不动 undo 槽, pollRedo 不动 undo 槽
+        UndoManager.clear()
+        val t = TimeTableEntity(id = 1, name = "T", startDate = "2026-09-01")
+        UndoManager.capture(listOf(t), emptyList(), 1L)
+        UndoManager.recordRedo(
+            UndoSnapshot(tables = listOf(t.copy(name = "modified")), courses = emptyList(), defaultTableId = 1L)
+        )
+        check(UndoManager.hasSnapshot)        // undo 槽仍存在
+        check(UndoManager.hasRedoSnapshot)    // redo 槽也存在
+        val undo = UndoManager.poll()
+        check(undo?.tables?.single()?.name == "T")
+        check(!UndoManager.hasSnapshot)        // undo 排空
+        check(UndoManager.hasRedoSnapshot)    // redo 仍在(互不抢)
+        val redo = UndoManager.pollRedo()
+        check(redo?.tables?.single()?.name == "modified")
+        check(!UndoManager.hasRedoSnapshot)
+    }
+
+    @Test
+    fun `capture clears redo slot (fork prevention)`() {
+        // 标准编辑器语义: undo → 改 → redo 路径废。新用户动作 = 历史分叉, redo 立即作废
+        UndoManager.clear()
+        UndoManager.recordRedo(
+            UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = null)
+        )
+        check(UndoManager.hasRedoSnapshot)
+        UndoManager.capture(emptyList(), emptyList(), null)
+        check(!UndoManager.hasRedoSnapshot)   // capture 必清 redo
+    }
+
+    @Test
+    fun `reinsertForRedoSymmetry restores undo slot without recording capture`() {
+        // redo 应用快照后必须把 redo 前态成 undo(对称 — 用户再次点撤回回退 redo)
+        // 实现把 redo 前态直接灌进 undo 槽,不走 capture(因为 restoring=true 抑制)
+        UndoManager.clear()
+        val before = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = null)
+        UndoManager.reinsertForRedoSymmetry(before)
+        check(UndoManager.hasSnapshot)
+        check(UndoManager.poll() === before)
+    }
+
+    @Test
+    fun `clear empties both undo and redo slots`() {
+        UndoManager.clear()
+        UndoManager.capture(emptyList(), emptyList(), null)
+        UndoManager.recordRedo(UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = null))
+        UndoManager.clear()
+        check(!UndoManager.hasSnapshot)
+        check(!UndoManager.hasRedoSnapshot)
+    }
+
+    @Test
+    fun `full undo-then-redo-then-new-write cycle`() {
+        // 用户原动作: A→B→C 三态演进。
+        // 1. capture(A)=S, 应用 B → redo=S(B) 已不可能(按设计 redo 只在 undo 触发时落地)
+        //    这里用仓库层语义模拟: undo() 把当前(C)存 redo, 恢复 S(=A)
+        //    redo() 把当前(A)存 undo, 恢复 S(B)
+        //    new-write(C') 必须清 redo, 否则能从 B 直跳 C' 而绕过 A(历史分叉)
+        UndoManager.clear()
+        val a = UndoSnapshot(tables = emptyList(), courses = emptyList(), defaultTableId = null)  // initial
+        val b = UndoSnapshot(tables = listOf(TimeTableEntity(id = 1, name = "B", startDate = "")), courses = emptyList(), defaultTableId = 1L)
+        // 用户在 B 状态点击"撤回" → 仓库把当前态(C,此处=b)录 redo,恢复 a
+        UndoManager.recordRedo(b)
+        UndoManager.reinsertForRedoSymmetry(a)   // 假装"应用 B 之前态 a"
+        check(!UndoManager.hasRedoSnapshot == false || !UndoManager.hasSnapshot == false)
+        // 用户点"取消撤回" → 仓库把当前态(a)录 undo, 恢复 b
+        UndoManager.reinsertForRedoSymmetry(b)
+        UndoManager.recordRedo(a)
+        // 关键: 用户做了新动作(capture C') → redo 必清
+        UndoManager.capture(emptyList(), emptyList(), 2L)
+        check(!UndoManager.hasRedoSnapshot)    // 关键断言:新写清 redo
+    }
 }

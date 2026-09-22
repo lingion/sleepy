@@ -31,16 +31,21 @@ data class UndoSnapshot(
  * 每个用户动作的撤回点 = 该动作自己开始前 — 动作链上不跳步。
  *
  * [restoring] 抑制恢复动作自身的捕获, 防止 undo 生成新的 undo。
+ *
+ * 2026-09-21 用户令: 单级 redo — 撤回后可"取消撤回"一次; 任何新写动作清空 redo,
+ * 历史不分支。undo/redo 槽互斥有值: 撤回把 undo 槽搬到 redo 槽, 取消撤回反向搬运。
  */
 object UndoManager {
     // mutableStateOf: Compose 读取 hasSnapshot 自动订阅, 撤回按钮随有无快照显隐(用户 2026-09-03)
     private var slot by androidx.compose.runtime.mutableStateOf<UndoSnapshot?>(null)
+    private var redoSlot by androidx.compose.runtime.mutableStateOf<UndoSnapshot?>(null)
     @Volatile private var batchDepth: Int = 0
     // 本批首拍是否已落: 批内多次 capture 只保第一次 — 但锚定的是本批开始前(非旧快照)
     @Volatile private var batchCaptured: Boolean = false
     @Volatile var restoring: Boolean = false
 
     val hasSnapshot: Boolean get() = slot != null
+    val hasRedoSnapshot: Boolean get() = redoSlot != null
 
     fun beginBatch() {
         batchDepth++
@@ -58,6 +63,9 @@ object UndoManager {
         periodTables: List<PeriodTableEntity> = emptyList()
     ) {
         if (restoring) return
+        // 新用户动作 = 历史从 redo 分叉 — redo 立即作废(标准 undo/redo 语义)。
+        // restore 期间捕获本就被抑制, 这里只管非 restore 的正常写路径。
+        redoSlot = null
         if (batchDepth > 0) {
             if (batchCaptured) return   // 批内已有本动作快照 — 保动作链起点
             batchCaptured = true
@@ -71,5 +79,25 @@ object UndoManager {
         return s
     }
 
-    fun clear() { slot = null }
+    /** 撤回执行时: 当前库态(= 被撤回动作的结果)整体成为 redo 快照。 */
+    fun recordRedo(snap: UndoSnapshot) { redoSlot = snap }
+
+    /** 取消撤回时取走 redo 快照(取走即清, 与 poll 同语义)。 */
+    fun pollRedo(): UndoSnapshot? {
+        val s = redoSlot
+        redoSlot = null
+        return s
+    }
+
+    /**
+     * redo 成功后重填 undo 槽。capture 在 restore 抑制下不会自己写槽 —
+     * 但 redo 也是一次"回到过去"的恢复, 用户随后点撤回应能撤掉它。
+     * [snap] = redo 前的库态, 直接重挂回 undo 槽(绕过批/抑制逻辑, 槽内即此值)。
+     */
+    fun reinsertForRedoSymmetry(snap: UndoSnapshot) { slot = snap }
+
+    fun clear() {
+        slot = null
+        redoSlot = null
+    }
 }
