@@ -446,6 +446,16 @@ class ScheduleViewModel : ViewModel() {
         return ok
     }
 
+    /**
+     * 2026-09-21 用户令: 取消最近一次撤回(单级 redo)。
+     * 返回 false = 没有可取消的撤回(调用方 toast 提示)。
+     */
+    suspend fun redoLastUndo(): Boolean {
+        val ok = repo.redoLastUndo()
+        if (ok) manualSelectDone = false   // 恢复后选中态交回 default 表(与 undo 同语义)
+        return ok
+    }
+
     fun openCourse(id: Long) {
         _state.update { it.copy(selectedCourseId = id, showCourseDialog = true) }
     }

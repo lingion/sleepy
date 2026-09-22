@@ -18,3 +18,16 @@ fun Modifier.noRippleClickable(onClick: () -> Unit): Modifier = composed {
         onClick = onClick
     )
 }
+
+/** 带 enabled 门控的变体(禁用时不响应点击)。供撤回/取消撤回胶囊等禁用态使用。 */
+fun Modifier.noRippleClickable(
+    enabled: Boolean,
+    onClick: () -> Unit
+): Modifier = composed {
+    clickable(
+        interactionSource = remember { MutableInteractionSource() },
+        indication = null,
+        enabled = enabled,
+        onClick = onClick
+    )
+}

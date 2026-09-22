@@ -59,6 +59,7 @@ import com.lingion.sleepy.ui.component.PillBarState
 import com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding
 import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
+import com.lingion.sleepy.ui.screen.mine.CourseListScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
@@ -204,6 +205,10 @@ internal fun SleepyNavHost(
                 onCreateNewTable = onCreateNewTable,
                 onOpenEditTable = { tableId -> navigator.openEditTable(tableId = tableId) },
             )
+        }
+
+        entry<SleepyRoute.CourseList> {
+            CourseListScreen(onBack = { navigator.pop() })
         }
 
         entry<SleepyRoute.EditTable> { key ->

@@ -53,6 +53,7 @@ import kotlinx.coroutines.launch
 fun MineScreen(
     viewModel: ScheduleViewModel = viewModel(),
     onOpenAllTables: () -> Unit = {},
+    onOpenCourseList: () -> Unit = {},
     onOpenPeriodTables: () -> Unit = {},
     onOpenAppearance: () -> Unit = {},
     onOpenGeneral: () -> Unit = {},
@@ -102,8 +103,13 @@ fun MineScreen(
             item {
                 StatsCard(
                     tableCount = state.tables.size,
-                    courseCount = state.courses.distinctBy { it.courseName }.size,
-                    week = state.currentWeek
+                    // 与 CourseListScreen 同口径: 同名课程一组, 空名按 groupId 区分
+                    courseCount = state.courses
+                        .distinctBy { it.courseName.ifBlank { "#${it.groupId}" } }
+                        .size,
+                    week = state.currentWeek,
+                    onOpenTables = onOpenAllTables,
+                    onOpenCourses = onOpenCourseList
                 )
             }
 
@@ -161,25 +167,39 @@ fun MineScreen(
 }
 
 @Composable
-private fun StatsCard(tableCount: Int, courseCount: Int, week: Int) {
+private fun StatsCard(
+    tableCount: Int,
+    courseCount: Int,
+    week: Int,
+    onOpenTables: () -> Unit,
+    onOpenCourses: () -> Unit
+) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(vertical = 18.dp, horizontal = 8.dp),
         horizontalArrangement = Arrangement.SpaceEvenly,
         verticalAlignment = Alignment.CenterVertically
     ) {
-        StatItem(value = tableCount.toString(), label = stringResource(R.string.mine_stat_tables))
+        // 2026-09-21 用户令: 统计格可点 — 表数格→所有课表, 课程格→课程清单页, 周数格静态
+        StatItem(value = tableCount.toString(), label = stringResource(R.string.mine_stat_tables), onClick = onOpenTables)
         Divider(vertical = true)
-        StatItem(value = courseCount.toString(), label = stringResource(R.string.mine_stat_courses))
+        StatItem(value = courseCount.toString(), label = stringResource(R.string.mine_stat_courses), onClick = onOpenCourses)
         Divider(vertical = true)
         StatItem(value = week.toString(), label = stringResource(R.string.mine_stat_week))
     }
 }
 
 @Composable
-private fun StatItem(value: String, label: String) {
+private fun StatItem(value: String, label: String, onClick: (() -> Unit)? = null) {
     val colors = MaterialTheme.colorScheme
-    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+    Column(
+        horizontalAlignment = Alignment.CenterHorizontally,
+        modifier = if (onClick != null) Modifier
+            .clip(SleepyTheme.shapes.medium)
+            .noRippleClickable(onClick)
+            .padding(horizontal = 12.dp, vertical = 4.dp)
+        else Modifier.padding(horizontal = 12.dp, vertical = 4.dp)
+    ) {
         Text(text = value, style = MaterialTheme.typography.headlineMedium.copy(fontWeight = FontWeight.Bold), color = colors.primary)
         Text(text = label, style = MaterialTheme.typography.labelSmall, color = colors.onSurfaceVariant)
     }
