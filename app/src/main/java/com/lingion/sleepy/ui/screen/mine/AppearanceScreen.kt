@@ -204,11 +204,11 @@ fun AppearanceScreen(
             onBack = { showEditor = false; editingTheme = null },
             onSaved = { saved ->
                 CustomThemeStore.save(context, saved)
+                AppPrefs.setThemeKey(context, ThemePresets.CUSTOM_KEY_PREFIX + saved.id)
                 customListVersion++
                 showEditor = false
                 editingTheme = null
-                // 若保存的主题正被应用(编辑既有主题),刷新小组件
-                if (currentKey == ThemePresets.CUSTOM_KEY_PREFIX + saved.id) refreshWidgets()
+                refreshWidgets()
             },
             onDeleted = { id ->
                 CustomThemeStore.delete(context, id)
@@ -354,15 +354,15 @@ private fun CustomThemeCard(
         color = bgColor, shape = SleepyTheme.shapes.large
     ) {
         Column(Modifier.padding(16.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 ColorSwatch(scheme.primary)
                 ColorSwatch(scheme.secondary)
                 ColorSwatch(scheme.tertiary)
                 Spacer(Modifier.weight(1f))
-                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 24dp 嵌 28dp 色板行不撑高
+                // edit 色块: surfaceContainerHighest 与卡片底色拉开层级; 28dp 与色板同高, 首行结构与 Preset 卡完全一致不撑高
                 Box(
                     modifier = Modifier
-                        .size(24.dp)
+                        .size(28.dp)
                         .clip(SleepyTheme.shapes.small)
                         .background(colors.surfaceContainerHighest)
                         .noRippleClickable(onEdit),
