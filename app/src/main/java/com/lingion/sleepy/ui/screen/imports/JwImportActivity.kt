@@ -201,10 +201,14 @@ class JwImportActivity : ComponentActivity() {
                         return
                     }
                     var stepsDone = 0
-                    fun advance(stage: DumpStage) {
-                        dumpProgress = DiagDumpProgress(stage, ++stepsDone)
+                    // 宣布-再执行: 卡片永远显示"正在跑"的段。2026-09-22 用户反馈:
+                    // 旧 advance-after 惯性下执行第 N 段时卡片仍标第 N-1 段名,
+                    // 用户盯着"网络快照"字样却是在跑 30s 重放, 误判死循环。
+                    fun entering(stage: DumpStage) {
+                        dumpProgress = DiagDumpProgress(stage, stepsDone)
                     }
-                    dumpProgress = DiagDumpProgress(DumpStage.DomInventory, 0)
+                    fun leaveStage() { stepsDone++ }
+                    entering(DumpStage.DomInventory)
                     val wv = webViewForDump
                     val ctx = this
                     scope.launch {
@@ -227,11 +231,14 @@ class JwImportActivity : ComponentActivity() {
                             }
                         }
                         val inventoryJson = evalJs(DOM_INVENTORY_JS)
-                        advance(DumpStage.DomInventory)
+                        leaveStage()
+                        entering(DumpStage.Storage)
                         val storageJson = evalJs(STORAGE_JS)
-                        advance(DumpStage.Storage)
+                        leaveStage()
+                        entering(DumpStage.Links)
                         val linksJson = evalJs(LINKS_JS)
-                        advance(DumpStage.Links)
+                        leaveStage()
+                        entering(DumpStage.NetworkSnapshot)
                         // 页面运行时真实 fetch/XHR 记录，和资源重取分开保存。
                         val networkLiveSnapshot = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -242,7 +249,8 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         }
-                        advance(DumpStage.NetworkSnapshot)
+                        leaveStage()
+                        entering(DumpStage.NetworkReplay)
                         val networkReplayJson = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
                                 withTimeoutOrNull(30_000L) {
@@ -263,7 +271,8 @@ class JwImportActivity : ComponentActivity() {
                                 }.also { webView.removeJavascriptInterface("__sleepyDiagBridge") }
                             }
                         }
-                        advance(DumpStage.NetworkReplay)
+                        leaveStage()
+                        entering(DumpStage.ResourceReplay)
                         // evaluateJavascript 不等待 Promise; 资源重取通过一次性 JS bridge 回传。
                         val resourceReplayJson = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -289,7 +298,8 @@ class JwImportActivity : ComponentActivity() {
                                 }
                             }
                         }
-                        advance(DumpStage.ResourceReplay)
+                        leaveStage()
+                        entering(DumpStage.Cookies)
                         // Cookie 全量值 — CookieManager 主线程约束(部分 ROM), 与 JS 段同在 Main 取
                         val cookiesFull: String? = wv?.let { webView ->
                             withContext(Dispatchers.Main) {
@@ -299,7 +309,8 @@ class JwImportActivity : ComponentActivity() {
                                 }.getOrNull()
                             }
                         }
-                        advance(DumpStage.Cookies)
+                        leaveStage()
+                        entering(DumpStage.ZipAssembly)
                         val dumpResult = withContext(Dispatchers.IO) {
                             if (school == null) {
                                 JwCaptureDump.DumpResult.Fail("未选择学校")
@@ -311,10 +322,10 @@ class JwImportActivity : ComponentActivity() {
                                 )
                             }
                         }
-                        advance(DumpStage.ZipAssembly)
+                        leaveStage()
                         when (dumpResult) {
                             is JwCaptureDump.DumpResult.Ok -> {
-                                advance(DumpStage.SaveShare)
+                                entering(DumpStage.SaveShare)
                                 dumpProgress = null
                                 statusMsg = getString(R.string.jw_diag_export_saved, dumpResult.zipName)
                                 JwCaptureDump.share(ctx, dumpResult.zipName, dumpResult.uri)

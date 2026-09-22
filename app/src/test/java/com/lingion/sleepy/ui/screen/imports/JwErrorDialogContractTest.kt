@@ -92,7 +92,7 @@ class JwErrorDialogContractTest {
     fun export_reports_atomic_stage_progress_not_black_box() {
         // 2026-09-21 用户: 点导出必须看到每个原子步骤的进度+百分比, 禁止无止境
         // "正在生成"黑箱。锁三件事: ①dumpProgress 状态存在并被推进 ②每个采集段
-        // 完成后调 advance ③UI 有进度渲染(LinearProgressIndicator + 百分比文案)。
+        // 执行前调 entering ③UI 有进度渲染(LinearProgressIndicator + 百分比文案)。
         val fn = exportFn()
         assertTrue(
             "导出函数必须推进 dumpProgress 原子步骤状态",
@@ -102,7 +102,7 @@ class JwErrorDialogContractTest {
         DumpStage.entries.forEach { stage ->
             assertTrue(
                 "采集管线缺 ${stage.name} 段的 advance 调用(用户会在此段黑箱等待)",
-                fn.contains("advance(DumpStage.${stage.name})")
+                fn.contains("entering(DumpStage.${stage.name})")
             )
         }
         assertTrue(
