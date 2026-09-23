@@ -77,8 +77,6 @@ import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayContext
-import com.lingion.sleepy.util.WeekDisplayResolver
-import com.lingion.sleepy.util.WeekDisplayStatus
 
 // 非 private: MainActivity(AppRoot 会话层)需以本类型注入 viewMode —
 // 会话内切视图/编辑课程 overlay 往返/切 tab 往返都不丢(启动默认仍由 AppRoot 初始化时读 AppPrefs)。
@@ -481,10 +479,6 @@ private fun TopBar(
     val isOnActual = currentWeek == actualWeek
     val semesterStatus = displayContext?.semesterStatus
         ?: DateUtils.semesterStatus(startDate, maxWeek)
-    val displayStatus = displayContext?.let {
-        WeekDisplayResolver.statusForSelectedWeek(it, currentWeek)
-    } ?: WeekDisplayStatus.NORMAL
-
     Row(
         modifier = Modifier
             .fillMaxWidth()
@@ -549,12 +543,11 @@ private fun TopBar(
                     else -> 0
                 }
                 Text(
-                    text = when (displayStatus) {
-                        WeekDisplayStatus.NEAREST_BUSY_DAY -> stringResource(R.string.schedule_nearest_busy_day)
-                        WeekDisplayStatus.NORMAL -> if (statusRes == 0)
-                            stringResource(R.string.schedule_current_week, currentWeek)
-                        else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}"
-                    },
+                    // 表头语义永远=第 N 周(学期外带状态前缀但仍保留周数)。
+                    // 最近有课日只能影响自动选中的周, 不能改写表头文案或点击行为。
+                    text = if (statusRes == 0)
+                        stringResource(R.string.schedule_current_week, currentWeek)
+                    else "${stringResource(statusRes)} · ${stringResource(R.string.schedule_week_prefix, currentWeek)}",
                     style = MaterialTheme.typography.labelLarge.copy(fontWeight = FontWeight.SemiBold),
                     color = if (isOnActual) colors.onPrimaryContainer else colors.primary,
                     modifier = Modifier
