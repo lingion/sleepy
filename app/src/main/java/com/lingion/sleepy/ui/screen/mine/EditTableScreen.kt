@@ -116,6 +116,12 @@ fun EditTableScreen(
     // v1.0.56 T6: bindExpanded 已随独立换绑卡拆除 — 绑定入口唯一化(第三 Tab)
     // issue#40 §5.3: 换绑确认弹窗 — 非 null 时弹「确认换绑」, 确认才真正写 periodTableId
     var pendingRebind by remember { mutableStateOf<Long?>(null) }
+    // 换绑确认跨越保存按钮与弹窗回调, 暂存待写回的课程表元数据。
+    var pendingRebindTable by remember { mutableStateOf<TimeTableEntity?>(null) }
+    // 用户在编辑区对目标作息表的节次/智慧节次编辑也一并暂存, 确认时落 target period。
+    var pendingRebindPeriod by remember {
+        mutableStateOf<com.lingion.sleepy.data.entity.PeriodTableEntity?>(null)
+    }
 
     // issue#40: 编辑的就是"有效时间表" — 绑定了独立时间节次表时, 节次编辑区
     // 展示/修改的是该时间节次表(多张绑定课表同享), 保存写回 period_tables;
@@ -299,6 +305,14 @@ fun EditTableScreen(
                             error = validationErrorMessage
                             return@Button
                         }
+                        // 绑定保持不变时, 有效作息数据尚未加载 = 流还在初始化, 禁止把过期
+                        // 兼容列当真值写回共享作息表; 用户主动改绑(含解绑)时编辑区已切到
+                        // 目标表/本表数据, 不受此闸限制。
+                        val bindChanged = pendingBind != table.periodTableId
+                        if (!bindChanged && table.periodTableId != null && effectivePeriodTable == null) {
+                            error = context.getString(R.string.edit_table_period_loading)
+                            return@Button
+                        }
                         error = null
                         val smartConfigJson = try {
                             Json.encodeToString(smartConfig.value)
@@ -313,20 +327,27 @@ fun EditTableScreen(
                             timeJson = newTimeJson,
                             smartConfigJson = smartConfigJson
                         )
-                        val bindChanged = pendingBind != table.periodTableId
                         if (bindChanged && pendingBind != null) {
-                            // issue#40 §5.3: 换绑须先预览确认 — 弹换绑确认框, 确认才写
+                            // issue#40 §5.3: 换绑须先预览确认 — 弹换绑确认框, 确认才写;
+                            // 用户在编辑区对目标表的节次编辑一并暂存(确认时落 target period)
                             pendingRebind = pendingBind
+                            pendingRebindTable = updated
+                            pendingRebindPeriod = effectivePeriodTable?.copy(
+                                timeJson = newTimeJson,
+                                smartConfigJson = smartConfigJson,
+                                nodesPerDay = slotRows.size.coerceAtLeast(1)
+                            )
                             return@Button
                         }
                         scope.launch {
                             if (bindChanged) {
-                                // issue#40 §5.3: 解绑 — 只写 periodTableId=null, 课程行零改动
-                                viewModel.bindPeriodTable(table.id, null)
+                                // 解绑: 元数据+时间域(解绑后兼容列是真值)+periodTableId=null,
+                                // 单事务原子完成 — 课程行零改动(issue#40 §5.3)
+                                viewModel.updateTableMetadataAndBind(updated, null)
                             } else if (effectivePeriodTable != null) {
-                                // issue#40: 节次编辑区改的是共享时间节次表 — 写回 period_tables +
-                                // 同步全部绑定课表兼容列(§5.2); 课程行零改动(§9.1)
-                                viewModel.updatePeriodTableContent(
+                                // 元数据 + 共享作息表内容: 单事务原子双写(2026-09-23 症状3)
+                                viewModel.updateTableMetadataWithPeriodTable(
+                                    updated,
                                     effectivePeriodTable.copy(
                                         timeJson = newTimeJson,
                                         smartConfigJson = smartConfigJson,
@@ -427,8 +448,16 @@ fun EditTableScreen(
                         confirmText = stringResource(R.string.period_table_preview_confirm),
                         onConfirm = {
                             pendingRebind = null
+                            val metadata = pendingRebindTable
+                            val periodContent = pendingRebindPeriod
+                            pendingRebindTable = null
+                            pendingRebindPeriod = null
                             scope.launch {
-                                viewModel.bindPeriodTable(table.id, targetId)
+                                if (metadata != null) {
+                                    viewModel.updateTableMetadataAndBind(metadata, targetId, periodContent)
+                                } else {
+                                    viewModel.bindPeriodTable(table.id, targetId)
+                                }
                                 onSaved()
                             }
                         },

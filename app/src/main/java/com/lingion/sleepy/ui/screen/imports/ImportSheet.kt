@@ -1526,14 +1526,32 @@ internal suspend fun applyImportPreview(
         ImportApplyMode.ReplaceCurrent -> {
             val existing = repo.getTable(preview.targetTableId)
             if (existing != null) {
+                // 时间域写回真实 owner: 绑定独立作息表时写 period_tables, 不污染兼容列
+                val bound = existing.periodTableId?.let { repo.getPeriodTable(it) }
+                val newNodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else existing.nodesPerDay
                 repo.updateTable(
                     existing.copy(
                         name = confirmedTableName.trim().ifBlank { preview.parseResult.tableName },
-                        startDate = confirmedStartDate,
-                        timeJson = confirmedTimeJson,
-                        nodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else existing.nodesPerDay
+                        startDate = confirmedStartDate
                     )
                 )
+                if (bound != null) {
+                    repo.savePeriodTable(
+                        bound.copy(
+                            timeJson = confirmedTimeJson,
+                            nodesPerDay = if (preview.parseResult.nodesPerDay > 0) preview.parseResult.nodesPerDay else bound.nodesPerDay
+                        )
+                    )
+                } else {
+                    repo.updateTable(
+                        existing.copy(
+                            name = confirmedTableName.trim().ifBlank { preview.parseResult.tableName },
+                            startDate = confirmedStartDate,
+                            timeJson = confirmedTimeJson,
+                            nodesPerDay = newNodesPerDay
+                        )
+                    )
+                }
             }
             // sleepy-v1 (§3.4 契约一): 解析端权威 groupId → 绕过 assignGroupIds 再分配
             if (preview.parseResult.groupIdsAuthoritative) {
@@ -1625,14 +1643,21 @@ internal suspend fun applyImportPreview(
             }
             // v7.10.16k 无损延伸: 老表作息∪导入作息, 并拓到导入课程实际到达的最大节。
             // 旧代码 timeJson 空白(粘贴文本常态)就整段跳过 → 课程入库了课表却不延伸 = 静默丢。
+            // 2026-09-23: 绑定共享作息表时写入兼容列不生效(水合读 period); 写回真正 owner。
             val existingTable = repo.getTable(preview.targetTableId)
             if (existingTable != null) {
+                val bound = existingTable.periodTableId?.let { repo.getPeriodTable(it) }
                 val extended = TimeTableUtils.mergeMostComplete(
-                    currentJson = existingTable.timeJson,
+                    currentJson = bound?.timeJson ?: existingTable.timeJson,
                     incomingJson = preview.parseResult.timeJson,
                     requiredNodeCount = preview.parseResult.nodesPerDay
                 )
-                if (extended != existingTable.timeJson) {
+                if (bound != null) {
+                    if (extended != bound.timeJson) {
+                        val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: bound.nodesPerDay
+                        repo.savePeriodTable(bound.copy(timeJson = extended, nodesPerDay = newMaxNode))
+                    }
+                } else if (extended != existingTable.timeJson) {
                     val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
                     repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
                 }
@@ -1714,14 +1739,21 @@ internal suspend fun applyImportPreview(
                 repo.insertCourses(cleanCourses.map { it.copy(id = 0, tableId = preview.targetTableId) })
             }
             // v7.10.16k: 节次无损延伸 — 与 AppendNonConflict 同策略(不再要求导入带 timeJson)
+            // 2026-09-23: 绑定态写 period_tables(真正 owner), 不污染兼容列。
             val existingTable = repo.getTable(preview.targetTableId)
             if (existingTable != null) {
+                val bound = existingTable.periodTableId?.let { repo.getPeriodTable(it) }
                 val extended = TimeTableUtils.mergeMostComplete(
-                    currentJson = existingTable.timeJson,
+                    currentJson = bound?.timeJson ?: existingTable.timeJson,
                     incomingJson = preview.parseResult.timeJson,
                     requiredNodeCount = preview.parseResult.nodesPerDay
                 )
-                if (extended != existingTable.timeJson) {
+                if (bound != null) {
+                    if (extended != bound.timeJson) {
+                        val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: bound.nodesPerDay
+                        repo.savePeriodTable(bound.copy(timeJson = extended, nodesPerDay = newMaxNode))
+                    }
+                } else if (extended != existingTable.timeJson) {
                     val newMaxNode = TimeTableUtils.parseTimeSlotRows(extended).maxOfOrNull { it.node } ?: existingTable.nodesPerDay
                     repo.updateTable(existingTable.copy(timeJson = extended, nodesPerDay = newMaxNode))
                 }

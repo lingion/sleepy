@@ -91,6 +91,7 @@
     <string name="edit_table_delete">Delete Schedule</string>
     <string name="edit_table_save">Save Settings</string>
     <string name="edit_table_not_found">Schedule not found</string>
+    <string name="edit_table_period_loading">Schedule timing data is still loading. Try again shortly.</string>
     <string name="edit_table_validation_error">Date must be yyyy-MM-dd, time must be HH:mm with start before end</string>
     <string name="edit_table_delete_confirm">Confirm Delete</string>
     <string name="edit_table_delete_msg">Delete schedule \"%1$s\"? This cannot be undone.</string>

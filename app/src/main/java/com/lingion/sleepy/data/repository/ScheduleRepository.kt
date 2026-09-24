@@ -129,6 +129,115 @@ class ScheduleRepository(private val db: AppDatabase) {
     }
 
     /**
+     * 2026-09-23 症状3修复: 编辑课表保存 — 只写课程表自身元数据(name/startDate/maxWeek),
+     * 绑定关系与兼容列原样保留。
+     *
+     * 场景: 课表绑定了共享作息表时, 用户同时改了名字/日期/周次与绑定关系;
+     * updateTable 整行覆盖会带着旧 periodTableId 抹掉并发的 bind 写入(或反之),
+     * 两个独立 launch 的竞态会让"改名不生效"复发。本方法从库内现值合成目标行,
+     * 按字段挑着写, 绝不触碰 periodTableId/preBindSnapshotJson/timeJson 等列。
+     *
+     * [writeTimeDomain]=true 时同步写 timeJson/smartConfigJson/nodesPerDay — 仅用于
+     * 解绑场景: 用户编辑的是旧源兼容列, 解绑后兼容列是真值。
+     */
+    suspend fun updateTableMetadata(
+        table: TimeTableEntity,
+        writeTimeDomain: Boolean = false
+    ) {
+        val current = tableDao.getById(table.id) ?: return
+        captureForUndo()
+        val merged = current.copy(
+            name = table.name,
+            startDate = table.startDate,
+            maxWeek = table.maxWeek,
+            timeJson = if (writeTimeDomain) table.timeJson else current.timeJson,
+            smartConfigJson = if (writeTimeDomain) table.smartConfigJson else current.smartConfigJson,
+            nodesPerDay = if (writeTimeDomain) table.nodesPerDay else current.nodesPerDay
+        )
+        if (merged != current) tableDao.update(merged)
+        onDataChanged()
+    }
+
+    /**
+     * 2026-09-23 症状3修复: 编辑课表保存 — 元数据 + 共享作息表内容, 单事务原子双写。
+     *
+     * 场景: 课表绑定共享作息表, 用户改了名字/日期/周次且同时改了节次内容;
+     * 两条独立写(updateTable + updatePeriodTableContent)顺序不保证, 撤回快照
+     * 也可能只拍到一半。本方法一次快照一次事务同时落两行, 要么都成要么都不成。
+     */
+    suspend fun updateTableMetadataWithPeriodTable(
+        table: TimeTableEntity,
+        periodTable: com.lingion.sleepy.data.entity.PeriodTableEntity
+    ) {
+        val current = tableDao.getById(table.id) ?: return
+        if (periodTableDao.getById(periodTable.id) == null) return
+        captureForUndo()
+        db.withTransaction {
+            tableDao.update(
+                current.copy(
+                    name = table.name,
+                    startDate = table.startDate,
+                    maxWeek = table.maxWeek
+                )
+            )
+            periodTableDao.update(
+                periodTable.copy(updatedAt = System.currentTimeMillis())
+            )
+        }
+        onDataChanged()
+    }
+
+    /**
+     * 2026-09-23 症状3修复: 编辑课表保存 — 元数据 + 换绑, 单事务原子完成。
+     *
+     * 换绑时编辑区的 slotRows 已随 pendingBind 切到目标作息表 — 用户编辑的是目标表
+     * 内容, 由 [periodContent] 一并落回目标 period_tables; 解绑(periodTableId=null)
+     * 时用户编辑的是本表兼容列, 时间域从 [table] 落回解绑后的兼容列。
+     * 与 bindPeriodTable 不同: 那条不落元数据, 这条一并落, 一次撤回整步回退。
+     */
+    suspend fun updateTableMetadataAndBind(
+        table: TimeTableEntity,
+        periodTableId: Long?,
+        periodContent: com.lingion.sleepy.data.entity.PeriodTableEntity? = null
+    ) {
+        val current = tableDao.getById(table.id) ?: return
+        if (periodTableId != null && periodTableDao.getById(periodTableId) == null) return
+        if (periodContent != null && periodTableDao.getById(periodContent.id) == null) return
+        if (current.periodTableId == periodTableId && periodContent == null) {
+            // 绑定关系与目标内容都没变 — 退化为纯元数据写; 解绑态写时间域(兼容列即真值)
+            updateTableMetadata(table, writeTimeDomain = periodTableId == null)
+            return
+        }
+        captureForUndo()
+        db.withTransaction {
+            val next = when {
+                current.periodTableId == null && periodTableId != null ->
+                    TimeTableEntity.snapshotForBind(current, periodTableId)
+                current.periodTableId != null && periodTableId == null ->
+                    // 解绑: 先恢复绑定前快照, 再叠用户本次编辑的时间域(编辑区展示的
+                    // 就是兼容列内容, 用户改动必须是解绑后的真值)
+                    TimeTableEntity.restoredForUnbind(current).copy(
+                        timeJson = table.timeJson,
+                        smartConfigJson = table.smartConfigJson,
+                        nodesPerDay = table.nodesPerDay
+                    )
+                else -> current.copy(periodTableId = periodTableId)
+            }
+            tableDao.update(
+                next.copy(
+                    name = table.name,
+                    startDate = table.startDate,
+                    maxWeek = table.maxWeek
+                )
+            )
+            periodContent?.let {
+                periodTableDao.update(it.copy(updatedAt = System.currentTimeMillis()))
+            }
+        }
+        onDataChanged()
+    }
+
+    /**
      * issue#28 P3: 编辑课表保存 — timeJson 变更时课程按绝对时间自适应新节次。
      *
      * 节次编号语义 = "该节在新表上的钟点", 表变了编号必须跟着变, 否则改完 16→12 节

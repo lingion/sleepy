@@ -91,6 +91,7 @@
     <string name="edit_table_delete">刪除課表</string>
     <string name="edit_table_save">儲存課表設定</string>
     <string name="edit_table_not_found">課表資料未找到</string>
+    <string name="edit_table_period_loading">作息表資料尚未載入完成，請稍候重試</string>
     <string name="edit_table_validation_error">日期需為 yyyy-MM-dd，時間需為 HH:mm 且開始早於結束</string>
     <string name="edit_table_delete_confirm">確認刪除</string>
     <string name="edit_table_delete_msg">確定要刪除課表「%1$s」嗎？此操作不可撤銷。</string>

@@ -91,6 +91,7 @@
     <string name="edit_table_delete">時間割を削除</string>
     <string name="edit_table_save">設定を保存</string>
     <string name="edit_table_not_found">時間割が見つかりません</string>
+    <string name="edit_table_period_loading">時間割データを読み込み中です。しばらくしてから再試行してください。</string>
     <string name="edit_table_validation_error">日付は yyyy-MM-dd、時刻は HH:mm で開始が終了より前である必要があります</string>
     <string name="edit_table_delete_confirm">削除の確認</string>
     <string name="edit_table_delete_msg">時間割「%1$s」を削除しますか？この操作は取り消せません。</string>

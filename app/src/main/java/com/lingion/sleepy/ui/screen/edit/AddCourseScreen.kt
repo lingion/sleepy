@@ -197,7 +197,8 @@ fun AddCourseScreen(
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
-    val currentTable = state.currentTable
+    // 节次时间域必须读取水合表; 绑定独立作息表时兼容列可能已过期。
+    val currentTable = state.effectiveCurrentTable
     val fieldShape = SleepyTheme.fieldShape
     val fieldColors = SleepyTheme.fieldColors()
 
@@ -378,11 +379,14 @@ fun AddCourseScreen(
                 val gid = java.util.UUID.randomUUID().toString()
                 repo.insertCourses(fixedDrafts.map { it.copy(groupId = gid) })
             }
-            // issue#23: 新建槽位 / 槽位时间编辑先在编辑页暂存, 课程落库成功后再写回课表 timeJson。
+            // issue#23: 新建槽位 / 槽位时间编辑先在编辑页暂存, 课程落库成功后再写回 timeJson。
             // 顺序串接保证一次添加多个槽位时编号连续且方向元数据不丢失。
             // v7.10.16v 撤回: 课程行 + timeJson 写回是一个动作 — beginBatch 让快照
             // 固定在动作前, 撤回一次整步回退(否则第二写覆盖快照, 只回退一半)。
+            // 2026-09-23: currentTable 已是水合表 — 绑定共享作息表时槽位变更必须写回
+            // period_tables(真正 owner), 写兼容列既不生效也违反 issue#40 不污染原则。
             val table = currentTable ?: repo.getTable(tableId)
+            val boundPeriodTable = state.effectivePeriodTable
             if (table != null && (pendingEdgeInserts.isNotEmpty() || pendingEdgeEdits.isNotEmpty())) {
                 com.lingion.sleepy.data.undo.UndoManager.beginBatch()
                 try {
@@ -392,7 +396,15 @@ fun AddCourseScreen(
                     val updated = pendingEdgeEdits.fold(withInserts) { json, edit ->
                         TimeTableUtils.updateEdgeNodeTimes(json, edit.node, edit.start, edit.end)
                     }
-                    if (updated != table.timeJson) viewModel.updateTable(table.copy(timeJson = updated))
+                    if (updated != table.timeJson) {
+                        if (boundPeriodTable != null) {
+                            viewModel.updatePeriodTableContent(
+                                boundPeriodTable.copy(timeJson = updated)
+                            )
+                        } else {
+                            viewModel.updateTable(table.copy(timeJson = updated))
+                        }
+                    }
                 } finally {
                     com.lingion.sleepy.data.undo.UndoManager.endBatch()
                 }
