@@ -378,6 +378,28 @@ class ScheduleViewModel : ViewModel() {
         viewModelScope.launch { repo.updateTable(table) }
     }
 
+    /** 2026-09-23 症状3修复: 仅写课程表元数据, 不动绑定关系。 */
+    fun updateTableMetadata(table: TimeTableEntity, writeTimeDomain: Boolean = false) {
+        viewModelScope.launch { repo.updateTableMetadata(table, writeTimeDomain) }
+    }
+
+    /** 2026-09-23 症状3修复: 元数据 + 共享作息表内容, 单事务原子双写。 */
+    fun updateTableMetadataWithPeriodTable(
+        table: TimeTableEntity,
+        periodTable: com.lingion.sleepy.data.entity.PeriodTableEntity
+    ) {
+        viewModelScope.launch { repo.updateTableMetadataWithPeriodTable(table, periodTable) }
+    }
+
+    /** 2026-09-23 症状3修复: 元数据 + 换绑/解绑(+目标作息表内容), 单事务原子完成。 */
+    fun updateTableMetadataAndBind(
+        table: TimeTableEntity,
+        periodTableId: Long?,
+        periodContent: com.lingion.sleepy.data.entity.PeriodTableEntity? = null
+    ) {
+        viewModelScope.launch { repo.updateTableMetadataAndBind(table, periodTableId, periodContent) }
+    }
+
     /** issue#28 P3: 保存课表编辑 — timeJson 变更时课程节次按绝对时间自适应 */
     fun updateTableRemappingCourses(table: TimeTableEntity) {
         viewModelScope.launch { repo.updateTableRemappingCourses(table) }
