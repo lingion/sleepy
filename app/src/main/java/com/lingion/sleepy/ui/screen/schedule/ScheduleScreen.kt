@@ -335,7 +335,7 @@ fun ScheduleScreen(
                     ViewMode.Cards -> CardsGridView(
                         courses = renderCourses,
                         allCourses = state.courses,
-                        timeSlots = TimeTableUtils.timeSlotsFor(state.currentTable),
+                        timeSlots = TimeTableUtils.timeSlotsFor(state.effectiveCurrentTable),
                         visibleDays = visibleDays,
                         showDate = showDate,
                         startDate = state.currentTable?.startDate ?: "",
