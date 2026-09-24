@@ -53,8 +53,8 @@ class VendorLiveCardRendererExtrasTest {
             rendererSource.contains("\"notification.superx.operation\"")
         )
         assertTrue(
-            "vivo renderer must set METTING scene",
-            rendererSource.contains("\"METTING\"")
+            "vivo renderer must post NAVIGATION scene (the only confirmed vivo allow-list scene)",
+            rendererSource.contains("\"NAVIGATION\"")
         )
         assertTrue(
             "vivo renderer must set template 2 (progress)",
@@ -63,6 +63,13 @@ class VendorLiveCardRendererExtrasTest {
         assertTrue(
             "vivo renderer must include changedRecord to guard ordering",
             rendererSource.contains("\"notification.superx.changedRecord\"")
+        )
+        // METTING/TIMER/TRAIN are still *requested* in scene registration
+        // (harmless extras that vivo may or may not grant); only NAVIGATION
+        // is posted on the actual notification.
+        assertTrue(
+            "vivo scene registration should still request the community-known scene list",
+            rendererSource.contains("listOf(\"NAVIGATION\", \"METTING\", \"TIMER\", \"TRAIN\")")
         )
     }
 

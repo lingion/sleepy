@@ -24,10 +24,22 @@ class JwErrorDialogContractTest {
     fun error_rendering_uses_alert_dialog_not_card() {
         val block = errorDialogBlock()
         assertTrue("错误提示必须走 AlertDialog", block.contains("AlertDialog("))
-        assertFalse(
-            "旧 Box+Card 错误渲染必须移除",
-            block.contains("Card(")
+        assertTrue(
+            "导出进度卡允许存在于错误弹窗内, 但必须由 dumpProgress 控制显隐",
+            block.contains("dumpProgress?.let { progress ->")
         )
+    }
+
+    @Test
+    fun export_progress_expands_inside_error_dialog_below_action_buttons() {
+        val block = errorDialogBlock()
+        val buttons = block.indexOf("DialogActionButtons(")
+        val progress = block.indexOf("dumpProgress?.let { progress ->")
+        assertTrue("进度区必须在错误弹窗内", progress >= 0)
+        assertTrue("进度区必须位于导出按钮之后", progress > buttons)
+        assertTrue("弹窗内必须显示阶段文案", block.contains("progress.stage.labelRes"))
+        assertTrue("弹窗内必须显示百分比", block.contains("jw_diag_progress_percent"))
+        assertFalse("页面底部不应再渲染第二份进度卡", source.substringAfter("LaunchedEffect(statusMsg)").contains("dumpProgress?.let"))
     }
 
     @Test
@@ -88,6 +100,44 @@ class JwErrorDialogContractTest {
         assertTrue("exportDump 必须在 Dispatchers.IO 执行", fn.contains("Dispatchers.IO"))
     }
 
+    @Test
+    fun export_reports_atomic_stage_progress_not_black_box() {
+        // 2026-09-21 用户: 点导出必须看到每个原子步骤的进度+百分比, 禁止无止境
+        // "正在生成"黑箱。锁三件事: ①dumpProgress 状态存在并被推进 ②每个采集段
+        // 执行前调 entering ③UI 有进度渲染(LinearProgressIndicator + 百分比文案)。
+        val fn = exportFn()
+        assertTrue(
+            "导出函数必须推进 dumpProgress 原子步骤状态",
+            fn.contains("dumpProgress = DiagDumpProgress(")
+        )
+        // 管线全部 9 段都必须有 advance 调用 — 缺一段 = 用户在该段处于黑箱
+        DumpStage.entries.forEach { stage ->
+            assertTrue(
+                "采集管线缺 ${stage.name} 段的 advance 调用(用户会在此段黑箱等待)",
+                fn.contains("entering(DumpStage.${stage.name})")
+            )
+        }
+        assertTrue(
+            "必须有 LinearProgressIndicator 渲染百分比进度",
+            source.contains("LinearProgressIndicator(") &&
+                source.contains("R.string.jw_diag_progress_percent")
+        )
+        assertTrue(
+            "必须显示 步骤 x/n 文案(jw_diag_progress_step)",
+            source.contains("R.string.jw_diag_progress_step")
+        )
+        // 旧的单一"正在生成"文案已被原子步骤取代, 不许复活
+        assertFalse(
+            "禁止回退到无进度的单一 jw_diag_exporting 文案",
+            source.contains("R.string.jw_diag_exporting")
+        )
+        // 终态必须清进度卡: 成功与失败分支都要 dumpProgress = null
+        val okBranch = fn.substringAfter("is JwCaptureDump.DumpResult.Ok")
+        val failBranch = fn.substringAfter("is JwCaptureDump.DumpResult.Fail")
+        assertTrue("成功分支必须清 dumpProgress", okBranch.contains("dumpProgress = null"))
+        assertTrue("失败分支必须清 dumpProgress", failBranch.contains("dumpProgress = null"))
+    }
+
     private fun statusBlock(): String {
         val start = source.indexOf("LaunchedEffect(statusMsg)")
         return if (start < 0) "" else source.substring(start)
@@ -97,9 +147,15 @@ class JwErrorDialogContractTest {
         val marker = "errorMsg?.let { msg ->"
         val start = source.indexOf(marker)
         assertTrue("errorMsg 渲染块缺失", start >= 0)
-        val end = source.indexOf("statusMsg?.let { msg ->", start).let {
-            if (it < 0) source.length else it
-        }
+        // 边界 = 本弹窗块之后的下一个顶层 composable 结构 (LaunchedEffect(statusMsg) /
+        // Box(进度卡+Snackbar))。旧版以 "statusMsg?.let" 为界, 但该写法早已不存在,
+        // end 一直静默落到 source.length, 把整个文件尾部都算进弹窗块 —
+        // 导出进度卡(Card)加进来后旧边界误伤。收窄到真实块尾。
+        val candidates = listOf(
+            source.indexOf("LaunchedEffect(statusMsg)", start),
+            source.indexOf("\n                Box(", start),
+        ).filter { it > start }
+        val end = if (candidates.isEmpty()) source.length else candidates.min()
         return source.substring(start, end)
     }
 

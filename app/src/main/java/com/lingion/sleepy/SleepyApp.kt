@@ -2,11 +2,13 @@ package com.lingion.sleepy
 
 import android.app.Application
 import android.content.res.Configuration
+import android.os.Build
 import android.util.Log
 import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.data.repository.ImportDraftRepository
 import com.lingion.sleepy.util.HolidayManager
+import com.lingion.sleepy.widget.PreviewRegistrationResult
 import com.lingion.sleepy.widget.WidgetPreviewRegistrar
 import com.lingion.sleepy.widget.WidgetUpdater
 import com.lingion.sleepy.widget.notification.CourseNotificationScheduler
@@ -63,7 +65,11 @@ class SleepyApp : Application() {
         // Android 15+ generated previews improve picker fidelity; older hosts
         // continue using previewLayout/previewImage from provider XML.
         CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-            val preview = WidgetPreviewRegistrar.register(this@SleepyApp)
+            val preview = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
+                WidgetPreviewRegistrar.register(this@SleepyApp)
+            } else {
+                PreviewRegistrationResult.UNSUPPORTED_API
+            }
             Log.i("WidgetPreview", "generated preview registration: $preview")
         }
         // 15-min periodic 兜底 (KEEP 幂等): 午夜自续链是单次任务, 强杀进程会清掉,

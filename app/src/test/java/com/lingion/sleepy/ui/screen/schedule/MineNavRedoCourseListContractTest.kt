@@ -207,12 +207,41 @@ class MineNavRedoCourseListContractTest {
     }
 
     @Test
+    fun `course list screen groups locations inside each course card`() {
+        assertTrue("课程卡必须保留老师标题", courseListScreen.contains("teacher = rows.first().teacher"))
+        assertTrue("课程卡必须按 room 分组地点", courseListScreen.contains("rows.groupBy { it.room.trim() }"))
+        assertTrue("课程卡必须渲染地点安排", courseListScreen.contains("group.locations.forEach"))
+    }
+
+    @Test
+    fun `week view filters empty days in single-column detail panel`() {
+        val courseTableView = findUpward(
+            "app/src/main/java/com/lingion/sleepy/ui/component/CourseTableView.kt"
+        ).readText()
+        val sortedDays = Regex("""val sortedDays = visibleDays\.sorted\(\)""")
+            .find(courseTableView)
+            ?: error("DetailPanel sortedDays declaration not found")
+        val singleColumn = courseTableView.indexOf("// 单栏(或两栏下过滤后不足 2 天)")
+        assertTrue("DetailPanel single-column branch must exist", singleColumn >= 0)
+        val loop = courseTableView.indexOf("for (day in sortedDays)", singleColumn)
+        assertTrue("single-column branch must render filtered sortedDays", loop > sortedDays.range.last)
+    }
+
+    @Test
     fun `course list screen renders empty state with course_list_empty`() {
         // grouped.isEmpty 分支必须显示 course_list_empty 文案
         val emptyBranch = Regex(
             """if\s*\(grouped\.isEmpty\(\)\)[\s\S]{0,400}?course_list_empty"""
         ).containsMatchIn(courseListScreen)
         assertTrue("空态必须显示 R.string.course_list_empty", emptyBranch)
+    }
+
+    @Test
+    fun `adding a slot reuses the previous slot teacher and room`() {
+        val addBlock = findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/edit/AddCourseScreen.kt").readText()
+        assertTrue("新增时段必须读取上一张卡", addBlock.contains("val previous = meetingBlocks.lastOrNull()"))
+        assertTrue("新增时段必须复用上一张卡地点", addBlock.contains("room = previous?.roomState.orEmpty()"))
+        assertTrue("新增时段必须复用上一张卡老师", addBlock.contains("teacher = previous?.teacherState.orEmpty()"))
     }
 
     // ---- E. 6 locale 字符串齐备 ----

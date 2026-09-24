@@ -715,6 +715,9 @@ fun AddCourseScreen(
             item {
                 FilledTonalButton(
                     onClick = {
+                        // 新时段沿用上一张卡的老师/地点,减少重复输入;
+                        // 时间、星期、周次仍采用新卡默认值,避免误复制上一卡的时段。
+                        val previous = meetingBlocks.lastOrNull()
                         meetingBlocks.add(
                             MeetingBlockDraft(
                                 id = nextBlockId,
@@ -725,7 +728,9 @@ fun AddCourseScreen(
                                 endTime = "11:40",
                                 startWeek = 1,
                                 endWeek = 16,
-                                weekType = 0
+                                weekType = 0,
+                                room = previous?.roomState.orEmpty(),
+                                teacher = previous?.teacherState.orEmpty()
                             )
                         )
                         nextBlockId += 1

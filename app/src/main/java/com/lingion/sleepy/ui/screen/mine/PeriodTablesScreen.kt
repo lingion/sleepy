@@ -69,6 +69,7 @@ fun PeriodTablesScreen(
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = androidx.compose.ui.platform.LocalContext.current
+    val newPeriodTableName = stringResource(R.string.period_table_new)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val tables by viewModel.state.collectAsState()
 
@@ -148,7 +149,7 @@ fun PeriodTablesScreen(
                 onClick = {
                     scope.launch {
                         val newId = viewModel.insertPeriodTable(
-                            name = context.getString(R.string.period_table_new)
+                            name = newPeriodTableName
                         )
                         // issue#40: 创建即落库(自增 id), 编辑页把它当"未保存新表" —
                         // 未保存返回时由 onCreateNew 调用方/编辑页清掉残留行

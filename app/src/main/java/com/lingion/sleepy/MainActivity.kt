@@ -74,6 +74,7 @@ import com.lingion.sleepy.ui.screen.mine.ExportScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
 import com.lingion.sleepy.ui.screen.mine.LicenseScreen
+import com.lingion.sleepy.data.CustomThemeStore
 import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.today.TodayScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -124,14 +125,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onPostResume() {
         super.onPostResume()
-        // 系统返回/最近任务的窗口快照动画若回看 windowBackground, 会露出
-        // Theme.Sleepy.Splash 的"纯色+居中 logo"启动底衬(in-app 返回时表现为
-        // "矩形缩小+空白背景+中间 logo"视觉残留)。首帧绘制后把底衬降级为纯色,
-        // 与启动页同色, 用户无感; logo 只在真正的冷启动首屏出现。
-        // OneShotPreDrawListener: 首帧 onDraw 前触发一次, 此时启动页使命已完成。
-        androidx.core.view.OneShotPreDrawListener.add(
-            window.decorView
-        ) {
+        // Keep the splash logo out of system window snapshots after the first frame.
+        androidx.core.view.OneShotPreDrawListener.add(window.decorView) {
             window.setBackgroundDrawable(
                 ColorDrawable(getColor(com.lingion.sleepy.R.color.splash_background))
             )
@@ -158,6 +153,9 @@ class MainActivity : ComponentActivity() {
         // 启动时检查更新: 用户可在「关于」最底 Toggle 关闭
         com.lingion.sleepy.util.UpdateNotifier.loadDismissedVersion(this)
         com.lingion.sleepy.util.UpdateNotifier.maybeCheckOnStart(this, lifecycleScope)
+        if (BuildConfig.DEBUG && intent.getBooleanExtra("mock_update", false)) {
+            com.lingion.sleepy.util.UpdateNotifier.showMockUpdate()
+        }
         setContent {
             // uiNightModeState.value 变化(composition-observed) → systemDark 重算 →
             // dirty 指派给 remember(systemDark) 触发 dark 重算; 此前 isSystemInDarkTheme()
@@ -168,7 +166,15 @@ class MainActivity : ComponentActivity() {
             fun applyTheme() { dark = AppPrefs.isDarkMode(this@MainActivity, systemDark) }
             val deepLinkCourse by editingCourseFlow.collectAsState()
             val themeKey by AppPrefs.themeKeyFlow(this@MainActivity).collectAsState(initial = AppPrefs.getThemeKey(this@MainActivity))
-            SleepyThemeProvider(darkTheme = dark, themeKey = themeKey) {
+            // The selected custom theme can be edited in place, so its key does not change.
+            // Subscribe to the custom-theme document as a separate invalidation signal.
+            val customThemesJson by CustomThemeStore.changes(this@MainActivity)
+                .collectAsState(initial = "")
+            SleepyThemeProvider(
+                darkTheme = dark,
+                themeKey = themeKey,
+                customThemeVersion = customThemesJson
+            ) {
                 AppRoot(
                     themeMode = themeMode,
                     onThemeModeChange = { mode ->
@@ -328,6 +334,7 @@ internal fun MainTabs(
         }
         Tab.Manage -> holder.SaveableStateProvider(currentTab.name) {
             val ctx = LocalContext.current
+            val importCoursesLabel = stringResource(com.lingion.sleepy.R.string.import_courses)
             // 空态导入引导: autoShowImportOnce 置位过 → 本次进管理页自动弹 ImportSheet, 随即消费清零。
             // pendingImportText != null 是另一路 (外部 app 分享课表文本进来) 的既有自动弹层, 语义不同并存。
             val autoOnce = MainActivity.autoShowImportOnceState.value
@@ -338,7 +345,7 @@ internal fun MainTabs(
                 ImportDraft(
                     id = entity.id,
                     name = snapshot.tableName.ifBlank { snapshot.school.name },
-                    details = "${snapshot.courses.size} ${ctx.getString(com.lingion.sleepy.R.string.import_courses)}",
+                    details = "${snapshot.courses.size} $importCoursesLabel",
                 )
             }
             ManagementPage(autoShowImportSheet = autoOnce || MainActivity.pendingImportText != null, onJwImportRequested = { ctx.startActivity(Intent(ctx, com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java)) }, onCreateNewTableRequested = onCreateNewTable,

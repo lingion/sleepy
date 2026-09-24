@@ -51,9 +51,11 @@ private class DefaultVendorNotificationAdapter(
         return VendorLiveNotificationCapability(
             vendor = vendor,
             state = notificationState ?: VendorCapabilityState.UNKNOWN,
-            summaryRes = if (notificationState == VendorCapabilityState.NOTIFICATION_PERMISSION_REQUIRED) {
-                R.string.reminder_fluid_note
-            } else R.string.reminder_fluid_note,
+            summaryRes = when (notificationState) {
+                VendorCapabilityState.NOTIFICATION_PERMISSION_REQUIRED ->
+                    R.string.reminder_fluid_status_notification_required
+                else -> R.string.reminder_fluid_status_unknown
+            },
             settingsIntents = vendorSettingsSpecs(vendor),
             fallbackToAppNotificationSettings = true
         )

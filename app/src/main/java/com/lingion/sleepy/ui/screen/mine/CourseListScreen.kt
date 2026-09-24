@@ -58,19 +58,21 @@ fun CourseListScreen(
     val state by viewModel.state.collectAsState()
     val colors = MaterialTheme.colorScheme
 
-    // 按课程名聚合(同名 = 一张课程卡), 名字为空时按 groupId 兜底
+    // 课程卡先按课程名和老师归组;同一张卡内部再按上课地点分组,
+    // 避免不同地点混在同一行,也保留同名不同老师的独立课程卡。
     val grouped: List<CourseGroup> = remember(state.courses) {
         state.courses
-            .groupBy { it.courseName.ifBlank { it.groupId } }
-            .map { (name, rows) ->
+            .groupBy { it.courseName.ifBlank { it.groupId } to it.teacher.trim() }
+            .map { (key, rows) ->
                 CourseGroup(
-                    name = rows.first().courseName,
+                    name = rows.first().courseName.ifBlank { key.first },
                     teacher = rows.first().teacher,
-                    room = rows.first().room,
-                    rows = rows
+                    locations = rows.groupBy { it.room.trim() }
+                        .map { (room, locationRows) -> CourseLocation(room, locationRows) }
+                        .sortedBy { it.room }
                 )
             }
-            .sortedBy { it.name }
+            .sortedWith(compareBy(String.CASE_INSENSITIVE_ORDER) { it.name })
     }
 
     Scaffold(
@@ -136,29 +138,27 @@ private fun CourseGroupCard(group: CourseGroup) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        // 课名 + 安排数小徽
-        Row(verticalAlignment = Alignment.CenterVertically) {
-            Text(
-                text = group.name.ifBlank { stringResource(R.string.course_detail_title) },
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
-                color = colors.onSurface,
-                modifier = Modifier.weight(1f)
-            )
-            Text(
-                text = stringResource(R.string.course_list_arrangements, group.rows.size),
-                style = MaterialTheme.typography.labelSmall,
-                color = colors.onSurfaceVariant
-            )
-        }
+        Text(
+            text = group.name.ifBlank { stringResource(R.string.course_detail_title) },
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.SemiBold),
+            color = colors.onSurface
+        )
         if (group.teacher.isNotBlank()) {
             MetaRow(icon = Icons.Outlined.Person, text = group.teacher)
         }
-        if (group.room.isNotBlank()) {
-            MetaRow(icon = Icons.Outlined.LocationOn, text = group.room)
-        }
-        // 全部上课安排一行一条(节次·周次·星期), 让用户看清到底落在哪天哪节
-        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
-            group.rows.forEach { row -> ArrangementRow(row) }
+        group.locations.forEach { location ->
+            if (location.room.isNotBlank()) {
+                MetaRow(icon = Icons.Outlined.LocationOn, text = location.room)
+            }
+            Text(
+                text = stringResource(R.string.course_list_arrangements, location.rows.size),
+                style = MaterialTheme.typography.labelSmall,
+                color = colors.onSurfaceVariant
+            )
+            // 每个地点单独列出该地点的全部上课安排。
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                location.rows.forEach { row -> ArrangementRow(row) }
+            }
         }
     }
 }
@@ -219,6 +219,10 @@ private fun ArrangementRow(row: CourseEntity) {
 private data class CourseGroup(
     val name: String,
     val teacher: String,
+    val locations: List<CourseLocation>
+)
+
+private data class CourseLocation(
     val room: String,
     val rows: List<CourseEntity>
 )

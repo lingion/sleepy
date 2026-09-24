@@ -41,6 +41,33 @@ class NavHostMigrationContractTest {
     private val themesNightSrc by lazy {
         File("src/main/res/values-night/themes.xml").readText()
     }
+    private val periodTableEditSrc by lazy {
+        File("src/main/java/com/lingion/sleepy/ui/screen/mine/PeriodTableEditScreen.kt").readText()
+    }
+
+    // ─── 作息表禁绑作息表 (issue#40 用户铁令, aa23a443 定稿) ───
+
+    @Test
+    fun period_table_editor_never_reintroduces_period_table_binding_tab() {
+        // 用户多轮拍板(issue#40): 「作息表里绑定另一个作息表?反人类」— 作息表之间
+        // 禁绑定/禁取入, 否则两表循环改写。aa23a443 移除第三 Tab, 此前一次 merge
+        // 把它带回来翻车一次 → 本契约锁死: TimeSlotEditor 调用不得再传
+        // periodTableOptions/selectedPeriodTableId/onSelectPeriodTable/excludePeriodTableId
+        // (这些参数只会催生「作息表」Tab)。复制需求永远走管理页「复制」按钮。
+        listOf(
+            "periodTableOptions",
+            "selectedPeriodTableId",
+            "onSelectPeriodTable",
+            "excludePeriodTableId",
+            "TimeSlotEditorPeriodTableOption",
+            "selectedImportTableId",
+        ).forEach { token ->
+            assertFalse(
+                "作息表编辑页禁止再传 $token(作息表禁绑作息表, issue#40 用户铁令, aa23a443)",
+                periodTableEditSrc.contains(token)
+            )
+        }
+    }
 
     private fun balancedBlock(src: String, anchor: String, maxChars: Int = 2000): String {
         val start = src.indexOf(anchor)
@@ -234,16 +261,12 @@ class NavHostMigrationContractTest {
     }
 
     @Test
-    fun manifest_predictive_back_stays_on_when_popExit_is_scaleOut() {
-        // 2026-09-20 用户真机 (Mate 30 EMUI) 翻车定稿: OEM 对 in-app BACK 也做
-        // 系统级预测性返回预演(整个任务窗口矩形缩小) → 773ff116 关闭
-        // enableOnBackInvokedCallback, BACK 走经典 KeyEvent 分发。
-        // 本契约随决策反转: manifest 必须=false(防再次打开重蹈 OEM 缩放),
-        // predictivePopTransform 保留 scaleOut 仅供 NavDisplay popTransitionSpec 使用。
+    fun manifest_predictive_back_is_enabled_for_lab_preview() {
+        // 返回预览是实验室功能的基础通路，系统回调必须开启。
         assertTrue(
-            "OEM 真机翻车定稿: predictive-back 必须=false(矩形缩小+logo 残留, 见 773ff116)",
+            "predictive-back 必须开启以提供返回预览",
             Regex(
-                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']false[\"']"""
+                """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
             ).containsMatchIn(manifestSrc)
         )
     }
@@ -438,10 +461,9 @@ class NavHostMigrationContractTest {
 
     @Test
     fun manifest_enables_predictive_back_app_wide() {
-        // 2026-09-20 决策反转(见 manifest_predictive_back_stays_on_when_popExit_is_scaleOut):
-        // OEM 对 in-app BACK 做系统级预演 → 关闭 predictive-back, 走经典 KeyEvent。
-        assertFalse(
-            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"false\"(OEM 预演翻车定稿)",
+        // 系统 predictive-back 是返回预览的入口；窗口底衬在首帧后已降级为纯色。
+        assertTrue(
+            "AndroidManifest <application> 必须含 enableOnBackInvokedCallback=\"true\"",
             Regex(
                 """<application[\s\S]{0,500}?android:enableOnBackInvokedCallback\s*=\s*[\"']true[\"']"""
             ).containsMatchIn(manifestSrc)

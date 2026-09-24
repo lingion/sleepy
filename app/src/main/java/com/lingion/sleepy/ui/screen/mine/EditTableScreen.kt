@@ -87,6 +87,7 @@ fun EditTableScreen(
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
 
     // tableId == null means edit current table
     val table = if (tableId != null) state.tables.find { it.id == tableId } else state.currentTable
@@ -301,7 +302,7 @@ fun EditTableScreen(
                             slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
                             slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = context.getString(R.string.edit_table_validation_error)
+                            error = validationErrorMessage
                             return@Button
                         }
                         // 绑定保持不变时, 有效作息数据尚未加载 = 流还在初始化, 禁止把过期

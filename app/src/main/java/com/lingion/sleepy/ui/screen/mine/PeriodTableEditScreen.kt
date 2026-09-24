@@ -56,7 +56,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
-import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -86,6 +85,9 @@ fun PeriodTableEditScreen(
     val colors = MaterialTheme.colorScheme
     val scope = rememberCoroutineScope()
     val context = LocalContext.current
+    val validationErrorMessage = stringResource(R.string.edit_table_validation_error)
+    val courseNodeFormat = stringResource(R.string.course_node_format)
+    val deleteBlockedFormat = stringResource(R.string.period_table_delete_blocked)
     val periodTables by viewModel.allPeriodTables.collectAsState()
     val scheduleState by viewModel.state.collectAsState()
 
@@ -110,10 +112,8 @@ fun PeriodTableEditScreen(
     var pendingSave by remember { mutableStateOf<PeriodTableEntity?>(null) }
     // issue#40: 新建未保存表的丢弃标记 — 用户确认保存后翻 false, 返回不再删行
     var unsavedNew by remember { mutableStateOf(isNewUnsaved) }
-    // v1.0.56 T6: 第三 Tab「作息表」— 作息表编辑页同样有(用户 2026-09-16: 有手动/自动就有第三个)。
-    // 语义 = 取入: 选中另一张作息表, 把它的节次内容拷进当前编辑区(成为本表内容的起点),
-    // 非活绑 — period_tables 自身无绑定字段, 绑定只存在于课表上。排除自己禁自引用。
-    var selectedImportTableId by remember(periodTable.id) { mutableStateOf<Long?>(null) }
+    // 2026-09-20 用户拍板(issue#40 反馈, aa23a443): 作息表编辑页不再有「作息表」第三 Tab。
+    // 绑定只存在于课表→作息表单向; 作息表之间禁绑定/取入, 防循环改写。复制走管理页按钮。
     // v1.0.56 T7: 删除入口迁入本页 — 确认弹窗 + 绑定拦截提示(从管理页列表行整体搬迁)
     var showDeleteConfirm by remember(periodTable.id) { mutableStateOf(false) }
     var deleteBlockedMsg by remember(periodTable.id) { mutableStateOf<String?>(null) }
@@ -263,29 +263,8 @@ fun PeriodTableEditScreen(
                                     slotRows.addAll(newRows)
                                 },
                                 smartConfig = smartConfig.value,
-                                onSmartConfigChange = { smartConfig.value = it },
-                                // v1.0.56 T6: 第三 Tab「作息表」— 列表排除自己;
-                                // 选中 = 把该表节次取入当前编辑区(取入非活绑)
-                                periodTableOptions = periodTables.map {
-                                    TimeSlotEditorPeriodTableOption(it.id, it.name, it.nodesPerDay)
-                                },
-                                selectedPeriodTableId = selectedImportTableId,
-                                excludePeriodTableId = periodTable.id,
-                                onSelectPeriodTable = { pickedId ->
-                                    selectedImportTableId = pickedId
-                                    val picked = periodTables.find { it.id == pickedId } ?: return@TimeSlotEditor
-                                    val imported = TimeTableUtils.parseTimeSlotRows(picked.timeJson)
-                                    slotRows.clear()
-                                    slotRows.addAll(imported)
-                                    // issue#23 Task 4: 取入后配置对齐同一规则 —— 取入表的配置
-                                    // 仍 derive 得到取入行 → 保留; 否则从取入行重推断; 不可推断
-                                    // → 维持当前配置。
-                                    val importedStored = com.lingion.sleepy.ui.component
-                                        .decodeSmartPeriodConfig(picked.smartConfigJson)
-                                    smartConfig.value = com.lingion.sleepy.ui.component
-                                        .resolveAutoPeriodConfig(imported, importedStored)
-                                        ?: smartConfig.value
-                                }
+                                onSmartConfigChange = { smartConfig.value = it }
+                                // 作息表编辑页只允许编辑本表内容; 活绑定仅由课程表→作息表入口提供。
                             )
                         }
                     }
@@ -306,7 +285,7 @@ fun PeriodTableEditScreen(
                             slotRows.all { it.start.matches(Regex("\\d{2}:\\d{2}")) && it.end.matches(Regex("\\d{2}:\\d{2}")) } &&
                             slotRows.all { it.start < it.end }
                         if (!valid) {
-                            error = context.getString(R.string.edit_table_validation_error)
+                            error = validationErrorMessage
                             return@Button
                         }
                         error = null
@@ -392,7 +371,7 @@ fun PeriodTableEditScreen(
                         val oldT = change.oldTime ?: "?"
                         val newT = change.newTime ?: "?"
                         val nodesTag = if (change.changedNodes.size == 1) {
-                            context.getString(R.string.course_node_format, change.changedNodes.first().toString())
+                            courseNodeFormat.format(change.changedNodes.first().toString())
                         } else {
                             "${change.changedNodes.first()}-${change.changedNodes.last()}"
                         }
@@ -453,7 +432,7 @@ fun PeriodTableEditScreen(
                                     onBack()
                                 } else {
                                     val bound = scheduleState.tables.count { it.periodTableId == periodTable.id }
-                                    deleteBlockedMsg = context.getString(R.string.period_table_delete_blocked, bound)
+                                    deleteBlockedMsg = deleteBlockedFormat.format(bound)
                                 }
                             }
                         },

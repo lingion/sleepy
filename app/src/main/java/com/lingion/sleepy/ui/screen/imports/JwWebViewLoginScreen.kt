@@ -574,7 +574,21 @@ private fun JwWebView(
                             if (userAgent?.isNotBlank() == true) conn.setRequestProperty("User-Agent", userAgent)
                             conn.connect()
                             if (conn.responseCode !in 200..299) null
-                            else conn.inputStream.use { ins -> ins.readNBytes(2 * 1024 * 1024) }
+                            else conn.inputStream.use { ins ->
+                                // readNBytes 是 API 33+; minSdk 26 用 read(byte[]) 循环等价实现 (上限 2MB)
+                                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                                    ins.readNBytes(2 * 1024 * 1024)
+                                } else {
+                                    val buf = ByteArray(2 * 1024 * 1024)
+                                    var offset = 0
+                                    while (offset < buf.size) {
+                                        val n = ins.read(buf, offset, buf.size - offset)
+                                        if (n < 0) break
+                                        offset += n
+                                    }
+                                    java.util.Arrays.copyOf(buf, offset)
+                                }
+                            }
                         }.getOrNull()
                         JwDiagnosticSession.recordDownload(
                             downloadUrl, userAgent, contentDisposition, mimeType, contentLength, body
