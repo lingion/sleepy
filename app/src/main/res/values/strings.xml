@@ -93,6 +93,7 @@
     <string name="edit_table_delete">删除课表</string>
     <string name="edit_table_save">保存课表设置</string>
     <string name="edit_table_not_found">课表数据未找到</string>
+    <string name="edit_table_period_loading">作息表数据尚未加载完成，请稍候重试</string>
     <string name="edit_table_validation_error">日期需为 yyyy-MM-dd，时间需为 HH:mm 且开始早于结束</string>
     <string name="edit_table_delete_confirm">确认删除</string>
     <string name="edit_table_delete_msg">确定要删除课表「%1$s」吗？此操作不可撤销。</string>

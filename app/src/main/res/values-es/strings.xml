@@ -91,6 +91,7 @@
     <string name="edit_table_delete">Eliminar horario de períodos</string>
     <string name="edit_table_save">Guardar ajustes</string>
     <string name="edit_table_not_found">Horario no encontrado</string>
+    <string name="edit_table_period_loading">Los datos del horario aún se están cargando. Inténtalo de nuevo en breve.</string>
     <string name="edit_table_validation_error">La fecha debe ser yyyy-MM-dd, la hora HH:mm con inicio antes del fin</string>
     <string name="edit_table_delete_confirm">Confirmar eliminación</string>
     <string name="edit_table_delete_msg">¿Eliminar horario \"%1$s\"? Esta acción no se puede deshacer.</string>
