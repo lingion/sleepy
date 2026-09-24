@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.imports
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * SEP XRW 剥离架构契约 (UCAS #18) — 源码扫描锁不变量。
@@ -41,20 +42,7 @@ class SepXrwStripInterceptorContractTest {
      */
     private fun loadSource(filename: String): String {
         val rel = "app/src/main/java/com/lingion/sleepy/ui/screen/imports/$filename"
-        val userDir = System.getProperty("user.dir")
-        // cwd 推断: 子项目根 (Gradle 默认 test working dir = app/)
-        val fromAppDir = if (userDir.endsWith("/app")) "$userDir/src/main/java/com/lingion/sleepy/ui/screen/imports/$filename" else "$userDir/$rel"
-        // 当前 worktree (d-pipeline) + 主仓兜底
-        val currentWorktree = "/Users/lingion_k/sleepy-worktrees/d-pipeline/$rel"
-        val mainRepo = "/Users/lingion_k/sleepy/$rel"
-        return sequenceOf(
-                java.io.File(rel),                       // cwd = 项目根
-                java.io.File(fromAppDir),                // cwd = app/ 子项目根
-                java.io.File(currentWorktree),           // worktree 绝对 (d-pipeline)
-                java.io.File(mainRepo),                  // 主仓绝对兜底
-            ).firstOrNull { it.isFile }
-            ?.readText()
-            ?: error("Unable to load $filename source. Tried: $rel, $fromAppDir, $currentWorktree, $mainRepo")
+        return readProjectSource(rel)
     }
 
     // ---------- 接线: JwWebViewLoginScreen → JwWebViewClientBuilder ----------

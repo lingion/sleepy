@@ -44,6 +44,12 @@ object AppPrefs {
     const val DEFAULT_TOMORROW_REMINDER_TIME = "22:00"
     const val KEY_BEFORE_CLASS_ENABLED = "before_class_enabled"       // bool default false
     const val KEY_BEFORE_CLASS_MINUTES = "before_class_minutes"       // int default 10
+    const val KEY_CALENDAR_TARGET_ID = "calendar_import_target_id"
+    const val KEY_CALENDAR_IMPORT_RANGE = "calendar_import_range"
+    const val KEY_CALENDAR_APPLY_TRANSFERS = "calendar_import_apply_transfers"
+    const val KEY_CALENDAR_REMINDER_MINUTES = "calendar_import_reminder_minutes"
+    const val KEY_CALENDAR_FIRST_ALARM = "calendar_import_first_alarm"
+    const val KEY_CALENDAR_FIRST_ALARM_MINUTES = "calendar_import_first_alarm_minutes"
     const val KEY_BEFORE_CLASS_BANNER = "before_class_banner"         // bool default true
     const val KEY_BEFORE_CLASS_FLUID = "before_class_fluid"            // bool default false
     const val KEY_BEFORE_CLASS_FLUID_FIELDS = "before_class_fluid_fields" // legacy multi-select
@@ -224,6 +230,31 @@ object AppPrefs {
 
     fun setBeforeClassMinutes(ctx: Context, minutes: Int) {
         sp(ctx).edit().putInt(KEY_BEFORE_CLASS_MINUTES, minutes).apply()
+    }
+
+    fun getCalendarTargetId(ctx: Context): Long = sp(ctx).getLong(KEY_CALENDAR_TARGET_ID, -1L)
+    fun setCalendarTargetId(ctx: Context, id: Long) { sp(ctx).edit().putLong(KEY_CALENDAR_TARGET_ID, id).apply() }
+    fun getCalendarImportRange(ctx: Context): String = sp(ctx).getString(KEY_CALENDAR_IMPORT_RANGE, "NEXT_WEEK") ?: "NEXT_WEEK"
+    fun setCalendarImportRange(ctx: Context, range: String) {
+        require(range in setOf("NEXT_WEEK", "NEXT_MONTH", "SEMESTER"))
+        sp(ctx).edit().putString(KEY_CALENDAR_IMPORT_RANGE, range).apply()
+    }
+    fun isCalendarApplyTransfers(ctx: Context): Boolean = sp(ctx).getBoolean(KEY_CALENDAR_APPLY_TRANSFERS, true)
+    fun setCalendarApplyTransfers(ctx: Context, enabled: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_CALENDAR_APPLY_TRANSFERS, enabled).apply()
+    }
+    /** null means calendar events receive no ordinary reminder. */
+    fun getCalendarReminderMinutes(ctx: Context): Int? = sp(ctx).getInt(KEY_CALENDAR_REMINDER_MINUTES, 15).takeIf { it >= 0 }
+    fun setCalendarReminderMinutes(ctx: Context, minutes: Int?) {
+        sp(ctx).edit().putInt(KEY_CALENDAR_REMINDER_MINUTES, minutes?.coerceIn(0, 999) ?: -1).apply()
+    }
+    fun isCalendarFirstAlarmEnabled(ctx: Context): Boolean = sp(ctx).getBoolean(KEY_CALENDAR_FIRST_ALARM, false)
+    fun setCalendarFirstAlarmEnabled(ctx: Context, enabled: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_CALENDAR_FIRST_ALARM, enabled).apply()
+    }
+    fun getCalendarFirstAlarmMinutes(ctx: Context): Int = sp(ctx).getInt(KEY_CALENDAR_FIRST_ALARM_MINUTES, 60).coerceIn(0, 999)
+    fun setCalendarFirstAlarmMinutes(ctx: Context, minutes: Int) {
+        sp(ctx).edit().putInt(KEY_CALENDAR_FIRST_ALARM_MINUTES, minutes.coerceIn(0, 999)).apply()
     }
 
     fun isBeforeClassBannerEnabled(ctx: Context): Boolean =

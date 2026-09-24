@@ -37,7 +37,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.font.FontWeight
@@ -62,10 +64,12 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.MealBreakDetector
 import com.lingion.sleepy.util.TimetableViewportPolicy
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 /**
  * 时段定义 — 5 个时段（对应 HTML 里的 5 个 slot-row）
@@ -213,6 +217,17 @@ fun CardsGridView(
     val timeW = d(68f)
     val gapH = d(4f)
     val gapW = d(5f)
+    val mealBreakAfterRows = remember(timeJson, courses, renderSlots) {
+        if (timeJson == null) emptySet() else {
+            val baseRows = TimeTableUtils.parseTimeSlotRows(timeJson)
+            MealBreakDetector.detect(timeJson, courses).mapNotNull { detected ->
+                baseRows.getOrNull(detected.afterRowIndex)?.node?.let { leftNode ->
+                    renderSlots.indexOfLast { it.nodeEnd == leftNode }.takeIf { it >= 0 }
+                }
+            }.toSet()
+        }
+    }
+    val mealGapExtra = d(6f)
 
     val gridBgShape = SleepyTheme.shapes.large
 
@@ -225,7 +240,7 @@ fun CardsGridView(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
             val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
-            val availableGridHeight = (maxHeight - headH - gapH - navExtra)
+            val availableGridHeight = (maxHeight - headH - gapH - navExtra - mealGapExtra * mealBreakAfterRows.size)
                 .value
                 .coerceAtLeast(0f)
             // 行高基座 (2026-09-16 用户令): 实验室开自适应=拟合高度; 默认关=原固定 52dp×scale。
@@ -272,14 +287,16 @@ fun CardsGridView(
             // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
             // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp;
             fun yOfRows(r: Float): Dp {
-                val ws = effectiveWeights ?: return rowH * r
+                val ws = effectiveWeights ?: List(renderSlots.size) { 1f }
                 var acc = 0f
                 val full = r.toInt().coerceAtMost(ws.size)
                 for (i in 0 until full) acc += ws[i]
                 if (full < ws.size && r > full) acc += ws[full] * (r - full)
-                return rowH * acc
+                val crossedBreaks = mealBreakAfterRows.count { it + 1 <= r }
+                return rowH * acc + mealGapExtra * crossedBreaks
             }
             fun rowHeightAt(i: Int): Dp = rowH * (effectiveWeights?.getOrNull(i) ?: 1f)
+            fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
 
             // 算出每列宽度 (dp)
             val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
@@ -340,13 +357,27 @@ fun CardsGridView(
                 Spacer(modifier = Modifier.height(gapH))
 
                 // ---- Grid 主体：固定高度 Box，内部全用 Modifier.offset 绝对定位 ----
-                Box(modifier = Modifier.fillMaxWidth().height(gridH)) {
+                Box(
+                    modifier = Modifier.fillMaxWidth().height(gridH).drawBehind {
+                        val lineColor = colors.outlineVariant.copy(alpha = 0.42f)
+                        val stroke = 0.7.dp.toPx()
+                        val firstColumn = timeW.toPx() + gapW.toPx() / 2f
+                        for (column in 0..dayCount) {
+                            val x = firstColumn + column * (colW + gapW).toPx()
+                            drawLine(lineColor, Offset(x, 0f), Offset(x, size.height), stroke)
+                        }
+                        for (boundary in 0..renderSlots.size) {
+                            val y = yOfRows(boundary.toFloat()).toPx()
+                            drawLine(lineColor, Offset(timeW.toPx(), y), Offset(size.width, y), stroke)
+                        }
+                    }
+                ) {
                     // 时间栏：每个节次一个 Row，用 offset 定位到正确 y (分钟加权)
                     for ((i, slot) in renderSlots.withIndex()) {
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(rowHeightAt(i) - gapH)
+                                .height((rowHeightAt(i) - gapAfterRow(i)).coerceAtLeast(0.dp))
                                 .offset(y = yOfRows(i.toFloat())),
                             horizontalArrangement = Arrangement.spacedBy(gapW),
                             verticalAlignment = Alignment.CenterVertically
@@ -474,9 +505,11 @@ fun CardsGridView(
                         val cardY = frac?.let { yOfRows(it.first) } ?: yOfRows(nodeIdx.toFloat())
                         val cardH = if (frac != null) {
                             // 按比例(分钟加权), 保底 0.3 标准行避免过短课胶囊塌缩到不可点
-                            (yOfRows(frac.second) - yOfRows(frac.first)).coerceAtLeast(rowH * 0.3f) - gapH
+                            (yOfRows(frac.second) - yOfRows(frac.first)).coerceAtLeast(rowH * 0.3f) -
+                                (if (frac.second == frac.second.roundToInt().toFloat() && frac.second > 0f)
+                                    gapAfterRow(frac.second.roundToInt() - 1) else gapH)
                         } else {
-                            yOfRows((nodeIdx + steps).toFloat()) - yOfRows(nodeIdx.toFloat()) - gapH
+                            yOfRows((nodeIdx + steps).toFloat()) - yOfRows(nodeIdx.toFloat()) - gapAfterRow(nodeIdx + steps - 1)
                         }
 
                         CourseOverlayCard(

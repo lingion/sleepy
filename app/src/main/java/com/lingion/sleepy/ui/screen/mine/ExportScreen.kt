@@ -102,6 +102,9 @@ fun ExportScreen(
     val table = state.tables.find { it.id == effectiveId } ?: state.currentTable
     val selectedPeriodTable = allPeriodTables.find { it.id == exportPeriodTableId }
     val tables = state.tables
+    val hydratedTable = table?.let { raw ->
+        raw.periodTableId?.let { id -> allPeriodTables.firstOrNull { it.id == id } }?.let(raw::hydratedWith) ?: raw
+    }
 
     // 选中表的课程: 当前表直接用 state.courses(已观察), 其他表选中时本地加载一次
     var loadedCourses by remember(effectiveId) { mutableStateOf<List<CourseEntity>?>(null) }
@@ -118,6 +121,7 @@ fun ExportScreen(
     val courses = loadedCourses ?: state.courses
 
     var showTablePicker by remember { mutableStateOf(false) }
+    var showCalendarImport by remember { mutableStateOf(false) }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().background(colors.background),
@@ -300,6 +304,25 @@ fun ExportScreen(
                     )
                     Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     ExportItem(
+                        icon = Icons.Outlined.CalendarMonth,
+                        title = stringResource(R.string.calendar_import_title),
+                        subtitle = if (effectiveId != state.selectedTableId && loadedCourses == null)
+                            stringResource(R.string.calendar_import_loading)
+                        else stringResource(R.string.calendar_import_subtitle),
+                        onClick = {
+                            scope.launch {
+                                val targetId = table.id
+                                if (targetId != state.selectedTableId) {
+                                    loadedCourses = withContext(Dispatchers.IO) {
+                                        SleepyApp.get().repository.getCourses(targetId)
+                                    }
+                                }
+                                showCalendarImport = true
+                            }
+                        }
+                    )
+                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    ExportItem(
                         icon = Icons.Outlined.Star,
                         title = stringResource(R.string.export_native_title),
                         subtitle = stringResource(R.string.export_native_subtitle),
@@ -393,6 +416,14 @@ fun ExportScreen(
             },
             confirmButton = {},
             dismissButton = {}
+        )
+    }
+
+    if (showCalendarImport && hydratedTable != null) {
+        CalendarImportDialog(
+            table = hydratedTable,
+            courses = courses,
+            onDismiss = { showCalendarImport = false }
         )
     }
 }
