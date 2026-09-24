@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -68,6 +70,9 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.widget.WidgetTableResolver
+import com.lingion.sleepy.widget.notification.VendorLiveNotificationCapability
+import com.lingion.sleepy.widget.notification.detectLiveCardVendor
+import com.lingion.sleepy.widget.notification.vendorAdapterFor
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -239,6 +244,16 @@ fun ReminderScreen(onBack: () -> Unit) {
     var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
+    var liveCardCapability by remember {
+        mutableStateOf<VendorLiveNotificationCapability?>(null)
+    }
+    // Re-inspect when the fluid toggle flips — capability may change once notification
+    // permission is granted, and we want a fresh snapshot so the status row reflects truth.
+    LaunchedEffect(fluidEnabled) {
+        if (fluidEnabled) {
+            liveCardCapability = vendorAdapterFor(detectLiveCardVendor()).inspect(context)
+        }
+    }
     var schedulePreview by remember { mutableStateOf<ReminderSchedulePreview?>(null) }
 
     // 示例只读取当前课表，不参与提醒调度；无可分析课表时保留资源中的通用示例。
@@ -640,6 +655,58 @@ fun ReminderScreen(onBack: () -> Unit) {
                                         color = colors.onSurfaceVariant,
                                         modifier = Modifier.padding(top = 6.dp)
                                     )
+                                    liveCardCapability?.let { cap ->
+                                        val capLabel = stringResource(cap.summaryRes)
+                                        Text(
+                                            text = capLabel,
+                                            style = MaterialTheme.typography.bodySmall,
+                                            color = colors.onSurfaceVariant,
+                                            modifier = Modifier.padding(top = 4.dp)
+                                        )
+                                        // 厂商设置入口: 按候选顺序逐个 startActivity,
+                                        // ActivityNotFoundException / SecurityException 一律吞掉,
+                                        // 全部失败时由 adapter.fallbackToAppNotificationSettings
+                                        // 兜底到系统应用通知页 — 实测厂商 Intent 在不同 ROM 上表现不稳定,
+                                        // 必须捕获异常, 不能用 resolveActivity 包揽决策(会一次性过滤掉所有候选)。
+                                        val ctx = context
+                                        Text(
+                                            text = stringResource(R.string.reminder_fluid_go_to_settings),
+                                            style = MaterialTheme.typography.bodyMedium,
+                                            color = colors.primary,
+                                            modifier = Modifier
+                                                .padding(top = 6.dp)
+                                                .noRippleClickable {
+                                                    val launched = cap.settingsIntents.any { spec ->
+                                                        try {
+                                                            val intent = Intent(spec.action).apply {
+                                                                putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName)
+                                                                putExtra(
+                                                                    android.provider.Settings.EXTRA_CHANNEL_ID,
+                                                                    com.lingion.sleepy.widget.notification.CourseNotificationScheduler.CHANNEL_FLUID
+                                                                )
+                                                            }
+                                                            ctx.startActivity(intent)
+                                                            true
+                                                        } catch (_: ActivityNotFoundException) {
+                                                            false
+                                                        } catch (_: SecurityException) {
+                                                            false
+                                                        }
+                                                    }
+                                                    if (!launched && cap.fallbackToAppNotificationSettings) {
+                                                        try {
+                                                            ctx.startActivity(
+                                                                Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                                                                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, ctx.packageName)
+                                                                }
+                                                            )
+                                                        } catch (_: ActivityNotFoundException) {
+                                                            // 系统页也不可用 — 设备过旧, 静默放弃
+                                                        }
+                                                    }
+                                                }
+                                        )
+                                    }
                                 }
                             }
                         }

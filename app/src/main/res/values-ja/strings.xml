@@ -708,7 +708,7 @@
     <string name="reminder_fluid_status_settings_required">Fluid Cloud / Super Island を有効にするには、まずシステム設定を開いてください。</string>
     <string name="reminder_fluid_status_not_supported">現在のシステムでは Fluid Cloud / Super Island をサポートしていません。</string>
     <string name="reminder_fluid_go_to_settings">設定を開く</string>
-    <string name="reminder_fluid_sub">対応する Xiaomi・OPPO スマホでリアルタイム授業カードを表示</string>
+    <string name="reminder_fluid_sub">対応する Xiaomi・vivo・Samsung・Meizu スマホでリアルタイム授業カードを表示</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
     <string name="reminder_master_sub">Sleepy に授業通知の送信を許可</string>
     <string name="reminder_master_title">リマインダーを有効化</string>

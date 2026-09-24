@@ -659,7 +659,7 @@
     <string name="reminder_banner_title">横幅提醒</string>
     <string name="reminder_banner_sub">在系统通知栏显示课前横幅</string>
     <string name="reminder_fluid_title">流体云 / 超级岛</string>
-    <string name="reminder_fluid_sub">在支持的小米、OPPO 手机上显示实时课程卡片</string>
+    <string name="reminder_fluid_sub">在支持的小米 / vivo / 三星 / 魅族手机上显示实时课程卡片</string>
     <string name="reminder_fluid_fields">胶囊主显示内容</string>
     <string name="reminder_fluid_fields_hint">选择一个主显示内容</string>
     <string name="reminder_fluid_field_name">课程名称</string>

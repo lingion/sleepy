@@ -708,7 +708,7 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="reminder_fluid_status_settings_required">Abra la configuración del sistema para habilitar Nube Fluida / Súper Isla.</string>
     <string name="reminder_fluid_status_not_supported">El sistema actual no admite Nube Fluida / Súper Isla.</string>
     <string name="reminder_fluid_go_to_settings">Ir a ajustes</string>
-    <string name="reminder_fluid_sub">Mostrar tarjetas de curso en tiempo real en teléfonos Xiaomi y OPPO compatibles</string>
+    <string name="reminder_fluid_sub">Mostrar tarjetas de curso en tiempo real en teléfonos Xiaomi, vivo, Samsung y Meizu compatibles</string>
     <string name="reminder_fluid_title">Nube Fluida / Súper Isla</string>
     <string name="reminder_master_sub">Permitir que Sleepy envíe notificaciones de cursos</string>
     <string name="reminder_master_title">Activar recordatorios</string>

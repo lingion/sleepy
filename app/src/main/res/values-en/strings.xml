@@ -718,7 +718,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_status_settings_required">Open system settings to enable Fluid Cloud / Super Island first.</string>
     <string name="reminder_fluid_status_not_supported">The current device system does not support Fluid Cloud / Super Island.</string>
     <string name="reminder_fluid_go_to_settings">Go to settings</string>
-    <string name="reminder_fluid_sub">Show real-time course cards on supported Xiaomi and OPPO phones</string>
+    <string name="reminder_fluid_sub">Show real-time course cards on supported Xiaomi, vivo, Samsung, and Meizu phones</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
     <string name="reminder_master_sub">Allow Sleepy to send course notifications</string>
     <string name="reminder_master_title">Enable Reminders</string>
