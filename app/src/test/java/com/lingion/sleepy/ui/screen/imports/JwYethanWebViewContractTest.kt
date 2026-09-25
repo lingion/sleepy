@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * SWJTU YETHAN 微信扫码登录卡壳 (2026-09-16 用户复测报告) 契约锁。
@@ -22,12 +23,9 @@ import org.junit.Test
  */
 class JwYethanWebViewContractTest {
 
-    private val source: String = sequenceOf(
-        java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
-        java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt")
-    ).firstOrNull { it.isFile }
-        ?.readText()
-        ?: error("Unable to load JwWebViewLoginScreen.kt source")
+    private val source: String = readProjectSource(
+        "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"
+    )
 
     private val fetchJs: String
         get() {

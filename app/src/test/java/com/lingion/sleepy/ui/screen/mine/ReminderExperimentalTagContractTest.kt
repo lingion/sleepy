@@ -2,13 +2,12 @@ package com.lingion.sleepy.ui.screen.mine
 
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /** Locks the experimental notification control to its existing reminders section. */
 class ReminderExperimentalTagContractTest {
     private val source: String by lazy {
-        java.io.File(
-            "/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"
-        ).readText()
+        readProjectSource("app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt")
     }
 
     @Test

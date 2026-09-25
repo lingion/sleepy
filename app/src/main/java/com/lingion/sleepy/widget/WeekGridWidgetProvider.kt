@@ -22,6 +22,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
+import com.lingion.sleepy.util.MealBreakDetector
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import kotlinx.coroutines.CoroutineScope
@@ -151,10 +152,10 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
          * 与旧内联算式逐字节同式: outerPad 6dp×2 + headH 56dp, bodyH 地板 20dp,
          * 节间隙 1.5dp×(n+1), slotH 地板 3dp (整除口径保持 Int / Int)。
          */
-        internal fun weekGridBodyGeomPx(hPx: Int, density: Float, maxNode: Int): Pair<Int, Float> {
+        internal fun weekGridBodyGeomPx(hPx: Int, density: Float, maxNode: Int, mealBreakCount: Int = 0): Pair<Int, Float> {
             fun dp(v: Float) = (v * density).roundToInt()
             val bodyH = (hPx - dp(6f) * 2 - dp(56f)).coerceAtLeast(dp(20f))
-            val totalGapH = dp(1.5f) * (maxNode + 1)
+            val totalGapH = dp(1.5f) * (maxNode + 1) + dp(4f) * mealBreakCount
             val slotH = ((bodyH - totalGapH) / maxNode).toFloat().coerceAtLeast(dp(3f).toFloat())
             return bodyH to slotH
         }
@@ -213,10 +214,10 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 .coerceAtLeast(1)
             // issue#22: 同名课程多地点 — 跨天汇总 course 全集,传给 pickCourseColorIntWithGroupRows
             val allCourses = data.days.flatMap { it.courses }
+            val mealBreakAfterRows = MealBreakDetector.detect(timeJson, allCourses).map { it.afterRowIndex }.toSet()
             val slots = allSlots.take(maxNode)
             val sortedDays = data.visibleDays.sorted()
             val dayCount = sortedDays.size.coerceIn(1, 7)
-            val todayDow = LocalDate.now().dayOfWeek.value
 
             // ── 布局 (dp → px, 跟 CourseTableView 同参数) ──
             val dp = { v: Float -> (v * density).roundToInt() }
@@ -231,7 +232,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
 
             val bodyW = wPx - outerPad * 2
             // §4.4 降级阶梯几何单一事实来源 (与 weekGridBodyGeomPx 契约测试同源)
-            val (bodyH, slotH) = weekGridBodyGeomPx(hPx, density, maxNode)
+            val (bodyH, slotH) = weekGridBodyGeomPx(hPx, density, maxNode, mealBreakAfterRows.count { it < maxNode - 1 })
             val totalGapW = gapW * (dayCount + 1)
             val dayW = ((bodyW - timeW - totalGapW) / dayCount)
                 .toFloat().coerceAtLeast(dp(20f).toFloat())  // 下限: 防 launcher 返极小宽度致负数
@@ -334,6 +335,36 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // ── Body ──
             y = (outerPad + headH).toFloat()
             val bodyTop = y
+            val mealGapExtraPx = dp(4f).toFloat()
+            fun rowTop(rowIndex: Int): Float = bodyTop + gapH + rowIndex * (slotH + gapH) +
+                mealBreakAfterRows.count { it + 1 <= rowIndex } * mealGapExtraPx
+
+            // Today backgrounds, grid borders, and course cards share the same row geometry.
+            for ((idx, dow) in sortedDays.withIndex()) {
+                val colX = x + timeW + gapW + idx * (dayW + gapW)
+                val dayData = data.days.firstOrNull { it.dayOfWeek == dow }
+                if (dayData != null && DateUtils.isDateToday(dayData.date)) {
+                    p.color = bgToday
+                    p.alpha = 40
+                    c.drawRect(RectF(colX, bodyTop, colX + dayW, bodyTop + bodyH), p)
+                    p.alpha = 255
+                }
+            }
+            p.color = gridLine
+            p.alpha = 90
+            p.strokeWidth = dp(0.7f).toFloat()
+            for ((idx, _) in sortedDays.withIndex()) {
+                val colX = x + timeW + gapW + idx * (dayW + gapW)
+                c.drawLine(colX, bodyTop, colX, bodyTop + bodyH - gapH, p)
+                c.drawLine(colX + dayW, bodyTop, colX + dayW, bodyTop + bodyH - gapH, p)
+            }
+            for (row in 0 until maxNode) {
+                val rowY = rowTop(row)
+                c.drawLine(x + timeW, rowY, x + timeW + gapW + dayCount * (dayW + gapW) - gapW, rowY, p)
+            }
+            c.drawLine(x + timeW, bodyTop + bodyH - gapH,
+                x + timeW + gapW + dayCount * (dayW + gapW) - gapW, bodyTop + bodyH - gapH, p)
+            p.alpha = 255
 
             // §4.4 降级阶梯末档: slotH 小到文字行排不下 (单节卡高 <9dp) → 色带模式:
             // 日头保留, 主体只画课程色条 (冲突课按 lane 分宽), 无任何文字。任意高度非空白。
@@ -341,18 +372,12 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 for ((idx, dow) in sortedDays.withIndex()) {
                     val colX = x + timeW + gapW + idx * (dayW + gapW)
                     val dayData = data.days.firstOrNull { it.dayOfWeek == dow } ?: continue
-                    if (dow == todayDow) {
-                        p.color = bgToday
-                        p.alpha = 40
-                        c.drawRect(RectF(colX, bodyTop, colX + dayW, bodyTop + bodyH), p)
-                        p.alpha = 255
-                    }
                     for (laneRect in com.lingion.sleepy.util.ConflictLayoutEngine
                             .gridDayLanes(dayData.courses, dayData.timeJson)) {
                         val course = laneRect.course
                         val startIdx = (course.startNode - 1).coerceAtLeast(0)
                         val step = course.step.coerceAtLeast(1).coerceAtMost(maxNode - startIdx)
-                        val top = bodyTop + gapH + startIdx * (slotH + gapH)
+                        val top = rowTop(startIdx)
                         val barH = (slotH * step + gapH * (step - 1)).coerceAtLeast(1f)
                         val laneX = colX + dayW * laneRect.laneStartFraction
                         val laneW = dayW * laneRect.laneWidthFraction
@@ -372,7 +397,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // time column labels
             p.textAlign = Paint.Align.CENTER
             for (i in 1..maxNode) {
-                val rowY = bodyTop + gapH + (i - 1) * (slotH + gapH)
+                val rowY = rowTop(i - 1)
                 val slot = slots.getOrNull(i - 1)
 
                 // period number 字号 = slotH * 0.40 (降比例)
@@ -439,16 +464,6 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             for ((idx, dow) in sortedDays.withIndex()) {
                 val colX = x + timeW + gapW + idx * (dayW + gapW)
                 val dayData = data.days.firstOrNull { it.dayOfWeek == dow } ?: continue
-                val isToday = DateUtils.isDateToday(dayData.date)
-
-                // today 背景列
-                if (isToday) {
-                    p.color = bgToday
-                    p.alpha = 40
-                    c.drawRect(RectF(colX, bodyTop, colX + dayW, bodyTop + bodyH), p)
-                    p.alpha = 255
-                }
-
                 // 课程卡片
                 // v7.10.8: 冲突课分栏 — 与 App 周视图同一引擎(ConflictLayoutEngine.gridDayLanes),
                 // 冲突区域内的课并排各占 1/N 列宽, 无冲突课整列宽。旧实现所有课画满整列宽,
@@ -459,7 +474,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     val startIdx = (course.startNode - 1).coerceAtLeast(0)
                     val step = course.step.coerceAtLeast(1)
                         .coerceAtMost(maxNode - startIdx)
-                    val cardTop = bodyTop + gapH + startIdx * (slotH + gapH)
+                    val cardTop = rowTop(startIdx)
                     val cardH = slotH * step + gapH * (step - 1)
                     // 分栏: 横向按引擎给的起点/宽度比例收缩列宽
                     val laneX = colX + dayW * laneRect.laneStartFraction

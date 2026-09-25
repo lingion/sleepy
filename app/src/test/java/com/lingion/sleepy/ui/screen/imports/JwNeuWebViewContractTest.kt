@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * issue #27: NEU WebView capture contract.
@@ -22,13 +23,9 @@ import org.junit.Test
  */
 class JwNeuWebViewContractTest {
 
-    private val source: String = sequenceOf(
-        java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
-        java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
-        java.io.File(System.getProperty("user.dir"), "sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt")
-    ).firstOrNull { it.isFile }
-        ?.readText()
-        ?: error("Unable to load JwWebViewLoginScreen.kt source")
+    private val source: String = readProjectSource(
+        "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"
+    )
 
     @Test
     fun neuWebView_dispatch_selects_a_dedicated_fetch_branch() {

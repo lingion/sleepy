@@ -96,6 +96,14 @@ class WidgetDegradationLadderTest {
         }
     }
 
+    @Test
+    fun `weekgrid meal break adds visible spacing without changing body bounds`() {
+        val (normalBody, normalSlot) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12)
+        val (breakBody, breakSlot) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12, mealBreakCount = 1)
+        assertEquals(normalBody, breakBody)
+        assertTrue(breakSlot < normalSlot)
+    }
+
     // ---- 四族 FIXED 窗口: 三档尺寸全尺寸同构 (无崩溃 + 锚行保底 + 页脚 best-effort) ----
 
     private fun todayData(n: Int) = WidgetData(

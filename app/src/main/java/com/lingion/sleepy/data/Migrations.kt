@@ -109,6 +109,33 @@ val MIGRATION_8_9: Migration = object : Migration(8, 9) {
     }
 }
 
+/** v9 → v10: retain mappings for calendar events created by Sleepy. */
+val MIGRATION_9_10: Migration = object : Migration(9, 10) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        MIGRATION_9_10_STATEMENTS.forEach { db.execSQL(it) }
+    }
+}
+
+internal val MIGRATION_9_10_STATEMENTS: List<String> = listOf(
+    """
+    CREATE TABLE IF NOT EXISTS calendar_import_records (
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+        tableId INTEGER NOT NULL,
+        courseId INTEGER NOT NULL,
+        eventDate TEXT NOT NULL,
+        calendarId INTEGER NOT NULL,
+        eventId INTEGER NOT NULL,
+        batchId TEXT NOT NULL,
+        fingerprint TEXT NOT NULL,
+        alarmRequested INTEGER NOT NULL,
+        createdAt INTEGER NOT NULL
+    )
+    """.trimIndent(),
+    "CREATE UNIQUE INDEX IF NOT EXISTS index_calendar_import_records_tableId_courseId_eventDate_calendarId ON calendar_import_records (tableId, courseId, eventDate, calendarId)",
+    "CREATE INDEX IF NOT EXISTS index_calendar_import_records_tableId ON calendar_import_records (tableId)",
+    "CREATE INDEX IF NOT EXISTS index_calendar_import_records_batchId ON calendar_import_records (batchId)"
+)
+
 /** v8→v9 的静态 schema SQL — 迁移契约测试与 Room 共用同一份 */
 internal val MIGRATION_8_9_STATEMENTS: List<String> = listOf(
     "ALTER TABLE time_tables ADD COLUMN preBindSnapshotJson TEXT NOT NULL DEFAULT ''"
@@ -121,7 +148,8 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_5_6,
     MIGRATION_6_7,
     MIGRATION_7_8,
-    MIGRATION_8_9
+    MIGRATION_8_9,
+    MIGRATION_9_10
 )
 
 /** issue#26: v5→v6 逐条 SQL — 单一事实来源, CourseAliasMigrationTest 用 sqlite-jdbc 直接执行同一份 */

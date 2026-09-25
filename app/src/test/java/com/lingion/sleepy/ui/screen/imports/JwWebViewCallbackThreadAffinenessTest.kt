@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.imports
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.projectSourceFile
 
 /**
  * 静态 lint 测试: 包内任何 `override fun shouldInterceptRequest / onReceivedSslError`
@@ -39,20 +40,8 @@ class JwWebViewCallbackThreadAffinenessTest {
      */
     private fun loadPackageSources(): List<Pair<String, String>> {
         val pkgDirRel = "app/src/main/java/com/lingion/sleepy/ui/screen/imports"
-        val userDir = System.getProperty("user.dir") ?: ""
-        val fromAppDir = if (userDir.endsWith("/app")) "$userDir/src/main/java/com/lingion/sleepy/ui/screen/imports"
-                         else "$userDir/$pkgDirRel"
-        val currentWorktree = "/Users/lingion_k/sleepy-worktrees/d-pipeline/$pkgDirRel"
-        val mainRepo = "/Users/lingion_k/sleepy/$pkgDirRel"
-        val roots = sequenceOf(
-            java.io.File(pkgDirRel),
-            java.io.File(fromAppDir),
-            java.io.File(currentWorktree),
-            java.io.File(mainRepo),
-        )
-        val firstExisting = roots.firstOrNull { it.isDirectory } ?: error(
-            "No source root found for $pkgDirRel. Tried: $pkgDirRel, $fromAppDir, $currentWorktree, $mainRepo"
-        )
+        val firstExisting = projectSourceFile(pkgDirRel)
+        check(firstExisting.isDirectory) { "Source root is not a directory: $firstExisting" }
         return firstExisting.listFiles { f -> f.isFile && f.name.endsWith(".kt") }
             ?.map { it.name to it.readText() }
             ?.sortedBy { it.first }
