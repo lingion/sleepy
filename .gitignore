@@ -53,3 +53,9 @@ CONTRIBUTING-INTERNAL.md
 
 # 设计文档 — 纯本地,永不上传(2026-09-11 用户定版)
 docs/sop/design/
+
+# 构建产物/发布暂存目录 (2026-09-28 治理: 大文件一律走 Release 资产, 不入 git)
+release-build/
+artifacts/
+*.idsig
+oppo-fluid-cloud-upk/build/
