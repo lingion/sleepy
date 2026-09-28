@@ -528,7 +528,7 @@ fun ConflictClusterCard(
             row = course,
             groupRows = groupRowsForCard,
             isDark = CourseColorUtil.isPaletteDark(palette),
-            neutralColor = colors.surfaceContainerLowest,
+            neutralColor = colors.secondaryContainer,
             colorless = AppPrefs.isCourseColorless(context)
         )
         return if (isGrey) bg.copy(alpha = SleepyTheme.Alpha.inactive) else bg
@@ -978,7 +978,7 @@ private fun ConflictCourseCard(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
-        neutralColor = colors.surfaceContainerLowest,
+        neutralColor = colors.secondaryContainer,
         colorless = AppPrefs.isCourseColorless(context)
     )
     val fg = CourseColorUtil.textColorOn(bg, CourseColorUtil.isPaletteDark(palette), colors.onSurface)

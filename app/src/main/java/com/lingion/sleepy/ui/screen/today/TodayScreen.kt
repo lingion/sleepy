@@ -314,7 +314,7 @@ private fun TodayCourseCard(course: CourseEntity, timeJson: String? = null, onCl
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
-        neutralColor = colors.surfaceContainerLowest,
+        neutralColor = colors.secondaryContainer,
         colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface

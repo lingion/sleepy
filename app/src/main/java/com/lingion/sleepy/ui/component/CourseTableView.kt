@@ -695,7 +695,7 @@ private fun CourseOverlayCard(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
-        neutralColor = colors.surfaceContainerLowest,
+        neutralColor = colors.secondaryContainer,
         colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
@@ -1355,7 +1355,7 @@ private fun LessonRow(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
-        neutralColor = colors.surfaceContainerLowest,
+        neutralColor = colors.secondaryContainer,
         colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface

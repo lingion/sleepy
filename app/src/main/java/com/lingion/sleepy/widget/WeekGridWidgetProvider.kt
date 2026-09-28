@@ -204,8 +204,9 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val fgOnSurface     = scheme.onSurface.toIntArgb()
             val fgOnSurfaceVar  = scheme.onSurfaceVariant.toIntArgb()
             val gridLine        = scheme.surfaceVariant.toIntArgb()
-            // 统一底色开关的中性底 = 当前主题最浅的 M3 surface container (跟随主题派生, 非写死色)
-            val unifiedCourseBg = scheme.surfaceContainerLowest.toIntArgb()
+            // 统一底色开关的中性底 = 所选主题的 secondaryContainer (2026-09-28 用户令:
+            // 与「我的」页「刷新所有小组件」FilledTonalButton 同色, 即主题色淡调)
+            val unifiedCourseBg = scheme.secondaryContainer.toIntArgb()
             val colorless       = AppPrefs.isWidgetColorless(context)
 
             // v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配

@@ -34,6 +34,7 @@ object WidgetBitmapRenderers {
         val bg: Int,
         val primary: Int,
         val primaryContainer: Int,
+        val secondaryContainer: Int,
         val onPrimaryContainer: Int,
         val onSurface: Int,
         val onSurfaceVariant: Int,
@@ -57,6 +58,7 @@ object WidgetBitmapRenderers {
             bg = s.bg.toIntArgb(),
             primary = s.primary.toIntArgb(),
             primaryContainer = s.primaryContainer.toIntArgb(),
+            secondaryContainer = s.secondaryContainer.toIntArgb(),
             onPrimaryContainer = s.onPrimaryContainer.toIntArgb(),
             onSurface = s.onSurface.toIntArgb(),
             onSurfaceVariant = s.onSurfaceVariant.toIntArgb(),
@@ -80,9 +82,9 @@ object WidgetBitmapRenderers {
         useAlias: Boolean = false,
         isGrey: Boolean = false
     ) {
-        // 统一取色入口 (决策 D3) — colorless 使用当前主题最浅的 M3 surface container
+        // 统一取色入口 (决策 D3) — colorless 使用所选主题 secondaryContainer (与「刷新所有小组件」按钮同色)
         // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
-        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.surfaceContainerLowest, colorless)
+        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.secondaryContainer, colorless)
         val greyAlpha = if (isGrey) 0x99 else 0xFF
         // 文字色亮度自适应 (决策 D5-13) — 深色自定义课色上切白字, 浅色底仍 onSurface
         val textColor = CourseColorUtil.textColorOn(bgColor, scheme.isDark, scheme.onSurface)
@@ -904,7 +906,7 @@ object WidgetBitmapRenderers {
                     // issue#22: 同名课程多地点 — 用 day.courses 同 groupId 全行,支持 AUTO/CUSTOM 模式取色
                     val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
                         course, day.courses.filter { it.groupId == course.groupId },
-                        s.isDark, s.surfaceContainerLowest, colorless
+                        s.isDark, s.secondaryContainer, colorless
                     )
                     p.color = applyAlpha(bgColor, if (day.isGrey) 153 else 255)
                     canvas.drawRoundRect(
