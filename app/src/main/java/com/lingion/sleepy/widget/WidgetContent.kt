@@ -45,6 +45,8 @@ data class WidgetData(
      * 构造的都是今日数据, 不加字段零改动。
      */
     val isToday: Boolean = true,
+    /** 原始日期是否按节假日/周末规则置灰；调休取课仍使用映射后的 weekday。 */
+    val isGrey: Boolean = false,
     /** 当前展示周状态：下一周/周末返回实际周/本周已结束。 */
     val weekDisplayStatus: WeekDisplayStatus = WeekDisplayStatus.NORMAL
 ) {
@@ -75,6 +77,8 @@ data class WidgetScheme(
     val onSurface: Color,
     val onSurfaceVariant: Color,
     val surfaceContainer: Color,
+    val surfaceContainerLow: Color,
+    val surfaceContainerLowest: Color,
     val surfaceVariant: Color,
     val isDark: Boolean
 )
@@ -134,6 +138,8 @@ internal fun resolveSchemePublic(context: Context, themeKey: String, isDark: Boo
         onSurface = s.onSurface,
         onSurfaceVariant = s.onSurfaceVariant,
         surfaceContainer = s.surfaceContainer,
+        surfaceContainerLow = s.surfaceContainerLow,
+        surfaceContainerLowest = s.surfaceContainerLowest,
         surfaceVariant = s.surfaceVariant,
         isDark = isDark
     )
@@ -148,7 +154,9 @@ data class DayData(
     val date: LocalDate,
     val dayOfWeek: Int,
     val courses: List<CourseEntity>,
-    val timeJson: String
+    val timeJson: String,
+    /** 原始日期是否按节假日/周末规则置灰；调休取课仍使用映射后的 weekday。 */
+    val isGrey: Boolean = false
 ) {
     val dayLabel: String get() = DateUtils.shortDate(date)
     val dayName: String get() = DateUtils.localizedDay(dayOfWeek, com.lingion.sleepy.SleepyApp.get())

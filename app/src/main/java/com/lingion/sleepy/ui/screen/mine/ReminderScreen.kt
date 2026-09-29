@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.mine
 import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
+import android.net.Uri
 import android.os.Build
 import android.content.ActivityNotFoundException
 import android.content.Intent
@@ -50,7 +51,9 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -61,6 +64,8 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.net.toUri
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
@@ -70,6 +75,10 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.widget.WidgetTableResolver
+import com.lingion.sleepy.widget.notification.BackgroundReliabilityProbe
+import com.lingion.sleepy.widget.notification.BackgroundReliabilitySnapshot
+import com.lingion.sleepy.widget.notification.ReminderTransportState
+import com.lingion.sleepy.widget.notification.VendorCapabilityState
 import com.lingion.sleepy.widget.notification.VendorLiveNotificationCapability
 import com.lingion.sleepy.widget.notification.detectLiveCardVendor
 import com.lingion.sleepy.widget.notification.vendorAdapterFor
@@ -229,6 +238,8 @@ private fun buildBeforeClassPreviewText(
 fun ReminderScreen(onBack: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val coroutineScope = rememberCoroutineScope()
 
     var masterEnabled by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
     var dailyEnabled by remember { mutableStateOf(AppPrefs.isDailyReminderEnabled(context)) }
@@ -247,12 +258,36 @@ fun ReminderScreen(onBack: () -> Unit) {
     var liveCardCapability by remember {
         mutableStateOf<VendorLiveNotificationCapability?>(null)
     }
-    // Re-inspect when the fluid toggle flips — capability may change once notification
-    // permission is granted, and we want a fresh snapshot so the status row reflects truth.
-    LaunchedEffect(fluidEnabled) {
-        if (fluidEnabled) {
-            liveCardCapability = vendorAdapterFor(detectLiveCardVendor()).inspect(context)
+    var reliabilitySnapshot by remember {
+        mutableStateOf<BackgroundReliabilitySnapshot?>(null)
+    }
+    // Re-inspect after entering the page and whenever the fluid toggle changes.
+    // The snapshot is diagnostic only; standard reminders remain independently usable.
+    suspend fun refreshReliabilitySnapshot() {
+        reliabilitySnapshot = withContext(Dispatchers.IO) {
+            BackgroundReliabilityProbe.snapshot(context)
         }
+        if (fluidEnabled) {
+            liveCardCapability = withContext(Dispatchers.IO) {
+                vendorAdapterFor(detectLiveCardVendor()).inspect(context)
+            }
+        }
+    }
+
+    LaunchedEffect(fluidEnabled) {
+        refreshReliabilitySnapshot()
+    }
+
+    DisposableEffect(lifecycleOwner, fluidEnabled) {
+        val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
+            if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
+                coroutineScope.launch {
+                    refreshReliabilitySnapshot()
+                }
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose { lifecycleOwner.lifecycle.removeObserver(observer) }
     }
     var schedulePreview by remember { mutableStateOf<ReminderSchedulePreview?>(null) }
 
@@ -306,6 +341,26 @@ fun ReminderScreen(onBack: () -> Unit) {
             AppPrefs.setReminderEnabled(context, true)
             SleepyApp.get().notificationScheduler.scheduleAll()
         }
+    }
+
+    // 可靠性诊断行的直达入口: 只吞异常不禁用任何能力 —
+    // 厂商 ROM 上系统页可能被裁剪, 打不开就静默放弃, 诊断行状态不受影响。
+    fun openExactAlarmSettings() {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
+        try {
+            context.startActivity(
+                Intent(android.provider.Settings.ACTION_REQUEST_SCHEDULE_EXACT_ALARM)
+                    .setData("package:${context.packageName}".toUri())
+            )
+        } catch (_: Exception) {}
+    }
+
+    fun openBatteryOptimizationSettings() {
+        try {
+            context.startActivity(
+                Intent(android.provider.Settings.ACTION_IGNORE_BATTERY_OPTIMIZATION_SETTINGS)
+            )
+        } catch (_: Exception) {}
     }
 
     fun onMasterToggle(on: Boolean) {
@@ -655,6 +710,106 @@ fun ReminderScreen(onBack: () -> Unit) {
                                         color = colors.onSurfaceVariant,
                                         modifier = Modifier.padding(top = 6.dp)
                                     )
+                                    reliabilitySnapshot?.let { snapshot ->
+                                        Column(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 10.dp)
+                                        ) {
+                                            Text(
+                                                text = stringResource(R.string.reminder_reliability_title),
+                                                style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.SemiBold),
+                                                color = colors.onSurface
+                                            )
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.reminder_reliability_notification,
+                                                    if (snapshot.notificationPermissionGranted) {
+                                                        stringResource(R.string.reminder_reliability_ready)
+                                                    } else {
+                                                        stringResource(R.string.reminder_reliability_missing)
+                                                    }
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = if (snapshot.notificationPermissionGranted) colors.onSurfaceVariant else colors.primary,
+                                                modifier = if (snapshot.notificationPermissionGranted) Modifier else Modifier.noRippleClickable {
+                                                    requestNotificationPermission()
+                                                }
+                                            )
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.reminder_reliability_exact_alarm,
+                                                    when (snapshot.reminderTransportState()) {
+                                                        ReminderTransportState.DEGRADED_INEXACT_ALARM ->
+                                                            stringResource(R.string.reminder_reliability_degraded)
+                                                        else -> if (snapshot.exactAlarmAllowed) {
+                                                            stringResource(R.string.reminder_reliability_ready)
+                                                        } else {
+                                                            stringResource(R.string.reminder_reliability_missing)
+                                                        }
+                                                    }
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = if (snapshot.exactAlarmAllowed) colors.onSurfaceVariant else colors.primary,
+                                                modifier = if (snapshot.exactAlarmAllowed) Modifier else Modifier.noRippleClickable {
+                                                    openExactAlarmSettings()
+                                                }
+                                            )
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.reminder_reliability_battery,
+                                                    if (snapshot.batteryOptimizationIgnored) {
+                                                        stringResource(R.string.reminder_reliability_ready)
+                                                    } else {
+                                                        stringResource(R.string.reminder_reliability_missing)
+                                                    }
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = if (snapshot.batteryOptimizationIgnored) colors.onSurfaceVariant else colors.primary,
+                                                modifier = if (snapshot.batteryOptimizationIgnored) Modifier else Modifier.noRippleClickable {
+                                                    openBatteryOptimizationSettings()
+                                                }
+                                            )
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.reminder_reliability_widget,
+                                                    if (snapshot.widgetBound) {
+                                                        stringResource(R.string.reminder_reliability_ready)
+                                                    } else {
+                                                        stringResource(R.string.reminder_reliability_missing)
+                                                    }
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = colors.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.reminder_reliability_vendor,
+                                                    when (snapshot.liveCardState) {
+                                                        VendorCapabilityState.ENABLED ->
+                                                            stringResource(R.string.reminder_reliability_ready)
+                                                        VendorCapabilityState.UNKNOWN ->
+                                                            stringResource(R.string.reminder_reliability_unknown)
+                                                        else -> stringResource(R.string.reminder_reliability_missing)
+                                                    }
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = colors.onSurfaceVariant
+                                            )
+                                            Text(
+                                                text = stringResource(
+                                                    R.string.reminder_reliability_promoted,
+                                                    when (snapshot.promotedOngoingAllowed) {
+                                                        null -> stringResource(R.string.reminder_reliability_not_applicable)
+                                                        true -> stringResource(R.string.reminder_reliability_ready)
+                                                        false -> stringResource(R.string.reminder_reliability_missing)
+                                                    }
+                                                ),
+                                                style = MaterialTheme.typography.bodySmall,
+                                                color = if (snapshot.promotedOngoingAllowed == false) colors.primary else colors.onSurfaceVariant
+                                            )
+                                        }
+                                    }
                                     liveCardCapability?.let { cap ->
                                         val capLabel = stringResource(cap.summaryRes)
                                         Text(

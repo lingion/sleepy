@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,7 +23,6 @@ import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -69,13 +69,13 @@ import kotlinx.coroutines.launch
 fun AppearanceScreen(
     onBack: () -> Unit,
     themeMode: String = AppPrefs.THEME_MODE_SYSTEM,
-    onThemeModeChange: (String) -> Unit = {}
+    onThemeModeChange: (String) -> Unit = {},
+    onOpenPeriodHeaderSettings: () -> Unit = {},
 ) {
     val context = LocalContext.current
     val colors = MaterialTheme.colorScheme
     val currentKey by AppPrefs.themeKeyFlow(context).collectAsState(initial = AppPrefs.getThemeKey(context))
     val selectedMode = themeMode
-
     // 自定义主题编辑器 overlay(创建时 editingTheme=null;微调时载入草稿)
     var showEditor by remember { mutableStateOf(false) }
     var editingTheme by remember { mutableStateOf<com.lingion.sleepy.data.CustomTheme?>(null) }
@@ -108,7 +108,7 @@ fun AppearanceScreen(
             contentPadding = PaddingValues(16.dp),
             verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            // ── 分组① 主题色彩 ──
+            // ── Section① 主题色彩 ──
             item {
                 SectionHeader(title = stringResource(R.string.appearance_section_theme))
             }
@@ -165,23 +165,25 @@ fun AppearanceScreen(
                 }
             }
 
-            // 外观模式: 浅色 / 深色 / 深浅色跟随系统 三态分段控件(标签与主题取色的 theme_system"跟随系统"区分)
+            // ── Section② 外观深浅 ──
             item {
-                Text(stringResource(R.string.theme_appearance), style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold), color = colors.onSurface)
-                Spacer(Modifier.height(8.dp))
+                SectionHeader(title = stringResource(R.string.theme_appearance))
+            }
+
+            item {
                 val modes = listOf(
                     AppPrefs.THEME_MODE_SYSTEM to stringResource(R.string.theme_mode_system),
                     AppPrefs.THEME_MODE_LIGHT to stringResource(R.string.theme_mode_light),
                     AppPrefs.THEME_MODE_DARK to stringResource(R.string.theme_mode_dark)
                 )
                 Row(
-                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.medium).background(colors.surfaceContainer).padding(3.dp),
-                    horizontalArrangement = Arrangement.spacedBy(3.dp)
+                    modifier = Modifier.fillMaxWidth().clip(SleepyTheme.shapes.large).background(colors.surfaceContainer).padding(4.dp),
+                    horizontalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
                     modes.forEach { (mode, label) ->
                         val sel = mode == selectedMode
                         Box(
-                            modifier = Modifier.weight(1f).clip(SleepyTheme.shapes.medium).background(if (sel) colors.primary else colors.surfaceContainer).noRippleClickable {
+                            modifier = Modifier.weight(1f).clip(SleepyTheme.shapes.medium).background(if (sel) colors.primary else colors.surfaceContainerHigh).noRippleClickable {
                                 if (mode != selectedMode) {
                                     AppPrefs.setThemeMode(context, mode); onThemeModeChange(mode); refreshWidgets()
                                 }
@@ -192,6 +194,31 @@ fun AppearanceScreen(
                         }
                     }
                 }
+            }
+
+            // ── Section③ 课表显示：冲突样式及参数仍属于本组 ──
+            item {
+                SectionHeader(title = stringResource(R.string.appearance_section_schedule_display))
+            }
+            item {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = SleepyTheme.shapes.large,
+                    color = colors.surfaceContainer,
+                ) {
+                    ScheduleDisplayContent(modifier = Modifier.padding(16.dp))
+                }
+            }
+
+            // ── Section④ 节次表头 ──
+            item {
+                SectionHeader(title = stringResource(R.string.appearance_period_header))
+            }
+            item {
+                AppearanceNavigationRow(
+                    title = stringResource(R.string.appearance_period_header),
+                    onClick = onOpenPeriodHeaderSettings,
+                )
             }
         }
     }

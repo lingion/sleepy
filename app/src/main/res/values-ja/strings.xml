@@ -156,7 +156,7 @@
     <string name="copied">コピーしました</string>
     <string name="ai_prompt_title">AIにスクショを変換させる（Sleepyネイティブ形式）</string>
     <string name="ai_prompt_hint">下のプロンプトをコピーして Doubao・ChatGPT などの AI に送り、時間割のスクリーンショットも一緒に送ってください。AI は #sleepy-v1 形式のテキストを出力するので、全体をコピーして上の入力欄に貼り付けるとインポートできます。</string>
-    <string name="ai_prompt_text">タスク：これから送る時間割のスクリーンショット（またはファイル内容）を、sleepy-v1 プレーンテキスト形式に変換して出力してください。変換結果以外は一切出力しないこと（説明・挨拶・Markdownコードフェンス禁止）。出力の1行目は必ず #sleepy-v1。\n\n========== 一、書式ルール ==========\n\n1行目は必ず：#sleepy-v1\n\n2行目以降は1行1レコード、列は縦棒 | で区切る。行は3種類：\n\n1. T 行（テーブル情報、省略可、最大1行）：\nTテーブル名|学期開始日|総週数|1日のコマ数\n· 開始日の形式は YYYY-MM-DD、第1週の月曜日であること\n· 時間割に明記されている項目のみ記入し、無い項目は空のまま。値がある列まで書けばOK（例：T|2026-03-02）\n· 時間割に全く言及がなければ T 行自体を出力しない。推測禁止\n\n2. N 行（各コマの開始・終了時刻、省略可、1コマ1行）：\nN番号|開始時刻|終了時刻\n· 例：N3|10:00|10:45\n· 時間割に時限表が明記されている場合のみ出力。時刻は24時間制 HH:mm（8:00 は 08:00 と書く）\n· 時限表がなければ N 行は一切出力しない\n\n3. C 行（科目、本体、1時限1行）：\nC科目名|曜日|コマ|週|教員|教室|色|備考|時刻|グループ\n常に10列・縦棒9個。空の列は空のまま、ただし縦棒は省略しない。各列の規則：\n  第1列 科目名：時間割の原文を一字一句そのまま写す（言語不問）\n  第2列 曜日：月〜日 = 1 2 3 4 5 6 7\n  第3列 コマ：3-4時限なら 3-4、単一時限は 6\n  第4列 週：「二、週のルール」参照\n  第5列 教員：時間割にあればそのまま、無ければ空\n  第6列 教室：同上\n  第7列 色：常に空\n  第8列 備考：時間割に備考があれば記入、無ければ空\n  第9列 時刻：時間割が科目ごとに具体的時刻（夜間授業など）を明記する場合のみ HH:mm-HH:mm、無ければ空\n  第10列 グループ：常に空\n\n========== 二、週のルール ==========\n\n各科目の開催週集合を抽出し、順に判定：\n1. 連続範囲かつ奇数・偶数の制約なし → S-E（例：1-16）\n2. 範囲内すべて奇数週（「奇数週」の表記）→ S-E单（例：1-15单）\n3. 範囲内すべて偶数週（「偶数週」の表記）→ S-E双（例：2-16双）\n4. 飛び飛びの週（例：1-8週、10週、12-16週）→ 連続する区間ごとに分割し、それぞれ独立した C 行に。他の列はそのままコピー：\n   · 全週の連続区間 → S-E（例：1-8、12-16）\n   · 孤立した単週 → S定（例：10定）\n   · 純奇数の連続 → S-E单、純偶数の連続 → S-E双\n   · 連続でなく純奇偶でもない → S-E定（例：6,7週 → 6-7定）\n5. 週の記載がなければ 1-16\n\n========== 三、抽出ルール ==========\n\n· 同じ科目が1週間に複数回（別日・別コマ）→ 複数の C 行、1時限1行。1行にまとめない\n· コマ番号は時間割の「X時限」から読む。時限がなく時刻のみなら、重複しない時間帯を朝から 1, 2, 3… と採番し、対応する N 行も出力\n· 科目名・教員・教室は原文のまま。テキストに | \ \" &amp;lt; { ( が含まれる場合は各文字の前に \ を付ける。文中の改行は \n の2文字、タブは \t\n· 時間割に無い情報はすべて空。教員・教室・時刻・週を捏造しないこと\n\n========== 四、出力セルフチェック（心中で確認。出力しない） ==========\n\n· 1行目が #sleepy-v1 で、他に余計な文字が一切ない\n· 各 C 行は正確に縦棒9個・10列\n· 曜日は 1-7 の数字。時刻は時が2桁（8:00 でなく 08:00）\n· 週の列は S-E、S-E单、S-E双、S-E定、S定 の5形態のみ\n· 科目名は時間割の原文と一致。捏造なし\n\n========== 五、出力例 ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
+    <string name="ai_prompt_text">タスク：これから送る時間割のスクリーンショット（またはファイル内容）を、sleepy-v1 プレーンテキスト形式に変換して出力してください。変換結果以外は一切出力しないこと（説明・挨拶・Markdownコードフェンス禁止）。出力の1行目は必ず #sleepy-v1。\n\n========== 一、書式ルール ==========\n\n1行目は必ず：#sleepy-v1\n\n2行目以降は1行1レコード、列は縦棒 | で区切る。行は3種類：\n\n1. T 行（テーブル情報、省略可、最大1行）：\nTテーブル名|学期開始日|総週数|1日のコマ数\n· 開始日の形式は YYYY-MM-DD、第1週の月曜日であること\n· 時間割に明記されている項目のみ記入し、無い項目は空のまま。値がある列まで書けばOK（例：T|2026-03-02）\n· 時間割に全く言及がなければ T 行自体を出力しない。推測禁止\n\n2. N 行（各コマの開始・終了時刻、省略可、1コマ1行）：\nN番号|開始時刻|終了時刻\n· 例：N3|10:00|10:45\n· 時間割に時限表が明記されている場合のみ出力。時刻は24時間制 HH:mm（8:00 は 08:00 と書く）\n· 時限表がなければ N 行は一切出力しない\n\n3. C 行（科目、本体、1時限1行）：\nC科目名|曜日|コマ|週|教員|教室|色|備考|時刻|グループ\n常に10列・縦棒9個。空の列は空のまま、ただし縦棒は省略しない。各列の規則：\n  第1列 科目名：時間割の原文を一字一句そのまま写す（言語不問）\n  第2列 曜日：月〜日 = 1 2 3 4 5 6 7\n  第3列 コマ：3-4時限なら 3-4、単一時限は 6\n  第4列 週：「二、週のルール」参照\n  第5列 教員：時間割にあればそのまま、無ければ空\n  第6列 教室：同上\n  第7列 色：常に空\n  第8列 備考：時間割に備考があれば記入、無ければ空\n  第9列 時刻：時間割が科目ごとに具体的時刻（夜間授業などの非標準時刻）を明記する場合のみ HH:mm-HH:mm。この時刻は科目固有の開始・終了時刻であり、共通の N 行にはしません。無ければ空\n  第10列 グループ：常に空\n\n========== 二、週のルール ==========\n\n各科目の開催週集合を抽出し、順に判定：\n1. 連続範囲かつ奇数・偶数の制約なし → S-E（例：1-16）\n2. 範囲内すべて奇数週（「奇数週」の表記）→ S-E单（例：1-15单）\n3. 範囲内すべて偶数週（「偶数週」の表記）→ S-E双（例：2-16双）\n4. 飛び飛びの週（例：1-8週、10週、12-16週）→ 連続する区間ごとに分割し、それぞれ独立した C 行に。他の列はそのままコピー：\n   · 全週の連続区間 → S-E（例：1-8、12-16）\n   · 孤立した単週 → S定（例：10定）\n   · 純奇数の連続 → S-E单、純偶数の連続 → S-E双\n   · 連続でなく純奇偶でもない → S-E定（例：6,7週 → 6-7定）\n5. 週の記載がなければ 1-16\n\n========== 三、抽出ルール ==========\n\n· 同じ科目が1週間に複数回（別日・別コマ）→ 複数の C 行、1時限1行。1行にまとめない\n· コマ番号は時間割の「X時限」から読む。時限がなく時刻のみなら、重複しない時間帯を朝から 1, 2, 3… と採番し、対応する N 行も出力\n· 科目名・教員・教室は原文のまま。テキストに | \\ \" &amp;lt; { ( が含まれる場合は各文字の前に \\ を付ける。文中の改行は \n の2文字、タブは \t\n· 時間割に無い情報はすべて空。教員・教室・時刻・週を捏造しないこと\n\n========== 四、出力セルフチェック（心中で確認。出力しない） ==========\n\n· 1行目が #sleepy-v1 で、他に余計な文字が一切ない\n· 各 C 行は正確に縦棒9個・10列\n· 曜日は 1-7 の数字。時刻は時が2桁（8:00 でなく 08:00）\n· 週の列は S-E、S-E单、S-E双、S-E定、S定 の5形態のみ\n· 科目名は時間割の原文と一致。捏造なし\n\n========== 五、出力例 ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
 
     <string name="format_wakeup_share_when">WakeUp アプリからの乗り換え。WakeUp の「コース共有」で生成されたテキスト全体をそのまま貼り付け。</string>
     <string-array name="format_wakeup_share_spec">
@@ -194,9 +194,10 @@
         <item>曜日は 1-7、月、Monday どれでも可</item>
         <item>週は 1-16、2-5,7-9、11,13,15 に対応。複数範囲は複数の授業に展開</item>
         <item>任意の「開始時間」「終了時間」列（HH:mm）：インポート時に実際の時間割として自動適用</item>
+        <item>任意の「自定義時間」列（はい/いいえ）：「はい」の行は開始・終了時刻をその科目の専用時刻として保存し、共通の時間割には反映されません</item>
         <item>種別は 0/1/2 または 毎週/奇数週/偶数週</item>
     </string-array>
-    <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type\nCalculus,John,A101,Monday,1-2,1-16,weekly\nEnglish,Mary,B202,3,3-4,1-16,odd</string>
+    <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type,start time,end time,custom time\nCalculus,John,A101,Monday,1-2,1-16,weekly,08:00,08:45,\nEvening class,Mary,C301,3,11-12,1-16,weekly,20:50,22:00,yes\nEnglish,Lee,B202,3,3-4,1-16,odd,,,</string>
 
     <string name="format_html_when">時間割ページを .html として保存したもの、コピーしたテーブルのソース、またはファイルマネージャーで .html をタップして Sleepy を選択。</string>
     <string-array name="format_html_spec">
@@ -204,24 +205,25 @@
         <item>ページ内にテーブルがあり、ヘッダー行に「科目」(course) を含むこと</item>
         <item>列名は CSV と同じ：科目、曜日、時限、週が必須。教員、教室、種別、備考は任意</item>
         <item>CSV と同様：任意の「開始時間」「終了時間」列、インポート時に自動適用</item>
+        <item>CSV と同様：任意の「自定義時間」列（はい/いいえ）。「はい」の行は非標準時刻の科目として保存されます</item>
         <item>月〜日を列にしたグリッド型時間割は解析不可。「1 行 1 科目」の縦長テーブルが必要</item>
     </string-array>
-    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
+    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;td&gt;start time&lt;/td&gt;&lt;td&gt;end time&lt;/td&gt;&lt;td&gt;custom time&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;td&gt;08:00&lt;/td&gt;&lt;td&gt;08:45&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Evening class&lt;/td&gt;&lt;td&gt;Mary&lt;/td&gt;&lt;td&gt;C301&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;11-12&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;td&gt;20:50&lt;/td&gt;&lt;td&gt;22:00&lt;/td&gt;&lt;td&gt;yes&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
-    <string name="format_plain_when">Sleepyネイティブ形式（sleepy-v1）：コンパクトで整然、寛容性が高い。手入力にも、AI によるスクショ変換（下のプロンプト参照）にも最適。旧のタブ区切り形式も引き続きインポート可能。</string>
+    <string name="format_plain_when">Sleepyネイティブ形式（sleepy-v1）：コンパクトで整然、寛容性が高い。手入力にも、AI によるスクショ変換（下のプロンプト参照）にも最適。旧のタブ区切り形式（科目名 教員 教室 曜日 コマ 週 種別、続けて開始・終了時刻も指定可）も引き続きインポート可能。</string>
     <string-array name="format_plain_spec">
         <item>1行目は必ず #sleepy-v1</item>
         <item>科目行の書式：C科目名|曜日|コマ|週|教員|教室|色|備考|時刻|グループ の10列・縦棒9個</item>
         <item>空の列は空のまま、縦棒は省略しない</item>
         <item>曜日は 1-7（月曜=1）。コマは範囲 1-2、単一コマは 6</item>
         <item>週の列は5形態：1-16（毎週）、1-15单（奇数）、2-16双（偶数）、3-4定（区間指定）、10定（単週）</item>
-        <item>色の列は空で自動色。時刻の列は固定時刻の科目のみ HH:mm-HH:mm</item>
-        <item>テキストに | \ \" &lt; { ( が含まれる場合は各文字の前に \ を付ける</item>
+        <item>色の列は空で自動色。時刻の列（非標準時刻科目の開始・終了 HH:mm-HH:mm）は夜間授業などの特別な科目のみ記入 — 記入するとその科目は時刻表示になり、共通の時間割には反映されません</item>
+        <item>テキストに | \\ \" &lt; { ( が含まれる場合は各文字の前に \\ を付ける</item>
         <item>時限行（省略可）：N番号|開始|終了（例 N3|10:00|10:45）。内蔵既定と同じなら Nd の1行で代用可</item>
         <item>テーブル行（省略可）：T名前|開始日|総週数|1日コマ数。開始日は第1週の月曜日</item>
         <item>認識できない行はインポートプレビューに列挙され、黙って捨てられることはない</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">#sleepy-v1\nT私の時間割|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC影视鉴赏|7|6|10-16双||||||</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1\nT私の時間割|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC晚课|3|11-12|1-16|李四|C301|||20:50-22:00|\nC影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">%1$d 行を認識できませんでした</string>
     <string name="import_dropped_hint">これらの行はスキップされました。形式を確認して再インポートしてください：</string>
     <string name="import_warnings_title">ヒント</string>
@@ -326,6 +328,7 @@
     <string name="settings_start_view">起動時の表示</string>
     <string name="settings_start_view_full">週表示</string>
     <string name="settings_start_view_cards">グリッド</string>
+    <string name="settings_show_view_switcher">表示切り替えバーを表示</string>
     <string name="settings_grid_sub_info">グリッドカードの補足情報</string>
     <string name="settings_grid_sub_room">教室</string>
     <string name="settings_grid_sub_room_sub">コマ名の下に教室を表示（未設定なら非表示）</string>
@@ -559,6 +562,18 @@
     <string name="theme_editor_delete_confirm_body">使用中のページとウィジェットは既定の「ライラック」に戻ります。</string>
 <string name="appearance_section_theme">テーマカラー</string>
     <string name="appearance_section_schedule_display">時間割の表示</string>
+    <string name="appearance_period_header">時限ヘッダー</string>
+    <string name="appearance_home_style">ホームスタイル</string>
+    <string name="appearance_header_layout">レイアウト</string>
+    <string name="appearance_layout_horizontal">横並び</string>
+    <string name="appearance_layout_legacy">旧式ヘッダー</string>
+    <string name="appearance_layout_legacy_sub">従来の節と時刻の表示を維持</string>
+    <string name="appearance_layout_vertical">縦並び</string>
+    <string name="appearance_layout_three_line">3行ヘッダー</string>
+    <string name="appearance_header_preview">ライブプレビュー</string>
+    <string name="appearance_header_style">時限スタイル</string>
+    <string name="appearance_header_show_x">「第 X 限」を表示</string>
+    <string name="appearance_header_hanging">開始時刻幅 %1$s 個分 左右移動</string>
     <string name="appearance_section_widget">ウィジェット</string>
     <string name="about_update_latest">最新バージョン v%1$s です</string>
     <string name="update_found_title">新しいバージョン v%1$s があります</string>
@@ -723,6 +738,18 @@
     <string name="reminder_fluid_status_settings_required">Fluid Cloud / Super Island を有効にするには、まずシステム設定を開いてください。</string>
     <string name="reminder_fluid_status_not_supported">現在のシステムでは Fluid Cloud / Super Island をサポートしていません。</string>
     <string name="reminder_fluid_go_to_settings">設定を開く</string>
+    <string name="reminder_reliability_title">バックグラウンドの信頼性</string>
+    <string name="reminder_reliability_notification">通知権限：%1$s</string>
+    <string name="reminder_reliability_exact_alarm">正確なアラーム：%1$s</string>
+    <string name="reminder_reliability_battery">バッテリー最適化：%1$s</string>
+    <string name="reminder_reliability_widget">ホームウィジェット：%1$s</string>
+    <string name="reminder_reliability_vendor">ベンダー対応ライブカード：%1$s</string>
+    <string name="reminder_reliability_promoted">ライブアップデート権限：%1$s</string>
+    <string name="reminder_reliability_not_applicable">非対象</string>
+    <string name="reminder_reliability_ready">有効</string>
+    <string name="reminder_reliability_missing">未設定</string>
+    <string name="reminder_reliability_degraded">制限あり</string>
+    <string name="reminder_reliability_unknown">不明</string>
     <string name="reminder_fluid_sub">対応する Xiaomi・vivo・Samsung・Meizu スマホでリアルタイム授業カードを表示</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
     <string name="reminder_master_sub">Sleepy に授業通知の送信を許可</string>
@@ -877,6 +904,19 @@
     <string name="period_table_preview_confirm">保存</string>
     <string name="period_table_bind_preview_title">切り替え確認</string>
     <string name="period_table_bind_preview_body">切り替え後、この時間割は新しい時程表で時限を解釈します。カスタム時刻の授業は影響しません</string>
+    <string name="schedule_conflict_dialog_title">この時程の変更をどこに適用しますか？</string>
+    <string name="schedule_conflict_dialog_summary">現在の時程：%1$s（%2$s）</string>
+    <string name="schedule_conflict_dialog_summary_only_this">この時間割のみ使用</string>
+    <string name="schedule_conflict_dialog_summary_other_count">ほか %1$d 件の時間割が紐付け済み</string>
+    <string name="schedule_conflict_option_detach_title">この時間割のみ変更</string>
+    <string name="schedule_conflict_option_detach_sub">この時間割は独自の時程を使い、共有時程表に従わなくなります</string>
+    <string name="schedule_conflict_option_create_title">新しい時程表を作成して紐付け</string>
+    <string name="schedule_conflict_option_create_sub">この時間割名で新しい時程表を作成し、他には影響しません</string>
+    <string name="schedule_conflict_option_sync_title">時程表「%1$s」に同期反映</string>
+    <string name="schedule_conflict_option_sync_sub_other">ほか %1$d 件の時間割に影響します</string>
+    <string name="schedule_conflict_option_sync_sub_only">この時程はこの時間割のみが使用</string>
+    <string name="schedule_conflict_banner_format">実行待ち：%1$s · 次回保存時に反映</string>
+    <string name="schedule_conflict_banner_modify">変更</string>
     <string name="import_drafts">インポート下書き</string>
     <string name="import_drafts_empty">保存されたインポート下書きはありません</string>
     <string name="import_draft_restore">下書きを復元</string>

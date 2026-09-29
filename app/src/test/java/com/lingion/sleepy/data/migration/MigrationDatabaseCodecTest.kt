@@ -86,6 +86,8 @@ internal class FakeTimeTableDao : TimeTableDao {
     override fun observeById(id: Long): Flow<TimeTableEntity?> = flowOf(null)
     override fun observeAll(): Flow<List<TimeTableEntity>> = flowOf(emptyList())
     override suspend fun getAll(): List<TimeTableEntity> = rows.values.toList()
+    override suspend fun getAllBoundTo(periodTableId: Long): List<TimeTableEntity> =
+        rows.values.toList()
     override suspend fun count(): Int = rows.size
     override suspend fun setDefault(id: Long) {
         defaultId = id

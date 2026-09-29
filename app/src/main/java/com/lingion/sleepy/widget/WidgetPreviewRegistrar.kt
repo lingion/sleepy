@@ -16,7 +16,8 @@ import com.lingion.sleepy.R
  *
  * A preview is deliberately data-free: the provider's real course data must
  * never be copied into a launcher preview or exposed before the widget is
- * configured by the host.
+ * configured by the host. The static drawable is assigned explicitly because
+ * an empty RemoteViews would otherwise replace the XML preview on Android 15+.
  */
 object WidgetPreviewRegistrar {
     private const val TAG = "WidgetPreview"
@@ -35,13 +36,13 @@ object WidgetPreviewRegistrar {
         ALL_WIDGET_VARIANTS.forEach { variant ->
             val provider = ComponentName(context, variant.receiverClass)
             try {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM) {
-                    manager.setWidgetPreview(
-                        provider,
-                        AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
-                        RemoteViews(context.packageName, R.layout.widget_bitmap_container)
-                    )
-                }
+                val views = RemoteViews(context.packageName, R.layout.widget_bitmap_container)
+                views.setImageViewResource(R.id.widget_bitmap, variant.previewImageRes)
+                manager.setWidgetPreview(
+                    provider,
+                    AppWidgetProviderInfo.WIDGET_CATEGORY_HOME_SCREEN,
+                    views
+                )
                 registered++
             } catch (error: RuntimeException) {
                 failed++

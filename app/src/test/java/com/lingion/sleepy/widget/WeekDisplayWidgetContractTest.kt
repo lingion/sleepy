@@ -13,9 +13,9 @@ import java.time.LocalDateTime
 
 /** 主界面/小组件共用"最近有课日"契约的纯 JVM 覆盖。 */
 class WeekDisplayWidgetContractTest {
-    private fun course(day: Int, name: String, startWeek: Int = 1) = CourseEntity(
+    private fun course(day: Int, name: String, startWeek: Int = 1, endWeek: Int = 3) = CourseEntity(
         id = day.toLong(), groupId = "g$day", tableId = 1, courseName = name,
-        day = day, startNode = 1, step = 1, startWeek = startWeek, endWeek = 3, color = ""
+        day = day, startNode = 1, step = 1, startWeek = startWeek, endWeek = endWeek, color = ""
     )
 
     @Test
@@ -35,6 +35,25 @@ class WeekDisplayWidgetContractTest {
         assertEquals(LocalDate.of(2026, 9, 16), context.targetDate)
         assertEquals(1, context.targetWeek)
         assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY, context.status)
+    }
+
+    @Test
+    fun `nearest busy day window returns two future class dates in calendar order`() {
+        val dates = com.lingion.sleepy.util.WeekDisplayResolver.findNearestBusyDays(
+            startDate = "2026-09-21",
+            actualWeek = 1,
+            maxWeek = 12,
+            today = LocalDate.of(2026, 9, 25),
+            courses = listOf(
+                course(day = 1, name = "十一月课程", startWeek = 7, endWeek = 7),
+                course(day = 3, name = "十二月课程", startWeek = 11, endWeek = 12)
+            ),
+            count = 2
+        )
+        assertEquals(
+            listOf(LocalDate.of(2026, 11, 2), LocalDate.of(2026, 12, 2)),
+            dates
+        )
     }
 
     @Test

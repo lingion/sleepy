@@ -309,6 +309,13 @@ class ScheduleRepository(private val db: AppDatabase) {
     suspend fun periodTableBoundCount(id: Long): Int = periodTableDao.boundTableCount(id)
 
     /**
+     * 甲案 (设计文档 §4.1): 绑定到指定作息表的全部课表 —
+     * 弹窗"另有 N 张课表绑定"提示 + 三选项作用域语义共用。
+     */
+    suspend fun getTablesBoundTo(periodTableId: Long): List<TimeTableEntity> =
+        tableDao.getAllBoundTo(periodTableId)
+
+    /**
      * 有效时间节次表解析(设计 §5.1): 绑定表存在 → 返回它;
      * 绑定指向已删除的 id(悬空引用, 仅可能来自旧数据/导入)或未绑定 → null, 调用方回退旧兼容列。
      */

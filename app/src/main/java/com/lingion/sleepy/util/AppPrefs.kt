@@ -62,6 +62,7 @@ object AppPrefs {
     val CONFLICT_FOLD_SIZE_RANGE = 8f..28f        // 拖杆量程(dp)
     const val CONFLICT_FOLD_SIZE_DEFAULT = 16f    // 默认(dp) — 沿用旧 FOLD_SIZE_DP 硬编码值
     const val KEY_START_VIEW = "start_view" // "full" / "cards" — 启动默认视图（仅通用设置里设置；手动切换课表顶部视图不写入；出厂默认 cards）
+    const val KEY_SHOW_VIEW_SWITCHER = "show_view_switcher" // boolean — 首页是否显示周视图/网格视图切换栏（默认 true）
     const val KEY_SHOW_DATE = "show_date"       // boolean — 网格视图表头显示当前日期（出厂默认 true，用户反馈找不到开关）
     const val KEY_VISIBLE_DAYS = "visible_days" // "1,2,3,4,5,6,7"
     const val KEY_COMPACT_WINDOW_TODAY_FIRST = "compact_window_today_first" // boolean — 最小档三天窗口锚点(2026-09-15 用户令)
@@ -92,6 +93,10 @@ object AppPrefs {
     const val KEY_UPDATE_NOTICE_DISMISSED_VERSION = "update_notice_dismissed_version" // string — 关闭该版本更新提醒
     const val KEY_HIGH_REFRESH = "high_refresh_rate" // bool default true — 窗口 preferredDisplayModeId 钉屏幕最高刷率(流畅优先); 关=跟随系统省电调度
     const val KEY_NAV_DOCK = "nav_dock" // bool default false — 底栏形态: false=贴底(通栏), true=悬浮药丸(Dock, 底边留距)
+    const val KEY_PERIOD_HEADER_LAYOUT = "period_header_layout" // "legacy" / "three_line", default legacy
+    const val KEY_PERIOD_HEADER_STYLE = "period_header_style" // arabic / chinese / financial / circled / roman, default arabic
+    const val KEY_PERIOD_HEADER_HANGING = "period_header_hanging" // Float time-width units, -1..1, default 0
+    const val KEY_PERIOD_HEADER_SHOW_X = "period_header_show_x" // boolean, default false
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -440,6 +445,14 @@ object AppPrefs {
         sp(ctx).edit().putString(KEY_START_VIEW, value).apply()
     }
 
+    fun isShowViewSwitcher(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_SHOW_VIEW_SWITCHER, true)
+
+    fun setShowViewSwitcher(ctx: Context, value: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_SHOW_VIEW_SWITCHER, value).apply()
+        _changeBus.tryEmit(KEY_SHOW_VIEW_SWITCHER)
+    }
+
     // ===== 网格显示日期 =====
 
     // 出厂默认显示日期 — 用户反馈不知道开关在哪，直接默认开；设置页仍可关
@@ -585,6 +598,48 @@ object AppPrefs {
     fun setGridCornerRatio(ctx: Context, v: Float) {
         sp(ctx).edit().putFloat(KEY_GRID_CORNER_RATIO, v.coerceIn(0f, 2f)).apply()
         _changeBus.tryEmit(KEY_GRID_CORNER_RATIO)
+    }
+
+    /**
+     * Header layout has two durable states. Older builds stored horizontal/vertical;
+     * map those values on read so an upgrade never leaves the UI without a selection.
+     */
+    fun getPeriodHeaderLayout(ctx: Context): String {
+        return when (sp(ctx).getString(KEY_PERIOD_HEADER_LAYOUT, "legacy")) {
+            "three_line", "vertical" -> "three_line"
+            else -> "legacy"
+        }
+    }
+
+    fun setPeriodHeaderLayout(ctx: Context, value: String) {
+        require(value == "legacy" || value == "three_line")
+        sp(ctx).edit().putString(KEY_PERIOD_HEADER_LAYOUT, value).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_LAYOUT)
+    }
+
+    fun getPeriodHeaderStyle(ctx: Context): String =
+        sp(ctx).getString(KEY_PERIOD_HEADER_STYLE, "arabic") ?: "arabic"
+
+    fun setPeriodHeaderStyle(ctx: Context, value: String) {
+        require(value in setOf("arabic", "chinese", "financial", "circled", "roman"))
+        sp(ctx).edit().putString(KEY_PERIOD_HEADER_STYLE, value).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_STYLE)
+    }
+
+    fun getPeriodHeaderHanging(ctx: Context): Float =
+        sp(ctx).getFloat(KEY_PERIOD_HEADER_HANGING, 0f).coerceIn(-1f, 1f)
+
+    fun setPeriodHeaderHanging(ctx: Context, value: Float) {
+        sp(ctx).edit().putFloat(KEY_PERIOD_HEADER_HANGING, value.coerceIn(-1f, 1f)).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_HANGING)
+    }
+
+    fun isPeriodHeaderShowX(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_PERIOD_HEADER_SHOW_X, false)
+
+    fun setPeriodHeaderShowX(ctx: Context, value: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_PERIOD_HEADER_SHOW_X, value).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_SHOW_X)
     }
 
     // ===== 周视图两栏(issue#8) — 默认关 =====

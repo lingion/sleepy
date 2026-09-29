@@ -2,6 +2,7 @@ package com.lingion.sleepy.widget
 
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
 import java.time.LocalDate
 
 /**
@@ -36,7 +37,13 @@ internal object WidgetCompactWindow {
             val afterEnd = DateUtils.semesterStatus(startDate, maxWeek, effectiveDate) == DateUtils.SemesterStatus.AFTER_END
             val visible = if (afterEnd) emptyList()
                 else repo.getCoursesByDayOnce(tableId, dow).filter { it.inWeek(week) }.sortedBy { it.startNode }
-            DayData(date = effectiveDate, dayOfWeek = dow, courses = visible, timeJson = timeJson)
+            DayData(
+                date = effectiveDate,
+                dayOfWeek = dow,
+                courses = visible,
+                timeJson = timeJson,
+                isGrey = HolidayManager.shouldGrey(com.lingion.sleepy.SleepyApp.get(), effectiveDate, tableId)
+            )
         }
     }
 }

@@ -50,6 +50,7 @@ CONTRIBUTING-INTERNAL.md
 # AI 工作流的 spec/design/task 产物只在本地保留,禁止入库。
 # 2026-09-09 task-7-report.md 误入库已移除,整目录兜底忽略。
 .superpowers/
+docs/superpowers/
 
 # 设计文档 — 纯本地,永不上传(2026-09-11 用户定版)
 docs/sop/design/

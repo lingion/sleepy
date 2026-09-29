@@ -47,6 +47,7 @@ class SleepyNavigator(
     fun openAllTables() = push(SleepyRoute.AllTables)
     fun openCourseList() = push(SleepyRoute.CourseList)
     fun openAppearance() = push(SleepyRoute.Appearance)
+    fun openPeriodHeaderSettings() = push(SleepyRoute.PeriodHeaderSettings)
     fun openGeneral() = push(SleepyRoute.General)
     fun openHoliday() = push(SleepyRoute.Holiday)
     fun openExport() = push(SleepyRoute.Export)

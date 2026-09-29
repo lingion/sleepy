@@ -24,6 +24,13 @@ import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
+import com.lingion.sleepy.util.PeriodHeaderFormatter
+import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.ui.component.PERIOD_HEADER_CARD_PAD_DP
+import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
+import com.lingion.sleepy.ui.component.PeriodHeaderMetrics
+import com.lingion.sleepy.ui.component.solvePlacement
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -197,6 +204,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val fgOnSurface     = scheme.onSurface.toIntArgb()
             val fgOnSurfaceVar  = scheme.onSurfaceVariant.toIntArgb()
             val gridLine        = scheme.surfaceVariant.toIntArgb()
+            // 统一底色开关的中性底 = 当前主题最浅的 M3 surface container (跟随主题派生, 非写死色)
+            val unifiedCourseBg = scheme.surfaceContainerLowest.toIntArgb()
             val colorless       = AppPrefs.isWidgetColorless(context)
 
             // v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
@@ -207,7 +216,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
 
             // ── 数据 ──
             val timeJson = data.days.firstOrNull()?.timeJson ?: ""
-            val allSlots = parseTimeSlots(timeJson)
+            val allSlots = TimeTableUtils.timeSlotsFor(timeJson)
             val maxNode = (data.days.flatMap { it.courses }
                 .maxOfOrNull { it.startNode + it.step - 1 } ?: allSlots.size)
                 .coerceAtLeast(1)
@@ -360,7 +369,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                             course, allCourses.filter { it.groupId == course.groupId },
                             isDark, gridLine, colorless
                         )
-                        p.alpha = 200
+                        p.alpha = if (dayData.isGrey) 120 else 200
                         val r = minOf(dp(4f).toFloat(), barH / 2f)
                         c.drawRoundRect(RectF(laneX, top, laneX + laneW, top + barH), r, r, p)
                         p.alpha = 255
@@ -371,27 +380,132 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
 
             // time column labels
             p.textAlign = Paint.Align.CENTER
+            val widgetHeaderLayout = AppPrefs.getPeriodHeaderLayout(context)
+            val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
+            val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
+            val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
+            // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
+            val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
+            // 三行卡片几何 — 与 PeriodHeaderCellContent / SingleTimeHeadCell 共享同一事实来源。
+            // PERIOD_HEADER_CARD_PAD_DP (3dp) 与预览/周视图逐层相等 (用户 2026-09-28 令)。
+            val cardPadPx = dp(PERIOD_HEADER_CARD_PAD_DP).toFloat()
+            val cardRadiusPx = dp(8f).toFloat()
             for (i in 1..maxNode) {
                 val rowY = bodyTop + gapH + (i - 1) * (slotH + gapH)
                 val slot = slots.getOrNull(i - 1)
 
-                // period number 字号 = slotH * 0.40 (降比例)
-                p.color = fgOnSurface
-                p.textSize = (slotH * 0.40f)
-                    .coerceAtMost(dp(13f).toFloat())
-                    .coerceAtLeast(dp(8f).toFloat())
-                p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                val cy = rowY + slotH / 2f + p.textSize * 0.35f
-                c.drawText("$i", x + timeW / 2f, cy, p)
-
-                // time label 字号 = slotH * 0.20 (降比例)
-                if (slot != null && slotH > dp(18f)) {
-                    p.color = fgOnSurfaceVar
-                    p.textSize = (slotH * 0.20f)
-                        .coerceAtMost(dp(7f).toFloat())
-                        .coerceAtLeast(dp(4f).toFloat())
+                val centerX = x + timeW / 2f
+                if (widgetHeaderLayout == "three_line" && slot != null) {
+                    val start = slot.displayStart
+                    val end = slot.displayEnd
+                    val isSingleNode = slot.nodeStart == slot.nodeEnd
+                    val label = if (widgetHeaderShowX && isSingleNode) {
+                        PeriodHeaderFormatter.fullLabel(slot.nodeStart, widgetHeaderStyle)
+                    } else {
+                        PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, widgetHeaderStyle)
+                    }
+                    // 同 Compose: 测量与绘制必须用同一组 paint 值,先以基础字号测宽,再走自适应,
+                    // 最后按自适应字号二次实测并端点异锚(用户 2026-09-27 三行表头收口)。
+                    // 单位契约: PeriodHeaderAdaptiveFont 输出是 sp 语义(Compose 侧 .sp 渲染),
+                    // Canvas Paint.textSize 是 px 语义 → 必须 sp→px 换算,否则文字缩小 density 倍。
+                    val spToPx = { v: Float ->
+                        android.util.TypedValue.applyDimension(
+                            android.util.TypedValue.COMPLEX_UNIT_SP, v,
+                            context.resources.displayMetrics
+                        )
+                    }
+                    val baseTimeSize = spToPx(11f)
+                    val baseLabelSize = spToPx(12f)
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
-                    c.drawText(slot, x + timeW / 2f, cy + p.textSize * 1.6f, p)
+                    p.textSize = baseTimeSize
+                    val baseStartW = p.measureText(start)
+                    val baseEndW = p.measureText(end)
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    p.textSize = baseLabelSize
+                    val baseLabelW = p.measureText(label)
+                    val baseMetrics = PeriodHeaderMetrics(
+                        baseStartW, baseEndW, baseLabelW,
+                        showX = widgetHeaderShowX && isSingleNode
+                    )
+                    val cardInnerW = (timeW - 2f * cardPadPx).coerceAtLeast(1f)
+                    val cardInnerH = (slotH - 2f * cardPadPx).coerceAtLeast(1f)
+                    val adaptive = PeriodHeaderAdaptiveFont.compute(
+                        cardWidthPx = cardInnerW,
+                        cardHeightPx = cardInnerH,
+                        inkWidthPx = baseMetrics.inkWidth(widgetHeaderHanging),
+                        timeMaxWidthPx = baseMetrics.timeMax,
+                        labelWidthPx = baseLabelW,
+                    )
+                    val timeSizePx = spToPx(adaptive.timeSize)
+                    val labelSizePx = spToPx(adaptive.labelSize)
+                    // 按自适应字号二次实测,得到绘制阶段真正使用的 width / 行高。
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    p.textSize = timeSizePx
+                    val startW = p.measureText(start)
+                    val endW = p.measureText(end)
+                    val startFontMetrics = p.fontMetrics
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    p.textSize = labelSizePx
+                    val labelW = p.measureText(label)
+                    val labelFontMetrics = p.fontMetrics
+                    val metrics = PeriodHeaderMetrics(
+                        startW, endW, labelW,
+                        showX = widgetHeaderShowX && isSingleNode
+                    )
+                    val placement = metrics.solvePlacement(widgetHeaderHanging)
+                    // 卡片宽 = 元素矩形(contentWidth) + 内边距 ×2,轨道内居中(用户 2026-09-27 令:
+                    // 卡片自适应元素矩形,不要用轨道宽度撑出空白)。
+                    val cardW = (placement.contentWidth + 2f * cardPadPx).coerceAtLeast(1f)
+                    // 外框覆盖整行，3dp 只属于卡片内部 padding（与预览/SingleTimeHeadCell 相同）。
+                    val cardH = slotH.coerceAtLeast(1f)
+                    val cardLeft = (centerX - cardW / 2f)
+                    val cardTop = rowY
+                    // 卡片底色(surfaceContainerLow 圆角 8dp,与 SingleTimeHeadCell 同款)
+                    p.color = bgSurfaceLow
+                    p.style = Paint.Style.FILL
+                    c.drawRoundRect(RectF(cardLeft, cardTop, cardLeft + cardW, cardTop + cardH),
+                        cardRadiusPx, cardRadiusPx, p)
+                    // 三行基线按 Compose Text 的实际字号/字体度量计算，避免固定比例造成纵向漂移。
+                    val timeRowH = startFontMetrics.descent - startFontMetrics.ascent
+                    val labelRowH = labelFontMetrics.descent - labelFontMetrics.ascent
+                    val contentH = timeRowH + labelRowH + timeRowH
+                    val contentTop = cardTop + (cardH - contentH).coerceAtLeast(0f) / 2f
+                    val baseX = cardLeft + cardPadPx
+                    p.style = Paint.Style.FILL
+                    p.textAlign = Paint.Align.LEFT
+                    // 第一行:开始时间
+                    p.color = fgOnSurfaceVar
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    p.textSize = timeSizePx
+                    val startBaseline = contentTop - startFontMetrics.ascent
+                    c.drawText(start, baseX + placement.timeBaseLeft, startBaseline, p)
+                    // 第二行:标签(端点异锚)
+                    p.color = fgOnSurface
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    p.textSize = labelSizePx
+                    val labelBaseline = contentTop + timeRowH - labelFontMetrics.ascent
+                    c.drawText(label, baseX + placement.labelLeft, labelBaseline, p)
+                    // 第三行:结束时间
+                    p.color = fgOnSurfaceVar
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                    p.textSize = timeSizePx
+                    val endBaseline = contentTop + timeRowH + labelRowH - startFontMetrics.ascent
+                    c.drawText(end, baseX + placement.timeBaseLeft, endBaseline, p)
+                } else {
+                    // Legacy remains the compact two-line grid header.
+                    p.color = fgOnSurface
+                    p.textSize = (slotH * 0.40f).coerceAtMost(dp(13f).toFloat()).coerceAtLeast(dp(8f).toFloat())
+                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    val cy = rowY + slotH / 2f + p.textSize * 0.35f
+                    val periodText = if (widgetHeaderLayout == "legacy") i.toString()
+                    else PeriodHeaderFormatter.label(i, widgetHeaderStyle)
+                    c.drawText(periodText, centerX, cy, p)
+                    if (slot != null && slotH > dp(18f)) {
+                        p.color = fgOnSurfaceVar
+                        p.textSize = (slotH * 0.20f).coerceAtMost(dp(7f).toFloat()).coerceAtLeast(dp(4f).toFloat())
+                        p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
+                        c.drawText(slot.timeString, centerX, cy + p.textSize * 1.6f, p)
+                    }
                 }
             }
 
@@ -473,7 +587,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         isDark, gridLine, colorless
                     )
                     p.color = baseColor
-                    p.alpha = 200
+                    p.alpha = if (dayData.isGrey) 120 else 200
                     c.drawRoundRect(cardRect, dp(10f).toFloat(), dp(10f).toFloat(), p)
                     p.alpha = 255
 
@@ -490,6 +604,10 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     // 卡片窄(~40dp), 双列并排挤死 → 改成: 课名竖排居中 + 教室缩到 0.6× 字号横排在底部
                     val textColor = if (isDarkOn(baseColor)) Color.WHITE else 0xFF1D1B20.toInt()
                     p.color = textColor
+                    p.alpha = if (dayData.isGrey) 153 else 255
+                    if (dayData.isGrey && AppPrefs.getHolidayStyle(context) == "strikethrough") {
+                        p.flags = p.flags or Paint.STRIKE_THRU_TEXT_FLAG
+                    }
                     p.textAlign = Paint.Align.CENTER
 
                     // nameChars 死变量已删 (v21 起 token 化走 tokenizeName, 不再用字符列表)
@@ -631,25 +749,13 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         c.drawText(roomVisible, nameCenterX, roomCy, p)
                         p.alpha = 255
                     }
+                    p.flags = p.flags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+                    p.alpha = 255
                     // 循环内 Log.d 渲染调试日志已删（每张课程卡都求值字符串模板, Release 也无法被 R8 消除）
                 }
             }
 
             return bmp
-        }
-
-        private fun parseTimeSlots(timeJson: String): List<String> {
-            return try {
-                val arr = org.json.JSONArray(timeJson)
-                (0 until arr.length()).map { i ->
-                    val o = arr.getJSONObject(i)
-                    o.getString("start")
-                }
-            } catch (e: Exception) {
-                // 默认 12 节
-                listOf("08:00","08:55","10:00","10:55","14:00","14:55",
-                    "16:00","16:55","19:00","19:55","20:50","21:45")
-            }
         }
 
         // ===== v21 竖排(直书) token 化 =====
@@ -812,7 +918,13 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 } else {
                     val days = daysPerCourse.map { (dow, courses) ->
                         val date = DateUtils.dateOfWeekDay(today, dow)
-                        DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = t.timeJson)
+                        DayData(
+                            date = date,
+                            dayOfWeek = dow,
+                            courses = courses,
+                            timeJson = t.timeJson,
+                            isGrey = runBlocking { HolidayManager.shouldGrey(context, date, t.id) }
+                        )
                     }
                     WeekData(days = days, hasTable = true, isDark = isDark,
                         themeKey = themeKey,

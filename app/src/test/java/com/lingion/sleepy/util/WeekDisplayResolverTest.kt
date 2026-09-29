@@ -168,20 +168,29 @@ class WeekDisplayResolverTest {
     }
 
     @Test
-    fun `statusForSelectedWeek mirrors NEAREST_BUSY_DAY only on target week`() {
-        // 周六无课，最近有课日在下周一（第 2 周）；手动选第 1 周(实际周)应回 NORMAL，
-        // 只有停留在自动跳到的第 2 周才显示 NEAREST_BUSY_DAY
+    fun `statusForSelectedDate mirrors NEAREST_BUSY_DAY only on target date`() {
+        // 周六无课，最近有课日在下周一（第 2 周）；展示其他日期一律 NORMAL，
+        // 只有展示日恰好等于自动跳到的目标日（周一）才显示 NEAREST_BUSY_DAY
         val ctx = resolve(
             "2026-09-19T23:00",
             courses = listOf(course(2, day = 1, startWeek = 2, startTime = "14:00", endTime = "15:30"))
         )
 
         assertEquals(2, ctx.targetWeek)
+        assertEquals(LocalDate.of(2026, 9, 21), ctx.targetDate)
         assertEquals(WeekDisplayStatus.NEAREST_BUSY_DAY,
-            WeekDisplayResolver.statusForSelectedWeek(ctx, ctx.targetWeek))
+            WeekDisplayResolver.statusForSelectedDate(ctx, ctx.targetDate))
+        // 同周翻到周二/周三 → 标签必须消失（原按周比较的回归点）
         assertEquals(WeekDisplayStatus.NORMAL,
-            WeekDisplayResolver.statusForSelectedWeek(ctx, ctx.actualWeek))
+            WeekDisplayResolver.statusForSelectedDate(ctx, ctx.targetDate.plusDays(1)))
         assertEquals(WeekDisplayStatus.NORMAL,
-            WeekDisplayResolver.statusForSelectedWeek(ctx, 3))
+            WeekDisplayResolver.statusForSelectedDate(ctx, ctx.targetDate.plusDays(2)))
+        // 其他周 / 今天 / 实际周
+        assertEquals(WeekDisplayStatus.NORMAL,
+            WeekDisplayResolver.statusForSelectedDate(ctx, ctx.targetDate.plusWeeks(1)))
+        assertEquals(WeekDisplayStatus.NORMAL,
+            WeekDisplayResolver.statusForSelectedDate(ctx, LocalDate.of(2026, 9, 19)))
+        assertEquals(WeekDisplayStatus.NORMAL,
+            WeekDisplayResolver.statusForSelectedDate(ctx, LocalDate.of(2026, 9, 14)))
     }
 }

@@ -12,6 +12,7 @@ import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.WeekDisplayResolver
 import kotlinx.coroutines.CoroutineScope
@@ -478,6 +479,7 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         val effectiveDayOfWeek = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, effectiveTarget)
                         val week = DateUtils.currentWeek(table.startDate, effectiveTarget)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, effectiveTarget)
+                        val isGrey = HolidayManager.shouldGrey(context, effectiveTarget, table.id)
                         // 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
                         val visible = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList() else
                             source.coursesFor(effectiveDayOfWeek, week)
@@ -490,8 +492,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                             themeKey = themeKey,
                             semesterStatus = status,
                             isToday = effectiveTarget == today,
-                            weekDisplayStatus = WeekDisplayResolver.statusForSelectedWeek(
-                                source.display, week
+                            isGrey = isGrey,
+                            weekDisplayStatus = WeekDisplayResolver.statusForSelectedDate(
+                                source.display, effectiveTarget
                             )
                         )
                     }

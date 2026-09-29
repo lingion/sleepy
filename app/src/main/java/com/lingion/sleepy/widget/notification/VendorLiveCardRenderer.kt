@@ -46,6 +46,18 @@ fun detectLiveCardVendor(manufacturer: String = Build.MANUFACTURER): LiveCardVen
 }
 
 /**
+ * Builds the public Android 16 ProgressStyle transport for one course-card state.
+ * NotificationCompat maps it to the platform style on API 36+ and degrades to a
+ * plain progress bar on older releases, so this single construction serves every
+ * supported OS version without a private vendor gate.
+ */
+fun progressStyleFor(progressPercent: Int): NotificationCompat.ProgressStyle =
+    NotificationCompat.ProgressStyle()
+        .setProgress(progressPercent.coerceIn(0, 100))
+        // progressMax 默认就是 100; core 1.17 没有 setProgressMax, 不为冗余 setter 升依赖
+        .setStyledByProgress(true)
+
+/**
  * Builds one notification for the shared OPPO lifecycle and adds only documented
  * vendor extras. Vendor access approval remains a device/platform concern; every
  * renderer leaves the generic Android notification usable as the fallback.
@@ -116,6 +128,7 @@ object VendorLiveCardRenderer {
             .setContentText(state.detailText)
             .setSubText(state.room)
             .setProgress(100, state.progress, false)
+            .setStyle(progressStyleFor(state.progress))
             .setOngoing(true)
             .setRequestPromotedOngoing(true)
             .setSilent(true)

@@ -58,8 +58,11 @@ class ScheduleReturnRestoreRaceContractTest {
     fun pager_current_page_effect_must_use_restore_gate() {
         val body = screenSource.substringAfter("LaunchedEffect(pagerState.currentPage)")
             .substringBefore("HorizontalPager")
-        // currentPage effect 仍可调用 changeWeek, 但必须同时经两道闸:
-        // 非程序化滚动 + 确实处于手势滚动中 — 恢复帧没有手势, 因此不得写 VM
+        // currentPage effect 只有在恢复校准完成且确实处于手势滚动时才可写 VM。
+        assertTrue(
+            "currentPage -> changeWeek must require pagerReady",
+            Regex("""pagerReady""").containsMatchIn(body)
+        )
         assertTrue(
             "currentPage -> changeWeek must require !syncingFromState",
             Regex("""!syncingFromState""").containsMatchIn(body)

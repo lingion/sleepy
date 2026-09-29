@@ -156,7 +156,7 @@
     <string name="copied">Copiado</string>
     <string name="ai_prompt_title">Deja que la IA convierta tu captura (formato nativo de Sleepy)</string>
     <string name="ai_prompt_hint">Copia el prompt de abajo a cualquier IA (Doubao, ChatGPT…) junto con la captura de tu horario. La IA devolvera texto #sleepy-v1 - pegalo en el campo de arriba para importarlo.</string>
-    <string name="ai_prompt_text">Tarea: Convierte la captura del horario (o el contenido del archivo) que te envie a continuacion al formato de texto plano sleepy-v1. No escribas nada mas alla del resultado: sin explicaciones, sin saludos, sin bloques de codigo markdown. La primera linea debe ser #sleepy-v1.\n\n========== 1. Reglas de formato ==========\n\nLa primera linea es siempre: #sleepy-v1\n\nCada linea siguiente es un registro con columnas separadas por barra vertical |. Tres tipos de linea:\n\n1. Linea T (info de la tabla, opcional, maximo una):\nTnombre|fechaInicio|semanasTotales|clasesPorDia\n· La fecha tiene formato YYYY-MM-DD y debe ser el lunes de la semana 1\n· Rellena solo lo que el horario indique explicitamente; deja vacio lo demas. Puedes cortar tras la ultima columna con valor, p. ej. T|2026-03-02\n· Si el horario no menciona nada de esto, omite la linea T por completo. Prohibido inventar.\n\n2. Linea N (horas de cada clase, opcional, una por clase):\nNnumero|horaInicio|horaFin\n· Ej.: N3|10:00|10:45\n· Solo si el horario incluye una tabla de horas por clase. Formato 24h HH:mm; 8:00 se escribe 08:00\n· Sin tabla de horas -&gt; ninguna linea N\n\n3. Linea C (cursos, cuerpo principal, una por sesion):\nCnombre|dia|clases|semanas|profesor|aula|color|nota|hora|grupo\nSiempre 10 columnas / 9 barras. Las columnas vacias quedan vacias, pero las barras no se omiten. Reglas:\n  Col 1 nombre: copia el texto del horario literal, cualquier idioma\n  Col 2 dia: lunes..domingo = 1 2 3 4 5 6 7\n  Col 3 clases: clases 3-4 = 3-4; una sola clase 6 = 6\n  Col 4 semanas: ver \"2. Reglas de semanas\"\n  Col 5 profesor: copiar; vacio si no aparece\n  Col 6 aula: igual\n  Col 7 color: siempre vacia\n  Col 8 nota: solo si el horario indica una; si no, vacia\n  Col 9 hora: solo si el horario marca hora concreta para ese curso (p. ej. clase nocturna), HH:mm-HH:mm; si no, vacia\n  Col 10 grupo: siempre vacia\n\n========== 2. Reglas de semanas ==========\n\nExtrae el conjunto de semanas de cada curso y decide en orden:\n1. Rango continuo sin restriccion par/impar -&gt; S-E, p. ej. 1-16\n2. Todas impares dentro del rango -&gt; S-E单, p. ej. 1-15单\n3. Todas pares -&gt; S-E双, p. ej. 2-16双\n4. Semanas dispersas (p. ej. 1-8, 10, 12-16) -&gt; divide en tramos continuos maximos, una linea C por tramo, copiando las demas columnas:\n   · Tramo de semanas completas -&gt; S-E (p. ej. 1-8, 12-16)\n   · Semana aislada -&gt; S定 (p. ej. 10定)\n   · Tramo solo impar -&gt; S-E单; solo par -&gt; S-E双\n   · Tramo ni continuo ni par/impar puro -&gt; S-E定 (p. ej. semanas 6,7 -&gt; 6-7定)\n5. El horario no dice nada de semanas -&gt; 1-16\n\n========== 3. Reglas de extraccion ==========\n\n· Un curso que se repite varias veces por semana (distintos dias u horas) -&gt; varias lineas C, una por sesion; nunca fusionar\n· Lee el numero de clase del \"periodo X\" del horario; si solo hay horas, numera los tramos horarios 1, 2, 3... de arriba abajo y emite las lineas N correspondientes\n· Copia nombres, profesores y aulas literalmente; si un texto contiene | \ \" &amp;lt; { ( escapa cada uno con \ delante; salto de linea dentro de texto = los dos caracteres \n, tabulacion = \t\n· Lo que el horario no indique queda vacio. Prohibido inventar profesores, aulas, horas o semanas.\n\n========== 4. Autocomprobacion (mental, no imprimir) ==========\n\n· La primera linea es #sleepy-v1 y no hay texto sobrante\n· Cada linea C tiene exactamente 9 barras / 10 columnas\n· El dia es un digito 1-7; la hora lleva dos digitos (08:00, no 8:00)\n· La columna de semanas solo muestra S-E, S-E单, S-E双, S-E定 o S定\n· Los nombres coinciden con el horario; nada inventado\n\n========== 5. Ejemplo de salida ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
+    <string name="ai_prompt_text">Tarea: Convierte la captura del horario (o el contenido del archivo) que te envie a continuacion al formato de texto plano sleepy-v1. No escribas nada mas alla del resultado: sin explicaciones, sin saludos, sin bloques de codigo markdown. La primera linea debe ser #sleepy-v1.\n\n========== 1. Reglas de formato ==========\n\nLa primera linea es siempre: #sleepy-v1\n\nCada linea siguiente es un registro con columnas separadas por barra vertical |. Tres tipos de linea:\n\n1. Linea T (info de la tabla, opcional, maximo una):\nTnombre|fechaInicio|semanasTotales|clasesPorDia\n· La fecha tiene formato YYYY-MM-DD y debe ser el lunes de la semana 1\n· Rellena solo lo que el horario indique explicitamente; deja vacio lo demas. Puedes cortar tras la ultima columna con valor, p. ej. T|2026-03-02\n· Si el horario no menciona nada de esto, omite la linea T por completo. Prohibido inventar.\n\n2. Linea N (horas de cada clase, opcional, una por clase):\nNnumero|horaInicio|horaFin\n· Ej.: N3|10:00|10:45\n· Solo si el horario incluye una tabla de horas por clase. Formato 24h HH:mm; 8:00 se escribe 08:00\n· Sin tabla de horas -&gt; ninguna linea N\n\n3. Linea C (cursos, cuerpo principal, una por sesion):\nCnombre|dia|clases|semanas|profesor|aula|color|nota|hora|grupo\nSiempre 10 columnas / 9 barras. Las columnas vacias quedan vacias, pero las barras no se omiten. Reglas:\n  Col 1 nombre: copia el texto del horario literal, cualquier idioma\n  Col 2 dia: lunes..domingo = 1 2 3 4 5 6 7\n  Col 3 clases: clases 3-4 = 3-4; una sola clase 6 = 6\n  Col 4 semanas: ver \"2. Reglas de semanas\"\n  Col 5 profesor: copiar; vacio si no aparece\n  Col 6 aula: igual\n  Col 7 color: siempre vacia\n  Col 8 nota: solo si el horario indica una; si no, vacia\n  Col 9 hora: solo si el horario marca una hora concreta para ese curso (p. ej. clase nocturna/no estándar), HH:mm-HH:mm; es la hora privada de inicio/fin del curso y no debe convertirse en una fila N; si no, vacía\n  Col 10 grupo: siempre vacia\n\n========== 2. Reglas de semanas ==========\n\nExtrae el conjunto de semanas de cada curso y decide en orden:\n1. Rango continuo sin restriccion par/impar -&gt; S-E, p. ej. 1-16\n2. Todas impares dentro del rango -&gt; S-E单, p. ej. 1-15单\n3. Todas pares -&gt; S-E双, p. ej. 2-16双\n4. Semanas dispersas (p. ej. 1-8, 10, 12-16) -&gt; divide en tramos continuos maximos, una linea C por tramo, copiando las demas columnas:\n   · Tramo de semanas completas -&gt; S-E (p. ej. 1-8, 12-16)\n   · Semana aislada -&gt; S定 (p. ej. 10定)\n   · Tramo solo impar -&gt; S-E单; solo par -&gt; S-E双\n   · Tramo ni continuo ni par/impar puro -&gt; S-E定 (p. ej. semanas 6,7 -&gt; 6-7定)\n5. El horario no dice nada de semanas -&gt; 1-16\n\n========== 3. Reglas de extraccion ==========\n\n· Un curso que se repite varias veces por semana (distintos dias u horas) -&gt; varias lineas C, una por sesion; nunca fusionar\n· Lee el numero de clase del \"periodo X\" del horario; si solo hay horas, numera los tramos horarios 1, 2, 3... de arriba abajo y emite las lineas N correspondientes\n· Copia nombres, profesores y aulas literalmente; si un texto contiene | \\ \" &amp;lt; { ( escapa cada uno con \\ delante; salto de linea dentro de texto = los dos caracteres \n, tabulacion = \t\n· Lo que el horario no indique queda vacio. Prohibido inventar profesores, aulas, horas o semanas.\n\n========== 4. Autocomprobacion (mental, no imprimir) ==========\n\n· La primera linea es #sleepy-v1 y no hay texto sobrante\n· Cada linea C tiene exactamente 9 barras / 10 columnas\n· El dia es un digito 1-7; la hora lleva dos digitos (08:00, no 8:00)\n· La columna de semanas solo muestra S-E, S-E单, S-E双, S-E定 o S定\n· Los nombres coinciden con el horario; nada inventado\n\n========== 5. Ejemplo de salida ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
 
     <string name="format_wakeup_share_when">Migrar todo desde la app WakeUp. Copia el texto completo generado por "Compartir cursos" de WakeUp y pégalo tal cual.</string>
     <string-array name="format_wakeup_share_spec">
@@ -194,9 +194,10 @@
         <item>Día acepta 1-7, lunes, Monday</item>
         <item>Semana admite 1-16, 2-5,7-9, 11,13,15 — los rangos múltiples se convierten en asignaturas separadas</item>
         <item>Columnas opcionales "hora inicio" + "hora fin" (HH:mm): los horarios reales se aplican automáticamente al importar</item>
+        <item>Columna opcional "hora personalizada" (sí/no): con "sí", la hora de esa fila se guarda como hora privada del curso y no se añade a la tabla común</item>
         <item>Tipo acepta 0/1/2 o semanal/impar/par</item>
     </string-array>
-    <string name="format_csv_example" formatted="false">curso,profesor,aula,día,periodo,semanas,tipo\nCálculo,Juan,A101,lunes,1-2,1-16,semanal\nInglés,María,B202,3,3-4,1-16,impar</string>
+    <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type,start time,end time,custom time\nCalculus,John,A101,Monday,1-2,1-16,weekly,08:00,08:45,\nEvening class,Mary,C301,3,11-12,1-16,weekly,20:50,22:00,yes\nEnglish,Lee,B202,3,3-4,1-16,odd,,,</string>
 
     <string name="format_html_when">Páginas de horario guardadas como .html, código fuente de tablas copiado, o toca el archivo .html en tu gestor de archivos y elige Sleepy.</string>
     <string-array name="format_html_spec">
@@ -204,24 +205,25 @@
         <item>La página debe contener una tabla cuya cabecera incluya la asignatura</item>
         <item>Nombres de columnas iguales que CSV: asignatura, día, bloque, semana obligatorios; docente, aula, tipo, nota opcionales</item>
         <item>Igual que CSV: columnas opcionales "hora inicio" + "hora fin", aplicadas automáticamente al importar</item>
+        <item>Igual que CSV: columna opcional "hora personalizada" (sí/no); "sí" conserva la fila como curso con hora privada</item>
         <item>Las rejillas con columnas lunes-domingo no se pueden analizar; hace falta una tabla larga con una asignatura por fila</item>
     </string-array>
-    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;curso&lt;/td&gt;&lt;td&gt;profesor&lt;/td&gt;&lt;td&gt;aula&lt;/td&gt;&lt;td&gt;día&lt;/td&gt;&lt;td&gt;periodo&lt;/td&gt;&lt;td&gt;semanas&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Cálculo&lt;/td&gt;&lt;td&gt;Juan&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
+    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;td&gt;start time&lt;/td&gt;&lt;td&gt;end time&lt;/td&gt;&lt;td&gt;custom time&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;td&gt;08:00&lt;/td&gt;&lt;td&gt;08:45&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Evening class&lt;/td&gt;&lt;td&gt;Mary&lt;/td&gt;&lt;td&gt;C301&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;11-12&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;td&gt;20:50&lt;/td&gt;&lt;td&gt;22:00&lt;/td&gt;&lt;td&gt;yes&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
-    <string name="format_plain_when">Formato nativo de Sleepy (sleepy-v1): compacto, ordenado y tolerante. Ideal para escribir a mano y mejor aun para que una IA convierta una captura (ver el prompt de abajo). El formato antiguo con tabulaciones sigue importandose.</string>
+    <string name="format_plain_when">Formato nativo de Sleepy (sleepy-v1): compacto, ordenado y tolerante. Ideal para escribir a mano y mejor aun para que una IA convierta una captura (ver el prompt de abajo). El formato antiguo con tabulaciones (nombre profesor aula día periodos semanas tipo, opcionalmente seguido por hora inicial y final) sigue importándose.</string>
     <string-array name="format_plain_spec">
         <item>La primera linea es siempre #sleepy-v1</item>
         <item>Linea de curso: Cnombre|dia|clases|semanas|profesor|aula|color|nota|hora|grupo - exactamente 10 columnas / 9 barras</item>
         <item>Las columnas vacias quedan vacias, pero las barras no se omiten</item>
         <item>Dia 1-7 (lunes=1); clases como rango 1-2 o una sola 6</item>
         <item>Cinco formas de semanas: 1-16 (todas), 1-15单 (impares), 2-16双 (pares), 3-4定 (rango), 10定 (una semana)</item>
-        <item>Color vacio = automatico; hora solo para cursos con horario fijo, HH:mm-HH:mm</item>
-        <item>Escapa | \ \" &lt; { ( en el texto con una barra invertida delante</item>
+        <item>Color vacio = automatico; la columna hora (inicio-fin privado HH:mm-HH:mm para cursos con horario no estándar) solo se rellena para clases especiales como las nocturnas; al rellenarla no se añade a la tabla común</item>
+        <item>Escapa | \\ \" &lt; { ( en el texto con una barra invertida delante</item>
         <item>Linea de horario (opcional): N&lt;numero&gt;|inicio|fin, p. ej. N3|10:00|10:45; o una linea Nd si coincide con el horario predefinido</item>
         <item>Linea de tabla (opcional): Tnombre|fechaInicio|semanasTotales|clasesPorDia; la fecha debe ser el lunes de la semana 1</item>
         <item>Las lineas no reconocidas se listan en la vista previa, nunca se descartan en silencio</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">#sleepy-v1\nTMi horario|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC影视鉴赏|7|6|10-16双||||||</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1\nTMi horario|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC晚课|3|11-12|1-16|李四|C301|||20:50-22:00|\nC影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">%1$d líneas no se pudieron analizar</string>
     <string name="import_dropped_hint">Estas líneas se omitieron. Revisa su formato y vuelve a importar:</string>
     <string name="import_warnings_title">Avisos</string>
@@ -326,6 +328,7 @@
     <string name="settings_start_view">Vista al iniciar</string>
     <string name="settings_start_view_full">Vista semanal</string>
     <string name="settings_start_view_cards">Cuadrícula</string>
+    <string name="settings_show_view_switcher">Mostrar barra de cambio de vista</string>
     <string name="settings_grid_sub_info">Detalles de la tarjeta</string>
     <string name="settings_grid_sub_room">Aula</string>
     <string name="settings_grid_sub_room_sub">Muestra el aula bajo el nombre del curso (oculta si no hay)</string>
@@ -559,6 +562,18 @@
     <string name="theme_editor_delete_confirm_body">Las páginas y widgets que lo usen volverán al tema predeterminado «Lila».</string>
 <string name="appearance_section_theme">Colores del tema</string>
     <string name="appearance_section_schedule_display">Visualización del horario</string>
+    <string name="appearance_period_header">Encabezados de período</string>
+    <string name="appearance_home_style">Estilo de inicio</string>
+    <string name="appearance_header_layout">Diseño</string>
+    <string name="appearance_layout_horizontal">Horizontal</string>
+    <string name="appearance_layout_legacy">Encabezado clásico</string>
+    <string name="appearance_layout_legacy_sub">Mantener la vista original de periodos y horas</string>
+    <string name="appearance_layout_vertical">Vertical</string>
+    <string name="appearance_layout_three_line">Encabezado de tres líneas</string>
+    <string name="appearance_header_preview">Vista previa en vivo</string>
+    <string name="appearance_header_style">Estilo de período</string>
+    <string name="appearance_header_show_x">Mostrar «Período X»</string>
+    <string name="appearance_header_hanging">Mover a izquierda/derecha %1$s anchos de hora de inicio</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
     <string name="update_found_title">Nueva versión v%1$s disponible</string>
@@ -723,6 +738,18 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="reminder_fluid_status_settings_required">Abra la configuración del sistema para habilitar Nube Fluida / Súper Isla.</string>
     <string name="reminder_fluid_status_not_supported">El sistema actual no admite Nube Fluida / Súper Isla.</string>
     <string name="reminder_fluid_go_to_settings">Ir a ajustes</string>
+    <string name="reminder_reliability_title">Fiabilidad en segundo plano</string>
+    <string name="reminder_reliability_notification">Notificaciones: %1$s</string>
+    <string name="reminder_reliability_exact_alarm">Alarmas exactas: %1$s</string>
+    <string name="reminder_reliability_battery">Optimización de batería: %1$s</string>
+    <string name="reminder_reliability_widget">Widgets de escritorio: %1$s</string>
+    <string name="reminder_reliability_vendor">Tarjeta en vivo del fabricante: %1$s</string>
+    <string name="reminder_reliability_promoted">Permiso de Live Updates: %1$s</string>
+    <string name="reminder_reliability_not_applicable">no aplicable</string>
+    <string name="reminder_reliability_ready">listo</string>
+    <string name="reminder_reliability_missing">no habilitado</string>
+    <string name="reminder_reliability_degraded">degradado</string>
+    <string name="reminder_reliability_unknown">desconocido</string>
     <string name="reminder_fluid_sub">Mostrar tarjetas de curso en tiempo real en teléfonos Xiaomi, vivo, Samsung y Meizu compatibles</string>
     <string name="reminder_fluid_title">Nube Fluida / Súper Isla</string>
     <string name="reminder_master_sub">Permitir que Sleepy envíe notificaciones de cursos</string>
@@ -877,6 +904,19 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="period_table_preview_confirm">Guardar</string>
     <string name="period_table_bind_preview_title">Confirmar cambio</string>
     <string name="period_table_bind_preview_body">Tras cambiar, este horario interpreta los períodos según el nuevo horario de períodos; los cursos con hora propia no se afectan</string>
+    <string name="schedule_conflict_dialog_title">¿Dónde aplicar este cambio de horario?</string>
+    <string name="schedule_conflict_dialog_summary">Horario actual: %1$s (%2$s)</string>
+    <string name="schedule_conflict_dialog_summary_only_this">solo este horario lo usa</string>
+    <string name="schedule_conflict_dialog_summary_other_count">otros %1$d horarios vinculados</string>
+    <string name="schedule_conflict_option_detach_title">Solo este horario</string>
+    <string name="schedule_conflict_option_detach_sub">Este horario usará su propia pauta y dejará de seguir la pauta compartida</string>
+    <string name="schedule_conflict_option_create_title">Crear un horario nuevo y vincular</string>
+    <string name="schedule_conflict_option_create_sub">Crea un horario nuevo con el nombre de este horario; los demás no se afectan</string>
+    <string name="schedule_conflict_option_sync_title">Sincronizar cambios en la pauta «%1$s»</string>
+    <string name="schedule_conflict_option_sync_sub_other">Afectará a otros %1$d horarios</string>
+    <string name="schedule_conflict_option_sync_sub_only">Solo este horario usa esta pauta</string>
+    <string name="schedule_conflict_banner_format">Pendiente: %1$s · se aplicará al próximo guardado</string>
+    <string name="schedule_conflict_banner_modify">Cambiar</string>
     <string name="import_drafts">Borradores de importación</string>
     <string name="import_drafts_empty">No hay borradores de importación guardados</string>
     <string name="import_draft_restore">Restaurar borrador</string>

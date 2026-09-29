@@ -9,6 +9,7 @@ import android.util.Log
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -186,7 +187,13 @@ open class WeekListWidgetReceiver : AppWidgetProvider() {
                             val effectiveDay = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, date)
                             val visible = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
                                 source.coursesFor(effectiveDay, week)
-                            DayData(date = date, dayOfWeek = dayOfWeek, courses = visible, timeJson = table.timeJson)
+                            DayData(
+                                date = date,
+                                dayOfWeek = dayOfWeek,
+                                courses = visible,
+                                timeJson = table.timeJson,
+                                isGrey = HolidayManager.shouldGrey(context, date, table.id)
+                            )
                         }
                         // 最小档三天窗口 (2026-09-15 用户令): 真实日期, 上下周打通
                         val compactWindow = WidgetCompactWindow.build(

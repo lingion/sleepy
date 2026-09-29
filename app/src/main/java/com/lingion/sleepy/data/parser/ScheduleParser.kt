@@ -374,6 +374,10 @@ object ScheduleParser {
 
         val courses = arr.map { el ->
             val obj = el.jsonObject
+            // issue#55: 与 parseCourseJsonArrayRaw 同规 — 带 startTime/endTime 恢复 ownTime
+            val ownStart = obj["startTime"]?.jsonPrimitive?.contentOrNull
+            val ownEnd = obj["endTime"]?.jsonPrimitive?.contentOrNull
+            val ownTime = !ownStart.isNullOrBlank() && !ownEnd.isNullOrBlank()
             CourseEntity(
                 id = 0,
                 groupId = "",
@@ -392,7 +396,10 @@ object ScheduleParser {
                 startWeek = obj["startWeek"]?.jsonPrimitive?.intOrZero() ?: 1,
                 endWeek = obj["endWeek"]?.jsonPrimitive?.intOrZero() ?: 16,
                 type = obj["type"]?.jsonPrimitive?.intOrZero() ?: 0,
-                color = obj["color"]?.jsonPrimitive?.content ?: defaultColor
+                color = obj["color"]?.jsonPrimitive?.content ?: defaultColor,
+                ownTime = ownTime,
+                startTime = if (ownTime) ownStart!! else "",
+                endTime = if (ownTime) ownEnd!! else ""
             )
         }
 
@@ -410,6 +417,11 @@ object ScheduleParser {
     private fun parseCourseJsonArrayRaw(arr: kotlinx.serialization.json.JsonArray, tableId: Long): List<CourseEntity> {
         return arr.map { el ->
             val obj = el.jsonObject
+            // issue#55: Sleepy 导出的非标准时间课程带 startTime/endTime — 读完恢复 ownTime,
+            // 缺字段(原生 WakeUp 分享常态)保持 ownTime=false 兼容
+            val ownStart = obj["startTime"]?.jsonPrimitive?.contentOrNull
+            val ownEnd = obj["endTime"]?.jsonPrimitive?.contentOrNull
+            val ownTime = !ownStart.isNullOrBlank() && !ownEnd.isNullOrBlank()
             CourseEntity(
                 id = 0,
                 groupId = "",
@@ -426,7 +438,10 @@ object ScheduleParser {
                 startWeek = obj["startWeek"]?.jsonPrimitive?.intOrZero() ?: 1,
                 endWeek = obj["endWeek"]?.jsonPrimitive?.intOrZero() ?: 16,
                 type = obj["type"]?.jsonPrimitive?.intOrZero() ?: 0,
-                color = obj["color"]?.jsonPrimitive?.content ?: "#FF6750A4"
+                color = obj["color"]?.jsonPrimitive?.content ?: "#FF6750A4",
+                ownTime = ownTime,
+                startTime = if (ownTime) ownStart!! else "",
+                endTime = if (ownTime) ownEnd!! else ""
             )
         }
     }
@@ -451,7 +466,8 @@ object ScheduleParser {
         data class Event(
             val name: String, val day: Int, val startNode: Int, val step: Int,
             val teacher: String, val room: String,
-            val firstDate: java.time.LocalDate, val lastDate: java.time.LocalDate, val interval: Int
+            val firstDate: java.time.LocalDate, val lastDate: java.time.LocalDate, val interval: Int,
+            val ownStart: String = "", val ownEnd: String = ""
         )
 
         val events = mutableListOf<Event>()
@@ -488,6 +504,13 @@ object ScheduleParser {
                 else -> location
             }
 
+            // issue#55: Sleepy 自家 ICS 在 DESCRIPTION 末尾追加 "\nHH:mm-HH:mm" 时间行
+            // (exportIcs ownTimeLine)。读到 → 恢复 ownTime; WakeUp 原生无此行不受影响。
+            // 布局: [0]=第X-Y节 [1]=教室 [2]=教师 [3]=HH:mm-HH:mm(ownTime 时)
+            val ownTimeMatch = descLines.getOrNull(3)?.let {
+                Regex("(\\d{1,2}:\\d{2})-(\\d{1,2}:\\d{2})").find(it.trim())
+            }
+
             val day = extractIcsDayOfWeek(block) ?: continue
             val dtstart = extractIcsDate(block) ?: continue
             val explicitNode = extractIcsNode(description)
@@ -509,7 +532,9 @@ object ScheduleParser {
             val deltaDays = java.time.temporal.ChronoUnit.DAYS.between(dtstart, untilDate).toInt()
             val lastOccurrence = dtstart.plusDays((deltaDays - deltaDays % 7).toLong())
 
-            events += Event(summary, day, startNode, step, teacher, room, dtstart, lastOccurrence, interval)
+            events += Event(summary, day, startNode, step, teacher, room, dtstart, lastOccurrence, interval,
+                ownStart = ownTimeMatch?.groupValues?.get(1) ?: "",
+                ownEnd = ownTimeMatch?.groupValues?.get(2) ?: "")
         }
 
         if (events.isEmpty()) {
@@ -530,10 +555,15 @@ object ScheduleParser {
 
         val groups = LinkedHashMap<SlotKey, MutableList<Triple<Int, Int, String>>>() // (startW, endW, room)
         val groupInterval = HashMap<SlotKey, Int>()
+        // issue#55: 同组事件来自同一课程实体, ownTime 时间恒一致 — 取首个非空即可
+        val groupOwnTime = HashMap<SlotKey, Pair<String, String>>()
         for (e in events) {
             val key = SlotKey(e.name, e.day, e.startNode, e.step, e.teacher)
             groups.getOrPut(key) { mutableListOf() }.add(Triple(weekOf(e.firstDate), weekOf(e.lastDate), e.room))
             groupInterval[key] = e.interval
+            if (e.ownStart.isNotBlank() && e.ownEnd.isNotBlank()) {
+                groupOwnTime.putIfAbsent(key, e.ownStart to e.ownEnd)
+            }
         }
 
         val courses = mutableListOf<CourseEntity>()
@@ -542,6 +572,7 @@ object ScheduleParser {
             val interval = groupInterval[key] ?: 1
 
             fun emit(startWeek: Int, endWeek: Int, type: Int, room: String) {
+                val own = groupOwnTime[key]
                 courses += CourseEntity(
                     id = 0,
                     groupId = "",
@@ -556,7 +587,10 @@ object ScheduleParser {
                     startWeek = startWeek,
                     endWeek = endWeek,
                     type = type,
-                    color = defaultColor
+                    color = defaultColor,
+                    ownTime = own != null,
+                    startTime = own?.first ?: "",
+                    endTime = own?.second ?: ""
                 )
             }
 
@@ -903,6 +937,20 @@ object ScheduleParser {
                 dropped += line.take(40); continue
             }
             val type = parts.getOrNull(6)?.let { parseType(it) } ?: 3
+            // issue#55: 类型之后再跟钟点 → 该行是非标准时间课程, 起止为课程私有。
+            // 两种写法都认: "20:50 22:00"(两列) / "20:50-22:00"(一列)。
+            // 课程行本身不含冒号(作息行在上方已被 timeTableRegex 截走), 无歧义。
+            val extra7 = parts.getOrNull(7) ?: ""
+            val extra8 = parts.getOrNull(8) ?: ""
+            val ownPair = when {
+                extra8.isNotBlank() && parseTimeRange("$extra7-$extra8") != null ->
+                    parseTimeRange("$extra7-$extra8")!!
+                extra7.contains(':') -> parseTimeRange(extra7)
+                else -> null
+            }
+            val rowOwnTime = ownPair != null
+            val ownStart = ownPair?.let { fmtOwnTime(it.first) } ?: ""
+            val ownEnd = ownPair?.let { fmtOwnTime(it.second) } ?: ""
 
             courses += CourseEntity(
                 id = 0,
@@ -917,7 +965,10 @@ object ScheduleParser {
                 startWeek = startWeek,
                 endWeek = endWeek,
                 type = type,
-                color = defaultColor
+                color = defaultColor,
+                ownTime = rowOwnTime,
+                startTime = if (rowOwnTime) ownStart else "",
+                endTime = if (rowOwnTime) ownEnd else ""
             )
         }
 
@@ -937,6 +988,10 @@ object ScheduleParser {
     /** 区间反写(16-1)自动排序为 (1,16) */
     private fun sortRange(p: Pair<Int, Int>): Pair<Int, Int> =
         if (p.first <= p.second) p else p.second to p.first
+
+    /** LocalTime → "HH:mm" (ownTime 列存储统一两位补零) */
+    private fun fmtOwnTime(t: java.time.LocalTime): String =
+        String.format("%02d:%02d", t.hour, t.minute)
 
     private fun parseRange(s: String): Pair<Int, Int>? {
         val parts = s.split('-', '~', '至')
@@ -989,8 +1044,15 @@ object ScheduleParser {
         val teacherIdx = findCol("教师", "老师", "teacher")
         val roomIdx = findCol("教室", "位置", "地点", "room", "position")
         // 时间列(可选): "开始时间"+"结束时间" 成对出现 → 每行收割该节次的真实作息
-        val timeStartIdx = findCol("开始时间", "上课时间", "start time", "starttime")
-        val timeEndIdx = findCol("结束时间", "下课时间", "end time", "endtime")
+        // (繁体/日文汉字/西语别名与内置说明文案的表头对齐: 開始時間/hora inicio)
+        val timeStartIdx = findCol("开始时间", "上课时间", "開始時間", "start time", "starttime", "hora inicio")
+        val timeEndIdx = findCol("结束时间", "下课时间", "結束時間", "end time", "endtime", "hora fin")
+        // issue#55: 自定义时间标记列(可选, Sleepy 自家 CSV 才有) — "是/true/yes/1" → 该行 ownTime,
+        // 时间列值即课程私有起止而非作息收割源
+        // 别名与 6 语说明文案对齐: 简中/繁中/日文汉字/英文 "own time|custom time"
+        val ownTimeIdx = findCol(
+            "自定义时间", "非标准时间", "自訂時間", "非標準時間", "自定義時間", "own time", "owntime", "custom time"
+        )
         val dayIdx = findCol("星期", "周几", "day")
             ?: throw IllegalArgumentException("找不到星期列")
         // 节次列三种兼容模式
@@ -1034,7 +1096,10 @@ object ScheduleParser {
             val step = (nodeEnd - nodeStart + 1).coerceAtLeast(1)
 
             // 时间列收割: 该行带真实起止钟点 → 记录首末节的边界作息(中间节交给恰好落界的行补)
-            if (timeStartIdx != null && timeEndIdx != null) {
+            // issue#55: ownTime 行的起止是课程私有时间, 不入公共作息收割
+            val ownTimeRow = ownTimeIdx != null &&
+                cell(ownTimeIdx).let { it == "是" || it.equals("true", true) || it.equals("yes", true) || it == "1" }
+            if (!ownTimeRow && timeStartIdx != null && timeEndIdx != null) {
                 parseTimeRange(cell(timeStartIdx) + "-" + cell(timeEndIdx))?.let { (st, et) ->
                     nodeTimes[nodeStart] = (nodeTimes[nodeStart]?.first ?: st) to
                         if (nodeEnd == nodeStart) et else (nodeTimes[nodeStart]?.second ?: et)
@@ -1052,6 +1117,11 @@ object ScheduleParser {
             val room = cell(roomIdx)
             val note = cell(noteIdx)
             val type = cell(typeIdx).let { parseType(it) }
+            // issue#55: ownTime 行恢复课程私有起止(与导出端 buildCsv 列对齐)
+            val ownStartRaw = cell(timeStartIdx)
+            val ownEndRaw = cell(timeEndIdx)
+            val ownPair = if (ownTimeRow) parseTimeRange("$ownStartRaw-$ownEndRaw") else null
+            val rowOwnTime = ownPair != null
 
             // 每个区间展开为一条 CourseEntity
             for ((startWeek, endWeek) in weekRanges) {
@@ -1069,7 +1139,10 @@ object ScheduleParser {
                     startWeek = startWeek,
                     endWeek = endWeek,
                     type = type,
-                    color = defaultColor
+                    color = defaultColor,
+                    ownTime = rowOwnTime,
+                    startTime = ownPair?.let { fmtOwnTime(it.first) } ?: "",
+                    endTime = ownPair?.let { fmtOwnTime(it.second) } ?: ""
                 )
             }
         }
@@ -1277,6 +1350,12 @@ object ScheduleParser {
         val weekIdx = findCol("周次", "周数", "weeks", "week")
         val typeIdx = findCol("类型", "type")
         val noteIdx = findCol("备注", "note")
+        // issue#55: Sleepy 自家 HTML 才有的列 — 自定义时间标记 + 起止时间
+        val ownTimeIdx = findCol(
+            "自定义时间", "非标准时间", "自訂時間", "非標準時間", "自定義時間", "own time", "owntime", "custom time"
+        )
+        val timeStartIdx = findCol("开始时间", "上课时间", "開始時間", "start time", "starttime", "hora inicio")
+        val timeEndIdx = findCol("结束时间", "下课时间", "結束時間", "end time", "endtime", "hora fin")
 
         if (nodeStartIdx == null && nodeEndIdx == null && nodeIdx == null) {
             return emptyList()
@@ -1313,6 +1392,14 @@ object ScheduleParser {
             val teacher = cell(teacherIdx)
             val room = cell(roomIdx)
             val note = cell(noteIdx)
+            // issue#55: ownTime 行恢复课程私有起止(钟点归一两位补零, 与 sleepy-v1 同规)
+            val ownStartRaw = cell(timeStartIdx)
+            val ownEndRaw = cell(timeEndIdx)
+            val ownPair = if (ownTimeIdx != null &&
+                cell(ownTimeIdx).let { it == "是" || it.equals("true", true) || it.equals("yes", true) || it == "1" }) {
+                parseTimeRange("$ownStartRaw-$ownEndRaw")
+            } else null
+            val rowOwnTime = ownPair != null
             for ((startWeek, endWeek) in weekRanges) {
                 courses += CourseEntity(
                     id = 0,
@@ -1328,7 +1415,10 @@ object ScheduleParser {
                     startWeek = startWeek,
                     endWeek = endWeek,
                     type = type,
-                    color = defaultColor
+                    color = defaultColor,
+                    ownTime = rowOwnTime,
+                    startTime = ownPair?.let { fmtOwnTime(it.first) } ?: "",
+                    endTime = ownPair?.let { fmtOwnTime(it.second) } ?: ""
                 )
             }
         }

@@ -262,8 +262,11 @@ class CourseNotificationScheduler(private val context: Context) {
             // Use exact alarm for precision, fall back to inexact on Android 12+ without grant
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
                 alarmManager.set(AlarmManager.RTC_WAKEUP, epoch, pending)
-            } else {
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epoch, pending)
+            } else {
+                // API 21/22 (Android 5): setExactAndAllowWhileIdle 是 API 23+
+                alarmManager.setExact(AlarmManager.RTC_WAKEUP, epoch, pending)
             }
         }
     }

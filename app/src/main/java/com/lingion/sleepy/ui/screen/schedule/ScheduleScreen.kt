@@ -110,6 +110,16 @@ fun ScheduleScreen(
     val displayMode = remember { AppPrefs.getDisplayMode(context) }
     val showDate = remember { AppPrefs.isShowDate(context) }
     val visibleDays = remember { AppPrefs.getVisibleDays(context) }
+    // 用户令 2026-09-23: 周视图/网格视图切换栏可隐藏 — 默认显示保留现有行为;
+    // 只影响这根 Bar 的去留, 不改 viewMode 本身与启动默认页。
+    var showViewSwitcher by remember { mutableStateOf(AppPrefs.isShowViewSwitcher(context)) }
+    LaunchedEffect(Unit) {
+        AppPrefs.changeBus.collect { key ->
+            if (key == AppPrefs.KEY_SHOW_VIEW_SWITCHER) {
+                showViewSwitcher = AppPrefs.isShowViewSwitcher(context)
+            }
+        }
+    }
     // 双指行高缩放 (2026-09-16 用户令): 长期手势 — 初始=上次 tick 确认的持久值;
     // 捏合只改会话值, 顶栏 tick=落盘长期生效, 撤回=回到上次确认值。
     var rowHeightScale by remember(state.selectedTableId) { mutableFloatStateOf(AppPrefs.getGridRowScale(context)) }
@@ -216,15 +226,18 @@ fun ScheduleScreen(
                 )
             }
 
-            // Segmented Switcher — 选中态由调用方注入(会话级存活), 切换经回调上抛
-            SegmentedSwitcher(
-                options = ViewMode.entries.map { it to stringResource(it.labelRes) },
-                selected = viewMode,
-                onSelect = onViewModeChange,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp, vertical = 8.dp)
-            )
+            // Segmented Switcher — 选中态由调用方注入(会话级存活), 切换经回调上抛。
+            // 隐藏时只释放这根 Bar 的空间, Pager 与当前 viewMode 不变。
+            if (showViewSwitcher) {
+                SegmentedSwitcher(
+                    options = ViewMode.entries.map { it to stringResource(it.labelRes) },
+                    selected = viewMode,
+                    onSelect = onViewModeChange,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(horizontal = 16.dp, vertical = 8.dp)
+                )
+            }
 
             // 主体视图 — 左右滑动切换周次
             val pagerMaxWeek = state.currentTable?.maxWeek ?: 20
@@ -233,29 +246,21 @@ fun ScheduleScreen(
                 pageCount = { pagerMaxWeek.coerceAtLeast(1) }
             )
 
-            // 标记：是否正在由 ViewModel 驱动 Pager 滚动（防止双向同步打架）
+            // Pager 只显示 ViewModel 的周次。恢复的 saveable page 在校准完成前
+            // 不得反向写回 ViewModel, 否则页面恢复与 Room 初始发射会形成反馈环。
             var syncingFromState by remember { mutableStateOf(false) }
+            var pagerReady by remember { mutableStateOf(false) }
 
-            // Pager 滑动（用户手势）→ 更新 ViewModel
-            // 2026-09-14: 回调必须经恢复闸 — 条件组合(overlay/tab 往返)使
-            // ScheduleScreen 整页离开组合树再回来, pagerState 按离开时的 page
-            // 恢复而 syncingFromState (普通 remember) 恢复帧归零 false,
-            // LaunchedEffect(pagerState.currentPage) 立即以恢复的 page 回调
-            // changeWeek → 与 selectedWeek effect 的 scrollToPage 双打 → 返回后
-            // 多周之间反复跳变闪烁 (无需用户操作)。恢复帧两个条件都不成立:
-            // !syncingFromState 刚初始化 (拦不住首回调), isScrollInProgress=false
-            // (无手势) → 恢复帧写路径静默丢弃, 环断; 手势拖动时 isScrollInProgress
-            // =true 放行, 行为不变。
+            // 先用业务状态校准恢复的 pager, 再开放用户手势回写。
+            // Pager 滑动（用户手势）→ 更新 ViewModel。
+            // 恢复帧和程序化滚动都必须被 pagerReady/syncingFromState 双重拦截。
             LaunchedEffect(pagerState.currentPage) {
-                if (!syncingFromState && pagerState.isScrollInProgress) {
+                if (pagerReady && !syncingFromState && pagerState.isScrollInProgress) {
                     viewModel.changeWeek(pagerState.currentPage + 1)
                 }
             }
 
-            // ViewModel 变化（TopBar 箭头/下拉菜单点击 / 切表）→ 同步 Pager
-            // ponytail: syncingFromState 阻止 scrollToPage 期间 currentPage 回调反向
-            // 触发 changeWeek, 否侧切表 A→B 异步重置 selectedWeek 即导致 Pager 滚动↔
-            // ViewModel 双打反向同步 → 多周之间闪烁反复跳变 (Realme OS 复现, ColorOS 同源)
+            // ViewModel 变化（TopBar 箭头/下拉菜单点击 / 切表）→ 同步 Pager。
             LaunchedEffect(state.selectedWeek) {
                 val targetPage = (state.selectedWeek - 1).coerceIn(0, pagerMaxWeek - 1)
                 if (pagerState.currentPage != targetPage) {
@@ -266,6 +271,7 @@ fun ScheduleScreen(
                         syncingFromState = false
                     }
                 }
+                pagerReady = true
             }
 
             HorizontalPager(

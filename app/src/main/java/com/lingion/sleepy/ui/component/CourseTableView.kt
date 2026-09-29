@@ -62,6 +62,7 @@ import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.PeriodHeaderFormatter
 import com.lingion.sleepy.util.TimetableViewportPolicy
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
@@ -143,7 +144,11 @@ fun CardsGridView(
                 it == AppPrefs.KEY_GRID_USE_ALIAS ||
                 it == AppPrefs.KEY_GRID_ADAPTIVE_HEIGHT ||
                 it == AppPrefs.KEY_GRID_AUTO_HIDE_EMPTY_EVENING ||
-                it == AppPrefs.KEY_GRID_EVENING_START
+                it == AppPrefs.KEY_GRID_EVENING_START ||
+                it == AppPrefs.KEY_PERIOD_HEADER_LAYOUT ||
+                it == AppPrefs.KEY_PERIOD_HEADER_STYLE ||
+                it == AppPrefs.KEY_PERIOD_HEADER_HANGING ||
+                it == AppPrefs.KEY_PERIOD_HEADER_SHOW_X
         }.collect { prefVersion++ }
     }
     val context = LocalContext.current
@@ -210,7 +215,40 @@ fun CardsGridView(
 
     // 布局常量（全 dp, 乘 scale）
     val headH = d(52f)
-    val timeW = d(68f)
+    val headerStyle = AppPrefs.getPeriodHeaderStyle(context)
+    val headerLayout = AppPrefs.getPeriodHeaderLayout(context)
+    val headerHanging = AppPrefs.getPeriodHeaderHanging(context)
+    val headerShowX = AppPrefs.isPeriodHeaderShowX(context)
+    val headerTextMeasurer = rememberTextMeasurer()
+    val timeW = if (headerLayout == "three_line") {
+        threeLineWidthDp(
+            renderSlots,
+            headerStyle,
+            scale,
+            headerTextMeasurer,
+            LocalDensity.current,
+            headerHanging,
+            headerShowX,
+        )
+            // 下限防极窄机型挤压时间列; 上限不再死钉 68dp — "第 X 节"更长标签
+            // 需要 3×开始时间宽度的完整轨道, 交给 threeLineWidthDp 按实测回传。
+            .coerceAtLeast(d(46f))
+    } else {
+        d(68f)
+    }
+    // 用户令 2026-09-27: 可见卡片按每行自己的文字包络收口(在 timeW 轨道内居中),
+    // timeW 只作为最宽行的列轨道保证对齐 — 窄行不再被最宽行撑出大片空白卡。
+    val headerDensity = LocalDensity.current
+    val slotCardWidths = remember(renderSlots, headerStyle, headerLayout, headerHanging, headerShowX, scale) {
+        if (headerLayout == "three_line") {
+            renderSlots.map { slot ->
+                threeLineWidthDp(
+                    listOf(slot), headerStyle, scale, headerTextMeasurer,
+                    headerDensity, headerHanging, headerShowX,
+                )
+            }
+        } else null
+    }
     val gapH = d(4f)
     val gapW = d(5f)
 
@@ -365,6 +403,7 @@ fun CardsGridView(
                                 slot = slot,
                                 scale = scale,
                                 modifier = Modifier.width(timeW).fillMaxHeight(),
+                                visibleWidth = slotCardWidths?.getOrNull(i),
                                 cornerRatio = cornerRatio,
                                 textFits = phFitsText,
                                 onToggleExpand = if (slot.isPlaceholder && !phFitsText) {
@@ -582,22 +621,24 @@ private fun Modifier.verticalResizeGesture(
 private const val PLACEHOLDER_TEXT_REQUIRED_DP = 19f
 
 @Composable
-private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier, cornerRatio: Float = 1f, textFits: Boolean = true, onToggleExpand: (() -> Unit)? = null) {
+private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier, visibleWidth: androidx.compose.ui.unit.Dp? = null, cornerRatio: Float = 1f, textFits: Boolean = true, onToggleExpand: (() -> Unit)? = null) {
     val colors = MaterialTheme.colorScheme
+    val context = LocalContext.current
+    val headerLayout = AppPrefs.getPeriodHeaderLayout(context)
+    val headerStyle = AppPrefs.getPeriodHeaderStyle(context)
     val sd = { v: Float -> (v * scale).dp }
-    val shape = RoundedCornerShape(sd(12f * cornerRatio))
+    val shape = RoundedCornerShape(sd(8f * cornerRatio.coerceAtMost(1f)))
     // 渲染期占位节次: 更低调的呈现 — 半透明底, 只显示时间不显示节号
     val isPh = slot.isPlaceholder
     // 用户反馈 2026-09-16: 文字放不下的占位行 = 纯灰块(不显示文字), 点击展开/折叠。
     // 只灰置占位卡片本身, 课程卡片照常渲染(几何由课程卡自身比例定位, 不受此影响)。
     val phCollapsed = isPh && !textFits
     Box(
-        modifier = modifier.padding(sd(2f)),
+        modifier = modifier,
         contentAlignment = Alignment.Center
     ) {
         Box(
-            modifier = Modifier
-                .fillMaxWidth()
+            modifier = (visibleWidth?.let { Modifier.width(it) } ?: Modifier.fillMaxWidth())
                 .fillMaxHeight()
                 .clip(shape)
                 .background(if (isPh) colors.surfaceContainerLow.copy(alpha = 0.5f) else colors.surfaceContainerLow)
@@ -605,31 +646,29 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
                     if (onToggleExpand != null) Modifier.noRippleClickable { onToggleExpand() }
                     else Modifier
                 )
-                .padding(sd(4f)),
+                // 与设置页预览逐层相等 (PERIOD_HEADER_CARD_PAD_DP, 用户 2026-09-28 令):
+                // 之前 2dp 外 + 3dp 内 = 5dp, 预览只有 3dp → 周视图卡片比预览小一圈。
+                .padding(sd(PERIOD_HEADER_CARD_PAD_DP)),
             contentAlignment = Alignment.Center
         ) {
             if (phCollapsed) {
                 // 灰块形态: 无文字 — 信息靠点击展开
                 Box(modifier = Modifier.fillMaxSize().align(Alignment.Center))
+            } else if (isPh) {
+                Text(
+                    text = slot.timeString,
+                    style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
+                    color = colors.onSurfaceVariant,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis
+                )
             } else {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    if (!isPh) {
-                        Text(
-                            text = stringResource(R.string.period_format_node, slot.label),
-                            style = SleepyTextStyle.smallMeta().copy(fontWeight = FontWeight.SemiBold, fontSize = (10 * scale).sp, lineHeight = (14 * scale).sp),
-                            color = colors.onSurface,
-                            maxLines = 1
-                        )
-                        Spacer(modifier = Modifier.height(sd(1f)))
-                    }
-                    Text(
-                        text = slot.timeString,
-                        style = SleepyTextStyle.micro().copy(fontSize = (9 * scale).sp, lineHeight = (11 * scale).sp),
-                        color = colors.onSurfaceVariant,
-                        maxLines = 1,
-                        overflow = TextOverflow.Ellipsis
-                    )
-                }
+                PeriodHeaderCellContent(
+                    slot = slot,
+                    layout = headerLayout,
+                    style = headerStyle,
+                    scale = scale,
+                )
             }
         }
     }
@@ -656,7 +695,7 @@ private fun CourseOverlayCard(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
-        neutralColor = colors.surfaceVariant,
+        neutralColor = colors.surfaceContainerLowest,
         colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface
@@ -755,9 +794,9 @@ private fun DayHeadCell(day: Int, isToday: Boolean, isGrey: Boolean = false, cou
     Box(
         modifier = modifier
             .height(if (dateStr != null) sd(56f) else sd(52f))
-            .clip(RoundedCornerShape((16 * scale * cornerRatio).dp))
+            .clip(RoundedCornerShape((10 * scale * cornerRatio.coerceAtMost(1f)).dp))
             .background(bg)
-            .padding(vertical = sd(6f)),
+            .padding(vertical = sd(if (dateStr != null) 4f else 3f)),
         contentAlignment = Alignment.Center
     ) {
         Column(
@@ -1316,7 +1355,7 @@ private fun LessonRow(
         row = course,
         groupRows = groupRows,
         isDark = CourseColorUtil.isPaletteDark(palette),
-        neutralColor = colors.surfaceVariant,
+        neutralColor = colors.surfaceContainerLowest,
         colorless = AppPrefs.isCourseColorless(context)
     )
     // 文字色亮度自适应（决策 D5-13）— 深色自定义课色上切白字，浅色底仍 onSurface

@@ -48,4 +48,8 @@ interface TimeTableDao {
 
     @Query("SELECT * FROM time_tables WHERE isDefault = 1 LIMIT 1")
     suspend fun getDefault(): TimeTableEntity?
+
+    /** 甲案: 绑定到指定作息表的全部课表 — 弹窗影响提示 + 策略执行前的作用域判定 */
+    @Query("SELECT * FROM time_tables WHERE periodTableId = :periodTableId ORDER BY createdAt DESC")
+    suspend fun getAllBoundTo(periodTableId: Long): List<TimeTableEntity>
 }

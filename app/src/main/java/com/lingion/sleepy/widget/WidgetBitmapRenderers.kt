@@ -38,6 +38,7 @@ object WidgetBitmapRenderers {
         val onSurface: Int,
         val onSurfaceVariant: Int,
         val surfaceContainer: Int,
+        val surfaceContainerLowest: Int,
         val surfaceVariant: Int,
         val isDark: Boolean
     )
@@ -60,6 +61,7 @@ object WidgetBitmapRenderers {
             onSurface = s.onSurface.toIntArgb(),
             onSurfaceVariant = s.onSurfaceVariant.toIntArgb(),
             surfaceContainer = s.surfaceContainer.toIntArgb(),
+            surfaceContainerLowest = s.surfaceContainerLowest.toIntArgb(),
             surfaceVariant = s.surfaceVariant.toIntArgb(),
             isDark = isDark
         )
@@ -75,15 +77,17 @@ object WidgetBitmapRenderers {
         scheme: Scheme, density: Float, fontSizeSp: Float = 11f, colorless: Boolean = false,
         displayMode: String = "node",
         groupRows: List<CourseEntity> = listOf(course),
-        useAlias: Boolean = false
+        useAlias: Boolean = false,
+        isGrey: Boolean = false
     ) {
-        // 统一取色入口 (决策 D3) — colorless 灰底传 scheme.surfaceVariant 的 Int 值
+        // 统一取色入口 (决策 D3) — colorless 使用当前主题最浅的 M3 surface container
         // issue#22: 同名课程多地点 — 用 groupRows 传同 groupId 全行,支持 AUTO/CUSTOM 模式取色
-        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.surfaceVariant, colorless)
+        val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(course, groupRows, scheme.isDark, scheme.surfaceContainerLowest, colorless)
+        val greyAlpha = if (isGrey) 0x99 else 0xFF
         // 文字色亮度自适应 (决策 D5-13) — 深色自定义课色上切白字, 浅色底仍 onSurface
         val textColor = CourseColorUtil.textColorOn(bgColor, scheme.isDark, scheme.onSurface)
         val pad = (3f * density).coerceAtLeast(1f)
-        p.color = bgColor
+        p.color = applyAlpha(bgColor, greyAlpha)
         c.drawRoundRect(RectF(x, y, x + w, y + h), 8f * density, 8f * density, p)
 
         // 时间 + 地点 — 先算 meta 文本 (需要知道是否有第二行才能居中)
@@ -143,7 +147,10 @@ object WidgetBitmapRenderers {
         // 课程名 — 亮度自适应文字色 (决策 D5-13)
         p.textSize = nameSize
         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-        p.color = textColor
+        p.color = applyAlpha(textColor, greyAlpha)
+        if (isGrey && AppPrefs.getHolidayStyle(SleepyApp.get()) == "strikethrough") {
+            p.flags = p.flags or Paint.STRIKE_THRU_TEXT_FLAG
+        }
         // issue#26: widget 场景别名 — 渲染时读全局 widget 开关(先例: colorless)
         val name = CourseDisplayUtil.displayName(course, useAlias)
         val maxWidth = w - pad * 2
@@ -158,14 +165,18 @@ object WidgetBitmapRenderers {
         if (metaLines.isNotEmpty()) {
             p.textSize = metaSize
             p.typeface = Typeface.DEFAULT
-            p.color = textColor
+            p.color = applyAlpha(textColor, greyAlpha)
             var my = blockTop + nameH + lineGap
             for (line in metaLines) {
                 c.drawText(ellipsize(p, line, maxWidth), x + pad, my - fmMeta!!.ascent, p)
                 my += metaH + lineGap
             }
         }
+        p.flags = p.flags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
     }
+
+    private fun applyAlpha(color: Int, alpha: Int): Int =
+        (alpha shl 24) or (color and 0x00FFFFFF)
 
     /**
      * Today widget 渲染 — 今日课程列表
@@ -423,7 +434,7 @@ object WidgetBitmapRenderers {
                 drawCourse(canvas, p, row.courses[0], data.timeJson, pad, y, rowW, rowH, s, density,
                     fontSizeSp = 11f, colorless = colorless, displayMode = displayMode,
                     groupRows = data.courses.filter { it.groupId == row.courses[0].groupId },
-                    useAlias = useAlias)
+                    useAlias = useAlias, isGrey = data.isGrey)
             } else {
                 val laneGap = 5f * density
                 val laneW = (rowW - laneGap * (row.laneCount - 1)) / row.laneCount
@@ -445,7 +456,7 @@ object WidgetBitmapRenderers {
                         drawCourse(canvas, p, laneCourse, data.timeJson, laneX, ly, laneW, rowH, s, density,
                             fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
                             groupRows = data.courses.filter { it.groupId == laneCourse.groupId },
-                            useAlias = useAlias)
+                            useAlias = useAlias, isGrey = data.isGrey)
                         ly += rowH
                         if (ci < laneCourses.size - 1) ly += stackGap
                     }
@@ -855,22 +866,24 @@ object WidgetBitmapRenderers {
 
             // 星期标题
             p.color = if (isToday) s.onPrimaryContainer else s.onSurface
+            p.alpha = if (day.isGrey) 153 else 255
             p.textSize = 12f * density
             p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             val title = dayLabels[day.dayOfWeek]
             val tw = p.measureText(title)
             canvas.drawText(title, x + (colW - tw) / 2, cy, p)
+            p.alpha = 255
             cy += 14f * density
 
             // 课程数量 chip
             if (day.courses.isNotEmpty()) {
                 val chipText = "${day.courses.size} 门"
-                p.color = s.surfaceVariant
+                p.color = applyAlpha(s.surfaceVariant, if (day.isGrey) 153 else 255)
                 val chipW = (chipText.length * 6f + 12f) * density
                 val chipH = 14f * density
                 canvas.drawRoundRect(RectF(x + (colW - chipW) / 2, cy, x + (colW - chipW) / 2 + chipW, cy + chipH),
                     50f, 50f, p)
-                p.color = s.onSurfaceVariant
+                p.color = applyAlpha(s.onSurfaceVariant, if (day.isGrey) 153 else 255)
                 p.textSize = 9f * density
                 val ctw = p.measureText(chipText)
                 val chipFm = p.fontMetrics
@@ -891,15 +904,20 @@ object WidgetBitmapRenderers {
                     // issue#22: 同名课程多地点 — 用 day.courses 同 groupId 全行,支持 AUTO/CUSTOM 模式取色
                     val bgColor = CourseColorUtil.pickCourseColorIntWithGroupRows(
                         course, day.courses.filter { it.groupId == course.groupId },
-                        s.isDark, s.surfaceVariant, colorless
+                        s.isDark, s.surfaceContainerLowest, colorless
                     )
-                    p.color = bgColor
+                    p.color = applyAlpha(bgColor, if (day.isGrey) 153 else 255)
                     canvas.drawRoundRect(
                         RectF(x + coursePad, cy, x + colW - coursePad, cy + courseRowH),
                         4f * density, 4f * density, p)
                     // 课程名 — FontMetrics 垂直居中 + 亮度自适应文字色 (决策 D5-13, 对齐 drawCourse 同入口)
-                    p.color = CourseColorUtil.textColorOn(bgColor, s.isDark, s.onSurface)
-                    p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
+                    p.color = applyAlpha(
+                        CourseColorUtil.textColorOn(bgColor, s.isDark, s.onSurface),
+                        if (day.isGrey) 153 else 255
+                    )
+                    if (day.isGrey && AppPrefs.getHolidayStyle(SleepyApp.get()) == "strikethrough") {
+                        p.flags = p.flags or Paint.STRIKE_THRU_TEXT_FLAG
+                    }
                     val maxTextWidth = colW - coursePad * 2 - 4f * density
                     val displayName = if (p.measureText(name) > maxTextWidth) {
                         var n = name
@@ -910,6 +928,7 @@ object WidgetBitmapRenderers {
                     val textBaseline = cy + (courseRowH - (fm.descent - fm.ascent)) / 2f - fm.ascent
                     canvas.drawText(displayName, x + coursePad + 2f * density, textBaseline, p)
                     p.typeface = Typeface.DEFAULT
+                    p.flags = p.flags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
                     cy += courseRowH + courseGap
                 }
                 // 列底「+N」短页脚 (FIXED 窗口隐藏了后续课)
@@ -990,6 +1009,7 @@ object WidgetBitmapRenderers {
             themeKey = data.themeKey,
             semesterStatus = data.semesterStatus,
             isToday = targetDate == today,
+            isGrey = targetDay?.isGrey ?: false,
             weekDisplayStatus = data.weekDisplayStatus
         )
     }
@@ -1140,22 +1160,24 @@ object WidgetBitmapRenderers {
 
             // 星期标题
             p.color = if (isToday) s.onPrimaryContainer else s.onSurface
+            p.alpha = if (day.isGrey) 153 else 255
             p.textSize = 12f * density
             p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
             val title = dayLabels[day.dayOfWeek]
             val tw = p.measureText(title)
             canvas.drawText(title, x + (colW - tw) / 2, cy, p)
+            p.alpha = 255
             cy += 14f * density
 
             // 课程数量 chip
             if (day.courses.isNotEmpty()) {
                 val chipText = "${day.courses.size} 门"
-                p.color = s.surfaceVariant
+                p.color = applyAlpha(s.surfaceVariant, if (day.isGrey) 153 else 255)
                 val chipW = (chipText.length * 6f + 12f) * density
                 val chipH = 14f * density
                 canvas.drawRoundRect(RectF(x + (colW - chipW) / 2, cy, x + (colW - chipW) / 2 + chipW, cy + chipH),
                     50f, 50f, p)
-                p.color = s.onSurfaceVariant
+                p.color = applyAlpha(s.onSurfaceVariant, if (day.isGrey) 153 else 255)
                 p.textSize = 9f * density
                 val ctw = p.measureText(chipText)
                 val chipFm = p.fontMetrics
@@ -1352,7 +1374,7 @@ object WidgetBitmapRenderers {
                         drawCourse(canvas, p, row.courses[0], day.timeJson, colX, cy, colW, maxRowH, s, density,
                             fontSizeSp = 10f, colorless = colorless, displayMode = displayMode,
                             groupRows = day.courses.filter { it.groupId == row.courses[0].groupId },
-                            useAlias = useAlias)
+                            useAlias = useAlias, isGrey = day.isGrey)
                         cy += maxRowH + rowGap
                     } else {
                         val laneW = (colW - laneGap * (row.laneCount - 1)) / row.laneCount
@@ -1375,7 +1397,7 @@ object WidgetBitmapRenderers {
                                 drawCourse(canvas, p, laneCourse, day.timeJson, laneX, ly, laneW, maxRowH, s, density,
                                     fontSizeSp = 9f, colorless = colorless, displayMode = displayMode,
                                     groupRows = day.courses.filter { it.groupId == laneCourse.groupId },
-                                    useAlias = useAlias)
+                                    useAlias = useAlias, isGrey = day.isGrey)
                                 ly += maxRowH
                                 if (ly < cy + laneRowTotalH) ly += stackGap
                             }

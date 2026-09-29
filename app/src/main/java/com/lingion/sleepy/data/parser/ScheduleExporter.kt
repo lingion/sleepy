@@ -37,6 +37,12 @@ object ScheduleExporter {
                     put("endWeek", c.endWeek)
                     put("type", c.type)
                     put("color", c.color)
+                    // issue#55: 非标准时间课程往返保真 — startTime/endTime 为该卡覆盖值,
+                    // 丢了导入端会退化成按节次定位(用户实测 20:50-22:00 变 11-12 节)
+                    if (c.ownTime && c.startTime.isNotBlank() && c.endTime.isNotBlank()) {
+                        put("startTime", c.startTime)
+                        put("endTime", c.endTime)
+                    }
                 })
             }
         }
@@ -72,6 +78,11 @@ object ScheduleExporter {
                     put("endWeek", c.endWeek)
                     put("type", c.type)
                     put("color", c.color)
+                    // issue#55: 非标准时间课程往返保真, 同 exportWakeUpJson
+                    if (c.ownTime && c.startTime.isNotBlank() && c.endTime.isNotBlank()) {
+                        put("startTime", c.startTime)
+                        put("endTime", c.endTime)
+                    }
                 })
             }
         }

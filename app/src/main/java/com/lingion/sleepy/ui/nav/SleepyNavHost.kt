@@ -61,6 +61,7 @@ import com.lingion.sleepy.ui.screen.edit.AddCourseScreen
 import com.lingion.sleepy.ui.screen.mine.AllTablesScreen
 import com.lingion.sleepy.ui.screen.mine.CourseListScreen
 import com.lingion.sleepy.ui.screen.mine.AppearanceScreen
+import com.lingion.sleepy.ui.screen.mine.PeriodHeaderSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
@@ -258,7 +259,12 @@ internal fun SleepyNavHost(
                 onBack = { navigator.pop() },
                 themeMode = themeMode,
                 onThemeModeChange = onThemeModeChange,
+                onOpenPeriodHeaderSettings = { navigator.openPeriodHeaderSettings() },
             )
+        }
+
+        entry<SleepyRoute.PeriodHeaderSettings> {
+            PeriodHeaderSettingsScreen(onBack = { navigator.pop() })
         }
 
         // ----------------------------------------------------------------
@@ -398,7 +404,12 @@ private fun MainRoute(
     val isCompact = sizeClass == null || sizeClass.widthSizeClass == WindowWidthSizeClass.Compact
 
     if (!isCompact) {
-        Row(modifier = Modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(MaterialTheme.colorScheme.background)
+                .windowInsetsPadding(WindowInsets.statusBars)
+        ) {
             NavigationRail {
                 Tab.entries.forEach { tab ->
                     NavigationRailItem(

@@ -77,7 +77,7 @@ object WidgetBoundaryScheduler {
                 }
             }
             val nextMin = nextBoundaryMin(endMins, nowMin)
-            val am = context.getSystemService(AlarmManager::class.java)
+            val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
             val pending = buildPendingIntent(context)
             am.cancel(pending)
             if (nextMin == null) {
@@ -91,8 +91,12 @@ object WidgetBoundaryScheduler {
                 // 无精确权限 → 不精确 + 15-min 周期兜底, 静默降级 (评审 #12)
                 am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
                 Log.d(TAG, "inexact arm at +${nextMin - nowMin}min (no exact-alarm permission)")
-            } else {
+            } else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                 am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAt, pending)
+                Log.d(TAG, "exact arm at +${nextMin - nowMin}min (endMins=${endMins.size})")
+            } else {
+                // API 21/22 (Android 5): 无 Doze, setExact 即可; setExactAndAllowWhileIdle 是 API 23+
+                am.setExact(AlarmManager.RTC_WAKEUP, triggerAt, pending)
                 Log.d(TAG, "exact arm at +${nextMin - nowMin}min (endMins=${endMins.size})")
             }
         } catch (t: Throwable) {

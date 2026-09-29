@@ -138,6 +138,26 @@ class StringsKeyParityTest {
         "duration_period_n"
     )
 
+    /**
+     * 甲案 作息冲突三选项新增 string key (2026-09-24, feat/period-table-conflict-resolution)。
+     * 全 6 locale 必须齐 — 缺任一 = MissingTranslation lint error 回归。
+     */
+    private val scheduleConflictKeys = listOf(
+        "schedule_conflict_dialog_title",
+        "schedule_conflict_dialog_summary",
+        "schedule_conflict_dialog_summary_only_this",
+        "schedule_conflict_dialog_summary_other_count",
+        "schedule_conflict_option_detach_title",
+        "schedule_conflict_option_detach_sub",
+        "schedule_conflict_option_create_title",
+        "schedule_conflict_option_create_sub",
+        "schedule_conflict_option_sync_title",
+        "schedule_conflict_option_sync_sub_other",
+        "schedule_conflict_option_sync_sub_only",
+        "schedule_conflict_banner_format",
+        "schedule_conflict_banner_modify"
+    )
+
     @Test
     fun all_six_locale_dirs_exist() {
         for (locale in localeDirs) {
@@ -153,6 +173,19 @@ class StringsKeyParityTest {
             for (key in mixedDurationKeys) {
                 assertTrue(
                     "mixed duration key \"$key\" missing in $locale/strings.xml",
+                    text.contains("name=\"$key\"")
+                )
+            }
+        }
+    }
+
+    @Test
+    fun schedule_conflict_keys_present_in_all_six_locales() {
+        for (locale in localeDirs) {
+            val text = File(basePath, "$locale/strings.xml").readText()
+            for (key in scheduleConflictKeys) {
+                assertTrue(
+                    "schedule conflict key \"$key\" missing in $locale/strings.xml",
                     text.contains("name=\"$key\"")
                 )
             }

@@ -13,7 +13,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.icons.Icons
@@ -28,8 +27,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -117,8 +114,6 @@ fun GeneralSettingsScreen(
     }
     var displayMode by remember { mutableStateOf(AppPrefs.getDisplayMode(context)) }
     var gridSubInfo by remember { mutableStateOf(AppPrefs.getGridSubInfo(context)) }
-    var gridScale by remember { mutableStateOf(AppPrefs.getGridScale(context)) }
-    var weekScale by remember { mutableStateOf(AppPrefs.getWeekScale(context)) }
     var autoHideEmptyEvening by remember { mutableStateOf(AppPrefs.isGridAutoHideEmptyEvening(context)) }
     var gridAdaptiveHeight by remember { mutableStateOf(AppPrefs.isGridAdaptiveHeight(context)) }
     // v1.0.56 T3: 双指捏放行高(实验室, 默认关)
@@ -127,18 +122,14 @@ fun GeneralSettingsScreen(
     // v1.0.56 T4: 语言折叠卡展开态 — 默认收起; 选择语言即 recreate 重建, 会话态足够
     var languageExpanded by remember { mutableStateOf(false) }
     var eveningStart by remember { mutableStateOf(AppPrefs.getGridEveningStart(context)) }
-    var gridCorner by remember { mutableStateOf(AppPrefs.getGridCornerRatio(context)) }
     var weekTwoColumn by remember { mutableStateOf(AppPrefs.isWeekTwoColumn(context)) }
     var weekTwoColumnMode by remember { mutableStateOf(AppPrefs.getWeekTwoColumnMode(context)) }
     var weekHideEmptyDays by remember { mutableStateOf(AppPrefs.isWeekHideEmptyDays(context)) }
     // issue#26: 周视图/网格视图场景别名开关
     var weekUseAlias by remember { mutableStateOf(AppPrefs.isWeekUseAlias(context)) }
     var gridUseAlias by remember { mutableStateOf(AppPrefs.isGridUseAlias(context)) }
-    var conflictStyle by remember { mutableStateOf(AppPrefs.getConflictStyle(context)) }
-    var conflictStackInset by remember { mutableStateOf(AppPrefs.getConflictStackInset(context)) }
-    var conflictRailInset by remember { mutableStateOf(AppPrefs.getConflictRailInset(context)) }
-    var conflictFoldSize by remember { mutableStateOf(AppPrefs.getConflictFoldSize(context)) }
     var showDate by remember { mutableStateOf(AppPrefs.isShowDate(context)) }
+    var showViewSwitcher by remember { mutableStateOf(AppPrefs.isShowViewSwitcher(context)) }
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
@@ -325,80 +316,7 @@ fun GeneralSettingsScreen(
             // 主页显示(issue#8): 网格/周视图各一个缩放 70%~130% + 圆角 0%~200%(5% 吸附) + 周视图两栏开关
             item {
                 SettingsCard(title = stringResource(R.string.settings_pill), expanded = "gridScale" in expandedSections, onToggle = { toggleSection("gridScale") }) {
-                    Text(text = stringResource(R.string.settings_pill_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "${(gridScale * 100).roundToInt()}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colors.primary,
-                            modifier = Modifier.widthIn(min = 52.dp)
-                        )
-                        Slider(
-                            value = gridScale,
-                            onValueChange = {
-                                gridScale = (it * 20).roundToInt() / 20f
-                            },
-                            onValueChangeFinished = {
-                                AppPrefs.setGridScale(context, gridScale)
-                            },
-                            valueRange = 0.7f..1.3f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = colors.primary,
-                                activeTrackColor = colors.primary,
-                                inactiveTrackColor = colors.surfaceVariant
-                            )
-                        )
-                    }
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Text(text = stringResource(R.string.settings_pill_week_scale), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "${(weekScale * 100).roundToInt()}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colors.primary,
-                            modifier = Modifier.widthIn(min = 52.dp)
-                        )
-                        Slider(
-                            value = weekScale,
-                            onValueChange = {
-                                weekScale = (it * 20).roundToInt() / 20f
-                            },
-                            onValueChangeFinished = {
-                                AppPrefs.setWeekScale(context, weekScale)
-                            },
-                            valueRange = 0.7f..1.3f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = colors.primary,
-                                activeTrackColor = colors.primary,
-                                inactiveTrackColor = colors.surfaceVariant
-                            )
-                        )
-                    }
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    Text(text = stringResource(R.string.settings_pill_corner), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 4.dp))
-                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Text(
-                            text = "${(gridCorner * 100).roundToInt()}%",
-                            style = MaterialTheme.typography.labelLarge,
-                            color = colors.primary,
-                            modifier = Modifier.widthIn(min = 52.dp)
-                        )
-                        Slider(
-                            value = gridCorner,
-                            onValueChange = {
-                                gridCorner = (it * 20).roundToInt() / 20f
-                            },
-                            onValueChangeFinished = {
-                                AppPrefs.setGridCornerRatio(context, gridCorner)
-                            },
-                            valueRange = 0f..2f,
-                            colors = SliderDefaults.colors(
-                                thumbColor = colors.primary,
-                                activeTrackColor = colors.primary,
-                                inactiveTrackColor = colors.surfaceVariant
-                            )
-                        )
-                    }
+                    // 样式参数(缩放/圆角)已迁外观与主题, 这里只保留内容/可见性参数
                     HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     SettingToggleRow(
                         label = stringResource(R.string.settings_week_two_column),
@@ -449,112 +367,20 @@ fun GeneralSettingsScreen(
                         checked = showDate,
                         onCheckedChange = { showDate = it; AppPrefs.setShowDate(context, it); refreshWidgets() }
                     )
+                    // 视图切换栏属于课表显示设置, 与主页显示参数放在同一子选项内
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_show_view_switcher),
+                        checked = showViewSwitcher,
+                        onCheckedChange = {
+                            showViewSwitcher = it
+                            AppPrefs.setShowViewSwitcher(context, it)
+                        }
+                    )
                 }
             }
 
-            // 冲突课程样式: 叠层 / 折角 / 竖轨（仅 App 内网格视图, 不涉及小组件, 无需 refreshWidgets）
-            item {
-                SettingsCard(title = stringResource(R.string.settings_conflict_style), expanded = "conflictStyle" in expandedSections, onToggle = { toggleSection("conflictStyle") }) {
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_conflict_stack),
-                        subtitle = stringResource(R.string.settings_conflict_stack_sub),
-                        selected = conflictStyle == "stack",
-                        onClick = { conflictStyle = "stack"; AppPrefs.setConflictStyle(context, "stack") }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_conflict_fold),
-                        subtitle = stringResource(R.string.settings_conflict_fold_sub),
-                        selected = conflictStyle == "fold",
-                        onClick = { conflictStyle = "fold"; AppPrefs.setConflictStyle(context, "fold") }
-                    )
-                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                    DisplayModeOption(
-                        label = stringResource(R.string.settings_conflict_rail),
-                        subtitle = stringResource(R.string.settings_conflict_rail_sub),
-                        selected = conflictStyle == "rail",
-                        onClick = { conflictStyle = "rail"; AppPrefs.setConflictStyle(context, "rail") }
-                    )
-                    // 折角幅度拖杆(v7.10.16o): 仅折角样式下显示 —— 其他样式没有折角符号
-                    if (conflictStyle == "fold") {
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        Text(text = stringResource(R.string.settings_conflict_fold_size), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = "${conflictFoldSize.roundToInt()}dp",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = colors.primary,
-                                modifier = Modifier.widthIn(min = 52.dp)
-                            )
-                            Slider(
-                                value = conflictFoldSize,
-                                onValueChange = { conflictFoldSize = it.roundToInt().toFloat() },
-                                onValueChangeFinished = {
-                                    AppPrefs.setConflictFoldSize(context, conflictFoldSize)
-                                },
-                                valueRange = AppPrefs.CONFLICT_FOLD_SIZE_RANGE.start..AppPrefs.CONFLICT_FOLD_SIZE_RANGE.endInclusive,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = colors.primary,
-                                    activeTrackColor = colors.primary,
-                                    inactiveTrackColor = colors.surfaceVariant
-                                )
-                            )
-                        }
-                    }
-                    // 叠层偏移量(用户 2026-09-04 拆分): 仅叠层样式下显示, 独立配置
-                    if (conflictStyle == "stack") {
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        Text(text = stringResource(R.string.settings_conflict_stack_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = "${conflictStackInset.roundToInt()}dp",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = colors.primary,
-                                modifier = Modifier.widthIn(min = 52.dp)
-                            )
-                            Slider(
-                                value = conflictStackInset,
-                                onValueChange = { conflictStackInset = it.roundToInt().toFloat() },
-                                onValueChangeFinished = {
-                                    AppPrefs.setConflictStackInset(context, conflictStackInset)
-                                },
-                                valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = colors.primary,
-                                    activeTrackColor = colors.primary,
-                                    inactiveTrackColor = colors.surfaceVariant
-                                )
-                            )
-                        }
-                    }
-                    // 右缘让宽(同上拆分): 仅侧边竖轨样式下显示, 与叠层互不影响
-                    if (conflictStyle == "rail") {
-                        HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
-                        Text(text = stringResource(R.string.settings_conflict_rail_inset), style = MaterialTheme.typography.bodyLarge, color = colors.onSurface, modifier = Modifier.padding(bottom = 8.dp))
-                        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                            Text(
-                                text = "${conflictRailInset.roundToInt()}dp",
-                                style = MaterialTheme.typography.labelLarge,
-                                color = colors.primary,
-                                modifier = Modifier.widthIn(min = 52.dp)
-                            )
-                            Slider(
-                                value = conflictRailInset,
-                                onValueChange = { conflictRailInset = it.roundToInt().toFloat() },
-                                onValueChangeFinished = {
-                                    AppPrefs.setConflictRailInset(context, conflictRailInset)
-                                },
-                                valueRange = AppPrefs.CONFLICT_TOP_INSET_RANGE.start..AppPrefs.CONFLICT_TOP_INSET_RANGE.endInclusive,
-                                colors = SliderDefaults.colors(
-                                    thumbColor = colors.primary,
-                                    activeTrackColor = colors.primary,
-                                    inactiveTrackColor = colors.surfaceVariant
-                                )
-                            )
-                        }
-                    }
-                }
-            }
+            // 冲突课程样式: 叠层 / 折角 / 竖轨 — 样式参数, 已迁外观与主题页
 
             // 显示星期: 周一~周日多选
             item {

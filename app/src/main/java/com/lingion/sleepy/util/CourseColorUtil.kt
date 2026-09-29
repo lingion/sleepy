@@ -14,7 +14,7 @@ import com.lingion.sleepy.ui.theme.CoursePalette
  *
  * 决策树（所有入口 100% 同源）：
  *   ① 用户自定义颜色（color 非空且非哨兵值）→ 直接返回，colorless 不覆盖手动设色
- *   ② colorless=true → 返回中性灰（surfaceVariant，与网格线同色保持一致）
+ *   ② colorless=true → 返回当前主题最浅的 surface container
  *   ③ 否则 → 黄金角 137.508° 基于 groupId 撒 hue，同门课永远同色
  *
  * 三层结构：
@@ -103,7 +103,7 @@ object CourseColorUtil {
      *   深色底（luminance<0.5） → 白字（原固定 onSurface 在浅色主题下是深字，深字压深底不可见）
      *   浅色底+浅色主题         → onSurface（浅色 HSL 默认底 L=0.82 恰好可读，行为不变）
      *   浅色底+暗色主题         → 黑字（暗色主题 onSurface 是浅色，用户自定义亮色课色上不可读）
-     * HSL 默认底（亮 0.82 / 暗 0.28）与 colorless 灰底均落在「行为不变」分支，仅自定义色跨界时切换。
+     * HSL 默认底（亮 0.82 / 暗 0.28）与 colorless 统一底色均落在「行为不变」分支，仅自定义色跨界时切换。
      *
      * @param onSurface 当前主题的 onSurface（Compose 路径传 WakeUpColorScheme.onSurface）
      */
@@ -161,7 +161,7 @@ object CourseColorUtil {
 
     /**
      * Compose 路径取色入口（TodayScreen / CourseTableView）。
-     * @param neutralColor colorless 灰底，即 WakeUpColorScheme.surfaceVariant（勿从 CoursePalette 取，它无此字段）
+     * @param neutralColor colorless 统一底色，即当前主题的最浅 surface container（勿从 CoursePalette 取，它无此字段）
      */
     fun pickCourseColorCompose(
         course: CourseEntity,
@@ -181,7 +181,7 @@ object CourseColorUtil {
 
     /**
      * Canvas 路径取色入口（WeekGridWidgetProvider / WidgetBitmapRenderers）。
-     * @param neutralColorInt colorless 灰底，即 scheme.surfaceVariant 的 Int 值
+     * @param neutralColorInt colorless 统一底色，即当前主题的最浅 surface container 的 Int 值
      */
     fun pickCourseColorInt(
         course: CourseEntity,
@@ -211,7 +211,7 @@ object CourseColorUtil {
      *
      * @param row 目标行
      * @param groupRows 同 groupId 所有行(含 row 自身) — 用于 AUTO 模式按行号顺序算 hue
-     * @param neutralColor colorless 灰底
+     * @param neutralColor colorless 统一底色
      */
     fun pickCourseColorComposeWithGroupRows(
         row: CourseEntity,

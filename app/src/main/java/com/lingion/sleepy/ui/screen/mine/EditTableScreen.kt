@@ -61,6 +61,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.ui.component.DatePickerField
 import com.lingion.sleepy.ui.component.PeriodTableOption as TimeSlotEditorPeriodTableOption
 import com.lingion.sleepy.ui.component.TimeSlotEditor
+import com.lingion.sleepy.ui.screen.schedule.SchedulePolicy
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -123,6 +124,20 @@ fun EditTableScreen(
         mutableStateOf<com.lingion.sleepy.data.entity.PeriodTableEntity?>(null)
     }
 
+    // 甲案 (设计文档 §2.2): 作息冲突三选项 — 绑定共享作息表时改了作息内容, 保存先弹三选项。
+    // 会话状态每次进入编辑页(按 table.id)重建: original = 本次进入时刻的实际生效作息快照。
+    var showConflictSheet by remember { mutableStateOf(false) }
+    var boundCount by remember { mutableStateOf(0) }
+    // 取消撤销作息改动后自增 → slotRows/smartConfig 的 remember 键变化 → 用库中真值重建
+    var scheduleEpoch by remember { mutableStateOf(0) }
+    val editState = remember(table.id) {
+        viewModel.startEditSession(
+            table.id,
+            state.effectivePeriodTable?.takeIf { table.periodTableId != null }
+        )
+    }
+    val pendingPolicy by editState.pendingSchedulePolicy.collectAsState()
+
     // issue#40: 编辑的就是"有效时间表" — 绑定了独立时间节次表时, 节次编辑区
     // 展示/修改的是该时间节次表(多张绑定课表同享), 保存写回 period_tables;
     // 未绑定时行为不变(编辑本表兼容列)。
@@ -132,7 +147,7 @@ fun EditTableScreen(
         pendingBind != null && it.id == pendingBind
     } ?: allPeriodTables.find { it.id == pendingBind }
     val timeJson = effectivePeriodTable?.timeJson ?: table.timeJson
-    val slotRows = remember(table.id, effectivePeriodTable?.id, timeJson) {
+    val slotRows = remember(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
         mutableStateListOf<TimeTableUtils.TimeSlotRow>().apply {
             addAll(TimeTableUtils.parseTimeSlotRows(timeJson))
         }
@@ -140,7 +155,7 @@ fun EditTableScreen(
     // v1.0.16 自动模式配置（编辑当前课表时使用）
     // issue#23 Task 4: 已存配置仍能 derive 出当前行 → 原样保留; 否则从当前行重推断;
     // 行不可推断 → 最简默认兜底(旧行为)。
-    val smartConfig = remember(table.id, effectivePeriodTable?.id, timeJson) {
+    val smartConfig = remember(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
         val stored = com.lingion.sleepy.ui.component.decodeSmartPeriodConfig(
             effectivePeriodTable?.smartConfigJson ?: table.smartConfigJson
         )
@@ -273,9 +288,32 @@ fun EditTableScreen(
                                 onRowsChange = { newRows ->
                                     slotRows.clear()
                                     slotRows.addAll(newRows)
+                                    // 甲案 §2.1: 节次编辑即草稿变化 — 同步进会话状态;
+                                    // 策略已登记时会自动失效(invariant ⑤, 下次保存重弹)
+                                    if (effectivePeriodTable != null) {
+                                        editState.updateDraft(
+                                            effectivePeriodTable.copy(
+                                                timeJson = TimeTableUtils.buildTimeJsonFromRows(newRows),
+                                                nodesPerDay = newRows.size.coerceAtLeast(1)
+                                            )
+                                        )
+                                    }
                                 },
                                 smartConfig = smartConfig.value,
-                                onSmartConfigChange = { smartConfig.value = it },
+                                onSmartConfigChange = { newCfg ->
+                                    smartConfig.value = newCfg
+                                    // 甲案 §2.1: 自动模式配置也属作息草稿 — 变化即同步+旧策略作废
+                                    if (effectivePeriodTable != null) {
+                                        editState.updateDraft(
+                                            effectivePeriodTable.copy(
+                                                smartConfigJson = runCatching {
+                                                    Json.encodeToString(newCfg)
+                                                }.getOrDefault(""),
+                                                nodesPerDay = slotRows.size.coerceAtLeast(1)
+                                            )
+                                        )
+                                    }
+                                },
                                 periodTableOptions = allPeriodTables.map {
                                     TimeSlotEditorPeriodTableOption(it.id, it.name, it.nodesPerDay)
                                 },
@@ -290,6 +328,23 @@ fun EditTableScreen(
             error?.let { msg ->
                 item {
                     Text(text = msg, color = colors.error, style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+
+            // 甲案 §4.2: 待执行提醒 — 登记策略后常驻; 「修改」重弹三选项(草稿不丢);
+            // 作息草稿再变 → 策略自动作废(updateDraft 内), Banner 随 NONE 消失。
+            if (pendingPolicy != SchedulePolicy.NONE) {
+                item {
+                    PendingPolicyBanner(
+                        policy = pendingPolicy,
+                        onModify = {
+                            scope.launch {
+                                boundCount = effectivePeriodTable
+                                    ?.let { viewModel.repoTablesBoundToCount(it.id) } ?: 0
+                            }
+                            showConflictSheet = true
+                        }
+                    )
                 }
             }
 
@@ -339,13 +394,41 @@ fun EditTableScreen(
                             )
                             return@Button
                         }
+                        // 甲案 §2.2: 绑定共享作息表时改了作息 → 保存先过三选项闸门。
+                        // ①改了作息+无策略 → 弹窗(invariant ②; 选择后再改的策略已被
+                        //   updateDraft 自动作废, 自然落回此分支 = invariant ⑤ 重弹)
+                        // ②有策略(=选择后未再动作息) → 执行策略(invariant ④)
+                        if (!bindChanged && effectivePeriodTable != null) {
+                            if (editState.hasScheduleChanged() && pendingPolicy == SchedulePolicy.NONE) {
+                                scope.launch {
+                                    boundCount = viewModel.repoTablesBoundToCount(
+                                        effectivePeriodTable.id
+                                    )
+                                }
+                                showConflictSheet = true
+                                return@Button
+                            }
+                            if (pendingPolicy != SchedulePolicy.NONE) {
+                                viewModel.executePolicyAndSave(
+                                    tableId = table.id,
+                                    editedTable = updated,
+                                    newTimeJson = newTimeJson,
+                                    smartConfigJson = smartConfigJson,
+                                    nodesPerDay = slotRows.size.coerceAtLeast(1),
+                                    onFinish = onSaved
+                                )
+                                return@Button
+                            }
+                        }
                         scope.launch {
                             if (bindChanged) {
                                 // 解绑: 元数据+时间域(解绑后兼容列是真值)+periodTableId=null,
                                 // 单事务原子完成 — 课程行零改动(issue#40 §5.3)
                                 viewModel.updateTableMetadataAndBind(updated, null)
                             } else if (effectivePeriodTable != null) {
-                                // 元数据 + 共享作息表内容: 单事务原子双写(2026-09-23 症状3)
+                                // 未改作息时保留元数据 + 共享作息表的单事务原子双写。
+                                // 改了作息的路径已在上面的三选项闸门处理; 走到这里的
+                                // hasScheduleChanged()==false, 内容与 X 等值, 等值写无差别。
                                 viewModel.updateTableMetadataWithPeriodTable(
                                     updated,
                                     effectivePeriodTable.copy(
@@ -468,6 +551,25 @@ fun EditTableScreen(
             },
             confirmButton = {},
             dismissButton = {}
+        )
+    }
+
+    // 甲案 §4.1: 三选项 BottomSheet — onSelect 只登记策略不写库(§2.2 invariant ③);
+    // 「取消」/点外部 = 撤销本次作息改动, 其他字段草稿保留(§2.2 invariant ⑥):
+    // 恢复草稿 + 作废策略 + scheduleEpoch 自增让 slotRows/smartConfig 回到库中真值。
+    if (showConflictSheet && effectivePeriodTable != null) {
+        ScheduleConflictBottomSheet(
+            periodTableName = effectivePeriodTable.name,
+            boundTableCount = boundCount,
+            onSelect = { policy ->
+                showConflictSheet = false
+                editState.selectPolicy(policy)
+            },
+            onCancel = {
+                showConflictSheet = false
+                editState.cancelPolicy()
+                scheduleEpoch++
+            }
         )
     }
 }

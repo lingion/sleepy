@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.PeriodTableEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.data.repository.ScheduleRepository
 import com.lingion.sleepy.util.AppPrefs
@@ -89,6 +90,127 @@ class ScheduleViewModel : ViewModel() {
      * 导致"显示成另一张表"的 bug。
      */
     private var coursesJob: Job? = null
+
+    /**
+     * 甲案 (设计文档 §2.1): 每张课表一个作息编辑会话状态, 按 tableId 缓存。
+     * EditTableScreen 打开时经 [editStateFor] 拿到; 弹窗/再次保存逻辑全走它。
+     * 表被删除时对应条目一并清理 (见 removeEditState), 避免长会话堆积。
+     */
+    private val editStates = mutableMapOf<Long, ScheduleEditPolicyState>()
+
+    /**
+     * 取 (必要时建) 该课表的作息编辑会话状态。
+     * 同会话内 recomposition 反复调用返回同一实例 (策略/草稿得以存活)。
+     * 进入编辑页时须走 [startEditSession] 重建, 保证 original 是"本次进入"的快照。
+     */
+    fun editStateFor(tableId: Long, originalEffectiveSchedule: PeriodTableEntity?): ScheduleEditPolicyState =
+        editStates.getOrPut(tableId) {
+            ScheduleEditPolicyState(tableId, originalEffectiveSchedule)
+        }
+
+    /**
+     * 开始一次新的编辑会话 (EditTableScreen 每次进入调用一次, 按 tableId keyed):
+     * originalEffectiveSchedule = 进入编辑時刻的实际生效作息快照
+     * (绑定 → 水合源 periodTable; 未绑定 → null)。旧会话残留策略一并作废。
+     */
+    fun startEditSession(tableId: Long, originalEffectiveSchedule: PeriodTableEntity?): ScheduleEditPolicyState {
+        val state = ScheduleEditPolicyState(tableId, originalEffectiveSchedule)
+        editStates[tableId] = state
+        return state
+    }
+
+    /** 该课表当前是否有已登记未执行的策略 (UI 待执行提醒 banner 依据)。 */
+    fun hasPendingPolicy(tableId: Long): Boolean =
+        editStates[tableId]?.let { it.pendingSchedulePolicy.value != SchedulePolicy.NONE } == true
+
+    /** 表删除/退出编辑时清理会话状态, 防止跨会话残留策略。 */
+    fun removeEditState(tableId: Long) {
+        editStates.remove(tableId)
+    }
+
+    /** 甲案 §4.1: 弹窗"另有 N 张课表绑定"提示 — 绑定到指定作息表的课表数。 */
+    suspend fun repoTablesBoundToCount(periodTableId: Long): Int =
+        repo.getTablesBoundTo(periodTableId).size
+
+    /**
+     * 甲案 (设计文档 §3.1-§3.3, §3.5): 执行已登记的作息策略 + 完成普通保存。
+     * 三选项共用同一份草稿源 (§3.4) = 用户编辑后的 draftEffectiveSchedule。
+     * 全程 UndoManager 批内 = 单撤回单元(§7: 绑定关系+作息内容一次回退)。
+     * 策略执行完清 pendingSchedulePolicy — 下次保存不再弹窗(invariant ④)。
+     *
+     * @param editedTable 普通字段(名称/日期/周次)+本表节次兼容列写值, 由 UI 层构建
+     * @param onFinish 普通保存(策略写库)完成后的 UI 回调(导航返回)
+     */
+    fun executePolicyAndSave(
+        tableId: Long,
+        editedTable: TimeTableEntity,
+        newTimeJson: String,
+        smartConfigJson: String,
+        nodesPerDay: Int,
+        onFinish: () -> Unit = {}
+    ) {
+        val editState = editStates[tableId] ?: return
+        val policy = editState.pendingSchedulePolicy.value
+        val draft = editState.draftEffectiveSchedule.value
+        if (policy == SchedulePolicy.NONE || draft == null) return
+        viewModelScope.launch {
+            com.lingion.sleepy.data.undo.UndoManager.beginBatch()
+            try {
+                val current = repo.getTable(tableId) ?: return@launch
+                when (policy) {
+                    SchedulePolicy.DETACH_COPY -> {
+                        // ① 写本表内置作息(兼容列) + 解绑; X 与其他绑定课表零改动
+                        // bindPeriodTable 内部走 restoredForUnbind 会把兼容列回滚到旧快照,
+                        // 所以先 updateTable 写入新内置作息, 再解绑会把快照值覆盖回去 —
+                        // 顺序必须反过来: 先解绑(恢复快照)再写内置列(草稿), 写入在最后保赢。
+                        repo.bindPeriodTable(tableId, null)
+                        repo.updateTableRemappingCourses(
+                            editedTable.copy(
+                                periodTableId = null,
+                                timeJson = newTimeJson,
+                                smartConfigJson = smartConfigJson,
+                                nodesPerDay = nodesPerDay
+                            )
+                        )
+                    }
+                    SchedulePolicy.CREATE_NEW -> {
+                        // ② 按课表名新建独立作息表(全局唯一名顺延, §3.2) + 改绑; X 零改动
+                        val newId = insertPeriodTableWithUniqueName(
+                            name = current.name,
+                            defaultName = current.name,
+                            timeJson = newTimeJson,
+                            nodesPerDay = nodesPerDay,
+                            smartConfigJson = smartConfigJson
+                        )
+                        repo.bindPeriodTable(tableId, newId)
+                        repo.updateTableRemappingCourses(
+                            editedTable.copy(periodTableId = newId)
+                        )
+                    }
+                    SchedulePolicy.SYNC -> {
+                        // ③ 写回共享作息表 X, 保持绑定; 全部绑定课表读到新作息
+                        val boundId = current.periodTableId
+                        if (boundId != null) {
+                            repo.updatePeriodTable(
+                                draft.copy(
+                                    id = boundId,
+                                    timeJson = newTimeJson,
+                                    smartConfigJson = smartConfigJson,
+                                    nodesPerDay = nodesPerDay
+                                )
+                            )
+                            repo.updateTable(editedTable)
+                        }
+                    }
+                    SchedulePolicy.NONE -> { /* unreachable */ }
+                }
+                editState.selectPolicy(SchedulePolicy.NONE)
+                onFinish()
+            } finally {
+                com.lingion.sleepy.data.undo.UndoManager.endBatch()
+            }
+        }
+    }
 
     init {
         loadTables()

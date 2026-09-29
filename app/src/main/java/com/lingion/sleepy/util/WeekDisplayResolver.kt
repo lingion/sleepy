@@ -60,13 +60,14 @@ object WeekDisplayResolver {
             !enabled -> today
             semesterStatus != DateUtils.SemesterStatus.IN_RANGE -> today
             todayHasRemaining -> today
-            else -> findNearestBusyDay(
+            else -> findNearestBusyDays(
                 startDate = startDate,
                 actualWeek = actualWeek,
                 maxWeek = safeMaxWeek,
                 today = today,
-                courses = courses
-            )
+                courses = courses,
+                count = 1
+            ).firstOrNull() ?: today
         }
         val targetWeek = if (targetDate == today) actualWeek
             else DateUtils.currentWeek(startDate, targetDate).coerceIn(1, safeMaxWeek)
@@ -90,48 +91,49 @@ object WeekDisplayResolver {
     }
 
     /**
-     * 给主界面 / 可手动导航的小组件计算当前选中周的标题状态：
-     * 仅当用户停留在自动选中的最近有课日（非今天）时显示 NEAREST_BUSY_DAY 文案，
-     * 其他手动周次 / 今天 / 关闭开关时统一 NORMAL。
+     * 给主界面 / 可手动导航的小组件计算当前展示日的标题状态：
+     * 仅当展示日恰好等于自动选中的最近有课日（非今天）时显示 NEAREST_BUSY_DAY 文案，
+     * 同周内翻到其他日子 / 其他周 / 今天 / 关闭开关时统一 NORMAL。
+     *
+     * 按日期而非周次比较：「最近有课的一天」语义指向具体那一天，
+     * 同周内的其他日子即使落在同一周也不该继续顶这个标签。
      */
-    fun statusForSelectedWeek(
+    fun statusForSelectedDate(
         context: WeekDisplayContext,
-        selectedWeek: Int
+        selectedDate: LocalDate
     ): WeekDisplayStatus = when {
         !context.enabled -> WeekDisplayStatus.NORMAL
         context.status == WeekDisplayStatus.NEAREST_BUSY_DAY &&
-            selectedWeek == context.targetWeek -> WeekDisplayStatus.NEAREST_BUSY_DAY
+            selectedDate == context.targetDate -> WeekDisplayStatus.NEAREST_BUSY_DAY
         else -> WeekDisplayStatus.NORMAL
     }
 
     /**
-     * 从今天（不含）开始，按日期逐天在学期 [actualWeek..maxWeek] 范围内找到
-     * 第一个日历上有课的日子；找不到则返回 today（行为降级为 NORMAL）。
+     * 从今天（不含）开始按日历顺序取未来有课日期。结果最多 [count] 个；没有结果时
+     * 返回 today，调用方可据此保持原有 NORMAL 降级语义。
      *
-     * 关键不变量：扫描上限是 maxWeek 的周天，不会跨学期跳出。
+     * 关键不变量：扫描上限是 maxWeek 的周天，不会跨学期跳出；日期顺序永远递增。
      */
-    private fun findNearestBusyDay(
+    fun findNearestBusyDays(
         startDate: String,
         actualWeek: Int,
         maxWeek: Int,
         today: LocalDate,
-        courses: List<CourseEntity>
-    ): LocalDate {
-        val endDate = DateUtils.dateOfWeek(startDate, maxWeek, 7) // 最后一周周日
+        courses: List<CourseEntity>,
+        count: Int = 2
+    ): List<LocalDate> {
+        if (count <= 0) return emptyList()
+        val endDate = DateUtils.dateOfWeek(startDate, maxWeek, 7)
+        val result = mutableListOf<LocalDate>()
         var cursor = today.plusDays(1)
-        while (!cursor.isAfter(endDate)) {
+        while (!cursor.isAfter(endDate) && result.size < count) {
             val cursorWeek = DateUtils.currentWeek(startDate, cursor).coerceIn(1, maxWeek)
-            if (cursorWeek < actualWeek) {
-                cursor = cursor.plusDays(1)
-                continue
+            if (cursorWeek >= actualWeek && courses.any { it.inWeek(cursorWeek) && it.day == cursor.dayOfWeek.value }) {
+                result += cursor
             }
-            val dow = cursor.dayOfWeek.value
-            // cursor 恒 > today（起点 today+1），日历上有课 = 该课的课还没上，直接命中
-            val hasAny = courses.any { it.inWeek(cursorWeek) && it.day == dow }
-            if (hasAny) return cursor
             cursor = cursor.plusDays(1)
         }
-        return today
+        return result.ifEmpty { listOf(today) }
     }
 
     /** 今天是否还有未结束的课：course.day > today → 未来；< today → 已过；= today → 解析 endTime。 */

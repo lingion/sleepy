@@ -156,7 +156,7 @@
     <string name="copied">Copied</string>
     <string name="ai_prompt_title">Let AI convert your screenshot (Sleepy native format)</string>
     <string name="ai_prompt_hint">Copy the prompt below to any AI assistant (Doubao, ChatGPT…) together with your timetable screenshot. The AI outputs #sleepy-v1 text - paste it back into the field above to import.</string>
-    <string name="ai_prompt_text">Task: Convert the timetable screenshot (or file content) I send next into the sleepy-v1 plain-text format. Output nothing besides the conversion result itself - no explanations, no greetings, no markdown code fences. The first line of your output must be #sleepy-v1.\n\n========== 1. Format rules ==========\n\nThe first line is always: #sleepy-v1\n\nEvery other line is one record, with columns separated by a vertical bar |. Three kinds of lines:\n\n1. T line (table info, optional, at most one):\nTtableName|termStartDate|totalWeeks|nodesPerDay\n· The start date format is YYYY-MM-DD and must be the Monday of week 1\n· Fill in only what the timetable explicitly states; leave unspecified fields empty. You may stop after the last known column, e.g. T|2026-03-02\n· If the timetable does not mention these at all, omit the T line entirely. Never guess.\n\n2. N line (per-period times, optional, one line per period):\nNnumber|startTime|endTime\n· e.g. N3|10:00|10:45\n· Only output N lines if the timetable explicitly provides a period-time table. Use 24-hour HH:mm; write 8:00 as 08:00\n· No period-time table in the timetable -&gt; output no N lines at all\n\n3. C line (courses, the main body, one line per occurrence):\nCname|day|nodes|weeks|teacher|room|color|note|time|group\nAlways exactly 10 columns / 9 bars. Empty columns stay empty, but the bars must not be dropped. Column rules:\n  Col 1 name: copy the timetable verbatim, character for character, any language\n  Col 2 day: Monday..Sunday = 1 2 3 4 5 6 7\n  Col 3 nodes: periods 3-4 = 3-4; single period 6 = 6\n  Col 4 weeks: see \"2. Week rules\"\n  Col 5 teacher: copy from the timetable; empty if absent\n  Col 6 room: same\n  Col 7 color: always empty\n  Col 8 note: only if the timetable states a note; otherwise empty\n  Col 9 time: only when the timetable explicitly marks a clock time for this course (e.g. evening class), as HH:mm-HH:mm; otherwise empty\n  Col 10 group: always empty\n\n========== 2. Week rules ==========\n\nExtract the set of weeks each course meets, then decide in order:\n1. A continuous range with no odd/even restriction -&gt; S-E, e.g. 1-16\n2. All odd weeks within the range (\"odd weeks\") -&gt; S-E单, e.g. 1-15单\n3. All even weeks (\"even weeks\") -&gt; S-E双, e.g. 2-16双\n4. Scattered weeks (e.g. \"weeks 1-8, 10, 12-16\") -&gt; split into maximal runs, one C line each, copying all other columns:\n   · A full-week run -&gt; S-E (e.g. 1-8, 12-16)\n   · A lone single week -&gt; S定 (e.g. 10定)\n   · A purely odd run -&gt; S-E单; a purely even run -&gt; S-E双\n   · A run that is neither continuous nor purely odd/even -&gt; S-E定 (e.g. weeks 6,7 -&gt; 6-7定)\n5. The timetable says nothing about weeks -&gt; 1-16\n\n========== 3. Extraction rules ==========\n\n· A course meeting multiple times per week (different days or periods) -&gt; multiple C lines, one per meeting; never merge into one line\n· Read period numbers from \"period X\" in the timetable; if it has only times and no periods, number the non-overlapping time slots 1, 2, 3... top to bottom and emit matching N lines\n· Copy names, teachers and rooms verbatim; if a text contains | \ \" &amp;lt; { ( escape each with a leading \; a newline inside text is the two characters \n and a tab is \t\n· Anything the timetable does not state stays empty. Never invent teachers, rooms, times or weeks.\n\n========== 4. Output self-check (verify silently, do not print) ==========\n\n· First line is #sleepy-v1 and nothing else precedes or follows the records\n· Every C line has exactly 9 bars / 10 columns\n· Day is a digit 1-7; hours are two digits (08:00, not 8:00)\n· The weeks column only ever shows S-E, S-E单, S-E双, S-E定 or S定\n· Names match the timetable verbatim; nothing was invented\n\n========== 5. Example output ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
+    <string name="ai_prompt_text">Task: Convert the timetable screenshot (or file content) I send next into the sleepy-v1 plain-text format. Output nothing besides the conversion result itself - no explanations, no greetings, no markdown code fences. The first line of your output must be #sleepy-v1.\n\n========== 1. Format rules ==========\n\nThe first line is always: #sleepy-v1\n\nEvery other line is one record, with columns separated by a vertical bar |. Three kinds of lines:\n\n1. T line (table info, optional, at most one):\nTtableName|termStartDate|totalWeeks|nodesPerDay\n· The start date format is YYYY-MM-DD and must be the Monday of week 1\n· Fill in only what the timetable explicitly states; leave unspecified fields empty. You may stop after the last known column, e.g. T|2026-03-02\n· If the timetable does not mention these at all, omit the T line entirely. Never guess.\n\n2. N line (per-period times, optional, one line per period):\nNnumber|startTime|endTime\n· e.g. N3|10:00|10:45\n· Only output N lines if the timetable explicitly provides a period-time table. Use 24-hour HH:mm; write 8:00 as 08:00\n· No period-time table in the timetable -&gt; output no N lines at all\n\n3. C line (courses, the main body, one line per occurrence):\nCname|day|nodes|weeks|teacher|room|color|note|time|group\nAlways exactly 10 columns / 9 bars. Empty columns stay empty, but the bars must not be dropped. Column rules:\n  Col 1 name: copy the timetable verbatim, character for character, any language\n  Col 2 day: Monday..Sunday = 1 2 3 4 5 6 7\n  Col 3 nodes: periods 3-4 = 3-4; single period 6 = 6\n  Col 4 weeks: see \"2. Week rules\"\n  Col 5 teacher: copy from the timetable; empty if absent\n  Col 6 room: same\n  Col 7 color: always empty\n  Col 8 note: only if the timetable states a note; otherwise empty\n  Col 9 time: only when the timetable explicitly marks a clock time for this course (e.g. an evening/non-standard-time class), as HH:mm-HH:mm; this is the private course start/end time and must not be added as an N period-time row; otherwise empty\n  Col 10 group: always empty\n\n========== 2. Week rules ==========\n\nExtract the set of weeks each course meets, then decide in order:\n1. A continuous range with no odd/even restriction -&gt; S-E, e.g. 1-16\n2. All odd weeks within the range (\"odd weeks\") -&gt; S-E单, e.g. 1-15单\n3. All even weeks (\"even weeks\") -&gt; S-E双, e.g. 2-16双\n4. Scattered weeks (e.g. \"weeks 1-8, 10, 12-16\") -&gt; split into maximal runs, one C line each, copying all other columns:\n   · A full-week run -&gt; S-E (e.g. 1-8, 12-16)\n   · A lone single week -&gt; S定 (e.g. 10定)\n   · A purely odd run -&gt; S-E单; a purely even run -&gt; S-E双\n   · A run that is neither continuous nor purely odd/even -&gt; S-E定 (e.g. weeks 6,7 -&gt; 6-7定)\n5. The timetable says nothing about weeks -&gt; 1-16\n\n========== 3. Extraction rules ==========\n\n· A course meeting multiple times per week (different days or periods) -&gt; multiple C lines, one per meeting; never merge into one line\n· Read period numbers from \"period X\" in the timetable; if it has only times and no periods, number the non-overlapping time slots 1, 2, 3... top to bottom and emit matching N lines\n· Copy names, teachers and rooms verbatim; if a text contains | \ \" &amp;lt; { ( escape each with a leading \; a newline inside text is the two characters \n and a tab is \t\n· Anything the timetable does not state stays empty. Never invent teachers, rooms, times or weeks.\n\n========== 4. Output self-check (verify silently, do not print) ==========\n\n· First line is #sleepy-v1 and nothing else precedes or follows the records\n· Every C line has exactly 9 bars / 10 columns\n· Day is a digit 1-7; hours are two digits (08:00, not 8:00)\n· The weeks column only ever shows S-E, S-E单, S-E双, S-E定 or S定\n· Names match the timetable verbatim; nothing was invented\n\n========== 5. Example output ==========\n\n#sleepy-v1\nT|2026-03-02\nN1|08:00|08:45\nN2|08:55|09:40\nN3|10:00|10:45\nN4|10:55|11:40\nN5|14:00|14:45\nN6|14:55|15:40\nN7|16:00|16:45\nN8|16:55|17:40\nN9|19:00|19:45\nN10|19:55|20:40\nC高等数学A|1|1-2|1-16|张三|A101||||\nC高等数学A|3|3-4|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC数据结构|4|3-4|2-16双|王五|C302||||\nC体育|4|5-6|3-4定||||||\nCJava实战|3|9-10|1-16||机房|||19:00-21:30|\nC影视鉴赏|7|6|10-16双||||||\nC形势与政策|5|8-9|1-8||||||\nC形势与政策|5|8-9|12-16||||||</string>
 
     <string name="format_wakeup_share_when">Migrating everything from the WakeUp app. Copy the entire text generated by WakeUp\'s "Share courses" and paste it as-is.</string>
     <string-array name="format_wakeup_share_spec">
@@ -194,9 +194,10 @@
         <item>Day accepts 1-7, Monday, Mon</item>
         <item>Week supports 1-16, 2-5,7-9, 11,13,15 — multiple ranges become separate courses</item>
         <item>Optional "start time" + "end time" columns (HH:mm): real period times are applied automatically on import</item>
+        <item>Optional "custom time" column (yes/no): when set to yes, that row keeps its start/end as private course time and is not added to the shared period table</item>
         <item>Type accepts 0/1/2 or weekly/odd/even</item>
     </string-array>
-    <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type\nCalculus,John,A101,Monday,1-2,1-16,weekly\nEnglish,Mary,B202,3,3-4,1-16,odd</string>
+    <string name="format_csv_example" formatted="false">course,teacher,room,weekday,period,weeks,type,start time,end time,custom time\nCalculus,John,A101,Monday,1-2,1-16,weekly,08:00,08:45,\nEvening class,Mary,C301,3,11-12,1-16,weekly,20:50,22:00,yes\nEnglish,Lee,B202,3,3-4,1-16,odd,,,</string>
 
     <string name="format_html_when">Timetable web pages saved as .html, copied table source, or tap the .html file in your file manager and choose Sleepy.</string>
     <string-array name="format_html_spec">
@@ -204,24 +205,25 @@
         <item>The page must contain a table whose header row includes "course"</item>
         <item>Column names same as CSV: course, day, node, week required; teacher, room, type, note optional</item>
         <item>Same as CSV: optional "start time" + "end time" columns, applied automatically on import</item>
+        <item>Same as CSV: optional "custom time" column (yes/no); yes preserves that row as a private-time course</item>
         <item>Grid layouts with Monday-Sunday columns cannot be parsed; needs a long table with one course per row</item>
     </string-array>
-    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
+    <string name="format_html_example" formatted="false">&lt;table&gt;\n&lt;tr&gt;&lt;td&gt;course&lt;/td&gt;&lt;td&gt;teacher&lt;/td&gt;&lt;td&gt;room&lt;/td&gt;&lt;td&gt;weekday&lt;/td&gt;&lt;td&gt;period&lt;/td&gt;&lt;td&gt;weeks&lt;/td&gt;&lt;td&gt;start time&lt;/td&gt;&lt;td&gt;end time&lt;/td&gt;&lt;td&gt;custom time&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Calculus&lt;/td&gt;&lt;td&gt;John&lt;/td&gt;&lt;td&gt;A101&lt;/td&gt;&lt;td&gt;1&lt;/td&gt;&lt;td&gt;1-2&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;td&gt;08:00&lt;/td&gt;&lt;td&gt;08:45&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;\n&lt;tr&gt;&lt;td&gt;Evening class&lt;/td&gt;&lt;td&gt;Mary&lt;/td&gt;&lt;td&gt;C301&lt;/td&gt;&lt;td&gt;3&lt;/td&gt;&lt;td&gt;11-12&lt;/td&gt;&lt;td&gt;1-16&lt;/td&gt;&lt;td&gt;20:50&lt;/td&gt;&lt;td&gt;22:00&lt;/td&gt;&lt;td&gt;yes&lt;/td&gt;&lt;/tr&gt;\n&lt;/table&gt;</string>
 
-    <string name="format_plain_when">Sleepy native format (sleepy-v1): compact, tidy and fault-tolerant. Great for handwriting and even better for letting AI convert a timetable screenshot (see the prompt below). The legacy tab-separated format still imports.</string>
+    <string name="format_plain_when">Sleepy native format (sleepy-v1): compact, tidy and fault-tolerant. Great for handwriting and even better for letting AI convert a timetable screenshot (see the prompt below). The legacy tab-separated format (name teacher room weekday periods weeks type, optionally followed by start time + end time) still imports.</string>
     <string-array name="format_plain_spec">
         <item>First line is always #sleepy-v1</item>
         <item>Course line layout: Cname|day|nodes|weeks|teacher|room|color|note|time|group - exactly 10 columns / 9 pipes</item>
         <item>Empty columns stay empty, but the pipes must not be dropped</item>
         <item>Day is 1-7 (Monday=1); nodes as a range 1-2, or a single node 6</item>
         <item>Week column has five shapes: 1-16 (weekly), 1-15单 (odd), 2-16双 (even), 3-4定 (range), 10定 (single week)</item>
-        <item>Leave color empty for auto; time column only for courses with a fixed clock time, as HH:mm-HH:mm</item>
-        <item>Escape | \ \" &lt; { ( in text with a leading backslash</item>
+        <item>Leave color empty for auto; the time column (private start-end clock times HH:mm-HH:mm for non-standard-time courses) is only for special courses like evening classes — once set, the course displays by clock time and is not added to the shared period table</item>
+        <item>Escape | \\ \" &lt; { ( in text with a leading backslash</item>
         <item>Period-time line (optional): N&lt;number&gt;|start|end, e.g. N3|10:00|10:45; or a single Nd line when times equal the built-in preset</item>
         <item>Table line (optional): Tname|startDate|totalWeeks|nodesPerDay; startDate must be the Monday of week 1</item>
         <item>Unrecognized lines are listed in the import preview, never silently dropped</item>
     </string-array>
-    <string name="format_plain_example" formatted="false">#sleepy-v1\nTMy timetable|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC影视鉴赏|7|6|10-16双||||||</string>
+    <string name="format_plain_example" formatted="false">#sleepy-v1\nTMy timetable|2026-03-02|20|12\nNd\nC高等数学A|1|1-2|1-16|张三|A101||||\nC大学英语|2|3-4|1-15单|李四|C301||||\nC体育|4|5-6|3-4定||||||\nC晚课|3|11-12|1-16|李四|C301|||20:50-22:00|\nC影视鉴赏|7|6|10-16双||||||</string>
     <string name="import_dropped_title">%1$d lines could not be parsed</string>
     <string name="import_dropped_hint">These lines were skipped. Check their format and re-import:</string>
     <string name="import_warnings_title">Notes</string>
@@ -338,6 +340,7 @@
     <string name="settings_start_view">Default view on launch</string>
     <string name="settings_start_view_full">Week view</string>
     <string name="settings_start_view_cards">Grid</string>
+    <string name="settings_show_view_switcher">Show view switcher</string>
     <string name="settings_grid_sub_info">Grid card details</string>
     <string name="settings_grid_sub_room">Room</string>
     <string name="settings_grid_sub_room_sub">Show the room under the course name (hidden if none)</string>
@@ -571,6 +574,18 @@
     <string name="theme_editor_delete_confirm_body">Pages and widgets using it will fall back to the default "Lilac" theme.</string>
 <string name="appearance_section_theme">Theme colors</string>
     <string name="appearance_section_schedule_display">Schedule display</string>
+    <string name="appearance_period_header">Period headers</string>
+    <string name="appearance_home_style">Home style</string>
+    <string name="appearance_header_layout">Layout</string>
+    <string name="appearance_layout_horizontal">Horizontal</string>
+    <string name="appearance_layout_legacy">Legacy header</string>
+    <string name="appearance_layout_legacy_sub">Keep the original period and time display</string>
+    <string name="appearance_layout_vertical">Vertical</string>
+    <string name="appearance_layout_three_line">Three-line header</string>
+    <string name="appearance_header_preview">Live preview</string>
+    <string name="appearance_header_style">Period style</string>
+    <string name="appearance_header_show_x">Show “Period X”</string>
+    <string name="appearance_header_hanging">Move left/right by %1$s start-time widths</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">You\'re on the latest version v%1$s</string>
     <string name="update_found_title">New version v%1$s available</string>
@@ -733,6 +748,18 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_status_settings_required">Open system settings to enable Fluid Cloud / Super Island first.</string>
     <string name="reminder_fluid_status_not_supported">The current device system does not support Fluid Cloud / Super Island.</string>
     <string name="reminder_fluid_go_to_settings">Go to settings</string>
+    <string name="reminder_reliability_title">Background reliability</string>
+    <string name="reminder_reliability_notification">Notifications: %1$s</string>
+    <string name="reminder_reliability_exact_alarm">Exact alarms: %1$s</string>
+    <string name="reminder_reliability_battery">Battery optimization: %1$s</string>
+    <string name="reminder_reliability_widget">Home-screen widgets: %1$s</string>
+    <string name="reminder_reliability_vendor">Vendor live card: %1$s</string>
+    <string name="reminder_reliability_promoted">Live Updates permission: %1$s</string>
+    <string name="reminder_reliability_not_applicable">not applicable</string>
+    <string name="reminder_reliability_ready">ready</string>
+    <string name="reminder_reliability_missing">not enabled</string>
+    <string name="reminder_reliability_degraded">degraded</string>
+    <string name="reminder_reliability_unknown">unknown</string>
     <string name="reminder_fluid_sub">Show real-time course cards on supported Xiaomi, vivo, Samsung, and Meizu phones</string>
     <string name="reminder_fluid_title">Fluid Cloud / Super Island</string>
     <string name="reminder_master_sub">Allow Sleepy to send course notifications</string>
@@ -890,6 +917,19 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="period_table_preview_confirm">Save</string>
     <string name="period_table_bind_preview_title">Confirm rebind</string>
     <string name="period_table_bind_preview_body">After switching, this timetable interprets periods via the new bell schedule; custom-time courses are unaffected</string>
+    <string name="schedule_conflict_dialog_title">Where should this schedule change go?</string>
+    <string name="schedule_conflict_dialog_summary">Current schedule: %1$s (%2$s)</string>
+    <string name="schedule_conflict_dialog_summary_only_this">only this timetable uses it</string>
+    <string name="schedule_conflict_dialog_summary_other_count">%1$d other timetables bound</string>
+    <string name="schedule_conflict_option_detach_title">Only this timetable</string>
+    <string name="schedule_conflict_option_detach_sub">This timetable gets its own schedule and stops following the shared period table</string>
+    <string name="schedule_conflict_option_create_title">Create a new schedule and bind</string>
+    <string name="schedule_conflict_option_create_sub">Creates a new schedule named after this timetable; others are unaffected</string>
+    <string name="schedule_conflict_option_sync_title">Sync changes to period table “%1$s”</string>
+    <string name="schedule_conflict_option_sync_sub_other">Will affect %1$d other timetables</string>
+    <string name="schedule_conflict_option_sync_sub_only">Only this timetable uses this schedule</string>
+    <string name="schedule_conflict_banner_format">Pending: %1$s · takes effect on next save</string>
+    <string name="schedule_conflict_banner_modify">Change</string>
     <string name="import_drafts">Import drafts</string>
     <string name="import_drafts_empty">No saved import drafts</string>
     <string name="import_draft_restore">Restore draft</string>

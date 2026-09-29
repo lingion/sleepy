@@ -136,7 +136,8 @@ fun AboutScreen(
 
     fun joinQqGroup() {
         val group = qqGroupNumber
-        context.getSystemService(android.content.ClipboardManager::class.java)
+        // API<26: getSystemService(Class) 是 API 23+, 用传统重载保兼容
+        (context.getSystemService(android.content.Context.CLIPBOARD_SERVICE) as? android.content.ClipboardManager)
             ?.setPrimaryClip(android.content.ClipData.newPlainText("qq_group", group))
         // 拉起降级链(经查证): 群号直拉群资料卡(show_pslcard→show_pslg)
         // → 官方加群组件(需 qun.qq.com 生成的 key, 本群未配置则跳过)

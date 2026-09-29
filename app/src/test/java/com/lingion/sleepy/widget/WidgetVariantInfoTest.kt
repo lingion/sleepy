@@ -32,6 +32,18 @@ class WidgetVariantInfoTest {
     }
 
     @Test
+    fun `all entries carry a preview drawable resource`() {
+        ALL_WIDGET_VARIANTS.forEach { v ->
+            assertTrue("previewImageRes must be non-zero for ${v.receiverClass.simpleName}", v.previewImageRes != 0)
+        }
+        assertEquals(
+            "preview resources must be unique",
+            ALL_WIDGET_VARIANTS.size,
+            ALL_WIDGET_VARIANTS.map { it.previewImageRes }.toSet().size
+        )
+    }
+
+    @Test
     fun `WidgetUpdater receiver list matches ALL_WIDGET_VARIANTS`() {
         // The refresh broadcast must not silently drop or duplicate a variant;
         // it must mirror the metadata list 1:1.

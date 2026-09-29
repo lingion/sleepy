@@ -9,6 +9,8 @@ import android.util.Log
 import com.lingion.sleepy.R
 import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.DateUtils
+import com.lingion.sleepy.util.HolidayManager
+import com.lingion.sleepy.util.WeekDisplayResolver
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -189,7 +191,20 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                     } else {
                         val table = source.table
                         val dates = if (source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY) {
-                            listOf(source.display.targetDate, source.display.targetDate.plusDays(1))
+                            // 两列 = 最近两个未来有课日 (用户 2026-09-23 定稿: 11/2 + 12/2,
+                            // 不再是 targetDate+1 的日历相邻日); 无第二个有课日 → 该列保持
+                            // targetDate+1 的日历顺序, 与「无课显示日历相邻」旧语义对齐。
+                            WeekDisplayResolver.findNearestBusyDays(
+                                startDate = table.startDate,
+                                actualWeek = source.display.actualWeek,
+                                maxWeek = table.maxWeek,
+                                today = today,
+                                courses = source.courses,
+                                count = 2
+                            ).let { nearest ->
+                                if (nearest.size >= 2) nearest.take(2)
+                                else listOf(source.display.targetDate, source.display.targetDate.plusDays(1))
+                            }
                         } else listOf(today, tomorrow)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, dates.first())
                         val days = dates.map { date ->
@@ -197,7 +212,13 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                             val dow = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, date)
                             val courses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList()
                                 else source.coursesFor(dow, week)
-                            DayData(date = date, dayOfWeek = dow, courses = courses, timeJson = table.timeJson)
+                            DayData(
+                                date = date,
+                                dayOfWeek = dow,
+                                courses = courses,
+                                timeJson = table.timeJson,
+                                isGrey = HolidayManager.shouldGrey(context, date, table.id)
+                            )
                         }
                         TwoDayData(
                             days = days,
