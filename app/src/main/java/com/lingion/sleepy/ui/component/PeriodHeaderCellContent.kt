@@ -62,7 +62,10 @@ internal const val PERIOD_HEADER_CARD_PAD_DP = 3f
 
 /** 三行式表头列所需宽度(dp): 在用户滑杆移动到极限时仍能完整显示三行文字。
  *  联合墨迹包络 = timeMax + 2×标签宽 (端点异锚各悬出半标签), 下限 = 3×开始时间宽轨道。
- *  与 PeriodHeaderCellContent 共享同一公式, 真实网格列宽与设置页预览卡共用。 */
+ *  与 PeriodHeaderCellContent 共享同一公式, 真实网格列宽与设置页预览卡共用。
+ *
+ * 2026-09-30 修截断: 列宽按自适应字号 (16sp) 投影, 不再用基准字号 (12sp) 测 —
+ * 基准 12sp 测的墨迹宽比 16sp 实际渲染窄 33%, 列宽不够 → 文字被 .clip 裁掉。 */
 internal fun threeLineWidthDp(
     slots: List<TimeSlot>,
     headerStyle: String,
@@ -71,9 +74,12 @@ internal fun threeLineWidthDp(
     density: androidx.compose.ui.unit.Density,
     hangingUnits: Float = 0f,
     showX: Boolean = false,
+    targetLabelSp: Float = 16f,
 ): androidx.compose.ui.unit.Dp {
     val timeStyle = headerTimeStyle(scale)
     val labelStyle = headerLabelStyle(scale)
+    // 投影到目标字号: 基准 12sp 测的宽度 × (目标字号 / 基准字号)
+    val projection = targetLabelSp / PeriodHeaderAdaptiveFont.BASE_LABEL_SP
     var maxGroup = 0f
     for (slot in slots) {
         val label = if (showX && slot.nodeStart == slot.nodeEnd) {
@@ -90,7 +96,7 @@ internal fun threeLineWidthDp(
             labelWidth = labelWidth,
             showX = showX && slot.nodeStart == slot.nodeEnd,
         )
-        maxGroup = maxOf(maxGroup, metrics.inkWidth(hangingUnits))
+        maxGroup = maxOf(maxGroup, metrics.inkWidth(hangingUnits) * projection)
     }
     // + 卡片内边距 ×2 (PERIOD_HEADER_CARD_PAD_DP, 预览/网格/widget 同一常量), 乘 scale
     return with(density) { maxGroup.toDp() } + (2f * PERIOD_HEADER_CARD_PAD_DP * scale).dp
@@ -106,6 +112,7 @@ fun PeriodHeaderCellContent(
     modifier: Modifier = Modifier,
     hangingUnitsOverride: Float? = null,
     showXOverride: Boolean? = null,
+    sharedFont: PeriodHeaderAdaptiveFont? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -140,12 +147,16 @@ fun PeriodHeaderCellContent(
             val hangingUnits = (hangingUnitsOverride ?: AppPrefs.getPeriodHeaderHanging(context))
                 .coerceIn(-1f, 1f)
             val baseMetrics = PeriodHeaderMetrics(baseStartW, baseEndW, baseLabelW, showX && slot.nodeStart == slot.nodeEnd)
-            val adaptiveFont = PeriodHeaderAdaptiveFont.compute(
-                cardWidthPx = with(density) { maxWidth.toPx() },
-                cardHeightPx = with(density) { maxHeight.toPx() },
-                inkWidthPx = baseMetrics.inkWidth(hangingUnits),
-                timeMaxWidthPx = baseMetrics.timeMax,
-                labelWidthPx = baseLabelW,
+            // 用户 2026-09-29: 整列统一字号 — sharedFont 由调用方按全列最紧约束算一次;
+            // 未传(预览)时逐卡自适应保持原行为。
+            // 单位契约: compute 输入 sp. Dp.toPx()/density = sp (px→sp 正确);
+            // dp 字面量 (52f 等) 数值≈sp, 禁再除 density (2026-09-30 修单位 bug).
+            val adaptiveFont = sharedFont ?: PeriodHeaderAdaptiveFont.compute(
+                cardWidthSp = with(density) { maxWidth.toPx() } / density.density,
+                cardHeightSp = with(density) { maxHeight.toPx() } / density.density,
+                inkWidthSp = baseMetrics.inkWidth(hangingUnits) / density.density,
+                timeMaxWidthSp = baseMetrics.timeMax / density.density,
+                labelWidthSp = baseLabelW / density.density,
             )
             val timeStyleAdaptive = adaptiveHeaderTimeStyle(scale, adaptiveFont)
             val labelStyleAdaptive = adaptiveHeaderLabelStyle(scale, adaptiveFont)

@@ -220,6 +220,39 @@ fun CardsGridView(
     val headerHanging = AppPrefs.getPeriodHeaderHanging(context)
     val headerShowX = AppPrefs.isPeriodHeaderShowX(context)
     val headerTextMeasurer = rememberTextMeasurer()
+    val headerDensity = LocalDensity.current
+    // 用户 2026-09-29: 整列统一字号 — 全列行约束先收集, 由最紧约束算一次;
+    // 每行共用同一个字号, 不再逐行独立自适应造成"有的行大有的行小"。
+    val columnFont = remember(renderSlots, headerStyle, headerLayout, headerShowX, scale) {
+        if (headerLayout != "three_line") return@remember null
+        val timeStyle = headerTimeStyle(scale)
+        val labelStyle = headerLabelStyle(scale)
+        val dPx = headerDensity.density
+        val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
+            val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
+                PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+            } else {
+                PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+            }
+            val startW = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width
+            val endW = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width
+            val labelW = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat()
+            val timeMaxW = maxOf(startW, endW)
+            // 墨迹宽 = 时间块 + 标签在 u=0 时的联合包络 (端点异锚中点)
+            // 用基准字号测, compute 内部会按字号比投影到自适应字号
+            val inkW = timeMaxW + labelW
+            PeriodHeaderAdaptiveFont.RowConstraint(
+                inkWidthSp = inkW / dPx,
+                timeMaxWidthSp = timeMaxW / dPx,
+                labelWidthSp = labelW / dPx,
+            )
+        }
+        PeriodHeaderAdaptiveFont.forColumn(
+            cardWidthSp = 240f,
+            cardHeightSp = 52f * scale,
+            rows = rows,
+        )
+    }
     val timeW = if (headerLayout == "three_line") {
         threeLineWidthDp(
             renderSlots,
@@ -238,7 +271,6 @@ fun CardsGridView(
     }
     // 用户令 2026-09-27: 可见卡片按每行自己的文字包络收口(在 timeW 轨道内居中),
     // timeW 只作为最宽行的列轨道保证对齐 — 窄行不再被最宽行撑出大片空白卡。
-    val headerDensity = LocalDensity.current
     val slotCardWidths = remember(renderSlots, headerStyle, headerLayout, headerHanging, headerShowX, scale) {
         if (headerLayout == "three_line") {
             renderSlots.map { slot ->
@@ -408,7 +440,8 @@ fun CardsGridView(
                                 textFits = phFitsText,
                                 onToggleExpand = if (slot.isPlaceholder && !phFitsText) {
                                     { togglePlaceholder(slot.timeString) }
-                                } else null
+                                } else null,
+                                sharedFont = columnFont,
                             )
                             // 透明占位：保证行宽和表头一致
                             for (day in sortedDays) {
@@ -621,7 +654,7 @@ private fun Modifier.verticalResizeGesture(
 private const val PLACEHOLDER_TEXT_REQUIRED_DP = 19f
 
 @Composable
-private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier, visibleWidth: androidx.compose.ui.unit.Dp? = null, cornerRatio: Float = 1f, textFits: Boolean = true, onToggleExpand: (() -> Unit)? = null) {
+private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modifier = Modifier, visibleWidth: androidx.compose.ui.unit.Dp? = null, cornerRatio: Float = 1f, textFits: Boolean = true, onToggleExpand: (() -> Unit)? = null, sharedFont: PeriodHeaderAdaptiveFont? = null) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val headerLayout = AppPrefs.getPeriodHeaderLayout(context)
@@ -668,6 +701,7 @@ private fun SingleTimeHeadCell(slot: TimeSlot, scale: Float = 1f, modifier: Modi
                     layout = headerLayout,
                     style = headerStyle,
                     scale = scale,
+                    sharedFont = sharedFont,
                 )
             }
         }

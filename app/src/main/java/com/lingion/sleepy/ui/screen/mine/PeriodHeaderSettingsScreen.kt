@@ -45,6 +45,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import com.lingion.sleepy.R
 import com.lingion.sleepy.ui.component.PERIOD_HEADER_CARD_PAD_DP
+import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
 import com.lingion.sleepy.ui.component.PeriodHeaderCellContent
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimeSlot
@@ -177,8 +178,7 @@ private fun HeaderStylePreviews(
     val colors = MaterialTheme.colorScheme
     val density = LocalDensity.current
     val measurer = rememberTextMeasurer()
-    // 全部预览卡同宽 — 取当前设置下最宽包络，保证“第 X 节”完整进入预览卡。
-    // 网格列仍有独立的 46~68dp 收口；预览不能沿用网格上限，否则滑杆变大时会裁字。
+    // 每种样式按自己的文字包络定宽; 最长样式有最长卡片, 禁截断.
     val styleWidths = styles.map { style ->
         threeLineWidthDp(
             slots = listOf(previewSlot),
@@ -190,11 +190,16 @@ private fun HeaderStylePreviews(
             showX = showX,
         )
     }
-    val contentWidth = if (layout == "three_line") {
-        styleWidths.max().coerceAtLeast(46.dp)
-    } else {
-        68.dp
-    }
+    // 字号统一 = 同一算法、同一输入 (52dp 卡高 → 高度驱动, 可读区间钳制):
+    // 预览与网格共用 forPreview/forColumn 的同一 compute 核心, 圈圈/罗马/汉字全同字号。
+    // 谁的内容更长谁的卡片变宽 (contentWidths 已按样式实测), 禁止缩字号迁就。
+    val previewFont = if (layout == "three_line") {
+        PeriodHeaderAdaptiveFont.forPreview(
+            cardWidthSp = with(density) { styleWidths.max().toPx() } / density.density,
+            cardHeightSp = 52f,
+        )
+    } else null
+    val contentWidths = styleWidths.map { if (layout == "three_line") it.coerceAtLeast(46.dp) else 68.dp }
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         Text(stringResource(R.string.appearance_header_preview), style = MaterialTheme.typography.titleSmall)
         FlowRow(
@@ -202,7 +207,7 @@ private fun HeaderStylePreviews(
             horizontalArrangement = Arrangement.spacedBy(8.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            styles.forEach { (value, label) ->
+            styles.forEachIndexed { styleIndex, (value, label) ->
                 Surface(
                     modifier = Modifier
                         .widthIn(min = 76.dp)
@@ -217,7 +222,7 @@ private fun HeaderStylePreviews(
                         verticalArrangement = Arrangement.spacedBy(5.dp),
                     ) {
                         Surface(
-                            modifier = Modifier.width(contentWidth).height(52.dp),
+                            modifier = Modifier.width(contentWidths[styleIndex]).height(52.dp),
                             shape = SleepyTheme.shapes.small,
                             color = colors.surfaceContainerLow,
                         ) {
@@ -233,6 +238,7 @@ private fun HeaderStylePreviews(
                                 scale = 1f,
                                 hangingUnitsOverride = hangingUnits,
                                 showXOverride = showX,
+                                sharedFont = previewFont,
                             )
                             }
                         }
