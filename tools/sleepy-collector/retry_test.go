@@ -85,7 +85,7 @@ var execCtxCache context.Context
 func execCtx() context.Context {
 	if execCtxCache == nil {
 		actx, acancel := chromedp.NewExecAllocator(context.Background(),
-			append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true))...)
+			append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true), chromedp.Flag("no-sandbox", true), chromedp.Flag("disable-dev-shm-usage", true))...)
 		_ = acancel
 		cctx, ccancel := chromedp.NewContext(actx)
 		_ = ccancel

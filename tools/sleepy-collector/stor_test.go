@@ -23,7 +23,7 @@ func TestStorageCapture(t *testing.T) {
 	defer srv.Close()
 
 	ctx, cancel := chromedp.NewExecAllocator(context.Background(),
-		append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true))...)
+		append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true), chromedp.Flag("no-sandbox", true), chromedp.Flag("disable-dev-shm-usage", true))...)
 	defer cancel()
 	cctx, ccancel := chromedp.NewContext(ctx)
 	defer ccancel()
@@ -69,7 +69,7 @@ func TestSelectsCapture(t *testing.T) {
 	defer srv.Close()
 
 	ctx, cancel := chromedp.NewExecAllocator(context.Background(),
-		append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true))...)
+		append(chromedp.DefaultExecAllocatorOptions[:], chromedp.Flag("headless", true), chromedp.Flag("no-sandbox", true), chromedp.Flag("disable-dev-shm-usage", true))...)
 	defer cancel()
 	cctx, ccancel := chromedp.NewContext(ctx)
 	defer ccancel()

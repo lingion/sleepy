@@ -1,0 +1,102 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  commit-lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Lint PR commit messages
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: |
+          npm install -g @commitlint/cli @commitlint/config-conventional
+          # squash 合并后 PR 里每条 commit 都会进 main 历史, 逐条校验
+          git fetch origin "$BASE_REF" --depth=200
+          npx commitlint --from "origin/$BASE_REF" --to HEAD --verbose
+
+  collector-test:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: tools/sleepy-collector
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: tools/sleepy-collector/go.mod
+          cache-dependency-path: tools/sleepy-collector/go.sum
+      - run: go vet ./...
+      - run: go test ./...
+
+  android-unit-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Repo probe (US runner network)
+        run: |
+          for u in \
+            https://maven.aliyun.com/repository/gradle-plugin/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom \
+            https://repo.maven.apache.org/maven2/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom \
+            https://mirrors.cloud.tencent.com/nexus/repository/gradle-plugins/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom \
+            https://plugins.gradle.org/m2/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom; do
+            printf '%s -> ' "$u"
+            curl -s -o /dev/null -w 'http=%{http_code} time=%{time_total}\n' --max-time 15 "$u" || echo 'curl-error'
+          done
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --info --stacktrace 2>&1 | tail -400
+
+  android-lint:
+    # 信息性检查, 不在 ruleset 必需检查清单里 (仓库有历史 lint 基线, 存量 error 未清零)
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - run: ./gradlew :app:lintDebug --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: lint-report
+          path: app/build/reports/lint-results-debug.*
+          retention-days: 7
+
+  android-assemble:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Assemble release APK
+        run: ./gradlew :app:assembleRelease --stacktrace
+      - uses: actions/upload-artifact@v4
+        with:
+          name: apks-debug-signing
+          path: app/build/outputs/apk/release/*.apk
+          retention-days: 7

@@ -19,6 +19,10 @@ func TestChromedpDrivesCfT(t *testing.T) {
 	opts := append(chromedp.DefaultExecAllocatorOptions[:],
 		chromedp.ExecPath(cftPath),
 		chromedp.Flag("headless", true),
+		// GitHub Actions runner (Ubuntu 24.04) 的 AppArmor 禁了无特权 userns,
+		// Chrome setuid sandbox 起不来 (No usable sandbox);CI 才需要这两个旗标
+		chromedp.Flag("no-sandbox", true),
+		chromedp.Flag("disable-dev-shm-usage", true),
 	)
 	allocCtx, cancel := chromedp.NewExecAllocator(context.Background(), opts...)
 	defer cancel()
