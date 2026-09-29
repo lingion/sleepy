@@ -6,7 +6,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Test
 
 /** 纯 JVM fake: SharedPreferences 是接口 + unitTests.isReturnDefaultValues=true, 可直接实现。 */
-private class FakePrefs : SharedPreferences {
+internal class FakePrefs : SharedPreferences {
     val map = LinkedHashMap<String, Any?>()
 
     override fun getAll(): Map<String, Any?> = map.toMap()

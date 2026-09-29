@@ -16,7 +16,7 @@ import org.junit.Assert.assertNull
 import org.junit.Test
 
 /** 模拟 Room autoGenerate 语义: id==0 走自增, id!=0 保留显式 id (REPLACE)。 */
-private class FakeCourseDao : CourseDao {
+internal class FakeCourseDao : CourseDao {
     val rows = LinkedHashMap<Long, CourseEntity>()
     private var nextId = 1L
 
@@ -60,7 +60,7 @@ private class FakeCourseDao : CourseDao {
     override suspend fun totalCount(): Int = rows.size
 }
 
-private class FakeTimeTableDao : TimeTableDao {
+internal class FakeTimeTableDao : TimeTableDao {
     val rows = LinkedHashMap<Long, TimeTableEntity>()
     private var nextId = 1L
     var defaultId: Long? = null
@@ -96,7 +96,7 @@ private class FakeTimeTableDao : TimeTableDao {
         rows.values.filter { it.periodTableId == periodTableId }
 }
 
-private class FakePeriodTableDao : PeriodTableDao {
+internal class FakePeriodTableDao : PeriodTableDao {
     val rows = LinkedHashMap<Long, PeriodTableEntity>()
     private var nextId = 1L
 
@@ -122,7 +122,7 @@ private class FakePeriodTableDao : PeriodTableDao {
     override suspend fun boundTableIds(id: Long): List<Long> = emptyList()
 }
 
-private class FakeImportDraftDao : ImportDraftDao {
+internal class FakeImportDraftDao : ImportDraftDao {
     val rows = LinkedHashMap<String, ImportDraftEntity>()
 
     override suspend fun insert(draft: ImportDraftEntity) {
