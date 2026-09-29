@@ -6,9 +6,12 @@ import org.junit.Test
 /** Locks the experimental notification control to its existing reminders section. */
 class ReminderExperimentalTagContractTest {
     private val source: String by lazy {
-        java.io.File(
-            "/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"
-        ).readText()
+        sequenceOf(
+            System.getProperty("sleepy.test.root")?.let { java.io.File(it, "app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt") },
+            java.io.File("src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"),
+            java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt")
+        ).filterNotNull().firstOrNull { it.isFile }?.readText()
+            ?: error("Unable to load ReminderScreen.kt source")
     }
 
     @Test

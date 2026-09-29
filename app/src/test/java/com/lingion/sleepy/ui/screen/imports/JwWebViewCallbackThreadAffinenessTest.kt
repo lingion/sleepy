@@ -42,15 +42,19 @@ class JwWebViewCallbackThreadAffinenessTest {
         val userDir = System.getProperty("user.dir") ?: ""
         val fromAppDir = if (userDir.endsWith("/app")) "$userDir/src/main/java/com/lingion/sleepy/ui/screen/imports"
                          else "$userDir/$pkgDirRel"
+        val configuredRoot = System.getProperty("sleepy.test.root")?.let {
+            java.io.File(it, pkgDirRel)
+        }
         val currentWorktree = "/Users/lingion_k/sleepy-worktrees/d-pipeline/$pkgDirRel"
         val mainRepo = "/Users/lingion_k/sleepy/$pkgDirRel"
         val roots = sequenceOf(
+            configuredRoot,
             java.io.File(pkgDirRel),
             java.io.File(fromAppDir),
             java.io.File(currentWorktree),
             java.io.File(mainRepo),
         )
-        val firstExisting = roots.firstOrNull { it.isDirectory } ?: error(
+        val firstExisting = roots.filterNotNull().firstOrNull { it.isDirectory } ?: error(
             "No source root found for $pkgDirRel. Tried: $pkgDirRel, $fromAppDir, $currentWorktree, $mainRepo"
         )
         return firstExisting.listFiles { f -> f.isFile && f.name.endsWith(".kt") }
