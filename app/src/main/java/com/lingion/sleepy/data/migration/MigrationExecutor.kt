@@ -18,7 +18,7 @@ import com.lingion.sleepy.data.dao.TimeTableDao
 object MigrationExecutor {
 
     /** prefs 文件访问抽象, 便于纯 JVM 测试注入。 */
-    interface PrefsStore {
+    fun interface PrefsStore {
         fun open(fileName: String): SharedPreferences
     }
 
