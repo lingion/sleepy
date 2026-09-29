@@ -60,6 +60,23 @@ class VendorLiveCardRendererFixContractTest {
     }
 
     @Test
+    fun `xiaomi island flag reflection uses primitive boolean parameter`() {
+        // v1.0.57 regression: reflection targeted getBoolean(String, java.lang.Boolean),
+        // which NoSuchMethodError'd on device → island flag always false → Xiaomi
+        // extras never injected → 超级岛回落普通通知. Lock the primitive type.
+        assertTrue(
+            "xiaomiIslandFeatureFlag must reflect getBoolean(String, Boolean.TYPE); " +
+                "Boolean::class.java selects the wrong overload and always throws",
+            supportSource.contains("java.lang.Boolean.TYPE")
+        )
+        assertFalse(
+            "Boolean::class.java in SystemProperties reflection picks the boxed " +
+                "overload that does not exist on device",
+            supportSource.contains("getBoolean\", String::class.java, Boolean::class.java"),
+        )
+    }
+
+    @Test
     fun `support suppress lint lives where hidden apis are actually called`() {
         assertTrue(
             "xiaomiIslandFeatureFlag reflects SystemProperties — needs BlockedPrivateApi",

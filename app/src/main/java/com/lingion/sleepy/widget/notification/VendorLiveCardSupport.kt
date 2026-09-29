@@ -49,7 +49,8 @@ object VendorLiveCardSupport {
     fun xiaomiIslandFeatureFlag(): Boolean {
         return try {
             val method = Class.forName("android.os.SystemProperties")
-                .getDeclaredMethod("getBoolean", String::class.java, Boolean::class.java)
+                // getBoolean(String, boolean) uses primitive boolean, not java.lang.Boolean.
+                .getDeclaredMethod("getBoolean", String::class.java, java.lang.Boolean.TYPE)
             method.invoke(null, "persist.sys.feature.island", false) as? Boolean ?: false
         } catch (t: Throwable) {
             false
