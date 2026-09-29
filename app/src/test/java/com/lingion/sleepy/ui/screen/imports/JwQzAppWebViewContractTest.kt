@@ -27,10 +27,11 @@ import org.junit.Test
 class JwQzAppWebViewContractTest {
 
     private val source: String = sequenceOf(
+        System.getProperty("sleepy.test.root")?.let { java.io.File(it, "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt") },
+        java.io.File("src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
         java.io.File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
-        java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
         java.io.File(System.getProperty("user.dir"), "sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt"),
-    ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load JwWebViewLoginScreen.kt source")
+    ).filterNotNull().firstOrNull { it.isFile }?.readText() ?: error("Unable to load JwWebViewLoginScreen.kt source")
 
     @Test
     fun qzAppWebView_dispatch_selects_a_dedicated_fetch_branch() {
