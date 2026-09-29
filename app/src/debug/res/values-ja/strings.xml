@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug package identity: app label gets a (debug) suffix. -->
+<resources>
+    <string name="app_name">Sleepy 時間割 (debug)</string>
+</resources>

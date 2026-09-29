@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Debug 包身份规范: 软件名加 (debug) 后缀。 -->
+<resources>
+    <string name="app_name">Sleepy 課表 (debug)</string>
+</resources>

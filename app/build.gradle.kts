@@ -62,6 +62,11 @@ android {
         debug {
             isMinifyEnabled = false
             versionNameSuffix = "-debug"
+            // Debug 包身份规范(与正式包区分):
+            //  1) applicationId 末段加 .debug, 数据沙箱与正式包完全隔离
+            //  2) 软件名后缀 (debug), 由 app/src/debug/res 覆盖各 locale app_name
+            //  3) launcher icon 反色, 由 app/src/debug/res 覆盖 mipmap + drawable
+            applicationIdSuffix = ".debug"
         }
         release {
             isMinifyEnabled = true
@@ -123,7 +128,7 @@ android {
             isEnable = true
             reset()
             include("arm64-v8a", "armeabi-v7a", "x86_64")
-            isUniversalApk = false
+            isUniversalApk = true
         }
     }
 }
