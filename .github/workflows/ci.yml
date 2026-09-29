@@ -53,8 +53,18 @@ jobs:
           distribution: temurin
           java-version: '17'
       - uses: gradle/actions/setup-gradle@v4
+      - name: Repo probe (US runner network)
+        run: |
+          for u in \
+            https://maven.aliyun.com/repository/gradle-plugin/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom \
+            https://repo.maven.apache.org/maven2/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom \
+            https://mirrors.cloud.tencent.com/nexus/repository/gradle-plugins/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom \
+            https://plugins.gradle.org/m2/com/google/devtools/ksp/com.google.devtools.ksp.gradle.plugin/2.1.10-1.0.29/com.google.devtools.ksp.gradle.plugin-2.1.10-1.0.29.pom; do
+            printf '%s -> ' "$u"
+            curl -s -o /dev/null -w 'http=%{http_code} time=%{time_total}\n' --max-time 15 "$u" || echo 'curl-error'
+          done
       - name: Unit tests
-        run: ./gradlew :app:testDebugUnitTest --stacktrace
+        run: ./gradlew :app:testDebugUnitTest --info --stacktrace 2>&1 | tail -400
 
   android-lint:
     # 信息性检查, 不在 ruleset 必需检查清单里 (仓库有历史 lint 基线, 存量 error 未清零)
