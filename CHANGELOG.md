@@ -1,231 +1,38 @@
 # Changelog
 
-## v1.0.35
+本项目所有重要变更记录于此。
 
-### Grid card sub-info — room, teacher, or nothing
+格式基于 [Keep a Changelog 1.1.0](https://keepachangelog.com/en/1.1.0/),版本号遵循 [SemVer 2.0.0](https://semver.org/spec/v2.0.0.html)(详见 [VERSIONING.md](VERSIONING.md))。
 
-Week grid cards showed course name plus a "3-4节" node label under it. The leftmost column already carries the node numbers and times. The card's vertical position *is* the node. That second line repeated information you get for free.
+- **每个已发布版本的完整说明**(英文在前、中文在后)见 [GitHub Releases](https://github.com/lingion/sleepy/releases),它们与仓库内的 `docs/release-notes-v*.*.*.md` 一一对应。
+- 本文件只跟踪"未发布(Unreleased)"段与版本分类速览;发版时 Unreleased 内容整理进新的 release notes,此处分段归档。
 
-Setting now in 通用设置 → 课程显示 → 网格卡片副信息. Three options:
+## [Unreleased]
 
-- 教室 — the room under the course name. Default.
-- 教师 — the teacher instead.
-- 无 — course name only, centered in the card.
+### Added
 
-Empty room or empty teacher renders as "none" for that card; no blank line. Changes take effect immediately, no restart.
+- 仓库协作规范升级:main 分支 ruleset 保护(PR-only、squash-only 线性历史、必需 CI 检查),`ci.yml` PR 门禁(commitlint / collector 单测 / Android 单测 / lint / assembleRelease),`release.yml` tag 触发发布,版本号由 git tag 与 `docs/release-notes-v*.md` 派生([VERSIONING.md](VERSIONING.md))。
 
-### Three pages stopped ignoring your theme
+## [1.0.57] - 2026-09-28
 
-You pick spring green. Most of the app turns spring green. Three screens didn't get the memo:
+### Added
 
-The JW import page (教务导入) hardcoded `themeKey = "default"` and followed the *system* dark mode instead of the in-app setting. So with spring green selected and dark mode set to "always light" in-app, the import flow showed default purple in dark. Same story in the week grid preview. The import conflict card also drew its red background from two hex literals — `0xFFFFEBEE` / `0xFFB71C1C` — which are light-theme pink-red and stay pink-red in every theme. Now they read `errorContainer` / `onErrorContainer` from whatever theme you picked.
+- 混合课时课表:逐节次设置不同课时,导入导出全链路往返。
+- 假期调休映射:假期日期到实际上课日期的映射,主课表/Today/周网格/通知/小组件全生效。
+- 最近有课日:当天无课时可显示最近的有课日,主课表与五族小组件共享开关。
+- 前夜明日预告:每日提醒卡片可预览明日首课与总课数。
+- 厂商实时通知引导:支持的机型家族给出能力感知的引导与厂商设置回退。
+- Android 15 小组件预览:13 个小组件变体注册无数据选择器预览。
+- 诊断导出:导入失败走单一 AlertDialog,一键导出完整诊断包。
+- 新增教务协议与学校:目录由 340 增至 345 所。
 
-All three pages now subscribe to `AppPrefs.themeKeyFlow` and `AppPrefs.isDarkMode`, same as the main schedule. Change theme, they follow.
+### Changed
 
-### Course capsule text no longer hugs the bottom
+- 官方 Navigation 3:自研 overlay 栈替换为类型化路由 + Material 过渡。
+- Material 3 迁移:主题与组件渲染切到官方 M3 API,旧主题桥删除。
+- 通用设置重排:课表显示/小组件/屏幕导航/语言/实验室分组定序。
 
-With sub-info showing, the course name sat directly on top of the room line — zero gap at two-line heights. The card now splits its space: name centered in the upper region, sub-info pinned to the bottom edge. Cards without sub-info center the name as before.
+(1.0.35–1.0.56 的完整变更见对应 [GitHub Release](https://github.com/lingion/sleepy/releases) 与 `docs/release-notes-v*.md`。)
 
-### Settings pages split
-
-外观 (Appearance) held theme colors, course display, and widget settings — three groups, one page. The course-display and widget groups moved to 通用设置 (General). Appearance is now theme colors only. The `refreshWidgets()` pipeline moved with them, so display changes still refresh widgets instantly.
-
-The shared card components (SectionHeader / SettingsCard / DisplayModeOption / SettingToggleRow) were pulled into a single `SettingsCards.kt` used by both pages, instead of two diverging copies.
-
-### Build
-
-- versionCode: 36
-- versionName: 1.0.35
-- APKs: `app-arm64-v8a-release.apk` (most phones), `app-armeabi-v7a-release.apk` (older arm32), `app-x86_64-release.apk` (emulator)
-
-— Lingion
-
----
-
-## v1.0.34
-
-### Course color split — one toggle became two
-
-Last release shipped a "unified course color" toggle. One switch, two jobs: it stripped color from the desktop widgets *and* from the in-app schedule grid. If you wanted gray widgets but colored capsules in the app, too bad. One switch drove both.
-
-Now they're two independent settings.
-
-- `widget_colorless` — desktop widgets only. Behavior unchanged.
-- `course_colorless` — the in-app schedule grid and today page only. New, default off.
-
-Default off means the app's course capsules come back in color after you update, even if you had the old unified toggle on. The two sides no longer touch each other.
-
-The split is enforced in `AppPrefs`, not just in the UI. The two keys live side by side, neither reads the other, neither seeds the other. There's no migration step — the old widget toggle keeps its stored value, the new course toggle starts from its default. Zero cross-read, so the independence can't regress silently. The course toggle's switch handler deliberately does *not* call `refreshWidgets()`, because it has nothing to do with widgets.
-
-### CourseColorUtil — one source of truth, plus text luminance
-
-Course color logic existed in four places. Four copies of the same HSL-picking code, drifting. This release pulls them into a single `CourseColorUtil` with three layers: constants, pure logic, and platform adapters. The four call sites now point at one implementation.
-
-Along the way, a real bug: text color on custom course capsules used a fixed source, so a dark custom course color produced dark text you couldn't read. `CourseColorUtil` gained `luminance` and `textColorOn` pure functions. Deep custom colors now get white text; light ones keep the old behavior. This lands on every surface that renders a course capsule — the in-app card, the lesson rows, the today card, and the widget bitmap renderers.
-
-### Glance layer deleted
-
-The Glance framework is gone. All five widgets now render through synchronous RemoteViews + Canvas — no `SessionWorker`, no async render that OPPO freezes mid-draw. `CourseColorRules` went with it, and `loadDataSync` moved into the receivers.
-
-This is internal. No user-visible behavior change. But it's why the widget refresh story from 1.0.31/1.0.33 finally holds everywhere: one code path, no async race.
-
-### Settings screen reorganized
-
-The settings entry grew to eight items. It's five now: theme, appearance, widget settings, and the rest. A new `AppearanceScreen` groups three sections — theme colors, course display, widget. The dead `ThemeColorScreen` and `MoreSettingsScreen` routes were deleted outright.
-
-The "follow system" label is also split in two: light-follows-system and dark-follows-system, each its own switch.
-
-### inWeek semantics — courses no longer forced into a start-to-end range
-
-Single/double-week courses were being expanded into a continuous "start week to end week" span, whether that matched reality or not. Fixed. Courses now show on their actual weeks.
-
-This means some schedules look like they lost cells after updating. They didn't. The old display was wrong. If a course only meets on odd weeks, it shows on odd weeks — not as a block running from week 1 to week 16.
-
-### Android backup rules pointed at the wrong filename
-
-Sleepy has no cloud service and no in-app backup. The `backup_rules.xml` and `data_extraction_rules.xml` files are the platform-side rules Android reads when the OS does auto-backup or device-transfer. They listed `settings.xml` as the preference file to back up. That file doesn't exist — `AppPrefs` writes to `sleepy_prefs.xml`. The result: whenever Android tried to back up or transfer your Sleepy settings, it copied nothing.
-
-Three rule entries — `backup_rules.xml` plus the cloud-backup and device-transfer sections of `data_extraction_rules.xml` — now point at the real filename. Whether anything actually gets backed up is still up to Android and your device vendor.
-
-### Internationalization
-
-Sixteen theme keys still had untranslated Simplified Chinese left in the English, Japanese, Spanish, and Traditional Chinese locales. Translated. Plus terminal-pass consistency: Traditional Chinese now uses 檔案/匯出/文字 across the board, Japanese uses 授業 for courses, Spanish uses Período for periods.
-
-### ICS export
-
-Single/double-week courses now export with `INTERVAL=2` — they were exporting as ordinary weekly courses before. Custom times (`ownTime`) export too.
-
-### Stability
-
-- lintRelease ran with eight errors. All cleared: notification permission checks inlined before each post (guards the coroutine window where the permission could be revoked), widget size reads wrapped in a `TIRAMISU` guard that fixes a real `NoSuchMethodError` crash on API 31/32, `ExportScreen` falls back through `FileProvider` on API 26-28.
-- The reminder subsystem's `cancelAll` moved off `runBlocking` onto a coroutine — the screen no longer blocks while alarms cancel.
-- Minute input debounced.
-- Deleting a schedule table now explicitly cancels the before-class alarms of the courses it cascades away.
-
-### Known issue (BG-14)
-
-Fresh installs don't get the 15-minute fallback widget refresh — `WidgetUpdater.schedule` is a dead link. Slated for v1.0.35. If your widget goes stale, open the app and touch some data once.
-
-### Build
-
-- versionCode: 35
-- versionName: 1.0.34
-- APKs: `app-arm64-v8a-release.apk` (most phones), `app-armeabi-v7a-release.apk` (older arm32), `app-x86_64-release.apk` (emulator)
-
-— Lingion
-
----
-
-## v1.0.35
-
-### 网格卡片副信息——教室 / 教师 / 无
-
-周视图网格卡之前在课程名下面垫一行「3-4节」。左栏本来就印着节次和时间，卡片在网格里的纵向位置本身就对应节次。那行字等于重复了一遍免费就能看到的信息。
-
-设置入口:通用设置 → 课程显示 → 网格卡片副信息。三个选项:
-
-- 教室——课程名下方显示上课地点。默认。
-- 教师——显示授课教师。
-- 无——只显示课程名，居中。
-
-某门课没填教室/教师时，那张卡自动按「无」处理，不会留一行空白。改完立即生效。
-
-### 三个页面终于肯跟主题走了
-
-你选了春绿，App 大部分地方跟着变绿。有三处没跟上:
-
-教务导入页把 `themeKey` 写死成 `"default"`,深浅色跟的是系统而不是 App 内设置。于是你 App 里选了春绿+强制浅色，导入流程照样渲染默认紫+暗色。周视图预览页同样的问题。导入冲突数卡片还有两处写死的红色——`0xFFFFEBEE` / `0xFFB71C1C`,浅色主题的粉红，在任何主题下都是那个粉红。现在改读主题的 `errorContainer` / `onErrorContainer`。
-
-三个页面现在都订阅 `AppPrefs.themeKeyFlow` 和 `AppPrefs.isDarkMode`,跟主课表同一条线。换主题，它们跟着换。
-
-### 课程名不再贴着副文字
-
-显示副信息时，课程名紧贴在教室/教师那行上面——两行文字零间距。现在卡片空间一分为二:课程名在上半区居中，副信息贴卡片底边。没副信息的卡保持原来的整体居中。
-
-### 设置页拆分
-
-外观页一度装了主题色彩、课程显示、小组件三组。课程显示和小组件两组迁去了通用设置，外观页只剩主题色彩。`refreshWidgets()` 管线随迁，改显示项后小组件照旧即时刷新。
-
-公共卡片组件(SectionHeader / SettingsCard / DisplayModeOption / SettingToggleRow)抽成了单独的 `SettingsCards.kt`,两页共用，不再各养一份各漂各的。
-
-### 构建
-
-- versionCode: 36
-- versionName: 1.0.35
-- APK:`app-arm64-v8a-release.apk`(多数手机)、`app-armeabi-v7a-release.apk`(旧款 arm32)、`app-x86_64-release.apk`(模拟器)
-
-— Lingion
-
----
-
-## v1.0.34
-
-### 课程颜色拆分——一个开关变成两个
-
-上个版本出了一个「统一课程底色」开关。一个开关干两件事:既去掉桌面小组件的颜色,又去掉 App 内课表的颜色。你想要小组件变灰、但 App 里胶囊保持彩色?不行,一个开关两头都绑死了。
-
-现在拆成两个独立设置。
-
-- `widget_colorless`——只管桌面小组件。行为不变。
-- `course_colorless`——只管 App 内的课表和今日页。新增,默认关。
-
-默认关意味着更新之后 App 的课程胶囊会恢复彩色,哪怕你之前把旧的统一开关开着。两边不再互相影响。
-
-这个拆分是在 `AppPrefs` 层做的,不是只在 UI 上。两个 key 并排放着,谁也不读谁,谁也不给谁播种。没有迁移步骤——旧的小组件开关保留它存的值,新的课程开关从默认值开始。零互读,独立性没法静默退化。课程开关的 handler 特意**不**调 `refreshWidgets()`,因为它跟小组件没关系。
-
-### CourseColorUtil——单一事实来源 + 文字亮度
-
-课程配色逻辑原本散在四处。四份 HSL 选色的拷贝,各自漂移。这个版本把它们收敛进一个 `CourseColorUtil`,三层结构:常量、纯逻辑、平台适配。四个调用点现在指向同一个实现。
-
-顺带修了一个真 bug:自定义课程胶囊的文字色用了固定来源,深色的自定义课程底配深色文字,根本看不清。`CourseColorUtil` 加了 `luminance` 和 `textColorOn` 两个纯函数。深色自定义底色现在出白字,浅色底保持原样。所有渲染课程胶囊的地方都接上了——App 内的卡片、lesson 行、今日卡片,还有小组件的 bitmap renderer。
-
-### Glance 层整个删掉
-
-Glance 框架没了。五个小组件现在全走同步的 RemoteViews + Canvas——没有 `SessionWorker`,没有那个 OPPO 渲染到一半就冻住的异步流程。`CourseColorRules` 一起删,`loadDataSync` 迁进了 receiver。
-
-这是内部改动,用户看不到行为变化。但它就是 1.0.31/1.0.33 里那个小组件刷新问题终于到处都成立的原因:一条代码路径,没有异步竞态。
-
-### 设置页重排
-
-设置入口一度涨到八项。现在是五项:主题、外观、小组件设置,加其余。新增 `AppearanceScreen`,三组结构——主题色彩、课程显示、小组件。死掉的 `ThemeColorScreen` 和 `MoreSettingsScreen` 路由整个删掉。
-
-「跟随系统」标签也拆成两个:浅色跟随系统、深色跟随系统,各一个开关。
-
-### inWeek 语义——课程不再被硬塞进起止区间
-
-单双周课程之前被扩成一个连续的「起始周—结束周」区间,不管符不符合实际。修了。课程现在按实际周次显示。
-
-这意味着有些课表更新后看起来「少了几格」。其实没少。是旧的显示错了。一门只上单周的课,就显示在单周——不是从第 1 周到第 16 周拉一条。
-
-### Android 备份规则指向了错的文件名
-
-Sleepy 没有云服务,也没有应用内备份。`backup_rules.xml` 和 `data_extraction_rules.xml` 是 Android 系统做自动备份或换机迁移时读取的平台侧规则。里面把偏好文件写成了 `settings.xml`。这文件根本不存在——`AppPrefs` 写的是 `sleepy_prefs.xml`。结果就是:Android 一旦尝试备份或迁移你的 Sleepy 设置,拷过去的是空气。
-
-三处规则——`backup_rules.xml` 加上 `data_extraction_rules.xml` 的 cloud-backup 和 device-transfer 两段——现在指向真实文件名。到底有没有真的备份上去,还是看 Android 和手机厂商。
-
-### 国际化
-
-十六个主题 key 在英语、日语、西班牙语、繁体中文里还残留着没翻译的简体中文。翻完了。加上终审的一致性:繁体中文统一用 檔案/匯出/文字,日语课程统一用 授業,西班牙语节次统一用 Período。
-
-### ICS 导出
-
-单双周课程现在导出 `INTERVAL=2`——之前被当普通周课导。自定义时间(`ownTime`)也能导出了。
-
-### 稳定性
-
-- lintRelease 原本报 8 个 error,全清零:通知权限校验在每次 post 前内联(守住协程窗口期权限被撤销的兜底),小组件尺寸读取套 `TIRAMISU` 守卫修了一个 API 31/32 上的真 `NoSuchMethodError` 崩溃,`ExportScreen` 在 API 26-28 走 `FileProvider` 回退。
-- 提醒子系统的 `cancelAll` 从 `runBlocking` 挪到协程——取消闹钟时界面不再卡死。
-- 分钟输入加了 debounce。
-- 删课表时现在显式取消级联删除课程的课前闹钟。
-
-### 既知问题(BG-14)
-
-新装用户拿不到 15 分钟兜底的小组件刷新——`WidgetUpdater.schedule` 是个死链。排在 v1.0.35。小组件要是过期了,进 App 碰一下任意数据。
-
-### 构建
-
-- versionCode: 35
-- versionName: 1.0.34
-- APK:`app-arm64-v8a-release.apk`(多数手机)、`app-armeabi-v7a-release.apk`(旧款 arm32)、`app-x86_64-release.apk`(模拟器)
-
-— Lingion
+[Unreleased]: https://github.com/lingion/sleepy/compare/v1.0.57...HEAD
+[1.0.57]: https://github.com/lingion/sleepy/compare/v1.0.56...v1.0.57

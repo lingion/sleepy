@@ -7,6 +7,41 @@ plugins {
     id("com.google.devtools.ksp")
 }
 
+// 版本号从 git tag + docs/release-notes-*.md 派生 (2026-09-29 治理定案):
+//   versionName  = 最近 v*.*.* tag 去 v 前缀
+//   versionCode  = major*10000 + minor*100 + patch (单调递增, 可重现)
+// 打 tag 之前 (main HEAD 无 tag 祖先) 时, 真源回退到 docs/release-notes-v*.md 最大版本;
+// 再无 (fresh clone, 无 tag 无 notes) 时 fallback 0.0.0/1 — 后者不应分发。
+fun versionFromGit(): Pair<String, Int> {
+    fun parse(ver: String): Pair<String, Int> {
+        val m = Regex("v?(\\d+)\\.(\\d+)\\.(\\d+)(.*)").find(ver) ?: return "0.0.0" to 1
+        val (maj, min, pat, suffix) = m.destructured
+        val name = "$maj.$min.$pat$suffix"
+        return name to (maj.toInt() * 10000 + min.toInt() * 100 + pat.toInt())
+    }
+    // 真源 1: git describe 最近 v*.*.* tag
+    val tag = try {
+        val p = ProcessBuilder("git", "describe", "--tags", "--match", "v*.*.*", "--abbrev=0")
+            .redirectErrorStream(true).start()
+        val out = p.inputStream.readBytes().toString(Charsets.UTF_8).trim()
+        p.waitFor()
+        if (p.exitValue() == 0) out else null
+    } catch (_: Exception) { null }
+    if (tag != null) return parse(tag)
+    // 真源 2: docs/release-notes-v*.*.*.md 文件名最大版本 (tag 缺席时的日常 main)
+    val notesRoot = rootProject.file("docs")
+    if (notesRoot.exists() && notesRoot.isDirectory) {
+        val re = Regex("v(\\d+\\.\\d+\\.\\d+)")
+        val max = notesRoot.listFiles { f -> f.name.startsWith("release-notes-v") && f.name.endsWith(".md") }
+            ?.mapNotNull { re.find(it.name.removeSuffix(".md"))?.groupValues?.get(1) }
+            ?.maxByOrNull { it.split('.').map(String::toInt).let { p -> p[0] * 1000000 + p[1] * 1000 + p[2] } }
+        if (max != null) return parse("v$max")
+    }
+    // 兜底: fresh clone, 不应分发
+    return "0.0.0" to 1
+}
+val (derivedVersionName, derivedVersionCode) = versionFromGit()
+
 android {
     namespace = "com.lingion.sleepy"
     compileSdk = 37
@@ -15,8 +50,8 @@ android {
         applicationId = "com.lingion.sleepy"
         minSdk = 26
         targetSdk = 37
-        versionCode = 63
-        versionName = "1.0.57"
+        versionCode = derivedVersionCode
+        versionName = derivedVersionName
         vectorDrawables { useSupportLibrary = true }
         androidResources {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")

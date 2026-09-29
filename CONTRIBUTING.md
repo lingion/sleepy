@@ -39,6 +39,9 @@ cd sleepy
    教务适配另跑该校 fixture 测试；改 WebView 内 JS 正则的，还必须同步通过对应的 `*WebViewContractTest`（如 `JwNeuWebViewContractTest`、`HfutPortalEams5WebViewContractTest`）。这类测试锁的是：同一条解析规则会同时出现在网页注入的 JS 和 Kotlin 两侧，两边写得不一致时页面表现和导入结果就对不上，contract 测试保证"两边写的是同一条规则"。
 
 4. PR 描述写清动机和行为变化；关联 issue 用 `ref #N`（不用 `Fixes #N`，由维护者合并后统一关闭）。
+5. **合并走 PR + squash**(不要 merge / rebase 进 main)。main 受 ruleset 保护：禁直推、禁非 fast-forward、必需 CI 全绿（commit-lint / collector-test / android-unit-test / android-assemble）。PR 里的**每条 commit message** 都要符合上面的 `<type>(<scope>): <subject>` 格式——commit-lint job 逐条校验。
+6. 贡献者的 PR 分支推到 `origin` 不需要额外批准；**合入 main 由维护者 squash 合并**。
+7. 版本号 / Release 由维护者打 `v*.*.*` tag 触发（`scripts/bump-version.sh`），不需要在 PR 里手改 `build.gradle.kts`——版本构建时从 tag 派生，见 [VERSIONING.md](VERSIONING.md)。
 
 ## 教务适配的特殊要求
 
