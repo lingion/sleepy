@@ -1,0 +1,67 @@
+name: Release
+
+# tag 触发发布 (治理阶段4): 跑测试 → assembleRelease → 以 docs/release-notes-v<ver>.md
+# 为 body 建 GitHub Release (notes 手写双语, 自动化只搬运不生成) → 上传 APK 附件。
+# Gitee 镜像由 sync-to-gitee.yml 以 GitHub Release 为真源自动接管 (release 事件)。
+
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Verify tag matches release notes
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          NOTES="docs/release-notes-v${VER}.md"
+          if [ ! -f "$NOTES" ]; then
+            echo "::error::缺少 $NOTES — 发布前必须先写好双语 release notes 并随 tag 提交"
+            exit 1
+          fi
+          echo "notes=$NOTES" >> "$GITHUB_OUTPUT"
+        id: notes
+
+      - name: Unit tests
+        run: ./gradlew :app:testDebugUnitTest --stacktrace
+
+      - name: Assemble release APK
+        run: ./gradlew :app:assembleRelease --stacktrace
+
+      - name: Collect APK artifacts
+        run: |
+          mkdir -p dist
+          find app/build/outputs/apk/release -name '*.apk' -exec cp {} dist/ \;
+          cd dist
+          sha256sum *.apk > sha256sums.txt
+          ls -la
+
+      - name: Create GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          VER="${GITHUB_REF_NAME#v}"
+          gh release create "$GITHUB_REF_NAME" \
+            --title "Sleepy v${VER}" \
+            --notes-file "${{ steps.notes.outputs.notes }}" \
+            dist/*
