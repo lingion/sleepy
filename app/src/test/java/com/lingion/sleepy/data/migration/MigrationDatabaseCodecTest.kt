@@ -92,8 +92,6 @@ internal class FakeTimeTableDao : TimeTableDao {
     }
 
     override suspend fun getDefault(): TimeTableEntity? = defaultId?.let { rows[it] }
-    override suspend fun getAllBoundTo(periodTableId: Long): List<TimeTableEntity> =
-        rows.values.filter { it.periodTableId == periodTableId }
 }
 
 internal class FakePeriodTableDao : PeriodTableDao {
