@@ -172,8 +172,15 @@ func selfCheckAndUpdate() (ok bool, updated bool, err error) {
 			return true, false, fmt.Errorf("旧版改名失败: %w", err)
 		}
 	}
-	if err := os.WriteFile(exe, bin, 0o755); err != nil {
+	// POSIX 原子替换: 写同目录临时文件再 rename。rename 对运行中的 exe 合法,
+	// 而直写运行中 exe 在 Linux 报 ETXTBSY (text file busy), macOS 才允许直写。
+	tmp := exe + ".new"
+	if err := os.WriteFile(tmp, bin, 0o755); err != nil {
 		return true, false, fmt.Errorf("写入新版失败: %w", err)
+	}
+	if err := os.Rename(tmp, exe); err != nil {
+		_ = os.Remove(tmp)
+		return true, false, fmt.Errorf("替换新版失败: %w", err)
 	}
 	return false, true, nil
 }
