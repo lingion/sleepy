@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.imports
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * SEP XRW 剥离架构契约 (UCAS #18) — 源码扫描锁不变量。

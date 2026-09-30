@@ -1,6 +1,9 @@
 package com.lingion.sleepy.ui.screen.mine
 
+import android.Manifest
 import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -31,6 +34,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.layout.heightIn
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.calendar.SystemCalendarManager
 import com.lingion.sleepy.SleepyApp
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -102,6 +106,9 @@ fun ExportScreen(
     val table = state.tables.find { it.id == effectiveId } ?: state.currentTable
     val selectedPeriodTable = allPeriodTables.find { it.id == exportPeriodTableId }
     val tables = state.tables
+    val hydratedTable = table?.let { raw ->
+        raw.periodTableId?.let { id -> allPeriodTables.firstOrNull { it.id == id } }?.let(raw::hydratedWith) ?: raw
+    }
 
     // 选中表的课程: 当前表直接用 state.courses(已观察), 其他表选中时本地加载一次
     var loadedCourses by remember(effectiveId) { mutableStateOf<List<CourseEntity>?>(null) }
@@ -118,6 +125,36 @@ fun ExportScreen(
     val courses = loadedCourses ?: state.courses
 
     var showTablePicker by remember { mutableStateOf(false) }
+    var showCalendarImport by remember { mutableStateOf(false) }
+
+    // 日历导出入口(权限状态机):
+    // 已授权 → 载入目标表课程后直接打开配置弹窗;
+    // 未授权 → 只发系统权限请求; 授权回调里再实际校验, 已授权自动进配置, 拒绝则停留本页。
+    suspend fun loadCoursesForCurrentTarget() {
+        val targetId = table?.id ?: return
+        if (targetId != state.selectedTableId) {
+            loadedCourses = withContext(Dispatchers.IO) {
+                SleepyApp.get().repository.getCourses(targetId)
+            }
+        }
+    }
+    suspend fun openCalendarImportForCurrentTarget() {
+        loadCoursesForCurrentTarget()
+        showCalendarImport = true
+    }
+
+    // 系统日历权限状态机: ExportScreen 是唯一入口。
+    // 已授权 → 直接进入配置;未授权 → 启动系统请求;授权回调后再次实际校验,
+    // 已授权则直接进入配置, 未授权则停留在导出页(不显示任何授权弹窗, 下次点击重试)。
+    val calendarPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions()
+    ) { _ ->
+        if (SystemCalendarManager.hasCalendarPermissions(ctx)) {
+            scope.launch { openCalendarImportForCurrentTarget() }
+        } else {
+            showCalendarImport = false
+        }
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize().background(colors.background),
@@ -300,6 +337,28 @@ fun ExportScreen(
                     )
                     Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
                     ExportItem(
+                        icon = Icons.Outlined.CalendarMonth,
+                        title = stringResource(R.string.calendar_import_title),
+                        subtitle = if (effectiveId != state.selectedTableId && loadedCourses == null)
+                            stringResource(R.string.calendar_import_loading)
+                        else stringResource(R.string.calendar_import_subtitle),
+                        onClick = {
+                            scope.launch {
+                                if (SystemCalendarManager.hasCalendarPermissions(ctx)) {
+                                    openCalendarImportForCurrentTarget()
+                                } else {
+                                    calendarPermissionLauncher.launch(
+                                        arrayOf(
+                                            Manifest.permission.READ_CALENDAR,
+                                            Manifest.permission.WRITE_CALENDAR
+                                        )
+                                    )
+                                }
+                            }
+                        }
+                    )
+                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    ExportItem(
                         icon = Icons.Outlined.Star,
                         title = stringResource(R.string.export_native_title),
                         subtitle = stringResource(R.string.export_native_subtitle),
@@ -393,6 +452,14 @@ fun ExportScreen(
             },
             confirmButton = {},
             dismissButton = {}
+        )
+    }
+
+    if (showCalendarImport && hydratedTable != null && SystemCalendarManager.hasCalendarPermissions(ctx)) {
+        CalendarImportDialog(
+            table = hydratedTable,
+            courses = courses,
+            onDismiss = { showCalendarImport = false }
         )
     }
 }

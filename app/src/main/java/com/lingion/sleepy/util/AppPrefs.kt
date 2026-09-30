@@ -44,6 +44,12 @@ object AppPrefs {
     const val DEFAULT_TOMORROW_REMINDER_TIME = "22:00"
     const val KEY_BEFORE_CLASS_ENABLED = "before_class_enabled"       // bool default false
     const val KEY_BEFORE_CLASS_MINUTES = "before_class_minutes"       // int default 10
+    const val KEY_CALENDAR_TARGET_ID = "calendar_import_target_id"
+    const val KEY_CALENDAR_IMPORT_RANGE = "calendar_import_range"
+    const val KEY_CALENDAR_APPLY_TRANSFERS = "calendar_import_apply_transfers"
+    const val KEY_CALENDAR_REMINDER_MINUTES = "calendar_import_reminder_minutes"
+    const val KEY_CALENDAR_FIRST_ALARM = "calendar_import_first_alarm"
+    const val KEY_CALENDAR_FIRST_ALARM_MINUTES = "calendar_import_first_alarm_minutes"
     const val KEY_BEFORE_CLASS_BANNER = "before_class_banner"         // bool default true
     const val KEY_BEFORE_CLASS_FLUID = "before_class_fluid"            // bool default false
     const val KEY_BEFORE_CLASS_FLUID_FIELDS = "before_class_fluid_fields" // legacy multi-select
@@ -77,6 +83,10 @@ object AppPrefs {
     const val KEY_GRID_ROW_SCALE = "grid_row_scale" // float default 1.0 — 双指行高缩放确认值(相对基座; 顶栏 tick 落盘, 撤回回退)
     const val KEY_GRID_PINCH_ZOOM = "grid_pinch_zoom" // bool default false — 实验室: 网格视图双指捏放行高(v1.0.56 默认关, 关=手势不挂; 存量缩放值不清)
     const val DEFAULT_GRID_PINCH_ZOOM = false
+    const val KEY_GRID_SHOW_SEPARATORS = "grid_show_separators" // bool default false — 实验室: 网格额外分隔线
+    const val DEFAULT_GRID_SHOW_SEPARATORS = false
+    const val KEY_GRID_LONG_BREAK_SPACING = "grid_long_break_spacing" // bool default false — 实验室: 长课间额外留白
+    const val DEFAULT_GRID_LONG_BREAK_SPACING = false
     const val KEY_NEAREST_BUSY_DAY = "nearest_busy_day" // bool default false — 今天没课时自动显示最近一个有课的日子
     const val DEFAULT_NEAREST_BUSY_DAY = false
     const val KEY_WEEK_SCALE = "week_scale" // float 0.7~1.3 default 1.0 — 周视图整体缩放(与网格视图互相独立, issue#8)
@@ -229,6 +239,31 @@ object AppPrefs {
 
     fun setBeforeClassMinutes(ctx: Context, minutes: Int) {
         sp(ctx).edit().putInt(KEY_BEFORE_CLASS_MINUTES, minutes).apply()
+    }
+
+    fun getCalendarTargetId(ctx: Context): Long = sp(ctx).getLong(KEY_CALENDAR_TARGET_ID, -1L)
+    fun setCalendarTargetId(ctx: Context, id: Long) { sp(ctx).edit().putLong(KEY_CALENDAR_TARGET_ID, id).apply() }
+    fun getCalendarImportRange(ctx: Context): String = sp(ctx).getString(KEY_CALENDAR_IMPORT_RANGE, "NEXT_WEEK") ?: "NEXT_WEEK"
+    fun setCalendarImportRange(ctx: Context, range: String) {
+        require(range in setOf("NEXT_WEEK", "NEXT_MONTH", "SEMESTER"))
+        sp(ctx).edit().putString(KEY_CALENDAR_IMPORT_RANGE, range).apply()
+    }
+    fun isCalendarApplyTransfers(ctx: Context): Boolean = sp(ctx).getBoolean(KEY_CALENDAR_APPLY_TRANSFERS, true)
+    fun setCalendarApplyTransfers(ctx: Context, enabled: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_CALENDAR_APPLY_TRANSFERS, enabled).apply()
+    }
+    /** null means calendar events receive no ordinary reminder. */
+    fun getCalendarReminderMinutes(ctx: Context): Int? = sp(ctx).getInt(KEY_CALENDAR_REMINDER_MINUTES, 15).takeIf { it >= 0 }
+    fun setCalendarReminderMinutes(ctx: Context, minutes: Int?) {
+        sp(ctx).edit().putInt(KEY_CALENDAR_REMINDER_MINUTES, minutes?.coerceIn(0, 999) ?: -1).apply()
+    }
+    fun isCalendarFirstAlarmEnabled(ctx: Context): Boolean = sp(ctx).getBoolean(KEY_CALENDAR_FIRST_ALARM, false)
+    fun setCalendarFirstAlarmEnabled(ctx: Context, enabled: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_CALENDAR_FIRST_ALARM, enabled).apply()
+    }
+    fun getCalendarFirstAlarmMinutes(ctx: Context): Int = sp(ctx).getInt(KEY_CALENDAR_FIRST_ALARM_MINUTES, 60).coerceIn(0, 999)
+    fun setCalendarFirstAlarmMinutes(ctx: Context, minutes: Int) {
+        sp(ctx).edit().putInt(KEY_CALENDAR_FIRST_ALARM_MINUTES, minutes.coerceIn(0, 999)).apply()
     }
 
     fun isBeforeClassBannerEnabled(ctx: Context): Boolean =
@@ -555,6 +590,22 @@ object AppPrefs {
     fun setGridPinchZoom(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_GRID_PINCH_ZOOM, v).apply()
         _changeBus.tryEmit(KEY_GRID_PINCH_ZOOM)
+    }
+
+    fun isGridShowSeparators(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_GRID_SHOW_SEPARATORS, DEFAULT_GRID_SHOW_SEPARATORS)
+
+    fun setGridShowSeparators(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_GRID_SHOW_SEPARATORS, v).apply()
+        _changeBus.tryEmit(KEY_GRID_SHOW_SEPARATORS)
+    }
+
+    fun isGridLongBreakSpacing(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_GRID_LONG_BREAK_SPACING, DEFAULT_GRID_LONG_BREAK_SPACING)
+
+    fun setGridLongBreakSpacing(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_GRID_LONG_BREAK_SPACING, v).apply()
+        _changeBus.tryEmit(KEY_GRID_LONG_BREAK_SPACING)
     }
 
     fun isNearestBusyDay(ctx: Context): Boolean =

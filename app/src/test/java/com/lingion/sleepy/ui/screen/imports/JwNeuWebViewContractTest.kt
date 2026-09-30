@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * issue #27: NEU WebView capture contract.

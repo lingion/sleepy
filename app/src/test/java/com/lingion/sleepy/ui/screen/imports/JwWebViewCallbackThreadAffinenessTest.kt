@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.imports
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.projectSourceFile
 
 /**
  * 静态 lint 测试: 包内任何 `override fun shouldInterceptRequest / onReceivedSslError`
@@ -40,7 +41,7 @@ class JwWebViewCallbackThreadAffinenessTest {
      */
     private fun loadPackageSources(): List<Pair<String, String>> {
         val pkgDirRel = "app/src/main/java/com/lingion/sleepy/ui/screen/imports"
-        val userDir = System.getProperty("user.dir") ?: ""
+val userDir = System.getProperty("user.dir") ?: ""
         val fromAppDir = if (userDir.endsWith("/app")) "$userDir/src/main/java/com/lingion/sleepy/ui/screen/imports"
                          else "$userDir/$pkgDirRel"
         val configuredRoot = System.getProperty("sleepy.test.root")?.let {

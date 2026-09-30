@@ -133,6 +133,8 @@ fun GeneralSettingsScreen(
     var startView by remember { mutableStateOf(AppPrefs.getStartView(context)) }
     var visibleDays by remember { mutableStateOf(AppPrefs.getVisibleDays(context)) }
     var vertPunct by remember { mutableStateOf(AppPrefs.isVertPunctReplace(context)) }
+    var gridShowSeparators by remember { mutableStateOf(AppPrefs.isGridShowSeparators(context)) }
+    var gridLongBreakSpacing by remember { mutableStateOf(AppPrefs.isGridLongBreakSpacing(context)) }
     var widgetColorless by remember { mutableStateOf(AppPrefs.isWidgetColorless(context)) }
     var courseColorless by remember { mutableStateOf(AppPrefs.isCourseColorless(context)) }
     var widgetSeparator by remember { mutableStateOf(AppPrefs.isWidgetSeparator(context)) }
@@ -757,6 +759,28 @@ fun GeneralSettingsScreen(
                         onCheckedChange = {
                             vertPunct = it
                             AppPrefs.setVertPunctReplace(context, it)
+                            refreshWidgets()
+                        }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_grid_show_separators),
+                        subtitle = stringResource(R.string.settings_grid_show_separators_sub),
+                        checked = gridShowSeparators,
+                        onCheckedChange = {
+                            gridShowSeparators = it
+                            AppPrefs.setGridShowSeparators(context, it)
+                            refreshWidgets()
+                        }
+                    )
+                    HorizontalDivider(color = colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    SettingToggleRow(
+                        label = stringResource(R.string.settings_grid_long_break_spacing),
+                        subtitle = stringResource(R.string.settings_grid_long_break_spacing_sub),
+                        checked = gridLongBreakSpacing,
+                        onCheckedChange = {
+                            gridLongBreakSpacing = it
+                            AppPrefs.setGridLongBreakSpacing(context, it)
                             refreshWidgets()
                         }
                     )

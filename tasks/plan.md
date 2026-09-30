@@ -84,3 +84,65 @@ No course-card or grid-body layout changes are included.
 
 - Which specific launcher/OEM and Android version first exhibits the missing preview/provider listing? The first verification pass will identify this from available emulator/device evidence; implementation will not assume all launchers share one defect.
 - Whether the user wants the new switcher hidden by default cannot be inferred from the request. Preserve the current visible default unless product direction later changes it.
+
+---
+
+# Implementation Plan: PR #56 Calendar and Grid Lab UX
+
+## Overview
+Implement two independent, default-off laboratory switches for grid separators and long class-break spacing, then refactor system-calendar export so permission handling is owned by ExportScreen and the authorized configuration dialog matches existing Sleepy Material 3 settings/import-preview patterns.
+
+## Architecture Decisions
+- Store each laboratory behavior as an independent `AppPrefs` Boolean; do not encode the pair as one mode.
+- Keep today highlighting independent from separator rendering.
+- Gate meal-break detection and geometry behind the long-break preference; gate only extra lines behind the separator preference.
+- Make ExportScreen the permission state machine. CalendarImportDialog assumes permission is already granted and contains no authorization button.
+- Use existing settings cards, `SettingToggleRow`, preview metric cards, and dialog action conventions; add no UI dependency.
+
+## Task List
+
+### Phase 1: Preferences and settings
+- [x] Task 1: Add two persisted AppPrefs flags and localized settings rows.
+- [x] Task 2: Wire settings changes to current-screen recomposition and widget refresh.
+
+### Phase 2: Grid rendering
+- [x] Task 3: Gate CourseTableView separators and long-break geometry independently.
+- [x] Task 4: Gate WeekGridWidgetProvider separators and long-break geometry independently.
+
+### Checkpoint: Grid labs
+- [x] Focused AppPrefs contract coverage and debug compilation succeed.
+
+### Phase 3: Calendar permission flow
+- [x] Task 5: Move permission state machine into ExportScreen with automatic post-grant transition and denial return.
+- [x] Task 6: Remove authorization UI from CalendarImportDialog and preserve authorized configuration states.
+
+### Phase 4: Calendar visual alignment and verification
+- [x] Task 7: Restructure CalendarImportDialog around existing settings/import-preview visual conventions and localized strings.
+- [x] Task 8: Add focused state/behavior coverage, run regression tests, lint, and build branch APKs.
+
+### Checkpoint: Complete
+- [x] Acceptance criteria in the design specification are implemented.
+- [x] APKs are built from `feat/pr56-calendar-lab-ui` and SHA-256 verified.
+- [x] Branch remains unmerged, unpushed, and untagged.
+
+## Dependencies
+- Tasks 1-2 precede Tasks 3-4.
+- Tasks 5-6 precede Task 7.
+- Tasks 1-7 precede Task 8.
+
+## Risks and Mitigations
+| Risk | Impact | Mitigation |
+|---|---|---|
+| Existing PR rendering paths duplicate geometry logic | High | Preserve baseline branches and test all four preference combinations. |
+| Permission callback state differs from actual provider state | High | Re-query both permissions after the activity-result callback. |
+| Calendar dialog visual refactor regresses import behavior | High | Keep `SystemCalendarManager` and import/delete paths unchanged; run existing calendar tests. |
+| Widget settings do not refresh immediately | Medium | Reuse the existing widget refresh entry point from the settings callback. |
+| Locale resources drift | Medium | Add strings to every existing locale file and run resource compilation. |
+
+## Verification Checkpoints
+- After Tasks 1-4: focused AppPrefs, detector/widget, and app compilation checks.
+- After Tasks 5-7: focused calendar tests and resource compilation.
+- After Task 8: full unit test, lint, debug APK build, artifact hash, and branch/status checks.
+
+## Scope Boundaries
+No merge to `main`, push, tag, release, database deletion, calendar-event deletion changes, dependency additions, or CI changes without explicit approval.

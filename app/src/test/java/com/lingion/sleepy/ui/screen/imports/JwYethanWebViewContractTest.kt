@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.imports
 
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * SWJTU YETHAN 微信扫码登录卡壳 (2026-09-16 用户复测报告) 契约锁。

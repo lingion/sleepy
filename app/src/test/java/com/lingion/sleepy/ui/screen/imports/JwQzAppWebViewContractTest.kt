@@ -3,6 +3,7 @@ package com.lingion.sleepy.ui.screen.imports
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
+import com.lingion.sleepy.testutil.readProjectSource
 
 /**
  * 强智移动教务 SPA (qz_app) WebView 抓取契约 — 河北资源环境职业技术学院 (issue 源)。
