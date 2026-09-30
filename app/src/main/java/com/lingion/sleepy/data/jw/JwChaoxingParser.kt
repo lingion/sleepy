@@ -129,36 +129,45 @@ class JwChaoxingParser(source: String) : JwParser(source) {
             )
         }
 
-        // 合并连堂: 排序后同(name,day,room,teacher,weeks串)且 node 前后衔接 → 拉通
-        val sorted = parsed.sortedWith(compareBy({ it.day }, { it.node }, { it.name }))
+        // 合并: 按 (课名,星期,教师) 分组 → 节号连续段拉通, 周次取并集, 同节多教室
+        // 用 "/" 连接。必要性 (闽江师范 2026-09-30 采集实锤): 同一节因按周次换教室
+        // 返回多行、各带不同周次串与教室 (如 5..15 周 A 室 + 17,19 周 B 室);
+        // 若按 (含周次或含教室) 的行分组, 同一节会渲染成两张重叠课程卡。
+        data class Key(val name: String, val day: Int, val teacher: String)
         val result = mutableListOf<JwCourse>()
-        var i = 0
-        while (i < sorted.size) {
-            val cur = sorted[i]
-            var endNode = cur.node
-            var j = i + 1
-            while (j < sorted.size &&
-                sorted[j].name == cur.name && sorted[j].day == cur.day &&
-                sorted[j].room == cur.room && sorted[j].teacher == cur.teacher &&
-                sorted[j].weeks == cur.weeks && sorted[j].node == endNode + 1
-            ) {
-                endNode = sorted[j].node
-                j++
+        for ((key, group) in parsed.groupBy { Key(it.name, it.day, it.teacher) }) {
+            val weeks = group.flatMap { it.weeks }.distinct().sorted()
+            val roomsByNode = group.groupBy { it.node }
+                .mapValues { (_, g) -> g.map { it.room }.filter { it.isNotBlank() }.distinct().joinToString("/") }
+            val nodes = group.map { it.node }.distinct().sorted()
+            var start = nodes.first()
+            var prev = nodes.first()
+            val blocks = mutableListOf<Pair<Int, Int>>()
+            for (n in nodes.drop(1)) {
+                if (n == prev + 1) prev = n
+                else {
+                    blocks += start to prev
+                    start = n; prev = n
+                }
             }
-            val weeks = cur.weeks
-            // 周次段: 一行可能展开为多段 (非连续周次, 如 1-3周 + 8-9周)
-            for ((sw, ew, type) in weekRuns(weeks)) {
-                result.add(
-                    JwCourse(
-                        name = cur.name, room = cur.room, teacher = cur.teacher,
-                        day = cur.day, startNode = cur.node, endNode = endNode,
-                        startWeek = sw, endWeek = ew,
-                        type = type
+            blocks += start to prev
+            for ((bs, be) in blocks) {
+                val room = (bs..be).mapNotNull { roomsByNode[it]?.takeIf { r -> r.isNotEmpty() } }
+                    .distinct().joinToString("/")
+                // 周次段: 并集展开后可能多段 (非连续周次, 如 1-3周 + 8-9周)
+                for ((sw, ew, type) in weekRuns(weeks)) {
+                    result.add(
+                        JwCourse(
+                            name = key.name, room = room, teacher = key.teacher,
+                            day = key.day, startNode = bs, endNode = be,
+                            startWeek = sw, endWeek = ew,
+                            type = type
+                        )
                     )
-                )
+                }
             }
-            i = j
         }
+        result.sortWith(compareBy({ it.day }, { it.startNode }, { it.name }))
         return result
     }
 }

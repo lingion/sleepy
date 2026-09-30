@@ -1112,12 +1112,16 @@ private const val CQU_FETCH_JS = """
 private const val CHAOXING_FETCH_JS = """
 (function(){
   try {
-    // 管理前缀按入口 URL 推断: 部分部署挂 /admin (吉林工商), 部分无前缀
-    var m = location.pathname.match(/^\/(\w+)\//);
-    var base = location.pathname.indexOf('/admin/') === 0 ? '/admin' : '';
+    // 管理前缀按入口 URL 推断: 部分部署挂 /admin 或 /admin/ (吉林工商), 部分无前缀
+    // 修复: pathname 可能恰好是 '/admin' (无尾斜杠), 旧逻辑 indexOf('/admin/') === 0 判 false
+    var base = /^\/admin(\/|$)/.test(location.pathname) ? '/admin' : '';
     var get = function(url){
       return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
         .then(function(r){ return r.json(); });
+    };
+    var getText = function(url){
+      return fetch(url, {credentials:'include', headers:{'X-Requested-With':'XMLHttpRequest'}})
+        .then(function(r){ return r.text(); });
     };
     // 1) 当前学期 + 校区: getMenuList 响应含 jsxq.dataXnxq / xqid (session 态)
     var ctx = get(base + '/api/getMenuList').then(function(j){
@@ -1128,10 +1132,40 @@ private const val CHAOXING_FETCH_JS = """
       if (!c.xnxq) {
         // getMenuList 缺 jsxq 时回退: 让服务端自己用会话学期 (queryKbForGrdb 无参)
       }
-      // 2) 个人课表 (无参 — 服务端按会话学期返回本人数据)
-      return get(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax')
-      .then(function(kb){
-        var rows = kb && kb.data;
+      // 2) 个人课表: 先试 queryKbForGrdb (无参), 若返回 HTML (404) 则回退 sdpkkbList
+      return getText(base + '/pkgl/xskb/queryKbForGrdb?sf_request_type=ajax')
+      .then(function(txt){
+        if (txt.trim().startsWith('<')) {
+          // 404 HTML — 回退 sdpkkbList (Syswin 变体, 需 xhid)
+          // xhid 来源优先级: 本页 query → 本页 HTML → 同源 iframe 的 URL query
+          // (门户壳结构: 主框 /admin 门户外壳, 课表页在 iframe 内, xhid 在其 URL)
+          var xhid = '';
+          try {
+            var pm = location.search.match(/[?&]xhid=([A-Z0-9]+)/);
+            if (pm) xhid = pm[1];
+            if (!xhid) {
+              var m = document.body.innerHTML.match(/xhid['":\s=]+['"]?([A-Z0-9]{60,})/);
+              if (m) xhid = m[1];
+            }
+            if (!xhid) {
+              var fs = document.querySelectorAll('iframe');
+              for (var fi = 0; fi < fs.length && !xhid; fi++) {
+                try {
+                  var fm = fs[fi].contentWindow.location.search.match(/[?&]xhid=([A-Z0-9]+)/);
+                  if (fm) xhid = fm[1];
+                } catch(e2) {}
+              }
+            }
+          } catch(e) {}
+          if (!xhid) throw new Error('无法识别课表接口: 请先在教务里打开"我的课表"页再导入');
+          return get(base + '/xsd/pkgl/xskb/sdpkkbList?xnxq=' + encodeURIComponent(c.xnxq) +
+                    '&xhid=' + encodeURIComponent(xhid) + '&xqdm=' + encodeURIComponent(c.xqid) +
+                    '&zdzc=&zxzc=&xskbxslx=0')
+          .then(function(kb){ return kb.data || []; });
+        }
+        return JSON.parse(txt).data || [];
+      })
+      .then(function(rows){
         if (!rows || !rows.length) throw new Error('课表为空: 请先在教务里打开"我的课表"页再导入');
         // 3) 节次时间 (尽力而为, 失败不阻断 — periods 仅用于展示)
         return get(base + '/api/getZclistByXnxq?xnxq=' + encodeURIComponent(c.xnxq) +
