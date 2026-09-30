@@ -1014,6 +1014,7 @@ private fun ConflictCourseCard(
                     textDecoration = textDecoration
                 ),
                 color = effectiveFg,
+                textAlign = TextAlign.Center,
                 maxLines = 6,
                 overflow = TextOverflow.Ellipsis,
                 modifier = Modifier.align(Alignment.Center)
