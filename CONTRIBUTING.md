@@ -24,10 +24,20 @@ cd sleepy
 
 ## 提 PR
 
-1. **从 `main` 拉分支**，命名：
+1. **从 `main` 拉个人 topic 分支**，不要直接向 `main` 推送；当前不需要共享的 `dev` 分支。命名：
    - 新功能 `feat/<scope>-<topic>`
    - 修 bug `fix/<scope>-<topic>` 或 `fix/issue-<N>-<topic>`
    - 教务适配 `adapt/<school-slug>-<topic>`
+
+   首次开始一个变更时，可以直接执行：
+
+   ```bash
+   git fetch origin
+   git switch -c feat/your-topic origin/main
+   git push -u origin HEAD
+   ```
+
+   如果是修 bug 或教务适配，把 `feat/your-topic` 换成对应的 `fix/...` 或 `adapt/...`。后续只在这个个人分支上 commit 和 push，再发起目标为 `main` 的 Pull Request。
 2. **一个分支一个主题**；小步 commit，格式 `<type>(<scope>): <subject>`，`<type>` ∈ {feat, fix, refactor, docs, test, chore, perf, build}。
 3. **合并前测试全绿**：
 
