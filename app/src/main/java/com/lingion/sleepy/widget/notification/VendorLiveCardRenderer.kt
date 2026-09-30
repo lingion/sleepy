@@ -7,13 +7,11 @@ import android.graphics.Color
 import android.graphics.drawable.Icon
 import android.os.Build
 import android.os.Bundle
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.lingion.sleepy.R
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.widget.resolveSchemePublic
 import androidx.compose.ui.graphics.toArgb
-import org.json.JSONObject
 
 /** Android vendor surface selected from the runtime manufacturer string. */
 enum class LiveCardVendor {
@@ -64,8 +62,11 @@ fun progressStyleFor(progressPercent: Int): NotificationCompat.ProgressStyle =
  * renderer leaves the generic Android notification usable as the fallback.
  *
  * Sources (corpus-grounded):
- *  - Xiaomi: ~/third-party-live-cards/xiaomi/HyperIsland-ToolKit (Apache-2.0)
- *    and docs/live-cards/xiaomi/REUSE.md + focus-notification.md (official docs)
+ *  - Xiaomi ships the plain Android promoted-ongoing notification (v1.0.56 behavior,
+ *    restored 2026-09-30): HyperOS auto-promotes ProgressStyle posts to the Super
+ *    Island, while private Xiaomi Focus extras require vendor approval and demote
+ *    unapproved apps to an ordinary notification. See WidgetInfoXmlContractTest for
+ *    the analogous widget-side mutual-exclusion lock.
  *  - vivo:  ~/third-party-live-cards/vivo/originos-toolkit (MIT)
  *    and docs/live-cards/vivo/REUSE.md + origin-isle-readonly PROTOCOL.md
  *  - Meizu:  ~/third-party-live-cards/meizu/Pinme (Apache-2.0)
@@ -80,8 +81,6 @@ object VendorLiveCardRenderer {
      * a real Context / device. Defaults to [VendorLiveCardSupport].
      */
     interface SupportProbes {
-        fun xiaomiFocusGranted(ctx: Context): Boolean
-        fun xiaomiIslandFeatureFlag(): Boolean
         fun flymeLiveEnabled(ctx: Context): Boolean
         fun flymeVersion(): Int
         fun samsungNowBarFeature(ctx: Context): Boolean
@@ -89,8 +88,6 @@ object VendorLiveCardRenderer {
     }
 
     private object RealSupport : SupportProbes {
-        override fun xiaomiFocusGranted(ctx: Context) = VendorLiveCardSupport.xiaomiFocusGranted(ctx)
-        override fun xiaomiIslandFeatureFlag() = VendorLiveCardSupport.xiaomiIslandFeatureFlag()
         override fun flymeLiveEnabled(ctx: Context) = VendorLiveCardSupport.flymeLiveEnabled(ctx)
         override fun flymeVersion() = VendorLiveCardSupport.flymeVersion()
         override fun samsungNowBarFeature(ctx: Context) = VendorLiveCardSupport.samsungNowBarFeature(ctx)
@@ -128,11 +125,6 @@ object VendorLiveCardRenderer {
             .setContentTitle(state.courseName)
             .setContentText(state.detailText)
             .setSubText(state.room)
-            .setStyle(
-                NotificationCompat.ProgressStyle()
-                    .setStyledByProgress(true)
-                    .setProgress(state.progress)
-            )
             .setProgress(100, state.progress, false)
             .setStyle(progressStyleFor(state.progress))
             .setOngoing(true)
@@ -144,7 +136,12 @@ object VendorLiveCardRenderer {
             .setShortCriticalText(primaryText.take(7))
 
         when (vendor) {
-            LiveCardVendor.XIAOMI -> addXiaomiExtras(builder, state, context, support)
+            // Xiaomi/HyperOS restores the v1.0.56 behavior: the standard ProgressStyle
+            // promoted-ongoing notification is auto-promoted to the Super Island.
+            // Private Xiaomi Focus extras are reserved for approved packages
+            // packages — unapproved apps carrying them get demoted to an ordinary
+            // notification (same mutual-exclusion pattern as the v1.0.57 miuiWidget
+            // manifest declarations removed in PR #65), so Xiaomi stays plain here.
             LiveCardVendor.VIVO, LiveCardVendor.IQOO -> addVivoExtras(builder, state, contentIntent, context, support, themePrimaryArgb)
             LiveCardVendor.MEIZU -> addMeizuExtras(builder, state, contentIntent, context, themePrimaryArgb, support)
             LiveCardVendor.SAMSUNG -> addSamsungExtras(builder, state, contentIntent, context, support)
@@ -154,100 +151,6 @@ object VendorLiveCardRenderer {
             else -> Unit
         }
         return builder.build()
-    }
-
-    // ---------------------------------------------------------------------------
-    // Xiaomi — HyperOS / MIUI Focus Notification (超级岛)
-    // Corpus: HyperIsland-ToolKit (Apache-2.0) + official docs docs/live-cards/xiaomi/focus-notification.md
-    // ---------------------------------------------------------------------------
-    private fun addXiaomiExtras(
-        builder: NotificationCompat.Builder,
-        state: CourseLiveCardState,
-        context: Context,
-        support: SupportProbes,
-    ) {
-        val hasFocusPermission = support.xiaomiFocusGranted(context)
-        val hasIslandFlag = support.xiaomiIslandFeatureFlag()
-        // 岛诊断探针 (v1.0.57 回归排查): 三闸门 + 协议版本打 logcat, 配合用户
-        // *#*#284#*#* 日志定位"降级普通通知"是哪一层挡的 (canShowFocus=权限审核,
-        // protocol: 0=无 1=OS1 2=OS2 3=OS3 支持岛, 小米语料 focus-notification.md §一)
-        val focusProtocol = try {
-            android.provider.Settings.System.getInt(context.contentResolver, "notification_focus_protocol", 0)
-        } catch (_: Throwable) { -1 }
-        Log.d(
-            "VendorLiveCard",
-            "xiaomi gates: canShowFocus=$hasFocusPermission islandFlag=$hasIslandFlag focusProtocol=$focusProtocol"
-        )
-        // HyperOS-ToolKit requires BOTH gates: package permission and island feature.
-        // A single positive signal is insufficient; otherwise a plain MIUI device
-        // receives private extras that SystemUI silently ignores.
-        if (!hasFocusPermission || !hasIslandFlag) return
-
-        val params = JSONObject().apply {
-            put("protocol", 1)
-            put("business", "schedule")
-            // islandFirstFloat: show pill on first post; enableFloat=false prevents
-            // continuous expand/collapse churn (corpus: HyperIsland-ToolKit §Builder)
-            put("islandFirstFloat", true)
-            put("enableFloat", false)
-            put("updatable", true)
-            put("timeout", 60)
-            put("sequence", state.updateSequence)
-            put("ticker", state.courseName)
-            put("aodTitle", "${state.startTime} ${state.courseName}")
-            put("param_island", JSONObject().apply {
-                put("islandProperty", 1)
-                put("islandTimeout", 3600)
-                put("bigIslandArea", JSONObject().apply {
-                    put("imageTextInfoLeft", JSONObject().apply {
-                        put("type", 1)
-                        put("picInfo", JSONObject().apply {
-                            put("type", 1)
-                            put("pic", "miui.focus.pic_start")
-                        })
-                        // Key path confirmed against official developer docs (focus-notification.md §四):
-                        // param_v2.param_island.bigIslandArea.imageTextInfoLeft.
-                        // miui.focus.paramtextInfo (prefix required by the protocol).
-                        put("miui.focus.paramtextInfo", JSONObject().apply {
-                            put("frontTitle", state.startTime)
-                            put("title", state.courseName)
-                            put("content", state.room)
-                            put("useHighLight", false)
-                        })
-                    })
-                    // Official focus-notification.md §五 ships a top-level picInfo *sibling*
-                    // to imageTextInfoLeft — without it MIUI falls back to the system default
-                    // island icon instead of the configured pic_start.
-                    put("picInfo", JSONObject().apply {
-                        put("type", 1)
-                        put("pic", "miui.focus.pic_start")
-                    })
-                })
-                put("smallIslandArea", JSONObject().apply {
-                    put("picInfo", JSONObject().apply {
-                        put("type", 1)
-                        put("pic", "miui.focus.pic_end")
-                    })
-                })
-            })
-            put("baseInfo", JSONObject().apply {
-                put("title", state.courseName)
-                put("content", state.detailText)
-                put("type", 1)
-            })
-        }
-        val pics = Bundle().apply {
-            putParcelable("miui.focus.pic_start",
-                Icon.createWithResource(context, R.drawable.ic_notification_time))
-            putParcelable("miui.focus.pic_end",
-                Icon.createWithResource(context, R.drawable.ic_notifications))
-        }
-        builder.setExtras(Bundle().apply {
-            putString("miui.focus.param", JSONObject().apply {
-                put("param_v2", params)
-            }.toString())
-            putBundle("miui.focus.pics", pics)
-        })
     }
 
     // ---------------------------------------------------------------------------

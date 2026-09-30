@@ -16,8 +16,6 @@ import android.util.Log
  * the only call site.
  *
  * Probe inventory (truth must remain stable across the renderer contract):
- *  - [xiaomiFocusGranted]: `content://miui.statusbar.notification.public` "canShowFocus"
- *  - [xiaomiIslandFeatureFlag]: `persist.sys.feature.island` via reflection
  *  - [flymeLiveEnabled]: `content://com.android.systemui.notification.provider` "isNotificationLiveEnabled"
  *  - [flymeVersion]: parsed from `Build.DISPLAY` (e.g. "Flyme 11.2.0")
  *  - [samsungNowBarFeature]: `com.samsung.feature.nowbar`
@@ -25,37 +23,15 @@ import android.util.Log
  *    `setSuperXInfosSceneList` listener (vivo whitelist is per-package, not per-app, so this
  *    only forwards the call; whether vivo accepts is unknown and reported as unknown).
  *
+ * Xiaomi has no probe: v1.0.56 restored the plain promoted-ongoing path. Private
+ * Xiaomi Focus extras are reserved for approved packages and demote unapproved
+ * apps (see VendorLiveCardRenderer).
+ *
  * Sources: see docs/live-cards/{xiaomi,vivo,meizu,samsung}/REUSE.md and the cloned corpus.
  */
 object VendorLiveCardSupport {
 
     private const val TAG = "VendorLiveCardSupport"
-
-    fun xiaomiFocusGranted(context: Context): Boolean {
-        return try {
-            val uri = Uri.parse("content://miui.statusbar.notification.public")
-            val bundle: Bundle? = context.contentResolver.call(
-                uri, "canShowFocus", null,
-                Bundle().apply { putString("package", context.packageName) }
-            )
-            bundle?.getBoolean("canShowFocus", false) ?: false
-        } catch (t: Throwable) {
-            Log.w(TAG, "canShowFocus probe failed", t)
-            false
-        }
-    }
-
-    @SuppressLint("BlockedPrivateApi")
-    fun xiaomiIslandFeatureFlag(): Boolean {
-        return try {
-            val method = Class.forName("android.os.SystemProperties")
-                // getBoolean(String, boolean) uses primitive boolean, not java.lang.Boolean.
-                .getDeclaredMethod("getBoolean", String::class.java, java.lang.Boolean.TYPE)
-            method.invoke(null, "persist.sys.feature.island", false) as? Boolean ?: false
-        } catch (t: Throwable) {
-            false
-        }
-    }
 
     fun flymeLiveEnabled(context: Context): Boolean {
         if (context.checkSelfPermission("flyme.permission.READ_NOTIFICATION_LIVE_STATE")

@@ -1,5 +1,6 @@
 package com.lingion.sleepy.widget.notification
 
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -23,26 +24,23 @@ class VendorLiveCardRendererExtrasTest {
         }
 
     @Test
-    fun `xiaomi extras use miui focus param and param v2 envelope`() {
-        assertTrue(
-            "Xiaomi renderer must put miui.focus.param extras",
-            rendererSource.contains("\"miui.focus.param\"")
+    fun `xiaomi stays on plain promoted ongoing without private focus extras`() {
+        // 2026-09-30 用户群回归 + v1.0.56 对照: v1.0.56 无 VendorLiveCardRenderer 时
+        // 小米超级岛正常 (HyperOS 对标准 ProgressStyle promoted-ongoing 自动提升)。
+        // 注入 miui.focus.* 私有 extras 后未过审核的包被 HyperOS 降级为普通通知 —
+        // 与 PR#65 摘除的 miuiWidget 声明互斥规则同构。锁死回归。
+        assertFalse(
+            "Xiaomi must not carry private Focus extras (reserved for approved " +
+                "Focus Notification packages; unapproved apps get demoted)",
+            rendererSource.contains("miui.focus.")
+        )
+        assertFalse(
+            "Xiaomi must not re-add addXiaomiExtras; the XIAOMI branch must stay plain",
+            rendererSource.contains("addXiaomiExtras")
         )
         assertTrue(
-            "Xiaomi renderer must wrap params in param_v2",
-            rendererSource.contains("\"param_v2\"")
-        )
-        assertTrue(
-            "Xiaomi renderer must include bigIslandArea",
-            rendererSource.contains("\"bigIslandArea\"")
-        )
-        assertTrue(
-            "Xiaomi renderer must include paramtextInfo (correct key path)",
-            rendererSource.contains("\"miui.focus.paramtextInfo\"")
-        )
-        assertTrue(
-            "Xiaomi renderer must include sequence for ordering",
-            rendererSource.contains("\"sequence\"")
+            "Xiaomi Super Island path relies on the standard ProgressStyle promoted-ongoing post",
+            rendererSource.contains("setRequestPromotedOngoing(true)")
         )
     }
 
