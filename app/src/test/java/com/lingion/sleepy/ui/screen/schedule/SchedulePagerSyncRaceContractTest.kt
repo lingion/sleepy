@@ -31,8 +31,7 @@ class SchedulePagerSyncRaceContractTest {
     private fun loadSource(vararg relPaths: String): String =
         sequenceOf(
             File("app/src/main/java/com/lingion/sleepy/"),
-            File("src/main/java/com/lingion/sleepy/"),
-            File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/")
+            File("src/main/java/com/lingion/sleepy/")
         ).firstOrNull { it.isDirectory }?.let { root ->
             relPaths.map { File(root, it) }.firstOrNull { it.isFile }?.readText()
         } ?: error("Unable to load sources: ${relPaths.joinToString()}")

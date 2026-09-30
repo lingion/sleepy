@@ -10,7 +10,7 @@ import java.io.File
 /**
  * T9 诊断分类单测 — 覆盖六类失败语义 + 兜底。
  *
- * Fixture 从 /tmp/jw_fixtures/ 同步到 src/test/resources 的副本读取 (jw_fixtures/),
+ * Fixture 从 app/src/test/resources/jw_fixtures/ 读取,
  * 字段断言：category、courseCount、matchedFeatures、userMessage 不含敏感数据。
  */
 class JwParseDiagnosticsTest {

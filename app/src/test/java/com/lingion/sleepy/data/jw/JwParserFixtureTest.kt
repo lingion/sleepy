@@ -10,8 +10,7 @@ import org.junit.Test
 /**
  * T10 协议契约 fixture 测试 — 63 个手写脱敏样本逐一核对九字段契约。
  *
- * 资源: app/src/test/resources/jw_fixtures/ (来自 /tmp/jw_fixtures)
- * oracle: 每个样本同名 *.expected.json 的 courses 数组 (九字段: name/day/startNode/
+ * 资源: app/src/test/resources/jw_fixtures/ * oracle: 每个样本同名 *.expected.json 的 courses 数组 (九字段: name/day/startNode/
  *         endNode/startWeek/endWeek/type/teacher/room), 顺序敏感, 禁止自动重排或改写。
  * 失败分类见规格 §8; 任何字段不符必须修 parser, 禁止改 expected 迎合现状。
  */

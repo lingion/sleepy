@@ -16,7 +16,7 @@
     "type_semantics": "0=每周(连续段) / 1=单周(整体奇数步进) / 2=双周(整体偶数步进)",
     "parser_run_logic": "1) 单 run → (start,end,0); 2) 多 week 整体 step=2 → 压缩 (first,last,1/2); 3) 其他 → 按连续段拆,每段 type=0",
     "evidence": [
-      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L82-112 weekRuns 实现)",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L82-112 weekRuns 实现)",
       "/tmp/fixtures/myleafy/README.md (跨平台契约-课程数组字段语义参考)",
       "/tmp/yibinu_01.js (宜宾学院 wisedu 适配器,字段命名一致,但其用 ZCMC 而非 SKZC)",
       "/tmp/whut_01.js (武汉理工 wisedu 适配器,parseWeeksFromSkzc 与 sleepy weekRuns 等价)",

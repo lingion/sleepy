@@ -2,9 +2,30 @@
 """Cross-check all qz-base-crazy fixtures vs expected.json using the compiled Sim."""
 import json, os, subprocess, sys
 
-JSOUP_JAR = "/Users/lingion_k/.gradle/caches/modules-2/files-2.1/org.jsoup/jsoup/1.18.1/cb7cd991d47b44101cbe4655dec611cdc01f8a02/jsoup-1.18.1.jar"
-WORK = "/tmp/jw_fixtures/qz-base-crazy/_sim"
-DIR = "/tmp/jw_fixtures/qz-base-crazy"
+def _find_jsoup_jar():
+    env = os.environ.get("JSOUP_JAR")
+    if env:
+        return env
+    cache = os.path.expanduser("~/.gradle/caches/modules-2/files-2.1/org.jsoup/jsoup")
+    if os.path.isdir(cache):
+        for version in sorted(os.listdir(cache), reverse=True):
+            jar_dir = os.path.join(cache, version)
+            for root, _dirs, files in os.walk(jar_dir):
+                for f in files:
+                    if f == f"jsoup-{version}.jar":
+                        return os.path.join(root, f)
+    return None
+
+JSOUP_JAR = _find_jsoup_jar()
+if not JSOUP_JAR or not os.path.isfile(JSOUP_JAR):
+    sys.exit("jsoup jar not found: set JSOUP_JAR=<path-to-jsoup.jar>")
+
+HERE = os.path.dirname(os.path.abspath(__file__))
+WORK = os.path.join(HERE, "_sim")
+DIR = HERE
+
+# Windows 的 classpath 分隔符是 ';', POSIX 是 ':'
+CP_SEP = ";" if os.name == "nt" else ":"
 
 fail = 0
 for name in sorted(os.listdir(DIR)):
@@ -19,7 +40,7 @@ for name in sorted(os.listdir(DIR)):
         exp = json.load(f)
     exp_courses = exp.get("courses", [])
     proc = subprocess.run(
-        ["java", "-Dfile.encoding=UTF-8", "-cp", f"{JSOUP_JAR}:{WORK}", "Sim", "upstream", os.path.join(DIR, name)],
+        ["java", "-Dfile.encoding=UTF-8", "-cp", f"{JSOUP_JAR}{CP_SEP}{WORK}", "Sim", "upstream", os.path.join(DIR, name)],
         capture_output=True, text=True)
     got = json.loads(proc.stdout.strip())
     if got == exp_courses:

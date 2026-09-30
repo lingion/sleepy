@@ -157,7 +157,7 @@ class JwOldZfParserTest {
 
     @Test
     fun `G4 type1 逗号合并行头加末尾时间 token 对抗组合不崩`() {
-        // 来自 /tmp/jw_fixtures/adversarial/merged-rows/zf_1_rowspan_style_grid_crash.html 语义:
+        // 来自 app/src/test/resources/jw_fixtures/adversarial/merged-rows/zf_1_rowspan_style_grid_crash.html 语义:
         // 行1 '第1,2节' 合并行头 + '高等数学 {第1-16周}' 末尾时间 token;
         // 行2 '第三节' 正常行头 + 完整 [名,时间,老师,教室] token 流。
         val html = """
@@ -352,7 +352,7 @@ class JwOldZfParserTest {
 
     @Test
     fun `composite 属性词加节点覆盖加双课同格`() {
-        // 语义来自 /tmp/jw_fixtures/zf-old-variants/course_property_with_node_override.html(缩减版)
+        // 语义来自 app/src/test/resources/jw_fixtures/zf-old-variants/course_property_with_node_override.html(缩减版)
         val html = """
             <html><body><table id="Table1">
               <tr><td colspan="2">时间</td><td>星期一</td><td>星期二</td></tr>

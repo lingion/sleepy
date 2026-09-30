@@ -12,9 +12,9 @@
       "step6": "最终 XNXQDM 用于 POST /jwapp/sys/wdkb/modules/xskcb/xskcb.do body=XNXQDM=..."
     },
     "evidence": [
-      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L397-444",
+      "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L397-444",
       "/tmp/jlu.js L180: res?.datas?.dqxnxq?.rows?.[0], r.DM / r.MC 字段命名交叉确认",
-      "/tmp/jw_fixtures/wisedu-json/dqxnxq_multi_semester.json.expected.json (SFDQ 字符串与数字两种形态)"
+      "app/src/test/resources/jw_fixtures/wisedu-json/dqxnxq_multi_semester.json.expected.json (SFDQ 字符串与数字两种形态)"
     ]
   },
   "expected_xnxqdm": "2025-2026-2",

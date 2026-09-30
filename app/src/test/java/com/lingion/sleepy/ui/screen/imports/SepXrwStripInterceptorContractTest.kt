@@ -35,30 +35,24 @@ class SepXrwStripInterceptorContractTest {
     private val iface: String = loadSource("JwRequestInterceptor.kt")
 
     /**
-     * 从多个候选位置读源码。Gradle test working dir 可能是项目根或子项目根,
-     * 还要兼容 worktree 隔离 (新文件只存在于 worktree, 主仓没有) 与本机多 worktree
-     * (未来可能在不同路径开 worktree)。所有路径都试, 第一个存在的 wins。
+     * 从当前 checkout 的多个候选位置读源码。Gradle test working dir 可能是项目根
+     * 或子项目根, 所有相对路径都试, 第一个存在的 wins。
      */
     private fun loadSource(filename: String): String {
         val rel = "app/src/main/java/com/lingion/sleepy/ui/screen/imports/$filename"
-        val userDir = System.getProperty("user.dir")
+        val userDir = System.getProperty("user.dir") ?: ""
         // cwd 推断: 子项目根 (Gradle 默认 test working dir = app/)
         val fromAppDir = if (userDir.endsWith("/app")) "$userDir/src/main/java/com/lingion/sleepy/ui/screen/imports/$filename" else "$userDir/$rel"
         val configured = System.getProperty("sleepy.test.root")?.let {
             java.io.File(it, rel)
         }
-        // 当前 worktree (d-pipeline) + 主仓兜底
-        val currentWorktree = "/Users/lingion_k/sleepy-worktrees/d-pipeline/$rel"
-        val mainRepo = "/Users/lingion_k/sleepy/$rel"
         return sequenceOf(
                 configured,
                 java.io.File(rel),                       // cwd = 项目根
                 java.io.File(fromAppDir),                // cwd = app/ 子项目根
-                java.io.File(currentWorktree),           // worktree 绝对 (d-pipeline)
-                java.io.File(mainRepo),                  // 主仓绝对兜底
             ).filterNotNull().firstOrNull { it.isFile }
             ?.readText()
-            ?: error("Unable to load $filename source. Tried: $rel, $fromAppDir, $currentWorktree, $mainRepo")
+            ?: error("Unable to load $filename source. Tried: $rel, $fromAppDir")
     }
 
     // ---------- 接线: JwWebViewLoginScreen → JwWebViewClientBuilder ----------

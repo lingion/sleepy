@@ -166,7 +166,7 @@ def parse(path):
             'type':t['type'],'teacher':b['teacher'],'room':b['room']})
     return courses
 
-base='/tmp/jw_fixtures/zf-old-table1'
+base=os.path.dirname(os.path.abspath(__file__))
 fail=0
 for f in sorted(glob.glob(base+'/*.html')):
     stem=os.path.basename(f)[:-5]

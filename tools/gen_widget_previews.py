@@ -7,7 +7,7 @@ Sleepy widget 选择列表预览图生成器 (Task 7)。
 管线无法在 JVM 跑 → 预览图改用本地工具生成 placeholder PNG, 产物直接入库。
 
 用法:
-    cd /Users/lingion_k/Desktop/sleepy && python3 tools/gen_widget_previews.py
+    cd <repo-root> && python3 tools/gen_widget_previews.py
 
 输出 10 张 PNG 到 app/src/main/res/drawable-nodpi/:
     widget_preview_{today,twoday,weeklist,weekview,weekgrid}{,_small}.png

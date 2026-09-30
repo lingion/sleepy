@@ -5,7 +5,7 @@
     "parser": "无独立 Kotlin parser — 由 WISEDU_FETCH_JS 消费",
     "consumption_logic": "JS 兜底 rows.find(r => r.SFDQ === '1' || r.SFDQ === 1) 同时兼容字符串与数字;rows[0] 不一定是当前学期 — 禁止无条件取 rows[0](jw_plan T11 明确要求)",
     "evidence": [
-      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L441: return row.SFDQ === '1' || row.SFDQ === 1 || row.CURRENT === '1' || row.current === true",
+      "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt L441: return row.SFDQ === '1' || row.SFDQ === 1 || row.CURRENT === '1' || row.current === true",
       "/tmp/jw_plan.json T11 details: '保留现有页面学期选择优先级,不无条件取 rows[0]'",
       "/tmp/jlu.js L155: labels = rows.map(r => r.MC || r.DM) — MC 缺失时用 DM"
     ]

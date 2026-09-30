@@ -13,7 +13,7 @@
       "JASMC_missing": "str('JASMC') 返回空串 → room='',但课程仍产出 (parser 不强制教室非空)"
     },
     "evidence": [
-      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L42-72: 字段处理顺序与空值兜底)"
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L42-72: 字段处理顺序与空值兜底)"
     ]
   },
   "courses": [

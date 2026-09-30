@@ -5,7 +5,7 @@
     "parser": "JwWiseduParser",
     "parser_behavior": "rows.mapIndexed { ... } 在空数组上自然终止 → 返回 emptyList()",
     "evidence": [
-      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L36-40: rows 空则 return emptyList())"
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt (L36-40: rows 空则 return emptyList())"
     ]
   },
   "courses": [],

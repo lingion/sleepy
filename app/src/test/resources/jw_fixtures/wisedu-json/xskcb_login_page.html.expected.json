@@ -6,7 +6,7 @@
     "upstream_evidence": "UJS adapter / NJUPT 接口文档:会话过期时接口返回 HTML 登录页而非 JSON,zfn_api.py 和 UJS 用 JSON.parse 抛异常识别未登录/会话过期,对应 toast '可能是您未成功登录或会话已过期'",
     "evidence": [
       "/tmp/jw_research.json domain[4] finding CSRF: '唯一坑: 会话过期时接口返回的是 HTML 登录页 (或 3xx) 而非 JSON'",
-      "/Users/lingion_k/Desktop/sleepy/app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt (WISEDU_FETCH_JS L394: .then(r => r.json()) 会 reject)"
+      "app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwWebViewLoginScreen.kt (WISEDU_FETCH_JS L394: .then(r => r.json()) 会 reject)"
     ]
   },
   "courses": null,

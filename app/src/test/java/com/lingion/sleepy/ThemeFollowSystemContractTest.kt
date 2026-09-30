@@ -34,8 +34,7 @@ class ThemeFollowSystemContractTest {
     private fun loadSource(vararg relPaths: String): String =
         sequenceOf(
             java.io.File("app/src/main/java/com/lingion/sleepy/"),
-            java.io.File("src/main/java/com/lingion/sleepy/"),
-            java.io.File("/Users/lingion_k/sleepy/app/src/main/java/com/lingion/sleepy/")
+            java.io.File("src/main/java/com/lingion/sleepy/")
         ).firstOrNull { it.isDirectory }?.let { root ->
             relPaths.map { java.io.File(root, it) }.firstOrNull { it.isFile }?.readText()
         } ?: error("Unable to load sources: ${relPaths.joinToString()}")
@@ -44,8 +43,7 @@ class ThemeFollowSystemContractTest {
     private val manifestSource: String by lazy {
         sequenceOf(
             java.io.File("app/src/main/AndroidManifest.xml"),
-            java.io.File("src/main/AndroidManifest.xml"),
-            java.io.File("/Users/lingion_k/sleepy/app/src/main/AndroidManifest.xml")
+            java.io.File("src/main/AndroidManifest.xml")
         ).firstOrNull { it.isFile }?.readText() ?: error("Unable to load AndroidManifest.xml")
     }
 

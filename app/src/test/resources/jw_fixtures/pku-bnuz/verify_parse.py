@@ -288,7 +288,7 @@ def compare(actual, expected, label, strip_room_step=False):
 
 
 def main():
-    fixture_dir = Path("/tmp/jw_fixtures/pku-bnuz")
+    fixture_dir = Path(__file__).resolve().parent
     all_ok = True
 
     cases_pku = ["pku_normal", "pku_single_double_week", "pku_missing_fields", "pku_empty", "pku_login"]

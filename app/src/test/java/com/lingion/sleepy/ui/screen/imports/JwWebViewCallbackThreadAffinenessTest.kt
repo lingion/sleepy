@@ -34,8 +34,9 @@ import org.junit.Test
 class JwWebViewCallbackThreadAffinenessTest {
 
     /**
-     * 加载 ui.screen.imports 包内全部 .kt 源文件。从多个候选根路径 (cwd / 当前 worktree /
-     * 主仓兜底) 扫;Gradle test working dir 在子项目根,故子项目路径也兼容。
+     * 加载 ui.screen.imports 包内全部 .kt 源文件。从当前 checkout 的候选根路径
+     * (sleepy.test.root / cwd 推断) 扫;Gradle test working dir 在子项目根,故子项目
+     * 路径也兼容。未来加新 interceptor 也会自动被扫描。
      */
     private fun loadPackageSources(): List<Pair<String, String>> {
         val pkgDirRel = "app/src/main/java/com/lingion/sleepy/ui/screen/imports"
@@ -45,17 +46,13 @@ class JwWebViewCallbackThreadAffinenessTest {
         val configuredRoot = System.getProperty("sleepy.test.root")?.let {
             java.io.File(it, pkgDirRel)
         }
-        val currentWorktree = "/Users/lingion_k/sleepy-worktrees/d-pipeline/$pkgDirRel"
-        val mainRepo = "/Users/lingion_k/sleepy/$pkgDirRel"
         val roots = sequenceOf(
             configuredRoot,
             java.io.File(pkgDirRel),
             java.io.File(fromAppDir),
-            java.io.File(currentWorktree),
-            java.io.File(mainRepo),
         )
         val firstExisting = roots.filterNotNull().firstOrNull { it.isDirectory } ?: error(
-            "No source root found for $pkgDirRel. Tried: $pkgDirRel, $fromAppDir, $currentWorktree, $mainRepo"
+            "No source root found for $pkgDirRel. Tried: $pkgDirRel, $fromAppDir"
         )
         return firstExisting.listFiles { f -> f.isFile && f.name.endsWith(".kt") }
             ?.map { it.name to it.readText() }

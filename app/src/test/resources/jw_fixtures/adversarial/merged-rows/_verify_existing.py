@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 """
 merged-rows 对抗样本组: 逐 token 重放验证脚本。
-只读 /Users/lingion_k/Desktop/sleepy 源码 + /tmp 样本, 不写 sleepy 仓库。
+只读当前 checkout 源码语义 + 本目录样本, 不写 sleepy 仓库。
 """
 import json, re, os, sys
 from html.parser import HTMLParser
 
-BASE = '/tmp/jw_fixtures/adversarial/merged-rows'
+BASE = os.path.dirname(os.path.abspath(__file__))
 
 # ──────────── JwOldZfParser (type=0 / type=1) companion 词表/正则 (L279-L346) ────────────
 COURSE_PROPERTY = set("任选 限选 实践选修 必修课 选修课 必修 选修 专基 专选 公必 公选 义修 选 必 主干 专限 公基 值班 通选 思政必 思政选 自基必 自基选 语技必".split())
