@@ -60,20 +60,15 @@ class VendorLiveCardRendererFixContractTest {
     }
 
     @Test
-    fun `xiaomi uses official focus payload and diagnostic probes`() {
-        assertTrue(
-            "Support probes must expose the official canShowFocus diagnostic",
-            supportSource.contains("miui.statusbar.notification.public")
-        )
+    fun `xiaomi matches v1056 and carries no private focus extras`() {
+        assertFalse(source.contains("putString(\"miui.focus"))
+        assertFalse(source.contains("putBundle(\"miui.focus"))
+        assertFalse(source.contains("private fun addXiaomiExtras"))
+        assertTrue(source.contains("LiveCardVendor.XIAOMI -> Unit"))
+        assertTrue(source.contains("setRequestPromotedOngoing(true)"))
         assertFalse(
-            "Support probes must not reflect private Xiaomi SystemProperties",
+            "Renderer must not reflect private Xiaomi SystemProperties",
             supportSource.contains("SystemProperties")
-        )
-        assertTrue(source.contains("miui.focus.param"))
-        assertTrue(source.contains("filterWhenNoPermission\", false"))
-        assertTrue(
-            "Renderer must keep the public promoted-ongoing fallback",
-            source.contains("setRequestPromotedOngoing(true)")
         )
     }
 

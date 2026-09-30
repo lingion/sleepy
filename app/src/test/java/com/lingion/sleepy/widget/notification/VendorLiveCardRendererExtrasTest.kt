@@ -24,18 +24,19 @@ class VendorLiveCardRendererExtrasTest {
         }
 
     @Test
-    fun `xiaomi injects official focus payload without client side permission gate`() {
-        assertTrue(rendererSource.contains("addXiaomiExtras"))
-        assertTrue(rendererSource.contains("miui.focus.param"))
-        assertTrue(rendererSource.contains("param_v2"))
-        assertTrue(rendererSource.contains("filterWhenNoPermission\", false"))
-        assertTrue(rendererSource.contains("bigIslandArea"))
-        assertTrue(rendererSource.contains("miui.focus.pics"))
-        assertTrue(rendererSource.contains("support.xiaomiFocusGranted(context)"))
+    fun `xiaomi keeps the v1056 promoted ongoing path free of vendor extras`() {
         assertFalse(
-            "Renderer must not gate Xiaomi injection on canShowFocus",
-            rendererSource.contains("if (!support.xiaomiFocusGranted")
+            "Xiaomi renderer must not attach Focus extras to the v1.0.56 path",
+            rendererSource.contains("putString(\"miui.focus") ||
+                rendererSource.contains("putBundle(\"miui.focus")
         )
+        assertFalse(
+            "Xiaomi renderer must not define a vendor-specific extras builder",
+            rendererSource.contains("private fun addXiaomiExtras")
+        )
+        assertTrue(rendererSource.contains("LiveCardVendor.XIAOMI -> Unit"))
+        assertTrue(rendererSource.contains("setRequestPromotedOngoing(true)"))
+        assertTrue(rendererSource.contains("ProgressStyle"))
     }
 
     @Test

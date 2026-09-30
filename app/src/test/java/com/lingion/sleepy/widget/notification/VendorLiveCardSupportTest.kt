@@ -36,14 +36,12 @@ class VendorLiveCardSupportTest {
     @Test
     fun `support object exposes every probe the renderer relies on`() {
         val probes = listOf(
-            VendorLiveCardSupport::xiaomiFocusGranted,
-            VendorLiveCardSupport::xiaomiFocusProtocol,
             VendorLiveCardSupport::flymeLiveEnabled,
             VendorLiveCardSupport::flymeVersion,
             VendorLiveCardSupport::samsungNowBarFeature,
             VendorLiveCardSupport::vivoRegisterSceneList,
         )
-        assertEquals(6, probes.size)
+        assertEquals(4, probes.size)
         probes.forEach { probe ->
             assertNotNull(probe)
             assertNotEquals("Probe ${probe.name} must have a name", "", probe.name)
