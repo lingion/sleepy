@@ -23,15 +23,46 @@ import android.util.Log
  *    `setSuperXInfosSceneList` listener (vivo whitelist is per-package, not per-app, so this
  *    only forwards the call; whether vivo accepts is unknown and reported as unknown).
  *
- * Xiaomi has no probe: v1.0.56 restored the plain promoted-ongoing path. Private
- * Xiaomi Focus extras are reserved for approved packages and demote unapproved
- * apps (see VendorLiveCardRenderer).
+ *  - [xiaomiFocusGranted]/[xiaomiFocusProtocol]: 小米焦点通知权限与协议版本, 仅诊断;
+ *    注入不做闸门 (official docs: filterWhenNoPermission=false lets the system fall
+ *    back gracefully, so client-side gating only starves the island path).
  *
  * Sources: see docs/live-cards/{xiaomi,vivo,meizu,samsung}/REUSE.md and the cloned corpus.
  */
 object VendorLiveCardSupport {
 
     private const val TAG = "VendorLiveCardSupport"
+
+    /**
+     * 小米焦点通知权限探测(官方文档 evidence A: focus-notification.md §一)。
+     * 只用于诊断日志 — 注入通路不做此闸门: 官方 param_v2.filterWhenNoPermission=false
+     * 时权限未开也正常显示通知(不呈岛形态), 由系统降级, 客户端拦截反而把岛参数
+     * 在 debug 包/权限默认关的设备上全部掐死。
+     */
+    fun xiaomiFocusGranted(context: Context): Boolean {
+        return try {
+            val uri = Uri.parse("content://miui.statusbar.notification.public")
+            val bundle: Bundle? = context.contentResolver.call(
+                uri, "canShowFocus", null,
+                Bundle().apply { putString("package", context.packageName) }
+            )
+            bundle?.getBoolean("canShowFocus", false) ?: false
+        } catch (t: Throwable) {
+            Log.w(TAG, "canShowFocus probe failed", t)
+            false
+        }
+    }
+
+    /** 焦点通知协议版本: 0=无 1=OS1 2=OS2 3=OS3(支持岛)。诊断日志用。 */
+    fun xiaomiFocusProtocol(context: Context): Int {
+        return try {
+            android.provider.Settings.System.getInt(
+                context.contentResolver, "notification_focus_protocol", 0
+            )
+        } catch (_: Throwable) {
+            -1
+        }
+    }
 
     fun flymeLiveEnabled(context: Context): Boolean {
         if (context.checkSelfPermission("flyme.permission.READ_NOTIFICATION_LIVE_STATE")

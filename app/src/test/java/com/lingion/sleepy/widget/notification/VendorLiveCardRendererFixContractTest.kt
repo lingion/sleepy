@@ -60,20 +60,19 @@ class VendorLiveCardRendererFixContractTest {
     }
 
     @Test
-    fun `xiaomi uses the v1056 standard notification path`() {
-        // Xiaomi's private SystemProperties/provider probes were part of the failed
-        // Focus Notification experiment. v1.0.56 worked without either probe because
-        // HyperOS auto-promotes the standard ProgressStyle notification.
-        assertFalse(
-            "Support probes must not call the private Xiaomi Focus provider",
+    fun `xiaomi uses official focus payload and diagnostic probes`() {
+        assertTrue(
+            "Support probes must expose the official canShowFocus diagnostic",
             supportSource.contains("miui.statusbar.notification.public")
         )
         assertFalse(
             "Support probes must not reflect private Xiaomi SystemProperties",
             supportSource.contains("SystemProperties")
         )
+        assertTrue(source.contains("miui.focus.param"))
+        assertTrue(source.contains("filterWhenNoPermission\", false"))
         assertTrue(
-            "Renderer must keep the public promoted-ongoing notification path",
+            "Renderer must keep the public promoted-ongoing fallback",
             source.contains("setRequestPromotedOngoing(true)")
         )
     }
