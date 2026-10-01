@@ -739,11 +739,22 @@ private const val WISEDU_FETCH_JS = """
         }
       }
       // 若页面没有学期控件，才使用接口标记的当前学期；禁止无条件取 rows[0]。
+      // 兼容标记字段: SFDQ / CURRENT / SFSY (在服/有效标志, 2026-10-01 ahyz 采集包实锤 SFSY=1)。
+      // 多学期部署仍必须靠上述 DOM 先识别, 只有列表唯一才允许直接取, 防止误选旧学期。
       if (!xnxq) {
         var current = rows.find(function(row) {
-          return row.DM && (row.SFDQ === '1' || row.SFDQ === 1 || row.CURRENT === '1' || row.current === true);
+          var dm = row.DM;
+          if (!dm) return false;
+          return row.SFDQ === '1' || row.SFDQ === 1
+            || row.CURRENT === '1' || row.current === true
+            || row.SFSY === '1' || row.SFSY === 1;
         });
-        xnxq = current ? String(current.DM) : '';
+        if (current) {
+          xnxq = String(current.DM);
+        } else if (rows.length === 1 && rows[0].DM) {
+          // 唯一学期: 无显式 current 标记时安全取 rows[0]。
+          xnxq = String(rows[0].DM);
+        }
       }
       if (!xnxq) throw new Error('无法识别当前选中的学期，请先在教务页面选择学期后再点导入');
       return fetch('/jwapp/sys/wdkb/modules/xskcb/xskcb.do', {
