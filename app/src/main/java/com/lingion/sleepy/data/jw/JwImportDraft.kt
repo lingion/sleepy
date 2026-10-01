@@ -27,6 +27,7 @@ data class JwImportDraftPeriod(
 )
 
 enum class JwImportDraftPhase {
+    WEBVIEW_LOGIN,
     CONFIGURE_CONFIRM,
 }
 
@@ -55,6 +56,7 @@ object JwImportDraftCodec {
         if (root.optInt("schemaVersion", -1) != SCHEMA_VERSION) return null
 
         val phase = when (root.optString("phase", JwImportDraftPhase.CONFIGURE_CONFIRM.name)) {
+            JwImportDraftPhase.WEBVIEW_LOGIN.name -> JwImportDraftPhase.WEBVIEW_LOGIN
             JwImportDraftPhase.CONFIGURE_CONFIRM.name -> JwImportDraftPhase.CONFIGURE_CONFIRM
             else -> return null
         }

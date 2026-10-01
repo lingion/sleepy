@@ -169,6 +169,24 @@ class ImportDraftWiringContractTest {
     }
 
     @Test
+    fun `keeping a draft creates one when leaving before courses are parsed`() {
+        val src = loadSource("ui/screen/imports/JwImportActivity.kt")
+
+        assertTrue(
+            "保存草稿必须允许只有已选学校、尚未解析课程的 WebView 阶段",
+            "val school = selectedSchool ?: parsedSchool ?: return null" in src,
+        )
+        assertTrue(
+            "保存草稿必须为无 draftId 的首次保存调用 repository.save",
+            "if (draftId == null)" in src && "draftRepository.save(" in src,
+        )
+        assertTrue(
+            "WebView 草稿必须恢复到 WebView 登录阶段",
+            "JwImportDraftPhase.WEBVIEW_LOGIN -> Stage.WebViewLogin" in src,
+        )
+    }
+
+    @Test
     fun `imported rows with 45-min majority and one 30-min row yield correct smart config`() {
         // 真实复刻从教务抓回的混合时长节次: 4 节, 第 3 节 30 分钟.
         val rows = listOf(

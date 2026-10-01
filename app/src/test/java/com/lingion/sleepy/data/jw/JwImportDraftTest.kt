@@ -108,6 +108,21 @@ class JwImportDraftTest {
     }
 
     @Test
+    fun `webview draft round trips without courses`() {
+        val webViewDraft = JwImportDraftSnapshot(
+            school = school,
+            courses = emptyList(),
+            periods = emptyList(),
+            phase = JwImportDraftPhase.WEBVIEW_LOGIN,
+        )
+
+        val decoded = JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(webViewDraft))
+
+        assertEquals(webViewDraft, decoded)
+        assertEquals(JwImportDraftPhase.WEBVIEW_LOGIN, decoded?.phase)
+    }
+
+    @Test
     fun `json uses explicit schema and preserves course ordering`() {
         val json = JwImportDraftCodec.toJson(snapshot)
 

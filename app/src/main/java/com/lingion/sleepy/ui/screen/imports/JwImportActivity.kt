@@ -172,8 +172,7 @@ class JwImportActivity : ComponentActivity() {
                 }
 
                 fun currentDraftSnapshot(): JwImportDraftSnapshot? {
-                    val school = parsedSchool ?: return null
-                    if (parsedCourses.isEmpty()) return null
+                    val school = selectedSchool ?: parsedSchool ?: return null
                     return JwImportDraftSnapshot(
                         school = school,
                         courses = parsedCourses,
@@ -181,6 +180,11 @@ class JwImportActivity : ComponentActivity() {
                         termStartDate = configStartDate,
                         tableName = configTableName,
                         smartConfigJson = Json.encodeToString(configSmartConfig),
+                        phase = if (parsedCourses.isEmpty()) {
+                            JwImportDraftPhase.WEBVIEW_LOGIN
+                        } else {
+                            JwImportDraftPhase.CONFIGURE_CONFIRM
+                        },
                     )
                 }
 
@@ -375,15 +379,22 @@ class JwImportActivity : ComponentActivity() {
                     exitDraftState = result.state
                     when (result.outcome) {
                         ExitDraftOutcome.KeepDraft -> {
-                            val id = draftId
                             val snapshot = currentDraftSnapshot()
-                            if (id != null && snapshot != null) {
+                            if (snapshot == null) {
+                                finish()
+                            } else {
                                 scope.launch {
-                                    draftRepository.update(id, snapshot)
+                                    if (draftId == null) {
+                                        draftId = draftRepository.save(
+                                            snapshot,
+                                            sourceType = "jw",
+                                            sourceUrl = snapshot.school.url,
+                                        )
+                                    } else {
+                                        draftRepository.update(draftId!!, snapshot)
+                                    }
                                     finish()
                                 }
-                            } else {
-                                finish()
                             }
                         }
                         ExitDraftOutcome.DeleteDraft -> {
@@ -440,7 +451,10 @@ class JwImportActivity : ComponentActivity() {
                     // v1.0.56 T10: 默认选中「本次导入自动建作息表」(合成 id=-1)
                     configBindPeriodTableId = -1L
                     exitDraftState = exitDraftState.copy(activeImport = true)
-                    stage = Stage.Preview
+                    stage = when (snapshot.phase) {
+                        JwImportDraftPhase.WEBVIEW_LOGIN -> Stage.WebViewLogin
+                        JwImportDraftPhase.CONFIGURE_CONFIRM -> Stage.Preview
+                    }
                 }
 
                 when {
