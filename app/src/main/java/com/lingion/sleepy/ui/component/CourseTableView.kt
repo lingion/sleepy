@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.offset
@@ -231,38 +232,8 @@ fun CardsGridView(
     val headerShowX = AppPrefs.isPeriodHeaderShowX(context)
     val headerTextMeasurer = rememberTextMeasurer()
     val headerDensity = LocalDensity.current
-    // 用户 2026-09-29: 整列统一字号 — 全列行约束先收集, 由最紧约束算一次;
-    // 每行共用同一个字号, 不再逐行独立自适应造成"有的行大有的行小"。
-    val columnFont = remember(renderSlots, headerStyle, headerLayout, headerShowX, scale) {
-        if (headerLayout != "three_line") return@remember null
-        val timeStyle = headerTimeStyle(scale)
-        val labelStyle = headerLabelStyle(scale)
-        val dPx = headerDensity.density
-        val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
-            val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
-                PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
-            } else {
-                PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
-            }
-            val startW = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width
-            val endW = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width
-            val labelW = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat()
-            val timeMaxW = maxOf(startW, endW)
-            // 墨迹宽 = 时间块 + 标签在 u=0 时的联合包络 (端点异锚中点)
-            // 用基准字号测, compute 内部会按字号比投影到自适应字号
-            val inkW = timeMaxW + labelW
-            PeriodHeaderAdaptiveFont.RowConstraint(
-                inkWidthSp = inkW / dPx,
-                timeMaxWidthSp = timeMaxW / dPx,
-                labelWidthSp = labelW / dPx,
-            )
-        }
-        PeriodHeaderAdaptiveFont.forColumn(
-            cardWidthSp = 240f,
-            cardHeightSp = 52f * scale,
-            rows = rows,
-        )
-    }
+    // columnFont/columnPlacements 需真实行高, 故搁后到 rowHeightDp 可用后 (见下 BoxWithConstraints)。
+
     val timeW = if (headerLayout == "three_line") {
         threeLineWidthDp(
             renderSlots,
@@ -278,30 +249,6 @@ fun CardsGridView(
             .coerceAtLeast(d(46f))
     } else {
         d(68f)
-    }
-    // 用户令 2026-09-30: 整列统一卡宽 — 所有行卡片 = timeW (整列最宽包络),
-    // 窄行文字由列级中点对齐 (PeriodHeaderCellContent sharedPlacement),
-    // 取代 2026-09-27 的逐行收口 (用户复令: 卡片宽度永远一致, 禁参差)。
-    val columnPlacements = remember(renderSlots, headerStyle, headerLayout, headerHanging, headerShowX, scale) {
-        if (headerLayout != "three_line") return@remember null
-        val timeStyle = headerTimeStyle(scale)
-        val labelStyle = headerLabelStyle(scale)
-        // 与 PeriodHeaderCellContent 自适应字号投影同一口径: 16sp 投影
-        val projection = PeriodHeaderAdaptiveFont.MAX_LABEL_SP / PeriodHeaderAdaptiveFont.BASE_LABEL_SP
-        val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
-            val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
-                PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
-            } else {
-                PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
-            }
-            PeriodHeaderMetrics(
-                startWidth = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width * projection,
-                endWidth = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width * projection,
-                labelWidth = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat() * projection,
-                showX = headerShowX && slot.nodeStart == slot.nodeEnd,
-            )
-        }
-        solveColumnPlacement(rows, headerHanging)
     }
     val gapH = d(4f)
     val gapW = d(5f)
@@ -385,6 +332,74 @@ fun CardsGridView(
             }
             fun rowHeightAt(i: Int): Dp = rowH * (effectiveWeights?.getOrNull(i) ?: 1f)
             fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
+
+            // 三行表头卡内容高 = 非占位 rowHeightAt − 行间 gap − 卡片内边距×2 (PERIOD_HEADER_CARD_PAD_DP, 与渲染侧一致)。
+            // 用户令 2026-10-03: 整列字号的卡高输入必须用真实行高 (双指缩行/自适应行高联动),
+            // 假 52f*scale 输入曾使矮卡字号过大 → 三行行盒互相重叠。最矮行兜底整列字号。
+            val headerContentHeightSp = run {
+                val padDp = 2f * PERIOD_HEADER_CARD_PAD_DP * scale
+                val minRowDp = renderSlots.withIndex()
+                    .filter { !it.value.isPlaceholder }
+                    .minOfOrNull { (i, _) ->
+                        (rowHeightAt(i) - gapAfterRow(i)).value.coerceAtLeast(0f)
+                    } ?: (rowHeightDp.dp - gapH).value
+                with(headerDensity) { (minRowDp - padDp).dp.toPx() } / headerDensity.density
+            }.coerceAtLeast(1f)
+            // 用户 2026-09-29: 整列统一字号 — 全列行约束先收集, 由最紧约束算一次;
+            // 每行共用同一个字号, 不再逐行独立自适应造成"有的行大有的行小"。
+            val columnFont = if (headerLayout != "three_line") null else {
+                val timeStyle = headerTimeStyle(scale)
+                val labelStyle = headerLabelStyle(scale)
+                val dPx = headerDensity.density
+                val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
+                    val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
+                        PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+                    } else {
+                        PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+                    }
+                    val startW = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width
+                    val endW = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width
+                    val labelW = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat()
+                    val timeMaxW = maxOf(startW, endW)
+                    // 墨迹宽 = 时间块 + 标签在 u=0 时的联合包络 (端点异锚中点)
+                    // 用基准字号测, compute 内部会按字号比投影到自适应字号
+                    val inkW = timeMaxW + labelW
+                    PeriodHeaderAdaptiveFont.RowConstraint(
+                        inkWidthSp = inkW / dPx,
+                        timeMaxWidthSp = timeMaxW / dPx,
+                        labelWidthSp = labelW / dPx,
+                    )
+                }
+                PeriodHeaderAdaptiveFont.forColumn(
+                    cardWidthSp = 240f,
+                    cardHeightSp = headerContentHeightSp,
+                    rows = rows,
+                )
+            }
+            // 用户令 2026-09-30: 整列统一卡宽 — 所有行卡片 = timeW (整列最宽包络),
+            // 窄行文字由列级中点对齐 (PeriodHeaderCellContent sharedPlacement),
+            // 取代 2026-09-27 的逐行收口 (用户复令: 卡片宽度永远一致, 禁参差)。
+            val columnPlacements = remember(renderSlots, headerStyle, headerLayout, headerHanging, headerShowX, scale) {
+                if (headerLayout != "three_line") return@remember null
+                val timeStyle = headerTimeStyle(scale)
+                val labelStyle = headerLabelStyle(scale)
+                // 与 PeriodHeaderCellContent 自适应字号投影同一口径: 16sp 投影
+                val projection = PeriodHeaderAdaptiveFont.MAX_LABEL_SP / PeriodHeaderAdaptiveFont.BASE_LABEL_SP
+                val rows = renderSlots.filter { !it.isPlaceholder }.map { slot ->
+                    val label = if (headerShowX && slot.nodeStart == slot.nodeEnd) {
+                        PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+                    } else {
+                        PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+                    }
+                    PeriodHeaderMetrics(
+                        startWidth = headerTextMeasurer.measure(slot.displayStart, timeStyle).size.width * projection,
+                        endWidth = headerTextMeasurer.measure(slot.displayEnd, timeStyle).size.width * projection,
+                        labelWidth = headerTextMeasurer.measure(label, labelStyle).size.width.toFloat() * projection,
+                        showX = headerShowX && slot.nodeStart == slot.nodeEnd,
+                    )
+                }
+                solveColumnPlacement(rows, headerHanging)
+            }
 
             // 算出每列宽度 (dp)
             val colW = (maxWidth - timeW - gapW * (dayCount + 1)) / dayCount
@@ -1070,7 +1085,7 @@ private fun DaySummaryCell(
 
     Column(
         modifier = modifier
-            .height((132 * scale).dp)
+            .heightIn(min = (132 * scale).dp)
             .clip(RoundedCornerShape((12 * scale * cornerRatio).dp))
             .background(bg)
             .padding(horizontal = sd(6f), vertical = sd(8f))

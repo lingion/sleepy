@@ -111,7 +111,8 @@ internal fun solveColumnPlacement(
  *   - 卡宽不够装墨迹 (最坏兜底) → 等比回缩
  *
  * 算法:
- *   - cardH / 2.6 = 标签字号上限 (三行文字 + 内边距 + 上下呼吸)
+ *   - (cardH + 2.5) / 3.75 = 标签字号上限 — 3.75 来自渲染行盒公式
+ *     (三行行盒 = 2.5×time + 1.25×label, time=label-1), 保证三行严格分隔永不重叠
  *   - cardW / labelWidth  ≈ 实测当前字号; (cardW/labelWidth) × scale_per_char
  *     其中 label 字宽 / 字号 ≈ 1.0 (汉字参考, 其它样式 ≤ 1.0)
  *   - 取 min(高上限, 宽上限), 钳到 [MIN, MAX]
@@ -139,8 +140,13 @@ data class PeriodHeaderAdaptiveFont(val timeSize: Float, val labelSize: Float) {
         /** 可读区间下限 — Material bodySmall 下限, 触底不再缩. */
         const val MIN_LABEL_SP = 11f
         const val MIN_TIME_SP = 10f
-        /** 三行总高 = label + lineGap + time + lineGap + time, 时间行略小. */
-        private const val HEIGHT_TO_LABEL_RATIO = 2.6f
+        /** 三行总占高 ↔ 单 label 字号之比。
+         *  渲染侧 (PeriodHeaderCellContent) 每行行盒高 = font × lineHeight(1.25), 三行 = 2.5×timeSize + 1.25×labelSize。
+         *  time=size-1 代入 → 2.5(label-1) + 1.25 label = 3.75 label - 2.5。
+         *  此比 (3.75) 是渲染占高与字号的精确反比, 非估算。它能保证: labelSize 满足 heightCap 时,
+         *  三行行盒总高恰等于 cardHeightSp, 永不重叠 (用户 2026-09-30 定稿二: 三行间距不可压缩为代价)。
+         */
+        private const val HEIGHT_TO_LABEL_RATIO = 3.75f
         /** 基准字号 — 墨迹宽度测量用, 与自适应字号无关. */
         const val BASE_LABEL_SP = 12f
         const val BASE_TIME_SP = 11f
@@ -159,10 +165,14 @@ data class PeriodHeaderAdaptiveFont(val timeSize: Float, val labelSize: Float) {
             timeMaxWidthSp: Float,
             labelWidthSp: Float,
         ): PeriodHeaderAdaptiveFont {
-            // 高度上限唯一驱动: 三行总高 ≈ label×2.6 (呼吸空间含内边距)。
+            // 高度上限唯一驱动: 三行行盒总高 = 2.5×timeSize + 1.25×labelSize
+            //   = 2.5×(labelSize-1) + 1.25×labelSize = 3.75×labelSize - 2.5sp。
+            //   要求 ≤ cardHeightSp → labelSize ≤ (cardHeightSp + 2.5) / 3.75。
+            //   此即 HEIGHT_TO_LABEL_RATIO 的精确反比 (3.75), 而非估算 2.6。
             // 宽度不做上限 — 宽度由上游按自适应字号实测后撑卡 (内容长→卡变宽, 禁缩字号迁就);
             // inkWidth 超卡宽仅在真装不下时兜底回缩 (见下)。
-            val heightCap = cardHeightSp.coerceAtLeast(1f) / HEIGHT_TO_LABEL_RATIO
+            // labelSize ≤ (cardHeightSp + 2.5) / 3.75 使三行行盒刚好贴齐卡高不越界。2.5sp 是 time=label-1 带出的补偿。
+            val heightCap = (cardHeightSp.coerceAtLeast(1f) + 2.5f) / HEIGHT_TO_LABEL_RATIO
             // 卡高装不下 MIN 时 (小组件极矮行), 按高度比例缩不硬钳 — 硬钳必竖向溢出
             val labelSize = if (heightCap >= MIN_LABEL_SP)
                 heightCap.coerceAtMost(MAX_LABEL_SP)

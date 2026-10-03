@@ -80,25 +80,27 @@ class PeriodHeaderAdaptiveFontTest {
     }
 
     @Test
-    fun standard_card_52dp_hits_comfortable_upper_bound() {
+    fun standard_card_52dp_size_is_exact_fit_not_comfortable_bound() {
         val v = font.compute(
             cardWidthSp = 240f, cardHeightSp = 52f,
             inkWidthSp = 86f, timeMaxWidthSp = 58f, labelWidthSp = 72f,
         )
-        // h=52 → cap = 52/2.6 = 20 → 锁 16/14, 老花眼舒适
-        assertEquals(16f, v.labelSize, 0.001f)
-        assertEquals(14f, v.timeSize, 0.001f)
+        // 用户令 2026-10-03: 三行严格分隔是最低下限, 字号让位于不重叠。
+        // h=52 → label = (52+2.5)/3.75 = 14.533, 三行行盒恰装卡高 (旧 2.6 公式给 16/14,
+        // 实际渲染占 55sp > 52sp → 重叠 — 本次修复的正是这个)。
+        assertEquals((52f + 2.5f) / 3.75f, v.labelSize, 0.001f)
+        assertEquals(v.labelSize - 1f, v.timeSize, 0.001f)
     }
 
     @Test
-    fun widget_card_44dp_still_at_comfortable_bound() {
+    fun widget_card_44dp_fits_three_rows_exactly() {
         val v = font.compute(
             cardWidthSp = 200f, cardHeightSp = 44f,
             inkWidthSp = 80f, timeMaxWidthSp = 56f, labelWidthSp = 60f,
         )
-        // h=44 → cap = 44/2.6 = 16.92 → 锁 16/14
-        assertEquals(16f, v.labelSize, 0.001f)
-        assertEquals(14f, v.timeSize, 0.001f)
+        // h=44 → label = (44+2.5)/3.75 = 12.4, 三行行盒 2.5×11.4+1.25×12.4 = 44 ≤ 卡高
+        assertEquals((44f + 2.5f) / 3.75f, v.labelSize, 0.001f)
+        assertEquals(v.labelSize - 1f, v.timeSize, 0.001f)
     }
 
     @Test
@@ -107,21 +109,21 @@ class PeriodHeaderAdaptiveFontTest {
             cardWidthSp = 100f, cardHeightSp = 39f,
             inkWidthSp = 60f, timeMaxWidthSp = 30f, labelWidthSp = 36f,
         )
-        // h=39 → cap = 39/2.6 = 15 → 落 [11,16] 区间, 不触底也不触顶
-        assertEquals(15f, v.labelSize, 0.001f)
-        assertEquals(14f, v.timeSize, 0.001f)
+        // h=39 → label = (39+2.5)/3.75 = 11.067, 落 [11,16] 区间下沿附近
+        assertEquals((39f + 2.5f) / 3.75f, v.labelSize, 0.001f)
+        assertEquals(v.labelSize - 1f, v.timeSize, 0.001f)
     }
 
     @Test
-    fun tiny_card_30dp_floors_near_minimum() {
+    fun tiny_card_30dp_prefers_no_overlap_over_minimum_size() {
         val v = font.compute(
             cardWidthSp = 60f, cardHeightSp = 30f,
             inkWidthSp = 40f, timeMaxWidthSp = 18f, labelWidthSp = 24f,
         )
-        // h=30 → cap = 30/2.6 = 11.54, 接近下限但仍有视觉余地
-        assertTrue("labelSize should be near 11.5: got ${v.labelSize}",
-            v.labelSize in 11f..12f)
-        assertTrue(v.timeSize >= 10f)
+        // h=30 → label = (30+2.5)/3.75 = 8.667 < MIN_LABEL_SP → 比例缩不硬钳
+        // (用户令 2026-10-03: 宁缩字不重叠, 硬钳 11sp 必致三行咬合)
+        assertEquals((30f + 2.5f) / 3.75f, v.labelSize, 0.001f)
+        assertTrue(v.labelSize < 11f)
     }
 
     @Test
@@ -131,10 +133,38 @@ class PeriodHeaderAdaptiveFontTest {
             cardWidthSp = 30f, cardHeightSp = 18f,
             inkWidthSp = 24f, timeMaxWidthSp = 12f, labelWidthSp = 16f,
         )
-        // h=18 → cap = 18/2.6 = 6.92, < 11 → 按比例 6.92, 不硬钳
+        // h=18 → label = (18+2.5)/3.75 = 5.467, < 11 → 按比例缩放
         assertTrue("labelSize should be < MIN_LABEL_SP when card too tiny: got ${v.labelSize}",
             v.labelSize < 11f)
         assertTrue(v.labelSize > 5f) // 仍 > 0.1 兜底
+    }
+
+    @Test
+    fun three_rows_never_overlap_for_any_card_height() {
+        // 用户令 2026-10-03 最低下限: 每行行盒 ≥ 字体占高, 三行总占高 ≤ 卡高。
+        // 渲染行高式: 总占高 = 2.5×timeSize + 1.25×labelSize (lineHeight=1.25)。
+        for (h in listOf(14f, 18f, 22f, 26f, 30f, 36f, 44f, 52f, 60f, 80f, 96f)) {
+            val v = font.compute(
+                cardWidthSp = 200f, cardHeightSp = h,
+                inkWidthSp = 0f, timeMaxWidthSp = 0f, labelWidthSp = 0f,
+            )
+            val occupied = v.timeSize * 2.5f + v.labelSize * 1.25f
+            assertTrue(
+                "h=$h: 三行行盒总高 $occupied 超过卡高 → 必重叠 (label=${v.labelSize}, time=${v.timeSize})",
+                occupied <= h + 0.001f,
+            )
+        }
+    }
+
+    @Test
+    fun width_shrink_also_preserves_no_overlap() {
+        // 墨迹闸等比回缩只会让字号更小 → 行盒更矮, 不重叠不变量自动保持
+        val v = font.compute(
+            cardWidthSp = 20f, cardHeightSp = 30f,
+            inkWidthSp = 80f, timeMaxWidthSp = 40f, labelWidthSp = 60f,
+        )
+        val occupied = v.timeSize * 2.5f + v.labelSize * 1.25f
+        assertTrue("width-shrunk font must still fit h=30: occupied=$occupied", occupied <= 30.001f)
     }
 
     @Test

@@ -152,21 +152,43 @@ fun PeriodHeaderCellContent(
             // 未传(预览)时逐卡自适应保持原行为。
             // 单位契约: compute 输入 sp. Dp.toPx()/density = sp (px→sp 正确);
             // dp 字面量 (52f 等) 数值≈sp, 禁再除 density (2026-09-30 修单位 bug).
-            val adaptiveFont = sharedFont ?: PeriodHeaderAdaptiveFont.compute(
+            val adaptiveFont0 = sharedFont ?: PeriodHeaderAdaptiveFont.compute(
                 cardWidthSp = with(density) { maxWidth.toPx() } / density.density,
                 cardHeightSp = with(density) { maxHeight.toPx() } / density.density,
                 inkWidthSp = baseMetrics.inkWidth(hangingUnits) / density.density,
                 timeMaxWidthSp = baseMetrics.timeMax / density.density,
                 labelWidthSp = baseLabelW / density.density,
             )
-            val timeStyleAdaptive = adaptiveHeaderTimeStyle(scale, adaptiveFont)
-            val labelStyleAdaptive = adaptiveHeaderLabelStyle(scale, adaptiveFont)
-            val startWidth = measurer.measure(slot.displayStart, timeStyleAdaptive).size.width.toFloat()
-            val endWidth = measurer.measure(slot.displayEnd, timeStyleAdaptive).size.width.toFloat()
-            val labelWidth = measurer.measure(label, labelStyleAdaptive).size.width.toFloat()
-            val startH = measurer.measure(slot.displayStart, timeStyleAdaptive).size.height.toFloat()
-            val labelH = measurer.measure(label, labelStyleAdaptive).size.height.toFloat()
-            val endH = measurer.measure(slot.displayEnd, timeStyleAdaptive).size.height.toFloat()
+            var adaptiveFont = adaptiveFont0
+            var timeStyleAdaptive = adaptiveHeaderTimeStyle(scale, adaptiveFont)
+            var labelStyleAdaptive = adaptiveHeaderLabelStyle(scale, adaptiveFont)
+            var startWidth = measurer.measure(slot.displayStart, timeStyleAdaptive).size.width.toFloat()
+            var endWidth = measurer.measure(slot.displayEnd, timeStyleAdaptive).size.width.toFloat()
+            var labelWidth = measurer.measure(label, labelStyleAdaptive).size.width.toFloat()
+            var startH = measurer.measure(slot.displayStart, timeStyleAdaptive).size.height.toFloat()
+            var labelH = measurer.measure(label, labelStyleAdaptive).size.height.toFloat()
+            var endH = measurer.measure(slot.displayEnd, timeStyleAdaptive).size.height.toFloat()
+            // 不重叠硬约束 (用户令 2026-10-03, 最低下限): 三行必须严格分隔,
+            // 每行行盒高 ≥ 字体实际占高。卡片装不下三行行盒时字号等比缩小,
+            // 宁小勿叠。实测行盒 px 对比可用高 px — 与 fontScale/density 无关,
+            // 兜住上游字号 (columnFont 共享值按整列最矮行算, 本卡可能更矮)。
+            val availHPx = with(density) { maxHeight.toPx() }
+            val requiredHPx = startH + labelH + endH
+            if (requiredHPx > availHPx && requiredHPx > 0f && availHPx > 0f) {
+                val guard = availHPx / requiredHPx
+                adaptiveFont = PeriodHeaderAdaptiveFont(
+                    timeSize = (adaptiveFont.timeSize * guard).coerceAtLeast(0.1f),
+                    labelSize = (adaptiveFont.labelSize * guard).coerceAtLeast(0.1f),
+                )
+                timeStyleAdaptive = adaptiveHeaderTimeStyle(scale, adaptiveFont)
+                labelStyleAdaptive = adaptiveHeaderLabelStyle(scale, adaptiveFont)
+                startWidth = measurer.measure(slot.displayStart, timeStyleAdaptive).size.width.toFloat()
+                endWidth = measurer.measure(slot.displayEnd, timeStyleAdaptive).size.width.toFloat()
+                labelWidth = measurer.measure(label, labelStyleAdaptive).size.width.toFloat()
+                startH = measurer.measure(slot.displayStart, timeStyleAdaptive).size.height.toFloat()
+                labelH = measurer.measure(label, labelStyleAdaptive).size.height.toFloat()
+                endH = measurer.measure(slot.displayEnd, timeStyleAdaptive).size.height.toFloat()
+            }
             val metrics = PeriodHeaderMetrics(startWidth, endWidth, labelWidth, showX && slot.nodeStart == slot.nodeEnd)
             // 用户令 2026-09-30: 整列统一排布 — sharedPlacement 由调用方按全列
             // 最宽行解一次, 本行各元素平移到基准行对应元素的 middle point;
