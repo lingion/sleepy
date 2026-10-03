@@ -33,13 +33,18 @@ fun parseReleaseJson(json: String, currentVersion: String, abi: String): UpdateI
     val release = org.json.JSONObject(json)
     val version = release.optString("tag_name").removePrefix("v")
     val body = release.optString("body")
-    val assetName = "app-$abi-release.apk"
-    val downloadUrl = release.optJSONArray("assets")?.let { assets ->
-        (0 until assets.length()).map { assets.getJSONObject(it) }
-            .firstOrNull { it.optString("name") == assetName }
-            ?.optString("browser_download_url")
-            ?.toMirrorDownloadUrl()
-    } ?: ""
+    val assetNames = listOf(
+        "app-$abi-release.apk",
+        "app-$abi.apk",
+        "Sleepy-v$version-$abi.apk",
+    )
+    val assetsJson = release.optJSONArray("assets") ?: return UpdateInfo(
+        version, body, "", VersionUtils.compare(version.ifBlank { "0" }, currentVersion) > 0
+    )
+    val downloadUrl = (0 until assetsJson.length()).map { assetsJson.getJSONObject(it) }
+        .firstOrNull { it.optString("name") in assetNames }
+        ?.optString("browser_download_url")
+        ?.toMirrorDownloadUrl() ?: ""
     val force = body.contains(FORCE_FLAG)
     val isUpdateAvailable = force ||
         VersionUtils.compare(version.ifBlank { "0" }, currentVersion) > 0

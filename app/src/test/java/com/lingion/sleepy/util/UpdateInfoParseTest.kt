@@ -46,6 +46,51 @@ class UpdateInfoParseTest {
         assertEquals("", info.downloadUrl)
     }
 
+    // ─── 双命名兼容 (2026-10-03 用户报障): v1.0.58 hand-uploaded with Sleepy-v*-<abi>.apk,
+    // shipped clients expected app-<abi>-release.apk → downloadUrl="" → URL("") "no protocol:"
+    // Both names must now match the same JSON assets list.
+
+    private val newNamingBody = """{"tag_name":"v1.0.58","body":"x","assets":[
+        {"name":"Sleepy-v1.0.58-arm64-v8a.apk","browser_download_url":"https://example.com/new-arm64.apk"},
+        {"name":"Sleepy-v1.0.58-armeabi-v7a.apk","browser_download_url":"https://example.com/new-armv7.apk"},
+        {"name":"Sleepy-v1.0.58-x86_64.apk","browser_download_url":"https://example.com/new-x86.apk"}]}"""
+
+    @Test
+    fun new_naming_arm64_picked_when_legacy_absent() {
+        val info = parseReleaseJson(newNamingBody, "1.0.57", "arm64-v8a")
+        assertEquals("https://example.com/new-arm64.apk", info.downloadUrl)
+        assertTrue(info.isUpdateAvailable)
+    }
+
+    @Test
+    fun new_naming_x86_64_picked_when_legacy_absent() {
+        val info = parseReleaseJson(newNamingBody, "1.0.57", "x86_64")
+        assertEquals("https://example.com/new-x86.apk", info.downloadUrl)
+    }
+
+    @Test
+    fun legacy_naming_preferred_when_both_present() {
+        // server-side rolled back to legacy names — legacy must take priority so cached
+        // URL decisions stay consistent across releases.
+        val both = """{"tag_name":"v1.0.59","body":"x","assets":[
+            {"name":"app-arm64-v8a-release.apk","browser_download_url":"https://example.com/legacy.apk"},
+            {"name":"Sleepy-v1.0.59-arm64-v8a.apk","browser_download_url":"https://example.com/new.apk"}]}"""
+        val info = parseReleaseJson(both, "1.0.58", "arm64-v8a")
+        assertEquals("https://example.com/legacy.apk", info.downloadUrl)
+    }
+
+    @Test
+    fun new_naming_github_url_rewritten_to_mirror() {
+        val body = """{"tag_name":"v1.0.58","body":"x","assets":[
+            {"name":"Sleepy-v1.0.58-arm64-v8a.apk",
+             "browser_download_url":"https://github.com/lingion/sleepy/releases/download/v1.0.58/Sleepy-v1.0.58-arm64-v8a.apk"}]}"""
+        val info = parseReleaseJson(body, "1.0.57", "arm64-v8a")
+        assertEquals(
+            "https://gh.qdp.qzz.io/lingion/sleepy/releases/download/v1.0.58/Sleepy-v1.0.58-arm64-v8a.apk",
+            info.downloadUrl
+        )
+    }
+
     // ─── 下载地址镜像改写(2026-09-05 用户令: api.github.com 可达 ≠ github.com 资产可达) ──
 
     private val githubAssetBody = """{"tag_name":"v1.0.47","body":"x","assets":[

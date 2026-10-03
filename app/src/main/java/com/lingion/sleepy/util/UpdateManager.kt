@@ -23,19 +23,31 @@ object UpdateManager {
     private const val MIRROR_PREFIX = "https://gh.qdp.qzz.io/lingion/sleepy/releases/download/"
 
     private fun currentAbiAsset(): String = when {
-        Build.SUPPORTED_ABIS.any { it == "arm64-v8a" } -> "app-arm64-v8a-release.apk"
-        Build.SUPPORTED_ABIS.any { it == "armeabi-v7a" } -> "app-armeabi-v7a-release.apk"
-        Build.SUPPORTED_ABIS.any { it == "x86_64" } -> "app-x86_64-release.apk"
-        else -> "app-arm64-v8a-release.apk"
+        Build.SUPPORTED_ABIS.any { it == "arm64-v8a" } -> "arm64-v8a"
+        Build.SUPPORTED_ABIS.any { it == "armeabi-v7a" } -> "armeabi-v7a"
+        Build.SUPPORTED_ABIS.any { it == "x86_64" } -> "x86_64"
+        else -> "arm64-v8a"
     }
 
     private fun currentAbi(): String = currentAbiAsset()
-        .removePrefix("app-").removeSuffix("-release.apk")
+
+    /**
+     * Accept both legacy (app-<abi>-release.apk) and new (Sleepy-v<ver>-<abi>.apk) asset names.
+     * Hand-uploaded v1.0.58 assets used the new naming while shipped clients still expected the
+     * old, leaving downloadUrl empty and crashing URL("") with MalformedURLException("no protocol: ").
+     * The legacy suffix is kept as the first fallback so the rename fix on the server side
+     * (POST PATCH assets to old names) is always honored when present.
+     */
+    private fun candidatesFor(abi: String): List<String> = listOf(
+        "app-$abi-release.apk",
+        "app-$abi.apk",
+        "Sleepy-v${BuildConfig.VERSION_NAME}-$abi.apk",
+    )
 
     /** 只拉 release 信息,不下载。GitHub 不通回退镜像。 */
     suspend fun fetchUpdateInfo(context: Context): UpdateInfo = withContext(Dispatchers.IO) {
         val abi = currentAbi()
-        val abiAsset = currentAbiAsset()
+        val candidates = candidatesFor(abi)
         runCatching {
             val json = readText(GITHUB_API)
             return@withContext parseReleaseJson(json, BuildConfig.VERSION_NAME, abi)
@@ -46,10 +58,26 @@ object UpdateManager {
             ?.groupValues?.get(1)
             ?: throw IllegalStateException(context.getString(com.lingion.sleepy.R.string.error_no_version_found))
         val version = tag.removePrefix("v")
-        val url = "$MIRROR_PREFIX$tag/$abiAsset"
+        // 镜像 HTML 不暴露 asset 列表 → 沿用候选名按顺序拼,找到能 200 的那条;全失败抛空串触发 no-protocol 错误而非 silently 404
+        val url = candidates.firstNotNullOfOrNull { candidate ->
+            val u = "$MIRROR_PREFIX$tag/$candidate"
+            if (headOk(u)) u else null
+        } ?: ""
         val isUpdate = VersionUtils.compare(version, BuildConfig.VERSION_NAME) > 0
         UpdateInfo(version, parseMirrorPage(page, tag), url, isUpdate)
     }
+
+    private fun headOk(url: String): Boolean = try {
+        val conn = (URL(url).openConnection() as HttpURLConnection).apply {
+            requestMethod = "HEAD"
+            connectTimeout = 8_000
+            readTimeout = 8_000
+            instanceFollowRedirects = true
+        }
+        val ok = conn.responseCode in 200..299
+        conn.disconnect()
+        ok
+    } catch (_: Exception) { false }
 
     /** 下载 APK 到 cacheDir,带进度回调(0-100)。协程 cancel 时删半截文件。 */
     suspend fun downloadApk(
