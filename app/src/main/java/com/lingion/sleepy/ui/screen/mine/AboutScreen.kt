@@ -251,14 +251,15 @@ fun AboutScreen(
                 .padding(horizontal = 20.dp)
                 .verticalScroll(rememberScrollState())
         ) {
-            // 顶部 banner: 仅提醒可见时渲染, 点击跳 Releases tag 页, 叉号按版本关闭提醒
+            // 顶部 banner: 仅提醒可见时渲染, 点击跳 GitHub Releases tag 页(镜像站只代理下载,
+            // 网页 UI 渲染不全, 浏览器入口一律走主站; 应用内下载链路才走镜像), 叉号按版本关闭提醒
             if (updateNoticeVisible && updateAvailable != null) {
                 Spacer(modifier = Modifier.height(12.dp))
                 UpdateBanner(
                     version = updateAvailable!!.version,
                     onClick = {
                         context.startActivity(
-                            Intent(Intent.ACTION_VIEW, Uri.parse("https://gh.qdp.qzz.io/lingion/sleepy/releases/tag/v${updateAvailable!!.version}"))
+                            Intent(Intent.ACTION_VIEW, Uri.parse("https://github.com/lingion/sleepy/releases/tag/v${updateAvailable!!.version}"))
                         )
                     },
                     onDismiss = { UpdateNotifier.dismiss(updateAvailable!!.version, context) }
