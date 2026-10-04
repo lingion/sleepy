@@ -200,10 +200,12 @@ class PeriodHeaderAdaptiveFontTest {
 
     @Test
     fun preview_skips_ink_guard_keeping_baseline() {
-        // 预览宽 ink 也不缩 (预览本身按内容宽度撑卡)
+        // 预览宽 ink 不触发墨迹缩字 (预览本身按内容宽度撑卡);
+        // 但高度封顶仍生效 — 精确公式 (52+2.5)/3.75 = 14.53sp, 老值 16 只在
+        // 估算比例 2.6 下凑巧不触顶。预览与网格同源同字号, 三行永不重叠。
         val v = font.forPreview(cardWidthSp = 240f, cardHeightSp = 52f)
-        assertEquals(16f, v.labelSize, 0.001f)
-        assertEquals(14f, v.timeSize, 0.001f)
+        assertEquals((52f + 2.5f) / 3.75f, v.labelSize, 0.001f)
+        assertEquals((52f + 2.5f) / 3.75f - 1f, v.timeSize, 0.001f)
     }
 
     @Test
