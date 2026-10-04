@@ -196,14 +196,24 @@ fun PeriodHeaderCellContent(
             val placement = sharedPlacement ?: metrics.solvePlacement(hangingUnits)
             val contentWidthPx = placement.contentWidth
             val contentWidth = with(density) { contentWidthPx.toDp() }
+            // 三行总高可能因硬约束缩字而 < 卡片高 (用户 2026-10-04):
+            // 外层 Box 用 contentHeight + 上下均分 pad, 子三行 TopStart/CenterStart/
+            // BottomStart 各自相对该盒子, 故三行联合块水平竖直都居中。
+            // 内容对齐 Alignment.Center 在此无意义 — 已被显式 pad 替代。
             val contentHeight = with(density) { (startH + labelH + endH).toDp() }
+            val cardHeight = maxHeight
+            val verticalPad = ((cardHeight - contentHeight) / 2f).coerceAtLeast(0.dp)
             val timeBaseLeft = with(density) { placement.timeBaseLeft.toDp() }
             val labelLeft = with(density) { placement.labelLeft.toDp() }
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
-                Box(modifier = Modifier.width(contentWidth).height(contentHeight)) {
+                Box(
+                    modifier = Modifier
+                        .width(contentWidth)
+                        .height(cardHeight),
+                ) {
                     Text(
                         text = slot.displayStart,
                         style = timeStyleAdaptive,
@@ -214,7 +224,7 @@ fun PeriodHeaderCellContent(
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .offset(x = timeBaseLeft),
+                            .offset(y = verticalPad, x = timeBaseLeft),
                     )
                     Text(
                         text = label,
@@ -238,7 +248,7 @@ fun PeriodHeaderCellContent(
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .align(Alignment.BottomStart)
-                            .offset(x = timeBaseLeft),
+                            .offset(y = -verticalPad, x = timeBaseLeft),
                     )
                 }
             }
