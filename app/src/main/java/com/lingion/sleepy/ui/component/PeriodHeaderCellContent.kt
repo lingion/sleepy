@@ -1,6 +1,8 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.layout.Arrangement
+import kotlin.math.max
+import kotlin.math.min
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
@@ -194,25 +196,33 @@ fun PeriodHeaderCellContent(
             // 最宽行解一次, 本行各元素平移到基准行对应元素的 middle point;
             // 未传 (预览/单卡) 时退回逐行排布保持原行为。
             val placement = sharedPlacement ?: metrics.solvePlacement(hangingUnits)
-            val contentWidthPx = placement.contentWidth
-            val contentWidth = with(density) { contentWidthPx.toDp() }
-            // 三行总高可能因硬约束缩字而 < 卡片高 (用户 2026-10-04):
-            // 外层 Box 用 contentHeight + 上下均分 pad, 子三行 TopStart/CenterStart/
-            // BottomStart 各自相对该盒子, 故三行联合块水平竖直都居中。
-            // 内容对齐 Alignment.Center 在此无意义 — 已被显式 pad 替代。
+            // 真实墨迹并集左/右缘 (px, 相对元素矩形左缘).
+            // 左缘: 时间块左缘 (timeBaseLeft) 与标签左缘 (labelLeft) 的最小值;
+            // 右缘: max(timeBaseLeft+时间块宽, labelLeft+标签宽).
+            // inner 盒宽 = 并集宽, 内层偏移转相对并集左缘, 外层 Box Alignment.Center
+            // 自然 X+Y 双居中 (用户 2026-10-04 实测: 原版用 placement.contentWidth 当
+            // 盒宽, 标签悬挂方向不同使并集左缘常 < 0, 视觉上整块贴卡左而非居中).
+            val timeMaxW = maxOf(startWidth, endWidth)
+            val inkLeftPx = min(placement.timeBaseLeft, placement.labelLeft)
+            val inkRightPx = max(
+                placement.timeBaseLeft + timeMaxW,
+                placement.labelLeft + labelWidth
+            )
+            val inkUnionWidthPx = (inkRightPx - inkLeftPx).coerceAtLeast(0f)
+            val inkUnionWidth = with(density) { inkUnionWidthPx.toDp() }
+            // 三行行盒总高可能 < 卡高 (缩字守卫触发时) — 盒高 = 行盒总高,
+            // 外层 Center 使上下间隙均分, 水平同理左右均分.
             val contentHeight = with(density) { (startH + labelH + endH).toDp() }
-            val cardHeight = maxHeight
-            val verticalPad = ((cardHeight - contentHeight) / 2f).coerceAtLeast(0.dp)
-            val timeBaseLeft = with(density) { placement.timeBaseLeft.toDp() }
-            val labelLeft = with(density) { placement.labelLeft.toDp() }
+            val timeBaseLeft = with(density) { (placement.timeBaseLeft - inkLeftPx).toDp() }
+            val labelLeft = with(density) { (placement.labelLeft - inkLeftPx).toDp() }
             Box(
                 modifier = Modifier.fillMaxSize(),
                 contentAlignment = Alignment.Center,
             ) {
                 Box(
                     modifier = Modifier
-                        .width(contentWidth)
-                        .height(cardHeight),
+                        .width(inkUnionWidth)
+                        .height(contentHeight),
                 ) {
                     Text(
                         text = slot.displayStart,
@@ -224,7 +234,7 @@ fun PeriodHeaderCellContent(
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .align(Alignment.TopStart)
-                            .offset(y = verticalPad, x = timeBaseLeft),
+                            .offset(x = timeBaseLeft),
                     )
                     Text(
                         text = label,
@@ -248,7 +258,7 @@ fun PeriodHeaderCellContent(
                         textAlign = TextAlign.Start,
                         modifier = Modifier
                             .align(Alignment.BottomStart)
-                            .offset(y = -verticalPad, x = timeBaseLeft),
+                            .offset(x = timeBaseLeft),
                     )
                 }
             }
