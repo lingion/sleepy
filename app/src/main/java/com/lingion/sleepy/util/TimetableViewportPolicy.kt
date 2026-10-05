@@ -107,6 +107,27 @@ object TimetableViewportPolicy {
         maxRowHeightDp: Float
     ): Float = (baseRowHeightDp * verticalScale).coerceIn(minRowHeightDp, maxRowHeightDp)
 
+    /**
+     * 长课间留白: 把餐段空隙分钟按 分钟/主课时 折进"餐段前一行"的行权重,
+     * 时间轴按分钟比例拉长背景 — 取代固定 mealGapExtra 间隙(间隙会压扁课程卡行)。
+     * weights 与 rows 一一对应; breaksAfter = 餐段后的渲染行下标;
+     * enabled=false 或无空隙时原样返回。periodMinutes<=0 回退 45。
+     */
+    fun expandWeightsForLongBreaks(
+        weights: List<Float>,
+        breaksAfter: Set<Int>,
+        breakMinutes: Map<Int, Int>,
+        periodMinutes: Int,
+        enabled: Boolean,
+    ): List<Float> {
+        if (!enabled || breaksAfter.isEmpty() || weights.isEmpty()) return weights
+        val unit = (if (periodMinutes > 0) periodMinutes else 45).toFloat()
+        return weights.mapIndexed { i, w ->
+            if (i !in breaksAfter) w
+            else w + (breakMinutes[i] ?: 0).toFloat() / unit
+        }
+    }
+
     /** True only after a two-finger gesture has a clear vertical intent. */
     fun locksVerticalResize(
         startVerticalSpan: Float,
