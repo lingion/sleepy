@@ -267,16 +267,21 @@ fun CardsGridView(
     }
     val gapH = d(4f)
     val gapW = d(5f)
-    val mealBreakAfterRows = remember(timeJson, courses, renderSlots, longBreakSpacing) {
-        if (!longBreakSpacing || timeJson == null) emptySet() else {
-            MealBreakDetector.detectDisplayRowIndexes(
-                timeJson,
-                courses,
-                renderSlots.map { it.nodeEnd }
-            )
+    // 长课间留白 (用户 2026-10-05 定稿): 空隙折进"餐段前一行"权重, 背景按时间比例
+    // 拉长 —— 取代旧固定 mealGapExtra 间隙(定值间隙会压扁课程卡行, 时间轴失真)。
+    // yOfRows/分隔线/卡片跨度/滚动高都读膨胀后的权重表 → 双链天然同源。
+    val mealBreakByRenderRow: Map<Int, Int> = remember(timeJson, courses, renderSlots, longBreakSpacing) {
+        if (!longBreakSpacing || timeJson == null) emptyMap() else {
+            val baseRows = TimeTableUtils.parseTimeSlotRows(timeJson)
+            MealBreakDetector.detect(timeJson, courses).mapNotNull { detected ->
+                baseRows.getOrNull(detected.afterRowIndex)?.node?.let { leftNode ->
+                    renderSlots.indexOfLast { it.nodeEnd == leftNode }
+                        .takeIf { it >= 0 }?.to(detected.minutes.toInt())
+                }
+            }.toMap()
         }
     }
-    val mealGapExtra = if (longBreakSpacing) d(6f) else 0.dp
+    val mealBreakAfterRows = mealBreakByRenderRow.keys
 
     val gridBgShape = SleepyTheme.shapes.large
 
@@ -289,16 +294,23 @@ fun CardsGridView(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
             val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
-            val availableGridHeight = (maxHeight - headH - gapH - navExtra - mealGapExtra * mealBreakAfterRows.size)
+            val availableGridHeight = (maxHeight - headH - gapH - navExtra)
                 .value
                 .coerceAtLeast(0f)
+            // 拟合口径的权重表先算(含长课间膨胀), 让自适应行高把空隙计入"一屏装下";
+            // 无餐段时直通原 slotWeights 保持逐像素旧语义。
+            val fitWeights: List<Float>? = if (mealBreakAfterRows.isEmpty()) renderPlan.slotWeights
+            else TimetableViewportPolicy.expandWeightsForLongBreaks(
+                renderPlan.slotWeights ?: List(renderSlots.size) { 1f },
+                mealBreakAfterRows, mealBreakByRenderRow, 45, longBreakSpacing,
+            )
             // 行高基座 (2026-09-16 用户令): 实验室开自适应=拟合高度; 默认关=原固定 52dp×scale。
             // 双指手势相对基座缩放, 上限 96dp 下限 36dp (×scale); 顶栏 tick 确认后长期生效, 撤回回退上次确认值。
             val baseRowHeight = TimetableViewportPolicy.baseRowHeightDp(
                 adaptive = adaptiveHeight,
                 fitRowHeightDp = TimetableViewportPolicy.fitRowHeightDp(
                     availableGridHeightDp = availableGridHeight,
-                    slotWeights = renderPlan.slotWeights,
+                    slotWeights = fitWeights ?: renderPlan.slotWeights,
                     slotCount = renderSlots.size,
                     contentScale = scale
                 ),
@@ -329,7 +341,7 @@ fun CardsGridView(
                             )
                         )
                     } else w
-                }
+                }?.let { TimetableViewportPolicy.expandWeightsForLongBreaks(it, mealBreakAfterRows, mealBreakByRenderRow, 45, longBreakSpacing) }
             }
 
             // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
@@ -341,11 +353,10 @@ fun CardsGridView(
                 val full = r.toInt().coerceAtMost(ws.size)
                 for (i in 0 until full) acc += ws[i]
                 if (full < ws.size && r > full) acc += ws[full] * (r - full)
-                val crossedBreaks = mealBreakAfterRows.count { it + 1 <= r }
-                return rowH * acc + mealGapExtra * crossedBreaks
+                return rowH * acc
             }
             fun rowHeightAt(i: Int): Dp = rowH * (effectiveWeights?.getOrNull(i) ?: 1f)
-            fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
+            fun gapAfterRow(i: Int): Dp = gapH
 
             // 三行表头卡内容高 = 非占位 rowHeightAt − 行间 gap − 卡片内边距×2 (PERIOD_HEADER_CARD_PAD_DP, 与渲染侧一致)。
             // 用户令 2026-10-03: 整列字号的卡高输入必须用真实行高 (双指缩行/自适应行高联动),
