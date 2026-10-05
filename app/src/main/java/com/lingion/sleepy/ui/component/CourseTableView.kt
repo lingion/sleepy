@@ -155,6 +155,7 @@ fun CardsGridView(
                 it == AppPrefs.KEY_PERIOD_HEADER_STYLE ||
                 it == AppPrefs.KEY_PERIOD_HEADER_HANGING ||
                 it == AppPrefs.KEY_PERIOD_HEADER_SHOW_X ||
+                it == AppPrefs.KEY_PERIOD_HEADER_HIDE_TIME ||
                 it == AppPrefs.KEY_GRID_SHOW_SEPARATORS ||
                 it == AppPrefs.KEY_GRID_LONG_BREAK_SPACING
         }.collect { prefVersion++ }
@@ -251,13 +252,15 @@ fun CardsGridView(
     } else {
         // 用户令 (老式表头同三行式统一): 列宽 = dash 轴几何
         // (所有行 dash 同一 X, 列宽含最宽行两侧余量), 不再硬钉 68dp。
-        legacyLineWidthDp(
+        // hideTime=true 时时间行不渲染, 列宽收口到标签实测宽 (legacyTimeWidthDp)。
+        legacyTimeWidthDp(
             renderSlots,
             headerStyle,
             scale,
             headerTextMeasurer,
             LocalDensity.current,
             headerShowX,
+            AppPrefs.isPeriodHeaderHideTime(context),
         )
             // 下限与三行式同一防挤压口径
             .coerceAtLeast(d(46f))
