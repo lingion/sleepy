@@ -1570,7 +1570,8 @@ internal suspend fun applyImportPreview(
         ImportApplyMode.ImportAsNew -> {
             val base = repo.getTable(preview.targetTableId)
             // issue#40 §6: 新格式带 P 区块 → 建 period_tables 并绑定(恢复共享关系);
-            // 旧格式 periodTable=null → 不建(课表用自己兼容列, 不误共享)。
+            // 用户 2026-10-05(2a): 无 P 区块(旧格式/粘贴文本)不再"不建" — 恒以确认页
+            // 最终 confirmedTimeJson 兜底建表并绑定, 三个入口作息表行为统一。
             // v1.0.56 T6: 用户在第三 Tab 显式选了作息表 → 绑定用户所选(优先于自动建表绑定);
             // v1.0.56 T10: 自动建表走全局唯一名顺延(撞名加后缀, 禁与既有课表/作息表同名)
             val importedPeriodTableId = bindPeriodTableId ?: preview.parseResult.periodTable?.let { pt ->
@@ -1581,6 +1582,19 @@ internal suspend fun applyImportPreview(
                         name = TimeTableUtils.suggestUniqueName(pt.name, courseNames, periodNames),
                         nodesPerDay = pt.nodesPerDay,
                         timeJson = pt.timeJson
+                    )
+                )
+            } ?: run {
+                val courseNames = repo.getAllTables().map { it.name }
+                val periodNames = repo.getAllPeriodTables().map { it.name }
+                repo.insertPeriodTable(
+                    com.lingion.sleepy.data.entity.PeriodTableEntity(
+                        name = TimeTableUtils.suggestUniqueName(
+                            confirmedTableName.trim(), courseNames, periodNames,
+                            defaultName = preview.parseResult.tableName,
+                        ),
+                        nodesPerDay = TimeTableUtils.parseTimeSlotRows(confirmedTimeJson).size,
+                        timeJson = confirmedTimeJson
                     )
                 )
             }
@@ -1679,15 +1693,28 @@ internal suspend fun applyImportPreview(
                 )
             }
             val mergedRows = TimeTableUtils.parseTimeSlotRows(mergedTimeJson)
+            // 用户 2026-10-05(2a): 合并新建课表同样恒建+绑作息表(以 mergedTimeJson 为源)。
+            val mergedName = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context)
+            val mergedPeriodTableId = repo.insertPeriodTable(
+                com.lingion.sleepy.data.entity.PeriodTableEntity(
+                    name = TimeTableUtils.suggestUniqueName(
+                        mergedName, repo.getAllTables().map { it.name },
+                        repo.getAllPeriodTables().map { it.name },
+                    ),
+                    nodesPerDay = mergedRows.size,
+                    timeJson = mergedTimeJson
+                )
+            )
             val newTableId = repo.insertTable(
                 TimeTableEntity(
-                    name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
+                    name = mergedName,
                     startDate = confirmedStartDate,
                     maxWeek = if (incoming.maxWeek > 0) incoming.maxWeek else base?.maxWeek ?: 20,
                     nodesPerDay = if (mergedRows.isNotEmpty()) mergedRows.size else base?.nodesPerDay ?: 12,
                     timeJson = mergedTimeJson,
                     color = base?.color ?: "#FF6750A4",
-                    isDefault = false
+                    isDefault = false,
+                    periodTableId = mergedPeriodTableId
                 )
             )
             // 当前课表原课 + 导入课程合并导入新课表
