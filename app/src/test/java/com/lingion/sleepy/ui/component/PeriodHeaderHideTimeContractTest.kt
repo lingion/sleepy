@@ -33,10 +33,22 @@ class PeriodHeaderHideTimeContractTest {
             Regex("""hideTime\s*\?[:=].*AppPrefs\.isPeriodHeaderHideTime""").containsMatchIn(src) ||
                 Regex("""hideTime\s*=\s*hideTimeOverride\s*\?:\s*AppPrefs\.isPeriodHeaderHideTime""").containsMatchIn(src),
         )
-        // legacy 分支: timeString 的 Text 必须被 if (!hideTime) 包住
+        // legacy 结构: if (hideTime) 只画居中标签; 时间串 (start/dash 分段) 必须
+        // 整体落在 else 分支 — 隐藏时一行时间都不能出现; else 里必须真的画时间串。
+        val ifIdx = src.indexOf("if (hideTime)")
+        assertTrue("legacy 缺 if (hideTime) 分支", ifIdx >= 0)
+        val elseIdx = src.indexOf("} else {", ifIdx)
+        assertTrue("hideTime 分支缺配套 else", elseIdx > ifIdx)
+        val hiddenBranch = src.substring(ifIdx, elseIdx)
         assertTrue(
-            "legacy 分支 slot.timeString 渲染缺 if (!hideTime) 守卫",
-            Regex("""if\s*\(\s*!\s*hideTime\s*\)[\s\S]{0,220}?slot\.timeString""").containsMatchIn(src),
+            "hideTime=true 分支内禁渲染时间串 (displayStart/timeString)",
+            !hiddenBranch.contains("text = slot.displayStart") &&
+                !hiddenBranch.contains("slot.timeString"),
+        )
+        val elseBranch = src.substring(elseIdx, minOf(elseIdx + 3000, src.length))
+        assertTrue(
+            "else 分支缺时间串渲染",
+            Regex("""text = slot\.displayStart|text = slot\.timeString""").containsMatchIn(elseBranch),
         )
     }
 
