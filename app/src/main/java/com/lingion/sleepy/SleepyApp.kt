@@ -37,6 +37,10 @@ class SleepyApp : Application() {
         instance = this
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+        // 提醒重排枢纽: 数据/设置变更 → 300ms 防抖合并为一次 scheduleAll (见 ReminderRescheduler)
+        com.lingion.sleepy.widget.notification.ReminderRescheduler.init {
+            notificationScheduler.scheduleAll()
+        }
         // 预热 SharedPreferences: 首次 getSharedPreferences 后台异步加载整文件,
         // 避免冷启动后首个 Compose 屏在主线程同步做磁盘反序列化 (AppPrefs 全部
         // getter 都在调用方线程直读, 严格模式 diskRead / 低端机卡顿来源)。
