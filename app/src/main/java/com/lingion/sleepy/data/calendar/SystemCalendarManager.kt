@@ -106,6 +106,68 @@ object SystemCalendarManager {
         ContextCompat.checkSelfPermission(context, Manifest.permission.READ_CALENDAR) == PackageManager.PERMISSION_GRANTED &&
             ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_CALENDAR) == PackageManager.PERMISSION_GRANTED
 
+    /**
+     * 自建 Sleepy 专属本地日历 (参照 shiguang CalendarAccountManager)。
+     * 场景: 设备无任何可写日历账户 (未登录/无 Google 服务) 时 writableCalendars
+     * 为空列表, 导入无从下手; 本函数用 `CALLER_IS_SYNCADAPTER` 插入隐藏
+     * LOCAL 账户日历 `<pkg>.account`, 幂等 (已存在直接返回)。
+     * 返回 null = 无权限或插入失败, 调用方保持原行为。
+     */
+    suspend fun ensureLocalCalendar(context: Context): SystemCalendarInfo? = withContext(Dispatchers.IO) {
+        if (!hasCalendarPermissions(context)) return@withContext null
+        val accountName = "${context.packageName}.account"
+        val accountType = CalendarContract.ACCOUNT_TYPE_LOCAL
+        val resolver = context.contentResolver
+
+        // 幂等: 已存在直接返回
+        runCatching {
+            resolver.query(
+                CalendarContract.Calendars.CONTENT_URI,
+                arrayOf(
+                    CalendarContract.Calendars._ID,
+                    CalendarContract.Calendars.CALENDAR_DISPLAY_NAME,
+                    CalendarContract.Calendars.ACCOUNT_NAME,
+                    CalendarContract.Calendars.ACCOUNT_TYPE
+                ),
+                "${CalendarContract.Calendars.ACCOUNT_NAME} = ? AND ${CalendarContract.Calendars.ACCOUNT_TYPE} = ?",
+                arrayOf(accountName, accountType),
+                null
+            )?.use { c ->
+                if (c.moveToFirst()) {
+                    return@withContext SystemCalendarInfo(
+                        id = c.getLong(0),
+                        displayName = c.getString(1).orEmpty().ifBlank { accountName },
+                        accountName = c.getString(2).orEmpty(),
+                        accountType = c.getString(3).orEmpty()
+                    )
+                }
+            }
+        }
+
+        val values = ContentValues().apply {
+            put(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
+            put(CalendarContract.Calendars.ACCOUNT_TYPE, accountType)
+            put(CalendarContract.Calendars.NAME, accountName)
+            put(CalendarContract.Calendars.CALENDAR_DISPLAY_NAME, "Sleepy")
+            put(CalendarContract.Calendars.CALENDAR_COLOR, 0xFF4285F4.toInt())
+            put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER)
+            put(CalendarContract.Calendars.OWNER_ACCOUNT, accountName)
+            put(CalendarContract.Calendars.VISIBLE, 1)
+            put(CalendarContract.Calendars.SYNC_EVENTS, 1)
+            put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, java.util.TimeZone.getDefault().id)
+        }
+        val syncAdapterUri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
+            .appendQueryParameter(CalendarContract.CALLER_IS_SYNCADAPTER, "true")
+            .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_NAME, accountName)
+            .appendQueryParameter(CalendarContract.Calendars.ACCOUNT_TYPE, accountType)
+            .build()
+        runCatching {
+            resolver.insert(syncAdapterUri, values)?.let { ContentUris.parseId(it) }
+        }.getOrNull()?.let { id ->
+            SystemCalendarInfo(id, "Sleepy", accountName, accountType)
+        } // null = 插入失败, 调用方保持原行为
+    }
+
     suspend fun writableCalendars(context: Context): List<SystemCalendarInfo> = withContext(Dispatchers.IO) {
         if (!hasCalendarPermissions(context)) return@withContext emptyList()
         val projection = arrayOf(
@@ -134,6 +196,12 @@ object SystemCalendarManager {
                     )
                 }
             }
+        }
+        result
+        // 无可写日历 (未登录/无 Google 服务) → 自建 Sleepy 本地日历兜底, 再重查一次
+        if (result.isEmpty()) {
+            val created = ensureLocalCalendar(context)
+            if (created != null) return@withContext listOf(created)
         }
         result
     }
