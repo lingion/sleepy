@@ -747,6 +747,8 @@ class BootReceiver : BroadcastReceiver() {
             if (AppPrefs.isReminderEnabled(context)) {
                 SleepyApp.get().notificationScheduler.scheduleAll()
             }
+            // 上课自动勿扰无条件重排: 开则校准+排闹钟, 关则恢复现场 (独立协程, syncFromPrefs 内部转 IO)
+            SleepyApp.get().classDndScheduler.syncFromPrefs()
             // 课程边界闹钟无条件重排 (设计 §5): 与通知开关无关, armNext 阻塞读库 → IO
             val appContext = context.applicationContext
             CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {

@@ -44,6 +44,7 @@ object AppPrefs {
     const val DEFAULT_TOMORROW_REMINDER_TIME = "22:00"
     const val KEY_BEFORE_CLASS_ENABLED = "before_class_enabled"       // bool default false
     const val KEY_BEFORE_CLASS_MINUTES = "before_class_minutes"       // int default 10
+    const val KEY_CLASS_DND_ENABLED = "class_dnd_enabled"             // bool default false — 上课自动勿扰
     const val KEY_CALENDAR_TARGET_ID = "calendar_import_target_id"
     const val KEY_CALENDAR_IMPORT_RANGE = "calendar_import_range"
     const val KEY_CALENDAR_APPLY_TRANSFERS = "calendar_import_apply_transfers"
@@ -231,6 +232,14 @@ object AppPrefs {
 
     fun setBeforeClassEnabled(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_ENABLED, v).apply()
+    }
+
+    /** 上课自动勿扰开关 — default false; 生效需系统"通知策略访问"权限 */
+    fun isClassDndEnabled(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_CLASS_DND_ENABLED, false)
+
+    fun setClassDndEnabled(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_CLASS_DND_ENABLED, v).apply()
     }
 
     /** Minutes before class to notify — default 10 */
