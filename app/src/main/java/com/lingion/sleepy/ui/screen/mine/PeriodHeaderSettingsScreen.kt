@@ -49,7 +49,7 @@ import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
 import com.lingion.sleepy.ui.component.PeriodHeaderCellContent
 import com.lingion.sleepy.ui.component.SegmentedSwitcher
 import com.lingion.sleepy.ui.component.TimeSlot
-import com.lingion.sleepy.ui.component.legacyLineWidthDp
+import com.lingion.sleepy.ui.component.legacyTimeWidthDp
 import com.lingion.sleepy.ui.component.threeLineWidthDp
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.util.AppPrefs
@@ -62,6 +62,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
     var style by remember { mutableStateOf(AppPrefs.getPeriodHeaderStyle(context)) }
     var hangingUnits by remember { mutableStateOf(AppPrefs.getPeriodHeaderHanging(context)) }
     var showX by remember { mutableStateOf(AppPrefs.isPeriodHeaderShowX(context)) }
+    var hideTime by remember { mutableStateOf(AppPrefs.isPeriodHeaderHideTime(context)) }
 
     Scaffold(
         topBar = {
@@ -88,6 +89,7 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                     selectedStyle = style,
                     hangingUnits = hangingUnits,
                     showX = showX,
+                    hideTime = hideTime,
                     onStyleSelected = {
                         style = it
                         AppPrefs.setPeriodHeaderStyle(context, it)
@@ -135,6 +137,33 @@ fun PeriodHeaderSettingsScreen(onBack: () -> Unit) {
                             },
                         )
                     }
+                    // 隐藏时间行仅适用旧式两行表头; 三行式以时间为主体, 不适用。
+                    if (layout == "legacy") {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                            ) {
+                                Text(
+                                    stringResource(R.string.appearance_header_hide_time),
+                                    style = MaterialTheme.typography.bodyLarge,
+                                )
+                                Switch(
+                                    checked = hideTime,
+                                    onCheckedChange = {
+                                        hideTime = it
+                                        AppPrefs.setPeriodHeaderHideTime(context, it)
+                                    },
+                                )
+                            }
+                            Text(
+                                stringResource(R.string.appearance_header_hide_time_sub),
+                                style = MaterialTheme.typography.bodyMedium,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            )
+                        }
+                    }
                     if (layout == "three_line") {
                         Text(
                             stringResource(R.string.appearance_header_hanging, String.format("%+.1f", hangingUnits)),
@@ -161,6 +190,7 @@ private fun HeaderStylePreviews(
     selectedStyle: String,
     hangingUnits: Float,
     showX: Boolean,
+    hideTime: Boolean,
     onStyleSelected: (String) -> Unit,
 ) {
     val previewSlot = remember {
@@ -193,13 +223,14 @@ private fun HeaderStylePreviews(
                 showX = showX,
             )
         } else {
-            legacyLineWidthDp(
+            legacyTimeWidthDp(
                 slots = listOf(previewSlot),
                 headerStyle = style.first,
                 scale = 1f,
                 measurer = measurer,
                 density = density,
                 showX = showX,
+                hideTime = hideTime,
             )
         }
     }
@@ -255,6 +286,7 @@ private fun HeaderStylePreviews(
                                 hangingUnitsOverride = hangingUnits,
                                 showXOverride = showX,
                                 sharedFont = previewFont,
+                                hideTimeOverride = hideTime,
                             )
                             }
                         }
