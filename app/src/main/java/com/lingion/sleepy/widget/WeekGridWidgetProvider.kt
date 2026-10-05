@@ -445,6 +445,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
             val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
             val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
+            val widgetHeaderHideTime = AppPrefs.isPeriodHeaderHideTime(context)
             // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
             val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
             // 三行卡片几何 — 与 PeriodHeaderCellContent / SingleTimeHeadCell 共享同一事实来源。
@@ -600,7 +601,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     val periodText = if (widgetHeaderLayout == "legacy") i.toString()
                     else PeriodHeaderFormatter.label(i, widgetHeaderStyle)
                     c.drawText(periodText, centerX, cy, p)
-                    if (slot != null && slotH > dp(18f)) {
+                    if (slot != null && slotH > dp(18f) && !widgetHeaderHideTime) {
                         p.color = fgOnSurfaceVar
                         p.textSize = (slotH * 0.20f).coerceAtMost(dp(7f).toFloat()).coerceAtLeast(dp(4f).toFloat())
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
