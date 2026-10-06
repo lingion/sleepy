@@ -6,7 +6,6 @@ import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.media.AudioManager
 import android.os.Build
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
@@ -56,8 +55,6 @@ class ClassDndScheduler(private val context: Context) {
          */
         @Volatile
         internal var savedFilter: Int = NotificationManager.INTERRUPTION_FILTER_ALL
-        @Volatile
-        private var enteredByUs = false
 
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
         private val rebuildLock = Mutex()
@@ -68,7 +65,6 @@ class ClassDndScheduler(private val context: Context) {
 
         internal fun resetSavedFilterForTest() {
             savedFilter = NotificationManager.INTERRUPTION_FILTER_ALL
-            enteredByUs = false
         }
 
         /** 当前时刻是否处于某节课区间 [start, end) 内。 */
@@ -129,7 +125,8 @@ class ClassDndScheduler(private val context: Context) {
         if (isCurrentlyInClass(intervals, now)) applyDnd(enter = true)
         val b = nextBoundaries(intervals, now)
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
-        b.nextStart?.let { setExact(am, RC_START, it) } ?: cancelSlot(am, RC_START)
+        b.nextStart?.let { setExact(am, RC_START, it) }
+            ?: setExact(am, RC_START, now.plusDays(WINDOW_DAYS))
         b.nextEnd?.let { setExact(am, RC_END, it) } ?: cancelSlot(am, RC_END)
     }
 
@@ -207,19 +204,14 @@ class ClassDndScheduler(private val context: Context) {
     fun applyDnd(enter: Boolean) {
         val nm = context.getSystemService(NotificationManager::class.java) ?: return
         if (!nm.isNotificationPolicyAccessGranted) return
-        val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (enter) {
             val current = nm.currentInterruptionFilter
-            if (current == NotificationManager.INTERRUPTION_FILTER_NONE) return
-            if (am.ringerMode != AudioManager.RINGER_MODE_NORMAL) return
+            if (current != NotificationManager.INTERRUPTION_FILTER_ALL) return
             savedFilter = current
-            enteredByUs = true
             nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
-        } else if (enteredByUs &&
-            nm.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_PRIORITY
+        } else if (nm.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_PRIORITY
         ) {
             nm.setInterruptionFilter(savedFilter)
-            enteredByUs = false
         }
     }
 }
