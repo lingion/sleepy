@@ -42,6 +42,18 @@ class FluidCloudService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        if (intent?.action == ACTION_STOP) {
+            // UI 端分裂态右半按钮: 中途停止流体云测试, 无需等 2 分钟自然窗口到期。
+            // 停止语义必须与到点自然停完全一致(防通知/前台残留)。
+            handler.removeCallbacks(updater)
+            if (android.os.Build.VERSION.SDK_INT >= 26) {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+            }
+            androidx.core.app.NotificationManagerCompat.from(this)
+                .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+            stopSelf()
+            return START_NOT_STICKY
+        }
         if (intent?.action == ACTION_TEST) {
             // 流体云测试入口: 用示例课程强制唤起一次, 窗口 2 分钟(进度条真实推进)。
             val now = System.currentTimeMillis()
@@ -158,6 +170,7 @@ class FluidCloudService : Service() {
         private const val UPDATE_INTERVAL_MS = 15_000L
         private const val TEST_WINDOW_MS = 2 * 60_000L
         const val ACTION_TEST = "com.lingion.sleepy.action.FLUID_TEST"
+        const val ACTION_STOP = "com.lingion.sleepy.action.FLUID_STOP"
         // MODE_A / MODE_B 死常量已删（从未被读取——服务固定走 ProgressStyle 进度条模式）
     }
 }
