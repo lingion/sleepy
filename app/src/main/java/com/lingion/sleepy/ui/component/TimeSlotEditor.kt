@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.component
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectDragGesturesAfterLongPress
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -8,6 +9,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -16,6 +18,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Add
 import androidx.compose.material.icons.outlined.Check
+import androidx.compose.material.icons.outlined.DragHandle
 import androidx.compose.material.icons.outlined.RemoveCircleOutline
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -31,6 +34,12 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.layout.onSizeChanged
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.zIndex
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.stringResource
@@ -122,6 +131,8 @@ fun TimeSlotEditor(
     onRowsChange: (List<TimeSlotRow>) -> Unit,
     smartConfig: SmartPeriodConfig = SmartPeriodConfig(),
     onSmartConfigChange: (SmartPeriodConfig) -> Unit = {},
+    reorderEnabled: Boolean = false,
+    courses: List<com.lingion.sleepy.data.entity.CourseEntity> = emptyList(),
     modifier: Modifier = Modifier,
     periodTableOptions: List<PeriodTableOption> = emptyList(),
     selectedPeriodTableId: Long? = null,
@@ -158,7 +169,9 @@ fun TimeSlotEditor(
         when (mode) {
             Mode.Manual -> ManualTimeSlotEditor(
                 rows = rows,
-                onRowsChange = onRowsChange
+                onRowsChange = onRowsChange,
+                reorderEnabled = reorderEnabled,
+                courses = courses
             )
             Mode.Auto -> SmartPeriodEditor(
                 config = smartConfig,
@@ -280,8 +293,18 @@ private fun BindChoiceRow(title: String, selected: Boolean, onClick: () -> Unit,
 private fun ManualTimeSlotEditor(
     rows: List<TimeSlotRow>,
     onRowsChange: (List<TimeSlotRow>) -> Unit,
+    reorderEnabled: Boolean,
+    courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
     modifier: Modifier = Modifier
 ) {
+    var displayRows by remember { mutableStateOf(rows) }
+    var draggingIndex by remember { mutableStateOf<Int?>(null) }
+    var dragOffset by remember { mutableStateOf(0f) }
+    var rowHeightPx by remember { mutableStateOf(1f) }
+    var invalidTarget by remember { mutableStateOf(false) }
+    var targetIndex by remember { mutableStateOf<Int?>(null) }
+    val density = androidx.compose.ui.platform.LocalDensity.current
+    LaunchedEffect(rows) { if (draggingIndex == null) displayRows = rows }
     val colors = MaterialTheme.colorScheme
 
     Column(modifier = modifier) {
@@ -314,6 +337,14 @@ private fun ManualTimeSlotEditor(
                 Text(stringResource(R.string.add_period), style = MaterialTheme.typography.labelMedium)
             }
         }
+        if (reorderEnabled) {
+            Text(
+                text = stringResource(R.string.timeslot_longpress_to_reorder),
+                style = MaterialTheme.typography.bodySmall,
+                color = colors.onSurfaceVariant,
+                modifier = Modifier.padding(start = 12.dp, end = 12.dp, bottom = 6.dp)
+            )
+        }
 
         // Rows
         Column(
@@ -323,19 +354,72 @@ private fun ManualTimeSlotEditor(
                 .padding(10.dp),
             verticalArrangement = Arrangement.spacedBy(10.dp)
         ) {
-            rows.forEach { row ->
+            displayRows.forEachIndexed { index, row ->
+                val isDragging = draggingIndex == index
+                val rowLongPress = Modifier.pointerInput(index, reorderEnabled) {
+                    if (!reorderEnabled) return@pointerInput
+                    detectDragGesturesAfterLongPress(
+                        onDragStart = {
+                            draggingIndex = index
+                            targetIndex = index
+                            dragOffset = 0f
+                            invalidTarget = false
+                        },
+                        onDragCancel = {
+                            draggingIndex = null
+                            targetIndex = null
+                            dragOffset = 0f
+                            invalidTarget = false
+                            displayRows = rows
+                        },
+                        onDragEnd = {
+                            val from = draggingIndex
+                            val to = targetIndex
+                            if (from != null && to != null && TimeTableUtils.canReorderTimeSlot(displayRows, from, to, courses)) {
+                                val reordered = TimeTableUtils.reorderTimeSlotRows(displayRows, from, to)
+                                displayRows = reordered
+                                onRowsChange(reordered)
+                            } else displayRows = rows
+                            draggingIndex = null
+                            targetIndex = null
+                            dragOffset = 0f
+                            invalidTarget = false
+                        },
+                        onDrag = { change, amount ->
+                            change.consume()
+                            val from = draggingIndex ?: return@detectDragGesturesAfterLongPress
+                            // 你原话: 拖到非法位置 — 跟随手指冻结 y 偏移, 不再换槽
+                            // (valid→invalid 转换那一刻 dragOffset 已被拉过去; 此后停用)
+                            dragOffset += amount.y
+                            val to = (from + (dragOffset / rowHeightPx).toInt())
+                                .coerceIn(displayRows.indices)
+                            targetIndex = to
+                            invalidTarget = !TimeTableUtils.canReorderTimeSlot(displayRows, from, to, courses)
+                            if (invalidTarget) {
+                                // 冻结: 保持该卡在 from + 0.5 行偏, 不再随手指移动
+                                dragOffset = (from + 0.5f) * rowHeightPx
+                            }
+                        }
+                    )
+                }
                 TimeSlotRowItem(
-                    row = row,
-                    canDelete = rows.size > 1,
-                    onStartChange = { newStart ->
-                        onRowsChange(rows.map { if (it.node == row.node) it.copy(start = newStart) else it })
-                    },
-                    onEndChange = { newEnd ->
-                        onRowsChange(rows.map { if (it.node == row.node) it.copy(end = newEnd) else it })
-                    },
-                    onDelete = {
-                        onRowsChange(TimeTableUtils.removeAndRenumber(rows, row.node))
-                    }
+                    row = row.copy(node = index + 1),
+                    canDelete = displayRows.size > 1,
+                    isBlank = row.start.isBlank() && row.end.isBlank(),
+                    reorderEnabled = reorderEnabled,
+                    isDragging = isDragging,
+                    dropInvalid = isDragging && invalidTarget,
+                    dropTargetIndex = targetIndex,
+                    longPressModifier = rowLongPress,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .zIndex(if (isDragging) 1f else 0f)
+                        .offset { IntOffset(0, if (isDragging) dragOffset.toInt() else 0) }
+                        .onSizeChanged { size -> if (size.height > 0) rowHeightPx = size.height + with(density) { 10.dp.toPx() } }
+                        .semantics { contentDescription = "第${index + 1}节" },
+                    onStartChange = { newStart -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(start = newStart) else it }) },
+                    onEndChange = { newEnd -> onRowsChange(displayRows.map { if (it.node == row.node) it.copy(end = newEnd) else it }) },
+                    onDelete = { onRowsChange(TimeTableUtils.removeAndRenumber(displayRows, row.node)) }
                 )
             }
         }
@@ -346,21 +430,62 @@ private fun ManualTimeSlotEditor(
 private fun TimeSlotRowItem(
     row: TimeSlotRow,
     canDelete: Boolean,
+    isBlank: Boolean,
+    reorderEnabled: Boolean,
+    isDragging: Boolean,
+    dropInvalid: Boolean,
+    dropTargetIndex: Int?,
+    longPressModifier: Modifier,
+    modifier: Modifier = Modifier,
     onStartChange: (String) -> Unit,
     onEndChange: (String) -> Unit,
     onDelete: () -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
+    val containerColor = when {
+        dropInvalid -> colors.errorContainer
+        isDragging -> colors.primaryContainer
+        else -> colors.surface
+    }
+    val rowShape = SleepyTheme.shapes.medium
     Row(
-        modifier = Modifier.fillMaxWidth(),
+        modifier = modifier
+            .fillMaxWidth()
+            .clip(rowShape)
+            .background(containerColor)
+            .then(if (reorderEnabled) longPressModifier else Modifier)
+            .padding(horizontal = 10.dp, vertical = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
+        // 空白行左侧虚线竖条 — 让用户看出特权(任意位)
+        if (isBlank) {
+            androidx.compose.foundation.Canvas(
+                modifier = Modifier.size(width = 3.dp, height = 28.dp)
+            ) {
+                val strokeWidthPx = 2.dp.toPx()
+                val dashLenPx = 4.dp.toPx()
+                val gapPx = 3.dp.toPx()
+                var y = 0f
+                while (y < size.height) {
+                    drawLine(
+                        color = colors.onSurfaceVariant,
+                        start = androidx.compose.ui.geometry.Offset(size.width / 2, y),
+                        end = androidx.compose.ui.geometry.Offset(
+                            size.width / 2,
+                            (y + dashLenPx).coerceAtMost(size.height)
+                        ),
+                        strokeWidth = strokeWidthPx
+                    )
+                    y += dashLenPx + gapPx
+                }
+            }
+        }
         Text(
             text = stringResource(R.string.course_node_format, row.node),
             modifier = Modifier.width(44.dp),
             style = MaterialTheme.typography.bodyMedium,
-            color = colors.onSurface
+            color = if (dropInvalid) colors.onErrorContainer else colors.onSurface
         )
         TimePickerField(
             value = row.start,
@@ -382,7 +507,7 @@ private fun TimeSlotRowItem(
                 Icon(
                     Icons.Outlined.RemoveCircleOutline,
                     contentDescription = stringResource(R.string.delete_period),
-                    tint = colors.error,
+                    tint = if (dropInvalid) colors.onErrorContainer else colors.error,
                     modifier = Modifier.size(20.dp)
                 )
             }

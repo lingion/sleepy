@@ -514,6 +514,9 @@
     <string name="start_label">Start</string>
     <string name="end_label">End</string>
     <string name="delete_period">Delete this period</string>
+    <string name="timeslot_longpress_to_reorder">Long-press a row to drag and reorder</string>
+    <string name="timeslot_row_blank_hint">Blank rows can move anywhere</string>
+    <string name="timeslot_drop_invalid">Invalid drop: breaks time order</string>
 
     <string name="mine_about">About</string>
     <string name="mine_about_body">Sleepy Schedule v%1$s\n\nA minimal, clean, local-first schedule app.\nAll data stays on your device — nothing is uploaded.\n\n· No ads\n· No tracking\n· Supports WakeUp / ICS / CSV / HTML / plain text import</string>

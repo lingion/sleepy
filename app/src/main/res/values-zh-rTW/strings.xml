@@ -502,6 +502,9 @@
     <string name="start_label">開始</string>
     <string name="end_label">結束</string>
     <string name="delete_period">刪除此節</string>
+    <string name="timeslot_longpress_to_reorder">長按整列可上下拖曳排序</string>
+    <string name="timeslot_row_blank_hint">空白列可拖到任意位置</string>
+    <string name="timeslot_drop_invalid">目標位置不合法，時間順序不正確</string>
 
     <string name="mine_about">關於</string>
     <string name="mine_about_body">Sleepy 課表 v%1$s\n\n一個極簡、乾淨、本地優先的課表工具。\n所有資料均儲存在你的裝置上，不上傳任何伺服器。\n\n· 無廣告\n· 無追蹤\n· 支援 WakeUp / ICS / CSV / HTML / 純文字 匯入</string>

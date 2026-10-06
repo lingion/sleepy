@@ -502,6 +502,9 @@
     <string name="start_label">開始</string>
     <string name="end_label">終了</string>
     <string name="delete_period">この時限を削除</string>
+    <string name="timeslot_longpress_to_reorder">行を長押しするとドラッグで並べ替えできます</string>
+    <string name="timeslot_row_blank_hint">空白行はどこにでも移動できます</string>
+    <string name="timeslot_drop_invalid">無効な位置: 時間順が崩れます</string>
 
     <string name="mine_about">情報</string>
     <string name="mine_about_body">Sleepy 時間割 v%1$s\n\nミニマルでクリーン、ローカルファーストの時間割アプリ。\nすべてのデータはデバイス内に保存され、サーバーにアップロードされません。\n\n· 広告なし\n· 追跡なし\n· WakeUp / ICS / CSV / HTML / プレーンテキスト インポート対応</string>
