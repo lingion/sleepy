@@ -65,9 +65,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.contentDescription
-import androidx.compose.ui.semantics.role
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
@@ -735,10 +732,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                                     .weight(1f)
                                                     .background(colors.surfaceContainerHighest)
                                                     .padding(vertical = 12.dp)
-                                                    .semantics(mergeDescendants = true) {
-                                                        role = Role.Image
-                                                        contentDescription = "流体云投放中"
-                                                    },
+                                                    .semantics(mergeDescendants = true) { },
                                                 contentAlignment = Alignment.Center
                                             ) {
                                                 Text(
