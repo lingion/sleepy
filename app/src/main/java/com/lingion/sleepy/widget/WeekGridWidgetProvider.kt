@@ -23,6 +23,7 @@ import com.lingion.sleepy.SleepyApp
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.CourseColorUtil
 import com.lingion.sleepy.util.MealBreakDetector
+import com.lingion.sleepy.util.GridSeparatorGeometry
 import com.lingion.sleepy.util.CourseDisplayUtil
 import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
@@ -226,10 +227,14 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 .coerceAtLeast(1)
             // issue#22: 同名课程多地点 — 跨天汇总 course 全集,传给 pickCourseColorIntWithGroupRows
             val allCourses = data.days.flatMap { it.courses }
-            val mealBreakAfterRows = if (longBreakSpacing) {
-                MealBreakDetector.detect(timeJson, allCourses).map { it.afterRowIndex }.toSet()
-            } else emptySet()
             val slots = allSlots.take(maxNode)
+            val mealBreakAfterRows = if (longBreakSpacing) {
+                MealBreakDetector.detectDisplayRowIndexes(
+                    timeJson,
+                    allCourses,
+                    slots.map { it.nodeEnd }
+                )
+            } else emptySet()
             val sortedDays = data.visibleDays.sorted()
             val dayCount = sortedDays.size.coerceIn(1, 7)
 
@@ -357,6 +362,11 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val mealGapExtraPx = dp(4f).toFloat()
             fun rowTop(rowIndex: Int): Float = bodyTop + gapH + rowIndex * (slotH + gapH) +
                 mealBreakAfterRows.count { it + 1 <= rowIndex } * mealGapExtraPx
+            val mealBreakBands = mealBreakAfterRows.mapNotNull { row ->
+                if (row !in 0 until maxNode - 1) return@mapNotNull null
+                GridSeparatorGeometry.Span(rowTop(row) + slotH, rowTop(row + 1))
+            }
+            val bodyBottom = bodyTop + bodyH - gapH
 
             // Today backgrounds, grid borders, and course cards share the same row geometry.
             for ((idx, dow) in sortedDays.withIndex()) {
@@ -375,12 +385,18 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 p.strokeWidth = dp(0.7f).toFloat()
                 for ((idx, _) in sortedDays.withIndex()) {
                     val colX = x + timeW + gapW + idx * (dayW + gapW)
-                    c.drawLine(colX, bodyTop, colX, bodyTop + bodyH - gapH, p)
-                    c.drawLine(colX + dayW, bodyTop, colX + dayW, bodyTop + bodyH - gapH, p)
+                    for (segment in GridSeparatorGeometry.verticalSegments(bodyTop, bodyBottom, mealBreakBands)) {
+                        c.drawLine(colX, segment.start, colX, segment.end, p)
+                        c.drawLine(colX + dayW, segment.start, colX + dayW, segment.end, p)
+                    }
                 }
                 for (row in 0 until maxNode) {
                     val rowY = rowTop(row)
                     c.drawLine(x + timeW, rowY, x + timeW + gapW + dayCount * (dayW + gapW) - gapW, rowY, p)
+                }
+                for (band in mealBreakBands) {
+                    c.drawLine(x + timeW, band.start,
+                        x + timeW + gapW + dayCount * (dayW + gapW) - gapW, band.start, p)
                 }
                 c.drawLine(x + timeW, bodyTop + bodyH - gapH,
                     x + timeW + gapW + dayCount * (dayW + gapW) - gapW, bodyTop + bodyH - gapH, p)

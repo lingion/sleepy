@@ -67,6 +67,7 @@ import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.util.PeriodHeaderFormatter
 import com.lingion.sleepy.util.MealBreakDetector
+import com.lingion.sleepy.util.GridSeparatorGeometry
 import com.lingion.sleepy.util.TimetableViewportPolicy
 import kotlinx.coroutines.flow.filter
 import java.time.LocalTime
@@ -265,12 +266,11 @@ fun CardsGridView(
     val gapW = d(5f)
     val mealBreakAfterRows = remember(timeJson, courses, renderSlots, longBreakSpacing) {
         if (!longBreakSpacing || timeJson == null) emptySet() else {
-            val baseRows = TimeTableUtils.parseTimeSlotRows(timeJson)
-            MealBreakDetector.detect(timeJson, courses).mapNotNull { detected ->
-                baseRows.getOrNull(detected.afterRowIndex)?.node?.let { leftNode ->
-                    renderSlots.indexOfLast { it.nodeEnd == leftNode }.takeIf { it >= 0 }
-                }
-            }.toSet()
+            MealBreakDetector.detectDisplayRowIndexes(
+                timeJson,
+                courses,
+                renderSlots.map { it.nodeEnd }
+            )
         }
     }
     val mealGapExtra = if (longBreakSpacing) d(6f) else 0.dp
@@ -352,7 +352,7 @@ fun CardsGridView(
                 val minRowDp = renderSlots.withIndex()
                     .filter { !it.value.isPlaceholder }
                     .minOfOrNull { (i, _) ->
-                        (rowHeightAt(i) - gapAfterRow(i)).value.coerceAtLeast(0f)
+                        (rowHeightAt(i) - gapH).value.coerceAtLeast(0f)
                     } ?: (rowHeightDp.dp - gapH).value
                 with(headerDensity) { (minRowDp - padDp).dp.toPx() } / headerDensity.density
             }.coerceAtLeast(1f)
@@ -503,13 +503,24 @@ fun CardsGridView(
                         val lineColor = colors.outlineVariant.copy(alpha = 0.42f)
                         val stroke = 0.7.dp.toPx()
                         val firstColumn = timeW.toPx() + gapW.toPx() / 2f
+                        val breakBands = mealBreakAfterRows.mapNotNull { row ->
+                            if (row !in renderSlots.indices || row + 1 >= renderSlots.size) return@mapNotNull null
+                            val bandBottom = yOfRows((row + 1).toFloat()).toPx()
+                            val bandTop = bandBottom - gapAfterRow(row).toPx()
+                            GridSeparatorGeometry.Span(bandTop, bandBottom)
+                        }
                         for (column in 0..dayCount) {
                             val x = firstColumn + column * (colW + gapW).toPx()
-                            drawLine(lineColor, Offset(x, 0f), Offset(x, size.height), stroke)
+                            for (segment in GridSeparatorGeometry.verticalSegments(0f, size.height, breakBands)) {
+                                drawLine(lineColor, Offset(x, segment.start), Offset(x, segment.end), stroke)
+                            }
                         }
                         for (boundary in 0..renderSlots.size) {
                             val y = yOfRows(boundary.toFloat()).toPx()
                             drawLine(lineColor, Offset(timeW.toPx(), y), Offset(size.width, y), stroke)
+                        }
+                        for (band in breakBands) {
+                            drawLine(lineColor, Offset(timeW.toPx(), band.start), Offset(size.width, band.start), stroke)
                         }
                     }
                 ) {
@@ -518,7 +529,7 @@ fun CardsGridView(
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height((rowHeightAt(i) - gapAfterRow(i)).coerceAtLeast(0.dp))
+                                .height((rowHeightAt(i) - gapH).coerceAtLeast(0.dp))
                                 .offset(y = yOfRows(i.toFloat())),
                             horizontalArrangement = Arrangement.spacedBy(gapW),
                             verticalAlignment = Alignment.CenterVertically

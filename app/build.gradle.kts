@@ -56,7 +56,7 @@ android {
         androidResources {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")
         }
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.lingion.sleepy.SleepyRenderTestRunner"
     }
 
     // 发布签名: 优先用环境变量注入的 keystore (release.yml 从 GitHub Secret
