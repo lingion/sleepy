@@ -54,6 +54,7 @@ object AppPrefs {
     const val KEY_BEFORE_CLASS_BANNER = "before_class_banner"         // bool default true
     const val KEY_BEFORE_CLASS_FLUID = "before_class_fluid"            // bool default false
     const val KEY_BEFORE_CLASS_FLUID_FIELDS = "before_class_fluid_fields" // legacy multi-select
+    const val KEY_FLUID_WEARABLE_COMPAT = "fluid_wearable_compat" // bool default false — Android 16 实况通知降级为可划 (手环/手表同步兼容)
     const val KEY_BEFORE_CLASS_FLUID_PRIMARY = "before_class_fluid_primary" // name/time/room
     const val KEY_THEME = "theme_key"
     const val KEY_LANG = "language"
@@ -287,6 +288,15 @@ object AppPrefs {
 
     fun setBeforeClassFluidEnabled(ctx: Context, v: Boolean) {
         sp(ctx).edit().putBoolean(KEY_BEFORE_CLASS_FLUID, v).apply()
+    }
+
+    /** 手环/手表兼容开关 — Android 16 实况通知(promoted ongoing)会让穿戴同步通道
+     *  把课程卡当不可销毁驻留通知; 开启后流体云降级为普通可划通知。 */
+    fun isFluidWearableCompat(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_FLUID_WEARABLE_COMPAT, false)
+
+    fun setFluidWearableCompat(ctx: Context, v: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_FLUID_WEARABLE_COMPAT, v).apply()
     }
 
     fun getBeforeClassFluidFields(ctx: Context): Set<String> =

@@ -1009,4 +1009,6 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="irregular_time_order">La hora inicial debe ser anterior a la final</string>
     <string name="reminder_class_dnd_title">No molestar en clase</string>
     <string name="reminder_class_dnd_sub">Activa No molestar durante las clases y lo restaura al terminar</string>
+    <string name="reminder_wearable_compat_title">Modo compatible con wearables</string>
+    <string name="reminder_wearable_compat_sub">Muestra la tarjeta en vivo de Android 16 como una notificación normal descartable</string>
 </resources>

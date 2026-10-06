@@ -1009,4 +1009,6 @@
     <string name="irregular_time_order">開始時刻は終了時刻より前にしてください</string>
     <string name="reminder_class_dnd_title">授業中は自動マナー</string>
     <string name="reminder_class_dnd_sub">授業時間帯に自動的にマナーモードを有効化し、終了後に復元します</string>
+    <string name="reminder_wearable_compat_title">ウェアラブル互換モード</string>
+    <string name="reminder_wearable_compat_sub">Android 16 のライブカードを通常の消せる通知にしてウォッチ同期と互換にします</string>
 </resources>

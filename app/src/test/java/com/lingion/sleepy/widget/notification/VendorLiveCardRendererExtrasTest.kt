@@ -97,4 +97,18 @@ class VendorLiveCardRendererExtrasTest {
             !rendererSource.contains("SeedlingCard")
         )
     }
+
+    @Test
+    fun `wearable compat mode downgrades promoted ongoing to dismissible card`() {
+        // 手环兼容开关: promoted ongoing → ongoing=false + autoCancel=true, 且关闭 promoted
+        val idx = rendererSource.indexOf("val wearableCompat")
+        assertTrue("wearableCompat 开关必须存在于 build()", idx > 0)
+        val window = rendererSource.substring(idx)
+        assertTrue(window.contains(".setOngoing(!wearableCompat)"))
+        assertTrue(window.contains(".setAutoCancel(wearableCompat)"))
+        assertTrue(
+            "setRequestPromotedOngoing 只允许出现在 !wearableCompat 分支",
+            window.indexOf("if (!wearableCompat)") in 0 until window.indexOf("setRequestPromotedOngoing(true)")
+        )
+    }
 }

@@ -117,6 +117,10 @@ object VendorLiveCardRenderer {
             AppPrefs.isDarkMode(context, isSystemDark)
         ).primary.toArgb()
 
+        // 手环/手表兼容 (参照 shiguang compatWearableSync): Android 16 promoted-ongoing
+        // 实况通知会被手环同步通道视为不可销毁驻留通知, 导致穿戴端卡死; 兼容模式
+        // 退回普通可划通知 (ongoing=false, autoCancel=true), 牺牲实况样式保同步。
+        val wearableCompat = AppPrefs.isFluidWearableCompat(context)
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification_time)
             .setColor(themePrimaryArgb)
@@ -125,13 +129,18 @@ object VendorLiveCardRenderer {
             .setSubText(state.room)
             .setProgress(100, state.progress, false)
             .setStyle(progressStyleFor(state.progress))
-            .setOngoing(true)
-            .setRequestPromotedOngoing(true)
+            .setOngoing(!wearableCompat)
+            .setAutoCancel(wearableCompat)
             .setSilent(true)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentIntent(contentIntent)
             .setShortCriticalText(primaryText.take(7))
+
+        if (!wearableCompat) {
+            // SDK_INT 守卫在 NotificationCompat 内部 (低版本静默忽略), 统一由开关控制
+            builder.setRequestPromotedOngoing(true)
+        }
 
         when (vendor) {
             // Xiaomi/HyperOS: v1.0.56 parity — the shared construction above already
@@ -343,3 +352,4 @@ object VendorLiveCardRenderer {
         builder.setExtras(samsungExtras)
     }
 }
+

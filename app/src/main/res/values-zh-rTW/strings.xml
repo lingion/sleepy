@@ -976,4 +976,6 @@
     <string name="jw_import_exit_delete_draft">刪除草稿</string>
     <string name="reminder_class_dnd_title">上課自動勿擾</string>
     <string name="reminder_class_dnd_sub">上課時段自動開啟勿擾, 下課自動恢復</string>
+    <string name="reminder_wearable_compat_title">手環/手錶相容模式</string>
+    <string name="reminder_wearable_compat_sub">Android 16 實況卡片改為一般可滑通知, 相容穿戴裝置同步</string>
 </resources>

@@ -1011,4 +1011,6 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="jw_fetch_empty">No courses this semester. Check the selected semester</string>
     <string name="reminder_class_dnd_title">Class-time Do Not Disturb</string>
     <string name="reminder_class_dnd_sub">Automatically enable DND during class and restore afterwards</string>
+    <string name="reminder_wearable_compat_title">Wearable compat mode</string>
+    <string name="reminder_wearable_compat_sub">Show Android 16 live card as a normal dismissible notification for watch sync</string>
 </resources>
