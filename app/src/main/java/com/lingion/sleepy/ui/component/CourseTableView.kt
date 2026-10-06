@@ -154,6 +154,7 @@ fun CardsGridView(
                 it == AppPrefs.KEY_PERIOD_HEADER_STYLE ||
                 it == AppPrefs.KEY_PERIOD_HEADER_HANGING ||
                 it == AppPrefs.KEY_PERIOD_HEADER_SHOW_X ||
+                it == AppPrefs.KEY_PERIOD_HEADER_HIDE_TIME ||
                 it == AppPrefs.KEY_GRID_SHOW_SEPARATORS ||
                 it == AppPrefs.KEY_GRID_LONG_BREAK_SPACING
         }.collect { prefVersion++ }
@@ -203,7 +204,7 @@ fun CardsGridView(
     // 用户反馈 2026-09-16: 占位行"文字放不下 → 灰块 + 点击展开/再点折叠"。
     // 展开态键 = 占位行时间串("11:40-12:30", 周内多天共享同一空隙 → 同键联动展开);
     // 会话级 remember — 翻周/离开页面即复位(与 rotationSteps 同生命周期哲学)。
-    // 展开/折叠通过改写 effectiveWeights 的该行权重实现, yOfRows/rowHeightAt/gridH
+    // 展开/折叠通过改写 naturalWeights 的该行权重实现, rowHeightAt/yOfRows/gridH
     // 全部读同一张表 → 行高与 y 前缀和天然同源(时间轴不破)。
     var expandedPlaceholders by remember { mutableStateOf(setOf<String>()) }
     fun togglePlaceholder(key: String) {
@@ -250,30 +251,57 @@ fun CardsGridView(
     } else {
         // 用户令 (老式表头同三行式统一): 列宽 = dash 轴几何
         // (所有行 dash 同一 X, 列宽含最宽行两侧余量), 不再硬钉 68dp。
-        legacyLineWidthDp(
+        // hideTime=true 时时间行不渲染, 列宽收口到标签实测宽 (legacyTimeWidthDp)。
+        legacyTimeWidthDp(
             renderSlots,
             headerStyle,
             scale,
             headerTextMeasurer,
             LocalDensity.current,
             headerShowX,
+            AppPrefs.isPeriodHeaderHideTime(context),
         )
             // 下限与三行式同一防挤压口径
             .coerceAtLeast(d(46f))
     }
     val gapH = d(4f)
     val gapW = d(5f)
-    val mealBreakAfterRows = remember(timeJson, courses, renderSlots, longBreakSpacing) {
-        if (!longBreakSpacing || timeJson == null) emptySet() else {
-            val baseRows = TimeTableUtils.parseTimeSlotRows(timeJson)
-            MealBreakDetector.detect(timeJson, courses).mapNotNull { detected ->
-                baseRows.getOrNull(detected.afterRowIndex)?.node?.let { leftNode ->
-                    renderSlots.indexOfLast { it.nodeEnd == leftNode }.takeIf { it >= 0 }
-                }
-            }.toSet()
+    // 长课间留白 (用户 2026-10-05 定稿): 空隙分钟按 分钟/左邻行真实课时 折进"餐段前一行"
+    // 的**边界权重**, 时间轴按分钟比例拉长背景 —— 取代旧固定 mealGapExtra 间隙(定值间隙会
+    // 压扁课程卡行, 时间轴失真)。两张表各司其职:
+    //   naturalWeights  = 内容高 (课程卡/表头卡/文字适配) —— 空隙不拉伸卡片;
+    //   boundaryWeights = 行边界坐标 (yOfRows/分隔线/gridH/fit) —— 空隙折在行下方。
+    // 卡片跨度 = 边界跨度 − 尾随空隙 → 空白落在课程卡之后, 与时间轴分钟成比例。
+    data class MealBreakFold(val minutes: Int, val unitMinutes: Int)
+    val mealBreakByRenderRow: Map<Int, MealBreakFold> =
+        remember(timeJson, courses, renderSlots, longBreakSpacing) {
+            if (!longBreakSpacing || timeJson == null) emptyMap() else {
+                val baseRows = TimeTableUtils.parseTimeSlotRows(timeJson)
+                MealBreakDetector.detect(timeJson, courses).mapNotNull { detected ->
+                    val baseRow = baseRows.getOrNull(detected.afterRowIndex) ?: return@mapNotNull null
+                    val leftNode = baseRow.node
+                    // 锚 = 最后的 nodeEnd==leftNode 行 (有占位行时落在占位行 — 占位权重已含
+                    // 该空隙前段分钟, 折入分钟要扣掉占位段防双计; 无占位 = 普通行)。
+                    val anchor = renderSlots.indexOfLast { it.nodeEnd == leftNode }
+                        .takeIf { it >= 0 } ?: return@mapNotNull null
+                    val phMinutes = renderSlots.getOrNull(anchor)
+                        ?.takeIf { it.isPlaceholder }
+                        ?.let { java.time.Duration.between(it.start, it.end).toMinutes().toInt() } ?: 0
+                    val foldMin = detected.minutes.toInt() - phMinutes
+                    if (foldMin <= 0) return@mapNotNull null
+                    // 分母 = 餐段左邻**标准节次**真实分钟 (占位行自身分钟会把分母缩成 ph,
+                    // 折权爆炸 — 禁用行自身分钟做分母)。
+                    val unit = runCatching {
+                        java.time.LocalTime.parse(baseRow.start).let { s ->
+                            java.time.Duration.between(s, java.time.LocalTime.parse(baseRow.end))
+                                .toMinutes().toInt()
+                        }
+                    }.getOrDefault(0).takeIf { it > 0 } ?: 45
+                    anchor to MealBreakFold(foldMin, unit)
+                }.toMap()
+            }
         }
-    }
-    val mealGapExtra = if (longBreakSpacing) d(6f) else 0.dp
+    val mealBreakAfterRows = mealBreakByRenderRow.keys
 
     val gridBgShape = SleepyTheme.shapes.large
 
@@ -286,16 +314,28 @@ fun CardsGridView(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
             val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
-            val availableGridHeight = (maxHeight - headH - gapH - navExtra - mealGapExtra * mealBreakAfterRows.size)
+            val availableGridHeight = (maxHeight - headH - gapH - navExtra)
                 .value
                 .coerceAtLeast(0f)
+            // 拟合口径的权重表先算(含长课间边界膨胀), 让自适应行高把空隙计入"一屏装下";
+            // 无餐段时直通原 slotWeights 保持逐像素旧语义。slotWeights==null (无占位行)
+            // 时按均匀权重表膨胀 — 否则折权结果被 yOfRows 的兜底表整体丢弃 (blocker #1)。
+            val naturalWeightsBase: List<Float> = renderPlan.slotWeights ?: List(renderSlots.size) { 1f }
+            val fitWeights: List<Float> = if (mealBreakAfterRows.isEmpty()) naturalWeightsBase
+            else TimetableViewportPolicy.expandWeightsForLongBreaks(
+                naturalWeightsBase,
+                mealBreakAfterRows,
+                breakMinutes = mealBreakByRenderRow.mapValues { it.value.minutes },
+                breakUnitMinutes = mealBreakByRenderRow.mapValues { it.value.unitMinutes },
+                periodMinutes = 45, enabled = longBreakSpacing,
+            )
             // 行高基座 (2026-09-16 用户令): 实验室开自适应=拟合高度; 默认关=原固定 52dp×scale。
             // 双指手势相对基座缩放, 上限 96dp 下限 36dp (×scale); 顶栏 tick 确认后长期生效, 撤回回退上次确认值。
             val baseRowHeight = TimetableViewportPolicy.baseRowHeightDp(
                 adaptive = adaptiveHeight,
                 fitRowHeightDp = TimetableViewportPolicy.fitRowHeightDp(
                     availableGridHeightDp = availableGridHeight,
-                    slotWeights = renderPlan.slotWeights,
+                    slotWeights = fitWeights,
                     slotCount = renderSlots.size,
                     contentScale = scale
                 ),
@@ -310,39 +350,61 @@ fun CardsGridView(
             val rowH = rowHeightDp.dp
 
             // 用户反馈 2026-09-16: 展开的占位行权重换成"正好显示完文字"的展开权重 —
-            // yOfRows / rowHeightAt / gridH 都读 effectiveWeights 同一张表, 行高与 y 同源。
-            // 占位行文字适配检测也是几何函数(随 rowH/scale 联动), 不放得下才允许灰置。
-            val effectiveWeights: List<Float>? = run {
-                val base = renderPlan.slotWeights ?: return@run null
-                base.mapIndexed { i, w ->
-                    val slot = renderSlots.getOrNull(i)
-                    if (slot != null && slot.isPlaceholder && slot.timeString in expandedPlaceholders) {
-                        maxOf(
-                            w,
-                            TimeTableUtils.placeholderExpandedWeight(
-                                rowHeightDp = rowHeightDp,
-                                gapDp = TimetableViewportPolicy.ROW_GAP_DP,
-                                requiredTextHeightDp = PLACEHOLDER_TEXT_REQUIRED_DP
-                            )
+            // natural/boundary 两表同族, 行高与 y 同源。
+            // 占位行文字适配检测也是几何函数(随 rowH/scale 联动), 放得下才允许灰置。
+            // 两表 (交叉验证 blocker #1 修正): natural = 内容高(卡片/表头卡),
+            // boundary = 行边界坐标(yOfRows/分隔线/gridH, 含长课间折权)。
+            // 无占位行(slotWeights=null)时也走均匀表 — 否则折权被兜底表整体丢弃。
+            val naturalWeights: List<Float> = naturalWeightsBase.mapIndexed { i, w ->
+                val slot = renderSlots.getOrNull(i)
+                if (slot != null && slot.isPlaceholder && slot.timeString in expandedPlaceholders) {
+                    maxOf(
+                        w,
+                        TimeTableUtils.placeholderExpandedWeight(
+                            rowHeightDp = rowHeightDp,
+                            gapDp = TimetableViewportPolicy.ROW_GAP_DP,
+                            requiredTextHeightDp = PLACEHOLDER_TEXT_REQUIRED_DP
                         )
-                    } else w
-                }
+                    )
+                } else w
             }
-
-            // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
-            // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
-            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp;
-            fun yOfRows(r: Float): Dp {
-                val ws = effectiveWeights ?: List(renderSlots.size) { 1f }
+            val boundaryWeights: List<Float> =
+                TimetableViewportPolicy.expandWeightsForLongBreaks(
+                    naturalWeights,
+                    mealBreakAfterRows,
+                    breakMinutes = mealBreakByRenderRow.mapValues { it.value.minutes },
+                    breakUnitMinutes = mealBreakByRenderRow.mapValues { it.value.unitMinutes },
+                    periodMinutes = 45, enabled = longBreakSpacing,
+                )
+            /** natural 累计坐标 (r = 行分数, 同 yOfRows 口径, 无折权)。 */
+            fun naturalSpan(r: Float): Dp {
+                val ws = naturalWeights
                 var acc = 0f
                 val full = r.toInt().coerceAtMost(ws.size)
                 for (i in 0 until full) acc += ws[i]
                 if (full < ws.size && r > full) acc += ws[full] * (r - full)
-                val crossedBreaks = mealBreakAfterRows.count { it + 1 <= r }
-                return rowH * acc + mealGapExtra * crossedBreaks
+                return rowH * acc
             }
-            fun rowHeightAt(i: Int): Dp = rowH * (effectiveWeights?.getOrNull(i) ?: 1f)
-            fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
+            /** natural 跨度 (dp): 卡片高度用 — 餐段空隙不计入卡高。 */
+            fun contentSpanDpOf(from: Float, to: Float): Dp =
+                naturalSpan(to) - naturalSpan(from)
+
+            // 用户反馈 2026-09-09 (精度): 时间轴按分钟加权 — 占位行只占真实分钟占比
+            // (5 分钟占位 ≈ 0.111 标准行), 不再整行拉满把时间轴歪曲。
+            // yOfRows(r) = 加权行坐标 r(0.0=网格顶, 1.0=一标准行) → dp (boundary 口径);
+            fun yOfRows(r: Float): Dp {
+                val ws = boundaryWeights
+                var acc = 0f
+                val full = r.toInt().coerceAtMost(ws.size)
+                for (i in 0 until full) acc += ws[i]
+                // 行内小数坐标按**自然权重**推进 — 折入空隙贴在行尾 (r→1 时到达自然
+                // 内容底, r 整数跳到空隙之后), 禁把空隙摊进行内。
+                if (full < ws.size && r > full)
+                    acc += (naturalWeights.getOrNull(full) ?: ws[full]) * (r - full)
+                return rowH * acc
+            }
+            fun rowHeightAt(i: Int): Dp = rowH * (naturalWeights.getOrNull(i) ?: 1f)
+            fun gapAfterRow(i: Int): Dp = gapH
 
             // 三行表头卡内容高 = 非占位 rowHeightAt − 行间 gap − 卡片内边距×2 (PERIOD_HEADER_CARD_PAD_DP, 与渲染侧一致)。
             // 用户令 2026-10-03: 整列字号的卡高输入必须用真实行高 (双指缩行/自适应行高联动),
@@ -527,7 +589,7 @@ fun CardsGridView(
                             // 点击展开(该行权重换展开权重, 下方时间轴同帧下移), 再点折叠。
                             val phFitsText = if (!slot.isPlaceholder) true else {
                                 TimeTableUtils.placeholderTextFits(
-                                    rowWeight = effectiveWeights?.getOrNull(i) ?: 1f,
+                                    rowWeight = naturalWeights.getOrNull(i) ?: 1f,
                                     rowHeightDp = rowHeightDp,
                                     gapDp = TimetableViewportPolicy.ROW_GAP_DP,
                                     requiredTextHeightDp = PLACEHOLDER_TEXT_REQUIRED_DP
@@ -622,6 +684,8 @@ fun CardsGridView(
                             maxNode = maxNode,
                             timeSlots = renderSlots,
                             spanDpOf = { from, to -> yOfRows(to) - yOfRows(from) },
+                            // 卡高走 natural 跨度 — 空隙不被算进卡片高度, 空白落在卡后
+                            contentSpanDpOf = { from, to -> contentSpanDpOf(from, to) },
                             timeW = timeW,
                             gapW = gapW,
                             gapH = gapH,
@@ -650,13 +714,15 @@ fun CardsGridView(
                             course.startTime, course.endTime, renderSlots
                         ) else null
                         val cardY = frac?.let { yOfRows(it.first) } ?: yOfRows(nodeIdx.toFloat())
+                        // 卡高走 natural 跨度 — 餐段折入的空隙不进卡高 (空白落在卡后),
+                        // 位置(cardY)仍走 yOfRows 边界, 与簇内 cardHOf/contentSpanDpOf 同规。
                         val cardH = if (frac != null) {
                             // 按比例(分钟加权), 保底 0.3 标准行避免过短课胶囊塌缩到不可点
-                            (yOfRows(frac.second) - yOfRows(frac.first)).coerceAtLeast(rowH * 0.3f) -
+                            (naturalSpan(frac.second) - naturalSpan(frac.first)).coerceAtLeast(rowH * 0.3f) -
                                 (if (frac.second == frac.second.roundToInt().toFloat() && frac.second > 0f)
                                     gapAfterRow(frac.second.roundToInt() - 1) else gapH)
                         } else {
-                            yOfRows((nodeIdx + steps).toFloat()) - yOfRows(nodeIdx.toFloat()) - gapAfterRow(nodeIdx + steps - 1)
+                            naturalSpan((nodeIdx + steps).toFloat()) - naturalSpan(nodeIdx.toFloat()) - gapAfterRow(nodeIdx + steps - 1)
                         }
 
                         CourseOverlayCard(

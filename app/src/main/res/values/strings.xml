@@ -922,6 +922,8 @@
     <string name="appearance_header_preview">实时预览</string>
     <string name="appearance_header_style">节次样式</string>
     <string name="appearance_header_show_x">显示“第 X 节”</string>
+    <string name="appearance_header_hide_time">隐藏时间行</string>
+    <string name="appearance_header_hide_time_sub">旧式表头只显示节次，不显示上课时间（实验性，默认关闭）</string>
     <string name="appearance_header_hanging">左右移动 %1$s 个开始时间宽度</string>
     <string name="appearance_section_widget">小组件</string>
     <!-- i18n: hardcoded string extraction -->

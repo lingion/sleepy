@@ -107,6 +107,32 @@ object TimetableViewportPolicy {
         maxRowHeightDp: Float
     ): Float = (baseRowHeightDp * verticalScale).coerceIn(minRowHeightDp, maxRowHeightDp)
 
+    /**
+     * 长课间留白: 把餐段空隙分钟按 分钟/该左邻行真实课时分钟 折进"餐段前一行"的
+     * 行权重, 时间轴按分钟比例拉长背景 — 取代固定 mealGapExtra 间隙(间隙会压扁课程卡行)。
+     * weights 与 rows 一一对应; breaksAfter = 餐段后的渲染行下标;
+     * enabled=false 或无空隙时原样返回。breakUnitMinutes[锚行] 缺失/≤0 回退 periodMinutes(≤0 再回退 45)。
+     */
+    fun expandWeightsForLongBreaks(
+        weights: List<Float>,
+        breaksAfter: Set<Int>,
+        breakMinutes: Map<Int, Int>,
+        breakUnitMinutes: Map<Int, Int>? = null,
+        periodMinutes: Int,
+        enabled: Boolean,
+    ): List<Float> {
+        if (!enabled || breaksAfter.isEmpty() || weights.isEmpty()) return weights
+        val fallback = if (periodMinutes > 0) periodMinutes else 45
+        return weights.mapIndexed { i, w ->
+            if (i !in breaksAfter) w
+            else {
+                // 分母 = 餐段左邻标准节次的真实分钟 (由调用方按锚行给), 缺失回退 periodMinutes。
+                val unit = breakUnitMinutes?.get(i)?.takeIf { it > 0 } ?: fallback
+                w + (breakMinutes[i] ?: 0).toFloat() / unit
+            }
+        }
+    }
+
     /** True only after a two-finger gesture has a clear vertical intent. */
     fun locksVerticalResize(
         startVerticalSpan: Float,

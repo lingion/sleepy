@@ -9,6 +9,12 @@ class PeriodHeaderLayoutModelTest {
     private val metrics = PeriodHeaderMetrics(40f, 36f, 28f, false)
 
     @Test
+    fun hide_time_pref_key_literal_is_locked() {
+        // C1: 键字面量是 prefs/网格/widget/设置页四处共享的契约, 钉死防漂移。
+        assertEquals("period_header_hide_time", com.lingion.sleepy.util.AppPrefs.KEY_PERIOD_HEADER_HIDE_TIME)
+    }
+
+    @Test
     fun left_endpoint_uses_actual_outer_rectangle() {
         val p = metrics.solvePlacement(-1f)
         assertEquals(68f, p.contentWidth, 0.001f)

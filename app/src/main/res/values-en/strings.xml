@@ -593,6 +593,8 @@
     <string name="appearance_header_preview">Live preview</string>
     <string name="appearance_header_style">Period style</string>
     <string name="appearance_header_show_x">Show “Period X”</string>
+    <string name="appearance_header_hide_time">Hide time row</string>
+    <string name="appearance_header_hide_time_sub">Show only period numbers in the legacy header (experimental, off by default)</string>
     <string name="appearance_header_hanging">Move left/right by %1$s start-time widths</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">You\'re on the latest version v%1$s</string>

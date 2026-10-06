@@ -28,6 +28,7 @@ import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.PeriodHeaderFormatter
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.util.TimetableViewportPolicy
 import com.lingion.sleepy.ui.component.PERIOD_HEADER_CARD_PAD_DP
 import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
 import com.lingion.sleepy.ui.component.PeriodHeaderMetrics
@@ -158,13 +159,25 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
          * §4.4 降级阶梯几何 — bodyH(px)/slotH(px) 推导 (渲染器与契约测试单一事实来源)。
          * 与旧内联算式逐字节同式: outerPad 6dp×2 + headH 56dp, bodyH 地板 20dp,
          * 节间隙 1.5dp×(n+1), slotH 地板 3dp (整除口径保持 Int / Int)。
+         *
+         * 长课间留白 redesign (用户 2026-10-05): 空隙分钟折进行权重后, slotH 的语义 =
+         * "每权重单位像素高", 分母取权重总和 (无餐段时 = maxNode, 逐字节回退旧语义)。
+         * widget 不可滚动 → 空隙稀释进 slotH, body 边界恒不变。
          */
-        internal fun weekGridBodyGeomPx(hPx: Int, density: Float, maxNode: Int, mealBreakCount: Int = 0): Pair<Int, Float> {
+        internal fun weekGridBodyGeomPx(hPx: Int, density: Float, maxNode: Int, totalWeight: Float = 0f): Pair<Int, Float> {
             fun dp(v: Float) = (v * density).roundToInt()
             val bodyH = (hPx - dp(6f) * 2 - dp(56f)).coerceAtLeast(dp(20f))
-            val totalGapH = dp(1.5f) * (maxNode + 1) + dp(4f) * mealBreakCount
-            val slotH = ((bodyH - totalGapH) / maxNode).toFloat().coerceAtLeast(dp(3f).toFloat())
+            val totalGapH = dp(1.5f) * (maxNode + 1)
+            val weight = maxOf(maxNode.toFloat(), totalWeight)
+            val slotH = ((bodyH - totalGapH) / weight).coerceAtLeast(dp(3f).toFloat())
             return bodyH to slotH
+        }
+
+        /** 加权行顶 (px): 行内容高 = slotH × 行权重 — 长课间行按分钟比例拉长 (与 rowTop 单一事实来源)。 */
+        internal fun weekGridRowTopPx(bodyTop: Float, gapH: Float, slotHPx: Float, weights: List<Float>, rowIndex: Int): Float {
+            var acc = 0f
+            for (i in 0 until rowIndex.coerceAtMost(weights.size)) acc += weights[i]
+            return bodyTop + gapH + slotHPx * acc + gapH * rowIndex
         }
 
         /** §4.4 降级阶梯末档: 单节 slotH < 9dp → 文字行排不下, 切色带模式 (无文字非空白) */
@@ -210,6 +223,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val unifiedCourseBg = scheme.secondaryContainer.toIntArgb()
             val showSeparators  = AppPrefs.isGridShowSeparators(context)
             val longBreakSpacing = AppPrefs.isGridLongBreakSpacing(context)
+            // legacy 隐藏时间行开关: timeW 在布局段先于表头绘制读取, 提前读一次。
+            val widgetHeaderHideTime = AppPrefs.isPeriodHeaderHideTime(context)
             val colorless       = AppPrefs.isWidgetColorless(context)
 
             // v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
@@ -226,9 +241,26 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 .coerceAtLeast(1)
             // issue#22: 同名课程多地点 — 跨天汇总 course 全集,传给 pickCourseColorIntWithGroupRows
             val allCourses = data.days.flatMap { it.courses }
-            val mealBreakAfterRows = if (longBreakSpacing) {
-                MealBreakDetector.detect(timeJson, allCourses).map { it.afterRowIndex }.toSet()
-            } else emptySet()
+            val mealBreakMinutes = if (longBreakSpacing) {
+                MealBreakDetector.detect(timeJson, allCourses)
+                    .filter { it.afterRowIndex < maxNode - 1 }
+                    .associate { it.afterRowIndex to it.minutes.toInt() }
+            } else emptyMap()
+            // 长课间留白 redesign (用户 2026-10-05): 空隙分钟折进"餐段前一行"权重,
+            // 时间轴按分钟比例拉长背景 — 与 Compose 网格同一 expandWeightsForLongBreaks。
+            // 小组件不可滚动 → boundaryWeights 进 slotH 分母, body 边界恒定。
+            val breakUnit: Map<Int, Int> = if (longBreakSpacing) allSlots.mapIndexedNotNull { i, s ->
+                val m = java.time.Duration.between(s.start, s.end).toMinutes().toInt()
+                if (m > 0) i to m else null
+            }.toMap() else emptyMap()
+            val rowWeights = TimetableViewportPolicy.expandWeightsForLongBreaks(
+                List(maxNode) { 1f },
+                mealBreakMinutes.keys,
+                mealBreakMinutes,
+                breakUnitMinutes = breakUnit,
+                periodMinutes = 45,
+                enabled = longBreakSpacing,
+            )
             val slots = allSlots.take(maxNode)
             val sortedDays = data.visibleDays.sorted()
             val dayCount = sortedDays.size.coerceIn(1, 7)
@@ -240,7 +272,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // 改成: cap 降到 dp(13f), min 升到 dp(10f), 文字宽度永远 < dayW - padding
             val outerPad = dp(6f)
             val headH = dp(56f)
-            val timeW = dp(40f)
+            // legacy 隐藏时间行: 仅节次标签, 列宽缩至 36dp(与 CourseTableView 36dp*1 同源)。
+            val timeW = if (widgetHeaderHideTime) dp(36f) else dp(40f)
             val gapH = dp(1.5f)
             val gapW = dp(2.5f)
 
@@ -250,7 +283,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 hPx,
                 density,
                 maxNode,
-                mealBreakAfterRows.count { it < maxNode - 1 }
+                totalWeight = rowWeights.sum(),
             )
             val totalGapW = gapW * (dayCount + 1)
             val dayW = ((bodyW - timeW - totalGapW) / dayCount)
@@ -354,9 +387,16 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // ── Body ──
             y = (outerPad + headH).toFloat()
             val bodyTop = y
-            val mealGapExtraPx = dp(4f).toFloat()
-            fun rowTop(rowIndex: Int): Float = bodyTop + gapH + rowIndex * (slotH + gapH) +
-                mealBreakAfterRows.count { it + 1 <= rowIndex } * mealGapExtraPx
+            fun rowTop(rowIndex: Int): Float = weekGridRowTopPx(
+                bodyTop, gapH.toFloat(), slotH, rowWeights, rowIndex)
+            /** 单行内容高 (px) — 交叉验证 blocker #1 两表模型: 长课间折权只拉长边界
+             *  (rowTop/分隔线), 内容高恒 slotH — 卡片/表头卡不吃空隙, 空白落在卡后。 */
+            fun rowContentHeightPx(): Float = slotH
+            /** 跨行卡高 (px) = step×slotH + 节间 gap×(step-1) — 不含折入空隙。 */
+            fun spanHeightPx(startIdx: Int, step: Int): Float {
+                val rows = (startIdx + step).coerceAtMost(maxNode) - startIdx
+                return (slotH * rows + gapH * (rows - 1)).coerceAtLeast(1f)
+            }
 
             // Today backgrounds, grid borders, and course cards share the same row geometry.
             for ((idx, dow) in sortedDays.withIndex()) {
@@ -399,7 +439,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         val startIdx = (course.startNode - 1).coerceAtLeast(0)
                         val step = course.step.coerceAtLeast(1).coerceAtMost(maxNode - startIdx)
                         val top = rowTop(startIdx)
-                        val barH = (slotH * step + gapH * (step - 1)).coerceAtLeast(1f)
+                        val barH = spanHeightPx(startIdx, step)
                         val laneX = colX + dayW * laneRect.laneStartFraction
                         val laneW = dayW * laneRect.laneWidthFraction
                         p.color = CourseColorUtil.pickCourseColorIntWithGroupRows(
@@ -421,6 +461,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
             val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
             val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
+
             // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
             val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
             // 三行卡片几何 — 与 PeriodHeaderCellContent / SingleTimeHeadCell 共享同一事实来源。
@@ -459,7 +500,9 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 }
                 PeriodHeaderAdaptiveFont.forColumn(
                     cardWidthSp = (timeW - 2f * cardPadPx).coerceAtLeast(1f) / density,
-                    cardHeightSp = (slotH - 2f * cardPadPx).coerceAtLeast(1f) / density,
+                    // 整列统一字号取最矮行 — 权重化后最矮行 = slotH × 最小权重 (用户 2026-09-29 令)。
+                    cardHeightSp = (slotH - 2f * cardPadPx)
+                        .coerceAtLeast(1f) / density,
                     rows = rows,
                 )
             } else null
@@ -501,7 +544,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         showX = widgetHeaderShowX && isSingleNode
                     )
                     val cardInnerW = (timeW - 2f * cardPadPx).coerceAtLeast(1f)
-                    val cardInnerH = (slotH - 2f * cardPadPx).coerceAtLeast(1f)
+                    val cardInnerH = (rowContentHeightPx() - 2f * cardPadPx).coerceAtLeast(1f)
                     // 单位契约: PeriodHeaderAdaptiveFont 输入输出是 sp 语义(Compose 侧 .sp 渲染),
                     // Canvas Paint.textSize 是 px 语义 → 必须 px/density 入参、sp→px 出参。
                     // dp 字面量数值≈sp 禁再除 density (2026-09-30 修单位 bug)。
@@ -533,7 +576,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     // 卡片自适应元素矩形,不要用轨道宽度撑出空白)。
                     val cardW = (placement.contentWidth + 2f * cardPadPx).coerceAtLeast(1f)
                     // 外框覆盖整行，3dp 只属于卡片内部 padding（与预览/SingleTimeHeadCell 相同）。
-                    val cardH = slotH.coerceAtLeast(1f)
+                    val cardH = rowContentHeightPx().coerceAtLeast(1f)
                     val cardLeft = (centerX - cardW / 2f)
                     val cardTop = rowY
                     // 卡片底色(surfaceContainerLow 圆角 8dp,与 SingleTimeHeadCell 同款)
@@ -569,16 +612,17 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     c.drawText(end, baseX + placement.timeBaseLeft, endBaseline, p)
                 } else {
                     // Legacy remains the compact two-line grid header.
+                    val rowH = rowContentHeightPx()
                     p.color = fgOnSurface
-                    p.textSize = (slotH * 0.40f).coerceAtMost(dp(13f).toFloat()).coerceAtLeast(dp(8f).toFloat())
+                    p.textSize = (rowH * 0.40f).coerceAtMost(dp(13f).toFloat()).coerceAtLeast(dp(8f).toFloat())
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
-                    val cy = rowY + slotH / 2f + p.textSize * 0.35f
+                    val cy = rowY + rowH / 2f + p.textSize * 0.35f
                     val periodText = if (widgetHeaderLayout == "legacy") i.toString()
                     else PeriodHeaderFormatter.label(i, widgetHeaderStyle)
                     c.drawText(periodText, centerX, cy, p)
-                    if (slot != null && slotH > dp(18f)) {
+                    if (slot != null && rowH > dp(18f) && !widgetHeaderHideTime) {
                         p.color = fgOnSurfaceVar
-                        p.textSize = (slotH * 0.20f).coerceAtMost(dp(7f).toFloat()).coerceAtLeast(dp(4f).toFloat())
+                        p.textSize = (rowH * 0.20f).coerceAtMost(dp(7f).toFloat()).coerceAtLeast(dp(4f).toFloat())
                         p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.NORMAL)
                         c.drawText(slot.timeString, centerX, cy + p.textSize * 1.6f, p)
                     }
@@ -608,8 +652,9 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             for (dow in sortedDays) {
                 val dd = data.days.firstOrNull { it.dayOfWeek == dow } ?: continue
                 for (course in dd.courses) {
-                    val step = course.step.coerceIn(1, maxNode)
-                    val cardH = slotH * step + gapH * (step - 1)
+                    val startIdx = (course.startNode - 1).coerceAtLeast(0)
+                    val step = course.step.coerceIn(1, maxNode - startIdx).coerceAtLeast(1)
+                    val cardH = spanHeightPx(startIdx, step)
                     val hasRoom = course.room.isNotBlank()
                     // v22: 真实可用高度(不夹下限 → 矮卡算真实空间) + 自适应 room 预留
                     val availCardHPre = (cardH - unifiedPad * 2).coerceAtLeast(0f)
@@ -640,7 +685,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     val step = course.step.coerceAtLeast(1)
                         .coerceAtMost(maxNode - startIdx)
                     val cardTop = rowTop(startIdx)
-                    val cardH = slotH * step + gapH * (step - 1)
+                    val cardH = spanHeightPx(startIdx, step)
                     // 分栏: 横向按引擎给的起点/宽度比例收缩列宽
                     val laneX = colX + dayW * laneRect.laneStartFraction
                     val laneW = dayW * laneRect.laneWidthFraction

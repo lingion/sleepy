@@ -146,6 +146,15 @@ fun EditTableScreen(
     val effectivePeriodTable = state.effectivePeriodTable?.takeIf {
         pendingBind != null && it.id == pendingBind
     } ?: allPeriodTables.find { it.id == pendingBind }
+    // 2b(用户 2026-10-05): 草稿载体三入口统一 — 未绑定课表用本表兼容列合成载体,
+    // 手动改动同样进 editState 草稿(与绑定态一致); 原 effectivePeriodTable != null
+    // 守卫把未绑定路径整个跳过 = 手动↔自动同步断链的根因。
+    val draftScheduleCarrier = effectivePeriodTable ?: com.lingion.sleepy.data.entity.PeriodTableEntity(
+        name = table.name,
+        nodesPerDay = table.nodesPerDay,
+        timeJson = table.timeJson,
+        smartConfigJson = table.smartConfigJson,
+    )
     val timeJson = effectivePeriodTable?.timeJson ?: table.timeJson
     val slotRows = remember(table.id, effectivePeriodTable?.id, timeJson, scheduleEpoch) {
         mutableStateListOf<TimeTableUtils.TimeSlotRow>().apply {
@@ -289,30 +298,27 @@ fun EditTableScreen(
                                     slotRows.clear()
                                     slotRows.addAll(newRows)
                                     // 甲案 §2.1: 节次编辑即草稿变化 — 同步进会话状态;
-                                    // 策略已登记时会自动失效(invariant ⑤, 下次保存重弹)
-                                    if (effectivePeriodTable != null) {
-                                        editState.updateDraft(
-                                            effectivePeriodTable.copy(
-                                                timeJson = TimeTableUtils.buildTimeJsonFromRows(newRows),
-                                                nodesPerDay = newRows.size.coerceAtLeast(1)
-                                            )
+                                    // 策略已登记时会自动失效(invariant ⑤, 下次保存重弹)。
+                                    // 2b: 绑定/未绑定同口径(载体 = draftScheduleCarrier)。
+                                    editState.updateDraft(
+                                        draftScheduleCarrier.copy(
+                                            timeJson = TimeTableUtils.buildTimeJsonFromRows(newRows),
+                                            nodesPerDay = newRows.size.coerceAtLeast(1)
                                         )
-                                    }
+                                    )
                                 },
                                 smartConfig = smartConfig.value,
                                 onSmartConfigChange = { newCfg ->
                                     smartConfig.value = newCfg
                                     // 甲案 §2.1: 自动模式配置也属作息草稿 — 变化即同步+旧策略作废
-                                    if (effectivePeriodTable != null) {
-                                        editState.updateDraft(
-                                            effectivePeriodTable.copy(
-                                                smartConfigJson = runCatching {
-                                                    Json.encodeToString(newCfg)
-                                                }.getOrDefault(""),
-                                                nodesPerDay = slotRows.size.coerceAtLeast(1)
-                                            )
+                                    editState.updateDraft(
+                                        draftScheduleCarrier.copy(
+                                            smartConfigJson = runCatching {
+                                                Json.encodeToString(newCfg)
+                                            }.getOrDefault(""),
+                                            nodesPerDay = slotRows.size.coerceAtLeast(1)
                                         )
-                                    }
+                                    )
                                 },
                                 periodTableOptions = allPeriodTables.map {
                                     TimeSlotEditorPeriodTableOption(it.id, it.name, it.nodesPerDay)

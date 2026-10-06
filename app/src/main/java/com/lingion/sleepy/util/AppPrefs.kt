@@ -107,6 +107,7 @@ object AppPrefs {
     const val KEY_PERIOD_HEADER_STYLE = "period_header_style" // arabic / chinese / financial / circled / roman, default arabic
     const val KEY_PERIOD_HEADER_HANGING = "period_header_hanging" // Float time-width units, -1..1, default 0
     const val KEY_PERIOD_HEADER_SHOW_X = "period_header_show_x" // boolean, default false
+    const val KEY_PERIOD_HEADER_HIDE_TIME = "period_header_hide_time" // boolean, default false (legacy header only)
     const val KEY_THEME_MODE = "theme_mode"  // light/dark/system
     const val THEME_MODE_LIGHT = "light"
     const val THEME_MODE_DARK = "dark"
@@ -691,6 +692,14 @@ object AppPrefs {
     fun setPeriodHeaderShowX(ctx: Context, value: Boolean) {
         sp(ctx).edit().putBoolean(KEY_PERIOD_HEADER_SHOW_X, value).apply()
         _changeBus.tryEmit(KEY_PERIOD_HEADER_SHOW_X)
+    }
+
+    fun isPeriodHeaderHideTime(ctx: Context): Boolean =
+        sp(ctx).getBoolean(KEY_PERIOD_HEADER_HIDE_TIME, false)
+
+    fun setPeriodHeaderHideTime(ctx: Context, value: Boolean) {
+        sp(ctx).edit().putBoolean(KEY_PERIOD_HEADER_HIDE_TIME, value).apply()
+        _changeBus.tryEmit(KEY_PERIOD_HEADER_HIDE_TIME)
     }
 
     // ===== 周视图两栏(issue#8) — 默认关 =====

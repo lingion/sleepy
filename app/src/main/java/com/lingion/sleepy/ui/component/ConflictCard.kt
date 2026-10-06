@@ -296,9 +296,13 @@ internal fun conflictCardRectFrac(
     topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp,
     // 用户报障 2026-09-10: 簇含占位行/小数行成员时, 行差必须按分钟加权换算 dp
     // (与外层 yOfRows 同一真值); null = 全标准行(裸 rowH, 历史行为)。
-    spanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null
+    spanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null,
+    // 长课间两表 (2026-10-06): 高度走 natural 跨度(卡片不跨进折入的空隙),
+    // 位置仍走 spanDpOf(边界) — 空白落在卡片之后。缺省回落 spanDpOf = 无餐段等价。
+    contentSpanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null
 ): ConflictRect {
-    val ownSpanDp = (spanDpOf?.invoke(startRowFrac, startRowFrac + ownRowsFrac) ?: rowH * ownRowsFrac)
+    val heightSpan = contentSpanDpOf ?: spanDpOf
+    val ownSpanDp = (heightSpan?.invoke(startRowFrac, startRowFrac + ownRowsFrac) ?: rowH * ownRowsFrac)
         .coerceAtLeast(rowH * 0.3f)
     val ownH = ownSpanDp - gapH
     val y = spanDpOf?.invoke(minStartRow, startRowFrac) ?: rowH * (startRowFrac - minStartRow)
@@ -352,9 +356,11 @@ internal fun conflictMarkRectFrac(
     clusterH: Dp,
     @Suppress("UNUSED_PARAMETER") topInset: Dp = AppPrefs.CONFLICT_TOP_INSET_DEFAULT.dp,
     // 用户报障 2026-09-10: 与 conflictCardRectFrac 同一加权轴契约
-    spanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null
+    spanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null,
+    contentSpanDpOf: ((fromRow: Float, toRow: Float) -> Dp)? = null
 ): ConflictRect {
-    val ownH = (spanDpOf?.invoke(startRowFrac, startRowFrac + ownRowsFrac) ?: rowH * ownRowsFrac)
+    val heightSpan = contentSpanDpOf ?: spanDpOf
+    val ownH = (heightSpan?.invoke(startRowFrac, startRowFrac + ownRowsFrac) ?: rowH * ownRowsFrac)
         .coerceAtLeast(rowH * 0.3f) - gapH
     val y = spanDpOf?.invoke(minStartRow, startRowFrac) ?: rowH * (startRowFrac - minStartRow)
     return when (form) {
@@ -442,6 +448,8 @@ fun ConflictClusterCard(
     // 簇内几何(簇框/卡位/命中区)全部经它换算, 占位行/小数行不再按裸 rowH 失真。
     // null = 全标准行(裸 rowH, 旧调用方兼容)。
     spanDpOf: ((Float, Float) -> Dp)? = null,
+    // 长课间两表: 高度(natural)与位置(边界)分离, 详见 conflictCardRectFrac 注释。
+    contentSpanDpOf: ((Float, Float) -> Dp)? = null,
     isGrey: Boolean,
     // v7.10.16r 轮换(issue#10): 会话内轮换步数(null=默认序),由 ScheduleScreen 持有,
     // 不落盘;N≥3 簇点露出带/折角推进一位,详情 radio 仍走 onPickTop 持久化通道。
@@ -583,7 +591,7 @@ fun ConflictClusterCard(
     ) ?: rowH * ((rowGeomOf[course.id]?.first ?: 0f) - minStartRow)
     fun cardHOf(courseId: Long): Dp {
         val g = rowGeomOf[courseId] ?: (0f to 1f)
-        return (spanDpOf?.invoke(g.first, g.first + g.second) ?: rowH * g.second)
+        return ((contentSpanDpOf ?: spanDpOf)?.invoke(g.first, g.first + g.second) ?: rowH * g.second)
             .coerceAtLeast(rowH * 0.3f) - gapH
     }
 
@@ -634,7 +642,8 @@ fun ConflictClusterCard(
             form = form,
             colW = colW, rowH = rowH, gapH = gapH, minStartRow = minStartRow,
             topInset = topInset,
-            spanDpOf = spanDpOf
+            spanDpOf = spanDpOf,
+            contentSpanDpOf = contentSpanDpOf
         )
     }
 
@@ -741,7 +750,7 @@ fun ConflictClusterCard(
                                 colW = colW, rowH = rowH, gapH = gapH,
                                 minStartRow = minStartRow, clusterH = cellH,
                                 topInset = topInset,
-                                spanDpOf = spanDpOf
+                                spanDpOf = spanDpOf, contentSpanDpOf = contentSpanDpOf
                             )
                             Box(
                                 modifier = Modifier
@@ -781,7 +790,7 @@ fun ConflictClusterCard(
                                 colW = colW, rowH = rowH, gapH = gapH,
                                 minStartRow = minStartRow, clusterH = cellH,
                                 topInset = topInset,
-                                spanDpOf = spanDpOf
+                                spanDpOf = spanDpOf, contentSpanDpOf = contentSpanDpOf
                             )
                             Box(
                                 modifier = Modifier

@@ -285,4 +285,54 @@ class TimetableViewportPolicyTest {
             0.001f
         )
     }
+
+    // ===== 长课间留白 redesign: 空隙分钟折进行权重 (替代固定 mealGapExtra 间隙) =====
+
+    @Test
+    fun long_break_weight_expansion_is_identity_when_disabled() {
+        val w = listOf(1f, 1f, 1f)
+        val out = TimetableViewportPolicy.expandWeightsForLongBreaks(
+            w, setOf(1), mapOf(1 to 40), periodMinutes = 45, enabled = false)
+        assertEquals(w.map { "%.4f".format(it) }, out.map { "%.4f".format(it) })
+    }
+
+    @Test
+    fun long_break_folds_break_minutes_into_preceding_row_weight() {
+        val out = TimetableViewportPolicy.expandWeightsForLongBreaks(
+            listOf(1f, 1f, 1f), setOf(1), mapOf(1 to 45), periodMinutes = 45, enabled = true)
+        // 45min 空隙 / 45min 主课时 = +1.0 → 行权重翻倍, 时间轴按分钟比例拉长
+        assertEquals(listOf(1f, 2f, 1f), out)
+    }
+
+    @Test
+    fun fractional_break_minutes_scale_fractionally_and_unknown_rows_are_ignored() {
+        val out = TimetableViewportPolicy.expandWeightsForLongBreaks(
+            listOf(1f, 1f), setOf(1, 7), mapOf(1 to 20, 7 to 60), periodMinutes = 40, enabled = true)
+        assertEquals(1.5f, out[1], 1e-5f)   // 20/40 = +0.5
+        assertEquals(2, out.size)           // 越界行号忽略, 不新增元素
+    }
+
+    @Test
+    fun non_positive_period_minutes_falls_back_to_45() {
+        val out = TimetableViewportPolicy.expandWeightsForLongBreaks(
+            listOf(1f), setOf(0), mapOf(0 to 45), periodMinutes = 0, enabled = true)
+        assertEquals(2f, out[0], 1e-5f)
+    }
+
+    @Test
+    fun per_break_unit_minutes_override_the_period_default() {
+        // 交叉验证 minor #3: 非 45 分钟课时制 — 分母取餐段左邻真实分钟 (40),
+        // 20min 空隙 → +0.5 行, 而不是 fallback 45 → 20/45。
+        val out = TimetableViewportPolicy.expandWeightsForLongBreaks(
+            listOf(1f, 1f), setOf(1), mapOf(1 to 20),
+            breakUnitMinutes = mapOf(1 to 40),
+            periodMinutes = 45, enabled = true)
+        assertEquals(1.5f, out[1], 1e-5f)
+        // 缺失条目回落 periodMinutes
+        val out2 = TimetableViewportPolicy.expandWeightsForLongBreaks(
+            listOf(1f, 1f), setOf(1), mapOf(1 to 45),
+            breakUnitMinutes = emptyMap(),
+            periodMinutes = 45, enabled = true)
+        assertEquals(2f, out2[1], 1e-5f)
+    }
 }

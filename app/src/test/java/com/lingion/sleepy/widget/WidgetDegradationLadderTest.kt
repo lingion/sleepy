@@ -97,11 +97,25 @@ class WidgetDegradationLadderTest {
     }
 
     @Test
-    fun `weekgrid meal break adds visible spacing without changing body bounds`() {
-        val (normalBody, normalSlot) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12)
-        val (breakBody, breakSlot) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12, mealBreakCount = 1)
-        assertEquals(normalBody, breakBody)
-        assertTrue(breakSlot < normalSlot)
+    fun `weekgrid meal break stretches its row proportionally without changing body bounds`() {
+        // 用户 2026-10-05 定稿: 长课间留白 = 空隙分钟折进行权重, 时间轴按分钟比例拉长;
+        // 小组件不可滚动 → 权重同折进 slotH 分母, body 边界恒不变。
+        val (bodyA, slotA) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12)
+        val weights = com.lingion.sleepy.util.TimetableViewportPolicy.expandWeightsForLongBreaks(
+            List(12) { 1f }, setOf(3), mapOf(3 to 45), periodMinutes = 45, enabled = true)
+        val (bodyB, slotB) = WeekGridWidgetProvider.weekGridBodyGeomPx(
+            1200, 2f, 12, totalWeight = weights.sum())
+        assertEquals("body 边界不受开关影响", bodyA, bodyB)
+        assertTrue("每权重单位高度随空隙稀释", slotB < slotA)
+        val gap = (1.5f * 2f).toInt().toFloat()
+        val bodyTop = 100f
+        fun top(i: Int) = WeekGridWidgetProvider.weekGridRowTopPx(bodyTop, gap, slotB, weights, i)
+        // 行内容高 = top(i+1)−top(i)−gap; 餐段行 (row3) = 2×普通行 (45min 空隙 + 45min 课)。
+        val h0 = top(1) - top(0) - gap
+        val h3 = top(4) - top(3) - gap
+        assertEquals(2f * h0, h3, 0.001f)
+        // 末行底 = body 底 — 权重折进分母后总高恒等, 无溢出无空白
+        assertEquals(bodyTop + bodyB, top(12), 0.001f)
     }
 
     // ---- 四族 FIXED 窗口: 三档尺寸全尺寸同构 (无崩溃 + 锚行保底 + 页脚 best-effort) ----

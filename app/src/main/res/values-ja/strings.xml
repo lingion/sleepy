@@ -581,6 +581,8 @@
     <string name="appearance_header_preview">ライブプレビュー</string>
     <string name="appearance_header_style">時限スタイル</string>
     <string name="appearance_header_show_x">「第 X 限」を表示</string>
+    <string name="appearance_header_hide_time">時間行を表示しない</string>
+    <string name="appearance_header_hide_time_sub">旧式ヘッダーで限のみ表示（実験的、デフォルト OFF）</string>
     <string name="appearance_header_hanging">開始時刻幅 %1$s 個分 左右移動</string>
     <string name="appearance_section_widget">ウィジェット</string>
     <string name="about_update_latest">最新バージョン v%1$s です</string>

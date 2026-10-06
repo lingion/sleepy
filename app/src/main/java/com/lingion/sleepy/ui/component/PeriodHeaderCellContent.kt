@@ -136,6 +136,35 @@ internal fun legacyLineWidthDp(
     return with(density) { geometry.columnWidthPx.toDp() } + (2f * PERIOD_HEADER_CARD_PAD_DP * scale).dp
 }
 
+/**
+ * 旧式表头时间列宽(dp)。hideTime=false 走 dash 轴几何(legacyLineWidthDp 同源);
+ * hideTime=true 时时间行不再渲染, 列宽收口到最长节次标签实测宽 + 卡片边距,
+ * 下限 36dp 防「第X节」等长标签被挤压。网格与设置页预览共用。
+ */
+internal fun legacyTimeWidthDp(
+    slots: List<TimeSlot>,
+    headerStyle: String,
+    scale: Float,
+    measurer: androidx.compose.ui.text.TextMeasurer,
+    density: androidx.compose.ui.unit.Density,
+    showX: Boolean = false,
+    hideTime: Boolean = false,
+): androidx.compose.ui.unit.Dp {
+    if (!hideTime) return legacyLineWidthDp(slots, headerStyle, scale, measurer, density, showX)
+    val labelStyle = headerLabelStyle(scale)
+    var maxLabel = 0f
+    for (slot in slots) {
+        val label = if (showX && slot.nodeStart == slot.nodeEnd) {
+            PeriodHeaderFormatter.fullLabel(slot.nodeStart, headerStyle)
+        } else {
+            PeriodHeaderFormatter.range(slot.nodeStart, slot.nodeEnd, headerStyle)
+        }
+        maxLabel = maxOf(maxLabel, measurer.measure(label, labelStyle).size.width.toFloat())
+    }
+    val content = with(density) { maxLabel.toDp() } + (2f * PERIOD_HEADER_CARD_PAD_DP * scale).dp
+    return content.coerceAtLeast((36f * scale).dp)
+}
+
 /** 老式表头单行墨迹: 标签整宽 + 时间串三段 (start / dash / end, px 实测, 含行高)。 */
 internal fun legacyRowInk(
     slot: TimeSlot,
@@ -174,10 +203,12 @@ fun PeriodHeaderCellContent(
     sharedFont: PeriodHeaderAdaptiveFont? = null,
     sharedPlacement: PeriodHeaderPlacement? = null,
     sharedLegacyAxis: androidx.compose.ui.unit.Dp? = null,
+    hideTimeOverride: Boolean? = null,
 ) {
     val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
     val showX = showXOverride ?: AppPrefs.isPeriodHeaderShowX(context)
+    val hideTime = hideTimeOverride ?: AppPrefs.isPeriodHeaderHideTime(context)
     val label = if (showX && slot.nodeStart == slot.nodeEnd) {
         PeriodHeaderFormatter.fullLabel(slot.nodeStart, style)
     } else {
@@ -336,6 +367,32 @@ fun PeriodHeaderCellContent(
             val axisX = sharedLegacyAxis ?: with(density) {
                 maxOf(rowInk.labelPx / 2f, rowInk.timeLeftPx).toDp()
             }
+            val baseFont = PeriodHeaderAdaptiveFont(
+                timeSize = PeriodHeaderAdaptiveFont.BASE_TIME_SP,
+                labelSize = PeriodHeaderAdaptiveFont.BASE_LABEL_SP,
+            )
+            if (hideTime) {
+                // 隐藏时间行 (用户 2026-10-05): 只剩标签一行 — 不参与 dash 轴/双行
+                // union 垂直解, 卡片内水平+垂直整体居中; 卡高装不下时同口径缩字。
+                val cardHPx = with(density) { maxHeight.toPx() }
+                val labelHPx = rowInk.labelHeightPx
+                val fontScale = if (labelHPx > 0f && cardHPx in 1f..<labelHPx)
+                    (cardHPx / labelHPx).coerceAtLeast(0.6f) else 1f
+                Box(
+                    modifier = Modifier.fillMaxSize(),
+                    contentAlignment = Alignment.Center,
+                ) {
+                    Text(
+                        text = label,
+                        style = adaptiveHeaderLabelStyle(scale * fontScale, baseFont),
+                        color = colors.onSurface,
+                        maxLines = 1,
+                        softWrap = false,
+                        overflow = TextOverflow.Visible,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            } else {
             val vertical = legacyColumnVerticalFit(
                 rows = listOf(rowInk),
                 cardContentHeightPx = with(density) { maxHeight.toPx() },
@@ -346,10 +403,6 @@ fun PeriodHeaderCellContent(
             // 字号按 fontScale 联动 — legacy 基准字号 (label 12sp/time 11sp, 与
             // headerTimeStyle/headerLabelStyle 同源), 缩字时整体乘 fontScale:
             // 行高与字号同比缩, 垂直解的 labelH/timeH 与真实渲染行高一致。
-            val baseFont = PeriodHeaderAdaptiveFont(
-                timeSize = PeriodHeaderAdaptiveFont.BASE_TIME_SP,
-                labelSize = PeriodHeaderAdaptiveFont.BASE_LABEL_SP,
-            )
             val effectiveScale = scale * vertical.fontScale
             val labelStyleScaled = adaptiveHeaderLabelStyle(effectiveScale, baseFont)
             val timeStyleScaled = adaptiveHeaderTimeStyle(effectiveScale, baseFont)
@@ -412,6 +465,7 @@ fun PeriodHeaderCellContent(
                         modifier = Modifier.align(Alignment.CenterStart).offset(x = startW + dashW),
                     )
                 }
+            }
             }
         }
     }

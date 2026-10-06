@@ -581,6 +581,8 @@
     <string name="appearance_header_preview">Vista previa en vivo</string>
     <string name="appearance_header_style">Estilo de período</string>
     <string name="appearance_header_show_x">Mostrar «Período X»</string>
+    <string name="appearance_header_hide_time">Ocultar fila de hora</string>
+    <string name="appearance_header_hide_time_sub">Solo el número de periodo en el encabezado clásico (experimental, desactivado)</string>
     <string name="appearance_header_hanging">Mover a izquierda/derecha %1$s anchos de hora de inicio</string>
     <string name="appearance_section_widget">Widget</string>
     <string name="about_update_latest">Ya tienes la última versión v%1$s</string>
