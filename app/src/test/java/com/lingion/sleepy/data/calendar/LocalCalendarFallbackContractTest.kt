@@ -1,5 +1,6 @@
 package com.lingion.sleepy.data.calendar
 
+import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import java.io.File
@@ -42,5 +43,23 @@ class LocalCalendarFallbackContractTest {
             body.contains("ensureLocalCalendar(context)"))
         assertTrue("有权限是前置条件, 权限拒绝时不动日历 provider",
             body.contains("hasCalendarPermissions"))
+    }
+
+    @Test
+    fun `ensureLocalCalendar 插入时 SYNC_EVENTS=0 — 阻止系统 sync 错误通知污染通知栏`() {
+        val s = source
+        // 锁 SYNC_EVENTS 必须是 0: Sleepy 不是真 sync adapter, 设 1 会让 SyncManager
+        // 周期性尝试 sync → 失败 → 在通知栏弹"同步错误", 污染 Sleepy 自身通知流。
+        assertTrue("ensureLocalCalendar 必须用 SYNC_EVENTS=0 (不是 sync adapter, 不应触发 sync)",
+            s.contains("put(CalendarContract.Calendars.SYNC_EVENTS, 0)"))
+        // 函数体内不允许出现 SYNC_EVENTS, 1 (防止某次重构改回 1)
+        val idx = s.indexOf("fun ensureLocalCalendar")
+        assertTrue("ensureLocalCalendar 必须存在", idx > 0)
+        val endIdx = s.indexOf("\n    }\n", idx).let { if (it < 0) s.length else it }
+        val body = s.substring(idx, endIdx)
+        assertFalse(
+            "ensureLocalCalendar 函数体内不应出现 SYNC_EVENTS, 1 (会触发系统 sync 错误通知)",
+            body.contains("SYNC_EVENTS, 1")
+        )
     }
 }

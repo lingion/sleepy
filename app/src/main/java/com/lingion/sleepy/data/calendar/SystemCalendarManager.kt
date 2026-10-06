@@ -153,7 +153,11 @@ object SystemCalendarManager {
             put(CalendarContract.Calendars.CALENDAR_ACCESS_LEVEL, CalendarContract.Calendars.CAL_ACCESS_OWNER)
             put(CalendarContract.Calendars.OWNER_ACCOUNT, accountName)
             put(CalendarContract.Calendars.VISIBLE, 1)
-            put(CalendarContract.Calendars.SYNC_EVENTS, 1)
+            // SYNC_EVENTS=0: Sleepy 不是真 sync adapter, 用 CALLER_IS_SYNCADAPTER 只是绕过
+            // 权限校验。设 1 会让 Android SyncManager 视为待 sync 日历, 周期性尝试 sync → 失败 →
+            // 在通知栏弹"同步错误", 污染 Sleepy 自身通知流。CAL_ACCESS_OWNER 已足够表示
+            // "我自己管理这个日历"。
+            put(CalendarContract.Calendars.SYNC_EVENTS, 0)
             put(CalendarContract.Calendars.CALENDAR_TIME_ZONE, java.util.TimeZone.getDefault().id)
         }
         val syncAdapterUri = CalendarContract.Calendars.CONTENT_URI.buildUpon()
