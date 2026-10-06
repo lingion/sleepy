@@ -59,6 +59,22 @@ android {
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
+    // 发布签名: 优先用环境变量注入的 keystore (release.yml 从 GitHub Secret
+    // RELEASE_KEYSTORE_BASE64 解出), 缺失时回退 debug 签名 (本地开发 / PR CI 无
+    // Secret)。release.yml 构建后会断言 APK 证书指纹, 保证发布产物签名身份恒定,
+    // 不会静默退回 CI 的 debug 密钥导致用户从旧版升级触发签名警告。
+    val releaseKeystorePath = System.getenv("SLEEPY_KEYSTORE_FILE")?.takeIf { it.isNotBlank() }
+    signingConfigs {
+        if (releaseKeystorePath != null) {
+            create("release") {
+                storeFile = file(releaseKeystorePath)
+                storePassword = System.getenv("SLEEPY_KEYSTORE_PASSWORD") ?: "android"
+                keyAlias = System.getenv("SLEEPY_KEY_ALIAS") ?: "androiddebugkey"
+                keyPassword = System.getenv("SLEEPY_KEY_PASSWORD") ?: "android"
+            }
+        }
+    }
+
     buildTypes {
         debug {
             isMinifyEnabled = false
@@ -77,7 +93,11 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
-            signingConfig = signingConfigs.getByName("debug")
+            signingConfig = if (releaseKeystorePath != null) {
+                signingConfigs.getByName("release")
+            } else {
+                signingConfigs.getByName("debug")
+            }
         }
     }
 
