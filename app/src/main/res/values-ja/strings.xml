@@ -1007,6 +1007,6 @@
     <string name="jw_fetch_empty">今学期の授業はありません。学期を確認してください</string>
     <string name="irregular_time_format">通常外の時刻は HH:mm 形式で入力してください</string>
     <string name="irregular_time_order">開始時刻は終了時刻より前にしてください</string>
-    <string name="reminder_class_dnd_title">授業中は自動マナー</string>
-    <string name="reminder_class_dnd_sub">授業時間帯に自動的にマナーモードを有効化し、終了後に復元します</string>
+    <string name="reminder_class_dnd_title">授業中はおやすみモード</string>
+    <string name="reminder_class_dnd_sub">授業時間帯におやすみモードを自動で有効にし、終了後に復元します</string>
 </resources>

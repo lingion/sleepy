@@ -1,11 +1,13 @@
 package com.lingion.sleepy.widget.notification
 
 import android.app.AlarmManager
+import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.media.AudioManager
+import android.os.Build
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
 import com.lingion.sleepy.util.AppPrefs
@@ -15,6 +17,8 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.ZoneId
@@ -51,19 +55,20 @@ class ClassDndScheduler(private val context: Context) {
          * 当 saved, 下次 leave 时反而恢复到 NONE 而不是用户原状态)。
          */
         @Volatile
-        internal var savedFilter: Int = android.app.NotificationManager.INTERRUPTION_FILTER_ALL
+        internal var savedFilter: Int = NotificationManager.INTERRUPTION_FILTER_ALL
+        @Volatile
+        private var enteredByUs = false
 
-        /** 单例 IO scope — syncFromPrefs / ClassDndReceiver 共用, 避免每次 new SupervisorJob */
         private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+        private val rebuildLock = Mutex()
 
-        /** Receiver 入口 — 在共享 scope 上启动 rebuildAlarms, 串行化避开并发 race */
         fun launchRebuildFromReceiver(appContext: Context) {
             scope.launch { ClassDndScheduler(appContext).rebuildAlarms() }
         }
 
-        /** 测试钩子 — 重置 savedFilter 到默认 ALL, 隔离测试间状态 */
         internal fun resetSavedFilterForTest() {
-            savedFilter = android.app.NotificationManager.INTERRUPTION_FILTER_ALL
+            savedFilter = NotificationManager.INTERRUPTION_FILTER_ALL
+            enteredByUs = false
         }
 
         /** 当前时刻是否处于某节课区间 [start, end) 内。 */
@@ -109,12 +114,18 @@ class ClassDndScheduler(private val context: Context) {
     }
 
     /** 开关关 / 无课表 → 直接返回; 否则校准当下状态后排下一对边界闹钟。 */
-    suspend fun rebuildAlarms() {
+    suspend fun rebuildAlarms() = rebuildLock.withLock {
+        if (!AppPrefs.isClassDndEnabled(context)) {
+            cancelAndRestore()
+            return@withLock
+        }
         val table = com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()
-            ?: return
+        if (table == null) {
+            cancelAndRestore()
+            return@withLock
+        }
         val intervals = buildIntervals(table)
         val now = LocalDateTime.now()
-        // 状态校准: 已在课中但闹钟链断了(如刚开开关) → 立即进入勿扰
         if (isCurrentlyInClass(intervals, now)) applyDnd(enter = true)
         val b = nextBoundaries(intervals, now)
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -134,6 +145,10 @@ class ClassDndScheduler(private val context: Context) {
 
     /** 关闭开关: 取消闹钟并恢复勿扰现场。 */
     fun disableAndRestore() {
+        cancelAndRestore()
+    }
+
+    private fun cancelAndRestore() {
         val am = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
         cancelSlot(am, RC_START)
         cancelSlot(am, RC_END)
@@ -165,10 +180,13 @@ class ClassDndScheduler(private val context: Context) {
         )
         val epoch = at.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         try {
-            am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epoch, pi)
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !am.canScheduleExactAlarms()) {
+                am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epoch, pi)
+            } else {
+                am.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epoch, pi)
+            }
         } catch (_: SecurityException) {
-            // 无精确闹钟权限 → 非精确兜底, 勿扰晚到但不丢
-            am.set(AlarmManager.RTC_WAKEUP, epoch, pi)
+            am.setAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, epoch, pi)
         }
     }
 
@@ -187,23 +205,21 @@ class ClassDndScheduler(private val context: Context) {
      * 离开时若 DND 已不在 (用户手动改走), 不抢方向盘, 让用户自己的选择生效。
      */
     fun applyDnd(enter: Boolean) {
-        val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return
+        val nm = context.getSystemService(NotificationManager::class.java) ?: return
         if (!nm.isNotificationPolicyAccessGranted) return
         val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (enter) {
-            if (am.ringerMode != AudioManager.RINGER_MODE_NORMAL) return // 用户已手动静音/振动
-            // 进入前快照用户原 filter (跳过 NONE — 不把"我们刚设的 NONE"误存为 saved)
             val current = nm.currentInterruptionFilter
-            if (current != android.app.NotificationManager.INTERRUPTION_FILTER_NONE) {
-                savedFilter = current
-            }
-            nm.setInterruptionFilter(android.app.NotificationManager.INTERRUPTION_FILTER_NONE)
-        } else {
-            // 离开时只在我们"自己进的 DND 还在"时恢复 saved — 若用户已手动改走
-            // (currentInterruptionFilter != NONE), 不抢方向盘, 让用户自己改的值生效
-            if (nm.currentInterruptionFilter == android.app.NotificationManager.INTERRUPTION_FILTER_NONE) {
-                nm.setInterruptionFilter(savedFilter)
-            }
+            if (current == NotificationManager.INTERRUPTION_FILTER_NONE) return
+            if (am.ringerMode != AudioManager.RINGER_MODE_NORMAL) return
+            savedFilter = current
+            enteredByUs = true
+            nm.setInterruptionFilter(NotificationManager.INTERRUPTION_FILTER_PRIORITY)
+        } else if (enteredByUs &&
+            nm.currentInterruptionFilter == NotificationManager.INTERRUPTION_FILTER_PRIORITY
+        ) {
+            nm.setInterruptionFilter(savedFilter)
+            enteredByUs = false
         }
     }
 }

@@ -59,6 +59,7 @@ class SleepyApp : Application() {
                 override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
                     CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                         try { notificationScheduler.ensureActiveFluidCloud() } catch (_: Throwable) {}
+                        try { classDndScheduler.syncFromPrefs() } catch (_: Throwable) {}
                     }
                 }
             }
