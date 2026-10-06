@@ -48,6 +48,14 @@ object JwProtocol {
     /** WakeUp Kingosoft 新协议，覆盖新青果/金智门户系列。 */
     const val TYPE_KINGO_NEW = "kingo_new"
 
+    /**
+     * 清华大学 zhjwxk.cic.tsinghua.edu.cn (THU 选课系统)。
+     * 协议：setInitValue('strHTML'+...)、getElementById('a'+big+'_'+day).innerHTML += strHTML。
+     * 4 仓 POSITIVE 共识 (WakeUp + Starrah + AdoreCN + BistuSchedule)；致谢见 attribution-candidates.json。
+     * wakeup-parity-thu-2026-10-06 SOP v1.11 §3。
+     */
+    const val TYPE_THU = "thu"
+
     /** WakeUp 金智课程表回退族。 */
     const val TYPE_JZ = "jz"
 
@@ -271,7 +279,7 @@ object JwProtocol {
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST,
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU,
     )
 
     fun displayName(type: String?): String = when (type) {
@@ -295,6 +303,7 @@ object JwProtocol {
         TYPE_SUDA_POST -> "苏大教务"
         TYPE_CUMTB -> "矿大 EAMS5"
         TYPE_XJU_POST -> "西交/新疆大学教务"
+        TYPE_THU -> "清华大学 (THU 教务)"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
         TYPE_CHAOXING -> "超星综合教务"
@@ -327,7 +336,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST -> "other"
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"
