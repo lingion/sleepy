@@ -616,6 +616,9 @@
     <string name="timeslot_longpress_to_reorder">长按整行可上下拖拽排序</string>
     <string name="timeslot_row_blank_hint">空白行可拖到任意位置</string>
     <string name="timeslot_drop_invalid">目标位置不合法，时间顺序不正确</string>
+    <string name="timeslot_drop_success">已重排第 %1$d 节到第 %2$d 位</string>
+    <string name="timeslot_reorder_in_progress">排序中</string>
+    <string name="timeslot_row_drop_target">插入位置</string>
 
     <!-- About -->
     <string name="mine_about">关于</string>

@@ -505,6 +505,9 @@
     <string name="timeslot_longpress_to_reorder">Mantén pulsada una fila para arrastrarla y reordenarla</string>
     <string name="timeslot_row_blank_hint">Las filas en blanco pueden moverse a cualquier lugar</string>
     <string name="timeslot_drop_invalid">Soltar inválido: rompe el orden horario</string>
+    <string name="timeslot_drop_success">Período %1$d movido a la posición %2$d</string>
+    <string name="timeslot_reorder_in_progress">Reordenando</string>
+    <string name="timeslot_row_drop_target">Insertar aquí</string>
 
     <string name="mine_about">Acerca de</string>
     <string name="mine_about_body">Sleepy Horario v%1$s\n\nUna aplicación de horario minimalista, limpia y local.\nTodos los datos se guardan en tu dispositivo — nada se sube a servidores.\n\n· Sin anuncios\n· Sin rastreo\n· Compatible con WakeUp / ICS / CSV / HTML / texto plano</string>
