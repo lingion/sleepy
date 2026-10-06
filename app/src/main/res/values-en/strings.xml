@@ -803,6 +803,10 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_test_started">Test card posted — check the top of your notification shade</string>
     <string name="reminder_fluid_test_course">Test course</string>
     <string name="reminder_fluid_test_room">Test room</string>
+    <string name="reminder_fluid_test_status_casting">Casting</string>
+    <string name="reminder_fluid_test_stop_button">End casting</string>
+    <string name="reminder_fluid_test_start_failed">Failed to start Live update test. Please try again.</string>
+    <string name="reminder_fluid_test_stop_failed">Failed to stop Live update test. Please try again.</string>
     <string name="reminder_reliability_title">Background reliability</string>
     <string name="reminder_reliability_notification">Notifications: %1$s</string>
     <string name="reminder_reliability_exact_alarm">Exact alarms: %1$s</string>

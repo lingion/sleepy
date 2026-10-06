@@ -793,6 +793,10 @@
     <string name="reminder_fluid_test_started">テストカードを投稿しました。通知シェード上部を確認してください</string>
     <string name="reminder_fluid_test_course">テスト授業</string>
     <string name="reminder_fluid_test_room">テスト教室</string>
+    <string name="reminder_fluid_test_status_casting">投影中</string>
+    <string name="reminder_fluid_test_stop_button">投影を終了</string>
+    <string name="reminder_fluid_test_start_failed">ライブ更新テストの開始に失敗しました。もう一度お試しください。</string>
+    <string name="reminder_fluid_test_stop_failed">ライブ更新テストの停止に失敗しました。もう一度お試しください。</string>
     <string name="reminder_reliability_title">バックグラウンドの信頼性</string>
     <string name="reminder_reliability_notification">通知権限：%1$s</string>
     <string name="reminder_reliability_exact_alarm">正確なアラーム：%1$s</string>

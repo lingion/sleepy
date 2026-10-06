@@ -791,6 +791,10 @@
     <string name="reminder_fluid_test_started">流體雲測試已傳送, 查看通知欄頂部卡片</string>
     <string name="reminder_fluid_test_course">測試課程</string>
     <string name="reminder_fluid_test_room">測試地點</string>
+    <string name="reminder_fluid_test_status_casting">投放中</string>
+    <string name="reminder_fluid_test_stop_button">結束投放</string>
+    <string name="reminder_fluid_test_start_failed">流體雲測試啟動失敗，請重試</string>
+    <string name="reminder_fluid_test_stop_failed">流體雲測試停止失敗，請重試</string>
     <string name="reminder_reliability_title">背景可靠性</string>
     <string name="reminder_reliability_notification">通知權限：%1$s</string>
     <string name="reminder_reliability_exact_alarm">精確提醒：%1$s</string>

@@ -12,7 +12,6 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -65,7 +64,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -723,25 +721,18 @@ fun ReminderScreen(onBack: () -> Unit) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
-                                                .padding(top = 10.dp)
-                                                .clip(SleepyTheme.fieldShape)
+                                                .padding(top = 10.dp),
+                                            horizontalArrangement = Arrangement.spacedBy(0.dp)
                                         ) {
-                                            // 左半: 投放中状态 (不可交互)
-                                            Box(
-                                                modifier = Modifier
-                                                    .weight(1f)
-                                                    .background(colors.surfaceContainerHighest)
-                                                    .padding(vertical = 12.dp)
-                                                    .semantics(mergeDescendants = true) { },
-                                                contentAlignment = Alignment.Center
+                                            // 左半: 投放中状态 (与右半 Button 同形状, disabled FilledTonalButton)
+                                            FilledTonalButton(
+                                                onClick = {},
+                                                enabled = false,
+                                                modifier = Modifier.weight(1f)
                                             ) {
-                                                Text(
-                                                    text = stringResource(R.string.reminder_fluid_test_status_casting),
-                                                    color = colors.onSurfaceVariant,
-                                                    style = MaterialTheme.typography.bodyMedium
-                                                )
+                                                Text(stringResource(R.string.reminder_fluid_test_status_casting))
                                             }
-                                            // 右半: 结束投放按钮
+                                            // 右半: 结束投放按钮 (与左半同形状, primary 强调)
                                             Button(
                                                 onClick = {
                                                     try {
