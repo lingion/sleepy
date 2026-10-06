@@ -285,6 +285,8 @@ fun EditTableScreen(
                             // 未绑定/选中语义零变化, pendingBind 保存链原样)
                             TimeSlotEditor(
                                 rows = slotRows.toList(),
+                                reorderEnabled = true,
+                                courses = state.courses,
                                 onRowsChange = { newRows ->
                                     slotRows.clear()
                                     slotRows.addAll(newRows)
