@@ -413,29 +413,33 @@ private fun ManualTimeSlotEditor(
                             onDragEnd = {
                                 val from = draggingIndex
                                 val to = targetIndex
+                                // 2026-10-06 实测发现 race: LaunchedEffect(rows) 在 onRowsChange 后
+                                // 因 rows key 变(toList 新对象)再次触发, 此时若 draggingIndex 仍非 null,
+                                // 会再次跑条件检查; 而 coroutine 内异步设 null → LaunchedEffect 之后又跑一遍
+                                // 把 displayRows 重置回外部 rows. 修法: 同步设 draggingIndex=null + displayRows.
                                 if (from != null && to != null && to != from &&
                                     TimeTableUtils.canReorderTimeSlot(displayRows, from, to, courses)
                                 ) {
                                     val reordered = TimeTableUtils.reorderTimeSlotRows(displayRows, from, to)
+                                    draggingIndex = null
+                                    targetIndex = null
+                                    invalidTarget = false
+                                    displayRows = reordered
+                                    onRowsChange(reordered)
                                     coroutineScope.launch {
                                         dragOffsetY.animateTo(0f, spring())
-                                        draggingIndex = null
-                                        targetIndex = null
-                                        invalidTarget = false
-                                        displayRows = reordered
-                                        onRowsChange(reordered)
                                         snackbarHostState.showSnackbar(
                                             message = invalidMsg,
                                             duration = androidx.compose.material3.SnackbarDuration.Short
                                         )
                                     }
                                 } else {
+                                    draggingIndex = null
+                                    targetIndex = null
+                                    invalidTarget = false
+                                    displayRows = rows
                                     coroutineScope.launch {
                                         dragOffsetY.animateTo(0f, spring())
-                                        draggingIndex = null
-                                        targetIndex = null
-                                        invalidTarget = false
-                                        displayRows = rows
                                     }
                                 }
                             },
