@@ -12,6 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -30,6 +31,8 @@ import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.School
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
@@ -62,6 +65,10 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
@@ -714,30 +721,89 @@ fun ReminderScreen(onBack: () -> Unit) {
                                     // 强制唤起一次流体云: 走真实 FluidCloudService 渲染管线
                                     // (同一通知 ID / 同一 vendor 分支), 用示例课程 2 分钟窗口,
                                     // 让用户当场验证岛/胶囊是否出现, 不用等课前窗口。
-                                    FilledTonalButton(
-                                        onClick = {
-                                            try {
-                                                androidx.core.content.ContextCompat.startForegroundService(
-                                                    context,
-                                                    Intent(
-                                                        context,
-                                                        com.lingion.sleepy.widget.notification.FluidCloudService::class.java
-                                                    ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
+                                    var testing by remember { mutableStateOf(false) }
+                                    if (testing) {
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 10.dp)
+                                                .clip(SleepyTheme.fieldShape)
+                                        ) {
+                                            // 左半: 投放中状态 (不可交互)
+                                            Box(
+                                                modifier = Modifier
+                                                    .weight(1f)
+                                                    .background(colors.surfaceContainerHighest)
+                                                    .padding(vertical = 12.dp)
+                                                    .semantics(mergeDescendants = true) {
+                                                        role = Role.Image
+                                                        contentDescription = "流体云投放中"
+                                                    },
+                                                contentAlignment = Alignment.Center
+                                            ) {
+                                                Text(
+                                                    text = stringResource(R.string.reminder_fluid_test_status_casting),
+                                                    color = colors.onSurfaceVariant,
+                                                    style = MaterialTheme.typography.bodyMedium
                                                 )
-                                                Toast.makeText(
-                                                    context,
-                                                    R.string.reminder_fluid_test_started,
-                                                    Toast.LENGTH_SHORT
-                                                ).show()
-                                            } catch (t: Throwable) {
-                                                android.util.Log.w("ReminderScreen", "fluid test start failed", t)
                                             }
-                                        },
-                                        modifier = Modifier
-                                            .fillMaxWidth()
-                                            .padding(top = 10.dp)
-                                    ) {
-                                        Text(stringResource(R.string.reminder_fluid_test_button))
+                                            // 右半: 结束投放按钮
+                                            Button(
+                                                onClick = {
+                                                    try {
+                                                        context.startService(
+                                                            Intent(context, com.lingion.sleepy.widget.notification.FluidCloudService::class.java)
+                                                                .setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_STOP)
+                                                        )
+                                                        testing = false
+                                                    } catch (t: Throwable) {
+                                                        android.util.Log.w("ReminderScreen", "fluid test stop failed", t)
+                                                        testing = false
+                                                        Toast.makeText(
+                                                            context,
+                                                            R.string.reminder_fluid_test_stop_failed,
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
+                                                },
+                                                modifier = Modifier.weight(1f),
+                                                colors = ButtonDefaults.buttonColors(containerColor = colors.primary)
+                                            ) {
+                                                Text(stringResource(R.string.reminder_fluid_test_stop_button))
+                                            }
+                                        }
+                                    } else {
+                                        FilledTonalButton(
+                                            onClick = {
+                                                try {
+                                                    androidx.core.content.ContextCompat.startForegroundService(
+                                                        context,
+                                                        Intent(
+                                                            context,
+                                                            com.lingion.sleepy.widget.notification.FluidCloudService::class.java
+                                                        ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
+                                                    )
+                                                    Toast.makeText(
+                                                        context,
+                                                        R.string.reminder_fluid_test_started,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                    testing = true
+                                                } catch (t: Throwable) {
+                                                    android.util.Log.w("ReminderScreen", "fluid test start failed", t)
+                                                    Toast.makeText(
+                                                        context,
+                                                        R.string.reminder_fluid_test_start_failed,
+                                                        Toast.LENGTH_SHORT
+                                                    ).show()
+                                                }
+                                            },
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(top = 10.dp)
+                                        ) {
+                                            Text(stringResource(R.string.reminder_fluid_test_button))
+                                        }
                                     }
                                     reliabilitySnapshot?.let { snapshot ->
                                         Column(
