@@ -399,12 +399,11 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 bodyTop, gapH.toFloat(), slotH, rowWeights, rowIndex)
             /** 单行内容高 (px) — 交叉验证 blocker #1 两表模型: 长课间折权只拉长边界
              *  (rowTop/分隔线), 内容高恒 slotH — 卡片/表头卡不吃空隙, 空白落在卡后。 */
-            @Suppress("UNUSED_PARAMETER") fun rowHeightPx(i: Int): Float = slotH
-            /** 跨行卡高 (px) = Σ 行高 + 节间 gap×(step-1) — 权重化 span, 替代 slotH*step。 */
+            fun rowContentHeightPx(): Float = slotH
+            /** 跨行卡高 (px) = step×slotH + 节间 gap×(step-1) — 不含折入空隙。 */
             fun spanHeightPx(startIdx: Int, step: Int): Float {
-                var acc = 0f
-                for (r in startIdx until (startIdx + step).coerceAtMost(maxNode)) acc += rowHeightPx(r)
-                return (acc + gapH * (step - 1)).coerceAtLeast(1f)
+                val rows = (startIdx + step).coerceAtMost(maxNode) - startIdx
+                return (slotH * rows + gapH * (rows - 1)).coerceAtLeast(1f)
             }
             val mealBreakBands = mealBreakAfterRows.mapNotNull { row ->
                 if (row !in 0 until maxNode - 1) return@mapNotNull null
@@ -489,7 +488,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
             val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
             val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
-                        // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
+
+            // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
             val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
             // 三行卡片几何 — 与 PeriodHeaderCellContent / SingleTimeHeadCell 共享同一事实来源。
             // PERIOD_HEADER_CARD_PAD_DP (3dp) 与预览/周视图逐层相等 (用户 2026-09-28 令)。
@@ -571,7 +571,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         showX = widgetHeaderShowX && isSingleNode
                     )
                     val cardInnerW = (timeW - 2f * cardPadPx).coerceAtLeast(1f)
-                    val cardInnerH = (rowHeightPx(i - 1) - 2f * cardPadPx).coerceAtLeast(1f)
+                    val cardInnerH = (rowContentHeightPx() - 2f * cardPadPx).coerceAtLeast(1f)
                     // 单位契约: PeriodHeaderAdaptiveFont 输入输出是 sp 语义(Compose 侧 .sp 渲染),
                     // Canvas Paint.textSize 是 px 语义 → 必须 px/density 入参、sp→px 出参。
                     // dp 字面量数值≈sp 禁再除 density (2026-09-30 修单位 bug)。
@@ -603,7 +603,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     // 卡片自适应元素矩形,不要用轨道宽度撑出空白)。
                     val cardW = (placement.contentWidth + 2f * cardPadPx).coerceAtLeast(1f)
                     // 外框覆盖整行，3dp 只属于卡片内部 padding（与预览/SingleTimeHeadCell 相同）。
-                    val cardH = rowHeightPx(i - 1).coerceAtLeast(1f)
+                    val cardH = rowContentHeightPx().coerceAtLeast(1f)
                     val cardLeft = (centerX - cardW / 2f)
                     val cardTop = rowY
                     // 卡片底色(surfaceContainerLow 圆角 8dp,与 SingleTimeHeadCell 同款)
@@ -639,7 +639,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     c.drawText(end, baseX + placement.timeBaseLeft, endBaseline, p)
                 } else {
                     // Legacy remains the compact two-line grid header.
-                    val rowH = rowHeightPx(i - 1)
+                    val rowH = rowContentHeightPx()
                     p.color = fgOnSurface
                     p.textSize = (rowH * 0.40f).coerceAtMost(dp(13f).toFloat()).coerceAtLeast(dp(8f).toFloat())
                     p.typeface = Typeface.create(Typeface.DEFAULT, Typeface.BOLD)
