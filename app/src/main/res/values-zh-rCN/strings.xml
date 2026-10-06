@@ -705,6 +705,10 @@
     <string name="reminder_fluid_go_to_settings">去设置</string>
     <string name="reminder_fluid_test_button">流体云测试</string>
     <string name="reminder_fluid_test_started">流体云测试已发送, 查看通知栏顶部卡片</string>
+    <string name="reminder_fluid_test_status_casting">投放中</string>
+    <string name="reminder_fluid_test_stop_button">结束投放</string>
+    <string name="reminder_fluid_test_start_failed">流体云测试启动失败，请重试</string>
+    <string name="reminder_fluid_test_stop_failed">流体云测试停止失败，请重试</string>
     <string name="reminder_fluid_test_course">测试课程</string>
     <string name="reminder_fluid_test_room">测试地点</string>
     <string name="reminder_reliability_title">后台可靠性</string>
