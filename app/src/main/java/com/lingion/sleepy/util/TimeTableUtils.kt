@@ -1,6 +1,7 @@
 package com.lingion.sleepy.util
 
 import com.lingion.sleepy.data.entity.BreakOption
+import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.DurationOption
 import com.lingion.sleepy.data.entity.SmartPeriodConfig
 import com.lingion.sleepy.data.entity.TimeTableEntity
@@ -525,6 +526,60 @@ object TimeTableUtils {
     fun appendEmptyRow(rows: List<TimeSlotRow>): List<TimeSlotRow> {
         val nextNode = (rows.maxOfOrNull { it.node } ?: 0) + 1
         return rows + TimeSlotRow(nextNode, "", "")
+    }
+
+    /**
+     * 节次行重排 — 拖拽排序的唯一变换出口。
+     *
+     * 不变量(必须保持, 否则存盘即丢排序): 返回值第 i 行的 node == i+1。
+     * 下游 remapCourseNodes / updateTableRemappingCourses 全部 sortedBy { it.node }
+     * 定位节次, JSON 又原样写 node — 只挪列表不重编号的话, 重新 parse+sort 后
+     * 顺序回到老样子, 拖了等于没拖。
+     */
+    fun reorderTimeSlotRows(rows: List<TimeSlotRow>, fromIndex: Int, toIndex: Int): List<TimeSlotRow> {
+        if (fromIndex !in rows.indices || toIndex !in rows.indices || fromIndex == toIndex) return rows
+        val moved = rows.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+        return moved.mapIndexed { i, row -> row.copy(node = i + 1) }
+    }
+
+    fun isTimeSlotOrderValid(rows: List<TimeSlotRow>): Boolean {
+        var previous: LocalTime? = null
+        rows.forEach { row ->
+            if (row.start.isBlank() && row.end.isBlank()) return@forEach
+            val start = runCatching { LocalTime.parse(row.start) }.getOrNull() ?: return false
+            val end = runCatching { LocalTime.parse(row.end) }.getOrNull() ?: return false
+            if (start >= end || (previous != null && start < previous)) return false
+            previous = start
+        }
+        return true
+    }
+
+    /**
+     * 拖拽落点是否合法。两层防呆:
+     *  1) 时间序 — 填了起止的行按 start 非降序; 空白行豁免(所以新建未填的节能拖到任意位);
+     *  2) 多节次课连续性 — 跨 step 节的课不能因为节次被打乱而被拆散。
+     *
+     * 显式排列表而非复用 reorderTimeSlotRows 的输出: 后者已按新位序重编号,
+     * 拿它自映射会得到恒等置换, 连续性校验静默变成永真。课程的 startNode 说的是
+     * **旧** node 号, 必须经"旧 node → 新 node"的置换后再判连续。
+     */
+    fun canReorderTimeSlot(rows: List<TimeSlotRow>, fromIndex: Int, toIndex: Int, courses: List<CourseEntity> = emptyList()): Boolean {
+        if (fromIndex !in rows.indices || toIndex !in rows.indices) return false
+        if (!isTimeSlotOrderValid(reorderTimeSlotRows(rows, fromIndex, toIndex))) return false
+        if (fromIndex == toIndex) return true
+        val permutation = (rows.indices).toList().let { order ->
+            order.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
+        }
+        // permutation[旧索引] = 新索引; 旧 node = 旧索引+1 → 新 node = 新索引+1
+        val oldNodeToNewNode = rows.indices.associateWith { permutation[it] + 1 }
+        return courses.none { course ->
+            if (course.ownTime || course.step <= 1) return@none false
+            val mapped = (course.startNode until (course.startNode + course.step)).mapNotNull { oldNodeToNewNode[it] }
+            val minMapped = mapped.minOrNull()
+            val maxMapped = mapped.maxOrNull()
+            mapped.size == course.step && minMapped != null && maxMapped != null &&
+                mapped.toSet() != (minMapped..maxMapped).toSet()
+        }
     }
 
     /**
