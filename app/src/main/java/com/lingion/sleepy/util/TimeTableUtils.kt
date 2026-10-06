@@ -571,7 +571,8 @@ object TimeTableUtils {
             order.toMutableList().apply { add(toIndex, removeAt(fromIndex)) }
         }
         // permutation[旧索引] = 新索引; 旧 node = 旧索引+1 → 新 node = 新索引+1
-        val oldNodeToNewNode = rows.indices.associateWith { permutation[it] + 1 }
+        // map key 用 1-based node 号, 跟 CourseEntity.startNode 同一坐标系
+        val oldNodeToNewNode = rows.indices.associate { (it + 1) to (permutation[it] + 1) }
         return courses.none { course ->
             if (course.ownTime || course.step <= 1) return@none false
             val mapped = (course.startNode until (course.startNode + course.step)).mapNotNull { oldNodeToNewNode[it] }
