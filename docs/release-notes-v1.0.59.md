@@ -72,11 +72,12 @@ The unit-test step piped Gradle into `tail`, so the job read `tail`'s exit code 
 - Unit tests: `:app:testDebugUnitTest` — 2,440 tests, 0 failures, 0 errors, 0 skipped.
 - Lint: `:app:lintDebug` — 0 errors, 488 warnings (pre-existing baseline; no new errors introduced by this range).
 - Build: `:app:assembleRelease` succeeded. `versionName` 1.0.59, `versionCode` 10059, confirmed in `output-metadata.json` for all four variants.
-- APK SHA-256 and sizes (local verification build, JDK 17.0.18 / Gradle 9.3.1):
-  - `app-arm64-v8a-release.apk`: `f34cbd6904cc247bafb940a79f87ec732297aa2d47e13216e527dfd281934a19` (3,790,421 bytes)
-  - `app-armeabi-v7a-release.apk`: `7894bb2957c136d62f735711a6c8d3f26ea8798657343e0cfa94b49f35378148` (3,787,729 bytes)
-  - `app-x86_64-release.apk`: `cc9b8a689482591f788249fb78da30918a02f6b99c5d243753a8f6e776db8453` (3,789,527 bytes)
-  - `app-universal-release.apk`: `b6fa0fb5e4e630843bc85bbb0e7980089b6bce15634e4cfb6405e286b73898c6` (3,888,357 bytes)
+- APK SHA-256 and sizes (published CI build, JDK 17.0.18 / Gradle 9.3.1):
+  - `app-arm64-v8a-release.apk`: `cdb3e1226b26dea35e14a6af710377bd29a6cf82a31eb2e90dccda27ce8a490b` (3,790,421 bytes)
+  - `app-armeabi-v7a-release.apk`: `e3303345ab8e0700bc2ccecd9d954888349cfff57ef99625ec4ce937b9ca2dbc` (3,787,729 bytes)
+  - `app-x86_64-release.apk`: `0f61a90a90514271b3b33936f464ad1ee65054499350d1a9d35e0dc20a37130b` (3,789,527 bytes)
+  - `app-universal-release.apk`: `2bf979d64f11e62e07bb0edceaf30030d4abf23b120650f6b9950bbfb17249a3` (3,888,357 bytes)
+  - A local rebuild produced byte-identical sizes but different digests (Android APK signing embeds build timestamps and is not byte-reproducible); the digests above are the published assets and are what you should verify your download against.
 - Baseline §12: 17 checks reviewed. Code-level items verified by the suite above; the device-only items (physical navigation gestures, real-device font scale, vendor live cards, widget interaction, alarm re-scheduling after reboot) were not executed — no physical device was attached to this build.
 
 ---
@@ -155,9 +156,10 @@ The unit-test step piped Gradle into `tail`, so the job read `tail`'s exit code 
 - 单元测试：`:app:testDebugUnitTest` — 2,440 个用例，0 失败，0 错误，0 跳过。
 - Lint：`:app:lintDebug` — 0 error，488 warning（历史存量基线；本范围未新增 error）。
 - 构建：`:app:assembleRelease` 成功。四个变体的 `output-metadata.json` 均确认 `versionName` 1.0.59、`versionCode` 10059。
-- APK SHA-256 与体积（本地验证构建，JDK 17.0.18 / Gradle 9.3.1）：
-  - `app-arm64-v8a-release.apk`：`f34cbd6904cc247bafb940a79f87ec732297aa2d47e13216e527dfd281934a19`（3,790,421 字节）
-  - `app-armeabi-v7a-release.apk`：`7894bb2957c136d62f735711a6c8d3f26ea8798657343e0cfa94b49f35378148`（3,787,729 字节）
-  - `app-x86_64-release.apk`：`cc9b8a689482591f788249fb78da30918a02f6b99c5d243753a8f6e776db8453`（3,789,527 字节）
-  - `app-universal-release.apk`：`b6fa0fb5e4e630843bc85bbb0e7980089b6bce15634e4cfb6405e286b73898c6`（3,888,357 字节）
+- APK SHA-256 与体积（已发布 CI 构建，JDK 17.0.18 / Gradle 9.3.1）：
+  - `app-arm64-v8a-release.apk`：`cdb3e1226b26dea35e14a6af710377bd29a6cf82a31eb2e90dccda27ce8a490b`（3,790,421 字节）
+  - `app-armeabi-v7a-release.apk`：`e3303345ab8e0700bc2ccecd9d954888349cfff57ef99625ec4ce937b9ca2dbc`（3,787,729 字节）
+  - `app-x86_64-release.apk`：`0f61a90a90514271b3b33936f464ad1ee65054499350d1a9d35e0dc20a37130b`（3,789,527 字节）
+  - `app-universal-release.apk`：`2bf979d64f11e62e07bb0edceaf30030d4abf23b120650f6b9950bbfb17249a3`（3,888,357 字节）
+  - 本地重新构建得到完全相同的字节数但不同的摘要（Android APK 签名内嵌构建时间戳，非字节可复现）；以上摘要即已发布资产，请以它们校验你下载的 APK。
 - 基线 §12：17 条逐条过。代码层项由上述测试套件验证；需要实机的项（实体机返回手势、真机字体缩放、厂商实况卡片、小组件交互、重启后闹钟重排）本次未执行——本次构建未接实体设备。
