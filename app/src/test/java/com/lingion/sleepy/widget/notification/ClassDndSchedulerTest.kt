@@ -125,4 +125,31 @@ class ClassDndSchedulerTest {
         assertNull(ClassDndScheduler.courseInterval(today, ownCourse("10:00", "10:00"), emptyList()))
         assertNull(ClassDndScheduler.courseInterval(today, ownCourse("10:00", "09:00"), emptyList()))
     }
+
+    // ==================== savedFilter 字段契约 (applyDnd 离开恢复依赖) ====================
+
+    @org.junit.Before
+    fun resetDndState() {
+        // 隔离跨测试状态 — savedFilter 是 companion @Volatile 字段, 真实 enter/leave
+        // 行为需要 fake NotificationManager, 这里只锁 reset 钩子 + 默认值契约。
+        ClassDndScheduler.resetSavedFilterForTest()
+    }
+
+    @Test
+    fun `savedFilter 默认 ALL — 未进入过 DND 时离开恢复到系统初始值`() {
+        assertEquals(
+            android.app.NotificationManager.INTERRUPTION_FILTER_ALL,
+            ClassDndScheduler.savedFilter
+        )
+    }
+
+    @Test
+    fun `resetSavedFilterForTest 把 savedFilter 复位到 ALL`() {
+        ClassDndScheduler.savedFilter = android.app.NotificationManager.INTERRUPTION_FILTER_ALARMS
+        ClassDndScheduler.resetSavedFilterForTest()
+        assertEquals(
+            android.app.NotificationManager.INTERRUPTION_FILTER_ALL,
+            ClassDndScheduler.savedFilter
+        )
+    }
 }

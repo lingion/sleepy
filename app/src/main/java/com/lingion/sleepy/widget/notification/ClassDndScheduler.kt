@@ -43,6 +43,29 @@ class ClassDndScheduler(private val context: Context) {
         const val RC_END = 7702
         internal const val WINDOW_DAYS = 7L
 
+        /**
+         * 用户进入 DND 前的 filter 快照; 离开时恢复。进程级单例字段 —
+         * ClassDndScheduler 每次 new 实例 (Receiver/syncFromPrefs), 用 companion
+         * 字段避开实例字段被 fresh instance 覆盖导致状态丢失的问题。默认 ALL
+         * (系统初始值); 进入时若当前已是 NONE 不覆盖 (避免把"我们刚设的 NONE"
+         * 当 saved, 下次 leave 时反而恢复到 NONE 而不是用户原状态)。
+         */
+        @Volatile
+        internal var savedFilter: Int = android.app.NotificationManager.INTERRUPTION_FILTER_ALL
+
+        /** 单例 IO scope — syncFromPrefs / ClassDndReceiver 共用, 避免每次 new SupervisorJob */
+        private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+
+        /** Receiver 入口 — 在共享 scope 上启动 rebuildAlarms, 串行化避开并发 race */
+        fun launchRebuildFromReceiver(appContext: Context) {
+            scope.launch { ClassDndScheduler(appContext).rebuildAlarms() }
+        }
+
+        /** 测试钩子 — 重置 savedFilter 到默认 ALL, 隔离测试间状态 */
+        internal fun resetSavedFilterForTest() {
+            savedFilter = android.app.NotificationManager.INTERRUPTION_FILTER_ALL
+        }
+
         /** 当前时刻是否处于某节课区间 [start, end) 内。 */
         internal fun isCurrentlyInClass(
             intervals: List<Pair<LocalDateTime, LocalDateTime>>,
@@ -102,9 +125,8 @@ class ClassDndScheduler(private val context: Context) {
     /** 开关入口 (ReminderScreen/BootReceiver 调): 开 → 重排; 关 → 取消并恢复。 */
     fun syncFromPrefs() {
         if (AppPrefs.isClassDndEnabled(context)) {
-            kotlinx.coroutines.CoroutineScope(
-                kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO
-            ).launch { rebuildAlarms() }
+            // 用 companion scope 替代每次 new SupervisorJob, 减少并发 race 与 GC 压力
+            scope.launch { rebuildAlarms() }
         } else {
             disableAndRestore()
         }
@@ -160,7 +182,9 @@ class ClassDndScheduler(private val context: Context) {
 
     /**
      * 勿扰切换; 需"通知策略访问"权限, 未授权静默跳过。
-     * 用户手动改过勿扰 (filter 非预期值) 时进入/恢复都跳过, 不跟人抢方向盘。
+     * 进入前快照用户 filter, 离开时恢复 saved — 保护 PRIORITY / ALARMS 等
+     * 非 ALL 用户档位不被"下课恢复成 ALL"误覆盖 (issue#audit PR103 over-restore)。
+     * 离开时若 DND 已不在 (用户手动改走), 不抢方向盘, 让用户自己的选择生效。
      */
     fun applyDnd(enter: Boolean) {
         val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return
@@ -168,9 +192,18 @@ class ClassDndScheduler(private val context: Context) {
         val am = context.getSystemService(Context.AUDIO_SERVICE) as AudioManager
         if (enter) {
             if (am.ringerMode != AudioManager.RINGER_MODE_NORMAL) return // 用户已手动静音/振动
+            // 进入前快照用户原 filter (跳过 NONE — 不把"我们刚设的 NONE"误存为 saved)
+            val current = nm.currentInterruptionFilter
+            if (current != android.app.NotificationManager.INTERRUPTION_FILTER_NONE) {
+                savedFilter = current
+            }
             nm.setInterruptionFilter(android.app.NotificationManager.INTERRUPTION_FILTER_NONE)
         } else {
-            nm.setInterruptionFilter(android.app.NotificationManager.INTERRUPTION_FILTER_ALL)
+            // 离开时只在我们"自己进的 DND 还在"时恢复 saved — 若用户已手动改走
+            // (currentInterruptionFilter != NONE), 不抢方向盘, 让用户自己改的值生效
+            if (nm.currentInterruptionFilter == android.app.NotificationManager.INTERRUPTION_FILTER_NONE) {
+                nm.setInterruptionFilter(savedFilter)
+            }
         }
     }
 }
@@ -182,12 +215,8 @@ class ClassDndScheduler(private val context: Context) {
 class ClassDndReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
         if (!AppPrefs.isClassDndEnabled(context)) return
-        // 校准+重排查库 — 挪出主线程防 ANR, 同 BeforeClassScheduleReceiver 模式
-        val app = context.applicationContext
-        kotlinx.coroutines.CoroutineScope(
-            kotlinx.coroutines.SupervisorJob() + kotlinx.coroutines.Dispatchers.IO
-        ).launch {
-            ClassDndScheduler(app).rebuildAlarms()
-        }
+        // 校准+重排查库 — 挪出主线程防 ANR; 通过 companion 暴露的 launch 复用单例 scope,
+        // 避免每次 alarm 触发都 new SupervisorJob + 减少并发 race
+        ClassDndScheduler.launchRebuildFromReceiver(context.applicationContext)
     }
 }
