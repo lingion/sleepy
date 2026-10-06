@@ -772,6 +772,7 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="reminder_fluid_field_room">Ubicación</string>
     <string name="reminder_fluid_field_teacher">Profesor</string>
     <string name="reminder_fluid_field_time">Hora</string>
+    <string name="reminder_fluid_field_countdown">Cuenta atrás</string>
     <string name="reminder_fluid_fields">Contenido principal de la cápsula</string>
     <string name="reminder_fluid_fields_hint">Elige un campo de visualización principal</string>
     <string name="reminder_fluid_note">Toca la notificación para expandir los detalles del curso. Si se muestra como Nube Fluida / Súper Isla depende del sistema del teléfono, los permisos de notificación y la elegibilidad del servicio del fabricante.</string>
@@ -786,6 +787,9 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="reminder_fluid_test_button">Prueba de tarjeta en vivo</string>
     <string name="reminder_fluid_test_started">Tarjeta de prueba enviada; revisa la parte superior del panel de notificaciones</string>
     <string name="reminder_fluid_test_course">Clase de prueba</string>
+    <string name="fluid_coloros_countdown">En %1$d min</string>
+    <string name="fluid_coloros_capsule">%1$d min</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d′</string>
     <string name="reminder_fluid_test_room">Aula de prueba</string>
     <string name="reminder_reliability_title">Fiabilidad en segundo plano</string>
     <string name="reminder_reliability_notification">Notificaciones: %1$s</string>

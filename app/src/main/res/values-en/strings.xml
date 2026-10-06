@@ -782,6 +782,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_field_room">Location</string>
     <string name="reminder_fluid_field_teacher">Teacher</string>
     <string name="reminder_fluid_field_time">Time</string>
+    <string name="reminder_fluid_field_countdown">Countdown</string>
     <string name="reminder_fluid_fields">Capsule Primary Content</string>
     <string name="reminder_fluid_fields_hint">Choose a primary display field</string>
     <string name="reminder_fluid_note">Tap the notification to expand course details. Whether it appears as Fluid Cloud / Super Island depends on the phone system, notification permissions, and manufacturer service eligibility.</string>
@@ -796,6 +797,9 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_test_button">Live update test</string>
     <string name="reminder_fluid_test_started">Test card posted — check the top of your notification shade</string>
     <string name="reminder_fluid_test_course">Test course</string>
+    <string name="fluid_coloros_countdown">Starts in %1$d min</string>
+    <string name="fluid_coloros_capsule">%1$d min</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d′</string>
     <string name="reminder_fluid_test_room">Test room</string>
     <string name="reminder_reliability_title">Background reliability</string>
     <string name="reminder_reliability_notification">Notifications: %1$s</string>

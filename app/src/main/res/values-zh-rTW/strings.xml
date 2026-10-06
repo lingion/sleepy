@@ -768,6 +768,7 @@
     <string name="reminder_tomorrow_toggle_sub">前一天晚上推送明日課程摘要</string>
     <string name="reminder_fluid_field_name">課程名稱</string>
     <string name="reminder_fluid_field_room">上課地點</string>
+    <string name="reminder_fluid_field_countdown">倒數計時</string>
     <string name="reminder_fluid_field_teacher">任課老師</string>
     <string name="reminder_fluid_field_time">上課時間</string>
     <string name="reminder_fluid_fields">膠囊主顯示內容</string>
@@ -784,6 +785,9 @@
     <string name="reminder_fluid_test_button">流體雲測試</string>
     <string name="reminder_fluid_test_started">流體雲測試已傳送, 查看通知欄頂部卡片</string>
     <string name="reminder_fluid_test_course">測試課程</string>
+    <string name="fluid_coloros_countdown">%1$d 分鐘後上課</string>
+    <string name="fluid_coloros_capsule">%1$d 分鐘後</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
     <string name="reminder_fluid_test_room">測試地點</string>
     <string name="reminder_reliability_title">背景可靠性</string>
     <string name="reminder_reliability_notification">通知權限：%1$s</string>

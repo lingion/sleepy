@@ -23,6 +23,8 @@ class FluidCloudService : Service() {
     private var room = ""
     private var teacher = ""
     private var startTime = ""
+    private var endTime = ""
+    private var startNode = 0
     private var notifyEpoch = 0L
     private var classEpoch = 0L
     private var updateSequence = 0
@@ -47,6 +49,8 @@ class FluidCloudService : Service() {
             room = getString(R.string.reminder_fluid_test_room)
             teacher = ""
             startTime = android.text.format.DateFormat.format("HH:mm", now + TEST_WINDOW_MS).toString()
+            endTime = android.text.format.DateFormat.format("HH:mm", now + TEST_WINDOW_MS + 45 * 60_000L).toString()
+            startNode = 1
             notifyEpoch = now
             classEpoch = now + TEST_WINDOW_MS
         } else {
@@ -54,6 +58,8 @@ class FluidCloudService : Service() {
             room = intent?.getStringExtra("room").orEmpty().ifBlank { getString(R.string.default_room) }
             teacher = intent?.getStringExtra("teacher").orEmpty()
             startTime = intent?.getStringExtra("startTime").orEmpty()
+            endTime = intent?.getStringExtra("endTime").orEmpty()
+            startNode = intent?.getIntExtra("startNode", 0) ?: 0
             notifyEpoch = intent?.getLongExtra("notifyEpoch", 0L) ?: 0L
             classEpoch = intent?.getLongExtra("classEpoch", 0L) ?: 0L
         }
@@ -104,7 +110,9 @@ class FluidCloudService : Service() {
             notifyEpoch = notifyEpoch,
             classEpoch = classEpoch,
             nowEpoch = now,
-            updateSequence = updateSequence
+            updateSequence = updateSequence,
+            endTime = endTime,
+            startNode = startNode
         )
         val contentIntent = PendingIntent.getActivity(
             this,

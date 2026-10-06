@@ -238,6 +238,13 @@ class CourseNotificationScheduler(private val context: Context) {
             val classStart = today.atTime(h, m)
             val notifyTime = classStart.minusMinutes(minutes.toLong())
             val epoch = notifyTime.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            // 下课时间: ColorOS 流体云正文 "HH:mm - HH:mm" 用
+            val endTimeStr = if (course.ownTime && course.endTime.isNotBlank()) {
+                course.endTime
+            } else {
+                nodes.find { it.node == course.startNode + course.step - 1 }
+                    ?.let { String.format("%02d:%02d", it.end.hour, it.end.minute) }
+            }.orEmpty()
 
             android.util.Log.d("CourseScheduler", "course=${course.id} start=$classStart notify=$notifyTime epoch=$epoch now=$now")
             if (epoch <= now) {
@@ -250,6 +257,8 @@ class CourseNotificationScheduler(private val context: Context) {
                 putExtra("room", course.room)
                 putExtra("teacher", course.teacher)
                 putExtra("startTime", String.format("%02d:%02d", h, m))
+                putExtra("endTime", endTimeStr)
+                putExtra("startNode", course.startNode)
                 putExtra("notifyEpoch", epoch)
                 putExtra("classEpoch", classStart.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli())
             }
@@ -312,11 +321,16 @@ class CourseNotificationScheduler(private val context: Context) {
         val p = st.split(":")
         val classStart = today.atTime(p[0].toInt(), p[1].toInt()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val notifyEpoch = classStart - minutes * 60_000L
+        val endTimeStr = if (hit.ownTime && hit.endTime.isNotBlank()) hit.endTime
+            else nodes.find { it.node == hit.startNode + hit.step - 1 }
+                ?.let { String.format("%02d:%02d", it.end.hour, it.end.minute) }.orEmpty()
         val svc = Intent(app, FluidCloudService::class.java).apply {
             putExtra("courseName", hit.courseName)
             putExtra("room", hit.room.ifBlank { app.getString(R.string.default_room) })
             putExtra("teacher", hit.teacher)
             putExtra("startTime", st)
+            putExtra("endTime", endTimeStr)
+            putExtra("startNode", hit.startNode)
             putExtra("notifyEpoch", notifyEpoch)
             putExtra("classEpoch", classStart)
         }
@@ -550,6 +564,8 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 putExtra("room", roomStr)
                 putExtra("teacher", teacher)
                 putExtra("startTime", startTime)
+                putExtra("endTime", intent.getStringExtra("endTime").orEmpty())
+                putExtra("startNode", intent.getIntExtra("startNode", 0))
                 putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
                 putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
             }

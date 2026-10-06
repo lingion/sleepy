@@ -684,7 +684,8 @@ fun ReminderScreen(onBack: () -> Unit) {
                                             listOf(
                                                 "name" to R.string.reminder_fluid_field_name,
                                                 "time" to R.string.reminder_fluid_field_time,
-                                                "room" to R.string.reminder_fluid_field_room
+                                                "room" to R.string.reminder_fluid_field_room,
+                                                "countdown" to R.string.reminder_fluid_field_countdown
                                             ).forEach { (key, labelRes) ->
                                                 DropdownMenuItem(
                                                     text = { Text(stringResource(labelRes)) },
@@ -1025,6 +1026,7 @@ private fun fluidPrimaryLabel(context: android.content.Context, primary: String)
         when (primary) {
             "name" -> R.string.reminder_fluid_field_name
             "time" -> R.string.reminder_fluid_field_time
+            "countdown" -> R.string.reminder_fluid_field_countdown
             else -> R.string.reminder_fluid_field_room
         }
     )

@@ -772,6 +772,7 @@
     <string name="reminder_fluid_field_room">教室</string>
     <string name="reminder_fluid_field_teacher">担当教員</string>
     <string name="reminder_fluid_field_time">時刻</string>
+    <string name="reminder_fluid_field_countdown">カウントダウン</string>
     <string name="reminder_fluid_fields">カプセルメイン表示内容</string>
     <string name="reminder_fluid_fields_hint">メイン表示内容を選択</string>
     <string name="reminder_fluid_note">通知をタップすると授業詳細を展開できます。Fluid Cloud / Super Island として表示されるかどうかは、スマホのシステム、通知権限、メーカーのサービス資格によって決まります。</string>
@@ -786,6 +787,9 @@
     <string name="reminder_fluid_test_button">ライブ更新テスト</string>
     <string name="reminder_fluid_test_started">テストカードを投稿しました。通知シェード上部を確認してください</string>
     <string name="reminder_fluid_test_course">テスト授業</string>
+    <string name="fluid_coloros_countdown">%1$d分後に開始</string>
+    <string name="fluid_coloros_capsule">%1$d分後</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
     <string name="reminder_fluid_test_room">テスト教室</string>
     <string name="reminder_reliability_title">バックグラウンドの信頼性</string>
     <string name="reminder_reliability_notification">通知権限：%1$s</string>

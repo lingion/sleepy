@@ -105,6 +105,7 @@ object VendorLiveCardRenderer {
         val primaryText = when (primary) {
             "name" -> state.courseName
             "time" -> state.startTime
+            "countdown" -> context.getString(R.string.fluid_coloros_capsule, state.minutesLeft)
             else -> state.room
         }.ifBlank { state.courseName }
 
@@ -117,21 +118,41 @@ object VendorLiveCardRenderer {
             AppPrefs.isDarkMode(context, isSystemDark)
         ).primary.toArgb()
 
+        val isColorOs = vendor == LiveCardVendor.OPPO ||
+            vendor == LiveCardVendor.ONEPLUS ||
+            vendor == LiveCardVendor.REALME
+
         val builder = NotificationCompat.Builder(context, channelId)
             .setSmallIcon(R.drawable.ic_notification_time)
             .setColor(themePrimaryArgb)
             .setContentTitle(state.courseName)
-            .setContentText(state.detailText)
-            .setSubText(state.room)
-            .setProgress(100, state.progress, false)
-            .setStyle(progressStyleFor(state.progress))
             .setOngoing(true)
             .setRequestPromotedOngoing(true)
             .setSilent(true)
             .setOnlyAlertOnce(true)
             .setCategory(NotificationCompat.CATEGORY_PROGRESS)
             .setContentIntent(contentIntent)
-            .setShortCriticalText(primaryText.take(7))
+
+        if (isColorOs) {
+            // ColorOS 流体云: ProgressStyle 渲染底部倒计时进度条; 正文行 =
+            // "HH:mm - HH:mm | 教室 | 老师", 灰色副行 = "N 分钟后上课";
+            // 胶囊短文本跟随"胶囊主显示内容"设置。小图标 = 倒计时进度环(随 15s 刷新推进)。
+            val countdown = context.getString(R.string.fluid_coloros_countdown, state.minutesLeft)
+            builder
+                .setContentText(state.colorOsDetailText)
+                .setSubText(countdown)
+                .setProgress(100, state.progress, false)
+                .setStyle(progressStyleFor(state.progress))
+                .setShortCriticalText(primaryText.take(7))
+            progressRingIcon(state.progress)?.let { builder.setSmallIcon(it) }
+        } else {
+            builder
+                .setContentText(state.detailText)
+                .setSubText(state.room)
+                .setProgress(100, state.progress, false)
+                .setStyle(progressStyleFor(state.progress))
+                .setShortCriticalText(primaryText.take(7))
+        }
 
         when (vendor) {
             // Xiaomi/HyperOS: v1.0.56 parity — the shared construction above already
@@ -150,6 +171,38 @@ object VendorLiveCardRenderer {
             else -> Unit
         }
         return builder.build()
+    }
+
+    /**
+     * 倒计时进度环小图标: 底环用低透明度、进度弧用全不透明 —— 系统对 small icon
+     * 只取 alpha 通道着色, 因此渲染出"暗环 + 亮弧"的进度环效果。
+     * FluidCloudService 每 15s 重发通知 → 环每 15s 前进一格。
+     */
+    private fun progressRingIcon(progress: Int): androidx.core.graphics.drawable.IconCompat? {
+        return try {
+            val size = 96
+            val bmp = android.graphics.Bitmap.createBitmap(size, size, android.graphics.Bitmap.Config.ARGB_8888)
+            val canvas = android.graphics.Canvas(bmp)
+            val paint = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply {
+                style = android.graphics.Paint.Style.STROKE
+                strokeWidth = 12f
+                strokeCap = android.graphics.Paint.Cap.ROUND
+            }
+            val inset = 12f
+            val oval = android.graphics.RectF(inset, inset, size - inset, size - inset)
+            // 底环(暗)
+            paint.color = -0x67000000 // alpha ~152
+            canvas.drawArc(oval, 0f, 360f, false, paint)
+            // 进度弧(亮), 从 12 点顺时针
+            val sweep = 360f * progress.coerceIn(0, 100) / 100f
+            if (sweep > 1f) {
+                paint.color = -0x1 // opaque
+                canvas.drawArc(oval, -90f, sweep, false, paint)
+            }
+            androidx.core.graphics.drawable.IconCompat.createWithBitmap(bmp)
+        } catch (_: Throwable) {
+            null
+        }
     }
 
     // ---------------------------------------------------------------------------

@@ -687,6 +687,7 @@
     <string name="reminder_fluid_field_name">课程名称</string>
     <string name="reminder_fluid_field_time">上课时间</string>
     <string name="reminder_fluid_field_room">上课地点</string>
+    <string name="reminder_fluid_field_countdown">倒计时</string>
     <string name="reminder_fluid_field_teacher">任课老师</string>
     <string name="reminder_fluid_note">点击通知后可展开课程详情。具体是否显示为流体云/超级岛由手机系统、通知权限和厂商服务资格决定。</string>
     <string name="reminder_experimental_tag">实验</string>
@@ -700,6 +701,9 @@
     <string name="reminder_fluid_test_button">流体云测试</string>
     <string name="reminder_fluid_test_started">流体云测试已发送, 查看通知栏顶部卡片</string>
     <string name="reminder_fluid_test_course">测试课程</string>
+    <string name="fluid_coloros_countdown">%1$d 分钟后上课</string>
+    <string name="fluid_coloros_capsule">%1$d 分钟后</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
     <string name="reminder_fluid_test_room">测试地点</string>
     <string name="reminder_reliability_title">后台可靠性</string>
     <string name="reminder_reliability_notification">通知权限：%1$s</string>
