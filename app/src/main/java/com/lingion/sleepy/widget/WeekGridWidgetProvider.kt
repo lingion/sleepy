@@ -224,6 +224,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val unifiedCourseBg = scheme.secondaryContainer.toIntArgb()
             val showSeparators  = AppPrefs.isGridShowSeparators(context)
             val longBreakSpacing = AppPrefs.isGridLongBreakSpacing(context)
+            // legacy 隐藏时间行开关: timeW 在布局段先于表头绘制读取, 提前读一次。
+            val widgetHeaderHideTime = AppPrefs.isPeriodHeaderHideTime(context)
             val colorless       = AppPrefs.isWidgetColorless(context)
 
             // v23: 课程颜色完全对齐 CourseTableView — 黄金角 HSL 分配
@@ -247,10 +249,16 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             } else emptyMap()
             // 长课间留白 redesign (用户 2026-10-05): 空隙分钟折进"餐段前一行"权重,
             // 时间轴按分钟比例拉长背景 — 与 Compose 网格同一 expandWeightsForLongBreaks。
+            // 小组件不可滚动 → boundaryWeights 进 slotH 分母, body 边界恒定。
+            val breakUnit: Map<Int, Int> = if (longBreakSpacing) allSlots.mapIndexedNotNull { i, s ->
+                val m = java.time.Duration.between(s.start, s.end).toMinutes().toInt()
+                if (m > 0) i to m else null
+            }.toMap() else emptyMap()
             val rowWeights = TimetableViewportPolicy.expandWeightsForLongBreaks(
                 List(maxNode) { 1f },
                 mealBreakMinutes.keys,
                 mealBreakMinutes,
+                breakUnitMinutes = breakUnit,
                 periodMinutes = 45,
                 enabled = longBreakSpacing,
             )
@@ -272,7 +280,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // 改成: cap 降到 dp(13f), min 升到 dp(10f), 文字宽度永远 < dayW - padding
             val outerPad = dp(6f)
             val headH = dp(56f)
-            val timeW = dp(40f)
+            // legacy 隐藏时间行: 仅节次标签, 列宽缩至 36dp(与 CourseTableView 36dp*1 同源)。
+            val timeW = if (widgetHeaderHideTime) dp(36f) else dp(40f)
             val gapH = dp(1.5f)
             val gapW = dp(2.5f)
 
@@ -388,8 +397,9 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val bodyTop = y
             fun rowTop(rowIndex: Int): Float = weekGridRowTopPx(
                 bodyTop, gapH.toFloat(), slotH, rowWeights, rowIndex)
-            /** 单行内容高 (px) — 长课间行按权重拉长 (用户 2026-10-05)。 */
-            fun rowHeightPx(i: Int): Float = slotH * rowWeights.getOrElse(i) { 1f }
+            /** 单行内容高 (px) — 交叉验证 blocker #1 两表模型: 长课间折权只拉长边界
+             *  (rowTop/分隔线), 内容高恒 slotH — 卡片/表头卡不吃空隙, 空白落在卡后。 */
+            @Suppress("UNUSED_PARAMETER") fun rowHeightPx(i: Int): Float = slotH
             /** 跨行卡高 (px) = Σ 行高 + 节间 gap×(step-1) — 权重化 span, 替代 slotH*step。 */
             fun spanHeightPx(startIdx: Int, step: Int): Float {
                 var acc = 0f
@@ -479,8 +489,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val widgetHeaderStyle = AppPrefs.getPeriodHeaderStyle(context)
             val widgetHeaderHanging = AppPrefs.getPeriodHeaderHanging(context).coerceIn(-1f, 1f)
             val widgetHeaderShowX = AppPrefs.isPeriodHeaderShowX(context)
-            val widgetHeaderHideTime = AppPrefs.isPeriodHeaderHideTime(context)
-            // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
+                        // §4.4 颜色池 — 显式补 surfaceContainerLow,旧链漏导 → 卡片底色硬用 surfaceContainer,时间列卡片与预览色不一致。
             val bgSurfaceLow = scheme.surfaceContainerLow.toIntArgb()
             // 三行卡片几何 — 与 PeriodHeaderCellContent / SingleTimeHeadCell 共享同一事实来源。
             // PERIOD_HEADER_CARD_PAD_DP (3dp) 与预览/周视图逐层相等 (用户 2026-09-28 令)。
@@ -519,7 +528,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 PeriodHeaderAdaptiveFont.forColumn(
                     cardWidthSp = (timeW - 2f * cardPadPx).coerceAtLeast(1f) / density,
                     // 整列统一字号取最矮行 — 权重化后最矮行 = slotH × 最小权重 (用户 2026-09-29 令)。
-                    cardHeightSp = (slotH * (rowWeights.minOrNull() ?: 1f) - 2f * cardPadPx)
+                    cardHeightSp = (slotH - 2f * cardPadPx)
                         .coerceAtLeast(1f) / density,
                     rows = rows,
                 )

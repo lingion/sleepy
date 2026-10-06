@@ -102,7 +102,7 @@ class WidgetDegradationLadderTest {
         // 小组件不可滚动 → 权重同折进 slotH 分母, body 边界恒不变。
         val (bodyA, slotA) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12)
         val weights = com.lingion.sleepy.util.TimetableViewportPolicy.expandWeightsForLongBreaks(
-            List(12) { 1f }, setOf(3), mapOf(3 to 45), 45, enabled = true)
+            List(12) { 1f }, setOf(3), mapOf(3 to 45), periodMinutes = 45, enabled = true)
         val (bodyB, slotB) = WeekGridWidgetProvider.weekGridBodyGeomPx(
             1200, 2f, 12, totalWeight = weights.sum())
         assertEquals("body 边界不受开关影响", bodyA, bodyB)
