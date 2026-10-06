@@ -79,6 +79,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.widget.WidgetTableResolver
 import com.lingion.sleepy.widget.notification.BackgroundReliabilityProbe
 import com.lingion.sleepy.widget.notification.BackgroundReliabilitySnapshot
+import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import com.lingion.sleepy.widget.notification.ReminderTransportState
 import com.lingion.sleepy.widget.notification.VendorCapabilityState
 import com.lingion.sleepy.widget.notification.VendorLiveNotificationCapability
@@ -316,7 +317,7 @@ fun ReminderScreen(onBack: () -> Unit) {
         val v = minutesInput.toIntOrNull()?.coerceIn(1, 999) ?: return@LaunchedEffect
         beforeClassMinutes = v
         AppPrefs.setBeforeClassMinutes(context, v)
-        SleepyApp.get().notificationScheduler.scheduleAll()
+        ReminderRescheduler.request()
     }
 
     // Permission launcher — NOT one-shot, can be re-triggered by clicking toggle again
@@ -326,7 +327,7 @@ fun ReminderScreen(onBack: () -> Unit) {
         if (granted) {
             masterEnabled = true
             AppPrefs.setReminderEnabled(context, true)
-            SleepyApp.get().notificationScheduler.scheduleAll()
+            ReminderRescheduler.request()
         } else {
             // Permission denied → revert to off
             masterEnabled = false
@@ -341,7 +342,7 @@ fun ReminderScreen(onBack: () -> Unit) {
             // Pre-Android 13: permission auto-granted at install
             masterEnabled = true
             AppPrefs.setReminderEnabled(context, true)
-            SleepyApp.get().notificationScheduler.scheduleAll()
+            ReminderRescheduler.request()
         }
     }
 
@@ -374,7 +375,7 @@ fun ReminderScreen(onBack: () -> Unit) {
             if (alreadyGranted) {
                 masterEnabled = true
                 AppPrefs.setReminderEnabled(context, true)
-                SleepyApp.get().notificationScheduler.scheduleAll()
+                ReminderRescheduler.request()
             } else {
                 requestNotificationPermission()
             }
@@ -481,7 +482,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { enabled ->
                                     dailyEnabled = enabled
                                     AppPrefs.setDailyReminderEnabled(context, enabled)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = colors.onPrimary,
@@ -499,7 +500,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { enabled ->
                                     todayEnabled = enabled
                                     AppPrefs.setTodayReminderEnabled(context, enabled)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             ReminderTimeRow(
@@ -521,7 +522,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { enabled ->
                                     tomorrowEnabled = enabled
                                     AppPrefs.setTomorrowReminderEnabled(context, enabled)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             ReminderTimeRow(
@@ -568,7 +569,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { on ->
                                     beforeClassEnabled = on
                                     AppPrefs.setBeforeClassEnabled(context, on)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = colors.onPrimary,
@@ -632,7 +633,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = {
                                     bannerEnabled = it
                                     AppPrefs.setBeforeClassBannerEnabled(context, it)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             SubDivider()
@@ -644,7 +645,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = {
                                     fluidEnabled = it
                                     AppPrefs.setBeforeClassFluidEnabled(context, it)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             if (fluidEnabled) {
@@ -692,7 +693,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                                     onClick = {
                                                         fluidPrimary = key
                                                         AppPrefs.setBeforeClassFluidPrimary(context, key)
-                                                        SleepyApp.get().notificationScheduler.scheduleAll()
+                                                        ReminderRescheduler.request()
                                                         fieldsMenuExpanded = false
                                                     },
                                                     leadingIcon = {
@@ -941,7 +942,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                     AppPrefs.setTomorrowReminderTime(context, newTime)
                                 }
                             }
-                            SleepyApp.get().notificationScheduler.scheduleAll()
+                            ReminderRescheduler.request()
                             timePickerTarget = null
                         },
                         dismissText = stringResource(R.string.action_cancel),

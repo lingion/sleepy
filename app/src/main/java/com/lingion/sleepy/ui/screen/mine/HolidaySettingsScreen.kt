@@ -77,6 +77,7 @@ import com.lingion.sleepy.util.HolidayEntry
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.HolidayRange
 import com.lingion.sleepy.util.HolidayRangeOps
+import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -140,7 +141,7 @@ fun HolidaySettingsScreen(
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch {
                 try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app) } catch (_: Throwable) {}
                 try {
-                    (app as? com.lingion.sleepy.SleepyApp)?.notificationScheduler?.scheduleAll()
+                    ReminderRescheduler.request()
                 } catch (_: Throwable) {}
             }
         }
