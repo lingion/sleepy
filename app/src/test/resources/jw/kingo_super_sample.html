@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Kingosoft Super (新青果 super) 测试样本 — 反编译 smali 反推合规 HTML</title>
+<!--
+  KingosoftSuperParser 合规 fixture — wakeup-parity-kingo-super-2026-10-06 SOP v1.11
+  ⚠️ 非真实学校样本, 按 docs/wakeup-parity-kingo-super-2026-10-06/findings.json 的
+     decompiled_kotlin 字段反推的合规 HTML, 同时命中 4 链降级:
+       链 1 (o0oOOo): div.xkinfo + &nbsp; + <br>
+       链 2 (o00O0OO): table thead 中文表头 (课程/学分/教师/地点/周次/节次/单双周)
+       链 3 (oo0oOO0): div.kbDiv 布局
+       链 4: TaskActivity JS grid (现有 kingo 入口, 不变)
+  + 8 个 regex_invariants (super 独有, 见 findings.json):
+    INV-HTML-FRAG-SPLIT    — <head>|</head> split
+    INV-NBSP-CLEANUP       — (&nbsp;)+ 清理 (链 1 用)
+    INV-CN-HEADER-LEXICON  — 中文表头 (链 2 用)
+    INV-DAY-DICT           — 周X/星期X → 1-7 (含 日→天)
+    INV-WEEKS-PARSE        — 逗号 + 横杠 + 单/双
+    INV-SECTIONS-RANGE     — "第1-2节" → [1, 2]
+    INV-NO-SECTION-TIME-MAP — 无时间字面量 (HH:MM 格式)
+    INV-ERROR-AGGREGATE    — 全链失败 → errorList.joinToString()
+-->
+<header>Kingosoft Super fixture v1.0 — by docs/wakeup-parity-kingo-super-2026-10-06</header>
+</head>
+<body>
+<!-- ==================== 链 1: o0oOOo 老 div (xkinfo + NBSP + <br>) ==================== -->
+<div class="mytable" id="o0oOOo-table">
+  <div class="xkinfo">
+    高等数学
+    <br>&nbsp;&nbsp;&nbsp;周一&nbsp;编号&nbsp;1-16周
+    <br>&nbsp;&nbsp;&nbsp;第1-2节
+    <br>张三
+    <br>博学楼A-101
+  </div>
+</div>
+<br>
+
+<!-- ==================== 链 2: o00O0OO 标准 (thead 中文表头) ==================== -->
+<table border="1" id="o00O0OO-table">
+  <thead>
+    <tr>
+      <th>日期</th>
+      <th>课程</th>
+      <th>学分</th>
+      <th>教师</th>
+      <th>地点</th>
+      <th>周次</th>
+      <th>节次</th>
+      <th>单双周</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>周二</td>
+      <td>大学物理</td>
+      <td>3</td>
+      <td>李四</td>
+      <td>物理楼-201</td>
+      <td>1-16</td>
+      <td>3-4节</td>
+      <td></td>
+    </tr>
+    <tr>
+      <td>周四</td>
+      <td>英语</td>
+      <td>2</td>
+      <td>王五</td>
+      <td>外语楼-101</td>
+      <td>1-16</td>
+      <td>5-6节</td>
+      <td>单</td>
+    </tr>
+  </tbody>
+</table>
+<br>
+
+<!-- ==================== 链 3: oo0oOO0 新版 (kbDiv div 布局) ==================== -->
+<div class="kbDiv" id="oo0oOO0-div">
+  <div>数据结构 周三 第3-4节 教工-301 1-16周</div>
+</div>
+<br>
+
+<!-- ==================== 链 4: TaskActivity JS grid (现有 kingo 入口) ==================== -->
+<script>
+var activity = null;
+var courseName = '算法设计';
+activity = new TaskActivity('算法设计', '赵老师', '理科楼-B101', '1010101010101010101010101010101010101010101010101010101010101010101010');
+index = 2 * unitCount + 4;
+activity.index = index;
+table0.marshalTable();
+</script>
+
+</body>
+</html>
