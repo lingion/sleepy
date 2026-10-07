@@ -88,6 +88,14 @@ class HfutEams5DatumChainContractTest {
     }
 
     @Test
+    fun `v3 chain extracts selected semester option before get-data`() {
+        val js = js()
+        assertTrue("must inspect selected semester option", js.contains("var extractedSemester = extractSemesterId(html)"))
+        assertTrue("must read selected option value", js.contains("selectedValue = options[oi].match"))
+        assertTrue("must send extracted semester to get-data", js.contains("var sem = extractedSemester"))
+    }
+
+    @Test
     fun `v2 datum error message keeps original prefix`() {
         // 反馈截图错误串 'POST schedule-table/datum 失败 HTTP 500' 的前缀必须保留, 便于用户比对
         assertTrue(js().contains("POST schedule-table/datum 失败 HTTP ' + r.status"))

@@ -1648,6 +1648,19 @@ private const val EAMS5_FETCH_JS = """
       return;
     }
     var PREFIX = '__EAMS5_PREFIX__';
+    // 合工大当前课表页把当前学期放在 #allSemesters 的 selected option 中，
+    // 而不是写成 semesterId=...；没有它时 get-data 会返回 500 (issue #46).
+    var extractSemesterId = function(source) {
+      var options = source.match(/<option\b[^>]*>/gi) || [];
+      for (var oi = 0; oi < options.length; oi++) {
+        if (!/\bselected(?:\s*=\s*["']?selected["']?)?\b/i.test(options[oi])) continue;
+        var selectedValue = options[oi].match(/\bvalue\s*=\s*["']?(\d+)/i);
+        if (selectedValue) return selectedValue[1];
+      }
+      var explicit = source.match(/semesterId\s*[=:]\s*["']?(\d+)/i);
+      if (explicit) return explicit[1];
+      return null;
+    };
     // 1) GET course-table 拿 studentId (Cookie 已带)。
     //    fetch 默认跟随重定向: 已登录 → /for-std/course-table 重定向到
     //    /for-std/course-table/info/<studentId>, 页面 HTML <script> 段里有
@@ -1660,6 +1673,7 @@ private const val EAMS5_FETCH_JS = """
     })
     .then(function(ctx){
       var html = ctx.html || '';
+      var extractedSemester = extractSemesterId(html);
       // 检测会话失效: 最终 URL 含 /login (302 落到登录页)
       if (ctx.finalUrl.indexOf('/login') >= 0 || ctx.finalUrl.indexOf('login?') >= 0) {
         window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'登录态已失效,请在教务主页重新登录后再试'}));
@@ -1687,9 +1701,8 @@ private const val EAMS5_FETCH_JS = """
         if (m) sid = m[1];
       }
       if (!sid) return null;
-      // semesterId 若本页 script 段带就顺手拿 (get-data 查询参数), 拿不到留空由 info 页兜底
-      var sem = html.match(/semesterId\s*[=:]\s*['"]?(\d+)/);
-      return {studentId: sid, semesterId: sem ? sem[1] : ''};
+      var sem = extractedSemester;
+      return {studentId: sid, semesterId: sem || ''};
     })
     .then(function(ctx){
       if (!ctx) {
@@ -1707,10 +1720,7 @@ private const val EAMS5_FETCH_JS = """
         if (infoHtml) {
           var bm = infoHtml.match(/bizTypeId\s*[=:]\s*['"]?(\d+)/);
           if (bm) biz = bm[1];
-          if (!sem) {
-            var sm = infoHtml.match(/semesterId\s*[=:]\s*['"]?(\d+)/);
-            if (sm) sem = sm[1];
-          }
+          if (!sem) sem = extractSemesterId(infoHtml);
         }
         // 3) get-data 拿 lessonIds[]; 任一环失败 → ids 留空数组 = v1 旧行为兜底
         var q = '/for-std/course-table/get-data?bizTypeId=' + biz + '&dataId=' + sid;
