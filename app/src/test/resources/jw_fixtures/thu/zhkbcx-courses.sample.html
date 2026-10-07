@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>清华大学 - 整体课表</title></head>
+<body>
+<form action="/syxk.vsyxkKcapb.do" method="post">
+<input type="hidden" name="p_xnxq" value="2024-2025-1" />
+<input type="hidden" name="pathContent" value="整体课表" />
+</form>
+
+<script>
+function setInitValue() {
+    // ---- 课程 1: 高等数学, 周一第1大节 (big=1, day=1) → 节点 1-2 ----
+    strHTML = "";
+    strHTML += "<a class='mainHref' href='/syxk.vsyxkKcapb.do;12345678'>";
+    strHTML += "<b>高等数学</b>";
+    strHTML1 = "";
+    strHTML1 += "；张三";
+    strHTML1 += "；必修";
+    strHTML1 += "；前八周";
+    strHTML1 += "；六教6A201";
+    getElementById('a1_1').innerHTML += strHTML;
+
+    // ---- 课程 2: 大学物理, 周三第2大节 (big=2, day=3) → 节点 3-5 ----
+    strHTML = "";
+    strHTML += "<a class='mainHref' href='/syxk.vsyxkKcapb.do;23456789'>";
+    strHTML += "<b>大学物理</b>";
+    strHTML1 = "";
+    strHTML1 += "；李四";
+    strHTML1 += "；限选";
+    strHTML1 += "；全周";
+    strHTML1 += "；主楼401";
+    getElementById('a2_3').innerHTML += strHTML;
+
+    // ---- 课程 3: 英语, 周五第5大节 (big=5, day=5) → 节点 10-11 ----
+    strHTML = "";
+    strHTML += "<a class='mainHref' href='/syxk.vsyxkKcapb.do;34567890'>";
+    strHTML += "<b>英语</b>";
+    strHTML1 = "";
+    strHTML1 += "；王五";
+    strHTML1 += "；必修";
+    strHTML1 += "；单周";
+    strHTML1 += "；三教305";
+    getElementById('a5_5').innerHTML += strHTML;
+
+    // ---- 课程 4: 体育, 周二第3大节 (big=3, day=2) → 节点 6-7 ----
+    strHTML = "";
+    strHTML += "<a class='mainHref' href='/syxk.vsyxkKcapb.do;45678901'>";
+    strHTML += "<b>体育</b>";
+    strHTML1 = "";
+    strHTML1 += "；赵六";
+    strHTML1 += "；必修";
+    strHTML1 += "；双周";
+    strHTML1 += "；操场";
+    getElementById('a3_2').innerHTML += strHTML;
+
+    // ---- 课程 5: 数据结构, 周四第3大节 (big=3, day=4) → 节点 6-7, 第3-15周(单) ----
+    strHTML = "";
+    strHTML += "<a class='mainHref' href='/syxk.vsyxkKcapb.do;56789012'>";
+    strHTML += "<b>数据结构</b>";
+    strHTML1 = "";
+    strHTML1 += "；孙七";
+    strHTML1 += "；限选";
+    strHTML1 += "；第3-15周（单）";
+    strHTML1 += "；主楼510";
+    getElementById('a3_4').innerHTML += strHTML;
+}
+Event.observe(window, 'load', setInitValue);
+</script>
+</body>
+</html>

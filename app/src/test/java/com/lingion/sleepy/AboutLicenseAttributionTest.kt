@@ -292,6 +292,11 @@ class AboutLicenseAttributionTest {
         Attribution("linling-zy/kust-schedule", "Apache-2.0"),
         Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
+        // 清华大学 THU (2026-10-06 SOP cross-verified, 4 仓 POSITIVE 共识 + 2 仓 NEGATIVE + 1 仓 NULL_EVIDENCE)
+        Attribution("Starrah/THUCourseHelper", "MIT"),
+        Attribution("piggyham/thu_timetable", ""),
+        Attribution("BistuSchedule", ""),
+        Attribution("AdoreCN", ""),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
