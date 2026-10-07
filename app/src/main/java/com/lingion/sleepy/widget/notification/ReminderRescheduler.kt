@@ -28,11 +28,17 @@ object ReminderRescheduler {
     private var action: (suspend () -> Unit)? = null
     private var debounceMs: Long = 300L
 
-    /** 注册重排动作与防抖窗口; 重复调用覆盖 (幂等键为调用方语义, 仅 app 启动调用一次)。 */
+    /** 注册重排动作与防抖窗口; 重复调用覆盖 (幂等键为调用方语义, 仅 app 启动调用一次)。
+     *  替换 action 时取消 in-flight pending Job, 防止旧 action 在新 action 已替换后仍执行一次
+     *  (极端时序: 旧 action 已过 delay 进入 runCatching → init 替换 → 旧 action 仍跑)。
+     *  生产路径只调一次 (SleepyApp.onCreate), 此 guard 主要是测试场景的兜底。
+     */
     @Synchronized
     fun init(debounceMs: Long = 300L, action: suspend () -> Unit) {
         this.debounceMs = debounceMs
         this.action = action
+        pending?.cancel()
+        pending = null
     }
 
     /** 请求一次重排; 静默窗口内的后续请求并入同一批。init 前调用静默丢弃。 */

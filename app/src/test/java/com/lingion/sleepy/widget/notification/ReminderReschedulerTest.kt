@@ -64,4 +64,22 @@ class ReminderReschedulerTest {
         delay(200)
         assertEquals(2, count)
     }
+
+    @Test
+    fun `init 替换时取消 in-flight pending — 旧 action 不再执行`() = runBlocking {
+        var first = 0
+        var second = 0
+        // 80ms 防抖窗口 — 给 init 替换留出足够时间窗口
+        ReminderRescheduler.init(debounceMs = 80) { first++ }
+        ReminderRescheduler.request() // first 进入 80ms 防抖延迟
+        delay(20) // 在延迟中段
+        // 替换 action + 取消 in-flight pending — 旧 first 不再触发
+        ReminderRescheduler.init(debounceMs = 40) { second++ }
+        delay(200) // 等旧 first delay 跑完
+        assertEquals("first 不应执行 (被 init 取消)", 0, first)
+        // init 替换不发起 request, 验证 init 没破坏后续 request 链路:
+        ReminderRescheduler.request()
+        delay(200)
+        assertEquals("second 在 init 后 request 应执行", 1, second)
+    }
 }
