@@ -542,6 +542,22 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "NWUPL: dream2333/NWUPL-Pure-EMS (间接协议旁证)\nLIXIN: classic EAMS 采集形态（未复制代码）\nKMUST: linling-zy/kust-schedule (间接协议旁证, Apache-2.0)\nNUIT: 3056810551/nuit-class-schedule (直接字段旁证, 未复制代码)"
     ),
     PerSchoolEntry(
+        "school-ecupl-super", "华东政法大学 ECUPL Super (3-parser 调度器, 2026-10 SOP cross-verified)",
+        "OpenWakeUp EcuplParser.kt (LonelyMarch, AGPL-3.0, 主参考 - ECUPLParser / o00000O0 双轨 + Super 调度器状态机)\n" +
+            "WakeUp ECUPLSuperParser.smali (YZune, Apache-2.0, smali 616 行反编译产物)\n" +
+            "WakeUp_SHU smali dump (ershiyidian, ECUPLParser$1 + ECUPLSuperParser$1 双旁证)\n" +
+            "wisedu-unified-login-api (zimo0o0omiz, MIT, Wisedu 通用族协议上下文)\n" +
+            "HEU-Wisedu (only9464, MIT, 同族 SKZC bitmap 周次拆段印证)"
+    ),
+    PerSchoolEntry(
+        "school-ecupl", "华东政法大学 ECUPL (HTML 双表 5 列, 2026-10 SOP cross-verified)",
+        "WakeUp ECUPLParser.java (YZune, 29 ⭐, 主参考 - smali 反编译 565 指令状态机)\n" +
+            "wisedu-unified-login-api (zimo0o0omiz, 148 ⭐, Wisedu 启发)\n" +
+            "HEU-Wisedu (only9464, 63 ⭐, Go 启发)\n" +
+            "neu_wisedu2wakeup (CreamPig233, 24 ⭐, WakeUp 协议互通启发)\n" +
+            "bh-mobile-sdk (wisedu, 12 ⭐, Wisedu 微应用框架启发)"
+    ),
+    PerSchoolEntry(
         "school-hzcu", "浙大城市学院 HZCU",
         "用户采集包实锤 zf_new 协议 (新正方 zftal-ui-v5 裸 /kbcx/ 路径, SSO /sso/ddlogin 专用入口, issue #90)\n" +
             "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +

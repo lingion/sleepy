@@ -146,6 +146,18 @@ object JwProtocol {
     const val TYPE_YETHAN = "yethan"
 
     /**
+     * 华东政法大学 (ECUPL) 主协议 (ECUPLParser)。
+     * 协议指纹: HTML 双 .listTable + 5 列模糊匹配 + bitmap 拆周次, 10 invariants。
+     */
+    const val TYPE_ECUPL = "ecupl"
+
+    /** 华东政法大学 ECUPL Script 变体 (ECUPLScriptParser)。R5/R6/R7 3 chain + RE whitespace tolerance。 */
+    const val TYPE_ECUPL_SCRIPT = "ecupl_script"
+
+    /** 华东政法大学 ECUPL Super fallback 调度器 (ECUPLSuperParser)。merge-dedupe by name|teacher|startNode。 */
+    const val TYPE_ECUPL_SUPER = "ecupl_super"
+
+    /**
      * 合肥工业大学教务 (金智 EAMS5, eams5-student 系列, jxglstu.hfut.edu.cn)。
      * WebView 内 fetch 三段 (CAS→course-table→lessons→POST schedule-table/datum) 拿课表 JSON。
      * 上游协议形态: Chiu-xaH/HFUT-Schedule (MIT) 全链路参考。
@@ -295,6 +307,9 @@ object JwProtocol {
         TYPE_SUDA_POST -> "苏大教务"
         TYPE_CUMTB -> "矿大 EAMS5"
         TYPE_XJU_POST -> "西交/新疆大学教务"
+        TYPE_ECUPL -> "华东政法大学 (ECUPL)"
+        TYPE_ECUPL_SCRIPT -> "华东政法大学 (ECUPL Script)"
+        TYPE_ECUPL_SUPER -> "华东政法大学 (ECUPL 调度器)"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
         TYPE_CHAOXING -> "超星综合教务"
