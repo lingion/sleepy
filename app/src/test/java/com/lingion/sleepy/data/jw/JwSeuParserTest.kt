@@ -166,4 +166,36 @@ class JwSeuParserTest {
         val courses = JwSeuParser("""{"data":{"nested":1}}""").generateCourseList()
         assertTrue(courses.isEmpty())
     }
+
+    @Test
+    fun `v2 wrapped format parses correctly`() {
+        // v2 WebView fetch 返回的包装格式: { "datas": { "xskcb": { "rows": [...] } } }
+        val v2Response = """
+            {
+              "datas": {
+                "xskcb": {
+                  "rows": [
+                    {
+                      "KCM": "数据结构",
+                      "SKJS": "张老师",
+                      "JASMC": "教一楼301",
+                      "SKXQ": 3,
+                      "KSJC": 3,
+                      "JSJC": 4,
+                      "ZCMC": "1-16周"
+                    }
+                  ]
+                }
+              }
+            }
+        """.trimIndent()
+        val courses = JwSeuParser(v2Response).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("数据结构", courses[0].name)
+        assertEquals("张老师", courses[0].teacher)
+        assertEquals("教一楼301", courses[0].room)
+        assertEquals(3, courses[0].day)
+        assertEquals(3, courses[0].startNode)
+        assertEquals(4, courses[0].endNode)
+    }
 }

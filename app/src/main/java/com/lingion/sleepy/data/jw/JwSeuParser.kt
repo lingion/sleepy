@@ -9,14 +9,15 @@ import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * 东南大学教务（正方 URP 系, newxk.urp.seu.edu.cn）课表 JSON 解析器。
+ * 东南大学教务（正方 URP 系, ehall.seu.edu.cn/jwapp 网关）课表 JSON 解析器。
  *
  * 适配学校：东南大学。
  * 与 [JwCquParser] / [JwEams5Parser] 同类：source 不是 HTML，而是课表 JSON 数组（用户粘入或
  * WebView fetch 拿到）。本 parser 接收纯 JSON 数组字符串，JSON 解析 + 字段映射一次性完成。
  *
- * 数据来源（v1：用户粘入 JSON；v2：WebView fetch 注入，与合工大 CQU 同模式）：
- *   端点：`https://newxk.urp.seu.edu.cn/...`（v1 不自动抓，用户粘入 JSON 数组）
+ * 数据来源：
+ *   - v1（用户粘入）：直接 JSON 数组 `[ {...}, {...} ]`
+ *   - v2（WebView fetch）：ehall.seu.edu.cn/jwapp 网关返回 { "datas": { "xskcb": { "rows": [...] } } }
  *
  * 字段映射（SEU JSON → JwCourse）：
  *   KCM 课程名   → name
@@ -29,11 +30,11 @@ import kotlinx.serialization.json.jsonPrimitive
  *   KCH  课程号   → 不映射（Sleepy 无 note 字段）
  *   JXBQH 教学班群号 → 不映射
  *
- * v1 限制：
+ * v1 → v2 升级：
  *   1. ZCMC 串解析支持三形态：范围 "1-16周"、单/双周 "1-10周(单)"、离散 "2,4,6周"
  *   2. 离散周逐个 emit JwCourse（type=0 每周）
  *   3. 单/双周 emit 一条 JwCourse（type=1 单周 / type=2 双周）
- *   4. 无 v1 自动抓取：依赖用户粘入 JSON 或 v2 WebView fetch JS
+ *   4. v2 支持自动抓取：WebView fetch JS 注入 ehall.seu.edu.cn/jwapp 网关获取课表
  *
  * 外部佐证：sakimidare/SEUTimetable (Apache-2.0) TableParserUtils.kt parseWeekRange 算法
  * 参考 —— 代码自写（仅复用解析思路，类型签名与字段映射自定）。
@@ -47,13 +48,18 @@ class JwSeuParser(source: String) : JwParser(source) {
             json.parseToJsonElement(source.trim())
         }.getOrNull() ?: return emptyList()
 
-        // 形状不符 (root 标量 / data 非数组) 返回 emptyList 走 0 课路径 —
-        // 显式 type 分发下 jsonPrimitive.jsonObject 抛 IAE 会把可恢复的
-        // "形状不对" 升级成用户可见解析失败报错 (同批 NEU/USTC/ZJU 全是
-        // as? 安全转换, 此处对齐)
+        // 支持两种数据格式：
+        //   1. 直接数组（v1 用户粘入）：[ {...}, {...} ]
+        //   2. 包装对象（v2 WebView fetch）：{ "datas": { "xskcb": { "rows": [...] } } }
         val arr: JsonArray = when (root) {
             is JsonArray -> root
-            is JsonObject -> root["data"] as? JsonArray ?: return emptyList()
+            is JsonObject -> {
+                // 尝试多层解包: datas -> xskcb -> rows
+                val datas = root["datas"]?.jsonObject
+                val xskcb = datas?.get("xskcb")?.jsonObject
+                val rows = xskcb?.get("rows") as? JsonArray
+                rows ?: root["data"] as? JsonArray ?: return emptyList()
+            }
             else -> return emptyList()
         }
 

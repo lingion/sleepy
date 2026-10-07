@@ -442,6 +442,12 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, NEU_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 东南大学（ehall.seu.edu.cn/jwapp 网关）：课表在 wdkb 模块 JSON API 中，
+                    // 页面 HTML 不含课程数据，需主动取学期和课表详情。
+                    if (school.type == JwProtocol.TYPE_SEU) {
+                        evaluateFetchWithTimeout(wv, SEU_FETCH_JS)
+                        return@CaptureBar
+                    }
                     if (school.type == JwProtocol.TYPE_NUIT) {
                         evaluateFetchWithTimeout(wv, NUIT_FETCH_JS)
                         return@CaptureBar
@@ -1108,7 +1114,6 @@ private val YETHAN_FALLBACK_PERIODS: List<Pair<String, String>> = listOf(
     "20:20" to "21:05",   // 第12节
     "21:10" to "21:55",   // 第13节
 )
-
 /**
  * CQU (重庆大学门户 my.cqu.edu.cn) 协议：在 WebView 内 fetch 课表 JSON + 抓节次时间。
  *
