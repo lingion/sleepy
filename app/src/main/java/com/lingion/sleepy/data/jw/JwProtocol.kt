@@ -69,6 +69,13 @@ object JwProtocol {
     /** WakeUp 西交/新疆大学 POST 课表变体。 */
     const val TYPE_XJU_POST = "xju_post"
 
+    /**
+     * WakeUp SCAU (华南农业大学) 自建教务协议。
+     * 协议指纹: table[border=1][bordercolor=#000000] + td[valign=top] + <br> split, 13 invariants。
+     * wakeup-parity-5-protocol-2026-10-06 SOP v1.11 §3。
+     */
+    const val TYPE_SCAU = "scau"
+
 
     /**
      * 重庆大学自建统一门户 my.cqu.edu.cn（REST API + Bearer token，非 HTML 解析）。
@@ -272,6 +279,7 @@ object JwProtocol {
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST,
+        TYPE_SCAU,
     )
 
     fun displayName(type: String?): String = when (type) {
@@ -295,6 +303,7 @@ object JwProtocol {
         TYPE_SUDA_POST -> "苏大教务"
         TYPE_CUMTB -> "矿大 EAMS5"
         TYPE_XJU_POST -> "西交/新疆大学教务"
+        TYPE_SCAU -> "华南农业大学 (SCAU)"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
         TYPE_CHAOXING -> "超星综合教务"
@@ -327,7 +336,8 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST -> "other"
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST,
+        TYPE_SCAU -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"

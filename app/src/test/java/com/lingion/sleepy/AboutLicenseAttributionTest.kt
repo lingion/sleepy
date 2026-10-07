@@ -292,6 +292,12 @@ class AboutLicenseAttributionTest {
         Attribution("linling-zy/kust-schedule", "Apache-2.0"),
         Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
+        // 华南农业大学 SCAU 新增致谢 (2026-10-06 SOP cross-verified, 5 仓 INDIRECT 旁证, 5 仓新增致谢)
+        Attribution("N0B0d7-rzddn/SCAU-course-tool", ""),
+        Attribution("CberYellowstone/Course-Hunter-SCAU", ""),
+        Attribution("Weather174/SCAU-Course-Assistant", ""),
+        Attribution("ToMo517/Scau_Course_bot-main", ""),
+        Attribution("visionyimian/scau_class_table", ""),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
