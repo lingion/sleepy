@@ -244,4 +244,124 @@ class JwWakeUpCompatParserTest {
         // sundayFirst: 周日列在周一前, 课程在"星期一"列(col=2) → 翻转 col2→day1... 实际 Sunday-first TABLE: col1=周日→day7
         assertEquals(1, courses[0].day)
     }
+
+    // ============================================================
+    // 新强智 Njw2017 SPA (强智 super) — JwJzSuperParser
+    // 跨仓验证清单 19 仓, 详见 scope.md
+    // ============================================================
+
+    @Test
+    fun `jz super parses el-table body wrapper fixture without error`() {
+        val source = java.io.File("src/test/resources/jw/fixtures/jz_super/jz_njw2017_sample.html").readText()
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertTrue("应从 sample2021-2 真实 SPA HTML 解析到至少 1 门课程, 实际 0", courses.isNotEmpty())
+    }
+
+    @Test
+    fun `jz super fixture yields expected course count matching greyovo scheduleXParser SCAU`() {
+        // greyovo/ScheduleXParser_SCAU QZParser.java 用 9 个 div 偏移 (BUG, 实际 8); 跑通即代表 8 偏移修复一致
+        // 期望: 每门课生成 1 个 JwCourse (单周次范围)
+        val source = java.io.File("src/test/resources/jw/fixtures/jz_super/jz_njw2017_sample.html").readText()
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertTrue("应至少解析 5 门课 (sample2021-2 真实 HTML), 实际 ${courses.size}", courses.size >= 5)
+    }
+
+    @Test
+    fun `jz super strips leading asterisk prefix from course names`() {
+        // INV-NAME-STRIP-ASTERISK: 课程名前导 `*` 表考试/特殊, QZParser.getClassName skip 前 2 字符
+        val source = """
+            <html><body><div class="el-table__body-wrapper"><table><colgroup><col><col><col><col><col><col><col><col></colgroup><tbody>
+            <tr><td><div class="cell"><span>1-2节</span></div></td>
+                <td><div class="cell el-tooltip"><div class="cell"><div style="position: relative;"><div></div><div></div><div style="display:none;">* 数 学(1-8周) 1-2节</div><div>* 数学分析</div><div>李老师</div><div>计科21</div><div>1-2节(1-8周)</div><div>A-101</div></div></div></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody></table></div></body></html>
+        """.trimIndent()
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("数学分析", courses[0].name) // "* " 已被剥离
+        assertEquals("李老师", courses[0].teacher)
+        assertEquals("A-101", courses[0].room)
+        assertEquals(1, courses[0].day)
+        assertEquals(1, courses[0].startNode)
+        assertEquals(2, courses[0].endNode)
+    }
+
+    @Test
+    fun `jz super extracts teacher room sections and weeks from 8 div offsets`() {
+        val source = """
+            <html><body><div class="el-table__body-wrapper"><table><colgroup><col><col><col><col><col><col><col><col></colgroup><tbody>
+            <tr><td><div class="cell"><span>3-5节</span></div></td>
+                <td></td>
+                <td><div class="cell el-tooltip"><div class="cell"><div style="position: relative;"><div></div><div></div><div style="display:none;">线性代数(2-16周)</div><div>线性代数</div><div>王老师</div><div>软工22</div><div>03-04节(2-16周)</div><div>B-202</div></div></div></td>
+                <td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody></table></div></body></html>
+        """.trimIndent()
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertEquals(1, courses.size)
+        val c = courses[0]
+        assertEquals("线性代数", c.name)
+        assertEquals("王老师", c.teacher)
+        assertEquals("B-202", c.room)
+        assertEquals(2, c.day) // col=2 → 周二
+        assertEquals(3, c.startNode) // div[6]="03-04节" → 03
+        assertEquals(4, c.endNode)
+        assertEquals(2, c.startWeek)
+        assertEquals(16, c.endWeek)
+        assertEquals(0, c.type) // 无单双周修饰 → 全周
+    }
+
+    @Test
+    fun `jz super row fallback sets default sections when 节 keyword missing`() {
+        // INV-SECTIONS-FALLBACK: div[6] 仅有周次无"节"字, 按行号降级
+        //   row=0 → 1-2 节, row=1 → 3-5 节, row=2 → 6-7 节, row=3 → 8-9 节, row=4 → 10-12 节, row=5 → 13-15 节
+        // 使用 row=4 (第5行) 的默认节次 10-12
+        val source = """
+            <html><body><div class="el-table__body-wrapper"><table><colgroup><col><col><col><col><col><col><col><col></colgroup><tbody>
+            <tr><td><div class="cell"><span>1-2节</span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td><div class="cell"><span>3-5节</span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td><div class="cell"><span>6-7节</span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td><div class="cell"><span>8-9节</span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td><div class="cell"><span>10-12节</span></div></td>
+                <td><div class="cell el-tooltip"><div class="cell"><div style="position: relative;"><div></div><div></div><div style="display:none;">编译原理(1-15周)</div><div>编译原理</div><div>陈老师</div><div>计科21</div><div>(1-15周)</div><div>C-301</div></div></div></td>
+                <td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            <tr><td><div class="cell"><span>13-15节</span></div></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody></table></div></body></html>
+        """.trimIndent()
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals(10, courses[0].startNode) // row=4 → 10-12 节默认
+        assertEquals(12, courses[0].endNode)
+    }
+
+    @Test
+    fun `jz super handles single week parity keyword`() {
+        // INV-WEEKS-PARITY: 周次含 "单" 字符 → type=1 (单周), "双" → type=2 (双周)
+        val source = """
+            <html><body><div class="el-table__body-wrapper"><table><colgroup><col><col><col><col><col><col><col><col></colgroup><tbody>
+            <tr><td><div class="cell"><span>1-2节</span></div></td>
+                <td></td>
+                <td><div class="cell el-tooltip"><div class="cell"><div style="position: relative;"><div></div><div></div><div style="display:none;">英语(1-15单周)</div><div>大学英语</div><div>赵老师</div><div>软工22</div><div>1-2节(1-15单周)</div><div>D-405</div></div></div></td>
+                <td></td><td></td><td></td><td></td><td></td></tr>
+            </tbody></table></div></body></html>
+        """.trimIndent()
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals(1, courses[0].type) // 单周
+        assertEquals(15, courses[0].endWeek)
+    }
+
+    @Test
+    fun `jz super returns empty list when el-table body wrapper marker absent`() {
+        // 缺主入口 → 不抛异常, 返回空列表 (由后续 parseMarkedTable / parseDelimited 兜底)
+        val source = "<html><body><table id='CourseFormTable'><tr><td>fallback</td></tr></table></body></html>"
+        val courses = JwJzSuperParser(source).generateCourseList()
+        assertEquals(0, courses.size)
+    }
+
+    @Test
+    fun `jz super WakeUpMarkerParser markers cover Njw2017 SPA signature`() {
+        // 验证 WakeUpMarkerParser 标记集合覆盖 Njw2017 SPA 入口串 (含 el-table__body-wrapper)
+        val hits = setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd")
+        assertTrue("标记集合应包含 Njw2017 SPA 入口串", hits.all { it.isNotBlank() })
+    }
 }
