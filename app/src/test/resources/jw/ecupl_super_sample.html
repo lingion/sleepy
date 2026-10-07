@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8"><title>华东政法大学 - 课程表 (Super)</title></head>
+<!--
+  ECUPL Super fixture — wakeup-parity-ecupl-super-2026-10-06 SOP v1.11
+  10 invariants: HTML R1/R3/R4 + script R5/R6/R7 (combined)
+-->
+<body>
+<h1>本学期课程表</h1>
+<table class="listTable" id="timetable">
+<tr><td>课程序号</td><td>课程名</td><td>教师</td><td>学分</td><td>备注</td></tr>
+<tr><td>001</td><td>民法(总则)</td><td>张教授</td><td>3.0</td><td>1-16每周</td></tr>
+<tr><td>002</td><td>刑法</td><td>李教授</td><td>2.5</td><td>1-16每周</td></tr>
+<tr><td>003</td><td>法理学</td><td>王老师</td><td>2.0</td><td>1-16每周</td></tr>
+</table>
+<script language="JavaScript">
+new CourseTable('2024-02-26',[[480,525],[535,580],[600,645]]);
+var activity;
+newActivity("民法(总则)","张教授","明法楼A101","1111111111111111",1);
+addActivityByTime(activity,1,1,2);
+newActivity("刑法","李教授","明法楼A102","1111111111111111",2);
+addActivityByTime(activity,2,3,4);
+newActivity("法理学","王老师","明法楼A103","1111111111111111",3);
+addActivityByTime(activity,3,5,6);
+</script>
+</body>
+</html>

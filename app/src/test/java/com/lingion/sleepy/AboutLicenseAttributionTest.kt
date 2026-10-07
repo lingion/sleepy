@@ -292,6 +292,15 @@ class AboutLicenseAttributionTest {
         Attribution("linling-zy/kust-schedule", "Apache-2.0"),
         Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
+        // 华东政法大学 ECUPL Super (2026-10-06 SOP cross-verified, 1 仓 POSITIVE + 4 仓 INDIRECT)
+        Attribution("LonelyMarch/OpenWakeUp", "AGPL-3.0"),
+        Attribution("ershiyidian/WakeUp_SHU", ""),
+        Attribution("zimo0o0omiz/wisedu-unified-login-api", "MIT"),
+        Attribution("only9464/HEU-Wisedu", "MIT"),
+        Attribution("CreamPig233/neu_wisedu2wakeup", ""),
+        // 华东政法大学 ECUPL base (2026-10-06 SOP cross-verified, 1 仓 POSITIVE + 4 仓 INDIRECT, 5 仓致谢)
+        Attribution("YZune/WakeUpSchedule", ""),
+        Attribution("wisedu/bh-mobile-sdk", ""),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
