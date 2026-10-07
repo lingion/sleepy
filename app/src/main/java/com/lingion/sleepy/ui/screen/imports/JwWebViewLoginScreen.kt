@@ -418,6 +418,12 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, NEU_FETCH_JS)
                         return@CaptureBar
                     }
+                    // 东南大学（ehall.seu.edu.cn/jwapp 网关）：课表在 wdkb 模块 JSON API 中，
+                    // 页面 HTML 不含课程数据，需主动取学期和课表详情。
+                    if (school.type == JwProtocol.TYPE_SEU) {
+                        evaluateFetchWithTimeout(wv, SEU_FETCH_JS)
+                        return@CaptureBar
+                    }
                     if (school.type == JwProtocol.TYPE_NUIT) {
                         evaluateFetchWithTimeout(wv, NUIT_FETCH_JS)
                         return@CaptureBar
@@ -1046,6 +1052,81 @@ const val NEU_FETCH_JS = """
       var arranged = scheduleData && scheduleData.datas && scheduleData.datas.arrangedList;
       if (!Array.isArray(arranged)) throw new Error('课表响应中没有 arrangedList');
       finish({ok:true, data:JSON.stringify(scheduleData)});
+    })
+    .catch(function(error) {
+      finish({ok:false, err:String(error && error.message ? error.message : error)});
+    });
+  } catch (error) {
+    finish({ok:false, err:String(error && error.message ? error.message : error)});
+  }
+})();
+"""
+
+/**
+ * SEU (东南大学 ehall.seu.edu.cn/jwapp 网关) 协议：在 WebView 内 fetch 课表 JSON。
+ *
+ * 前提：用户已在 WebView 里登录东南大学统一身份认证（newids.seu.edu.cn）并进入 ehall.seu.edu.cn 门户。
+ *
+ * 流程：
+ *  1) 检查 hostname 是否为 ehall.seu.edu.cn
+ *  2) GET /jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do → 获取当前学期代码
+ *  3) POST /jwapp/sys/wdkb/modules/xskcb/xskcb.do → 获取课表 JSON
+ *  4) 解析响应，提取 KCM/SKJS/JASMC/SKXQ/KSJC/JSJC/ZCMC 字段返回
+ */
+private const val SEU_FETCH_JS = """
+(function(){
+  function finish(payload) {
+    window.__sleepyBridge.onWiseduResult(JSON.stringify(payload));
+  }
+
+  function fetchJson(url, options) {
+    var request = Object.assign({credentials:'include'}, options || {});
+    return fetch(url, request).then(function(response) {
+      return response.text().then(function(body) {
+        if (!response.ok) throw new Error('请求失败 HTTP ' + response.status + ': ' + url);
+        try {
+          return JSON.parse(body);
+        } catch (e) {
+          throw new Error('接口返回不是 JSON: ' + url);
+        }
+      });
+    });
+  }
+
+  try {
+    var hostname = (location.hostname || '').toLowerCase();
+    if (hostname !== 'ehall.seu.edu.cn') {
+      finish({ok:false, err:'请先登录东南大学统一身份认证并进入 ehall.seu.edu.cn 门户后再点导入'});
+      return;
+    }
+
+    // 获取当前学期
+    fetchJson('/jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do')
+    .then(function(termData) {
+      var termCode = termData && termData.datas && termData.datas.dqxnxq &&
+        termData.datas.dqxnxq.rows && termData.datas.dqxnxq.rows[0] &&
+        termData.datas.dqxnxq.rows[0].DM;
+      if (!termCode) throw new Error('当前用户信息中没有学期代码，请重新登录后重试');
+
+      // 获取课表
+      var body = 'XNXQDM=' + encodeURIComponent(String(termCode));
+      return fetchJson('/jwapp/sys/wdkb/modules/xskcb/xskcb.do', {
+        method:'POST',
+        headers:{
+          'Content-Type':'application/x-www-form-urlencoded;charset=UTF-8',
+          'X-Requested-With':'XMLHttpRequest'
+        },
+        body:body
+      });
+    })
+    .then(function(scheduleData) {
+      var rows = scheduleData && scheduleData.datas && scheduleData.datas.xskcb &&
+        scheduleData.datas.xskcb.rows;
+      if (!Array.isArray(rows) || rows.length === 0) {
+        throw new Error('课表响应中没有课程数据');
+      }
+      // 提取课程数组返回
+      finish({ok:true, data:JSON.stringify(rows)});
     })
     .catch(function(error) {
       finish({ok:false, err:String(error && error.message ? error.message : error)});
