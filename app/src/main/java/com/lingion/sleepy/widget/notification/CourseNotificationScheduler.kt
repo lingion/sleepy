@@ -290,6 +290,13 @@ class CourseNotificationScheduler private constructor(
                     "room" to course.room,
                     "teacher" to course.teacher,
                     "startTime" to String.format("%02d:%02d", h, m),
+                    "endTime" to (if (course.ownTime && course.endTime.isNotBlank()) {
+                        course.endTime
+                    } else {
+                        nodes.find { it.node == course.startNode + course.step - 1 }
+                            ?.let { String.format("%02d:%02d", it.end.hour, it.end.minute) }
+                    }.orEmpty()),
+                    "startNode" to course.startNode,
                     "notifyEpoch" to epoch,
                     "classEpoch" to classStart.atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
                 )
@@ -345,11 +352,16 @@ class CourseNotificationScheduler private constructor(
         val p = st.split(":")
         val classStart = today.atTime(p[0].toInt(), p[1].toInt()).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
         val notifyEpoch = classStart - minutes * 60_000L
+        val endTimeStr = if (hit.ownTime && hit.endTime.isNotBlank()) hit.endTime
+            else nodes.find { it.node == hit.startNode + hit.step - 1 }
+                ?.let { String.format("%02d:%02d", it.end.hour, it.end.minute) }.orEmpty()
         val svc = Intent(app, FluidCloudService::class.java).apply {
             putExtra("courseName", hit.courseName)
             putExtra("room", hit.room.ifBlank { app.getString(R.string.default_room) })
             putExtra("teacher", hit.teacher)
             putExtra("startTime", st)
+            putExtra("endTime", endTimeStr)
+            putExtra("startNode", hit.startNode)
             putExtra("notifyEpoch", notifyEpoch)
             putExtra("classEpoch", classStart)
         }
@@ -690,6 +702,8 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 putExtra("room", roomStr)
                 putExtra("teacher", teacher)
                 putExtra("startTime", startTime)
+                putExtra("endTime", intent.getStringExtra("endTime").orEmpty())
+                putExtra("startNode", intent.getIntExtra("startNode", 0))
                 putExtra("notifyEpoch", intent.getLongExtra("notifyEpoch", System.currentTimeMillis()))
                 putExtra("classEpoch", intent.getLongExtra("classEpoch", System.currentTimeMillis()))
             }
