@@ -1044,4 +1044,29 @@
     <string name="jw_import_exit_continue">继续导入</string>
     <string name="jw_import_exit_keep_draft">保留草稿</string>
     <string name="jw_import_exit_delete_draft">删除草稿</string>
+
+    <string name="reminder_fluid_field_countdown">倒计时</string>
+    <string name="fluid_coloros_countdown">%1$d 分钟后上课</string>
+    <string name="fluid_coloros_capsule">%1$d 分钟后</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
+    <string name="possible_schools">可能的学校</string>
+    <plurals name="school_location_city">
+        <item quantity="other">当前城市：%1$s · %2$d 个学校入口</item>
+    </plurals>
+    <string name="school_location_loading">正在定位当前城市…</string>
+    <string name="school_location_denied">未获得定位权限，可继续搜索学校</string>
+    <string name="school_location_disabled">系统定位已关闭，可继续搜索学校</string>
+    <string name="school_location_unavailable">已取得位置，但此位置暂未匹配到城市，可继续搜索学校</string>
+    <string name="school_location_hint">点击定位，查找所在城市的学校</string>
+    <string name="school_location_locate">定位</string>
+    <string name="school_location_enable">启用定位</string>
+    <string name="school_location_settings">打开定位</string>
+    <string name="school_location_retry">重新定位</string>
+    <string name="school_location_no_matches">此城市暂未匹配到目录中的学校，请使用下方搜索</string>
+    <string name="school_location_city_hint">根据学校所在城市推荐，可能包含同城不同校区</string>
+    <string name="school_location_collapse">收起学校</string>
+    <string name="school_location_show_all">查看全部同城学校</string>
+    <string name="school_location_no_fix">暂未取得当前位置，请确认系统定位已开启后重试</string>
+    <string name="school_location_accuracy_insufficient">位置精度不足或范围跨越城市，请重试或在定位权限设置中启用精准位置</string>
+    <string name="school_location_permission_settings">定位权限设置</string>
 </resources>

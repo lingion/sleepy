@@ -1017,4 +1017,30 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="jw_fetch_empty">No hay cursos este semestre. Comprueba el semestre elegido</string>
     <string name="irregular_time_format">La hora irregular debe tener formato HH:mm</string>
     <string name="irregular_time_order">La hora inicial debe ser anterior a la final</string>
+
+    <string name="reminder_fluid_field_countdown">Cuenta atrás</string>
+    <string name="fluid_coloros_countdown">En %1$d min</string>
+    <string name="fluid_coloros_capsule">%1$d min</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d′</string>
+    <string name="possible_schools">Posibles centros</string>
+    <plurals name="school_location_city">
+        <item quantity="one">Ciudad actual: %1$s · %2$d centro</item>
+        <item quantity="other">Ciudad actual: %1$s · %2$d centros</item>
+    </plurals>
+    <string name="school_location_loading">Buscando tu ciudad…</string>
+    <string name="school_location_denied">Sin permiso de ubicación. Puedes buscar centros.</string>
+    <string name="school_location_disabled">La ubicación está desactivada. Puedes buscar centros.</string>
+    <string name="school_location_unavailable">Ubicación recibida, pero ninguna ciudad coincide. Puedes buscar centros.</string>
+    <string name="school_location_hint">Pulsa Localizar para buscar centros en tu ciudad</string>
+    <string name="school_location_locate">Localizar</string>
+    <string name="school_location_enable">Permitir ubicación</string>
+    <string name="school_location_settings">Activar ubicación</string>
+    <string name="school_location_retry">Localizar de nuevo</string>
+    <string name="school_location_no_matches">No hay centros del directorio en esta ciudad. Usa la búsqueda.</string>
+    <string name="school_location_city_hint">Sugerencias según la ciudad del centro; los campus pueden estar en otro lugar de la ciudad</string>
+    <string name="school_location_collapse">Mostrar menos</string>
+    <string name="school_location_show_all">Ver todos los centros locales</string>
+    <string name="school_location_no_fix">No se recibió la ubicación actual. Comprueba los ajustes y reintenta.</string>
+    <string name="school_location_accuracy_insufficient">La ubicación es demasiado imprecisa o cruza límites urbanos. Reintenta o permite ubicación precisa en los ajustes de permisos.</string>
+    <string name="school_location_permission_settings">Permisos de ubicación</string>
 </resources>

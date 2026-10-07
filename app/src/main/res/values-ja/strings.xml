@@ -1017,4 +1017,29 @@
     <string name="jw_fetch_empty">今学期の授業はありません。学期を確認してください</string>
     <string name="irregular_time_format">通常外の時刻は HH:mm 形式で入力してください</string>
     <string name="irregular_time_order">開始時刻は終了時刻より前にしてください</string>
+
+    <string name="reminder_fluid_field_countdown">カウントダウン</string>
+    <string name="fluid_coloros_countdown">%1$d分後に開始</string>
+    <string name="fluid_coloros_capsule">%1$d分後</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d分</string>
+    <string name="possible_schools">候補の学校</string>
+    <plurals name="school_location_city">
+        <item quantity="other">現在の都市：%1$s · %2$d校</item>
+    </plurals>
+    <string name="school_location_loading">現在の都市を取得中…</string>
+    <string name="school_location_denied">位置情報の権限がありません。学校を検索できます。</string>
+    <string name="school_location_disabled">位置情報が無効です。学校を検索できます。</string>
+    <string name="school_location_unavailable">位置は取得できましたが、都市が一致しません。学校を検索できます。</string>
+    <string name="school_location_hint">位置を取得するボタンで同じ都市の学校を探します</string>
+    <string name="school_location_locate">位置を取得</string>
+    <string name="school_location_enable">位置情報を許可</string>
+    <string name="school_location_settings">位置情報を有効化</string>
+    <string name="school_location_retry">再取得</string>
+    <string name="school_location_no_matches">この都市に一致する学校がありません。下の検索を使用してください。</string>
+    <string name="school_location_city_hint">学校の所在都市に基づく候補です。キャンパスの場所は異なる場合があります</string>
+    <string name="school_location_collapse">折りたたむ</string>
+    <string name="school_location_show_all">同じ都市の学校をすべて表示</string>
+    <string name="school_location_no_fix">現在位置を取得できません。端末の位置設定を確認して再試行してください。</string>
+    <string name="school_location_accuracy_insufficient">位置の精度が不足しているか都市の境界に重なっています。再試行するか設定で正確な位置を許可してください。</string>
+    <string name="school_location_permission_settings">位置情報の権限</string>
 </resources>

@@ -1019,4 +1019,30 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="jw_fetch_parse_failed">Data was fetched but no courses could be parsed. Open the personal schedule page</string>
     <string name="jw_fetch_network">Network error. Check your connection and retry</string>
     <string name="jw_fetch_empty">No courses this semester. Check the selected semester</string>
+
+    <string name="reminder_fluid_field_countdown">Countdown</string>
+    <string name="fluid_coloros_countdown">Starts in %1$d min</string>
+    <string name="fluid_coloros_capsule">%1$d min</string>
+    <string name="fluid_coloros_capsule_compact">%1$s·%2$d′</string>
+    <string name="possible_schools">Possible schools</string>
+    <plurals name="school_location_city">
+        <item quantity="one">Current city: %1$s · %2$d school entry</item>
+        <item quantity="other">Current city: %1$s · %2$d school entries</item>
+    </plurals>
+    <string name="school_location_loading">Finding your current city…</string>
+    <string name="school_location_denied">Location permission denied. You can still search for schools.</string>
+    <string name="school_location_disabled">Location is turned off. You can still search for schools.</string>
+    <string name="school_location_unavailable">Location received, but no city matched. You can still search for schools.</string>
+    <string name="school_location_hint">Tap Locate to find schools in your city</string>
+    <string name="school_location_locate">Locate</string>
+    <string name="school_location_enable">Enable location</string>
+    <string name="school_location_settings">Turn on location</string>
+    <string name="school_location_retry">Locate again</string>
+    <string name="school_location_no_matches">No directory schools matched this city. Use the search below.</string>
+    <string name="school_location_city_hint">Suggested by school city; campuses may be elsewhere in the city</string>
+    <string name="school_location_collapse">Show fewer</string>
+    <string name="school_location_show_all">Show all local schools</string>
+    <string name="school_location_no_fix">No current location received. Check device location settings and retry.</string>
+    <string name="school_location_accuracy_insufficient">Location is too imprecise or overlaps city borders. Retry or allow precise location in permission settings.</string>
+    <string name="school_location_permission_settings">Location permissions</string>
 </resources>
