@@ -153,9 +153,10 @@ object JwProtocol {
     const val TYPE_EAMS5 = "eams5"
 
     /**
-     * 东南大学教务 (正方 URP 系, newxk.urp.seu.edu.cn, 用户粘 JSON 后 fetch 课表)。
+     * 东南大学教务 (正方 URP 系, ehall.seu.edu.cn/jwapp 网关)。
      * JSON 字段集 {KCM,SKJS,JASMC,SKXQ,KSJC,JSJC,ZCMC,KCH,JXBQH} — 与 WakeupSchedule_BUPT
-     * 强智系字段形态高度同构, 但走 JSON 而非 HTML; v1 单次 POST 拿全表, 无周次 bitmap 压缩。
+     * 强智系字段形态高度同构, 但走 JSON 而非 HTML; v1 用户粘 JSON 数组, v2 WebView fetch 自动抓取。
+     * v2 流程：GET /jwapp/sys/wdkb/modules/jshkcb/dqxnxq.do → 学期代码 → POST /jwapp/sys/wdkb/modules/xskcb/xskcb.do → 课表
      * 上游协议形态: sakimidare/SEUTimetable (Apache-2.0) TableParserUtils.kt parseWeekRange
      * 算法参考 (代码自写, 只复用逻辑)。
      */
