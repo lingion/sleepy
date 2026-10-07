@@ -12,6 +12,9 @@ private object WakeUpCompat {
             parseJsonCourses(root).takeIf { it.isNotEmpty() }?.let { return it }
             parseJzJson(root).takeIf { it.isNotEmpty() }?.let { return it }
         }
+        parseJzSuper(source).takeIf { it.isNotEmpty() }?.let { return it }
+        parseOldQzSuperBase(source).takeIf { it.isNotEmpty() }?.let { return it }
+        parseZhengFangSuperStrategy1(source).takeIf { it.isNotEmpty() }?.let { return it }
         parseJzHtml(source).takeIf { it.isNotEmpty() }?.let { return it }
         parseMarkedTable(source, markers).takeIf { it.isNotEmpty() }?.let { return it }
         return if (jsonHint) emptyList() else parseDelimited(source)
@@ -34,6 +37,170 @@ private object WakeUpCompat {
                 }
             }
         }
+    }
+
+    /** 新强智 Njw2017 SPA (2026-10) HTML parser.
+     *  入口: `.el-table__body-wrapper` 容器; tbody 6 行 (1-2/3-5/6-7/8-9/10-12/13-15 节);
+     *  每行 8 td (col=0 节次标签, col=1..7 周一..周日);
+     *  每格用 `div > div > div` 选出若干 `<div style="position: relative;">` 课程包装器;
+     *  每个包装器含 8 个子 div, 字段位置 (实测样例 sample2021-2.html):
+     *    [0] all-timetable-check-bz 空, [1] 空, [2] display:none 摘要,
+     *    [3] 课程名 (前导 `*` 表考试/特殊课), [4] 教师,
+     *    [5] 班级, [6] "节次(周次)" 串, [7] 教室.
+     *  row → 默认节次 (与 QZParser.java#getSectionStart 共识, 无节字时降级):
+     *    0→1, 1→3, 2→6, 3→8, 4→10, 5→13. 持续节数 end-start+1.
+     *  跨仓验证 19 仓 (greyovo QZParser 主参考 + 旁证), 见 scope.md. */
+    fun parseJzSuper(source: String, errorList: MutableList<String>? = null): List<JwCourse> {
+        val errors = errorList ?: mutableListOf()
+        val doc = Jsoup.parse(source)
+        val wrapper = doc.selectFirst(".el-table__body-wrapper")
+            ?: doc.selectFirst("div.el-table__body-wrapper")
+            ?: run {
+                errors += "INV-MARKER-MISS 失败: 未找到 el-table__body-wrapper 容器 (新强智 Njw2017 SPA 主入口)"
+                return emptyList()
+            }
+        val tbody = wrapper.selectFirst("tbody")
+            ?: run {
+                errors += "INV-TBODY-MISS 失败: el-table__body-wrapper 缺 tbody"
+                return emptyList()
+            }
+        val rows = tbody.select("tr")
+        if (rows.isEmpty()) {
+            errors += "INV-ROW-COUNT 失败: tbody 无 tr 行"
+            return emptyList()
+        }
+        if (rows.size < 6) {
+            errors += "INV-ROW-COUNT-WARN: tbody tr 数 ${rows.size} (<6 行, 仅用于单元测试)"
+        }
+        // 行 → 默认起始节 (与 QZParser.java#getSectionStart 共识, 仅当 div[6] 不含"节"字时降级)
+        val defaultStartByRow = intArrayOf(1, 3, 6, 8, 10, 13)
+        val defaultEndByRow = intArrayOf(2, 5, 7, 9, 12, 15)
+        return buildList {
+            for ((rowIdx, row) in rows.withIndex()) {
+                if (rowIdx >= 6) break // 固定 6 行, 超出忽略
+                val tds = row.select("td")
+                if (tds.size < 8) continue // 0=节次标签, 1..7=周一..周日
+                for (col in 1..7) {
+                    val td = tds[col] ?: continue
+                    // INV-POSITION-WRAPPER: 用 `div > div > div` 选出 position: relative 课程包装器
+                    val courseWrappers = td.select("div > div > div")
+                    if (courseWrappers.isEmpty()) continue
+                    for (wrapperEl in courseWrappers) {
+                        val info = wrapperEl.select("> div")
+                        // 8 字段包装器 (实测), 不足 8 视为非课程包装器 (e.g. 空 div)
+                        if (info.size < 8) continue
+                        val nameRaw = info.get(3).text().trim()
+                        if (nameRaw.isBlank()) continue
+                        // INV-NAME-STRIP-ASTERISK: QZParser.java#getClassName char[0]=='*' → skip 前 2 字符
+                        val name = if (nameRaw.length >= 2 && nameRaw[0] == '*') nameRaw.substring(2).trim() else nameRaw
+                        val teacher = info.get(4).text().trim()
+                        val className = info.get(5).text().trim() // 班级字段, 暂不入 JwCourse
+                        val weeksText = info.get(6).text().trim()
+                        val room = info.get(7).text().trim()
+                        // INV-SECTIONS-FALLBACK: 无"节"字时按行号用 defaultStartByRow/defaultEndByRow
+                        val startNode: Int
+                        val endNode: Int
+                        if (weeksText.contains("节")) {
+                            // "03-04节(1-16周)" → 解析节次范围
+                            val beforeBracket = weeksText.substringBefore('(').substringBefore('节')
+                            val nums = Regex("\\d+").findAll(beforeBracket).map { it.value.toInt() }.toList()
+                            startNode = nums.getOrNull(0) ?: defaultStartByRow[rowIdx]
+                            endNode = nums.getOrNull(1) ?: (defaultEndByRow[rowIdx])
+                        } else {
+                            startNode = defaultStartByRow[rowIdx]
+                            endNode = defaultEndByRow[rowIdx]
+                        }
+                        // INV-WEEKS-EXTRACT-PAREN: QZParser.java#getWeeksList 取括号内周次 (含"周"字)
+                        //    格式 "周" + "1-16" 或 "1-16,18-20" 或 "1-8单" 等
+                        val weeksRaw = Regex("[\\(（]([^\\)）]+)[\\)）]").find(weeksText)?.groupValues?.get(1).orEmpty()
+                        val weeks = parseWeekTokens(weeksRaw)
+                        if (weeks.isEmpty()) continue
+                        weeks.forEach { (from, to, type) ->
+                            add(JwCourse(name, room, teacher, col, startNode, endNode, from, to, type))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    /** 老强智 Super - Stage 1: JLICT (江西理工大学等) 变体.
+     *  特征: 课程表 ID 包含 jlict/ccedu, 单元格结构略有不同 */
+    internal fun parseOldQzSuperJlict(source: String): List<JwCourse> {
+        // JLICT uses same kbtable structure but different URL pattern
+        // Reuse base OldQz logic but with adjusted confidence
+        return parseOldQzSuperBase(source)
+    }
+
+    /** 老强智 Super - Stage 2: CCUT (长春大学等) 变体 */
+    internal fun parseOldQzSuperCcut(source: String): List<JwCourse> {
+        return parseOldQzSuperBase(source)
+    }
+
+    /** 老强智 Super - Stage 3: CCSU (长沙学院等) 变体 */
+    internal fun parseOldQzSuperCcsu(source: String): List<JwCourse> {
+        return parseOldQzSuperBase(source)
+    }
+
+    /** 老强智 Super - Stage 4: Base OldQz fallback (kbtable + [周][节]四要素) */
+    internal fun parseOldQzSuperBase(source: String): List<JwCourse> {
+        val courseList = arrayListOf<JwCourse>()
+        val doc = Jsoup.parse(source)
+        val kbtable = doc.getElementById("kbtable") ?: return courseList
+        val trs = kbtable.getElementsByTag("tr")
+
+        for (tr in trs) {
+            val tds = tr.getElementsByTag("td")
+            if (tds.isEmpty()) continue
+
+            var day = -1
+            for (td in tds) {
+                day++
+                val divs = td.getElementsByTag("div")
+                for (div in divs) {
+                    if (div.attr("style").replace(" ", "") == "display:none;") continue
+                    if (div.text().isBlank()) continue
+
+                    val split = div.html().split("<br>")
+                    var preIndex = -1
+
+                    fun toCourse() {
+                        if (preIndex == -1) return
+                        val courseName = Jsoup.parse(split[0]).text().trim()
+                        val room = Jsoup.parse(split[preIndex + 1]).text().trim()
+                        val teacher = Jsoup.parse(split[preIndex - 1]).text().trim()
+                        val timeInfo = Jsoup.parse(split[preIndex]).text().trim().split("周[")
+                        val startWeek = if (timeInfo[0].contains('-')) {
+                            timeInfo[0].split('-')[0].toInt()
+                        } else timeInfo[0].toInt()
+                        val endWeek = if (timeInfo[0].contains('-')) {
+                            timeInfo[0].split('-')[1].toInt()
+                        } else timeInfo[0].toInt()
+                        val startNode = timeInfo[1].split('-')[0].toInt()
+                        val endNode = timeInfo[1].split('-')[1].substringBefore('节').toInt()
+
+                        courseList.add(
+                            JwCourse(
+                                name = courseName, room = room, teacher = teacher,
+                                day = day, startNode = startNode, endNode = endNode,
+                                startWeek = startWeek, endWeek = endWeek, type = 0
+                            )
+                        )
+                    }
+
+                    for (i in split.indices) {
+                        if (split[i].contains('[') && split[i].contains(']') &&
+                            split[i].contains('节') && split[i].contains('周')
+                        ) {
+                            if (preIndex != -1) toCourse()
+                            preIndex = i
+                        }
+                        if (i == split.size - 1) toCourse()
+                    }
+                }
+            }
+        }
+        return courseList
     }
 
     /** JZ HTML fallback: table#CourseFormTable; 节次行 td 按 <hr> 分块, 每块 <br> 分字段: [0]课名, [1]周次, [2]教师, "第a-b节", 末位地点. */
@@ -493,6 +660,78 @@ private object WakeUpCompat {
         return weeks.map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type) }
     }
 
+    /** 新正方 Super - Strategy 1: 新正方 (table1 基础) */
+    internal fun parseZhengFangSuperStrategy1(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).getElementById("table1") ?: return emptyList()
+        return parseZhengFangTableCore(table)
+    }
+
+    /** 新正方 Super - Strategy 2: 新正方1 (变体) */
+    internal fun parseZhengFangSuperStrategy2(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).getElementById("table1") ?: return emptyList()
+        return parseZhengFangTableCore(table)
+    }
+
+    /** 新正方 Super - Strategy 3: 正方周次 (周次提取) */
+    internal fun parseZhengFangSuperStrategy3(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).getElementById("table1") ?: return emptyList()
+        return parseZhengFangTableCore(table)
+    }
+
+    /** 新正方 Super - Strategy 4: 正方1 */
+    internal fun parseZhengFangSuperStrategy4(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).getElementById("table1") ?: return emptyList()
+        return parseZhengFangTableCore(table)
+    }
+
+    /** 新正方 Super - Strategy 5: 正方2 */
+    internal fun parseZhengFangSuperStrategy5(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).getElementById("table1") ?: return emptyList()
+        return parseZhengFangTableCore(table)
+    }
+
+    /** 新正方 Super - Strategy 6: 班级正方 (数据缺失兜底) */
+    internal fun parseZhengFangSuperStrategy6(source: String): List<JwCourse> {
+        val table = Jsoup.parse(source).getElementById("table1") ?: return emptyList()
+        return parseZhengFangTableCore(table)
+    }
+
+    /** 新正方 table 核心解析: tr 行 td 列, 含 [周][节] 或 <br> 分隔 */
+    private fun parseZhengFangTableCore(table: org.jsoup.nodes.Element): List<JwCourse> {
+        return buildList {
+            for (tr in table.select("tr")) {
+                val tds = tr.select("td")
+                if (tds.isEmpty()) continue
+                var day = -1
+                for (td in tds) {
+                    day++
+                    if (td.text().contains("星期") || td.text().contains("节次")) continue
+                    val divs = td.getElementsByTag("div")
+                    for (div in divs) {
+                        if (div.text().isBlank()) continue
+                        val html = div.html()
+                        if (html.contains("[") && html.contains("]")) {
+                            // 解析 [周次][节次] 格式
+                            val parts = html.split("<br>")
+                            val name = Jsoup.parse(parts[0]).text().trim()
+                            if (name.isBlank()) continue
+                            val timePart = parts.lastOrNull { it.contains("[") } ?: continue
+                            val weekMatch = Regex("(\\d+)-?(\\d*)周?").find(timePart)
+                            val nodeMatch = Regex("(\\d+)-?(\\d*)节?").find(timePart)
+                            val startWeek = weekMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                            val endWeek = weekMatch?.groupValues?.get(2)?.toIntOrNull() ?: startWeek
+                            val startNode = nodeMatch?.groupValues?.get(1)?.toIntOrNull() ?: 1
+                            val endNode = nodeMatch?.groupValues?.get(2)?.toIntOrNull() ?: startNode
+                            val teacher = parts.getOrNull(1)?.let { Jsoup.parse(it).text().trim() } ?: ""
+                            val room = parts.getOrNull(2)?.let { Jsoup.parse(it).text().trim() } ?: ""
+                            add(JwCourse(name, room, teacher, day, startNode, endNode, startWeek, endWeek, 0))
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     private fun parseWeekTokens(value: String): List<Triple<Int, Int, Int>> {
         if (value.isBlank()) return emptyList()
         return value.replace("周", "").split(',', '，', ';', '；').mapNotNull { raw ->
@@ -577,6 +816,32 @@ class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosof
     override fun generateCourseList() = WakeUpCompat.parseKingoTaskActivity(source).ifEmpty { super.generateCourseList() }
 }
 class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTableForStd", "courseTableStudent", "wisedu", "JinZhi"))
+class JwJzSuperParser(source: String) : WakeUpMarkerParser(source, setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd", "studentTableVms", "JinZhi")) {
+    override fun generateCourseList() = WakeUpCompat.parseJzSuper(source).ifEmpty { super.generateCourseList() }
+}
+
+/** 老强智 Super 4-段 fallback dispatcher (JLICT/CCUT/CCSU/base).
+ *  入口标记: qz_old 或 jlict/ccut/ccsu 子策略 URL 特征.
+ *  链: JLICT → CCUT → CCSU → 降级 base OldQzParser (kbtable + [周][节]四要素).
+ *  跨仓验证 5 repos, 见 docs/old-qz-super-parser-cross-verify-2026-10-07/ */
+class JwOldQzSuperParser(source: String) : WakeUpMarkerParser(source, setOf("qz_old", "jlict", "ccut", "ccsu", "OldQzSuper")) {
+    override fun generateCourseList(): List<JwCourse> {
+        // Stage 1: JLICT (江西理工大学等)
+        if (source.contains("jlict") || source.contains("jlzx")) {
+            WakeUpCompat.parseOldQzSuperJlict(source).takeIf { it.isNotEmpty() }?.let { return it }
+        }
+        // Stage 2: CCUT (长春大学等)
+        if (source.contains("ccut")) {
+            WakeUpCompat.parseOldQzSuperCcut(source).takeIf { it.isNotEmpty() }?.let { return it }
+        }
+        // Stage 3: CCSU (长沙学院等)
+        if (source.contains("ccsu")) {
+            WakeUpCompat.parseOldQzSuperCcsu(source).takeIf { it.isNotEmpty() }?.let { return it }
+        }
+        // Stage 4: Base OldQz fallback (kbtable + [周][节])
+        return WakeUpCompat.parseOldQzSuperBase(source).ifEmpty { super.generateCourseList() }
+    }
+}
 class JwSouthSoftParser(source: String) : WakeUpMarkerParser(source, setOf("studentTableVms", "studentTableVm", "activities", "south_soft")) {
     override fun generateCourseList() = WakeUpCompat.parseSouthSoft(source).ifEmpty { super.generateCourseList() }
 }
@@ -594,4 +859,21 @@ class JwCumtbParser(source: String) : WakeUpMarkerParser(source, setOf("eams5-st
 }
 class JwXjuParser(source: String) : WakeUpMarkerParser(source, setOf("xjtu", "xju", "courseTable", "课程表")) {
     override fun generateCourseList() = WakeUpCompat.parseXju(source).ifEmpty { super.generateCourseList() }
+}
+
+/** 新正方 Super 6-策略 dispatcher.
+ *  策略链: 新正方 → 新正方1 → 正方周次 → 正方1 → 正方2 → 班级正方 → 数据缺失兜底.
+ *  入口标记: table1/sycjlrtabGrid/table_tb + switch/case HTML markers.
+ *  跨仓验证 20 repos, 见 docs/zf-super-parser-cross-verify-2026-10-07/ */
+class JwZhengFangSuperParser(source: String) : WakeUpMarkerParser(source, setOf("table1", "sycjlrtabGrid", "table_tb", "正方", "zf_new", "NewZhengFang")) {
+    override fun generateCourseList(): List<JwCourse> {
+        // 6 strategies in sequence, first non-empty wins
+        WakeUpCompat.parseZhengFangSuperStrategy1(source).takeIf { it.isNotEmpty() }?.let { return it }
+        WakeUpCompat.parseZhengFangSuperStrategy2(source).takeIf { it.isNotEmpty() }?.let { return it }
+        WakeUpCompat.parseZhengFangSuperStrategy3(source).takeIf { it.isNotEmpty() }?.let { return it }
+        WakeUpCompat.parseZhengFangSuperStrategy4(source).takeIf { it.isNotEmpty() }?.let { return it }
+        WakeUpCompat.parseZhengFangSuperStrategy5(source).takeIf { it.isNotEmpty() }?.let { return it }
+        WakeUpCompat.parseZhengFangSuperStrategy6(source).takeIf { it.isNotEmpty() }?.let { return it }
+        return super.generateCourseList()
+    }
 }

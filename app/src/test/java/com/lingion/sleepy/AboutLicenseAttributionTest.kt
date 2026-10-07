@@ -292,6 +292,14 @@ class AboutLicenseAttributionTest {
         Attribution("linling-zy/kust-schedule", "Apache-2.0"),
         Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
+        // 2026-10-07 老强智 super (4 段 fallback dispatcher) 跨仓验证 5 仓全量纳入
+        // per jw-cross-verify-sop v1.11 §3: 1 POSITIVE (WakeUp OldQzSuperParser smali 同源 4 子解析器) + 4 NULL_EVIDENCE_FOR_SUPER
+        Attribution("WakeUp OldQzSuperParser smali", "YZune"),
+        Attribution("ershiyidian/WakeUp_SHU", "Apache-2.0"),
+        Attribution("ThaiCao/WakeupSchedule_Kotlin", "Apache-2.0"),
+        Attribution("Crazy-ChenMiLin/TableAPK", "Apache-2.0"),
+        Attribution("dIT8Zv/WakeupSchedule_BUPT", "Apache-2.0"),
+        Attribution("YuZhangWang/Java-Demo", "Apache-2.0"),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
