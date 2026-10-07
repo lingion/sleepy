@@ -59,10 +59,12 @@ object JwParserRegistry {
         JwProtocol.TYPE_QZ_APP to 141,
         JwProtocol.TYPE_UCAS to 142,
         JwProtocol.TYPE_QZ_OLD to 145,
+        JwProtocol.TYPE_KINGO_ZX to 205,
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
         JwProtocol.TYPE_KINGO_NEW to ::JwKingoParser,
+        JwProtocol.TYPE_KINGO_ZX to ::JwKingoZxParser,
         JwProtocol.TYPE_JZ to ::JwJzParser,
         JwProtocol.TYPE_SOUTH_SOFT to ::JwSouthSoftParser,
         JwProtocol.TYPE_CHAOXING_LEGACY to ::JwChaoxingLegacyParser,

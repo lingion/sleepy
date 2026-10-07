@@ -141,6 +141,42 @@ class JwWakeUpCompatParserTest {
     }
 
     @Test
+    fun `kingo zx parses pageRpt table courses with 4-helper fallback`() {
+        val source = """
+            <html><body><div id="pageRpt">
+            <table border="1"><tbody>
+            <tr><th>节次</th><th>星期一</th><th>星期二</th><th>星期三</th></tr>
+            <tr>
+              <td>第1-2节</td>
+              <td>线性代数<br>赵老师<br>主楼A-101<br>1-16周 第1节</td>
+              <td>&nbsp;</td>
+              <td>离散数学<br>孙老师<br>主楼B-202<br>1-16周单 第2节</td>
+            </tr>
+            </tbody></table>
+            </div></body></html>
+        """.trimIndent()
+
+        val parser = JwKingoZxParser(source)
+        val courses = parser.generateCourseList()
+
+        assertEquals(2, courses.size)
+        assertEquals("线性代数", courses[0].name)
+        assertEquals("赵老师", courses[0].teacher)
+        assertEquals("主楼A-101", courses[0].room)
+        assertEquals(1, courses[0].startWeek)
+        assertEquals(16, courses[0].endWeek)
+        assertEquals(0, courses[0].type)
+
+        assertEquals("离散数学", courses[1].name)
+        assertEquals("孙老师", courses[1].teacher)
+        assertEquals("主楼B-202", courses[1].room)
+        assertEquals(1, courses[1].type)
+
+        assertTrue(parser.confidence() >= 40)
+        assertTrue(parser.matchedFeatures().contains("pageRpt-primary"))
+    }
+
+    @Test
     fun `xju dgData brace blocks with week parity`() {
         val source = """
             <html><body><table id="ctl00_contentParent_dgData">
