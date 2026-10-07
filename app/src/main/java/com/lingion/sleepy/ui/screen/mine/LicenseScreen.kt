@@ -542,6 +542,14 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "NWUPL: dream2333/NWUPL-Pure-EMS (间接协议旁证)\nLIXIN: classic EAMS 采集形态（未复制代码）\nKMUST: linling-zy/kust-schedule (间接协议旁证, Apache-2.0)\nNUIT: 3056810551/nuit-class-schedule (直接字段旁证, 未复制代码)"
     ),
     PerSchoolEntry(
+        "school-thu", "清华大学 THU (2026-10 SOP cross-verified)",
+        "WakeUp THUParser.java (YZune, Apache-2.0, 主参考 - 节次↔大节映射 + gridColumns/gridData)\n" +
+            "Starrah/THUCourseHelper (MIT, strHTML1 += 状态机 + blue_red_none PAT_C2)\n" +
+            "piggyham/thu_timetable (HarmonyOS ArkTS, 跨语言旁证)\n" +
+            "BistuSchedule (THU 协议移植参考)\n" +
+            "AdoreCN (THU 协议微调旁证)"
+    ),
+    PerSchoolEntry(
         "school-hzcu", "浙大城市学院 HZCU",
         "用户采集包实锤 zf_new 协议 (新正方 zftal-ui-v5 裸 /kbcx/ 路径, SSO /sso/ddlogin 专用入口, issue #90)\n" +
             "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +
