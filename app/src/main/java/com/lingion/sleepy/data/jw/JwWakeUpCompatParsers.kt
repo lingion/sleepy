@@ -12,6 +12,7 @@ private object WakeUpCompat {
             parseJsonCourses(root).takeIf { it.isNotEmpty() }?.let { return it }
             parseJzJson(root).takeIf { it.isNotEmpty() }?.let { return it }
         }
+        parseJzSuper(source).takeIf { it.isNotEmpty() }?.let { return it }
         parseJzHtml(source).takeIf { it.isNotEmpty() }?.let { return it }
         parseMarkedTable(source, markers).takeIf { it.isNotEmpty() }?.let { return it }
         return if (jsonHint) emptyList() else parseDelimited(source)
@@ -31,6 +32,91 @@ private object WakeUpCompat {
                 row.optString("qmz").split(';', '；').forEach { token ->
                     val nums = Regex("\\d+").findAll(token).map { it.value.toInt() }.toList()
                     if (nums.isNotEmpty()) add(JwCourse(name, row.optString("skdd"), row.optString("jsxm"), day, start, start, nums.first(), nums.getOrNull(1) ?: nums.first(), type))
+                }
+            }
+        }
+    }
+
+    /** 新强智 Njw2017 SPA (2026-10) HTML parser.
+     *  入口: `.el-table__body-wrapper` 容器; tbody 6 行 (1-2/3-5/6-7/8-9/10-12/13-15 节);
+     *  每行 8 td (col=0 节次标签, col=1..7 周一..周日);
+     *  每格用 `div > div > div` 选出若干 `<div style="position: relative;">` 课程包装器;
+     *  每个包装器含 8 个子 div, 字段位置 (实测样例 sample2021-2.html):
+     *    [0] all-timetable-check-bz 空, [1] 空, [2] display:none 摘要,
+     *    [3] 课程名 (前导 `*` 表考试/特殊课), [4] 教师,
+     *    [5] 班级, [6] "节次(周次)" 串, [7] 教室.
+     *  row → 默认节次 (与 QZParser.java#getSectionStart 共识, 无节字时降级):
+     *    0→1, 1→3, 2→6, 3→8, 4→10, 5→13. 持续节数 end-start+1.
+     *  跨仓验证 19 仓 (greyovo QZParser 主参考 + 旁证), 见 scope.md. */
+    fun parseJzSuper(source: String, errorList: MutableList<String>? = null): List<JwCourse> {
+        val errors = errorList ?: mutableListOf()
+        val doc = Jsoup.parse(source)
+        val wrapper = doc.selectFirst(".el-table__body-wrapper")
+            ?: doc.selectFirst("div.el-table__body-wrapper")
+            ?: run {
+                errors += "INV-MARKER-MISS 失败: 未找到 el-table__body-wrapper 容器 (新强智 Njw2017 SPA 主入口)"
+                return emptyList()
+            }
+        val tbody = wrapper.selectFirst("tbody")
+            ?: run {
+                errors += "INV-TBODY-MISS 失败: el-table__body-wrapper 缺 tbody"
+                return emptyList()
+            }
+        val rows = tbody.select("tr")
+        if (rows.isEmpty()) {
+            errors += "INV-ROW-COUNT 失败: tbody 无 tr 行"
+            return emptyList()
+        }
+        if (rows.size < 6) {
+            errors += "INV-ROW-COUNT-WARN: tbody tr 数 ${rows.size} (<6 行, 仅用于单元测试)"
+        }
+        // 行 → 默认起始节 (与 QZParser.java#getSectionStart 共识, 仅当 div[6] 不含"节"字时降级)
+        val defaultStartByRow = intArrayOf(1, 3, 6, 8, 10, 13)
+        val defaultEndByRow = intArrayOf(2, 5, 7, 9, 12, 15)
+        return buildList {
+            for ((rowIdx, row) in rows.withIndex()) {
+                if (rowIdx >= 6) break // 固定 6 行, 超出忽略
+                val tds = row.select("td")
+                if (tds.size < 8) continue // 0=节次标签, 1..7=周一..周日
+                for (col in 1..7) {
+                    val td = tds[col] ?: continue
+                    // INV-POSITION-WRAPPER: 用 `div > div > div` 选出 position: relative 课程包装器
+                    val courseWrappers = td.select("div > div > div")
+                    if (courseWrappers.isEmpty()) continue
+                    for (wrapperEl in courseWrappers) {
+                        val info = wrapperEl.select("> div")
+                        // 8 字段包装器 (实测), 不足 8 视为非课程包装器 (e.g. 空 div)
+                        if (info.size < 8) continue
+                        val nameRaw = info.get(3).text().trim()
+                        if (nameRaw.isBlank()) continue
+                        // INV-NAME-STRIP-ASTERISK: QZParser.java#getClassName char[0]=='*' → skip 前 2 字符
+                        val name = if (nameRaw.length >= 2 && nameRaw[0] == '*') nameRaw.substring(2).trim() else nameRaw
+                        val teacher = info.get(4).text().trim()
+                        val className = info.get(5).text().trim() // 班级字段, 暂不入 JwCourse
+                        val weeksText = info.get(6).text().trim()
+                        val room = info.get(7).text().trim()
+                        // INV-SECTIONS-FALLBACK: 无"节"字时按行号用 defaultStartByRow/defaultEndByRow
+                        val startNode: Int
+                        val endNode: Int
+                        if (weeksText.contains("节")) {
+                            // "03-04节(1-16周)" → 解析节次范围
+                            val beforeBracket = weeksText.substringBefore('(').substringBefore('节')
+                            val nums = Regex("\\d+").findAll(beforeBracket).map { it.value.toInt() }.toList()
+                            startNode = nums.getOrNull(0) ?: defaultStartByRow[rowIdx]
+                            endNode = nums.getOrNull(1) ?: (defaultEndByRow[rowIdx])
+                        } else {
+                            startNode = defaultStartByRow[rowIdx]
+                            endNode = defaultEndByRow[rowIdx]
+                        }
+                        // INV-WEEKS-EXTRACT-PAREN: QZParser.java#getWeeksList 取括号内周次 (含"周"字)
+                        //    格式 "周" + "1-16" 或 "1-16,18-20" 或 "1-8单" 等
+                        val weeksRaw = Regex("[\\(（]([^\\)）]+)[\\)）]").find(weeksText)?.groupValues?.get(1).orEmpty()
+                        val weeks = parseWeekTokens(weeksRaw)
+                        if (weeks.isEmpty()) continue
+                        weeks.forEach { (from, to, type) ->
+                            add(JwCourse(name, room, teacher, col, startNode, endNode, from, to, type))
+                        }
+                    }
                 }
             }
         }
@@ -577,6 +663,9 @@ class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosof
     override fun generateCourseList() = WakeUpCompat.parseKingoTaskActivity(source).ifEmpty { super.generateCourseList() }
 }
 class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTableForStd", "courseTableStudent", "wisedu", "JinZhi"))
+class JwJzSuperParser(source: String) : WakeUpMarkerParser(source, setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd", "studentTableVms", "JinZhi")) {
+    override fun generateCourseList() = WakeUpCompat.parseJzSuper(source).ifEmpty { super.generateCourseList() }
+}
 class JwSouthSoftParser(source: String) : WakeUpMarkerParser(source, setOf("studentTableVms", "studentTableVm", "activities", "south_soft")) {
     override fun generateCourseList() = WakeUpCompat.parseSouthSoft(source).ifEmpty { super.generateCourseList() }
 }
