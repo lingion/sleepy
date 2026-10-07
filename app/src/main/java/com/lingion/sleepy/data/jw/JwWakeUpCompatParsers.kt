@@ -155,6 +155,155 @@ private object WakeUpCompat {
         }
     }
 
+    /** Kingo Super (新青果 super 2026-10) HTML 3-chain fallback parser.
+     *  3 chains (WakeUp NewKingosoftSuperParser.smali 反编译证据):
+     *    - chain1 (o0oOOo  老 div): div.xkinfo + NBSP cleanup + <br> row split (INV-NBSP-CLEANUP)
+     *    - chain2 (o00O0OO 标准): table thead 中文表头 课程/学分/教师/地点/周次/节次/单双周 (INV-CN-HEADER-LEXICON)
+     *    - chain3 (oo0oOO0  新版): div.kbDiv layout (新青果 super 2026-10 主入口)
+     *  8 regex_invariants 闸门 (SOP §6):
+     *    INV-HTML-FRAG-SPLIT / INV-NBSP-CLEANUP / INV-CN-HEADER-LEXICON / INV-DAY-DICT
+     *    / INV-WEEKS-PARSE / INV-SECTIONS-RANGE / INV-NO-SECTION-TIME-MAP / INV-ERROR-AGGREGATE.
+     *  失败原因写入 [errorList] (INV-ERROR-AGGREGATE), 任一链命中即返回, 全部失败返回空. */
+    fun parseKingoSuperHtml(source: String, errorList: MutableList<String>? = null): List<JwCourse> {
+        val errors = errorList ?: mutableListOf()
+        // INV-HTML-FRAG-SPLIT: split on "<head" + "</head>" delimiters (Kingo 协议族共用)
+        val headParts = source.split("<head", "</head>")
+        if (headParts.size < 3) {
+            errors += "INV-HTML-FRAG-SPLIT 失败: <head></head> 切片 size=${headParts.size} (<3)"
+            return emptyList()
+        }
+        val body = headParts[2]
+        // INV-NO-SECTION-TIME-MAP: super 协议族不使用 08:00/10:00 时间字面量, 不调用 timeToNode()
+
+        // 链 1 — o0oOOo 老 div: xkinfo + NBSP + <br>
+        val chain1: List<JwCourse> = try {
+            // INV-NBSP-CLEANUP: 把连续 &nbsp; 统一塌缩为空格 (避免 Jsoup text() 切碎)
+            val cleaned = Regex("(&nbsp;)+").replace(body, " ")
+            buildList {
+                for (div in Jsoup.parse(cleaned).select("div.xkinfo, div[class*=xkinfo]")) {
+                    val lines = div.html().split("<br>", "\n")
+                        .map { Jsoup.parse(it).text().trim() }
+                        .filter { it.isNotEmpty() }
+                    if (lines.isEmpty()) continue
+                    val name = lines.first().trim()
+                    if (name.isBlank()) continue
+                    val dayText = lines.firstOrNull { Regex("(?:星期|周)\\s*[一二三四五六日天1-7]").containsMatchIn(it) }.orEmpty()
+                    // INV-DAY-DICT: 复用 extractDay (周X/星期X → 1-7, 含 日→天)
+                    val day = extractDay(dayText) ?: continue
+                    val weeksText = lines.firstOrNull { Regex("\\d+\\s*[-~至]\\s*\\d+").containsMatchIn(it) }.orEmpty()
+                    if (weeksText.isBlank()) continue
+                    // INV-SECTIONS-RANGE: "第1-2节" → [1, 2]
+                    val nodeText = lines.firstOrNull {
+                        Regex("第?\\s*\\d+\\s*[-~至]\\s*\\d+\\s*节?").containsMatchIn(it) && it != weeksText
+                    }.orEmpty()
+                    val nums = nodeText.let { Regex("\\d+").findAll(it).map { m -> m.value.toInt() }.toList() }
+                    val start = nums.getOrNull(0) ?: 1
+                    val end = nums.getOrNull(1) ?: start
+                    val knownSet = setOf(name, dayText, weeksText, nodeText)
+                    val room = lines.lastOrNull { it !in knownSet && it.isNotBlank() }.orEmpty()
+                    val teacher = lines.firstOrNull { it !in (knownSet + room) && it.isNotBlank() }.orEmpty()
+                    parseWeekTokens(weeksText).forEach { (from, to, type) ->
+                        add(JwCourse(name, room, teacher, day, start, end, from, to, type))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            errors += "chain1 o0oOOo 异常: ${e.message}"
+            emptyList()
+        }
+        if (chain1.isNotEmpty()) return chain1
+        errors += "chain1 o0oOOo: 无 xkinfo 命中或解析为空"
+
+        // 链 2 — o00O0OO 标准: thead 中文表头
+        val chain2: List<JwCourse> = try {
+            // INV-CN-HEADER-LEXICON: 课程/学分/教师/地点/周次/节次/单双周
+            val cnHeaders = setOf("课程", "学分", "教师", "地点", "周次", "节次", "单双周")
+            buildList {
+                for (table in Jsoup.parse(body).select("table")) {
+                    val ths = table.select("thead th, tr th").map { it.text().trim() }
+                    if (ths.isEmpty() || ths.none { it in cnHeaders }) continue
+                    val idxName = ths.indexOfFirst { it == "课程" }
+                    val idxTeacher = ths.indexOfFirst { it == "教师" }
+                    val idxRoom = ths.indexOfFirst { it == "地点" }
+                    val idxWeeks = ths.indexOfFirst { it == "周次" }
+                    val idxNode = ths.indexOfFirst { it == "节次" }
+                    val idxParity = ths.indexOfFirst { it == "单双周" }
+                    // INV-DAY-DICT: 列头带"周X"/"星期X" 直接识别; 否则扫描所有 cells 找周X/星期X
+                    val idxDay = ths.indexOfFirst { Regex("(?:星期|周)[一二三四五六日天1-7]").containsMatchIn(it) }
+                    for (row in table.select("tbody tr").ifEmpty { table.select("tr").drop(1) }) {
+                        val cells = row.select("td")
+                        if (cells.isEmpty()) continue
+                        val name = cells.getOrNull(idxName)?.text()?.trim().orEmpty()
+                        if (name.isBlank()) continue
+                        val teacher = cells.getOrNull(idxTeacher)?.text()?.trim().orEmpty()
+                        val room = cells.getOrNull(idxRoom)?.text()?.trim().orEmpty()
+                        val weeksText = cells.getOrNull(idxWeeks)?.text()?.trim().orEmpty()
+                        val nodeText = cells.getOrNull(idxNode)?.text()?.trim().orEmpty()
+                        val parityText = cells.getOrNull(idxParity)?.text()?.trim().orEmpty()
+                        if (weeksText.isBlank() || nodeText.isBlank()) continue
+                        // INV-DAY-DICT: 优先 idxDay 列头; 否则扫描所有 cells
+                        val day = when {
+                            idxDay >= 0 -> extractDay(cells.getOrNull(idxDay)?.text().orEmpty())
+                            else -> cells.firstNotNullOfOrNull { extractDay(it.text()) }
+                        } ?: continue
+                        // INV-SECTIONS-RANGE: "3-4节" → [3, 4]
+                        val nums = Regex("\\d+").findAll(nodeText).map { it.value.toInt() }.toList()
+                        val start = nums.getOrNull(0) ?: 1
+                        val end = nums.getOrNull(1) ?: start
+                        // INV-WEEKS-PARSE: 复用 parseWeekTokens, 注入 parity (单/双) 字段
+                        val effectiveWeeks = when {
+                            parityText.isNotBlank() && weeksText.isNotBlank() -> "$weeksText$parityText"
+                            else -> weeksText
+                        }
+                        parseWeekTokens(effectiveWeeks).forEach { (from, to, type) ->
+                            add(JwCourse(name, room, teacher, day, start, end, from, to, type))
+                        }
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            errors += "chain2 o00O0OO 异常: ${e.message}"
+            emptyList()
+        }
+        if (chain2.isNotEmpty()) return chain2
+        errors += "chain2 o00O0OO: 无 thead 中文表头命中或解析为空"
+
+        // 链 3 — oo0oOO0 新版: kbDiv div 布局
+        val chain3: List<JwCourse> = try {
+            buildList {
+                for (div in Jsoup.parse(body).select("div.kbDiv, div[class*=kbDiv]")) {
+                    val text = div.text().trim()
+                    if (text.isBlank()) continue
+                    val day = extractDay(text) ?: continue
+                    // INV-WEEKS-PARSE: 取末次匹配 (kbDiv 行内周次在尾部, 避免 "第3-4节" 抢先匹配)
+                    val weeksText = Regex("\\d+\\s*[-~至]\\s*\\d+\\s*(?:周|[单双周])").findAll(text).lastOrNull()?.value
+                        ?: Regex("\\d+\\s*[-~至]\\s*\\d+").findAll(text).lastOrNull()?.value.orEmpty()
+                    if (weeksText.isBlank()) continue
+                    // INV-SECTIONS-RANGE: "第1-2节" → [1, 2]
+                    val nodeText = Regex("第?\\s*\\d+\\s*[-~至]\\s*\\d+\\s*节?").find(text)?.value.orEmpty()
+                    val nums = nodeText.let { Regex("\\d+").findAll(it).map { m -> m.value.toInt() }.toList() }
+                    val start = nums.getOrNull(0) ?: 1
+                    val end = nums.getOrNull(1) ?: start
+                    val dayRegex = Regex("(?:星期|周)\\s*[一二三四五六日天1-7]")
+                    val dayMatch = dayRegex.find(text)
+                    val name = if (dayMatch != null) text.substring(0, dayMatch.range.first).trim() else text.trim()
+                    if (name.isBlank()) continue
+                    val afterNode = text.substringAfter(nodeText, "").trim()
+                    val room = afterNode.takeIf { it.isNotEmpty() && it != text && !afterNode.matches(Regex("\\d+\\s*周")) }.orEmpty()
+                    parseWeekTokens(weeksText).forEach { (from, to, type) ->
+                        add(JwCourse(name, room, "", day, start, end, from, to, type))
+                    }
+                }
+            }
+        } catch (e: Exception) {
+            errors += "chain3 oo0oOO0 异常: ${e.message}"
+            emptyList()
+        }
+        if (chain3.isNotEmpty()) return chain3
+        errors += "chain3 oo0oOO0: 无 kbDiv 命中或解析为空"
+        return emptyList()
+    }
+
     /** Kingo TaskActivity JS grid: "activity = new TaskActivity(name,teacher,room,weeksBinary)"; index=a*unitCount+b → day=a+1, node=b+1; '1'@p → week p+1, 连续段合并成组, 全奇→单周/全偶→双周. */
     fun parseKingoTaskActivity(source: String): List<JwCourse> {
         if (!source.contains("TaskActivity")) return emptyList()
@@ -573,8 +722,24 @@ abstract class WakeUpMarkerParser(source: String, private val markers: Set<Strin
     override fun confidence(): Int = WakeUpCompat.confidence(source, markers)
     override fun matchedFeatures(): List<String> = WakeUpCompat.features(source, markers)
 }
-class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosoft", "courseTableForStd", "courseTableStudent", "new TaskActivity")) {
-    override fun generateCourseList() = WakeUpCompat.parseKingoTaskActivity(source).ifEmpty { super.generateCourseList() }
+class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosoft", "courseTableForStd", "courseTableStudent", "new TaskActivity", "CourseTableForStd", "ScheduleTaskBean", "xkinfo", "kbDiv")) {
+    override fun generateCourseList(): List<JwCourse> {
+        // Kingo Super 2026-10 — 内部叠加 HTML 3 链降级 (不新建独立类, 与 TYPE_KINGO_NEW 共用)
+        // 阶段 1: HTML 3 链降级 (新青果 super 主入口) — 见 parseKingoSuperHtml
+        val errors = mutableListOf<String>()
+        val superHtml = WakeUpCompat.parseKingoSuperHtml(source, errors)
+        if (superHtml.isNotEmpty()) return superHtml
+        // 阶段 2: TaskActivity JS grid (现有路径, 兼容老版本 kingo 教务)
+        val taskActivity = WakeUpCompat.parseKingoTaskActivity(source)
+        if (taskActivity.isNotEmpty()) return taskActivity
+        // 阶段 3: 父类 WakeUpMarkerParser (markers 命中回退)
+        val parent = super.generateCourseList()
+        if (parent.isNotEmpty()) return parent
+        // 全失败 — INV-ERROR-AGGREGATE: 错误列表聚合抛出
+        errors += "TaskActivity JS grid 链 (chain1/老 kingo) 解析为空"
+        errors += "父类 WakeUpMarkerParser 链 (markers 命中回退) 解析为空"
+        throw IllegalStateException("JwKingoParser (新青果 super 2026-10) 全链降级失败:\n" + errors.joinToString("\n"))
+    }
 }
 class JwJzParser(source: String) : WakeUpMarkerParser(source, setOf("courseTableForStd", "courseTableStudent", "wisedu", "JinZhi"))
 class JwSouthSoftParser(source: String) : WakeUpMarkerParser(source, setOf("studentTableVms", "studentTableVm", "activities", "south_soft")) {
