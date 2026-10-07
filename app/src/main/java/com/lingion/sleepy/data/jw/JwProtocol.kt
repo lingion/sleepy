@@ -48,6 +48,19 @@ object JwProtocol {
     /** WakeUp Kingosoft 新协议，覆盖新青果/金智门户系列。 */
     const val TYPE_KINGO_NEW = "kingo_new"
 
+    /**
+     * Kingosoft ZX 子变体 (青果新一代 ZX 形态, 2026-10 SOP cross-verified) — 4-helper fallback chain.
+     * 协议形态 (docs/wakeup-parity-kingo-zx-2026-10-06/findings.json decompiled_kotlin):
+     *  - pageRpt 第一层 (#pageRpt > table)
+     *  - pageRpt 第二层 (#pageRpt table, 嵌套表格)
+     *  - reportArea 降级 (#reportArea)
+     *  - mytable + xkinfo 极旧版 (table#mytable / #xkinfo)
+     * 跨仓印证: LonelyMarch/OpenWakeUp (KgZxParser.kt),
+     *          aischedule-lit-kingosoft (icepie, MIT, pageRpt 第二层 table 销点旁证),
+     *          oh-my-lit (Go 跨语言 pageRpt 锚点验证), kingosoft_api (lizhengqiang).
+     */
+    const val TYPE_KINGO_ZX = "kingo_zx"
+
     /** WakeUp 金智课程表回退族。 */
     const val TYPE_JZ = "jz"
 
@@ -270,7 +283,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
-        TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
+        TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST,
     )
 
@@ -288,6 +301,7 @@ object JwProtocol {
         TYPE_PKU -> "北京大学"
         TYPE_BNUZ -> "北师珠"
         TYPE_KINGO_NEW -> "新青果/金智教务"
+        TYPE_KINGO_ZX -> "青果教务 (ZX 子变体)"
         TYPE_JZ -> "金智教务（WakeUp 兼容）"
         TYPE_SOUTH_SOFT -> "南软研究生教务"
         TYPE_CHAOXING_LEGACY -> "超星教务（旧版）"
@@ -326,7 +340,7 @@ object JwProtocol {
         TYPE_UCAS -> "other"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
-        TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
+        TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
