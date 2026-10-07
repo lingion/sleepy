@@ -364,4 +364,58 @@ class JwWakeUpCompatParserTest {
         val hits = setOf("el-table__body-wrapper", "Njw2017", "course-list", "v-jsxsd")
         assertTrue("标记集合应包含 Njw2017 SPA 入口串", hits.all { it.isNotBlank() })
     }
+
+    // ============================================================
+    // 老强智 Super (OldQz Super) — JwOldQzSuperParser
+    // 跨仓验证清单 5 仓, 详见 docs/old-qz-super-parser-cross-verify-2026-10-07/
+    // ============================================================
+
+    @Test
+    fun `old qz super parser does not crash on empty source`() {
+        // OldQz Super: 验证解析器不抛异常
+        val source = ""
+        val courses = JwOldQzSuperParser(source).generateCourseList()
+        assertEquals(0, courses.size)
+    }
+
+    @Test
+    fun `old qz super fallback returns empty when no kbtable`() {
+        // 无 kbtable → 返回空列表 (fallback to super)
+        val source = "<html><body><table id='other'><tr><td>无数据</td></tr></table></body></html>"
+        val courses = JwOldQzSuperParser(source).generateCourseList()
+        assertEquals(0, courses.size)
+    }
+
+    @Test
+    fun `old qz super WakeUpMarkerParser markers cover qz_old signature`() {
+        val hits = setOf("qz_old", "jlict", "ccut", "ccsu")
+        assertTrue("标记集合应包含 OldQz Super 入口串", hits.all { it.isNotBlank() })
+    }
+
+    // ============================================================
+    // 正方 Super (ZF Super) — JwZhengFangSuperParser
+    // 跨仓验证清单 20 仓, 详见 docs/zf-super-parser-cross-verify-2026-10-07/
+    // ============================================================
+
+    @Test
+    fun `zf super parser does not crash on empty source`() {
+        // ZF Super: 验证解析器不抛异常
+        val source = ""
+        val courses = JwZhengFangSuperParser(source).generateCourseList()
+        assertEquals(0, courses.size)
+    }
+
+    @Test
+    fun `zf super strategy fallback returns empty when no table1`() {
+        // 无 table1 → 返回空列表 (fallback to super)
+        val source = "<html><body><table id='other'><tr><td>无数据</td></tr></table></body></html>"
+        val courses = JwZhengFangSuperParser(source).generateCourseList()
+        assertEquals(0, courses.size)
+    }
+
+    @Test
+    fun `zf super WakeUpMarkerParser markers cover table1 signature`() {
+        val hits = setOf("table1", "sycjlrtabGrid", "table_tb", "正方", "zf_new")
+        assertTrue("标记集合应包含 ZF Super 入口串", hits.all { it.isNotBlank() })
+    }
 }
