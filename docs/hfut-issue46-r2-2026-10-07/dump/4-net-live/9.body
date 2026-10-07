@@ -1,0 +1,13 @@
+<div class="card-content">
+  <strong style="color: #737373">
+    <% if (activityType == 'Exam') { %>
+      考试
+    <% } else if (activityType == 'RoomBorrow') { %>
+      教室借用
+    <% } %>
+  </strong>
+  <p>
+    <%= activityName %><br/>
+    (<%= weekIndices %>)周
+  </p>
+</div>

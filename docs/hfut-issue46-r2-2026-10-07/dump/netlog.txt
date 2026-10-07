@@ -1,0 +1,1743 @@
+# Session: 20261007-133854
+# Total: 347 requests
+# Format: +offsetMs METHOD status mime [MAIN|sub] [REDIRECT] url
+
++46ms GET unknown - MAIN https://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+  > Upgrade-Insecure-Requests: 1
+  > sec-ch-ua-platform: "Android"
++519ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui.min.css?v=00011
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/css,*/*;q=0.1
+  > sec-ch-ua-platform: "Android"
++520ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui-plugin.min.css?v=00010
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/css,*/*;q=0.1
+  > sec-ch-ua-platform: "Android"
++521ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/css/info-page.css?v=00005
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/css,*/*;q=0.1
+  > sec-ch-ua-platform: "Android"
++523ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/css/generate-template.css?v=00002
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/css,*/*;q=0.1
+  > sec-ch-ua-platform: "Android"
++523ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/default.css?v=00010
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/css,*/*;q=0.1
+  > sec-ch-ua-platform: "Android"
++523ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui.js?v=00011
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++524ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui.zh.min.js?v=00002
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++524ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/search-page-helper1.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++524ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/iconfont.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++524ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/notIndex-page-helper.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++525ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/info-page.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++526ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/student-selectize.js?v=00004
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++526ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/helper/datatable-column-tools.js?v=20260722
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++530ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui-home.min.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/css,*/*;q=0.1
+  > sec-ch-ua-platform: "Android"
++531ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/cryptoJS/sha1.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++532ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/cryptoJS/md5.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: */*
+  > sec-ch-ua-platform: "Android"
++904ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/img/bg1.jpg
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui-home.min.css
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > sec-ch-ua-platform: "Android"
++1014ms GET unknown - https://jxglstu.hfut.edu.cn/eams5-student/static/favicon.png
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > sec-ch-ua-platform: "Android"
++2135ms GET unknown - MAIN https://jxglstu.hfut.edu.cn/eams5-student/neusoft-sso/login
+  > sec-ch-ua: "Android WebView";v="137", "Chromium";v="137", "Not/A)Brand";v="24"
+  > sec-ch-ua-mobile: ?1
+  > Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+  > Upgrade-Insecure-Requests: 1
+  > sec-ch-ua-platform: "Android"
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: https://jxglstu.hfut.edu.cn/eams5-student/login?refer=http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
++2832ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui-plugin.min.css?v=00010
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2832ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui.min.css?v=00011
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2832ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/css/generate-template.css?v=00002
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2832ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/css/info-page.css?v=00005
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2839ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/default.css?v=00010
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2839ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui.js?v=00011
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2839ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui.zh.min.js?v=00002
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2839ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/iconfont.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2840ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/search-page-helper1.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2840ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/info-page.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2840ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/notIndex-page-helper.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2841ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/datatable-column-tools.js?v=20260722
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2841ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/student-selectize.js?v=00004
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2842ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/font-awesome.min.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui-home.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/home/css/home.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/common-home/css/index.css?v=08
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/home/css/notice.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/css/QRCode.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2844ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/cryptoJS/sha1.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2844ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-vendors.da35cd08.css?v=1
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2845ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/home/img/eams_logo_color.png
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2845ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui-home.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++2845ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/app.6afb2c3b.css?v=1
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3155ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/require.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3169ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-home/main.js?v=1
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3169ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/home/js/notice.js?v=00005
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3169ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/chunk-vendors.0c4ffa91.js?v=1
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3169ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/app.97ac1327.js?v=1
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3183ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/fonts/fontawesome-webfont.woff2?v=4.3.0
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/font-awesome.min.css
+  > Accept: */*
++3383ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-7cd97cc4.8b897625.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3385ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/chunk-7cd97cc4.474239b0.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3385ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-328aa3a1.58bdc45d.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3386ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/chunk-328aa3a1.7c446cdd.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3386ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-5409d1b3.1937f178.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3387ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/chunk-5409d1b3.1f8fac66.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3387ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-40fc0290.722a9fd3.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3387ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/chunk-40fc0290.555fffae.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3388ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-7c3c4ec8.4b24b2d4.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3388ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/js/chunk-7c3c4ec8.721dc811.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3390ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/home/menu
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: application/json, text/plain, */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3392ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/home/get-primary-permCodes?identity=STUDENT
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: application/json, text/plain, */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3398ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/home/menu
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
+  > Accept: */*
+  > X-Requested-With: XMLHttpRequest
++3404ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/my/check-has-new-notification
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
+  > Accept: */*
+  > X-Requested-With: XMLHttpRequest
++3404ms GET unknown - http://121.251.19.54:8080/webroot/decision/login/cross/domain?fine_username=2024218261&fine_password=d41d8cd98f00b204e9800998ecf8427e&validity=-1&callback=jQuery112405714717581245131_1791351537952&_=1791351537953
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/
++3416ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/common-home/js/views/themeConfigView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3508ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/student/home-page/students
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: application/json, text/plain, */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3569ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/students/avatar/222af359-dd86-4c92-9f3d-c7e59b9b00cb
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3577ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/student/home-page/programCompletionPreview
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: application/json, text/plain, */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3577ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/img/com-imge-wushuju.206d5b44.png
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-7cd97cc4.8b897625.css
++3628ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/fonts/element-icons.535877f5.woff
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/static/std-tchr-home/css/chunk-vendors.da35cd08.css?v=1
+  > Accept: */*
++3665ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/text.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3732ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/common-home/js/templates/themeConfig-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
++3830ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/common-home/img/theme1.jpg
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/static/common-home/css/index.css?v=08
++4421ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/my/get-notices
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
+  > Accept: */*
+  > X-Requested-With: XMLHttpRequest
++4492ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/notification/get-alert-notifications
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
+  > Accept: */*
+  > X-Requested-With: XMLHttpRequest
++16528ms GET unknown - MAIN http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/home
+  > Accept: text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.7
+  > Upgrade-Insecure-Requests: 1
++16843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/css/schedule-table.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: text/css,*/*;q=0.1
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++16843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/main.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++16843ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/coursetable/course-table.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17062ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/get-data?bizTypeId=23&semesterId=354&dataId=178619
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > Accept: */*
+  > X-Requested-With: XMLHttpRequest
++17319ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/timetable-layout
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++17389ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++17643ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/favicon.png
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: image/avif,image/webp,image/apng,image/svg+xml,image/*,*/*;q=0.8
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17655ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/lesson.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17658ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/lessons.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17660ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/card.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17660ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/cards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17663ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/scheduleGroup.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17664ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/scheduleGroups.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17664ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/common.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17667ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/timeTable.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17668ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/timeTableView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17674ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/holidays.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17676ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/warnCards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17677ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/weekdayColumns.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17774ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/cardsService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17775ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/schedules.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17817ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/scheduleGroupService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17852ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/weekdayColumnListView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++17855ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/time-table.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18024ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/schedule.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18025ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/schedulesService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18025ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/holiday.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18025ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/weekdayColumn.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18026ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/warnCard.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18083ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/extendCard.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18084ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/activity.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18084ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/extendCards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18086ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/weekdayColumnView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18086ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/cardView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18091ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/warnCardView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18092ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/extendCardView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18093ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/roomTableWarnView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18097ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/roomActivityTableRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18130ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++18274ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/activities.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18276ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/weekday-column.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18277ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/popoverView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18275ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/temp-cards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18278ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/card-drag-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18279ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/card-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18279ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/scheduleArrangeView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18279ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/TeacherExistedActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18280ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/RoomExistedActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18280ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/AdminclassExistedActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18281ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/ExistActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18284ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/extend-card-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18285ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/extendPopoverView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18285ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/warn-card-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18285ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/warnPopoverView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18286ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/room-table-warn-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18383ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/card-popover-content.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18476ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/RoomExistedActivityRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18477ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/AdminclassExistedActivityRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18481ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/scheduleView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18485ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/cell.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18486ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/room.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18487ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/cells.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18490ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/rooms.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18493ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/roomView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/customTimeAndPlace.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/scheduleArrangeViewService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/TeacherConflictService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/RoomConflictService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18496ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/AdminclassConflictService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18497ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/TeacherExistedActivityRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18560ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/warn-card-popover.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18568ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/extend-card-popover.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18571ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/schedule-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18663ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/windowViewService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18670ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/room-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18755ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/TeacherArrangingActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18757ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/RoomArrangingActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18763ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/AdminclassArrangingActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++18888ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++18986ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19079ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19160ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19278ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19394ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19500ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19600ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19686ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19782ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19879ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++19962ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++20034ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++20118ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++20205ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++20337ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++20419ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/fonts/fontawesome-webfont.woff2?v=4.7.0
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui.min.css?v=00011
+  > Accept: */*
++22354ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++22620ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++22689ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++22746ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++22811ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++22902ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++22975ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++23046ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++23124ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++23192ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++23278ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++23349ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++23445ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++24105ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++24258ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++26613ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++26722ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29164ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29529ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29604ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29672ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29735ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29797ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29869ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++29970ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30052ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30126ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30195ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30279ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30349ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30433ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30514ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30598ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++30671ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++32232ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++32583ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++32737ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/get-data?bizTypeId=23&dataId=178619
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++32811ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > Accept: */*
+  > Content-Type: application/json
++52413ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/timetable-layout
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52413ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52413ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52414ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52417ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52420ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52420ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52421ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52421ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52421ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52421ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52424ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52424ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52425ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52425ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52425ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52425ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52425ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52426ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52427ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52428ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52428ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52428ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52432ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52432ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52432ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52433ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52433ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52433ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52433ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52434ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52435ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52435ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52435ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52435ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52436ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52436ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52436ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52436ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++52437ms POST unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Origin: http://jxglstu.hfut.edu.cn
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > X-Requested-With: XMLHttpRequest
+  > Accept: */*
+  > Content-Type: application/json
++82442ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui.min.css?v=00011
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82442ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/eams-ui-plugin.min.css?v=00010
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82445ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/css/info-page.css?v=00005
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82446ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/css/generate-template.css?v=00002
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82447ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/css/default.css?v=00010
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82447ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui.js?v=00011
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82448ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/eams-ui.zh.min.js?v=00002
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82448ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/iconfont.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82462ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/search-page-helper1.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82474ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/notIndex-page-helper.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82474ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/info-page.js?v=00003
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82474ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/student-selectize.js?v=00004
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82474ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/helper/datatable-column-tools.js?v=20260722
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82474ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/css/schedule-table.css
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82474ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/require.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82475ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/coursetable/course-table.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82475ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/main.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82475ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/get-data?bizTypeId=23&semesterId=354&dataId=178619
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82476ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/timetable-layout
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82476ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82476ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/favicon.png
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82476ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/lesson.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82477ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/lessons.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82477ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/card.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82477ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/cards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82478ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/scheduleGroup.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82478ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/scheduleGroups.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82478ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/common.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82479ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/timeTable.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82480ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/timeTableView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82480ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/holidays.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82480ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/weekdayColumns.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82480ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/warnCards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82481ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/cardsService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82481ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/schedules.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82481ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/scheduleGroupService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82481ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/weekdayColumnListView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82481ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/js/text.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/time-table.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/schedule.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/schedulesService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/holiday.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/warnCard.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/weekdayColumn.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82482ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/extendCard.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82483ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/activity.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82483ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/weekdayColumnView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82483ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/cardView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82483ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/warnCardView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82483ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/extendCards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82484ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/extendCardView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82485ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/roomActivityTableRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82485ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/roomTableWarnView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82485ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/week-indices-digest
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82485ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/activities.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82486ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/temp-cards.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82487ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/weekday-column.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82487ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/popoverView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82489ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/card-drag-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82489ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/card-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82489ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/scheduleArrangeView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82489ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/TeacherExistedActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82490ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/AdminclassExistedActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82490ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/RoomExistedActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82490ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/ExistActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82491ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/extend-card-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82491ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/extendPopoverView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82492ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/warn-card-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82492ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/warnPopoverView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82493ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/room-table-warn-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82494ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/card-popover-content.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82494ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/AdminclassExistedActivityRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82494ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/scheduleView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/cell.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/models/room.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/rooms.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/collections/cells.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/roomView.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/views/customTimeAndPlace.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82496ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/scheduleArrangeViewService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82496ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/RoomConflictService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82496ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/TeacherConflictService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82495ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/RoomExistedActivityRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82496ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/AdminclassConflictService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82496ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/repo/TeacherExistedActivityRepo.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82497ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/extend-card-popover.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82497ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/schedule-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82497ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/warn-card-popover.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82498ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/windowViewService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82498ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/templates/room-template.html
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82501ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/TeacherArrangingActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82501ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/RoomArrangingActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82501ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/scheduletable/js/services/AdminclassArrangingActivityService.js
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82502ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82502ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/static/eams-ui/fonts/fontawesome-webfont.woff2?v=4.7.0
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82502ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619
++82502ms GET unknown - http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/get-data?bizTypeId=23&dataId=178619
+  > User-Agent: Mozilla/5.0 (Linux; Android 16; 23078RKD5C Build/BP2A.250605.031.A3; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/137.0.7151.115 Mobile Safari/537.36
+  > Accept: */*
+  > Referer: http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619

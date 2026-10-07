@@ -1,0 +1,20 @@
+<div class="card-content">
+  <span style="color: #ff6b6b">
+    <% for (var i=0; i < conflictTypes.length; i++) { %>
+      <% if (conflictTypes[i] == 'Person') { %>
+      <div style="color: blue;">
+        <i class="fa fa-exclamation-triangle"></i>教师占用
+      </div>
+      <% } else if (conflictTypes[i] == 'Room') { %>
+      <div style="color: red;">
+        <i class="fa fa-exclamation-triangle"></i>教室占用
+      </div>
+      <% } else if (conflictTypes[i] == 'Adminclass') { %>
+      <div style="color: yellow;">
+        <i class="fa fa-exclamation-triangle"></i>班级占用
+      </div>
+      <% } %>
+    <% } %>
+  </span>
+</div>
+

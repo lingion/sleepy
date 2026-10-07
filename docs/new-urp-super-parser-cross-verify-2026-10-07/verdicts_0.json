@@ -1,0 +1,177 @@
+[
+  {
+    "repo": "ceilf6/Auto_courseGrabber",
+    "stars": 976,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "courseGrabber.js",
+      "web结构/自主选课_files/api.js",
+      "web结构/自主选课_files/jwglxt-common_zh_CN.js"
+    ],
+    "notes": "Uses `kcmc` (standard Zhengfang/正方 URP field name) in DOM scraping code. No `kcm` (lowercase NewUrp), no `cxjc`, no `skzc`. Regular Zhengfang教务系统, not NewUrp Super."
+  },
+  {
+    "repo": "Moonrend/Classworks",
+    "stars": 351,
+    "language": "Vue",
+    "verdict": "NEGATIVE",
+    "evidence_files": [
+      "apps/web/src/pages/cses2wakeup.vue"
+    ],
+    "notes": "Class homework/作业 board display tool for classroom large screens. No URP/教务 system integration. Uses `subject` field, not URP course schedule. No relevance to NewUrp or any教务系统."
+  },
+  {
+    "repo": "HaoZai000/NexioSchedule",
+    "stars": 114,
+    "language": "Kotlin",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "README.md",
+      "app/src/main/java/com/haooz/chedule/viewmodel/SettingsViewModel.kt"
+    ],
+    "notes": "Android course schedule app with 教务系统 import via WebView + JavaScript adapters (shiguang_warehouse style). No `kcm`/`jxlm`/`cxjc`/`skzc` fields found. Uses school-specific JS scripts for scraping, not NewUrp Super protocol."
+  },
+  {
+    "repo": "Lorcas-Zephyr/aoxiang-assistant",
+    "stars": 68,
+    "language": "Java",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "README.md",
+      "docs/API.md"
+    ],
+    "notes": "翱翔助手 for 西北工业大学 (NWPU). Custom教务 system with统一身份认证. No `kcm`/`kcmc`/`jxlm`/`cxjc` fields found. School-specific system, not standard NewUrp Super."
+  },
+  {
+    "repo": "xiaomanjun233/SleepDown-Schedule",
+    "stars": 61,
+    "language": "Kotlin",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "app/src/main/assets/shiguang_warehouse-main/resources/NIIT/niit.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/LUT/LUT.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/HQU/hquadap.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/HRBEU/hrbeu.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/DLUTCI/dlutci.js"
+    ],
+    "notes": "Jetpack Compose schedule app bundling shiguang_warehouse school adapters. Has `KCM` (uppercase, regular URP field) in NIIT/LUT/HQU/HRBEU/DLUTCI adapters. No lowercase `kcm`, no `jxlm`/`cxjc`/`skzc`. Uses standard URP JSON field names, not NewUrp Super variant."
+  },
+  {
+    "repo": "yuchenii/HHUClassSchedule",
+    "stars": 48,
+    "language": "Java",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "README.md",
+      "app/src/main/res/layout/activity_parse_html.xml"
+    ],
+    "notes": "河海大学 (HHU) Android schedule app with教务系统 import. No `kcm`/`kcmc`/`jxlm`/`cxjc` fields found. Uses HTML parsing for import, not NewUrp Super protocol."
+  },
+  {
+    "repo": "superdaobo/mini-hbut",
+    "stars": 32,
+    "language": "TypeScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "apps/client/src/utils/cloud_sync.js.md",
+      "apps/client/src-tauri/src/transport/tauri/qxzkb.rs",
+      "apps/client/src-tauri/src/modules/exam.rs"
+    ],
+    "notes": "湖北工业大学 (HBUT) cross-platform教务助手. Uses `kcmc` (standard Zhengfang URP) in query fields and models. No lowercase `kcm`, no `jxlm`/`cxjc`/`skzc`. Regular Zhengfang URP, not NewUrp Super."
+  },
+  {
+    "repo": "BIT101-dev/BIT101-GO",
+    "stars": 21,
+    "language": "Go",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "pkg/webvpn/schedule.go",
+      "api/service/course.go"
+    ],
+    "notes": "北京理工大学 (BIT) Go backend. Has `KCM` (uppercase, regular URP field) in `pkg/webvpn/schedule.go` struct tag `json:\"KCM\"`. No lowercase `kcm`, no `jxlm`/`cxjc`/`skzc`. Uses standard URP JSON keys, not NewUrp Super."
+  },
+  {
+    "repo": "CrazyRunning/MyStudyHelper",
+    "stars": 18,
+    "language": "Java",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "README.md"
+    ],
+    "notes": "四川大学 (SCU) URP mobile client. README explicitly states URP综合学分制教务系统. However no `kcm`/`jxlm`/`cxjc`/`skzc` fields found in code search. Classic URP教务系统 client, not NewUrp Super variant."
+  },
+  {
+    "repo": "Sibuxiangx/LoveACE",
+    "stars": 13,
+    "language": "Dart",
+    "verdict": "POSITIVE",
+    "evidence_files": [
+      "ios/loveaceios/Service/CourseScheduleService.swift",
+      "desktop/lib/models/jwc/course_schedule_record.dart",
+      "desktop/lib/models/jwc/course_schedule_record.g.dart",
+      "desktop/lib/services/jwc/class_curriculum_service.dart",
+      "ios/loveaceios/Models/Models.swift"
+    ],
+    "notes": "CONFIRMED NewUrp Super protocol match. Contains full `kcm` + `jxlm` + `cxjc` triple AND `skzc` + `kcm` combo across Dart/iOS models. All fields are lowercase NewUrp keys: `skzc`, `kcm`, `jxlm`, `cxjc`, `jsm`, `jasm`, `skjc`, `skxq`, `xf`. Located in `models/jwc/` (教务处) and `services/jwc/` paths. Cross-platform (Android/iOS/Desktop) for 安徽财经大学 (AUFE)."
+  },
+  {
+    "repo": "chaolan2019/SCU-URP-plusplus",
+    "stars": 6,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "src/styles/schedule-cards.css",
+      "tests/fixtures/grades.html",
+      "tests/fixtures/schedule.html"
+    ],
+    "notes": "四川大学 (SCU) URP++ Tampermonkey美化 script. Has `kcm` in test fixture form fields (`name=\"kcm\"` in grades.html) and CSS class `p-kcm-*` (Zhengfang URP DOM class for course name paragraphs). These are regular Zhengfang URP DOM elements, NOT the NewUrp Super JSON protocol. No `jxlm`/`cxjc`/`skzc`."
+  },
+  {
+    "repo": "Xiaoxusheng/qqbat",
+    "stars": 5,
+    "language": "JavaScript",
+    "verdict": "NEGATIVE",
+    "evidence_files": [
+      "config.json",
+      "README.md"
+    ],
+    "notes": "go-cqhttp based QQ bot. Features 学习通 (Chaoxing/超星) schedule push, not URP/正方教务系统. No `kcm`/`jxlm`/`cxjc`/`skzc` found. 学习通 is an online learning platform, entirely different from URP教务系统."
+  },
+  {
+    "repo": "leavesvv-source/NEU-Timetable",
+    "stars": 3,
+    "language": "Kotlin",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "app/src/main/java/com/lingion/sleepy/data/neu/NeuGraduateClient.kt",
+      "app/src/main/test/resources/xskcb_heu.json"
+    ],
+    "notes": "东北大学 (NEU) Android schedule app. Has `KCM` (uppercase) as one of multiple fallbacks (`firstNonBlank(item, \"KCMC\", \"courseName\", \"KCM\")`) in NeuGraduateClient.kt. No lowercase `kcm` as primary, no `jxlm`/`cxjc`/`skzc`. Uses standard URP field names, not NewUrp Super."
+  },
+  {
+    "repo": "Youwenqwq/ysu-sdk",
+    "stars": 3,
+    "language": "Python",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "ysu_sdk/jwxt/types.py",
+      "ysu_sdk/jwxt/client.py"
+    ],
+    "notes": "燕山大学 (YSU) Python SDK. Has `KCM` (uppercase, regular URP) in types.py docstrings and client.py fallback chain (`raw.get(\"XSKCM\") or raw.get(\"KCM\")`). No lowercase `kcm`, no `jxlm`/`cxjc`/`skzc`. Standard URP教务系统 SDK, not NewUrp Super."
+  },
+  {
+    "repo": "philipszhang666/SnakeChat",
+    "stars": 2,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "server/lms_judge.py",
+      "server/lms_scores.py",
+      "server/lms_schedule.py",
+      "server/lms_training_plan.py",
+      "server/lms_judge_core/jwxt/judge.py"
+    ],
+    "notes": "SnakeChat server with LMS (Learning Management System) integration. Has `KCM` (uppercase, regular URP) as namedtuple field and in `_norm_text(row.get(\"KCM\"))` calls across multiple modules. No lowercase `kcm`, no `jxlm`/`cxjc`/`skzc`. Standard URP教务系统 integration, not NewUrp Super."
+  }
+]

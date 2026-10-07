@@ -1,0 +1,11 @@
+<div class="time-table-title">
+  <div class="layout-title"></div>
+</div>
+
+<!-- time table -->
+<div class="time-table-body">
+  <div class="columns time-segment">
+  </div>
+  <div class="columns unit">
+  </div>
+</div>

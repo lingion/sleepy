@@ -1,0 +1,57 @@
+<%
+  var index = 0;
+  var conflictDataLength = 0;
+  for (var i in popoverData.conflictDatas) {
+    var conflictData = popoverData.conflictDatas[i];
+    var rootClass = conflictData.rootClass;
+
+    var end = index +  conflictData.activities.length;
+    if ((index >= popoverData.pageStart && index < popoverData.pageEnd) ||
+        (end >= popoverData.pageStart && end < popoverData.pageEnd) ||
+        (index < popoverData.pageEnd && end >= popoverData.pageEnd)
+      ) {
+%>
+    <div class="conflict-activity">
+  <%
+    } else {
+  %>
+      <div class="conflict-activity" style="display: none">
+  <% } %>
+      <b>
+        <% if (rootClass == "Person") { %>
+          教师占用:
+        <% } else if (rootClass == "Room") { %>
+          教室占用:
+        <% } else if (rootClass == "Adminclass") { %>
+          班级占用:
+        <% } %>
+        &nbsp;<%= conflictData.rootName %>
+      </b>
+      <%
+      $.each(conflictData.activities, function() {
+        if (index < popoverData.pageStart || index >= popoverData.pageEnd) {
+          index ++;
+          return true;
+        }
+      %>
+        <div class="arranges">
+          <p>
+            <i class="fa fa-th-large"></i>
+            <%= this.activityType %>
+            <%= this.activityName %>
+            (<%= this.weekIndices %>周)
+          </p>
+        </div>
+      <%
+        index ++;
+      });
+      %>
+    </div>
+<%
+  }
+%>
+
+<div class="row">
+  <div class="col col-sm-6 text-right"><button class="btn btn-link text-muted previous-page">上一页</button></div>
+  <div class="col col-sm-6"><button class="btn btn-link next-page">下一页</button></div>
+</div>

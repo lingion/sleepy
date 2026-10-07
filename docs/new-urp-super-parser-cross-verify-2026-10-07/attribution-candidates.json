@@ -1,0 +1,248 @@
+[
+  {
+    "project": "ShellBox",
+    "author": "Airmole",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "yunxiaozhi",
+    "author": "danbaixi",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "Classworks",
+    "author": "Moonrend",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "school-api",
+    "author": "dairoot",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "scu-urp-assistant",
+    "author": "frederick-wang",
+    "license": "Apache-2.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "seu-jwc-catcher",
+    "author": "LeonidasCl",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "NexioSchedule",
+    "author": "HaoZai000",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "SuperCourseTimetableBot",
+    "author": "StageGuard",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "xjtu-toolbox-android",
+    "author": "yeliqin666",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "SCU-URP-Helper",
+    "author": "LittFlower",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "aoxiang-assistant",
+    "author": "Lorcas-Zephyr",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "sleepy",
+    "author": "lingion",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "shiguang_warehouse",
+    "author": "ShiGuangSchedule",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "BIT101-Android",
+    "author": "BIT101-dev",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "SleepDown-Schedule",
+    "author": "xiaomanjun233",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "mikcb",
+    "author": "Mutx163",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "SEU-NewSystem-catcher",
+    "author": "AriaPokotengYe",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "Higk",
+    "author": "higuangke",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "HHUClassSchedule",
+    "author": "yuchenii",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "herald-webservice",
+    "author": "HeraldStudio",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "ZCrawler",
+    "author": "yuan1994",
+    "license": "Apache-2.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "mini-hbut",
+    "author": "superdaobo",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "BIT101-GO",
+    "author": "BIT101-dev",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "xmu_assistant",
+    "author": "democard",
+    "license": "Apache-2.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "ncepu-edm",
+    "author": "ki-ljl",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "indulge-in-study",
+    "author": "wcomaqsw",
+    "license": "AGPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "MyStudyHelper",
+    "author": "CrazyRunning",
+    "license": "GPL-2.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "SCU-URP-plusplus",
+    "author": "chaolan2019",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "ScheduleX",
+    "author": "mlkgrnt",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "HEU_edusys_miui",
+    "author": "Holit",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "WakeUp_SHU",
+    "author": "ershiyidian",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "swun_ehall",
+    "author": "BritneyOvO",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "NEU-Timetable",
+    "author": "leavesvv-source",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "XMUTimeTabel",
+    "author": "ArrogHie",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "AIschedule-HHU-URP",
+    "author": "yuchenii",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "shou-api",
+    "author": "shouDeveloper",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "classtable",
+    "author": "kuailiaojie",
+    "license": "MIT",
+    "role_in_verification": "POSITIVE"
+  },
+  {
+    "project": "SHOU-urp-auto-choose-lessons",
+    "author": "adminerest",
+    "license": "GPL-3.0",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "seuGrabber",
+    "author": "neiro-o",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "shanghaitech-chooseCourse-query",
+    "author": "arnoliudaxia",
+    "license": "MIT",
+    "role_in_verification": "INDIRECT"
+  },
+  {
+    "project": "funhubu",
+    "author": "fangd123",
+    "license": null,
+    "role_in_verification": "INDIRECT"
+  }
+]

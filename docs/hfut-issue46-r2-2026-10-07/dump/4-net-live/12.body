@@ -1,0 +1,24 @@
+<% _.each(teachers, function(teacher) { %>
+<h4>
+  <a class="fa fa-user"></a>&nbsp;
+  <% if (teacher.id || teacher.personId) { %>
+    <%= teacher.personName %>
+  <% } else { %>
+    未安排教师
+  <% } %>
+</h4>
+<div class="arranges">
+  <% if (!teacher.arranges || teacher.arranges.length == 0) { %>
+    <p>未排课或未安排教室</p>
+  <% } %>
+  <% _.each(teacher.arranges, function(arrange, index) { %>
+
+  <p>
+    <%= arrange.campusName %>&nbsp;<%= arrange.buildingName %>&nbsp;
+    <%= arrange.roomName %>(<%= arrange.weekIndices %>周)
+  </p>
+
+  <% }); %>
+</div>
+<% }); %>
+<div style="margin-left: 15px;">组号:<%= scheduleGroupNo %></div>

@@ -1,0 +1,4 @@
+# Device / WebView Environment
+sdk=36 release=16 device=corot model=23078RKD5C manufacturer=Xiaomi
+appPackage=com.lingion.sleepy
+webviewPackage=com.google.android.webview webviewVersion=137.0.7151.115

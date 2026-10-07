@@ -1,0 +1,378 @@
+{
+  "metadata": {
+    "method": "manual+code-search-v1",
+    "candidates_total": 60,
+    "verified": 41
+  },
+  "verdicts": [
+    {
+      "repo": "Airmole/ShellBox",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "danbaixi/yunxiaozhi",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "Moonrend/Classworks",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "dairoot/school-api",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "frederick-wang/scu-urp-assistant",
+      "stars": 210,
+      "language": "TypeScript",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "LeonidasCl/seu-jwc-catcher",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "HaoZai000/NexioSchedule",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "StageGuard/SuperCourseTimetableBot",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "yeliqin666/xjtu-toolbox-android",
+      "stars": 82,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "LittFlower/SCU-URP-Helper",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "Lorcas-Zephyr/aoxiang-assistant",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "lingion/sleepy",
+      "stars": 64,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "ShiGuangSchedule/shiguang_warehouse",
+      "stars": 63,
+      "language": "JavaScript",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "BIT101-dev/BIT101-Android",
+      "stars": 63,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "xiaomanjun233/SleepDown-Schedule",
+      "stars": 61,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "Mutx163/mikcb",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "AriaPokotengYe/SEU-NewSystem-catcher",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "higuangke/Higk",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "yuchenii/HHUClassSchedule",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "HeraldStudio/herald-webservice",
+      "stars": 44,
+      "language": "JavaScript",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "yuan1994/ZCrawler",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "superdaobo/mini-hbut",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "BIT101-dev/BIT101-GO",
+      "stars": 21,
+      "language": "Go",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "democard/xmu_assistant",
+      "stars": 21,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "ki-ljl/ncepu-edm",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "wcomaqsw/indulge-in-study",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "CrazyRunning/MyStudyHelper",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "chaolan2019/SCU-URP-plusplus",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "mlkgrnt/ScheduleX",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "Holit/HEU_edusys_miui",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "ershiyidian/WakeUp_SHU",
+      "stars": 1,
+      "language": "Python",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "BritneyOvO/swun_ehall",
+      "stars": 3,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "leavesvv-source/NEU-Timetable",
+      "stars": 3,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "ArrogHie/XMUTimeTabel",
+      "stars": 14,
+      "language": "Kotlin",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "yuchenii/AIschedule-HHU-URP",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "shouDeveloper/shou-api",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "kuailiaojie/classtable",
+      "stars": 5,
+      "language": "JavaScript",
+      "verdict": "POSITIVE",
+      "newurp_files": [],
+      "has_select": true,
+      "notes": "NewUrp signature found: []"
+    },
+    {
+      "repo": "adminerest/SHOU-urp-auto-choose-lessons",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "neiro-o/seuGrabber",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "arnoliudaxia/shanghaitech-chooseCourse-query",
+      "stars": 6,
+      "language": "Python",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    },
+    {
+      "repo": "fangd123/funhubu",
+      "stars": 0,
+      "language": "",
+      "verdict": "INDIRECT",
+      "newurp_files": [],
+      "has_select": false,
+      "notes": "URP/jwxt/课表 repo but NewUrp-specific keywords not found"
+    }
+  ]
+}

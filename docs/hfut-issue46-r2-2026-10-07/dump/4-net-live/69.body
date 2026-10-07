@@ -1,0 +1,8 @@
+<!doctype html><html lang="zh"><head><title>HTTP状态 500 - 内部服务器错误</title><style type="text/css">body {font-family:Tahoma,Arial,sans-serif;} h1, h2, h3, b {color:white;background-color:#525D76;} h1 {font-size:22px;} h2 {font-size:16px;} h3 {font-size:14px;} p {font-size:12px;} a {color:black;} .line {height:1px;background-color:#525D76;border:none;}</style></head><body><h1>HTTP状态 500 - 内部服务器错误</h1><hr class="line" /><p><b>类型</b> 异常报告</p><p><b>描述</b> 服务器遇到一个意外的情况，阻止它完成请求。</p><p><b>例外情况</b></p><pre>java.lang.NullPointerException
+	org.springframework.boot.web.support.ErrorPageFilter.handleException(ErrorPageFilter.java:170)
+	org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:145)
+	org.springframework.boot.web.support.ErrorPageFilter.access$000(ErrorPageFilter.java:66)
+	org.springframework.boot.web.support.ErrorPageFilter$1.doFilterInternal(ErrorPageFilter.java:105)
+	org.springframework.web.filter.OncePerRequestFilter.doFilter(OncePerRequestFilter.java:107)
+	org.springframework.boot.web.support.ErrorPageFilter.doFilter(ErrorPageFilter.java:123)
+</pre><p><b>):注意</b> 主要问题的全部 stack 信息可以在 server logs 里查看</p><hr class="line" /><h3>Apache Tomcat/8.5.100</h3></body></html>

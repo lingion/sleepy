@@ -547,6 +547,10 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +
             "Xu-Jack11/MySchedule (MIT, 同端点直接旁证)\n" +
             "LanternCX/HZCUCourseChoose (MIT, 选课端点旁证)"
+    ),
+    PerSchoolEntry(
+        "school-new-urp-super", "新 URP 第二变体 (WakeUp NewUrpSuperParser o0O0o)",
+        "WakeUp 反编译 smali 实锤 NewUrpSuperParser 第二变体 (smali 类名 o0O0o): 顶层 JSON **数组** (互斥于第一变体的 dateList/selectCourseList/timeAndPlaceList 嵌套), 每项 NewUrpClassListItem 含 kcm/jsm/jxlm+jasm/cxjc + id.skxq/skjc/skzc 位图串; 周次编码 = 0/1 字符 bitmap (WakeUp o0 变体是 classWeek bitmap, 共用同一种归并算法)。后续交叉验证覆盖 (候选 GitHub 仓库清单见 candidates.json)。"
     )
 )
 
