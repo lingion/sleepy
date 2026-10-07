@@ -480,8 +480,15 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "CQYTZFCheckScores (xM3GAN, Apache-2.0)"
     ),
     PerSchoolEntry(
-        "school-scau", "华南农业大学 SCAU",
-        "ScheduleXParser_SCAU (greyovo)"
+        "school-scau", "华南农业大学 SCAU (2026-10 SOP cross-verified)",
+        "ScheduleXParser_SCAU (greyovo, ScheduleX 协议同源)\n" +
+            "AIScheduleSCAU (greyovo, el-table__body-wrapper 形态)\n" +
+            "SCAU-Grad-Automatically-Fill-Evaluation-Form-JS (jiefing, 致谢清单)\n" +
+            "N0B0d7-rzddn/SCAU-course-tool (强智新教务 API 旁证)\n" +
+            "CberYellowstone/Course-Hunter-SCAU (iframe 表单旁证)\n" +
+            "Weather174/SCAU-Course-Assistant (zzxkyzbjk_* API 端点确认)\n" +
+            "ToMo517/Scau_Course_bot-main (正方 V9.0 历史旁证)\n" +
+            "visionyimian/scau_class_table (老正方历史旁证)"
     ),
     PerSchoolEntry(
         "school-qlu", "齐鲁工业大学 QLU",

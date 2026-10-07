@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>华南农业大学 - 教务课表</title>
+</head>
+<body>
+<h2>华南农业大学 SCAU 主路径 (WakeUp o00OOO00 — table[border=1] + td[valign=top])</h2>
+<!-- 主路径: 3 行 × 7 单元格, 含 12 课程样本 (trIndex=0/1/2 各 7 cells, 部分空白) -->
+<table border="1">
+  <tr>
+    <td valign="top">高等数学<br>张三<br>1-8周<br>六教6A201<br>1节)</td>
+    <td valign="top">大学物理<br>李四<br>1-16周<br>主楼401<br>3节)</td>
+    <td valign="top"></td>
+    <td valign="top">数据结构<br>孙七<br>3-15周(单)<br>主楼510<br>6节)</td>
+    <td valign="top">英语<br>王五<br>1-8周(双)<br>三教305<br>10节)</td>
+    <td valign="top"></td>
+    <td valign="top"></td>
+  </tr>
+  <tr>
+    <td valign="top">体育<br>赵六<br>1-16周<br>操场<br>2节)</td>
+    <td valign="top">线性代数<br>陈八<br>2-12周<br>七教703<br>4节)</td>
+    <td valign="top">电路基础<br>周九<br>1-16周<br>实验楼B202<br>5节)</td>
+    <td valign="top">软件工程<br>吴十<br>5-16周（双）<br>主楼601<br>7节)</td>
+    <td valign="top">操作系统<br>郑十一<br>1-8周<br>主楼405<br>11节)</td>
+    <td valign="top">数据库<br>王十二<br>9-16周<br>主楼510<br>12节)</td>
+    <td valign="top"></td>
+  </tr>
+  <tr>
+    <td valign="top"></td>
+    <td valign="top"></td>
+    <td valign="top">计算机网络<br>林十三<br>1-16周<br>实验楼C303<br>8节)</td>
+    <td valign="top"></td>
+    <td valign="top"></td>
+    <td valign="top">编译原理<br>黄十四<br>1-12周<br>主楼701<br>13节)</td>
+    <td valign="top"></td>
+  </tr>
+</table>
+
+<h2>华南农业大学 SCAU 降级路径 (WakeUp SCAUParser — table[border=1][bordercolor=#000000] + chunked(2))</h2>
+<!-- 降级路径: head-slice + fallback table (含全角冒号 split 单字段) -->
+<head>
+<meta charset="utf-8">
+<title>老视图片段</title>
+</head>
+<table border="1" bordercolor="#000000">
+  <tr>
+    <td valign="top">1节)</td>
+    <td valign="top">2节)</td>
+    <td valign="top">3节)</td>
+    <td valign="top">4节)</td>
+    <td valign="top">5节)</td>
+    <td valign="top">6节)</td>
+    <td valign="top">7节)</td>
+  </tr>
+  <tr>
+    <td valign="top">高等数学：张三<br>1-8周<br>六教6A201</td>
+    <td valign="top">大学物理：李四<br>1-16周<br>主楼401</td>
+    <td valign="top">数据结构：孙七<br>3-15周（单）<br>主楼510</td>
+    <td valign="top">体育：赵六<br>1-16周<br>操场</td>
+    <td valign="top">英语：王五<br>1-8周（双）<br>三教305</td>
+    <td valign="top">软件工程：吴十<br>5-16周<br>主楼601</td>
+    <td valign="top">操作系统：郑十一<br>9-16周<br>主楼405</td>
+  </tr>
+</table>
+
+</body>
+</html>
