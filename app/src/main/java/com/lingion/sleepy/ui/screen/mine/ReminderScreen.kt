@@ -320,6 +320,23 @@ fun ReminderScreen(onBack: () -> Unit) {
         ReminderRescheduler.request()
     }
 
+    // class auto-DND toggle — 勿扰策略访问权限走系统页, 授权状态用 policyLauncher 回读
+    var classDndEnabled by remember { mutableStateOf(AppPrefs.isClassDndEnabled(context)) }
+    val policyLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        // 用户可能拒绝或秒退 — 以系统实时授权状态为准
+        val nm = context.getSystemService(android.app.NotificationManager::class.java)
+        if (nm != null && nm.isNotificationPolicyAccessGranted) {
+            classDndEnabled = true
+            AppPrefs.setClassDndEnabled(context, true)
+        } else {
+            classDndEnabled = false
+            AppPrefs.setClassDndEnabled(context, false)
+        }
+        SleepyApp.get().classDndScheduler.syncFromPrefs()
+    }
+
     // Permission launcher — NOT one-shot, can be re-triggered by clicking toggle again
     val permissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -899,6 +916,35 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 }
                             }
                         }
+                    }
+                }
+
+                // Class auto-DND — 上课自动勿扰 (需系统"通知策略访问"权限)
+                item {
+                    ReminderCard {
+                        ReminderToggleRow(
+                            title = stringResource(R.string.reminder_class_dnd_title),
+                            subtitle = stringResource(R.string.reminder_class_dnd_sub),
+                            checked = classDndEnabled,
+                            onCheckedChange = { on ->
+                                val nm = context.getSystemService(android.app.NotificationManager::class.java)
+                                if (on && nm != null && !nm.isNotificationPolicyAccessGranted) {
+                                    // 未授权 → 跳系统页, 回跳后 policyLauncher 以实际状态落定
+                                    try {
+                                        policyLauncher.launch(
+                                            Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                                        )
+                                    } catch (_: Exception) {
+                                        classDndEnabled = false
+                                        AppPrefs.setClassDndEnabled(context, false)
+                                    }
+                                } else {
+                                    classDndEnabled = on
+                                    AppPrefs.setClassDndEnabled(context, on)
+                                    SleepyApp.get().classDndScheduler.syncFromPrefs()
+                                }
+                            }
+                        )
                     }
                 }
             }

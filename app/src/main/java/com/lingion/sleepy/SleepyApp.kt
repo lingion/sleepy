@@ -31,6 +31,9 @@ class SleepyApp : Application() {
     val notificationScheduler: CourseNotificationScheduler by lazy {
         CourseNotificationScheduler(this)
     }
+    val classDndScheduler: com.lingion.sleepy.widget.notification.ClassDndScheduler by lazy {
+        com.lingion.sleepy.widget.notification.ClassDndScheduler(this)
+    }
 
     override fun onCreate() {
         super.onCreate()
@@ -56,6 +59,7 @@ class SleepyApp : Application() {
                 override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
                     CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
                         try { notificationScheduler.ensureActiveFluidCloud() } catch (_: Throwable) {}
+                        try { classDndScheduler.syncFromPrefs() } catch (_: Throwable) {}
                     }
                 }
             }
