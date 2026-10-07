@@ -292,6 +292,28 @@ class AboutLicenseAttributionTest {
         Attribution("linling-zy/kust-schedule", "Apache-2.0"),
         Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
+        // 西北工业大学研究生教务 NWPU Post (51 候选跨仓验证, 0 POSITIVE / 20 INDIRECT / 31 NEGATIVE, 2026-10-07)
+        Attribution("NWPU Post", ""),
+        Attribution("aoxiang-assistant", "Lorcas-Zephyr"),
+        Attribution("shiguang_warehouse", "ShiGuangSchedule"),
+        Attribution("AoxiangRobot", "QingQiz"),
+        Attribution("shangkeschedule", "Apache-2.0"),
+        Attribution("nonebot-plugin-npu", "qllokirin"),
+        Attribution("NPU-Course-picker", "CR200J1-A"),
+        Attribution("nwpu-jwxt", "Jungod1121"),
+        Attribution("sjw", "Nikaidou-Shinku"),
+        Attribution("AutoAoxiang", "stevexyh"),
+        Attribution("SelectCourseEasily", "cheanus"),
+        Attribution("NWPU_COURSE_MONITOR", "fantian-bilibili"),
+        Attribution("aoxiang-jwxt-enhance", "zengzoxiong"),
+        Attribution("NWPU_AISchedule", "zhanghaoran124"),
+        Attribution("NWPU-EAMS-helper", "Hydrostic"),
+        Attribution("NCP-NWPU-Course-Parser", "fantian-bilibili"),
+        Attribution("nwpu-edu-plus", "top-tree"),
+        Attribution("nwpu-coursetable", "LiYulin-s"),
+        Attribution("aoxiang-harmonyos", "Panoramasx"),
+        Attribution("guagua-course", "iiijiashu"),
+        Attribution("NPU-eCampus-ICS-Exporter", "xiaozhuang357"),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
