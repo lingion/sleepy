@@ -547,6 +547,31 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +
             "Xu-Jack11/MySchedule (MIT, 同端点直接旁证)\n" +
             "LanternCX/HZCUCourseChoose (MIT, 选课端点旁证)"
+    ),
+    PerSchoolEntry(
+        "school-nwpu-post", "西北工业大学研究生教务 NWPU Post",
+        "WakeUp 反编译 smali 实锤 sample-table-1 HTML 一维清单协议层; 51 候选 GitHub 仓库跨仓求证 (0 POSITIVE / 20 INDIRECT / 31 NEGATIVE), " +
+            "协议层无任何开源实现, 全量迁移至新门户 jwxt.nwpu.edu.cn print-data JSON 端点; 致谢 20 个 NWPU 同校生态仓 (新门户 print-data / 智慧校园 ecampus / 强智 URP):\n" +
+            "Lorcas-Zephyr/aoxiang-assistant\n" +
+            "ShiGuangSchedule/shiguang_warehouse (MIT, nwpu_01.js 跨校适配)\n" +
+            "QingQiz/AoxiangRobot (LGPL-3.0, archived 旧 EAMS courseTableForStd)\n" +
+            "qiqqqqq517/shangkeschchedule (Apache-2.0, 时光 NWPU 适配镜像)\n" +
+            "qllokirin/nonebot-plugin-npu (MIT, ecampus + print-data 双轨)\n" +
+            "CR200J1-A/NPU-Course-picker (新门户 print-data 油猴脚本)\n" +
+            "Jungod1121/nwpu-jwxt (强智 URP + Playwright 自动化)\n" +
+            "Nikaidou-Shinku/sjw (WTFPL, course-selection-api 选课端点)\n" +
+            "stevexyh/AutoAoxiang (WTFPL, 翱翔 NCP/图书馆辅助)\n" +
+            "cheanus/SelectCourseEasily (新门户 lesson-search 排课抓取)\n" +
+            "fantian-bilibili/NWPU_COURSE_MONITOR (ecampus WebView 历史课表)\n" +
+            "zengzoxiong/aoxiang-jwxt-enhance (西工大研究生系统挂载)\n" +
+            "zhanghaoran124/NWPU_AISchedule (iframe course-table 解析)\n" +
+            "Hydrostic/NWPU-EAMS-helper (Svelte userscript jwxt iframe)\n" +
+            "fantian-bilibili/NCP-NWPU-Course-Parser (Aoxiang localStorage 缓存)\n" +
+            "top-tree/nwpu-edu-plus (显式 print-data 端点 + studentTableVm)\n" +
+            "LiYulin-s/nwpu-coursetable (jwxt localStorage cs-selectedLessons)\n" +
+            "Panoramasx/aoxiang-harmonyos (HarmonyOS api_collect.js 镜像)\n" +
+            "iiijiashu/guagua-course (NwpuPrintDataParser + NwpuJwxtExtractor 双端点)\n" +
+            "xiaozhuang357/NPU-eCampus-ICS-Exporter (智慧校园 studentTableVm 导出)"
     )
 )
 

@@ -1,0 +1,1418 @@
+{
+  "school": "西北工业大学 (NWPU)",
+  "protocol": "NWPUPostParser",
+  "verified_at": "2026-10-07",
+  "verdicts": [
+    {
+      "repo_name": "Lorcas-Zephyr/aoxiang-assistant",
+      "stars": 68,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "app/src/main/assets/api_collect.js",
+          "purpose": "JS 采集器：解析新门户 print-data JSON (studentTableVm.activities / timeTableLayout.courseUnitList)",
+          "lines_with_protocol": [
+            "73:    match = String(entry && entry.name || \"\").match(/\\/for-std\\/course-table\\/semester\\/[^/]+\\/print-data\\/([^/?#]+)/);",
+            "109:    const table = printData && printData.studentTableVm;",
+            "110:    const activities = table && Array.isArray(table.activities) ? table.activities : [];",
+            "200-201:    \"/student/for-std/course-table/semester/\" + encodeURIComponent(semester.id) + \"/print-data/\" + encodeURIComponent(studentId));",
+            "261:        : path.includes(\"/student/for-std/course-table\");"
+          ]
+        },
+        {
+          "path": "app/src/main/java/cn/nwpu/campus/PortalApiParsers.java",
+          "purpose": "Java 端解析 print-data JSON，生成课表模型 ScheduleModels.Course/TimeSlot",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "app/src/main/java/cn/nwpu/campus/MainActivity.java",
+          "purpose": "SSO 入口：jwxt.nwpu.edu.cn SSO login + student-portrait",
+          "lines_with_protocol": [
+            "private static final String EDUCATION_SSO = \"https://jwxt.nwpu.edu.cn/student/sso-login\";",
+            "\"https://jwxt.nwpu.edu.cn/student/for-std/student-portrait\";"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走新门户 jwxt.nwpu.edu.cn 的 print-data JSON 端点 + studentTableVm.activities/timeTableLayout.courseUnitList 解析，与 NWPUPostParser 锚定的「sample-table-1 HTML 表格」或 yjsjy.nwpu.edu.cn 完全不同协议层；端点本身同源 WakeUp 解析路径，但 0 命中研究生 sample-table-1，且代码面向全校本科生/研究生通用用户（依赖登录身份判定），不锁研究生"
+    },
+    {
+      "repo_name": "ShiGuangSchedule/shiguang_warehouse",
+      "stars": 63,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "resources/NWPU/nwpu_01.js",
+          "purpose": "NWPU 专项适配脚本（拾光课程表），维护者 zengzoxiong；走 print-data + timeTableLayout.courseUnitList",
+          "lines_with_protocol": [
+            "2:// 适配系统：EAMS 教务系统（jwxt.nwpu.edu.cn）",
+            "112:    var url = \"/student/for-std/course-table/semester/\" + semesterId + \"/print-data/\" + studentId;",
+            "151:    var layout = apiData.timeTableLayout;",
+            "152:    if (layout && layout.courseUnitList) {",
+            "155:        var unit = layout.courseUnitList[i];",
+            "400:    var tableVm = apiData.studentTableVm;"
+          ]
+        },
+        {
+          "path": "resources/NWPU/adapters.yaml",
+          "purpose": "适配器清单，category=BACHELOR_AND_ASSOCIATE 显式标注本科生",
+          "lines_with_protocol": [
+            "adapter_id: \"NWPU_01\"",
+            "category: \"BACHELOR_AND_ASSOCIATE\"",
+            "import_url: \"https://ecampus.nwpu.edu.cn/\""
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "NWPU 专项适配存在，但 adapters.yaml 显式标注 category=BACHELOR_AND_ASSOCIATE（本科）；适配协议层是新门户 print-data JSON（timeTableLayout.courseUnitList + studentTableVm.activities），与 NWPUPostParser 的 sample-table-1 HTML 一维清单完全异构"
+    },
+    {
+      "repo_name": "XiaoDcs/NWPU-Grad-Math-Exams",
+      "stars": 59,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "西北工业大学研究生数学考试（矩阵论/数理统计）试卷 PDF 仓库",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "根目录只有 README.md（描述：「西北工业大学/西工大/瓜大/NWPU 矩阵论 数理统计 研究生考试 试卷」），0 个 .java/.kt/.py/.js/.ts 源文件，无任何教务协议代码；属于资料仓库，与 NWPUPostParser 协议无关"
+    },
+    {
+      "repo_name": "QingQiz/AoxiangRobot",
+      "stars": 29,
+      "default_branch": "master",
+      "license": "LGPL-3.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "src/netreq/aoxiang.py",
+          "purpose": "Aoxiang 客户端（CAS 登录 + 课表/成绩/考试请求）",
+          "lines_with_protocol": [
+            "216: ticket = self.req('https://uis.nwpu.edu.cn/cas/login?service=https://ecampus.nwpu.edu.cn/').url.split('=')[-1]",
+            "420: ids = self.req('http://us.nwpu.edu.cn/eams/courseTableForStd.action').text",
+            "425: json = table2json(self.req('http://us.nwpu.edu.cn/eams/courseTableForStd!courseTable.action', data={...}))"
+          ]
+        },
+        {
+          "path": "src/classTable/classTable.py",
+          "purpose": "课表导出 ICS；classTable(timeStart, timeEnd) 从 Aoxiang 取数据 + ICS 输出",
+          "lines_with_protocol": [
+            "from .ics import ICS",
+            "classTable = self.aoxiang.classTable(timeStart, timeEnd)"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "archived=true + pushed_at=2022-01-08（已归档老仓）；登录走 ecampus.nwpu.edu.cn（智慧校园）+ us.nwpu.edu.cn/eams 旧教务（courseTableForStd.action 走 EAMS action），与 yjsjy.nwpu.edu.cn 研究生 sample-table-1 协议无任何重合；课表 classTable 模型基于 Aoxiang ecampus 数据"
+    },
+    {
+      "repo_name": "qiqqqqq517/shangkeschedule",
+      "stars": 28,
+      "default_branch": "main",
+      "license": "Apache-2.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "shared/assets/offline_repo/schools/resources/NWPU/nwpu_01.js",
+          "purpose": "镜像自 shiguang_warehouse 的 NWPU 本科研适配（同名同维护者 zengzoxiong）",
+          "lines_with_protocol": [
+            "same as shiguang_warehouse/resources/NWPU/nwpu_01.js line 112: var url = \"/student/for-std/course-table/semester/\" + semesterId + \"/print-data/\" + studentId;",
+            "line 152: if (layout && layout.courseUnitList)"
+          ]
+        },
+        {
+          "path": "shared/assets/offline_repo/schools/timetable_schools.json",
+          "purpose": "学校索引包含 NWPU",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "NWPU 适配脚本是 shiguang_warehouse 的镜像拷贝（同 author zengzoxiong + 同 category=BACHELOR_AND_ASSOCIATE），协议层同为 print-data JSON，本科研；与 NWPUPostParser 异构"
+    },
+    {
+      "repo_name": "qllokirin/nonebot-plugin-npu",
+      "stars": 24,
+      "default_branch": "master",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "nonebot_plugin_npu/nwpu_query.py",
+          "purpose": "NwpuQuery 客户端：CAS 登录 + 成绩/考试/student-portrait/course-table print-data",
+          "lines_with_protocol": [
+            "90: \"referer\": \"https://ecampus.nwpu.edu.cn/main.html\"",
+            "132: url = \"https://uis.nwpu.edu.cn/cas/login?service=https%3A%2F%2Fecampus.nwpu.edu.cn%2F%3Fpath%3Dhttps%253A%252F%252Fecampus.nwpu.edu.cn%252Fmain.html%2523%252FIndex\"",
+            "545: url = \"https://jwxt.nwpu.edu.cn/student/for-std/course-table\"",
+            "552: url = f\"https://jwxt.nwpu.edu.cn/student/for-std/course-table/semester/{semester['value']}/print-data/{self.student_assoc}?hasExperiment=true\""
+          ]
+        },
+        {
+          "path": "nonebot_plugin_npu/draw_course_schedule_pic.py",
+          "purpose": "从 print-data JSON 提取 timeTableLayout.courseUnitList 渲染课程表图片",
+          "lines_with_protocol": [
+            "for course in data[\"studentTableVm\"][\"timeTableLayout\"][\"courseUnitList\"]:"
+          ]
+        },
+        {
+          "path": "nonebot_plugin_npu/jwxt/rs6.js",
+          "purpose": "Node.js 加密 JavaScript 模拟环境（rs6 反混淆 wrapper），用于登录 jwxt SSO",
+          "lines_with_protocol": [
+            "\"href\": \"https://jwxt.nwpu.edu.cn/student/sso-login\"",
+            "\"host\": \"jwxt.nwpu.edu.cn\""
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走 ecampus.nwpu.edu.cn（智慧校园）+ 新门户 jwxt.nwpu.edu.cn 的 print-data JSON；解析路径 studentTableVm.timeTableLayout.courseUnitList 与 NWPUPostParser 的 sample-table-1 HTML 锚点完全异构；rs6.js 是 SSO 反混淆 wrapper，非协议解析"
+    },
+    {
+      "repo_name": "Dy1anT/NWPUgrade",
+      "stars": 16,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "NWPUgrade.py",
+          "purpose": "西工大旧 EAMS 教务成绩通知机",
+          "lines_with_protocol": [
+            "self.loginUrl = \"http://us.nwpu.edu.cn/eams/login.action\"",
+            "self.gradeUrl = \"http://us.nwpu.edu.cn/eams/teach/grade/course/person!historyCourseGrade.action?projectType=MAJOR\""
+          ]
+        },
+        {
+          "path": "basic.py",
+          "purpose": "基础登录封装（旧 EAMS）",
+          "lines_with_protocol": [
+            "self.loginUrl = \"http://us.nwpu.edu.cn/eams/login.action\""
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2018-12-24 旧仓；只做旧 EAMS（us.nwpu.edu.cn/eams）成绩查询与通知，无课表解析；端点 us.nwpu.edu.cn/eams 与 yjsjy.nwpu.edu.cn/jwxt.nwpu.edu.cn 完全不同，0 命中 sample-table-1"
+    },
+    {
+      "repo_name": "pkufzh/NWPU_Aircraft_Engineering_Courses_Term_1_6",
+      "stars": 14,
+      "default_branch": "master",
+      "license": "CC0-1.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "NWPU 飞行器设计与工程本科专业课（大一下）学习资料",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "根目录只有 LICENSE + README.md（CC0 资料仓库），0 个源文件；学习资料而非协议代码，与 NWPUPostParser 完全无关"
+    },
+    {
+      "repo_name": "CR200J1-A/NPU-Course-picker",
+      "stars": 12,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "DownLoadCourse.js.js",
+          "purpose": "Tampermonkey 脚本：西工大课程表下载 HTML/CSV（导出到 WakeUp 课表）",
+          "lines_with_protocol": [
+            "7: // @match        https://jwxt.nwpu.edu.cn/student/for-std/course-table*",
+            "344: const apiUrl = `https://jwxt.nwpu.edu.cn/student/for-std/course-table/semester/${fixedSemesterId}/print-data/${studentAssoc}?hasExperiment=true`;",
+            "333: const fixedSemesterId = 341; // 强制修改为341，对应2025-2026春学期"
+          ]
+        },
+        {
+          "path": "readme.md",
+          "purpose": "说明 HTML 格式获取参考 qllokirin/nonebot-plugin-npu，导入 wakeup 课程表",
+          "lines_with_protocol": [
+            "https://jwxt.nwpu.edu.cn/student/for-std/course-table"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走新门户 jwxt.nwpu.edu.cn 的 print-data 端点（学号 hardcode 341），导出 HTML/CSV 用于 WakeUp 导入；协议层是 print-data JSON，与 sample-table-1 异构；维护者也是 zengzoxiong 同源（同 shiguang warehouse）"
+    },
+    {
+      "repo_name": "pkufzh/NWPU_Aircraft_Engineering_Courses_Term_5_6",
+      "stars": 10,
+      "default_branch": "master",
+      "license": "CC0-1.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "NWPU 飞行器设计与工程本科专业课（大三上）学习资料",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "根目录只有 LICENSE + README.md（CC0 资料仓库），0 个 .py/.java/.kt/.js/.ts 源文件；大三上课程笔记/作业资料，与 NWPUPostParser 协议无关"
+    },
+    {
+      "repo_name": "Jungod1121/nwpu-jwxt",
+      "stars": 8,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "scripts/nwpu_browser.py",
+          "purpose": "Playwright 浏览器自动化客户端：登录 jwxt.nwpu.edu.cn + 课表/选课/成绩接口",
+          "lines_with_protocol": [
+            "13-14: - 课表     : GET /student/for-std/course-table/get-data?semesterId=&dataId=&bizTypeId=2 / GET /student/for-std/course-table/semester/{sid}/print-data/{dataId}?hasExperiment=true",
+            "36: JWXT = \"https://jwxt.nwpu.edu.cn\"",
+            "243: html = self._get_text(f\"{JWXT}/student/for-std/course-table\")",
+            "266: f\"{JWXT}/student/for-std/course-table/get-data?semesterId={semester_id}\"",
+            "270-271: f\"{JWXT}/student/for-std/course-table/semester/{semester_id}/print-data/{data_id}?hasExperiment=true\"",
+            "323: \"timeTableLayout,crossBizTypes,courseProperty\""
+          ]
+        },
+        {
+          "path": "scripts/schedule.py",
+          "purpose": "无冲突排课求解器（基于 nwpu_browser 拉取的全校开课）",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "SKILL.md",
+          "purpose": "AI Agent 操作指南（强智 URP / jwxt.nwpu.edu.cn）",
+          "lines_with_protocol": [
+            "description: Use when the user wants to 爬取/查询/分析/对账/操作 西北工业大学翱翔门户教务系统（翱翔教务，jwxt.nwpu.edu.cn，强智 URP）"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "明确标注「强智 URP / jwxt.nwpu.edu.cn」新门户，使用 print-data + get-data 端点（timeTableLayout/courseUnitList 字段也在 headers 中显式声明）；Playwright 浏览器自动化而非 HTML 表格解析；与 sample-table-1 异构"
+    },
+    {
+      "repo_name": "Nikaidou-Shinku/sjw",
+      "stars": 8,
+      "default_branch": "master",
+      "license": "WTFPL",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "src/utils/fetchCourses.ts",
+          "purpose": "课表查询：course-selection-api query-lesson 端点",
+          "lines_with_protocol": [
+            "28: `https://jwxt.nwpu.edu.cn/course-selection-api/api/v1/student/course-select/query-lesson/${tokens.studentId}/${tokens.turnId}`"
+          ]
+        },
+        {
+          "path": "src/utils/getTokens.ts",
+          "purpose": "从 course-selection URL 提取 tokens",
+          "lines_with_protocol": [
+            "3: const TOKEN_RE = /https:\\/\\/jwxt\\.nwpu\\.edu\\.cn\\/course-selection\\/#\\/course-select\\/(\\d+?)\\/turn\\/(\\d+?)\\/select/;"
+          ]
+        },
+        {
+          "path": "src/utils/getCookie.ts",
+          "purpose": "提取 cs-course-select-student-token cookie",
+          "lines_with_protocol": [
+            "1: const AUTH_COOKIE_RE = /cs-course-select-student-token=(.+)/;"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "pushed_at=2022-08-23 旧仓；走 jwxt.nwpu.edu.cn/course-selection-api（supwisdom 选课 API，独立 JWT），且功能是选课/退课（addCourse/dropCourse/fetchStatus），非课表解析；与 sample-table-1 完全异构"
+    },
+    {
+      "repo_name": "stevexyh/AutoAoxiang",
+      "stars": 8,
+      "default_branch": "master",
+      "license": "WTFPL",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "functions/loginAoxiang.py",
+          "purpose": "CAS 登录封装（uis.nwpu.edu.cn）",
+          "lines_with_protocol": [
+            "11: def login(user='', passwd='', url_login='https://uis.nwpu.edu.cn/cas/login', keyword='Log In Successful')",
+            "34: 'Origin': 'https://uis.nwpu.edu.cn'"
+          ]
+        },
+        {
+          "path": "autoNCP.py",
+          "purpose": "NCP 疫情自动填报脚本",
+          "lines_with_protocol": [
+            "29: urlForm = 'http://yqtb.nwpu.edu.cn/wx/ry/jrsb.jsp'",
+            "30: urlSubmit = 'http://yqtb.nwpu.edu.cn/wx/ry/ry_util.jsp'"
+          ]
+        },
+        {
+          "path": "lib_registrate.py",
+          "purpose": "图书馆预约脚本",
+          "lines_with_protocol": [
+            "27: # url_msg = 'http://iroom.nwpu.edu.cn/Pages/WxOpenDoorMsg.aspx'",
+            "28: url_login = 'http://iroom.nwpu.edu.cn/Pages/WxOpenDoor.aspx'"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "pushed_at=2021-05-25 旧仓；功能定位为「Automatic scripts for Aoxiang」，实际仅做 NCP 疫情自动填报（yqtb.nwpu.edu.cn）+ 图书馆预约（iroom.nwpu.edu.cn）；0 命中 sample-table-1/yjsjy/print-data/course-table 任何课表协议特征"
+    },
+    {
+      "repo_name": "guhang987/Awesome_NWPU_Graduate_entrance_exam",
+      "stars": 7,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "(empty repo)",
+          "purpose": "仓库已被作者清空：唯一 commit 为「Delete README.md」，HEAD 工作树为空",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2021-02-23；HEAD 单 commit 「Delete README.md」，git ls-tree -r HEAD 输出为空，0 个源文件；非协议代码，仅为已被清空的考研资料收集入口"
+    },
+    {
+      "repo_name": "haoheliu/DM_courseProject",
+      "stars": 7,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "README 自述：DM（Data Mining）课程实验 NWPU · Bayes + KNN 分类器 + PageRank",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "2.5.py / 2.6.py",
+          "purpose": "课程实验代码：贝叶斯/KNN 分类 + PageRank，与教务协议无关",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2019-10-05；内容是「数据挖掘与分析」课程作业（Bayes + KNN + PageRank），reports/ 下为 Word 报告；0 个 jwxt/yjsjy/aoxiang 任何 NWPU 教务端点引用，纯课程材料"
+    },
+    {
+      "repo_name": "pkufzh/NWPU_Aircraft_Engineering_Courses_Term_3_6",
+      "stars": 7,
+      "default_branch": "master",
+      "license": "CC0-1.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "学术英语读写/Academic English Reading and Writing.pdf 等",
+          "purpose": "本科生大二上课程材料：216 张 jpg + 179 个 pdf + 37 个 PPT + 16 个 doc 等",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2022-03-13；CC0 资料仓库，本科大二上「学术英语读写」+ 多门课程教材 PDF/PPT/作业 JPG，0 个 .py/.java/.kt/.js/.ts 源文件；纯课程材料，与 NWPUPostParser 协议无关"
+    },
+    {
+      "repo_name": "pkufzh/NWPU_Aircraft_Engineering_Courses_Term_4_6",
+      "stars": 7,
+      "default_branch": "master",
+      "license": "CC0-1.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "Fundamentals of Aerodynamics/Chapter_01.ppt 等",
+          "purpose": "本科生大二下课程材料：空气动力学教材 PDF + 课件 PPT + MATLAB 程序",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2022-03-13；CC0 资料仓库，本科大二下「Fundamentals of Aerodynamics」+ 多门课程教材 PDF/PPT/MATLAB 程序文件，0 个 .py/.java/.js/.ts 源文件；纯课程材料，与 NWPUPostParser 协议无关"
+    },
+    {
+      "repo_name": "pkufzh/NWPU_Aircraft_Engineering_Courses_Term_6_6",
+      "stars": 7,
+      "default_branch": "master",
+      "license": "CC0-1.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "MATLAB软件与应用/2017300281-FZH-MATLAB*.pdf 等",
+          "purpose": "本科生大三下课程材料：188 个 .m（MATLAB）+ 111 个 pdf + 80 个 .DAT + 66 个 CATPart（CATIA 三维模型）+ 61 张 jpg",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2022-07-11；CC0 资料仓库，本科大三下「MATLAB 软件与应用」+ CATIA/ANSYS 等课程作业（M 代码/CATIA 三维模型/数据文件），0 个解析教务协议的源文件；纯课程材料"
+    },
+    {
+      "repo_name": "2ndelement/nwpu-lesson-select-enhance",
+      "stars": 6,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "nwpu-lesson-select-enhance.user.js",
+          "purpose": "Tampermonkey 选课增强：解析 jwxt.nwpu.edu.cn/course-selection 已选人数显示",
+          "lines_with_protocol": [
+            "7: // @match        https://jwxt.nwpu.edu.cn/course-selection/",
+            "38: /https:\\/\\/jwxt.nwpu.edu.cn\\/course-selection\\/#\\/course-select\\/(\\d+)\\/turn\\/(\\d+)\\/select/;",
+            "44: \"https://jwxt.nwpu.edu.cn/course-selection-api/api/v1/student/course-select/selected-lessons/\" + ",
+            "49: \"https://jwxt.nwpu.edu.cn/course-selection-api/api/v1/student/course-select/std-count?lessonIds=\";"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "archived=true + pushed_at=2022-08-22；README 标题「翱翔门户选课增强」，功能是 course-selection-api 显示「已选人数」增强，supwisdom 选课 API（独立 JWT），不是课表解析；0 命中 sample-table-1/yjsjy/print-data；属于「选课 only」"
+    },
+    {
+      "repo_name": "zymelaii/nwpu-toy-scripts",
+      "stars": 6,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "NWPU 教务个人画像排名小组件.js",
+          "purpose": "油猴脚本：拉取 student-portrait/getStdInfo + getMyGrades，显示专业排名小组件",
+          "lines_with_protocol": [
+            "7: // @match        https://jwxt.nwpu.edu.cn/student/home",
+            "21: const reqUrl = 'https://jwxt.nwpu.edu.cn/student/for-std/student-portrait/getStdInfo?bizTypeAssoc=2&cultivateTypeAssoc=1';",
+            "34: const gradeReqUrl = `https://jwxt.nwpu.edu.cn/${portraitSource}/getMyGrades?studentAssoc=${studentId}&semesterAssoc=${semesterId}`;"
+          ]
+        },
+        {
+          "path": "NWPU 大头照拉取.py",
+          "purpose": "拉取学生证头像（jwxt eams-file-server/image/student）",
+          "lines_with_protocol": [
+            "44: url = 'https://jwxt.nwpu.edu.cn/eams-file-server/image/student'"
+          ]
+        },
+        {
+          "path": "爱问答助手补丁·自动提交.js",
+          "purpose": "超星学习通自动答题，非教务协议",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2024-10-27；3 个脚本：① 个人画像成绩排名（getMyGrades）② 学生证大头照拉取 ③ 超星学习通自动提交；0 命中 sample-table-1/yjsjy/print-data；功能范围是「成绩 + 头像 + 学习助手」，非课表解析"
+    },
+    {
+      "repo_name": "FlowingFrost/NWPU-Course-Helper",
+      "stars": 5,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None（package.json/Cargo.toml 无 license 字段，无 LICENSE 文件）",
+      "relevant_files": [
+        {
+          "path": "extension/manifest.json",
+          "purpose": "Chrome 扩展 manifest：host_permissions 限定 jwxt.nwpu.edu.cn（for-std/lesson-search, course-selection, course-table）",
+          "lines_with_protocol": [
+            "10:    \"https://jwxt.nwpu.edu.cn/*\"",
+            "16:        \"https://jwxt.nwpu.edu.cn/student/for-std/lesson-search*\",",
+            "17:        \"https://jwxt.nwpu.edu.cn/course-selection/*\",",
+            "18:        \"https://jwxt.nwpu.edu.cn/student/for-std/course-table*\""
+          ]
+        },
+        {
+          "path": "shared/parser.ts / shared/segment.ts",
+          "purpose": "解析规则注册表（add_course / 教务网页课程文本 via parseWebCoursesText）+ Segment 数据模型（day/startNode/step/startWeek/endWeek/room/teacher），无 NWPUPostParser 锚点",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2026-08-25（活跃仓）；README 标题「选课助手（CourseHelper）」，功能是「本地选课/排课助手」（候选评分、冲突检测、组合枚举），浏览器插件从「全校开课查询」DOM 提取教学班；扩展 manifest 虽列 course-table 路径但仅作参考展示，未实现 yjsjy/sample-table-1/print-data 任一课表协议层解析；属于「选课 排课 助手」而非课表解析"
+    },
+    {
+      "repo_name": "Phoenix-ZH/NWPU_GPA",
+      "stars": 5,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "getRank.py",
+          "purpose": "单脚本：基于 student-portrait + getMyGrades 端点拉成绩算 GPA 排名",
+          "lines_with_protocol": [
+            "13: 'Referer': 'https://jwxt.nwpu.edu.cn/student/for-std/student-portrait',",
+            "29: response = requests.get('https://jwxt.nwpu.edu.cn/student/for-std/student-portrait/getMyGrades', params=params, headers=headers)"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2023-04-13；纯成绩工具：仅调 getMyGrades 端点算 GPA + 专业排名，readme 操作流程明说手动抓 cookie（SESSION + __pstsid）；0 命中 sample-table-1/yjsjy/print-data；属于「成绩 only」"
+    },
+    {
+      "repo_name": "pkufzh/NWPU_Aircraft_Engineering_Courses_Term_2_6",
+      "stars": 5,
+      "default_branch": "master",
+      "license": "CC0-1.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "C语言设计/C理论+实验/.../第二个大作业_IE01011704_2017300281_冯政豪/main.cpp 等",
+          "purpose": "本科生大一下课程材料：C 语言理论+实验作业（OpenGL 大作业 .cpp/.exe/.o 编译产物 + 数据 + 报告 .doc）",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2022-07-11；CC0 资料仓库，本科大一下「C 语言程序设计」+ OpenGL 大作业完整编译产物（含 .exe/.dll/.o/.wav 等二进制 + .cpp 源码），0 个解析教务协议的源文件；纯课程材料"
+    },
+    {
+      "repo_name": "CrazySupporter/NWPU_OnlineEducation",
+      "stars": 4,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "AwesomeCoding/backend/utils/DoSQL.js + frontend/src/utils/DoSQL.js 等",
+          "purpose": "自建 online education 平台：Vue + Element 前端 + 后端 + MySQL + 直播 API + 聊天 + 在线练习；自研在线教育系统",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2019-07-05；README 自述「An online video curriculum platform project for online Education by team in NWPU」自建教学平台（含直播/聊天/在线练习/课件管理），非 NWPU 教务系统解析；0 命中 sample-table-1/yjsjy/jwxt/aoxiang/ecampus 任何 NWPU 教务端点"
+    },
+    {
+      "repo_name": "MoeMion/NPU-Course-Evalue-Script",
+      "stars": 4,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "翱翔教务半自动评教.user.js",
+          "purpose": "油猴脚本：jwxt.nwpu.edu.cn/evaluation-student-frontend 自动评教（满意给分 + 默认匿名）",
+          "lines_with_protocol": [
+            "7: // @match        https://jwxt.nwpu.edu.cn/evaluation-student-frontend/*"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2022-12-26 + selection_reason=D3（语义触发）；README「翱翔教务半自动评教」；功能是 evaluation-student-frontend 自动点击评教按钮，非课表解析；0 命中 sample-table-1/yjsjy/print-data；属于「评教」非「课表」"
+    },
+    {
+      "repo_name": "churehill/JWhelper",
+      "stars": 4,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "src/cn/edu/nwpu/jwhelper/MainActivity.java",
+          "purpose": "Android 端 CAS 登录封装（cas.nwpu.edu.cn/cas/login）+ 旧 EAMS（222.24.192.69/mhLogin.jsp）",
+          "lines_with_protocol": [
+            "161: URL url = new URL(\"http://222.24.192.69/mhLogin.jsp\");",
+            "183: (\"http://cas.nwpu.edu.cn/cas/login\").openConnection();"
+          ]
+        },
+        {
+          "path": "src/cn/edu/nwpu/jwhelper/ScoresActivity.java",
+          "purpose": "成绩查询 Activity：拉 gradeLnAllAction.do 解析成绩 HTML",
+          "lines_with_protocol": [
+            "191: (\"http://222.24.192.69/gradeLnAllAction.do?type=ln&oper=fainfo&fajhh=4308\");"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2014-09-28 老仓 + Android 实训项目；只做成绩查询（gradeLnAllAction.do），端点 222.24.192.69（旧 EAMS）+ cas.nwpu.edu.cn（旧 CAS），与 jwxt.nwpu.edu.cn/yjsjy.nwpu.edu.cn 完全不同；0 命中 sample-table-1/print-data；属于「成绩 only」"
+    },
+    {
+      "repo_name": "BakerBunker/nwpu_helper",
+      "stars": 3,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected)",
+      "relevant_files": [
+        {
+          "path": "lib/pages/query_classroom.dart",
+          "purpose": "Flutter 教室查询页面：调用 us.nwpu.edu.cn/eams/stdRooms.action 解析空教室",
+          "lines_with_protocol": [
+            "38:        await dio.get('http://us.nwpu.edu.cn/eams/stdRooms.action');",
+            "44:        final document = parse(response.data.toString());",
+            "49:        final selectors = document.querySelectorAll('select');"
+          ]
+        },
+        {
+          "path": "lib/pages/classroom_result.dart",
+          "purpose": "空教室查询结果展示，POST 上",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "NWPU 空闲教室查询客户端，调用 us.nwpu.edu.cn/eams (本科教务旧门户 stdRooms.action) 解析 select 选项与教室列表，与 NWPUPostParser 锚定的研究生 yjsjy.nwpu.edu.cn sample-table-1 HTML 课程表 / 节次上中下晚 协议层无关，0 命中"
+    },
+    {
+      "repo_name": "cheanus/SelectCourseEasily",
+      "stars": 3,
+      "default_branch": "master",
+      "license": "MIT",
+      "license_source": "LICENSE file (MIT)",
+      "relevant_files": [
+        {
+          "path": "NWPUfun.py",
+          "purpose": "Python 选课客户端：登录 jwxt.nwpu.edu.cn + lesson-search 课程检索与排课算法",
+          "lines_with_protocol": [
+            "71:        response = self.session.get('https://jwxt.nwpu.edu.cn/student/for-std/lesson-search', headers=self.headers)",
+            "175:        URL = 'https://jwxt.nwpu.edu.cn/student/sso-login'",
+            "184:        response = self.session.get('https://jwxt.nwpu.edu.cn/student/for-std-lessons/info/' + class_id, headers=self.headers)",
+            "208:        url = 'https://jwxt.nwpu.edu.cn/student/for-std/lesson-search'",
+            "211:        url = ('https://jwxt.nwpu.edu.cn/student/for-std/lesson-search/semester/' + self.semester + '/search/'+ identify_code"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走新门户 jwxt.nwpu.edu.cn 调 /student/for-std/lesson-search 课程检索接口 + for-std-lessons/info/{id}，渲染依赖用户输入课程代码后用 pulp 排课；与 NWPUPostParser 锚定的研究生 sample-table-1 HTML 协议层无关，0 命中 sample-table-1/yjsjy，路径与 aoxiang-assistant 同源 JSON/HTML 层（render_layer 同源），但面向本科生课表查询排课，非研究生协议"
+    },
+    {
+      "repo_name": "fantian-bilibili/NWPU_COURSE_MONITOR",
+      "stars": 3,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "README badge (License: MIT)",
+      "relevant_files": [
+        {
+          "path": "lib/app/pages/jwxt_import_webview_page.dart",
+          "purpose": "WebView 加载翱翔教务 ecampus.nwpu.edu.cn + JS 注入提取课程",
+          "lines_with_protocol": [
+            "7:const String _jwxtUrl = 'https://ecampus.nwpu.edu.cn/';",
+            "424:    controller.loadRequest(Uri.parse(_jwxtUrl));"
+          ]
+        },
+        {
+          "path": "docs/references/soaring-schedule/jwxtParser.ts",
+          "purpose": "历史课表 HTML 解析器：解析 tr.lessonInfo[data-semester]/courseInfo[data-course] + 学分/教师 regex",
+          "lines_with_protocol": [
+            "97:  const courseRegex = /<tr class=\"lessonInfo\"[^>]*data-semester=\"([^\"]+)\"[^>]*>[\\s\\S]*?<td class=\"courseInfo\"[^>]*data-course=\"([^\"]+)\"[^>]*>[\\s\\S]*?<p class=\"showSchedules\">([^<]+)<\\/p>[\\s\\S]*?<p>([^<]+)<i[\\s\\S]*?学分\\(([\\d.]+)\\)[\\s\\S]*?授课教师：([^<]+)<\\/p>[\\s\\S]*?<td>([^<]*)<\\/td>[\\s\\S]*?<td>([\\s\\S]*?)<\\/td>/g;"
+          ]
+        },
+        {
+          "path": "docs/references/soaring-schedule/JwxtWebView.tsx",
+          "purpose": "WebView 内嵌页面：扫描 tr + showSchedules/h3/学分() 节次解析",
+          "lines_with_protocol": [
+            "68:                iframeBodyText.includes('学分') ||",
+            "167:          } else if (trText.includes('学分(') && trText.length > 20) {",
+            "187:            const creditsMatch = trHtml.match(/学分\\(([\\d.]+)\\)/);"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走翱翔教务 ecampus.nwpu.edu.cn WebView + docs/references 下的历史 tr.lessonInfo/courseInfo HTML 解析（旧翱翔版课程表 DOM 协议），与 NWPUPostParser 锚定的研究生 yjsjy.nwpu.edu.cn sample-table-1 / 节次上中下晚协议层无关，0 命中 sample-table-1/yjsjy；当前主分支 lib 已不再直接解析 HTML 而走 WebView+JS extract，与新门户 print-data / 研究生 sample-table-1 协议都不同源"
+    },
+    {
+      "repo_name": "qllokirin/npu_check_electricity",
+      "stars": 3,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "README badge (License: MIT) + LICENSE",
+      "relevant_files": [
+        {
+          "path": "electricity_client.py",
+          "purpose": "电费客户端 yktapp.nwpu.edu.cn/jfdt 登录 + jwxt.nwpu.edu.cn RS6 Cookie 模板替换",
+          "lines_with_protocol": [
+            "295:            \"https://jwxt.nwpu.edu.cn/student/sso-login\": target_url,",
+            "296:            \"https://jwxt.nwpu.edu.cn\": f\"{parts.scheme}://{parts.netloc}\",",
+            "297:            \"jwxt.nwpu.edu.cn\": parts.netloc,"
+          ]
+        },
+        {
+          "path": "rs6/rs6_env.js",
+          "purpose": "瑞数 6 代 Cookie 模板：硬编码 jwxt.nwpu.edu.cn URL 替换字段",
+          "lines_with_protocol": [
+            "22:    \"href\": \"https://jwxt.nwpu.edu.cn/student/sso-login\",",
+            "23:    \"origin\": \"https://jwxt.nwpu.edu.cn\",",
+            "25:    \"host\": \"jwxt.nwpu.edu.cn\",",
+            "26:    \"hostname\": \"jwxt.nwpu.edu.cn\","
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "电费查询工具，主站 yktapp.nwpu.edu.cn/jfdt/charge/feeitem/getThirdData，rs6/rs6_env.js 中出现 jwxt.nwpu.edu.cn 仅作为 RS6 Cookie 模板 URL 占位符/替换字段（非实际课表协议），与 NWPUPostParser 锚定的 sample-table-1 / 节次上中下晚 / 学分课程表 0 命中"
+    },
+    {
+      "repo_name": "zengzoxiong/aoxiang-jwxt-enhance",
+      "stars": 3,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "README + LICENSE",
+      "relevant_files": [
+        {
+          "path": "aoxiang-jwxt-enhance.user.js",
+          "purpose": "油猴脚本：覆盖 jwxt.nwpu.edu.cn / yjsjy.nwpu.edu.cn 多页面增强；包含 yjsjy 兜底 initProgramPageEnhancement",
+          "lines_with_protocol": [
+            "7:// @match        https://jwxt.nwpu.edu.cn/*",
+            "8:// @match        https://jwxt.nwpu.edu.cn/student/for-std/course-select/some-page*",
+            "11:// @match        https://yjsjy.nwpu.edu.cn/*",
+            "594:            const courseTableUrl = \"https://jwxt.nwpu.edu.cn/student/for-std/course-table\";",
+            "6770-6771:        else if (location.host === 'yjsjy.nwpu.edu.cn') { initProgramPageEnhancement(); }"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "元数据 // @match 命中 yjsjy.nwpu.edu.cn 域名（line 11），运行期判定 location.host === 'yjsjy.nwpu.edu.cn' 触发 initProgramPageEnhancement（line 6770-6771），但仅针对培养方案页面的课程预览，**未解析** sample-table-1 / 节次上中下晚 / 学分列；研发生 yjsjy 路由范围标注，但具体落到研究生课表的协议层（sample-table-1 HTML 或节次汉字前缀）为 0 命中；其新门户路径（jwxt.nwpu.edu.cn/student/for-std/course-table）属本科生 INDIRECT 层"
+    },
+    {
+      "repo_name": "zhanghaoran124/NWPU_AISchedule",
+      "stars": 3,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected)",
+      "relevant_files": [
+        {
+          "path": "provider.js",
+          "purpose": "小爱课程表适配 provider.js：扫描 iframe 找 /student/for-std/course-table，解析 tdHtml/course-name/节次汉字",
+          "lines_with_protocol": [
+            "19:    await AIScheduleAlert('当前页面无课程数据，请登录翱翔门户后定位到\"翱翔教务 - 课程管理 - 我的课表\"页，并选择需要导入课程的学期。')",
+            "30:        if (obj[i].src.indexOf('/student/for-std/course-table') != -1){"
+          ]
+        },
+        {
+          "path": "parser.js",
+          "purpose": "周次/节次字符串解析（weeksParser）",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "翱翔教务 iframe /student/for-std/course-table 解析 + 周次/节次正则；line 30 命中 iframe src 但 0 命中 sample-table-1/yjsjy，且对中午节次 5/6 直接跳过（line 102）= 与 NWPUPostParser 节次上中下晚汉字映射协议层不兼容；新门户 course-table 协议层 INDIRECT，非研究生协议"
+    },
+    {
+      "repo_name": "ACha-xwx/nwpu-electricity-reminder",
+      "stars": 2,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "README badge (License: MIT) + LICENSE",
+      "relevant_files": [
+        {
+          "path": "nwpu_api.py",
+          "purpose": "电费 API 封装：yktapp.nwpu.edu.cn/jfdt/charge/feeitem/getThirdData",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "check_electricity.py",
+          "purpose": "电费检查脚本，POST 上",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "宿舍电量监控工具，主站 yktapp.nwpu.edu.cn/jfdt，与 NWPUPostParser 锚定的 yjsjy.nwpu.edu.cn sample-table-1 课表 / 学分 / 节次上中下晚 0 命中"
+    },
+    {
+      "repo_name": "BakerBunker/NpuGpa",
+      "stars": 2,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected)",
+      "relevant_files": [
+        {
+          "path": "app/src/main/java/com/bakerbunker/npugpa/MainViewModel.kt",
+          "purpose": "Kotlin 客户端：us.nwpu.edu.cn/eams/login.action 登录 + eams/teach/grade/course/person!historyCourseGrade.action 历史成绩查询",
+          "lines_with_protocol": [
+            "18:private const val LOGIN_URL = \"http://us.nwpu.edu.cn/eams/login.action\"",
+            "19-20:private const val SCORE_URL = \"http://us.nwpu.edu.cn/eams/teach/grade/course/person!historyCourseGrade.action\""
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "本科 GPA 查询（us.nwpu.edu.cn/eams 旧门户历史成绩接口），与 NWPUPostParser 锚定的研究生 yjsjy.nwpu.edu.cn sample-table-1 / 学分课程表 / 节次上中下晚 0 命中"
+    },
+    {
+      "repo_name": "NaraLan0502/AoxiangHelp_QQBotPlugin",
+      "stars": 2,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected)",
+      "relevant_files": [
+        {
+          "path": "renderer.py",
+          "purpose": "图片渲染占位（schedule/grades 抛 RendererUnavailable）",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "collector.py",
+          "purpose": "采集层契约 Protocol：login/grades/schedule/electricity 全部 UNAVAILABLE 兜底",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "service.py",
+          "purpose": "QQBot 指令编排层：成绩/课表/排名/考试指令路由",
+          "lines_with_protocol": [
+            "164-165:            \"课表\": \"week_schedule\",\n            \"全部课表\": \"all_schedule\","
+          ]
+        },
+        {
+          "path": "rs6/rs6_crack.js",
+          "purpose": "瑞数 6 代 Cookie 模板（jwxt.nwpu.edu.cn SSO 登录）",
+          "lines_with_protocol": [
+            "1:const TARGET_URL = 'https://jwxt.nwpu.edu.cn/student/sso-login';",
+            "11:const TARGET_URL = 'https://jwxt.nwpu.edu.cn/student/sso-login';"
+          ]
+        },
+        {
+          "path": "rs6/rs6_env.js",
+          "purpose": "RS6 浏览器环境模板，jwxt.nwpu.edu.cn URL 占位符",
+          "lines_with_protocol": [
+            "35-39:\"href\"/\"origin\"/\"host\"/\"hostname\" = \"https://jwxt.nwpu.edu.cn/...\""
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "QQBot 翱翔助手插件，但采集层 collector.py 全部 UNAVAILABLE 兜底 + renderer.py RendererUnavailable，README 明确写「成绩、课表、排名和考试的在线采集暂未恢复，会稳定返回维护提示」；jwxt.nwpu.edu.cn 仅出现于 RS6 兜底 cookie 模板 URL 占位符，0 命中 sample-table-1/yjsjy/节次上中下晚"
+    },
+    {
+      "repo_name": "kidozh/nwpu_graduate_exam_answer_sheet",
+      "stars": 2,
+      "default_branch": "master",
+      "license": "MIT",
+      "license_source": "LICENSE (MIT)",
+      "relevant_files": [
+        {
+          "path": "document.tex",
+          "purpose": "XeLaTeX 答题册模板：正文字体小四宋体，标题黑体小二加粗",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "settings.tex / settings1.tex",
+          "purpose": "LaTeX 样式定义（字号行距），POST 上",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "西工大研究生课程考试**答题册排版模板**（XeLaTeX，无任何代码/网络爬取/HTML 解析），与 NWPUPostParser 锚定的 sample-table-1 / 节次上中下晚 / 学分课程表协议层完全无关，0 命中"
+    },
+    {
+      "repo_name": "4ilde/NWPU-school-of-software-graduate-course-guidance",
+      "stars": 1,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected, repo only contains README.md)",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "仅有 62 字节 README「帮助研一同学更快捷的完成研一课程的学习」+ .git 目录，无代码",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "空仓库：除 README.md 标题外无任何代码 / HTML / 网络爬取 / 协议解析文件；0 命中 sample-table-1/yjsjy/jwxt/节次上中下晚"
+    },
+    {
+      "repo_name": "Dryzk/nwpu-gpa-and-rank",
+      "stars": 1,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected)",
+      "relevant_files": [
+        {
+          "path": "实现登陆.py",
+          "purpose": "Selenium 模拟浏览器登录 uis.nwpu.edu.cn CAS → 翱翔门户 → 学生画像 → 保存 page_source",
+          "lines_with_protocol": [
+            "12:browser.get(\"https://uis.nwpu.edu.cn/cas/login?service=https%3A%2F%2Fecampus.nwpu.edu.cn...\");",
+            "28: aoxiangjiaowu = browser.find_element(by=By.XPATH,value='/html/body/div/div[1]/div[1]/div/section/div/div[1]/div[2]/div/div[2]/ul[1]/li[4]/span[1]/img')",
+            "29: aoxiangjiaowu.click()"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "基于 Selenium + uis.nwpu.edu.cn CAS + 翱翔门户学生画像的本科 GPA/Rank 查询脚本（README 明确写「进入学生画像后，…getmygrades 的请求…可以看到专业排名」），与 NWPUPostParser 锚定的研究生 yjsjy.nwpu.edu.cn sample-table-1 课表 / 节次上中下晚 / 学分课程表 0 命中"
+    },
+    {
+      "repo_name": "Hydrostic/NWPU-EAMS-helper",
+      "stars": 1,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "GitHub repo metadata (no LICENSE file detected)",
+      "relevant_files": [
+        {
+          "path": "vite.config.ts",
+          "purpose": "Vite userscript 注入配置：match = https://jwxt.nwpu.edu.cn/student/home",
+          "lines_with_protocol": [
+            "24:        match: ['https://jwxt.nwpu.edu.cn/student/home'],"
+          ]
+        },
+        {
+          "path": "src/views/TextbookOverview.svelte",
+          "purpose": "教材查看视图：访问 iframe /student/for-std/course-table + 调 /student/for-std/course-table/get-data 端点",
+          "lines_with_protocol": [
+            "8-9:    if(window.location.href !== 'https://jwxt.nwpu.edu.cn/student/home') { window.location.href = 'https://jwxt.nwpu.edu.cn/student/home'; }",
+            "44:            const iframe = document.querySelector('iframe[src^=\"/student/for-std/course-table\"]');",
+            "113:        const url = `https://jwxt.nwpu.edu.cn/student/for-std/course-table/get-data?${params}`;"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "Svelte userscript 注入 jwxt.nwpu.edu.cn/student/home，扫描 iframe[src^='/student/for-std/course-table'] 调 /student/for-std/course-table/get-data 端点拉取课程教材数据，但**仅用** lessons[].course.textbooks 字段，0 命中 sample-table-1/yjsjy/节次上中下晚；新门户 course-table get-data JSON 协议层 INDIRECT，非研究生协议"
+    },
+    {
+      "repo_name": "Xio-Shark/aoxiang-kebiao",
+      "stars": 1,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "schedule-app/mobile_app/lib/data/datasources/aoxiang_jiaowu_adapter.dart",
+          "purpose": "AoxiangJiaowuAdapter：JSON kbList / 嵌入 JSON / 任意 HTML table 嗅探通用解析；查找 window.kbList / kbList=...正则 / doc.querySelectorAll('table') 任意表",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "schedule-app/mobile_app/lib/presentation/pages/jiaowu_web_import_page.dart",
+          "purpose": "WebView 嗅探入口：evaluateJavascript 读 window.kbList 或 #kbtable/.kb_table/table.outerHTML；_defaultUrl='https://uis.nwpu.edu.cn/cas/login'",
+          "lines_with_protocol": [
+            "static const String _defaultUrl = 'https://uis.nwpu.edu.cn/cas/login';",
+            "if (window.kbList && Array.isArray(window.kbList)) {",
+            "document.querySelector(\"#kbtable\") || document.querySelector(\".kb_table\") || document.querySelector(\"table\")"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "Flutter WebView 嗅探通用 教务 课表：定位 window.kbList / 嵌入 JSON 正则 / #kbtable/.kb_table/任意 table.outerHTML，无任何 jwxt print-data 端点 / sample-table-1 / yjsjy 域名；字段 kcmc/xm/cdmc/xqmc/skxq/ksjc/jsjc/zcs 是通用教务字段映射，不是 NWPUPostParser 列头（院系/课程编号/课程名称/班级名称/主讲教师/学分/班级说明/上课时间）；与 NWPUPostParser 锚定的研究生 sample-table-1 HTML 一维清单完全异构"
+    },
+    {
+      "repo_name": "fantian-bilibili/NCP-NWPU-Course-Parser",
+      "stars": 1,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "NCP.py",
+          "purpose": "解析localStorage `cs-selectedLessons-xxx-xxx` 缓存（Aoxiang 翱翔门户 js 前端缓存）→CSV：parse_schedule_text 提周次/星期/节次/地点；遍历 lesson.course.nameZh / scheduleGroups[0].schedules[h].startUnit,endUnit,weekday / dateTimePlace.textZh",
+          "lines_with_protocol": [
+            "data = json.load(f)  # cs-selectedLessons-xxx-xxx 缓存值",
+            "course_name = lesson.get('course', {}).get('nameZh') or lesson.get('nameZh', '')",
+            "schedules = group.get('schedules', []);  # schedules[h].startUnit/endUnit/weekday",
+            "dtp = group.get('dateTimePlace', {}).get('textZh') or group.get('dateTimePlace', {}).get('text')"
+          ]
+        },
+        {
+          "path": "README.md",
+          "purpose": "README 操作流程：翱翔门户 → 我的课表 → F12 → Application → LocalStorage → cs-selectedLessons-xxx-xxx → 复制值 → 存 NCP.txt → 跑 NCP.py",
+          "lines_with_protocol": [
+            "找到`cs-selectedLessons-xxxxxx-xxxx`的条目，单击它。下方会弹出一系列条目，对着第一行右键，选择**复制值**"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走翱翔门户前端 localStorage 缓存 `cs-selectedLessons-xxx-xxx`（即 jwxt/Aoxiang 同源 课表 JSON 缓存），字段 course.nameZh + scheduleGroups[0].schedules[h].{weekday,startUnit,endUnit} + dateTimePlace.textZh 与 print-data JSON 同源；与 NWPUPostParser 锚定的「sample-table-1 HTML 列头」异构；未直接调用 print-data 端点，靠用户手工复制 localStorage 粘贴触发"
+    },
+    {
+      "repo_name": "gonearewe/CourseRecom",
+      "stars": 1,
+      "default_branch": "main",
+      "license": "GPL-3.0",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "README 自述：Big Data 课程作业，Spark + ElementUI/Vue 的课程推荐系统；NWPU 仅出现在「大数据课程」归属说明",
+          "lines_with_protocol": []
+        },
+        {
+          "path": "FrontEnd/src/renderer/main.js + BackEnd/",
+          "purpose": "electron-vue 前端 + Spark/Scala 后端，无 NWPU 教务 endpoint / yjsjy / jwxt / sample-table-1 任何引用",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2020-12-31；Big Data 课程 Spark + Scala 推荐系统作业（FrontEnd electron-vue + BackEnd Spark），NWPU 仅作「课程归属」出现在 README，0 命中 yjsjy/jwxt/sample-table-1/print-data/cs-selectedLessons；与 NWPUPostParser 协议无任何重合"
+    },
+    {
+      "repo_name": "huohuo132/Aoxiang-assistant-for-HarmonyOS",
+      "stars": 1,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "entry/src/main/resources/rawfile/api_collect.js",
+          "purpose": "api_collect.js：仅采集 grades 路径 — /student/for-std/student-portrait/getStdInfo + /student/for-std/grade/sheet/ + /student/for-std/student-portrait/getMyGpa；0 命中 /student/for-std/course-table 路径",
+          "lines_with_protocol": [
+            "const studentInfo = await fetchJson(\"/student/for-std/student-portrait/getStdInfo\");",
+            "const sheetHtml = await fetchText(\"/student/for-std/grade/sheet/\");",
+            "\"/student/for-std/student-portrait/getMyGpa?studentAssoc=\" + encodeURIComponent(studentId)"
+          ]
+        },
+        {
+          "path": "entry/src/main/resources/rawfile/auto_collect.js",
+          "purpose": "auto_collect.js：UIS CAS / 验证页嗅探（uis.nwpu.edu.cn 安全验证弹层识别），无课表解析",
+          "lines_with_protocol": [
+            "host === \"uis.nwpu.edu.cn\""
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2026-09-18；HarmonyOS 移植版翱翔助手，0 命中 sample-table-1/yjsjy/print-data/course-table/studentTableVm/timeTableLayout；api_collect.js 唯一 endpoint 全是 student-portrait/grade/sheet 路径（成绩+GPA），无任何 /student/for-std/course-table 路由分支；与 NWPUPostParser 锚定的研究生 sample-table-1 完全异构"
+    },
+    {
+      "repo_name": "npuNancy/AoXiangGrades",
+      "stars": 1,
+      "default_branch": "master",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "README.md",
+          "purpose": "README 单行说明：get grade from NWPU Aoxiang",
+          "lines_with_protocol": []
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2019-07-26 老仓；git ls-tree HEAD 输出仅 README.md 一个文件，0 个源文件；README 自述「get grade from NWPU Aoxiang」但无任何代码 / 协议解析 / 网络爬取 / sample-table-1 / yjsjy / jwxt / print-data 任何引用"
+    },
+    {
+      "repo_name": "sjrsjz/nwpu-gpa-rank",
+      "stars": 1,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "gpa.py",
+          "purpose": "Tkinter GUI 客户端：UIS 二维码登录 → jwxt.nwpu.edu.cn/sso-login → student-portrait 拉 GPA/排名；0 命中 course-table / print-data",
+          "lines_with_protocol": [
+            "qr_url = \"https://uis.nwpu.edu.cn/cas/qr/init\"",
+            "\"service\": \"https://jwxt.nwpu.edu.cn/student/sso-login\""
+          ]
+        },
+        {
+          "path": "README.md",
+          "purpose": "README 自述：「快速查看GPA排名和所有课程GPA」，扫码登录 NWPU APP；列出的全是 student-portrait 端点（getMyGradesByProgram / getScoreRangeGrades / getMyGpa 等），0 命中 course-table",
+          "lines_with_protocol": [
+            "https://jwxt.nwpu.edu.cn/student/for-std/student-portrait/getMyGradesByProgram",
+            "https://jwxt.nwpu.edu.cn/student/for-std/student-portrait/getMyGpa"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "纯 GPA 工具：UIS 二维码登录 + student-portrait 成绩/GPA 端点，0 命中 sample-table-1/yjsjy/print-data/course-table/studentTableVm；与 NWPUPostParser 锚定的「院系/课程编号/课程名称/班级名称/主讲教师/学分/班级说明/上课时间」HTML 列头无任何重合；仅同源 jwxt 但路径完全错位"
+    },
+    {
+      "repo_name": "top-tree/nwpu-edu-plus",
+      "stars": 1,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "main.user.js",
+          "purpose": "油猴脚本（基于 524099 二次开发）：@match 命中 jwxt.nwpu.edu.cn/*；PAGE_COURSE_TABLE 常量指向 /student/for-std/course-table；包含「解析课表 print-data」异常分支（line 7300-7312）",
+          "lines_with_protocol": [
+            "// @match        https://jwxt.nwpu.edu.cn/*",
+            "PAGE_COURSE_TABLE: 'https://jwxt.nwpu.edu.cn/student/for-std/course-table'",
+            "if (this._gm_textbook_url && this._gm_textbook_url.includes('/print-data/')) { ... '2.13', '解析课表 print-data 失败' }",
+            "window.location.href.includes('/student/for-std/course-table')",
+            "API_MY_SCHEDULE: 'https://jwxt.nwpu.edu.cn/student/for-std/course-schedule/getData'"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走新门户 jwxt.nwpu.edu.cn 的 print-data JSON 端点（line 7300 显式捕获 /print-data/ 响应做异步打印）+ course-table 页面嗅探（line 7832 / 2602 / 2610 / 2659）；解析路径指向新门户 studentTableVm/courseUnitList 而非 NWPUPostParser 锚定的 sample-table-1 HTML 表格；与上一批 Lorcas-Zephyr/aoxiang-assistant 协议层完全同源"
+    },
+    {
+      "repo_name": "LiYulin-s/nwpu-coursetable",
+      "stars": 0,
+      "default_branch": "vite",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "dist/main.user.js",
+          "purpose": "Tampermonkey 用户脚本：@include https://jwxt.nwpu.edu.cn/student/home；遍历 unsafeWindow.localStorage 匹配 /cs-selectedLessons-\\d+-\\d+/ 读取 Aoxiang 缓存 JSON；解析 dateTimePlace.textZh / scheduleGroups[0].schedules[h].{weekday,startUnit,endUnit} / course.nameZh / teachers[].nameZh → 输出 GBK CSV（WakeUp 导入格式）",
+          "lines_with_protocol": [
+            "// @include         https://jwxt.nwpu.edu.cn/student/home",
+            "t.dateTimePlace.textZh.split(\";\").map(...)",
+            "${n.scheduleGroups[0].schedules[h].weekday, ${...}.startUnit, ${...}.endUnit}, ${n.course.nameZh}",
+            "if (t.match(/cs-selectedLessons-\\d+-\\d+/))",
+            "unsafeWindow.localStorage.getItem(U) → JSON.parse(t)"
+          ]
+        },
+        {
+          "path": "readme.md",
+          "purpose": "README：Tampermonkey 用户脚本，gbk CSV → WakeUp；自动读取教务系统课表数据（localStorage 选课信息）",
+          "lines_with_protocol": [
+            "自动读取西北工业大学教务系统的课表数据（localStorage 中的选课信息）"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走翱翔门户前端 localStorage `cs-selectedLessons-\\d+-\\d+/` 缓存（jwxt/Aoxiang 同源 JSON），与 print-data JSON 字段同源（scheduleGroups[0].schedules[h].{weekday,startUnit,endUnit} / dateTimePlace.textZh / course.nameZh）；@include 命中 jwxt.nwpu.edu.cn/student/home；未直接调 print-data 端点（依赖 Aoxiang 前端预填缓存），与 sample-table-1 HTML 表格完全异构"
+    },
+    {
+      "repo_name": "Panoramasx/aoxiang-harmonyos",
+      "stars": 0,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "entry/src/main/resources/rawfile/api_collect.js",
+          "purpose": "ArkWeb 内嵌 JS：捕获 /student/for-std/course-table/semester/{id}/print-data/{studentId} JSON；解析 printData.studentTableVm.activities + timeTableLayout.courseUnitList；fallback 到 /student/for-std/course-table HTML 抓取",
+          "lines_with_protocol": [
+            "/\\/for-std\\/course-table\\/semester\\/[^/]+\\/print-data\\/([^/?#]+)/",
+            "printData.studentTableVm && Array.isArray(printData.studentTableVm.activities)",
+            "'/student/for-std/course-table/semester/' + encodeURIComponent(semester.id) + '/print-data/' + encodeURIComponent(studentId)",
+            "printData = await request('/student/for-std/course-table/semester/' + ... + '/print-data/' + ..., 'json')"
+          ]
+        },
+        {
+          "path": "entry/src/main/resources/rawfile/page_collect.js",
+          "purpose": "页面 DOM 嗅探：location.pathname 命中 /student/for-std/course-table 后构建虚拟 printData={studentTableVm:{activities}}",
+          "lines_with_protocol": [
+            "if (!location.pathname.includes('/student/for-std/course-table'))",
+            "printData: { studentTableVm: { activities } }"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走新门户 jwxt.nwpu.edu.cn 的 print-data JSON 端点 + studentTableVm.activities + timeTableLayout.courseUnitList 解析路径；page_collect.js 在 course-table 页面构造虚拟 studentTableVm 结构；与 NWPUPostParser 锚定的 sample-table-1 HTML 一维清单完全异构；与上一批 Lorcas-Zephyr/aoxiang-assistant 同协议层"
+    },
+    {
+      "repo_name": "iiijiashu/guagua-course",
+      "stars": 0,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "app/src/main/java/com/example/npucourse/domain/importer/NwpuPrintDataParser.kt",
+          "purpose": "NwpuPrintDataParser：注释「Parses the JSON returned by 翱翔教务's read-only print-data endpoint」；root.studentTableVm.activities → Meetings",
+          "lines_with_protocol": [
+            "45: * Parses the JSON returned by 翱翔教务's read-only print-data endpoint.",
+            "113: root.optJSONObject(\"studentTableVm\")?.optJSONArray(\"activities\")"
+          ]
+        },
+        {
+          "path": "app/src/main/java/com/example/npucourse/domain/importer/NwpuJwxtExtractor.kt",
+          "purpose": "NwpuJwxtExtractor：OFFICIAL_HOST=jwxt.nwpu.edu.cn；同源 iframe 抓 /student/for-std/course-table/semester/{semesterId}/print-data/{studentId}",
+          "lines_with_protocol": [
+            "20: private const val OFFICIAL_HOST = \"jwxt.nwpu.edu.cn\"",
+            "65: var path = \"/student/for-std/course-table/semester/\" + semesterId + \"/print-data/\" + studentId",
+            "73: if (finalUrl.origin !== \"https://jwxt.nwpu.edu.cn\")"
+          ]
+        },
+        {
+          "path": "app/src/test/java/com/example/npucourse/NwpuPrintDataParserTest.kt",
+          "purpose": "NwpuPrintDataParserTest：测试 fixture 显式构造 {studentTableVm:{activities:[...], timeTableLayout:{courseUnitList:[...]}}}",
+          "lines_with_protocol": [
+            "22: {\"studentTableVm\":{...timeTableLayout:{\"courseUnitList\":[...]}}",
+            "43: {\"studentTableVm\":{\"activities\":["
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "Android 多学校课表导入 NWPU 专项：NwpuPrintDataParser + NwpuJwxtExtractor 显式调用 print-data 端点（OFFICIAL_HOST=jwxt.nwpu.edu.cn，path = /student/for-std/course-table/semester/{id}/print-data/{studentId}），解析路径 studentTableVm.activities + timeTableLayout.courseUnitList；同源 jwxt 但 0 命中研究生 yjsjy.nwpu.edu.cn / sample-table-1；与 NWPUPostParser 锚定的「HTML 列头 / 上中下晚 节次」完全异构"
+    },
+    {
+      "repo_name": "lpz-07/nwpu-zcp-exporter",
+      "stars": 0,
+      "default_branch": "main",
+      "license": "MIT",
+      "license_source": "root LICENSE",
+      "relevant_files": [
+        {
+          "path": "src/nwpu-zcp-exporter.user.js",
+          "purpose": "Tampermonkey 综测导出脚本：// @match https://xgpt.nwpu.edu.cn/*；综测系统同源 API + JSZip/SheetJS 导出 Excel/ZIP；0 命中 jwxt/yjsjy/aoxiang/ecampus/课表",
+          "lines_with_protocol": [
+            "// @match        https://xgpt.nwpu.edu.cn/*",
+            "脚本只在 `https://xgpt.nwpu.edu.cn/` 页面运行，并使用当前登录会话调用该站点的同源读取或文件下载接口"
+          ]
+        },
+        {
+          "path": "README.md",
+          "purpose": "README 自述：「非官方、只读的西工大综测数据与证明材料导出」；综测审核人员批量导出综测 Excel/证明材料",
+          "lines_with_protocol": [
+            "非官方、只读的西工大综测数据与证明材料导出 Tampermonkey 脚本"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "NEGATIVE",
+      "verdict_reason": "pushed_at=2026-09-10；综测（综合测评）审核系统 xgpt.nwpu.edu.cn 专用脚本，与教务课表系统完全无关：0 命中 jwxt.nwpu.edu.cn / yjsjy.nwpu.edu.cn / ecampus / sample-table-1 / print-data / course-table；功能是综测数据 + 证明材料导出（Excel + ZIP），与 NWPUPostParser 锚定的研究生课表协议 0 重合"
+    },
+    {
+      "repo_name": "xiaozhuang357/NPU-eCampus-ICS-Exporter",
+      "stars": 0,
+      "default_branch": "main",
+      "license": null,
+      "license_source": "None",
+      "relevant_files": [
+        {
+          "path": "nwpu-timetable-ics-exporter.user.js",
+          "purpose": "Tampermonkey ICS 导出：// @match https://jwxt.nwpu.edu.cn/student/*；显式注释「只观察课程表 print-data 请求」；捕获 /student/for-std/course-table/semester/.../print-data/ 响应 → printData.studentTableVm → 解析 activities → 生成 ICS（@npu-course-table UID）",
+          "lines_with_protocol": [
+            "// @namespace    https://jwxt.nwpu.edu.cn/",
+            "// @match        https://jwxt.nwpu.edu.cn/student/*",
+            "22: //    只观察课程表 print-data 请求",
+            "80: url.includes('/course-table/semester/') && url.includes('/print-data/')",
+            "87: // 2. 捕获 studentTableVm",
+            "92: response?.studentTableVm",
+            "97: '[NPU ICS] print-data 中没有找到 TableVm'"
+          ]
+        }
+      ],
+      "table_anchor": null,
+      "section_base_map": null,
+      "exact_code_snippet": null,
+      "verdict": "INDIRECT",
+      "verdict_reason": "走新门户 jwxt.nwpu.edu.cn/student/* 课程表 print-data JSON 端点 + activities 列表 → ICS 输出；注释 line 22 显式标注「只观察课程表 print-data 请求」、line 92 提取 studentTableVm；与 NWPUPostParser 锚定的 sample-table-1 HTML 一维清单异构；与 Lorcas-Zephyr/aoxiang-assistant / QingQiz 等同协议层（print-data JSON）"
+    }
+  ],
+  "anchor_summary": "sample-table-1 / yjsjy.nwpu.edu.cn / 上中下晚 节次 / 第N-M周 周次",
+  "verified_count": 51,
+  "positive_count": 0,
+  "indirect_count": 20,
+  "negative_count": 31,
+  "network_failure_count": 0
+}
