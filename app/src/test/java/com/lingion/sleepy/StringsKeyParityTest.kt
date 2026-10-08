@@ -181,7 +181,6 @@ class StringsKeyParityTest {
         }
     }
 
-
     @Test
     fun all_six_locale_dirs_exist() {
         for (locale in localeDirs) {
