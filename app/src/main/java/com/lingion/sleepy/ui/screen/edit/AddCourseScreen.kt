@@ -846,12 +846,13 @@ fun AddCourseScreen(
 
 
 
-/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师 参与分组，
- *  保证「同节次不同周次」「同名多地点」「同名多老师」回填成多个 block 而不是被错误合并。
- *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块 */
+/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师/星期 参与分组，
+ *  保证「同节次不同周次」「同名多地点」「同名多老师」「同名不同星期」回填成多个 block 而不是被错误合并。
+ *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块
+ *  v4(用户报障 2026-10-08): day 进分组 key — 同节次不同星期被错误合并 → 必须分开 */
 internal fun groupSlotsForEdit(courses: List<CourseEntity>): List<List<CourseEntity>> =
     courses.groupBy { c ->
-        "${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
+        "${c.day}|${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
     }.values.toList()
 
 /** 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
