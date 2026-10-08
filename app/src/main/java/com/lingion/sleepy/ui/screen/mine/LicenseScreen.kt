@@ -576,5 +576,13 @@ private val contributorEntries: List<ContributorEntry> = listOf(
     ContributorEntry(
         "contributor-Cold577", "冷冷冷 Cold577", "GitHub @Cold577",
         "已合并 PR #79 小组件选择器预览图修复 (运行时位图容器 previewLayout 摘除) — 全部提交与讨论记录见 github.com/Cold577"
+    ),
+    ContributorEntry(
+        "contributor-X-art-hash", "X-art-hash", "GitHub @X-art-hash",
+        "已合并的代码贡献 — 全部提交与讨论记录见 github.com/X-art-hash"
+    ),
+    ContributorEntry(
+        "contributor-echo0731", "echo0731", "GitHub @echo0731",
+        "已合并的代码贡献 — 全部提交与讨论记录见 github.com/echo0731"
     )
 )
