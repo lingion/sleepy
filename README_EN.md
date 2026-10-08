@@ -22,7 +22,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">All versions</a> · <a href="docs/adapt-kit/README.md">Add your university</a> · <a href="#community">💬 Community</a>
+  <a href="README.md">中文</a> · <a href="README_EN.md">English</a> · <a href="https://github.com/lingion/sleepy/wiki">Wiki</a> · <a href="https://github.com/lingion/sleepy/releases/latest">Download APK</a> · <a href="https://github.com/lingion/sleepy/releases">All versions</a> · <a href="docs/adapt-kit/README.md">Add your university</a> · <a href="#community">💬 Community</a> · <a href="sponsor.md">Sponsor</a>
 </p>
 
 ---
