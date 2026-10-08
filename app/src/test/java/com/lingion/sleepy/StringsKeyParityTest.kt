@@ -181,7 +181,8 @@ class StringsKeyParityTest {
         }
     }
 
-
+    @Test
+    fun all_six_locale_dirs_exist() {
         for (locale in localeDirs) {
             val dir = File(basePath, locale)
             assertTrue("Missing locale dir $locale", dir.isDirectory)
