@@ -116,6 +116,21 @@ val MIGRATION_9_10: Migration = object : Migration(9, 10) {
     }
 }
 
+/**
+ * v10 → v11: 每表独立提醒开关 (2026-10-08 用户诉求)
+ *   - 加 time_tables.reminderEnabled (INTEGER NOT NULL DEFAULT 1)
+ *   - 纯加列, 旧行默认 1 = 所有表继续参与提醒(升级行为不变), 后台表可单独关闭
+ */
+val MIGRATION_10_11: Migration = object : Migration(10, 11) {
+    override fun migrate(db: SupportSQLiteDatabase) {
+        MIGRATION_10_11_STATEMENTS.forEach { db.execSQL(it) }
+    }
+}
+
+internal val MIGRATION_10_11_STATEMENTS: List<String> = listOf(
+    "ALTER TABLE time_tables ADD COLUMN reminderEnabled INTEGER NOT NULL DEFAULT 1"
+)
+
 internal val MIGRATION_9_10_STATEMENTS: List<String> = listOf(
     """
     CREATE TABLE IF NOT EXISTS calendar_import_records (
@@ -149,7 +164,8 @@ val ALL_MIGRATIONS: Array<Migration> = arrayOf(
     MIGRATION_6_7,
     MIGRATION_7_8,
     MIGRATION_8_9,
-    MIGRATION_9_10
+    MIGRATION_9_10,
+    MIGRATION_10_11
 )
 
 /** issue#26: v5→v6 逐条 SQL — 单一事实来源, CourseAliasMigrationTest 用 sqlite-jdbc 直接执行同一份 */

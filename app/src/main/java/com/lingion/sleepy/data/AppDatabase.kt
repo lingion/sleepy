@@ -17,7 +17,7 @@ import com.lingion.sleepy.data.entity.TimeTableEntity
 
 @Database(
     entities = [CourseEntity::class, TimeTableEntity::class, PeriodTableEntity::class, ImportDraftEntity::class, CalendarImportRecordEntity::class],
-    version = 10,                           // 9 → 10: Sleepy-managed system calendar imports
+    version = 11,                           // 10 → 11: per-table reminder toggle (time_tables.reminderEnabled)
     exportSchema = false
 )
 abstract class AppDatabase : RoomDatabase() {

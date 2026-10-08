@@ -30,6 +30,7 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Switch
 import androidx.compose.material3.TextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -108,6 +109,7 @@ fun EditTableScreen(
     var name by remember(table.id) { mutableStateOf(table.name) }
     var startDate by remember(table.id) { mutableStateOf(table.startDate) }
     var maxWeekText by remember(table.id) { mutableStateOf(table.maxWeek.toString()) }
+    var reminderEnabled by remember(table.id) { mutableStateOf(table.reminderEnabled) }
     var timeSlotsExpanded by remember { mutableStateOf(false) }
     var error by remember { mutableStateOf<String?>(null) }
     var showDeleteConfirm by remember { mutableStateOf(false) }
@@ -230,6 +232,25 @@ fun EditTableScreen(
                             shape = SleepyTheme.fieldShape,
                             colors = fieldColors
                         )
+                        // 每表独立提醒开关: 关闭后本表不发课前提醒/每日摘要/流体云(全局开关仍总控)
+                        Row(
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(Modifier.weight(1f)) {
+                                Text(
+                                    stringResource(R.string.edit_table_reminder_enable),
+                                    style = MaterialTheme.typography.bodyMedium
+                                )
+                                Text(
+                                    stringResource(R.string.edit_table_reminder_desc),
+                                    style = MaterialTheme.typography.labelSmall,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Spacer(Modifier.width(12.dp))
+                            Switch(checked = reminderEnabled, onCheckedChange = { reminderEnabled = it })
+                        }
                     }
                 }
             }
@@ -380,7 +401,8 @@ fun EditTableScreen(
                             startDate = DateUtils.normalizeStartDate(startDate),
                             maxWeek = maxWeek,
                             timeJson = newTimeJson,
-                            smartConfigJson = smartConfigJson
+                            smartConfigJson = smartConfigJson,
+                            reminderEnabled = reminderEnabled
                         )
                         if (bindChanged && pendingBind != null) {
                             // issue#40 §5.3: 换绑须先预览确认 — 弹换绑确认框, 确认才写;

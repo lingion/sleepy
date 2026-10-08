@@ -38,7 +38,8 @@ class HolidayReminderConsumerTest {
         ).readText()
         assertTrue(course.contains("HolidayReminderPolicyAdapter"))
         assertTrue(course.contains("dataSource.allowsReminder(table.id, date)"))
-        assertTrue(course.contains("decide(context.applicationContext, targetDate, table.id)"))
+        // 2026-10 每表独立提醒: 摘要改为多表循环, 策略按每张开启提醒的表逐一判定
+        assertTrue(course.contains("decide(app, targetDate, it.id)"))
         assertTrue(course.contains("resolvedTableId"))
         assertTrue(dnd.contains("HolidayReminderPolicyAdapter"))
         assertTrue(!course.contains("isPublicHolidayCached(context.applicationContext, targetDate"))
@@ -93,10 +94,11 @@ class HolidayReminderConsumerTest {
 
         assertTrue(reconcile.contains("if (!ensureActiveFluidCloud())"))
         assertTrue(reconcile.contains("FluidCloudService.requestStop(app)"))
-        assertTrue(ensure.contains("val table = resolveCurrentTable() ?: return false"))
-        assertTrue(normalized(ensure).contains(".allowReminder ) return false"))
-        assertTrue(ensure.contains("!= DateUtils.SemesterStatus.IN_RANGE) return false"))
-        assertTrue(ensure.contains("} ?: return false"))
+        // 2026-10 每表独立提醒: 流体云改为扫描全部开启提醒的课表, 取窗口内最早的一节
+        assertTrue(ensure.contains("val (hit, table) = best ?: return false"))
+        assertTrue(normalized(ensure).contains(".allowReminder ) return@forEach"))
+        assertTrue(ensure.contains("!= DateUtils.SemesterStatus.IN_RANGE) return@forEach"))
+        assertTrue(ensure.contains("best ?: return false"))
         val normalizedEnsure = normalized(ensure)
         assertTrue(normalizedEnsure.contains("startForegroundService(app, svc)"))
         assertTrue(normalizedEnsure.contains("true } catch (t: Throwable)"))

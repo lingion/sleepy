@@ -87,6 +87,8 @@
     <string name="edit_table_start_date">Fecha de inicio</string>
     <string name="edit_table_start_date_hint">Ej. 2026-02-24</string>
     <string name="edit_table_max_week">Semanas totales</string>
+    <string name="edit_table_reminder_enable">Recordatorios de este horario</string>
+    <string name="edit_table_reminder_desc">Al desactivarlo, este horario deja de enviar avisos previos, resúmenes diarios y nube fluida</string>
     <string name="edit_table_time_slots">Horario de períodos</string>
     <string name="edit_table_delete">Eliminar horario de períodos</string>
     <string name="edit_table_save">Guardar ajustes</string>

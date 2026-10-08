@@ -109,6 +109,8 @@ class CourseNotificationScheduler private constructor(
         const val NOTIFY_DAILY = 1001
         const val NOTIFY_TOMORROW_DAILY = 1002
         const val NOTIFY_BEFORE_CLASS_BASE = 2000 // + courseId offset
+        // 每表独立提醒: 多表开启时每日/明日摘要按 tableId 分配独立 ID (base + tableId*2 (+1 明日))
+        const val NOTIFY_TABLE_SUMMARY_BASE = 5000
 
         // 进程级: 各 Receiver 会 new 自己的实例, 锁必须跨实例; Mutex 不可重入, 持锁路径只调 *Locked
         private val scheduleLock = Mutex()
@@ -257,8 +259,8 @@ class CourseNotificationScheduler private constructor(
 
     private suspend fun resyncBeforeClassLocked() {
         val previous = env.loadArmedCodes()
-        val table = if (env.isBeforeClassEnabled()) dataSource.resolveCurrentTable() else null
-        if (table == null) {
+        val tables = if (env.isBeforeClassEnabled()) dataSource.resolveReminderTables() else emptyList()
+        if (tables.isEmpty()) {
             previous.forEach { alarmPort.cancel(it) }
             env.saveArmedCodes(emptySet())
             return
@@ -266,6 +268,29 @@ class CourseNotificationScheduler private constructor(
         val minutes = env.beforeClassMinutes()
         val nowEpoch = env.nowEpochMs()
         val today = env.todayDate()
+
+        // 每表独立提醒: 逐张开启提醒的表收集未来槽位; courseId 全局唯一, 跨表 RC 不冲突
+        val desired = LinkedHashMap<Int, Pair<Long, Map<String, Any?>>>()
+        val windowCourseRcs = mutableListOf<Int>()
+        tables.forEach { table -> collectTableSlots(table, today, minutes, nowEpoch, desired, windowCourseRcs) }
+
+        // 撤销不再需要的: 账本里的 + 窗口内出现过的(覆盖账本上线前旧版本排下的)
+        (previous + windowCourseRcs)
+            .filterNot { it in desired }
+            .forEach { alarmPort.cancel(it) }
+        desired.forEach { (rc, slot) -> alarmPort.setExact(rc, slot.first, slot.second) }
+        env.saveArmedCodes(desired.keys.toSet())
+    }
+
+    /** 收集单张课表窗口内需要的课前槽位; 同 courseId 保留最早的未来触发(先到先得)。 */
+    private suspend fun collectTableSlots(
+        table: TimeTableEntity,
+        today: LocalDate,
+        minutes: Int,
+        nowEpoch: Long,
+        desired: LinkedHashMap<Int, Pair<Long, Map<String, Any?>>>,
+        windowCourseRcs: MutableList<Int>
+    ) {
         val nodes = TimeTableUtils.parseNodes(table.timeJson)
 
         // 1) 枚举窗口内的天, 收集课程行(仅学期内且允许提醒的天)
@@ -284,9 +309,8 @@ class CourseNotificationScheduler private constructor(
             days += date to dataSource.coursesForDay(table.id, dow).filter { it.inWeek(week) }
         }
 
-        // 2) 逐天收集未来槽位; 同 courseId 保留最早的未来触发
+        // 逐天收集未来槽位; 同 courseId 保留最早的未来触发
         //    (每周重复课/调休映射共享 requestCode, 天按时间顺序遍历, 先到先得 = 最早一次)
-        val desired = LinkedHashMap<Int, Pair<Long, Map<String, Any?>>>()
         days.forEach { (date, courses) ->
             courses.forEach { course ->
                 val startStr = if (course.ownTime && course.startTime.isNotBlank()) {
@@ -329,12 +353,7 @@ class CourseNotificationScheduler private constructor(
             }
         }
 
-        // 3) 撤销不再需要的: 账本里的 + 窗口内出现过的(覆盖账本上线前旧版本排下的)
-        (previous + days.flatMap { it.second }.map { RC_BEFORE_CLASS_BASE + it.id.toInt() })
-            .filterNot { it in desired }
-            .forEach { alarmPort.cancel(it) }
-        desired.forEach { (rc, slot) -> alarmPort.setExact(rc, slot.first, slot.second) }
-        env.saveArmedCodes(desired.keys.toSet())
+        windowCourseRcs += days.flatMap { it.second }.map { RC_BEFORE_CLASS_BASE + it.id.toInt() }
     }
 
     /**
@@ -355,32 +374,43 @@ class CourseNotificationScheduler private constructor(
         if (!AppPrefs.isBeforeClassFluidEnabled(app)) return false
         val minutes = AppPrefs.getBeforeClassMinutes(app)
         val today = LocalDate.now()
-        val table = resolveCurrentTable() ?: return false
-        // Current-date policy must also prevent stale/recovery launches after settings change.
-        if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
-                .decide(app, today, table.id)
-                .allowReminder
-        ) return false
-        val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table.id, today)
-        val week = DateUtils.currentWeek(table.startDate, today)
-        // 防呆: 学期范围外不触发流体云(钳制周数会误匹配第 1 周的课)
-        if (DateUtils.semesterStatus(table.startDate, table.maxWeek, today) != DateUtils.SemesterStatus.IN_RANGE) return false
-        val nodes = TimeTableUtils.parseNodes(table.timeJson)
         val now = System.currentTimeMillis()
-
-        // 找出现在处于课前窗口内的第一节课
-        val hit = SleepyApp.get().repository.getCoursesByDayOnce(table.id, dow)
-            .filter { it.inWeek(week) }
-            .firstOrNull { c ->
-                val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
-                    else nodes.find { it.node == c.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
-                val p = st?.split(":")
-                val h = p?.getOrNull(0)?.toIntOrNull(); val m = p?.getOrNull(1)?.toIntOrNull()
-                if (h == null || m == null || h !in 0..23 || m !in 0..59) return@firstOrNull false
-                val classStart = today.atTime(h, m).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
-                val notifyEpoch = classStart - minutes * 60_000L
-                now in notifyEpoch..classStart  // 现在在窗口内
-            } ?: return false
+        // 每表独立提醒: 扫描所有开启提醒的课表, 取课前窗口内最早开始的一节
+        val repo = SleepyApp.get().repository
+        val tables = repo.getAllTables().filter { it.reminderEnabled }.map { t ->
+            t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
+        }
+        var best: Pair<CourseEntity, TimeTableEntity>? = null
+        var bestStart = Long.MAX_VALUE
+        tables.forEach { table ->
+            // Current-date policy must also prevent stale/recovery launches after settings change.
+            if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
+                    .decide(app, today, table.id)
+                    .allowReminder
+            ) return@forEach
+            val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table.id, today)
+            val week = DateUtils.currentWeek(table.startDate, today)
+            // 防呆: 学期范围外不触发流体云(钳制周数会误匹配第 1 周的课)
+            if (DateUtils.semesterStatus(table.startDate, table.maxWeek, today) != DateUtils.SemesterStatus.IN_RANGE) return@forEach
+            val nodes = TimeTableUtils.parseNodes(table.timeJson)
+            repo.getCoursesByDayOnce(table.id, dow)
+                .filter { it.inWeek(week) }
+                .forEach { c ->
+                    val st = if (c.ownTime && c.startTime.isNotBlank()) c.startTime
+                        else nodes.find { it.node == c.startNode }?.let { String.format("%02d:%02d", it.start.hour, it.start.minute) }
+                    val p = st?.split(":")
+                    val h = p?.getOrNull(0)?.toIntOrNull(); val m = p?.getOrNull(1)?.toIntOrNull()
+                    if (h == null || m == null || h !in 0..23 || m !in 0..59) return@forEach
+                    val classStart = today.atTime(h, m).atZone(ZoneId.systemDefault()).toInstant().toEpochMilli()
+                    val notifyEpoch = classStart - minutes * 60_000L
+                    if (now in notifyEpoch..classStart && classStart < bestStart) { // 现在在窗口内
+                        best = c to table
+                        bestStart = classStart
+                    }
+                }
+        }
+        val (hit, table) = best ?: return false
+        val nodes = TimeTableUtils.parseNodes(table.timeJson)
 
         // 计算这节课的精确窗口，启动 FluidCloudService
         val st = if (hit.ownTime && hit.startTime.isNotBlank()) hit.startTime
@@ -450,6 +480,9 @@ internal interface BeforeClassEnv {
 /** 课前闹钟数据源 — 课表/课程查询接缝。 */
 internal interface BeforeClassDataSource {
     suspend fun resolveCurrentTable(): TimeTableEntity?
+    /** 每表独立提醒: 返回开启提醒的课表(含作息 hydrate)。默认实现回退到当前课表, 兼容旧测试替身。 */
+    suspend fun resolveReminderTables(): List<TimeTableEntity> =
+        resolveCurrentTable()?.let { t -> if (t.reminderEnabled) listOf(t) else emptyList() } ?: emptyList()
     suspend fun coursesForDay(tableId: Long, dayOfWeek: Int): List<CourseEntity>
     suspend fun allCourseIds(): List<Long>
     fun effectiveDayOfWeek(tableId: Long?, date: LocalDate): Int
@@ -489,6 +522,13 @@ internal class AndroidBeforeClassEnv(private val ctx: Context) : BeforeClassEnv 
 internal class AndroidBeforeClassDataSource(private val ctx: Context) : BeforeClassDataSource {
     override suspend fun resolveCurrentTable(): TimeTableEntity? =
         com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()
+
+    override suspend fun resolveReminderTables(): List<TimeTableEntity> {
+        val repo = SleepyApp.get().repository
+        return repo.getAllTables().filter { it.reminderEnabled }.map { t ->
+            t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
+        }
+    }
 
     override suspend fun coursesForDay(tableId: Long, dayOfWeek: Int): List<CourseEntity> =
         SleepyApp.get().repository.getCoursesByDayOnce(tableId, dayOfWeek)
@@ -591,76 +631,105 @@ private suspend fun sendScheduleSummary(
     targetDate: LocalDate,
     isTomorrowPreview: Boolean
 ) {
-    val table = com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()
-    if (table != null && !com.lingion.sleepy.util.HolidayReminderPolicyAdapter
-            .decide(context.applicationContext, targetDate, table.id)
-            .allowReminder
-    ) return
-    val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(
-        context.applicationContext, table?.id, targetDate
-    )
+    val app = context.applicationContext
     val dayOfMonth = targetDate.dayOfMonth
 
-    val courses = if (table == null) {
-        emptyList()
-    } else {
+    // 每表独立提醒: 聚合所有开启提醒的课表; 若全部被节假日策略豁免则整体静默
+    val repo = SleepyApp.get().repository
+    val tables = repo.getAllTables().map { t ->
+        t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
+    }
+    val enabledTables = tables.filter { it.reminderEnabled }
+    val activeTables = enabledTables.filter {
+        com.lingion.sleepy.util.HolidayReminderPolicyAdapter
+            .decide(app, targetDate, it.id)
+            .allowReminder
+    }
+    if (enabledTables.isNotEmpty() && activeTables.isEmpty()) return
+
+    data class TableSummary(val table: TimeTableEntity, val courses: List<CourseEntity>)
+
+    val summaries = activeTables.map { table ->
+        val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table.id, targetDate)
         val week = DateUtils.currentWeek(table.startDate, targetDate)
         val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, targetDate) ==
             DateUtils.SemesterStatus.IN_RANGE
-        if (!inSemester) {
+        val courses = if (!inSemester) {
             emptyList()
         } else {
-            SleepyApp.get().repository
-                .getCoursesByDayOnce(table.id, dow)
+            repo.getCoursesByDayOnce(table.id, dow)
                 .filter { it.inWeek(week) }
                 .sortedBy { it.startNode }
         }
+        TableSummary(table, courses)
+    }
+    val posts = summaries.filter { it.courses.isNotEmpty() }
+
+    val permissionGranted = ContextCompat.checkSelfPermission(
+        context, Manifest.permission.POST_NOTIFICATIONS
+    ) == PackageManager.PERMISSION_GRANTED
+
+    fun notify(id: Int, notif: android.app.Notification) {
+        if (permissionGranted) NotificationManagerCompat.from(context).notify(id, notif)
     }
 
-    val title: String
-    val text: String
-    if (courses.isEmpty()) {
-        title = context.getString(
+    fun build(title: String, text: String): android.app.Notification =
+        NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_DAILY)
+            .setSmallIcon(R.drawable.ic_notification_time)
+            .setContentTitle(title)
+            .setContentText(text)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setContentIntent(openAppIntent(context))
+            .setAutoCancel(true)
+            .build()
+
+    if (posts.isEmpty()) {
+        val title = context.getString(
             if (isTomorrowPreview) R.string.notif_tomorrow_title_no_course else R.string.notif_daily_title_no_course,
             dayOfMonth
         )
-        text = context.getString(
+        val text = context.getString(
             if (isTomorrowPreview) R.string.notif_tomorrow_text_no_course
             else R.string.notif_daily_text_no_course
         )
-    } else {
-        title = context.getString(
-            if (isTomorrowPreview) R.string.notif_tomorrow_title else R.string.notif_daily_title,
-            dayOfMonth,
-            courses.size
-        )
-        val first = courses.first()
-        val firstTime = getCourseStartTime(first, requireNotNull(table))
-        val firstRoom = first.room.ifBlank { context.getString(R.string.notif_room_unknown) }
-        text = context.getString(R.string.notif_daily_text_first, first.courseName, firstTime, firstRoom)
-    }
-
-    val notif = NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_DAILY)
-        .setSmallIcon(R.drawable.ic_notification_time)
-        .setContentTitle(title)
-        .setContentText(text)
-        .setStyle(NotificationCompat.BigTextStyle().bigText(text))
-        .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-        .setContentIntent(openAppIntent(context))
-        .setAutoCancel(true)
-        .build()
-
-    if (ContextCompat.checkSelfPermission(context, Manifest.permission.POST_NOTIFICATIONS)
-        == PackageManager.PERMISSION_GRANTED
-    ) {
-        NotificationManagerCompat.from(context).notify(
+        notify(
             if (isTomorrowPreview) {
                 CourseNotificationScheduler.NOTIFY_TOMORROW_DAILY
             } else {
                 CourseNotificationScheduler.NOTIFY_DAILY
             },
-            notif
+            build(title, text)
         )
+        return
+    }
+
+    posts.forEach { (table, courses) ->
+        var title = context.getString(
+            if (isTomorrowPreview) R.string.notif_tomorrow_title else R.string.notif_daily_title,
+            dayOfMonth,
+            courses.size
+        )
+        val first = courses.first()
+        val firstTime = getCourseStartTime(first, table)
+        val firstRoom = first.room.ifBlank { context.getString(R.string.notif_room_unknown) }
+        var text = context.getString(R.string.notif_daily_text_first, first.courseName, firstTime, firstRoom)
+        // 多表同时提醒时用课表名区分来源
+        if (activeTables.size > 1) {
+            title = "${table.name} · $title"
+            text = "${table.name} · $text"
+        }
+        val baseId = if (posts.size == 1 && activeTables.size <= 1) {
+            if (isTomorrowPreview) {
+                CourseNotificationScheduler.NOTIFY_TOMORROW_DAILY
+            } else {
+                CourseNotificationScheduler.NOTIFY_DAILY
+            }
+        } else {
+            (CourseNotificationScheduler.NOTIFY_TABLE_SUMMARY_BASE + table.id * 2 +
+                if (isTomorrowPreview) 1L else 0L).toInt()
+        }
+        notify(baseId, build(title, text))
     }
 }
 
@@ -696,11 +765,13 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 val date = intent.getStringExtra("reminderDate")
                     ?.let { runCatching { LocalDate.parse(it) }.getOrNull() }
                     ?: LocalDate.now()
-                val currentTableId =
-                    com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
+                // 每表独立提醒: 闹钟所属课表不再要求是当前课表, 只要该表仍存在且开启提醒即可弹
+                val resolvedTableId = tableId
+                    ?: com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
                     ?: return@launch
-                val resolvedTableId = tableId ?: currentTableId
-                if (resolvedTableId != currentTableId) return@launch
+                val owner = SleepyApp.get().repository.getAllTables()
+                    .firstOrNull { it.id == resolvedTableId } ?: return@launch
+                if (!owner.reminderEnabled) return@launch
                 if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
                         .decide(context.applicationContext, date, resolvedTableId)
                         .allowReminder

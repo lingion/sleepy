@@ -87,6 +87,8 @@
     <string name="edit_table_start_date">Semester Start Date</string>
     <string name="edit_table_start_date_hint">e.g. 2026-02-24</string>
     <string name="edit_table_max_week">Total Weeks</string>
+    <string name="edit_table_reminder_enable">Reminders for this table</string>
+    <string name="edit_table_reminder_desc">When off, this table stops sending pre-class reminders, daily summaries and fluid cloud</string>
     <string name="edit_table_time_slots">Bell schedule</string>
     <string name="edit_table_delete">Delete Schedule</string>
     <string name="edit_table_save">Save Settings</string>

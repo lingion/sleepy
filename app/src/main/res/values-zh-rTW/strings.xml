@@ -87,6 +87,8 @@
     <string name="edit_table_start_date">學期開始日期</string>
     <string name="edit_table_start_date_hint">例如 2026-02-24</string>
     <string name="edit_table_max_week">總週數</string>
+    <string name="edit_table_reminder_enable">本表參與提醒</string>
+    <string name="edit_table_reminder_desc">關閉後，本課表不再發送課前提醒、每日課表摘要與流體雲</string>
     <string name="edit_table_time_slots">作息表</string>
     <string name="edit_table_delete">刪除課表</string>
     <string name="edit_table_save">儲存課表設定</string>
