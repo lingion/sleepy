@@ -468,6 +468,8 @@
     <string name="jw_nav_hint">Navega a "Mi horario", luego toca el botón derecho</string>
     <string name="jw_import_page">Importar esta página</string>
     <string name="jw_fetch_timeout">Tiempo de espera agotado: el servidor no respondió durante mucho tiempo. Verifique su red y reintente</string>
+    <string name="jw_fetch_fallback_periods">El portal no devolvió las horas de las franjas; se han rellenado automáticamente con el horario estándar de SWJTU</string>
+    <string name="jw_fetch_no_periods">No se pudieron obtener las horas de las franjas del portal; se han rellenado con el horario estándar de SWJTU (ajustable en la configuración del horario)</string>
     <string name="jw_fetch_no_courses">Se obtuvo correctamente pero no se encontraron cursos: asegúrese de que la página muestre el horario del semestre actual y que el semestre sea correcto</string>
     <string name="jw_edit_url">Editar la URL actual</string>
     <string name="jw_url_submit">Abrir URL</string>

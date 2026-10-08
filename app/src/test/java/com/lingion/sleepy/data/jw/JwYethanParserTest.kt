@@ -5,6 +5,13 @@ import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertTrue
 import org.junit.Test
 
+import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.JsonNull
+import kotlinx.serialization.json.contentOrNull
+import kotlinx.serialization.json.jsonArray
+import kotlinx.serialization.json.jsonObject
+import kotlinx.serialization.json.jsonPrimitive
+
 /**
  * JwYethanParser 单元测试 — 西南交通大学 yhxt.swjtu.edu.cn (YETHAN/以专) 课表 JSON。
  *
@@ -162,5 +169,96 @@ class JwYethanParserTest {
         val idxBjtu = JwProtocol.ALL_TYPES.indexOf(JwProtocol.TYPE_BJTU)
         val idxYethan = JwProtocol.ALL_TYPES.indexOf(JwProtocol.TYPE_YETHAN)
         assertTrue("yethan 应紧跟 bjtu (同为自建 JSON 族)", idxYethan == idxBjtu + 1)
+    }
+
+    // ================================================================
+    // 2026-10-08 真实采集包回归（sleepy-jw-dump-20261008-135253）
+    //
+    // 与上面 `yethan-schedule.json`（手工构造的脱敏样张）不同，本夹具是
+    // 用户在 yhxt.swjtu.edu.cn 上**真实触发**的
+    // /yethan/common/course-schedule/student-course-schedule 响应原文
+    // （仅学号脱敏）。它锁死解析侧对真实数据形状的兼容性 ——
+    // 本次事故的断点在 token 获取（见 JwYethanWebViewContractTest），
+    // 解析侧经 Python 等价逻辑交叉验证为 100% 命中，此处固化为回归门。
+    // ================================================================
+
+    private fun loadLiveJson(): String {
+        val stream = javaClass.classLoader?.getResourceAsStream("jw_fixtures/yethan-schedule-live-20261008.json")
+        assertNotNull("真实采集包夹具应存在", stream)
+        return stream!!.bufferedReader().use { it.readText() }
+    }
+
+    @Test
+    fun `live capture 20261008 - parses all 10 real courses`() {
+        val courses = JwYethanParser(loadLiveJson()).generateCourseList()
+        assertTrue("真实包应解析出非空课程", courses.isNotEmpty())
+        val names = courses.map { it.name }.toSet()
+        assertEquals(
+            "真实采集包含 10 门课",
+            setOf(
+                "体育健康课程Ⅰ", "形势与政策V", "工程沟通与交流技巧2",
+                "机械工程素养训练Ⅱ", "工程力学", "振动与控制",
+                "设计与制造2", "经济与管理", "机电一体化和测量系统", "热流体2"
+            ),
+            names
+        )
+    }
+
+    @Test
+    fun `live capture 20261008 - total JwCourse rows match python cross-check 98`() {
+        // Python 等价逻辑交叉验证结果: 98 条 JwCourse, classTimeRegex 命中率 100%。
+        // 若此数变化，说明真实数据文法或解析行为发生漂移，需人工复核。
+        val courses = JwYethanParser(loadLiveJson()).generateCourseList()
+        assertEquals("真实包应产出 98 条 JwCourse (与 Python 交叉验证一致)", 98, courses.size)
+    }
+
+    @Test
+    fun `live capture 20261008 - no classTime row is silently dropped`() {
+        // 反向门: 统计原始 classTime{N} 非空槽位数，与解析出的"周次段总数"比对。
+        // 二者必须相等 —— 任何一条被正则漏掉都会让总数变小（静默丢课）。
+        val json = loadLiveJson()
+        val obj = kotlinx.serialization.json.Json { ignoreUnknownKeys = true }
+            .parseToJsonElement(json).jsonObject
+        val rawSlots = obj["data"]!!.jsonArray.sumOf { row ->
+            (1..40).count { i ->
+                val v = row.jsonObject["classTime$i"]
+                v != null && v !is kotlinx.serialization.json.JsonNull &&
+                    (v.jsonPrimitive.contentOrNull?.isNotBlank() == true)
+            }
+        }
+        // 每条原始槽位按其顿号枚举段数展开 → 期望 JwCourse 数
+        val expected = obj["data"]!!.jsonArray.sumOf { row ->
+            (1..40).sumOf { i ->
+                val v = row.jsonObject["classTime$i"]?.jsonPrimitive?.contentOrNull?.trim().orEmpty()
+                if (v.isBlank()) 0 else JwYethanParser(loadLiveJson()).weekRuns(
+                    Regex("""^([0-9、\-]+)周""").find(v)?.groupValues?.get(1).orEmpty()
+                ).size
+            }
+        }
+        val actual = JwYethanParser(loadLiveJson()).generateCourseList().size
+        assertTrue("原始 classTime 槽位非空数应 > 0", rawSlots > 0)
+        assertEquals("解析行数应与原始槽位展开数一致（无静默丢弃）", expected, actual)
+    }
+
+    @Test
+    fun `live capture 20261008 - real world place forms parse without crashing`() {
+        val courses = JwYethanParser(loadLiveJson()).generateCourseList()
+        // 真实包中出现的典型 classPlace 形态
+        assertTrue("应含双括号形态 room(校区)(教师) 解析结果",
+            courses.any { it.room == "X30547(犀浦)" })
+        assertTrue("应含 Online 形态", courses.any { it.room == "Online" })
+        assertTrue("应含无校区单括号 → 截掉教师",
+            courses.any { it.room.startsWith("X5213") || it.room.startsWith("X5416") })
+        assertTrue("所有 room 不应残留第二个括号中的教师名",
+            courses.none { it.room.count { c -> c == '(' || c == '（' } >= 2 })
+    }
+
+    @Test
+    fun `live capture 20261008 - registry selects yethan with high confidence`() {
+        val (courses, attempts) = JwParserRegistry.selectBest(loadLiveJson(), "yethan")
+        assertEquals(98, courses.size)
+        val attempt = attempts.firstOrNull { it.type == "yethan" }
+        assertEquals("yethan", attempt?.type)
+        assertTrue("真实包置信度应 >= 90", (attempt?.confidence ?: 0) >= 90)
     }
 }

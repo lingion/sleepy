@@ -131,11 +131,13 @@ object JwProtocol {
 
     /**
      * 西南交通大学本部 yhxt.swjtu.edu.cn（YETHAN/以专 逐专平台，自建 JSON API，非 HTML 解析）。
-     * WebView 登录 CAS 后从 localStorage 取 `ytoken`（JWT，同时落 .swjtu.edu.cn cookie），
-     * 请求头 `ytoken: <JWT>`，fetch 接口：
+     * WebView 登录后 JWT 只存在 **Cookie**（`document.cookie` 可读，localStorage 为空；
+     * 2026-10-08 诊断包实锤：storage.json 全空但平台自身请求带有效 JWT）。
+     * 取法 cookie → localStorage 兜底；取不到也不阻断，靠 credentials:'include'
+     * 自动携带 Cookie。请求头 `ytoken: <JWT>`（有值才发），fetch 接口：
      *   GET /yethan/common/course-schedule/student-course-schedule（零参数，纯 JSON 无 SM2）
      *   GET /yethan/public/sys/config/web（TermStart + TermLessonStr 节次时间）
-     * 包络 {"code":"00000","data":[…]}；失效码 401/A0230/A0422（Arex 跨仓验证）。
+     * 包络 {"code":"00000","data":[…]};失效码 401/A0230/A0422（Arex 跨仓验证）。
      * classTime{N} "7、10-12、14-15周 星期三 5节"（顿号枚举只作用于周次列表，共享一个
      * 「星期X 节」后缀）；classTime{N}/classPlace{N} 成对槽位 1..40。
      * SM2 `_j` 加密只在 /register/…、/sport/…（选课），课表接口无 SM2，Sleepy 不需要。
