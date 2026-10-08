@@ -1623,6 +1623,9 @@ private fun IrregularOptionsSection(
                             }
                         } else {
                             // 关闭覆盖时间 → 回落槽位默认 / 标准节次时间
+                            // 用户报障 2026-10-08: 此前漏置 isIrregularTime=false, 开关拨回后
+                            // 状态仍为开 → UI 立即重绘回 ON, 表现为「无法关闭」
+                            block.isIrregularTime = false
                             block.startTime = ""
                             block.endTime = ""
                             block.durationText = ""
