@@ -1,0 +1,25 @@
+<div class="card-content">
+  <strong style="color: #737373"><%- code %></strong>
+  <p><%- courseName %><br/>
+    <%- roomInfo %>
+    <% if (weekIndices) { %>
+    &nbsp;(<%- weekIndices %>周)
+    <% } %>
+    &nbsp;
+    <% if (!draggable) { %>
+    <%- weekday %>&nbsp;(<%- unitTime %>)
+    <% } %>
+  </p>
+</div>
+<button type="button" style="position: absolute; right: 0px; z-index: 10;" <%= draggable ? 'class="close"' : 'class="close hide"'%>><span>×</span></button>
+
+<!-- 显示card详情 -->
+<div class="card-info" style="display: none; position: absolute; background: yellow; z-index: 9999; max-width: 180px;">
+  <table cellspacing="0" cellpadding="3" border="0" bgcolor="#FFFF00">
+    <tbody>
+    <tr>
+      <td width="380" color="#000000" style="padding: 5px;"></td>
+    </tr>
+    </tbody>
+  </table>
+</div>

@@ -1,0 +1,606 @@
+== GET /eams5-student/for-std/course-table/get-data?bizTypeId=23&semesterId=354&dataId=178619 ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:17 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/timetable-layout ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:17 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/datum ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:17 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/time-table.html ==
+accept-ranges: bytes
+content-length: 214
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:18 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/card-drag-template.html ==
+accept-ranges: bytes
+content-length: 250
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/weekday-column.html ==
+accept-ranges: bytes
+content-length: 11
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/card-template.html ==
+accept-ranges: bytes
+content-length: 814
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/extend-card-template.html ==
+accept-ranges: bytes
+content-length: 287
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/warn-card-template.html ==
+accept-ranges: bytes
+content-length: 648
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/room-table-warn-template.html ==
+accept-ranges: bytes
+content-length: 185
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/card-popover-content.html ==
+accept-ranges: bytes
+content-length: 648
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/warn-card-popover.html ==
+accept-ranges: bytes
+content-length: 1635
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/schedule-template.html ==
+accept-ranges: bytes
+content-length: 2656
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/extend-card-popover.html ==
+accept-ranges: bytes
+content-length: 62
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:18 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== GET /eams5-student/static/scheduletable/js/templates/room-template.html ==
+accept-ranges: bytes
+content-length: 269
+content-type: text/html
+date: Wed, 07 Oct 2026 05:39:19 GMT
+last-modified: Thu, 24 Sep 2026 06:30:10 GMT
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:19 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:20 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/datum ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:23 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:24 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:24 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:24 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:24 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:24 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:25 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:27 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:27 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/datum ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:30 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:31 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:31 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:31 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== POST /eams5-student/ws/schedule-table/week-indices-digest ==
+cache-control: no-store
+content-type: application/json;charset=UTF-8
+date: Wed, 07 Oct 2026 05:39:31 GMT
+transfer-encoding: chunked
+vary: accept-encoding
+x-application-context: application
+
+
+== GET http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619 ==
+{"cache-control":"no-store","content-language":"zh","content-type":"text\/html;charset=UTF-8","date":"Wed, 07 Oct 2026 05:39:33 GMT","transfer-encoding":"chunked","vary":"accept-encoding","x-application-context":"application"}
+
+== GET http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/info/178619 ==
+{"cache-control":"no-store","content-language":"zh","content-type":"text\/html;charset=UTF-8","date":"Wed, 07 Oct 2026 05:39:33 GMT","transfer-encoding":"chunked","vary":"accept-encoding","x-application-context":"application"}
+
+== GET http://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table/get-data?bizTypeId=23&dataId=178619 ==
+{"cache-control":"no-store","content-language":"zh-CN","content-length":"1346","content-type":"text\/html;charset=utf-8","date":"Wed, 07 Oct 2026 05:39:33 GMT","x-application-context":"application"}
+
+== POST http://jxglstu.hfut.edu.cn/eams5-student/ws/schedule-table/datum ==
+{"cache-control":"no-store","content-type":"application\/json;charset=UTF-8","date":"Wed, 07 Oct 2026 05:39:33 GMT","transfer-encoding":"chunked","vary":"accept-encoding"}
+

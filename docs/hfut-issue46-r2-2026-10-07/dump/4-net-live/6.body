@@ -1,0 +1,4 @@
+<span>[<%- code %>]</span><br/>
+<span><%- courseName %></span><br/>
+<i class="fa fa-circle" style="color: #fbb44c"></i>&nbsp;<%- weekIndices %>周</span><br/>
+<i class="fa fa-calendar-o" style="color: #fbb44c"></i>&nbsp;<span><%- periods %>节</span>

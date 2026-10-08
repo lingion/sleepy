@@ -1,0 +1,13 @@
+# Sleepy JW Diagnostic Summary
+session=20261007-133854
+appVersion=1.0.59 (10059)
+debug=false
+school=合肥工业大学 type=eams5 url=https://jxglstu.hfut.edu.cn/eams5-student/for-std/course-table
+status=UNKNOWN
+courseCount=0
+selectedFramePath=<none>
+matchedAnchors=
+retryCount=0 maxDepthReached=0
+blockedFrames=
+skippedFrames=
+diagnosticHint=抓取失败：Error: POST schedule-table/datum 失败 HTTP 500 (lessonIds:0)

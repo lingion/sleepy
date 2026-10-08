@@ -1,0 +1,200 @@
+[
+  {
+    "query": "jwxt URP class",
+    "full_name": "ceilf6/Auto_courseGrabber",
+    "html_url": "https://github.com/ceilf6/Auto_courseGrabber",
+    "stargazers": 976,
+    "language": "JavaScript",
+    "description": "正方教务系统自动抢课脚本（多省市高校实测）：并发选课、课程名/课号检索、时间/教师筛选、换课、定时开抢与可视化控制台。JavaScript helper for Zhengfang course enrollment.",
+    "source": "gh api code search",
+    "files_matched": [
+      "web结构/展开后页面结构/自主选课_files/zftal-ui.css"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Moonrend/Classworks",
+    "html_url": "https://github.com/Moonrend/Classworks",
+    "stargazers": 351,
+    "language": "Vue",
+    "description": "适用于班级大屏的作业板小工具",
+    "source": "gh api code search",
+    "files_matched": [
+      "apps/web/src/pages/cses2wakeup.vue"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "HaoZai000/NexioSchedule",
+    "html_url": "https://github.com/HaoZai000/NexioSchedule",
+    "stargazers": 114,
+    "language": "Kotlin",
+    "description": "",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/haooz/chedule/ui/screens/MainScheduleScreen.kt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Lorcas-Zephyr/aoxiang-assistant",
+    "html_url": "https://github.com/Lorcas-Zephyr/aoxiang-assistant",
+    "stargazers": 68,
+    "language": "Java",
+    "description": "翱翔助手，适配西北工业大学教务系统，自动同步成绩、课表、电费",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/cn/nwpu/campus/BackgroundSyncService.java"
+    ]
+  },
+  {
+    "query": "jwxt URP class; 正方 URP 课表",
+    "full_name": "xiaomanjun233/SleepDown-Schedule",
+    "html_url": "https://github.com/xiaomanjun233/SleepDown-Schedule",
+    "stargazers": 61,
+    "language": "Kotlin",
+    "description": "基于 Jetpack Compose 的液态玻璃风格课程表 Android 应用",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/assets/shiguang_warehouse-main/resources/CTGU/ctgu.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/WHUT/whut_01.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/GSCMXY/gscmxy.js",
+      "app/src/main/assets/shiguang_warehouse-main/resources/HQU/hquadap.js",
+      "docs/migration/1_1_5_WORKLOG.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "yuchenii/HHUClassSchedule",
+    "html_url": "https://github.com/yuchenii/HHUClassSchedule",
+    "stargazers": 48,
+    "language": "Java",
+    "description": "一款纯 Java 开发的课程表软件，适合新手学习，android 课设",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "superdaobo/mini-hbut",
+    "html_url": "https://github.com/superdaobo/mini-hbut",
+    "stargazers": 32,
+    "language": "TypeScript",
+    "description": "湖北工业大学教务助手 基于 Tauri + Capacitor + Vue 3 的跨平台客户端应用",
+    "source": "gh api code search",
+    "files_matched": [
+      "website/src/views/docs/FAQ.tsx",
+      "website/src/sections/Features.tsx",
+      "website/src/views/Privacy.tsx",
+      "website/src/views/Search.tsx",
+      "website/src/views/docs/Overview.tsx"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "BIT101-dev/BIT101-GO",
+    "html_url": "https://github.com/BIT101-dev/BIT101-GO",
+    "stargazers": 21,
+    "language": "Go",
+    "description": "针对北京理工大学搞的怪东西后面的东西",
+    "source": "gh api code search",
+    "files_matched": [
+      "api/service/course.go",
+      "pkg/webvpn/schedule.go"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "CrazyRunning/MyStudyHelper",
+    "html_url": "https://github.com/CrazyRunning/MyStudyHelper",
+    "stargazers": 18,
+    "language": "Java",
+    "description": "该项目针对高校的URP综合学分制教务系统开发，可理解为URP教务系统的移动客户端。本项目以四川大学教务处为例，实现了如下功能：登录（教务处的学号和密码）、我的课表（离线和在线）、考试信息查询、学分绩点查询、学籍信息；出于爱好，同时还集成了如下功能：翻译功能（支持20种语言间的互相翻译）、实时新闻、最新影讯、笑话集、百度地图的定位功能、基础地图、卫星地图、步行路经规划和语音导航功能。UI设计加入了Material Design。\\n note：请使用Android6.0以下运行，Android6.0及以上会因为百度SDK版本过低不能运行，欢迎小伙伴自己更新百度SDK。",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "skzc jxlm jasm; 新 URP; 新 URP 教务 课表; 新正方教务 课表; 正方 URP 课表",
+    "full_name": "Sibuxiangx/LoveACE",
+    "html_url": "https://github.com/Sibuxiangx/LoveACE",
+    "stargazers": 13,
+    "language": "Dart",
+    "description": "彩带小工具：面向安徽财经大学校园生活的一体化移动端工具箱，现已聚合 Android 与 iOS 原生客户端。",
+    "source": "gh api code search",
+    "files_matched": [
+      "android/app/src/main/java/tech/loveace/appv3/data/service/CourseScheduleService.kt",
+      "android/app/src/main/java/tech/loveace/appv3/data/model/Models.kt",
+      "desktop/lib/services/jwc/class_curriculum_service.dart",
+      "desktop/lib/models/jwc/course_schedule_record.dart",
+      "ios/loveaceios/Service/CourseScheduleService.swift"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "chaolan2019/SCU-URP-plusplus",
+    "html_url": "https://github.com/chaolan2019/SCU-URP-plusplus",
+    "stargazers": 6,
+    "language": "JavaScript",
+    "description": "SCU URP++ 教务系统美化油猴脚本",
+    "source": "gh api code search",
+    "files_matched": [
+      "AGENTS.md",
+      "src/features/settings/panel-template.js",
+      "CHANGELOG.md",
+      "README.md",
+      "src/features/clean-mode/render.js"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Xiaoxusheng/qqbat",
+    "html_url": "https://github.com/Xiaoxusheng/qqbat",
+    "stargazers": 5,
+    "language": "JavaScript",
+    "description": "基于go-cqhttp的机器人,可推送学习通课表，查看天气，推送视频，chatgpt聊天等功能",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表",
+    "full_name": "leavesvv-source/NEU-Timetable",
+    "html_url": "https://github.com/leavesvv-source/NEU-Timetable",
+    "stargazers": 3,
+    "language": "Kotlin",
+    "description": "东北大学专用的无广告 Android 课表，支持官方教务系统导入",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/lingion/sleepy/data/neu/NeuGraduateClient.kt"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "Youwenqwq/ysu-sdk",
+    "html_url": "https://github.com/Youwenqwq/ysu-sdk",
+    "stargazers": 3,
+    "language": "Python",
+    "description": "Python SDK for Yanshan University's student systems.",
+    "source": "gh api code search",
+    "files_matched": [
+      "ysu_sdk/jwxt/types.py",
+      "ysu_sdk/jwxt/client.py"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "philipszhang666/SnakeChat",
+    "html_url": "https://github.com/philipszhang666/SnakeChat",
+    "stargazers": 2,
+    "language": "JavaScript",
+    "description": "",
+    "source": "gh api code search",
+    "files_matched": [
+      "server/lms_schedule.py"
+    ]
+  }
+]

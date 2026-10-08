@@ -1,0 +1,4 @@
+<h4>
+  <%= activityName %><br/>
+  <%= weekIndices %>周
+</h4>

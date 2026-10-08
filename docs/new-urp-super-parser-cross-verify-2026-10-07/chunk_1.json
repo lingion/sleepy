@@ -1,0 +1,199 @@
+[
+  {
+    "query": "NewUrp timetable",
+    "full_name": "boy-hack/wooyun-payload",
+    "html_url": "https://github.com/boy-hack/wooyun-payload",
+    "stargazers": 840,
+    "language": "Java",
+    "description": "从wooyun中提取的payload，以及burp插件",
+    "source": "gh api code search",
+    "files_matched": [
+      "data/subdomain.txt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "dairoot/school-api",
+    "html_url": "https://github.com/dairoot/school-api",
+    "stargazers": 237,
+    "language": "Python",
+    "description": "🌱 校园教务系统接口，正方教务系统 SDK for Python",
+    "source": "gh api code search",
+    "files_matched": [
+      "doc/api/课表接口.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "StageGuard/SuperCourseTimetableBot",
+    "html_url": "https://github.com/StageGuard/SuperCourseTimetableBot",
+    "stargazers": 88,
+    "language": "Kotlin",
+    "description": "基于 mirai-console 的 超级课表上课提醒QQ机器人 插件",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表",
+    "full_name": "lingion/sleepy",
+    "html_url": "https://github.com/lingion/sleepy",
+    "stargazers": 64,
+    "language": "Kotlin",
+    "description": "Sleepy 课程表 — Material You 设计的纯净 Android 课表 App，多视图/小组件/教务导入/HSV配色",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwWhutParser.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwWiseduParser.kt",
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwNewZfParser.kt",
+      "app/src/test/java/com/lingion/sleepy/data/jw/JwWhutParserTest.kt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Mutx163/mikcb",
+    "html_url": "https://github.com/Mutx163/mikcb",
+    "stargazers": 55,
+    "language": "Dart",
+    "description": "轻屿课表 — Android 课表应用，HyperOS 超级岛、教务导入、云同步",
+    "source": "gh api code search",
+    "files_matched": [
+      "docs/design/2026-08-24-redesign-mockup.html",
+      "test/widgets/home_page_region_blur_test.dart",
+      "lib/screens/timetable_settings_screen.dart"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "mengkunsoft/HuasHelper",
+    "html_url": "https://github.com/mengkunsoft/HuasHelper",
+    "stargazers": 46,
+    "language": "JavaScript",
+    "description": "🙋 文理助手APP全套源代码（包含新闻浏览、阳光服务、成绩查询、图书馆藏检索、课表查询、在线缴费、一键登录校园网、校友交流社区、校园街景查看等功能）",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.MD"
+    ]
+  },
+  {
+    "query": "jwxt URP class; 正方 URP 课表",
+    "full_name": "qiqqqqq517/shangkeschedule",
+    "html_url": "https://github.com/qiqqqqq517/shangkeschedule",
+    "stargazers": 28,
+    "language": "Kotlin",
+    "description": "开源无广告课程表 App「上课」，专注课表排版体验、多作息方案与情侣课表。界面简约，专项优化适配",
+    "source": "gh api code search",
+    "files_matched": [
+      "shared/assets/offline_repo/schools/resources/NIIT/niit.js",
+      "website/features.html",
+      "tools/build_schools.py"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "wcomaqsw/indulge-in-study",
+    "html_url": "https://github.com/wcomaqsw/indulge-in-study",
+    "stargazers": 20,
+    "language": "Python",
+    "description": "SCU_urp教务系统Python抢课程序",
+    "source": "gh api code search",
+    "files_matched": [
+      "lesson.py"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "adminerest/SHOU-urp-auto-choose-lessons",
+    "html_url": "https://github.com/adminerest/SHOU-urp-auto-choose-lessons",
+    "stargazers": 17,
+    "language": "Python",
+    "description": "上海海洋大学URP自动抢课脚本",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "fangd123/funhubu",
+    "html_url": "https://github.com/fangd123/funhubu",
+    "stargazers": 11,
+    "language": "PHP",
+    "description": "湖北大学校园公众平台——玩转湖大|强智教务系统通用",
+    "source": "gh api code search",
+    "files_matched": [
+      "docs/post/page/7/index.html",
+      "docs/archives/index.html",
+      "docs/page/70/index.html",
+      "docs/2015/01/玩转湖大需要你的支持/index.html"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "arnoliudaxia/shanghaitech-chooseCourse-query",
+    "html_url": "https://github.com/arnoliudaxia/shanghaitech-chooseCourse-query",
+    "stargazers": 6,
+    "language": "Python",
+    "description": "某科大选课名单查询工具",
+    "source": "gh api code search",
+    "files_matched": [
+      "pages/1-🔍课表查询.py",
+      "pages/3-🔴单课查询.py",
+      "pages/2-🏫所有课程.py"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "kuailiaojie/classtable",
+    "html_url": "https://github.com/kuailiaojie/classtable",
+    "stargazers": 5,
+    "language": "JavaScript",
+    "description": "",
+    "source": "gh api code search",
+    "files_matched": [
+      "warehouse/resources/HRBEU/hrbeu.js",
+      "warehouse/resources/HRBEU/hrbeu.js"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Nakanomk/WadwaitaUp",
+    "html_url": "https://github.com/Nakanomk/WadwaitaUp",
+    "stargazers": 3,
+    "language": "Python",
+    "description": "I want to develop an adwaita-designed version of WakeUp, but with better experience.",
+    "source": "gh api code search",
+    "files_matched": [
+      "window.py"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Holit/HEU_edusys_miui",
+    "html_url": "https://github.com/Holit/HEU_edusys_miui",
+    "stargazers": 3,
+    "language": "HTML",
+    "description": "使用小爱同学对哈尔滨工程大学(HEU)的教务系统进行适配",
+    "source": "gh api code search",
+    "files_matched": [
+      "web_ref/学期理论课表.html"
+    ]
+  },
+  {
+    "query": "NewUrpClassListItem; NewUrpSuperParser",
+    "full_name": "ershiyidian/WakeUp_SHU",
+    "html_url": "https://github.com/ershiyidian/WakeUp_SHU",
+    "stargazers": 1,
+    "language": "Python",
+    "description": "面向上海大学的 WakeUp 6.0.23 定制工程：上大教务、课表导入、12 节作息、深色课表与轻量启动。",
+    "source": "gh api code search",
+    "files_matched": [
+      "core/dex1/classes/app/05455_com.suda.yzune.wakeupschedule.schedule_parser.bean.NewUrpClassListItem$Companion.dexasm.json",
+      "core/dex1/classes/app/05457_com.suda.yzune.wakeupschedule.schedule_parser.bean.NewUrpClassListItem$Id$Companion.dexasm.json",
+      "core/dex1/classes/app/05456_com.suda.yzune.wakeupschedule.schedule_parser.bean.NewUrpClassListItem$Id$$serializer.dexasm.json",
+      "core/dex1/classes/app/05458_com.suda.yzune.wakeupschedule.schedule_parser.bean.NewUrpClassListItem$Id.dexasm.json",
+      "core/dex1/classes/app/05459_com.suda.yzune.wakeupschedule.schedule_parser.bean.NewUrpClassListItem.dexasm.json"
+    ]
+  }
+]

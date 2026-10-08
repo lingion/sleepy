@@ -69,6 +69,21 @@ object JwProtocol {
     /** WakeUp 西交/新疆大学 POST 课表变体。 */
     const val TYPE_XJU_POST = "xju_post"
 
+    /**
+     * WakeUp `NewUrpSuperParser` 第二变体 (smali 类名 `o0O0o`).
+     *
+     * 协议特征: 顶层是 JSON **数组** (互斥于第一变体的 `dateList[].selectCourseList[].timeAndPlaceList[]` 嵌套),
+     * 每项 `NewUrpClassListItem` 含 `kcm/jsm/jxlm+jasm/cxjc` + `id.skxq/skjc/skzc` 位图串;
+     * 周次编码 = 0/1 字符 bitmap (与 o0 变体 classWeek bitmap 共用同一种归并算法).
+     *
+     * 真源: `tools/reverse/wakeup-fresh/smali_classes4/com/suda/yzune/wakeupschedule/schedule_parser/parser/o0O0o.smali`
+     * 反编译: `NewUrpClassListItem` (`kcm`, `jsm`, `jxlm`, `jasm`, `cxjc`, `id: {skxq, skjc, skzc, ...}`)
+     *
+     * 上游协议形态: `dIT8Zv/WakeupSchedule_BUPT` `NewUrpSuperParser.kt` 第一变体 (Apache-2.0)
+     * 已合并入 Sleepy `JwNewUrpParser` (TYPE_URP_NEW); 本变体为 WakeUp 串行 fallback 第二策略.
+     */
+    const val TYPE_NEW_URP_SUPER = "new_urp_super"
+
 
     /**
      * 重庆大学自建统一门户 my.cqu.edu.cn（REST API + Bearer token，非 HTML 解析）。
@@ -273,7 +288,7 @@ object JwProtocol {
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST,
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_NEW_URP_SUPER,
     )
 
     fun displayName(type: String?): String = when (type) {
@@ -297,6 +312,7 @@ object JwProtocol {
         TYPE_SUDA_POST -> "苏大教务"
         TYPE_CUMTB -> "矿大 EAMS5"
         TYPE_XJU_POST -> "西交/新疆大学教务"
+        TYPE_NEW_URP_SUPER -> "新 URP 教务 (WakeUp 兼容)"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
         TYPE_CHAOXING -> "超星综合教务"
@@ -329,7 +345,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST -> "other"
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_NEW_URP_SUPER -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"

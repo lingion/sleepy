@@ -1,0 +1,103 @@
+Sleepy JW Diagnostic Package (sleepy-android)
+session=20261007-133854
+
+== 目录说明 ==
+summary.txt  状态/锚点/帧路径/重试/hint/学校/版本
+frames/      所有可达 frame 的 outerHTML 原文
+dom-inventory.txt  DOM 可点元素清单(失败时反循救命)
+netlog.txt   全程网络请求 + 请求头/响应头/重定向标记
+console.txt  WebView console 输出
+cookies-full.txt  Cookie 全量值(1B 不脱敏,排查登录态)
+5-storage/  Web Storage(sessionStorage + localStorage)全键值
+2-inline/links.json  页面链接全集 + select 下拉枚举(学期码)
+env/device.txt  SDK/包名/WebView 实现版本
+
+== 文件清单 (path | 说明) ==
+summary.txt  |  状态/锚点/帧路径/重试/hint/学校/版本
+dom-inventory.txt  |  DOM 可点元素清单(a/button/input/select/textarea/label)
+netlog.txt  |  全程网络请求(方法/状态/MIME/请求头/响应头/重定向)
+console.txt  |  WebView console 输出
+cookies-full.txt  |  Cookie 全量值(1B 不脱敏, 排查登录态)
+5-storage/storage.json  |  Web Storage 全量键值(sessionStorage + localStorage)
+2-inline/links.json  |  页面链接全集 + select 下拉枚举(学期码)
+4-net-live/manifest.json  |  页面运行时真实 fetch/XHR 请求与响应
+4-net-live/1.body  |  真实响应正文
+4-net-live/2.body  |  真实响应正文
+4-net-live/3.body  |  真实响应正文
+4-net-live/4.body  |  真实响应正文
+4-net-live/5.body  |  真实响应正文
+4-net-live/6.body  |  真实响应正文
+4-net-live/7.body  |  真实响应正文
+4-net-live/8.body  |  真实响应正文
+4-net-live/9.body  |  真实响应正文
+4-net-live/10.body  |  真实响应正文
+4-net-live/11.body  |  真实响应正文
+4-net-live/12.body  |  真实响应正文
+4-net-live/13.body  |  真实响应正文
+4-net-live/14.body  |  真实响应正文
+4-net-live/15.body  |  真实响应正文
+4-net-live/16.body  |  真实响应正文
+4-net-live/17.body  |  真实响应正文
+4-net-live/18.body  |  真实响应正文
+4-net-live/19.body  |  真实响应正文
+4-net-live/20.body  |  真实响应正文
+4-net-live/21.body  |  真实响应正文
+4-net-live/22.body  |  真实响应正文
+4-net-live/23.body  |  真实响应正文
+4-net-live/24.body  |  真实响应正文
+4-net-live/25.body  |  真实响应正文
+4-net-live/26.body  |  真实响应正文
+4-net-live/27.body  |  真实响应正文
+4-net-live/28.body  |  真实响应正文
+4-net-live/29.body  |  真实响应正文
+4-net-live/30.body  |  真实响应正文
+4-net-live/31.body  |  真实响应正文
+4-net-live/32.body  |  真实响应正文
+4-net-live/33.body  |  真实响应正文
+4-net-live/34.body  |  真实响应正文
+4-net-live/35.body  |  真实响应正文
+4-net-live/36.body  |  真实响应正文
+4-net-live/37.body  |  真实响应正文
+4-net-live/38.body  |  真实响应正文
+4-net-live/39.body  |  真实响应正文
+4-net-live/40.body  |  真实响应正文
+4-net-live/41.body  |  真实响应正文
+4-net-live/42.body  |  真实响应正文
+4-net-live/43.body  |  真实响应正文
+4-net-live/44.body  |  真实响应正文
+4-net-live/45.body  |  真实响应正文
+4-net-live/46.body  |  真实响应正文
+4-net-live/47.body  |  真实响应正文
+4-net-live/48.body  |  真实响应正文
+4-net-live/49.body  |  真实响应正文
+4-net-live/50.body  |  真实响应正文
+4-net-live/51.body  |  真实响应正文
+4-net-live/52.body  |  真实响应正文
+4-net-live/53.body  |  真实响应正文
+4-net-live/54.body  |  真实响应正文
+4-net-live/55.body  |  真实响应正文
+4-net-live/56.body  |  真实响应正文
+4-net-live/57.body  |  真实响应正文
+4-net-live/58.body  |  真实响应正文
+4-net-live/59.body  |  真实响应正文
+4-net-live/60.body  |  真实响应正文
+4-net-live/61.body  |  真实响应正文
+4-net-live/62.body  |  真实响应正文
+4-net-live/63.body  |  真实响应正文
+4-net-live/64.body  |  真实响应正文
+4-net-live/65.body  |  真实响应正文
+4-net-live/66.body  |  真实响应正文
+4-net-live/67.body  |  真实响应正文
+4-net-live/68.body  |  真实响应正文
+4-net-live/69.body  |  真实响应正文
+4-net-live/70.body  |  真实响应正文
+6-logs/network-live.json  |  机器可读运行时网络记录
+6-logs/all-urls.txt  |  运行时发现的 URL
+6-logs/response-headers.txt  |  运行时响应头汇总
+6-logs/capture.har  |  HAR 1.2 网络回放文件
+6-logs/collection-summary.json  |  机器可读采集汇总
+env/device.txt  |  设备/Android SDK/WebView 实现版本
+6-logs/collect-log.txt  |  采集过程逐文件日志(时间序, 对标桌面 collector)
+
+== 自查提示 ==
+接口响应/页面可能含你的姓名/学号;提交前搜索改成 XXX 即可,不影响适配。

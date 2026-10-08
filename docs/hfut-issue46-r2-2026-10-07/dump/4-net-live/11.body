@@ -1,0 +1,7 @@
+<div class="room-table-content">
+  教室占用:<%- rootName %>
+  <p>
+    <i class="fa fa-th-large"></i>
+    <%= activityType %><%= activityName %>(<%- weekIndices %>周)
+  </p>
+</div>

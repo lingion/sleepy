@@ -1,0 +1,59 @@
+<% if (selected) { %>
+  <div class="td-selected text-center"><span>选中</span></div>
+<% } %>
+<% if (conflictInfo) {
+    var title = conflictInfo.replace("Person", "教师占用").replace("Room", "教室占用").replace("Adminclass", "班级占用").replace("practiceWeek", "实践专周");
+%>
+<div title="<%=title%>" class="td-conflict text-right" style="padding-right: 30px;">
+  <span><%=title%></span>
+</div>
+<% } %>
+<%
+  if (lessonTypeInfo) {
+    var lessonTypeStr = lessonTypeInfo.replace("THEORY", "理论").replace("EXPERIMENT", "实验").replace("PRACTICE", "实践").replace("TEST", "习题").replace("MACHINE", "上机").replace("DESIGN", "设计")
+%>
+<div class="lesson-type-span text-right">
+  <span><%=lessonTypeStr%></span>
+</div>
+<% } %>
+<% if (holiday) { %>
+  <div title="<%=holiday %>" class="td-conflict text-right" style="padding-right: 30px;"><span><%= holiday %></span></div>
+<% } %>
+<% if (lessThanCurrentSemester) { %>
+  <div title="不属于本学期" class="td-conflict text-right" style="padding-right: 30px;"><span>不属于本学期</span></div>
+<% } %>
+
+<% if (!batch) { %>
+  <% if (schedule) { %>
+    <% if (schedule.get('room') && schedule.get('room').id) { %>
+      <i class="fa fa-home arrange-icon"></i>&nbsp;<%= schedule.get('room').building.campus.nameZh %>&nbsp;<%= schedule.get('room').nameZh %>
+    <% } else if (schedule.get('customPlace') && schedule.get('customPlace') != '') { %>
+      <i class="fa fa-home arrange-icon"></i>&nbsp;<%= schedule.get('customPlace') %>
+    <% } else { %>
+      <i class="fa fa-exclamation-circle undo-arrange-icon"></i>&nbsp;未安排教室
+    <% } %>
+  <% } else { %>
+      <i class="fa fa-minus-circle donot-arrange-icon"></i>&nbsp;此周不排课
+  <% } %>
+<% } else { %>
+  <% if (schedules.length > 0) { %>
+    <%
+      var arranged = true;
+      for (var i=0; i < schedules.length; i++) {
+        if (!schedules.models[i].get('room') || !schedules.models[i].get('room').id) {
+          arranged = false;
+          break;
+        }
+      }
+      if (arranged) {
+    %>
+      <i class="fa fa-home arrange-icon"></i>&nbsp;<%= schedules.models[0].get('room').building.campus.nameZh %>&nbsp;<%= schedules.models[0].get('room').nameZh %>
+      <% } else if (schedules.models[0].get('customPlace') && schedules.models[0].get('customPlace') != '') { %>
+       <i class="fa fa-home arrange-icon"></i>&nbsp;<%= schedules.models[0].get('customPlace') %>
+      <% } else { %>
+       <i class="fa fa-exclamation-circle undo-arrange-icon"></i>&nbsp;未安排教室
+    <% } %>
+  <% } else { %>
+    <i class="fa fa-minus-circle donot-arrange-icon"></i>&nbsp;此周不排课
+  <% } %>
+<% } %>

@@ -1,0 +1,7 @@
+<td><%= nameZh %></td>
+<td><%= building.nameZh %></td>
+<td><%= building.campus.nameZh %></td>
+<td><%= seatsForLesson %></td>
+<td><%= roomType.nameZh %></td>
+<td><%= remark %></td>
+<td><button type="button" class="btn btn-xs btn-primary settingRoom">选择</button></td>
