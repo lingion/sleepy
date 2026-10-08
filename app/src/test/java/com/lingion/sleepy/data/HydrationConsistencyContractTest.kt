@@ -79,32 +79,17 @@ class HydrationConsistencyContractTest {
     }
 
     @Test
-    fun import_time_domain_writes_bound_owner_in_all_existing_table_modes() {
-        // P1(2026-09-23 workflow 审计): 绑定共享作息表的课表, 导入延伸节次时
-        // 必须写 period_tables(真实 owner), 不得污染兼容列(症状1可经导入复现)。
-        val replaceBranch = importSheet.substringAfter("ImportApplyMode.ReplaceCurrent ->")
-            .substringBefore("ImportApplyMode.AppendNonConflict ->")
-        val appendNonConflictBranch = importSheet.substringAfter("ImportApplyMode.AppendNonConflict ->")
-            .substringBefore("ImportApplyMode.AppendAsNew ->")
-        val appendAllBranch = importSheet.substringAfter("ImportApplyMode.AppendAll ->")
-
-        assertTrue(
-            "ReplaceCurrent(整表替换)绑定态必须经 savePeriodTable 写作息表 owner",
-            replaceBranch.contains("repo.savePeriodTable(")
-        )
-        assertTrue(
-            "AppendNonConflict(仅追加不冲突)绑定态必须经 savePeriodTable 写作息表 owner",
-            appendNonConflictBranch.contains("repo.savePeriodTable(")
-        )
-        assertTrue(
-            "AppendAll(全部追加)绑定态必须经 savePeriodTable 写作息表 owner",
-            appendAllBranch.contains("repo.savePeriodTable(")
-        )
-        assertTrue(
-            "三个写时间域分支都必须先探查绑定关系(getPeriodTable)",
-            replaceBranch.contains("repo.getPeriodTable(it)") &&
-                appendNonConflictBranch.contains("repo.getPeriodTable(it)") &&
-                appendAllBranch.contains("repo.getPeriodTable(it)")
-        )
+    fun imports_use_the_shared_decision_entry_and_atomic_owner_writer() {
+        val jw = findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/imports/JwImportActivity.kt").readText()
+        val dialog = findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/imports/ImportDecisionDialog.kt").readText()
+        val repository = findUpward("app/src/main/java/com/lingion/sleepy/data/repository/ScheduleRepository.kt").readText()
+        assertTrue(importSheet.contains("ImportDecisionDialog("))
+        assertTrue(jw.contains("ImportDecisionDialog("))
+        assertFalse(jw.contains("jwViewModel.importAsNewTable("))
+        assertFalse(importSheet.contains("applyImportPreview("))
+        val submission = findUpward("app/src/main/java/com/lingion/sleepy/ui/screen/imports/ImportSubmissionViewModel.kt").readText()
+        assertTrue(dialog.contains("submissionModel.submit("))
+        assertTrue(submission.contains("repository.applyImportPlan("))
+        assertTrue(repository.contains("writes.updatePeriod?.let"))
     }
 }

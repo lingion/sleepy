@@ -2,6 +2,10 @@ package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.ConflictLayoutEngine
+import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.imports.*
+import com.lingion.sleepy.data.parser.ScheduleParser
+import com.lingion.sleepy.util.TimeTableUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -51,8 +55,15 @@ class AppendNonConflictGateTest {
     ): Set<Int> = ConflictLayoutEngine.daysExceedingTwoLanes(keep + candidate) -
         ConflictLayoutEngine.daysExceedingTwoLanes(keep)
 
-    private fun gate(keep: List<CourseEntity>, candidates: List<CourseEntity>): List<CourseEntity> =
-        candidates.filter { cand -> newlyExceededDays(keep, cand).isEmpty() }
+    private fun gate(keep: List<CourseEntity>, candidates: List<CourseEntity>): List<CourseEntity> {
+        val base = TimeTableEntity(id = 1, name = "Old", startDate = "2026-09-07", maxWeek = 16)
+        val source = ScheduleParser.ParseResult("Imported", base.startDate, candidates,
+            timeJson = TimeTableUtils.DEFAULT_TIME_JSON, maxWeek = 16)
+        val plan = planImport(source, ImportSnapshot(listOf(base), emptyList(), keep),
+            ImportConfiguration.forExisting(base).copy(overlaps = OverlapPolicy.SkipIncoming))
+        assertTrue(plan.issues.toString(), plan.canSubmit)
+        return plan.incomingCourses
+    }
 
     @Test
     fun `pre-existing three-lane day does not veto non-conflicting candidates`() {
@@ -67,7 +78,7 @@ class AppendNonConflictGateTest {
 
         assertEquals(0, incomingConflictCount(incoming, existing))   // 预览口径: 不冲突
         assertTrue(newlyExceededDays(existing, incoming).isEmpty())  // 相对口径: 不加深
-        assertEquals(listOf(incoming), gate(existing, listOf(incoming)))
+        assertEquals(listOf(incoming.copy(id = 0)), gate(existing, listOf(incoming)))
     }
 
     @Test
@@ -86,7 +97,7 @@ class AppendNonConflictGateTest {
         }
         assertEquals(8, incoming.size)
         assertTrue(incoming.all { incomingConflictCount(it, existing) == 0 })  // 预览: 全不冲突
-        assertEquals(incoming, gate(existing, incoming))                        // 闸门: 全放行
+        assertEquals(incoming.map { it.copy(id = 0) }, gate(existing, incoming))                        // 闸门: 全放行
     }
 
     @Test
