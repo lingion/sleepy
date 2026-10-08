@@ -56,11 +56,11 @@ class EditCourseJumpToClickedSlotTest {
     }
 
     @Test
-    fun `scroll is triggered only when target index is past the first block`() {
-        // 首块就是用户点的 → 已经在视线内, 滚反而抖动。targetIdx>0 才 animateScrollToItem。
+    fun `scroll is triggered when target index is valid`() {
+        // 即使 idx=0, header 也占屏幕空间, 必须滚到块。targetIdx>=0 才 animateScrollToItem。
         assertTrue(
-            "必须 targetIdx > 0 才 animateScrollToItem(targetIdx)",
-            source.contains("if (targetIdx > 0)") &&
+            "必须 targetIdx >= 0 才 animateScrollToItem(targetIdx)",
+            source.contains("if (targetIdx >= 0)") &&
                 source.contains("listState.animateScrollToItem(targetIdx)")
         )
     }

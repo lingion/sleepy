@@ -316,14 +316,15 @@ fun AddCourseScreen(
 
     // 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
     // meetingBlocks 异步填充(group 加载完成时 size 跳变), 用 size 当 key 等待一次即可;
-    // targetIdx>0 才滚, 第一个块就是用户点的 → 已经在视线内, 滚反而抖动。
     // v2(用户报障 2026-10-08): 单靠 day+startNode 模糊 — 跨组 (step / ownTime /
     // weekRange / room / teacher) 任意一维不同的两组可共享 (day, startNode),
     // indexOfFirst 命中错组。改用 editingCourse.id in block.sourceIds (CourseEntity
     // 主键唯一, 块里记下 groupSlotsForEdit 切出的同组所有行 id)。
+    // v3(用户报障 2026-10-08): targetIdx>=0 才滚 — 即使 idx=0, "基础信息"header
+    // 也占用屏幕空间, 第一个时段块在 header 下方不可见, 必须滚。
     LaunchedEffect(editingCourse?.id, meetingBlocks.size) {
         val targetIdx = findTargetBlockIndex(meetingBlocks, editingCourse)
-        if (targetIdx > 0) {
+        if (targetIdx >= 0) {
             listState.animateScrollToItem(targetIdx)
         }
     }
