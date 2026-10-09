@@ -11,7 +11,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
-import com.lingion.sleepy.util.AppPrefs
 
 /**
  * Keeps the promoted course notification's progress synchronized with the
@@ -42,16 +41,9 @@ class FluidCloudService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
+        CourseNotificationScheduler.ensureNotificationChannels(this)
         if (intent?.action == ACTION_STOP) {
-            // UI 端分裂态右半按钮: 中途停止流体云测试, 无需等 2 分钟自然窗口到期。
-            // 停止语义必须与到点自然停完全一致(防通知/前台残留)。
-            handler.removeCallbacks(updater)
-            if (android.os.Build.VERSION.SDK_INT >= 26) {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-            }
-            androidx.core.app.NotificationManagerCompat.from(this)
-                .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
-            stopSelf()
+            stopCloudNotification()
             return START_NOT_STICKY
         }
         if (intent?.action == ACTION_TEST) {
@@ -159,6 +151,24 @@ class FluidCloudService : Service() {
         )
     }
 
+    private fun stopCloudNotification() {
+        if (android.os.Build.VERSION.SDK_INT >= 26) {
+            try {
+                val placeholder = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
+                    .setSmallIcon(R.drawable.ic_notification_time)
+                    .setContentTitle(getString(R.string.reminder_fluid_title))
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
+                    .build()
+                startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, placeholder)
+            } catch (_: Throwable) {}
+        }
+        handler.removeCallbacks(updater)
+        androidx.core.app.NotificationManagerCompat.from(this)
+            .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+        stopForeground(STOP_FOREGROUND_REMOVE)
+        stopSelf()
+    }
+
     override fun onDestroy() {
         handler.removeCallbacks(updater)
         super.onDestroy()
@@ -171,6 +181,15 @@ class FluidCloudService : Service() {
         private const val TEST_WINDOW_MS = 2 * 60_000L
         const val ACTION_TEST = "com.lingion.sleepy.action.FLUID_TEST"
         const val ACTION_STOP = "com.lingion.sleepy.action.FLUID_STOP"
-        // MODE_A / MODE_B 死常量已删（从未被读取——服务固定走 ProgressStyle 进度条模式）
+
+        fun requestStop(context: android.content.Context) {
+            val intent = Intent(context, FluidCloudService::class.java).setAction(ACTION_STOP)
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(context, intent)
+            } catch (_: Throwable) {
+                androidx.core.app.NotificationManagerCompat.from(context)
+                    .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+            }
+        }
     }
 }

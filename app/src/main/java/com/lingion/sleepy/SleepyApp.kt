@@ -31,12 +31,26 @@ class SleepyApp : Application() {
     val notificationScheduler: CourseNotificationScheduler by lazy {
         CourseNotificationScheduler(this)
     }
+    val classDndScheduler: com.lingion.sleepy.widget.notification.ClassDndScheduler by lazy {
+        com.lingion.sleepy.widget.notification.ClassDndScheduler(this)
+    }
 
     override fun onCreate() {
         super.onCreate()
         instance = this
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+        // 提醒重排枢纽: 数据/设置变更 → 300ms 防抖合并为一次完整刷新。
+        // Each subsystem is isolated so one reconciliation failure cannot block the others.
+        com.lingion.sleepy.widget.notification.ReminderRescheduler.init {
+            runCatching { notificationScheduler.scheduleAll() }
+            runCatching { classDndScheduler.reconcileReminderRules() }
+            runCatching {
+                CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+                    notificationScheduler.reconcileActiveFluidCloud()
+                }
+            }
+        }
         // 预热 SharedPreferences: 首次 getSharedPreferences 后台异步加载整文件,
         // 避免冷启动后首个 Compose 屏在主线程同步做磁盘反序列化 (AppPrefs 全部
         // getter 都在调用方线程直读, 严格模式 diskRead / 低端机卡顿来源)。
@@ -51,7 +65,8 @@ class SleepyApp : Application() {
             object : androidx.lifecycle.DefaultLifecycleObserver {
                 override fun onStart(owner: androidx.lifecycle.LifecycleOwner) {
                     CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
-                        try { notificationScheduler.ensureActiveFluidCloud() } catch (_: Throwable) {}
+                        try { notificationScheduler.reconcileActiveFluidCloud() } catch (_: Throwable) {}
+                        try { classDndScheduler.syncFromPrefs() } catch (_: Throwable) {}
                     }
                 }
             }

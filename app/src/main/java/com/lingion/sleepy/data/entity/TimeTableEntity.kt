@@ -56,7 +56,13 @@ data class TimeTableEntity(
      * 解绑后"使用本表作息"读到的是镜像副本, 用户手工作息永久丢失。
      * 快照仅当 periodTableId 由 null → 非 null 时写入一次; 绑→绑换目标不刷新快照。
      */
-    @ColumnInfo(name = "preBindSnapshotJson", defaultValue = "") val preBindSnapshotJson: String = ""
+    @ColumnInfo(name = "preBindSnapshotJson", defaultValue = "") val preBindSnapshotJson: String = "",
+
+    /**
+     * 2026-10-08 用户诉求: 每表独立提醒开关。开=本表参与课前提醒/每日摘要/流体云调度
+     * (后台未选中课表同样生效); 关=整表跳过。默认开 = 升级行为不变。
+     */
+    @ColumnInfo(name = "reminderEnabled", defaultValue = "1") val reminderEnabled: Boolean = true
 ) {
     /**
      * issue#40 有效时间表水合(设计 §5.1): 绑定存在 → 节次时间/智慧节次/节次数

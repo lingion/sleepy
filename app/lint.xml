@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="PropertyEscape">
+        <!-- 忽略 local.properties 文件中的 PropertyEscape 问题 -->
+        <ignore path="local.properties" />
+    </issue>
+</lint>

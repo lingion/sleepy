@@ -16,6 +16,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -161,6 +163,111 @@ fun TodayScreen(
     }
 
     // 详情 Bottom Sheet — 与课表页同一组件同一交互
+    CourseDetailSheet(
+        course = selectedCourse,
+        timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
+        allCourses = todayCourses,
+        timeJson = state.effectiveCurrentTable?.timeJson,
+        onDismiss = { selectedCourse = null },
+        onEdit = { course ->
+            selectedCourse = null
+            onEditCourse(course)
+        }
+    )
+}
+
+/**
+ * 平板宽屏右栏(今日): 顶栏头卡 + 今日课程卡, 顶部对齐紧凑排布, 不留多余底部空白。
+ * 与手机今日页同一数据源(mainVm: ScheduleViewModel)同一卡片组件, 共享状态实时同步。
+ * 独立于 LazyColumn: 面板高度有限, 直接 Column 顺序铺(卡片数量=当日节次数, 天然装得下),
+ * 超出交给外层 verticalScroll(与周网格同款策略)。
+ */
+@Composable
+fun CompactTodayPane(
+    onEditCourse: (CourseEntity) -> Unit = {},
+    viewModel: ScheduleViewModel = viewModel(),
+) {
+    val state by viewModel.state.collectAsState()
+    val today = LocalDate.now()
+    val dayOfWeek = state.transferDayFor(today)
+    val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
+    val semesterStatus = state.currentTable?.let {
+        DateUtils.semesterStatus(it.startDate, it.maxWeek, today)
+    } ?: DateUtils.SemesterStatus.IN_RANGE
+    val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
+    val todayCourses = if (isOutOfSemester) emptyList() else state.courses.filter {
+        it.day == dayOfWeek && it.inWeek(actualWeek)
+    }.let { list ->
+        val tj = state.effectiveCurrentTable?.timeJson
+        if (tj == null) list else list.map { c -> c.normalizeNode(tj) }
+    }.sortedBy { it.startNode }
+    val laneRows = remember(todayCourses, state.effectiveCurrentTable?.timeJson) {
+        com.lingion.sleepy.util.ConflictLayoutEngine.weekLaneRows(
+            todayCourses, state.effectiveCurrentTable?.timeJson
+        )
+    }
+
+    var selectedCourse by remember { mutableStateOf<CourseEntity?>(null) }
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 12.dp),
+        verticalArrangement = Arrangement.spacedBy(12.dp)
+    ) {
+        TodayHeader(date = today, week = actualWeek, count = todayCourses.size, semesterStatus = semesterStatus)
+
+        if (todayCourses.isEmpty()) {
+            EmptyToday(semesterStatus = semesterStatus)
+        } else {
+            SectionHead(title = stringResource(R.string.widget_today_label), action = stringResource(R.string.n_periods, todayCourses.size))
+            laneRows.forEach { row ->
+                if (row.laneCount == 1) {
+                    TodayCourseCard(
+                        course = row.courses[0],
+                        timeJson = state.effectiveCurrentTable?.timeJson,
+                        onClick = { selectedCourse = row.courses[0] },
+                        groupRows = todayCourses.filter { it.groupId == row.courses[0].groupId }
+                    )
+                } else {
+                    val laneGap = 6.dp
+                    Row(
+                        modifier = Modifier.fillMaxWidth().height(IntrinsicSize.Min),
+                        horizontalArrangement = Arrangement.spacedBy(laneGap)
+                    ) {
+                        repeat(row.laneCount) { li ->
+                            if (li > 0) {
+                                Box(
+                                    modifier = Modifier
+                                        .width(0.5.dp)
+                                        .fillMaxHeight()
+                                        .background(
+                                            MaterialTheme.colorScheme.onSurface.copy(alpha = SleepyTheme.Alpha.hairline)
+                                        )
+                                )
+                            }
+                            val laneCourses = row.courses.filter { row.laneOf[it.id] == li }
+                            Column(
+                                modifier = Modifier.weight(1f),
+                                verticalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                laneCourses.forEach { laneCourse ->
+                                    TodayCourseCard(
+                                        course = laneCourse,
+                                        timeJson = state.effectiveCurrentTable?.timeJson,
+                                        onClick = { selectedCourse = laneCourse },
+                                        groupRows = todayCourses.filter { it.groupId == laneCourse.groupId }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     CourseDetailSheet(
         course = selectedCourse,
         timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },

@@ -87,6 +87,8 @@
     <string name="edit_table_start_date">Semester Start Date</string>
     <string name="edit_table_start_date_hint">e.g. 2026-02-24</string>
     <string name="edit_table_max_week">Total Weeks</string>
+    <string name="edit_table_reminder_enable">Reminders for this table</string>
+    <string name="edit_table_reminder_desc">When off, this table stops sending pre-class reminders, daily summaries and fluid cloud</string>
     <string name="edit_table_time_slots">Bell schedule</string>
     <string name="edit_table_delete">Delete Schedule</string>
     <string name="edit_table_save">Save Settings</string>
@@ -480,6 +482,8 @@
     <string name="jw_nav_hint">Navigate to "My Schedule" page, then tap the button on the right</string>
     <string name="jw_import_page">Import This Page</string>
     <string name="jw_fetch_timeout">Fetch timed out: the server did not respond for a long time. Check your network and retry</string>
+    <string name="jw_fetch_fallback_periods">Period times were not returned by the portal; filled in automatically with the SWJTU standard timetable</string>
+    <string name="jw_fetch_no_periods">Period times could not be fetched from the portal; filled in with the SWJTU standard timetable (adjustable in timetable settings)</string>
     <string name="jw_fetch_no_courses">Fetched successfully but no courses were parsed: make sure the page shows this semester\'s timetable and the semester is correct</string>
     <string name="jw_edit_url">Edit current URL</string>
     <string name="jw_url_submit">Open URL</string>
@@ -825,6 +829,16 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_master_title">Enable Reminders</string>
     <string name="reminder_pick_time">Pick Reminder Time</string>
     <string name="reminder_title">Reminders</string>
+    <string name="reminder_date_rules_title">Date-based reminders</string>
+    <string name="reminder_date_rules_subtitle">When off, every date still sends reminders. When on, configure date types separately. This affects daily summaries, before-class reminders, Fluid Cloud, and class DND.</string>
+    <string name="reminder_date_rules_inactive">Not active. Every date still sends reminders while this is off; child choices are kept.</string>
+    <string name="reminder_date_rules_public_holiday">Legal holiday reminders</string>
+    <string name="reminder_date_rules_transfer_holiday">Mapped holiday reminders</string>
+    <string name="reminder_date_rules_makeup_workday">Makeup workday reminders</string>
+    <string name="reminder_date_rules_ordinary_weekend">Ordinary weekend reminders</string>
+    <string name="reminder_date_rules_advanced_title">Advanced holiday settings</string>
+    <string name="reminder_date_rules_advanced_button">Open holiday settings</string>
+    <string name="reminder_date_rules_advanced_subtitle">These options apply only when enabled. Mappings are timetable-specific, weekends are distinct from legal holidays, and all four reminder paths are affected.</string>
     <string name="school_count_supported">%1$d supported</string>
     <string name="school_count_total">%1$d total</string>
     <string name="school_pinyin_hint">Supports pinyin initials / school abbreviations (e.g. hrbeu)</string>
@@ -861,6 +875,7 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="settings_holiday_title">Holiday make-up schedule</string>
     <string name="holiday_makeup_title">Make-up day class source</string>
     <string name="holiday_makeup_subtitle">Set per timetable. Unmapped make-up days keep their own schedule — nothing is guessed.</string>
+    <string name="holiday_mapping_explanation">An unconfigured public holiday remains a legal holiday. Mappings are scoped to the current timetable, and make-up workdays come from the data. A mapping affects the course source and all four reminder paths: daily summary, before-class reminder, Fluid Cloud, and automatic DND. Ordinary users do not need a mapping unless their school has a special arrangement.</string>
     <string name="holiday_makeup_unset">None</string>
     <string name="holiday_transfer_pick_other">Other date…</string>
     <string name="holiday_transfer_edit_segment">Edit this holiday segment</string>
@@ -1045,4 +1060,6 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="school_location_no_fix">No current location received. Check device location settings and retry.</string>
     <string name="school_location_accuracy_insufficient">Location is too imprecise or overlaps city borders. Retry or allow precise location in permission settings.</string>
     <string name="school_location_permission_settings">Location permissions</string>
+    <string name="reminder_class_dnd_title">Class-time Do Not Disturb</string>
+    <string name="reminder_class_dnd_sub">Automatically enable DND during class and restore afterwards</string>
 </resources>

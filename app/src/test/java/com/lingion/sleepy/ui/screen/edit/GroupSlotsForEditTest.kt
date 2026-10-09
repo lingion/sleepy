@@ -29,14 +29,15 @@ class GroupSlotsForEditTest {
         assertEquals(2, groups.size)
     }
 
-    // 同节次同周次的两天 → 1 组
+    // 用户报障 2026-10-08:「点周四的课跳到星期五的时段块」— 跨星期合并会让落地块
+    // 以另一天打头，看起来跳错。day 进分组 key 后：同节次同周次的两天 → 2 组。
     @Test
-    fun sameSlotDifferentDays_oneGroup() {
+    fun sameSlotDifferentDays_twoGroups() {
         val courses = listOf(
             course(1, 2, 1, 16, 0, day = 1),
             course(1, 2, 1, 16, 0, day = 3)
         )
-        assertEquals(1, groupSlotsForEdit(courses).size)
+        assertEquals(2, groupSlotsForEdit(courses).size)
     }
 
     // 同节次但周次不同 → 2 组（旧逻辑会错误合并）
@@ -69,7 +70,7 @@ class GroupSlotsForEditTest {
         assertEquals(2, groupSlotsForEdit(courses).size)
     }
 
-    // 组内 days 去重聚合的原料：同组两条 day=1/day=3
+    // 组内 days 去重聚合：day 进 key 后 day=1/day=3 成两组，day=1 的 startNode=5 另一组
     @Test
     fun groupMembersPreserved() {
         val courses = listOf(
@@ -78,7 +79,7 @@ class GroupSlotsForEditTest {
             course(5, 2, 1, 16, 0, day = 1)
         )
         val groups = groupSlotsForEdit(courses)
-        assertEquals(2, groups.size)
-        assertEquals(2, groups.first { it[0].startNode == 1 }.size)
+        assertEquals(3, groups.size)
+        assertEquals(1, groups.first { it[0].startNode == 1 }.size)
     }
 }

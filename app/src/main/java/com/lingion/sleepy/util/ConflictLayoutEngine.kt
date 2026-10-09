@@ -161,6 +161,33 @@ object ConflictLayoutEngine {
         courses.sortedWith(primaryComparator)
 
     /**
+     * 并排栏位分配 — 用户报障 2026-10-08: 含非常规时间(ownTime)课的冲突簇不再
+     * 层叠覆盖(「多出来的课程覆盖在课表之上」), 改为并排分栏同时可见。
+     *
+     * 输入: 每课 id to (起始行小数 to 行跨度小数)。按起始升序贪心: 每课放进
+     * 第一个右端不越过它起点的既有栏, 否则新开一栏。返回 id → 栏号(0 起),
+     * 栏数 = 最大值 + 1。真实时间互不相交的课共享同一栏(各拿全宽), 真重叠才分栏。
+     */
+    fun assignLanes(intervals: List<Pair<Long, Pair<Float, Float>>>): Map<Long, Int> {
+        val laneEnds = mutableListOf<Float>()
+        val out = mutableMapOf<Long, Int>()
+        intervals
+            .sortedWith(compareBy({ it.second.first }, { -it.second.second }))
+            .forEach { (id, geom) ->
+                val (start, span) = geom
+                val lane = laneEnds.indexOfFirst { it <= start + 0.001f }
+                if (lane >= 0) {
+                    laneEnds[lane] = start + span
+                    out[id] = lane
+                } else {
+                    laneEnds.add(start + span)
+                    out[id] = laneEnds.size - 1
+                }
+            }
+        return out
+    }
+
+    /**
      * 布局一簇: 返回全簇课,输出顺序 = zRank 升序(主课判定序;topOverrideId 命中时该课
      * 所在图层整体提到 zRank 0,其余保持图层间相对顺序,层内按 startNode 升序拼接)。
      *

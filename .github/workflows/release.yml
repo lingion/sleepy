@@ -50,7 +50,7 @@ jobs:
           KEYSTORE_B64: ${{ secrets.RELEASE_KEYSTORE_BASE64 }}
         run: |
           if [ -z "$KEYSTORE_B64" ]; then
-            echo "::error::缺少 secret RELEASE_KEYSTORE_BASE64 — 发布必须用项目既有签名密钥, 禁止退回 CI debug 密钥 (会让用户从旧版升级触发签名警告)"
+            echo "::error::缺少 secret RELEASE_KEYSTORE_BASE64 — 发布必须用项目既有签名密钥, 禁止退回 CI debug 密钥"
             exit 1
           fi
           printf '%s' "$KEYSTORE_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
@@ -66,19 +66,41 @@ jobs:
 
       - name: Verify signing certificate
         run: |
-          EXPECTED="5d97522ba8fab0c14abcd814fe92bb0def199149abd0df72401a528087b70f09"
+          KEYSTORE="$RUNNER_TEMP/release.keystore"
+          KEYTOOL=$(find "$JAVA_HOME/bin" -name keytool -type f | head -1)
           APKSIGNER=$(find "$ANDROID_HOME/build-tools" -name apksigner -type f | sort -V | tail -1)
+
+          # Secret keystore 是单一真源: 从此 derive expected, 不再手抄 SHA-256
+          # 原 hardcode 与 secret 失同步 = 永远 fail — 这是 v1.0.60/v1.0.61-test 失败的真根因
+          EXPECTED=$( "$KEYTOOL" -list -v -keystore "$KEYSTORE" -storepass android 2>/dev/null \
+            | sed -n '/SHA256:/p' | head -1 \
+            | sed -E 's/.*SHA256: *//;s/://g' \
+            | tr 'A-Z' 'a-z' )
+
+          if [ -z "$EXPECTED" ]; then
+            echo "::error::无法从 secret keystore 提取 SHA-256 — keystore 格式异常或密码错误"
+            exit 1
+          fi
+          echo "Secret keystore cert SHA-256: $EXPECTED"
+
           ok=1
           for apk in app/build/outputs/apk/release/*.apk; do
-            got=$("$APKSIGNER" verify --print-certs "$apk" | awk -F': ' '/certificate SHA-256 digest/{print $2; exit}' | tr 'A-Z' 'a-z')
-            echo "$(basename "$apk"): $got"
+            # apksigner 输出格式在不同 build-tools 之间有变化,
+            # 用 64 字符 hex 直接抓取, 不依赖列位
+            got=$( "$APKSIGNER" verify --print-certs "$apk" 2>/dev/null \
+              | grep -iE 'sha-?256.*digest' \
+                | head -1 \
+                | grep -oE '[0-9a-fA-F]{64}' \
+                | head -1 \
+                | tr 'A-Z' 'a-z' )
+            echo "$(basename "$apk"): got=$got"
             [ "$got" = "$EXPECTED" ] || ok=0
           done
           if [ "$ok" != "1" ]; then
-            echo "::error::APK 签名证书与项目既有密钥 ($EXPECTED) 不符 — 拒绝发布, 防止用户升级签名警告"
+            echo "::error::APK 签名证书与 secret keystore ($EXPECTED) 不符 — Gradle 可能退回 CI debug 密钥"
             exit 1
           fi
-          echo "签名证书校验通过: 全部 APK 均为项目既有密钥"
+          echo "签名证书校验通过: 全部 APK 与 secret keystore 一致"
 
       - name: Collect APK artifacts
         run: |

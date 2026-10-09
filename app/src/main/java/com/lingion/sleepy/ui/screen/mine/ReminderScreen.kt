@@ -81,6 +81,7 @@ import com.lingion.sleepy.util.TimeTableUtils
 import com.lingion.sleepy.widget.WidgetTableResolver
 import com.lingion.sleepy.widget.notification.BackgroundReliabilityProbe
 import com.lingion.sleepy.widget.notification.BackgroundReliabilitySnapshot
+import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import com.lingion.sleepy.widget.notification.ReminderTransportState
 import com.lingion.sleepy.widget.notification.VendorCapabilityState
 import com.lingion.sleepy.widget.notification.VendorLiveNotificationCapability
@@ -239,13 +240,18 @@ private fun buildBeforeClassPreviewText(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReminderScreen(onBack: () -> Unit) {
+fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     val coroutineScope = rememberCoroutineScope()
 
     var masterEnabled by remember { mutableStateOf(AppPrefs.isReminderEnabled(context)) }
+    var dateRulesEnabled by remember { mutableStateOf(AppPrefs.isHolidayReminderRulesEnabled(context)) }
+    var publicHolidayReminder by remember { mutableStateOf(AppPrefs.isHolidayReminderPublicHolidayEnabled(context)) }
+    var transferHolidayReminder by remember { mutableStateOf(AppPrefs.isHolidayReminderTransferHolidayEnabled(context)) }
+    var makeupWorkdayReminder by remember { mutableStateOf(AppPrefs.isHolidayReminderMakeupWorkdayEnabled(context)) }
+    var ordinaryWeekendReminder by remember { mutableStateOf(AppPrefs.isHolidayReminderOrdinaryWeekendEnabled(context)) }
     var dailyEnabled by remember { mutableStateOf(AppPrefs.isDailyReminderEnabled(context)) }
     var todayEnabled by remember { mutableStateOf(AppPrefs.isTodayReminderEnabled(context)) }
     var dailyTime by remember { mutableStateOf(AppPrefs.getDailyReminderTime(context)) }
@@ -318,7 +324,24 @@ fun ReminderScreen(onBack: () -> Unit) {
         val v = minutesInput.toIntOrNull()?.coerceIn(1, 999) ?: return@LaunchedEffect
         beforeClassMinutes = v
         AppPrefs.setBeforeClassMinutes(context, v)
-        SleepyApp.get().notificationScheduler.scheduleAll()
+        ReminderRescheduler.request()
+    }
+
+    // class auto-DND toggle — 勿扰策略访问权限走系统页, 授权状态用 policyLauncher 回读
+    var classDndEnabled by remember { mutableStateOf(AppPrefs.isClassDndEnabled(context)) }
+    val policyLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) {
+        // 用户可能拒绝或秒退 — 以系统实时授权状态为准
+        val nm = context.getSystemService(android.app.NotificationManager::class.java)
+        if (nm != null && nm.isNotificationPolicyAccessGranted) {
+            classDndEnabled = true
+            AppPrefs.setClassDndEnabled(context, true)
+        } else {
+            classDndEnabled = false
+            AppPrefs.setClassDndEnabled(context, false)
+        }
+        SleepyApp.get().classDndScheduler.syncFromPrefs()
     }
 
     // Permission launcher — NOT one-shot, can be re-triggered by clicking toggle again
@@ -328,7 +351,7 @@ fun ReminderScreen(onBack: () -> Unit) {
         if (granted) {
             masterEnabled = true
             AppPrefs.setReminderEnabled(context, true)
-            SleepyApp.get().notificationScheduler.scheduleAll()
+            ReminderRescheduler.request()
         } else {
             // Permission denied → revert to off
             masterEnabled = false
@@ -343,7 +366,7 @@ fun ReminderScreen(onBack: () -> Unit) {
             // Pre-Android 13: permission auto-granted at install
             masterEnabled = true
             AppPrefs.setReminderEnabled(context, true)
-            SleepyApp.get().notificationScheduler.scheduleAll()
+            ReminderRescheduler.request()
         }
     }
 
@@ -376,7 +399,7 @@ fun ReminderScreen(onBack: () -> Unit) {
             if (alreadyGranted) {
                 masterEnabled = true
                 AppPrefs.setReminderEnabled(context, true)
-                SleepyApp.get().notificationScheduler.scheduleAll()
+                ReminderRescheduler.request()
             } else {
                 requestNotificationPermission()
             }
@@ -455,6 +478,104 @@ fun ReminderScreen(onBack: () -> Unit) {
                 }
             }
 
+            // Date-based reminder rules remain independent from the general reminder master.
+            item {
+                ReminderCard {
+                    Column(modifier = Modifier.fillMaxWidth()) {
+                        Row(
+                            modifier = Modifier.fillMaxWidth().padding(4.dp),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = stringResource(R.string.reminder_date_rules_title),
+                                    style = MaterialTheme.typography.bodyLarge.copy(fontWeight = FontWeight.SemiBold),
+                                    color = colors.onSurface
+                                )
+                                Text(
+                                    text = stringResource(R.string.reminder_date_rules_subtitle),
+                                    style = MaterialTheme.typography.bodySmall,
+                                    color = colors.onSurfaceVariant
+                                )
+                            }
+                            Switch(
+                                checked = dateRulesEnabled,
+                                onCheckedChange = {
+                                    dateRulesEnabled = it
+                                    AppPrefs.setHolidayReminderRulesEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                },
+                                colors = SwitchDefaults.colors(
+                                    checkedThumbColor = colors.onPrimary,
+                                    checkedTrackColor = colors.primary
+                                )
+                            )
+                        }
+                        if (!dateRulesEnabled) {
+                            Text(
+                                text = stringResource(R.string.reminder_date_rules_inactive),
+                                style = MaterialTheme.typography.bodySmall,
+                                color = colors.onSurfaceVariant,
+                                modifier = Modifier.padding(horizontal = 4.dp, vertical = 4.dp)
+                            )
+                        } else {
+                            SubDivider()
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_public_holiday),
+                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
+                                checked = publicHolidayReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    publicHolidayReminder = it
+                                    AppPrefs.setHolidayReminderPublicHolidayEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_transfer_holiday),
+                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
+                                checked = transferHolidayReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    transferHolidayReminder = it
+                                    AppPrefs.setHolidayReminderTransferHolidayEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_makeup_workday),
+                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
+                                checked = makeupWorkdayReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    makeupWorkdayReminder = it
+                                    AppPrefs.setHolidayReminderMakeupWorkdayEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            ReminderToggleRow(
+                                title = stringResource(R.string.reminder_date_rules_ordinary_weekend),
+                                subtitle = stringResource(R.string.reminder_date_rules_advanced_subtitle),
+                                checked = ordinaryWeekendReminder,
+                                enabled = dateRulesEnabled,
+                                onCheckedChange = {
+                                    ordinaryWeekendReminder = it
+                                    AppPrefs.setHolidayReminderOrdinaryWeekendEnabled(context, it)
+                                    ReminderRescheduler.request()
+                                }
+                            )
+                            FilledTonalButton(
+                                onClick = onOpenHoliday,
+                                modifier = Modifier.fillMaxWidth().padding(top = 4.dp)
+                            ) {
+                                Text(stringResource(R.string.reminder_date_rules_advanced_button))
+                            }
+                        }
+                    }
+                }
+            }
+
             // Sub-settings — only visible when master is on
             if (masterEnabled) {
                 // Daily reminder — single card with parent switch in header + expandable sub items
@@ -483,7 +604,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { enabled ->
                                     dailyEnabled = enabled
                                     AppPrefs.setDailyReminderEnabled(context, enabled)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = colors.onPrimary,
@@ -501,7 +622,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { enabled ->
                                     todayEnabled = enabled
                                     AppPrefs.setTodayReminderEnabled(context, enabled)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             ReminderTimeRow(
@@ -523,7 +644,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { enabled ->
                                     tomorrowEnabled = enabled
                                     AppPrefs.setTomorrowReminderEnabled(context, enabled)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             ReminderTimeRow(
@@ -570,7 +691,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = { on ->
                                     beforeClassEnabled = on
                                     AppPrefs.setBeforeClassEnabled(context, on)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 },
                                 colors = SwitchDefaults.colors(
                                     checkedThumbColor = colors.onPrimary,
@@ -634,7 +755,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = {
                                     bannerEnabled = it
                                     AppPrefs.setBeforeClassBannerEnabled(context, it)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             SubDivider()
@@ -646,7 +767,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                 onCheckedChange = {
                                     fluidEnabled = it
                                     AppPrefs.setBeforeClassFluidEnabled(context, it)
-                                    SleepyApp.get().notificationScheduler.scheduleAll()
+                                    ReminderRescheduler.request()
                                 }
                             )
                             if (fluidEnabled) {
@@ -694,7 +815,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                                     onClick = {
                                                         fluidPrimary = key
                                                         AppPrefs.setBeforeClassFluidPrimary(context, key)
-                                                        SleepyApp.get().notificationScheduler.scheduleAll()
+                                                        ReminderRescheduler.request()
                                                         fieldsMenuExpanded = false
                                                     },
                                                     leadingIcon = {
@@ -951,6 +1072,35 @@ fun ReminderScreen(onBack: () -> Unit) {
                         }
                     }
                 }
+
+                // Class auto-DND — 上课自动勿扰 (需系统"通知策略访问"权限)
+                item {
+                    ReminderCard {
+                        ReminderToggleRow(
+                            title = stringResource(R.string.reminder_class_dnd_title),
+                            subtitle = stringResource(R.string.reminder_class_dnd_sub),
+                            checked = classDndEnabled,
+                            onCheckedChange = { on ->
+                                val nm = context.getSystemService(android.app.NotificationManager::class.java)
+                                if (on && nm != null && !nm.isNotificationPolicyAccessGranted) {
+                                    // 未授权 → 跳系统页, 回跳后 policyLauncher 以实际状态落定
+                                    try {
+                                        policyLauncher.launch(
+                                            Intent(android.provider.Settings.ACTION_NOTIFICATION_POLICY_ACCESS_SETTINGS)
+                                        )
+                                    } catch (_: Exception) {
+                                        classDndEnabled = false
+                                        AppPrefs.setClassDndEnabled(context, false)
+                                    }
+                                } else {
+                                    classDndEnabled = on
+                                    AppPrefs.setClassDndEnabled(context, on)
+                                    SleepyApp.get().classDndScheduler.syncFromPrefs()
+                                }
+                            }
+                        )
+                    }
+                }
             }
         }
     }
@@ -992,7 +1142,7 @@ fun ReminderScreen(onBack: () -> Unit) {
                                     AppPrefs.setTomorrowReminderTime(context, newTime)
                                 }
                             }
-                            SleepyApp.get().notificationScheduler.scheduleAll()
+                            ReminderRescheduler.request()
                             timePickerTarget = null
                         },
                         dismissText = stringResource(R.string.action_cancel),
@@ -1034,6 +1184,7 @@ private fun ReminderToggleRow(
     subtitle: String,
     tag: String? = null,
     checked: Boolean,
+    enabled: Boolean = true,
     onCheckedChange: (Boolean) -> Unit
 ) {
     val colors = MaterialTheme.colorScheme
@@ -1064,6 +1215,7 @@ private fun ReminderToggleRow(
         Switch(
             checked = checked,
             onCheckedChange = onCheckedChange,
+            enabled = enabled,
             colors = SwitchDefaults.colors(
                 checkedThumbColor = colors.onPrimary,
                 checkedTrackColor = colors.primary

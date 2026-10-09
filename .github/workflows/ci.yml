@@ -63,17 +63,18 @@ jobs:
             printf '%s -> ' "$u"
             curl -s -o /dev/null -w 'http=%{http_code} time=%{time_total}\n' --max-time 15 "$u" || echo 'curl-error'
           done
-      - name: Unit tests
+      - name: Unit tests and Room schema check
         # pipefail 必须显式开: 无它时 gradle 非零退出码被 tail 吞掉, 红测试假绿
         # (issue #98: preview_skips_ink_guard 红但 android-unit-test 绿, 差点带病合入)
         run: |
           set -o pipefail
           ./gradlew :app:testDebugUnitTest --info --stacktrace 2>&1 | tee gradle-unit-test.log | tail -400
+          git diff --exit-code -- app/schemas
+          test -z "$(git ls-files --others --exclude-standard app/schemas)"
 
   android-lint:
-    # 信息性检查, 不在 ruleset 必需检查清单里 (仓库有历史 lint 基线, 存量 error 未清零)
+    # Lint uses app/lint-baseline.xml for accepted legacy findings; new findings fail CI.
     runs-on: ubuntu-latest
-    continue-on-error: true
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4

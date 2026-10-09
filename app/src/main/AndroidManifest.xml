@@ -25,6 +25,7 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
+    <uses-permission android:name="android.permission.ACCESS_NOTIFICATION_POLICY" />
     <!-- 电池优化弹窗兜底(厂商耗电页打不开时): 标准"忽略电池优化"对话框权限 -->
     <uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" tools:ignore="BatteryLife" />
 
@@ -348,6 +349,11 @@
         <receiver
             android:name=".widget.notification.BeforeClassNotifyReceiver"
             android:exported="true" />
+
+        <!-- 上课自动勿扰边界闹钟 (RC 7701 进 / 7702 出) -->
+        <receiver
+            android:name=".widget.notification.ClassDndReceiver"
+            android:exported="false" />
 
         <!-- 教务直连导入 Activity (v1.0.8 新增) -->
         <activity

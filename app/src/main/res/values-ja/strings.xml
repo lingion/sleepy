@@ -87,6 +87,8 @@
     <string name="edit_table_start_date">学期開始日</string>
     <string name="edit_table_start_date_hint">例: 2026-02-24</string>
     <string name="edit_table_max_week">総週数</string>
+    <string name="edit_table_reminder_enable">この時間割を通知</string>
+    <string name="edit_table_reminder_desc">オフにすると、この時間割の课前リマインダー・日課表サマリー・フローティングクラウドは送信されません</string>
     <string name="edit_table_time_slots">時程表</string>
     <string name="edit_table_delete">時間割を削除</string>
     <string name="edit_table_save">設定を保存</string>
@@ -468,6 +470,8 @@
     <string name="jw_nav_hint">「個人時間割」ページに移動し、右のボタンをタップ</string>
     <string name="jw_import_page">このページをインポート</string>
     <string name="jw_fetch_timeout">取得がタイムアウトしました：サーバーが長時間応答しません。ネットワークを確認して再試行してください</string>
+    <string name="jw_fetch_fallback_periods">ポータルが時限の時刻を返さなかったため、西南交通大学の標準時間割で自動補完しました</string>
+    <string name="jw_fetch_no_periods">ポータルから時限の時刻を取得できず、西南交通大学の標準時間割で補完しました（時間割設定で変更できます）</string>
     <string name="jw_fetch_no_courses">取得は成功しましたが授業を解析できませんでした：ページに今学期の時間割が表示されているか、学期選択が正しいか確認してください</string>
     <string name="jw_edit_url">URLを編集</string>
     <string name="jw_url_submit">URLを開く</string>
@@ -815,6 +819,16 @@
     <string name="reminder_master_title">リマインダーを有効化</string>
     <string name="reminder_pick_time">リマインダー時刻を選択</string>
     <string name="reminder_title">リマインダー</string>
+    <string name="reminder_date_rules_title">日付ごとにリマインダーを設定</string>
+    <string name="reminder_date_rules_subtitle">オフではすべての日に通知します。オンにすると日付の種類ごとに設定できます。日次概要、授業前通知、フローティング通知、授業中のおやすみモードに適用されます。</string>
+    <string name="reminder_date_rules_inactive">現在は無効です。オフの間はすべての日に通知し、子項目の選択は保持します。</string>
+    <string name="reminder_date_rules_public_holiday">祝日のリマインダー</string>
+    <string name="reminder_date_rules_transfer_holiday">振替休日のリマインダー</string>
+    <string name="reminder_date_rules_makeup_workday">振替出勤日のリマインダー</string>
+    <string name="reminder_date_rules_ordinary_weekend">通常の週末のリマインダー</string>
+    <string name="reminder_date_rules_advanced_title">祝日・振替の詳細設定</string>
+    <string name="reminder_date_rules_advanced_button">祝日設定を開く</string>
+    <string name="reminder_date_rules_advanced_subtitle">オンのときだけ有効です。振替は時間割ごとに管理し、週末は祝日とは別に扱います。4種類すべての通知に反映されます。</string>
     <string name="school_count_supported">対応 %1$d</string>
     <string name="school_count_total">全 %1$d 校</string>
     <string name="school_pinyin_hint">ピンイン頭文字 / 学校の英語略称 に対応（例: hrbeu）</string>
@@ -851,6 +865,7 @@
     <string name="settings_holiday_title">祝日・週末のグレー表示</string>
     <string name="holiday_makeup_title">振替出勤日の授業曜日</string>
     <string name="holiday_makeup_subtitle">時間割ごとに設定します。未設定の振替出勤日はその曜日自体の時間割を表示し、自動で推測しません。</string>
+    <string name="holiday_mapping_explanation">未設定の法定祝日は法定祝日として扱われます。振替設定は現在の時間割だけに適用され、振替出勤日はデータに基づきます。設定は授業の参照元と4つの通知経路（毎日の概要、授業前通知、Fluid Cloud、自動DND）に反映されます。特別な学校行事がなければ、通常は設定不要です。</string>
     <string name="holiday_makeup_unset">なし</string>
     <string name="holiday_transfer_pick_other">その他の日付…</string>
     <string name="holiday_transfer_edit_segment">この期間を編集</string>
@@ -1042,4 +1057,6 @@
     <string name="school_location_no_fix">現在位置を取得できません。端末の位置設定を確認して再試行してください。</string>
     <string name="school_location_accuracy_insufficient">位置の精度が不足しているか都市の境界に重なっています。再試行するか設定で正確な位置を許可してください。</string>
     <string name="school_location_permission_settings">位置情報の権限</string>
+    <string name="reminder_class_dnd_title">授業中はおやすみモード</string>
+    <string name="reminder_class_dnd_sub">授業時間帯におやすみモードを自動で有効にし、終了後に復元します</string>
 </resources>

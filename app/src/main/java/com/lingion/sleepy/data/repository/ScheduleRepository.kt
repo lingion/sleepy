@@ -652,7 +652,7 @@ class ScheduleRepository(private val db: AppDatabase) {
         val app = SleepyApp.get()
         WidgetUpdater.notifyDataChanged(app)
         try {
-            app.notificationScheduler.scheduleAll()
+            com.lingion.sleepy.widget.notification.ReminderRescheduler.request()
         } catch (_: Throwable) {
             // 提醒未开启或调度失败不应影响写操作本身
         }

@@ -90,6 +90,8 @@
     <string name="edit_table_start_date">学期开始日期</string>
     <string name="edit_table_start_date_hint">例如 2026-02-24</string>
     <string name="edit_table_max_week">总周数</string>
+    <string name="edit_table_reminder_enable">本表参与提醒</string>
+    <string name="edit_table_reminder_desc">关闭后，本课表不再发送课前提醒、每日课表摘要与流体云</string>
     <string name="edit_table_time_slots">作息表</string>
     <string name="edit_table_delete">删除课表</string>
     <string name="edit_table_save">保存课表设置</string>
@@ -455,6 +457,7 @@
     <string name="settings_holiday_title">节假日调休设置</string>
     <string name="holiday_makeup_title">调休日按哪天上课</string>
     <string name="holiday_makeup_subtitle">每张课表单独设置。未设置的放假日按当天星期取课，不会替你猜。</string>
+    <string name="holiday_mapping_explanation">未配置的法定节假日仍按法定节假日处理；映射仅对当前课表生效，补班日以数据为准。映射会影响课程来源和四种提醒路径（每日摘要、课前提醒、流体云、自动勿扰）。普通用户无需设置，除非学校有特殊安排。</string>
     <string name="holiday_makeup_unset">无</string>
     <string name="holiday_transfer_pick_other">其他日期…</string>
     <string name="holiday_transfer_edit_segment">编辑本假期段</string>
@@ -579,6 +582,8 @@
     <string name="jw_nav_hint">导航到「个人课表」页，再点右侧按钮</string>
     <string name="jw_import_page">导入此页</string>
     <string name="jw_fetch_timeout">抓取超时：教务服务器长时间无响应，请检查网络后重试</string>
+    <string name="jw_fetch_fallback_periods">节次时间接口未返回，已按西南交通大学标准作息自动填入</string>
+    <string name="jw_fetch_no_periods">未能从教务接口获取节次时间，已按西南交通大学标准作息填入（可在课表设置中调整）</string>
     <string name="jw_fetch_no_courses">抓取成功但未解析到课程：请确认页面已显示本学期课表且学期选择正确</string>
     <string name="jw_refresh">刷新当前页面</string>
     <string name="jw_edit_url">编辑当前网址</string>
@@ -642,6 +647,16 @@
 
     <!-- v1.0.20 提醒功能 -->
     <string name="reminder_title">提醒</string>
+    <string name="reminder_date_rules_title">按日期设置提醒</string>
+    <string name="reminder_date_rules_subtitle">关闭时所有日期照常发送提醒；开启后可分别设置日期类型，同时影响每日摘要、课前提醒、流体云提醒和上课自动勿扰。</string>
+    <string name="reminder_date_rules_inactive">当前未生效。关闭时所有日期照常提醒，子选项会保留。</string>
+    <string name="reminder_date_rules_public_holiday">法定节假日提醒</string>
+    <string name="reminder_date_rules_transfer_holiday">调休放假日提醒</string>
+    <string name="reminder_date_rules_makeup_workday">补班日提醒</string>
+    <string name="reminder_date_rules_ordinary_weekend">普通周末提醒</string>
+    <string name="reminder_date_rules_advanced_title">节假日调休高级设置</string>
+    <string name="reminder_date_rules_advanced_button">打开节假日调休设置</string>
+    <string name="reminder_date_rules_advanced_subtitle">仅在开启时生效。映射按当前课表区分，周末不等于法定节假日，并影响四类提醒。</string>
     <string name="reminder_master_title">开启提醒</string>
     <string name="reminder_master_sub">允许 Sleepy 发送课程通知</string>
     <string name="reminder_daily_title">每日提醒</string>
@@ -1003,4 +1018,6 @@
     <string name="school_location_no_fix">暂未取得当前位置，请确认系统定位已开启后重试</string>
     <string name="school_location_accuracy_insufficient">位置精度不足或范围跨越城市，请重试或在定位权限设置中启用精准位置</string>
     <string name="school_location_permission_settings">定位权限设置</string>
+    <string name="reminder_class_dnd_title">上课自动勿扰</string>
+    <string name="reminder_class_dnd_sub">上课时段自动开启勿扰, 下课自动恢复</string>
 </resources>

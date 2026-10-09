@@ -1,10 +1,18 @@
 import org.gradle.api.tasks.testing.Test
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("com.google.devtools.ksp")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
+}
+
+ksp {
+    arg("room.schemaLocation", "$projectDir/schemas")
 }
 
 // 版本号从 git tag + docs/release-notes-*.md 派生 (2026-09-29 治理定案):
@@ -56,7 +64,7 @@ android {
         androidResources {
             localeFilters += listOf("zh-rCN", "zh-rTW", "en", "ja", "es")
         }
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        testInstrumentationRunner = "com.lingion.sleepy.SleepyRenderTestRunner"
     }
 
     // 发布签名: 优先用环境变量注入的 keystore (release.yml 从 GitHub Secret
@@ -129,6 +137,10 @@ android {
         }
     }
 
+    sourceSets.getByName("androidTest").assets.srcDir("schemas")
+
+    sourceSets.getByName("androidTest").assets.srcDir("schemas")
+
     lint {
         // 基线对齐 v1.0.57 (38 errors / 434 warnings):
         // 本次集成前仓库 lint 从非 0, 这些 id 全部是 AGP 9.1 新检查在既有代码上的
@@ -142,7 +154,10 @@ android {
             "UnusedBoxWithConstraintsScope",
             "ModifierParameter",
         )
+		lintConfig = file("${rootProject.projectDir}/app/lint.xml")
     }
+
+    sourceSets.getByName("main").assets.srcDir("schemas")
 
     splits {
         abi {
@@ -173,78 +188,59 @@ tasks.withType<Test>().configureEach {
 }
 
 dependencies {
-    val composeBom = platform("androidx.compose:compose-bom:2026.09.00")
+    val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     androidTestImplementation(composeBom)
 
     // Compose
-    implementation("androidx.compose.ui:ui")
-    implementation("androidx.compose.ui:ui-graphics")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    implementation("androidx.compose.material3:material3:1.5.0-alpha28")
-    implementation("androidx.compose.material3:material3-window-size-class:1.5.0-alpha28")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite:1.5.0-alpha28")
-    implementation("androidx.compose.material3.adaptive:adaptive")
-    implementation("androidx.compose.material3.adaptive:adaptive-layout")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.animation:animation")
-    implementation("androidx.compose.foundation:foundation")
+    implementation(libs.compose.ui.core)
+    implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.ui.tooling.preview)
+    implementation(libs.compose.material3.core)
+    implementation(libs.compose.material3.window.size)
+    implementation(libs.compose.material3.adaptive.navigation)
+    implementation(libs.compose.adaptive.core)
+    implementation(libs.compose.adaptive.layout)
+    implementation(libs.compose.material.icons)
+    implementation(libs.compose.animation)
+    implementation(libs.compose.foundation)
 
     // Activity + Lifecycle
-    implementation("androidx.core:core-ktx:1.17.0")
-    implementation("androidx.activity:activity-compose:1.13.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
-    implementation("androidx.lifecycle:lifecycle-process:2.8.7")
+    implementation(libs.androidx.core)
+    implementation(libs.activity.compose)
+    implementation(libs.lifecycle.runtime)
+    implementation(libs.lifecycle.viewmodel.compose)
+    implementation(libs.lifecycle.process)
 
     // Navigation
-    // issue#45: typed back stack + gesture-progress predictive back.
-    // 官方 navigation3 1.1.7 (kotlin-stdlib 2.1.20, 与本仓 Kotlin 2.2.0 编译器兼容;
-    // miuix-nav 0.9.4 metadata 2.4.0 超出 compiler 2.3.0 上限已弃用)。
-    implementation("androidx.navigation3:navigation3-runtime:1.1.7")
-    implementation("androidx.navigation3:navigation3-ui:1.1.7")
-    implementation("androidx.navigationevent:navigationevent-compose:1.1.2")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-navigation3:2.11.0")
+    implementation(libs.navigation3.runtime)
+    implementation(libs.navigation3.ui)
+    implementation(libs.navigation.event.compose)
+    implementation(libs.lifecycle.viewmodel.navigation3)
 
-    // DataStore (preferences)
-    implementation("androidx.datastore:datastore-preferences:1.1.1")
+    implementation(libs.datastore.preferences)
 
     // Room
-    val roomVersion = "2.7.0"
-    implementation("androidx.room:room-runtime:$roomVersion")
-    implementation("androidx.room:room-ktx:$roomVersion")
-    ksp("androidx.room:room-compiler:$roomVersion")
+    implementation(libs.room.runtime)
+    implementation(libs.room.ktx)
+    ksp(libs.room.compiler)
 
-    // Coroutines
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.8.1")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
-
-    // Kotlinx Serialization (JSON parsing for WakeUp JSON)
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.6.3")
-
-    // jsoup (HTML parsing for 教务直连 import)
-    implementation("org.jsoup:jsoup:1.18.1")
-
-    // WorkManager (Daily notifications)
-    // Glance 依赖已随死代码删除移除(决策 D5-11): 5 个生产 widget 全走 RemoteViews + Canvas bitmap
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
-
-    // Splash screen
-    implementation("androidx.core:core-splashscreen:1.0.1")
-
-    // Coil (image loading)
-    implementation("io.coil-kt:coil-compose:2.7.0")
+    implementation(libs.coroutines.core)
+    implementation(libs.coroutines.android)
+    implementation(libs.serialization.json)
+    implementation(libs.jsoup)
+    implementation(libs.work.runtime)
+    implementation(libs.core.splashscreen)
+    implementation(libs.coil.compose)
 
     // Test
-    testImplementation("junit:junit:4.13.2")
-    testImplementation("org.junit.jupiter:junit-jupiter-params:5.10.2")
-    testImplementation("org.json:json:20231013")
-    // issue#26: 迁移测试用 sqlite-jdbc 直接执行 MIGRATION_5_6_STATEMENTS(单一事实来源),
-    //             避免 Robolectric/Instrumentation 依赖(本仓库无)
-    testImplementation("org.xerial:sqlite-jdbc:3.53.4.0")
-    androidTestImplementation("androidx.test.ext:junit:1.2.1")
-    androidTestImplementation("androidx.test.espresso:espresso-core:3.6.1")
-    androidTestImplementation("androidx.compose.ui:ui-test-junit4")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    debugImplementation("androidx.compose.ui:ui-test-manifest")
+    testImplementation(libs.junit)
+    testImplementation(libs.junit.params)
+    testImplementation(libs.json)
+    testImplementation(libs.sqlite.jdbc)
+    androidTestImplementation(libs.androidx.test.junit)
+    androidTestImplementation(libs.espresso.core)
+    androidTestImplementation(libs.compose.ui.test.junit4)
+    debugImplementation(libs.compose.ui.tooling)
+    debugImplementation(libs.compose.ui.test.manifest)
 }

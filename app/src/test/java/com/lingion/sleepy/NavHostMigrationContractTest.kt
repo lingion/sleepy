@@ -547,7 +547,7 @@ class NavHostMigrationContractTest {
     // ─── issue#45 ③ 自适应导航: 官方有→官方, 官方无→保留自研 Dock ───
     @Test
     fun mainRoute_uses_official_nav_where_official_exists_and_keeps_self_dock() {
-        val route = balancedBlock(navHostSrc, "private fun MainRoute(", maxChars = 8000)
+        val route = balancedBlock(navHostSrc, "private fun MainRoute(", maxChars = 20000)
 
         // ③ 横屏/平板: 必须按 WindowWidthSizeClass 分支, 非 Compact 用官方 NavigationRail
         assertTrue(
@@ -558,9 +558,11 @@ class NavHostMigrationContractTest {
             "非 Compact 必须用官方 NavigationRail(官方有此形态)",
             Regex("""NavigationRail\s*\{""").containsMatchIn(route)
         )
+        // Master-Detail 设计 (2026-10-06): rail 内是自研 CombinedRailItem 跑道胶囊
+        // (Schedule + tab 图标组合), 不再用官方 NavigationRailItem。锁 CombinedRailItem 存在。
         assertTrue(
-            "NavigationRail 必须用官方 NavigationRailItem",
-            Regex("""NavigationRailItem\(""").containsMatchIn(route)
+            "宽屏 rail 必须自研 CombinedRailItem 跑道胶囊(替代 NavigationRailItem)",
+            Regex("""CombinedRailItem\(""").containsMatchIn(route)
         )
 
         // 贴底: 官方有 NavigationBar → 用官方, 不得再用自研 PillNavigationBar 贴底形态

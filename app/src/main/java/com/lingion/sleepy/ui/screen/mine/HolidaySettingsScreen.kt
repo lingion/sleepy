@@ -77,6 +77,7 @@ import com.lingion.sleepy.util.HolidayEntry
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.HolidayRange
 import com.lingion.sleepy.util.HolidayRangeOps
+import com.lingion.sleepy.widget.notification.ReminderRescheduler
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -140,7 +141,7 @@ fun HolidaySettingsScreen(
             kotlinx.coroutines.CoroutineScope(kotlinx.coroutines.Dispatchers.Default).launch {
                 try { com.lingion.sleepy.widget.WidgetUpdater.notifyDataChanged(app) } catch (_: Throwable) {}
                 try {
-                    (app as? com.lingion.sleepy.SleepyApp)?.notificationScheduler?.scheduleAll()
+                    ReminderRescheduler.request()
                 } catch (_: Throwable) {}
             }
         }
@@ -152,6 +153,7 @@ fun HolidaySettingsScreen(
         next.add(range)
         AppPrefs.setHolidayRanges(context, next)
         reload()
+        ReminderRescheduler.request()
     }
 
     /**
@@ -171,12 +173,14 @@ fun HolidaySettingsScreen(
         }
         AppPrefs.setHolidayRanges(context, next)
         reload()
+        ReminderRescheduler.request()
     }
 
     /** 恢复默认: 移除该 id 的覆盖(含 REMOVED 型), 网络段随之回来 */
     fun restoreRange(range: HolidayRange) {
         AppPrefs.setHolidayRanges(context, overrides.filter { it.id != range.id })
         reload()
+        ReminderRescheduler.request()
     }
 
     fun load(targetYear: Int, force: Boolean = false) {
@@ -193,6 +197,7 @@ fun HolidaySettingsScreen(
                 entries.isEmpty() && HolidayManager.isYearFetchFailed(targetYear) -> HolidayUiState.Failed
                 else -> HolidayUiState.Loaded(entries)
             }
+            if (force) ReminderRescheduler.request()
         }
     }
 
@@ -365,6 +370,11 @@ fun HolidaySettingsScreen(
                     Text(
                         text = if (tableId == null) stringResource(R.string.holiday_makeup_no_table)
                         else stringResource(R.string.holiday_makeup_subtitle),
+                        style = MaterialTheme.typography.bodySmall,
+                        color = colors.onSurfaceVariant
+                    )
+                    Text(
+                        text = stringResource(R.string.holiday_mapping_explanation),
                         style = MaterialTheme.typography.bodySmall,
                         color = colors.onSurfaceVariant
                     )

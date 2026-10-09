@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CornerBasedShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -126,6 +127,9 @@ internal data class SlotEditTarget(
 
 internal class MeetingBlockDraft(
     val id: Int,
+    /** 源 CourseEntity id 列表 — groupSlotsForEdit 切出的同组所有行, 用于按 PK 唯一匹配
+     *  editingCourse.id (单凭 day+startNode 模糊, 跨组 step/ownTime/week/room 歧义)。 */
+    val sourceIds: List<Long> = emptyList(),
     val days: androidx.compose.runtime.snapshots.SnapshotStateList<Int>,
     startNode: Int,
     step: Int,
@@ -253,6 +257,11 @@ fun AddCourseScreen(
         mutableStateListOf(initialMeetingBlock(editingCourse))
     }
 
+    // 用户从周/网格/今日视图点开某门课 → 编辑页要自动落到那颗胶囊所在时段卡。
+    // 同一门课可能挂 N 个时段(groupSlotsForEdit 切块), 默认顺序是 HashMap 迭代序 —
+    // 没有这一跳, 用户在 100+ 块里要手翻很久。
+    val listState = rememberLazyListState()
+
     // 编辑模式：查同 groupId 全部课程，按时段分组回填多个 block (issue#22 分组规则不变)
     LaunchedEffect(editingCourse?.groupId) {
         val eg = editingCourse
@@ -275,6 +284,7 @@ fun AddCourseScreen(
                     val isEdge = first.startNode in edgeNodes
                     meetingBlocks.add(MeetingBlockDraft(
                         id = bid++,
+                        sourceIds = courses.map { it.id },
                         days = androidx.compose.runtime.mutableStateListOf<Int>().apply {
                             addAll(courses.map { it.day }.distinct().sorted())
                         },
@@ -301,6 +311,24 @@ fun AddCourseScreen(
                     }
                 }
             }
+        }
+    }
+
+    // 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
+    // meetingBlocks 异步填充(group 加载完成时 size 跳变), 用 size 当 key 等待一次即可;
+    // v2(用户报障 2026-10-08): 单靠 day+startNode 模糊 — 跨组 (step / ownTime /
+    // weekRange / room / teacher) 任意一维不同的两组可共享 (day, startNode),
+    // indexOfFirst 命中错组。改用 editingCourse.id in block.sourceIds (CourseEntity
+    // 主键唯一, 块里记下 groupSlotsForEdit 切出的同组所有行 id)。
+    // v3(用户报障 2026-10-08): targetIdx>=0 才滚 — 即使 idx=0, "基础信息"header
+    // 也占用屏幕空间, 第一个时段块在 header 下方不可见, 必须滚。
+    LaunchedEffect(editingCourse?.id, meetingBlocks.size) {
+        val targetIdx = findTargetBlockIndex(meetingBlocks, editingCourse)
+        if (targetIdx >= 0) {
+            // LazyColumn 前面有 Spacer、基础信息、周次范围、时段标题 4 个 item；
+            // targetIdx 是 meetingBlocks 下标，不能直接当 LazyColumn 下标。
+            val headerItemCount = 4 + if (validationIssues.isNotEmpty()) 1 else 0
+            listState.animateScrollToItem(headerItemCount + targetIdx)
         }
     }
 
@@ -567,6 +595,7 @@ fun AddCourseScreen(
         containerColor = colors.background
     ) { padding ->
         LazyColumn(
+            state = listState,
             modifier = Modifier
                 .fillMaxSize()
                 .padding(padding)
@@ -820,13 +849,27 @@ fun AddCourseScreen(
 
 
 
-/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师 参与分组，
- *  保证「同节次不同周次」「同名多地点」「同名多老师」回填成多个 block 而不是被错误合并。
- *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块 */
+/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师/星期 参与分组，
+ *  保证「同节次不同周次」「同名多地点」「同名多老师」「同名不同星期」回填成多个 block 而不是被错误合并。
+ *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块
+ *  v4(用户报障 2026-10-08): day 进分组 key — 同节次不同星期被错误合并 → 必须分开 */
 internal fun groupSlotsForEdit(courses: List<CourseEntity>): List<List<CourseEntity>> =
     courses.groupBy { c ->
-        "${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
+        "${c.day}|${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
     }.values.toList()
+
+/** 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
+ *  纯函数供 JVM 直测: editingCourse?.id 命中 block.sourceIds 任意元素即该块。
+ *  v1(day+startNode 模糊) 在跨组歧义下错: e.g. 周一 1-2节(step=2) 与
+ *  周一 1节(step=1) 共享 (day=1, startNode=1), indexOfFirst 命中前者即滚错。
+ *  v2 改用 CourseEntity 主键, sourceIds 由 groupSlotsForEdit 切组时填入。 */
+internal fun findTargetBlockIndex(
+    blocks: List<MeetingBlockDraft>,
+    editingCourse: CourseEntity?
+): Int {
+    val eg = editingCourse ?: return -1
+    return blocks.indexOfFirst { block -> eg.id in block.sourceIds }
+}
 
 private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     if (course == null) {
@@ -842,6 +885,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     val days = androidx.compose.runtime.mutableStateListOf(course.day)
     return MeetingBlockDraft(
         id = 1,
+        sourceIds = listOf(course.id),
         days = days,
         startNode = course.startNode,
         step = course.step,
@@ -1585,6 +1629,9 @@ private fun IrregularOptionsSection(
                             }
                         } else {
                             // 关闭覆盖时间 → 回落槽位默认 / 标准节次时间
+                            // 用户报障 2026-10-08: 此前漏置 isIrregularTime=false, 开关拨回后
+                            // 状态仍为开 → UI 立即重绘回 ON, 表现为「无法关闭」
+                            block.isIrregularTime = false
                             block.startTime = ""
                             block.endTime = ""
                             block.durationText = ""

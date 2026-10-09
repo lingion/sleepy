@@ -37,7 +37,118 @@ class HolidayManagerTest {
     }
 
     @Test
-    fun parseEntries_sorts_and_keeps_supported_types() {
+    fun `effective entries preserve network rows removed by user overrides`() {
+        val effectiveEntry = HolidayEntry(holiday, "New Year", HolidayManager.TYPE_PUBLIC_HOLIDAY)
+        val result = HolidayManager.yearData(listOf(effectiveEntry), fetchFailed = false, hasCachedData = true)
+
+        assertEquals(listOf(effectiveEntry), result.entries)
+        assertTrue(result.available)
+    }
+
+    @Test
+    fun `merged user override participates in policy classification`() {
+        val override = HolidayRange(
+            id = "user-holiday",
+            name = "User holiday",
+            startDate = holiday,
+            endDate = holiday,
+            type = HolidayManager.TYPE_PUBLIC_HOLIDAY,
+            sourceKey = null,
+        )
+        val merged = HolidayRangeOps.mergeSegments(emptyList(), listOf(override))
+        val (holidays, workdays) = HolidayRangeOps.toSets(merged.active)
+        val result = HolidayReminderPolicy.decide(
+            date = holiday,
+            publicHolidays = holidays,
+            transferWorkdays = workdays,
+            transfers = emptyList(),
+            rulesEnabled = true,
+            publicHolidayReminder = false,
+            transferHolidayReminder = true,
+            makeupWorkdayReminder = true,
+            ordinaryWeekendReminder = true,
+            dataAvailable = true,
+        )
+
+        assertTrue(holiday in holidays)
+        assertEquals(HolidayReminderPolicy.Category.PUBLIC_HOLIDAY, result.category)
+        assertFalse(result.allowReminder)
+    }
+
+    @Test
+    fun `unavailable empty fetch is distinct from successful empty year`() {
+        val unavailable = HolidayManager.yearData(emptyList(), fetchFailed = true, hasCachedData = false)
+        val successfulEmpty = HolidayManager.yearData(emptyList(), fetchFailed = false, hasCachedData = true)
+
+        assertFalse(unavailable.available)
+        assertTrue(unavailable.entries.isEmpty())
+        val unavailableDecision = HolidayReminderPolicy.decide(
+            date = holiday,
+            publicHolidays = emptySet(),
+            transferWorkdays = emptySet(),
+            transfers = emptyList(),
+            rulesEnabled = true,
+            publicHolidayReminder = false,
+            transferHolidayReminder = false,
+            makeupWorkdayReminder = false,
+            ordinaryWeekendReminder = false,
+            dataAvailable = unavailable.available,
+        )
+        assertEquals(HolidayReminderPolicy.Category.DATA_UNAVAILABLE, unavailableDecision.category)
+        assertTrue(unavailableDecision.allowReminder)
+        assertTrue(successfulEmpty.available)
+        assertTrue(successfulEmpty.entries.isEmpty())
+    }
+
+    @Test
+    fun `override entries do not make failed network data available`() {
+        val override = listOf(HolidayEntry(holiday, "User holiday", HolidayManager.TYPE_PUBLIC_HOLIDAY))
+        val result = HolidayManager.yearData(override, fetchFailed = true, hasCachedData = false)
+
+        assertFalse(result.available)
+        val decision = HolidayReminderPolicy.decide(
+            date = holiday,
+            publicHolidays = setOf(holiday),
+            transferWorkdays = emptySet(),
+            transfers = emptyList(),
+            rulesEnabled = true,
+            publicHolidayReminder = false,
+            transferHolidayReminder = true,
+            makeupWorkdayReminder = true,
+            ordinaryWeekendReminder = true,
+            dataAvailable = result.available,
+        )
+        assertEquals(HolidayReminderPolicy.Category.DATA_UNAVAILABLE, decision.category)
+        assertTrue(decision.allowReminder)
+    }
+    @Test
+    fun `failed refresh with cache retains cached entries`() {
+        val cached = listOf(HolidayEntry(holiday, "New Year", HolidayManager.TYPE_PUBLIC_HOLIDAY))
+        val result = HolidayManager.refreshedEntries(cached, emptyList(), fetchFailed = true)
+
+        assertTrue(HolidayManager.yearData(result, fetchFailed = true, hasCachedData = true).available)
+        assertEquals(cached, result)
+    }
+
+    @Test
+    fun `failed refresh without cache returns unavailable empty data`() {
+        val result = HolidayManager.refreshedEntries(null, emptyList(), fetchFailed = true)
+
+        assertEquals(emptyList<HolidayEntry>(), result)
+        assertFalse(HolidayManager.yearData(result, fetchFailed = true, hasCachedData = false).available)
+    }
+
+    @Test
+    fun `successful empty refresh replaces cached data and remains available`() {
+        val cached = listOf(HolidayEntry(holiday, "New Year", HolidayManager.TYPE_PUBLIC_HOLIDAY))
+        val result = HolidayManager.refreshedEntries(cached, emptyList(), fetchFailed = false)
+
+        assertTrue(result.isEmpty())
+        assertTrue(HolidayManager.yearData(result, fetchFailed = false, hasCachedData = true).available)
+    }
+
+    @Test
+    fun `parseEntries sorts and keeps supported types`() {
         val json = """{"year":2025,"dates":[
             {"date":"2025-01-26","name":"春节","type":"transfer_workday"},
             {"date":"2025-01-01","name":"元旦","type":"public_holiday"}]}"""

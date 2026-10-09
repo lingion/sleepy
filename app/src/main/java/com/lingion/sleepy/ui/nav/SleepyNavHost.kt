@@ -1,13 +1,21 @@
 package com.lingion.sleepy.ui.nav
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.statusBars
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.ui.draw.clip
 import androidx.compose.foundation.layout.windowInsetsPadding
 import androidx.compose.material3.Icon
 import androidx.compose.material3.NavigationBar
@@ -31,12 +39,18 @@ import androidx.compose.runtime.setValue
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.runtime.saveable.SaveableStateHolder
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
+import androidx.compose.animation.core.tween
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
@@ -76,6 +90,9 @@ import com.lingion.sleepy.ui.screen.schedule.ScheduleScreen
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.screen.schedule.ViewMode
 import com.lingion.sleepy.ui.screen.today.TodayScreen
+import com.lingion.sleepy.ui.screen.today.CompactTodayPane
+import com.lingion.sleepy.ui.screen.manage.ManagementPage
+import com.lingion.sleepy.ui.screen.mine.MineScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetEditScreen
 import com.lingion.sleepy.ui.screen.widget.WidgetManagementScreen
 import com.lingion.sleepy.ui.theme.SleepyTheme
@@ -291,7 +308,10 @@ internal fun SleepyNavHost(
         }
 
         entry<SleepyRoute.Reminder> {
-            ReminderScreen(onBack = { navigator.pop() })
+            ReminderScreen(
+                onBack = { navigator.pop() },
+                onOpenHoliday = { navigator.openHoliday() },
+            )
         }
 
         entry<SleepyRoute.About> {
@@ -404,35 +424,170 @@ private fun MainRoute(
     val isCompact = sizeClass == null || sizeClass.widthSizeClass == WindowWidthSizeClass.Compact
 
     if (!isCompact) {
+        // 平板宽屏 Master-Detail (PLAN:wide-merged):
+        // 左 50% = ScheduleScreen 永久固定;右 50% = Today/Manage/Mine (跟用户切 rail 项);
+        // Rail: 当前选中的 tab 跟 Schedule 组合成跑道胶囊(高亮),其它两个普通单图标。
+        // 默认 currentTab = Tab.Schedule (Compact 分支默认),宽屏派生为 Tab.Today
+        // 让右半默认显示今日、slot 1 胶囊默认高亮,两侧一致。
+        // 红点显示条件 = 真实 updateNoticeVisible (云端有新 release + 用户未 dismiss)。
+        val effectiveRightTab: Tab = if (currentTab == Tab.Schedule) Tab.Today else currentTab
+        val onTabletEditCourse: (CourseEntity) -> Unit = { course ->
+            navigator.session.beginEditCourse(course)
+            navigator.openAddCourse(course.id, editing = true)
+        }
+        val onTabletGoImport: () -> Unit = {
+            com.lingion.sleepy.MainActivity.autoShowImportOnceState.value = true
+            setCurrentTab(Tab.Manage)
+        }
+        val onTabletManualAdd: () -> Unit = { navigator.openAddCourse() }
+        val colors = MaterialTheme.colorScheme
         Row(
             modifier = Modifier
                 .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
+                .background(colors.background)
                 .windowInsetsPadding(WindowInsets.statusBars)
         ) {
             NavigationRail {
-                Tab.entries.forEach { tab ->
-                    NavigationRailItem(
-                        selected = currentTab == tab,
-                        onClick = { setCurrentTab(tab) },
-                        icon = { NavigationTabIcon(tab, showUpdateDot = updateNoticeVisible && tab == Tab.Mine) },
-                        label = { Text(stringResource(tab.labelRes)) },
-                    )
+                // 当前选中的 tab 跟 Schedule 组合成跑道胶囊(强高亮 primaryContainer);
+                // 其它两个 tab 是普通 NavigationRailItem 单图标(标准 selected 态)。
+                when (effectiveRightTab) {
+                    Tab.Today -> {
+                        CombinedRailItem(
+                            selected = true,
+                            scheduleIcon = Tab.Schedule.icon,
+                            tabIcon = Tab.Today.icon,
+                            tabShowUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Today) },
+                        )
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Manage,
+                            showUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Manage) },
+                        )
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Mine,
+                            showUpdateDot = updateNoticeVisible,
+                            onClick = { setCurrentTab(Tab.Mine) },
+                        )
+                    }
+                    Tab.Manage -> {
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Today,
+                            showUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Today) },
+                        )
+                        CombinedRailItem(
+                            selected = true,
+                            scheduleIcon = Tab.Schedule.icon,
+                            tabIcon = Tab.Manage.icon,
+                            tabShowUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Manage) },
+                        )
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Mine,
+                            showUpdateDot = updateNoticeVisible,
+                            onClick = { setCurrentTab(Tab.Mine) },
+                        )
+                    }
+                    Tab.Mine -> {
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Today,
+                            showUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Today) },
+                        )
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Manage,
+                            showUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Manage) },
+                        )
+                        CombinedRailItem(
+                            selected = true,
+                            scheduleIcon = Tab.Schedule.icon,
+                            tabIcon = Tab.Mine.icon,
+                            tabShowUpdateDot = updateNoticeVisible,
+                            onClick = { setCurrentTab(Tab.Mine) },
+                        )
+                    }
+                    else -> {
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Today,
+                            showUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Today) },
+                        )
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Manage,
+                            showUpdateDot = false,
+                            onClick = { setCurrentTab(Tab.Manage) },
+                        )
+                        PlainRailItem(
+                            selected = false,
+                            tab = Tab.Mine,
+                            showUpdateDot = updateNoticeVisible,
+                            onClick = { setCurrentTab(Tab.Mine) },
+                        )
+                    }
                 }
             }
-            Box(modifier = Modifier.fillMaxSize().weight(1f)) {
-                MainTabs(
-                    currentTab = currentTab,
-                    setCurrentTab = setCurrentTab,
-                    navigator = navigator,
-                    mainVm = mainVm,
-                    mainScope = mainScope,
-                    viewMode = scheduleViewMode,
-                    onViewModeChange = onScheduleViewModeChange,
-                    onCreateNewTable = onCreateNewTable,
-                    holder = holder,
-                    updateNoticeVisible = updateNoticeVisible,
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .weight(1f)
+                    .padding(horizontal = 16.dp, vertical = 12.dp),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                // 左: 课表永久固定 (地球毁灭也不变)
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(colors.surfaceContainerLow)
+                ) {
+                    ScheduleScreen(
+                        viewMode = scheduleViewMode,
+                        onViewModeChange = onScheduleViewModeChange,
+                        onGoImport = onTabletGoImport,
+                        onManualAdd = onTabletManualAdd,
+                        onCreateTable = onCreateNewTable,
+                        onEditCourse = onTabletEditCourse,
+                        viewModel = mainVm,
+                    )
+                }
+                // 暗色 gap — 12dp 沟槽 (背景 = background)
+                Box(
+                    modifier = Modifier
+                        .width(12.dp)
+                        .fillMaxSize()
+                        .background(colors.background)
                 )
+                // 右: AnimatedContent 切换 Today/Manage/Mine
+                Box(
+                    modifier = Modifier
+                        .weight(1f)
+                        .fillMaxSize()
+                        .clip(RoundedCornerShape(16.dp))
+                        .background(colors.surfaceContainerLow)
+                ) {
+                    RightHalfContent(
+                        currentTab = effectiveRightTab,
+                        mainVm = mainVm,
+                        navigator = navigator,
+                        ctx = ctxForExit,
+                        onTabletEditCourse = onTabletEditCourse,
+                        onTabletGoImport = onTabletGoImport,
+                        onTabletManualAdd = onTabletManualAdd,
+                        onCreateNewTable = onCreateNewTable,
+                        onNavigateManageTab = { setCurrentTab(Tab.Manage) },
+                    )
+                }
             }
         }
     } else if (navDock) {
@@ -538,3 +693,179 @@ private fun NavigationTabIcon(tab: Tab, showUpdateDot: Boolean) {
         )
     }
 }
+
+/**
+ * Master-Detail 跑道胶囊导航项 — Schedule + 任意 tab 图标组合,无 label。
+ * 56dp 宽 × 64dp 高;上下两半各塞图标,中线分隔;选中整组**强高亮**(primaryContainer)。
+ * 自研容器,绕开 NavigationRailItem 默认 24dp 图标槽位。
+ * `tabShowUpdateDot` = true 时在"从 tab"图标右上角画 7dp 红点(原 NavigationTabIcon 风格)。
+ */
+@Composable
+private fun CombinedRailItem(
+    selected: Boolean,
+    scheduleIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    tabIcon: androidx.compose.ui.graphics.vector.ImageVector,
+    tabShowUpdateDot: Boolean = false,
+    onClick: () -> Unit,
+) {
+    val colors = MaterialTheme.colorScheme
+    val containerColor = if (selected) colors.primaryContainer else androidx.compose.ui.graphics.Color.Transparent
+    val iconColor = if (selected) colors.onPrimaryContainer else colors.onSurfaceVariant
+    Column(
+        modifier = Modifier
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            .clickable(onClick = onClick),
+        horizontalAlignment = Alignment.CenterHorizontally,
+    ) {
+        Column(
+            modifier = Modifier
+                .width(56.dp)
+                .clip(RoundedCornerShape(percent = 50))
+                .background(containerColor)
+                .padding(vertical = 4.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+        ) {
+            Box(
+                modifier = Modifier.size(28.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(scheduleIcon, contentDescription = "课表", tint = iconColor, modifier = Modifier.size(22.dp))
+            }
+            HorizontalDivider(
+                modifier = Modifier.padding(horizontal = 10.dp),
+                thickness = 0.5.dp,
+                color = colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.hairline),
+            )
+            Box(
+                modifier = Modifier.size(28.dp),
+                contentAlignment = Alignment.Center,
+            ) {
+                Icon(tabIcon, contentDescription = "从 tab", tint = iconColor, modifier = Modifier.size(22.dp))
+                if (tabShowUpdateDot) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.TopEnd)
+                            .size(7.dp)
+                            .background(colors.primary, androidx.compose.foundation.shape.CircleShape)
+                    )
+                }
+            }
+        }
+    }
+}
+
+/**
+ * Master-Detail 普通 rail 项 — 单图标 + 标准 NavigationRailItem 风格。
+ * 用于"当前选中胶囊"以外的另两个 tab。
+ */
+@Composable
+private fun PlainRailItem(
+    selected: Boolean,
+    tab: Tab,
+    showUpdateDot: Boolean,
+    onClick: () -> Unit,
+) {
+    NavigationRailItem(
+        selected = selected,
+        onClick = onClick,
+        icon = { NavigationTabIcon(tab, showUpdateDot = showUpdateDot) },
+        label = { Text(stringResource(tab.labelRes)) },
+    )
+}
+
+/**
+ * 右半边内容 — AnimatedContent 包 3 个子页 (Today / Manage / Mine)。
+ * 200ms 渐隐渐显。子页面跳转回调全部接到 navigator (避免空 lambda 让按钮"点不动")。
+ */
+@Composable
+private fun RightHalfContent(
+    currentTab: Tab,
+    mainVm: ScheduleViewModel,
+    navigator: SleepyNavigator,
+    ctx: android.content.Context,
+    onTabletEditCourse: (CourseEntity) -> Unit,
+    onTabletGoImport: () -> Unit,
+    onTabletManualAdd: () -> Unit,
+    onCreateNewTable: () -> Unit,
+    onNavigateManageTab: () -> Unit,
+) {
+    // 导入草稿来源 — 与 MainTabs (Compact) 同源
+    val draftEntities by com.lingion.sleepy.SleepyApp.get().importDraftRepository
+        .observeAll().collectAsState(initial = emptyList())
+    val drafts: List<com.lingion.sleepy.ui.screen.imports.ImportDraft> =
+        draftEntities.mapNotNull { entity ->
+            val snapshot = com.lingion.sleepy.data.jw.JwImportDraftCodec.fromJson(entity.payloadJson)
+                ?: return@mapNotNull null
+            com.lingion.sleepy.ui.screen.imports.ImportDraft(
+                id = entity.id,
+                name = snapshot.tableName.ifBlank { snapshot.school.name },
+                details = "${snapshot.courses.size} ${stringResource(com.lingion.sleepy.R.string.import_courses)}",
+            )
+        }
+    val draftScope = androidx.compose.runtime.rememberCoroutineScope()
+    AnimatedContent(
+        targetState = currentTab,
+        transitionSpec = {
+            fadeIn(animationSpec = tween(200)) togetherWith fadeOut(animationSpec = tween(200))
+        },
+        label = "right-half-tab-switch",
+    ) { tab ->
+        when (tab) {
+            Tab.Today -> CompactTodayPane(
+                onEditCourse = onTabletEditCourse,
+                viewModel = mainVm,
+            )
+            Tab.Manage -> ManagementPage(
+                autoShowImportSheet = com.lingion.sleepy.MainActivity.autoShowImportOnceState.value
+                    || com.lingion.sleepy.MainActivity.pendingImportText != null,
+                onJwImportRequested = {
+                    ctx.startActivity(android.content.Intent(
+                        ctx,
+                        com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
+                    ))
+                },
+                onCreateNewTableRequested = onCreateNewTable,
+                onCreateNewPeriodTableRequested = { newId -> navigator.createPeriodTableAndEdit(newId) },
+                onManualAdd = onTabletManualAdd,
+                onEditCurrentTable = { navigator.openEditTable() },
+                onExportRequested = { navigator.openExport() },
+                onOpenAllTables = { navigator.openAllTables() },
+                drafts = drafts,
+                onRestoreDraft = { id ->
+                    ctx.startActivity(
+                        android.content.Intent(
+                            ctx,
+                            com.lingion.sleepy.ui.screen.imports.JwImportActivity::class.java
+                        ).putExtra(
+                            com.lingion.sleepy.ui.screen.imports.JwImportActivity.EXTRA_DRAFT_ID,
+                            id
+                        )
+                    )
+                },
+                onDeleteDraft = { id ->
+                    draftScope.launch {
+                        com.lingion.sleepy.SleepyApp.get().importDraftRepository.delete(id)
+                    }
+                },
+                onImported = { /* 留在管理页, 摘要卡就地刷新 */ },
+                viewModel = mainVm,
+            )
+            Tab.Mine -> MineScreen(
+                viewModel = mainVm,
+                onOpenAllTables = { navigator.openAllTables() },
+                onOpenCourseList = { navigator.openCourseList() },
+                onOpenPeriodTables = { navigator.openPeriodTables() },
+                onOpenAppearance = { navigator.openAppearance() },
+                onOpenGeneral = { navigator.openGeneral() },
+                onOpenExport = { navigator.openExport() },
+                onOpenReminder = { navigator.openReminder() },
+                onOpenAbout = { navigator.openAbout() },
+            )
+            else -> CompactTodayPane(
+                onEditCourse = onTabletEditCourse,
+                viewModel = mainVm,
+            )
+        }
+    }
+}
+

@@ -1,0 +1,34 @@
+{
+  "school": "SEU",
+  "date": "2026-10-09",
+  "queries_run": [
+    {
+      "query": "seu+timetable",
+      "api": "search/repositories",
+      "results": [
+        {"name": "Haa1024/SEU-Timetable", "stars": 5, "lang": "Kotlin", "desc": "东南大学课程表App"},
+        {"name": "OFRabby/seu-routine-maker", "stars": 0, "lang": null, "desc": null}
+      ]
+    },
+    {
+      "query": "WakeUp+schedule",
+      "api": "search/repositories", 
+      "results": [
+        {"name": "YZune/WakeUpSchedule", "stars": 29, "lang": "Java", "desc": "WakeUpSchedule Android"},
+        {"name": "tKM9WsmQUaUgNttn3DGUsHkxG8/WakeupSchedule_Kotlin", "stars": 30, "forks": 76, "lang": "Kotlin", "desc": "WakeUp Kotlin fork"},
+        {"name": "ThaiCao/WakeupSchedule_Kotlin", "stars": 0, "lang": "Kotlin", "desc": null}
+      ]
+    }
+  ],
+  "findings": {
+    "seu_protocol_v2": {
+      "endpoint": "jwgl.seu.edu.cn/xsglapp/sys/xsxkapp/*/xskcb.do",
+      "response_format": "{datas: {xskcb: {rows: []}}}",
+      "source": "用户采集包"
+    },
+    "wakeup_reference": {
+      "YZune/WakeUpSchedule": "Java 原始实现, SEU adapter 未直接复用",
+      "tKM9WsmQUaUgNttn3DGUsHkxG8": "Kotlin fork, 76 forks, 协议适配参考"
+    }
+  }
+}

@@ -87,6 +87,8 @@
     <string name="edit_table_start_date">學期開始日期</string>
     <string name="edit_table_start_date_hint">例如 2026-02-24</string>
     <string name="edit_table_max_week">總週數</string>
+    <string name="edit_table_reminder_enable">本表參與提醒</string>
+    <string name="edit_table_reminder_desc">關閉後，本課表不再發送課前提醒、每日課表摘要與流體雲</string>
     <string name="edit_table_time_slots">作息表</string>
     <string name="edit_table_delete">刪除課表</string>
     <string name="edit_table_save">儲存課表設定</string>
@@ -468,6 +470,8 @@
     <string name="jw_nav_hint">導航到「個人課表」頁，再點右側按鈕</string>
     <string name="jw_import_page">匯入此頁</string>
     <string name="jw_fetch_timeout">抓取逾時：教務伺服器長時間無回應，請檢查網路後重試</string>
+    <string name="jw_fetch_fallback_periods">節次時間介面未回傳，已按西南交通大學標準作息自動填入</string>
+    <string name="jw_fetch_no_periods">未能從教務介面取得節次時間，已按西南交通大學標準作息填入（可在課表設定中調整）</string>
     <string name="jw_fetch_no_courses">抓取成功但未解析到課程：請確認頁面已顯示本學期課表且學期選擇正確</string>
     <string name="jw_refresh">刷新當前頁面</string>
     <string name="jw_edit_url">編輯當前網址</string>
@@ -813,6 +817,16 @@
     <string name="reminder_master_title">開啟提醒</string>
     <string name="reminder_pick_time">選擇提醒時間</string>
     <string name="reminder_title">提醒</string>
+    <string name="reminder_date_rules_title">依日期設定提醒</string>
+    <string name="reminder_date_rules_subtitle">關閉時所有日期照常發送提醒；開啟後可分別設定日期類型，同時影響每日摘要、課前提醒、流體雲提醒與上課自動勿擾。</string>
+    <string name="reminder_date_rules_inactive">目前未生效。關閉時所有日期照常提醒，子選項會保留。</string>
+    <string name="reminder_date_rules_public_holiday">法定假日提醒</string>
+    <string name="reminder_date_rules_transfer_holiday">調休放假日提醒</string>
+    <string name="reminder_date_rules_makeup_workday">補班日提醒</string>
+    <string name="reminder_date_rules_ordinary_weekend">一般週末提醒</string>
+    <string name="reminder_date_rules_advanced_title">假日調休進階設定</string>
+    <string name="reminder_date_rules_advanced_button">開啟假日設定</string>
+    <string name="reminder_date_rules_advanced_subtitle">僅在開啟時生效。映射依目前課表區分，週末不等於法定假日，並影響四種提醒。</string>
     <string name="school_count_supported">已支援 %1$d</string>
     <string name="school_count_total">共 %1$d 所</string>
     <string name="school_pinyin_hint">支援拼音首字母 / 學校英文簡稱 (如 hrbeu)</string>
@@ -849,6 +863,7 @@
     <string name="settings_holiday_title">假日課程灰顯</string>
     <string name="holiday_makeup_title">補班日依哪天上課</string>
     <string name="holiday_makeup_subtitle">每張課表個別設定。未設定的補班日照常顯示當天課表，不會替你猜測。</string>
+    <string name="holiday_mapping_explanation">未設定的法定假日仍會按法定假日處理；對應只套用於目前課表，補班日以資料為準。對應會影響課程來源及四種提醒途徑（每日摘要、課前提醒、流體雲、自動勿擾）。一般使用者不需要設定，除非學校有特殊安排。</string>
     <string name="holiday_makeup_unset">無</string>
     <string name="holiday_transfer_pick_other">其他日期…</string>
     <string name="holiday_transfer_edit_segment">編輯本假期段</string>
@@ -1009,4 +1024,6 @@
     <string name="school_location_no_fix">尚未取得目前位置，請確認系統定位已開啟後重試</string>
     <string name="school_location_accuracy_insufficient">位置精度不足或範圍跨越城市，請重試或在定位權限設定啟用精準位置</string>
     <string name="school_location_permission_settings">定位權限設定</string>
+    <string name="reminder_class_dnd_title">上課自動勿擾</string>
+    <string name="reminder_class_dnd_sub">上課時段自動開啟勿擾, 下課自動恢復</string>
 </resources>

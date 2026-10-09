@@ -149,6 +149,7 @@ fun JwWebViewLoginScreen(
     val sepPortalHintMsg = stringResource(R.string.jw_err_ucas_sep_portal)
     val fetchTimeoutMsg = stringResource(R.string.jw_fetch_timeout)
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
+    val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
     val urlInvalidMsg = stringResource(R.string.jw_url_invalid)
 
     // wisedu (金智) 协议：WebView 内 fetch 课表 JSON 的回调结果处理
@@ -193,7 +194,21 @@ fun JwWebViewLoginScreen(
                     var termStart = termStartDate
                     if (periods.isEmpty() && school.type == JwProtocol.TYPE_YETHAN) {
                         try {
-                            val cfg = obj.optJSONObject("yethanConfig")?.optJSONObject("data")
+                            val cfgObj = obj.optJSONObject("yethanConfig")
+                            val cfg = cfgObj?.optJSONObject("data")
+                            // 诊断指纹（2026-10-08 用户反馈"导入成功但无作息表"）：
+                            // config 业务码 + data 实际类型。该平台失败用 HTTP 200 +
+                            // 业务 401 包裹，data 也可能是数组而非对象 —— 两者都会让
+                            // 下面的 termLessonStr 静默取空。留痕后提示手填。
+                            val configCode = obj.optString("yethanConfigCode", "")
+                            val cfgKind = when {
+                                cfgObj == null -> "no-yethanConfig"
+                                cfg != null -> "object"
+                                cfgObj.opt("data") != null -> "data-is-" +
+                                    (cfgObj.opt("data")?.javaClass?.simpleName?.lowercase() ?: "unknown")
+                                else -> "no-data"
+                            }
+                            Log.w("JwWebView", "yethan periods empty: configCode=$configCode cfgKind=$cfgKind")
                             val lessonStr = cfg?.optString("termLessonStr").orEmpty()
                             if (lessonStr.isNotBlank()) {
                                 val slots = lessonStr.split(',').mapNotNull { seg ->
@@ -208,6 +223,15 @@ fun JwWebViewLoginScreen(
                             if (termStart.isBlank() && cfgStart.isNotBlank()) termStart = cfgStart
                         } catch (e: Exception) {
                             Log.w("JwWebView", "yethanConfig parse failed", e)
+                        }
+                        // 接口拿不到节次时间 → 官方标准作息兜底（用户实测：选课界面
+                        // 本就不显示节次时间，common-config 疑似已不返回 termLessonStr）。
+                        if (periods.isEmpty()) {
+                            periods.addAll(YETHAN_FALLBACK_PERIODS.mapIndexed { i, (s, e2) ->
+                                Triple(i + 1, s, e2)
+                            })
+                            Log.w("JwWebView", "yethan periods filled from SWJTU standard timetable fallback (13 nodes)")
+                            scope.launch { snackbar.showSnackbar(fetchFallbackPeriodsMsg) }
                         }
                     }
                     val effectiveStartDate = termStart.ifBlank { termStartDate }
@@ -426,8 +450,9 @@ fun JwWebViewLoginScreen(
                         evaluateFetchWithTimeout(wv, KUST_FETCH_JS)
                         return@CaptureBar
                     }
-                    // SWJTU YETHAN 逐专平台：CAS 登录后从 localStorage 取 ytoken，
+                    // SWJTU YETHAN 逐专平台：登录后从 cookie 取 ytoken（getItem 兜底），
                     // 同源 GET 课表 JSON；不发送采集包中的真实 token。
+                    // 取不到 token 也照发请求，靠 Cookie 自动携带 + 接口码判登录态。
                     if (school.type == JwProtocol.TYPE_YETHAN) {
                         evaluateFetchWithTimeout(wv, YETHAN_FETCH_JS)
                         return@CaptureBar
@@ -1057,6 +1082,34 @@ const val NEU_FETCH_JS = """
 """
 
 /**
+ * SWJTU 犀浦/九里两校区统一标准作息（13 节）—— YETHAN 节次时间兜底。
+ *
+ * 来源：西南交通大学官方通知《关于调整教学时间的通知》
+ * https://news.swjtu.edu.cn/info/1020/80965.htm（校长办公室/教务处/研究生院
+ * 2025-05-21 发布，自 2025-2026 学年第一学期起执行，两校区统一）。
+ *
+ * 为什么写死（2026-10-08 用户实测）：逐专平台选课界面本就不显示节次时间，
+ * common-config 接口侧疑似已不返回 termLessonStr（2026-09-15 采集包实锤过
+ * 该字段，之后平台行为变化）——接口优先、此处兜底，导入后免手填作息。
+ * 学校调整作息属低频事件（上一版执行多年），变化时改此一处即可。
+ */
+private val YETHAN_FALLBACK_PERIODS: List<Pair<String, String>> = listOf(
+    "08:00" to "08:45",   // 第01节
+    "08:50" to "09:35",   // 第02节
+    "09:50" to "10:35",   // 第03节
+    "10:40" to "11:25",   // 第04节
+    "11:30" to "12:15",   // 第05节
+    "14:00" to "14:45",   // 第06节
+    "14:50" to "15:35",   // 第07节
+    "15:40" to "16:25",   // 第08节
+    "16:40" to "17:25",   // 第09节
+    "17:30" to "18:15",   // 第10节
+    "19:30" to "20:15",   // 第11节
+    "20:20" to "21:05",   // 第12节
+    "21:10" to "21:55",   // 第13节
+)
+
+/**
  * CQU (重庆大学门户 my.cqu.edu.cn) 协议：在 WebView 内 fetch 课表 JSON + 抓节次时间。
  *
  * 前提：用户已在 WebView 里登录统一身份认证（2026-06 起含动态验证码双因素，人工输入即可）
@@ -1079,13 +1132,28 @@ private const val YETHAN_FETCH_JS = """
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'请先登录西南交通大学逐专平台后再点导入'}));
       return;
     }
+    // ytoken 取法（2026-10-08 诊断包实锤）：逐专平台的 JWT 只存在 **Cookie**，
+    // localStorage 里根本没有（storage.json 全空；同刻平台自身请求带有效 JWT
+    // 但无任何 JS 干预 → 只能是 Cookie 自动携带）。旧实现只读 localStorage，
+    // 取到空串后误判"未登录"提前 return，课表请求从未发出。
+    // 顺序：cookie → localStorage 兜底（兼容未来平台改存储方式）。
+    // 若 ytoken 为 HttpOnly，两者都读不到 → 不发 ytoken 头，靠 credentials:'include'
+    // 自动携带 Cookie（该路径已被平台自身请求证明可行）。因此**不因取不到 token 就
+    // 提前 return**，而是照常发请求，用接口返回码判定登录态（比猜存储位置可靠）。
     var token = '';
-    try { token = localStorage.getItem('ytoken') || ''; } catch(e) {}
+    try {
+      var cm = document.cookie.match(/(?:^|;\s*)ytoken=([^;]+)/);
+      if (cm) token = decodeURIComponent(cm[1]);
+    } catch(e) {}
     if (!token) {
-      // 按页面标记区分卡点 (2026-09-16 用户复测: 微信扫码页点导入, 旧文案不指路):
-      //   ① 微信扫码页: 「使用微信扫一扫登录」/「微信登录」入口标记
-      //   ② 账号密码页: password 输入框
-      //   ③ 其余: 通用文案
+      try { token = localStorage.getItem('ytoken') || ''; } catch(e) {}
+    }
+    // token 有值才发 ytoken 头；无值仅靠 Cookie，同样能通过鉴权
+    var headers = {Accept:'application/json'};
+    if (token) headers['ytoken'] = token;
+
+    /** 登录页文案提示（仅在确认未登录时使用） */
+    var loginHint = function() {
       var pageHint = '';
       try {
         var lower = (document.body ? document.body.innerText : '') || '';
@@ -1095,11 +1163,9 @@ private const val YETHAN_FETCH_JS = """
           pageHint = '当前停在账号密码登录页：请输入学号密码和验证码完成登录，登录完成后再点导入';
         }
       } catch(e2) {}
-      if (!pageHint) pageHint = '未取到登录凭据，请先登录逐专平台后再点导入';
-      window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:pageHint}));
-      return;
-    }
-    var headers = {Accept:'application/json', 'ytoken':token};
+      return pageHint || '未取到登录凭据，请先登录逐专平台后再点导入';
+    };
+
     var get = function(path) {
       return fetch(path, {method:'GET', credentials:'include', headers:headers}).then(function(r) {
         return r.text().then(function(txt) {
@@ -1116,12 +1182,25 @@ private const val YETHAN_FETCH_JS = """
       var config = JSON.parse(values[1]);
       if (!schedule || (schedule.code !== '00000' && schedule.code !== 0)) {
         var code = schedule && schedule.code ? String(schedule.code) : 'unknown';
+        // 失效码 401/A0230/A0422 → 登录态过期；无 code → 多半是未登录（接口返回登录页）
+        if (code === '401' || code === 'A0230' || code === 'A0422') {
+          throw new Error('登录态已过期（' + code + '），请刷新重登后再点导入');
+        }
+        if (code === 'unknown') {
+          throw new Error(loginHint());
+        }
         throw new Error('课表接口返回 ' + code + '（登录态可能已过期，请刷新重登）');
       }
+      // config 业务码回传（2026-10-08 实测：该平台失败用 HTTP 200 + 业务 401 包裹，
+      // 只查 schedule.code 会静默放行 config 失败 → 节次时间静默缺失）。
+      // config 失败不阻断导入（课表已到手），回传码供 Kotlin 端提示"手填节次"。
+      var configCode = '';
+      try { configCode = config && config.code != null ? String(config.code) : ''; } catch(e3) {}
       window.__sleepyBridge.onWiseduResult(JSON.stringify({
         ok:true,
         data:values[0],
-        yethanConfig:config
+        yethanConfig:config,
+        yethanConfigCode:configCode
       }));
     }).catch(function(e){
       window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:String(e)}));
@@ -1648,6 +1727,19 @@ private const val EAMS5_FETCH_JS = """
       return;
     }
     var PREFIX = '__EAMS5_PREFIX__';
+    // 合工大当前课表页把当前学期放在 #allSemesters 的 selected option 中，
+    // 而不是写成 semesterId=...；没有它时 get-data 会返回 500 (issue #46).
+    var extractSemesterId = function(source) {
+      var options = source.match(/<option\b[^>]*>/gi) || [];
+      for (var oi = 0; oi < options.length; oi++) {
+        if (!/\bselected(?:\s*=\s*["']?selected["']?)?\b/i.test(options[oi])) continue;
+        var selectedValue = options[oi].match(/\bvalue\s*=\s*["']?(\d+)/i);
+        if (selectedValue) return selectedValue[1];
+      }
+      var explicit = source.match(/semesterId\s*[=:]\s*["']?(\d+)/i);
+      if (explicit) return explicit[1];
+      return null;
+    };
     // 1) GET course-table 拿 studentId (Cookie 已带)。
     //    fetch 默认跟随重定向: 已登录 → /for-std/course-table 重定向到
     //    /for-std/course-table/info/<studentId>, 页面 HTML <script> 段里有
@@ -1660,6 +1752,7 @@ private const val EAMS5_FETCH_JS = """
     })
     .then(function(ctx){
       var html = ctx.html || '';
+      var extractedSemester = extractSemesterId(html);
       // 检测会话失效: 最终 URL 含 /login (302 落到登录页)
       if (ctx.finalUrl.indexOf('/login') >= 0 || ctx.finalUrl.indexOf('login?') >= 0) {
         window.__sleepyBridge.onWiseduResult(JSON.stringify({ok:false, err:'登录态已失效,请在教务主页重新登录后再试'}));
@@ -1687,9 +1780,8 @@ private const val EAMS5_FETCH_JS = """
         if (m) sid = m[1];
       }
       if (!sid) return null;
-      // semesterId 若本页 script 段带就顺手拿 (get-data 查询参数), 拿不到留空由 info 页兜底
-      var sem = html.match(/semesterId\s*[=:]\s*['"]?(\d+)/);
-      return {studentId: sid, semesterId: sem ? sem[1] : ''};
+      var sem = extractedSemester;
+      return {studentId: sid, semesterId: sem || ''};
     })
     .then(function(ctx){
       if (!ctx) {
@@ -1707,10 +1799,7 @@ private const val EAMS5_FETCH_JS = """
         if (infoHtml) {
           var bm = infoHtml.match(/bizTypeId\s*[=:]\s*['"]?(\d+)/);
           if (bm) biz = bm[1];
-          if (!sem) {
-            var sm = infoHtml.match(/semesterId\s*[=:]\s*['"]?(\d+)/);
-            if (sm) sem = sm[1];
-          }
+          if (!sem) sem = extractSemesterId(infoHtml);
         }
         // 3) get-data 拿 lessonIds[]; 任一环失败 → ids 留空数组 = v1 旧行为兜底
         var q = '/for-std/course-table/get-data?bizTypeId=' + biz + '&dataId=' + sid;

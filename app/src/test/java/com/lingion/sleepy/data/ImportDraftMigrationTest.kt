@@ -117,6 +117,6 @@ class ImportDraftMigrationTest {
             assertEquals(migration.startVersion + 1, migration.endVersion)
             if (index > 0) assertEquals(chain[index - 1].endVersion, migration.startVersion)
         }
-        assertEquals(10, chain.last().endVersion)
+        assertEquals(11, chain.last().endVersion)
     }
 }

@@ -11,6 +11,23 @@ object MealBreakDetector {
 
     data class Break(val afterRowIndex: Int, val minutes: Long, val zone: Zone)
 
+    /**
+     * Maps detector indexes (which follow timeJson array order) into the order actually
+     * rendered by a grid. Render rows can be sorted or filtered, so row indexes must not
+     * be carried across that boundary; the configured node is the stable identity.
+     */
+    fun detectDisplayRowIndexes(
+        timeJson: String,
+        courses: List<CourseEntity>,
+        displayedNodeEnds: List<Int>
+    ): Set<Int> {
+        val configuredRows = TimeTableUtils.parseTimeSlotRows(timeJson)
+        return detect(timeJson, courses).mapNotNull { detected ->
+            val leftNode = configuredRows.getOrNull(detected.afterRowIndex)?.node ?: return@mapNotNull null
+            displayedNodeEnds.indexOfLast { it == leftNode }.takeIf { it >= 0 }
+        }.toSet()
+    }
+
     /** Returns row indexes (zero based) after which the grid should leave a wider gap. */
     fun detect(timeJson: String, courses: List<CourseEntity>): List<Break> {
         val array = runCatching { JSONArray(timeJson) }.getOrNull() ?: return emptyList()

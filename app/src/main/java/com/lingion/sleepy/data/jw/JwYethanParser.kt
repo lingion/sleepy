@@ -14,7 +14,8 @@ import kotlinx.serialization.json.jsonPrimitive
  * （在 WebView 内通过 fetch 拿到，见 JwWebViewLoginScreen 的 YETHAN 分支）。
  *
  * 数据来源：GET /yethan/common/course-schedule/student-course-schedule（零参数）
- *   headers: ytoken: <JWT>（localStorage `ytoken` 取）+ .swjtu.edu.cn cookie
+ *   headers: ytoken: <JWT>（cookie 取，localStorage 兜底；有值才发）+ .swjtu.edu.cn cookie
+ *   登录态也可仅靠 Cookie 通过鉴权（credentials:'include'）；token 取不到不阻断。
  * 返回结构：{"code":"00000","data":[{…}]}
  *
  * 字段映射（教务 → JwCourse）：

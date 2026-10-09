@@ -642,6 +642,47 @@ fun ConflictClusterCard(
     // 短课置顶时,底部长课仍要按自己的尺寸锚在簇位右下)。
     val cellH = clusterH
 
+    // 用户报障 2026-10-08: 非常规时间(ownTime)课与已有课重叠时层叠覆盖, 看起来像
+    // 「多出来的课程覆盖在课表之上」。含 ownTime 成员的簇改为并排分栏: 按小数行
+    // 几何贪心分配栏位, 每课占 1/栏数 列宽、全部同时可见, 点击=打开课程详情。
+    // 纯节点冲突簇(无 ownTime)不受影响, 保持 stack/fold/rail 层叠设计。
+    val laneMode = drawList.any { fracRowsOf[it.course.id] != null }
+    if (laneMode) {
+        val laneOfCourse = ConflictLayoutEngine.assignLanes(
+            drawList.mapNotNull { laid -> rowGeomOf[laid.course.id]?.let { laid.course.id to it } }
+        )
+        val laneCount = (laneOfCourse.values.maxOrNull() ?: 0) + 1
+        val laneW = colW / laneCount
+        // 栏模式几何直接对齐绝对行坐标: 簇顶=cardY(=yOfRows(baseRowFrac)),
+        // 内容原点须回退到 minStartRow, 偏移 = min - base(与经典路径同式, 此处
+        // 全部真卡无层叠, 直接用行差保证不越出簇框)
+        val laneYOffset = spanDpOf?.invoke(baseRowFrac, minStartRow)
+            ?: rowH * (minStartRow - baseRowFrac)
+        Box(
+            modifier = modifier
+                .width(colW)
+                .height(clusterH)
+                .offset(y = laneYOffset)
+        ) {
+            drawList.forEach { laid ->
+                val c = laid.course
+                val lane = laneOfCourse[c.id] ?: 0
+                ConflictCourseCard(
+                    course = c,
+                    onClick = { onCourseClick(c) },
+                    modifier = Modifier
+                        .offset(x = laneW * lane, y = cardYOf(c))
+                        .width(laneW)
+                        .height(cardHOf(c.id)),
+                    isGrey = isGrey,
+                    shape = cardShape,
+                    groupRows = groupRowsForCard
+                )
+            }
+        }
+        return
+    }
+
     Box(
         modifier = modifier
             .width(colW)
