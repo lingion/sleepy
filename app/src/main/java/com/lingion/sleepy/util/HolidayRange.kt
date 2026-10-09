@@ -148,10 +148,35 @@ object HolidayRangeOps {
         }
 
         /**
-         * 互斥写(核心不变量): 一个 targetDate 一天只能上一次课 —
-         * 写入 [newEntry] 前先移除同 targetDate 的既有条目(后选覆盖前选),
-         * 同 sourceDate 的旧条目也一并替换。返回可直接落盘的新列表。
+         * 渲染期 daySwap 应用层(issue#145 抽离可测, 修复前 daySwap 只搬不删,
+         * 补班日那列原课未屏蔽, 与调过去的课在同一列叠加显示)。
+         *
+         * 输入 daySwap 形如 `{sourceDow → targetDow}`:
+         *   - sourceDow 的课改写到 targetDow(每行 .copy(day = targetDow))
+         *   - targetDow 上原本属于它的课(day == targetDow 且 day 不在 daySwap.keySet() 的)
+         *     被屏蔽, 不参与本周渲染
+         *
+         * 几何契约: 调休语义 = "源日课挪到补班日, 补班日原课让位" — 与 widget/通知
+         * 那侧走 effectiveDayOfWeek(date) 取数天然同形, 但本函数作用于 daySwap 改写
+         * 之后的课程列表, 与 effectiveDayOfWeek 不互相依赖。
+         *
+         * daySwap 为空 → 返回 courses 原样(零成本快路径, 闭包侧无须分支)。
          */
+        fun applyDaySwap(
+            courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
+            daySwap: Map<Int, Int>
+        ): List<com.lingion.sleepy.data.entity.CourseEntity> {
+            if (daySwap.isEmpty()) return courses
+            val targetDays = daySwap.values.toSet()
+            val sourceDays = daySwap.keys.toSet()
+            return courses
+                .filterNot { c -> c.day in targetDays && c.day !in sourceDays }
+                .map { c ->
+                    val mapped = daySwap[c.day]
+                    if (mapped == null || mapped == c.day) c else c.copy(day = mapped)
+                }
+        }
+
         fun withTargetExclusivity(
             existing: List<HolidayTransferEntry>,
             newEntry: HolidayTransferEntry

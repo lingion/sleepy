@@ -1,5 +1,6 @@
 package com.lingion.sleepy.util
 
+import com.lingion.sleepy.data.entity.CourseEntity
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertNull
@@ -121,5 +122,80 @@ class HolidayTransferOpsTest {
         val e = HolidayTransferEntry(d(1, 1), d(1, 4), "a")
         val yearHolidays = setOf(d(1, 1), d(1, 2))
         assertEquals(false, Ops.isOrphanFor(e, yearHolidays))
+    }
+
+    // ============================ issue#145: 调休改写应用层契约 ============================
+    //
+    // 场景: 10-07(周三, day=3) 调休到 10-10(周六, day=6)。
+    // daySwap = {3 → 6} 写课程改写逻辑后, 10-10 那一列 (day=6) 上既不能出现 10-07
+    // 改写过来的课 ∪ 10-10 原 day=6 课(融合),也不能让两者都丢; 用户语义:
+    // 10-10 显示「调过来的 10-07 课」,原 day=6 课被屏蔽。
+    //
+    // 修法: daySwap.values 集合 = 补班日所在 weekday 集合, 在改写 c.day 前先
+    // 过滤 c.day ∈ daySwap.values 且 c.day ∉ daySwap.keySet() 的课(即原本属于
+    // 补班日那列、且不属于被调走日 source 的课)。
+    //
+    // 抽出 applyDaySwap 纯函数到 HolidayTransferOps, 渲染层直接调用,
+    // 闭包不再内联 — 同 effectiveDayOfWeek 一致(纯函数可测, 真值唯一来源)。
+
+    private fun course(id: Long, day: Int, name: String = "课") = CourseEntity(
+        id = id, groupId = "g$id", tableId = 1L, courseName = name,
+        day = day, startNode = 1, step = 2, startWeek = 1, endWeek = 16, type = 0,
+        color = "#FF6750A4"
+    )
+
+    @Test
+    fun applyDaySwap_moves_source_courses_to_target_day() {
+        val courses = listOf(
+            course(1, day = 3, name = "周三课"),  // 10-07 来源
+            course(2, day = 6, name = "周六课")   // 10-10 原课(将被屏蔽)
+        )
+        val daySwap = mapOf(3 to 6)
+        val out = Ops.applyDaySwap(courses, daySwap)
+        // 来源课改写到 target weekday
+        val moved = out.first { it.id == 1L }
+        assertEquals(6, moved.day)
+        assertEquals("周三课", moved.courseName)
+        // 原 target weekday 课被屏蔽
+        assertEquals(null, out.firstOrNull { it.id == 2L })
+    }
+
+    @Test
+    fun applyDaySwap_empty_map_returns_courses_unchanged() {
+        val courses = listOf(course(1, 3), course(2, 6))
+        val out = Ops.applyDaySwap(courses, emptyMap())
+        assertEquals(courses, out)
+    }
+
+    @Test
+    fun applyDaySwap_multiple_targets_each_source_moves_into_its_own_target() {
+        // 周三(d=3)→周六(d=6), 周日(d=7)→周四(d=4)
+        val courses = listOf(
+            course(1, 3, "周三"),
+            course(2, 6, "周六原"),
+            course(3, 7, "周日"),
+            course(4, 4, "周四原")
+        )
+        val daySwap = mapOf(3 to 6, 7 to 4)
+        val out = Ops.applyDaySwap(courses, daySwap)
+        val byId = out.associateBy { it.id }
+        assertEquals(6, byId[1]?.day)   // 周三 → 改写到 6
+        assertEquals(null, byId[2])     // 原周六屏蔽
+        assertEquals(4, byId[3]?.day)   // 周日 → 改写到 4
+        assertEquals(null, byId[4])     // 原周四屏蔽
+    }
+
+    @Test
+    fun applyDaySwap_unmapped_day_courses_untouched() {
+        val courses = listOf(
+            course(1, 1, "周一"),  // 未参与 daySwap
+            course(2, 3, "周三调走"),
+            course(3, 6, "周六被屏蔽")
+        )
+        val daySwap = mapOf(3 to 6)
+        val out = Ops.applyDaySwap(courses, daySwap)
+        assertEquals(1, out.first { it.id == 1L }.day)  // 周一不动
+        assertEquals(6, out.first { it.id == 2L }.day)  // 周三→6
+        assertEquals(null, out.firstOrNull { it.id == 3L })  // 周六屏蔽
     }
 }
