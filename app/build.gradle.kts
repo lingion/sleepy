@@ -11,10 +11,6 @@ ksp {
     arg("room.schemaLocation", "$projectDir/schemas")
 }
 
-ksp {
-    arg("room.schemaLocation", "$projectDir/schemas")
-}
-
 // 版本号从 git tag + docs/release-notes-*.md 派生 (2026-09-29 治理定案):
 //   versionName  = 最近 v*.*.* tag 去 v 前缀
 //   versionCode  = major*10000 + minor*100 + patch (单调递增, 可重现)

@@ -72,27 +72,38 @@ class FluidCloudServiceActionStopContractTest {
         val afterStart = source.substring(startCmdIdx)
         val firstReturn = afterStart.indexOf("return START_NOT_STICKY")
         val branch = afterStart.substring(0, firstReturn)
+        // 4 步停止语义收敛在 stopCloudNotification() 单一函数 (extracted, 分支只调用),
+        // 契约锁: 分支调用它 + 函数体内 4 步齐
         assertTrue(
-            "ACTION_STOP 分支必须 handler.removeCallbacks(updater) 取消 15s 循环",
-            branch.contains("removeCallbacks(updater)")
+            "ACTION_STOP 分支必须调用 stopCloudNotification() 收敛停止语义",
+            branch.contains("stopCloudNotification()")
+        )
+        val stopFnIdx = source.indexOf("private fun stopCloudNotification()")
+        assertTrue("stopCloudNotification() 函数必须存在", stopFnIdx >= 0)
+        val stopFn = source.substring(stopFnIdx)
+        val stopFnEnd = stopFn.indexOf("\n    }")
+        val stopBody = stopFn.substring(0, stopFnEnd)
+        assertTrue(
+            "stopCloudNotification 必须 handler.removeCallbacks(updater) 取消 15s 循环",
+            stopBody.contains("removeCallbacks(updater)")
         )
         assertTrue(
-            "ACTION_STOP 分支必须 stopForeground 解除前台服务",
-            branch.contains("stopForeground")
+            "stopCloudNotification 必须 stopForeground 解除前台服务",
+            stopBody.contains("stopForeground")
         )
         assertTrue(
-            "ACTION_STOP 分支必须 NotificationManagerCompat.from 拿通知管理器",
-            branch.contains("NotificationManagerCompat.from")
+            "stopCloudNotification 必须 NotificationManagerCompat.from 拿通知管理器",
+            stopBody.contains("NotificationManagerCompat.from")
         )
         assertTrue(
-            "ACTION_STOP 分支必须 cancel(NOTIFY_BEFORE_CLASS_BASE) 取消流体云通知",
-            branch.contains(
+            "stopCloudNotification 必须 cancel(NOTIFY_BEFORE_CLASS_BASE) 取消流体云通知",
+            stopBody.contains(
                 "cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)"
             )
         )
         assertTrue(
-            "ACTION_STOP 分支必须 stopSelf() Service 自停",
-            branch.contains("stopSelf()")
+            "stopCloudNotification 必须 stopSelf() Service 自停",
+            stopBody.contains("stopSelf()")
         )
     }
 }
