@@ -57,11 +57,15 @@ class EditCourseJumpToClickedSlotTest {
 
     @Test
     fun `scroll is triggered when target index is valid`() {
-        // 即使 idx=0, header 也占屏幕空间, 必须滚到块。targetIdx>=0 才 animateScrollToItem。
+        // 即使 idx=0, header 也占屏幕空间, 必须滚到块；目标还要加上前置 item 偏移。
+        assertTrue("必须 targetIdx >= 0 才滚", source.contains("if (targetIdx >= 0)"))
         assertTrue(
-            "必须 targetIdx >= 0 才 animateScrollToItem(targetIdx)",
-            source.contains("if (targetIdx >= 0)") &&
-                source.contains("listState.animateScrollToItem(targetIdx)")
+            "必须按 LazyColumn 的前置 item 数修正目标下标",
+            source.contains("listState.animateScrollToItem(headerItemCount + targetIdx)")
+        )
+        assertTrue(
+            "无 groupId 的编辑课程也必须把初始块绑定到课程 id",
+            source.contains("sourceIds = listOf(course.id)")
         )
     }
 

@@ -325,7 +325,10 @@ fun AddCourseScreen(
     LaunchedEffect(editingCourse?.id, meetingBlocks.size) {
         val targetIdx = findTargetBlockIndex(meetingBlocks, editingCourse)
         if (targetIdx >= 0) {
-            listState.animateScrollToItem(targetIdx)
+            // LazyColumn 前面有 Spacer、基础信息、周次范围、时段标题 4 个 item；
+            // targetIdx 是 meetingBlocks 下标，不能直接当 LazyColumn 下标。
+            val headerItemCount = 4 + if (validationIssues.isNotEmpty()) 1 else 0
+            listState.animateScrollToItem(headerItemCount + targetIdx)
         }
     }
 
@@ -882,6 +885,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     val days = androidx.compose.runtime.mutableStateListOf(course.day)
     return MeetingBlockDraft(
         id = 1,
+        sourceIds = listOf(course.id),
         days = days,
         startNode = course.startNode,
         step = course.step,
