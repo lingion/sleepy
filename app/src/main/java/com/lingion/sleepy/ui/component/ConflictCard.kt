@@ -243,6 +243,27 @@ internal fun conflictShowBadge(layerCount: Int, hiddenCount: Int): Boolean =
     layerCount >= 3 && hiddenCount > 0
 
 /**
+ * 簇内原点相对锚点 Box 的垂直偏移(纯函数, issue#146 抽离可测)。
+ *
+ * 几何契约: 锚课 baseRowFrac 不在最早行 minStartRow 上时, 簇内容需相对锚点 Box
+ * **向上**回退到 minStartRow; 即偏移 = (minStartRow − baseRowFrac) × rowH,
+ * 与 laneMode 路径(laneYOffset, 660 行)、conflictCardRectFrac 的 y 计算(304/359 行)
+ * 语义统一。
+ *
+ * spanDpOf 真值存在时也按相同语义: 偏移 = spanDpOf(baseRowFrac, minStartRow) =
+ * yOfRows(minStartRow) − yOfRows(baseRowFrac), 必须是**负值**(向上)或 0。
+ *
+ * 修复历史: 2026-10-09 之前 579 行参数误传为 `invoke(minStartRow, baseRowFrac)`,
+ * spanDpOf 真值下算出 +1 行(向下), 整簇下移 2 节。issue#146 锁(主分支与兜底必须同号)。
+ */
+internal fun clusterYOffset(
+    rowH: Dp,
+    baseRowFrac: Float,
+    minStartRow: Float,
+    spanDpOf: ((Float, Float) -> Dp)?
+): Dp = spanDpOf?.invoke(baseRowFrac, minStartRow) ?: rowH * (minStartRow - baseRowFrac)
+
+/**
  * 簇内单卡放置矩形(纯 JVM 可测,v5)。
  *
  * 锚点规则(用户 2026-09-01 定版): 一切锚定都是**相对该课自身区间**的方位,不是簇格位的——
@@ -576,7 +597,8 @@ fun ConflictClusterCard(
         g.first + g.second
     }
     val clusterH = (spanDpOf?.invoke(minStartRow, maxEndRow) ?: rowH * (maxEndRow - minStartRow)) - gapH
-    val clusterYOffset = spanDpOf?.invoke(minStartRow, baseRowFrac) ?: rowH * (minStartRow - baseRowFrac)
+    // issue#146: 抽离为 clusterYOffset 纯函数可测, 修复前参数反了导致整簇下移 2 节。
+    val clusterYOffset = clusterYOffset(rowH, baseRowFrac, minStartRow, spanDpOf)
 
     fun cardYOf(course: CourseEntity) = spanDpOf?.invoke(
         minStartRow, rowGeomOf[course.id]?.first ?: 0f
@@ -655,9 +677,8 @@ fun ConflictClusterCard(
         val laneW = colW / laneCount
         // 栏模式几何直接对齐绝对行坐标: 簇顶=cardY(=yOfRows(baseRowFrac)),
         // 内容原点须回退到 minStartRow, 偏移 = min - base(与经典路径同式, 此处
-        // 全部真卡无层叠, 直接用行差保证不越出簇框)
-        val laneYOffset = spanDpOf?.invoke(baseRowFrac, minStartRow)
-            ?: rowH * (minStartRow - baseRowFrac)
+        // 全部真卡无层叠, 直接用行差保证不越出簇框) — 与 clusterYOffset 共享真值
+        val laneYOffset = clusterYOffset(rowH, baseRowFrac, minStartRow, spanDpOf)
         Box(
             modifier = modifier
                 .width(colW)

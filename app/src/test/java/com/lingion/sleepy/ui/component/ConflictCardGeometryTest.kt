@@ -21,6 +21,38 @@ class ConflictCardGeometryTest {
     private val rowH = 58.dp
     private val gapH = 4.dp
 
+    /**
+     * 簇内原点偏移(issue#146 锁: 锚点行 + 簇内偏移 = 内容绝对原点 = minStartRow 行)
+     *
+     * 几何契约: 锚课 baseRowFrac 不在最早行 minStartRow 上时, 簇内容需相对锚点 Box
+     * **向上**回退到 minStartRow; 即 clusterYOffset = (minStartRow − baseRowFrac) × rowH,
+     * 与 laneMode 路径(laneYOffset, 660 行)语义一致。
+     *
+     * 用户报障 2026-10-09: 此前 579 行的 `invoke(minStartRow, baseRowFrac)` 参数反了,
+     * spanDpOf 真值下算出 +1 行(向下), 整簇下移 2 节——A=1-2 课程渲染到节 3-4, B=2-4
+     * 渲染到节 4-6(锚点行 1 + 偏移 1 = 节 3 起, A/B 内部各再各下移 1 行)。
+     * 修复: 参数对调为 `invoke(baseRowFrac, minStartRow)`, 与 660 行 / 304/359 行的 y 计算统一。
+     */
+    @Test
+    fun clusterYOffset_returns_min_minus_base_even_with_spanDpOf() {
+        val base = 1f   // B 锚点(步长大者)
+        val min = 0f    // A 最早开始
+        // 全标准行 (无 spanDpOf): offset = (min - base) * rowH = -58dp(向上)
+        assertEquals(-58.dp, clusterYOffset(rowH, base, min, spanDpOf = null))
+        // spanDpOf 真值(weight=1 行): 修复后 invoke(base, min) = yOfRows(min) - yOfRows(base) = -58dp
+        val spanDp = { from: Float, to: Float -> rowH * (to - from) }
+        assertEquals(-58.dp, clusterYOffset(rowH, base, min, spanDpOf = spanDp))
+        // min == base 时偏移恒 0(锚点就是最早行)
+        assertEquals(0.dp, clusterYOffset(rowH, 2f, 2f, spanDpOf = spanDp))
+        // 顺序语义: spanDpOf(min, base) 与 (base, min) 必然相反; 主分支不允许与兜底反号
+        // (回归 2026-10-09 误传 min 在前导致整簇下移)
+        val sanityCheck = clusterYOffset(rowH, base, min, spanDpOf = spanDp)
+        assertTrue(
+            "clusterYOffset 符号必须 = 兜底分支 (min − base), 修复前为反号(下行)",
+            sanityCheck == -58.dp
+        )
+    }
+
     private fun rect(
         startNode: Int, ownRows: Int, isTop: Boolean, form: ConflictVariant, minStart: Int = 1,
         topInset: Dp = STACK_OFFSET_DP.dp // STACK 基线用 8dp(v4 定版偏移);RAIL 测试自行传默认
