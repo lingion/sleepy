@@ -316,15 +316,19 @@ fun AddCourseScreen(
 
     // 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
     // meetingBlocks 异步填充(group 加载完成时 size 跳变), 用 size 当 key 等待一次即可;
-    // targetIdx>0 才滚, 第一个块就是用户点的 → 已经在视线内, 滚反而抖动。
     // v2(用户报障 2026-10-08): 单靠 day+startNode 模糊 — 跨组 (step / ownTime /
     // weekRange / room / teacher) 任意一维不同的两组可共享 (day, startNode),
     // indexOfFirst 命中错组。改用 editingCourse.id in block.sourceIds (CourseEntity
     // 主键唯一, 块里记下 groupSlotsForEdit 切出的同组所有行 id)。
+    // v3(用户报障 2026-10-08): targetIdx>=0 才滚 — 即使 idx=0, "基础信息"header
+    // 也占用屏幕空间, 第一个时段块在 header 下方不可见, 必须滚。
     LaunchedEffect(editingCourse?.id, meetingBlocks.size) {
         val targetIdx = findTargetBlockIndex(meetingBlocks, editingCourse)
-        if (targetIdx > 0) {
-            listState.animateScrollToItem(targetIdx)
+        if (targetIdx >= 0) {
+            // LazyColumn 前面有 Spacer、基础信息、周次范围、时段标题 4 个 item；
+            // targetIdx 是 meetingBlocks 下标，不能直接当 LazyColumn 下标。
+            val headerItemCount = 4 + if (validationIssues.isNotEmpty()) 1 else 0
+            listState.animateScrollToItem(headerItemCount + targetIdx)
         }
     }
 
@@ -845,12 +849,13 @@ fun AddCourseScreen(
 
 
 
-/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师 参与分组，
- *  保证「同节次不同周次」「同名多地点」「同名多老师」回填成多个 block 而不是被错误合并。
- *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块 */
+/** 编辑回填：按完整时段特征分组。周次/单双周/地点/老师/星期 参与分组，
+ *  保证「同节次不同周次」「同名多地点」「同名多老师」「同名不同星期」回填成多个 block 而不是被错误合并。
+ *  issue#22: room/teacher 进分组 key — 同名同周次不同地点/老师 → 独立编辑块
+ *  v4(用户报障 2026-10-08): day 进分组 key — 同节次不同星期被错误合并 → 必须分开 */
 internal fun groupSlotsForEdit(courses: List<CourseEntity>): List<List<CourseEntity>> =
     courses.groupBy { c ->
-        "${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
+        "${c.day}|${c.ownTime}|${c.startNode}|${c.step}|${c.startTime}|${c.endTime}|${c.startWeek}|${c.endWeek}|${c.type}|${c.room}|${c.teacher}"
     }.values.toList()
 
 /** 用户点开课程胶囊 → editingCourse 即那颗胶囊, PK 唯一确定一个时段卡。
@@ -880,6 +885,7 @@ private fun initialMeetingBlock(course: CourseEntity?): MeetingBlockDraft {
     val days = androidx.compose.runtime.mutableStateListOf(course.day)
     return MeetingBlockDraft(
         id = 1,
+        sourceIds = listOf(course.id),
         days = days,
         startNode = course.startNode,
         step = course.step,
@@ -1623,6 +1629,9 @@ private fun IrregularOptionsSection(
                             }
                         } else {
                             // 关闭覆盖时间 → 回落槽位默认 / 标准节次时间
+                            // 用户报障 2026-10-08: 此前漏置 isIrregularTime=false, 开关拨回后
+                            // 状态仍为开 → UI 立即重绘回 ON, 表现为「无法关闭」
+                            block.isIrregularTime = false
                             block.startTime = ""
                             block.endTime = ""
                             block.durationText = ""
