@@ -175,4 +175,17 @@ class XiaoaiPresetDataTest {
         val infos = XiaoaiPresetData.buildCourseInfos(emptyList(), DEFAULT_TIME_JSON)
         assertEquals(0, infos.size)
     }
+
+    @Test
+    fun timerSections_acceptsLegacyNodeStartKeyShape() {
+        // 真实 DB 并存的历史键形 {nodeStart,startTime,endTime} — 模拟器实测抓到
+        val legacy = """
+            [{"nodeStart":1,"startTime":"08:00","endTime":"08:45"},
+             {"nodeStart":2,"startTime":"08:50","endTime":"09:35"}]
+        """.trimIndent()
+        val sections = XiaoaiPresetData.parseTimerSections(legacy)
+        assertEquals(2, sections.size)
+        assertEquals(Triple(1, "08:00", "08:45"), sections[0])
+        assertEquals(Triple(2, "08:50", "09:35"), sections[1])
+    }
 }
