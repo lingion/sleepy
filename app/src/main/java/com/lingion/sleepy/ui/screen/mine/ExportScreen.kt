@@ -60,6 +60,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -708,7 +709,7 @@ internal suspend fun launchXiaoaiImport(
     val link = XiaoaiPresetData.deepLink(presetData)
     try {
         ctx.startActivity(
-            Intent(Intent.ACTION_VIEW, android.net.Uri.parse(link)).apply {
+            Intent(Intent.ACTION_VIEW, link.toUri()).apply {
                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
         )
