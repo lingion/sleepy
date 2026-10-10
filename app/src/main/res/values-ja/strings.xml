@@ -801,6 +801,7 @@
     <string name="reminder_fluid_test_stop_button">投影を終了</string>
     <string name="reminder_fluid_test_start_failed">ライブ更新テストの開始に失敗しました。もう一度お試しください。</string>
     <string name="reminder_fluid_test_stop_failed">ライブ更新テストの停止に失敗しました。もう一度お試しください。</string>
+    <string name="reminder_fluid_test_permission_denied">通知が許可されていないため、ライブカードは表示されません</string>
     <string name="reminder_reliability_title">バックグラウンドの信頼性</string>
     <string name="reminder_reliability_notification">通知権限：%1$s</string>
     <string name="reminder_reliability_exact_alarm">正確なアラーム：%1$s</string>

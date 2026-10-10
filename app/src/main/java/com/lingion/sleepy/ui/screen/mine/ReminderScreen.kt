@@ -265,6 +265,8 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var bannerEnabled by remember { mutableStateOf(AppPrefs.isBeforeClassBannerEnabled(context)) }
     var fluidPrimary by remember { mutableStateOf(AppPrefs.getBeforeClassFluidPrimary(context)) }
     var fieldsMenuExpanded by remember { mutableStateOf(false) }
+    // 流体云测试按钮两态: 投放中显示「投放中 | 结束投放」。提升到顶层供授权回调置位。
+    var fluidTesting by remember { mutableStateOf(false) }
     var liveCardCapability by remember {
         mutableStateOf<VendorLiveNotificationCapability?>(null)
     }
@@ -356,6 +358,31 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
             // Permission denied → revert to off
             masterEnabled = false
             AppPrefs.setReminderEnabled(context, false)
+        }
+    }
+
+    // 流体云测试专用授权 launcher: 授权成功自动开始投放 (不用再点一次);
+    // 拒绝时明示「投放将不可见」, 不静默降级 (用户 2026-10-10 诉求)。
+    val fluidTestPermissionLauncher = rememberLauncherForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { granted ->
+        if (granted) {
+            try {
+                androidx.core.content.ContextCompat.startForegroundService(
+                    context,
+                    Intent(
+                        context,
+                        com.lingion.sleepy.widget.notification.FluidCloudService::class.java
+                    ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
+                )
+                Toast.makeText(context, R.string.reminder_fluid_test_started, Toast.LENGTH_SHORT).show()
+                fluidTesting = true
+            } catch (t: Throwable) {
+                android.util.Log.w("ReminderScreen", "fluid test start failed", t)
+                Toast.makeText(context, R.string.reminder_fluid_test_start_failed, Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            Toast.makeText(context, R.string.reminder_fluid_test_permission_denied, Toast.LENGTH_LONG).show()
         }
     }
 
@@ -837,8 +864,9 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                                     // 强制唤起一次流体云: 走真实 FluidCloudService 渲染管线
                                     // (同一通知 ID / 同一 vendor 分支), 用示例课程 2 分钟窗口,
                                     // 让用户当场验证岛/胶囊是否出现, 不用等课前窗口。
-                                    var testing by remember { mutableStateOf(false) }
-                                    if (testing) {
+                                    // testing 状态提升到 composable 顶层 fluidTesting —
+                                    // 授权 launcher 回调 (composable 作用域) 也要置它。
+                                    if (fluidTesting) {
                                         Row(
                                             modifier = Modifier
                                                 .fillMaxWidth()
@@ -861,10 +889,10 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                                                             Intent(context, com.lingion.sleepy.widget.notification.FluidCloudService::class.java)
                                                                 .setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_STOP)
                                                         )
-                                                        testing = false
+                                                        fluidTesting = false
                                                     } catch (t: Throwable) {
                                                         android.util.Log.w("ReminderScreen", "fluid test stop failed", t)
-                                                        testing = false
+                                                        fluidTesting = false
                                                         Toast.makeText(
                                                             context,
                                                             R.string.reminder_fluid_test_stop_failed,
@@ -881,27 +909,41 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                                     } else {
                                         FilledTonalButton(
                                             onClick = {
-                                                try {
-                                                    androidx.core.content.ContextCompat.startForegroundService(
-                                                        context,
-                                                        Intent(
-                                                            context,
-                                                            com.lingion.sleepy.widget.notification.FluidCloudService::class.java
-                                                        ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
+                                                // 投放闸门 (用户 2026-10-10 诉求): 先查通知权限,
+                                                // 缺失则现场请求 — 授权成功自动开投, 拒绝明示「投放将不可见」,
+                                                // 不再静默降级成「投放中但什么都看不到」。
+                                                val notifGranted =
+                                                    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+                                                    ContextCompat.checkSelfPermission(
+                                                        context, Manifest.permission.POST_NOTIFICATIONS
+                                                    ) == PackageManager.PERMISSION_GRANTED
+                                                if (!notifGranted) {
+                                                    fluidTestPermissionLauncher.launch(
+                                                        Manifest.permission.POST_NOTIFICATIONS
                                                     )
-                                                    Toast.makeText(
-                                                        context,
-                                                        R.string.reminder_fluid_test_started,
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
-                                                    testing = true
-                                                } catch (t: Throwable) {
-                                                    android.util.Log.w("ReminderScreen", "fluid test start failed", t)
-                                                    Toast.makeText(
-                                                        context,
-                                                        R.string.reminder_fluid_test_start_failed,
-                                                        Toast.LENGTH_SHORT
-                                                    ).show()
+                                                } else {
+                                                    try {
+                                                        androidx.core.content.ContextCompat.startForegroundService(
+                                                            context,
+                                                            Intent(
+                                                                context,
+                                                                com.lingion.sleepy.widget.notification.FluidCloudService::class.java
+                                                            ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
+                                                        )
+                                                        Toast.makeText(
+                                                            context,
+                                                            R.string.reminder_fluid_test_started,
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                        fluidTesting = true
+                                                    } catch (t: Throwable) {
+                                                        android.util.Log.w("ReminderScreen", "fluid test start failed", t)
+                                                        Toast.makeText(
+                                                            context,
+                                                            R.string.reminder_fluid_test_start_failed,
+                                                            Toast.LENGTH_SHORT
+                                                        ).show()
+                                                    }
                                                 }
                                             },
                                             modifier = Modifier

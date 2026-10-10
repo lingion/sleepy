@@ -793,6 +793,7 @@
     <string name="reminder_fluid_test_stop_button">结束投放</string>
     <string name="reminder_fluid_test_start_failed">流体云测试启动失败，请重试</string>
     <string name="reminder_fluid_test_stop_failed">流体云测试停止失败，请重试</string>
+    <string name="reminder_fluid_test_permission_denied">未授权通知，投放将不可见</string>
     <string name="reminder_fluid_test_course">测试课程</string>
     <string name="reminder_fluid_test_room">测试地点</string>
     <string name="reminder_reliability_title">后台可靠性</string>

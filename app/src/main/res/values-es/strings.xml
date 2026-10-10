@@ -801,6 +801,7 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="reminder_fluid_test_stop_button">Detener proyección</string>
     <string name="reminder_fluid_test_start_failed">No se pudo iniciar la prueba de tarjeta en vivo. Inténtalo de nuevo.</string>
     <string name="reminder_fluid_test_stop_failed">No se pudo detener la prueba de tarjeta en vivo. Inténtalo de nuevo.</string>
+    <string name="reminder_fluid_test_permission_denied">Permiso de notificaciones no concedido — la tarjeta en vivo no será visible</string>
     <string name="reminder_reliability_title">Fiabilidad en segundo plano</string>
     <string name="reminder_reliability_notification">Notificaciones: %1$s</string>
     <string name="reminder_reliability_exact_alarm">Alarmas exactas: %1$s</string>
