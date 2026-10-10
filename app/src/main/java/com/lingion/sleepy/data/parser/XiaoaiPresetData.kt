@@ -117,18 +117,25 @@ object XiaoaiPresetData {
         (from..to).forEach { add(JsonPrimitive(it)) }
     }
 
-    /** timeJson [{node,start,end}] → timerRes.sections [{section,startTime,endTime}]。 */
+    /**
+     * timeJson → timerRes.sections [{section,startTime,endTime}]。
+     * 兼容两种键形(真实 DB 并存, 模拟器实测抓到):
+     *   规范形 {node,start,end}(TimeTableUtils.buildTimeJsonFromRows 写入)
+     *   历史形 {nodeStart,startTime,endTime}(创建向导/旧版写入)
+     */
     internal fun parseTimerSections(timeJson: String): List<Triple<Int, String, String>> {
         if (timeJson.isBlank()) return emptyList()
         return runCatching {
             Json.parseToJsonElement(timeJson).let { root ->
                 (root as? JsonArray)?.mapNotNull { el ->
                     val o = el as? JsonObject ?: return@mapNotNull null
-                    Triple(
-                        o["node"]?.toString()?.toIntOrNull() ?: return@mapNotNull null,
-                        o["start"]?.toString()?.trim('"') ?: return@mapNotNull null,
-                        o["end"]?.toString()?.trim('"') ?: return@mapNotNull null,
-                    )
+                    val node = (o["node"] ?: o["nodeStart"])?.toString()?.toIntOrNull()
+                        ?: return@mapNotNull null
+                    val start = (o["start"] ?: o["startTime"])?.toString()?.trim('"')
+                        ?: return@mapNotNull null
+                    val end = (o["end"] ?: o["endTime"])?.toString()?.trim('"')
+                        ?: return@mapNotNull null
+                    Triple(node, start, end)
                 } ?: emptyList()
             }
         }.getOrDefault(emptyList())
