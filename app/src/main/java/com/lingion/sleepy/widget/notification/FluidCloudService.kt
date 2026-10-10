@@ -13,6 +13,21 @@ import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 
 /**
+ * 进程内投放状态真源: 服务存活 = 投放中。
+ * 不用通知可见性当信号 — ColorOS 16 等系统在应用回前台时自动收起 promoted
+ * 实时通知 (activeNotifications 查不到), 但服务仍在投 (2026-10-10 用户实测)。
+ * UI 据此对账; 服务启动路径置位, 停止路径/onDestroy 清零。进程死则归零。
+ */
+object FluidCastState {
+    @Volatile
+    var casting: Boolean = false
+        private set
+
+    fun markStarted() { casting = true }
+    fun markStopped() { casting = false }
+}
+
+/**
  * Keeps the promoted course notification's progress synchronized with the
  * user's before-class reminder window. The capsule text remains static.
  */
@@ -34,6 +49,7 @@ class FluidCloudService : Service() {
             if (System.currentTimeMillis() < classEpoch) {
                 handler.postDelayed(this, UPDATE_INTERVAL_MS)
             } else {
+                FluidCastState.markStopped()
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
@@ -88,6 +104,7 @@ class FluidCloudService : Service() {
                     startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, placeholder)
                 } catch (_: Throwable) {}
             }
+            FluidCastState.markStopped()
             androidx.core.app.NotificationManagerCompat.from(this)
                 .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -96,6 +113,7 @@ class FluidCloudService : Service() {
         }
 
         handler.removeCallbacks(updater)
+        FluidCastState.markStarted()
         postProgressNotification()
         if (System.currentTimeMillis() < classEpoch) {
             handler.postDelayed(updater, UPDATE_INTERVAL_MS)
@@ -152,6 +170,7 @@ class FluidCloudService : Service() {
     }
 
     private fun stopCloudNotification() {
+        FluidCastState.markStopped()
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             try {
                 val placeholder = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
@@ -171,6 +190,7 @@ class FluidCloudService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacks(updater)
+        FluidCastState.markStopped()
         super.onDestroy()
     }
 

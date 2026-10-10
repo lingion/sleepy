@@ -273,14 +273,12 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var reliabilitySnapshot by remember {
         mutableStateOf<BackgroundReliabilitySnapshot?>(null)
     }
-    // 投放状态对账: 服务端自然到期(测试窗口 2 分钟 / 真实课前窗口结束)时服务自停,
-    // 通知随之移除 — 轮询活动通知即真实投放态。ON_RESUME 兜底覆盖离开页面再回来的场景。
-    fun isFluidCastActive(): Boolean {
-        val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return false
-        return nm.activeNotifications.any {
-            it.id == com.lingion.sleepy.widget.notification.CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE
-        }
-    }
+    // 投放状态对账: 状态真源 = FluidCastState.casting (服务存活), 不查通知可见性 —
+    // ColorOS 16 等系统在应用回前台时自动收起 promoted 通知 (NotificationManager
+    // 的活动列表查不到), 但服务仍在投 (2026-10-10 用户实测)。ON_RESUME + casting
+    // 期间轮询双通道对账。
+    fun isFluidCastActive(): Boolean =
+        com.lingion.sleepy.widget.notification.FluidCastState.casting
 
     // Re-inspect after entering the page and whenever the fluid toggle changes.
     // The snapshot is diagnostic only; standard reminders remain independently usable.

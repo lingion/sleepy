@@ -86,33 +86,28 @@ class FluidCastGateContractTest {
 
 class FluidCastStateReconciliationContractTest {
     /**
-     * 锁「投放状态对账」语义 (2026-10-10 用户实测: 测试窗口 2 分钟到期, 服务自停,
-     * UI 停在「投放中」)。屏幕侧 isFluidCastActive() = 存在 id=NOTIFY_BEFORE_CLASS_BASE
-     * 的活动通知; 服务侧 updater 到期时 STOP_FOREGROUND_REMOVE + stopSelf 移除该通知。
-     * 两端 token 漂移(改 ID / 改移除方式)时此测试提醒同步。
+     * 锁「投放状态对账」语义 (2026-10-10 用户两轮实测):
+     * 一轮 — 测试窗口 2 分钟到期服务自停, UI 停在「投放中」;
+     * 二轮 — ColorOS 16 应用回前台自动收起 promoted 通知, 通知可见性不可作状态信号。
+     * 结论: 状态真源 = FluidCastState.casting (服务存活), 屏幕读它, 不查通知。
      */
     @Test
-    fun `service self stop removes the cast notification`() {
+    fun `service marks state stopped on every self-stop path`() {
         val src = java.io.File(
             "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
         ).readText()
-        // updater 到期分支必须移除通知 + 自停
-        val expiryBranch = """else {
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
-            }"""
-        assert(src.contains(expiryBranch.replace("            }", "            }"))) {
-            "updater expiry branch must stopForeground(STOP_FOREGROUND_REMOVE) + stopSelf()"
-        }
+        // updater 到期 / ACTION_STOP / 提前作废 / onDestroy 四条自停路径都清零
+        assertEquals(4, Regex("FluidCastState.markStopped").findAll(src).count())
+        // 正常调度路径置位
+        assertEquals(1, Regex("FluidCastState.markStarted").findAll(src).count())
     }
 
     @Test
-    fun `screen polls active notifications by the same id`() {
-        val src = java.io.File(
+    fun `screen derives cast state from service liveness not notification presence`() {
+        val screen = java.io.File(
             "../app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"
         ).readText()
-        assert(src.contains("NOTIFY_BEFORE_CLASS_BASE")) { "screen must reference the cast notification id" }
-        assert(src.contains("activeNotifications")) { "screen must poll activeNotifications" }
-        assert(src.contains("isFluidCastActive()")) { "screen must have isFluidCastActive helper" }
+        assert(screen.contains("FluidCastState.casting")) { "screen must read FluidCastState.casting" }
+        assert(!screen.contains("activeNotifications")) { "screen must NOT poll notification presence" }
     }
 }
