@@ -1,76 +1,73 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.data.entity.CourseEntity
+import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.imports.*
 import com.lingion.sleepy.data.parser.ScheduleParser
-import org.junit.Assert.assertEquals
-import org.junit.Assert.assertSame
-import org.junit.Assert.assertTrue
+import com.lingion.sleepy.util.TimeTableUtils
+import org.junit.Assert.*
 import org.junit.Test
 
 class ImportPreviewTest {
-    private fun course(name: String, node: Int = 1, week: Int = 1) = CourseEntity(
-        groupId = "", tableId = 42, courseName = name,
+    private val table = TimeTableEntity(id = 42, name = "Current semester", startDate = "2026-09-07", maxWeek = 22)
+    private fun course(name: String, id: Long = 0, node: Int = 1, week: Int = 1) = CourseEntity(
+        id = id, groupId = name, tableId = 42, courseName = name,
         day = 1, startNode = node, step = 2,
         startWeek = week, endWeek = week + 3, color = "#FF6750A4"
     )
-
     private fun parsed(vararg courses: CourseEntity) = ScheduleParser.ParseResult(
-        tableName = "Imported", startDate = "2026-09-07", courses = courses.toList(),
-        nodesPerDay = 14, maxWeek = 22
+        tableName = "Imported", startDate = table.startDate, courses = courses.toList(),
+        timeJson = TimeTableUtils.DEFAULT_TIME_JSON, nodesPerDay = 12, maxWeek = 22
+    )
+    private fun plan(source: ScheduleParser.ParseResult, old: List<CourseEntity>) = planImport(
+        source, ImportSnapshot(listOf(table), emptyList(), old),
+        ImportConfiguration.forExisting(table).copy(overlaps = OverlapPolicy.SkipIncoming)
     )
 
-    @Test
-    fun `existing table remains the append target and imported metadata is preserved`() {
-        val incoming = parsed(course("New", node = 13))
-        val existing = listOf(course("Existing"))
-        val preview = createImportPreview(incoming, 42, "Current semester", existing)
-
-        assertEquals(42L, preview.targetTableId)
-        assertEquals("Current semester", preview.targetTableName)
-        assertSame(incoming, preview.parseResult)
-        assertEquals(existing, preview.existingCourses)
-        assertEquals(1, preview.cleanCount)
-        assertEquals(0, preview.conflictCount)
+    @Test fun `existing target and source metadata remain intact while planning`() {
+        val source = parsed(course("New", node = 9))
+        val old = listOf(course("Existing", id = 1))
+        val preview = plan(source, old)
+        assertTrue(preview.issues.toString(), preview.canSubmit)
+        assertEquals(42L, preview.finalTable.id)
+        assertEquals("Current semester", preview.finalTable.name)
+        assertSame(source, preview.source)
+        assertEquals(old, preview.snapshot.courses)
+        assertEquals(1, preview.incomingCount)
+        assertTrue(preview.conflicts.isEmpty())
     }
 
-    @Test
-    fun `one incoming course overlapping several existing courses counts only once`() {
+    @Test fun `one incoming row reports every old conflict but is skipped only once`() {
         val overlap = course("Overlap", node = 2)
         val free = course("Free", node = 5)
-        val preview = createImportPreview(
-            parsed(overlap, free), 42, "Current semester",
-            listOf(course("Existing A"), course("Existing B", node = 3))
-        )
-
-        assertEquals(2, preview.incomingCount)
-        assertEquals(1, preview.conflictCount)
-        assertEquals(1, preview.cleanCount)
-        assertEquals(overlap, preview.conflicts.single().incoming)
-        // Keeping conflicting courses must still have access to the entire source.
-        assertEquals(listOf(overlap, free), preview.parseResult.courses)
+        val preview = plan(parsed(overlap, free), listOf(
+            course("Existing A", id = 1), course("Existing B", id = 2, node = 3)
+        ))
+        assertEquals(2, preview.conflicts.count { it.kind == ConflictKind.IncomingExisting })
+        assertEquals(1, preview.skippedCount)
+        assertEquals(listOf("Free"), preview.incomingCourses.map { it.courseName })
+        assertEquals(listOf(overlap, free), preview.source.courses)
     }
 
-    @Test
-    fun `courses in different weeks days or nodes stay appendable`() {
-        val preview = createImportPreview(
-            parsed(
-                course("Later weeks", week = 5),
-                course("Next day").copy(day = 2),
-                course("Later nodes", node = 3)
-            ), 42, "Current semester", listOf(course("Existing"))
-        )
-
-        assertEquals(3, preview.cleanCount)
+    @Test fun `different weeks days and times remain appendable`() {
+        val preview = plan(parsed(course("Later weeks", week = 5),
+            course("Next day").copy(day = 2), course("Later nodes", node = 3)),
+            listOf(course("Existing", id = 1)))
+        assertEquals(3, preview.incomingCount)
         assertTrue(preview.conflicts.isEmpty())
+        assertTrue(preview.skipped.isEmpty())
     }
 
-    @Test
-    fun `first import keeps the no-target state for the new-table-only dialog`() {
-        val preview = createImportPreview(parsed(course("New")), 0, "", emptyList())
-
-        assertEquals(0L, preview.targetTableId)
+    @Test fun `first import creates a new table without a synthetic base`() {
+        val source = parsed(course("New"))
+        val snapshot = ImportSnapshot(emptyList(), emptyList(), emptyList())
+        val configuration = createImportDecisionConfiguration(source, snapshot, 0, "Imported", "Periods")
+        val preview = planImport(source, snapshot, configuration)
+        assertTrue(preview.issues.toString(), preview.canSubmit)
+        assertEquals(ImportDestination.New, configuration.destination)
+        assertEquals(ImportContent.ImportOnly, configuration.content)
+        assertEquals(0L, preview.finalTable.id)
         assertEquals(1, preview.incomingCount)
-        assertTrue(preview.existingCourses.isEmpty())
-        assertTrue(preview.conflicts.isEmpty())
+        assertTrue(preview.snapshot.tables.isEmpty())
     }
 }

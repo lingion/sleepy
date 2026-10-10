@@ -110,19 +110,13 @@ class ImportDraftWiringContractTest {
     // --- issue#23 Task 5: 导入边界共享推断契约 ---
 
     @Test
-    fun `ImportConfirmDialog seeds smartConfig from imported rows via shared inference`() {
-        val src = loadSource("ui/screen/imports/ImportSheet.kt")
-        // 初值必须从导入解析行推断; 旧 fresh 45-min SmartPeriodConfig(...) 形态属回归。
-        assertTrue(
-            "ImportConfirmDialog 应走 resolveAutoPeriodConfig(rows, null) 播种; 旧 fresh 45-min 默认值属回归",
-            Regex(
-                """resolveAutoPeriodConfig\(\s*rows\.toList\(\)\s*,\s*null\s*\)"""
-            ).containsMatchIn(src),
-        )
-        assertTrue(
-            "ImportConfirmDialog 缺失保底默认 (totalPeriods/startTime 兜底) — 推断 null 时必须回退",
-            Regex("""totalPeriods\s*=\s*rows\.size\.coerceAtLeast\(1\)""").containsMatchIn(src),
-        )
+    fun `shared decision editor seeds automatic configuration from its current rows`() {
+        val src = loadSource("ui/screen/imports/ImportDecisionSections.kt")
+        assertTrue(src.contains("resolveAutoPeriodConfig("))
+        assertTrue(src.contains("TimeSlotEditor("))
+        val jw = loadSource("ui/screen/imports/JwImportActivity.kt")
+        assertTrue(jw.contains("decisionConfigJson ="))
+        assertTrue(jw.contains("decodeImportDecisionConfiguration(snapshot.decisionConfigJson)"))
     }
 
     @Test

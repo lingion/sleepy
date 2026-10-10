@@ -18,6 +18,7 @@ data class JwImportDraftSnapshot(
     /** Serialized SmartPeriodConfig; kept opaque to avoid coupling this contract to UI/entity classes. */
     val smartConfigJson: String = "",
     val phase: JwImportDraftPhase = JwImportDraftPhase.CONFIGURE_CONFIRM,
+    val decisionConfigJson: String = "",
 )
 
 data class JwImportDraftPeriod(
@@ -48,6 +49,7 @@ object JwImportDraftCodec {
         put("termStartDate", snapshot.termStartDate)
         put("tableName", snapshot.tableName)
         put("smartConfigJson", snapshot.smartConfigJson)
+        put("decisionConfigJson", snapshot.decisionConfigJson)
     }.toString()
 
     /** Returns null for an unsupported schema or any invalid/incomplete external payload. */
@@ -82,6 +84,7 @@ object JwImportDraftCodec {
             tableName = root.optString("tableName", ""),
             smartConfigJson = root.optString("smartConfigJson", ""),
             phase = phase,
+            decisionConfigJson = root.optString("decisionConfigJson", ""),
         )
     }.getOrNull()
 

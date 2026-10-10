@@ -182,8 +182,8 @@ class BackRestoreSaveableContractTest {
             "JwImportActivity must obtain a SaveableStateHolder via rememberSaveableStateHolder()",
             Regex("""rememberSaveableStateHolder\(\)""").containsMatchIn(jwImportSource)
         )
-        // key 用 stage 类名(SelectSchool / WebViewLogin); ConfigureConfirm 是 Dialog 无需滚动恢复但同样包, 统一作用域
-        listOf("SelectSchool", "WebViewLogin", "ConfigureConfirm").forEach { stage ->
+        // Preview hosts the shared decision dialog and its saveable configuration.
+        listOf("SelectSchool", "WebViewLogin", "Preview").forEach { stage ->
             assertTrue(
                 "Stage '$stage' branch must be wrapped in SaveableStateProvider keyed by stage class name",
                 Regex("""SaveableStateProvider\(\s*[^)]*"$stage"|SaveableStateProvider\(\s*stage::class""").containsMatchIn(jwImportSource)

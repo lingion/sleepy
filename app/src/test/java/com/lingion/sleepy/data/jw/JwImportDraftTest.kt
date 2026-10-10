@@ -123,6 +123,30 @@ class JwImportDraftTest {
     }
 
     @Test
+    fun `decision configuration round trips without changing course order`() {
+        val configured = snapshot.copy(
+            decisionConfigJson = """{"destination":"New","content":"Merge","baseTableId":42,"itemOverrides":{"1":"Skip"}}"""
+        )
+
+        val decoded = JwImportDraftCodec.fromJson(JwImportDraftCodec.toJson(configured))
+
+        assertEquals(configured, decoded)
+        assertEquals(configured.courses, decoded?.courses)
+    }
+
+    @Test
+    fun `older drafts without decision configuration still restore`() {
+        val json = org.json.JSONObject(JwImportDraftCodec.toJson(snapshot)).apply {
+            remove("decisionConfigJson")
+        }.toString()
+
+        val decoded = JwImportDraftCodec.fromJson(json)
+
+        assertEquals("", decoded?.decisionConfigJson)
+        assertEquals(snapshot, decoded)
+    }
+
+    @Test
     fun `json uses explicit schema and preserves course ordering`() {
         val json = JwImportDraftCodec.toJson(snapshot)
 

@@ -4,6 +4,9 @@ import com.lingion.sleepy.data.AppDatabase
 import com.lingion.sleepy.data.diff.DiffResult
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.imports.ImportPlan
+import com.lingion.sleepy.data.imports.ImportSnapshot
+import com.lingion.sleepy.data.imports.PeriodBinding
 import com.lingion.sleepy.data.undo.UndoManager
 import com.lingion.sleepy.data.undo.UndoSnapshot
 import com.lingion.sleepy.SleepyApp
@@ -11,19 +14,137 @@ import androidx.room.withTransaction
 import com.lingion.sleepy.util.AppPrefs
 import com.lingion.sleepy.util.ConflictLayoutEngine
 import com.lingion.sleepy.widget.WidgetUpdater
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flatMapLatest
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
+
+/** A committed import remains Applied even if a post-commit refresh needs retrying. */
+sealed interface ImportApplyResult {
+    data class Applied(val tableId: Long, val warnings: List<String> = emptyList()) : ImportApplyResult
+    data object StalePreview : ImportApplyResult
+    data object Invalid : ImportApplyResult
+    data object NoChanges : ImportApplyResult
+    data class Failed(val message: String) : ImportApplyResult
+}
 
 /**
  * 课表仓库 — 业务数据访问的唯一入口。
  *
  * UI 层只调这个类，不直接碰 DAO。
  */
-class ScheduleRepository(private val db: AppDatabase) {
+class ScheduleRepository(
+    private val db: AppDatabase,
+    private val onCommitted: (suspend (deletedCourseIds: List<Long>) -> Unit)? = null
+) {
 
+    private val importMutex = Mutex()
     private val courseDao = db.courseDao()
     private val tableDao = db.timeTableDao()
     private val periodTableDao = db.periodTableDao()
+
+    // ========== Import decision transaction ==========
+
+    /** Raw persisted rows, read together; hydration belongs to preview/rendering, not stale checks. */
+    suspend fun loadImportSnapshot(): ImportSnapshot = db.withTransaction { readImportSnapshot() }
+
+    private suspend fun readImportSnapshot(): ImportSnapshot = canonicalImportSnapshot(
+        ImportSnapshot(tableDao.getAll(), periodTableDao.getAll(), courseDao.getAll())
+    )
+
+    /**
+     * Apply exactly the confirmed preview. No public writer, batch state, undo capture or external
+     * effect runs in the transaction. The per-repository mutex covers imports, not unrelated writers.
+     */
+    suspend fun applyImportPlan(plan: ImportPlan, importDraftId: String? = null): ImportApplyResult = importMutex.withLock {
+        if (!plan.canSubmit) return@withLock ImportApplyResult.Invalid
+        var before: UndoSnapshot? = null
+        var deletedCourseIds: List<Long> = emptyList()
+        val result = try {
+            db.withTransaction {
+                if (importDraftId != null && db.importDraftDao().getById(importDraftId) == null) {
+                    return@withTransaction ImportApplyResult.StalePreview
+                }
+                val current = readImportSnapshot()
+                if (current != canonicalImportSnapshot(plan.snapshot)) {
+                    return@withTransaction ImportApplyResult.StalePreview
+                }
+                val writes = validatedImportWriteSet(plan, current)
+                    ?: return@withTransaction ImportApplyResult.Invalid
+                if (!writes.hasChanges) return@withTransaction ImportApplyResult.NoChanges
+                val undo = UndoSnapshot(
+                    periodTables = current.periodTables,
+                    tables = current.tables,
+                    courses = current.courses,
+                    defaultTableId = current.tables.firstOrNull { it.isDefault }?.id
+                )
+                val now = System.currentTimeMillis()
+                val insertedPeriodId = writes.insertPeriod?.let { period ->
+                    periodTableDao.insert(period.copy(
+                        createdAt = period.createdAt.takeIf { it != 0L } ?: now,
+                        updatedAt = period.updatedAt.takeIf { it != 0L } ?: now
+                    ))
+                }
+                writes.updatePeriod?.let { periodTableDao.update(it.copy(updatedAt = now)) }
+                val oldTable = current.tables.firstOrNull { it.id == plan.configuration.baseTableId }
+                val resolvedTable = if (plan.periodBinding == PeriodBinding.PlannedPeriod) {
+                    val periodId = checkNotNull(insertedPeriodId)
+                    // A bound table's first-bind snapshot must survive a switch to an independent
+                    // owner, even for legacy rows whose snapshot is blank. For a first bind take it.
+                    if (oldTable?.periodTableId == null && writes.table.preBindSnapshotJson.isBlank()) {
+                        TimeTableEntity.snapshotForBind(writes.table, periodId)
+                    } else writes.table.copy(periodTableId = periodId)
+                } else writes.table
+                val tableId = if (resolvedTable.id == 0L) {
+                    tableDao.insert(resolvedTable.copy(
+                        createdAt = resolvedTable.createdAt.takeIf { it != 0L } ?: now
+                    ))
+                } else {
+                    if (resolvedTable != oldTable) tableDao.update(resolvedTable)
+                    resolvedTable.id
+                }
+                if (writes.deleteCourseIds.isNotEmpty()) courseDao.deleteByIds(writes.deleteCourseIds)
+                if (writes.updateCourses.isNotEmpty()) courseDao.updateAll(writes.updateCourses)
+                if (writes.insertCourses.isNotEmpty()) {
+                    courseDao.insertAll(writes.insertCourses.map { it.copy(id = 0L, tableId = tableId) })
+                }
+                if (writes.setDefault) tableDao.setDefault(tableId)
+                importDraftId?.let { db.importDraftDao().deleteById(it) }
+                before = undo
+                deletedCourseIds = writes.deleteCourseIds
+                ImportApplyResult.Applied(tableId)
+            }
+        } catch (cancelled: CancellationException) {
+            throw cancelled
+        } catch (failure: Exception) {
+            return@withLock ImportApplyResult.Failed(
+                failure.message?.takeIf { it.isNotBlank() } ?: failure.javaClass.simpleName
+            )
+        }
+        if (result !is ImportApplyResult.Applied) return@withLock result
+        // No suspension between a successful transaction return and publication of its undo point.
+        val undo = checkNotNull(before)
+        UndoManager.capture(undo.tables, undo.courses, undo.defaultTableId, undo.periodTables)
+        val warnings = notifyImportCommitted(deletedCourseIds)
+        result.copy(warnings = warnings)
+    }
+
+    private suspend fun notifyImportCommitted(deletedCourseIds: List<Long>): List<String> {
+        val callback = onCommitted
+        if (callback != null) {
+            return importPostCommitWarnings("Import refresh" to { callback(deletedCourseIds) })
+        }
+        return importPostCommitWarnings(
+            "Deleted course alarm cleanup" to {
+                if (deletedCourseIds.isNotEmpty()) {
+                    SleepyApp.get().notificationScheduler.cancelCourseAlarms(deletedCourseIds)
+                }
+            },
+            "Widget refresh" to { WidgetUpdater.notifyDataChanged(SleepyApp.get()) },
+            "Reminder refresh" to { SleepyApp.get().notificationScheduler.scheduleAll() }
+        )
+    }
 
     // ========== v7.10.16 单级撤回 ==========
 
@@ -78,8 +199,12 @@ class ScheduleRepository(private val db: AppDatabase) {
             UndoManager.restoring = false
         }
         UndoManager.recordRedo(redoSnap)
-        onDataChanged()
-        pruneDefaultTopPrefs()
+        if (onCommitted == null) {
+            onDataChanged()
+            pruneDefaultTopPrefs()
+        } else {
+            notifyImportCommitted(emptyList())
+        }
         return true
     }
 
@@ -96,8 +221,12 @@ class ScheduleRepository(private val db: AppDatabase) {
         // 把"刚恢复到的 redo 起点之前那一刻"重新填回 undo 槽,
         // 用户再次点撤回应能回到"被我们撤回来的那次修改之前的库态"。
         UndoManager.reinsertForRedoSymmetry(undoSnap)
-        onDataChanged()
-        pruneDefaultTopPrefs()
+        if (onCommitted == null) {
+            onDataChanged()
+            pruneDefaultTopPrefs()
+        } else {
+            notifyImportCommitted(emptyList())
+        }
         return true
     }
 
