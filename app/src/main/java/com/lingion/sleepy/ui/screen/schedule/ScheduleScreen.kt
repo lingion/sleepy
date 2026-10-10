@@ -289,6 +289,7 @@ fun ScheduleScreen(
                     }
                 // issue#44 调休改写: 本页各天日期若命中调休映射, 该天在网格里改按映射目标星期渲染 —
                 // 周日(补周四)列显示周四的课。渲染期替身, 不写库; 未映射日期原样。
+                // issue#145: 同时屏蔽补班日那列原本属于它的课(否则与调过去的课叠加显示)。
                 val renderCourses = run {
                     val start = state.currentTable?.startDate
                     val transfers = state.transfers
@@ -305,11 +306,7 @@ fun ScheduleScreen(
                             )
                             if (display != natural) natural to display else null
                         }.toMap()
-                        if (daySwap.isEmpty()) weekCourses
-                        else weekCourses.map { c ->
-                            val mapped = daySwap[c.day]
-                            if (mapped == null || mapped == c.day) c else c.copy(day = mapped)
-                        }
+                        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.applyDaySwap(weekCourses, daySwap)
                     }
                 }
                 // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
