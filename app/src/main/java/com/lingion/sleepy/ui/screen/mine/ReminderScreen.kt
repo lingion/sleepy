@@ -375,13 +375,26 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     // 否则返回缺失字符串资源清单 — 弹窗逐条列出, 用户可「去设置」或「仍要投放」(明示降级)。
     // 与诊断区同源 (liveCardCapability / reliabilitySnapshot), 不另起炉灶。
     fun checkFluidCastGate(): List<Int>? {
+        // 点击时现场实查, 不读缓存快照 — 快照异步刷新有竞态,
+        // 用户从系统设置授权完返回立刻点击会被旧值误拦 (2026-10-10 用户实测:
+        // 第一次点击永远弹拦截, 第二次才真投)。checkSelfPermission /
+        // canPostPromotedNotifications 都是廉价 binder 调用, 点击时查得起。
         val reasons = mutableListOf<Int>()
-        if (reliabilitySnapshot?.notificationPermissionGranted == false ||
+        val nm = context.getSystemService(android.app.NotificationManager::class.java)
+        val notifGranted =
+            Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
+            ContextCompat.checkSelfPermission(
+                context, Manifest.permission.POST_NOTIFICATIONS
+            ) == PackageManager.PERMISSION_GRANTED
+        val promotedAllowed =
+            if (Build.VERSION.SDK_INT < 36) null
+            else nm?.let { runCatching { it.canPostPromotedNotifications() }.getOrNull() }
+        if (!notifGranted ||
             liveCardCapability?.state == VendorCapabilityState.NOTIFICATION_PERMISSION_REQUIRED
         ) {
             reasons.add(R.string.reminder_fluid_gate_notification)
         }
-        if (reliabilitySnapshot?.promotedOngoingAllowed == false) {
+        if (promotedAllowed == false) {
             reasons.add(R.string.reminder_fluid_gate_promoted)
         }
         if (liveCardCapability?.state == VendorCapabilityState.SETTINGS_REQUIRED ||
@@ -994,8 +1007,12 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                                                 // 用户明知降级可「仍要投放」, 不再静默降级。
                                                 // 通知权限缺失优先弹系统授权框 (授权后自动重过闸门);
                                                 // promoted/厂商缺失则弹闸门弹窗。
-                                                val notifMissing = reliabilitySnapshot?.notificationPermissionGranted == false
-                                                if (notifMissing && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                                                val notifMissing =
+                                                    Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU &&
+                                                    ContextCompat.checkSelfPermission(
+                                                        context, Manifest.permission.POST_NOTIFICATIONS
+                                                    ) != PackageManager.PERMISSION_GRANTED
+                                                if (notifMissing) {
                                                     fluidTestPermissionLauncher.launch(
                                                         Manifest.permission.POST_NOTIFICATIONS
                                                     )

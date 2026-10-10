@@ -111,3 +111,38 @@ class FluidCastStateReconciliationContractTest {
         assert(!screen.contains("activeNotifications")) { "screen must NOT poll notification presence" }
     }
 }
+
+class FluidFirstPostReinforceContractTest {
+    /**
+     * 锁「首帖双发」不变量 (2026-10-10 用户实测: ColorOS 16 第一次点击永远不显示
+     * 流体云, 第二次永远可以 — 进程内第一条 promoted 通知被吞, 同 ID 替换更新
+     * 才建立渲染会话)。ACTION_TEST 启动后必须在 FIRST_POST_REINFORCE_MS 内重发
+     * 同 ID 一次; 非 TEST 路径 (真实课前提醒) 不双发。
+     */
+    @Test
+    fun `action test posts reinforcement after first post`() {
+        val src = java.io.File(
+            "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
+        ).readText()
+        assert(src.contains("FIRST_POST_REINFORCE_MS")) { "reinforce constant missing" }
+        assert(src.contains("if (intent?.action == ACTION_TEST) {")) {
+            "reinforcement must be gated to ACTION_TEST only"
+        }
+    }
+
+    @Test
+    fun `gate probes live state not cached snapshot`() {
+        val src = java.io.File(
+            "../app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"
+        ).readText()
+        // 闸门必须现场 checkSelfPermission / canPostPromotedNotifications,
+        // 不读 reliabilitySnapshot 缓存 (授权返回后旧快照误拦第一次点击)。
+        assert(src.contains("nm?.let { runCatching { it.canPostPromotedNotifications() }")) {
+            "gate must probe promoted state live"
+        }
+        val gateBody = src.substring(src.indexOf("fun checkFluidCastGate"), src.indexOf("fun startFluidTestCast"))
+        assert("reliabilitySnapshot" !in gateBody) {
+            "gate must not read cached reliabilitySnapshot"
+        }
+    }
+}

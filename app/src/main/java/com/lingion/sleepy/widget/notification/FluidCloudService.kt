@@ -115,6 +115,13 @@ class FluidCloudService : Service() {
         handler.removeCallbacks(updater)
         FluidCastState.markStarted()
         postProgressNotification()
+        // ColorOS 16 首帖竞态 (2026-10-10 用户实测: 第一次点击永远不显示流体云,
+        // 第二次永远可以): 进程内第一条 promoted 通知被系统吞掉, 同 ID 的替换
+        // 更新才建立渲染会话。600ms 后重发同 ID 一次, 把首投伪装成"更新"路径。
+        // AOSP/其他厂商幂等无害: 同 ID 替换 + setOnlyAlertOnce, 无声无感。
+        if (intent?.action == ACTION_TEST) {
+            handler.postDelayed({ postProgressNotification() }, FIRST_POST_REINFORCE_MS)
+        }
         if (System.currentTimeMillis() < classEpoch) {
             handler.postDelayed(updater, UPDATE_INTERVAL_MS)
         }
@@ -199,6 +206,7 @@ class FluidCloudService : Service() {
     companion object {
         private const val UPDATE_INTERVAL_MS = 15_000L
         private const val TEST_WINDOW_MS = 2 * 60_000L
+        private const val FIRST_POST_REINFORCE_MS = 600L
         const val ACTION_TEST = "com.lingion.sleepy.action.FLUID_TEST"
         const val ACTION_STOP = "com.lingion.sleepy.action.FLUID_STOP"
 
