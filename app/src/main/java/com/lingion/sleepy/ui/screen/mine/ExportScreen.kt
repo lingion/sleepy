@@ -2,6 +2,7 @@ package com.lingion.sleepy.ui.screen.mine
 
 import android.Manifest
 import android.content.Intent
+import android.widget.Toast
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
@@ -22,6 +23,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Code
 import androidx.compose.material.icons.outlined.Share
+import androidx.compose.material.icons.outlined.SmartToy
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.Star
 import androidx.compose.material.icons.outlined.ExpandMore
@@ -58,12 +60,14 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
+import androidx.core.net.toUri
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.lingion.sleepy.R
 import com.lingion.sleepy.data.parser.ScheduleExporter
 import com.lingion.sleepy.data.parser.SleepyNativeExporter
+import com.lingion.sleepy.data.parser.XiaoaiPresetData
 import com.lingion.sleepy.ui.screen.schedule.ScheduleViewModel
 import com.lingion.sleepy.ui.theme.SleepyTheme
 import com.lingion.sleepy.ui.theme.noRippleClickable
@@ -314,6 +318,23 @@ fun ExportScreen(
                                     ctx = ctx,
                                     content = ScheduleExporter.exportWakeUpShareText(table, courses),
                                     subject = table.name,
+                                    onResult = { msg -> snackbarHostState.showSnackbar(msg) }
+                                )
+                            }
+                        }
+                    )
+                    Divider(colors.outlineVariant.copy(alpha = SleepyTheme.Alpha.hairline))
+                    ExportItem(
+                        icon = Icons.Outlined.SmartToy,
+                        title = stringResource(R.string.export_xiaoai_title),
+                        subtitle = stringResource(R.string.export_xiaoai_subtitle),
+                        onClick = {
+                            scope.launch {
+                                launchXiaoaiImport(
+                                    table = table,
+                                    courses = courses,
+                                    boundPeriodTable = table.periodTableId
+                                        ?.let { boundId -> allPeriodTables.find { it.id == boundId } },
                                     onResult = { msg -> snackbarHostState.showSnackbar(msg) }
                                 )
                             }
@@ -658,4 +679,49 @@ internal suspend fun shareText(
     }
     ctx.startActivity(Intent.createChooser(intent, ctx.getString(R.string.export_share_chooser)))
     onResult(ctx.getString(R.string.export_copied_hint))
+}
+
+/**
+ * 小爱课程表一键导入 — 2026-10-10。
+ *
+ * 深链 voiceassist://aiweb/?url=&presetData= 唤起小爱(或小爱课程表独立 App),
+ * H5 /import 路由读 presetData.importData 进预览, 用户确认后才写入小米云。
+ * Sleepy 侧只发 intent, 零网络零账号 — 数据不经过任何服务器。
+ *
+ * 未安装小爱 → ActivityNotFoundException → Toast 提示 + 官方下载页兜底。
+ */
+internal suspend fun launchXiaoaiImport(
+    table: com.lingion.sleepy.data.entity.TimeTableEntity,
+    courses: List<CourseEntity>,
+    boundPeriodTable: com.lingion.sleepy.data.entity.PeriodTableEntity?,
+    onResult: suspend (String) -> Unit
+) {
+    val ctx = SleepyApp.get()
+    if (courses.isEmpty()) {
+        onResult(ctx.getString(R.string.export_xiaoai_empty))
+        return
+    }
+    val presetData = XiaoaiPresetData.build(
+        table = table,
+        courses = courses,
+        periodTable = boundPeriodTable,
+    )
+    val link = XiaoaiPresetData.deepLink(presetData)
+    try {
+        ctx.startActivity(
+            Intent(Intent.ACTION_VIEW, link.toUri()).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+        )
+    } catch (e: android.content.ActivityNotFoundException) {
+        withContext(Dispatchers.Main) {
+            Toast.makeText(
+                ctx,
+                ctx.getString(R.string.export_xiaoai_not_installed),
+                Toast.LENGTH_LONG
+            ).show()
+        }
+        return
+    }
+    onResult(ctx.getString(R.string.export_xiaoai_launched))
 }

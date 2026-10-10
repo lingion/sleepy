@@ -697,6 +697,11 @@
     <string name="export_current_table_badge">現在の時間割</string>
     <string name="export_saved_to">Download/Sleepy/%1$s に保存しました</string>
     <string name="export_share_chooser">時間割を共有</string>
+    <string name="export_xiaoai_title">小愛課題表</string>
+    <string name="export_xiaoai_subtitle">小愛アプリに移動してプレビュー・取り込み（サーバー不経由）</string>
+    <string name="export_xiaoai_empty">この課題表に授業がなく、書き出せません</string>
+    <string name="export_xiaoai_not_installed">小愛が見つかりません。先に小愛アプリ（小愛課題表同梱）をインストールしてください</string>
+    <string name="export_xiaoai_launched">小愛課題表を開きました。プレビュー画面で取り込みを確認してください</string>
     <string name="export_share_subtitle">短いテキスト形式、チャットアプリに貼り付け可能</string>
     <string name="export_share_title">テキストを共有</string>
     <string name="export_start_date">学期開始 %1$s</string>
