@@ -1003,7 +1003,11 @@ object WidgetBitmapRenderers {
     fun weekGridMinimumTodayData(data: WeekData, today: LocalDate): WidgetData {
         val timeJson = data.days.firstOrNull()?.timeJson ?: ""
         val targetDate = if (data.weekDisplayStatus == WeekDisplayStatus.NEAREST_BUSY_DAY) {
-            data.days.minByOrNull { it.date }?.date ?: today
+            // 整周数据下 minBy=周一, 不一定是跳转目标日; 数据源显式给出 targetDate 时优先。
+            data.nearestBusyTargetDate
+                ?: data.days.firstOrNull { it.courses.isNotEmpty() }?.date
+                ?: data.days.minByOrNull { it.date }?.date
+                ?: today
         } else today
         val targetDay = data.days.firstOrNull { it.date == targetDate }
         return WidgetData(
