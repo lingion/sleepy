@@ -1143,6 +1143,16 @@
   },
   {
     "sortKey": "H",
+    "name": "湖北商贸学院",
+    "url": "https://jwxt.hbc.edu.cn/",
+    "type": "zf_new",
+    "aliases": [
+      "hbc.edu.cn"
+    ],
+    "sortKeyFull": "hubeishangmauxueyuan"
+  },
+  {
+    "sortKey": "H",
     "name": "湖北医药学院",
     "url": "https://jw.hbmu.edu.cn",
     "type": "cf",

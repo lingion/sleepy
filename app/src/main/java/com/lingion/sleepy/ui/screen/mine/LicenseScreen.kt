@@ -555,6 +555,12 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +
             "Xu-Jack11/MySchedule (MIT, 同端点直接旁证)\n" +
             "LanternCX/HZCUCourseChoose (MIT, 选课端点旁证)"
+    ),
+    PerSchoolEntry(
+        "school-hbsm", "湖北商贸学院 HBSM",
+        "用户采集包实锤 zf_new 协议 (新正方 zftal-ui-v5 裸 /kbcx/ 路径, xskbcx_cxXsgrkb kbList JSON)\n" +
+            "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +
+            "LonelyMarch/OpenWakeUp (AGPL-3.0, 该校 type=zf 伞型收录同域旁证, 未复用代码)"
     )
 )
 

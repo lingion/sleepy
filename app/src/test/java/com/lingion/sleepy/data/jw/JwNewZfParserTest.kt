@@ -122,6 +122,24 @@ class JwNewZfParserTest {
         assertTrue("应保留单/双周课信息", courses.any { it.type == 1 || it.type == 2 })
     }
 
+    /**
+     * 湖北商贸学院 HBSM (2026-10-10 脱敏采集包) 真实 kbList 报文:
+     * zf_new zftal-ui-v5 裸 /kbcx/ 路径, jc 带「节」后缀, zcd 含 "11-17周(单)" 单周形态,
+     * sjkList 实践环节 (军训/入学教育) 不产课程, 军事理论在 kbList 内正常落库。
+     * 18 课原始行 1:1 落库 (jc/zcd 均单段无展开), 教师名已脱敏为某某某。
+     */
+    @Test
+    fun `json kblist hbsm real capture parses odd weeks and skips sjk practice`() {
+        val src = readFixture("kblist_hbsm_20261010.json")
+        val courses = JwNewZfParser(src).generateCourseList()
+        assertCourses("kblist_hbsm_20261010", courses)
+        assertEquals("HBSM 18 课原始行应 1:1 落库", 18, courses.size)
+        assertTrue("应保留形势与政策-1 的单周 (11-17周(单)) 信息",
+            courses.any { it.name == "形势与政策-1" && it.type == 1 && it.startWeek == 11 && it.endWeek == 17 })
+        assertTrue("军事理论在 kbList 内, 应正常落库", courses.any { it.name == "军事理论" })
+        assertTrue("军训属 sjkList 实践环节, 不应出现在课表", courses.none { it.name == "军训" })
+    }
+
     @Test
     fun `json kblist bitmap and extremes parses 32bit`() {
         val src = readFixture("kblist_bitmap_and_extremes.json")

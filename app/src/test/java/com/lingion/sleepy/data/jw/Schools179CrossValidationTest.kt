@@ -181,7 +181,8 @@ class Schools179CrossValidationTest {
         // 341 existing entries + four newly verified schools.
         // 2026-10-02 收录浙大城市学院(zf_new, issue #90 WestGu 采集包, SSO /sso/ddlogin 入口) → 347
         // 2026-10-04 收录惠州学院(zf_new, 用户采集包 sleepy-adapt-1004, jwxt.hzu.edu.cn) → 348
-        assertEquals(348, entries().size)
+        // 2026-10-10 收录湖北商贸学院(zf_new, 用户采集包 hbsm-20261010, jwxt.hbc.edu.cn 裸 /kbcx/) → 349
+        assertEquals(349, entries().size)
     }
 
     @Test
@@ -192,6 +193,20 @@ class Schools179CrossValidationTest {
         assertTrue("吉林工商学院 条目缺失", e != null)
         assertTrue("入口应为 jwxt.jlbtc.edu.cn", e!!.optString("url").contains("jwxt.jlbtc.edu.cn"))
         assertEquals("应为 chaoxing (Powered by ChaoXing 采集包实锤)", "chaoxing", e.optString("type"))
+    }
+
+    @Test
+    fun `hbsm entry pinned to collector evidence`() {
+        // 采集包 hbsm-20261010 (湖北商贸学院-课表数据-脱敏.zip): jwxt.hbc.edu.cn
+        // zftal-ui-v5 指纹 + 裸 /kbcx/ 路径 + xskbcx_cxXsgrkb kbList JSON (18 条课程),
+        // sjkList 实践环节 (军训等 4 条) 无 xqj/jc 不入课表 — zf_new 标准行为。
+        // 跨仓: qiqqqqq517/shangkeschedule 独立收录该校为 zhengfang_new, 判定互证。
+        val e = entryOf("湖北商贸学院")
+        assertTrue("湖北商贸学院 条目缺失", e != null)
+        assertTrue("入口应为 jwxt.hbc.edu.cn", e!!.optString("url").contains("jwxt.hbc.edu.cn"))
+        assertEquals("应为 zf_new (kbList JSON 采集包实锤)", "zf_new", e.optString("type"))
+        assertEquals("sortKeyFull 应为全拼", "hubeishangmauxueyuan", e.optString("sortKeyFull"))
+        assertTrue("至少含 hbc.edu.cn 别名", e.optJSONArray("aliases").let { it != null && (0 until it.length()).any { i -> it.optString(i) == "hbc.edu.cn" } })
     }
 
     @Test
