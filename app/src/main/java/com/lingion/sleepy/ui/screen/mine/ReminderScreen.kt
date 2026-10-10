@@ -273,6 +273,15 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
     var reliabilitySnapshot by remember {
         mutableStateOf<BackgroundReliabilitySnapshot?>(null)
     }
+    // 投放状态对账: 服务端自然到期(测试窗口 2 分钟 / 真实课前窗口结束)时服务自停,
+    // 通知随之移除 — 轮询活动通知即真实投放态。ON_RESUME 兜底覆盖离开页面再回来的场景。
+    fun isFluidCastActive(): Boolean {
+        val nm = context.getSystemService(android.app.NotificationManager::class.java) ?: return false
+        return nm.activeNotifications.any {
+            it.id == com.lingion.sleepy.widget.notification.CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE
+        }
+    }
+
     // Re-inspect after entering the page and whenever the fluid toggle changes.
     // The snapshot is diagnostic only; standard reminders remain independently usable.
     suspend fun refreshReliabilitySnapshot() {
@@ -294,6 +303,9 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
         val observer = androidx.lifecycle.LifecycleEventObserver { _, event ->
             if (event == androidx.lifecycle.Lifecycle.Event.ON_RESUME) {
                 coroutineScope.launch {
+                    // 先对账投放状态再刷诊断: 服务 2 分钟窗口到期自停后,
+                    // fluidTesting 若不清, 按钮永远停在「投放中」(2026-10-10 用户实测)。
+                    if (fluidTesting && !isFluidCastActive()) fluidTesting = false
                     refreshReliabilitySnapshot()
                 }
             }
@@ -1236,6 +1248,16 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
             confirmButton = {},
             dismissButton = {}
         )
+    }
+
+    LaunchedEffect(fluidTesting) {
+        while (fluidTesting) {
+            delay(3000)
+            if (!isFluidCastActive()) {
+                fluidTesting = false
+                break
+            }
+        }
     }
 
     // The same picker edits either daily-summary time without duplicating its behavior.

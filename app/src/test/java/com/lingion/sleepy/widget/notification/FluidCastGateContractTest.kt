@@ -83,3 +83,36 @@ class FluidCastGateContractTest {
         assertNull(gate(liveCardState = VendorCapabilityState.UNKNOWN))
     }
 }
+
+class FluidCastStateReconciliationContractTest {
+    /**
+     * 锁「投放状态对账」语义 (2026-10-10 用户实测: 测试窗口 2 分钟到期, 服务自停,
+     * UI 停在「投放中」)。屏幕侧 isFluidCastActive() = 存在 id=NOTIFY_BEFORE_CLASS_BASE
+     * 的活动通知; 服务侧 updater 到期时 STOP_FOREGROUND_REMOVE + stopSelf 移除该通知。
+     * 两端 token 漂移(改 ID / 改移除方式)时此测试提醒同步。
+     */
+    @Test
+    fun `service self stop removes the cast notification`() {
+        val src = java.io.File(
+            "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
+        ).readText()
+        // updater 到期分支必须移除通知 + 自停
+        val expiryBranch = """else {
+                stopForeground(STOP_FOREGROUND_REMOVE)
+                stopSelf()
+            }"""
+        assert(src.contains(expiryBranch.replace("            }", "            }"))) {
+            "updater expiry branch must stopForeground(STOP_FOREGROUND_REMOVE) + stopSelf()"
+        }
+    }
+
+    @Test
+    fun `screen polls active notifications by the same id`() {
+        val src = java.io.File(
+            "../app/src/main/java/com/lingion/sleepy/ui/screen/mine/ReminderScreen.kt"
+        ).readText()
+        assert(src.contains("NOTIFY_BEFORE_CLASS_BASE")) { "screen must reference the cast notification id" }
+        assert(src.contains("activeNotifications")) { "screen must poll activeNotifications" }
+        assert(src.contains("isFluidCastActive()")) { "screen must have isFluidCastActive helper" }
+    }
+}
