@@ -390,16 +390,24 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         c.drawLine(colX + dayW, segment.start, colX + dayW, segment.end, p)
                     }
                 }
-                for (row in 0 until maxNode) {
-                    val rowY = rowTop(row)
+                // 线-卡协同 (用户 2026-10-10): 普通格间横线画在间隙中点, 卡上下各留 gapH/2;
+                // 旧口径线贴卡顶(0)、卡底离线 gapH, 空白全堆在卡下 → 上下不对称。
+                // 长休带(楚河汉界)双线保持原位贴 band 上下边, 不中点化; 与 Compose
+                // CourseTableView.drawBehind 同口径同步修改。
+                fun boundaryLineY(boundary: Int): Float = when {
+                    boundary <= 0 -> bodyTop + gapH / 2f                        // 网格首线
+                    boundary >= maxNode -> (bodyTop + bodyH - gapH) + gapH / 2f // 网格末线
+                    (boundary - 1) in mealBreakAfterRows -> rowTop(boundary)    // 长休带下边界: 原位
+                    else -> rowTop(boundary) - gapH / 2f                        // 普通格间: 间隙中点
+                }
+                for (row in 0..maxNode) {
+                    val rowY = boundaryLineY(row)
                     c.drawLine(x + timeW, rowY, x + timeW + gapW + dayCount * (dayW + gapW) - gapW, rowY, p)
                 }
                 for (band in mealBreakBands) {
                     c.drawLine(x + timeW, band.start,
                         x + timeW + gapW + dayCount * (dayW + gapW) - gapW, band.start, p)
                 }
-                c.drawLine(x + timeW, bodyTop + bodyH - gapH,
-                    x + timeW + gapW + dayCount * (dayW + gapW) - gapW, bodyTop + bodyH - gapH, p)
                 p.alpha = 255
             }
 
