@@ -184,7 +184,12 @@ data class WeekData(
      */
     val compactWindow: List<DayData> = emptyList(),
     /** 当前展示周状态。 */
-    val weekDisplayStatus: WeekDisplayStatus = WeekDisplayStatus.NORMAL
+    val weekDisplayStatus: WeekDisplayStatus = WeekDisplayStatus.NORMAL,
+    /**
+     * NEAREST_BUSY_DAY 档时被自动跳到的那一天（周网格 SMALL 最小档
+     * weekGridMinimumTodayData 用它定位单日; 其他档位/来源为 null 时回退旧口径）。
+     */
+    val nearestBusyTargetDate: LocalDate? = null
 )
 
 /** 两天视图数据 */

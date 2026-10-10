@@ -967,54 +967,46 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             val showDate = AppPrefs.isShowDate(context)
             val visibleDays = AppPrefs.getVisibleDays(context)
             return try {
-                // Triple<Table?, Status, List<Pair<dow, courses>>>
-                val loaded = kotlinx.coroutines.runBlocking {
-                    val app = SleepyApp.get()
-                    val repo = app.repository
-                    // 选表逻辑：先按 widgetId 取绑定表，未绑定则走 WidgetTableResolver（默认表优先），避免与 App 选中表不同步
-                    val t = WidgetTableResolver.resolveBoundTable(appWidgetId)
-                        ?: WidgetTableResolver.resolveCurrentTable()
-                    val status = if (t != null)
-                        DateUtils.semesterStatus(t.startDate, t.maxWeek, today)
-                    else DateUtils.SemesterStatus.IN_RANGE
-                    val map = if (t != null) {
-                        val week = DateUtils.currentWeek(t.startDate, today)
-                        (1..7).map { dow ->
-                            val date = DateUtils.dateOfWeekDay(today, dow)
+                kotlinx.coroutines.runBlocking {
+                    // v2 口径对齐 WeekViewWidget: 统一走 WidgetWeekDataLoader(内含
+                    // WeekDisplayResolver), 「无课自动跳最近有课日」开关生效于周网格。
+                    // - 本周没课(开关开) → 显示 targetDate 所在那一周的网格
+                    // - 开关关/学期外/今天还有课 → targetDate=today, 行为与旧实现一致
+                    val source = WidgetWeekDataLoader.resolve(appWidgetId)
+                    if (source == null) null else {
+                        val t = source.table
+                        val display = source.display
+                        val week = display.targetWeek
+                        // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
+                        val days = (1..7).map { dow ->
+                            val date = source.dateFor(dow)
                             // issue#44: 取课按调休映射
                             val courseDow = HolidayTransferHelper.effectiveDayOfWeek(context, t.id, date)
-                            // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
-                            val courses = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
-                                repo.getCoursesByDayOnce(t.id, courseDow)
-                                    .filter { it.inWeek(week) }.sortedBy { it.startNode }
-                            dow to courses
+                            val courses = if (display.semesterStatus == DateUtils.SemesterStatus.AFTER_END) emptyList() else
+                                source.coursesFor(courseDow, week)
+                            DayData(
+                                date = date,
+                                dayOfWeek = dow,
+                                courses = courses,
+                                timeJson = t.timeJson,
+                                isGrey = HolidayManager.shouldGrey(context, date, t.id)
+                            )
                         }
-                    } else emptyList()
-                    Triple(t, status, map)
-                }
-                val (t, status, daysPerCourse) = loaded
-                if (t == null) {
-                    WeekData(days = emptyList(), hasTable = false, isDark = isDark,
-                        themeKey = themeKey,
-                        showDate = showDate, visibleDays = visibleDays)
-                } else {
-                    val days = daysPerCourse.map { (dow, courses) ->
-                        val date = DateUtils.dateOfWeekDay(today, dow)
-                        DayData(
-                            date = date,
-                            dayOfWeek = dow,
-                            courses = courses,
-                            timeJson = t.timeJson,
-                            isGrey = runBlocking { HolidayManager.shouldGrey(context, date, t.id) }
+                        WeekData(
+                            days = days, hasTable = true, isDark = isDark,
+                            themeKey = themeKey,
+                            showDate = showDate, visibleDays = visibleDays,
+                            semesterStatus = display.semesterStatus,
+                            weekDisplayStatus = display.status,
+                            nearestBusyTargetDate = display.targetDate.takeIf {
+                                display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
+                            }
                         )
                     }
-                    WeekData(days = days, hasTable = true, isDark = isDark,
-                        themeKey = themeKey,
-                        showDate = showDate, visibleDays = visibleDays,
-                        semesterStatus = status)
-                }
-            } catch (e: Throwable) {
-                Log.e(TAG, "loadWeekData failed", e)
+                } ?: WeekData(days = emptyList(), hasTable = false, isDark = isDark,
+                    themeKey = themeKey,
+                    showDate = showDate, visibleDays = visibleDays)
+            } catch (_: Throwable) {
                 WeekData(days = emptyList(), hasTable = false, isDark = isDark,
                     themeKey = themeKey,
                     showDate = showDate, visibleDays = visibleDays)
