@@ -695,6 +695,11 @@
     <string name="export_current_table_badge">當前課表</string>
     <string name="export_saved_to">已儲存到 Download/Sleepy/%1$s</string>
     <string name="export_share_chooser">分享課表</string>
+    <string name="export_xiaoai_title">小愛課程表</string>
+    <string name="export_xiaoai_subtitle">跳轉小愛 App 預覽並匯入，資料不經任何伺服器</string>
+    <string name="export_xiaoai_empty">目前課表沒有課程，無法匯出</string>
+    <string name="export_xiaoai_not_installed">未偵測到小愛，請先安裝小愛 App（含小愛課程表）</string>
+    <string name="export_xiaoai_launched">已跳轉小愛課程表，請在預覽頁確認匯入</string>
     <string name="export_share_subtitle">短文字格式，可貼上到任何聊天工具</string>
     <string name="export_share_title">分享文字</string>
     <string name="export_start_date">開學 %1$s</string>
