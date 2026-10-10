@@ -799,6 +799,14 @@
     <string name="reminder_fluid_test_stop_button">結束投放</string>
     <string name="reminder_fluid_test_start_failed">流體雲測試啟動失敗，請重試</string>
     <string name="reminder_fluid_test_stop_failed">流體雲測試停止失敗，請重試</string>
+    <string name="reminder_fluid_gate_title">投放前權限檢查</string>
+    <string name="reminder_fluid_gate_message">以下條件未滿足，直接投放可能看不到流體雲：</string>
+    <string name="reminder_fluid_gate_notification">通知權限未授權</string>
+    <string name="reminder_fluid_gate_promoted">系統即時更新授權未開啟</string>
+    <string name="reminder_fluid_gate_vendor">廠商即時卡片能力異常</string>
+    <string name="reminder_fluid_gate_cast_anyway">仍要投放</string>
+    <string name="reminder_flher_gate_cast_anyway">仍要投放</string>
+    <string name="reminder_fluid_gate_go_settings">去設定</string>
     <string name="reminder_fluid_test_permission_denied">未授權通知，投放將不可見</string>
     <string name="reminder_reliability_title">背景可靠性</string>
     <string name="reminder_reliability_notification">通知權限：%1$s</string>

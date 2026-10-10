@@ -361,25 +361,59 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
         }
     }
 
-    // 流体云测试专用授权 launcher: 授权成功自动开始投放 (不用再点一次);
+    // 三查闸门: 通知权限 → promoted 实时更新授权 → 厂商能力。全绿返回 null (放行),
+    // 否则返回缺失字符串资源清单 — 弹窗逐条列出, 用户可「去设置」或「仍要投放」(明示降级)。
+    // 与诊断区同源 (liveCardCapability / reliabilitySnapshot), 不另起炉灶。
+    fun checkFluidCastGate(): List<Int>? {
+        val reasons = mutableListOf<Int>()
+        if (reliabilitySnapshot?.notificationPermissionGranted == false ||
+            liveCardCapability?.state == VendorCapabilityState.NOTIFICATION_PERMISSION_REQUIRED
+        ) {
+            reasons.add(R.string.reminder_fluid_gate_notification)
+        }
+        if (reliabilitySnapshot?.promotedOngoingAllowed == false) {
+            reasons.add(R.string.reminder_fluid_gate_promoted)
+        }
+        if (liveCardCapability?.state == VendorCapabilityState.SETTINGS_REQUIRED ||
+            liveCardCapability?.state == VendorCapabilityState.NOT_SUPPORTED
+        ) {
+            reasons.add(R.string.reminder_fluid_gate_vendor)
+        }
+        return reasons.takeIf { it.isNotEmpty() }
+    }
+
+    // 真正启动投放的单一入口 — 闸门放行 / 用户明知降级仍要投放, 都走这里。
+    fun startFluidTestCast() {
+        try {
+            androidx.core.content.ContextCompat.startForegroundService(
+                context,
+                Intent(
+                    context,
+                    com.lingion.sleepy.widget.notification.FluidCloudService::class.java
+                ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
+            )
+            Toast.makeText(context, R.string.reminder_fluid_test_started, Toast.LENGTH_SHORT).show()
+            fluidTesting = true
+        } catch (t: Throwable) {
+            android.util.Log.w("ReminderScreen", "fluid test start failed", t)
+            Toast.makeText(context, R.string.reminder_fluid_test_start_failed, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // 闸门拦截弹窗状态: reasons 非空时展示, 用户选择后清空。
+    var showFluidGateDialog by remember { mutableStateOf(false) }
+    var fluidGateBlockedReasons by remember { mutableStateOf<List<Int>>(emptyList()) }
+
+    // 流体云测试专用授权 launcher: 授权成功后重新过闸门 (可能还剩 promoted/厂商缺失),
     // 拒绝时明示「投放将不可见」, 不静默降级 (用户 2026-10-10 诉求)。
     val fluidTestPermissionLauncher = rememberLauncherForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { granted ->
         if (granted) {
-            try {
-                androidx.core.content.ContextCompat.startForegroundService(
-                    context,
-                    Intent(
-                        context,
-                        com.lingion.sleepy.widget.notification.FluidCloudService::class.java
-                    ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
-                )
-                Toast.makeText(context, R.string.reminder_fluid_test_started, Toast.LENGTH_SHORT).show()
-                fluidTesting = true
-            } catch (t: Throwable) {
-                android.util.Log.w("ReminderScreen", "fluid test start failed", t)
-                Toast.makeText(context, R.string.reminder_fluid_test_start_failed, Toast.LENGTH_SHORT).show()
+            val remaining = checkFluidCastGate()
+            if (remaining == null) startFluidTestCast() else {
+                fluidGateBlockedReasons = remaining
+                showFluidGateDialog = true
             }
         } else {
             Toast.makeText(context, R.string.reminder_fluid_test_permission_denied, Toast.LENGTH_LONG).show()
@@ -399,6 +433,42 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
 
     // 可靠性诊断行的直达入口: 只吞异常不禁用任何能力 —
     // 厂商 ROM 上系统页可能被裁剪, 打不开就静默放弃, 诊断行状态不受影响。
+    // 弹窗「去设置」: 复用诊断区同款厂商候选链 (promotion → channel → vendor → app
+    // 逐级回退), 与诊断区行为一致。
+    fun openVendorSettings() {
+        val cap = liveCardCapability ?: return
+        val launched = cap.settingsIntents.any { spec ->
+            try {
+                val intent = Intent(spec.action).apply {
+                    putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    if (spec.action == android.provider.Settings.ACTION_CHANNEL_NOTIFICATION_SETTINGS) {
+                        putExtra(
+                            android.provider.Settings.EXTRA_CHANNEL_ID,
+                            com.lingion.sleepy.widget.notification.CourseNotificationScheduler.CHANNEL_FLUID
+                        )
+                    }
+                }
+                context.startActivity(intent)
+                true
+            } catch (_: ActivityNotFoundException) {
+                false
+            } catch (_: SecurityException) {
+                false
+            }
+        }
+        if (!launched && cap.fallbackToAppNotificationSettings) {
+            try {
+                context.startActivity(
+                    Intent(android.provider.Settings.ACTION_APP_NOTIFICATION_SETTINGS).apply {
+                        putExtra(android.provider.Settings.EXTRA_APP_PACKAGE, context.packageName)
+                    }
+                )
+            } catch (_: ActivityNotFoundException) {
+                // 系统页也不可用 — 设备过旧, 静默放弃
+            }
+        }
+    }
+
     fun openExactAlarmSettings() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
         try {
@@ -909,40 +979,23 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                                     } else {
                                         FilledTonalButton(
                                             onClick = {
-                                                // 投放闸门 (用户 2026-10-10 诉求): 先查通知权限,
-                                                // 缺失则现场请求 — 授权成功自动开投, 拒绝明示「投放将不可见」,
-                                                // 不再静默降级成「投放中但什么都看不到」。
-                                                val notifGranted =
-                                                    Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU ||
-                                                    ContextCompat.checkSelfPermission(
-                                                        context, Manifest.permission.POST_NOTIFICATIONS
-                                                    ) == PackageManager.PERMISSION_GRANTED
-                                                if (!notifGranted) {
+                                                // 三查闸门 (用户 2026-10-10 二轮): 通知权限 + promoted
+                                                // 实时更新授权 + 厂商能力, 任一缺失弹窗列明 + 给设置入口,
+                                                // 用户明知降级可「仍要投放」, 不再静默降级。
+                                                // 通知权限缺失优先弹系统授权框 (授权后自动重过闸门);
+                                                // promoted/厂商缺失则弹闸门弹窗。
+                                                val notifMissing = reliabilitySnapshot?.notificationPermissionGranted == false
+                                                if (notifMissing && Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                                                     fluidTestPermissionLauncher.launch(
                                                         Manifest.permission.POST_NOTIFICATIONS
                                                     )
                                                 } else {
-                                                    try {
-                                                        androidx.core.content.ContextCompat.startForegroundService(
-                                                            context,
-                                                            Intent(
-                                                                context,
-                                                                com.lingion.sleepy.widget.notification.FluidCloudService::class.java
-                                                            ).setAction(com.lingion.sleepy.widget.notification.FluidCloudService.ACTION_TEST)
-                                                        )
-                                                        Toast.makeText(
-                                                            context,
-                                                            R.string.reminder_fluid_test_started,
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
-                                                        fluidTesting = true
-                                                    } catch (t: Throwable) {
-                                                        android.util.Log.w("ReminderScreen", "fluid test start failed", t)
-                                                        Toast.makeText(
-                                                            context,
-                                                            R.string.reminder_fluid_test_start_failed,
-                                                            Toast.LENGTH_SHORT
-                                                        ).show()
+                                                    val gate = checkFluidCastGate()
+                                                    if (gate == null) {
+                                                        startFluidTestCast()
+                                                    } else {
+                                                        fluidGateBlockedReasons = gate
+                                                        showFluidGateDialog = true
                                                     }
                                                 }
                                             },
@@ -1145,6 +1198,44 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                 }
             }
         }
+    }
+
+    // 流体云三查闸门拦截弹窗: 列出未满足项, 「去设置」走厂商候选链,
+    // 「仍要投放」= 用户明知降级继续 (不静默)。
+    if (showFluidGateDialog) {
+        AlertDialog(
+            onDismissRequest = { showFluidGateDialog = false },
+            title = { Text(stringResource(R.string.reminder_fluid_gate_title)) },
+            text = {
+                androidx.compose.foundation.layout.Column(
+                    verticalArrangement = androidx.compose.foundation.layout.Arrangement.spacedBy(8.dp)
+                ) {
+                    Text(stringResource(R.string.reminder_fluid_gate_message))
+                    fluidGateBlockedReasons.forEach { res ->
+                        Text(
+                            text = "• " + stringResource(res),
+                            style = MaterialTheme.typography.bodySmall
+                        )
+                    }
+                    androidx.compose.foundation.layout.Spacer(modifier = Modifier.height(12.dp))
+                    com.lingion.sleepy.ui.component.DialogActionButtons(
+                        confirmText = stringResource(R.string.reminder_fluid_gate_cast_anyway),
+                        onConfirm = {
+                            showFluidGateDialog = false
+                            startFluidTestCast()
+                        },
+                        dismissText = stringResource(R.string.reminder_fluid_gate_go_settings),
+                        onDismiss = {
+                            showFluidGateDialog = false
+                            openVendorSettings()
+                        },
+                        destructive = false
+                    )
+                }
+            },
+            confirmButton = {},
+            dismissButton = {}
+        )
     }
 
     // The same picker edits either daily-summary time without duplicating its behavior.
