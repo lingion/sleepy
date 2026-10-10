@@ -515,8 +515,19 @@ fun CardsGridView(
                                 drawLine(lineColor, Offset(x, segment.start), Offset(x, segment.end), stroke)
                             }
                         }
+                        // 线-卡协同 (用户 2026-10-10): 普通格间横线画在间隙中点, 卡上下各留半 gap;
+                        // 旧口径线贴卡顶(0)、卡底离线 gapH, 空白全堆在卡下 → 上下不对称。
+                        // 长休带(楚河汉界, 2026-09-09 用户令)双线保持原位贴 band 上下边, 不中点化。
+                        // boundary 0 保持 y=0: Box 上方是 Spacer(gapH), 负坐标有被父级裁剪风险。
                         for (boundary in 0..renderSlots.size) {
-                            val y = yOfRows(boundary.toFloat()).toPx()
+                            val y = when {
+                                boundary == 0 -> 0f
+                                (boundary - 1) in mealBreakAfterRows ->
+                                    yOfRows(boundary.toFloat()).toPx()          // 长休带下边界: 原位
+                                else ->
+                                    yOfRows(boundary.toFloat()).toPx() -
+                                        gapAfterRow(boundary - 1).toPx() / 2f   // 普通格间: 间隙中点
+                            }
                             drawLine(lineColor, Offset(timeW.toPx(), y), Offset(size.width, y), stroke)
                         }
                         for (band in breakBands) {
