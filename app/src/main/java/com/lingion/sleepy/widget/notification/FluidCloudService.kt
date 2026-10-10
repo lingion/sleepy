@@ -13,6 +13,21 @@ import com.lingion.sleepy.MainActivity
 import com.lingion.sleepy.R
 
 /**
+ * 进程内投放状态真源: 服务存活 = 投放中。
+ * 不用通知可见性当信号 — ColorOS 16 等系统在应用回前台时自动收起 promoted
+ * 实时通知 (activeNotifications 查不到), 但服务仍在投 (2026-10-10 用户实测)。
+ * UI 据此对账; 服务启动路径置位, 停止路径/onDestroy 清零。进程死则归零。
+ */
+object FluidCastState {
+    @Volatile
+    var casting: Boolean = false
+        private set
+
+    fun markStarted() { casting = true }
+    fun markStopped() { casting = false }
+}
+
+/**
  * Keeps the promoted course notification's progress synchronized with the
  * user's before-class reminder window. The capsule text remains static.
  */
@@ -34,6 +49,7 @@ class FluidCloudService : Service() {
             if (System.currentTimeMillis() < classEpoch) {
                 handler.postDelayed(this, UPDATE_INTERVAL_MS)
             } else {
+                FluidCastState.markStopped()
                 stopForeground(STOP_FOREGROUND_REMOVE)
                 stopSelf()
             }
@@ -88,6 +104,7 @@ class FluidCloudService : Service() {
                     startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, placeholder)
                 } catch (_: Throwable) {}
             }
+            FluidCastState.markStopped()
             androidx.core.app.NotificationManagerCompat.from(this)
                 .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
             stopForeground(STOP_FOREGROUND_REMOVE)
@@ -96,7 +113,15 @@ class FluidCloudService : Service() {
         }
 
         handler.removeCallbacks(updater)
+        FluidCastState.markStarted()
         postProgressNotification()
+        // ColorOS 16 首帖竞态 (2026-10-10 用户实测: 第一次点击永远不显示流体云,
+        // 第二次永远可以): 进程内第一条 promoted 通知被系统吞掉, 同 ID 的替换
+        // 更新才建立渲染会话。600ms 后重发同 ID 一次, 把首投伪装成"更新"路径。
+        // AOSP/其他厂商幂等无害: 同 ID 替换 + setOnlyAlertOnce, 无声无感。
+        if (intent?.action == ACTION_TEST) {
+            handler.postDelayed({ postProgressNotification() }, FIRST_POST_REINFORCE_MS)
+        }
         if (System.currentTimeMillis() < classEpoch) {
             handler.postDelayed(updater, UPDATE_INTERVAL_MS)
         }
@@ -152,6 +177,7 @@ class FluidCloudService : Service() {
     }
 
     private fun stopCloudNotification() {
+        FluidCastState.markStopped()
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             try {
                 val placeholder = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
@@ -171,6 +197,7 @@ class FluidCloudService : Service() {
 
     override fun onDestroy() {
         handler.removeCallbacks(updater)
+        FluidCastState.markStopped()
         super.onDestroy()
     }
 
@@ -179,6 +206,7 @@ class FluidCloudService : Service() {
     companion object {
         private const val UPDATE_INTERVAL_MS = 15_000L
         private const val TEST_WINDOW_MS = 2 * 60_000L
+        private const val FIRST_POST_REINFORCE_MS = 600L
         const val ACTION_TEST = "com.lingion.sleepy.action.FLUID_TEST"
         const val ACTION_STOP = "com.lingion.sleepy.action.FLUID_STOP"
 

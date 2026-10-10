@@ -724,6 +724,14 @@
     <string name="reminder_fluid_test_stop_button">结束投放</string>
     <string name="reminder_fluid_test_start_failed">流体云测试启动失败，请重试</string>
     <string name="reminder_fluid_test_stop_failed">流体云测试停止失败，请重试</string>
+    <string name="reminder_fluid_gate_title">投放前权限检查</string>
+    <string name="reminder_fluid_gate_message">以下条件未满足，直接投放可能看不到流体云：</string>
+    <string name="reminder_fluid_gate_notification">通知权限未授权</string>
+    <string name="reminder_fluid_gate_promoted">系统实时更新授权未开启</string>
+    <string name="reminder_fluid_gate_vendor">厂商实时卡片能力异常</string>
+    <string name="reminder_fluid_gate_cast_anyway">仍要投放</string>
+    <string name="reminder_fluid_gate_go_settings">去设置</string>
+    <string name="reminder_fluid_test_permission_denied">未授权通知，投放将不可见</string>
     <string name="reminder_fluid_test_course">测试课程</string>
     <string name="reminder_fluid_test_room">测试地点</string>
     <string name="reminder_reliability_title">后台可靠性</string>

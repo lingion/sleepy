@@ -811,6 +811,14 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="reminder_fluid_test_stop_button">End casting</string>
     <string name="reminder_fluid_test_start_failed">Failed to start Live update test. Please try again.</string>
     <string name="reminder_fluid_test_stop_failed">Failed to stop Live update test. Please try again.</string>
+    <string name="reminder_fluid_gate_title">Pre-cast permission check</string>
+    <string name="reminder_fluid_gate_message">These conditions are unmet. Casting now may not show the live card:</string>
+    <string name="reminder_fluid_gate_notification">Notification permission not granted</string>
+    <string name="reminder_fluid_gate_promoted">Live updates authorization off</string>
+    <string name="reminder_fluid_gate_vendor">Vendor live card capability abnormal</string>
+    <string name="reminder_fluid_gate_cast_anyway">Cast anyway</string>
+    <string name="reminder_fluid_gate_go_settings">Go to settings</string>
+    <string name="reminder_fluid_test_permission_denied">Notification permission not granted — the live card will be invisible</string>
     <string name="reminder_reliability_title">Background reliability</string>
     <string name="reminder_reliability_notification">Notifications: %1$s</string>
     <string name="reminder_reliability_exact_alarm">Exact alarms: %1$s</string>
