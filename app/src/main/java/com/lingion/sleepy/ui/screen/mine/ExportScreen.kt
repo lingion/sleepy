@@ -179,7 +179,9 @@ fun ExportScreen(
             )
         }
     ) { padding ->
-        if (table == null && selectedPeriodTable == null) {
+        // 空态只在课表与作息表都不存在时成立; 无课表但有作息表时正常渲染,
+        // 用户经顶部展开框选作息表导出(原生 + JSON) — 用户反馈 bug, 见契约测试。
+        if (table == null && selectedPeriodTable == null && allPeriodTables.isEmpty()) {
             Box(modifier = Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
                 Text(stringResource(R.string.export_no_table), color = colors.onSurfaceVariant)
             }
