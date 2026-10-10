@@ -352,6 +352,11 @@
     <string name="export_json_title">WakeUp 兼容 JSON</string>
     <string name="export_json_subtitle">完整课表结构，可被 WakeUp 课表等同类 App 直接导入</string>
     <string name="export_share_title">分享文本</string>
+    <string name="export_xiaoai_title">小爱课程表</string>
+    <string name="export_xiaoai_subtitle">跳转小爱 App 预览并导入，数据不经任何服务器</string>
+    <string name="export_xiaoai_empty">当前课表没有课程，无法导出</string>
+    <string name="export_xiaoai_not_installed">未检测到小爱，请先安装小爱 App（含小爱课程表）</string>
+    <string name="export_xiaoai_launched">已跳转小爱课程表，请在预览页确认导入</string>
     <string name="export_share_subtitle">短文本格式，可粘贴到任何聊天工具</string>
     <string name="export_ics_title">ICS 日历</string>
     <string name="calendar_import_title">添加到系统日历</string>
