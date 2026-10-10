@@ -6,6 +6,16 @@
   "_note": "Same-city recommendations, not campus distance ranking. Ministry home cities are the baseline, overridden by explicitly verified teaching locations or multi-city campuses. Campus overrides are a dated audit of known cases, not a complete inventory of every research institute. Never infer a city from a school name. Old names map explicitly to current names; independent colleges and named branch import entries are not merged into their parent schools.",
   "_campusAuditDate": "2026-10-06",
   "_campusOverrides": {
+    "湖北商贸学院": {
+      "cities": [
+        "武汉市",
+        "咸宁市"
+      ],
+      "sources": [
+        "https://www.hbsm.edu.cn/xxgk/xxjj.htm"
+      ],
+      "reason": "官网明确武汉、咸宁两校区办学。"
+    },
     "山东科技大学": {
       "cities": [
         "青岛市",

@@ -205,7 +205,7 @@ class Schools179CrossValidationTest {
         assertTrue("湖北商贸学院 条目缺失", e != null)
         assertTrue("入口应为 jwxt.hbc.edu.cn", e!!.optString("url").contains("jwxt.hbc.edu.cn"))
         assertEquals("应为 zf_new (kbList JSON 采集包实锤)", "zf_new", e.optString("type"))
-        assertEquals("sortKeyFull 应为全拼", "hubeishangmauxueyuan", e.optString("sortKeyFull"))
+        assertEquals("sortKeyFull 应为全拼", "hubeishangmaoxueyuan", e.optString("sortKeyFull"))
         assertTrue("至少含 hbc.edu.cn 别名", e.optJSONArray("aliases").let { it != null && (0 until it.length()).any { i -> it.optString(i) == "hbc.edu.cn" } })
     }
 
