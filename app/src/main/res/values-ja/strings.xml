@@ -804,7 +804,6 @@
     <string name="reminder_fluid_gate_title">配信前の権限チェック</string>
     <string name="reminder_fluid_gate_message">以下の条件が未充足のため、配信してもライブカードが表示されない可能性があります：</string>
     <string name="reminder_fluid_gate_notification">通知権限が許可されていません</string>
-    <string name="reminder_flow_gate_promoted">ライブアップデート権限がオフです</string>
     <string name="reminder_fluid_gate_promoted">ライブアップデート権限がオフです</string>
     <string name="reminder_fluid_gate_vendor">ベンダーライブカード機能に異常</string>
     <string name="reminder_fluid_gate_cast_anyway">それでも配信</string>
