@@ -1014,7 +1014,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 } ?: WeekData(days = emptyList(), hasTable = false, isDark = isDark,
                     themeKey = themeKey,
                     showDate = showDate, visibleDays = visibleDays)
-            } catch (_: Throwable) {
+            } catch (e: Throwable) {
+                Log.e(TAG, "loadWeekData failed", e)
                 WeekData(days = emptyList(), hasTable = false, isDark = isDark,
                     themeKey = themeKey,
                     showDate = showDate, visibleDays = visibleDays)
