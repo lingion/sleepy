@@ -61,15 +61,15 @@ fun TodayScreen(
 ) {
     val state by viewModel.state.collectAsState()
     val today = LocalDate.now()
-    // issue#44: 调休日按映射目标星期取课, 未映射走自然星期
-    val dayOfWeek = state.transferDayFor(today)
+    // issue#44: 取课走反向查(补班日=sourceDate 的课, 放假日=无课), 未映射走自然星期
+    val dayOfWeek = state.courseDayFor(today)
     val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
     // 学期外感知: BEFORE_START/AFTER_END 时今日课不按周过滤展示
     val semesterStatus = state.currentTable?.let {
         DateUtils.semesterStatus(it.startDate, it.maxWeek, today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val todayCourses = if (isOutOfSemester) emptyList() else state.courses.filter {
+    val todayCourses = if (isOutOfSemester || dayOfWeek == null) emptyList() else state.courses.filter {
         it.day == dayOfWeek && it.inWeek(actualWeek)
     }.let { list ->
         // 用户报障 2026-09-10: ownTime 课渲染前按真实时间归一化节点(与网格同一预处理),
@@ -189,13 +189,13 @@ fun CompactTodayPane(
 ) {
     val state by viewModel.state.collectAsState()
     val today = LocalDate.now()
-    val dayOfWeek = state.transferDayFor(today)
+    val dayOfWeek = state.courseDayFor(today)
     val actualWeek = state.currentTable?.let { DateUtils.currentWeek(it.startDate, today) } ?: state.currentWeek
     val semesterStatus = state.currentTable?.let {
         DateUtils.semesterStatus(it.startDate, it.maxWeek, today)
     } ?: DateUtils.SemesterStatus.IN_RANGE
     val isOutOfSemester = semesterStatus != DateUtils.SemesterStatus.IN_RANGE
-    val todayCourses = if (isOutOfSemester) emptyList() else state.courses.filter {
+    val todayCourses = if (isOutOfSemester || dayOfWeek == null) emptyList() else state.courses.filter {
         it.day == dayOfWeek && it.inWeek(actualWeek)
     }.let { list ->
         val tj = state.effectiveCurrentTable?.timeJson

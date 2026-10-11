@@ -209,12 +209,13 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, dates.first())
                         val days = dates.map { date ->
                             val week = DateUtils.currentWeek(table.startDate, date)
-                            val dow = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, date)
-                            val courses = if (status != DateUtils.SemesterStatus.IN_RANGE) emptyList()
+                            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
+                            val dow = HolidayTransferHelper.courseDayForDate(context, table.id, date)
+                            val courses = if (status != DateUtils.SemesterStatus.IN_RANGE || dow == null) emptyList()
                                 else source.coursesFor(dow, week)
                             DayData(
                                 date = date,
-                                dayOfWeek = dow,
+                                dayOfWeek = dow ?: date.dayOfWeek.value,
                                 courses = courses,
                                 timeJson = table.timeJson,
                                 isGrey = HolidayManager.shouldGrey(context, date, table.id)

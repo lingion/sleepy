@@ -16,7 +16,7 @@ class HolidayReminderConsumerTest {
     fun before_class_window_uses_policy_and_keeps_effective_weekday() {
         val text = source()
         assertTrue(text.contains("dataSource.allowsReminder"))
-        assertTrue(text.contains("effectiveDayOfWeek(table.id, date)"))
+        assertTrue(text.contains("courseDayForDate(table.id, date)"))
     }
 
     @Test

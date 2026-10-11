@@ -989,8 +989,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         val days = (1..7).map { dow ->
                             val date = source.dateFor(dow)
                             // issue#44: 取课按调休映射
-                            val courseDow = HolidayTransferHelper.effectiveDayOfWeek(context, t.id, date)
-                            val courses = if (display.semesterStatus == DateUtils.SemesterStatus.AFTER_END) emptyList() else
+                            val courseDow = HolidayTransferHelper.courseDayForDate(context, t.id, date)
+                            val courses = if (display.semesterStatus == DateUtils.SemesterStatus.AFTER_END || courseDow == null) emptyList() else
                                 source.coursesFor(courseDow, week)
                             DayData(
                                 date = date,

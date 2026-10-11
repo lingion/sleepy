@@ -177,8 +177,9 @@ class ClassDndScheduler(private val context: Context) {
                     .allowReminder
             ) continue
             val week = DateUtils.currentWeek(table.startDate, date)
+            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课, 跳过该天)
             val dow = com.lingion.sleepy.widget.HolidayTransferHelper
-                .effectiveDayOfWeek(context, table.id, date)
+                .courseDayForDate(context, table.id, date) ?: continue
             result += com.lingion.sleepy.SleepyApp.get().repository
                 .getCoursesByDayOnce(table.id, dow)
                 .filter { it.inWeek(week) }

@@ -61,7 +61,11 @@ data class ScheduleState(
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
 
-    /** issue#44: 给定日期实际应"按星期几取课"; 命中映射=targetDate 星期, 未命中=自然星期 */
+    /** issue#44: 给定日期实际应"按星期几取课"; 补班日=sourceDate 星期, 放假日=无课(null), 未命中=自然星期 */
+    fun courseDayFor(date: LocalDate): Int? =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.courseDayForDate(date, transfers)
+
+    /** issue#44 正向查(仅课表页 daySwap 用): 放假日 → targetDate 星期; 未命中=自然星期 */
     fun transferDayFor(date: LocalDate): Int =
         com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
 }

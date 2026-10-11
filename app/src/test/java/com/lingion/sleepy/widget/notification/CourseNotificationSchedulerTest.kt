@@ -54,13 +54,13 @@ class CourseNotificationSchedulerTest {
     private class FakeDataSource(
         var table: TimeTableEntity?,
         var byDay: Map<Int, List<CourseEntity>>,
-        private val dayMapping: (LocalDate) -> Int = { it.dayOfWeek.value },
+        private val dayMapping: (LocalDate) -> Int? = { it.dayOfWeek.value },
         private val holidayDates: Set<LocalDate> = emptySet(),
     ) : BeforeClassDataSource {
         override suspend fun resolveCurrentTable() = table
         override suspend fun coursesForDay(tableId: Long, dayOfWeek: Int) = byDay[dayOfWeek].orEmpty()
         override suspend fun allCourseIds() = byDay.values.flatten().map { it.id }
-        override fun effectiveDayOfWeek(tableId: Long?, date: LocalDate) = dayMapping(date)
+        override fun courseDayForDate(tableId: Long?, date: LocalDate): Int? = dayMapping(date)
         override fun isPublicHoliday(tableId: Long, date: LocalDate) = date in holidayDates
     }
 

@@ -404,8 +404,10 @@ object SystemCalendarManager {
         var date = from
         while (date.isBefore(until)) {
             val week = DateUtils.currentWeek(table.startDate, date)
+            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课, 跳过该天)
             val classDay = if (transfers.isEmpty()) date.dayOfWeek.value
-                else HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
+                else HolidayRangeOps.HolidayTransferOps.courseDayForDate(date, transfers)
+            if (classDay == null) { date = date.plusDays(1); continue }
             courses.asSequence().filter { it.day == classDay && it.inWeek(week) }.forEach { course ->
                 val interval = TimeTableUtils.effectiveCourseTime(course.isIrregularTime, course.startTime,
                     course.endTime, course.startNode, course.step, table.timeJson)

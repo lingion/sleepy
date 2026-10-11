@@ -26,12 +26,12 @@ class HolidayTransferWidgetContractTest {
     )
 
     @Test
-    fun all_consumers_use_shared_effectiveDayOfWeek() {
+    fun all_consumers_use_shared_courseDayForDate() {
         consumers.forEach { rel ->
             val text = src(rel)
             assertTrue(
-                "$rel must use HolidayTransferHelper.effectiveDayOfWeek (or VM courseDayFor)",
-                text.contains("effectiveDayOfWeek")
+                "$rel must use HolidayTransferHelper.courseDayForDate (reverse course-day lookup, 2026-10-11 fix)",
+                text.contains("courseDayForDate")
             )
         }
     }

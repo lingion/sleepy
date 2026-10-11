@@ -75,7 +75,7 @@ class WidgetRenderActivity : Activity() {
     private suspend fun renderWidgetBitmap(which: String, wDp: Float, hDp: Float): android.graphics.Bitmap {
         return when (which) {
             "today" -> {
-                // issue#44: 数据装载走 loadDataSync → HolidayTransferHelper.effectiveDayOfWeek
+                // issue#44: 数据装载走 loadDataSync → HolidayTransferHelper.courseDayForDate
                 WidgetBitmapRenderers.renderToday(
                     this,
                     TodayWidgetReceiver.loadDataSync(this, AppWidgetManager.INVALID_APPWIDGET_ID),

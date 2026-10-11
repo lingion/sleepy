@@ -209,9 +209,10 @@ open class WeekViewWidgetReceiver : AppWidgetProvider() {
                         // 学期前: 第 1 周课照常显示(预习); 学期后: 课程清空, renderer 画状态行
                         val days = (1..7).map { dayOfWeek ->
                             val date = source.dateFor(dayOfWeek)
-                            val effectiveDay = HolidayTransferHelper.effectiveDayOfWeek(context, table.id, date)
-                            val visible = if (status == DateUtils.SemesterStatus.AFTER_END) emptyList() else
-                                source.coursesFor(effectiveDay, week)
+                            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
+                            val courseDay = HolidayTransferHelper.courseDayForDate(context, table.id, date)
+                            val visible = if (status == DateUtils.SemesterStatus.AFTER_END || courseDay == null) emptyList() else
+                                source.coursesFor(courseDay, week)
                             DayData(
                                 date = date,
                                 dayOfWeek = dayOfWeek,

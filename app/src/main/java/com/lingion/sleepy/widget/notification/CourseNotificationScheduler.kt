@@ -305,8 +305,9 @@ class CourseNotificationScheduler private constructor(
                 continue
             }
             val week = DateUtils.currentWeek(table.startDate, date)
-            val dow = dataSource.effectiveDayOfWeek(table.id, date)
-            days += date to dataSource.coursesForDay(table.id, dow).filter { it.inWeek(week) }
+            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
+            val dow = dataSource.courseDayForDate(table.id, date)
+            days += date to if (dow == null) emptyList() else dataSource.coursesForDay(table.id, dow).filter { it.inWeek(week) }
         }
 
         // 逐天收集未来槽位; 同 courseId 保留最早的未来触发
@@ -388,7 +389,9 @@ class CourseNotificationScheduler private constructor(
                     .decide(app, today, table.id)
                     .allowReminder
             ) return@forEach
-            val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table.id, today)
+            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课, 跳过该表)
+            val dow = com.lingion.sleepy.widget.HolidayTransferHelper.courseDayForDate(app, table.id, today)
+                ?: return@forEach
             val week = DateUtils.currentWeek(table.startDate, today)
             // 防呆: 学期范围外不触发流体云(钳制周数会误匹配第 1 周的课)
             if (DateUtils.semesterStatus(table.startDate, table.maxWeek, today) != DateUtils.SemesterStatus.IN_RANGE) return@forEach
@@ -485,7 +488,8 @@ internal interface BeforeClassDataSource {
         resolveCurrentTable()?.let { t -> if (t.reminderEnabled) listOf(t) else emptyList() } ?: emptyList()
     suspend fun coursesForDay(tableId: Long, dayOfWeek: Int): List<CourseEntity>
     suspend fun allCourseIds(): List<Long>
-    fun effectiveDayOfWeek(tableId: Long?, date: LocalDate): Int
+    /** 取课语义(反向查): 补班日=sourceDate 星期, 放假日=null(无课), 未映射=自然星期 */
+    fun courseDayForDate(tableId: Long?, date: LocalDate): Int?
     /** Legacy holiday hook retained for source-compatible test fakes. */
     fun isPublicHoliday(tableId: Long, date: LocalDate): Boolean
     suspend fun allowsReminder(tableId: Long, date: LocalDate): Boolean = !isPublicHoliday(tableId, date)
@@ -538,8 +542,8 @@ internal class AndroidBeforeClassDataSource(private val ctx: Context) : BeforeCl
         return repo.getAllTables().flatMap { repo.getCourses(it.id) }.map { it.id }
     }
 
-    override fun effectiveDayOfWeek(tableId: Long?, date: LocalDate): Int =
-        com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(ctx, tableId, date)
+    override fun courseDayForDate(tableId: Long?, date: LocalDate): Int? =
+        com.lingion.sleepy.widget.HolidayTransferHelper.courseDayForDate(ctx, tableId, date)
 
     override fun isPublicHoliday(tableId: Long, date: LocalDate): Boolean =
         com.lingion.sleepy.util.HolidayManager.isPublicHolidayCached(ctx, date, tableId)
@@ -650,11 +654,12 @@ private suspend fun sendScheduleSummary(
     data class TableSummary(val table: TimeTableEntity, val courses: List<CourseEntity>)
 
     val summaries = activeTables.map { table ->
-        val dow = com.lingion.sleepy.widget.HolidayTransferHelper.effectiveDayOfWeek(app, table.id, targetDate)
+        // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
+        val dow = com.lingion.sleepy.widget.HolidayTransferHelper.courseDayForDate(app, table.id, targetDate)
         val week = DateUtils.currentWeek(table.startDate, targetDate)
         val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, targetDate) ==
             DateUtils.SemesterStatus.IN_RANGE
-        val courses = if (!inSemester) {
+        val courses = if (!inSemester || dow == null) {
             emptyList()
         } else {
             repo.getCoursesByDayOnce(table.id, dow)

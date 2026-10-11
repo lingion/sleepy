@@ -198,4 +198,44 @@ class HolidayTransferOpsTest {
         assertEquals(6, out.first { it.id == 2L }.day)  // 周三→6
         assertEquals(null, out.firstOrNull { it.id == 3L })  // 周六屏蔽
     }
+
+    // ==================== 2026-10-11 报障: 取课语义反向查询 ====================
+    //
+    // 用户场景(Honor Win RT, v1.0.61): 10-07(周三) 放假调休到 10-11(周日)。
+    // 「课表」页 daySwap 正常显示 10-07 的课, 但「今日」页空白、早晨推送报无课、
+    // 课前提醒与自动勿扰全失效 — 取课链路(今日页/widget/通知/DND)用的是
+    // effectiveDayOfWeek 正向查(sourceDate==date), 补班日永远查不到,
+    // 落回自然星期(周日); 用户周日无课 → 全空。
+    //
+    // courseDayForDate 取课语义(反向查):
+    //   补班日(targetDate 命中) → 上 sourceDate 那天的课
+    //   放假日(sourceDate 命中, 课被调走) → null(当天无课)
+    //   未命中 → 自然星期
+
+    @Test
+    fun courseDayForDate_makeupDay_takes_sourceDate_courses() {
+        // 10-07(周三3) 调休到 10-11(周日7): 补班日 10-11 应取周三的课
+        val transfers = listOf(HolidayTransferEntry(d(10, 7), d(10, 11), "seg-national"))
+        assertEquals(3, Ops.courseDayForDate(d(10, 11), transfers))
+    }
+
+    @Test
+    fun courseDayForDate_holidayDay_has_no_courses() {
+        // 放假日 10-07 的课被调走 → 当天无课
+        val transfers = listOf(HolidayTransferEntry(d(10, 7), d(10, 11), "seg-national"))
+        assertNull(Ops.courseDayForDate(d(10, 7), transfers))
+    }
+
+    @Test
+    fun courseDayForDate_unmapped_returns_natural() {
+        val transfers = listOf(HolidayTransferEntry(d(10, 7), d(10, 11), "seg-national"))
+        // 10-12 周一, 未映射 → 自然星期 1
+        assertEquals(1, Ops.courseDayForDate(d(10, 12), transfers))
+    }
+
+    @Test
+    fun courseDayForDate_empty_transfers_returns_natural() {
+        // 无任何映射: 按自然星期取课(回归保护 — 不设映射时行为与旧版一致)
+        assertEquals(7, Ops.courseDayForDate(d(10, 11), emptyList()))
+    }
 }
