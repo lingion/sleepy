@@ -355,7 +355,8 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 - Reminder content **queries the day's timetable live**; on empty days it pushes "Today the Xth, no classes"
 - Notifications go through `AlarmManager` exact/inexact dual-path fallback, Android 12+ compatible
 - `BootReceiver` re-registers after reboot/app update
-- Toggle state persists locally (`AppPrefs`, SharedPreferences)
+- Master toggle state persists locally (`AppPrefs`, SharedPreferences)
+- **Per-timetable reminders**: open Mine → Reminders → Timetable reminders to see every timetable and toggle each one. Changes save immediately and retain existing choices. You can configure them while the master switch is off; they take effect when it is enabled. The timetable editor no longer contains this switch.
 - Today, tomorrow, and before-class reminders provide live schedule previews
 - Date rules distinguish public holidays, transferred days, make-up workdays, and ordinary weekends
 - Before-class reminders can use a notification banner and experimental live notifications; the page includes main-field selection, a test action, and notification/alarm/battery reliability diagnostics
