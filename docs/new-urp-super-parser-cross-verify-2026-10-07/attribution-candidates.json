@@ -42,6 +42,13 @@
     "license_status": "unverified metadata; author used in attribution"
   },
   {
+    "project": "SuperCourseTimetableBot",
+    "author": "StageGuard",
+    "role_in_verification": "NEGATIVE",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
+  },
+  {
     "project": "xjtu-toolbox-android",
     "author": "yeliqin666",
     "role_in_verification": "INDIRECT",
@@ -227,6 +234,13 @@
     "project": "shou-api",
     "author": "shouDeveloper",
     "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
+  },
+  {
+    "project": "classtable",
+    "author": "kuailiaojie",
+    "role_in_verification": "NEGATIVE",
     "license": null,
     "license_status": "unverified metadata; author used in attribution"
   },

@@ -619,13 +619,14 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     ),
     PerSchoolEntry(
         "school-new-urp-super", "新 URP 数组变体（跨校协议）",
-        "WakeUp NewUrpSuperParser 反编译提供字段模型；37 个相关仓库仅为间接生态或协议边界参考，未证实同款接口：\n" +
+        "WakeUp NewUrpSuperParser 反编译提供字段模型；39 个相关仓库仅为间接生态或协议边界参考，未证实同款接口：\n" +
             "Airmole/ShellBox\n" +
             "danbaixi/yunxiaozhi\n" +
             "dairoot/school-api\n" +
             "frederick-wang/scu-urp-assistant\n" +
             "LeonidasCl/seu-jwc-catcher\n" +
             "HaoZai000/NexioSchedule\n" +
+            "StageGuard/SuperCourseTimetableBot (NEGATIVE, 协议边界)\n" +
             "yeliqin666/xjtu-toolbox-android\n" +
             "LittFlower/SCU-URP-Helper\n" +
             "Lorcas-Zephyr/aoxiang-assistant\n" +
@@ -653,6 +654,7 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "ArrogHie/XMUTimeTabel\n" +
             "yuchenii/AIschedule-HHU-URP\n" +
             "shouDeveloper/shou-api\n" +
+            "kuailiaojie/classtable (NEGATIVE, 无匹配源码)\n" +
             "adminerest/SHOU-urp-auto-choose-lessons\n" +
             "neiro-o/seuGrabber\n" +
             "arnoliudaxia/shanghaitech-chooseCourse-query\n" +

@@ -6,7 +6,9 @@
     "review_date": "2026-10-13",
     "verified_positive": 0,
     "indirect": 37,
-    "negative": 4
+    "negative": 4,
+    "credited_related": 39,
+    "excluded_unrelated": 2
   },
   "verdicts": [
     {
@@ -93,7 +95,7 @@
       "verdict": "NEGATIVE",
       "newurp_files": [],
       "has_select": false,
-      "notes": "Excluded: reminder bot, not academic-system parser",
+      "notes": "Related timetable ecosystem/boundary; no matching flat-array source proven",
       "description": "基于 mirai-console 的 超级课表上课提醒QQ机器人 插件",
       "evidence": "target_repos.json metadata and historical search results; not pinned source"
     },
@@ -412,7 +414,7 @@
       "verdict": "NEGATIVE",
       "newurp_files": [],
       "has_select": false,
-      "notes": "Excluded: no matching source files or descriptive proof",
+      "notes": "Related timetable ecosystem/boundary; no matching flat-array source proven",
       "description": "",
       "evidence": "target_repos.json metadata and historical search results; not pinned source"
     },
