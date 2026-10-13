@@ -535,7 +535,7 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     ),
     PerSchoolEntry(
         "school-kingo-zx", "新青果 super 协议适配（2026-10）",
-        "WakeUp NewKingosoftSuperParser smali 主参考 (YZune, 反向)\nOpenWakeUp NewKingosoftSuperParser (LonelyMarch, AGPL-3.0)\nNYIST-CIPS/CourseTable (NYIST-CIPS, MIT, 间接协议旁证)\nicepie/aischedule-lit-kingosoft (MIT, 间接协议旁证)\nlizhengqiang/kingosoft_api (间接接口旁证)\nershiyidian/WakeUp_SHU (ershiyidian, 同源青果协议旁证)\n52funny/KINGOSOFT-LOGIN (青果登录端点)\nXTAI9/SYU_KINGGOClassSel (青果选课端点旁证)\nwzj1122/jxufe-auto-evaluate (MIT, 青果族批量请求)\nKou-JunHao/mi-schedule (MIT, 青果族渲染)\nDaydream357/WakeUpSchedule (MIT, WakeUp 通用反混淆)"
+        "WakeUp NewKingosoftSuperParser smali 主参考 (YZune, 反向)\nOpenWakeUp NewKingosoftSuperParser (LonelyMarch, AGPL-3.0)\nNYIST-CIPS/CourseTable (NYIST-CIPS, MIT, 间接协议旁证)\nicepie/aischedule-lit-kingosoft (MIT, 间接协议旁证)\nlizhengqiang/kingosoft_api (间接接口旁证)\nershiyidian/WakeUp_SHU (ershiyidian, 同源青果协议旁证)\n52funny/KINGOSOFT-LOGIN (青果登录端点)\nXTAI9/SYU_KINGGOClassSel (青果选课端点旁证)\nwzj1122/jxufe-auto-evaluate (MIT, 青果族批量请求)\nKou-JunHao/mi-schedule (MIT, 青果族渲染)\nDaydream357/WakeUpSchedule (MIT, WakeUp 通用反混淆)\nicepie/oh-my-lit (AGPL-3.0, negative layout control)"
     ),
     PerSchoolEntry(
         "school-wakeup-family", "WakeUp 兼容协议族调研",

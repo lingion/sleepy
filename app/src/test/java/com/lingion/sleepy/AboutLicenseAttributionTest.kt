@@ -298,7 +298,7 @@ class AboutLicenseAttributionTest {
         Attribution("jxufe-auto-evaluate", "wzj1122"),
         Attribution("mi-schedule", "Kou-JunHao"),
         Attribution("WakeUpSchedule", "Daydream357"),
-        Attribution("oh-my-lit", "AGPL-3.0"),
+        Attribution("icepie/oh-my-lit", "AGPL-3.0"),
         // 2026-09-19 byxt.buaa.edu.cn (新本研教务, 金智 jwapp homeapp 族) 跨仓验证 13 仓全量纳入
         Attribution("fontlos/buaa-api", "MIT"),
         Attribution("BUAASubnet/UBAA", "MIT"),
