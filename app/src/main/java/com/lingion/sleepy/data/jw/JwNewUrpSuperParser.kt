@@ -129,7 +129,6 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
         }
         val starts = ArrayDeque<Int>()
         var parsedChars = 0L
-        var candidateEnd = -1
         var inString = false
         var escaped = false
         for (end in source.indices) {
@@ -142,13 +141,15 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
             }
             when (ch) {
                 '"' -> inString = true
-                '[' -> starts.addLast(end)
+                '[' -> {
+                    if (starts.isEmpty()) parsedChars = 0L
+                    starts.addLast(end)
+                }
                 ']' -> if (starts.isNotEmpty()) {
                     val start = starts.removeLast()
                     if (kcm[end + 1] == kcm[start] || skzc[end + 1] == skzc[start] ||
                         id[end + 1] == id[start]) continue
                     val length = end - start + 1
-                    if (end > candidateEnd) { parsedChars = 0L; candidateEnd = end }
                     // A valid large array gets its first parse. Repeated nested
                     // candidates are bounded by aggregate input scanned by JSON.
                     if (parsedChars + length > source.length.toLong() * 3) continue
