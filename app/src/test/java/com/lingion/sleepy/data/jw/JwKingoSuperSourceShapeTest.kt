@@ -79,6 +79,18 @@ class JwKingoSuperSourceShapeTest {
         assertEquals("老课", explicit.generateCourseList().single().name)
     }
 
+    @Test fun genericRegistryPreservesLegacyZxSparseGrid() {
+        val html = """<table id='mytable'><tr><td>节次</td>
+            <td class='td'><div>数据结构<br>钱老师<br>5,7,9,13-16,1-18 单[5-6]<br>教2-301</div></td>
+            <td class='td'><div>大学英语<br>孙老师<br>2-8 双[1-2]<br>教1-102</div></td>
+            </tr></table>"""
+        val zx = JwKingoZxParser(html).generateCourseList()
+        val (generic, _) = JwParserRegistry.selectBest(html)
+        val (declared, _) = JwParserRegistry.selectBest(html, JwProtocol.TYPE_KINGO_ZX)
+        assertEquals(zx, generic)
+        assertEquals(zx, declared)
+    }
+
     @Test fun noLayoutGivesAggregateError() {
         val ex = try { JwKingoParser("<html><body></body></html>").generateCourseList(); null }
             catch (e: IllegalStateException) { e }
