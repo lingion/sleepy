@@ -97,4 +97,13 @@ class JwKingoZxParserTest {
         assertTrue(FrameTraversalTree.findAnchors("<table id='pageRpt'></table>").contains("pageRpt"))
         assertTrue(FrameTraversalTree.findAnchors("<table id='mytable'></table>").contains("mytable"))
     }
+
+    @Test fun genericSelectionRoutesCapturedKingoReport() {
+        val html = javaClass.getResource("/jw/kingo-zx/kingo_zx_sample.html")!!.readText()
+        assertTrue(FrameTraversalTree.findAnchors(html).contains("pageRpt"))
+        val (courses, attempts) = JwParserRegistry.selectBest(html)
+        assertEquals(2, courses.size)
+        assertEquals("线性代数", courses.first().name)
+        assertTrue(attempts.any { it.type == JwProtocol.TYPE_KINGO_ZX && it.courseCount == 2 })
+    }
 }

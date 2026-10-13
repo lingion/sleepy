@@ -56,6 +56,9 @@ object JwProtocol {
      */
     const val TYPE_THU = "thu"
 
+    /** Kingosoft ZX: pageRpt reports and mytable grids. */
+    const val TYPE_KINGO_ZX = "kingo_zx"
+
     /** WakeUp 金智课程表回退族。 */
     const val TYPE_JZ = "jz"
 
@@ -280,7 +283,7 @@ object JwProtocol {
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
-        TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
+        TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU,
     )
 
@@ -298,6 +301,7 @@ object JwProtocol {
         TYPE_PKU -> "北京大学"
         TYPE_BNUZ -> "北师珠"
         TYPE_KINGO_NEW -> "新青果/金智教务"
+        TYPE_KINGO_ZX -> "青果教务 (ZX 子变体)"
         TYPE_JZ -> "金智教务（WakeUp 兼容）"
         TYPE_SOUTH_SOFT -> "南软研究生教务"
         TYPE_CHAOXING_LEGACY -> "超星教务（旧版）"
@@ -337,7 +341,7 @@ object JwProtocol {
         TYPE_UCAS -> "other"
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
-        TYPE_KINGO_NEW, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
+        TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
