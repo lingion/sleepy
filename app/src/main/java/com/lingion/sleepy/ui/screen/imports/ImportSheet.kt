@@ -1574,48 +1574,29 @@ internal suspend fun applyImportPreview(
             // 最终 confirmedTimeJson 兜底建表并绑定, 三个入口作息表行为统一。
             // v1.0.56 T6: 用户在第三 Tab 显式选了作息表 → 绑定用户所选(优先于自动建表绑定);
             // v1.0.56 T10: 自动建表走全局唯一名顺延(撞名加后缀, 禁与既有课表/作息表同名)
-            val importedPeriodTableId = bindPeriodTableId ?: preview.parseResult.periodTable?.let { pt ->
-                val courseNames = repo.getAllTables().map { it.name }
-                val periodNames = repo.getAllPeriodTables().map { it.name }
-                repo.insertPeriodTable(
-                    com.lingion.sleepy.data.entity.PeriodTableEntity(
-                        name = TimeTableUtils.suggestUniqueName(pt.name, courseNames, periodNames),
-                        nodesPerDay = pt.nodesPerDay,
-                        timeJson = pt.timeJson
-                    )
-                )
-            } ?: run {
-                val courseNames = repo.getAllTables().map { it.name }
-                val periodNames = repo.getAllPeriodTables().map { it.name }
-                repo.insertPeriodTable(
-                    com.lingion.sleepy.data.entity.PeriodTableEntity(
-                        name = TimeTableUtils.suggestUniqueName(
-                            confirmedTableName.trim(), courseNames, periodNames,
-                            defaultName = preview.parseResult.tableName,
-                        ),
-                        nodesPerDay = TimeTableUtils.parseTimeSlotRows(confirmedTimeJson).size,
-                        timeJson = confirmedTimeJson
-                    )
-                )
-            }
-            val newTableId = repo.insertTable(
-                TimeTableEntity(
+            val importedPeriod = com.lingion.sleepy.util.importedPeriodTableDraft(
+                bindingId = bindPeriodTableId,
+                name = TimeTableUtils.suggestUniqueName(
+                    preview.parseResult.periodTable?.name ?: confirmedTableName.trim(),
+                    repo.getAllTables().map { it.name }, repo.getAllPeriodTables().map { it.name },
+                    defaultName = preview.parseResult.tableName
+                ),
+                confirmedTimeJson = confirmedTimeJson
+            )
+            repo.importNewTable(
+                table = TimeTableEntity(
                     name = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context),
                     startDate = confirmedStartDate,
                     maxWeek = if (preview.parseResult.maxWeek > 0) preview.parseResult.maxWeek else base?.maxWeek ?: 20,
+                    nodesPerDay = TimeTableUtils.parseTimeSlotRows(confirmedTimeJson).size.coerceAtLeast(1),
                     timeJson = confirmedTimeJson,
-                    color = base?.color ?: "#FF6750A4",
-                    isDefault = false,
-                    periodTableId = importedPeriodTableId
-                )
+                    color = base?.color ?: "#FF6750A4"
+                ),
+                courses = preview.parseResult.courses,
+                periodTable = importedPeriod,
+                bindPeriodTableId = bindPeriodTableId,
+                keepGroups = preview.parseResult.groupIdsAuthoritative
             )
-            // sleepy-v1: groupId 权威时保留分区(ImportAsNew 全量落新课表, 等价 replace 语义)
-            if (preview.parseResult.groupIdsAuthoritative) {
-                repo.insertCoursesKeepingGroups(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
-            } else {
-                repo.insertCourses(preview.parseResult.courses.map { it.copy(id = 0, tableId = newTableId) })
-            }
-            repo.setDefault(newTableId)
             // v7.10.12: 整表新建不过闸门, 超层时提示(同 ReplaceCurrent 策略)
             val badDaysNew = com.lingion.sleepy.util.ConflictLayoutEngine
                 .daysExceedingTwoLanes(preview.parseResult.courses)
@@ -1695,27 +1676,12 @@ internal suspend fun applyImportPreview(
             val mergedRows = TimeTableUtils.parseTimeSlotRows(mergedTimeJson)
             // 用户 2026-10-05(2a): 合并新建课表同样恒建+绑作息表(以 mergedTimeJson 为源)。
             val mergedName = uniqueImportedTableName(confirmedTableName, repo.getAllTables().map { it.name }, context)
-            val mergedPeriodTableId = repo.insertPeriodTable(
-                com.lingion.sleepy.data.entity.PeriodTableEntity(
-                    name = TimeTableUtils.suggestUniqueName(
-                        mergedName, repo.getAllTables().map { it.name },
-                        repo.getAllPeriodTables().map { it.name },
-                    ),
-                    nodesPerDay = mergedRows.size,
-                    timeJson = mergedTimeJson
-                )
-            )
-            val newTableId = repo.insertTable(
-                TimeTableEntity(
-                    name = mergedName,
-                    startDate = confirmedStartDate,
-                    maxWeek = if (incoming.maxWeek > 0) incoming.maxWeek else base?.maxWeek ?: 20,
-                    nodesPerDay = if (mergedRows.isNotEmpty()) mergedRows.size else base?.nodesPerDay ?: 12,
-                    timeJson = mergedTimeJson,
-                    color = base?.color ?: "#FF6750A4",
-                    isDefault = false,
-                    periodTableId = mergedPeriodTableId
-                )
+            val mergedPeriod = PeriodTableEntity(
+                name = TimeTableUtils.suggestUniqueName(
+                    mergedName, repo.getAllTables().map { it.name }, repo.getAllPeriodTables().map { it.name }
+                ),
+                nodesPerDay = mergedRows.size.coerceAtLeast(1),
+                timeJson = mergedTimeJson
             )
             // 当前课表原课 + 导入课程合并导入新课表
             // v7.10.16i: 老课全量保留(dropThreeLayerCourses 只返回候选幸存者)。
@@ -1737,14 +1703,19 @@ internal suspend fun applyImportPreview(
             // 全量合并入库: 老课 + 全部非重复导入课(仅提示, 不再剔除 — 闸门只拦编辑恶化,
             // 合并是新建课表, 用户明确要的就是并集)
             // AppendAsNew 合并新老课: 导入侧 groupId 权威时仅对导入课保组, 老课照原样保组
-            if (preview.parseResult.groupIdsAuthoritative) {
-                val keptOld = oldCourses.map { it.copy(id = 0, tableId = newTableId) }
-                val keptIncoming = cleanIncoming.map { it.copy(id = 0, tableId = newTableId) }
-                repo.insertCoursesKeepingGroups(keptOld + keptIncoming)
-            } else {
-                repo.insertCourses((oldCourses + cleanIncoming).map { it.copy(id = 0, tableId = newTableId) })
-            }
-            repo.setDefault(newTableId)
+            repo.importNewTable(
+                table = TimeTableEntity(
+                    name = mergedName,
+                    startDate = confirmedStartDate,
+                    maxWeek = if (incoming.maxWeek > 0) incoming.maxWeek else base?.maxWeek ?: 20,
+                    nodesPerDay = mergedRows.size.coerceAtLeast(1),
+                    timeJson = mergedTimeJson,
+                    color = base?.color ?: "#FF6750A4"
+                ),
+                courses = oldCourses + cleanIncoming,
+                periodTable = mergedPeriod,
+                keepGroups = preview.parseResult.groupIdsAuthoritative
+            )
             onImported()
         }
         ImportApplyMode.AppendAll -> {

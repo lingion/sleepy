@@ -40,30 +40,29 @@ class ImportPeriodTableCreationContractTest {
     }
 
     @Test
-    fun `ImportAsNew falls back to creating a period table from confirmedTimeJson`() {
+    fun newImportsUseConfirmedScheduleAndAtomicRepositoryOperation() {
         val src = loadSource("ui/screen/imports/ImportSheet.kt")
         val branch = balancedBlock(src, "ImportApplyMode.ImportAsNew -> {")
-        assertTrue(
-            "ImportAsNew 解析器无 P 区块时必须以 confirmedTimeJson 兜底建作息表 (?: run { insertPeriodTable … })",
-            Regex(
-                """\?:\s*run\s*\{[\s\S]{0,600}?insertPeriodTable[\s\S]{0,400}?confirmedTimeJson"""
-            ).containsMatchIn(branch),
-        )
+        assertTrue(branch.contains("importedPeriodTableDraft("))
+        assertTrue(branch.contains("confirmedTimeJson = confirmedTimeJson"))
+        assertTrue(branch.contains("bindPeriodTableId = bindPeriodTableId"))
+        assertTrue(branch.contains("repo.importNewTable("))
+        assertTrue(!branch.contains("repo.insertPeriodTable("))
     }
 
     @Test
-    fun `AppendAsNew creates and binds a period table for the merged table`() {
-        val src = loadSource("ui/screen/imports/ImportSheet.kt")
-        val branch = balancedBlock(src, "ImportApplyMode.AppendAsNew -> {")
-        assertTrue(
-            "AppendAsNew 必须以 mergedTimeJson 建作息表",
-            Regex(
-                """insertPeriodTable[\s\S]{0,500}?mergedTimeJson"""
-            ).containsMatchIn(branch),
-        )
-        assertTrue(
-            "AppendAsNew 的 TimeTableEntity 必须写 periodTableId",
-            Regex("""TimeTableEntity\([\s\S]{0,900}?periodTableId\s*=""").containsMatchIn(branch),
-        )
+    fun appendCreatesPrivateScheduleInsideAtomicRepositoryOperation() {
+        val branch = balancedBlock(loadSource("ui/screen/imports/ImportSheet.kt"), "ImportApplyMode.AppendAsNew -> {")
+        assertTrue(branch.contains("timeJson = mergedTimeJson"))
+        assertTrue(branch.contains("periodTable = mergedPeriod"))
+        assertTrue(branch.contains("repo.importNewTable("))
+    }
+
+    @Test
+    fun newImportTransactionIncludesAllRowsBeforeRefresh() {
+        val src = loadSource("data/repository/ScheduleRepository.kt")
+        assertTrue(src.contains("override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction { block() }"))
+        val body = src.substringAfter("suspend fun importNewTable(").substringBefore("/** Reminder settings")
+        assertTrue(body.indexOf("importNewTableAtomically(") < body.indexOf("onDataChanged()"))
     }
 }

@@ -122,6 +122,27 @@ class ScheduleRepository(private val db: AppDatabase) {
         return id
     }
 
+    /** New timetable, optional private bell schedule, courses and default switch commit together. */
+    suspend fun importNewTable(
+        table: TimeTableEntity,
+        courses: List<CourseEntity>,
+        periodTable: com.lingion.sleepy.data.entity.PeriodTableEntity?,
+        bindPeriodTableId: Long? = null,
+        keepGroups: Boolean = false
+    ): Long {
+        val id = importNewTableAtomically(object : NewTableImportStore {
+            override suspend fun atomic(block: suspend () -> Long): Long = db.withTransaction { block() }
+            override suspend fun periodExists(id: Long) = periodTableDao.getById(id) != null
+            override suspend fun captureUndo() = captureForUndo()
+            override suspend fun insertPeriod(period: com.lingion.sleepy.data.entity.PeriodTableEntity) = periodTableDao.insert(period)
+            override suspend fun insertTable(table: TimeTableEntity) = tableDao.insert(table)
+            override suspend fun insertCourses(courses: List<CourseEntity>) { courseDao.insertAll(courses) }
+            override suspend fun setDefault(id: Long) = tableDao.setDefault(id)
+        }, table, courses, periodTable, bindPeriodTableId, keepGroups)
+        onDataChanged()
+        return id
+    }
+
     /** Reminder settings own this field; never overwrite timetable metadata. */
     suspend fun setTableReminderEnabled(id: Long, enabled: Boolean) {
         val changed = db.withTransaction {
@@ -669,12 +690,5 @@ class ScheduleRepository(private val db: AppDatabase) {
         }
     }
 
-    private fun assignGroupIds(courses: List<CourseEntity>): List<CourseEntity> {
-        val nameToGroupId = mutableMapOf<String, String>()
-        return courses.map { c ->
-            val key = c.courseName.trim().replace(Regex("\\s+"), " ").lowercase()
-            val gid = nameToGroupId.getOrPut(key) { c.groupId.takeIf { it.isNotBlank() } ?: java.util.UUID.randomUUID().toString() }
-            c.copy(groupId = gid)
-        }
-    }
+    private fun assignGroupIds(courses: List<CourseEntity>): List<CourseEntity> = normalizedImportGroups(courses)
 }
