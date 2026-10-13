@@ -145,7 +145,7 @@ object SystemCalendarManager {
         options: CalendarImportOptions,
         today: LocalDate = LocalDate.now()
     ): CalendarImportPreview {
-        val (from, until) = selectedDateRange(table, options.range, today)
+        val (from, until) = selectedDateRange(table, options.range, today, if (options.applyHolidayTransfers) AppPrefs.getHolidayTransfers(context, table.id) else emptyList())
         val (specs, invalid) = buildEventSpecs(context, table, courses, options, from, until)
         val alarms = firstPeriodAlarmKeys(specs)
         val rows = specs.map { spec ->
@@ -377,16 +377,18 @@ object SystemCalendarManager {
                 actual == listOf(CalendarContract.Reminders.METHOD_ALERT to expectedMinutes))
     }
 
-    private fun selectedDateRange(table: TimeTableEntity, range: CalendarImportRange, today: LocalDate): Pair<LocalDate, LocalDate> {
+    private fun selectedDateRange(table: TimeTableEntity, range: CalendarImportRange, today: LocalDate, transfers: List<com.lingion.sleepy.util.HolidayTransferEntry>): Pair<LocalDate, LocalDate> {
         val semesterStart = DateUtils.mondayOf(LocalDate.parse(table.startDate))
         val semesterEnd = semesterStart.plusWeeks(table.maxWeek.toLong())
-        val start = maxOf(today, semesterStart)
+        val validTargets = transfers.filter { DateUtils.semesterStatus(table.startDate, table.maxWeek, it.sourceDate) == DateUtils.SemesterStatus.IN_RANGE }.map { it.targetDate }
+        val effectiveEnd = maxOf(semesterEnd, validTargets.maxOrNull()?.plusDays(1) ?: semesterEnd)
+        val start = maxOf(today, minOf(semesterStart, validTargets.minOrNull() ?: semesterStart))
         val requestedEnd = when (range) {
             CalendarImportRange.NEXT_WEEK -> today.plusDays(7)
             CalendarImportRange.NEXT_MONTH -> today.plusMonths(1)
-            CalendarImportRange.SEMESTER -> semesterEnd
+            CalendarImportRange.SEMESTER -> effectiveEnd
         }
-        return start to minOf(requestedEnd, semesterEnd)
+        return start to minOf(requestedEnd, effectiveEnd)
     }
 
     private fun buildEventSpecs(
@@ -403,12 +405,13 @@ object SystemCalendarManager {
         var invalid = 0
         var date = from
         while (date.isBefore(until)) {
-            val week = DateUtils.currentWeek(table.startDate, date)
-            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课, 跳过该天)
-            val classDay = if (transfers.isEmpty()) date.dayOfWeek.value
-                else HolidayRangeOps.HolidayTransferOps.courseDayForDate(date, transfers)
-            if (classDay == null) { date = date.plusDays(1); continue }
-            courses.asSequence().filter { it.day == classDay && it.inWeek(week) }.forEach { course ->
+            val sourceDate = HolidayRangeOps.HolidayTransferOps.courseDateForDate(date, transfers)
+            val selected = HolidayRangeOps.HolidayTransferOps.coursesForDate(
+                date, table.startDate, table.maxWeek, courses, transfers
+            )
+            val week = DateUtils.currentWeek(table.startDate, sourceDate ?: date)
+            val classDay = (sourceDate ?: date).dayOfWeek.value
+            selected.forEach { course ->
                 val interval = TimeTableUtils.effectiveCourseTime(course.isIrregularTime, course.startTime,
                     course.endTime, course.startNode, course.step, table.timeJson)
                 val start = interval?.first?.let { runCatching { LocalTime.parse(it) }.getOrNull() }
@@ -416,7 +419,7 @@ object SystemCalendarManager {
                 if (start == null || end == null || !end.isAfter(start)) {
                     invalid++
                 } else {
-                    val transferred = classDay != date.dayOfWeek.value
+                    val transferred = sourceDate != date
                     val marker = "$SLEEPY_MARKER_PREFIX${table.id}:${course.id}:${DateUtils.fullDate(date)}"
                     val description = buildString {
                         append("第${week}周 · 第${course.startNode}—${course.startNode + course.step - 1}节")

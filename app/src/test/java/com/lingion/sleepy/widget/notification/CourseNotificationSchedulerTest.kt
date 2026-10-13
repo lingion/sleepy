@@ -25,10 +25,12 @@ class CourseNotificationSchedulerTest {
     private class FakeAlarmPort : BeforeClassAlarmPort {
         val armed = LinkedHashMap<Int, Long>()   // requestCode → epochMs (重复 set 覆盖, 语义同 PendingIntent)
         val cancels = mutableListOf<Int>()
+        val courseIds = LinkedHashMap<Int, Any?>()
         var setCount = 0
         override fun setExact(requestCode: Int, epochMs: Long, extras: Map<String, Any?>) {
             setCount++
             armed[requestCode] = epochMs
+            courseIds[requestCode] = extras["courseName"]
         }
         override fun cancel(requestCode: Int) {
             cancels += requestCode
@@ -56,11 +58,12 @@ class CourseNotificationSchedulerTest {
         var byDay: Map<Int, List<CourseEntity>>,
         private val dayMapping: (LocalDate) -> Int? = { it.dayOfWeek.value },
         private val holidayDates: Set<LocalDate> = emptySet(),
+        val transfers: List<com.lingion.sleepy.util.HolidayTransferEntry> = emptyList(),
     ) : BeforeClassDataSource {
         override suspend fun resolveCurrentTable() = table
         override suspend fun coursesForDay(tableId: Long, dayOfWeek: Int) = byDay[dayOfWeek].orEmpty()
         override suspend fun allCourseIds() = byDay.values.flatten().map { it.id }
-        override fun courseDayForDate(tableId: Long?, date: LocalDate): Int? = dayMapping(date)
+        override fun courseDateForDate(tableId: Long?, date: LocalDate): LocalDate? = if (transfers.isNotEmpty()) com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.courseDateForDate(date, transfers) else dayMapping(date)?.let { date.with(java.time.temporal.ChronoField.DAY_OF_WEEK, it.toLong()) }
         override fun isPublicHoliday(tableId: Long, date: LocalDate) = date in holidayDates
     }
 
@@ -92,6 +95,23 @@ class CourseNotificationSchedulerTest {
         env: BeforeClassEnv,
         src: FakeDataSource,
     ) = CourseNotificationScheduler(port, env, src)
+
+    @Test
+    fun sourceWeekCourseIsScheduledOnDestinationDate() = runBlocking {
+        val sourceDate = LocalDate.of(2026, 10, 7)
+        val target = LocalDate.of(2026, 10, 18)
+        val sourceCourse = course(91, 3, 1).copy(startWeek = 1, endWeek = 20, type = 1)
+        val wrongEven = sourceCourse.copy(id = 92, courseName = "wrongEven", type = 2)
+        val src = FakeDataSource(table(startDate = LocalDate.of(2026, 9, 7)),
+            mapOf(3 to listOf(sourceCourse, wrongEven)),
+            transfers = listOf(com.lingion.sleepy.util.HolidayTransferEntry(sourceDate, target, "test")))
+        val port = FakeAlarmPort()
+        val env = FakeEnv(now = target.atStartOfDay(zone).toInstant().toEpochMilli(), today = target)
+        scheduler(port, env, src).scheduleNext7DaysExactAlarms()
+        val expected = target.atTime(7, 50).atZone(zone).toInstant().toEpochMilli()
+        assertTrue(port.armed.any { (rc, epoch) -> epoch == expected && port.courseIds[rc] == sourceCourse.courseName })
+        assertTrue(port.armed.none { (rc, epoch) -> epoch == expected && port.courseIds[rc] == wrongEven.courseName })
+    }
 
     @Test
     fun `窗口内未来的课 排一颗精确闹钟 epoch=开课减提前分钟`() = runBlocking {

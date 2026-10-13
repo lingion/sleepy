@@ -168,7 +168,8 @@ class ClassDndScheduler(private val context: Context) {
         val result = mutableListOf<Pair<LocalDateTime, LocalDateTime>>()
         for (offsetDays in 0 until WINDOW_DAYS) {
             val date = today.plusDays(offsetDays.toLong())
-            if (DateUtils.semesterStatus(table.startDate, table.maxWeek, date)
+            val sourceDate = com.lingion.sleepy.widget.HolidayTransferHelper.courseDateForDate(context, table.id, date) ?: continue
+            if (DateUtils.semesterStatus(table.startDate, table.maxWeek, sourceDate)
                 != DateUtils.SemesterStatus.IN_RANGE
             ) continue
             // Use the reminder policy for the same date semantics as course notifications.
@@ -176,12 +177,9 @@ class ClassDndScheduler(private val context: Context) {
                     .decide(context, date, table.id)
                     .allowReminder
             ) continue
-            val week = DateUtils.currentWeek(table.startDate, date)
-            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课, 跳过该天)
-            val dow = com.lingion.sleepy.widget.HolidayTransferHelper
-                .courseDayForDate(context, table.id, date) ?: continue
+            val week = DateUtils.currentWeek(table.startDate, sourceDate)
             result += com.lingion.sleepy.SleepyApp.get().repository
-                .getCoursesByDayOnce(table.id, dow)
+                .getCoursesByDayOnce(table.id, sourceDate.dayOfWeek.value)
                 .filter { it.inWeek(week) }
                 .mapNotNull { courseInterval(date, it, nodes) }
         }

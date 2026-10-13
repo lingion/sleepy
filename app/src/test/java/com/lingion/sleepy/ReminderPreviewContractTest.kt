@@ -31,9 +31,9 @@ class ReminderPreviewContractTest {
 
     @Test
     fun `preview filters courses using the same date and week semantics as notifications`() {
-        assertTrue(source.contains("DateUtils.semesterStatus(table.startDate, table.maxWeek, date)"))
-        assertTrue(source.contains("DateUtils.currentWeek(table.startDate, date)"))
-        assertTrue(source.contains("it.day == DateUtils.todayDayOfWeek(date) && it.inWeek(week)"))
+        assertTrue(source.contains("HolidayTransferOps.coursesForDate"))
+        assertTrue(source.contains("date, table.startDate, table.maxWeek, allCourses"))
+        assertTrue(source.contains("AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id)"))
         assertTrue(source.contains("today.plusDays(1)"))
         assertTrue(source.contains("LocalTime.now()"))
     }

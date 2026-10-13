@@ -128,12 +128,10 @@ private suspend fun loadReminderSchedulePreview(): ReminderSchedulePreview? = wi
     val today = LocalDate.now()
 
     fun coursesOn(date: LocalDate): List<CourseEntity> {
-        if (DateUtils.semesterStatus(table.startDate, table.maxWeek, date) != DateUtils.SemesterStatus.IN_RANGE) {
-            return emptyList()
-        }
-        val week = DateUtils.currentWeek(table.startDate, date)
-        return allCourses
-            .filter { it.day == DateUtils.todayDayOfWeek(date) && it.inWeek(week) }
+        return com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+            date, table.startDate, table.maxWeek, allCourses,
+            AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id)
+        )
             .sortedWith(compareBy<CourseEntity> { courseStartTime(it, nodes) ?: LocalTime.MAX }.thenBy { it.startNode })
     }
 
