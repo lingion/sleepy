@@ -2,6 +2,10 @@ package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.data.entity.CourseEntity
 import com.lingion.sleepy.util.ConflictLayoutEngine
+import com.lingion.sleepy.data.entity.TimeTableEntity
+import com.lingion.sleepy.data.imports.*
+import com.lingion.sleepy.data.parser.ScheduleParser
+import com.lingion.sleepy.util.TimeTableUtils
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -39,11 +43,19 @@ class AppendAsNewMergeTest {
         color = ""
     )
 
-    /** 与 v7.10.16j AppendAsNew 分支同一合并算式: 并集, 无剔除。 */
     private fun mergedNewTable(
         oldCourses: List<CourseEntity>,
         cleanIncoming: List<CourseEntity>
-    ): List<CourseEntity> = oldCourses + cleanIncoming
+    ): List<CourseEntity> {
+        val base = TimeTableEntity(id = 1, name = "Old", startDate = "2026-09-07", maxWeek = 16)
+        val source = ScheduleParser.ParseResult("New", base.startDate, cleanIncoming,
+            timeJson = TimeTableUtils.DEFAULT_TIME_JSON, maxWeek = 16)
+        val plan = planImport(source, ImportSnapshot(listOf(base), emptyList(), oldCourses),
+            ImportConfiguration.forExisting(base).copy(destination = ImportDestination.New,
+                name = "New", overlaps = OverlapPolicy.KeepBoth))
+        assertTrue(plan.issues.toString(), plan.canSubmit)
+        return plan.finalCourses
+    }
 
     /** 与 v7.10.16j 同一提示判定: before/after 超层天对比(不剔除, 只提示)。 */
     private fun newlyExceededDays(
@@ -65,7 +77,7 @@ class AppendAsNewMergeTest {
         val newTable = mergedNewTable(old, cleanIncoming)
         assertEquals(
             "新表必须保留原课表全部老课",
-            old, newTable
+            old.map { it.copy(id = 0, tableId = 0) }, newTable
         )
         assertTrue("无新增候选 → 无新超层天", newlyExceededDays(old, cleanIncoming).isEmpty())
     }
@@ -76,7 +88,7 @@ class AppendAsNewMergeTest {
         val incoming = listOf(course(3, day = 3, startNode = 5, step = 2, courseName = "物理"))
         val newTable = mergedNewTable(old, incoming)
         assertEquals(2, newTable.size)
-        assertTrue(newTable.containsAll(old))
+        assertTrue(newTable.containsAll(old.map { it.copy(id = 0, tableId = 0) }))
     }
 
     @Test
@@ -95,7 +107,7 @@ class AppendAsNewMergeTest {
         )
         val newTable = mergedNewTable(old, incoming)
         assertEquals("导入课必须进新表 — 旧闸门在这里全灭", 4, newTable.size)
-        assertTrue(newTable.contains(incoming[0]))
+        assertTrue(newTable.contains(incoming[0].copy(id = 0, tableId = 0)))
     }
 
     @Test

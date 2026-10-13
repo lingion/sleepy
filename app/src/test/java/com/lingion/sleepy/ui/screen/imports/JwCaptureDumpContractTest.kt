@@ -190,14 +190,26 @@ class JwCaptureDumpContractTest {
     fun invoke_on_cancellation_dispatches_webview_calls_to_main() {
         val activity = activitySource()
         // 至少有一段 invokeOnCancellation 体里把 removeJavascriptInterface 用 main.post 包住
-        val cancel = Regex("invokeOnCancellation\\s*\\{([\\s\\S]*?)\\}\\s*\\n[\\s]*\\}\\)")
-        val matches = cancel.findAll(activity).toList()
-        assertTrue("must have at least one invokeOnCancellation block", matches.isNotEmpty())
-        val anySafe = matches.any { m ->
-            val body = m.groupValues[1]
-            body.contains("main.post") && body.contains("removeJavascriptInterface")
+        val starts = Regex("invokeOnCancellation\\s*\\{").findAll(activity).toList()
+        assertTrue("must have at least one invokeOnCancellation block", starts.isNotEmpty())
+        val bodies = starts.map { match ->
+            val start = match.range.last + 1
+            var depth = 1
+            var end = start
+            while (end < activity.length && depth > 0) {
+                when (activity[end]) {
+                    '{' -> depth++
+                    '}' -> depth--
+                }
+                end++
+            }
+            activity.substring(start, end - 1)
         }
-        assertTrue("invokeOnCancellation must post WebView calls to main thread", anySafe)
+        val allSafe = bodies.all {
+            it.contains("Handler(android.os.Looper.getMainLooper()).post") &&
+                it.contains("removeJavascriptInterface")
+        }
+        assertTrue("invokeOnCancellation must post WebView calls to main thread", allSafe)
     }
 
     /**
