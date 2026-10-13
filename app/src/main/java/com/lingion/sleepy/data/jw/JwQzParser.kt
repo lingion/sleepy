@@ -102,6 +102,10 @@ open class JwQzParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val courseList = arrayListOf<JwCourse>()
         val doc = Jsoup.parse(source)
+        // New QZ layouts (NNNU) use explicit sections and a detailed #timetable view.
+        if (doc.getElementById("kbtable") == null &&
+            doc.selectFirst("table#timetable .kbcontent") != null
+        ) return JwQzTimetableParser(source).generateCourseList()
         // T8: 找不到 #kbtable 抛 JwParseException(NO_TABLE_CONTAINER_MARKER)
         //   而不是静默 return courseList. 让 T9 区分"协议选错"和"课表页为空".
         val kbTable = doc.getElementById("kbtable")
@@ -163,6 +167,9 @@ open class JwQzParser(source: String) : JwParser(source) {
     override fun confidence(): Int {
         return try {
             val doc = Jsoup.parse(source)
+            if (doc.getElementById("kbtable") == null &&
+                doc.selectFirst("table#timetable .kbcontent [title='周次(节次)']") != null
+            ) return 100
             val kbtable = doc.getElementById("kbtable") ?: return 0
             val fontCount = doc.getElementsByAttributeValue("title", "老师").size +
                 doc.getElementsByAttributeValue("title", "教师").size +
@@ -180,6 +187,7 @@ open class JwQzParser(source: String) : JwParser(source) {
         val doc = Jsoup.parse(source)
         buildList {
             if (doc.getElementById("kbtable") != null) add("id=kbtable")
+            if (doc.selectFirst("table#timetable .kbcontent") != null) add("id=timetable")
             if (doc.getElementsByClass(tableName).isNotEmpty()) add("class=$tableName")
             if (doc.getElementsByAttributeValue("title", "老师").isNotEmpty()) add("title=老师")
             if (doc.getElementsByAttributeValue("title", "教师").isNotEmpty()) add("title=教师")
