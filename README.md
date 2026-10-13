@@ -38,7 +38,7 @@
 </p>
 
 <p align="center">
-  Android 8.0+ · 包名 <code>com.lingion.sleepy</code>
+  Android 8.0+ · 正式包 <code>com.lingion.sleepy</code> · 调试包 <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -50,43 +50,54 @@
 | 项 | 值 |
 |---|---|
 | 包名 | `com.lingion.sleepy` |
-| 最低 SDK | `26` (Android 8.0；OPPO SeedlingSupportSDK 3.0.7 要求) |
+| 最低 SDK | `26` (Android 8.0) |
 | 目标 SDK | `37` |
 | 架构 | arm64-v8a / armeabi-v7a / x86_64 |
 | 语言 | zh-CN · zh-TW · en · ja · es |
 
 **学校教务系统在维护?** WakeUp / 课程格子要登录云端?**想看下一节课却要点开 App?**
 
-Sleepy 把课表存在本地,默认不联网,只有按「同步教务」时才访问学校教务;没有任何第三方分析 SDK(Firebase / Crashlytics / Sentry / Bugsnag 全部未集成),所有数据只存本机。支持 340 所中国高校教务系统直连导入,另兼容 iCalendar (ICS)、WakeUp 课程包、超级课程表、课程格子 CSV 等格式。导出标准 ICS,macOS Calendar / Google Calendar / Outlook 都能直接订阅。
+Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。当前学校目录收录 349 个条目、33 种协议标识，收录不等于每个学校当前登录流程都已实机验证。另支持 iCalendar (ICS)、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
 桌面 5 种小组件、13 个固定尺寸变体(Today / TwoDay / WeekList / WeekView / WeekGrid × 常规 / 小 / 宽),跨厂商兼容,放在首屏不用点开 App。GPL-3.0 开源,谁都能审计谁都能 fork。
+
+按需权限：学校定位仅在点击定位后请求前台位置；添加到系统日历时请求日历读写；开启提醒时请求通知权限，相关页面提供精确闹钟、电池优化和勿扰授权入口；安装应用内下载的更新需允许安装未知来源应用。可离线查看已保存的课表，无需为了普通查看授予这些可选权限。
 
 版本号与当前支持的学校目录以应用内「关于」和 GitHub Releases 为准。AI 引擎可同时抓取仓库根的 [`llms.txt`](./llms.txt) 与 [`FAQ.md`](./FAQ.md)。
 
 ---
 
+功能导航：[三视图](#三视图) · [多课表](#多课表管理) · [作息表](#节次配置手动--自动双模式) · [导入](#教务系统导入) · [课程编辑](#课程编辑) · [导出与系统日历](#导出课表作息表) · [小组件](#桌面-widget5-类-13-变体) · [提醒](#课程通知--提醒) · [主题外观](#深色模式自定义主题与课表外观) · [设置与备份](#课表管理与通用设置) · [构建安装](#构建--安装)
+
 ## 三视图
 
-课表主页内置三种视图，顶部一键切换。
+课表页提供周视图和网格视图，可在顶部切换；底栏「今日」单独呈现当天课程。
 
 | 视图 | 截图 |
 |---|---|
-| **周视图**（7 日横排 × N 节） | <p align="left"><img src="docs/screenshots/01-schedule-week.png" width="280"></p> |
+| **周视图**（按天归组的课程列表） | <p align="left"><img src="docs/screenshots/01-schedule-week.png" width="280"></p> |
 | **网格视图**（时间网格 · 课程色块） | <p align="left"><img src="docs/screenshots/02-schedule-grid.png" width="280"></p> |
 | **今日视图**（底部"今日"Tab · 当日课程） | <p align="left"><img src="docs/screenshots/03-today.png" width="280"></p> |
 
 特性：
 - 左/右滑周切换器，实时算周次
-- **v1.0.19：手指左右滑动切换周次**（HorizontalPager），周视图与网格视图均支持
-- **v1.0.21：提醒功能重做** — 独立提醒页面，master toggle 权限流（拒绝可重试），每日提醒（自定义时间 + 动态内容），每节课前提醒（自由输入分钟数，胶囊型输入框），新增「关于」页面（版本/作者/开源声明）
+- 周视图与网格视图均支持手指左右滑动切换周次
+- 今日页区分无课、学期未开始和学期已结束状态
+- 平板等宽屏使用侧边导航和双栏布局，左侧保留课表，右侧切换今日、课表管理与我的
 - 课程按"起止周+单双周+起止节"自动过滤当前周
 - 点击课程卡片弹出详情底部弹窗
 
 ---
 
+<p align="left">
+  <img src="docs/screenshots/33-tablet.png" width="800" alt="宽屏布局：左侧课表、右侧我的">
+</p>
+
+> 宽屏布局：左侧课表、右侧我的
+
 ## 多课表管理
 
-可同时管理多张独立课表，每张表拥有自己的节次时间表、开学日期、最大周数。
+可同时管理多张课表，分别设置名称、开学日期和最大周数，并绑定作息表。作息表独立管理，可被多张课表共用。
 
 <p align="left">
   <img src="docs/screenshots/05-all-tables.png" width="280">
@@ -96,23 +107,34 @@ Sleepy 把课表存在本地,默认不联网,只有按「同步教务」时才�
 > 左：所有课表列表（齿轮进入编辑）
 > 右：我的页面（统计 + 入口）
 
-新建/编辑课表必填项：名称、开始日期、最大周数、节次时间表（手动或自动模式）。
+新建/编辑课表可设置名称、开始日期、最大周数和绑定作息表。
+
+「我的」顶部统计卡可进入全部课表或课程清单。课程清单将同一课程的地点和上课安排归组展示，便于查看一门课在不同星期、节次、周次的全部安排。
+
+<p align="left">
+  <img src="docs/screenshots/24-course-list.png" width="280" alt="Course list">
+</p>
 
 ---
 
 ## 节次配置（手动 / 自动双模式）
 
-v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式输入每节时长 + 总节数 + 首节时间 + 课间模板，自动推算全部时间。
+<p align="left">
+  <img src="docs/screenshots/23-period-tables.png" width="280" alt="Period table list">
+</p>
+
+在「我的 → 作息表」管理独立作息表，查看绑定课表数量，也可复制一份再编辑；「课表管理」还提供新建作息表入口。手动模式逐节设置起止时间；自动模式输入每节时长、总节数、首节时间和课间模板，自动推算全部时间。
 
 <p align="left">
   <img src="docs/screenshots/06-edit-table-manual.png" width="280">
   <img src="docs/screenshots/07-edit-table-auto.png" width="280">
 </p>
 
-> 左：手动模式（展开的 12 节 HEU 真实节次）
+> 左：手动模式（展开的演示作息节次）
 > 右：自动模式（每节时长 / 总节数 / 首节 / 大小课间模板 / 预览切换）
 
 自动模式特性：
+- 可添加短课时、长课时，以及小课间、大课间，并在节次/课间分配区指定适用位置
 - 跨组互斥（同一 transition 不能同时属大/小课间）
 - 默认 0 分钟连续，无间隔亦合法
 - 卡片网格多选，点击直观反馈
@@ -162,13 +184,19 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | `boya_pp` | 研究生博雅平台（燕山大学等） |
 | `xju_post` | 新疆大学研究生 Gwork 平台 |
 | `yethan` | 西南交通大学 YETHAN 移动教务 |
-| `ucas` / `pku` 等 | 国科大 SEP、单校自建门户（完整 31 类见[已收录学校名单](docs/schools-list.md)） |
+| `ucas` / `pku` 等 | 国科大 SEP、单校自建门户（完整 33 种协议标识见[已收录学校名单](docs/schools-list.md)） |
 
 ### 学校目录与自定义 URL
 
+<p align="left">
+  <img src="docs/screenshots/25-schools.png" width="280" alt="学校选择（演示设备此页使用英语）">
+</p>
+
+> 学校选择（演示设备此页使用英语）
+
 学校目录会随版本更新。已收录学校可以直接选择；如果学校暂时不在目录中，也可以在搜索框输入教务系统 URL，Sleepy 会尝试根据 URL 识别协议，再打开该地址进行登录和导入。能否成功取到课表取决于学校页面、登录方式和对应解析器。
 
-全部已收录学校（340 所）的名字、教务登录地址和协议类型见 **[已收录学校名单](docs/schools-list.md)**，支持 Ctrl+F 按全名 / 简称 / 拼音缩写检索，也用于核实教务地址和学校改名。
+全部已收录学校（349 个条目）的名字、教务登录地址和协议类型见 **[已收录学校名单](docs/schools-list.md)**，支持 Ctrl+F 按全名 / 简称 / 拼音缩写检索，也用于核实教务地址和学校改名。
 
 如果 URL 识别或解析仍不成功，再提交适配申请。优先提供教务 URL 和失败现象；需要进一步定位时，再按 **[适配采集教程](docs/adapt-kit/README.md)** 提供页面或网络数据。不要在 issue 中提交账号、密码、验证码或其他个人信息。也可以直接 [开一个适配申请](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml)。
 
@@ -186,25 +214,46 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 > 所有导入路径都先生成预览，确认后才写入课表。
 
+预览会展示课程和冲突信息，可选择替换当前课表、导入为新课表、仅追加不冲突课程、合并为新课表或连冲突课程一起追加。教务导入还会让你核对课表名称、开学日期与节次时间。
+
+<p align="left">
+  <img src="docs/screenshots/26-import-preview.png" width="280" alt="导入冲突预览与五种处理方式">
+</p>
+
+> 导入冲突预览与五种处理方式
+
+教务流程中途退出可保留导入草稿，之后从课表管理继续；也可选择删除草稿。学校选择支持搜索、手动输入教务 URL，以及点击定位查找同城学校。
+
+导入页提供各格式的说明与示例。「纯文本」说明中可复制 AI 截图转换提示词，交给你自行选择的识图工具，再将生成的文本粘贴回 Sleepy 预览；Sleepy 本身不会自动上传截图或内置调用 AI 服务。
+
+<p align="left">
+  <img src="docs/screenshots/34-import-guide.png" width="280" alt="纯文本格式示例与外部识图提示词说明">
+</p>
+
+> 纯文本格式示例与外部识图提示词说明
+
 ---
 
 ## 课程编辑
 
 <p align="left">
   <img src="docs/screenshots/18-add-course.png" width="280">
+  <img src="docs/screenshots/39-course-slots.png" width="280" alt="同一课程的第二个上课时段编辑">
   <img src="docs/screenshots/08-course-detail.png" width="280">
 </p>
 
-> 左：手动添加/编辑单条课程
+> 左：已填写别名的课程编辑页；中：第二个上课时段：可独立配置星期、节次、周次与教师；截图为未保存的虚构演示。
 > 右：点击周视图课程卡片弹出详情底部弹窗
 
-字段：课名 · 教师 · 教室 · 备注 · 星期 · 起止节 · 起止周 · 单双周类型 · 课程色。
+同一课程可添加多个上课时段，每个时段分别设置教师、教室、备注、星期、起止节、周次和单双周类型；可把周次设置应用到所有时段。
+
+课程支持原名与可选别名、整组配色及每时段配色。别名仅用于显示，不改变课程身份；周视图、网格和每个小组件可分别决定是否使用别名。保存前会校验输入并提示冲突。
 
 ---
 
 ## 导出课表/作息表
 
-支持多种导出格式；文件型格式会保存到设备的 `Download/Sleepy/`，并触发系统分享面板。具体格式以当前版本导出页为准。
+支持多种导出格式；Android 10+ 的文件型导出保存到 `Download/Sleepy/` 后打开系统分享面板，Android 8–9 使用应用缓存文件分享。具体格式以当前版本导出页为准。
 
 <p align="left">
   <img src="docs/screenshots/19-export.png" width="280">
@@ -212,7 +261,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 > 截图：导出页（在"我的 → 导出课表/作息表"）
 
-导出页先选课表或作息表(上半区全部课表、分隔线之下全部作息表)：选**课表**有四种格式，选**作息表**自动收窄为两种(JSON 与 sleepy-v1)。
+导出页先选课表或作息表(上半区全部课表、分隔线之下全部作息表)：选**课表**有四种分享/文件格式及系统日历入口，选**作息表**自动收窄为两种(JSON 与 sleepy-v1)。
 
 课表四种导出格式：
 
@@ -223,9 +272,13 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | **ICS 日历** | 标准 iCalendar 格式，可导入系统日历 / Google / Apple Calendar | `ScheduleExporter.exportIcs` |
 | **sleepy-v1** | Sleepy 原生纯文本格式，可再次导入或编辑 | `SleepyNativeExporter` |
 
-文件路径：传统文件格式使用 `Download/Sleepy/sleepy_<表名>_<时间戳>.{json|ics}`；`sleepy-v1` 通过系统分享面板导出。
+文件型导出保存为 `Download/Sleepy/sleepy_<表名>_<时间戳>.{json|ics|sleepy}`，随后打开系统分享面板；分享文本直接通过分享面板发送。
 
 旧版 WakeUp 分享文本仍可继续导入。
+
+### 添加到系统日历
+
+导出页还可直接将课程添加到设备上的可写日历：先选择目标日历和范围（未来 7 天、未来 1 个月或本学期剩余课程），可应用本课表调课安排、设置普通日历提醒，生成预览后再确认写入。首次使用才申请日历读写权限。第 1 节课程闹钟提醒为实验能力，实际响铃取决于系统日历与账户。
 
 ---
 
@@ -238,8 +291,22 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 | **Today** | 常规 / 小 / 宽 | 今日课程列表 | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
 | **TwoDay** | 常规 / 小 / 宽 | 今天 + 明天（左右双栏） | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
 | **WeekList** | 常规 / 小 / 宽 | 7 日课程统计 + 名称 | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekView** | 常规 / 小 | 周视图缩略（无彩色胶囊，纯主题色） | 无独立截图 |
-| **WeekGrid** | 常规 / 小 | 完整时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+| **WeekView** | 常规 / 小 | 周视图缩略（无彩色胶囊，纯主题色） | <img src="docs/screenshots/widget-weekview.png" width="240" alt="WeekView on Android launcher"> |
+| **WeekGrid** | 常规 / 小 | 时间网格 + 课程块 | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+
+图片来源：Today、TwoDay、WeekList 为模拟器中 `WidgetRenderActivity` 调用当前生产渲染器生成的预览，裁切到组件边界，未拉伸；WeekView 和 WeekGrid 为实际桌面小组件截图。WeekGrid 此图展示当前可见的第 1–6 节，不代表完整学期或全部节次。桌面实际尺寸和字体截断由启动器及所选变体决定。
+
+<p align="left">
+  <img src="docs/screenshots/32-widget-settings.png" width="280" alt="单个桌面小组件：课表绑定与课程名显示">
+</p>
+
+> 单个桌面小组件：课表绑定与课程名显示
+
+逐个小组件配置：
+- 在「通用设置 → 小组件管理」选择已添加的桌面小组件，可固定显示某张课表，或跟随当前课表
+- 每个实例独立选择课程原名/别名；适用变体可启用实验性滚动
+- WeekList 小号和 WeekView 小号支持三天窗口，选择今天在第一位还是第二位
+- 「我的」提供手动刷新全部小组件入口
 
 实现要点：
 - 全部 5 类：v1.0.29 起为同步 RemoteViews + Canvas 渲染（OPPO 等深度定制 launcher 会冻结 Glance 的异步 SessionWorker，导致卡片不刷新，故整体移植）
@@ -247,7 +314,7 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 - **v1.0.55：部分变体提供实验性滚动**（内容超出卡片高度时可滚动查看）
 - **v1.0.55：上课/下课边界触发刷新**，跨过节次边界时卡片内容自动更新
 - 配色与 app 主题实时同步（深色模式 + 5 主题预设）
-- **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，均匀铺开且每门课稳定唯一
+- **三条渲染路径（主 app / WeekGrid / 截图渲染器）配色完全统一**：课程色按黄金角 (137.508°) HSL 分布，以课程所属分组哈希映射色相，按课程分组稳定分配色相；不同课程仍可能使用相同颜色
 - 刷新机制：对全部 receiver 广播 `APPWIDGET_UPDATE`（系统级）+ WorkManager 定时刷新 + 上课/下课边界刷新
 
 ---
@@ -258,7 +325,15 @@ v1.0.16 引入智能节次编辑器。手动模式逐节设起止；自动模式
 
 手动添加或编辑课程遇到冲突时，提示会列出星期、节次、实际重叠周次和冲突课程。确认后才保存，返回修改则不写入。
 
-顶栏提供撤回操作，用于回退最近一次课表数据修改。切换当前课表不会被当作数据修改记录。
+顶栏提供撤回与重做，用于回退最近一次课表数据修改、恢复刚撤回的修改；无可用操作时隐藏对应入口。切换当前课表不会被当作数据修改记录。
+
+「我的 → 外观与主题 → 课表显示」可切换叠层、折角、侧栏三种冲突样式，并调整对应的偏移或折角大小。
+
+<p align="left">
+  <img src="docs/screenshots/31-conflict.png" width="280" alt="冲突样式设置（效果见网格视图）">
+</p>
+
+> 冲突样式设置（效果见网格视图）
 
 ---
 
@@ -278,19 +353,25 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 
 <p align="left">
   <img src="docs/screenshots/22-reminder.png" width="320">
+  <img src="docs/screenshots/37-reminder-advanced.png" width="280" alt="课前提醒、实验流体云及自动勿扰">
 </p>
 
 | 子功能 | 触发时机 | 内容（动态生成） |
 |---|---|---|
-| **每日提醒** | 每天指定时间 | `今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课` |
+| **今日摘要** | 每天指定时间 | `今日 15 号 您有 3 节课 第一节课 高等数学 于 08:00 在 教学楼A101 上课` |
+| **明日摘要** | 单独设置每天提醒时间 | 提前查看明天的课程安排 |
 | **每节课前提醒** | 每节课前 N 分钟 | `下节课 高等数学 于 08:00 在 教学楼A101 上课` |
 
+- 今日、明日和课前提醒提供当前课表的动态内容预览
+- 日期规则可分别配置法定节假日、调休日、补班日和普通周末
+- 课前提醒可分别选择通知横幅和实验性流体云；流体云支持主显示字段选择、测试入口与通知/精确闹钟/电池等可靠性状态检查
+- **上课自动勿扰**：授予系统勿扰访问权限后，上课期间开启勿扰，下课恢复
 - 课前分钟数**自由输入**（1–999，胶囊型输入框，非硬编码选项）
 - 提醒内容**动态查询当天课表**，无课则推送「今日 X 号，今天没有课程」
 - 通知通过 `AlarmManager` 精确/非精确双路降级，Android 12+ 兼容
 - `BootReceiver` 重注册（开机/更新后自动恢复）
 - 开关状态本地持久化（`AppPrefs`，SharedPreferences）
-- v1.0.21 起 master 关闭时**不再弹权限**（避免首次启动骚扰），所有权限请求都从 ReminderScreen 发起
+- 提醒总开关关闭时不会主动请求通知权限；开启提醒时由提醒页面引导授权
 
 ---
 
@@ -307,18 +388,19 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 | **版本信息** | 版本号 + 构建号（`BuildConfig.VERSION_NAME` / `BuildConfig.VERSION_CODE`） |
 | **作者** | Lingion，点击跳 GitHub 主页 |
 | **开源地址** | github.com/lingion/sleepy，点击可跳转 |
-| **开源声明** | GPL-3.0 协议说明、9 个跨校普适项目 + 38 张单校致谢卡的许可证和参考范围 |
+| **开源声明** | GPL-3.0 协议说明、9 个跨校普适项目 + 单校致谢卡的许可证和参考范围 |
 
-关于页还提供版本更新检查。检查到新版本时先展示完整更新说明，确认后才下载；下载过程可取消。
+关于页提供手动更新检查及启动自动检查开关；自动检查默认开启，可关闭。检查会访问更新服务。检查到新版本时先展示完整更新说明，确认后才下载；下载过程可取消。
 
 ---
 
-## 深色模式 & 主题
+## 深色模式、自定义主题与课表外观
 
 多套预设 + 跟随系统，每套含 Light/Dark 配色方案，在「我的」→「外观与主题」（`AppearanceScreen`）切换。
 
 <p align="left">
   <img src="docs/screenshots/11-theme.png" width="280">
+  <img src="docs/screenshots/36-theme-dark.png" width="280" alt="Dark theme">
 </p>
 
 | 主题 | 风格 |
@@ -328,15 +410,73 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 | 海蓝 | 沉静冷调 |
 | 蜜桃粉 | 暖橙 |
 | 石板灰 | 中性冷淡 |
-| 跟随系统 | 自动适配 |
+| 跟随系统 | 使用系统主题色 |
+
+主题色与深浅模式独立设置：可跟随系统，也可强制浅色或深色。点击新建主题可随机生成、从主色派生整套配色，或逐一设置主交互色、次级强调、第三强调和表面中性色；编辑器提供颜色选择和实时预览，支持保存、重命名及删除。主题变更同步刷新桌面小组件。
+
+<p align="left">
+  <img src="docs/screenshots/30-custom-theme.png" width="280" alt="新建自定义主题与实时预览">
+</p>
+
+> 新建自定义主题与实时预览
+
+外观页还可调整周视图/网格的课程块缩放与圆角、冲突显示样式，以及节次表头的传统/三行布局、文字显示和悬挂偏移。
+
+<p align="left">
+  <img src="docs/screenshots/35-period-header.png" width="280" alt="节次表头样式及布局设置">
+</p>
+
+> 节次表头样式及布局设置
 
 ---
 
-## 课表管理总览
+## 课表管理与通用设置
 
 <p align="left">
   <img src="docs/screenshots/09-manage.png" width="280">
 </p>
+
+课表管理集中提供当前课表摘要、导入及草稿、新建课表、新建作息表、手动添加课程、编辑当前课表与导出入口。
+
+「我的 → 通用设置」包含以下配置：
+
+<p align="left">
+  <img src="docs/screenshots/27-general.png" width="280" alt="通用设置：课表显示与小组件入口">
+  <img src="docs/screenshots/38-general-advanced.png" width="280" alt="导航、语言与实验功能">
+</p>
+
+> 通用设置：课表显示与小组件入口
+
+| 分类 | 可配置内容 |
+|---|---|
+| 课程信息 | 显示节次或具体时间，网格副信息显示教室、教师或隐藏，周视图/网格分别使用别名 |
+| 周视图布局 | 双列展示、按天分列或均衡分列、隐藏空白日期 |
+| 显示范围 | 选择显示星期、日期及视图切换器，课程无色模式 |
+| 小组件全局设置 | 无色模式、分隔线、无课时查找最近有课日、小组件管理入口 |
+| 导航与语言 | 启动默认视图、高刷新率、停靠/悬浮底栏、简中/繁中/英语/日语/西班牙语 |
+| 实验功能 | 网格自适应高度、双指缩放、自动隐藏晚间节次、竖排标点、分隔线和大课间留白 |
+
+### 节假日与调休
+
+<p align="left">
+  <img src="docs/screenshots/28-holiday.png" width="280" alt="节假日灰显和调休设置">
+</p>
+
+> 节假日灰显和调休设置
+
+进入「通用设置 → 节假日调休设置」可切换年份、刷新中国节假日数据，设置法定节假日和周末课程灰显，以及是否排除补班日。支持添加、编辑、删除或恢复自定义日期段。
+
+学校调休可按当前课表设置日期映射，指定调休日采用哪一天的课程；不同课表分别保存。它会影响课程来源及每日摘要、课前提醒、流体云和自动勿扰的日期判断。节假日灰显与提醒日期规则是不同设置，可分别调整。
+
+### 全量备份与换机迁移
+
+<p align="left">
+  <img src="docs/screenshots/29-migration.png" width="280" alt="实验设置与全量数据迁移入口">
+</p>
+
+> 实验设置与全量数据迁移入口
+
+「通用设置 → 数据迁移」可将全部课表、作息表、偏好和小组件配置打包为 `.sleepybackup`。恢复前可选**合并导入**（保留本机课表并追加，备份中的同名偏好会覆盖本机值）或**覆盖导入**（替换备份包含的课表与设置模块）。换机备份与单张课表的 JSON/ICS/文本导出用途不同。
 
 ---
 
@@ -344,8 +484,8 @@ v1.0.37 起课前提醒支持流体云样式：`FluidCloudService` 前台服务�
 
 ```
 language        = Kotlin 2.1.10
-ui              = Jetpack Compose (BOM 2024.10.00) + Material 3
-navigation      = Navigation Compose 2.8.3
+ui              = Jetpack Compose (BOM 2026.09.00) + Material 3
+navigation      = Navigation 3 1.1.7 + NavigationEvent 1.1.2
 storage         = Room 2.7.0 (KSP)
 prefs           = SharedPreferences (AppPrefs)；DataStore 1.1.1 已声明未使用
 serialization   = kotlinx-serialization-json 1.6.3
@@ -355,7 +495,7 @@ background      = WorkManager 2.9.1
 image           = Coil Compose 2.7.0
 splash          = Core Splash Screen 1.0.1
 core_ktx        = AndroidX Core 1.17.0
-build           = AGP 9.1.0 + Gradle 9.3.1 (Kotlin DSL)
+build           = AGP 9.1.1 + Gradle 9.3.1 (Kotlin DSL)
 java_compat     = 17
 ```
 
@@ -374,12 +514,12 @@ sleepy/                                    # 仓库根目录
 │   │   │   │   ├── AppDatabase.kt        # Room 数据库
 │   │   │   │   ├── dao/                  # CourseDao / TimeTableDao
 │   │   │   │   ├── entity/               # CourseEntity / TimeTableEntity / SmartPeriodConfig
-│   │   │   │   ├── jw/                   # 43 个 教务 parser + JwImportViewModel + JwParity
+│   │   │   │   ├── jw/                   # 教务 parser + JwImportViewModel + JwParity
 │   │   │   │   ├── parser/               # ScheduleParser + SleepyNativeParser/Exporter/Format
 │   │   │   │   ├── repository/           # ScheduleRepository
 │   │   │   │   └── undo/                 # UndoManager
 │   │   │   ├── ui/
-│   │   │   │   ├── component/            # 12 个: CourseTableView / CourseDetailSheet /
+│   │   │   │   ├── component/            # CourseTableView / CourseDetailSheet /
 │   │   │   │   │                         # SmartPeriodEditor / TimeSlotEditor /
 │   │   │   │   │                         # PillNavigationBar / SegmentedSwitcher /
 │   │   │   │   │                         # ConflictCard / DateTimePickers / SettingsCards /
@@ -392,14 +532,14 @@ sleepy/                                    # 仓库根目录
 │   │   │   │   │   ├── manage/           # 课程管理
 │   │   │   │   │   └── mine/             # 我的 / 所有课表 / 编辑课表 / 主题 / 导出
 │   │   │   │   └── theme/                # Theme + ThemePresets + NoRippleClickable
-│   │   │   ├── util/                     # 19 个: AppPrefs / DateUtils / LocaleHelper /
+│   │   │   ├── util/                     # AppPrefs / DateUtils / LocaleHelper /
 │   │   │   │                             # TimeTableUtils / CourseColorUtil /
 │   │   │   │                             # ConflictLayoutEngine / ConflictDetailReporter /
 │   │   │   │                             # WeekRangeOverlap / HolidayManager / HolidayRange /
 │   │   │   │                             # HighRefreshRate / PinyinMatcher / MarkdownBlocks /
 │   │   │   │                             # FeedbackComposer / UpdateManager / UpdateInfo /
 │   │   │   │                             # UpdateNotifier / VersionUtils
-│   │   │   └── widget/                   # 46 个 widget Kotlin 文件 + notification/ 子目录
+│   │   │   └── widget/                   # widget Kotlin 文件 + notification/ 子目录
 │   │   │                                 # (Today/WeekList/WeekView/TwoDay/WeekGrid × Provider + Receiver)
 │   │   │                                 # + WidgetRenderActivity + RemoteViewsWidgetHelper +
 │   │   │                                 # WidgetContent / WidgetBitmapRenderers /
@@ -421,7 +561,7 @@ sleepy/                                    # 仓库根目录
 │   │       └── xml/                      # 13 个 widget_info + 网络/备份规则
 │   └── libs/                             # seedling-support-lite-3.0.7.aar (未声明依赖)
 ├── docs/
-│   ├── screenshots/                      # README 引用的 19 张截图
+│   ├── screenshots/                      # README 引用的 截图
 │   ├── logo.png                          # README 顶部 logo
 │   ├── adapt-kit/                        # 适配采集教程 (独立 README)
 │   └── sop/                              # SOP 索引（不列举具体文件）
@@ -431,7 +571,7 @@ sleepy/                                    # 仓库根目录
 ├── scripts/                              # release_check.sh
 ├── tools/                                # gen_widget_previews.py + sleepy-collector
 ├── tasks/                                # plan.md + todo.md
-├── build.gradle.kts                       # 根构建 (AGP 9.1.0 / Kotlin 2.1.10 / KSP)
+├── build.gradle.kts                       # 根构建 (AGP 9.1.1 / Kotlin 2.1.10 / KSP)
 ├── app/build.gradle.kts                   # App 模块（compileSdk=37 / minSdk=26 / targetSdk=37）
 ├── settings.gradle.kts                   # rootProject.name = "WakeUpPure"
 ├── gradle.properties                     # android.disallowKotlinSourceSets=false
@@ -450,8 +590,10 @@ sleepy/                                    # 仓库根目录
 ```bash
 java -version           # JDK 17+
 
-sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
+
+当前 Gradle 配置解析为 `compileSdk=37`、`buildToolsVersion=36.0.0`；平台安装包标识为 `platforms;android-37.0`。
 
 ### 编译
 
@@ -461,7 +603,7 @@ Linux / macOS：
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
 
-# Debug（x86_64 模拟器 / arm64 真机），产物约 20MB
+# Debug（x86_64 模拟器 / arm64 真机）
 ./gradlew assembleDebug
 ```
 
@@ -490,9 +632,13 @@ adb install app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 ```
 
-> ABI 分包：arm64-v8a（真机主流）、armeabi-v7a（32 位备机）、x86_64（模拟器）。自动匹配设备架构。
+> ABI 分包：arm64-v8a（真机主流）、armeabi-v7a（32 位备机）、x86_64（模拟器）。手动安装时请选择设备对应的 APK，也可使用 universal 包。
 
 ---
+
+调试构建使用 `com.lingion.sleepy.debug`，与正式包分开保存数据；发布页还提供 universal APK 和校验和。
+
+CI 在面向 `main` 的 PR 上运行提交格式检查、采集工具检查、Android 单元测试、Android lint 和 APK 构建；推送 `v*.*.*` 标签触发发布。CI 与 Release 当前都不支持手动 dispatch。配置见 [CI](.github/workflows/ci.yml) 和 [Release](.github/workflows/release.yml)。
 
 ## 社区
 
@@ -515,7 +661,7 @@ Bug 反馈和新学校适配走 [Issues](https://github.com/lingion/sleepy/issue
 
 [GPL-3.0](LICENSE)
 
-Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；9 个跨校普适项目与 38 张单校致谢卡的项目名称、许可证和参考范围见应用内「我的」→「关于」→「开源声明」。
+Sleepy 使用 GPL-3.0 发布。教务导入适配、协议研究和课表格式工作参考了多个开源项目；9 个跨校普适项目与 单校致谢卡的项目名称、许可证和参考范围见应用内「我的」→「关于」→「开源声明」。
 
 ---
 

@@ -38,7 +38,7 @@
 </p>
 
 <p align="center">
-  Android 8.0+ · Package <code>com.lingion.sleepy</code>
+  Android 8.0+ · Release <code>com.lingion.sleepy</code> · Debug <code>com.lingion.sleepy.debug</code>
 </p>
 
 ---
@@ -50,36 +50,47 @@ The school selector requests foreground location only after tapping Locate, for 
 | Item | Value |
 |---|---|
 | Package | `com.lingion.sleepy` |
-| Min SDK | `26` (Android 8.0; required by OPPO SeedlingSupportSDK 3.0.7) |
+| Min SDK | `26` (Android 8.0) |
 | Target SDK | `37` |
 | ABIs | arm64-v8a / armeabi-v7a / x86_64 |
 | Languages | zh-CN · zh-TW · en · ja · es |
 
-Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. It supports direct import from 340 Chinese university academic systems (JW), multi-format parsing, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases.
+Sleepy is an Android timetable app built around three principles: **light, fast, accurate**. Its school catalogue contains 349 entries across 33 protocol identifiers; catalogue inclusion does not mean every current school login has been tested on a device. Features include JW import, multi-format parsing, five home-screen widget types in 13 fixed-size variants, daily course notifications, dark mode, and multiple theme presets. The version and supported-school catalogue are maintained in the app's About page and on GitHub Releases. Timetables are stored locally. Network operations include JW synchronization, holiday-data refresh from `unpkg.com/holiday-calendar`, and update checks via GitHub (with the project mirror as fallback); these are not analytics services.
 
 ---
 
+Explore: [Views](#three-views) · [Timetables](#multiple-timetables) · [Period tables](#period-configuration-manual--auto) · [Import](#jw-system-import) · [Course editing](#course-editing) · [Export and calendar](#export-timetable--period-table) · [Widgets](#home-screen-widgets-5-types-13-variants) · [Reminders](#notifications--reminders) · [Themes](#dark-mode-custom-themes-and-timetable-appearance) · [Settings and backup](#timetable-management-and-general-settings) · [Build](#build--install)
+
 ## Three Views
 
-The main screen has three views, switchable from the top bar.
+The timetable page switches between week and grid views in the top bar. Today is a separate bottom-navigation page.
 
 | View | Screenshot |
 |---|---|
-| **Week view** (7 days × N periods) | <p align="left"><img src="docs/screenshots/01-schedule-week.png" width="280"></p> |
+| **Week view** (weekly overview + daily course lists) | <p align="left"><img src="docs/screenshots/01-schedule-week.png" width="280"></p> |
 | **Grid view** (time grid · colored course blocks) | <p align="left"><img src="docs/screenshots/02-schedule-grid.png" width="280"></p> |
 | **Today view** ("Today" tab · today's courses) | <p align="left"><img src="docs/screenshots/03-today.png" width="280"></p> |
 
 Features:
+
 - Swipe left/right to change weeks, week number computed live
 - Swipe works in both week and grid views (HorizontalPager)
 - Courses filtered to the current week by week-range + odd/even + period-range
 - Tap a course card for the detail bottom sheet
+- Today distinguishes no classes, term not started, and term ended
+- Wide screens use side navigation and a two-pane layout: the timetable stays on the left while Today, management, and Mine open on the right
 
 ---
 
+<p align="left">
+  <img src="docs/screenshots/33-tablet.png" width="800" alt="Wide-screen layout: timetable on the left, Mine on the right">
+</p>
+
+> Wide-screen layout: timetable on the left, Mine on the right
+
 ## Multiple Timetables
 
-Manage several independent timetables, each with its own period times, start date, and max week count.
+Manage several timetables with independent names, start dates, and maximum week counts. Each binds to a period table, which can be shared by multiple timetables.
 
 <p align="left">
   <img src="docs/screenshots/05-all-tables.png" width="280">
@@ -89,13 +100,21 @@ Manage several independent timetables, each with its own period times, start dat
 > Left: all timetables (gear icon to edit)
 > Right: "Mine" page (stats + entries)
 
-Creating or editing a timetable requires: name, start date, max weeks, period time table (manual or auto mode).
+Create or edit a timetable to set its name, start date, maximum weeks, and bound period table. Mine’s statistics cards open all timetables or the course list; the latter groups each course’s locations and teaching slots.
+
+<p align="left">
+  <img src="docs/screenshots/24-course-list.png" width="280" alt="Course list">
+</p>
 
 ---
 
 ## Period Configuration (Manual / Auto)
 
-Manual mode sets each period's start and end individually. Auto mode takes period length + total periods + first bell + break templates and derives everything else.
+<p align="left">
+  <img src="docs/screenshots/23-period-tables.png" width="280" alt="Period table list">
+</p>
+
+Manage independent period tables in Mine → Period tables, inspect how many timetables use one, or duplicate it before editing. Timetable management also provides a new-period-table entry. Manual mode sets each period's start and end individually. Auto mode takes period length + total periods + first bell + break templates and derives everything else.
 
 <p align="left">
   <img src="docs/screenshots/06-edit-table-manual.png" width="280">
@@ -106,6 +125,8 @@ Manual mode sets each period's start and end individually. Auto mode takes perio
 > Right: auto mode (period length / total / first bell / break templates / preview toggle)
 
 Auto mode details:
+
+- Add short/long class durations and short/long breaks, then assign them to the relevant periods or transitions
 - Cross-group exclusivity (the same transition can't be both a long and a short break)
 - Zero-minute gaps are valid; adjacent periods need no break between them
 - Card-grid multi-select with immediate visual feedback
@@ -154,9 +175,15 @@ The protocol catalogue grows with school integrations. The table below shows pro
 
 ### School Catalogue and Custom URLs
 
+<p align="left">
+  <img src="docs/screenshots/25-schools.png" width="280" alt="School selector shown in English on the demo device">
+</p>
+
+> School selector shown in English on the demo device
+
 The school catalogue changes with each release. Choose a listed university for the maintained path, or enter a JW URL in the search field when your university is not listed. Sleepy will try to detect a protocol from the URL and open it for login and import. Success still depends on the university page, its login flow, and a compatible parser.
 
-All supported universities (340) with their JW login URLs and protocol types are listed in **[Supported Schools List](docs/schools-list.md)** — searchable by full name, abbreviation, or pinyin initials; also useful for verifying JW addresses and school renames.
+All catalogued school entries (349) with their JW login URLs and protocol types are listed in **[Supported Schools List](docs/schools-list.md)** — searchable by full name, abbreviation, or pinyin initials; also useful for verifying JW addresses and school renames.
 
 If URL detection or parsing does not work, file an adaptation request with the JW URL and the observed failure. Use the **[collection guide](docs/adapt-kit/README.md)** only when more page or network data is needed. Never include an account, password, verification code, or other personal data in an issue. You can [open an adaptation request](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml) directly.
 
@@ -174,23 +201,44 @@ If URL detection or parsing does not work, file an adaptation request with the J
 
 ---
 
+The preview shows courses and conflicts. Choose replacement, a new timetable, append non-conflicting courses, merge into a new timetable, or append including conflicts. JW import also asks you to review the timetable name, term start, and period times.
+
+<p align="left">
+  <img src="docs/screenshots/26-import-preview.png" width="280" alt="Import conflict preview and five available actions">
+</p>
+
+> Import conflict preview and five available actions
+
+An interrupted JW import can be saved as a draft, resumed from management, or discarded. School selection supports search, a custom JW URL, and a Locate action for same-city suggestions.
+
+The import sheet includes format instructions and examples. The plain-text guide offers a copyable prompt for converting screenshots with an image-capable AI tool of your choice; paste its output back into Sleepy for preview. Sleepy does not upload the screenshot or call an AI service itself.
+
+<p align="left">
+  <img src="docs/screenshots/34-import-guide.png" width="280" alt="Plain-text example and instructions for an external image-to-text tool">
+</p>
+
+> Plain-text example and instructions for an external image-to-text tool
+
+---
+
 ## Course Editing
 
 <p align="left">
   <img src="docs/screenshots/18-add-course.png" width="280">
+  <img src="docs/screenshots/39-course-slots.png" width="280" alt="Editing the second teaching slot of one course">
   <img src="docs/screenshots/08-course-detail.png" width="280">
 </p>
 
-> Left: manually add/edit a single course
+> Left: course editor with a filled alias. Middle: Second teaching slot: configure its weekdays, periods, weeks, and teacher independently. This is an unsaved fictional demonstration.
 > Right: tapping a course card in week view opens the detail bottom sheet
 
-Fields: course name · teacher · room · notes · weekday · period range · week range · odd/even type · course color.
+A course may contain several teaching slots, each with its own teacher, room, note, weekday, periods, weeks, and odd/even selection. Apply week settings to all slots when needed. Optional aliases, group colors, and per-slot colors are supported; week/grid views and widgets independently choose whether to display aliases. Saving validates input and reports conflicts.
 
 ---
 
 ## Export Timetable / Period Table
 
-Multiple export formats are available. File-based formats use the device's `Download/Sleepy/` directory and open the system share sheet; see the current Export screen for the exact list.
+Multiple export formats are available. File exports use `Download/Sleepy/` on Android 10+ and shared app-cache files on Android 8–9, then open the system share sheet; see the current Export screen for the exact list.
 
 <p align="left">
   <img src="docs/screenshots/19-export.png" width="280">
@@ -198,19 +246,22 @@ Multiple export formats are available. File-based formats use the device's `Down
 
 > Screenshot: export page ("Mine → Export Timetable / Period Table")
 
-| Format | Use | Implementation |
-|---|---|---|
-
 The export screen first picks a course table or a period table (all course tables on top, a divider, then all period tables). Picking a **course table** offers four formats; picking a **period table** narrows the list to two (JSON and sleepy-v1).
 
+| Format | Use | Implementation |
+|---|---|---|
 | **WakeUp-compatible JSON** | Full timetable structure; importable by WakeUp and similar apps | `ScheduleExporter.exportWakeUpJson` |
 | **Share text** | Compact text format (URL-encoded JSON); paste anywhere | `ScheduleExporter.exportWakeUpShareText` |
 | **ICS calendar** | Standard iCalendar; import into system / Google / Apple Calendar | `ScheduleExporter.exportIcs` |
 | **sleepy-v1** | Sleepy's native plain-text format for re-import or editing | `SleepyNativeExporter` |
 
-File path: traditional formats use `Download/Sleepy/sleepy_<name>_<timestamp>.{json|ics}`; `sleepy-v1` is exported through the system share sheet.
+File names use `sleepy_<name>_<timestamp>.json`, `.ics`, or `.sleepy`; share text opens the system text-sharing sheet directly.
 
 The existing WakeUp share text format remains importable.
+
+### Add to the System Calendar
+
+Export can write courses to a writable calendar on the device. Choose a calendar and range (next 7 days, next month, or remaining semester), optionally apply schedule transfers and regular calendar reminders, review the preview, then confirm. Calendar read/write permission is requested for this action. First-period alarm reminders are experimental; actual alarm behavior depends on the calendar app and account.
 
 ---
 
@@ -223,10 +274,26 @@ Five widget types across 13 fixed-size variants: Today / TwoDay / WeekList each 
 | **Today** | regular / small / wide | Today's course list | <p align="left"><img src="docs/screenshots/widget-today.png" width="240"></p> |
 | **TwoDay** | regular / small / wide | Today + tomorrow, two columns | <p align="left"><img src="docs/screenshots/widget-twoday.png" width="240"></p> |
 | **WeekList** | regular / small / wide | 7-day course summary + names | <p align="left"><img src="docs/screenshots/widget-weeklist.png" width="240"></p> |
-| **WeekView** | regular / small | Week-view thumbnail (theme-colored, no capsules) | no separate screenshot |
-| **WeekGrid** | regular / small | Full time grid + course blocks | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+| **WeekView** | regular / small | Week-view thumbnail (theme-colored, no capsules) | <img src="docs/screenshots/widget-weekview.png" width="240" alt="WeekView on Android launcher"> |
+| **WeekGrid** | regular / small | Time grid + course blocks | <p align="left"><img src="docs/screenshots/widget-weekgrid.png" width="200"></p> |
+
+Image sources: Today, TwoDay, and WeekList are emulator previews produced by the current production renderer through `WidgetRenderActivity`, cropped to component bounds without stretching. WeekView and WeekGrid are actual launcher widget captures. This WeekGrid image shows visible periods 1–6, not every period or the entire term. Launcher size and widget variant determine the final layout and text truncation.
+
+<p align="left">
+  <img src="docs/screenshots/32-widget-settings.png" width="280" alt="Per-widget timetable binding and course-name display">
+</p>
+
+> Per-widget timetable binding and course-name display
+
+Per-widget settings:
+
+- General Settings → Widget management selects an installed widget and binds it to a fixed timetable or the currently selected timetable
+- Each instance chooses original course names or aliases; eligible variants offer experimental scrolling
+- Small WeekList and WeekView support three-day windows with today first or second
+- Mine includes a refresh-all-widgets action
 
 Implementation notes:
+
 - All five use synchronous RemoteViews + Canvas rendering (since v1.0.29). Heavily customized launchers like OPPO freeze Glance's async SessionWorker, leaving stale cards — hence the port.
 - **v1.0.55: fixed-size layout tiers** — each variant picks a layout for its own size bucket instead of stretching one layout
 - **v1.0.55: experimental scrolling on some variants** (today / twoday / weeklist / weekview) when content exceeds the card height
@@ -237,15 +304,21 @@ Implementation notes:
 
 ---
 
-## Course Conflicts and Undo
+## Course Conflicts, Undo and Redo
 
 When courses overlap, the grid keeps two layers visible and tapping the covered area rotates through the other courses. Three or more overlapping courses are not silently dropped; the stack style also works with any layer count.
 
 When a manually added or edited course overlaps an existing course, the confirmation dialog lists the weekday, periods, actual overlapping weeks, and the conflicting course before saving.
 
-The top bar includes Undo for the most recent timetable data change. Switching the active timetable is navigation and does not create an undo entry.
+The top bar includes Undo and Redo for timetable data changes. Switching the active timetable is navigation and does not create an undo entry.
 
----
+Appearance → Schedule display offers stacked, folded-corner, and side-bar conflict styles with corresponding size controls.
+
+<p align="left">
+  <img src="docs/screenshots/31-conflict.png" width="280" alt="Conflict style controls">
+</p>
+
+> Conflict style controls; see the grid view for overlapping courses
 
 ## OPPO Fluid Cloud
 
@@ -263,11 +336,13 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 
 <p align="left">
   <img src="docs/screenshots/22-reminder.png" width="320">
+  <img src="docs/screenshots/37-reminder-advanced.png" width="280" alt="Before-class reminders, experimental live cards, and automatic DND">
 </p>
 
 | Feature | Trigger | Content (dynamically generated) |
 |---|---|---|
 | **Daily reminder** | User-set time each day | `Today the 15th: 3 classes. First class Calculus at 08:00 in Building A101` |
+| **Tomorrow summary** | Its own user-set time | Tomorrow’s course schedule |
 | **Before-class reminder** | N minutes before each class | `Next class Calculus at 08:00 in Building A101` |
 
 - The minutes-before value is **free input** (1–999, capsule-style field, no hardcoded options)
@@ -275,6 +350,10 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 - Notifications go through `AlarmManager` exact/inexact dual-path fallback, Android 12+ compatible
 - `BootReceiver` re-registers after reboot/app update
 - Toggle state persists locally (`AppPrefs`, SharedPreferences)
+- Today, tomorrow, and before-class reminders provide live schedule previews
+- Date rules distinguish public holidays, transferred days, make-up workdays, and ordinary weekends
+- Before-class reminders can use a notification banner and experimental live notifications; the page includes main-field selection, a test action, and notification/alarm/battery reliability diagnostics
+- Optional automatic Do Not Disturb during class; it restores the previous state at the class boundary and remains vendor/permission dependent
 
 ---
 
@@ -292,18 +371,19 @@ Entry: "Mine" → "About". A dedicated page showing version, author, and open-so
 | **Author** | Lingion, tap to open the GitHub profile |
 | **Source** | github.com/lingion/sleepy, tappable |
 | **License note** | GPL-3.0 summary; contributions welcome |
-| **Open-source acknowledgements** | 9 cross-school projects plus 38 per-school credit cards, their licenses, and the parts of Sleepy they informed |
+| **Open-source acknowledgements** | 9 cross-school projects plus per-school credit cards, their licenses, and the parts of Sleepy they informed |
 
-The About page also checks for updates and shows the full release notes before downloading. Downloads can be cancelled.
+The About page offers manual update checks and a startup-check switch. Startup checks are enabled by default and can be disabled. Checks contact the update service; full release notes are shown before downloading, and downloads can be cancelled.
 
 ---
 
-## Dark Mode & Themes
+## Dark Mode, Custom Themes and Timetable Appearance
 
 Multiple presets + follow-system, each with Light/Dark schemes. Switch in "Mine" → "Appearance & theme".
 
 <p align="left">
   <img src="docs/screenshots/11-theme.png" width="280">
+  <img src="docs/screenshots/36-theme-dark.png" width="280" alt="Dark theme">
 </p>
 
 | Theme | Feel |
@@ -313,15 +393,73 @@ Multiple presets + follow-system, each with Light/Dark schemes. Switch in "Mine"
 | Ocean blue | Calm cool tones |
 | Peach pink | Warm orange |
 | Slate gray | Neutral |
-| Follow system | Auto |
+| Follow system | Use system theme colors |
+
+Theme colors and light/dark mode are independent: follow the system or force light or dark. Create a custom theme randomly, derive it from a main color, or edit primary, secondary, tertiary, and neutral surface colors with live preview. Custom themes can be saved, renamed, and deleted; theme changes refresh widgets.
+
+<p align="left">
+  <img src="docs/screenshots/30-custom-theme.png" width="280" alt="Custom theme creation and live preview">
+</p>
+
+> Custom theme creation and live preview
+
+Appearance also controls course-block scale and corners, conflict styles, and period headers: traditional/three-line layout, visible text, and hanging offset.
+
+<p align="left">
+  <img src="docs/screenshots/35-period-header.png" width="280" alt="Period header styles and layout">
+</p>
+
+> Period header styles and layout
 
 ---
 
-## Timetable Management
+## Timetable Management and General Settings
 
 <p align="left">
   <img src="docs/screenshots/09-manage.png" width="280">
 </p>
+
+Management collects the current timetable summary, import and drafts, new timetable/period table, manual course entry, edit, and export actions.
+
+Mine → General Settings includes:
+
+<p align="left">
+  <img src="docs/screenshots/27-general.png" width="280" alt="General settings: timetable display and widget entry">
+  <img src="docs/screenshots/38-general-advanced.png" width="280" alt="Navigation, language, and experimental features">
+</p>
+
+> General settings: timetable display and widget entry
+
+| Group | Controls |
+|---|---|
+| Course information | Period numbers or clock times, room/teacher/hidden grid subtitles, separate week/grid alias settings |
+| Week layout | Two columns, by-day or balanced columns, hide empty days |
+| Visible content | Selected weekdays, dates, view switcher, colorless courses |
+| Global widgets | Colorless mode, separators, nearest busy day, widget management |
+| Navigation and language | Start view, high refresh rate, docked/floating bottom navigation, Chinese (simplified/traditional), English, Japanese, Spanish |
+| Experimental | Adaptive grid height, pinch zoom, hide empty evening periods, vertical punctuation, separators and long-break spacing |
+
+### Holidays and Schedule Transfers
+
+<p align="left">
+  <img src="docs/screenshots/28-holiday.png" width="280" alt="Holiday appearance and transfer settings">
+</p>
+
+> Holiday appearance and transfer settings
+
+General Settings → Holiday settings lets you change years, refresh Chinese holiday data, gray out public holidays/weekends, and exempt make-up workdays. Add, edit, remove, or restore custom date ranges.
+
+Each timetable can map a transfer date to another date’s courses. These mappings affect course selection and the date logic for daily summaries, before-class reminders, live notifications, and automatic DND. Visual holiday treatment and reminder date rules are separate controls.
+
+### Full Backup and Migration
+
+<p align="left">
+  <img src="docs/screenshots/29-migration.png" width="280" alt="Experimental settings and full migration entry">
+</p>
+
+> Experimental settings and full migration entry
+
+General Settings → Data migration exports timetable and period-table data, preferences, and widget settings to `.sleepybackup`. Restore offers **Merge** (keep local timetables and append; matching preference keys take the backup values) or **Overwrite** (replace the timetable/settings modules included in the backup). This is a whole-app migration package, distinct from a single timetable’s JSON/ICS/text export; Android’s document picker chooses the file location.
 
 ---
 
@@ -329,8 +467,8 @@ Multiple presets + follow-system, each with Light/Dark schemes. Switch in "Mine"
 
 ```
 language        = Kotlin 2.1.10
-ui              = Jetpack Compose (BOM 2024.10.00) + Material 3
-navigation      = Navigation Compose 2.8.3
+ui              = Jetpack Compose (BOM 2026.09.00) + Material 3 1.5.0-alpha28
+navigation      = Navigation 3 runtime/ui 1.1.7 + navigationevent-compose 1.1.2
 storage         = Room 2.7.0 (KSP)
 prefs           = SharedPreferences (AppPrefs); DataStore 1.1.1 declared, unused
 serialization   = kotlinx-serialization-json 1.6.3
@@ -340,7 +478,7 @@ background      = WorkManager 2.9.1
 image           = Coil Compose 2.7.0
 splash          = Core Splash Screen 1.0.1
 core_ktx        = AndroidX Core 1.17.0
-build           = AGP 9.1.0 + Gradle 9.3.1 (Kotlin DSL)
+build           = AGP 9.1.1 + Gradle 9.3.1 (Kotlin DSL)
 java_compat     = 17
 ```
 
@@ -359,12 +497,12 @@ sleepy/                                    # Repository root
 │   │   │   │   ├── AppDatabase.kt        # Room database
 │   │   │   │   ├── dao/                  # CourseDao / TimeTableDao
 │   │   │   │   ├── entity/               # CourseEntity / TimeTableEntity / SmartPeriodConfig
-│   │   │   │   ├── jw/                   # 43 JW parsers + JwImportViewModel + JwParity
+│   │   │   │   ├── jw/                   # JW parsers + JwImportViewModel + JwParity
 │   │   │   │   ├── parser/               # ScheduleParser + SleepyNativeParser/Exporter/Format
 │   │   │   │   ├── repository/           # ScheduleRepository
 │   │   │   │   └── undo/                 # UndoManager
 │   │   │   ├── ui/
-│   │   │   │   ├── component/            # 12: CourseTableView / CourseDetailSheet /
+│   │   │   │   ├── component/            # CourseTableView / CourseDetailSheet /
 │   │   │   │   │                         # SmartPeriodEditor / TimeSlotEditor /
 │   │   │   │   │                         # PillNavigationBar / SegmentedSwitcher /
 │   │   │   │   │                         # ConflictCard / DateTimePickers / SettingsCards /
@@ -377,14 +515,14 @@ sleepy/                                    # Repository root
 │   │   │   │   │   ├── manage/           # Course management
 │   │   │   │   │   └── mine/             # Mine / all timetables / edit / theme / export
 │   │   │   │   └── theme/                # Theme + ThemePresets + NoRippleClickable
-│   │   │   ├── util/                     # 19: AppPrefs / DateUtils / LocaleHelper /
+│   │   │   ├── util/                     # AppPrefs / DateUtils / LocaleHelper /
 │   │   │   │                             # TimeTableUtils / CourseColorUtil /
 │   │   │   │                             # ConflictLayoutEngine / ConflictDetailReporter /
 │   │   │   │                             # WeekRangeOverlap / HolidayManager / HolidayRange /
 │   │   │   │                             # HighRefreshRate / PinyinMatcher / MarkdownBlocks /
 │   │   │   │                             # FeedbackComposer / UpdateManager / UpdateInfo /
 │   │   │   │                             # UpdateNotifier / VersionUtils
-│   │   │   └── widget/                   # 46 widget Kotlin files + notification/ subdirectory
+│   │   │   └── widget/                   # Widget Kotlin files + notification/ subdirectory
 │   │   │                                 # (Today/WeekList/WeekView/TwoDay/WeekGrid × Provider + Receiver)
 │   │   │                                 # + WidgetRenderActivity + RemoteViewsWidgetHelper +
 │   │   │                                 # WidgetContent / WidgetBitmapRenderers /
@@ -406,7 +544,7 @@ sleepy/                                    # Repository root
 │   │       └── xml/                      # 13 widget_info + network/backup rules
 │   └── libs/                             # seedling-support-lite-3.0.7.aar (dependency not declared)
 ├── docs/
-│   ├── screenshots/                      # 19 screenshots referenced by README
+│   ├── screenshots/                      # README screenshots
 │   ├── logo.png                          # Top-of-README logo
 │   ├── adapt-kit/                        # Adaptation collection guide (separate README)
 │   └── sop/                              # SOP index (does not enumerate any specific file)
@@ -416,7 +554,7 @@ sleepy/                                    # Repository root
 ├── scripts/                              # release_check.sh
 ├── tools/                                # gen_widget_previews.py + sleepy-collector
 ├── tasks/                                # plan.md + todo.md
-├── build.gradle.kts                       # Root build (AGP 9.1.0 / Kotlin 2.1.10 / KSP)
+├── build.gradle.kts                       # Root build (AGP 9.1.1 / Kotlin 2.1.10 / KSP)
 ├── app/build.gradle.kts                   # App module (compileSdk=37 / minSdk=26 / targetSdk=37)
 ├── settings.gradle.kts                   # rootProject.name = "WakeUpPure"
 ├── gradle.properties                     # android.disallowKotlinSourceSets=false
@@ -435,8 +573,10 @@ sleepy/                                    # Repository root
 ```bash
 java -version           # JDK 17+
 
-sdkmanager "platforms;android-37.0" "build-tools;37.0.0"
+sdkmanager "platforms;android-37.0" "build-tools;36.0.0"
 ```
+
+The current Gradle configuration resolves to `compileSdk=37` and `buildToolsVersion=36.0.0`; the platform package identifier is `platforms;android-37.0`.
 
 ### Build
 
@@ -446,7 +586,7 @@ Linux / macOS:
 git clone https://github.com/lingion/sleepy.git
 cd sleepy
 
-# Debug (x86_64 emulator / arm64 device), ~20MB
+# Debug (x86_64 emulator / arm64 device)
 ./gradlew assembleDebug
 ```
 
@@ -475,9 +615,17 @@ adb install app/build/outputs/apk/debug/app-arm64-v8a-debug.apk
 adb install app/build/outputs/apk/debug/app-x86_64-debug.apk
 ```
 
-> ABI splits: arm64-v8a (mainstream devices), armeabi-v7a (32-bit legacy), x86_64 (emulators). Installed automatically per device.
+> ABI splits: arm64-v8a (mainstream devices), armeabi-v7a (32-bit legacy), x86_64 (emulators). Choose the APK matching your device ABI, or use the universal APK.
 
 ---
+
+Debug builds use `com.lingion.sleepy.debug` and a separate data sandbox from the release app. Releases also provide a universal APK. See [GitHub Releases](https://github.com/lingion/sleepy/releases/latest) for installable release files and checksums.
+
+CI runs on pull requests to `main` (commit lint, collector checks, Android tests, Android lint, and APK assembly). Tagged `v*.*.*` pushes trigger the release workflow; neither CI nor Release currently supports manual dispatch. Source: [CI](.github/workflows/ci.yml) and [Release](.github/workflows/release.yml).
+
+## Permissions and Network Access
+
+Timetable viewing and editing work offline. JW import contacts the selected school, holiday refresh downloads public calendar data, and update checks/downloads contact GitHub or the project mirror. Notification permission is requested when reminders are enabled; optional class-time DND needs system notification-policy access. Location is requested after Locate in school selection. Adding courses to the system calendar requests calendar read/write access; installing an in-app update requires permission to install unknown apps. Exact-alarm and battery settings affect reminder reliability and are surfaced on the reminder page.
 
 ## Community
 
@@ -500,7 +648,7 @@ Prefer to stay on GitHub? [Discussions](https://github.com/lingion/sleepy/discus
 
 [GPL-3.0](LICENSE)
 
-Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list — 9 cross-school projects plus 38 per-school credit cards, with licenses and reference scope — is available in the app under Mine → About → Open-source acknowledgements.
+Sleepy is released under GPL-3.0. The JW adapters, protocol research, and timetable formats reference multiple open-source projects. The complete list — 9 cross-school projects plus per-school credit cards, with licenses and reference scope — is available in the app under Mine → About → Open-source acknowledgements.
 
 ---
 
