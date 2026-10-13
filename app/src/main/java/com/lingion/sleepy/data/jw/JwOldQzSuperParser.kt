@@ -20,11 +20,10 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
 
     private fun weeks(text: String): List<Triple<Int, Int, Int>> {
         val clean = text.trim().trim('(', ')', '[', ']', '（', '）').replace("周", "").replace(" ", "")
-        val shared = when { clean.endsWith("单") -> 1; clean.endsWith("双") -> 2; else -> 0 }
-        val tokens = clean.removeSuffix("单").removeSuffix("双").split(',', '，')
+        val tokens = clean.split(',', '，')
         val result = mutableListOf<Triple<Int, Int, Int>>()
         for (token in tokens) {
-            val type = when { token.endsWith("单") -> 1; token.endsWith("双") -> 2; else -> shared }
+            val type = when { token.endsWith("单") -> 1; token.endsWith("双") -> 2; else -> 0 }
             val b = bounds(token.removeSuffix("单").removeSuffix("双"), 64) ?: return emptyList()
             result += Triple(b.first, b.last, type)
         }
@@ -45,7 +44,8 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
     override fun generateCourseList(): List<JwCourse> {
         val result = mutableListOf<JwCourse>()
         // Fixed cell ids explicitly encode section group and weekday (CCSU shape).
-        for (cell in doc.select("[id]")) {
+        val fixedCells = doc.select("[id]").filter { fixedId.matches(it.id()) }
+        for (cell in fixedCells.takeIf { cells -> cells.map { it.id() }.toSet().size == 35 }.orEmpty()) {
             val id = fixedId.matchEntire(cell.id()) ?: continue
             if (hidden(cell)) continue
             val f = fields(cell)
@@ -97,7 +97,9 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
                                 recordStart = i + 2
                             } else if (m == null && f[i].endsWith("周") && i >= 3 && i + 1 < f.size) {
                                 // CCUT: group-day id establishes nodes; never infer them from text order.
-                                val group = Regex("""^([1-9]|1[0-5])-[1-7](?:-\d+)?$""").matchEntire(block.id())?.groupValues?.get(1)?.toIntOrNull() ?: continue
+                                val id = Regex("""^([1-9]|1[0-5])-([1-7])(?:-\d+)?$""").matchEntire(block.id()) ?: continue
+                                if (id.groupValues[2].toInt() != day) continue
+                                val group = id.groupValues[1].toInt()
                                 add(result, f[i - 3], f[i - 1], f[i + 1], day, group * 2 - 1..group * 2, f[i])
                                 recordStart = i + 2
                             }

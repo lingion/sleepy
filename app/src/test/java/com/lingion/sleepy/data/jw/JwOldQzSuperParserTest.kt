@@ -16,7 +16,18 @@ class JwOldQzSuperParserTest {
             assertTrue(name, courses.isNotEmpty())
             assertTrue(name, FrameTraversalTree.findAnchors(html).isNotEmpty())
             assertEquals(courses, JwParserRegistry.selectBest(html, JwProtocol.TYPE_QZ_OLD).first)
+            assertEquals(courses, JwImportViewModel.parseHtmlStatic(html, JwProtocol.TYPE_QZ_OLD).first)
         }
+    }
+    @Test fun `parity belongs to each explicit week fragment`() {
+        val c = parse(grid("<div>课<br>T<br>1-4,9-12双周[1节]<br>R</div>"))
+        assertEquals(listOf(0, 2), c.map { it.type })
+        val mixed = parse(grid("<div>课<br>T<br>1-4单,9-12周[1节]<br>R</div>"))
+        assertEquals(listOf(1, 0), mixed.map { it.type })
+    }
+    @Test fun `isolated fixed id and conflicting group weekday rejected`() {
+        assertTrue(parse("<div id='1-3-2'>A<br>B<br>T<br>1-4周<br>R</div>").isEmpty())
+        assertTrue(parse(grid("<div id='2-3'>A<br>B<br>T<br>1-4周<br>R</div>")).isEmpty())
     }
     @Test fun `distinct source forms preserve values`() {
         val jlict = parse(fixture("jlict")).single()

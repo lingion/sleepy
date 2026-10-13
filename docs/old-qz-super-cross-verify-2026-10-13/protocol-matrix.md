@@ -8,3 +8,5 @@
 | CCSU | OpenWakeUp CcsuQzOldParser | id group-day-2 | five lines: name/class/teacher/weeks/room | id directly establishes day and node group | short records rejected |
 
 All use already-rendered DOM. No new network endpoint, credential, student-id extraction, captcha bypass or login algorithm is asserted. Existing frame traversal and login/session diagnostics remain in place. JLICT/fixed IDs have a structural frame anchor validated by parser output; arbitrary id=kb is insufficient. No duplicated JS regex: time parsing only exists in Kotlin.
+
+Hardening: CCSU requires all 35 documented fixed IDs before treating arbitrary ID-bearing divs as course data. CCUT id weekday must agree with table column/header. Parity is scoped to each comma-delimited range; unmarked ranges are every week (no suffix leakage).
