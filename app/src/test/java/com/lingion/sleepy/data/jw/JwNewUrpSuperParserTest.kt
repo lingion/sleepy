@@ -121,6 +121,15 @@ class JwNewUrpSuperParserTest {
     }
 
     @Test
+    fun `many unmatched brackets before valid array do not hide timetable`() {
+        val payload = """[{"kcm":"Math [lab]","cxjc":1,"id":{"skxq":2,"skjc":2,"skzc":"101"}}]"""
+        val html = "<div>" + "[".repeat(15000) + "</div><script>window.table=$payload;</script>"
+        val courses = JwNewUrpSuperParser(html).generateCourseList()
+        assertEquals(1, courses.size)
+        assertEquals("Math [lab]", courses.single().name)
+    }
+
+    @Test
     fun `two adjacent weeks preserve ending week and invalid bitmap rejects`() {
         fun payload(bits: String) = """[{"kcm":"A","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"$bits"}}]"""
         assertEquals(2, JwNewUrpSuperParser(payload("110")).generateCourseList().single().endWeek)

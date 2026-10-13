@@ -219,7 +219,7 @@
     "project": "classtable",
     "author": "kuailiaojie",
     "license": "MIT",
-    "role_in_verification": "POSITIVE"
+    "role_in_verification": "INDIRECT"
   },
   {
     "project": "SHOU-urp-auto-choose-lessons",

@@ -107,35 +107,30 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
         // '[' inside a course name or nested JSON array instead of the outer array.
         // A real timetable has both keys; avoid scanning unrelated large HTML documents.
         if (!source.contains("\"skzc\"") || !source.contains("\"kcm\"")) return null
-        for (start in source.indices) {
-            if (source[start] != '[') continue
-            var depth = 0
-            var inString = false
-            var escaped = false
-            for (end in start until source.length) {
-                val ch = source[end]
-                if (inString) {
-                    if (escaped) escaped = false
-                    else if (ch == '\\') escaped = true
-                    else if (ch == '"') inString = false
-                    continue
-                }
-                when (ch) {
-                    '"' -> inString = true
-                    '[' -> depth++
-                    ']' -> {
-                        if (depth == 0) break
-                        depth--
-                        if (depth == 0) {
-                            val candidate = source.substring(start, end + 1)
-                            val array = runCatching { JSONArray(candidate) }.getOrNull()
-                            if (array != null && (0 until array.length()).any { index ->
-                                    val item = array.optJSONObject(index)
-                                    item?.has("kcm") == true && item.optJSONObject("id")?.has("skzc") == true
-                                }) return candidate
-                            break
-                        }
-                    }
+        val starts = ArrayDeque<Int>()
+        var inString = false
+        var escaped = false
+        for (end in source.indices) {
+            val ch = source[end]
+            if (inString) {
+                if (escaped) escaped = false
+                else if (ch == '\\') escaped = true
+                else if (ch == '"') inString = false
+                continue
+            }
+            when (ch) {
+                '"' -> inString = true
+                '[' -> starts.addLast(end)
+                ']' -> if (starts.isNotEmpty()) {
+                    val start = starts.removeLast()
+                    // Nested arrays cannot be the top-level item list. Skip their
+                    // repeated parsing so deeply nested payloads stay bounded.
+                    val candidate = source.substring(start, end + 1)
+                    val array = runCatching { JSONArray(candidate) }.getOrNull()
+                    if (array != null && (0 until array.length()).any { index ->
+                            val item = array.optJSONObject(index)
+                            item?.has("kcm") == true && item.optJSONObject("id")?.has("skzc") == true
+                        }) return candidate
                 }
             }
         }

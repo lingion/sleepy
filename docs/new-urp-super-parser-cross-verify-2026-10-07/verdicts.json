@@ -2,7 +2,9 @@
   "metadata": {
     "method": "manual+code-search-v1",
     "candidates_total": 60,
-    "verified": 41
+    "verified": 41,
+    "review_date": "2026-10-13",
+    "verified_positive": 0
   },
   "verdicts": [
     {
@@ -333,10 +335,10 @@
       "repo": "kuailiaojie/classtable",
       "stars": 5,
       "language": "JavaScript",
-      "verdict": "POSITIVE",
+      "verdict": "INDIRECT",
       "newurp_files": [],
-      "has_select": true,
-      "notes": "NewUrp signature found: []"
+      "has_select": false,
+      "notes": "No matching flat-array source files in recorded evidence; historical POSITIVE label withdrawn"
     },
     {
       "repo": "adminerest/SHOU-urp-auto-choose-lessons",
