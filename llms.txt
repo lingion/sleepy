@@ -92,7 +92,7 @@ Supported exports:
 - iCalendar / ICS;
 - `sleepy-v1`.
 
-On Android 10+, JSON/ICS files are written under `Download/Sleepy/`; Android 8–9 uses app cache with FileProvider sharing; share text and sleepy-v1 use the Android system share sheet. Period-table export has a narrower format set than course-table export.
+On Android 10+, JSON/ICS/.sleepy files are written under `Download/Sleepy/`; Android 8–9 uses app cache with FileProvider sharing; share text uses the Android system share sheet. Period-table export has a narrower format set than course-table export.
 
 ## Backup, calendar, and permissions
 
