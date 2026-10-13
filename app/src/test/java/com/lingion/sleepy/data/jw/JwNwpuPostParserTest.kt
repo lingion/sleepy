@@ -135,4 +135,15 @@ class JwNwpuPostParserTest {
         val blank = fixtureHtml.replace("<td>高等计算机体系结构</td>", "<td></td>")
         assertEquals(3, JwNwpuPostParser(blank).generateCourseList().size)
     }
+
+    @Test fun `bare numeric continuation remains supported`() {
+        val continued = fixtureHtml.replace(
+            "教学西楼D-101(第1-16周 星期一上1-2节)",
+            "教学西楼D-101(第1-16周 星期一上1节,2节)"
+        )
+        val parsed = JwNwpuPostParser(continued).generateCourseList()
+        assertEquals(5, parsed.size)
+        assertEquals(1, parsed.first().startNode)
+        assertEquals(2, parsed.first().endNode)
+    }
 }

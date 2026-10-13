@@ -585,7 +585,22 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "LiYulin-s/nwpu-coursetable (jwxt localStorage cs-selectedLessons)\n" +
             "Panoramasx/aoxiang-harmonyos (HarmonyOS api_collect.js 镜像)\n" +
             "iiijiashu/guagua-course (NwpuPrintDataParser + NwpuJwxtExtractor 双端点)\n" +
-            "xiaozhuang357/NPU-eCampus-ICS-Exporter (智慧校园 studentTableVm 导出)"
+            "xiaozhuang357/NPU-eCampus-ICS-Exporter (智慧校园 studentTableVm 导出)\n" +
+            "Dy1anT/NWPUgrade (NEGATIVE, 教务相关协议边界)\n" +
+            "2ndelement/nwpu-lesson-select-enhance (NEGATIVE, 教务相关协议边界)\n" +
+            "zymelaii/nwpu-toy-scripts (NEGATIVE, 教务相关协议边界)\n" +
+            "FlowingFrost/NWPU-Course-Helper (NEGATIVE, 教务相关协议边界)\n" +
+            "Phoenix-ZH/NWPU_GPA (NEGATIVE, 教务相关协议边界)\n" +
+            "MoeMion/NPU-Course-Evalue-Script (NEGATIVE, 教务相关协议边界)\n" +
+            "churehill/JWhelper (NEGATIVE, 教务相关协议边界)\n" +
+            "BakerBunker/nwpu_helper (NEGATIVE, 教务相关协议边界)\n" +
+            "BakerBunker/NpuGpa (NEGATIVE, 教务相关协议边界)\n" +
+            "NaraLan0502/AoxiangHelp_QQBotPlugin (NEGATIVE, 教务相关协议边界)\n" +
+            "Dryzk/nwpu-gpa-and-rank (NEGATIVE, 教务相关协议边界)\n" +
+            "Xio-Shark/aoxiang-kebiao (NEGATIVE, 教务相关协议边界)\n" +
+            "huohuo132/Aoxiang-assistant-for-HarmonyOS (NEGATIVE, 教务相关协议边界)\n" +
+            "npuNancy/AoXiangGrades (NEGATIVE, 教务相关协议边界)\n" +
+            "sjrsjz/nwpu-gpa-rank (NEGATIVE, 教务相关协议边界)"
     )
 )
 

@@ -159,7 +159,7 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                     // 节次（含范围）：[上中下晚](\d+)(?:-(\d+))?节?
                     // 例：上1-2节 -> 上1-2, base 0 -> [1,2]
                     //     下1-2节 -> 下1-2, base 6 -> [7,8]
-                    val nodeRangePattern = Pattern.compile("([上中下晚])(\\d+)(?:-(\\d+))?节?")
+                    val nodeRangePattern = Pattern.compile("([上中下晚])?(\\d+)(?:-(\\d+))?节?")
                     val nodeMatcher = nodeRangePattern.matcher(daySeg.substringBefore("第"))
                     val nodes = mutableListOf<Int>()
                     while (nodeMatcher.find()) {

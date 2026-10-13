@@ -118,5 +118,95 @@
     "author": "作者待确认",
     "license_or_None": "无 LICENSE",
     "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+  },
+  {
+    "project": "Dy1anT/NWPUgrade",
+    "author": "Dy1anT",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "2ndelement/nwpu-lesson-select-enhance",
+    "author": "2ndelement",
+    "license_or_None": "MIT",
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "zymelaii/nwpu-toy-scripts",
+    "author": "zymelaii",
+    "license_or_None": "MIT",
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "FlowingFrost/NWPU-Course-Helper",
+    "author": "FlowingFrost",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "Phoenix-ZH/NWPU_GPA",
+    "author": "Phoenix-ZH",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "MoeMion/NPU-Course-Evalue-Script",
+    "author": "MoeMion",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "churehill/JWhelper",
+    "author": "churehill",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "BakerBunker/nwpu_helper",
+    "author": "BakerBunker",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "BakerBunker/NpuGpa",
+    "author": "BakerBunker",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "NaraLan0502/AoxiangHelp_QQBotPlugin",
+    "author": "NaraLan0502",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "Dryzk/nwpu-gpa-and-rank",
+    "author": "Dryzk",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "Xio-Shark/aoxiang-kebiao",
+    "author": "Xio-Shark",
+    "license_or_None": "MIT",
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "huohuo132/Aoxiang-assistant-for-HarmonyOS",
+    "author": "huohuo132",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "npuNancy/AoXiangGrades",
+    "author": "npuNancy",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
+  },
+  {
+    "project": "sjrsjz/nwpu-gpa-rank",
+    "author": "sjrsjz",
+    "license_or_None": null,
+    "role_in_verification": "NWPU 教务相关但目标 sample-table-1 协议 NEGATIVE；仅作相关系统边界旁证，不构成协议层正证"
   }
 ]

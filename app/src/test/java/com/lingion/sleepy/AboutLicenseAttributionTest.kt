@@ -319,6 +319,21 @@ class AboutLicenseAttributionTest {
         Attribution("aoxiang-harmonyos", "Panoramasx"),
         Attribution("guagua-course", "iiijiashu"),
         Attribution("NPU-eCampus-ICS-Exporter", "xiaozhuang357"),
+        Attribution("Dy1anT/NWPUgrade", ""),
+        Attribution("2ndelement/nwpu-lesson-select-enhance", ""),
+        Attribution("zymelaii/nwpu-toy-scripts", ""),
+        Attribution("FlowingFrost/NWPU-Course-Helper", ""),
+        Attribution("Phoenix-ZH/NWPU_GPA", ""),
+        Attribution("MoeMion/NPU-Course-Evalue-Script", ""),
+        Attribution("churehill/JWhelper", ""),
+        Attribution("BakerBunker/nwpu_helper", ""),
+        Attribution("BakerBunker/NpuGpa", ""),
+        Attribution("NaraLan0502/AoxiangHelp_QQBotPlugin", ""),
+        Attribution("Dryzk/nwpu-gpa-and-rank", ""),
+        Attribution("Xio-Shark/aoxiang-kebiao", ""),
+        Attribution("huohuo132/Aoxiang-assistant-for-HarmonyOS", ""),
+        Attribution("npuNancy/AoXiangGrades", ""),
+        Attribution("sjrsjz/nwpu-gpa-rank", ""),
     )
 
     // ----- 贡献者 (Contributors) token 集: 直接提交代码并合入的开发者, 与上游参考仓库致谢区分 -----
