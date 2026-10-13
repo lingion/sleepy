@@ -267,7 +267,7 @@ This action supports weeks 1–30 and stops with a message for invalid dates, co
 
 ### Add to the System Calendar
 
-Export can write courses to a writable calendar on the device. Choose a calendar and range (next 7 days, next month, or remaining semester), optionally apply schedule transfers and regular calendar reminders, review the preview, then confirm. Calendar read/write permission is requested for this action. First-period alarm reminders are experimental; actual alarm behavior depends on the calendar app and account.
+Export can write courses to a writable calendar on the device. Choose a calendar and range (next 7 days, next month, or remaining semester), optionally apply schedule transfers and regular calendar reminders, review the preview, then confirm. Calendar read/write permission is requested for this action. If the device has no writable calendar, Sleepy creates a local calendar without requiring a cloud account. First-period alarm reminders are experimental; actual alarm behavior depends on the calendar app and account.
 
 ---
 
