@@ -80,6 +80,7 @@ import com.lingion.sleepy.ui.screen.mine.EditTableScreen
 import com.lingion.sleepy.ui.screen.mine.GeneralSettingsScreen
 import com.lingion.sleepy.ui.screen.mine.HolidaySettingsScreen
 import com.lingion.sleepy.ui.screen.mine.ExportScreen
+import com.lingion.sleepy.ui.screen.mine.TableReminderScreen
 import com.lingion.sleepy.ui.screen.mine.ReminderScreen
 import com.lingion.sleepy.ui.screen.mine.AboutScreen
 import com.lingion.sleepy.util.UpdateNotifier
@@ -307,8 +308,13 @@ internal fun SleepyNavHost(
             ExportScreen(onBack = { navigator.pop() })
         }
 
+        entry<SleepyRoute.TableReminder> {
+            TableReminderScreen(onBack = { navigator.pop() })
+        }
+
         entry<SleepyRoute.Reminder> {
             ReminderScreen(
+                onOpenTableReminder = { navigator.openTableReminder() },
                 onBack = { navigator.pop() },
                 onOpenHoliday = { navigator.openHoliday() },
             )

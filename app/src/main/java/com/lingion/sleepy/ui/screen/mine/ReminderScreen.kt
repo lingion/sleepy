@@ -26,6 +26,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.ArrowBack
+import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material.icons.outlined.AccessTime
 import androidx.compose.material.icons.outlined.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
@@ -240,7 +241,7 @@ private fun buildBeforeClassPreviewText(
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
+fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}, onOpenTableReminder: () -> Unit = {}) {
     val colors = MaterialTheme.colorScheme
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -595,6 +596,25 @@ fun ReminderScreen(onBack: () -> Unit, onOpenHoliday: () -> Unit = {}) {
                             )
                         )
                     }
+                }
+            }
+
+            item {
+                Row(
+                    modifier = Modifier.fillMaxWidth()
+                        .clip(SleepyTheme.shapes.large)
+                        .background(colors.surfaceContainer)
+                        .noRippleClickable(onOpenTableReminder)
+                        .padding(horizontal = 16.dp, vertical = 14.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Column(Modifier.weight(1f)) {
+                        Text(stringResource(R.string.table_reminder_title), style = MaterialTheme.typography.titleSmall)
+                        Text(stringResource(R.string.table_reminder_subtitle), style = MaterialTheme.typography.bodySmall,
+                            color = colors.onSurfaceVariant)
+                    }
+                    Icon(Icons.Outlined.ChevronRight, contentDescription = null,
+                        tint = colors.onSurfaceVariant, modifier = Modifier.size(20.dp))
                 }
             }
 

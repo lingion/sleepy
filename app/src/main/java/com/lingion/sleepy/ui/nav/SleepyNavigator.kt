@@ -51,6 +51,7 @@ class SleepyNavigator(
     fun openGeneral() = push(SleepyRoute.General)
     fun openHoliday() = push(SleepyRoute.Holiday)
     fun openExport() = push(SleepyRoute.Export)
+    fun openTableReminder() = push(SleepyRoute.TableReminder)
     fun openReminder() = push(SleepyRoute.Reminder)
     fun openAbout() = push(SleepyRoute.About)
     fun openLicense() = push(SleepyRoute.License)

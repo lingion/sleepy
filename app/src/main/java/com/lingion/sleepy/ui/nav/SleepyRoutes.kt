@@ -20,6 +20,7 @@ sealed interface SleepyRoute : NavKey {
     @Serializable data object General : SleepyRoute
     @Serializable data object Holiday : SleepyRoute
     @Serializable data object Export : SleepyRoute
+    @Serializable data object TableReminder : SleepyRoute
     @Serializable data object Reminder : SleepyRoute
     @Serializable data object About : SleepyRoute
     @Serializable data object License : SleepyRoute

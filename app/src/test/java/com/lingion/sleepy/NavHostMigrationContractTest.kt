@@ -424,7 +424,7 @@ class NavHostMigrationContractTest {
         // openXxx 入口全部走 SleepyRoute typed 子类,不允许裸字符串。
         // 课表显示直接并入外观页，因此只保留节次表头子页入口。
         val openFns = Regex("""fun\s+(open\w+)\(""").findAll(navigatorSrc).map { it.groupValues[1] }.toList()
-        assertEquals("Navigator 必须有 16 个 openXxx 入口(与当前路由一一对应)", 16, openFns.size)
+        assertEquals("Navigator 必须有 17 个 openXxx 入口(与当前路由一一对应)", 17, openFns.size)
         openFns.forEach { fn ->
             // 多行签名(如 openEditTable 三参数)必须取到函数体尾部,不止签名首行。
             // 取从 `fun fn(` 开始到下一个 `fun ` 或 400 字符,以先到者为准。
