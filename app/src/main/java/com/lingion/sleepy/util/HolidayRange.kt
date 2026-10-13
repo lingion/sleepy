@@ -147,21 +147,26 @@ object HolidayRangeOps {
             return hit.targetDate.dayOfWeek.value
         }
 
-        /**
-         * 取课语义 resolver(2026-10-11 报障修复): 按「今天上谁的课」反向查。
-         * 补班日(targetDate 命中)→ 上 sourceDate 那天的课; 放假日(sourceDate 命中,
-         * 课已被调走)→ null 表示当天无课; 未命中 → 自然星期。
-         *
-         * 与 effectiveDayOfWeek(正向, 课表页 daySwap 专用)方向相反: 旧代码取课链路
-         * (今日页/widget/通知/勿扰)误用正向查, 补班日永远 miss 落回自然星期,
-         * 用户补班日全链路空白。两者并存, 语义不同勿混用 —
-         * effectiveDayOfWeek 只回答"这天课该排进哪列", courseDayForDate 只回答
-         * "这天实际上谁的课(或没课)"。
-         */
-        fun courseDayForDate(date: LocalDate, transfers: List<HolidayTransferEntry>): Int? {
-            transfers.lastOrNull { it.targetDate == date }?.let { return it.sourceDate.dayOfWeek.value }
+        /** Reverse one-step lookup: target uses the original source date; moved-out source is empty. */
+        fun courseDateForDate(date: LocalDate, transfers: List<HolidayTransferEntry>): LocalDate? {
+            transfers.lastOrNull { it.targetDate == date }?.let { return it.sourceDate }
             if (transfers.any { it.sourceDate == date }) return null
-            return date.dayOfWeek.value
+            return date
+        }
+
+        fun courseDayForDate(date: LocalDate, transfers: List<HolidayTransferEntry>): Int? =
+            courseDateForDate(date, transfers)?.dayOfWeek?.value
+
+        /** Content follows the source date; display and alarm time keep the destination date. */
+        fun coursesForDate(
+            date: LocalDate, startDate: String, maxWeek: Int,
+            courses: List<com.lingion.sleepy.data.entity.CourseEntity>,
+            transfers: List<HolidayTransferEntry>
+        ): List<com.lingion.sleepy.data.entity.CourseEntity> {
+            val source = courseDateForDate(date, transfers) ?: return emptyList()
+            if (DateUtils.semesterStatus(startDate, maxWeek, source) != DateUtils.SemesterStatus.IN_RANGE) return emptyList()
+            val week = DateUtils.currentWeek(startDate, source)
+            return courses.filter { it.day == source.dayOfWeek.value && it.inWeek(week) }
         }
 
         /**
