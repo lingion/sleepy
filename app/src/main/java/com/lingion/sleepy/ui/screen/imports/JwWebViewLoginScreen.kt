@@ -1140,6 +1140,7 @@ private val YETHAN_FALLBACK_PERIODS: List<Pair<String, String>> = listOf(
     "20:20" to "21:05",   // 第12节
     "21:10" to "21:55",   // 第13节
 )
+
 /**
  * CQU (重庆大学门户 my.cqu.edu.cn) 协议：在 WebView 内 fetch 课表 JSON + 抓节次时间。
  *
