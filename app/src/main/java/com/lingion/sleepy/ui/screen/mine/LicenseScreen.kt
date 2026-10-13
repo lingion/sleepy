@@ -373,7 +373,7 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     ),
     PerSchoolEntry(
         "school-seu", "东南大学 SEU",
-        "SEUTimetable (sakimidare, Apache-2.0)\nAetik-yue/hormone (SEU SSO 入口)\nluzy99/SEUAutoLogin\nHaa1024/SEU-Timetable (MIT)\nHeraldStudio/herald-webservice (MIT)\n131AIClub/seu-xiaoai-course (LGPL-2.1)\nluyishui/classduck\nWheretoSleepinNJU/NJU-Class-Shedule-Flutter (Apache-2.0)"
+        "SEUTimetable (sakimidare, Apache-2.0)\nAetik-yue/hormone (SEU SSO 入口)\nluzy99/SEUAutoLogin\nHaa1024/SEU-Timetable (MIT)\nOFRabby/seu-routine-maker (OFRabby, UMS PDF negative evidence)\nHeraldStudio/herald-webservice (MIT)\n131AIClub/seu-xiaoai-course (LGPL-2.1)\nluyishui/classduck\nWheretoSleepinNJU/NJU-Class-Shedule-Flutter (Apache-2.0)"
     ),
     PerSchoolEntry(
         "school-zju", "浙江大学 ZJU",

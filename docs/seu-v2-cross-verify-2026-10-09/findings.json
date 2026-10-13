@@ -15,7 +15,7 @@
       "path": "seu_routine_maker.py",
       "license": "not declared",
       "verdict": "negative: UMS pasted-text timetable to PDF; unrelated endpoint",
-      "limit": "no app network protocol, no code copied or attribution required"
+      "limit": "README describes Southeast University UMS; institutional identity relative to China SEU not established. Credited as reviewed negative source; no code copied."
     },
     {
       "repo": "HeraldStudio/herald-webservice",

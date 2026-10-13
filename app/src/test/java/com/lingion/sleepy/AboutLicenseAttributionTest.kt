@@ -68,6 +68,7 @@ class AboutLicenseAttributionTest {
         Attribution("Aetik-yue/hormone", ""),
         Attribution("luzy99/SEUAutoLogin", ""),
         Attribution("Haa1024/SEU-Timetable", "MIT"),
+        Attribution("OFRabby/seu-routine-maker", "OFRabby"),
         Attribution("HeraldStudio/herald-webservice", "MIT"),
         Attribution("131AIClub/seu-xiaoai-course", "LGPL-2.1"),
         Attribution("luyishui/classduck", ""),

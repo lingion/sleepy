@@ -18,7 +18,8 @@
     "131AIClub/seu-xiaoai-course": "LGPL-2.1; credited in LicenseScreen and six locale strings",
     "luyishui/classduck": "No repo license declared; credited by author in LicenseScreen and six locale strings; no source copied",
     "WheretoSleepinNJU/NJU-Class-Shedule-Flutter": "Apache-2.0; credited in LicenseScreen and six locale strings",
-    "Haa1024/SEU-Timetable": "MIT; credited in LicenseScreen and six locale strings"
+    "Haa1024/SEU-Timetable": "MIT; credited in LicenseScreen and six locale strings",
+    "OFRabby/seu-routine-maker": "No license declared; credited as reviewed negative in LicenseScreen and six locale strings; institution identity ambiguous"
   },
   "negative_candidates": [
     "OFRabby/seu-routine-maker@2f2f0ecb:seu_routine_maker.py; UMS pasted text -> PDF, no jwapp protocol"
