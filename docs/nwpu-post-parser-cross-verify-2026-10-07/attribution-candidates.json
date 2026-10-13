@@ -1,123 +1,123 @@
 [
   {
     "project": "Lorcas-Zephyr/aoxiang-assistant",
-    "author": "作者待确认",
+    "author": "Lorcas-Zephyr",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "ShiGuangSchedule/shiguang_warehouse",
-    "author": "MIT",
+    "author": "ShiGuangSchedule",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "QingQiz/AoxiangRobot",
-    "author": "LGPL-3.0",
+    "author": "QingQiz",
     "license_or_None": "LGPL-3.0",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "qiqqqqq517/shangkeschedule",
-    "author": "Apache-2.0",
+    "author": "qiqqqqq517",
     "license_or_None": "Apache-2.0",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "qllokirin/nonebot-plugin-npu",
-    "author": "MIT",
+    "author": "qllokirin",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "CR200J1-A/NPU-Course-picker",
-    "author": "作者待确认",
+    "author": "CR200J1-A",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "Jungod1121/nwpu-jwxt",
-    "author": "作者待确认",
+    "author": "Jungod1121",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "Nikaidou-Shinku/sjw",
-    "author": "WTFPL",
+    "author": "Nikaidou-Shinku",
     "license_or_None": "WTFPL",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "stevexyh/AutoAoxiang",
-    "author": "WTFPL",
+    "author": "stevexyh",
     "license_or_None": "WTFPL",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "cheanus/SelectCourseEasily",
-    "author": "MIT",
+    "author": "cheanus",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "fantian-bilibili/NWPU_COURSE_MONITOR",
-    "author": "MIT",
+    "author": "fantian-bilibili",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "zengzoxiong/aoxiang-jwxt-enhance",
-    "author": "MIT",
+    "author": "zengzoxiong",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "zhanghaoran124/NWPU_AISchedule",
-    "author": "作者待确认",
+    "author": "zhanghaoran124",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "Hydrostic/NWPU-EAMS-helper",
-    "author": "作者待确认",
+    "author": "Hydrostic",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "fantian-bilibili/NCP-NWPU-Course-Parser",
-    "author": "作者待确认",
+    "author": "fantian-bilibili",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "top-tree/nwpu-edu-plus",
-    "author": "MIT",
+    "author": "top-tree",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "LiYulin-s/nwpu-coursetable",
-    "author": "作者待确认",
+    "author": "LiYulin-s",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "Panoramasx/aoxiang-harmonyos",
-    "author": "MIT",
+    "author": "Panoramasx",
     "license_or_None": "MIT",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "iiijiashu/guagua-course",
-    "author": "作者待确认",
+    "author": "iiijiashu",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "xiaozhuang357/NPU-eCampus-ICS-Exporter",
-    "author": "作者待确认",
+    "author": "xiaozhuang357",
     "license_or_None": "无 LICENSE",
-    "role_in_verification": "NWPU 校园/门户/课表生态旁证 (新门户 print-data / 智慧校园 ecampus / 强智 URP); 与本协议 sample-table-1 HTML 不同源"
+    "role_in_verification": "NWPU 同校生态 INDIRECT；与 sample-table-1 HTML 目标协议异构，具体路径与字段判定见 findings.json 对应逐仓 verdict"
   },
   {
     "project": "Dy1anT/NWPUgrade",
