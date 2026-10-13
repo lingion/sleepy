@@ -136,6 +136,18 @@ class JwNewUrpSuperParserTest {
     }
 
     @Test
+    fun `flat array reaches protocol detection and generic registry`() {
+        assertEquals(JwProtocol.TYPE_NEW_URP_SUPER,
+            JwImportViewModel.detectProtocolFromHtmlForTest(fixtureJson))
+        assertEquals(JwProtocol.TYPE_NEW_URP_SUPER,
+            JwImportViewModel.detectProtocolForTest(fixtureJson, null))
+        assertEquals(5, JwImportViewModel.tryAllParsersForTest(fixtureJson).size)
+        val emptyTerm = """[{"kcm":"A","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"000"}}]"""
+        assertEquals(JwProtocol.TYPE_NEW_URP_SUPER,
+            JwImportViewModel.detectProtocolFromHtmlForTest(emptyTerm))
+    }
+
+    @Test
     fun `nested URP bitmap keeps second week and rejects invalid bitmap`() {
         fun payload(bits: String) = """{"dateList":[{"selectCourseList":[{"courseName":"A","timeAndPlaceList":[{"classDay":1,"classSessions":1,"continuingSession":1,"classWeek":"$bits"}]}]}]}"""
         assertEquals(2, JwNewUrpParser(payload("110")).generateCourseList().single().endWeek)
