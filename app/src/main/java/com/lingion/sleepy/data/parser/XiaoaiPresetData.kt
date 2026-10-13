@@ -20,7 +20,7 @@ import java.time.ZoneOffset
  * 通路: 构造小爱官方前端(H5 /import)同构的 presetData, 经
  * `voiceassist://aiweb/?url=<H5>&presetData=<encoded>` intent 唤起小爱 App,
  * H5 从 presetData.importData 读 parserRes.courseInfos 进预览页, 用户在小爱里确认导入。
- * Sleepy 侧零网络零账号 — 数据不经过任何服务器, 与隐私立场一致。
+ * Sleepy 本地准备数据后交给小爱; 小爱接收后的联网和数据处理由其负责。
  *
  * presetData 结构(三方独立印证: 小爱官方 umi.js bundle / NEORUAA MIT 实现 / Mercury 实现):
  * ```
@@ -66,6 +66,7 @@ object XiaoaiPresetData {
     ): String {
         val timeJson = periodTable?.timeJson ?: table.timeJson
         val timerSections = parseTimerSections(timeJson)
+        validate(table, courses, timeJson, timerSections)
 
         val importData = buildJsonObject {
             put("isV2", true)
@@ -86,14 +87,42 @@ object XiaoaiPresetData {
         }.toString()
     }
 
+    /** Reject unsupported input before XiaoAI silently drops weeks or renumbers periods. */
+    private fun validate(
+        table: TimeTableEntity,
+        courses: List<CourseEntity>,
+        timeJson: String,
+        sections: List<Triple<Int, String, String>>,
+    ) {
+        require(table.maxWeek in 1..30)
+        require(courses.isNotEmpty() && sections.isNotEmpty())
+        val ordered = sections.sortedBy { it.first }
+        ordered.forEachIndexed { index, (node, start, end) ->
+            require(node == index + 1)
+            require(clockMinutes(start) >= 0 && clockMinutes(end) > clockMinutes(start))
+            if (index > 0) require(clockMinutes(start) >= clockMinutes(ordered[index - 1].third))
+        }
+        val counts = inferSessionCounts(sections)
+        require(counts[0] in 1..10 && counts[1] in 0..10 && counts[2] in 0..10)
+        courses.forEach { course ->
+            require(course.day in 1..7)
+            require(course.startWeek in 1..30 && course.endWeek in course.startWeek..30)
+            require(expandWeeks(course).isNotEmpty())
+            val normalized = course.normalizeNode(canonicalTimeJson(timeJson))
+            require(normalized.startNode in 1..sections.size && normalized.step in 1..sections.size)
+            require(normalized.startNode.toLong() + normalized.step - 1 <= sections.size)
+        }
+    }
+
     /**
      * CourseEntity 列表 → courseInfos 数组。空列表返回空数组(由调用方拦空表)。
      * [timeJson] 用于 issue#55 ownTime 课程按节次表归一化 sections 落位。
      */
     internal fun buildCourseInfos(courses: List<CourseEntity>, timeJson: String): JsonArray =
         buildJsonArray {
+            val canonicalTimeJson = canonicalTimeJson(timeJson)
             courses.forEach { c ->
-                val normalized = c.normalizeNode(timeJson)
+                val normalized = c.normalizeNode(canonicalTimeJson)
                 add(buildJsonObject {
                     put("name", c.courseName)
                     put("teacher", c.teacher)
@@ -108,6 +137,12 @@ object XiaoaiPresetData {
     /** startWeek..endWeek 按 type(0每周/1单周/2双周/3按列) 展开为显式周次数组。 */
     internal fun expandWeeks(c: CourseEntity): List<Int> =
         (c.startWeek..c.endWeek).filter { c.inWeek(it) }
+
+    private fun canonicalTimeJson(timeJson: String): String = buildJsonArray {
+        parseTimerSections(timeJson).forEach { (node, start, end) ->
+            add(buildJsonObject { put("node", node); put("start", start); put("end", end) })
+        }
+    }.toString()
 
     private fun intArrayJson(values: List<Int>): JsonArray = buildJsonArray {
         values.forEach { add(JsonPrimitive(it)) }
@@ -127,14 +162,13 @@ object XiaoaiPresetData {
         if (timeJson.isBlank()) return emptyList()
         return runCatching {
             Json.parseToJsonElement(timeJson).let { root ->
-                (root as? JsonArray)?.mapNotNull { el ->
-                    val o = el as? JsonObject ?: return@mapNotNull null
-                    val node = (o["node"] ?: o["nodeStart"])?.toString()?.toIntOrNull()
-                        ?: return@mapNotNull null
-                    val start = (o["start"] ?: o["startTime"])?.toString()?.trim('"')
-                        ?: return@mapNotNull null
-                    val end = (o["end"] ?: o["endTime"])?.toString()?.trim('"')
-                        ?: return@mapNotNull null
+                (root as? JsonArray)?.mapIndexed { index, el ->
+                    val o = requireNotNull(el as? JsonObject)
+                    val nodeValue = o["node"] ?: o["nodeStart"]
+                    val node = if (nodeValue == null) index + 1 else
+                        requireNotNull(nodeValue.toString().toIntOrNull())
+                    val start = requireNotNull(o["start"] ?: o["startTime"]).toString().trim('"')
+                    val end = requireNotNull(o["end"] ?: o["endTime"]).toString().trim('"')
                     Triple(node, start, end)
                 } ?: emptyList()
             }
@@ -166,7 +200,7 @@ object XiaoaiPresetData {
 
     /**
      * 按 startTime 推断上午/下午/晚间节数 (小爱 timerRes 三段统计):
-     * <12:00 上午 · [12:00,18:00) 下午 · >=18:00 晚间。缺时间信息的节次归上午。
+     * <13:00 上午 · [13:00,18:00) 下午 · >=18:00 晚间，与接收端保持一致。
      */
     internal fun inferSessionCounts(sections: List<Triple<Int, String, String>>): IntArray {
         val morning = mutableSetOf<Int>()
@@ -176,7 +210,7 @@ object XiaoaiPresetData {
             val minutes = clockMinutes(start)
             when {
                 minutes < 0 -> morning += node
-                minutes < 12 * 60 -> morning += node
+                minutes < 13 * 60 -> morning += node
                 minutes < 18 * 60 -> afternoon += node
                 else -> night += node
             }
@@ -186,16 +220,15 @@ object XiaoaiPresetData {
 
     private fun clockMinutes(hhmm: String): Int {
         val parts = hhmm.split(":")
-        if (parts.size < 2) return -1
+        if (parts.size != 2 || !Regex("[0-9]{2}:[0-9]{2}").matches(hhmm)) return -1
         val h = parts[0].toIntOrNull() ?: return -1
         val m = parts[1].toIntOrNull() ?: return -1
-        return h * 60 + m
+        return if (h in 0..23 && m in 0..59) h * 60 + m else -1
     }
 
     /** startDate("yyyy-MM-dd") → 当日 00:00 UTC+8 的 13 位毫秒时间戳字符串。 */
     internal fun startSemesterMillis(startDate: String): String {
-        val date = runCatching { LocalDate.parse(startDate) }.getOrNull()
-            ?: LocalDate.now(ZoneOffset.ofHours(8))
+        val date = requireNotNull(runCatching { LocalDate.parse(startDate) }.getOrNull())
         return date.atStartOfDay().toInstant(ZoneOffset.ofHours(8)).toEpochMilli().toString()
     }
 }

@@ -130,9 +130,9 @@ class XiaoaiPresetDataTest {
             "官方 P 验证器: forenoon+afternoon+night 必须 === sections.length",
             sections.size, forenoon + afternoon + night
         )
-        // DEFAULT_TIME_JSON: <13:00 上午 4 节(1-4), <18:00 下午 4 节(5-8), 晚间 2 节(9-10)
-        assertEquals(4, forenoon)
-        assertEquals(4, afternoon)
+        // DEFAULT_TIME_JSON: <13:00 上午 5 节(1-5), <18:00 下午 3 节(6-8), 晚间 2 节(9-10)
+        assertEquals(5, forenoon)
+        assertEquals(3, afternoon)
         assertEquals(2, night)
     }
 
@@ -187,5 +187,65 @@ class XiaoaiPresetDataTest {
         assertEquals(2, sections.size)
         assertEquals(Triple(1, "08:00", "08:45"), sections[0])
         assertEquals(Triple(2, "08:50", "09:35"), sections[1])
+    }
+
+    @Test
+    fun legacyOwnTime_usesActualClockInsteadOfStaleNode() {
+        val legacy = DEFAULT_TIME_JSON.replace("node", "nodeStart")
+            .replace("start", "startTime").replace("end", "endTime")
+        val custom = course(startNode = 1).copy(ownTime = true, startTime = "18:30", endTime = "20:10")
+        val data = parseImportData(XiaoaiPresetData.build(table().copy(timeJson = legacy), listOf(custom)))
+        assertEquals(listOf(9, 10), data["parserRes"]!!.jsonObject["courseInfos"]!!.jsonArray[0]
+            .jsonObject["sections"]!!.jsonArray.map { it.jsonPrimitive.content.toInt() })
+    }
+
+    @Test
+    fun timerSections_acceptsImplicitSequentialNodes() {
+        val sections = XiaoaiPresetData.parseTimerSections("""[{"start":"08:00","end":"08:45"}]""")
+        assertEquals(listOf(Triple(1, "08:00", "08:45")), sections)
+    }
+
+    @Test
+    fun unsupportedWeeks_areRejectedInsteadOfSilentlyDropped() {
+        assertThrows(IllegalArgumentException::class.java) {
+            XiaoaiPresetData.build(table().copy(maxWeek = 31), listOf(course()))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            XiaoaiPresetData.build(table(), listOf(course(endWeek = 31)))
+        }
+        assertThrows(IllegalArgumentException::class.java) {
+            XiaoaiPresetData.build(table(), listOf(course(startWeek = 2, endWeek = 2, type = 1)))
+        }
+    }
+
+    @Test
+    fun invalidPeriods_areRejectedBeforeReceiverRenumbersOrIgnoresThem() {
+        val invalid = listOf(
+            """[{"node":1,"start":"08:00","end":"08:45"},{"node":1,"start":"09:00","end":"09:45"}]""",
+            """[{"node":2,"start":"08:00","end":"08:45"}]""",
+            """[{"node":1,"start":"08:00","end":"09:45"},{"node":2,"start":"09:00","end":"10:00"}]""",
+            """[{"node":1,"start":"13:00","end":"13:45"}]""",
+            """[{"node":1,"start":"08:00","end":"28:45"}]""",
+            """[{"node":1,"start":"08:00","end":"08:45"},{}]""",
+        )
+        invalid.forEach { times ->
+            assertThrows(times, IllegalArgumentException::class.java) {
+                XiaoaiPresetData.build(table().copy(timeJson = times), listOf(course(step = 1)))
+            }
+        }
+    }
+
+    @Test
+    fun invalidDate_isRejectedInsteadOfChangingSemesterToToday() {
+        assertThrows(IllegalArgumentException::class.java) {
+            XiaoaiPresetData.build(table().copy(startDate = "bad-date"), listOf(course()))
+        }
+    }
+
+    @Test
+    fun sessionCounts_matchReceiverBoundaryAtThirteenAndEighteen() {
+        assertArrayEquals(intArrayOf(1, 1, 1), XiaoaiPresetData.inferSessionCounts(listOf(
+            Triple(1, "12:59", "13:00"), Triple(2, "13:00", "13:45"), Triple(3, "18:00", "18:45")
+        )))
     }
 }
