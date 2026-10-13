@@ -39,6 +39,10 @@ class JwOldQzSuperParserTest {
         val c = parse(grid("<div><div>A<br>T<br>1周[1节]<br>R<br>B<br>T<br>2周[2节]<br>R</div></div>"))
         assertEquals(listOf("A","B"), c.map { it.name })
     }
+    @Test fun `same course multiple arrangements keeps its name`() {
+        val c = parse(grid("<div>A<br>T1<br>1周[1节]<br>R1<br>T2<br>2周[3节]<br>R2</div>"))
+        assertEquals(listOf("A", "A"), c.map { it.name }); assertEquals(listOf("T1", "T2"), c.map { it.teacher })
+    }
     @Test fun `malformed or overflowing record does not abort following valid course`() {
         val c = parse(grid("<div>坏<br>T<br>99999999999周[1-2节]<br>R</div><div>好<br>T<br>2周[3节]<br>R</div>"))
         assertEquals(listOf("好"), c.map { it.name })

@@ -85,12 +85,15 @@ class JwOldQzSuperParser(source: String) : JwParser(source) {
                         if (hidden(block)) continue
                         val f = fields(block)
                         var recordStart = 0
+                        var previousName = ""
                         for (i in f.indices) {
                             val m = weekNode.matchEntire(f[i])
-                            if (m != null && i >= recordStart + 2 && i + 1 < f.size) {
+                            if (m != null && i >= 2 && i + 1 < f.size) {
                                 val raw = m.groupValues[2]
                                 val nodes = if (raw.length == 4 && raw.all(Char::isDigit)) bounds(raw.take(2) + "-" + raw.takeLast(2), 30) else bounds(raw, 30)
-                                if (nodes != null) add(result, f[recordStart], f[i - 1], f[i + 1], day, nodes, m.groupValues[1])
+                                val name = if (i - recordStart >= 2) f[recordStart] else previousName
+                                if (nodes != null) add(result, name, f[i - 1], f[i + 1], day, nodes, m.groupValues[1])
+                                previousName = name
                                 recordStart = i + 2
                             } else if (m == null && f[i].endsWith("周") && i >= 3 && i + 1 < f.size) {
                                 // CCUT: group-day id establishes nodes; never infer them from text order.
