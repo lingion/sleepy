@@ -1,65 +1,135 @@
 package com.lingion.sleepy.data.calendar
 
-import org.junit.Assert.assertFalse
-import org.junit.Assert.assertTrue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import org.junit.Assert.*
 import org.junit.Test
-import java.io.File
 
-/**
- * 本地日历兜底源码级契约 — 无 Google 服务/未登录设备的导入链命脉。
- * Robolectric 避免 (同 VendorLiveCardRendererExtrasTest 风格), 锁住
- * "CALLER_IS_SYNCADAPTER 插入 + writableCalendars 兜底接入" 这条结构不被误删。
- */
 class LocalCalendarFallbackContractTest {
-
-    private val source: String
-        get() {
-            var dir: File? = File(".").absoluteFile
-            while (dir != null) {
-                val f = File(dir, "app/src/main/java/com/lingion/sleepy/data/calendar/SystemCalendarManager.kt")
-                if (f.isFile) return f.readText()
-                dir = dir.parentFile
-            }
-            error("SystemCalendarManager source not found")
+    private val info = SystemCalendarInfo(42, "Sleepy", "com.lingion.sleepy.account", "LOCAL")
+    private inner class Store : LocalCalendarStore {
+        var permission = true
+        var queryFailure = false
+        var ownedFailure = false
+        var insertFailure = false
+        var enableResult = true
+        var inserts = 0
+        var enables = 0
+        var queries = 0
+        var rows = emptyList<LocalCalendarRow>()
+        var calendars = emptyList<LocalCalendarRow>()
+        override fun hasPermissions() = permission
+        override fun queryWritable(): List<LocalCalendarRow> {
+            queries++
+            check(!queryFailure)
+            return calendars
         }
-
-    @Test
-    fun `ensureLocalCalendar uses sync-adapter uri for insert`() {
-        val s = source
-        assertTrue(s.contains("fun ensureLocalCalendar"))
-        assertTrue("必须用 CALLER_IS_SYNCADAPTER 参数 (否则普通插表被 CalendarProvider 拒绝)",
-            s.contains("CalendarContract.CALLER_IS_SYNCADAPTER"))
-        assertTrue(s.contains("ACCOUNT_TYPE_LOCAL"))
-        assertTrue("账户名稳定为包名, 幂等查询靠它",
-            s.contains("\${context.packageName}.account"))
+        override fun queryOwned(): List<LocalCalendarRow> {
+            queries++
+            check(!ownedFailure)
+            return rows
+        }
+        override fun enable(row: LocalCalendarRow): Boolean {
+            enables++
+            return enableResult
+        }
+        override fun insert(): SystemCalendarInfo? {
+            inserts++
+            if (insertFailure) return null
+            Thread.sleep(10) // Widen the race window; the policy must hold its lock throughout.
+            rows = listOf(LocalCalendarRow(info, true, false, true, true))
+            return info
+        }
     }
 
-    @Test
-    fun `writableCalendars falls back to local calendar when empty`() {
-        val s = source
-        val idx = s.indexOf("fun writableCalendars")
-        val body = s.substring(idx, s.indexOf("fun buildPreview", idx))
-        assertTrue("列表为空时必须兜底 ensureLocalCalendar",
-            body.contains("ensureLocalCalendar(context)"))
-        assertTrue("有权限是前置条件, 权限拒绝时不动日历 provider",
-            body.contains("hasCalendarPermissions"))
+    @Test fun repeatedAndConcurrentCallsCreateExactlyOneCalendar() = runBlocking {
+        val policy = LocalCalendarFallback()
+        val store = Store()
+        val results = (1..20).map { async(Dispatchers.Default) { policy.ensure(store) } }.awaitAll()
+        assertEquals(List(20) { info }, results)
+        assertEquals(info, policy.ensure(store))
+        assertEquals(1, store.inserts)
     }
 
-    @Test
-    fun `ensureLocalCalendar 插入时 SYNC_EVENTS=0 — 阻止系统 sync 错误通知污染通知栏`() {
-        val s = source
-        // 锁 SYNC_EVENTS 必须是 0: Sleepy 不是真 sync adapter, 设 1 会让 SyncManager
-        // 周期性尝试 sync → 失败 → 在通知栏弹"同步错误", 污染 Sleepy 自身通知流。
-        assertTrue("ensureLocalCalendar 必须用 SYNC_EVENTS=0 (不是 sync adapter, 不应触发 sync)",
-            s.contains("put(CalendarContract.Calendars.SYNC_EVENTS, 0)"))
-        // 函数体内不允许出现 SYNC_EVENTS, 1 (防止某次重构改回 1)
-        val idx = s.indexOf("fun ensureLocalCalendar")
-        assertTrue("ensureLocalCalendar 必须存在", idx > 0)
-        val endIdx = s.indexOf("\n    }\n", idx).let { if (it < 0) s.length else it }
-        val body = s.substring(idx, endIdx)
-        assertFalse(
-            "ensureLocalCalendar 函数体内不应出现 SYNC_EVENTS, 1 (会触发系统 sync 错误通知)",
-            body.contains("SYNC_EVENTS, 1")
-        )
+    @Test fun deniedPermissionDoesNotAccessProvider() = runBlocking {
+        val store = Store().apply { permission = false }
+        val policy = LocalCalendarFallback()
+        assertNull(policy.ensure(store))
+        assertTrue(policy.writable(store).isEmpty())
+        assertEquals(0, store.queries)
+        assertEquals(0, store.inserts)
+    }
+
+    @Test fun failedQueriesNeverAuthorizeInsert() = runBlocking {
+        for (writable in listOf(true, false)) {
+            val store = Store().apply { queryFailure = writable; ownedFailure = !writable }
+            val policy = LocalCalendarFallback()
+            assertTrue(policy.writable(store).isEmpty())
+            assertEquals(0, store.inserts)
+        }
+    }
+
+    @Test fun successfulEmptyQueryCreatesFallbackButExternalCalendarDoesNot() = runBlocking {
+        val policy = LocalCalendarFallback()
+        val empty = Store()
+        assertEquals(listOf(info), policy.writable(empty))
+        assertEquals(1, empty.inserts)
+        val external = Store().apply { calendars = listOf(LocalCalendarRow(info.copy(id = 99), true, false, true, true)) }
+        assertEquals(external.calendars.map { it.info }, policy.writable(external))
+        assertEquals(0, external.inserts)
+        assertEquals(1, external.queries)
+    }
+
+    @Test fun hiddenOrInstancesDisabledOwnedCalendarIsRepairedWithoutDuplicate() = runBlocking {
+        for (visible in listOf(true, false)) {
+            val store = Store().apply { rows = listOf(LocalCalendarRow(info, true, false, visible, false)) }
+            assertEquals(info, LocalCalendarFallback().ensure(store))
+            assertEquals(1, store.enables)
+            assertEquals(0, store.inserts)
+        }
+    }
+
+    @Test fun failedRepairAndUnusableExistingRowsDoNotDuplicate() = runBlocking {
+        val repair = Store().apply {
+            rows = listOf(LocalCalendarRow(info, true, false, true, false)); enableResult = false
+        }
+        assertNull(LocalCalendarFallback().ensure(repair))
+        assertEquals(0, repair.inserts)
+        for (deleted in listOf(true, false)) {
+            val store = Store().apply { rows = listOf(LocalCalendarRow(info, deleted, deleted, true, true)) }
+            assertNull(LocalCalendarFallback().ensure(store))
+            assertEquals(0, store.inserts)
+        }
+    }
+
+    @Test fun insertionFailureReturnsEmptyWithoutInventedCalendar() = runBlocking {
+        val store = Store().apply { insertFailure = true }
+        assertTrue(LocalCalendarFallback().writable(store).isEmpty())
+        assertEquals(1, store.inserts)
+    }
+
+    @Test fun ownedRepairFailurePreservesThirdPartyWritableCalendars() = runBlocking {
+        val external = info.copy(id = 99, accountName = "external")
+        val store = Store().apply {
+            calendars = listOf(
+                LocalCalendarRow(info, true, false, true, false, owned = true),
+                LocalCalendarRow(external, true, false, true, false)
+            )
+            enableResult = false
+        }
+        assertEquals(listOf(external), LocalCalendarFallback().writable(store))
+        assertEquals(1, store.enables)
+        assertEquals(0, store.inserts)
+    }
+
+    @Test fun visibleOwnedCalendarWithDisabledInstancesIsRepaired() = runBlocking {
+        val store = Store().apply {
+            calendars = listOf(LocalCalendarRow(info, true, false, true, false, owned = true))
+        }
+        assertEquals(listOf(info), LocalCalendarFallback().writable(store))
+        assertEquals(1, store.enables)
+        assertEquals(0, store.inserts)
     }
 }
