@@ -6,7 +6,6 @@ import android.content.Intent
 import android.os.Handler
 import android.os.IBinder
 import android.os.Looper
-import androidx.compose.ui.graphics.toArgb
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import com.lingion.sleepy.MainActivity
@@ -41,26 +40,35 @@ class FluidCloudService : Service() {
     private var startNode = 0
     private var notifyEpoch = 0L
     private var classEpoch = 0L
-    private var updateSequence = 0
-
-    private val updater = object : Runnable {
-        override fun run() {
-            postProgressNotification()
-            if (System.currentTimeMillis() < classEpoch) {
-                handler.postDelayed(this, UPDATE_INTERVAL_MS)
-            } else {
-                FluidCastState.markStopped()
-                stopForeground(STOP_FOREGROUND_REMOVE)
-                stopSelf()
-            }
-        }
-    }
+    private var activeIdentity: FluidNotificationIdentity? = null
+    private val vendor by lazy { detectLiveCardVendor() }
+    private val session = FluidNotificationSession(
+        now = System::currentTimeMillis,
+        schedule = { callback, delay -> handler.postDelayed(callback, delay) },
+        cancel = { callback -> handler.removeCallbacks(callback) },
+        publish = ::postProgressNotification,
+        finished = ::stopCloudNotification,
+    )
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         CourseNotificationScheduler.ensureNotificationChannels(this)
         if (intent?.action == ACTION_STOP) {
             stopCloudNotification()
             return START_NOT_STICKY
+        }
+        val nextIdentity = FluidNotificationIdentity(
+            intent?.getLongExtra("notifyEpoch", 0L) ?: 0L,
+            intent?.getLongExtra("classEpoch", 0L) ?: 0L,
+            intent?.getIntExtra("startNode", 0) ?: 0,
+            intent?.getStringExtra("courseName").orEmpty(),
+        )
+        val reuseSession = canReuseFluidSession(
+            activeIdentity, nextIdentity, FluidCastState.casting,
+            intent?.action == ACTION_TEST, System.currentTimeMillis(),
+        )
+        if (!reuseSession) {
+            session.stop()
+            cancelVivoCard(this)
         }
         if (intent?.action == ACTION_TEST) {
             // 流体云测试入口: 用示例课程强制唤起一次, 窗口 2 分钟(进度条真实推进)。
@@ -91,46 +99,24 @@ class FluidCloudService : Service() {
         }
 
         if (classEpoch <= System.currentTimeMillis()) {
-            // 修复 P0: startForegroundService 启动后，即使决定立即停止也必须先
-            // startForeground()，否则 Android 12+ 抛 ForegroundServiceDidNotStartInTimeException。
-            // 用最小占位通知履行契约，随后移除。
-            if (android.os.Build.VERSION.SDK_INT >= 26) {
-                try {
-                    val placeholder = NotificationCompat.Builder(this, CourseNotificationScheduler.CHANNEL_FLUID)
-                        .setSmallIcon(R.drawable.ic_notification_time)
-                        .setContentTitle(courseName)
-                        .setPriority(NotificationCompat.PRIORITY_LOW)
-                        .build()
-                    startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, placeholder)
-                } catch (_: Throwable) {}
-            }
-            FluidCastState.markStopped()
-            androidx.core.app.NotificationManagerCompat.from(this)
-                .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
-            stopForeground(STOP_FOREGROUND_REMOVE)
-            stopSelf()
+            stopCloudNotification()
             return START_NOT_STICKY
         }
 
-        handler.removeCallbacks(updater)
+        // A repeated scheduler start still refreshes display fields above. Publish them
+        // on the existing tick to preserve vivo's rate limit and expanded card state.
+        if (reuseSession) return START_NOT_STICKY
+        activeIdentity = nextIdentity
         FluidCastState.markStarted()
-        postProgressNotification()
-        // ColorOS 16 首帖竞态 (2026-10-10 用户实测: 第一次点击永远不显示流体云,
-        // 第二次永远可以): 进程内第一条 promoted 通知被系统吞掉, 同 ID 的替换
-        // 更新才建立渲染会话。600ms 后重发同 ID 一次, 把首投伪装成"更新"路径。
-        // AOSP/其他厂商幂等无害: 同 ID 替换 + setOnlyAlertOnce, 无声无感。
-        if (intent?.action == ACTION_TEST) {
-            handler.postDelayed({ postProgressNotification() }, FIRST_POST_REINFORCE_MS)
-        }
-        if (System.currentTimeMillis() < classEpoch) {
-            handler.postDelayed(updater, UPDATE_INTERVAL_MS)
-        }
+        session.start(
+            classEpoch,
+            intent?.action == ACTION_TEST && needsFluidFirstPostReinforcement(vendor),
+        )
         return START_NOT_STICKY
     }
 
-    private fun postProgressNotification() {
+    private fun postProgressNotification(updateSequence: Int) {
         val now = System.currentTimeMillis()
-        updateSequence = if (updateSequence == Int.MAX_VALUE) 1 else updateSequence + 1
         val state = CourseLiveCardState(
             courseName = courseName,
             room = room,
@@ -153,7 +139,8 @@ class FluidCloudService : Service() {
             context = this,
             state = state,
             contentIntent = contentIntent,
-            channelId = CourseNotificationScheduler.CHANNEL_FLUID
+            channelId = CourseNotificationScheduler.CHANNEL_FLUID,
+            vendor = vendor,
         )
 
         if (android.os.Build.VERSION.SDK_INT >= 26) {
@@ -177,6 +164,8 @@ class FluidCloudService : Service() {
     }
 
     private fun stopCloudNotification() {
+        activeIdentity = null
+        session.stop()
         FluidCastState.markStopped()
         if (android.os.Build.VERSION.SDK_INT >= 26) {
             try {
@@ -188,15 +177,16 @@ class FluidCloudService : Service() {
                 startForeground(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE, placeholder)
             } catch (_: Throwable) {}
         }
-        handler.removeCallbacks(updater)
         androidx.core.app.NotificationManagerCompat.from(this)
             .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+        cancelVivoCard(this)
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
     }
 
     override fun onDestroy() {
-        handler.removeCallbacks(updater)
+        session.stop()
+        cancelVivoCard(this)
         FluidCastState.markStopped()
         super.onDestroy()
     }
@@ -204,17 +194,26 @@ class FluidCloudService : Service() {
     override fun onBind(intent: Intent?): IBinder? = null
 
     companion object {
-        private const val UPDATE_INTERVAL_MS = 15_000L
         private const val TEST_WINDOW_MS = 2 * 60_000L
-        private const val FIRST_POST_REINFORCE_MS = 600L
         const val ACTION_TEST = "com.lingion.sleepy.action.FLUID_TEST"
         const val ACTION_STOP = "com.lingion.sleepy.action.FLUID_STOP"
+
+        // Official vivo doc 896: direct cancellation uses the system-created tag.
+        // Keep normal cancellation as well: the foreground notification is untagged.
+        private fun cancelVivoCard(context: android.content.Context) {
+            val vendor = detectLiveCardVendor()
+            if (vendor == LiveCardVendor.VIVO || vendor == LiveCardVendor.IQOO) {
+                androidx.core.app.NotificationManagerCompat.from(context)
+                    .cancel("VIVO_SUPERX_TAG", CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
+            }
+        }
 
         fun requestStop(context: android.content.Context) {
             val intent = Intent(context, FluidCloudService::class.java).setAction(ACTION_STOP)
             try {
                 androidx.core.content.ContextCompat.startForegroundService(context, intent)
             } catch (_: Throwable) {
+                cancelVivoCard(context)
                 androidx.core.app.NotificationManagerCompat.from(context)
                     .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)
             }

@@ -15,7 +15,7 @@ import org.junit.Test
  *   2. ACTION_STOP 与 ACTION_TEST 字面量不同 (防合并错误)
  *   3. onStartCommand 顶部存在 ACTION_STOP 分支, 在首个 return START_NOT_STICKY 前
  *   4. ACTION_STOP 分支体走齐 4 步停止语义:
- *      removeCallbacks(updater) + stopForeground + NotificationManagerCompat.from.cancel +
+ *      session.stop() + stopForeground + NotificationManagerCompat.from.cancel +
  *      stopSelf()
  */
 class FluidCloudServiceActionStopContractTest {
@@ -84,8 +84,8 @@ class FluidCloudServiceActionStopContractTest {
         val stopFnEnd = stopFn.indexOf("\n    }")
         val stopBody = stopFn.substring(0, stopFnEnd)
         assertTrue(
-            "stopCloudNotification 必须 handler.removeCallbacks(updater) 取消 15s 循环",
-            stopBody.contains("removeCallbacks(updater)")
+            "stopCloudNotification 必须 session.stop() 取消 15s 循环",
+            stopBody.contains("session.stop()")
         )
         assertTrue(
             "stopCloudNotification 必须 stopForeground 解除前台服务",

@@ -96,8 +96,12 @@ class FluidCastStateReconciliationContractTest {
         val src = java.io.File(
             "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
         ).readText()
-        // updater 到期 / ACTION_STOP / 提前作废 / onDestroy 四条自停路径都清零
-        assertEquals(4, Regex("FluidCastState.markStopped").findAll(src).count())
+        // 自停集中到 stopCloudNotification；自然到期由 session 的 finished 路由到同一入口。
+        assert(src.contains("finished = ::stopCloudNotification"))
+        val stop = src.substringAfter("private fun stopCloudNotification()").substringBefore("override fun onDestroy")
+        assert(stop.contains("session.stop()"))
+        assert(stop.contains("FluidCastState.markStopped()"))
+        assert(src.substringAfter("override fun onDestroy").contains("FluidCastState.markStopped()"))
         // 正常调度路径置位
         assertEquals(1, Regex("FluidCastState.markStarted").findAll(src).count())
     }
@@ -124,9 +128,8 @@ class FluidFirstPostReinforceContractTest {
         val src = java.io.File(
             "../app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt"
         ).readText()
-        assert(src.contains("FIRST_POST_REINFORCE_MS")) { "reinforce constant missing" }
-        assert(src.contains("if (intent?.action == ACTION_TEST) {")) {
-            "reinforcement must be gated to ACTION_TEST only"
+        assert(src.contains("ACTION_TEST && needsFluidFirstPostReinforcement(vendor)")) {
+            "reinforcement must be gated to ACTION_TEST and ColorOS family"
         }
     }
 

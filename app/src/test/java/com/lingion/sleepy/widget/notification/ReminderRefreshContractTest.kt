@@ -21,7 +21,7 @@ class ReminderRefreshContractTest {
     fun fluid_cloud_has_explicit_stop_action_and_cleanup() {
         val service = source("app/src/main/java/com/lingion/sleepy/widget/notification/FluidCloudService.kt")
         assertTrue(service.contains("ACTION_STOP"))
-        assertTrue(service.contains("handler.removeCallbacks(updater)"))
+        assertTrue(service.contains("session.stop()"))
         assertTrue(service.contains("NOTIFY_BEFORE_CLASS_BASE"))
         assertTrue(service.contains("STOP_FOREGROUND_REMOVE"))
         assertTrue(service.contains("stopSelf()"))
