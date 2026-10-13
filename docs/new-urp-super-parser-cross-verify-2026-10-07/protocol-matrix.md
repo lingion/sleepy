@@ -74,8 +74,8 @@ WakeUp `NewUrpSuperParser` 包含两个变体 (同 SUPER 串行调用, 任一成
 |---|---|---|
 | 顶层 | `dateList[]` (按周) → `selectCourseList[]` (按日) → `timeAndPlaceList[]` | flat array `[]` (每个 item 一条流) |
 | 锚点 | `dateList` + `selectCourseList` + `timeAndPlaceList` 嵌套 | `kcm` + `id` + `skzc` 三件套 (任一齐) |
-| 周次表达 | 字符串 (例 "1-15单") | bitmap `'0'/'1'` |
-| 共存 | 同时注册 TYPE_NEW_URP + TYPE_NEW_URP_SUPER, 自动按 confidence 优先 | 同左 |
+| 周次表达 | 位图字符串 | bitmap `'0'/'1'` |
+| 共存 | 现有 TYPE_URP_NEW + 新 TYPE_NEW_URP_SUPER；显式 URP_NEW 也可回退数组解析 | 同左 |
 
 ## 检索矩阵
 
