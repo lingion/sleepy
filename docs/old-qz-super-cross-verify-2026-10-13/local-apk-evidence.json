@@ -1,0 +1,19 @@
+{
+  "repository": "lingion/wakeup-mod",
+  "head": "03e2da1256c449d0fc5a2a6feabe12734dbe3e6d",
+  "license": "closed-source APK; protocol facts only, no code reused",
+  "files": [
+    {
+      "path": "wakeup-android-project/app/src/main/java/com/suda/yzune/wakeupschedule/schedule_parser/parser/old_qz/OooO00o.java",
+      "sha256": "3e13d154c43a93be66da6397c57e70430a2f2012e49db264ede6cb0fc621c181"
+    },
+    {
+      "path": "wakeup-android-project/app/src/main/java/com/suda/yzune/wakeupschedule/schedule_parser/parser/old_qz/OooO0O0.java",
+      "sha256": "ebebf8fbef69c4d42d7cfb32eb472230f2351ad13805751224aedb096602bb82"
+    },
+    {
+      "path": "wakeup-android-project/app/src/main/java/com/suda/yzune/wakeupschedule/schedule_parser/parser/old_qz/OooO0OO.java",
+      "sha256": "85da0c23c8301eadd735fa72909011f818ffb9183fa37602619decc0712d9206"
+    }
+  ]
+}
