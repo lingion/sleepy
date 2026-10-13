@@ -686,9 +686,9 @@ internal suspend fun shareText(
  *
  * 深链 voiceassist://aiweb/?url=&presetData= 唤起小爱(或小爱课程表独立 App),
  * H5 /import 路由读 presetData.importData 进预览, 用户确认后才写入小米云。
- * Sleepy 侧只发 intent, 零网络零账号 — 数据不经过任何服务器。
+ * Sleepy 本地准备数据后发送 intent; 小爱接收后的联网和数据处理由其负责。
  *
- * 未安装小爱 → ActivityNotFoundException → Toast 提示 + 官方下载页兜底。
+ * 未安装小爱 → ActivityNotFoundException → Toast 提示安装。
  */
 internal suspend fun launchXiaoaiImport(
     table: com.lingion.sleepy.data.entity.TimeTableEntity,
@@ -701,11 +701,12 @@ internal suspend fun launchXiaoaiImport(
         onResult(ctx.getString(R.string.export_xiaoai_empty))
         return
     }
-    val presetData = XiaoaiPresetData.build(
-        table = table,
-        courses = courses,
-        periodTable = boundPeriodTable,
-    )
+    val presetData = try {
+        XiaoaiPresetData.build(table, courses, boundPeriodTable)
+    } catch (e: IllegalArgumentException) {
+        onResult(ctx.getString(R.string.export_xiaoai_invalid))
+        return
+    }
     val link = XiaoaiPresetData.deepLink(presetData)
     try {
         ctx.startActivity(
@@ -721,6 +722,9 @@ internal suspend fun launchXiaoaiImport(
                 Toast.LENGTH_LONG
             ).show()
         }
+        return
+    } catch (e: SecurityException) {
+        onResult(ctx.getString(R.string.export_failed))
         return
     }
     onResult(ctx.getString(R.string.export_xiaoai_launched))

@@ -353,7 +353,8 @@
     <string name="export_json_subtitle">完整课表结构，可被 WakeUp 课表等同类 App 直接导入</string>
     <string name="export_share_title">分享文本</string>
     <string name="export_xiaoai_title">小爱课程表</string>
-    <string name="export_xiaoai_subtitle">跳转小爱 App 预览并导入，数据不经任何服务器</string>
+    <string name="export_xiaoai_subtitle">本地准备课表后交给小爱 App 预览并导入</string>
+    <string name="export_xiaoai_invalid">课表超出小爱支持范围或时间表无效，请检查周次、日期及节次设置</string>
     <string name="export_xiaoai_empty">当前课表没有课程，无法导出</string>
     <string name="export_xiaoai_not_installed">未检测到小爱，请先安装小爱 App（含小爱课程表）</string>
     <string name="export_xiaoai_launched">已跳转小爱课程表，请在预览页确认导入</string>

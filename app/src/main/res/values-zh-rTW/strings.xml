@@ -696,7 +696,8 @@
     <string name="export_saved_to">已儲存到 Download/Sleepy/%1$s</string>
     <string name="export_share_chooser">分享課表</string>
     <string name="export_xiaoai_title">小愛課程表</string>
-    <string name="export_xiaoai_subtitle">跳轉小愛 App 預覽並匯入，資料不經任何伺服器</string>
+    <string name="export_xiaoai_subtitle">在本機準備課表後交給小愛 App 預覽並匯入</string>
+    <string name="export_xiaoai_invalid">課表超出小愛支援範圍或時間表無效，請檢查週次、日期及節次設定</string>
     <string name="export_xiaoai_empty">目前課表沒有課程，無法匯出</string>
     <string name="export_xiaoai_not_installed">未偵測到小愛，請先安裝小愛 App（含小愛課程表）</string>
     <string name="export_xiaoai_launched">已跳轉小愛課程表，請在預覽頁確認匯入</string>

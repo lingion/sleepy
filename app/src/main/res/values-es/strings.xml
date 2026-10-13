@@ -698,7 +698,8 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="export_saved_to">Guardado en Download/Sleepy/%1$s</string>
     <string name="export_share_chooser">Compartir horario</string>
     <string name="export_xiaoai_title">Horario XiaoAI</string>
-    <string name="export_xiaoai_subtitle">Salta a la app XiaoAI para previsualizar e importar; sin servidores</string>
+    <string name="export_xiaoai_subtitle">Prepara el horario localmente y abre XiaoAI para revisarlo e importarlo</string>
+    <string name="export_xiaoai_invalid">Horario no compatible o períodos no válidos. Revisa semanas, fechas y períodos.</string>
     <string name="export_xiaoai_empty">Esta tabla no tiene cursos para exportar</string>
     <string name="export_xiaoai_not_installed">No se encontró XiaoAI; instala la app XiaoAI (con Horario XiaoAI) primero</string>
     <string name="export_xiaoai_launched">Se abrió Horario XiaoAI; confirma la importación en la vista previa</string>

@@ -707,7 +707,8 @@ Per-school attribution (one card per school, expand to see details) — Hefei Un
     <string name="export_saved_to">Saved to Download/Sleepy/%1$s</string>
     <string name="export_share_chooser">Share Schedule</string>
     <string name="export_xiaoai_title">XiaoAI Schedule</string>
-    <string name="export_xiaoai_subtitle">Jump to XiaoAI app to preview and import; no server involved</string>
+    <string name="export_xiaoai_subtitle">Prepare locally, then open XiaoAI to preview and import</string>
+    <string name="export_xiaoai_invalid">Unsupported schedule or invalid period times. Check weeks, dates and period settings.</string>
     <string name="export_xiaoai_empty">No courses in this table to export</string>
     <string name="export_xiaoai_not_installed">XiaoAI not found; install the XiaoAI app (with XiaoAI Schedule) first</string>
     <string name="export_xiaoai_launched">Opened XiaoAI Schedule; confirm the import on the preview page</string>
