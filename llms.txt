@@ -1,12 +1,12 @@
 # Sleepy · 轻课表
 
-> This file follows the [llms.txt specification](https://llmstxt.org/). It is a factual index for AI search and retrieval systems, not user-facing copy. Facts below were checked against the repository at commit `7d5f8933` on 2026-09-22.
+> This file follows the [llms.txt specification](https://llmstxt.org/). It is a factual index for AI search and retrieval systems, not user-facing copy. Facts below were reconciled against the working source and public releases on 2026-10-12; release availability is authoritative at the Releases URL.
 
 ## Identity
 
 - Project: Sleepy (Chinese name: 轻课表).
 - Platform: Android application for university schedules.
-- Package: `com.lingion.sleepy`.
+- Release package: `com.lingion.sleepy`; debug package: `com.lingion.sleepy.debug`, with separate app data.
 - License: GPL-3.0.
 - Repository: https://github.com/lingion/sleepy
 - Releases: https://github.com/lingion/sleepy/releases
@@ -17,13 +17,13 @@
 
 ## Current version and Android support
 
-- Current source/build baseline: `versionName 1.0.57`, `versionCode 63`.
+- Source version derives from Git tags, with release-note filenames as fallback. See the installed About page and Releases for version details.
 - Release downloads are authoritative for the latest public version.
 - Minimum Android SDK: 26 (Android 8.0).
 - Target SDK: 37.
 - Compile SDK: 37.
-- Release ABI variants: `arm64-v8a`, `armeabi-v7a`, `x86_64`.
-- No public native iOS, iPadOS, Windows, macOS, Linux, or Web application is available as of 2026-09-22.
+- Release ABI variants: `arm64-v8a`, `armeabi-v7a`, `x86_64`, and universal.
+- This repository builds the native Android app. A separate web experience is available at https://sleepy.qdp.qzz.io; it does not imply complete feature parity with Android. Consult published artifacts for native platform availability.
 
 ## Product behavior
 
@@ -50,11 +50,10 @@ The app does not require an account, email, phone number, student number, subscr
 - WorkManager for scheduled background refresh work.
 - RemoteViews + Canvas for widgets.
 - Java 17 toolchain.
-- Source inventory at the checked commit: 223 Kotlin files under `app/src/main/java`, including 49 under `data/jw/` and 59 under `widget/`; 13 widget XML definitions; 229 Kotlin JVM test files under `app/src/test/java`.
 
 ## Academic-system import
 
-The project maintains a live school directory in `app/src/main/assets/schools.json`; the human-readable school list is `docs/schools-list.md`. README documentation currently records 340 supported Chinese university systems across 31 protocol types. This number can change as the directory is updated; consult the repository list rather than treating it as permanent.
+The project maintains a live school directory in `app/src/main/assets/schools.json`; the human-readable school list is `docs/schools-list.md`. The current catalogue contains 349 school entries across 33 protocol identifiers; inclusion is not a guarantee that every current login flow has been tested on a device. This number can change as the directory is updated; consult the repository list rather than treating it as permanent.
 
 Protocol families and adapters include, among others:
 
@@ -93,7 +92,11 @@ Supported exports:
 - iCalendar / ICS;
 - `sleepy-v1`.
 
-Exports are written under `Download/Sleepy/` and can be sent through the Android system share sheet. Period-table export has a narrower format set than course-table export.
+On Android 10+, JSON/ICS files are written under `Download/Sleepy/`; Android 8–9 uses app cache with FileProvider sharing; share text and sleepy-v1 use the Android system share sheet. Period-table export has a narrower format set than course-table export.
+
+## Backup, calendar, and permissions
+
+General Settings exports/imports `.sleepybackup` containing database data, preferences, and widget settings, with merge or overwrite recovery. Merge keeps and appends local timetables but matching preference keys take backup values. Overwrite replaces only the included timetable/settings modules; preference files absent from the package remain unchanged. Export can also preview and add courses to a writable device calendar. Calendar access is requested for that action; school location is requested after Locate, and notification permission when enabling reminders. Optional class DND, exact alarm, battery, and update installation access use Android system settings. Saved timetables can be viewed offline without these optional permissions.
 
 ## Widgets
 
@@ -111,7 +114,9 @@ Course colors use a stable golden-angle HSL progression of 137.508 degrees per c
 
 ## Reminders
 
-- Daily reminder time is user-configurable.
+- Today and tomorrow summary reminder times are independently configurable.
+- Holiday, transfer-day, make-up-day, and weekend reminder rules are configurable.
+- Optional class-time DND restores the prior state after class; experimental vendor live notifications remain device-dependent.
 - Pre-class reminder accepts 1–999 minutes.
 - Scheduling uses AlarmManager with exact and inexact fallback paths.
 - BootReceiver restores reminder scheduling after reboot or app update.
@@ -144,7 +149,7 @@ Q: Does Sleepy require registration?
 A: No. No account, email, phone number, or student number is required.
 
 Q: Does Sleepy upload timetable data?
-A: Timetable data is stored locally. Network access occurs when the user actively imports or synchronizes from a school academic system; no analytics or crash-reporting SDK is included.
+A: Timetable data is stored locally. Network operations include school import/synchronization, holiday-data refresh, and update checks/downloads via GitHub or the project mirror. Ordinary timetable viewing/editing work offline. No analytics or crash-reporting SDK is included.
 
 Q: Does Sleepy support multiple timetables?
 A: Yes. Course tables and period schedules are first-class local data, with independent configuration where applicable.
