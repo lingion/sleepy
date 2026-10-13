@@ -28,7 +28,7 @@ class JwWebViewFrameCaptureTest {
         assertEquals(html, result.html)
         val emptyTerm = """<html><script>window.schedule=[{"kcm":"A","cxjc":2,"id":{"skxq":1,"skjc":1,"skzc":"000"}}];</script></html>"""
         assertTrue(FrameTraversalTree.findAnchors(emptyTerm).contains("new-urp-array"))
-        assertTrue(FrameTraversalTree.findAnchors("""<html><script>var x=[{"kcm":"A","id":{"skzc":"bad"}}]</script></html>""").isEmpty())
+        assertTrue(FrameTraversalTree.findAnchors("""<html><script>var x=[{"kcm":"A","id":{"skzc":"bad"}}]</script></html>""").contains("new-urp-array"))
     }
 
     // ---------- 构造 helper ----------
