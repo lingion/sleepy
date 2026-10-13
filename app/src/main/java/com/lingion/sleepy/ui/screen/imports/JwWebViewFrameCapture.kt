@@ -122,7 +122,7 @@ object FrameTraversalTree {
      * 匹配语义: 对 frame 的 outerHTML 小写化后做 id="/class=" 属性子串匹配; 不做裸子串匹配。
      */
     val ANCHORS: List<String> = listOf(
-        "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo"
+        "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo", "sample-table-1"
     )
 
     private fun anchorNeedle(anchor: String): List<String> =

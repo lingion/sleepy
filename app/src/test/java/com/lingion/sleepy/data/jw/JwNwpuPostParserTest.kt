@@ -1,5 +1,6 @@
 package com.lingion.sleepy.data.jw
 
+import com.lingion.sleepy.ui.screen.imports.FrameTraversalTree
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
 import org.junit.Test
@@ -85,5 +86,25 @@ class JwNwpuPostParserTest {
         assertTrue(parser.confidence() >= 90)
         assertTrue(parser.matchedFeatures().contains("id:sample-table-1"))
         assertTrue(parser.matchedFeatures().contains("col:上课时间"))
+    }
+
+    @Test fun `generic frame capture routes NWPU graduate table`() {
+        assertTrue(FrameTraversalTree.findAnchors(fixtureHtml).contains("sample-table-1"))
+        val (courses, attempts) = JwParserRegistry.selectBest(fixtureHtml)
+        assertEquals(5, courses.size)
+        assertEquals("高等计算机体系结构(2024硕01班)", courses.first().name)
+        assertTrue(attempts.any { it.type == JwProtocol.TYPE_NWPU_POST && it.courseCount == 5 })
+    }
+
+    @Test fun `invalid weekday and missing weeks never become Monday week one`() {
+        fun withTime(value: String): String = fixtureHtml.replace(
+            "教学西楼D-101(第1-16周 星期一上1-2节)", value
+        )
+        val badDay = JwNwpuPostParser(withTime("教学西楼D-101(第1-16周 星期八上1-2节)")).generateCourseList()
+        assertEquals(4, badDay.size)
+        val badWeeks = JwNwpuPostParser(withTime("教学西楼D-101(星期一上1-2节)")).generateCourseList()
+        assertEquals(4, badWeeks.size)
+        val expired = "<html><form action='/login'><input type='password'></form></html>"
+        assertTrue(JwNwpuPostParser(expired).generateCourseList().isEmpty())
     }
 }

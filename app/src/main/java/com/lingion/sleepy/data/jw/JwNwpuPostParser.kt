@@ -14,8 +14,7 @@ import java.util.regex.Pattern
  * 4. 周次提取：`第(\\d+)-(\\d+)周` 或 `第(\\d+)周`，包含单周/双周标识；
  * 5. 星期拆分：`星期.+?(?=<|星期|$)`，支持星期一至星期日映射；
  * 6. 时段与节次偏移：上(0), 中(4), 下(6), 晚(10) + 节次序号；连续节次自动合并；
- * 7. 作息时间：默认长安校区 13 节，友谊校区支持冬夏令制判定；
- * 8. 学期信息：从 select#xq 的 option[selected] 自动提取拼接。
+ * 7. 本解析器只输出课程，不推断校区作息时间或学期起始日期。
  */
 class JwNwpuPostParser(source: String) : JwParser(source) {
 
@@ -26,9 +25,7 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
         "晚" to 10
     )
 
-    private val dayNames = listOf(
-        "时间", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日"
-    )
+    private val dayNames = listOf("星期一", "星期二", "星期三", "星期四", "星期五", "星期六", "星期日")
 
     override fun confidence(): Int {
         var score = 0
@@ -120,19 +117,19 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                 // 周次
                 val weekRangePattern = Pattern.compile("第(\\d+)-(\\d+)周")
                 val singleWeekPattern = Pattern.compile("第(\\d+)周")
-                var startWeek = 1
-                var endWeek = 1
+                val startWeek: Int
+                val endWeek: Int
                 val weekRangeMatcher = weekRangePattern.matcher(timeContent)
                 if (weekRangeMatcher.find()) {
-                    startWeek = weekRangeMatcher.group(1)?.toIntOrNull() ?: 1
-                    endWeek = weekRangeMatcher.group(2)?.toIntOrNull() ?: 1
+                    startWeek = weekRangeMatcher.group(1)?.toIntOrNull() ?: continue
+                    endWeek = weekRangeMatcher.group(2)?.toIntOrNull() ?: continue
                 } else {
                     val singleMatcher = singleWeekPattern.matcher(timeContent)
-                    if (singleMatcher.find()) {
-                        startWeek = singleMatcher.group(1)?.toIntOrNull() ?: 1
-                        endWeek = startWeek
-                    }
+                    if (!singleMatcher.find()) continue
+                    startWeek = singleMatcher.group(1)?.toIntOrNull() ?: continue
+                    endWeek = startWeek
                 }
+                if (startWeek !in 1..60 || endWeek !in startWeek..60) continue
 
                 val weekType = when {
                     startWeek == endWeek -> 0
@@ -154,9 +151,10 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                 }
 
                 for (daySeg in daySegments) {
-                    val dayStr = if (daySeg.length >= 3) daySeg.substring(0, 3) else daySeg
+                    val dayStr = daySeg.take(3)
                     val dayIdx = dayNames.indexOf(dayStr)
-                    val day = if (dayIdx > 0) dayIdx else 1
+                    if (dayIdx < 0) continue
+                    val day = dayIdx + 1
 
                     // 节次（含范围）：[上中下晚]?(\d+)(?:-(\d+))?节?
                     // 例：上1-2节 -> 上1-2, base 0 -> [1,2]
@@ -169,6 +167,7 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                         val startNum = nodeMatcher.group(2)?.toIntOrNull() ?: continue
                         val endNum = nodeMatcher.group(3)?.toIntOrNull() ?: startNum
                         val base = if (sectionChar != null) (sectionBaseMap[sectionChar] ?: 0) else 0
+                        if (startNum !in 1..13 || endNum !in startNum..13) continue
                         for (n in startNum..endNum) {
                             nodes.add(base + n)
                         }
