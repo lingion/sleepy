@@ -266,6 +266,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             html: String,
             protocolType: String,
         ): Pair<List<JwCourse>, List<JwParserRegistry.ParserAttempt>> {
+            if (protocolType == JwProtocol.TYPE_CLASSIC_EAMS &&
+                JwEcuplScriptParser.RE_COURSE_TABLE.containsMatchIn(html) &&
+                JwEcuplScriptParser.RE_NEW_ACTIVITY_8.containsMatchIn(html) &&
+                html.contains("addActivityByTime(")) {
+                return parseHtmlStatic(html, JwProtocol.TYPE_ECUPL_SCRIPT)
+            }
             val parser = try {
                 JwParserRegistry.parserFor(protocolType, html)
             } catch (e: IllegalArgumentException) {

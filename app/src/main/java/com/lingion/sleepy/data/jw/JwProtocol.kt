@@ -165,6 +165,17 @@ object JwProtocol {
     const val TYPE_YETHAN = "yethan"
 
     /**
+     * 华东政法大学 (ECUPL) TaskActivity/index 时间表及 listTable 元数据。
+     */
+    const val TYPE_ECUPL = "ecupl"
+
+    /** 华东政法大学 ECUPL Script：CourseTable 分钟矩阵与十进制周位图。 */
+    const val TYPE_ECUPL_SCRIPT = "ecupl_script"
+
+    /** 华东政法大学 ECUPL 双形态调度器，仅对完全相同的 JwCourse 去重。 */
+    const val TYPE_ECUPL_SUPER = "ecupl_super"
+
+    /**
      * 合肥工业大学教务 (金智 EAMS5, eams5-student 系列, jxglstu.hfut.edu.cn)。
      * WebView 内 fetch 三段 (CAS→course-table→lessons→POST schedule-table/datum) 拿课表 JSON。
      * 上游协议形态: Chiu-xaH/HFUT-Schedule (MIT) 全链路参考。
@@ -293,6 +304,7 @@ object JwProtocol {
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
+        TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER,
     )
 
     fun displayName(type: String?): String = when (type) {
@@ -317,6 +329,9 @@ object JwProtocol {
         TYPE_SUDA_POST -> "苏大教务"
         TYPE_CUMTB -> "矿大 EAMS5"
         TYPE_XJU_POST -> "西交/新疆大学教务"
+        TYPE_ECUPL -> "华东政法大学 (ECUPL)"
+        TYPE_ECUPL_SCRIPT -> "华东政法大学 (ECUPL Script)"
+        TYPE_ECUPL_SUPER -> "华东政法大学 (ECUPL 调度器)"
         TYPE_THU -> "清华大学 (THU 教务)"
         TYPE_NWPU_POST -> "西北工业大学研究生教务"
         TYPE_NEW_URP_SUPER -> "新 URP 教务 (数组变体)"
@@ -352,7 +367,8 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER -> "other"
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
+        TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"

@@ -319,6 +319,12 @@ class AboutLicenseAttributionTest {
         Attribution("linling-zy/kust-schedule", "Apache-2.0"),
         Attribution("3056810551/nuit-class-schedule", ""),
         Attribution("SCAU-Grad-Automatically-Fill-Evaluation-Form-JS", "jiefing"),
+        // ECUPL script protocol: direct upstream source; APK archive is separately credited below.
+        Attribution("LonelyMarch/OpenWakeUp", "AGPL-3.0"),
+        Attribution("zimo0o0omiz/wisedu-unified-login-api", ""),
+        Attribution("only9464/HEU-Wisedu", ""),
+        Attribution("CreamPig233/neu_wisedu2wakeup", ""),
+        Attribution("wisedu/bh-mobile-sdk", ""),
         // 清华大学 THU (2026-10-13 固定源码复核；未登录实测)
         Attribution("Compultra/BistuSchedule", ""),
         Attribution("fengh16/CourseDataGet", ""),

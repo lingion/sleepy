@@ -565,6 +565,12 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "brightcolin/thu-course-pilot (scheduling assistant; parser not verified)"
     ),
     PerSchoolEntry(
+        "school-ecupl", "华东政法大学 ECUPL",
+        "LonelyMarch/OpenWakeUp (AGPL-3.0; CourseTable 脚本协议参考)\n" +
+            "lingion/wakeup-mod (历史 WakeUp APK 归档；仅核实 TaskActivity/index 协议；原作者许可未确认)\n" +
+            "调研对照，尚未证实适用于 ECUPL 课表字段：ershiyidian/WakeUp_SHU、zimo0o0omiz/wisedu-unified-login-api、only9464/HEU-Wisedu、CreamPig233/neu_wisedu2wakeup、wisedu/bh-mobile-sdk"
+    ),
+    PerSchoolEntry(
         "school-hzcu", "浙大城市学院 HZCU",
         "用户采集包实锤 zf_new 协议 (新正方 zftal-ui-v5 裸 /kbcx/ 路径, SSO /sso/ddlogin 专用入口, issue #90)\n" +
             "qiqqqqq517/shangkeschedule (Apache-2.0, 该校 zhengfang_new 条目互证)\n" +
