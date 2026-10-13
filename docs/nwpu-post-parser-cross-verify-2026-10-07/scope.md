@@ -1,9 +1,9 @@
 # NWPU POST Parser 跨仓验证与协议适配
 
-> 日期: 2026-10-07  
-> 学校: 西北工业大学 (Northwestern Polytechnical University, NWPU)  
-> 协议: NWPUPostParser (研究生 POST/HTML 表格课表协议)  
-> 来源: WakeUp Schedule 逆向分析 + GitHub 开源教务项目跨仓交叉验证  
+> 日期: 2026-10-07
+> 学校: 西北工业大学 (Northwestern Polytechnical University, NWPU)
+> 协议: NWPUPostParser (研究生 POST/HTML 表格课表协议)
+> 来源: WakeUp Schedule 逆向分析 + GitHub 开源教务项目跨仓交叉验证
 
 ## 一、立项背景
 
