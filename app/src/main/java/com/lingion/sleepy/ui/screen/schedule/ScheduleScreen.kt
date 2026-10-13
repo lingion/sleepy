@@ -169,7 +169,7 @@ fun ScheduleScreen(
             val undoScope = androidx.compose.runtime.rememberCoroutineScope()
             TopBar(
                 currentWeek = state.selectedWeek,
-                maxWeek = state.currentTable?.maxWeek ?: 20,
+                maxWeek = state.displayMaxWeek,
                 startDate = state.currentTable?.startDate ?: "",
                 displayContext = state.weekDisplayContext,
                 onSwitchTable = { showTableSwitcher = true },
@@ -243,7 +243,7 @@ fun ScheduleScreen(
             }
 
             // 主体视图 — 左右滑动切换周次
-            val pagerMaxWeek = state.currentTable?.maxWeek ?: 20
+            val pagerMaxWeek = state.displayMaxWeek
             val pagerState = rememberPagerState(
                 initialPage = (state.selectedWeek - 1).coerceIn(0, (pagerMaxWeek - 1).coerceAtLeast(0)),
                 pageCount = { pagerMaxWeek.coerceAtLeast(1) }
@@ -290,25 +290,17 @@ fun ScheduleScreen(
                 // issue#44 调休改写: 本页各天日期若命中调休映射, 该天在网格里改按映射目标星期渲染 —
                 // 周日(补周四)列显示周四的课。渲染期替身, 不写库; 未映射日期原样。
                 // issue#145: 同时屏蔽补班日那列原本属于它的课(否则与调过去的课叠加显示)。
-                val renderCourses = run {
-                    val start = state.currentTable?.startDate
-                    val transfers = state.transfers
-                    if (start.isNullOrBlank() || transfers.isEmpty()) weekCourses
-                    else {
-                        fun displayDayOf(date: java.time.LocalDate): Int =
-                            com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.effectiveDayOfWeek(date, transfers)
-                        val daySwap: Map<Int, Int> = (1..7).mapNotNull { d ->
-                            val natural = try {
-                                com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d).dayOfWeek.value
-                            } catch (_: Exception) { null } ?: return@mapNotNull null
-                            val display = displayDayOf(
-                                com.lingion.sleepy.util.DateUtils.dateOfWeek(start, page + 1, d)
-                            )
-                            if (display != natural) natural to display else null
-                        }.toMap()
-                        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.applyDaySwap(weekCourses, daySwap)
+                val renderCourses = state.currentTable?.let { table ->
+                    (1..7).flatMap { day ->
+                        val date = DateUtils.dateOfWeek(table.startDate, page + 1, day)
+                        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+                            date, table.startDate, table.maxWeek, state.courses, state.transfers
+                        ).map { course ->
+                            val projected = course.copy(day = day)
+                            state.effectiveCurrentTable?.timeJson?.let { projected.normalizeNode(it) } ?: projected
+                        }
                     }
-                }
+                } ?: weekCourses
                 // 计算本周哪些天是节假日/周末(灰显用); 传入表 ID 使命中调休映射的放假日不灰
                 val greyDays by produceState<Set<Int>>(
                     emptySet(), page, state.currentTable?.startDate, state.transfers
@@ -375,14 +367,21 @@ fun ScheduleScreen(
         CourseDetailSheet(
             course = selectedCourse,
             timeString = selectedCourse?.let { it.nodeString(LocalContext.current) },
-            allCourses = state.courses.filter { it.inWeek(state.selectedWeek) },
+            allCourses = state.currentTable?.let { table ->
+                (1..7).flatMap { day ->
+                    com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+                        DateUtils.dateOfWeek(table.startDate, state.selectedWeek, day),
+                        table.startDate, table.maxWeek, state.courses, state.transfers
+                    ).map { it.copy(day = day) }
+                }
+            } ?: emptyList(),
             // 用户报障 2026-09-10: 详情页聚簇与网格同一时间域 — ownTime 课
             // 按真实分钟判重叠, 节点占位值不再制造假冲突。
             timeJson = state.effectiveCurrentTable?.timeJson,
             onDismiss = { selectedCourse = null },
             onEdit = { course ->
                 selectedCourse = null
-                onEditCourse(course)
+                onEditCourse(state.courses.firstOrNull { it.id == course.id } ?: course)
             },
             onDefaultTopChanged = { clusterKey, repId ->
                 // 勾选瞬间: 会话级换层(网格同帧刷新) + 持久化(跨会话默认)。

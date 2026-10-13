@@ -46,15 +46,18 @@ object WeekDisplayResolver {
         now: LocalDateTime,
         courses: List<CourseEntity>,
         timeJson: String,
-        enabled: Boolean
+        enabled: Boolean,
+        transfers: List<HolidayTransferEntry> = emptyList()
     ): WeekDisplayContext {
         val safeMaxWeek = maxWeek.coerceAtLeast(1)
         val today = now.toLocalDate()
         val semesterStatus = DateUtils.semesterStatus(startDate, safeMaxWeek, today)
         val actualWeek = DateUtils.currentWeek(startDate, today).coerceIn(1, safeMaxWeek)
 
-        val todayHasRemaining = semesterStatus == DateUtils.SemesterStatus.IN_RANGE &&
-            hasRemainingCourse(actualWeek, today, now.toLocalTime(), courses, timeJson)
+        val sourceToday = HolidayRangeOps.HolidayTransferOps.courseDateForDate(today, transfers)
+        val todayHasRemaining = sourceToday != null &&
+            DateUtils.semesterStatus(startDate, safeMaxWeek, sourceToday) == DateUtils.SemesterStatus.IN_RANGE &&
+            hasRemainingCourse(DateUtils.currentWeek(startDate, sourceToday), sourceToday, now.toLocalTime(), courses, timeJson)
 
         val targetDate = when {
             !enabled -> today
@@ -66,11 +69,11 @@ object WeekDisplayResolver {
                 maxWeek = safeMaxWeek,
                 today = today,
                 courses = courses,
-                count = 1
+                count = 1, transfers = transfers
             ).firstOrNull() ?: today
         }
-        val targetWeek = if (targetDate == today) actualWeek
-            else DateUtils.currentWeek(startDate, targetDate).coerceIn(1, safeMaxWeek)
+        val targetWeek = if (targetDate == today && transfers.none { it.targetDate == today && DateUtils.semesterStatus(startDate, safeMaxWeek, it.sourceDate) == DateUtils.SemesterStatus.IN_RANGE }) actualWeek
+            else DateUtils.currentWeek(startDate, targetDate)
 
         val status = when {
             !enabled || semesterStatus != DateUtils.SemesterStatus.IN_RANGE ->
@@ -120,15 +123,19 @@ object WeekDisplayResolver {
         maxWeek: Int,
         today: LocalDate,
         courses: List<CourseEntity>,
-        count: Int = 2
+        count: Int = 2,
+        transfers: List<HolidayTransferEntry> = emptyList()
     ): List<LocalDate> {
         if (count <= 0) return emptyList()
-        val endDate = DateUtils.dateOfWeek(startDate, maxWeek, 7)
+        val semesterEnd = DateUtils.dateOfWeek(startDate, maxWeek, 7)
+        val endDate = maxOf(semesterEnd, transfers.filter {
+            DateUtils.semesterStatus(startDate, maxWeek, it.sourceDate) == DateUtils.SemesterStatus.IN_RANGE
+        }.maxOfOrNull { it.targetDate } ?: semesterEnd)
         val result = mutableListOf<LocalDate>()
         var cursor = today.plusDays(1)
         while (!cursor.isAfter(endDate) && result.size < count) {
             val cursorWeek = DateUtils.currentWeek(startDate, cursor).coerceIn(1, maxWeek)
-            if (cursorWeek >= actualWeek && courses.any { it.inWeek(cursorWeek) && it.day == cursor.dayOfWeek.value }) {
+            if (HolidayRangeOps.HolidayTransferOps.coursesForDate(cursor, startDate, maxWeek, courses, transfers).isNotEmpty()) {
                 result += cursor
             }
             cursor = cursor.plusDays(1)

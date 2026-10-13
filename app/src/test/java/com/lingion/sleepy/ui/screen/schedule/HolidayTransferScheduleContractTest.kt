@@ -24,7 +24,7 @@ class HolidayTransferScheduleContractTest {
     @Test
     fun today_uses_courseDayFor() {
         // 取课走 state.courseDayFor(today) 反向查 — 锁定"不用 todayDayOfWeek"即可
-        assertTrue(todayScreen.contains("courseDayFor"))
+        assertTrue(todayScreen.contains("courseDateFor"))
         assertTrue(!todayScreen.contains("DateUtils.todayDayOfWeek(today)"))
     }
 
@@ -70,6 +70,6 @@ class HolidayTransferScheduleContractTest {
         // 网格渲染层必须存在"调休改写 day"逻辑(渲染期替身, 不写库)
         assertTrue(scheduleScreen.contains("issue#44 调休改写"))
         assertTrue(scheduleScreen.contains("renderCourses"))
-        assertTrue(scheduleScreen.contains("daySwap"))
+        assertTrue(scheduleScreen.contains("HolidayTransferOps.coursesForDate"))
     }
 }

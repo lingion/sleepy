@@ -57,11 +57,21 @@ data class ScheduleState(
     val currentTable: TimeTableEntity?
         get() = tables.find { it.id == selectedTableId }
 
+    val displayMaxWeek: Int
+        get() = currentTable?.let { table ->
+            maxOf(table.maxWeek, transfers.filter {
+                DateUtils.semesterStatus(table.startDate, table.maxWeek, it.sourceDate) == DateUtils.SemesterStatus.IN_RANGE
+            }.maxOfOrNull { DateUtils.currentWeek(table.startDate, it.targetDate) } ?: table.maxWeek)
+        } ?: 20
+
     /** issue#40: 水合后的当前表 — 节次时间域一律从这里读, 不得直接读 currentTable.timeJson */
     val effectiveCurrentTable: TimeTableEntity?
         get() = currentTable?.hydratedWith(effectivePeriodTable)
 
     /** issue#44: 给定日期实际应"按星期几取课"; 补班日=sourceDate 星期, 放假日=无课(null), 未命中=自然星期 */
+    fun courseDateFor(date: LocalDate): LocalDate? =
+        com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.courseDateForDate(date, transfers)
+
     fun courseDayFor(date: LocalDate): Int? =
         com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.courseDayForDate(date, transfers)
 
@@ -276,7 +286,8 @@ class ScheduleViewModel : ViewModel() {
                                 now = LocalDateTime.now(),
                                 courses = courses,
                                 timeJson = it.timeJson,
-                                enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
+                                enabled = AppPrefs.isNearestBusyDay(SleepyApp.get()),
+                                transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id)
                             )
                         }
                         val week = displayContext?.actualWeek ?: 1
@@ -558,7 +569,7 @@ class ScheduleViewModel : ViewModel() {
 
     fun changeWeek(week: Int) {
         // 防呆: 下限 1, 上限 maxWeek — 之前只有下限, 右箭头可以无限翻出学期范围外
-        val maxWeek = _state.value.currentTable?.maxWeek ?: 20
+        val maxWeek = _state.value.displayMaxWeek
         if (week < 1 || week > maxWeek) return
         _state.update { it.copy(selectedWeek = week, weekSelectionManual = true) }
     }
@@ -572,7 +583,8 @@ class ScheduleViewModel : ViewModel() {
             now = LocalDateTime.now(),
             courses = current.courses,
             timeJson = table.timeJson,
-            enabled = AppPrefs.isNearestBusyDay(SleepyApp.get())
+            enabled = AppPrefs.isNearestBusyDay(SleepyApp.get()),
+                                transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), table.id)
         )
         _state.update {
             val selected = if (it.weekSelectionManual) it.selectedWeek else context.targetWeek
@@ -619,6 +631,7 @@ class ScheduleViewModel : ViewModel() {
     fun refreshTransfer() {
         val id = _state.value.selectedTableId ?: return
         _state.update { it.copy(transfers = AppPrefs.getHolidayTransfers(SleepyApp.get(), id)) }
+        recalculateWeekDisplay()
     }
 
     fun addEmptyCourse() {
