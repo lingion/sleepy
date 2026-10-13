@@ -225,13 +225,8 @@ object VendorLiveCardRenderer {
         support: SupportProbes,
         themeColor: Int,
     ) {
-        // Attempt scene registration (best-effort; vivo may not grant our package).
-        // NAVIGATION is the only confirmed scene on vivo's allow-list (corpus:
-        // origin-isle PROTOCOL.md §1). The return value tells us whether vivo
-        // actually accepted the registration; if not, the island bundle below
-        // becomes noise so we drop it. Without this gate we post extras that
-        // the system silently ignores — see VendorLiveCardSupport
-        // vivoRegisterSceneList.
+        // A successful hidden-API call only means it did not throw; it does not
+        // prove scene authorization. The system still decides whether to render.
         val registered = support.vivoRegisterSceneList(
             context, listOf("NAVIGATION", "METTING", "TIMER", "TRAIN")
         )
@@ -285,17 +280,24 @@ object VendorLiveCardRenderer {
             })
             putBundle("notification.superx.infos", infos)
             putBundle("notification.superx.shortInfos", shortInfos)
-            // OriginOS reads the top-level notification.superx.island bundle for the
-            // atomic-island surface. We deliberately do NOT also write a
-            // notification.superx.capsule bundle: per corpus (OriginIslandTemplates.kt)
-            // capsule is a different rendering template than island, and posting both
-            // forces the system to pick a winner. Pick island (the live-card feature).
+            // Official vivo doc 896: island and capsule serve different devices.
+            // Keep the capsule fallback for non-island devices and Flip outer screens.
+            putBundle("notification.superx.capsule", Bundle().apply {
+                putInt("notification.superx.capsule.state", 1)
+                putParcelable("notification.superx.capsule.icon",
+                    Icon.createWithResource(context, R.drawable.ic_notification_time))
+                putString("notification.superx.capsule.content", state.startTime)
+                putParcelable("notification.superx.capsule.clickResp", contentIntent)
+            })
             putBundle("notification.superx.island", Bundle().apply {
                 putInt("island.superx.leftTemplate", 1)
                 putInt("island.superx.rightTemplate", 2)
                 putBoolean("island.superx.forceShow", true)
                 putBoolean("island.superx.showBarWhenCard", false)
-                putInt("island.superx.click", 0)
+                // The notification-center template is NOT the island expanded template.
+                // Omitting this field means no expanded card (official doc 896).
+                putInt("island.superx.template", 2)
+                putInt("island.superx.islandClick", 0)
                 putParcelable("island.superx.clickResp", contentIntent)
                 putBundle("island.superx.leftInfo", Bundle().apply {
                     putParcelable("island.superx.leftInfo.icon",

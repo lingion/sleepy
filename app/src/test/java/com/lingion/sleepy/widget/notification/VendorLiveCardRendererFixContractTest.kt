@@ -189,18 +189,11 @@ class VendorLiveCardRendererFixContractTest {
     }
 
     @Test
-    fun `vivo renderer ships the atomic island not a separate capsule bundle`() {
-        // OriginOS exposes two surfaces — a short capsule and the atomic-island card.
-        // Sending both wastes IPC budget and forces the system to pick a winner.
-        // Lock the renderer to island only.
-        assertFalse(
-            "vivo renderer must not write notification.superx.capsule alongside the island bundle",
-            source.contains("putBundle(\"notification.superx.capsule\"")
-        )
-        assertTrue(
-            "vivo renderer must still ship the atomic island bundle",
-            source.contains("putBundle(\"notification.superx.island\"")
-        )
+    fun vivo_expanded_template_and_documented_capsule_fallback() {
+        // Official doc 896: capsule is the fallback for non-island/Flip screens.
+        assertTrue(source.contains("notification.superx.capsule"))
+        assertTrue(source.contains("island.superx.template"))
+        assertTrue(source.contains("island.superx.islandClick"))
     }
 
     @Test
