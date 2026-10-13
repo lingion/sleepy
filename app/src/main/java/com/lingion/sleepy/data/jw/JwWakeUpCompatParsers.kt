@@ -169,7 +169,17 @@ private object WakeUpCompat {
         fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String): List<JwCourse> {
             val (start, end) = nodes(nodeText) ?: return emptyList()
             if (name.isBlank() || day !in 1..7) return emptyList()
-            return runCatching { parseWeekTokens(weeksText) }.getOrDefault(emptyList()).filter { it.first in 1..60 && it.second in it.first..60 }
+            // Keep this source's week grammar strict; the generic compatibility parser is deliberately permissive.
+            val weekPattern = Regex("""^(\d{1,2})(?:[-~至](\d{1,2}))?周?(?:\(([单双])\)|([单双])周?)?$""")
+            val weeks = weeksText.split(',', '，', ';', '；').mapNotNull { raw ->
+                val match = weekPattern.matchEntire(raw.filterNot(Char::isWhitespace)) ?: return@mapNotNull null
+                val first = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null
+                val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
+                if (first !in 1..60 || last !in first..60) return@mapNotNull null
+                val parity = match.groupValues[3].ifBlank { match.groupValues[4] }
+                Triple(first, last, when (parity) { "单" -> 1; "双" -> 2; else -> 0 })
+            }
+            return weeks
                 .map { (from, to, type) -> JwCourse(name, room, teacher, day, start, end, from, to, type) }
         }
 
@@ -675,6 +685,8 @@ abstract class WakeUpMarkerParser(source: String, private val markers: Set<Strin
 }
 class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosoft", "courseTableForStd", "courseTableStudent", "new TaskActivity", "CourseTableForStd", "ScheduleTaskBean", "xkinfo", "kbDiv")) {
     override fun confidence(): Int = when {
+        // td.td is the positive-selection legacy ZX grid; its first td can be a section gutter.
+        Jsoup.parse(source).selectFirst("table#mytable td.td") != null -> 0
         source.contains("id=\"kbDiv\"") || source.contains("id='kbDiv'") -> 95
         source.contains("<thead") && source.contains("课程") && source.contains("节次") &&
             Regex("(?:星期|周)[一二三四五六日天1-7]").containsMatchIn(source) -> 93

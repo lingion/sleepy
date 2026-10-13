@@ -75,7 +75,7 @@ class JwKingoSuperSourceShapeTest {
         val (courses, attempts) = JwParserRegistry.selectBest(html)
         assertEquals("新课", courses.single().name)
         assertTrue(attempts.any { it.type == JwProtocol.TYPE_KINGO_NEW && it.courseCount == 1 })
-        val explicit = JwParserRegistry.parserFor(JwProtocol.TYPE_KINGO_ZX, """<table id="mytable"><tr><td class="td"><div>老课<br>教师<br>1-8[1-2节]<br>A101</div></td></tr></table>""")
+        val explicit = JwParserRegistry.parserFor(JwProtocol.TYPE_KINGO_ZX, """<table id="mytable"><tr><td class="td"><div>老课<br>教师<br>1-8[1-2]<br>A101</div></td><td></td></tr></table>""")
         assertEquals("老课", explicit.generateCourseList().single().name)
     }
 
@@ -89,6 +89,20 @@ class JwKingoSuperSourceShapeTest {
         val (declared, _) = JwParserRegistry.selectBest(html, JwProtocol.TYPE_KINGO_ZX)
         assertEquals(zx, generic)
         assertEquals(zx, declared)
+    }
+
+    @Test fun malformedWeekRangesAndOverflowDoNotHideFollowingCourse() {
+        val html = """<table id="mytable"><tr><td>
+            <div>前导负号<br>教师<br>-1-8周[1-2节]<br>A101</div>
+            <div>多重区间<br>教师<br>1-2-3周[1-2节]<br>A101</div>
+            <div>溢出周次<br>教师<br>999999999999999999周[1-2节]<br>A101</div>
+            <div>有效课程<br>教师<br>1-8周(单),10-12周(双)[3-4节]<br>A102</div>
+        </td></tr></table>"""
+        val courses = JwKingoParser(html).generateCourseList()
+        assertEquals(2, courses.size)
+        assertTrue(courses.all { it.name == "有效课程" && it.startNode == 3 && it.endNode == 4 })
+        assertTrue(courses.any { it.startWeek == 1 && it.endWeek == 8 && it.type == 1 })
+        assertTrue(courses.any { it.startWeek == 10 && it.endWeek == 12 && it.type == 2 })
     }
 
     @Test fun noLayoutGivesAggregateError() {

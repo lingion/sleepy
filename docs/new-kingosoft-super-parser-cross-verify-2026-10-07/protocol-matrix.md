@@ -8,4 +8,6 @@
 | TaskActivity | Existing Sleepy parser, independent historical Kingosoft references | TYPE_KINGO_NEW fallback | HTML parsing does not remove JS path |
 | Positive selection report | Existing Sleepy #122 JwKingoZxParser, table#pageRpt and td.td grid | TYPE_KINGO_ZX | Explicit type remains intact |
 
+For the compact NBSP block, the pinned upstream source replaces NBSP with a br tag before splitting, while its later three-line indexing is internally inconsistent. This port treats NBSP as a separator within the teacher/week line, preserving the observed three-line fields. This is an intentional correction, not a byte-for-byte reproduction.
+
 The upstream helper splits concatenated documents by head boundaries as a tolerance mechanism. A head-less fragment is valid. No section-time literals are inferred from this HTML family.
