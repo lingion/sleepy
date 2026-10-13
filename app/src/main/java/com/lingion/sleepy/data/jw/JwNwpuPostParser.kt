@@ -85,7 +85,7 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                 }
             }
 
-            if (courseName.isBlank() && timeRoomRaw.isBlank()) continue
+            if (courseName.isBlank() || timeRoomRaw.isBlank()) continue
 
             val combinedName = if (className.isNotBlank()) {
                 "$courseName($className)"
@@ -156,18 +156,18 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                     if (dayIdx < 0) continue
                     val day = dayIdx + 1
 
-                    // 节次（含范围）：[上中下晚]?(\d+)(?:-(\d+))?节?
+                    // 节次（含范围）：[上中下晚](\d+)(?:-(\d+))?节?
                     // 例：上1-2节 -> 上1-2, base 0 -> [1,2]
                     //     下1-2节 -> 下1-2, base 6 -> [7,8]
-                    val nodeRangePattern = Pattern.compile("([上中下晚])?(\\d+)(?:-(\\d+))?节?")
-                    val nodeMatcher = nodeRangePattern.matcher(daySeg)
+                    val nodeRangePattern = Pattern.compile("([上中下晚])(\\d+)(?:-(\\d+))?节?")
+                    val nodeMatcher = nodeRangePattern.matcher(daySeg.substringBefore("第"))
                     val nodes = mutableListOf<Int>()
                     while (nodeMatcher.find()) {
                         val sectionChar = nodeMatcher.group(1)
                         val startNum = nodeMatcher.group(2)?.toIntOrNull() ?: continue
                         val endNum = nodeMatcher.group(3)?.toIntOrNull() ?: startNum
                         val base = if (sectionChar != null) (sectionBaseMap[sectionChar] ?: 0) else 0
-                        if (startNum !in 1..13 || endNum !in startNum..13) continue
+                        if (startNum !in 1..13 || endNum !in startNum..13 || base + endNum > 13) continue
                         for (n in startNum..endNum) {
                             nodes.add(base + n)
                         }
@@ -175,14 +175,14 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
 
                     if (nodes.isEmpty()) continue
 
-                    nodes.sort()
+                    val orderedNodes = nodes.distinct().sorted()
 
                     // 连续节次聚类合并
-                    var curStart = nodes[0]
-                    var curEnd = nodes[0]
-                    for (i in 1 until nodes.size) {
-                        if (nodes[i] == curEnd + 1) {
-                            curEnd = nodes[i]
+                    var curStart = orderedNodes[0]
+                    var curEnd = orderedNodes[0]
+                    for (i in 1 until orderedNodes.size) {
+                        if (orderedNodes[i] == curEnd + 1) {
+                            curEnd = orderedNodes[i]
                         } else {
                             courses.add(
                                 JwCourse(
@@ -197,8 +197,8 @@ class JwNwpuPostParser(source: String) : JwParser(source) {
                                     type = weekType
                                 )
                             )
-                            curStart = nodes[i]
-                            curEnd = nodes[i]
+                            curStart = orderedNodes[i]
+                            curEnd = orderedNodes[i]
                         }
                     }
 

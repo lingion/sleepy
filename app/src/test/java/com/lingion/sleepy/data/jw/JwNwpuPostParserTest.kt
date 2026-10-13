@@ -107,4 +107,32 @@ class JwNwpuPostParserTest {
         val expired = "<html><form action='/login'><input type='password'></form></html>"
         assertTrue(JwNwpuPostParser(expired).generateCourseList().isEmpty())
     }
+
+    @Test fun `week digits never become nodes and late node cannot exceed day`() {
+        val mixed = fixtureHtml.replace(
+            "教学西楼D-101(第1-16周 星期一上1-2节)",
+            "教学西楼D-101(第1-16周 星期一上1-2节 第1-16周)"
+        )
+        val parsed = JwNwpuPostParser(mixed).generateCourseList()
+        assertEquals(5, parsed.size)
+        assertEquals(2, parsed.first().endNode)
+        val late = fixtureHtml.replace(
+            "教学西楼D-101(第1-16周 星期一上1-2节)",
+            "教学西楼D-101(第1-16周 星期一晚4节)"
+        )
+        assertEquals(4, JwNwpuPostParser(late).generateCourseList().size)
+    }
+
+    @Test fun `duplicate nodes and blank course name are rejected or deduplicated`() {
+        val duplicate = fixtureHtml.replace(
+            "教学西楼D-101(第1-16周 星期一上1-2节)",
+            "教学西楼D-101(第1-16周 星期一上1节上1节)"
+        )
+        val parsed = JwNwpuPostParser(duplicate).generateCourseList()
+        assertEquals(5, parsed.size)
+        assertEquals(1, parsed.first().startNode)
+        assertEquals(1, parsed.first().endNode)
+        val blank = fixtureHtml.replace("<td>高等计算机体系结构</td>", "<td></td>")
+        assertEquals(3, JwNwpuPostParser(blank).generateCourseList().size)
+    }
 }
