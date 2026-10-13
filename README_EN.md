@@ -364,6 +364,8 @@ Entry: "Mine" → "Reminders". The master toggle is off by default; turning it o
 
 ---
 
+Schedule transfers select courses using the source date’s teaching week, odd/even weeks, and week range, then place them on the destination date. The source day is cleared and the destination’s original courses are replaced, including transfers across weeks or between the same weekday.
+
 ## About
 
 Entry: "Mine" → "About". A dedicated page showing version, author, and open-source info.
