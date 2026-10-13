@@ -1,6 +1,7 @@
 package com.lingion.sleepy.ui.screen.imports
 
 import com.lingion.sleepy.data.jw.JwParseDiagnostics
+import com.lingion.sleepy.data.jw.JwNewUrpSuperParser
 import org.json.JSONArray
 import org.json.JSONObject
 import java.net.URI
@@ -149,7 +150,13 @@ object FrameTraversalTree {
         val anchors = ANCHORS.filter { anchor ->
             anchorNeedle(anchor).any { needle -> lower.contains(needle.lowercase()) }
         }
-        return if (isThuCoursePage(html)) anchors + THU_SCRIPT_ANCHOR else anchors
+        val thuAnchors = if (isThuCoursePage(html)) anchors + THU_SCRIPT_ANCHOR else anchors
+        // Some URP pages embed the timetable as a flat JSON array in a script,
+        // without a table id/class. Validate its structure before selecting frame.
+        return if (html.contains("\"skzc\"") && html.contains("\"kcm\"") &&
+            JwNewUrpSuperParser(html).generateCourseList().isNotEmpty()
+        ) thuAnchors + "new-urp-array" else thuAnchors
+
     }
 
     /** 跨域 frame 列表: 返回 "frameName@domain" 字符串(frameName 缺省用 src 尾段) */

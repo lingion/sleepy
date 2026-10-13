@@ -16,6 +16,19 @@ import org.junit.Test
  */
 class JwWebViewFrameCaptureTest {
 
+    @Test
+    fun `flat URP array is a validated frame anchor`() {
+        val html = """<html><script>window.schedule=[{"kcm":"A","cxjc":2,"id":{"skxq":1,"skjc":1,"skzc":"101"}}];</script></html>"""
+        assertTrue(FrameTraversalTree.findAnchors(html).contains("new-urp-array"))
+        val frames = FrameSnapshotList("https://example.edu/timetable", 0, listOf(
+            FrameSnapshot("(top)", null, 0, emptyList(), html, null)
+        ))
+        val result = FrameTraversalTree.selectBestFrame(frames)
+        assertEquals(FrameCaptureStatus.OK, result.status)
+        assertEquals(html, result.html)
+        assertTrue(FrameTraversalTree.findAnchors("""<html><script>var x=[{"kcm":"A","id":{"skzc":"bad"}}]</script></html>""").isEmpty())
+    }
+
     // ---------- 构造 helper ----------
 
     /** frame 六元组: [name, src, depth, path, html, blocked] */

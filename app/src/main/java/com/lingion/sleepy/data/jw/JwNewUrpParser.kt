@@ -45,15 +45,17 @@ class JwNewUrpParser(source: String) : JwParser(source) {
         val result = arrayListOf<JwCourse>()
 
         // 1. 从 HTML 里抠出 JSON 字符串
-        val jsonText = extractJsonFromHtml(source) ?: return result
+        val jsonText = extractJsonFromHtml(source)
+            ?: return JwNewUrpSuperParser(source).generateCourseList()
 
         // 2. 解析 JSON
         val root = try {
             JSONObject(jsonText)
         } catch (e: Exception) {
-            return result
+            return JwNewUrpSuperParser(source).generateCourseList()
         }
-        val dateList = root.optJSONArray("dateList") ?: return result
+        val dateList = root.optJSONArray("dateList")
+            ?: return JwNewUrpSuperParser(source).generateCourseList()
         if (dateList.length() == 0) return result
 
         val firstDate = dateList.getJSONObject(0)
@@ -143,6 +145,7 @@ class JwNewUrpParser(source: String) : JwParser(source) {
     }
 
     private fun parseWeekBits(s: String): List<Int> {
+        if (s.isEmpty() || s.length > 60 || s.any { it != '0' && it != '1' }) return emptyList()
         val out = arrayListOf<Int>()
         for (i in s.indices) {
             if (s[i] == '1') out.add(i + 1)
@@ -171,6 +174,7 @@ class JwNewUrpParser(source: String) : JwParser(source) {
                         // 奇数开头→单周；偶数开头→双周
                         step = 2
                         var k = i + 1
+                        end = weeks[k]
                         while (k + 1 < weeks.size && weeks[k + 1] - weeks[k] == 2) { k++; end = weeks[k] }
                         // 把 end 拓展到这一段最后一个连续 2-step 的位置
                         // 实际：如果 start=1,end=7 步长2 覆盖 1,3,5,7

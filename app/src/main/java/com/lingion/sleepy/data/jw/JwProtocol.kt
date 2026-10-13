@@ -56,6 +56,8 @@ object JwProtocol {
      * wakeup-parity-thu-2026-10-06 SOP v1.11 §3。
      */
     const val TYPE_THU = "thu"
+    /** WakeUp NewUrpSuperParser 的 flat-array/skzc 位图变体。 */
+    const val TYPE_NEW_URP_SUPER = "new_urp_super"
 
     /** Kingosoft ZX: pageRpt reports and mytable grids. */
     const val TYPE_KINGO_ZX = "kingo_zx"
@@ -283,14 +285,14 @@ object JwProtocol {
         TYPE_CF, TYPE_CF_NEW, TYPE_HNUST, TYPE_HNIU,
         TYPE_SEU, TYPE_ZJU, TYPE_USTC, TYPE_SCU, TYPE_NEU, TYPE_WHUT,
         TYPE_BJTU, TYPE_YETHAN,
-        TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_ZF_NEW,
+        TYPE_ZF, TYPE_ZF_1, TYPE_URP, TYPE_URP_NEW, TYPE_NEW_URP_SUPER, TYPE_ZF_NEW,
         TYPE_QZ, TYPE_QZ_CRAZY, TYPE_QZ_BR, TYPE_QZ_WITH_NODE, TYPE_QZ_IEAS, TYPE_QZ_APP, TYPE_UCAS, TYPE_QZ_OLD,
     )
 
     /** WakeUp-derived types routed by the compatibility layer; kept separate from legacy UI ordering. */
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST,
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
     )
 
     fun displayName(type: String?): String = when (type) {
@@ -317,6 +319,7 @@ object JwProtocol {
         TYPE_XJU_POST -> "西交/新疆大学教务"
         TYPE_THU -> "清华大学 (THU 教务)"
         TYPE_NWPU_POST -> "西北工业大学研究生教务"
+        TYPE_NEW_URP_SUPER -> "新 URP 教务 (数组变体)"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
         TYPE_CHAOXING -> "超星综合教务"
@@ -349,7 +352,7 @@ object JwProtocol {
         TYPE_ZF, TYPE_ZF_1, TYPE_ZF_NEW -> "zf"
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
-        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST -> "other"
+        TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"
