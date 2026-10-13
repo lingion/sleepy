@@ -1,0 +1,27 @@
+{
+  "repo": "FztTony/Tsinghua-CourseSpider",
+  "sha": "124a86279eb730beeaa18e6c1cac62bbc13b5103",
+  "license": "GPL-3.0 (LICENSE present; GitHub SPDX GPL-3.0).",
+  "verdict": "NEGATIVE for Sleepy THU zhkbcx strHTML/gridColumns timetable protocol; separate authenticated course-offering catalog HTML scraping workflow.",
+  "evidence_paths": [
+    "https://github.com/FztTony/Tsinghua-CourseSpider/blob/124a86279eb730beeaa18e6c1cac62bbc13b5103/README.md",
+    "https://github.com/FztTony/Tsinghua-CourseSpider/blob/124a86279eb730beeaa18e6c1cac62bbc13b5103/OpeningInfo.py",
+    "https://github.com/FztTony/Tsinghua-CourseSpider/blob/124a86279eb730beeaa18e6c1cac62bbc13b5103/LICENSE"
+  ],
+  "confirmed": [
+    "README identifies tool as course-selection-system spider plus Excel course-planning aid; script exports opening-course information to OpeningInfo.xlsx.",
+    "OpeningInfo.py POSTs authenticated form fields to http://zhjw.cic.tsinghua.edu.cn/xkBks.vxkBksJxjhBs.do with m=kkxxSearch, p_xnxq semester, token, cookies, and pagination.",
+    "Response is parsed as HTML via lxml etree.HTML and an XPath selecting table rows; extracted table is written using pandas to Excel.",
+    "The repository has a GPL-3.0 LICENSE."
+  ],
+  "contradictions": [
+    "Sleepy protocol matrix and attribution-candidates say no LICENSE; pinned tree contains GPL-3.0 LICENSE.",
+    "Sleepy documents call this a direct JSON endpoint; actual code uses an HTML form response, XPath table extraction, and a POST request.",
+    "The source is a course-offerings catalog, not a personal timetable retrieval or zhkbcx grid parser; its existence does not substantiate the alternative timetable API claim."
+  ],
+  "limits": [
+    "Static source review at pinned HEAD only; authenticated endpoint behavior in 2026 not validated.",
+    "Excel macro contents were not inspected; README describes them as downstream course-planning aid rather than the spider protocol."
+  ],
+  "attribution_needed": "Correct existing negative-evidence listing to GPL-3.0 HTML course catalog scraper; remove the inaccurate JSON endpoint and no-LICENSE assertions. Cite only as different THU course-selection workflow; no evidence it informed Sleepy timetable parser. Avoid GPL-3.0 code copying without license-compliance review."
+}

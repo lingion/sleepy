@@ -7,7 +7,6 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.BackHandler
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -34,6 +33,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.SaveableStateHolder
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
@@ -144,6 +144,7 @@ class JwImportActivity : ComponentActivity() {
                 var importFinished by remember { mutableStateOf(false) }
                 var isApplying by remember { mutableStateOf(false) }
                 var importPreview by remember { mutableStateOf<ImportPreview?>(null) }
+                var thuSkippedCount by remember { mutableIntStateOf(0) }
                 var pendingMode by remember { mutableStateOf(ImportApplyMode.ImportAsNew) }
                 var exitDraftState by remember { mutableStateOf(ExitDraftState()) }
                 // 解析后的课程暂存 + 配置确认状态
@@ -497,6 +498,8 @@ class JwImportActivity : ComponentActivity() {
                         importPreview?.let { preview ->
                             ImportPreviewDialog(
                                 preview = preview,
+                                parserWarning = if (parsedSchool?.type == JwProtocol.TYPE_THU && thuSkippedCount > 0)
+                                    getString(R.string.jw_thu_skipped_courses, thuSkippedCount) else null,
                                 onDismiss = { requestExit() },
                                 isApplying = isApplying,
                                 onApply = { mode ->
@@ -733,6 +736,10 @@ class JwImportActivity : ComponentActivity() {
                                                 runCatching { UcasDetailFetch.enrich(html) }.getOrDefault(html)
                                             } else html
                                             val courses = jwViewModel.parseHtml(htmlForParse, effectiveType ?: "")
+                                            thuSkippedCount = if (effectiveType == JwProtocol.TYPE_THU)
+                                                jwViewModel.lastAttempts.firstOrNull { it.type == JwProtocol.TYPE_THU }
+                                                    ?.matchedFeatures?.firstOrNull { it.startsWith("thu:skipped-unsupported=") }
+                                                    ?.substringAfter('=')?.toIntOrNull() ?: 0 else 0
                                             Log.d("JwImport", "parseHtml returned ${courses.size} courses")
                                             if (courses.isEmpty()) {
                                                 // T9 诊断壳: classify 拿精确分类再选文案
@@ -742,7 +749,9 @@ class JwImportActivity : ComponentActivity() {
                                                         parsersAttempted = jwViewModel.lastDiagAttempts
                                                     )
                                                 } catch (e: Exception) { null }
-                                                errorMsg = if (diag != null) {
+                                                errorMsg = if (effectiveType == JwProtocol.TYPE_THU && thuSkippedCount > 0) {
+                                                    getString(R.string.jw_thu_skipped_courses, thuSkippedCount)
+                                                } else if (diag != null) {
                                                     DiagMapper.mapImpl(diag, sch, this@JwImportActivity)
                                                 } else {
                                                     getString(R.string.jw_err_empty_semester)

@@ -147,6 +147,8 @@ fun JwWebViewLoginScreen(
     val fetchFailedFmt = stringResource(R.string.jw_fetch_failed)
     val pageNotLoadedMsg = stringResource(R.string.jw_page_not_loaded)
     val sepPortalHintMsg = stringResource(R.string.jw_err_ucas_sep_portal)
+    val thuPageHintMsg = stringResource(R.string.jw_err_thu_course_page)
+    val thuNavHintMsg = stringResource(R.string.jw_nav_hint_thu)
     val fetchTimeoutMsg = stringResource(R.string.jw_fetch_timeout)
     val fetchNoCoursesMsg = stringResource(R.string.jw_fetch_no_courses)
     val fetchFallbackPeriodsMsg = stringResource(R.string.jw_fetch_fallback_periods)
@@ -415,6 +417,7 @@ fun JwWebViewLoginScreen(
         },
         bottomBar = {
             CaptureBar(
+                navigationHint = if (school.type == JwProtocol.TYPE_THU) thuNavHintMsg else null,
                 enabled = webViewRef != null,
                 onCapture = {
                     val wv = webViewRef
@@ -431,6 +434,9 @@ fun JwWebViewLoginScreen(
                     val url = wv.url ?: ""
                     Log.d("JwWebView", "capture tapped, current url=$url")
                     scope.launch { snackbar.showSnackbar(fetchingMsg) }
+                    // THU 的登录/门户页不含课表脚本。用户登录后先打开“整体课表”并
+                    // 选择学期，再点“导入此页”；下方通用 frame 抓取识别 setInitValue。
+                    // 不根据当前日期猜 p_xnxq，也不在未验证的 URL 上自动请求。
                     // wisedu (金智 jwapp)：课表数据在 JSON API 不在页面 HTML，改用 fetch 拿 JSON（结果走 JS 桥回调）
                     if (school.type == JwProtocol.TYPE_WISEDU) {
                         evaluateFetchWithTimeout(wv, WISEDU_FETCH_JS)
@@ -565,6 +571,10 @@ fun JwWebViewLoginScreen(
                         // (还没跳到 xkgo 课表页) → hint 换成精确动线指引, Activity 对
                         // WRONG_PAGE 且 hint 非空时优先展示 hint
                         val hint = if (r.status == FrameCaptureStatus.WRONG_PAGE &&
+                            school.type == JwProtocol.TYPE_THU
+                        ) {
+                            thuPageHintMsg
+                        } else if (r.status == FrameCaptureStatus.WRONG_PAGE &&
                             school.type == JwProtocol.TYPE_UCAS &&
                             (wv.url ?: "").contains("sep.ucas.ac.cn")
                         ) {
@@ -765,7 +775,7 @@ private fun JwWebView(
 }
 
 @Composable
-private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
+private fun CaptureBar(enabled: Boolean, navigationHint: String? = null, onCapture: () -> Unit) {
     val colors = MaterialTheme.colorScheme
     Row(
         modifier = Modifier
@@ -782,7 +792,7 @@ private fun CaptureBar(enabled: Boolean, onCapture: () -> Unit) {
                 color = colors.onSurfaceVariant
             )
             Text(
-                text = stringResource(R.string.jw_nav_hint),
+                text = navigationHint ?: stringResource(R.string.jw_nav_hint),
                 style = MaterialTheme.typography.bodyMedium.copy(fontWeight = FontWeight.Medium),
                 color = colors.onSurface
             )

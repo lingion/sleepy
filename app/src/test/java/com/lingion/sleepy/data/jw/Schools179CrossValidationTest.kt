@@ -168,7 +168,7 @@ class Schools179CrossValidationTest {
     // ---- 6. 总量闸 ----
 
     @Test
-    fun `school count stays 182`() {
+    fun `school count stays 350`() {
         // 179 - 删3 (行健文理/广东环保/广西师范学院重复条目) = 176
         // 2026-09-05 收录广东医科大学 → 177; 广州医科大学 → 178; 吉林工商学院(超星) → 179
         // 2026-09-06 收录北京航空航天大学(强智 iEAS) → 180；2026-09-07 国科大 → 181
@@ -182,7 +182,8 @@ class Schools179CrossValidationTest {
         // 2026-10-02 收录浙大城市学院(zf_new, issue #90 WestGu 采集包, SSO /sso/ddlogin 入口) → 347
         // 2026-10-04 收录惠州学院(zf_new, 用户采集包 sleepy-adapt-1004, jwxt.hzu.edu.cn) → 348
         // 2026-10-10 收录湖北商贸学院(zf_new, 用户采集包 hbsm-20261010, jwxt.hbc.edu.cn 裸 /kbcx/) → 349
-        assertEquals(349, entries().size)
+        // 2026-10-13 清华大学 THU：已核选课系统 host，用户在整体课表页手动导入 → 350
+        assertEquals(350, entries().size)
     }
 
     @Test

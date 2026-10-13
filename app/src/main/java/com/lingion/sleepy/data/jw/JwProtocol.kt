@@ -51,7 +51,8 @@ object JwProtocol {
     /**
      * 清华大学 zhjwxk.cic.tsinghua.edu.cn (THU 选课系统)。
      * 协议：setInitValue('strHTML'+...)、getElementById('a'+big+'_'+day).innerHTML += strHTML。
-     * 4 仓 POSITIVE 共识 (WakeUp + Starrah + AdoreCN + BistuSchedule)；致谢见 attribution-candidates.json。
+     * Starrah/THUCourseHelper 的固定源码提供 C1/C2 课程脚本直接证据；
+     * 反编译 WakeUp APK 提供旧版节次映射，非独立原仓共识；见 docs/wakeup-parity-thu-2026-10-06。
      * wakeup-parity-thu-2026-10-06 SOP v1.11 §3。
      */
     const val TYPE_THU = "thu"

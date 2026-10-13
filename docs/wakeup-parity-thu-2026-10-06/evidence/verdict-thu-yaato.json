@@ -1,0 +1,20 @@
+{
+  "repo": "heyeshuang/YAATO",
+  "sha": "2931561f4455d08b9e6e7c3597a16966f5465805",
+  "license": null,
+  "verdict": "POSITIVE",
+  "evidence_paths": [
+    "https://github.com/heyeshuang/YAATO/blob/2931561f4455d08b9e6e7c3597a16966f5465805/README.md",
+    "https://github.com/heyeshuang/YAATO/blob/2931561f4455d08b9e6e7c3597a16966f5465805/calendar_outputer.user.js"
+  ],
+  "confirmed": [
+    "README and userscript target THU Overall Timetable endpoint; userscript reads rendered .mainHref and .blue_red_none course elements to export vCalendar.",
+    "Userscript header declares GPLv2 though GitHub repository license metadata is null."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Historical 2012 implementation; does not establish 2026 endpoint behavior.",
+    "Rendered DOM method is distinct from Sleepy script-text parser; no code copied."
+  ],
+  "attribution_needed": true
+}

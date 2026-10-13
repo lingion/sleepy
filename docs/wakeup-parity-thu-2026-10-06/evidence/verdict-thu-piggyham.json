@@ -1,0 +1,31 @@
+{
+  "repo": "piggyham/thu_timetable",
+  "sha": "762f0bdc75fd9219dee75f3416c172d634dd1816",
+  "license": "No LICENSE file in pinned tree; GitHub SPDX license is null.",
+  "verdict": "INDIRECT for THU timetable domain and 14-period concept; NEGATIVE for Sleepy zhkbcx strHTML/gridColumns HTML protocol corroboration.",
+  "evidence_paths": [
+    "https://github.com/piggyham/thu_timetable/blob/762f0bdc75fd9219dee75f3416c172d634dd1816/README.md",
+    "https://github.com/piggyham/thu_timetable/blob/762f0bdc75fd9219dee75f3416c172d634dd1816/entry/src/main/ets/service/InfoDataSource.ets",
+    "https://github.com/piggyham/thu_timetable/blob/762f0bdc75fd9219dee75f3416c172d634dd1816/entry/src/main/ets/model/CourseData.ets",
+    "https://github.com/piggyham/thu_timetable/blob/762f0bdc75fd9219dee75f3416c172d634dd1816/entry/src/main/ets/model/TimeTable.ets",
+    "https://github.com/piggyham/thu_timetable/blob/762f0bdc75fd9219dee75f3416c172d634dd1816/entry/src/main/ets/pages/LoginPage.ets"
+  ],
+  "confirmed": [
+    "Actual source is jxmh_out.do JSONP: m=bks_jxrl_all or yjs_jxrl_all with dates and jsoncallback=m, fetched in three-week segments.",
+    "Rows use nq, fl, nr, dd, kssj, jssj. Parser accepts 上课/实验, derives week from each date and first Monday, maps times to sections, and merges course name, room, weekday, begin, end.",
+    "Hardcoded 14 sections exist, first 08:00-08:45 and last 21:00-21:45; this supports only a broad 14-period concept.",
+    "Calendar API supplies jyzdyt and xnxq; summer is treated as 12 weeks, other semesters as 18."
+  ],
+  "contradictions": [
+    "No zhkbcx, strHTML, gridColumns, gridData, mainHref, blue_red_none or HTML grid-coordinate extraction exists in pinned source. Sleepy matrix claims of naming/protocol equivalence are unsupported.",
+    "No week-expression parsing for 全周, 前八周, 后八周 or 单双周 exists; week membership comes from JSONP nq dates.",
+    "Sleepy matrix says periods 10/11/14 are 17:00-17:45, 18:45-19:30, 21:15-22:00; piggyham uses 17:05-17:50, 17:55-18:40, 21:00-21:45. Same 14-slot-table claim is false.",
+    "README mentions in-WebView fetch, while implemented LoginPage calls fetchJxrlSegmentsHttp; rely on code for protocol characterization."
+  ],
+  "limits": [
+    "Static pinned-source review only; no authenticated THU session or live payload validation.",
+    "No evidence Sleepy zhkbcx HTML parser can process this JSONP data.",
+    "Current pinned repository tree checked; historical branches/forks not audited."
+  ],
+  "attribution_needed": "If listed, characterize as a separate THU JSONP/calendar timetable reference, not corroboration for zhkbcx HTML, week expressions, or identical 14-slot times. Courteous credit is possible; no code reuse without permission or an explicit license."
+}

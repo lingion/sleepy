@@ -1,0 +1,108 @@
+{
+  "date": "2026-10-13",
+  "scope": "THU-related repository candidates identified by focused GitHub repo and code searches plus pre-existing attribution list; non-THU general coursework false positives excluded at query relevance stage",
+  "reported_counts_not_qualified": "The broad four repository queries reported 1175 aggregate hits; first-page union 343 includes generic LearningOS/data-structure repositories; these are not qualifying timetable tools. The exact school-host README query reported 8, all manually classified in verdict files.",
+  "candidates": [
+    {
+      "repo": "AdoreCN (unresolved name)",
+      "sha": null,
+      "verdict": "UNVERIFIED_IDENTITY",
+      "evidence_file": "verdict-thu-adorecn.json"
+    },
+    {
+      "repo": "Compultra/BistuSchedule",
+      "sha": "8253eed73f9c91079e8009de63789e95ff191687",
+      "verdict": "NEGATIVE for THU protocol",
+      "evidence_file": "verdict-thu-bistu.json"
+    },
+    {
+      "repo": "fengh16/CourseDataGet",
+      "sha": "5155e8d9d124ff18cc0a228778bbc4f73218961d",
+      "verdict": "NEGATIVE",
+      "evidence_file": "verdict-thu-coursedataget.json"
+    },
+    {
+      "repo": "robertying/CourseRegistrationHelper",
+      "sha": "9b11388df5ea1b70cc0a9343fdc442e81f4338a3",
+      "verdict": "NEGATIVE",
+      "evidence_file": "verdict-thu-courseregistrationhelper.json"
+    },
+    {
+      "repo": "FztTony/Tsinghua-CourseSpider",
+      "sha": "124a86279eb730beeaa18e6c1cac62bbc13b5103",
+      "verdict": "NEGATIVE for Sleepy THU zhkbcx strHTML/gridColumns timetable protocol; separate authenticated course-offering catalog HTML scraping workflow.",
+      "evidence_file": "verdict-thu-fzttony.json"
+    },
+    {
+      "repo": "smartThise/NextTHUxk",
+      "sha": "086c8c29cad824d6da7363e7e16008e6951329f7",
+      "verdict": "POSITIVE",
+      "evidence_file": "verdict-thu-nextthuxk.json"
+    },
+    {
+      "repo": "piggyham/thu_timetable",
+      "sha": "762f0bdc75fd9219dee75f3416c172d634dd1816",
+      "verdict": "INDIRECT for THU timetable domain and 14-period concept; NEGATIVE for Sleepy zhkbcx strHTML/gridColumns HTML protocol corroboration.",
+      "evidence_file": "verdict-thu-piggyham.json"
+    },
+    {
+      "repo": "Starrah/THUCourseHelper",
+      "sha": "64a543518f9007e2b5a615582bd049acf5d2ada9",
+      "verdict": "POSITIVE",
+      "evidence_file": "verdict-thu-starrah.json"
+    },
+    {
+      "repo": "xbcfantasy/tanwei-course-guide",
+      "sha": "2388a84c2dc791a4a6c1e9d860b6ca72018f4d36",
+      "verdict": "NEGATIVE",
+      "evidence_file": "verdict-thu-tanwei-course-guide.json"
+    },
+    {
+      "repo": "huangkaka666/thu-course-helper",
+      "sha": "6de127976b30fdc4f3212144db6847611e994eb9",
+      "verdict": "NEGATIVE",
+      "evidence_file": "verdict-thu-thu-course-helper.json"
+    },
+    {
+      "repo": "Delthin/thu-graduate-course-helper",
+      "sha": "03a42a1701bb9c9539ae9df861310f7e21adabb9",
+      "verdict": "INDIRECT",
+      "evidence_file": "verdict-thu-thu-graduate-course-helper.json"
+    },
+    {
+      "repo": "denny2001/thu_courses2ics",
+      "sha": "aebdfa5389a770232de7bae596ae3a56db5d84eb",
+      "verdict": "INDIRECT",
+      "evidence_file": "verdict-thu-thu_courses2ics.json"
+    },
+    {
+      "repo": "YZune/WakeUpSchedule",
+      "sha": "5d439287a22a64b36d14c08c81bd9fc7bb9a53db",
+      "verdict": "NEGATIVE",
+      "evidence_file": "verdict-thu-wakeup.json"
+    },
+    {
+      "repo": "heyeshuang/YAATO",
+      "sha": "2931561f4455d08b9e6e7c3597a16966f5465805",
+      "verdict": "POSITIVE",
+      "evidence_file": "verdict-thu-yaato.json"
+    },
+    {
+      "repo": "circleLZY/thu-courses",
+      "sha": "f0b29682f08e0c3eb35d2bac9599b15b820dfefb",
+      "verdict": "NEGATIVE: course notes, no timetable parser",
+      "evidence_file": "verdict-thu-circlelzy.json",
+      "metadata_url": "https://api.github.com/repos/circleLZY/thu-courses"
+    },
+    {
+      "repo": "brightcolin/thu-course-pilot",
+      "sha": "897f6679126844431ad5c9ac50bc9a5d6ecb1427",
+      "verdict": "INDIRECT: course planning from separate JSON/database source; no demonstrated ztkbSearch timetable parser",
+      "evidence_file": "verdict-thu-brightcolin.json",
+      "metadata_url": "https://api.github.com/repos/brightcolin/thu-course-pilot"
+    }
+  ],
+  "count": 16,
+  "source": "thu-github-search-matrix.json plus focused queries in scope.md",
+  "historical_404_excluded": "xiangwentao666/ECSA-Thu returned HTTP 404 on 2026-10-13; cannot verify source or retain old AGPL attribution claim."
+}

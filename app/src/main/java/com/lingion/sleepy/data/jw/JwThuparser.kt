@@ -4,7 +4,7 @@ package com.lingion.sleepy.data.jw
 /**
  * 清华大学 (THU) 教务解析器 — zhjwxk.cic.tsinghua.edu.cn
  *
- * 协议指纹 6 件套 (跨仓印证 4 仓 POSITIVE 共识, 1 仓 NULL_EVIDENCE, 3 仓 NEGATIVE):
+ * 以下协议指纹来自 Starrah/THUCourseHelper 固定源码；fixture 为人工构造，未经登录实测：
  *  1. `<form action="/syxk.vsyxkKcapb.do">` + `name="p_xnxq"` 学期字段
  *  2. `<script>` 块内 `function setInitValue() {` + `Event.observe(...)`
  *  3. `strHTML += "<a class='mainHref' href='.*?;([0-9A-Z]{8})'.*?>"` 课程链接
@@ -13,26 +13,22 @@ package com.lingion.sleepy.data.jw
  *  6. `getElementById('a{big}_{day}').innerHTML += strHTML` 网格坐标
  *  + C2 模式 `strHTML = "<a class='blue_red_none' ...><b><font color='blue'>...</font></b></a><font color='blue'>...</font>";`
  *
- * 上游协议形态 (POSITIVE cross-verify):
- *  - WakeUp THUParser.java (Apache-2.0) — 节次↔大节映射 + 7 行网格坐标 + gridColumns/gridData 双轨
- *  - Starrah/THUCourseHelper THUCourseDataSouce.kt (MIT) — strHTML += 状态机 + PAT_C2 blue_red_none
+ *  - Starrah/THUCourseHelper THUCourseDataSouce.kt @ 64a543518f9007e2b5a615582bd049acf5d2ada9 (MIT): C1/C2 脚本及整体课表入口。
+ *  - lingion/wakeup-mod THUParser.java @ 879f0d6781da19d1da9300d5eda6b0c2629b6a63: 反编译 APK 的大节映射与作息表；未核实原发布者授权，不复用源码。
  *
- * 协议演化: 2020-2026 同协议稳定 (WakeUp 7 年未改 endpoint); schedule-data.netlify.app/{semester}.json
- * 单源独证 1/8 (Starrah), Sleepy 不引用此路径, 维持零依赖。
- *
- * 跨语言不变式 (SOP 铁律 3): THUParser.java ↔ 本文件 regex literal char-by-char 锁定;
- * Sleepy 没有 WebView JS 入口, 铁律 3 只在 Java↔Kotlin 间执行。
+ * 与 Starrah 的课程字段正则保持同形；Sleepy 的 WebView 只抓当前页面 HTML，
+ * 不在 JS 中另写协议正则。
  */
 class JwThuparser(source: String) : JwParser(source) {
 
     companion object {
-        // ---- 节次↔大节映射 (WakeUp THUParser f9220/f9221 OooO0O0 / OooO0OO) ----
+        // ---- 节次↔大节映射 (仅反编译 WakeUp v6.1.06 副本可核；未登录实测) ----
 
         /**
          * 大节索引 (big, 0-6) → 实际起课节点 (startNode)。
          * big=0 占位 (无课); big=1 第 1 节; big=2 第 3-5 节 (连 3 节);
          * big=3 第 6-7 节; big=4 第 8-9 节; big=5 第 10-11 节; big=6 第 12-14 节 (连 3 节)。
-         * 与 WakeUp THUParser f9220OooO0O0 一致, SOP 铁律 3 跨仓不变式锁定。
+         * 与固定版本反编译 THUParser 数组一致。
          */
         val START_NODE_MAP: IntArray = intArrayOf(0, 1, 3, 6, 8, 10, 12)
 
@@ -43,7 +39,7 @@ class JwThuparser(source: String) : JwParser(source) {
         val END_NODE_MAP: IntArray = intArrayOf(0, 2, 5, 7, 9, 11, 14)
 
         /**
-         * 清华 14 节作息表 (硬编码, 4/8 仓 cross-verify 共识)。
+         * 反编译 WakeUp v6.1.06 中的 14 节作息表；不是学校当前官方作息保证。
          * pair[0] = 起始时间 HH:MM, pair[1] = 结束时间 HH:MM, index = 节次 1-14。
          * 与 WakeUp THUParser.OooO0O0() 同源 (WakeUp 字段名 TimeDetail 节次+起始+结束)。
          */
@@ -64,7 +60,7 @@ class JwThuparser(source: String) : JwParser(source) {
             "21:00" to "21:45",
         )
 
-        // ---- regex 常量 (SOP 铁律 3: char-by-char 与 Starrah/THUCourseHelper 跨语言不变式锁定) ----
+        // ---- regex 常量 (与 Starrah/THUCourseHelper Kotlin 源码对照) ----
 
         /** 课程链接 `strHTML += "<a class='mainHref' href='.*?;([0-9A-Z]{8})'.*?>"` — 8 位 courseId。 */
         val RE_C1_LINK = Regex("strHTML \\+= \"<a class='mainHref' href='.*?;([0-9A-Z]{8})'.*?>\"")
@@ -104,6 +100,8 @@ class JwThuparser(source: String) : JwParser(source) {
 
     /** 课程类型识别 (教务统计 XKTYPE_LIST, Starrah 实证)。 */
     private val xkTypeList = listOf("必修", "限选", "任选")
+    internal var skippedCourseCount: Int = 0
+        private set
 
     // ---- 内部状态机 ----
 
@@ -116,6 +114,7 @@ class JwThuparser(source: String) : JwParser(source) {
         GOT_TYPE,       // 4: 已识别课程类型, 等待周次 (C1)
         GOT_WEEKS,      // 5: 已识别周次, 等待地点 (C1)
         GOT_LOCATION,   // 6: 已识别地点, 等待 grid 坐标 (C1)
+        GOT_C2,         // 7: 已识别 C2, 等待 grid 坐标
     }
 
     /** 当前正在累积的课程信息 (C1 模式状态机内)。 */
@@ -126,11 +125,13 @@ class JwThuparser(source: String) : JwParser(source) {
         var type: String = "",
         var weekText: String = "",
         var location: String = "",
+        var isC2: Boolean = false,
         var big: Int = 0,  // 大节 (0-6)
         var day: Int = 0,  // 星期 (1-7)
     )
 
     override fun generateCourseList(): List<JwCourse> {
+        skippedCourseCount = 0
         val out = mutableListOf<JwCourse>()
         if (!source.contains("function setInitValue") || !source.contains("Event.observe")) {
             return emptyList()
@@ -147,6 +148,24 @@ class JwThuparser(source: String) : JwParser(source) {
         val foundCourses = mutableMapOf<String, PendingCourse>()  // courseId → PendingCourse (跨段复用)
 
         for (trimmed in lines) {
+            // 上游在元数据缺项时会直接进入网格坐标；不能把下一门课的字段吞进当前记录。
+            if (state != ParseState.IDLE && (RE_C1_LINK.containsMatchIn(trimmed) || RE_C2_BLUE_RED_NONE.containsMatchIn(trimmed))) {
+                skippedCourseCount++
+                state = ParseState.IDLE
+                pending = PendingCourse()
+            }
+            if (state in setOf(ParseState.GOT_TITLE, ParseState.GOT_TEACHER,
+                    ParseState.GOT_TYPE, ParseState.GOT_WEEKS)) {
+                val grid = RE_C1_WEEKBIG.find(trimmed)
+                if (grid != null) {
+                    pending = pending.copy(big = grid.groupValues[1].toInt(), day = grid.groupValues[2].toInt())
+                    emitCourse(pending)?.let(out::add) ?: run { skippedCourseCount++ }
+                    foundCourses[pending.courseId] = pending.copy(big = 0, day = 0)
+                    state = ParseState.IDLE
+                    pending = PendingCourse()
+                    continue
+                }
+            }
             when (state) {
                 ParseState.IDLE -> {
                     // 优先 C2 (单行 blue_red_none 模式, 跨周实验课/辅修)
@@ -154,7 +173,8 @@ class JwThuparser(source: String) : JwParser(source) {
                     if (c2 != null) {
                         val name = c2.groupValues[2]
                         val detStr = c2.groupValues[3]
-                        out += parseBlueRedNone(name, detStr)
+                        pending = PendingCourse(name = name, location = detStr, isC2 = true)
+                        state = ParseState.GOT_C2
                         continue
                     }
                     // 否则试 C1 链接
@@ -191,8 +211,11 @@ class JwThuparser(source: String) : JwParser(source) {
                         if (str in xkTypeList) {
                             pending = pending.copy(type = str)
                             state = ParseState.GOT_TYPE
+                        } else {
+                            // 课程属性是可选字段；缺省时本行就是周次，不可丢弃。
+                            pending = pending.copy(weekText = str)
+                            state = ParseState.GOT_WEEKS
                         }
-                        // 非 XKTYPE_LIST → 回退 (Starrah 实证, 例: 直接周次)
                     }
                 }
 
@@ -217,48 +240,52 @@ class JwThuparser(source: String) : JwParser(source) {
                     if (m != null) {
                         pending = pending.copy(big = m.groupValues[1].toInt(), day = m.groupValues[2].toInt())
                         // 解析并 emit
-                        out += emitCourse(pending)
+                        emitCourse(pending)?.let(out::add) ?: run { skippedCourseCount++ }
                         // 保留课程 (跨段复用), 重置 big/day
                         foundCourses[pending.courseId] = pending.copy(big = 0, day = 0)
                         state = ParseState.IDLE
                         pending = PendingCourse()
                     }
                 }
+                ParseState.GOT_C2 -> {
+                    val m = RE_C1_WEEKBIG.find(trimmed)
+                    if (m != null) {
+                        pending = pending.copy(big = m.groupValues[1].toInt(), day = m.groupValues[2].toInt())
+                        emitCourse(pending)?.let(out::add) ?: run { skippedCourseCount++ }
+                        state = ParseState.IDLE
+                        pending = PendingCourse()
+                    }
+                }
             }
         }
+        if (state != ParseState.IDLE) skippedCourseCount++
         return out
-    }
-
-    /**
-     * C2 (blue_red_none) 课程解析 — 跨周实验课/辅修, 字段挤在单行 strHTML。
-     * "北大"/"北外" 类附注识别为辅修; 周次 "(1-8周)" / "(1-16周)" 紧跟其后。
-     * 地点位于 <font color='blue'>...</font> 第二段。
-     */
-    private fun parseBlueRedNone(name: String, detStr: String): List<JwCourse> {
-        val course = JwCourse(
-            name = name,
-            teacher = "",
-            room = detStr.trim(),
-            day = 0,
-            startNode = 0,
-            endNode = 0,
-            startWeek = 1,
-            endWeek = defaultWeekCount,
-            type = 0,
-        )
-        return listOf(course)
     }
 
     /**
      * 将 pending 课程 emit 为 JwCourse: 大节↔节点映射 + 周次文字解析 + 端点修正。
      */
-    private fun emitCourse(p: PendingCourse): JwCourse {
-        if (p.name.isBlank() || p.big !in 0..6 || p.day !in 1..7) return emptyCourse(p.name)
+    private fun emitCourse(p: PendingCourse): JwCourse? {
+        if (p.name.isBlank() || p.big !in 1..6 || p.day !in 1..7) return null
         val startNode = START_NODE_MAP[p.big]
         val endNode = END_NODE_MAP[p.big]
-        if (startNode == 0 || endNode == 0) return emptyCourse(p.name)  // big=0 无课
-        val (sw, ew, type) = parseWeekText(p.weekText)
+        if (p.isC2) {
+            // C2 详情可含任意周集合/小时区间；当前模型不能无损表达时不伪造全周。
+            if ('(' !in p.location || ')' !in p.location) return null
+            val details = p.location.substringAfter('(').substringBeforeLast(')')
+            val parts = details.split('；').map(String::trim)
+            val weekText = parts.firstOrNull { it.contains('周') } ?: return null
+            if (parts.any { it.contains("时间：") }) return null
+            val range = parseKnownWeekText(weekText) ?: return null
+            val room = parts.takeWhile { !it.contains('周') }.joinToString("；")
+            val (sw, ew, type) = range
+            val (sw2, ew2) = JwParity.adjustedRange(sw, ew, type)
+            if (sw2 > ew) return null
+            return JwCourse(p.name, room = room, day = p.day, startNode = startNode, endNode = endNode, startWeek = sw2, endWeek = ew2, type = type)
+        }
+        val (sw, ew, type) = parseKnownWeekText(p.weekText) ?: return null
         val (sw2, ew2) = JwParity.adjustedRange(sw, ew, type)
+        if (sw2 > ew) return null
         return JwCourse(
             name = p.name,
             teacher = p.teacher.trim(),
@@ -272,14 +299,8 @@ class JwThuparser(source: String) : JwParser(source) {
         )
     }
 
-    private fun emptyCourse(name: String) = JwCourse(
-        name = name, teacher = "", room = "",
-        day = 0, startNode = 0, endNode = 0,
-        startWeek = 0, endWeek = 0, type = 0,
-    )
-
     /**
-     * 解析周次文字 (清华独有字典):
+     * 解析已知周次文字；未知或越界返回 null，不伪造全周:
      *  "全周" → (1, 16, 0)
      *  "前八周" → (1, 8, 0)
      *  "后八周" → (9, 16, 0)
@@ -289,32 +310,37 @@ class JwThuparser(source: String) : JwParser(source) {
      *  "第X-Y周(单/双)" → (X, Y, 1/2)
      *  "第X周" → (X, X, 0)
      */
-    internal fun parseWeekText(text: String): Triple<Int, Int, Int> {
+    private fun parseKnownWeekText(text: String): Triple<Int, Int, Int>? {
         val t = text.trim().trimStart('；', ';')
-        return when {
+        val parsed = when {
             t == "全周" -> Triple(1, defaultWeekCount, 0)
             t == "前八周" -> Triple(1, 8, 0)
             t == "后八周" -> Triple(9, defaultWeekCount, 0)
             t == "单周" -> Triple(1, defaultWeekCount, 1)
             t == "双周" -> Triple(2, defaultWeekCount, 2)
+            t.matches(Regex("""\d+-\d+周""")) -> {
+                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toIntOrNull() ?: return null }
+                Triple(nums[0], nums[1], 0)
+            }
             t.matches(Regex("""第\d+-\d+周（单）""")) || t.matches(Regex("""第\d+-\d+周\(单\)""")) -> {
-                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toInt() }
+                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toIntOrNull() ?: return null }
                 Triple(nums[0], nums[1], 1)
             }
             t.matches(Regex("""第\d+-\d+周（双）""")) || t.matches(Regex("""第\d+-\d+周\(双\)""")) -> {
-                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toInt() }
+                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toIntOrNull() ?: return null }
                 Triple(nums[0], nums[1], 2)
             }
             t.matches(Regex("""第\d+-\d+周""")) -> {
-                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toInt() }
+                val nums = RE_NUMBER.findAll(t).toList().map { it.value.toIntOrNull() ?: return null }
                 Triple(nums[0], nums[1], 0)
             }
             t.matches(Regex("""第\d+周""")) -> {
-                val n = RE_NUMBER.find(t)?.value?.toInt() ?: 1
+                val n = RE_NUMBER.find(t)?.value?.toIntOrNull() ?: return null
                 Triple(n, n, 0)
             }
-            else -> Triple(1, defaultWeekCount, 0)
+            else -> null
         }
+        return parsed?.takeIf { (start, end, _) -> start in 1..30 && end in start..30 }
     }
 
     override fun confidence(): Int {
@@ -338,6 +364,7 @@ class JwThuparser(source: String) : JwParser(source) {
 
     override fun matchedFeatures(): List<String> {
         val out = mutableListOf<String>()
+        if (skippedCourseCount > 0) out += "thu:skipped-unsupported=$skippedCourseCount"
         if (source.contains("zhjwxk") || source.contains("cic.tsinghua")) out += "thu:login-or-sso-marker"
         if (RE_SEMESTER.containsMatchIn(source)) out += "thu:p_xnxq-form"
         if (RE_SET_INIT_VALUE.containsMatchIn(source)) out += "thu:setInitValue-block"

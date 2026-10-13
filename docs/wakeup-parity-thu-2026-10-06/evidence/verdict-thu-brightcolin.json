@@ -1,0 +1,10 @@
+{
+  "repo": "brightcolin/thu-course-pilot",
+  "sha": "897f6679126844431ad5c9ac50bc9a5d6ecb1427",
+  "verdict": "INDIRECT",
+  "source_urls": [
+    "https://api.github.com/repos/brightcolin/thu-course-pilot",
+    "https://github.com/brightcolin/thu-course-pilot/blob/897f6679126844431ad5c9ac50bc9a5d6ecb1427/src/data_adapter.py"
+  ],
+  "finding": "Course planning tool data_adapter.py consumes existing database slots with weekday, period_list and weeks; this does not establish a ztkbSearch or strHTML1 timetable parser."
+}

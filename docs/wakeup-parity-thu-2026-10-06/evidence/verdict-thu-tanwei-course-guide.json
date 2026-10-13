@@ -1,0 +1,19 @@
+{
+  "repo": "xbcfantasy/tanwei-course-guide",
+  "sha": "2388a84c2dc791a4a6c1e9d860b6ca72018f4d36",
+  "license": null,
+  "verdict": "NEGATIVE",
+  "evidence_paths": [
+    "https://github.com/xbcfantasy/tanwei-course-guide/blob/2388a84c2dc791a4a6c1e9d860b6ca72018f4d36/README.md",
+    "https://github.com/xbcfantasy/tanwei-course-guide/blob/2388a84c2dc791a4a6c1e9d860b6ca72018f4d36/scripts/parse_zhjwxk.py"
+  ],
+  "confirmed": [
+    "Static 2026 freshman course-planning guide; school course catalog data appears in data/zhjwxk_courses.json.",
+    "Does not parse logged-in personal Overall Timetable for Sleepy."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Pinned source/README static review only; no authenticated 2026 runtime request."
+  ],
+  "attribution_needed": false
+}

@@ -1,0 +1,20 @@
+{
+  "repo": "denny2001/thu_courses2ics",
+  "sha": "aebdfa5389a770232de7bae596ae3a56db5d84eb",
+  "license": "MIT",
+  "verdict": "INDIRECT",
+  "evidence_paths": [
+    "https://github.com/denny2001/thu_courses2ics/blob/aebdfa5389a770232de7bae596ae3a56db5d84eb/README.md",
+    "https://github.com/denny2001/thu_courses2ics/blob/aebdfa5389a770232de7bae596ae3a56db5d84eb/course.py",
+    "https://github.com/denny2001/thu_courses2ics/blob/aebdfa5389a770232de7bae596ae3a56db5d84eb/main.py"
+  ],
+  "confirmed": [
+    "Exports an undergraduate first-level timetable as XLS from school UI then converts that local spreadsheet to ICS.",
+    "No ztkbSearch HTML script parsing or live endpoint in this tool."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Pinned source/README static review only; no authenticated 2026 runtime request."
+  ],
+  "attribution_needed": true
+}

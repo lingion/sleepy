@@ -35,6 +35,17 @@
     "enableFetch": true
   },
   {
+    "sortKey": "Q",
+    "name": "清华大学",
+    "url": "https://zhjwxk.cic.tsinghua.edu.cn/",
+    "type": "thu",
+    "aliases": [
+      "THU",
+      "tsinghua"
+    ],
+    "sortKeyFull": "qinghuadaxue"
+  },
+  {
     "sortKey": "S",
     "name": "上海立信会计金融学院",
     "url": "https://lxjw.lixin.edu.cn/edu/lesson/std/timetable!courseTable.action",

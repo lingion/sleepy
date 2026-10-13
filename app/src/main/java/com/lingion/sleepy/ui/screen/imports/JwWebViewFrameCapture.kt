@@ -125,6 +125,15 @@ object FrameTraversalTree {
         "Table1", "blacktab", "kbtable", "kbgrid_table_0", "kblist_table", "kbList", "kbxx", "timetable", "_dgdata", "pageRpt", "mytable", "reportArea", "xkinfo", "sample-table-1"
     )
 
+    /** THU 网格课程由页面脚本填入 aN_M 单元；需要完整脚本指纹，不能仅凭泛用 id 命中。 */
+    private const val THU_SCRIPT_ANCHOR = "thu-setInitValue-course-grid"
+
+    private fun isThuCoursePage(html: String): Boolean =
+        html.contains("function setInitValue()") &&
+            html.contains("Event.observe") &&
+            (html.contains("class='mainHref'") || html.contains("class='blue_red_none'")) &&
+            Regex("""getElementById\('a[1-6]_[1-7]'\)\.innerHTML\s*\+=\s*strHTML""").containsMatchIn(html)
+
     private fun anchorNeedle(anchor: String): List<String> =
         if (anchor.startsWith("_")) {
             // 尾部子串锚点 (ASP.NET 命名容器前缀): id="..._dgdata" — 引号内以锚点结尾即命中
@@ -137,9 +146,10 @@ object FrameTraversalTree {
     fun findAnchors(html: String): List<String> {
         if (html.isEmpty()) return emptyList()
         val lower = html.lowercase()
-        return ANCHORS.filter { anchor ->
+        val anchors = ANCHORS.filter { anchor ->
             anchorNeedle(anchor).any { needle -> lower.contains(needle.lowercase()) }
         }
+        return if (isThuCoursePage(html)) anchors + THU_SCRIPT_ANCHOR else anchors
     }
 
     /** 跨域 frame 列表: 返回 "frameName@domain" 字符串(frameName 缺省用 src 尾段) */

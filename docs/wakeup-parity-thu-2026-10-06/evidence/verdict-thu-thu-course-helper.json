@@ -1,0 +1,19 @@
+{
+  "repo": "huangkaka666/thu-course-helper",
+  "sha": "6de127976b30fdc4f3212144db6847611e994eb9",
+  "license": "MIT",
+  "verdict": "NEGATIVE",
+  "evidence_paths": [
+    "https://github.com/huangkaka666/thu-course-helper/blob/6de127976b30fdc4f3212144db6847611e994eb9/README.md",
+    "https://github.com/huangkaka666/thu-course-helper/blob/6de127976b30fdc4f3212144db6847611e994eb9/thu-course-helper.user.js"
+  ],
+  "confirmed": [
+    "Adds reviews and official ratings to NextTHUxk course cards and sorting.",
+    "No personal Overall Timetable parsing evidence."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Pinned source/README static review only; no authenticated 2026 runtime request."
+  ],
+  "attribution_needed": false
+}

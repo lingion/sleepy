@@ -1,0 +1,21 @@
+{
+  "repo": "Compultra/BistuSchedule",
+  "sha": "8253eed73f9c91079e8009de63789e95ff191687",
+  "license": "No LICENSE in pinned tree; GitHub license null",
+  "verdict": "NEGATIVE for THU protocol",
+  "evidence_paths": [
+    "README.md",
+    "t9.py"
+  ],
+  "confirmed": [
+    "README describes BISTU Python Windows timetable viewer",
+    "t9.py loads local xlsx using zipfile and XML then displays Tkinter schedule"
+  ],
+  "contradictions": [
+    "Historical THU protocol port reference unsupported"
+  ],
+  "limits": [
+    "Static pinned source only; no live school login"
+  ],
+  "attribution_needed": "Accurate negative timetable reference; no THU support claim"
+}

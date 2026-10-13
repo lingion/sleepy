@@ -1,0 +1,19 @@
+{
+  "repo": "fengh16/CourseDataGet",
+  "sha": "5155e8d9d124ff18cc0a228778bbc4f73218961d",
+  "license": null,
+  "verdict": "NEGATIVE",
+  "evidence_paths": [
+    "https://github.com/fengh16/CourseDataGet/blob/5155e8d9d124ff18cc0a228778bbc4f73218961d/README.md",
+    "https://github.com/fengh16/CourseDataGet/blob/5155e8d9d124ff18cc0a228778bbc4f73218961d/main.js"
+  ],
+  "confirmed": [
+    "Fetches course-selection popularity/registration data for analytics from xkBks.vxkBksXkbBs.do?m=xkqkSearch.",
+    "No personal Overall Timetable script parsing."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Pinned source/README static review only; no authenticated 2026 runtime request."
+  ],
+  "attribution_needed": false
+}

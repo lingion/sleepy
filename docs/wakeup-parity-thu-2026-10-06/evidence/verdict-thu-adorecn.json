@@ -1,0 +1,16 @@
+{
+  "repo": "AdoreCN (unresolved name)",
+  "sha": null,
+  "verdict": "UNVERIFIED_IDENTITY",
+  "confirmed": [
+    "GitHub repository name search returns empty",
+    "GitHub users/AdoreCN returns404",
+    "Historical attribution contains no repository URL"
+  ],
+  "contradictions": [
+    "Cannot substantiate historical THU corroboration claim"
+  ],
+  "limits": [
+    "Search absence does not prove a project never existed"
+  ]
+}

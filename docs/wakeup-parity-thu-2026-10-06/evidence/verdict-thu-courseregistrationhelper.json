@@ -1,0 +1,19 @@
+{
+  "repo": "robertying/CourseRegistrationHelper",
+  "sha": "9b11388df5ea1b70cc0a9343fdc442e81f4338a3",
+  "license": "MIT",
+  "verdict": "NEGATIVE",
+  "evidence_paths": [
+    "https://github.com/robertying/CourseRegistrationHelper/blob/9b11388df5ea1b70cc0a9343fdc442e81f4338a3/README.md",
+    "https://github.com/robertying/CourseRegistrationHelper/blob/9b11388df5ea1b70cc0a9343fdc442e81f4338a3/content_script.js"
+  ],
+  "confirmed": [
+    "Chrome extension for English-course registration and抢课.",
+    "No personal Overall Timetable parse."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Pinned source/README static review only; no authenticated 2026 runtime request."
+  ],
+  "attribution_needed": false
+}

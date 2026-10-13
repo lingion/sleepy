@@ -3,12 +3,18 @@ package com.lingion.sleepy.data.jw
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertTrue
+import org.junit.Assert.assertFalse
 import org.junit.Test
+import com.lingion.sleepy.ui.screen.imports.FrameCaptureStatus
+import com.lingion.sleepy.ui.screen.imports.FrameSnapshot
+import com.lingion.sleepy.ui.screen.imports.FrameSnapshotList
+import com.lingion.sleepy.ui.screen.imports.FrameTraversalTree
+import org.json.JSONArray
+import org.json.JSONObject
 
 /**
  * 清华大学 (THU) zhjwxk.cic.tsinghua.edu.cn 解析器测试 — SOP v1.11
- * fixture 来自跨仓印证 4 仓 POSITIVE 共识 + WakeUp THUParser.java 同源算法自写
- * (docs/wakeup-parity-thu-2026-10-06/protocol-matrix.md)。
+ * fixture 为按固定 Starrah 脚本形态人工构造；非登录后真实回包。
  */
 class JwThuparserTest {
 
@@ -167,5 +173,105 @@ class JwThuparserTest {
         assertTrue(thu != null)
         assertEquals(5, thu!!.courseCount)
         assertTrue(thu.confidence >= 80)
+    }
+
+    @Test
+    fun `directory to frame to registry reaches thu timetable`() {
+        val assets = java.io.File("src/main/assets/schools.json").readText()
+        val school = JwImportViewModel.parseSchoolsJson(assets).single { it.name == "清华大学" }
+        assertEquals(JwProtocol.TYPE_THU, school.type)
+        assertEquals("https://zhjwxk.cic.tsinghua.edu.cn/", school.url)
+        assertEquals(JwProtocol.TYPE_THU, JwImportViewModel.detectProtocolFromUrlForTest(school.url))
+
+        val frame = JSONObject().put("name", "(top)").put("src", school.url)
+            .put("depth", 0).put("path", JSONArray()).put("html", sample())
+            .put("blocked", "")
+        val snapshots = FrameSnapshot.fromJson(JSONObject().put("ok", true)
+            .put("url", school.url).put("depth", 8)
+            .put("frames", JSONArray().put(frame)).toString())
+        val selected = FrameTraversalTree.selectBestFrame(snapshots)
+        assertEquals(FrameCaptureStatus.OK, selected.status)
+        assertTrue(selected.matchedAnchors.contains("thu-setInitValue-course-grid"))
+        val (courses, _) = JwParserRegistry.selectBest(selected.html, school.type)
+        assertEquals(5, courses.size)
+        assertTrue(courses.all { it.day in 1..7 && it.startNode >= 1 && it.endNode >= it.startNode })
+    }
+
+    @Test
+    fun `login and unrelated scripts do not enter thu capture`() {
+        val login = "<html><form action='/login'>Please sign in</form></html>"
+        assertFalse(FrameTraversalTree.findAnchors(login).contains("thu-setInitValue-course-grid"))
+        val unrelated = sample().replace("mainHref", "otherHref")
+        assertFalse(FrameTraversalTree.findAnchors(unrelated).contains("thu-setInitValue-course-grid"))
+        assertTrue(JwThuparser(login).generateCourseList().isEmpty())
+    }
+
+    @Test
+    fun `missing course type still preserves week and location`() {
+        val noType = sample().replace("strHTML1 += \"；必修\";\n", "")
+        val course = JwThuparser(noType).generateCourseList().single { it.name == "高等数学" }
+        assertEquals(1, course.startWeek)
+        assertEquals(8, course.endWeek)
+        assertEquals("六教6A201", course.room)
+    }
+
+    @Test
+    fun `c2 without usable schedule never creates a monday placeholder`() {
+        val c2 = """<html><script>function setInitValue() {
+            strHTML = "<a class='blue_red_none' href='/x?p_id=12345678'><b><font color='blue'>实验课</font></b></a><font color='blue'>北大</font>";
+            getElementById('a2_3').innerHTML += strHTML;
+            } Event.observe(window, 'load', setInitValue);</script></html>"""
+        val parser = JwThuparser(c2)
+        assertTrue(parser.generateCourseList().isEmpty())
+        assertEquals(1, parser.skippedCourseCount)
+        assertTrue(parser.matchedFeatures().contains("thu:skipped-unsupported=1"))
+    }
+
+    @Test
+    fun `registry reports skipped C2 in mixed timetable`() {
+        val c2 = "strHTML = \"<a class='blue_red_none' href='/x?p_id=12345678'><b><font color='blue'>实验课</font></b></a><font color='blue'>北大</font>\";\n" +
+            "getElementById('a2_3').innerHTML += strHTML;\n"
+        val html = sample().replace("Event.observe(window", c2 + "Event.observe(window")
+        val (courses, attempts) = JwParserRegistry.selectBest(html, JwProtocol.TYPE_THU)
+        assertEquals(5, courses.size)
+        assertTrue(attempts.first { it.type == JwProtocol.TYPE_THU }
+            .matchedFeatures.contains("thu:skipped-unsupported=1"))
+    }
+
+    @Test
+    fun `missing room does not consume next course`() {
+        val html = sample().replace("strHTML1 += \"；六教6A201\";\n", "")
+        val courses = JwThuparser(html).generateCourseList()
+        assertEquals(5, courses.size)
+        assertEquals("", courses.single { it.name == "高等数学" }.room)
+        assertEquals("主楼401", courses.single { it.name == "大学物理" }.room)
+    }
+
+    @Test
+    fun `incomplete course cannot swallow following course`() {
+        val html = sample().replace("getElementById('a1_1').innerHTML += strHTML;", "")
+        val parser = JwThuparser(html)
+        val courses = parser.generateCourseList()
+        assertEquals(4, courses.size)
+        assertEquals(1, parser.skippedCourseCount)
+        assertTrue(courses.any { it.name == "大学物理" })
+    }
+
+    @Test
+    fun `truncated final course is counted`() {
+        val html = sample().replace("Event.observe(window", "strHTML += \"<a class='mainHref' href='/syxk;ABCDEF12'>\";\nEvent.observe(window")
+        val parser = JwThuparser(html)
+        assertEquals(5, parser.generateCourseList().size)
+        assertEquals(1, parser.skippedCourseCount)
+    }
+
+    @Test
+    fun `invalid week ranges are skipped and counted`() {
+        for (week in listOf("第0-8周", "第8-3周", "第1-31周")) {
+            val html = sample().replace("前八周", week)
+            val parser = JwThuparser(html)
+            assertEquals(4, parser.generateCourseList().size)
+            assertEquals(1, parser.skippedCourseCount)
+        }
     }
 }

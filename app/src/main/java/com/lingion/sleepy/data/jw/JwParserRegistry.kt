@@ -124,8 +124,8 @@ object JwParserRegistry {
     fun selectBest(html: String, declaredType: String? = null): Pair<List<JwCourse>, List<ParserAttempt>> {
         val rows = allCandidates(html).map { (type, parser) ->
             val confidence = runCatching { parser.confidence() }.getOrDefault(0)
-            val features = runCatching { parser.matchedFeatures() }.getOrDefault(emptyList())
             val parsed = runCatching { parser.generateCourseList() }
+            val features = runCatching { parser.matchedFeatures() }.getOrDefault(emptyList())
             val result = parsed.getOrDefault(emptyList())
             val exception = parsed.exceptionOrNull()?.let { error ->
                 when {

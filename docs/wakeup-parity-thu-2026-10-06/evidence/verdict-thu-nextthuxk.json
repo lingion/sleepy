@@ -1,0 +1,21 @@
+{
+  "repo": "smartThise/NextTHUxk",
+  "sha": "086c8c29cad824d6da7363e7e16008e6951329f7",
+  "license": null,
+  "verdict": "POSITIVE",
+  "evidence_paths": [
+    "https://github.com/smartThise/NextTHUxk/blob/086c8c29cad824d6da7363e7e16008e6951329f7/README.md",
+    "https://github.com/smartThise/NextTHUxk/blob/086c8c29cad824d6da7363e7e16008e6951329f7/content.js",
+    "https://github.com/smartThise/NextTHUxk/blob/086c8c29cad824d6da7363e7e16008e6951329f7/src/data.js"
+  ],
+  "confirmed": [
+    "Current browser extension calls the same /syxk.vsyxkKcapb.do?m=ztkbSearch&p_xnxq=...&pathContent=整体课表 endpoint.",
+    "src/data.js parseWholeTimetable extracts p_id, strHTML1 metadata and a[1-6]_[1-7] grid coordinates from returned HTML."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Its logic may tolerate undocumented variants; no authenticated runtime request was made.",
+    "Repository license metadata null; no copying code."
+  ],
+  "attribution_needed": true
+}

@@ -1,0 +1,10 @@
+{
+  "repo": "circleLZY/thu-courses",
+  "sha": "f0b29682f08e0c3eb35d2bac9599b15b820dfefb",
+  "verdict": "NEGATIVE",
+  "source_urls": [
+    "https://api.github.com/repos/circleLZY/thu-courses",
+    "https://github.com/circleLZY/thu-courses/blob/f0b29682f08e0c3eb35d2bac9599b15b820dfefb/README.md"
+  ],
+  "finding": "README describes EE course materials, mainly lab reports; no timetable import protocol evidence."
+}

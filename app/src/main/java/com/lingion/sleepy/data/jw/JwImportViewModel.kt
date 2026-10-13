@@ -35,7 +35,7 @@ import java.time.temporal.TemporalAdjusters
  * 简化点（相对 wakeup 原版 ImportViewModel）：
  *  - 不在 ViewModel 内做 HTTP 抓取（WebView 内完成）
  *  - 不在 ViewModel 内做登录流程（用户输账号密码 + 验证码）
- *  - 特殊学校（清华/吉大/华科等）v1.0.8 不支持
+ *  - 特殊学校按已登记协议分流；清华需用户进入“整体课表”页手动抓取
  */
 class JwImportViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -381,6 +381,9 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             //    (强智 iEAS) 走下方 ②b 分支不变。必须先于通用 /jwapp/ 分支 (否则被吸进 TYPE_WISEDU,
             //    WISEDU_FETCH_JS 走 wdkb/xskcb.do 通道拿不到 arrangedList 必空课表)。
             u.contains("byxt.buaa.edu.cn") -> JwProtocol.TYPE_NEU
+
+            // 清华选课系统独立主机；仅业务域判型，oauth 门户页仍走上方网关守卫。
+            u.matches(Regex("""https?://zhjwxk\.cic\.tsinghua\.edu\.cn(/.*)?""")) -> JwProtocol.TYPE_THU
 
             u.contains("/jwapp/") -> JwProtocol.TYPE_WISEDU
 

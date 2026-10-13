@@ -923,6 +923,7 @@ internal data class ImportPreview(
 @Composable
 internal fun ImportPreviewDialog(
     preview: ImportPreview,
+    parserWarning: String? = null,
     onDismiss: () -> Unit,
     onApply: (ImportApplyMode) -> Unit,
     isApplying: Boolean = false
@@ -954,6 +955,10 @@ internal fun ImportPreviewDialog(
         },
         text = {
             Column(verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                if (parserWarning != null) {
+                    Text(parserWarning, color = colors.onErrorContainer,
+                        modifier = Modifier.fillMaxWidth().background(colors.errorContainer).padding(12.dp))
+                }
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.spacedBy(8.dp)

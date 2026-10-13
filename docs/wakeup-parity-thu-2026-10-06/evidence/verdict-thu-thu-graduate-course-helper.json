@@ -1,0 +1,19 @@
+{
+  "repo": "Delthin/thu-graduate-course-helper",
+  "sha": "03a42a1701bb9c9539ae9df861310f7e21adabb9",
+  "license": "MIT",
+  "verdict": "INDIRECT",
+  "evidence_paths": [
+    "https://github.com/Delthin/thu-graduate-course-helper/blob/03a42a1701bb9c9539ae9df861310f7e21adabb9/README.md",
+    "https://github.com/Delthin/thu-graduate-course-helper/blob/03a42a1701bb9c9539ae9df861310f7e21adabb9/thu-graduate-course-helper.user.js"
+  ],
+  "confirmed": [
+    "Graduate selection-page schedule organizer, distinct from undergraduate selected-course Overall Timetable.",
+    "No evidence for undergraduate setInitValue/strHTML grid parser."
+  ],
+  "contradictions": [],
+  "limits": [
+    "Pinned source/README static review only; no authenticated 2026 runtime request."
+  ],
+  "attribution_needed": true
+}

@@ -542,12 +542,23 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
         "NWUPL: dream2333/NWUPL-Pure-EMS (间接协议旁证)\nLIXIN: classic EAMS 采集形态（未复制代码）\nKMUST: linling-zy/kust-schedule (间接协议旁证, Apache-2.0)\nNUIT: 3056810551/nuit-class-schedule (直接字段旁证, 未复制代码)"
     ),
     PerSchoolEntry(
-        "school-thu", "清华大学 THU (2026-10 SOP cross-verified)",
-        "WakeUp THUParser.java (YZune, Apache-2.0, 主参考 - 节次↔大节映射 + gridColumns/gridData)\n" +
-            "Starrah/THUCourseHelper (MIT, strHTML1 += 状态机 + blue_red_none PAT_C2)\n" +
-            "piggyham/thu_timetable (HarmonyOS ArkTS, 跨语言旁证)\n" +
-            "BistuSchedule (THU 协议移植参考)\n" +
-            "AdoreCN (THU 协议微调旁证)"
+        "school-thu", "清华大学 THU (2026-10 固定源码复核)",
+        "Compultra/BistuSchedule (BISTU XLSX tool; unrelated)\n" +
+            "fengh16/CourseDataGet (reviewed; no matching timetable protocol)\n" +
+            "robertying/CourseRegistrationHelper (reviewed; no matching timetable protocol)\n" +
+            "FztTony/Tsinghua-CourseSpider (GPL-3.0; course catalog, not timetable)\n" +
+            "smartThise/NextTHUxk (same ztkbSearch script fields; historical corroboration)\n" +
+            "piggyham/thu_timetable (different JSONP timetable; indirect)\n" +
+            "lingion/wakeup-mod (decompiled historical periods; facts only)\n" +
+            "Starrah/THUCourseHelper (MIT; historical timetable script parser)\n" +
+            "xbcfantasy/tanwei-course-guide (reviewed; no matching timetable protocol)\n" +
+            "huangkaka666/thu-course-helper (MIT; ratings integration, not timetable)\n" +
+            "Delthin/thu-graduate-course-helper (MIT; indirect, different workflow)\n" +
+            "denny2001/thu_courses2ics (MIT; indirect timetable export)\n" +
+            "YZune/WakeUpSchedule (cited THUParser absent from pinned source)\n" +
+            "heyeshuang/YAATO (2012 rendered DOM timetable; historical corroboration)\n" +
+            "circleLZY/thu-courses (course notes; no timetable parser)\n" +
+            "brightcolin/thu-course-pilot (scheduling assistant; parser not verified)"
     ),
     PerSchoolEntry(
         "school-hzcu", "浙大城市学院 HZCU",
