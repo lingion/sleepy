@@ -61,12 +61,12 @@ WakeUp `NewUrpSuperParser` 包含两个变体 (同 SUPER 串行调用, 任一成
 | 维度 | WakeUp smali (jadx) | 开源仓证据 | Sleepy 实现 | 判定 |
 |---|---|---|---|---|
 | 端点 | smali parser只描述输入，不证明学校 URL | 41 仓记录未给出可核验通用端点 | 本 PR 解析已抓到的 DOM/响应文本，不新增猜测 fetch | 待真实端点佐证 |
-| 顶层形态 | JSON **数组** (`o0O0o` smali) | 跨仓见 o0O0o 类同款字段 | 抠取最大合法 JSON 数组 (深度平衡扫描) | 一致 |
+| 顶层形态 | JSON **数组** (`o0O0o` smali) | 41 仓检索未验证同款源码 | 对平衡数组做 JSON 与字段校验 | smali 支持 |
 | 字段锚点 | `kcm + jxlm + cxjc + id{skxq, skjc, skzc}` | 仓库 POSITIVE 标签缺文件证据 | 结构验证需 kcm + id.skzc，解析还检验节次与位图 | 部分验证 |
-| 周次位图 | `'0'/'1'` 字符串, 1-based | 同左 | `parseWeekBits` 提取 `1` 字符 1-based 索引 → `weekBitsToRanges` 段合并 | 一致 |
-| 节次坐标 | `cxjc` 持续节次 | 同左 | `endSection = skjc + cxjc - 1` | 一致 |
-| 单双周 | 位图奇偶判定 | 同左 | 段端点步长 1/2 + 起始奇偶判定 type | 一致 |
-| 嵌套策略 | 顶层 flat array, 区别于 `o0` 嵌套 dateList/selectCourseList | 与 Sleepy 现有 `JwNewUrpParser` (处理 `o0` 嵌套) 互补不冲突 | 新增 parser 仅处理 flat array, 不重复处理 `o0` 嵌套 | 一致 |
+| 周次位图 | `'0'/'1'` 字符串, 1-based | 无独立仓库确认 | `parseWeekBits` 提取 `1` 字符 1-based 索引 → `weekBitsToRanges` 段合并 | smali 支持 |
+| 节次坐标 | `cxjc` 持续节次 | 无独立仓库确认 | `endSection = skjc + cxjc - 1` | 一致 |
+| 单双周 | 位图奇偶判定 | 无独立仓库确认 | 段端点步长 1/2 + 起始奇偶判定 type | 一致 |
+| 嵌套策略 | 顶层 flat array, 区别于 `o0` 嵌套 dateList/selectCourseList | 无独立仓库确认 | 新增 parser 处理 flat array，原 URP_NEW 嵌套 parser 在不匹配时回退 | smali 支持 |
 
 ## 与现有 `JwNewUrpParser` 的边界
 
@@ -75,7 +75,7 @@ WakeUp `NewUrpSuperParser` 包含两个变体 (同 SUPER 串行调用, 任一成
 | 顶层 | `dateList[]` (按周) → `selectCourseList[]` (按日) → `timeAndPlaceList[]` | flat array `[]` (每个 item 一条流) |
 | 锚点 | `dateList` + `selectCourseList` + `timeAndPlaceList` 嵌套 | `kcm` + `id` + `skzc` 三件套 (任一齐) |
 | 周次表达 | 位图字符串 | bitmap `'0'/'1'` |
-| 共存 | 现有 TYPE_URP_NEW + 新 TYPE_NEW_URP_SUPER；显式 URP_NEW 也可回退数组解析 | 同左 |
+| 共存 | 现有 TYPE_URP_NEW + 新 TYPE_NEW_URP_SUPER；显式 URP_NEW 也可回退数组解析 | 分别注册与回退 |
 
 ## 检索矩阵
 

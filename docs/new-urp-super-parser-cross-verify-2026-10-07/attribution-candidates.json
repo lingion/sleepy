@@ -2,247 +2,260 @@
   {
     "project": "ShellBox",
     "author": "Airmole",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "yunxiaozhi",
     "author": "danbaixi",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
-  },
-  {
-    "project": "Classworks",
-    "author": "Moonrend",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "school-api",
     "author": "dairoot",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "scu-urp-assistant",
     "author": "frederick-wang",
-    "license": "Apache-2.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "seu-jwc-catcher",
     "author": "LeonidasCl",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "NexioSchedule",
     "author": "HaoZai000",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
-  },
-  {
-    "project": "SuperCourseTimetableBot",
-    "author": "StageGuard",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "xjtu-toolbox-android",
     "author": "yeliqin666",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "SCU-URP-Helper",
     "author": "LittFlower",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "aoxiang-assistant",
     "author": "Lorcas-Zephyr",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
-  },
-  {
-    "project": "sleepy",
-    "author": "lingion",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "shiguang_warehouse",
     "author": "ShiGuangSchedule",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "BIT101-Android",
     "author": "BIT101-dev",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "SleepDown-Schedule",
     "author": "xiaomanjun233",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "mikcb",
     "author": "Mutx163",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "SEU-NewSystem-catcher",
     "author": "AriaPokotengYe",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "Higk",
     "author": "higuangke",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "HHUClassSchedule",
     "author": "yuchenii",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "herald-webservice",
     "author": "HeraldStudio",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "ZCrawler",
     "author": "yuan1994",
-    "license": "Apache-2.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "mini-hbut",
     "author": "superdaobo",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "BIT101-GO",
     "author": "BIT101-dev",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "xmu_assistant",
     "author": "democard",
-    "license": "Apache-2.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "ncepu-edm",
     "author": "ki-ljl",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "indulge-in-study",
     "author": "wcomaqsw",
-    "license": "AGPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "MyStudyHelper",
     "author": "CrazyRunning",
-    "license": "GPL-2.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "SCU-URP-plusplus",
     "author": "chaolan2019",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "ScheduleX",
     "author": "mlkgrnt",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "HEU_edusys_miui",
     "author": "Holit",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "WakeUp_SHU",
     "author": "ershiyidian",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "swun_ehall",
     "author": "BritneyOvO",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "NEU-Timetable",
     "author": "leavesvv-source",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "XMUTimeTabel",
     "author": "ArrogHie",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "AIschedule-HHU-URP",
     "author": "yuchenii",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "shou-api",
     "author": "shouDeveloper",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
-  },
-  {
-    "project": "classtable",
-    "author": "kuailiaojie",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "SHOU-urp-auto-choose-lessons",
     "author": "adminerest",
-    "license": "GPL-3.0",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "seuGrabber",
     "author": "neiro-o",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "shanghaitech-chooseCourse-query",
     "author": "arnoliudaxia",
-    "license": "MIT",
-    "role_in_verification": "INDIRECT"
+    "role_in_verification": "INDIRECT",
+    "license": null,
+    "license_status": "unverified metadata; author used in attribution"
   },
   {
     "project": "funhubu",
     "author": "fangd123",
+    "role_in_verification": "INDIRECT",
     "license": null,
-    "role_in_verification": "INDIRECT"
+    "license_status": "unverified metadata; author used in attribution"
   }
 ]

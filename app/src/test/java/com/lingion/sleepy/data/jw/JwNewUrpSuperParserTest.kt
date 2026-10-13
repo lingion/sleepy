@@ -130,6 +130,40 @@ class JwNewUrpSuperParserTest {
     }
 
     @Test
+    fun `HTML attribute quote and irrelevant arrays do not hide script payload`() {
+        val html = """<div data-note="odd [ quote" data-other='x'>[1,2]</div><script>const unrelated=[{"x":1}];window.table=[{"kcm":"Math [lab]","cxjc":1,"id":{"skxq":2,"skjc":2,"skzc":"101"}}];</script>"""
+        assertEquals("Math [lab]", JwNewUrpSuperParser(html).generateCourseList().single().name)
+    }
+
+    @Test
+    fun `deep irrelevant arrays do not require nested JSON parsing`() {
+        val payload = """[{"kcm":"A","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"1"}}]"""
+        val html = "<script>const other=" + "[".repeat(2000) + "0" + "]".repeat(2000) + ";window.table=$payload;</script>"
+        assertEquals(1, JwNewUrpSuperParser(html).generateCourseList().size)
+    }
+
+    @Test
+    fun `deep keyword arrays lacking id are skipped before JSON parse`() {
+        val noise = "[".repeat(10000) + "{"kcm":"x","skzc":"1"}" + "]".repeat(10000)
+        val valid = """[{"kcm":"Real","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"1"}}]"""
+        assertEquals("Real", JwNewUrpSuperParser(noise + valid).generateCourseList().single().name)
+    }
+
+    @Test
+    fun `deep keyword arrays with unrelated id leave later valid array reachable`() {
+        val noise = "[".repeat(4000) + "{"kcm":"x","skzc":"1","id":0}" + "]".repeat(4000)
+        val valid = """[{"kcm":"Real","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"1"}}]"""
+        assertEquals("Real", JwNewUrpSuperParser(noise + valid).generateCourseList().single().name)
+    }
+
+    @Test
+    fun `large valid timetable array remains parseable`() {
+        val item = """{"kcm":"Big","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"1"}}"""
+        val payload = (1..300).joinToString(prefix = "[", postfix = "]") { item }
+        assertEquals(300, JwNewUrpSuperParser(payload).generateCourseList().size)
+    }
+
+    @Test
     fun `two adjacent weeks preserve ending week and invalid bitmap rejects`() {
         fun payload(bits: String) = """[{"kcm":"A","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"$bits"}}]"""
         assertEquals(2, JwNewUrpSuperParser(payload("110")).generateCourseList().single().endWeek)

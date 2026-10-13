@@ -616,6 +616,47 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
             "huohuo132/Aoxiang-assistant-for-HarmonyOS (NEGATIVE, 教务相关协议边界)\n" +
             "npuNancy/AoXiangGrades (NEGATIVE, 教务相关协议边界)\n" +
             "sjrsjz/nwpu-gpa-rank (NEGATIVE, 教务相关协议边界)"
+    ),
+    PerSchoolEntry(
+        "school-new-urp-super", "新 URP 数组变体（跨校协议）",
+        "WakeUp NewUrpSuperParser 反编译提供字段模型；37 个相关仓库仅为间接生态或协议边界参考，未证实同款接口：\n" +
+            "Airmole/ShellBox\n" +
+            "danbaixi/yunxiaozhi\n" +
+            "dairoot/school-api\n" +
+            "frederick-wang/scu-urp-assistant\n" +
+            "LeonidasCl/seu-jwc-catcher\n" +
+            "HaoZai000/NexioSchedule\n" +
+            "yeliqin666/xjtu-toolbox-android\n" +
+            "LittFlower/SCU-URP-Helper\n" +
+            "Lorcas-Zephyr/aoxiang-assistant\n" +
+            "ShiGuangSchedule/shiguang_warehouse\n" +
+            "BIT101-dev/BIT101-Android\n" +
+            "xiaomanjun233/SleepDown-Schedule\n" +
+            "Mutx163/mikcb\n" +
+            "AriaPokotengYe/SEU-NewSystem-catcher\n" +
+            "higuangke/Higk\n" +
+            "yuchenii/HHUClassSchedule\n" +
+            "HeraldStudio/herald-webservice\n" +
+            "yuan1994/ZCrawler\n" +
+            "superdaobo/mini-hbut\n" +
+            "BIT101-dev/BIT101-GO\n" +
+            "democard/xmu_assistant\n" +
+            "ki-ljl/ncepu-edm\n" +
+            "wcomaqsw/indulge-in-study\n" +
+            "CrazyRunning/MyStudyHelper\n" +
+            "chaolan2019/SCU-URP-plusplus\n" +
+            "mlkgrnt/ScheduleX\n" +
+            "Holit/HEU_edusys_miui\n" +
+            "ershiyidian/WakeUp_SHU\n" +
+            "BritneyOvO/swun_ehall\n" +
+            "leavesvv-source/NEU-Timetable\n" +
+            "ArrogHie/XMUTimeTabel\n" +
+            "yuchenii/AIschedule-HHU-URP\n" +
+            "shouDeveloper/shou-api\n" +
+            "adminerest/SHOU-urp-auto-choose-lessons\n" +
+            "neiro-o/seuGrabber\n" +
+            "arnoliudaxia/shanghaitech-chooseCourse-query\n" +
+            "fangd123/funhubu"
     )
 )
 
