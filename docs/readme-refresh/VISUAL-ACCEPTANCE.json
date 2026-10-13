@@ -1,0 +1,377 @@
+{
+  "01-schedule-week.png": {
+    "sha256": "ad80d6796a7795aa7119849d138b001db6e8046c329d4a838e44c6006aa55aa0",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811008.557511,
+    "result": "accepted: correct populated screen, no blocking overlay"
+  },
+  "02-schedule-grid.png": {
+    "sha256": "96ac2088edcb4ca7a001483586c50e53090d1d42b4ed61134394feedb9bf58d1",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791810935.2243545,
+    "result": "accepted: correct populated screen, no blocking overlay"
+  },
+  "03-today.png": {
+    "sha256": "7d3604c2a24e1bf81c080022d2325eb07e2d1f947a80c18fc3adf0a79e240f70",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811035.5489888,
+    "result": "accepted: correct populated screen, no blocking overlay"
+  },
+  "04-mine.png": {
+    "sha256": "a662f40d983fa4bcbc06fc9d183d5edd0dd1a5695dbd904c147e137bf8c8664c",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811109.833101,
+    "result": "accepted: correct populated screen, no blocking overlay"
+  },
+  "05-all-tables.png": {
+    "sha256": "631cecb9233597ce8fc417d6028dd70169c1fa372a0d4b0f3105c91378327942",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811194.1878505,
+    "result": "accepted: correct populated screen, no blocking overlay"
+  },
+  "06-edit-table-manual.png": {
+    "sha256": "b9d033d190975fe4f88772d8394a016fa82e126b89df69104ddbd38ba95a17b4",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811468.8135087,
+    "result": "accepted: manual period editor expanded; screenshot intentionally scrolled to period controls"
+  },
+  "07-edit-table-auto.png": {
+    "sha256": "076b89336010db9810e3e88eedaf0b48847d0ab34751e0c8818de9d33e49485e",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811512.059913,
+    "result": "accepted: auto period configuration and break allocation"
+  },
+  "24-course-list.png": {
+    "sha256": "fa248c668151ec59a319fc2d2ebcdeb663a42276f786cd3839a6297ca4c56566",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791811585.1905198,
+    "result": "accepted: populated course list"
+  },
+  "19-export.png": {
+    "sha256": "dfd9a54f7ae4df4d49c35464ac1d1a66ae8d85d786c693585c0789e7c1d39a3d",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812141.9944708,
+    "result": "accepted: populated export page with calendar entry",
+    "revisions": [
+      {
+        "sha256": "d98c0b07a55f6f48f99a510fb734fc3dc3e75bae83efd8eddeacd6b3ee84b6fe",
+        "size": [
+          1080,
+          2340
+        ],
+        "mtime": 1791811709.9985065,
+        "result": "rejected: period editor, not export screen; recapture requested"
+      }
+    ]
+  },
+  "23-period-tables.png": {
+    "sha256": "a84bf092047eb5a2e1949882db66859af436d5e22e06dce4713176378df72b77",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812085.6266782,
+    "result": "accepted: period table list with one unbound demo table and edit/copy controls",
+    "revisions": [
+      {
+        "sha256": "05a58cbb1f281d42611c4fd236be65dad55f95c73a9c5806452e68472da3afd5",
+        "size": [
+          1080,
+          2340
+        ],
+        "mtime": 1791811698.8977723,
+        "result": "rejected: save preview modal, not period table list; recapture requested"
+      }
+    ]
+  },
+  "22-reminder.png": {
+    "sha256": "67cca233cfd4aeae000fbbec06c5528dcdfc42e002b569e0991a74bd5b687137",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812246.4238527,
+    "result": "accepted: matching current page, readable populated UI, no blocking overlay"
+  },
+  "11-theme.png": {
+    "sha256": "db93abe00fb83af7f156c1912d683d5fa9fdf3a83e0aab6fd7058221a27f9d0d",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812257.2996745,
+    "result": "accepted: matching current page, readable populated UI, no blocking overlay"
+  },
+  "36-theme-dark.png": {
+    "sha256": "384160f1958f38c5d53aa06a15c192aba5354ca353a48cba2ae98b99d34533fc",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812298.5352485,
+    "result": "accepted: matching current page, readable populated UI, no blocking overlay"
+  },
+  "21-about.png": {
+    "sha256": "2f916a0f0d849cc4ddde89b9d72bfde23a8e729fc34696db9c9f026a62d1286f",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812309.3805194,
+    "result": "accepted: matching current page, readable populated UI, no blocking overlay"
+  },
+  "30-custom-theme.png": {
+    "sha256": "c579c15b7e3116e80f1939fcdbe764f6884090040f9e32be89a0cd5e3a6c2668",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812606.4359763,
+    "result": "accepted: matching settings/editor page, no blocking overlay; 31 is conflict style controls, not resulting course overlap"
+  },
+  "31-conflict.png": {
+    "sha256": "d3bb256b2ee154fcce7788d19d7725bf54aa4ebbef9990323d010d65dd5f41e3",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812646.3360648,
+    "result": "accepted: matching settings/editor page, no blocking overlay; 31 is conflict style controls, not resulting course overlap"
+  },
+  "35-period-header.png": {
+    "sha256": "209fd390c70a4dd7d6eb26d43ad8ff03acf4524895616ddf951b6a1cf8d254c6",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812819.421477,
+    "result": "accepted: matching settings/editor page, no blocking overlay; 31 is conflict style controls, not resulting course overlap"
+  },
+  "27-general.png": {
+    "sha256": "e2c684637c71beabf77ad18335ae9d4fd3251be614cd646c72bc0e65319c296b",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812869.9098682,
+    "result": "accepted: matching settings/editor page, no blocking overlay; 31 is conflict style controls, not resulting course overlap"
+  },
+  "28-holiday.png": {
+    "sha256": "79f3ebb976f6f9654418c316bb923cb2b41f45b96a57d8baae26829f952a040b",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791812912.3876514,
+    "result": "accepted: matching settings/editor page, no blocking overlay; 31 is conflict style controls, not resulting course overlap"
+  },
+  "29-migration.png": {
+    "sha256": "d2ca6eb6eeaa6683118f40dfd728c8d5615d89e21e29291332445f89d38a9b7f",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813240.1142716,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "09-manage.png": {
+    "sha256": "ae68cf552552a01e0f2f5ccfc0d03f8b7971d4bbcd4ca930d7a43d1a740117a8",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813293.9974668,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "20-import-bottomsheet.png": {
+    "sha256": "90dcdde1432582c5c6ad69cd3cb430fbf620bc6544d140286203818decc9e324",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813300.2327547,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "34-import-guide.png": {
+    "sha256": "541527ac1df9fd58809217744e318c52c54f28e0448f25a71980f4f88db74268",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813383.622583,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "25-schools.png": {
+    "sha256": "464eaeb12f234f972e6d4200397143bb209a09bbad7a80d836d8c71fd5eb0e81",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813477.2391746,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "26-import-preview.png": {
+    "sha256": "418f00e954484fd35d8f81337945870c2d1f1aa4b5a0385f5004058cf0a8abc4",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813751.5538673,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "18-add-course.png": {
+    "sha256": "4ba33e730220cf2661865ab61a3282381127c3d9618e5d654df416f1d244a5dd",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791823190.2260034,
+    "result": "accepted: filled course editor with Calculus alias, group color, week controls and first slot; keyboard hidden",
+    "revisions": [
+      {
+        "sha256": "634461d07d19ed70f9afcb25124063b26b8d9085b189c3168e73de2196136abc",
+        "size": [
+          1080,
+          2340
+        ],
+        "mtime": 1791813818.3369777,
+        "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+      }
+    ]
+  },
+  "08-course-detail.png": {
+    "sha256": "6eec99e88cee49faece16d356fe28455e22a53af54657432af6c2f4372992fbd",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791813894.0638945,
+    "result": "accepted: correct screen; intentional form/dialog content readable; 18 shows unfilled create form, 25 English school selector, 26 real demo conflict preview"
+  },
+  "widget-weekview.png": {
+    "sha256": "63fc2d399c30e920e65c8c079854a302925b58b24f00155f6f4e1a8cb4b808c2",
+    "size": [
+      784,
+      672
+    ],
+    "mtime": 1791855675.949648,
+    "result": "accepted: actual launcher widget at corrected height; visually reviewed without handles or stretching"
+  },
+  "widget-today.png": {
+    "sha256": "f13b2dc3c2637b60c05683e15988af5f410d3e1eb9e54a1d9c1480a606c40eab",
+    "size": [
+      1080,
+      901
+    ],
+    "mtime": 1791819927.70702,
+    "result": "accepted: cropped production renderer preview; full emulator capture retained in raw; WeekGrid shows visible periods 1–6"
+  },
+  "widget-twoday.png": {
+    "sha256": "a33de4ca2804294d31680ca0ebbc72745357cfad79d9204d277ba401096e81bf",
+    "size": [
+      1080,
+      901
+    ],
+    "mtime": 1791819927.774967,
+    "result": "accepted: cropped production renderer preview; full emulator capture retained in raw; WeekGrid shows visible periods 1–6"
+  },
+  "widget-weekgrid.png": {
+    "sha256": "dc88bcf330579c1a640b2131ae7599627dcf4b144c8b8e50249a357dd78fc0c3",
+    "size": [
+      991,
+      1388
+    ],
+    "mtime": 1791855209.0317774,
+    "result": "accepted: actual launcher widget at corrected height; visually reviewed without handles or stretching"
+  },
+  "widget-weeklist.png": {
+    "sha256": "8f4ce14e6a36f8367a7bc9918a28a0c8ee3a80d456b7ccfa837609a9c7541050",
+    "size": [
+      1080,
+      901
+    ],
+    "mtime": 1791819927.8390872,
+    "result": "accepted: cropped production renderer preview; full emulator capture retained in raw; WeekGrid shows visible periods 1–6"
+  },
+  "32-widget-settings.png": {
+    "sha256": "19eb359db0d4c5a4721545d7f0a566f22dadb854f5366e001986343b0e503e9a",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791820785.5481899,
+    "result": "accepted: independently viewed matching populated controls/layout, no blocking overlay"
+  },
+  "33-tablet.png": {
+    "sha256": "78afb2234eee6796de3a1c85a1c6e4acb15b419bfe5df7cba1ddd882133d3b20",
+    "size": [
+      1920,
+      1200
+    ],
+    "mtime": 1791822433.2705097,
+    "result": "accepted: independently viewed matching populated controls/layout, no blocking overlay"
+  },
+  "37-reminder-advanced.png": {
+    "sha256": "778e2d3f14cb4547a8280a9f36df15d75126111f4db8ded977ad78a3fa62256a",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791822180.3179827,
+    "result": "accepted: independently viewed matching populated controls/layout, no blocking overlay"
+  },
+  "38-general-advanced.png": {
+    "sha256": "c8d9ffb79a4f5b9832f8c4073603c8bf1afefe003562237b71c637790a847d9c",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791820979.5498555,
+    "result": "accepted: independently viewed matching populated controls/layout, no blocking overlay"
+  },
+  "39-course-slots.png": {
+    "sha256": "5403cce2c1ef2f9d9e77b2bc5cb703199d7351d134d1aa44369c6bfc2ecd0b88",
+    "size": [
+      1080,
+      2340
+    ],
+    "mtime": 1791823699.5297644,
+    "result": "accepted: second teaching slot editor, Tuesday periods 3–4 weeks 1–16; fictional unsaved demonstration"
+  },
+  "00-overview.png": {
+    "sha256": "f537dc7204d623055903d3098292578c95771bb627e010d18765df7c4f5b79c3",
+    "size": [
+      2400,
+      4811
+    ],
+    "mtime": 1791856252.7593558,
+    "result": "accepted: original online overview explicitly requested by user; GitHub blob c00414c2cc1676544e19be4344f62c6203e0424b verified visually"
+  }
+}
