@@ -1,6 +1,7 @@
 {
   "checked_on": "2026-10-13",
   "direct_protocol_sources": [
+    "Haa1024/SEU-Timetable@d69ae1dfa24b56f3a28dd2098fda94c1cf9cde4b:app/src/main/java/com/seu/timetable/data/EhallClient.kt",
     "HeraldStudio/herald-webservice@29180c4:routes/api/curriculum.js",
     "131AIClub/seu-xiaoai-course@c933e81:provider.js",
     "luyishui/classduck@4f2b370:backend/python_import_service/adapters/undergraduate/scripts/csf_dongnandaxue_provider.js"
@@ -16,6 +17,10 @@
     "HeraldStudio/herald-webservice": "MIT; credited in LicenseScreen and six locale strings",
     "131AIClub/seu-xiaoai-course": "LGPL-2.1; credited in LicenseScreen and six locale strings",
     "luyishui/classduck": "No repo license declared; credited by author in LicenseScreen and six locale strings; no source copied",
-    "WheretoSleepinNJU/NJU-Class-Shedule-Flutter": "Apache-2.0; credited in LicenseScreen and six locale strings"
-  }
+    "WheretoSleepinNJU/NJU-Class-Shedule-Flutter": "Apache-2.0; credited in LicenseScreen and six locale strings",
+    "Haa1024/SEU-Timetable": "MIT; credited in LicenseScreen and six locale strings"
+  },
+  "negative_candidates": [
+    "OFRabby/seu-routine-maker@2f2f0ecb:seu_routine_maker.py; UMS pasted text -> PDF, no jwapp protocol"
+  ]
 }

@@ -38,6 +38,18 @@
       "path": "api/tools/seubksjw.js",
       "lines": "4-9,53-59,62-105",
       "role": "related bykb/cxxszhxqkb shape, not same endpoint"
+    },
+    {
+      "repository": "Haa1024/SEU-Timetable",
+      "revision": "d69ae1dfa24b56f3a28dd2098fda94c1cf9cde4b",
+      "path": "app/src/main/java/com/seu/timetable/data/EhallClient.kt",
+      "role": "2026 Sep direct xskcb and rowsOf xskcb code; source claim of real session remains unverified here"
+    },
+    {
+      "repository": "OFRabby/seu-routine-maker",
+      "revision": "2f2f0ecb2a7d741e97f137bd2f2eb8cab031bae8",
+      "path": "seu_routine_maker.py",
+      "role": "negative: pasted UMS schedule to PDF, no ehall or jwapp protocol"
     }
   ],
   "queries_run": {

@@ -2,6 +2,22 @@
   "checked_on": "2026-10-13",
   "findings": [
     {
+      "repo": "Haa1024/SEU-Timetable",
+      "revision": "d69ae1dfa24b56f3a28dd2098fda94c1cf9cde4b",
+      "path": "app/src/main/java/com/seu/timetable/data/EhallClient.kt",
+      "license": "MIT",
+      "verdict": "direct ehall jwapp wdkb/xskcb endpoint, XNXQDM POST, rowsOf xskcb; same protocol",
+      "limit": "source comments claim real capture but original session packet not revalidated"
+    },
+    {
+      "repo": "OFRabby/seu-routine-maker",
+      "revision": "2f2f0ecb2a7d741e97f137bd2f2eb8cab031bae8",
+      "path": "seu_routine_maker.py",
+      "license": "not declared",
+      "verdict": "negative: UMS pasted-text timetable to PDF; unrelated endpoint",
+      "limit": "no app network protocol, no code copied or attribution required"
+    },
+    {
       "repo": "HeraldStudio/herald-webservice",
       "revision": "29180c4",
       "path": "routes/api/curriculum.js:93-111",
@@ -28,11 +44,6 @@
       "path": "api/tools/seubksjw.js:4-9,53-59,62-105",
       "verdict": "related ehall jwapp bykb gateway and bitmap",
       "limit": "different cxxszhxqkb endpoint and response shape"
-    },
-    {
-      "repo": "Haa1024/SEU-Timetable and OFRabby/seu-routine-maker",
-      "verdict": "previous search candidates only",
-      "limit": "no protocol file vetted here; excluded from protocol proof"
     },
     {
       "repo": "YZune/WakeUpSchedule and WakeupSchedule_Kotlin forks",

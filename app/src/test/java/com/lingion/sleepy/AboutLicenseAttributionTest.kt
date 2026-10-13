@@ -67,6 +67,7 @@ class AboutLicenseAttributionTest {
         Attribution("SEUTimetable", "Apache-2.0"),
         Attribution("Aetik-yue/hormone", ""),
         Attribution("luzy99/SEUAutoLogin", ""),
+        Attribution("Haa1024/SEU-Timetable", "MIT"),
         Attribution("HeraldStudio/herald-webservice", "MIT"),
         Attribution("131AIClub/seu-xiaoai-course", "LGPL-2.1"),
         Attribution("luyishui/classduck", ""),
