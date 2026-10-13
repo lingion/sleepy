@@ -266,6 +266,15 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
             html: String,
             protocolType: String,
         ): Pair<List<JwCourse>, List<JwParserRegistry.ParserAttempt>> {
+            // Older SCAU directory entries declare QZ, and their legacy URL may detect ZF.
+            // Only a fully parsed pinned Element UI course-table shape can override them.
+            if (protocolType in setOf(JwProtocol.TYPE_QZ, JwProtocol.TYPE_ZF, JwProtocol.TYPE_ZF_1) &&
+                html.contains("el-table__body-wrapper") && html.contains("el-table__body")) {
+                val scau = JwScauParser(html)
+                if (scau.parseElementUiStrategy().isNotEmpty()) {
+                    return parseHtmlStatic(html, JwProtocol.TYPE_SCAU)
+                }
+            }
             if (protocolType == JwProtocol.TYPE_CLASSIC_EAMS &&
                 JwEcuplScriptParser.RE_COURSE_TABLE.containsMatchIn(html) &&
                 JwEcuplScriptParser.RE_NEW_ACTIVITY_8.containsMatchIn(html) &&

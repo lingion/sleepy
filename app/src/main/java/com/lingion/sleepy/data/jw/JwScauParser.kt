@@ -37,7 +37,7 @@ class JwScauParser(source: String) : JwParser(source) {
     }
 
     /** Pinned greyovo/ScheduleXParser_SCAU sample: Element UI's seven weekday cells follow a section cell. */
-    private fun parseElementUiStrategy(): List<JwCourse> {
+    internal fun parseElementUiStrategy(): List<JwCourse> {
         val out = mutableListOf<JwCourse>()
         val doc = Jsoup.parse(source)
         for (table in doc.select(".el-table__body-wrapper table.el-table__body")) {

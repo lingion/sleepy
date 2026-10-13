@@ -36,7 +36,13 @@ class JwScauParserTest {
         val html = "<div class='el-table__body-wrapper'><table class='el-table__body'>" +
             "<tbody><tr><td>1-2节</td><td>$course</td>" + "<td></td>".repeat(6) +
             "</tr></tbody></table></div>"
-        val courses = JwImportViewModel.parseHtmlStatic(html, JwProtocol.TYPE_QZ).first
+        val directory = java.io.File("src/main/assets/schools.json").readText()
+        val schools = org.json.JSONArray(directory)
+        val school = (0 until schools.length()).map { schools.getJSONObject(it) }
+            .single { it.getString("name") == "华南农业大学" }
+        val courses = JwImportViewModel.parseHtmlStatic(html, school.getString("type")).first
+        val detectedType = JwImportViewModel.detectProtocolFromUrlForTest(school.getString("url"))!!
+        assertEquals(courses, JwImportViewModel.parseHtmlStatic(html, detectedType).first)
         assertEquals(2, courses.size)
         assertEquals(2, courses[0].startWeek)
         assertEquals(3, courses[0].endWeek)
