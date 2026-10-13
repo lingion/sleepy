@@ -244,9 +244,9 @@ Multiple export formats are available. File exports use `Download/Sleepy/` on An
   <img src="docs/screenshots/19-export.png" width="280">
 </p>
 
-> Screenshot: export page ("Mine → Export Timetable / Period Table")
+> Screenshot: export page ("Mine → Export Timetable / Period Table"); this image does not yet show the new XiaoAI entry.
 
-The export screen first picks a course table or a period table (all course tables on top, a divider, then all period tables). Picking a **course table** offers four formats; picking a **period table** narrows the list to two (JSON and sleepy-v1).
+The export screen first picks a course table or a period table (all course tables on top, a divider, then all period tables). Picking a **course table** offers four file/text formats plus XiaoAI and system-calendar actions; picking a **period table** narrows the list to two (JSON and sleepy-v1).
 
 | Format | Use | Implementation |
 |---|---|---|
@@ -258,6 +258,12 @@ The export screen first picks a course table or a period table (all course table
 File names use `sleepy_<name>_<timestamp>.json`, `.ics`, or `.sleepy`; share text opens the system text-sharing sheet directly.
 
 The existing WakeUp share text format remains importable.
+
+### XiaoAI Schedule
+
+Select a course table and tap XiaoAI Schedule. Sleepy prepares the data locally and opens XiaoAI for preview; you confirm the import inside XiaoAI. Subsequent network access and data handling follow XiaoAI’s own rules. If no compatible XiaoAI app is installed, Sleepy displays an installation prompt.
+
+This action supports weeks 1–30 and stops with a message for invalid dates, course weeks or periods. Periods must be numbered consecutively from 1, ordered by time and non-overlapping. XiaoAI requires 1–10 morning periods (before 13:00), and 0–10 afternoon (13:00–before 18:00) and evening periods each; afternoon-only or evening-only period tables are unsupported. Custom course times snap to the selected period table and do not preserve exact minutes.
 
 ### Add to the System Calendar
 
