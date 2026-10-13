@@ -1,1 +1,28 @@
-{"checked_on":"2026-10-13","primary":{"repository":"LonelyMarch/OpenWakeUp","revision":"bc4f13ec606611795c5fee540e1d74c2d88fbf47","path":"parser/src/main/kotlin/com/openwakeup/parser/web/KingoNewParser.kt","license":"AGPL-3.0","credit":"Existing school-kingo-zx card, six locale strings, AboutLicenseAttributionTest"},"historical":{"repository":"YZune/WakeUpSchedule","role":"reverse-engineered smali reference claimed in original PR; source artifact absent in checked-in repository","credit":"Existing school-kingo-zx card"},"other_candidates":"See candidates.json and findings.json; most are Kingosoft-family indirect or negative controls, not layout-shape proof."}
+{
+  "checked_on": "2026-10-13",
+  "primary": {
+    "repository": "LonelyMarch/OpenWakeUp",
+    "revision": "bc4f13ec606611795c5fee540e1d74c2d88fbf47",
+    "path": "parser/src/main/kotlin/com/openwakeup/parser/web/KingoNewParser.kt",
+    "license": "AGPL-3.0",
+    "credit": "Existing school-kingo-zx card, six locale strings, AboutLicenseAttributionTest"
+  },
+  "historical": {
+    "repository": "YZune/WakeUpSchedule",
+    "role": "Historical same-product Java tree; no checked-in NewKingosoftSuperParser smali and no proven derivation from this repository",
+    "credit": "Existing school-kingo-zx card"
+  },
+  "other_candidates": "See candidates.json and findings.json; most are Kingosoft-family indirect or negative controls, not layout-shape proof.",
+  "related_or_negative_credits": [
+    "ershiyidian/WakeUp_SHU",
+    "icepie/aischedule-lit-kingosoft",
+    "icepie/oh-my-lit",
+    "lizhengqiang/kingosoft_api",
+    "NYIST-CIPS/CourseTable",
+    "XTAI9/SYU_KINGGOClassSel",
+    "wzj1122/jxufe-auto-evaluate",
+    "Kou-JunHao/mi-schedule",
+    "52funny/KINGOSOFT-LOGIN",
+    "Daydream357/WakeUpSchedule"
+  ]
+}

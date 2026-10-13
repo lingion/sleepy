@@ -25,7 +25,7 @@
     "evidence_for_super_chain": "none",
     "exact_regex_or_code_snippet": "(无 smali 源 / 仓库 tree 仅含 49 个 .java 文件: app/.gitignore, README.md, MyAppGlideModule.java, adapter/*.java, model/bean/*.java, service/*.java, utils/*.java — 不含任何 schedule_parser 包或 NewKingosoftSuperParser 类)",
     "verdict": "INDIRECT",
-    "verdict_reason": "上游 Java 源码 (2018) 反混淆/反编译后产出的 smali 才是 NewKingosoftSuperParser 的真源, 本仓库 tree 中无 smali 也无 parser 包; 仅作为上游原始产物"
+    "verdict_reason": "The checked-in YZune Java tree does not include the NewKingosoftSuperParser smali artifact. It is only a historical same-product reference; no derivation claim is made."
   },
   {
     "repo_name": "LonelyMarch/OpenWakeUp",
