@@ -142,4 +142,27 @@ class JwNewUrpSuperParserTest {
         assertEquals(3, JwNewUrpParser(payload("101")).generateCourseList().single().endWeek)
         assertTrue(JwNewUrpParser(payload("10X")).generateCourseList().isEmpty())
     }
+
+    @Test
+    fun `all eight-week bitmaps remain lossless in both URP variants`() {
+        fun flat(bits: String) = """[{"kcm":"A","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"$bits"}}]"""
+        fun nested(bits: String) = """{"dateList":[{"selectCourseList":[{"courseName":"A","timeAndPlaceList":[{"classDay":1,"classSessions":1,"continuingSession":1,"classWeek":"$bits"}]}]}]}"""
+        for (mask in 0..255) {
+            val bits = (0..7).joinToString("") { if (mask and (1 shl it) != 0) "1" else "0" }
+            val expected = (1..8).filter { bits[it - 1] == '1' }.toSet()
+            val variants = listOf(
+                JwNewUrpSuperParser(flat(bits)).generateCourseList(),
+                JwNewUrpParser(nested(bits)).generateCourseList()
+            )
+            for (courses in variants) {
+                val actual = courses.flatMap { course ->
+                    (course.startWeek..course.endWeek).filter { week ->
+                        course.type == 0 || (course.type == 1 && week % 2 == 1) ||
+                            (course.type == 2 && week % 2 == 0)
+                    }
+                }.toSet()
+                assertEquals("bitmap=$bits", expected, actual)
+            }
+        }
+    }
 }

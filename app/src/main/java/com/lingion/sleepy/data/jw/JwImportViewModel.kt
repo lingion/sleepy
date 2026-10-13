@@ -534,7 +534,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
 
                 // ⑤ URP_NEW — SM3 加密资源 + URPNova
                 lower.contains("\"skzc\"") && lower.contains("\"kcm\"") &&
-                    JwNewUrpSuperParser(html).generateCourseList().isNotEmpty() -> JwProtocol.TYPE_NEW_URP_SUPER
+                    JwNewUrpSuperParser(html).hasFlatArraySchema() -> JwProtocol.TYPE_NEW_URP_SUPER
 
                 lower.contains("/js/sm3/")
                     || lower.contains("sm3web.js")

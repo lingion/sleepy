@@ -99,9 +99,14 @@ class JwNewUrpSuperParser(source: String) : JwParser(source) {
      */
     fun extractJsonArrayForTest(source: String): String? = extractJsonArray(source)
 
+    /** A timetable frame may be structurally valid while the selected term has no active weeks. */
+    fun hasFlatArraySchema(): Boolean = extractJsonArray(source) != null
+
     private fun extractJsonArray(source: String): String? {
         // Scan balanced array candidates. Looking backward from skzc can land on
         // '[' inside a course name or nested JSON array instead of the outer array.
+        // A real timetable has both keys; avoid scanning unrelated large HTML documents.
+        if (!source.contains("\"skzc\"") || !source.contains("\"kcm\"")) return null
         for (start in source.indices) {
             if (source[start] != '[') continue
             var depth = 0

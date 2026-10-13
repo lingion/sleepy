@@ -154,9 +154,8 @@ object FrameTraversalTree {
         // Some URP pages embed the timetable as a flat JSON array in a script,
         // without a table id/class. Validate its structure before selecting frame.
         return if (html.contains("\"skzc\"") && html.contains("\"kcm\"") &&
-            JwNewUrpSuperParser(html).generateCourseList().isNotEmpty()
+            JwNewUrpSuperParser(html).hasFlatArraySchema()
         ) thuAnchors + "new-urp-array" else thuAnchors
-
     }
 
     /** 跨域 frame 列表: 返回 "frameName@domain" 字符串(frameName 缺省用 src 尾段) */
