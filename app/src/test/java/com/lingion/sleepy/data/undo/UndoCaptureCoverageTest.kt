@@ -26,7 +26,7 @@ class UndoCaptureCoverageTest {
 
     /** 会写课表数据的公开方法 — 漏一个 capture, 对应动作的撤回按钮就消失一次。 */
     private val mustCapture = listOf(
-        "insertTable", "updateTable", "updateTableRemappingCourses", "deleteTable",
+        "importNewTable", "insertTable", "updateTable", "updateTableRemappingCourses", "deleteTable",
         "insertCourse", "insertCourses", "insertCoursesKeepingGroups",
         "replaceCoursesKeepingGroups", "updateCourse", "updateCourseGroup",
         "applyDiff", "deleteCourse", "deleteCourseGroup", "replaceCourses"
@@ -34,7 +34,7 @@ class UndoCaptureCoverageTest {
 
     /** 方法签名起点 → 下一个方法声明之间的源码段。 */
     private fun segmentOf(method: String): String {
-        val start = Regex("""fun\s+$method\s*\(""").find(source)?.range?.first
+        val start = Regex("""(?m)^    (?:suspend\s+)?fun\s+$method\s*\(""").find(source)?.range?.first
             ?: error("ScheduleRepository 缺少方法 $method — 契约清单需同步")
         val next = Regex("""\n\s*(private\s+)?(suspend\s+)?fun\s+\w+""")
             .find(source, startIndex = start + 20)?.range?.first ?: source.length

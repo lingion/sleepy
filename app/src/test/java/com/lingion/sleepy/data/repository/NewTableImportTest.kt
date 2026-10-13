@@ -31,13 +31,16 @@ class NewTableImportTest {
             s.executeQuery(sql).use { r -> check(r.next()); r.getString(1) }
         }
         override suspend fun periodExists(id: Long) = scalar("SELECT COUNT(*) FROM periods WHERE id=$id") == "1"
-        override suspend fun captureUndo() {}
+        var captured = false
+        override suspend fun captureUndo() { captured = true }
         override suspend fun insertPeriod(period: PeriodTableEntity): Long {
+            check(captured) { "Undo must precede the first period write" }
             db.prepareStatement("INSERT INTO periods(time) VALUES(?)").use { it.setString(1,period.timeJson); it.executeUpdate() }
             if(failAt == "period") error("injected")
             return scalar("SELECT last_insert_rowid()").toLong()
         }
         override suspend fun insertTable(table: TimeTableEntity): Long {
+            check(captured) { "Undo must precede the first timetable write" }
             db.prepareStatement("INSERT INTO tables(period,selected) VALUES(?,0)").use {
                 it.setLong(1, requireNotNull(table.periodTableId)); it.executeUpdate()
             }
@@ -62,6 +65,12 @@ class NewTableImportTest {
         importNewTableAtomically(store,TimeTableEntity(name="new",startDate="2026-09-07"),
             listOf(course("a"),course("b")),PeriodTableEntity(name="new",timeJson="confirmed"),binding,keep)
 
+    @Test fun captureRunsBeforeFirstWriteForPrivateAndSharedSchedules() = runBlocking {
+        for (binding in listOf<Long?>(null, 7L)) SqlStore().use { s ->
+            apply(s, binding = binding)
+            assertTrue(s.captured)
+        }
+    }
     @Test fun rollbackAfterEveryWritePreservesAllTablesAndDefault() = runBlocking {
         for (stage in listOf("period","table","courses","default")) SqlStore(stage).use { s ->
             try { apply(s); fail("Expected failure at $stage") } catch (_: IllegalStateException) {}
