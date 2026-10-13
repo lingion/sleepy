@@ -144,14 +144,14 @@ class JwNewUrpSuperParserTest {
 
     @Test
     fun `deep keyword arrays lacking id are skipped before JSON parse`() {
-        val noise = "[".repeat(10000) + "{"kcm":"x","skzc":"1"}" + "]".repeat(10000)
+        val noise = "[".repeat(10000) + """{"kcm":"x","skzc":"1"}""" + "]".repeat(10000)
         val valid = """[{"kcm":"Real","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"1"}}]"""
         assertEquals("Real", JwNewUrpSuperParser(noise + valid).generateCourseList().single().name)
     }
 
     @Test
     fun `deep keyword arrays with unrelated id leave later valid array reachable`() {
-        val noise = "[".repeat(4000) + "{"kcm":"x","skzc":"1","id":0}" + "]".repeat(4000)
+        val noise = "[".repeat(4000) + """{"kcm":"x","skzc":"1","id":0}""" + "]".repeat(4000)
         val valid = """[{"kcm":"Real","cxjc":1,"id":{"skxq":1,"skjc":1,"skzc":"1"}}]"""
         assertEquals("Real", JwNewUrpSuperParser(noise + valid).generateCourseList().single().name)
     }
