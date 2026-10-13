@@ -1,51 +1,6 @@
 {
   "school": "SEU",
   "date": "2026-10-09",
-  "queries_run": [
-    {
-      "query": "seu+timetable",
-      "api": "search/repositories",
-      "results": [
-        {
-          "name": "Haa1024/SEU-Timetable",
-          "stars": 5,
-          "lang": "Kotlin",
-          "desc": "东南大学课程表App"
-        },
-        {
-          "name": "OFRabby/seu-routine-maker",
-          "stars": 0,
-          "lang": null,
-          "desc": null
-        }
-      ]
-    },
-    {
-      "query": "WakeUp+schedule",
-      "api": "search/repositories",
-      "results": [
-        {
-          "name": "YZune/WakeUpSchedule",
-          "stars": 29,
-          "lang": "Java",
-          "desc": "WakeUpSchedule Android"
-        },
-        {
-          "name": "tKM9WsmQUaUgNttn3DGUsHkxG8/WakeupSchedule_Kotlin",
-          "stars": 30,
-          "forks": 76,
-          "lang": "Kotlin",
-          "desc": "WakeUp Kotlin fork"
-        },
-        {
-          "name": "ThaiCao/WakeupSchedule_Kotlin",
-          "stars": 0,
-          "lang": "Kotlin",
-          "desc": null
-        }
-      ]
-    }
-  ],
   "findings": {
     "seu_protocol_v2": {
       "endpoint": "jwgl.seu.edu.cn/xsglapp/sys/xsxkapp/*/xskcb.do",
@@ -76,6 +31,61 @@
       "revision": "4f2b370",
       "path": "backend/python_import_service/adapters/undergraduate/scripts/csf_dongnandaxue_provider.js",
       "lines": "4-75"
+    },
+    {
+      "repository": "WheretoSleepinNJU/NJU-Class-Shedule-Flutter",
+      "revision": "25125ef",
+      "path": "api/tools/seubksjw.js",
+      "lines": "4-9,53-59,62-105",
+      "role": "related bykb/cxxszhxqkb shape, not same endpoint"
     }
-  ]
+  ],
+  "queries_run": {
+    "historical_notes_only": [
+      {
+        "query": "seu+timetable",
+        "api": "search/repositories",
+        "results": [
+          {
+            "name": "Haa1024/SEU-Timetable",
+            "stars": 5,
+            "lang": "Kotlin",
+            "desc": "东南大学课程表App"
+          },
+          {
+            "name": "OFRabby/seu-routine-maker",
+            "stars": 0,
+            "lang": null,
+            "desc": null
+          }
+        ]
+      },
+      {
+        "query": "WakeUp+schedule",
+        "api": "search/repositories",
+        "results": [
+          {
+            "name": "YZune/WakeUpSchedule",
+            "stars": 29,
+            "lang": "Java",
+            "desc": "WakeUpSchedule Android"
+          },
+          {
+            "name": "tKM9WsmQUaUgNttn3DGUsHkxG8/WakeupSchedule_Kotlin",
+            "stars": 30,
+            "forks": 76,
+            "lang": "Kotlin",
+            "desc": "WakeUp Kotlin fork"
+          },
+          {
+            "name": "ThaiCao/WakeupSchedule_Kotlin",
+            "stars": 0,
+            "lang": "Kotlin",
+            "desc": null
+          }
+        ]
+      }
+    ],
+    "warning": "Prior search-result metadata was not independently verified in this audit and is not evidence of protocol behavior."
+  }
 }

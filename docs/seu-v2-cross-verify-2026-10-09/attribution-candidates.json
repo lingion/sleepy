@@ -1,1 +1,21 @@
-{"checked_on":"2026-10-13","direct_protocol_sources":["HeraldStudio/herald-webservice@29180c4:routes/api/curriculum.js","131AIClub/seu-xiaoai-course@c933e81:provider.js","luyishui/classduck@4f2b370:backend/python_import_service/adapters/undergraduate/scripts/csf_dongnandaxue_provider.js"],"historical_unrevalidated":["WheretoSleepinNJU@25125ef:api/tools/seubksjw.js"],"not_evidence":["uncommitted local candidates.json claim of live jwgl.seu.edu.cn/xsglapp capture"]}
+{
+  "checked_on": "2026-10-13",
+  "direct_protocol_sources": [
+    "HeraldStudio/herald-webservice@29180c4:routes/api/curriculum.js",
+    "131AIClub/seu-xiaoai-course@c933e81:provider.js",
+    "luyishui/classduck@4f2b370:backend/python_import_service/adapters/undergraduate/scripts/csf_dongnandaxue_provider.js"
+  ],
+  "historical_unrevalidated": [],
+  "not_evidence": [
+    "uncommitted local candidates.json claim of live jwgl.seu.edu.cn/xsglapp capture"
+  ],
+  "related_alternate_protocol": [
+    "WheretoSleepinNJU/NJU-Class-Shedule-Flutter@25125ef:api/tools/seubksjw.js (Apache-2.0; bykb/cxxszhxqkb)"
+  ],
+  "license_and_credit": {
+    "HeraldStudio/herald-webservice": "MIT; credited in LicenseScreen and six locale strings",
+    "131AIClub/seu-xiaoai-course": "LGPL-2.1; credited in LicenseScreen and six locale strings",
+    "luyishui/classduck": "No repo license declared; credited by author in LicenseScreen and six locale strings; no source copied",
+    "WheretoSleepinNJU/NJU-Class-Shedule-Flutter": "Apache-2.0; credited in LicenseScreen and six locale strings"
+  }
+}

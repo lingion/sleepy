@@ -1,1 +1,48 @@
-{"checked_on":"2026-10-13","findings":[{"id":"SEU-1","verdict":"supported historical protocol","evidence":"HeraldStudio@29180c4, 131AIClub@c933e81 and classduck@4f2b370 independently name ehall.seu.edu.cn/jwapp/sys/wdkb/modules/xskcb/xskcb.do and datas.xskcb.rows"},{"id":"SEU-2","verdict":"supported local behavior","evidence":"tools/test-seu-fetch.js: 12 executable VM cases; JwSeuParserTest bitmap cases"},{"id":"SEU-3","verdict":"not verified as current","evidence":"No authenticated live session, raw capture, or independent pinned source confirms jwgl.seu.edu.cn/xsglapp route"}]}
+{
+  "checked_on": "2026-10-13",
+  "findings": [
+    {
+      "repo": "HeraldStudio/herald-webservice",
+      "revision": "29180c4",
+      "path": "routes/api/curriculum.js:93-111",
+      "verdict": "direct xskcb gateway and SKZC; historical cohort-specific code",
+      "limit": "does not establish live 2026 availability"
+    },
+    {
+      "repo": "131AIClub/seu-xiaoai-course",
+      "revision": "c933e81",
+      "path": "provider.js:4-35",
+      "verdict": "direct xskcb gateway and dqxnxq2 term field",
+      "limit": "browser script, no live account verification"
+    },
+    {
+      "repo": "luyishui/classduck",
+      "revision": "4f2b370",
+      "path": "backend/python_import_service/adapters/undergraduate/scripts/csf_dongnandaxue_provider.js:4-75",
+      "verdict": "direct xskcb rows and SKZC-first parsing",
+      "limit": "term selection differs; unlicensed repository, no code copied"
+    },
+    {
+      "repo": "WheretoSleepinNJU/NJU-Class-Shedule-Flutter",
+      "revision": "25125ef",
+      "path": "api/tools/seubksjw.js:4-9,53-59,62-105",
+      "verdict": "related ehall jwapp bykb gateway and bitmap",
+      "limit": "different cxxszhxqkb endpoint and response shape"
+    },
+    {
+      "repo": "Haa1024/SEU-Timetable and OFRabby/seu-routine-maker",
+      "verdict": "previous search candidates only",
+      "limit": "no protocol file vetted here; excluded from protocol proof"
+    },
+    {
+      "repo": "YZune/WakeUpSchedule and WakeupSchedule_Kotlin forks",
+      "verdict": "previous broad WakeUp search candidates only",
+      "limit": "no SEU endpoint evidence attributed"
+    },
+    {
+      "repo": "uncommitted local user-capture assertion",
+      "verdict": "unverified alternative jwgl.seu.edu.cn/xsglapp route",
+      "limit": "raw capture unavailable; cannot assert production 2026 behavior"
+    }
+  ]
+}

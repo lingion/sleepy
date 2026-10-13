@@ -67,6 +67,10 @@ class AboutLicenseAttributionTest {
         Attribution("SEUTimetable", "Apache-2.0"),
         Attribution("Aetik-yue/hormone", ""),
         Attribution("luzy99/SEUAutoLogin", ""),
+        Attribution("HeraldStudio/herald-webservice", "MIT"),
+        Attribution("131AIClub/seu-xiaoai-course", "LGPL-2.1"),
+        Attribution("luyishui/classduck", ""),
+        Attribution("WheretoSleepinNJU/NJU-Class-Shedule-Flutter", "Apache-2.0"),
         // 浙江大学 ZJU
         Attribution("zju-ical-py", "LGPL-2.1"),
         // 中国科学技术大学 USTC
