@@ -694,6 +694,12 @@ class JwKingoParser(source: String) : WakeUpMarkerParser(source, setOf("kingosof
         else -> super.confidence()
     }
     override fun generateCourseList(): List<JwCourse> {
+        // A declared KINGO_NEW school may still serve the older positive-selection grid.
+        // Delegate its td.td cells so the optional section gutter and sparse weeks keep ZX semantics.
+        if (Jsoup.parse(source).selectFirst("table#mytable td.td") != null) {
+            val legacy = JwKingoZxParser(source).generateCourseList()
+            if (legacy.isNotEmpty()) return legacy
+        }
         // Kingo Super 2026-10 — 内部叠加 HTML 3 链降级 (不新建独立类, 与 TYPE_KINGO_NEW 共用)
         // 阶段 1: HTML 3 链降级 (新青果 super 主入口) — 见 parseKingoSuperHtml
         val errors = mutableListOf<String>()

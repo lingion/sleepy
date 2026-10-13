@@ -87,8 +87,11 @@ class JwKingoSuperSourceShapeTest {
         val zx = JwKingoZxParser(html).generateCourseList()
         val (generic, _) = JwParserRegistry.selectBest(html)
         val (declared, _) = JwParserRegistry.selectBest(html, JwProtocol.TYPE_KINGO_ZX)
+        val (declaredNew, _) = JwParserRegistry.selectBest(html, JwProtocol.TYPE_KINGO_NEW)
         assertEquals(zx, generic)
         assertEquals(zx, declared)
+        assertEquals(zx, declaredNew)
+        assertEquals(zx, JwParserRegistry.parserFor(JwProtocol.TYPE_KINGO_NEW, html).generateCourseList())
     }
 
     @Test fun malformedWeekRangesAndOverflowDoNotHideFollowingCourse() {
