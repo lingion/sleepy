@@ -1074,4 +1074,9 @@ Agradecimientos por universidad (una tarjeta por universidad, expandir para ver 
     <string name="school_location_permission_settings">Permisos de ubicación</string>
     <string name="reminder_class_dnd_title">No molestar en clase</string>
     <string name="reminder_class_dnd_sub">Activa No molestar durante las clases y lo restaura al terminar</string>
+    <string name="table_reminder_title">Avisos por horario</string>
+    <string name="table_reminder_subtitle">Elige qué horarios reciben avisos</string>
+    <string name="table_reminder_master_off">Los avisos están desactivados. Tu selección se aplicará al activar el interruptor principal.</string>
+    <string name="table_reminder_empty">No hay horarios. Añade o importa uno primero.</string>
+    <string name="table_reminder_save_failed">No se pudo guardar. Inténtalo de nuevo.</string>
 </resources>

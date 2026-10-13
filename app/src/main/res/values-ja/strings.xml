@@ -1073,4 +1073,9 @@
     <string name="school_location_permission_settings">位置情報の権限</string>
     <string name="reminder_class_dnd_title">授業中はおやすみモード</string>
     <string name="reminder_class_dnd_sub">授業時間帯におやすみモードを自動で有効にし、終了後に復元します</string>
+    <string name="table_reminder_title">時間割の通知</string>
+    <string name="table_reminder_subtitle">通知を受け取る時間割を選択</string>
+    <string name="table_reminder_master_off">通知はオフです。時間割ごとの設定は、通知のメインスイッチをオンにすると有効になります。</string>
+    <string name="table_reminder_empty">時間割がありません。先に追加またはインポートしてください。</string>
+    <string name="table_reminder_save_failed">保存できませんでした。もう一度お試しください。</string>
 </resources>

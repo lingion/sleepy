@@ -1040,4 +1040,9 @@
     <string name="school_location_permission_settings">定位權限設定</string>
     <string name="reminder_class_dnd_title">上課自動勿擾</string>
     <string name="reminder_class_dnd_sub">上課時段自動開啟勿擾, 下課自動恢復</string>
+    <string name="table_reminder_title">課表提醒</string>
+    <string name="table_reminder_subtitle">選擇需要接收提醒的課表</string>
+    <string name="table_reminder_master_off">總開關已關閉。可以先設定各課表，開啟總開關後生效。</string>
+    <string name="table_reminder_empty">還沒有課表，請先新增或匯入課表。</string>
+    <string name="table_reminder_save_failed">儲存失敗，請重試</string>
 </resources>

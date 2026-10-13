@@ -1101,4 +1101,9 @@
     <string name="school_location_permission_settings">定位权限设置</string>
     <string name="reminder_class_dnd_title">上课自动勿扰</string>
     <string name="reminder_class_dnd_sub">上课时段自动开启勿扰, 下课自动恢复</string>
+    <string name="table_reminder_title">课表提醒</string>
+    <string name="table_reminder_subtitle">选择需要接收提醒的课表</string>
+    <string name="table_reminder_master_off">总开关已关闭。可以先设置各课表，开启总开关后生效。</string>
+    <string name="table_reminder_empty">还没有课表，请先添加或导入课表。</string>
+    <string name="table_reminder_save_failed">保存失败，请重试</string>
 </resources>
