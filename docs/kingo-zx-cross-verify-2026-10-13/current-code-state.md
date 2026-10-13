@@ -1,0 +1,5 @@
+# Current code state / known boundary
+
+PR #122 originally registered `kingo_zx` in `JwProtocol` and `JwParserRegistry`, but parsed a weekday grid under `div#pageRpt`. The checked-in old fixture was a four-column report with no `节` marker and yielded zero courses. No test loaded it. The repaired parser separates `table#pageRpt` report rows from `#mytable` weekday grid; capture anchors include `pageRpt`, `mytable`, `reportArea`, `xkinfo`. `JwKingoZxParserTest` locks report field mapping, seven weekdays, sparse/odd-even weeks, blank grid weekday, evening node, unsupported table, expired login input, and frame anchors.
+
+No school-specific production credentials were used. Session-expiry remains governed by `FrameTraversalTree` login fingerprint before parsing; empty/unsupported pages do not emit courses. `kingo_zx` has no school entry: generic HTML/frame fallback is the production route. A live school page would still be required to confirm deployment variants and cross-origin iframe accessibility.
