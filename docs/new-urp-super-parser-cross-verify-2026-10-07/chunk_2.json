@@ -1,0 +1,202 @@
+[
+  {
+    "query": "jwxt URP class",
+    "full_name": "Airmole/ShellBox",
+    "html_url": "https://github.com/Airmole/ShellBox",
+    "stargazers": 448,
+    "language": "JavaScript",
+    "description": "贝壳小盒子Wechat微信小程序，高校微信小程序，集课表查询、成绩查询、电费查询、图书查询等功能于一体。",
+    "source": "gh api code search",
+    "files_matched": [
+      "pages/course/my.js"
+    ]
+  },
+  {
+    "query": "jwxt 新 URP 课表; skzc jxlm jasm; 新 URP; 新正方教务 课表; 正方 URP 课表",
+    "full_name": "frederick-wang/scu-urp-assistant",
+    "html_url": "https://github.com/frederick-wang/scu-urp-assistant",
+    "stargazers": 210,
+    "language": "TypeScript",
+    "description": "四川大学综合教务系统助手，是一个优化四川大学综合教务系统的「Userscript」，即用户脚本。这不是一个独立的软件，也不是一个浏览器的插件，但可以依赖浏览器的插件运行，或者作为一个Bookmarklet在点击后运行。该脚本可以为综合教务系统增加以下功能：1. 外观美化：会自动美化教务系统界面上部分元素的外观；2. 快捷评教：自动为「希望给好评」的老师打满分好评，并附上随机的正面评语；3. 自动登录：恢复登陆页面的「两周之内不必登录」选项，每次打开教务系统后不用重复登录；4. 均分绩点计算器：可以直接看到自己的全部均分、全部绩点与必修均分、必修绩点，还可以自由选择自己需要的课程进行计算；5. ",
+    "source": "gh api code search",
+    "files_matched": [
+      "src/store/types.ts",
+      "src/store/types.ts",
+      "src/store/types.ts",
+      "src/store/types.ts",
+      "src/store/types.ts"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表",
+    "full_name": "yeliqin666/xjtu-toolbox-android",
+    "html_url": "https://github.com/yeliqin666/xjtu-toolbox-android",
+    "stargazers": 82,
+    "language": "Kotlin",
+    "description": "交兵安卓工具箱",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/xjtu/toolbox/schedule/JwxtChanges.kt",
+      "app/src/main/java/com/xjtu/toolbox/schedule/ScheduleApi.kt",
+      "app/src/test/java/com/xjtu/toolbox/schedule/JwxtChangesTest.kt"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "ShiGuangSchedule/shiguang_warehouse",
+    "html_url": "https://github.com/ShiGuangSchedule/shiguang_warehouse",
+    "stargazers": 63,
+    "language": "JavaScript",
+    "description": "本仓库用于 shiguangschedule 适配脚本的管理和测试。所有适配脚本将集中存放于此，方便软件拉取和测试",
+    "source": "gh api code search",
+    "files_matched": [
+      "resources/SANYEDU/sany.js",
+      "resources/XJTU/xjtu.js",
+      "resources/CTGU/ctgu.js",
+      "resources/SANYEDU/sany.js",
+      "resources/XJTU/xjtu.js"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "AriaPokotengYe/SEU-NewSystem-catcher",
+    "html_url": "https://github.com/AriaPokotengYe/SEU-NewSystem-catcher",
+    "stargazers": 53,
+    "language": "Python",
+    "description": "针对2018年起东南大学新更换的选课系统所写的刷课软件",
+    "source": "gh api code search",
+    "files_matched": [
+      "crawl.py"
+    ]
+  },
+  {
+    "query": "jwxt URP class; 正方 URP 课表",
+    "full_name": "HeraldStudio/herald-webservice",
+    "html_url": "https://github.com/HeraldStudio/herald-webservice",
+    "stargazers": 44,
+    "language": "JavaScript",
+    "description": "小猴偷米 WebService3 使用 NodeJS + Koa 构建",
+    "source": "gh api code search",
+    "files_matched": [
+      "routes/api/curriculum.js",
+      "routes/api/health.js",
+      "routes/api/curriculum.js",
+      "middleware/auth-provider/ids-3.js"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "ki-ljl/ncepu-edm",
+    "html_url": "https://github.com/ki-ljl/ncepu-edm",
+    "stargazers": 26,
+    "language": "Java",
+    "description": "NCEPU-EDM（NCEPU和EDM分别是华北电力大学和教育数据挖掘的缩写）软件是专门为华北电力大学本科生所开发的一款简单软件，具有查询和数据挖掘两大功能模块。其中查询模块为学生提供成绩、课表、考试、GPA、培养方案、成绩总表以及综合测评等教务查询。同时该模块对学生的成绩数据进行可视化分析，包括成绩占比、成绩比较、GPA走势、单科分析、专业排名、挂科分析、单科排名以及个人分析查询。数据挖掘模块对近五年的学生成绩数据进行了关联分析，生成了几十条有用的关联规则，利用关联规则学生可以根据以前考试科目的成绩来大致预测将来考试科目的成绩。同时该模块根据关联规则，选取了关联性较强的一些科目，利用部分科目",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/example/NCEPU/Student/TimeTable/TimeTableActivity.java"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "sasaju/NormalSchedule",
+    "html_url": "https://github.com/sasaju/NormalSchedule",
+    "stargazers": 19,
+    "language": "Kotlin",
+    "description": "河大课表：适用于河北大学本科生和研究生的课程表APP",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "iedon/weyzu-backend-main",
+    "html_url": "https://github.com/iedon/weyzu-backend-main",
+    "stargazers": 17,
+    "language": "JavaScript",
+    "description": "WeYZU mini-program core microservice: iEdon Uniplex. WeYZU 校园微信小程序核心服务端原型。",
+    "source": "gh api code search",
+    "files_matched": [
+      "classes/crawlers/urp.js",
+      "README.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "shuakami/timetable",
+    "html_url": "https://github.com/shuakami/timetable",
+    "stargazers": 10,
+    "language": "TypeScript",
+    "description": "嘎嘎课程表 · 免费无广告的 Android 课程表 App。大学生课表：教务系统/Excel/ICS/CSV/JSON 多源导入、AI 一键转换、冲突检测、变更记录、学科贴纸、桌面小组件、写入系统日历。",
+    "source": "gh api code search",
+    "files_matched": [
+      "src/domain/__tests__/edu.test.ts"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表; 正方 URP 课表",
+    "full_name": "ggggh123/Personal-Studio",
+    "html_url": "https://github.com/ggggh123/Personal-Studio",
+    "stargazers": 6,
+    "language": "Kotlin",
+    "description": "北京理工大学学生事务集成软件。包括成绩查询，成绩分析，DDL/考试信息查询，空教室查询，课程表导入等主要功能。另有AI聊天，文档扫描分析，知识库错题本整理，个人Timeline事务管理（可一键导入课程，DDL，考试安排等事务，也支持自定义添加）",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/example/personal_studio/data/network/bit/dto/ScheduleRowDto.kt",
+      "app/src/main/java/com/example/personal_studio/domain/bitimport/MapBitCourseUseCase.kt",
+      "app/src/test/java/com/example/personal_studio/domain/bitimport/MapBitCourseUseCaseTest.kt",
+      "docs/superpowers/specs/2026-05-18-p5-bit-import-design.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Aetik-yue/hormone",
+    "html_url": "https://github.com/Aetik-yue/hormone",
+    "stargazers": 4,
+    "language": "Dart",
+    "description": "Hormone 课表 - 简洁轻量的大学课程表 Flutter App",
+    "source": "gh api code search",
+    "files_matched": [
+      "lib/features/import/data/school_adapter.dart"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表; 正方 URP 课表",
+    "full_name": "BritneyOvO/swun_ehall",
+    "html_url": "https://github.com/BritneyOvO/swun_ehall",
+    "stargazers": 3,
+    "language": "Kotlin",
+    "description": "民大助手 — 西南民族大学学生门户（课表 / 成绩 / 考勤 / 一卡通）",
+    "source": "gh api code search",
+    "files_matched": [
+      "android/app/src/main/kotlin/cn/edu/swun/swun_ehall/data/http/KtkqClient.kt",
+      "android/app/src/test/java/cn/edu/swun/swun_ehall/data/http/CampusParseTest.kt",
+      "android/app/src/main/kotlin/cn/edu/swun/swun_ehall/data/http/KtkqClient.kt",
+      "android/app/src/main/kotlin/cn/edu/swun/swun_ehall/data/http/KtkqClient.kt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "junqi1121/URPHelper",
+    "html_url": "https://github.com/junqi1121/URPHelper",
+    "stargazers": 3,
+    "language": "HTML",
+    "description": "在皮卡丘的基础上增加了自动识别验证码，账号密码本地储存的功能",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "mlkgrnt/ScheduleX",
+    "html_url": "https://github.com/mlkgrnt/ScheduleX",
+    "stargazers": 1,
+    "language": "Kotlin",
+    "description": "开源无广告 Android 课程表应用 — 智能导入（并不智能）、多教务系统适配（适配效果未经验证）、桌面小组件（对的对的小组件真的很可爱）。",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  }
+]

@@ -1,0 +1,248 @@
+[
+  {
+    "repo": "Airmole/ShellBox",
+    "stars": 0,
+    "language": "",
+    "description": "贝壳小盒子Wechat微信小程序，高校微信小程序，集课表查询、成绩查询、电费查询、图书查询等功能于一体。"
+  },
+  {
+    "repo": "danbaixi/yunxiaozhi",
+    "stars": 0,
+    "language": "",
+    "description": "云小智 - 一款全面的校园教务查询微信小程序。包括课表查询、成绩查询、校历、一键评教、考试安排、成绩排名、空教室查询等"
+  },
+  {
+    "repo": "Moonrend/Classworks",
+    "stars": 0,
+    "language": "",
+    "description": "适用于班级大屏的作业板小工具"
+  },
+  {
+    "repo": "dairoot/school-api",
+    "stars": 0,
+    "language": "",
+    "description": "🌱 校园教务系统接口，正方教务系统 SDK for Python"
+  },
+  {
+    "repo": "frederick-wang/scu-urp-assistant",
+    "stars": 210,
+    "language": "TypeScript",
+    "description": "四川大学综合教务系统助手，是一个优化四川大学综合教务系统的「Userscript」，即用户脚本。这不是一个独立的软件，也不是一个浏览器的插件，但可以依赖浏览器的插件运行，或者作为一个Bookmarklet在点击后运行。该脚本可以为综合教务系"
+  },
+  {
+    "repo": "LeonidasCl/seu-jwc-catcher",
+    "stars": 0,
+    "language": "",
+    "description": "增强版东南大学选课助手  Enhanced version of Southeast University course selection assistant."
+  },
+  {
+    "repo": "HaoZai000/NexioSchedule",
+    "stars": 0,
+    "language": "",
+    "description": ""
+  },
+  {
+    "repo": "StageGuard/SuperCourseTimetableBot",
+    "stars": 0,
+    "language": "",
+    "description": "基于 mirai-console 的 超级课表上课提醒QQ机器人 插件"
+  },
+  {
+    "repo": "yeliqin666/xjtu-toolbox-android",
+    "stars": 82,
+    "language": "Kotlin",
+    "description": "交兵安卓工具箱"
+  },
+  {
+    "repo": "LittFlower/SCU-URP-Helper",
+    "stars": 0,
+    "language": "",
+    "description": "some apis and scripts about scu urp."
+  },
+  {
+    "repo": "Lorcas-Zephyr/aoxiang-assistant",
+    "stars": 0,
+    "language": "",
+    "description": "翱翔助手，适配西北工业大学教务系统，自动同步成绩、课表、电费"
+  },
+  {
+    "repo": "lingion/sleepy",
+    "stars": 64,
+    "language": "Kotlin",
+    "description": "Sleepy 课程表 — Material You 设计的纯净 Android 课表 App，多视图/小组件/教务导入/HSV配色"
+  },
+  {
+    "repo": "ShiGuangSchedule/shiguang_warehouse",
+    "stars": 63,
+    "language": "JavaScript",
+    "description": "本仓库用于 shiguangschedule 适配脚本的管理和测试。所有适配脚本将集中存放于此，方便软件拉取和测试"
+  },
+  {
+    "repo": "BIT101-dev/BIT101-Android",
+    "stars": 63,
+    "language": "Kotlin",
+    "description": "针对北京理工大学搞的怪安卓"
+  },
+  {
+    "repo": "xiaomanjun233/SleepDown-Schedule",
+    "stars": 61,
+    "language": "Kotlin",
+    "description": "基于 Jetpack Compose 的液态玻璃风格课程表 Android 应用"
+  },
+  {
+    "repo": "Mutx163/mikcb",
+    "stars": 0,
+    "language": "",
+    "description": "轻屿课表 — Android 课表应用，HyperOS 超级岛、教务导入、云同步"
+  },
+  {
+    "repo": "AriaPokotengYe/SEU-NewSystem-catcher",
+    "stars": 0,
+    "language": "",
+    "description": "针对2018年起东南大学新更换的选课系统所写的刷课软件"
+  },
+  {
+    "repo": "higuangke/Higk",
+    "stars": 0,
+    "language": "",
+    "description": "Hi广科，前端源码fork自重庆邮电大学We重邮微信小程序，修改并适配Hi广科后端程序，由广科贴吧技术组开发并运营的微信小程序。广东科学技术职业学院学子的贴心助手，专注于校园服务，主要功能有：成绩查询、快递查询、借阅查询、课表查询、表白墙、"
+  },
+  {
+    "repo": "yuchenii/HHUClassSchedule",
+    "stars": 0,
+    "language": "",
+    "description": "一款纯 Java 开发的课程表软件，适合新手学习，android 课设"
+  },
+  {
+    "repo": "HeraldStudio/herald-webservice",
+    "stars": 44,
+    "language": "JavaScript",
+    "description": "小猴偷米 WebService3 使用 NodeJS + Koa 构建"
+  },
+  {
+    "repo": "yuan1994/ZCrawler",
+    "stars": 0,
+    "language": "",
+    "description": "ZCrawler 是一个优雅、高效、功能强大的【正方教务】爬虫程序，支持成绩查询、考试查询、课表查询、四六级成绩查询、四六级报名、选课查询、修改密码、获取用户菜单等功能，并且能将数据解析成易读格式，是一个强大的【正方教务】爬虫的 PHP 类"
+  },
+  {
+    "repo": "superdaobo/mini-hbut",
+    "stars": 0,
+    "language": "",
+    "description": "湖北工业大学教务助手 基于 Tauri + Capacitor + Vue 3 的跨平台客户端应用"
+  },
+  {
+    "repo": "BIT101-dev/BIT101-GO",
+    "stars": 21,
+    "language": "Go",
+    "description": "针对北京理工大学搞的怪东西后面的东西"
+  },
+  {
+    "repo": "democard/xmu_assistant",
+    "stars": 21,
+    "language": "Kotlin",
+    "description": "面向厦门大学的 Windows / Android 学习助手，提供签到记录、课件下载、课表、成绩与考试安排。"
+  },
+  {
+    "repo": "ki-ljl/ncepu-edm",
+    "stars": 0,
+    "language": "",
+    "description": "NCEPU-EDM（NCEPU和EDM分别是华北电力大学和教育数据挖掘的缩写）软件是专门为华北电力大学本科生所开发的一款简单软件，具有查询和数据挖掘两大功能模块。其中查询模块为学生提供成绩、课表、考试、GPA、培养方案、成绩总表以及综合测评"
+  },
+  {
+    "repo": "wcomaqsw/indulge-in-study",
+    "stars": 0,
+    "language": "",
+    "description": "SCU_urp教务系统Python抢课程序"
+  },
+  {
+    "repo": "CrazyRunning/MyStudyHelper",
+    "stars": 0,
+    "language": "",
+    "description": "该项目针对高校的URP综合学分制教务系统开发，可理解为URP教务系统的移动客户端。本项目以四川大学教务处为例，实现了如下功能：登录（教务处的学号和密码）、我的课表（离线和在线）、考试信息查询、学分绩点查询、学籍信息；出于爱好，同时还集成了如"
+  },
+  {
+    "repo": "chaolan2019/SCU-URP-plusplus",
+    "stars": 0,
+    "language": "",
+    "description": "SCU URP++ 教务系统美化油猴脚本"
+  },
+  {
+    "repo": "mlkgrnt/ScheduleX",
+    "stars": 0,
+    "language": "",
+    "description": "开源无广告 Android 课程表应用 — 智能导入（并不智能）、多教务系统适配（适配效果未经验证）、桌面小组件（对的对的小组件真的很可爱）。"
+  },
+  {
+    "repo": "Holit/HEU_edusys_miui",
+    "stars": 0,
+    "language": "",
+    "description": "使用小爱同学对哈尔滨工程大学(HEU)的教务系统进行适配"
+  },
+  {
+    "repo": "ershiyidian/WakeUp_SHU",
+    "stars": 1,
+    "language": "Python",
+    "description": "面向上海大学的 WakeUp 6.0.23 定制工程：上大教务、课表导入、12 节作息、深色课表与轻量启动。"
+  },
+  {
+    "repo": "BritneyOvO/swun_ehall",
+    "stars": 3,
+    "language": "Kotlin",
+    "description": "民大助手 — 西南民族大学学生门户（课表 / 成绩 / 考勤 / 一卡通）"
+  },
+  {
+    "repo": "leavesvv-source/NEU-Timetable",
+    "stars": 3,
+    "language": "Kotlin",
+    "description": "东北大学专用的无广告 Android 课表，支持官方教务系统导入"
+  },
+  {
+    "repo": "ArrogHie/XMUTimeTabel",
+    "stars": 14,
+    "language": "Kotlin",
+    "description": "厦门大学轻量化课表"
+  },
+  {
+    "repo": "yuchenii/AIschedule-HHU-URP",
+    "stars": 0,
+    "language": "",
+    "description": "小米小爱课程表-河海大学-URP教务系统"
+  },
+  {
+    "repo": "shouDeveloper/shou-api",
+    "stars": 0,
+    "language": "",
+    "description": "上海海洋大学urp及部分官网信息接口"
+  },
+  {
+    "repo": "kuailiaojie/classtable",
+    "stars": 5,
+    "language": "JavaScript",
+    "description": ""
+  },
+  {
+    "repo": "adminerest/SHOU-urp-auto-choose-lessons",
+    "stars": 0,
+    "language": "",
+    "description": "上海海洋大学URP自动抢课脚本"
+  },
+  {
+    "repo": "neiro-o/seuGrabber",
+    "stars": 0,
+    "language": "",
+    "description": "东南大学新版（2018）选课系统抢课程序=。="
+  },
+  {
+    "repo": "arnoliudaxia/shanghaitech-chooseCourse-query",
+    "stars": 6,
+    "language": "Python",
+    "description": "某科大选课名单查询工具"
+  },
+  {
+    "repo": "fangd123/funhubu",
+    "stars": 0,
+    "language": "",
+    "description": "湖北大学校园公众平台——玩转湖大|强智教务系统通用"
+  }
+]

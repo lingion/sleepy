@@ -1,0 +1,167 @@
+[
+  {
+    "repo": "Airmole/ShellBox",
+    "stars": 448,
+    "language": "JavaScript",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "frederick-wang/scu-urp-assistant",
+    "stars": 210,
+    "language": "TypeScript",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3_err": "HTTP 403: API rate limit exceeded for user ID 165679819. If you reach out to GitHub Support for help, please include the request ID ADC3:3AD7BA:3EF407:422BD2:6AC5ED09 and timestamp 2026-10-07 06:56:09 UTC. For more on scraping GitHub and how it may affect your rights, please review our Terms of Serv",
+    "q3": ""
+  },
+  {
+    "repo": "yeliqin666/xjtu-toolbox-android",
+    "stars": 82,
+    "language": "Kotlin",
+    "q1_err": "",
+    "q1": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "ShiGuangSchedule/shiguang_warehouse",
+    "stars": 63,
+    "language": "JavaScript",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3_err": "",
+    "q3": ""
+  },
+  {
+    "repo": "AriaPokotengYe/SEU-NewSystem-catcher",
+    "stars": 53,
+    "language": "Python",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "HeraldStudio/herald-webservice",
+    "stars": 44,
+    "language": "JavaScript",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "ki-ljl/ncepu-edm",
+    "stars": 26,
+    "language": "Java",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "sasaju/NormalSchedule",
+    "stars": 19,
+    "language": "Kotlin",
+    "q1_err": "",
+    "q1": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "iedon/weyzu-backend-main",
+    "stars": 17,
+    "language": "JavaScript",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "shuakami/timetable",
+    "stars": 10,
+    "language": "TypeScript",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "ggggh123/Personal-Studio",
+    "stars": 6,
+    "language": "Kotlin",
+    "q1": "",
+    "q1_err": "",
+    "q2_err": "",
+    "q2": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "Aetik-yue/hormone",
+    "stars": 4,
+    "language": "Dart",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "BritneyOvO/swun_ehall",
+    "stars": 3,
+    "language": "Kotlin",
+    "q1": "",
+    "q1_err": "",
+    "q2_err": "HTTP 403: API rate limit exceeded for user ID 264747586. If you reach out to GitHub Support for help, please include the request ID B213:2729E1:58E433:5C3C5D:6AC5EE67 and timestamp 2026-10-07 07:02:00 UTC. For more on scraping GitHub and how it may affect your rights, please review our Terms of Serv",
+    "q2": "",
+    "q3_err": "",
+    "q3": ""
+  },
+  {
+    "repo": "junqi1121/URPHelper",
+    "stars": 3,
+    "language": "HTML",
+    "q1": "",
+    "q1_err": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  },
+  {
+    "repo": "mlkgrnt/ScheduleX",
+    "stars": 1,
+    "language": "Kotlin",
+    "q1_err": "",
+    "q1": "",
+    "q2": "",
+    "q2_err": "",
+    "q3": "",
+    "q3_err": ""
+  }
+]

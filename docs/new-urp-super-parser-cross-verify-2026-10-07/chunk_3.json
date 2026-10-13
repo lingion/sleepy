@@ -1,0 +1,183 @@
+[
+  {
+    "query": "jwxt URP class",
+    "full_name": "danbaixi/yunxiaozhi",
+    "html_url": "https://github.com/danbaixi/yunxiaozhi",
+    "stargazers": 440,
+    "language": "JavaScript",
+    "description": "云小智 - 一款全面的校园教务查询微信小程序。包括课表查询、成绩查询、校历、一键评教、考试安排、成绩排名、空教室查询等",
+    "source": "gh api code search",
+    "files_matched": [
+      "pages/course/add/add.js"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "LeonidasCl/seu-jwc-catcher",
+    "html_url": "https://github.com/LeonidasCl/seu-jwc-catcher",
+    "stargazers": 115,
+    "language": "Python",
+    "description": "增强版东南大学选课助手  Enhanced version of Southeast University course selection assistant.",
+    "source": "gh api code search",
+    "files_matched": [
+      "main.py"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "LittFlower/SCU-URP-Helper",
+    "html_url": "https://github.com/LittFlower/SCU-URP-Helper",
+    "stargazers": 74,
+    "language": "Python",
+    "description": "some apis and scripts about scu urp.",
+    "source": "gh api code search",
+    "files_matched": [
+      "README_CN.md"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表",
+    "full_name": "BIT101-dev/BIT101-Android",
+    "html_url": "https://github.com/BIT101-dev/BIT101-Android",
+    "stargazers": 63,
+    "language": "Kotlin",
+    "description": "针对北京理工大学搞的怪安卓",
+    "source": "gh api code search",
+    "files_matched": [
+      "api/src/main/java/cn/bit101/api/model/common/CourseForSchedule.kt",
+      "data/src/main/java/cn/bit101/android/data/database/entity/CourseScheduleEntity.kt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "higuangke/Higk",
+    "html_url": "https://github.com/higuangke/Higk",
+    "stargazers": 51,
+    "language": "JavaScript",
+    "description": "Hi广科，前端源码fork自重庆邮电大学We重邮微信小程序，修改并适配Hi广科后端程序，由广科贴吧技术组开发并运营的微信小程序。广东科学技术职业学院学子的贴心助手，专注于校园服务，主要功能有：成绩查询、快递查询、借阅查询、课表查询、表白墙、校园活动、新闻等。",
+    "source": "gh api code search",
+    "files_matched": [
+      "pages/core/kb/kb.js"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "yuan1994/ZCrawler",
+    "html_url": "https://github.com/yuan1994/ZCrawler",
+    "stargazers": 41,
+    "language": "PHP",
+    "description": "ZCrawler 是一个优雅、高效、功能强大的【正方教务】爬虫程序，支持成绩查询、考试查询、课表查询、四六级成绩查询、四六级报名、选课查询、修改密码、获取用户菜单等功能，并且能将数据解析成易读格式，是一个强大的【正方教务】爬虫的 PHP 类库。",
+    "source": "gh api code search",
+    "files_matched": [
+      "src/Schedule/Select.php"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表",
+    "full_name": "democard/xmu_assistant",
+    "html_url": "https://github.com/democard/xmu_assistant",
+    "stargazers": 21,
+    "language": "Kotlin",
+    "description": "面向厦门大学的 Windows / Android 学习助手，提供签到记录、课件下载、课表、成绩与考试安排。",
+    "source": "gh api code search",
+    "files_matched": [
+      "android/app/src/main/java/com/xmu/assistant/XmuScheduleModels.kt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "neiro-o/seuGrabber",
+    "html_url": "https://github.com/neiro-o/seuGrabber",
+    "stargazers": 19,
+    "language": "PHP",
+    "description": "东南大学新版（2018）选课系统抢课程序=。=",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "新 URP 教务 课表",
+    "full_name": "ArrogHie/XMUTimeTabel",
+    "html_url": "https://github.com/ArrogHie/XMUTimeTabel",
+    "stargazers": 14,
+    "language": "Kotlin",
+    "description": "厦门大学轻量化课表",
+    "source": "gh api code search",
+    "files_matched": [
+      "app/src/main/java/com/lingion/sleepy/data/jw/JwXmuParser.kt"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "SNNU-CS/SNNU-SDK",
+    "html_url": "https://github.com/SNNU-CS/SNNU-SDK",
+    "stargazers": 8,
+    "language": "Python",
+    "description": "陕西师范大学(SNNU) 教务系统、校园卡、图书馆的非官方Python SDK",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "正方 URP 课表",
+    "full_name": "NagaruZ/szu-schedule-ical",
+    "html_url": "https://github.com/NagaruZ/szu-schedule-ical",
+    "stargazers": 5,
+    "language": "Python",
+    "description": "一个创建深圳大学课程表的iCal文件的脚本 / A script to generate iCal files for class schedules in Shenzhen University",
+    "source": "gh api code search",
+    "files_matched": [
+      "script.py"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "yuchenii/AIschedule-HHU-URP",
+    "html_url": "https://github.com/yuchenii/AIschedule-HHU-URP",
+    "stargazers": 3,
+    "language": "JavaScript",
+    "description": "小米小爱课程表-河海大学-URP教务系统",
+    "source": "gh api code search",
+    "files_matched": [
+      "README.md"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "shouDeveloper/shou-api",
+    "html_url": "https://github.com/shouDeveloper/shou-api",
+    "stargazers": 3,
+    "language": "JavaScript",
+    "description": "上海海洋大学urp及部分官网信息接口",
+    "source": "gh api code search",
+    "files_matched": [
+      "api.md"
+    ]
+  },
+  {
+    "query": "新正方教务 课表",
+    "full_name": "huhu415/eduData-GoBack",
+    "html_url": "https://github.com/huhu415/eduData-GoBack",
+    "stargazers": 2,
+    "language": "Go",
+    "description": "某些高校的教务处爬虫. 主要爬取课程表,成绩等",
+    "source": "gh api code search",
+    "files_matched": [
+      "school/neau/Ug/农大课表json/tsconfig.json"
+    ]
+  },
+  {
+    "query": "jwxt URP class",
+    "full_name": "Exmeaning/SCU_URP_CLASS_SELETOR",
+    "html_url": "https://github.com/Exmeaning/SCU_URP_CLASS_SELETOR",
+    "stargazers": 1,
+    "language": "JavaScript",
+    "description": "四川大学URP选课系统选课自动刷新小工具",
+    "source": "gh api code search",
+    "files_matched": [
+      "main.js"
+    ]
+  }
+]

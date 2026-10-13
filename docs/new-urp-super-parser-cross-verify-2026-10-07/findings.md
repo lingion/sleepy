@@ -1,0 +1,5 @@
+# New URP flat-array cross-verification findings
+
+2026-10-13 audit correction: candidates.json contains 923 raw candidates, while a separate deduplicated search reports 911. Only 41 targets have verdicts; neither 923 nor 911 was individually verified. The verdict ledger labels kuailiaojie/classtable POSITIVE, but records newurp_files=[] and NewUrp signature found: []; this is insufficient direct evidence. The old narrative labels frederick-wang/scu-urp-assistant POSITIVE, contrary to its INDIRECT ledger entry. Therefore no independently confirmed repository-level POSITIVE has been established. The WakeUp parser and data-model smali remain the primary protocol reference.
+
+The production integration parses flat arrays already present in captured same-origin DOM or supplied as response text. A universal flat-array API endpoint is not evidenced, so no new endpoint fetch is claimed. The 41-repo list remains audit context rather than automatic user-facing attribution.

@@ -1,0 +1,122 @@
+[
+  {
+    "repo": "danbaixi/yunxiaozhi",
+    "stars": 440,
+    "language": "JavaScript",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "Generic 教务 微信小程序 (云小智). Code search returned 0 hits on kcm+jxlm+cxjc, skzc+kcm, and jwglxt/urpjw/zhengfang. No URP/正方 signature; likely uses a custom or vendor-specific 教务 endpoint."
+  },
+  {
+    "repo": "LeonidasCl/seu-jwc-catcher",
+    "stars": 115,
+    "language": "Python",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "SEU (东南大学) 选课助手. All three signature searches empty. SEU uses its own 一卡通/选课 system, not URP/正方."
+  },
+  {
+    "repo": "LittFlower/SCU-URP-Helper",
+    "stars": 74,
+    "language": "Python",
+    "verdict": "INDIRECT",
+    "evidence_files": [],
+    "notes": "Name and README reference 'SCU URP' but code search returned 0 hits on kcm+jxlm+cxjc, skzc+kcm, and jwglxt/urpjw/zhengfang. URP-family reference only in documentation; no NewUrp flat-array JSON signature in source."
+  },
+  {
+    "repo": "BIT101-dev/BIT101-Android",
+    "stars": 63,
+    "language": "Kotlin",
+    "verdict": "POSITIVE",
+    "evidence_files": ["data/src/main/java/cn/bit101/android/data/database/entity/CourseScheduleEntity.kt"],
+    "notes": "Direct NewUrp match: 'skzc AND kcm' returns 1 hit in CourseScheduleEntity.kt (week-bitmap + course-name combo). Confirms BIT101 教务 backend exposes the NewUrp flat-array JSON variant."
+  },
+  {
+    "repo": "higuangke/Higk",
+    "stars": 51,
+    "language": "JavaScript",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "Hi广科 (广东科学技术职业学院) 微信小程序, forked from We重邮. All three signature searches empty. Likely uses a custom backend, not URP/正方."
+  },
+  {
+    "repo": "yuan1994/ZCrawler",
+    "stars": 41,
+    "language": "PHP",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "Explicitly 正方教务 (Zhengfang) crawler per description, but code search for 'zhengfang' returned 0 hits. No URP markers (kcm/jxlm/cxjc/skzc all 0). Different vendor (正方 vs URP); claim false."
+  },
+  {
+    "repo": "democard/xmu_assistant",
+    "stars": 21,
+    "language": "Kotlin",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "XMU (厦门大学) 学习助手. All three signature searches empty. XMU uses its own 教务; no NewUrp JSON keys."
+  },
+  {
+    "repo": "neiro-o/seuGrabber",
+    "stars": 19,
+    "language": "PHP",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "SEU (东南大学) 新版选课抢课. All three signature searches empty. SEU-specific 选课 system; no URP signature."
+  },
+  {
+    "repo": "ArrogHie/XMUTimeTabel",
+    "stars": 14,
+    "language": "Kotlin",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "XMU (厦门大学) 轻量化课表. All three signature searches empty. XMU uses own 教务; no NewUrp JSON keys."
+  },
+  {
+    "repo": "SNNU-CS/SNNU-SDK",
+    "stars": 8,
+    "language": "Python",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "SNNU (陕西师范大学) 非官方 SDK. All three signature searches empty. SNNU uses own 教务; no URP/正方 markers."
+  },
+  {
+    "repo": "NagaruZ/szu-schedule-ical",
+    "stars": 5,
+    "language": "Python",
+    "verdict": "POSITIVE",
+    "evidence_files": ["script.py"],
+    "notes": "Direct NewUrp match: 'skzc AND kcm' returns 1 hit in script.py. Confirms SZU (深圳大学) backend returns NewUrp flat-array JSON variant."
+  },
+  {
+    "repo": "yuchenii/AIschedule-HHU-URP",
+    "stars": 3,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [],
+    "notes": "Name and README reference 'HHU URP 教务系统'. Code search returned 0 hits on kcm+jxlm+cxjc, skzc+kcm, and jwglxt/urpjw/zhengfang. URP reference only in documentation; no NewUrp flat-array JSON signature in source."
+  },
+  {
+    "repo": "shouDeveloper/shou-api",
+    "stars": 3,
+    "language": "JavaScript",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "上海海洋大学 URP 接口文档. All three signature searches empty. Description references URP but code does not contain NewUrp JSON keys; likely alternate URP variant."
+  },
+  {
+    "repo": "huhu415/eduData-GoBack",
+    "stars": 2,
+    "language": "Go",
+    "verdict": "NEGATIVE",
+    "evidence_files": [],
+    "notes": "Generic multi-school 教务爬虫 (Go). All three signature searches empty. No URP/正方 markers; likely uses per-school custom parsers without NewUrp flat-array."
+  },
+  {
+    "repo": "Exmeaning/SCU_URP_CLASS_SELETOR",
+    "stars": 1,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [],
+    "notes": "Name and description reference 'SCU URP 选课系统'. Code search returned 0 hits on kcm+jxlm+cxjc, skzc+kcm, and jwglxt/urpjw/zhengfang. URP reference only in documentation; no NewUrp flat-array JSON signature in source."
+  }
+]

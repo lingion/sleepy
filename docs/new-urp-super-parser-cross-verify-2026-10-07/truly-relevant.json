@@ -1,0 +1,1432 @@
+[
+  {
+    "repo": "frederick-wang/scu-urp-assistant",
+    "stars": 210,
+    "default_branch": "dev",
+    "license": "Apache-2.0",
+    "archived": false,
+    "description": "四川大学综合教务系统助手，是一个优化四川大学综合教务系统的「Userscript」，即用户脚本。这不是一个独立的软件，也不是一个浏览器的插件，但可以依赖浏览器的插件运行，或者作为一个Bookmarklet在点击后运行。该脚本可以为综合教务系统增加以下功能：1. 外观美化：会自动美化教务系统界面上部分元素的外观；2. 快捷评教：自动为「希望给好评」的老师打满分好评，并附上随机的正面评语；3. 自动登录：恢复登陆页面的「两周之内不必登录」选项，每次打开教务系统后不用重复登录；4. 均分绩点计算器：可以直接看到自己的全部均分、全部绩点与必修均分、必修绩点，还可以自由选择自己需要的课程进行计算；5. 培养方案查询：可以方便地查询全校所有专业的培养方案与指导性教学计划，并且可以选择任意两个培养方案进行比较，查看差异；6. 成绩查询：可以方便地查询到本学期课程成绩的最高分、最低分、平均分和名次。",
+    "language": "TypeScript",
+    "search_hits": [
+      "cxjc",
+      "id",
+      "jasm",
+      "jxlm",
+      "selectcourselist",
+      "skxq",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C3",
+      "C4",
+      "C5",
+      "C7",
+      "C8"
+    ],
+    "pushed_at": "2025-01-11T16:51:20Z",
+    "html_url": "https://github.com/frederick-wang/scu-urp-assistant",
+    "fork": false,
+    "urp_hit_count": 5
+  },
+  {
+    "repo": "lingion/sleepy",
+    "stars": 64,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "archived": false,
+    "description": "Sleepy 课程表 — Material You 设计的纯净 Android 课表 App，多视图/小组件/教务导入/HSV配色",
+    "language": "Kotlin",
+    "search_hits": [
+      "jasm",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11"
+    ],
+    "pushed_at": "2026-10-07T05:59:25Z",
+    "html_url": "https://github.com/lingion/sleepy",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "qiqqqqq517/shangkeschedule",
+    "stars": 28,
+    "default_branch": "main",
+    "license": "Apache-2.0",
+    "archived": false,
+    "description": "开源无广告课程表 App「上课」，专注课表排版体验、多作息方案与情侣课表。界面简约，专项优化适配",
+    "language": "Kotlin",
+    "search_hits": [
+      "jasm",
+      "skxq",
+      "skzc",
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C8",
+      "C9"
+    ],
+    "pushed_at": "2026-10-06T18:39:03Z",
+    "html_url": "https://github.com/qiqqqqq517/shangkeschedule",
+    "fork": false,
+    "urp_hit_count": 4
+  },
+  {
+    "repo": "democard/xmu_assistant",
+    "stars": 21,
+    "default_branch": "main",
+    "license": "Apache-2.0",
+    "archived": false,
+    "description": "面向厦门大学的 Windows / Android 学习助手，提供签到记录、课件下载、课表、成绩与考试安排。",
+    "language": "Kotlin",
+    "search_hits": [
+      "jasm",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11"
+    ],
+    "pushed_at": "2026-10-02T17:07:35Z",
+    "html_url": "https://github.com/democard/xmu_assistant",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "ArrogHie/XMUTimeTabel",
+    "stars": 14,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "archived": false,
+    "description": "厦门大学轻量化课表",
+    "language": "Kotlin",
+    "search_hits": [
+      "jasm",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11"
+    ],
+    "pushed_at": "2026-09-10T09:38:07Z",
+    "html_url": "https://github.com/ArrogHie/XMUTimeTabel",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "Sibuxiangx/LoveACE",
+    "stars": 13,
+    "default_branch": "main",
+    "license": "Apache-2.0",
+    "archived": false,
+    "description": "彩带小工具：面向安徽财经大学校园生活的一体化移动端工具箱，现已聚合 Android 与 iOS 原生客户端。",
+    "language": "Dart",
+    "search_hits": [
+      "id",
+      "jasm",
+      "jxlm",
+      "selectcourselist",
+      "skxq",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11",
+      "C3",
+      "C5",
+      "C7",
+      "C8"
+    ],
+    "pushed_at": "2026-09-08T16:40:17Z",
+    "html_url": "https://github.com/Sibuxiangx/LoveACE",
+    "fork": false,
+    "urp_hit_count": 4
+  },
+  {
+    "repo": "sinyu1012/YCITSpider",
+    "stars": 8,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "盐城工学院 URP 教务系统爬虫",
+    "language": "Java",
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/sinyu1012/YCITSpider",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "ggggh123/Personal-Studio",
+    "stars": 6,
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "description": "北京理工大学学生事务集成软件。包括成绩查询，成绩分析，DDL/考试信息查询，空教室查询，课程表导入等主要功能。另有AI聊天，文档扫描分析，知识库错题本整理，个人Timeline事务管理（可一键导入课程，DDL，考试安排等事务，也支持自定义添加）",
+    "language": "Kotlin",
+    "search_hits": [
+      "id",
+      "jasm",
+      "skxq",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11",
+      "C8"
+    ],
+    "pushed_at": "2026-06-22T04:52:43Z",
+    "html_url": "https://github.com/ggggh123/Personal-Studio",
+    "fork": false,
+    "urp_hit_count": 3
+  },
+  {
+    "repo": "baifan97/urp",
+    "stars": 4,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "新urp教务系统院校 教务助手",
+    "language": "JavaScript",
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/baifan97/urp",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "BritneyOvO/swun_ehall",
+    "stars": 3,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "民大助手 — 西南民族大学学生门户（课表 / 成绩 / 考勤 / 一卡通）",
+    "language": "Kotlin",
+    "search_hits": [
+      "jasm",
+      "skxq",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11",
+      "C8"
+    ],
+    "pushed_at": "2026-09-27T04:19:40Z",
+    "html_url": "https://github.com/BritneyOvO/swun_ehall",
+    "fork": false,
+    "urp_hit_count": 3
+  },
+  {
+    "repo": "leavesvv-source/NEU-Timetable",
+    "stars": 3,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "archived": false,
+    "description": "东北大学专用的无广告 Android 课表，支持官方教务系统导入",
+    "language": "Kotlin",
+    "search_hits": [
+      "jasm",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C11"
+    ],
+    "pushed_at": "2026-09-08T11:57:19Z",
+    "html_url": "https://github.com/leavesvv-source/NEU-Timetable",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "huhu415/eduData-GoBack",
+    "stars": 2,
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "description": "某些高校的教务处爬虫. 主要爬取课程表,成绩等",
+    "language": "Go",
+    "search_hits": [
+      "selectcourselist",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C7"
+    ],
+    "pushed_at": "2026-04-25T15:18:30Z",
+    "html_url": "https://github.com/huhu415/eduData-GoBack",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "qinglvsuan/IMU-URP-Spider",
+    "stars": 2,
+    "default_branch": "main",
+    "license": "WTFPL",
+    "archived": false,
+    "description": "内蒙古大学URP教务系统爬虫",
+    "language": "Python",
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/qinglvsuan/IMU-URP-Spider",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "although2013/new_getscore",
+    "stars": 1,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "全新的获取校园网成绩和全班成绩的Ruby程序，URP综合教务系统",
+    "language": "Ruby",
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/although2013/new_getscore",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "ershiyidian/WakeUp_SHU",
+    "stars": 1,
+    "default_branch": "main",
+    "license": "NOASSERTION",
+    "archived": false,
+    "description": "面向上海大学的 WakeUp 6.0.23 定制工程：上大教务、课表导入、12 节作息、深色课表与轻量启动。",
+    "language": "Python",
+    "search_hits": [
+      "newurpclasslistitem",
+      "newurpsuperparser"
+    ],
+    "search_query_ids": [
+      "C1",
+      "C2"
+    ],
+    "pushed_at": "2026-09-16T01:36:02Z",
+    "html_url": "https://github.com/ershiyidian/WakeUp_SHU",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "pingg241/Kelo",
+    "stars": 1,
+    "default_branch": "main",
+    "license": "GPL-3.0",
+    "archived": false,
+    "description": "为四川大学专门定制的课程表查看软件，同时可以较为轻松的修改为任意学校的专用课程表",
+    "language": "Dart",
+    "search_hits": [
+      "selectcourselist",
+      "skzc",
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C7",
+      "C9"
+    ],
+    "pushed_at": "2026-07-12T09:23:26Z",
+    "html_url": "https://github.com/pingg241/Kelo",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "00103-a/dayagent-backend",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "早上醒来，一键了解今天该怎么过。AI 驱动的个人每日智能规划助手 — 融合天气、课表、作业、快递、新闻，生成个性化日程。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/00103-a/dayagent-backend",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Aetik-yue/hormone",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "Hormone 课表 - 简洁轻量的大学课程表 Flutter App",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Aetik-yue/hormone",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Airmole/ShellBox",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "贝壳小盒子Wechat微信小程序，高校微信小程序，集课表查询、成绩查询、电费查询、图书查询等功能于一体。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Airmole/ShellBox",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "ChuckieEsan/dut-coursetable-import",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "大连理工大学小爱同学课表导入",
+    "language": "JavaScript",
+    "search_hits": [
+      "cxjc",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C4"
+    ],
+    "pushed_at": "2022-08-19T13:18:49Z",
+    "html_url": "https://github.com/ChuckieEsan/dut-coursetable-import",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "CrazyRunning/MyStudyHelper",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "该项目针对高校的URP综合学分制教务系统开发，可理解为URP教务系统的移动客户端。本项目以四川大学教务处为例，实现了如下功能：登录（教务处的学号和密码）、我的课表（离线和在线）、考试信息查询、学分绩点查询、学籍信息；出于爱好，同时还集成了如下功能：翻译功能（支持20种语言间的互相翻译）、实时新闻、最新影讯、笑话集、百度地图的定位功能、基础地图、卫星地图、步行路经规划和语音导航功能。UI设计加入了Material Design。\\n note：请使用Android6.0以下运行，Android6.0及以上会因为百度SDK版本过低不能运行，欢迎小伙伴自己更新百度SDK。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/CrazyRunning/MyStudyHelper",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Dreace/NUC-Information",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "一个简单的课程表&成绩信息查询微信、QQ小程序",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Dreace/NUC-Information",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Exmeaning/SCU_URP_CLASS_SELETOR",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "四川大学URP选课系统选课自动刷新小工具",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Exmeaning/SCU_URP_CLASS_SELETOR",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Holit/HEU_edusys_miui",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "使用小爱同学对哈尔滨工程大学(HEU)的教务系统进行适配",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Holit/HEU_edusys_miui",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "HoshiKurea/ITYUT",
+    "stars": 0,
+    "default_branch": "master",
+    "license": "MIT",
+    "archived": false,
+    "description": "一个用于连接TYUT并获取相关信息快速开发的工具，教务处一键评教、查询班级课表、查询成绩、查询个人信息等功能....",
+    "language": "Java",
+    "search_hits": [
+      "jasm",
+      "jxlm",
+      "skxq",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C3",
+      "C5"
+    ],
+    "pushed_at": "2024-01-29T06:49:33Z",
+    "html_url": "https://github.com/HoshiKurea/ITYUT",
+    "fork": false,
+    "urp_hit_count": 4
+  },
+  {
+    "repo": "LittFlower/SCU-URP-Helper",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "some apis and scripts about scu urp.",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/LittFlower/SCU-URP-Helper",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Lorcas-Zephyr/aoxiang-assistant",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "翱翔助手，适配西北工业大学教务系统，自动同步成绩、课表、电费",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Lorcas-Zephyr/aoxiang-assistant",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Mutx163/mikcb",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "轻屿课表 — Android 课表应用，HyperOS 超级岛、教务导入、云同步",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Mutx163/mikcb",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Nakanomk/WadwaitaUp",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "I want to develop an adwaita-designed version of WakeUp, but with better experience.",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Nakanomk/WadwaitaUp",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "NoColor2/URP_Class_Schedule",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "爬取新版URP教务系统课表并生成ICS日历文件",
+    "language": "Python",
+    "search_hits": [
+      "新",
+      "URP",
+      "URP",
+      "课表"
+    ],
+    "html_url": "https://github.com/NoColor2/URP_Class_Schedule",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 3,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "PIKACHUIM/Pika-PY3-App-UrpHelp",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "四川大学教务处助手",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/PIKACHUIM/Pika-PY3-App-UrpHelp",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Qing-Xians/html-course-schedule",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "一个基于 HTML 的排课表生成工具，支持自定义课表并导出保存为图片。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Qing-Xians/html-course-schedule",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "RTXwcz/Class-Schedule",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "原生 Android 课表：课程提醒、调休、桌面小组件、离线 OCR、OpenAI 导入与局域网 MCP；保留 Web/PWA。GPL-3.0-only。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/RTXwcz/Class-Schedule",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Reversedeer/urp-academic-affairs-tools",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "URP 教务系统的抢课脚本及工具",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Reversedeer/urp-academic-affairs-tools",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "SNNU-CS/SNNU-SDK",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "陕西师范大学(SNNU) 教务系统、校园卡、图书馆的非官方Python SDK",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/SNNU-CS/SNNU-SDK",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "StageGuard/SuperCourseTimetableBot",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "基于 mirai-console 的 超级课表上课提醒QQ机器人 插件",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/StageGuard/SuperCourseTimetableBot",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "Xiaoxusheng/qqbat",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "基于go-cqhttp的机器人,可推送学习通课表，查看天气，推送视频，chatgpt聊天等功能",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/Xiaoxusheng/qqbat",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "adminerest/SHOU-urp-auto-choose-lessons",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "上海海洋大学URP自动抢课脚本",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/adminerest/SHOU-urp-auto-choose-lessons",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "boy-hack/wooyun-payload",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "从wooyun中提取的payload，以及burp插件",
+    "language": null,
+    "search_hits": [
+      "jwxt",
+      "skzc",
+      "urp"
+    ],
+    "search_query_ids": [
+      "C12"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/boy-hack/wooyun-payload",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "bxs114/Dufe_URP_Courseselection",
+    "stars": 0,
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "description": "东北财经大学URP教务系统选课辅助",
+    "language": null,
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/bxs114/Dufe_URP_Courseselection",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "ceilf6/Auto_courseGrabber",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "正方教务系统自动抢课脚本（多省市高校实测）：并发选课、课程名/课号检索、时间/教师筛选、换课、定时开抢与可视化控制台。JavaScript helper for Zhengfang course enrollment.",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/ceilf6/Auto_courseGrabber",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "chaolan2019/SCU-URP-plusplus",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "SCU URP++ 教务系统美化油猴脚本",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/chaolan2019/SCU-URP-plusplus",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "chaolan2019/URP-plusplus-Repository",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "SCU URP++ 教务系统美化主题/插件商店三方仓库",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/chaolan2019/URP-plusplus-Repository",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "dairoot/school-api",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "🌱 校园教务系统接口，正方教务系统 SDK for Python",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/dairoot/school-api",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "danbaixi/yunxiaozhi",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "云小智 - 一款全面的校园教务查询微信小程序。包括课表查询、成绩查询、校历、一键评教、考试安排、成绩排名、空教室查询等",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/danbaixi/yunxiaozhi",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "elaimoe/Grade-Watcher",
+    "stars": 0,
+    "default_branch": "main",
+    "license": "MIT",
+    "archived": false,
+    "description": "适用于URP教务系统学生站，监控教务系统页面",
+    "language": "Jupyter Notebook",
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/elaimoe/Grade-Watcher",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "etherealviator/CourseTable",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "📅 极简课程表 Android 应用 — 无广告·秒开·教务导入·Zustand模块化架构",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/etherealviator/CourseTable",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "fangd123/funhubu",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "湖北大学校园公众平台——玩转湖大|强智教务系统通用",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/fangd123/funhubu",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "guoyu07/import-URP-timetable",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "使用PHPExcel解析Excel课表数据并上传至数据库中",
+    "language": "PHP",
+    "search_hits": [
+      "URP",
+      "课表"
+    ],
+    "html_url": "https://github.com/guoyu07/import-URP-timetable",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "higuangke/Higk",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "Hi广科，前端源码fork自重庆邮电大学We重邮微信小程序，修改并适配Hi广科后端程序，由广科贴吧技术组开发并运营的微信小程序。广东科学技术职业学院学子的贴心助手，专注于校园服务，主要功能有：成绩查询、快递查询、借阅查询、课表查询、表白墙、校园活动、新闻等。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/higuangke/Higk",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "iAaronLau/HEBUST_URP_login",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "河北科技大学新教务系统登录",
+    "language": "Python",
+    "search_hits": [
+      "新",
+      "URP"
+    ],
+    "html_url": "https://github.com/iAaronLau/HEBUST_URP_login",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "jadhav7777/Pharmacy_Management_System",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "Pharmacy Management System Language:      Visual Basic Database:      MS Access Description:  The purpose of this project is to manage all data derived from a pharmacy through                         the computer-based system.",
+    "language": "Visual Basic .NET",
+    "search_hits": [
+      "cxjc",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C4"
+    ],
+    "pushed_at": "2020-06-05T13:58:26Z",
+    "html_url": "https://github.com/jadhav7777/Pharmacy_Management_System",
+    "fork": false,
+    "urp_hit_count": 2
+  },
+  {
+    "repo": "ki-ljl/ncepu-edm",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "NCEPU-EDM（NCEPU和EDM分别是华北电力大学和教育数据挖掘的缩写）软件是专门为华北电力大学本科生所开发的一款简单软件，具有查询和数据挖掘两大功能模块。其中查询模块为学生提供成绩、课表、考试、GPA、培养方案、成绩总表以及综合测评等教务查询。同时该模块对学生的成绩数据进行可视化分析，包括成绩占比、成绩比较、GPA走势、单科分析、专业排名、挂科分析、单科排名以及个人分析查询。数据挖掘模块对近五年的学生成绩数据进行了关联分析，生成了几十条有用的关联规则，利用关联规则学生可以根据以前考试科目的成绩来大致预测将来考试科目的成绩。同时该模块根据关联规则，选取了关联性较强的一些科目，利用部分科目的成绩来预测特定科目的成绩，并用SVM、KNN等六个机器学习算法来训练模型，进而预测相关成绩，让学生可以根据预测情况进行相应学习状态或者复习状态的调整，最终达到成绩预警的作用。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/ki-ljl/ncepu-edm",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "kkkzbh/bot",
+    "stars": 0,
+    "default_branch": "main",
+    "license": null,
+    "archived": false,
+    "description": "Koishi-based QQ AI bot with memory, multimodal replies, attachments, automation, academic-system integration, and a web console.",
+    "language": "TypeScript",
+    "search_hits": [
+      "selectcourselist",
+      "skzc"
+    ],
+    "search_query_ids": [
+      "C7"
+    ],
+    "pushed_at": "2026-09-26T11:41:29Z",
+    "html_url": "https://github.com/kkkzbh/bot",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "linling-zy/kust-schedule",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "昆工课程表 - 基于拾光课程表，对接昆明理工大学教务系统",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/linling-zy/kust-schedule",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "mengkunsoft/HuasHelper",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "🙋 文理助手APP全套源代码（包含新闻浏览、阳光服务、成绩查询、图书馆藏检索、课表查询、在线缴费、一键登录校园网、校友交流社区、校园街景查看等功能）",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/mengkunsoft/HuasHelper",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "miluSam/Xiao-Ai-s-Class-Schedule",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "基于新URP教学管理系统的小爱同学课表导入代码",
+    "language": "JavaScript",
+    "search_hits": [
+      "新",
+      "URP",
+      "URP",
+      "课表"
+    ],
+    "html_url": "https://github.com/miluSam/Xiao-Ai-s-Class-Schedule",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 3,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "mlkgrnt/ScheduleX",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "开源无广告 Android 课程表应用 — 智能导入（并不智能）、多教务系统适配（适配效果未经验证）、桌面小组件（对的对的小组件真的很可爱）。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/mlkgrnt/ScheduleX",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "sasaju/NormalSchedule",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "河大课表：适用于河北大学本科生和研究生的课程表APP",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/sasaju/NormalSchedule",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "shouDeveloper/shou-api",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "上海海洋大学urp及部分官网信息接口",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/shouDeveloper/shou-api",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "shuakami/timetable",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "嘎嘎课程表 · 免费无广告的 Android 课程表 App。大学生课表：教务系统/Excel/ICS/CSV/JSON 多源导入、AI 一键转换、冲突检测、变更记录、学科贴纸、桌面小组件、写入系统日历。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/shuakami/timetable",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "superdaobo/mini-hbut",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "湖北工业大学教务助手 基于 Tauri + Capacitor + Vue 3 的跨平台客户端应用",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/superdaobo/mini-hbut",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "tf2jaguar/craw_neau",
+    "stars": 0,
+    "default_branch": "master",
+    "license": null,
+    "archived": false,
+    "description": "查询URP教务系统学生信息、查询成绩、查询课表",
+    "language": "Python",
+    "search_hits": [
+      "URP",
+      "课表"
+    ],
+    "html_url": "https://github.com/tf2jaguar/craw_neau",
+    "search_query_ids": [
+      "RXN1",
+      "RXU"
+    ],
+    "urp_hit_count": 2,
+    "pushed_at": null,
+    "fork": false
+  },
+  {
+    "repo": "wcomaqsw/indulge-in-study",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "SCU_urp教务系统Python抢课程序",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/wcomaqsw/indulge-in-study",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "xiaowang4588/Repair-System-and-Its-Schedule",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "处理学校多媒体报修，网信中心报修表上传，及其全校课表查询和变更",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/xiaowang4588/Repair-System-and-Its-Schedule",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "yuan1994/ZCrawler",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "ZCrawler 是一个优雅、高效、功能强大的【正方教务】爬虫程序，支持成绩查询、考试查询、课表查询、四六级成绩查询、四六级报名、选课查询、修改密码、获取用户菜单等功能，并且能将数据解析成易读格式，是一个强大的【正方教务】爬虫的 PHP 类库。",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/yuan1994/ZCrawler",
+    "fork": false,
+    "urp_hit_count": 1
+  },
+  {
+    "repo": "yuchenii/AIschedule-HHU-URP",
+    "stars": 0,
+    "default_branch": null,
+    "license": null,
+    "archived": false,
+    "description": "小米小爱课程表-河海大学-URP教务系统",
+    "language": null,
+    "search_hits": [
+      "urp",
+      "新",
+      "课表"
+    ],
+    "search_query_ids": [
+      "C9"
+    ],
+    "pushed_at": null,
+    "html_url": "https://github.com/yuchenii/AIschedule-HHU-URP",
+    "fork": false,
+    "urp_hit_count": 1
+  }
+]

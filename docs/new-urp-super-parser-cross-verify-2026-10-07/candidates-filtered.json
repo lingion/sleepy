@@ -1,0 +1,22 @@
+{
+  "metadata": {
+    "generated_at": "2026-10-07",
+    "queries_used": [
+      "jsxsd new",
+      "NewUrpClassListItem",
+      "NewUrp timetable",
+      "NewUrpSuperParser",
+      "jxlm jasm 课表",
+      "jwxt URP class",
+      "新 URP",
+      "jwxt 新 URP 课表",
+      "新 URP 教务 课表",
+      "新正方教务 课表",
+      "skzc jxlm jasm",
+      "正方 URP 课表"
+    ],
+    "unique_candidates": 911,
+    "code_search_pages_per_query": 3
+  },
+  "candidates": []
+}

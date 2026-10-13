@@ -1,0 +1,163 @@
+[
+  {
+    "repo": "frederick-wang/scu-urp-assistant",
+    "stars": 210,
+    "language": "TypeScript",
+    "verdict": "POSITIVE",
+    "evidence_files": [
+      "src/store/types.ts"
+    ],
+    "notes": "CourseScheduleInfoDTO in types.ts (dev branch) declares full NewUrp Super flat-JSON schema: skzc, skxq, skjc, cxjc, jxlm, jasm, kcm, with nested id {courseNumber, courseSequenceNumber, ...}. Matches target protocol signature exactly."
+  },
+  {
+    "repo": "ggggh123/Personal-Studio",
+    "stars": 6,
+    "language": "Kotlin",
+    "verdict": "POSITIVE",
+    "evidence_files": [
+      "app/src/main/java/com/example/personal_studio/data/network/bit/dto/ScheduleRowDto.kt",
+      "app/src/main/java/com/example/personal_studio/domain/bitimport/MapBitCourseUseCase.kt",
+      "docs/superpowers/specs/2026-05-18-p5-bit-import-design.md"
+    ],
+    "notes": "ScheduleRowDto declares KCM/SKZC/SKXQ/JASMC/KCH/XF/XS (BIT 教务 flat-array DTO) with companion design doc explaining SKZC week-bitmap expansion. NewUrp signature kcm+skzc+jasm+skxq present. jxlm/cxjc absent in DTO but parser invokes them through MapBitCourseUseCase contract."
+  },
+  {
+    "repo": "BritneyOvO/swun_ehall",
+    "stars": 3,
+    "language": "Kotlin",
+    "verdict": "POSITIVE",
+    "evidence_files": [
+      "android/app/src/test/java/cn/edu/swun/swun_ehall/data/http/CampusParseTest.kt",
+      "android/app/src/main/kotlin/cn/edu/swun/swun_ehall/data/http/KtkqClient.kt"
+    ],
+    "notes": "CampusParseTest.kt constructs JSON fixtures with full NewUrp keys (kcm, cxjc, skzc, jasmc, skxq, jsjc) from SWUN campus; KtkqClient.kt has 7 occurrences of kcm, 9 of skzc. Direct NewUrp Super protocol match."
+  },
+  {
+    "repo": "iedon/weyzu-backend-main",
+    "stars": 17,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "classes/crawlers/urp.js"
+    ],
+    "notes": "Header explicitly declares 'URP 1.50 (~2008)教务系统爬虫实现' — legacy HTML scraping via cheerio+iconv-lite. Uses 'kcm'/'jsm' as jQuery DOM selector variable names, not NewUrp flat-JSON keys. Old URP family, not NewUrp Super."
+  },
+  {
+    "repo": "HeraldStudio/herald-webservice",
+    "stars": 44,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "routes/api/curriculum.js",
+      "middleware/auth-provider/ids-3.js"
+    ],
+    "notes": "Curriculum API uses cheerio HTML scraping from 'xk.urp.seu.edu.cn/jw_service/service/stuCurriculum.action' (legacy URP, not NewUrp). ids-3.js references urp.seu.edu.cn (old portal). No kcm/jxlm/cxjc/skzc in actual code."
+  },
+  {
+    "repo": "Airmole/ShellBox",
+    "stars": 448,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "pages/course/my.js"
+    ],
+    "notes": "WeChat mini-program with hardcoded class-time grid. Single 'urp' keyword mention; no NewUrp signature keys (kcm/jxlm/cxjc/skzc absent). Generic URP/WXU course-app shell."
+  },
+  {
+    "repo": "yeliqin666/xjtu-toolbox-android",
+    "stars": 82,
+    "language": "Kotlin",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "app/src/main/java/com/xjtu/toolbox/schedule/ScheduleApi.kt",
+      "app/src/main/java/com/xjtu/toolbox/schedule/JwxtChanges.kt"
+    ],
+    "notes": "Hits 'cxjc' only as URL path '/jwapp/sys/wdkb/modules/jshkcb/cxjcs.do' and object key 'cxjcs' — not the NewUrp period-length field. Targets XJTU jwapp/sys/wdkb (old JWSJ endpoint family), not NewUrp Super flat-array payload."
+  },
+  {
+    "repo": "ShiGuangSchedule/shiguang_warehouse",
+    "stars": 63,
+    "language": "JavaScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "resources/XJTU/xjtu.js",
+      "resources/SANYEDU/sany.js",
+      "resources/CTGU/ctgu.js"
+    ],
+    "notes": "Per-school adapter repo. XJTU.js hits 'cxjc' (URL path only), SANY/sany.js hits 'cxjc' 5x (URL path), CTGU/ctgu.js hits 'skzc' 2x (likely param name). None contain the NewUrp Super flat-JSON triple. Shiguang legacy-adapter family, not NewUrp."
+  },
+  {
+    "repo": "AriaPokotengYe/SEU-NewSystem-catcher",
+    "stars": 53,
+    "language": "Python",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "crawl.py"
+    ],
+    "notes": "SEU 选课刷课脚本 (Tkinter GUI). 'urp' appears 26 times but as URL/host substring; no kcm/jxlm/cxjc/skzc flat-JSON keys. Targets SEU 新选课系统 (course-grabbing), not timetable parser."
+  },
+  {
+    "repo": "ki-ljl/ncepu-edm",
+    "stars": 26,
+    "language": "Java",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "app/src/main/java/com/example/NCEPU/Student/TimeTable/TimeTableActivity.java"
+    ],
+    "notes": "Android timetable UI with hardcoded time slots. No NewUrp signature keys (kcm/jxlm/cxjc/skzc absent). Generic school-app shell, URP-family only by repository description."
+  },
+  {
+    "repo": "sasaju/NormalSchedule",
+    "stars": 19,
+    "language": "Kotlin",
+    "verdict": "NEGATIVE",
+    "evidence_files": [
+      "app/src/main/java/com/liflymark/normalschedule/logic/network/CourseService.kt",
+      "app/src/main/java/com/liflymark/normalschedule/logic/bean/CourseBean.kt"
+    ],
+    "notes": "河北大学 course/score/exam app with custom Retrofit services (CourseService, ScoreService, ExamArrangeService). No URP/NewUrp/Zhengfang references at code level — single 'urp' is unrelated. Repository description suggests URP, but actual implementation is school-API-specific."
+  },
+  {
+    "repo": "shuakami/timetable",
+    "stars": 10,
+    "language": "TypeScript",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "src/domain/__tests__/edu.test.ts"
+    ],
+    "notes": "Test file imports 'parseZfKbList' from '../edu/zhengfang' and tests '正方新版课表解析' — Zhengfang (ZFSJ) adapter, NOT NewUrp. Hits kcm/jwglxt/zhengfang are all Zhengfang-family keys (kcmc/xqj/jcs)."
+  },
+  {
+    "repo": "Aetik-yue/hormone",
+    "stars": 4,
+    "language": "Dart",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "lib/features/import/data/school_adapter.dart"
+    ],
+    "notes": "school_adapter.dart is a static config mapping 30+ school URLs to AcademicSystemType.{urp, zhengfang} enum. No actual NewUrp signature keys (kcm/jxlm/cxjc/skzc absent). Adapter-config-only repo."
+  },
+  {
+    "repo": "junqi1121/URPHelper",
+    "stars": 3,
+    "language": "HTML",
+    "verdict": "INDIRECT",
+    "evidence_files": [
+      "Modules/postClass.py",
+      "Modules/showClass.py",
+      "Modules/userLogin.py"
+    ],
+    "notes": "Python URP helper forked from 皮卡丘. postClass.py uses 'kcm'/'jasm' as dictionary keys for HTML row scraping ('addles_loop[\"kcm\"]'), not NewUrp flat-JSON field names. Legacy URP 1.50 HTML-scrape approach."
+  },
+  {
+    "repo": "mlkgrnt/ScheduleX",
+    "stars": 1,
+    "language": "Kotlin",
+    "verdict": "NEGATIVE",
+    "evidence_files": [
+      "app/src/main/java/com/schedulex/data/model/School.kt",
+      "app/src/main/java/com/schedulex/llm/HtmlExtractor.kt"
+    ],
+    "notes": "School.kt configures 'zhengfang' and 'urp' as system type strings (1 line each). HtmlExtractor and extract_schedule_v4.js contain no URP/Zhengfang/NewUrp keys. Repository has README marketing ('智能导入/多教务适配') but actual code is generic. Adjacent relevance only."
+  }
+]
