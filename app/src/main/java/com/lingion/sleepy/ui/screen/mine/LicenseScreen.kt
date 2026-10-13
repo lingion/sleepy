@@ -321,6 +321,7 @@ private data class AttributionEntry(
 
 /** 跨校普适项目 (单卡, 不可展开)。 */
 private val attributionEntries: List<AttributionEntry> = listOf(
+    AttributionEntry("old-qz-audit", "Old-QZ 协议核对", "历史协议参考", "Old-QZ protocol verification: Crazy-ChenMiLin/TableAPK (Apache-2.0; protocol reference); LonelyMarch/OpenWakeUp (AGPL-3.0; protocol reference); ThaiCao/WakeupSchedule_Kotlin (Apache-2.0; protocol reference); YuZhangWang/Java-Demo (GPL-3.0; protocol reference); dIT8Zv/WakeupSchedule_BUPT (Apache-2.0; protocol reference); ershiyidian/WakeUp_SHU (NOASSERTION; protocol reference); historical WakeUp APK (YZune; closed-source protocol reference, no code reused)."),
     AttributionEntry(
         "foundational-wakeup", "WakeUp 课程表 (YZune)", "Apache-2.0",
         "JwCourse / JwParser 中间结构语义与强智系 HTML 解析的参考实现"

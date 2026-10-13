@@ -150,7 +150,11 @@ object FrameTraversalTree {
         val anchors = ANCHORS.filter { anchor ->
             anchorNeedle(anchor).any { needle -> lower.contains(needle.lowercase()) }
         }
-        val thuAnchors = if (isThuCoursePage(html)) anchors + THU_SCRIPT_ANCHOR else anchors
+        val oldQzAnchors = if ((lower.contains("id=\"kb\"") || lower.contains("id='kb'") ||
+            Regex("""id=["'][1-5]-[1-7]-2["']""").containsMatchIn(lower)) &&
+            com.lingion.sleepy.data.jw.JwOldQzSuperParser(html).generateCourseList().isNotEmpty()
+        ) anchors + "old-qz-structural" else anchors
+        val thuAnchors = if (isThuCoursePage(html)) oldQzAnchors + THU_SCRIPT_ANCHOR else oldQzAnchors
         // Some URP pages embed the timetable as a flat JSON array in a script,
         // without a table id/class. Validate its structure before selecting frame.
         return if (html.contains("\"skzc\"") && html.contains("\"kcm\"") &&

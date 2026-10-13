@@ -37,6 +37,12 @@ class AboutLicenseAttributionTest {
     // ----- 跨校普适项目 (Foundational) token 集 -----
 
     private val FOUNDATIONAL_ATTRIBUTIONS = listOf(
+        Attribution("Crazy-ChenMiLin/TableAPK", "Apache-2.0"),
+        Attribution("LonelyMarch/OpenWakeUp", "AGPL-3.0"),
+        Attribution("ThaiCao/WakeupSchedule_Kotlin", "Apache-2.0"),
+        Attribution("YuZhangWang/Java-Demo", "GPL-3.0"),
+        Attribution("dIT8Zv/WakeupSchedule_BUPT", "Apache-2.0"),
+        Attribution("ershiyidian/WakeUp_SHU", "NOASSERTION"),
         Attribution("WakeUp", "Apache-2.0"),
         Attribution("WakeupSchedule_BUPT", "Apache-2.0"),
         Attribution("WakeupSchedule_Kotlin", "Apache-2.0"),

@@ -1,0 +1,58 @@
+[
+  {
+    "repo_name": "Crazy-ChenMiLin/TableAPK",
+    "verdict": "POSITIVE",
+    "license": "Apache-2.0",
+    "relevant_files": [
+      "app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ],
+    "verdict_reason": "Pinned file read: historical kbtable/br field protocol, no independent four-stage dispatcher; shared ancestry is not independent consensus"
+  },
+  {
+    "repo_name": "LonelyMarch/OpenWakeUp",
+    "verdict": "POSITIVE",
+    "license": "AGPL-3.0",
+    "relevant_files": [
+      "parser/src/main/kotlin/com/openwakeup/parser/web/CcsuQzOldParser.kt",
+      "parser/src/main/kotlin/com/openwakeup/parser/web/JlictQzOldParser.kt",
+      "parser/src/main/kotlin/com/openwakeup/parser/web/QzOldParser.kt"
+    ],
+    "verdict_reason": "Pinned file read: independent JLICT title, CCSU fixed-cell, base week-node forms; AGPL code not copied"
+  },
+  {
+    "repo_name": "ThaiCao/WakeupSchedule_Kotlin",
+    "verdict": "POSITIVE",
+    "license": "Apache-2.0",
+    "relevant_files": [
+      "app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ],
+    "verdict_reason": "Pinned file read: historical kbtable/br field protocol, no independent four-stage dispatcher; shared ancestry is not independent consensus"
+  },
+  {
+    "repo_name": "YuZhangWang/Java-Demo",
+    "verdict": "POSITIVE",
+    "license": "GPL-3.0",
+    "relevant_files": [
+      "24WakeupSchedule_Kotlin/app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ],
+    "verdict_reason": "Pinned file read: historical kbtable/br field protocol, no independent four-stage dispatcher; shared ancestry is not independent consensus"
+  },
+  {
+    "repo_name": "dIT8Zv/WakeupSchedule_BUPT",
+    "verdict": "POSITIVE",
+    "license": "Apache-2.0",
+    "relevant_files": [
+      "app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ],
+    "verdict_reason": "Pinned file read: historical kbtable/br field protocol, no independent four-stage dispatcher; shared ancestry is not independent consensus"
+  },
+  {
+    "repo_name": "ershiyidian/WakeUp_SHU",
+    "verdict": "POSITIVE",
+    "license": "NOASSERTION",
+    "relevant_files": [
+      "core/dex1/classes/app/05584_com.suda.yzune.wakeupschedule.schedule_parser.parser.old_qz.OooO00o.dexasm.json"
+    ],
+    "verdict_reason": "Pinned file read: historical decompiled CCUT group id and field positions; APK is not Apache-licensed source"
+  }
+]

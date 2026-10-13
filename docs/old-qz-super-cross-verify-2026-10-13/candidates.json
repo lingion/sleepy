@@ -1,0 +1,52 @@
+[
+  {
+    "full_name": "Crazy-ChenMiLin/TableAPK",
+    "head": "56db9ceefc9ca5f0934925e3232a34b48dd55f93",
+    "license": "Apache-2.0",
+    "files": [
+      "app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ]
+  },
+  {
+    "full_name": "LonelyMarch/OpenWakeUp",
+    "head": "9c2d0436d74e1a8a9925c009bb80e1a15df4d854",
+    "license": "AGPL-3.0",
+    "files": [
+      "parser/src/main/kotlin/com/openwakeup/parser/web/CcsuQzOldParser.kt",
+      "parser/src/main/kotlin/com/openwakeup/parser/web/JlictQzOldParser.kt",
+      "parser/src/main/kotlin/com/openwakeup/parser/web/QzOldParser.kt"
+    ]
+  },
+  {
+    "full_name": "ThaiCao/WakeupSchedule_Kotlin",
+    "head": "a69fb7555e0917e0ba8a0dadbf3248364666b089",
+    "license": "Apache-2.0",
+    "files": [
+      "app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ]
+  },
+  {
+    "full_name": "YuZhangWang/Java-Demo",
+    "head": "784e619050f7f7424b5f88f1715713d55f2e0475",
+    "license": "GPL-3.0",
+    "files": [
+      "24WakeupSchedule_Kotlin/app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ]
+  },
+  {
+    "full_name": "dIT8Zv/WakeupSchedule_BUPT",
+    "head": "88d5b2ff93b946b40e8ade6851d4440188443a7f",
+    "license": "Apache-2.0",
+    "files": [
+      "app/src/main/java/com/suda/yzune/wakeupschedule/schedule_import/parser/OldQzParser.kt"
+    ]
+  },
+  {
+    "full_name": "ershiyidian/WakeUp_SHU",
+    "head": "95d293d92ea642bc03eccc8ab63b7e29b8d25f3a",
+    "license": "NOASSERTION",
+    "files": [
+      "core/dex1/classes/app/05584_com.suda.yzune.wakeupschedule.schedule_parser.parser.old_qz.OooO00o.dexasm.json"
+    ]
+  }
+]

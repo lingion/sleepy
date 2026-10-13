@@ -1,0 +1,32 @@
+[
+  {
+    "project": "Crazy-ChenMiLin/TableAPK",
+    "license": "Apache-2.0",
+    "role_in_verification": "protocol facts only; no source code copied"
+  },
+  {
+    "project": "LonelyMarch/OpenWakeUp",
+    "license": "AGPL-3.0",
+    "role_in_verification": "protocol facts only; no source code copied"
+  },
+  {
+    "project": "ThaiCao/WakeupSchedule_Kotlin",
+    "license": "Apache-2.0",
+    "role_in_verification": "protocol facts only; no source code copied"
+  },
+  {
+    "project": "YuZhangWang/Java-Demo",
+    "license": "GPL-3.0",
+    "role_in_verification": "protocol facts only; no source code copied"
+  },
+  {
+    "project": "dIT8Zv/WakeupSchedule_BUPT",
+    "license": "Apache-2.0",
+    "role_in_verification": "protocol facts only; no source code copied"
+  },
+  {
+    "project": "ershiyidian/WakeUp_SHU",
+    "license": "NOASSERTION",
+    "role_in_verification": "protocol facts only; no source code copied"
+  }
+]
