@@ -19,8 +19,21 @@ import java.time.LocalDateTime
 internal data class WidgetWeekSource(
     val table: TimeTableEntity,
     val courses: List<CourseEntity>,
-    val display: WeekDisplayContext
+    val display: WeekDisplayContext,
+    val transfers: List<com.lingion.sleepy.util.HolidayTransferEntry> = emptyList()
 ) {
+    fun coursesOn(date: java.time.LocalDate, previewBeforeStart: Boolean = false): List<CourseEntity> {
+        if (previewBeforeStart && display.semesterStatus == DateUtils.SemesterStatus.AFTER_END &&
+            transfers.none { it.targetDate == date }) return emptyList()
+        if (previewBeforeStart && transfers.none { it.sourceDate == date || it.targetDate == date } &&
+            DateUtils.semesterStatus(table.startDate, table.maxWeek, date) == DateUtils.SemesterStatus.BEFORE_START) {
+            return coursesFor(date.dayOfWeek.value, 1)
+        }
+        return com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+            date, table.startDate, table.maxWeek, courses, transfers
+        ).sortedBy { it.startNode }
+    }
+
     fun coursesFor(dayOfWeek: Int, week: Int = display.targetWeek): List<CourseEntity> =
         courses.asSequence()
             .filter { it.day == dayOfWeek && it.inWeek(week) }
@@ -28,7 +41,9 @@ internal data class WidgetWeekSource(
             .toList()
 
     fun dateFor(dayOfWeek: Int): java.time.LocalDate =
-        DateUtils.dateOfWeek(table.startDate, display.targetWeek, dayOfWeek)
+        if (display.semesterStatus == DateUtils.SemesterStatus.BEFORE_START && display.status == com.lingion.sleepy.util.WeekDisplayStatus.NORMAL)
+            DateUtils.dateOfWeek(table.startDate, 1, dayOfWeek)
+        else DateUtils.dateOfWeekDay(display.targetDate, dayOfWeek)
 
     /**
      * 返回 widget 应展示的"今天"语义日期：
@@ -55,8 +70,9 @@ internal object WidgetWeekDataLoader {
             now = now,
             courses = courses,
             timeJson = table.timeJson,
-            enabled = AppPrefs.isNearestBusyDay(app)
+            enabled = AppPrefs.isNearestBusyDay(app),
+            transfers = AppPrefs.getHolidayTransfers(app, table.id)
         )
-        return WidgetWeekSource(table, courses, display)
+        return WidgetWeekSource(table, courses, display, AppPrefs.getHolidayTransfers(app, table.id))
     }
 }

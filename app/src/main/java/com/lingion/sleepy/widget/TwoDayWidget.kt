@@ -200,7 +200,7 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                                 maxWeek = table.maxWeek,
                                 today = today,
                                 courses = source.courses,
-                                count = 2
+                                count = 2, transfers = source.transfers
                             ).let { nearest ->
                                 if (nearest.size >= 2) nearest.take(2)
                                 else listOf(source.display.targetDate, source.display.targetDate.plusDays(1))
@@ -208,14 +208,10 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                         } else listOf(today, tomorrow)
                         val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, dates.first())
                         val days = dates.map { date ->
-                            val week = DateUtils.currentWeek(table.startDate, date)
-                            // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
-                            val dow = HolidayTransferHelper.courseDayForDate(context, table.id, date)
-                            val courses = if (status != DateUtils.SemesterStatus.IN_RANGE || dow == null) emptyList()
-                                else source.coursesFor(dow, week)
+                            val courses = source.coursesOn(date)
                             DayData(
                                 date = date,
-                                dayOfWeek = dow ?: date.dayOfWeek.value,
+                                dayOfWeek = date.dayOfWeek.value,
                                 courses = courses,
                                 timeJson = table.timeJson,
                                 isGrey = HolidayManager.shouldGrey(context, date, table.id)
@@ -226,7 +222,7 @@ open class TwoDayWidgetReceiver : AppWidgetProvider() {
                             hasTable = true,
                             isDark = isDark,
                             themeKey = themeKey,
-                            semesterStatus = status,
+                            semesterStatus = if (days.any { it.courses.isNotEmpty() }) DateUtils.SemesterStatus.IN_RANGE else status,
                             weekDisplayStatus = source.display.status
                         )
                     }

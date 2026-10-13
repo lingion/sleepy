@@ -133,8 +133,12 @@ private suspend fun loadScreenData(): ScreenData {
         val table = WidgetTableResolver.resolveCurrentTable()
         if (table != null) {
             val week = DateUtils.currentWeek(table.startDate, today)
+            val allCourses = repo.getCourses(table.id)
+            val transfers = com.lingion.sleepy.util.AppPrefs.getHolidayTransfers(app, table.id)
             val courses = (1..7).flatMap { dow ->
-                repo.getCoursesByDayOnce(table.id, dow).filter { it.inWeek(week) }
+                com.lingion.sleepy.util.HolidayRangeOps.HolidayTransferOps.coursesForDate(
+                    DateUtils.dateOfWeek(table.startDate, week, dow), table.startDate, table.maxWeek, allCourses, transfers
+                ).map { it.copy(day = dow) }
             }
             ScreenData(
                 courses = courses,

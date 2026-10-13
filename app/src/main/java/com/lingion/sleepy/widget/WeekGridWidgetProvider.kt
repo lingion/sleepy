@@ -989,9 +989,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                         val days = (1..7).map { dow ->
                             val date = source.dateFor(dow)
                             // issue#44: 取课按调休映射
-                            val courseDow = HolidayTransferHelper.courseDayForDate(context, t.id, date)
-                            val courses = if (display.semesterStatus == DateUtils.SemesterStatus.AFTER_END || courseDow == null) emptyList() else
-                                source.coursesFor(courseDow, week)
+                            val courses = source.coursesOn(date, previewBeforeStart = true)
                             DayData(
                                 date = date,
                                 dayOfWeek = dow,
@@ -1004,7 +1002,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                             days = days, hasTable = true, isDark = isDark,
                             themeKey = themeKey,
                             showDate = showDate, visibleDays = visibleDays,
-                            semesterStatus = display.semesterStatus,
+                            semesterStatus = if (days.any { it.courses.isNotEmpty() } && display.semesterStatus == DateUtils.SemesterStatus.AFTER_END) DateUtils.SemesterStatus.IN_RANGE else display.semesterStatus,
                             weekDisplayStatus = display.status,
                             nearestBusyTargetDate = display.targetDate.takeIf {
                                 display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY

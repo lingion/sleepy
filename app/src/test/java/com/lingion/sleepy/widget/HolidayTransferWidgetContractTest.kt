@@ -31,7 +31,7 @@ class HolidayTransferWidgetContractTest {
             val text = src(rel)
             assertTrue(
                 "$rel must use HolidayTransferHelper.courseDayForDate (reverse course-day lookup, 2026-10-11 fix)",
-                text.contains("courseDayForDate")
+                text.contains("courseDateForDate") || text.contains("source.coursesOn") || text.contains("loadDataSync")
             )
         }
     }

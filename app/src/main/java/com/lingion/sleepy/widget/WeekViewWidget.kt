@@ -210,9 +210,7 @@ open class WeekViewWidgetReceiver : AppWidgetProvider() {
                         val days = (1..7).map { dayOfWeek ->
                             val date = source.dateFor(dayOfWeek)
                             // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
-                            val courseDay = HolidayTransferHelper.courseDayForDate(context, table.id, date)
-                            val visible = if (status == DateUtils.SemesterStatus.AFTER_END || courseDay == null) emptyList() else
-                                source.coursesFor(courseDay, week)
+                            val visible = source.coursesOn(date, previewBeforeStart = true)
                             DayData(
                                 date = date,
                                 dayOfWeek = dayOfWeek,
@@ -229,7 +227,7 @@ open class WeekViewWidgetReceiver : AppWidgetProvider() {
                                 source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
                             }
                         )
-                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = status, compactWindow = compactWindow, weekDisplayStatus = source.display.status)
+                        WeekData(days = days, hasTable = true, isDark = isDark, themeKey = themeKey, semesterStatus = if (days.any { it.courses.isNotEmpty() } && status == DateUtils.SemesterStatus.AFTER_END) DateUtils.SemesterStatus.IN_RANGE else status, compactWindow = compactWindow, weekDisplayStatus = source.display.status)
                     }
                 }
             } catch (_: Throwable) {

@@ -476,13 +476,9 @@ open class TodayWidgetReceiver : AppWidgetProvider() {
                         val effectiveTarget = if (autoNearestBusyDay &&
                             source.display.status == com.lingion.sleepy.util.WeekDisplayStatus.NEAREST_BUSY_DAY
                         ) source.display.targetDate else target
-                        val effectiveDayOfWeek = HolidayTransferHelper.courseDayForDate(context, table.id, effectiveTarget)
-                        val week = DateUtils.currentWeek(table.startDate, effectiveTarget)
-                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, effectiveTarget)
                         val isGrey = HolidayManager.shouldGrey(context, effectiveTarget, table.id)
-                        // 学期外(前/后)不展示课程 — App 今日页同语义, 避免学期前显示"第1周"的课
-                        val visible = if (status != DateUtils.SemesterStatus.IN_RANGE || effectiveDayOfWeek == null) emptyList() else
-                            source.coursesFor(effectiveDayOfWeek, week)
+                        val status = DateUtils.semesterStatus(table.startDate, table.maxWeek, HolidayTransferHelper.courseDateForDate(context, table.id, effectiveTarget) ?: effectiveTarget)
+                        val visible = source.coursesOn(effectiveTarget)
                         WidgetData(
                             date = effectiveTarget,
                             courses = visible,
