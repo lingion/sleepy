@@ -242,34 +242,25 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 .coerceAtLeast(1)
             // issue#22: 同名课程多地点 — 跨天汇总 course 全集,传给 pickCourseColorIntWithGroupRows
             val allCourses = data.days.flatMap { it.courses }
-            val mealBreakMinutes = if (longBreakSpacing) {
-                MealBreakDetector.detect(timeJson, allCourses)
-                    .filter { it.afterRowIndex < maxNode - 1 }
-                    .associate { it.afterRowIndex to it.minutes.toInt() }
-            } else emptyMap()
-            // 长课间留白 redesign (用户 2026-10-05): 空隙分钟折进"餐段前一行"权重,
-            // 时间轴按分钟比例拉长背景 — 与 Compose 网格同一 expandWeightsForLongBreaks。
-            // 小组件不可滚动 → boundaryWeights 进 slotH 分母, body 边界恒定。
-            val breakUnit: Map<Int, Int> = if (longBreakSpacing) allSlots.mapIndexedNotNull { i, s ->
-                val m = java.time.Duration.between(s.start, s.end).toMinutes().toInt()
-                if (m > 0) i to m else null
-            }.toMap() else emptyMap()
-            val rowWeights = TimetableViewportPolicy.expandWeightsForLongBreaks(
-                List(maxNode) { 1f },
-                mealBreakMinutes.keys,
-                mealBreakMinutes,
-                breakUnitMinutes = breakUnit,
-                periodMinutes = 45,
-                enabled = longBreakSpacing,
-            )
             val slots = allSlots.take(maxNode)
-            val mealBreakAfterRows = if (longBreakSpacing) {
-                MealBreakDetector.detectDisplayRowIndexes(
-                    timeJson,
-                    allCourses,
-                    slots.map { it.nodeEnd }
-                )
-            } else emptySet()
+            val configuredRows = TimeTableUtils.parseTimeSlotRows(timeJson)
+            val mealBreakMinutes = if (longBreakSpacing) {
+                MealBreakDetector.detect(timeJson, allCourses).mapNotNull { detected ->
+                    val leftNode = configuredRows.getOrNull(detected.afterRowIndex)?.node ?: return@mapNotNull null
+                    val displayIndex = slots.indexOfLast { it.nodeEnd == leftNode }
+                    if (displayIndex !in 0 until slots.lastIndex) null
+                    else displayIndex to detected.minutes.toInt()
+                }.toMap()
+            } else emptyMap()
+            val breakUnit = slots.mapIndexedNotNull { i, slot ->
+                val minutes = java.time.Duration.between(slot.start, slot.end).toMinutes().toInt()
+                if (minutes > 0) i to minutes else null
+            }.toMap()
+            val rowWeights = TimetableViewportPolicy.expandWeightsForLongBreaks(
+                List(maxNode) { 1f }, mealBreakMinutes.keys, mealBreakMinutes,
+                breakUnitMinutes = breakUnit, periodMinutes = 45, enabled = longBreakSpacing
+            )
+            val mealBreakAfterRows = mealBreakMinutes.keys
             val sortedDays = data.visibleDays.sorted()
             val dayCount = sortedDays.size.coerceIn(1, 7)
 
