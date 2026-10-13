@@ -44,6 +44,16 @@ jobs:
       - run: go vet ./...
       - run: go test ./...
 
+  jw-fetch-js-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Execute SEU and WISEDU WebView fetch contracts
+        run: node tools/test-seu-fetch.js
+
   android-unit-test:
     runs-on: ubuntu-latest
     steps:

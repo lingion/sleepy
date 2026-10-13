@@ -33,4 +33,14 @@ class JwWiseduWebViewContractTest {
         assertTrue("学期接口必须经过状态检查", js.contains("dqxnxq.do") && js.contains("response.ok"))
         assertTrue("不能把 403 HTML 直接当 JSON 解析", !js.contains(".then(function(r){ return r.json(); })"))
     }
+
+    @Test
+    fun seu_root_portal_uses_shared_wisedu_capture_and_checks_schedule_response() {
+        assertTrue(source.contains("school.type == JwProtocol.TYPE_SEU") &&
+            source.contains("evaluateFetchWithTimeout(wv, WISEDU_FETCH_JS.replace("))
+        assertTrue("SEU 门户根路径必须允许抓取", source.contains("location.hostname.toLowerCase() ==="))
+        assertTrue("SEU 学期可由课表页控件选中", source.contains("document.querySelector('#dqxnxq2')"))
+        assertTrue("课表接口 HTTP 状态必须检查", js.contains("WISEDU_HTTP_"))
+        assertTrue("登录页 HTML 不能当作成功数据", js.contains("课表接口返回非 JSON"))
+    }
 }

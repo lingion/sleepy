@@ -3,13 +3,12 @@ package com.lingion.sleepy.data.jw
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.JsonArray
 import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.JsonPrimitive
 import kotlinx.serialization.json.contentOrNull
 import kotlinx.serialization.json.jsonObject
 import kotlinx.serialization.json.jsonPrimitive
 
 /**
- * 东南大学教务（正方 URP 系, ehall.seu.edu.cn/jwapp 网关）课表 JSON 解析器。
+ * 东南大学教务（金智 jwapp 网关）课表 JSON 解析器。
  *
  * 适配学校：东南大学。
  * 与 [JwCquParser] / [JwEams5Parser] 同类：source 不是 HTML，而是课表 JSON 数组（用户粘入或
@@ -26,7 +25,8 @@ import kotlinx.serialization.json.jsonPrimitive
  *   SKXQ 星期     → day (1=周一..7=周日)
  *   KSJC 起始节   → startNode (Int 直接)
  *   JSJC 结束节   → endNode (Int 直接)
- *   ZCMC 周次串   → 周次段（range/单双周/离散周）
+ *   SKZC 周次位图 → 精确周次（优先）
+ *   ZCMC 周次串   → 周次段（位图缺失时回退；range/单双周/离散周）
  *   KCH  课程号   → 不映射（Sleepy 无 note 字段）
  *   JXBQH 教学班群号 → 不映射
  *
@@ -34,7 +34,7 @@ import kotlinx.serialization.json.jsonPrimitive
  *   1. ZCMC 串解析支持三形态：范围 "1-16周"、单/双周 "1-10周(单)"、离散 "2,4,6周"
  *   2. 离散周逐个 emit JwCourse（type=0 每周）
  *   3. 单/双周 emit 一条 JwCourse（type=1 单周 / type=2 双周）
- *   4. v2 支持自动抓取：WebView fetch JS 注入 ehall.seu.edu.cn/jwapp 网关获取课表
+ *   4. v2 复用 WISEDU_FETCH_JS 抓取 jwapp 网关完整课表响应
  *
  * 外部佐证：sakimidare/SEUTimetable (Apache-2.0) TableParserUtils.kt parseWeekRange 算法
  * 参考 —— 代码自写（仅复用解析思路，类型签名与字段映射自定）。
@@ -55,10 +55,10 @@ class JwSeuParser(source: String) : JwParser(source) {
             is JsonArray -> root
             is JsonObject -> {
                 // 尝试多层解包: datas -> xskcb -> rows
-                val datas = root["datas"]?.jsonObject
-                val xskcb = datas?.get("xskcb")?.jsonObject
+                val datas = root["datas"] as? JsonObject
+                val xskcb = datas?.get("xskcb") as? JsonObject
                 val rows = xskcb?.get("rows") as? JsonArray
-                rows ?: root["data"] as? JsonArray ?: return emptyList()
+                rows ?: (root["data"] as? JsonArray) ?: return emptyList()
             }
             else -> return emptyList()
         }
@@ -82,8 +82,16 @@ class JwSeuParser(source: String) : JwParser(source) {
             val endNode = o["JSJC"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }?.toIntOrNull()
                 ?: startNode
             val zcmc = o["ZCMC"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }.orEmpty()
+            val skzc = o["SKZC"]?.let { runCatching { it.jsonPrimitive.contentOrNull }.getOrNull() }.orEmpty()
 
-            for ((sw, ew, type) in parseWeekRanges(zcmc)) {
+            // 只有由 0/1 构成的非空 SKZC 才是位图；全 0 明确表示无课，不能回退 ZCMC。
+            // 缺失或非法位图才回退到 ZCMC 展示文本。
+            val weekRanges = if (skzc.isNotEmpty() && skzc.all { it == '0' || it == '1' }) {
+                parseWeekBitmap(skzc)
+            } else {
+                parseWeekRanges(zcmc)
+            }
+            for ((sw, ew, type) in weekRanges) {
                 out += JwCourse(
                     name = name,
                     room = room,
@@ -98,6 +106,29 @@ class JwSeuParser(source: String) : JwParser(source) {
             }
         }
         return out
+    }
+
+    /** 精确保留服务端 SKZC 位图中的洞与单双周；与金智同族解析器一致。 */
+    internal fun parseWeekBitmap(skzc: String): List<Triple<Int, Int, Int>> {
+        val weeks = skzc.mapIndexedNotNull { index, bit -> if (bit == '1') index + 1 else null }
+        if (weeks.isEmpty()) return emptyList()
+        if (weeks.size > 1 && weeks.zipWithNext().all { (a, b) -> b - a == 2 }) {
+            return listOf(Triple(weeks.first(), weeks.last(), if (weeks.first() % 2 == 1) 1 else 2))
+        }
+        val ranges = mutableListOf<Triple<Int, Int, Int>>()
+        var start = weeks.first()
+        var end = start
+        for (week in weeks.drop(1)) {
+            if (week == end + 1) {
+                end = week
+            } else {
+                ranges += Triple(start, end, 0)
+                start = week
+                end = week
+            }
+        }
+        ranges += Triple(start, end, 0)
+        return ranges
     }
 
     /**

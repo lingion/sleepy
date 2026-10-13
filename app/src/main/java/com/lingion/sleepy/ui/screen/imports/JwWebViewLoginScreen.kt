@@ -445,7 +445,23 @@ fun JwWebViewLoginScreen(
                     // 东南大学（ehall.seu.edu.cn/jwapp 网关）：课表在 wdkb 模块 JSON API 中，
                     // 页面 HTML 不含课程数据，需主动取学期和课表详情。
                     if (school.type == JwProtocol.TYPE_SEU) {
-                        evaluateFetchWithTimeout(wv, SEU_FETCH_JS)
+                        evaluateFetchWithTimeout(wv, WISEDU_FETCH_JS.replace(
+                            "var pathOk = location.pathname.indexOf('/jwapp/') >= 0;",
+                            "var pathOk = location.pathname.indexOf('/jwapp/') >= 0 || location.hostname.toLowerCase() === 'ehall.seu.edu.cn';",
+                        ).replace(
+                            "var selects = document.querySelectorAll('select');",
+                            """var selected = document.querySelector('#dqxnxq2');
+      if (!selected) {
+        var frames = document.querySelectorAll('iframe');
+        for (var fi = 0; fi < frames.length && !selected; fi++) {
+          try { selected = frames[fi].contentDocument.querySelector('#dqxnxq2'); }
+          catch(e) { /* cross-origin frame cannot expose its selected term */ }
+        }
+      }
+      var selectedCode = selected && (selected.value || selected.getAttribute('value'));
+      if (selectedCode) xnxq = String(selectedCode);
+      var selects = document.querySelectorAll('select');""",
+                        ))
                         return@CaptureBar
                     }
                     if (school.type == JwProtocol.TYPE_NUIT) {
@@ -893,9 +909,19 @@ private const val WISEDU_FETCH_JS = """
         headers:{'Content-Type':'application/x-www-form-urlencoded','X-Requested-With':'XMLHttpRequest'},
         body:'XNXQDM='+encodeURIComponent(xnxq),
         credentials:'include'
-      }).then(function(r){ return r.text().then(function(txt){
-        return {xnxq:xnxq, txt:txt};
-      });});
+      }).then(function(r){
+        if (!r.ok) throw new Error('WISEDU_HTTP_' + r.status + '：课表接口拒绝访问，请重新登录后重试');
+        return r.text().then(function(txt){
+          var payload;
+          try { payload = JSON.parse(txt); }
+          catch(e) { throw new Error('课表接口返回非 JSON，登录态可能失效'); }
+          if (!payload || !payload.datas || !payload.datas.xskcb ||
+              !Array.isArray(payload.datas.xskcb.rows)) {
+            throw new Error('课表接口响应缺少 xskcb.rows 数组，请重新登录后重试');
+          }
+          return {xnxq:xnxq, txt:txt};
+        });
+      });
     })
     .then(function(o){
       // 抓节次时间：从页面 DOM 找"是否显示节次时间"开启后的节次文本
