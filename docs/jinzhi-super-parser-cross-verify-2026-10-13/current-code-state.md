@@ -1,0 +1,1 @@
+TYPE_JZ registry maps to JwJzParser. Its WakeUpCompat.parse calls parseJzSuper before parseJzHtml, so the production route is wired without adding another protocol. JwJzSuperParser is an explicit test/compatibility facade. New hardening tests cover malformed-before-valid, single section, compact style and seventh explicit row.

@@ -183,6 +183,7 @@ class AboutLicenseAttributionTest {
         Attribution("CQYTZFCheckScores", "xM3GAN"),
         // 华南农业大学 SCAU
         Attribution("ScheduleXParser_SCAU", "greyovo"),
+        Attribution("ruc-schedule-extension", "KerryChia"),
         // 齐鲁工业大学 QLU
         Attribution("JW-spider", "Zhy423310825"),
         // 渤海大学 BHU

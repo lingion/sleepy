@@ -1,0 +1,224 @@
+[
+  {
+    "full_name": "HF-CYGG/Dawn-Course",
+    "stars": 48,
+    "lang": "Kotlin",
+    "pushed": "2026-09-05",
+    "archived": false,
+    "license": "GPL-3.0",
+    "branch": "main",
+    "desc": "开源课程表app（已适配新旧正方、强智、青果教务系统）",
+    "families": [
+      "kingo_new(青果)",
+      "jz?"
+    ]
+  },
+  {
+    "full_name": "XingHeYuZhuan/shiguang_warehouse",
+    "stars": 56,
+    "lang": "JavaScript",
+    "pushed": "2026-09-15",
+    "archived": false,
+    "license": "MIT",
+    "branch": "main",
+    "desc": "shiguangschedule 适配脚本集中管理 (多校, 含 courseTableForStd/contentParent_dgData token)",
+    "families": [
+      "kingo_new",
+      "jz",
+      "xju_post(UPC/CUG dgData 同族)"
+    ]
+  },
+  {
+    "full_name": "jiangyiqi99/CourseHelper",
+    "stars": 2,
+    "lang": "Swift",
+    "pushed": "2026-02-28",
+    "archived": false,
+    "license": "GPL-3.0",
+    "branch": "main",
+    "desc": "iOS 课表导入, 含 courseTableForStd 协议多校 (Ecnu/Sufe/Shmtu)",
+    "families": [
+      "kingo_new",
+      "jz"
+    ]
+  },
+  {
+    "full_name": "xiaxiaoyu8/xiaoaiSchedule",
+    "stars": 1,
+    "lang": "JavaScript",
+    "pushed": "2025-02-15",
+    "archived": false,
+    "license": null,
+    "branch": "main",
+    "desc": "小爱课程表适配金智教务",
+    "families": [
+      "jz"
+    ]
+  },
+  {
+    "full_name": "Kou-JunHao/mi-schedule",
+    "stars": 0,
+    "lang": "JavaScript",
+    "pushed": "2025-03-19",
+    "archived": false,
+    "license": "MIT",
+    "branch": "main",
+    "desc": "湖南科技职院小爱适配, 强智教务",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "ltxhhz/AISchedule-xjsf",
+    "stars": 1,
+    "lang": "HTML",
+    "pushed": "2025-02-28",
+    "archived": false,
+    "license": "MIT",
+    "branch": "master",
+    "desc": "新疆师大强智教务课程表解析",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "greyovo/AIScheduleSCAU",
+    "stars": 10,
+    "lang": "JavaScript",
+    "pushed": "2022-03-02",
+    "archived": false,
+    "license": null,
+    "branch": "master",
+    "desc": "华南农大新教务(强智)课程表解析",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "ceresOPA/MI_AI_Course_Schedule",
+    "stars": 1,
+    "lang": "JavaScript",
+    "pushed": "2022-01-10",
+    "archived": false,
+    "license": null,
+    "branch": "main",
+    "desc": "湖南工大强智教务导入脚本",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "MyLikeGirl/AISchedule-QiangZhi",
+    "stars": 1,
+    "lang": null,
+    "pushed": "2021-10-04",
+    "archived": false,
+    "license": null,
+    "branch": "main",
+    "desc": "山东科大强智教务小爱适配",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "greyovo/ScheduleXParser_SCAU",
+    "stars": 1,
+    "lang": "HTML",
+    "pushed": "2021-09-01",
+    "archived": false,
+    "license": null,
+    "branch": "master",
+    "desc": "ScheduleX 适配新强智(华南农大)",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "sungithub270/classpush",
+    "stars": 12,
+    "lang": "Python",
+    "pushed": "2021-02-24",
+    "archived": false,
+    "license": "GPL-3.0",
+    "branch": "main",
+    "desc": "自动推送课程表 WFMU 强智教务",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "trueWangSyutung/XiaoAiScheduleOfSUOT",
+    "stars": 2,
+    "lang": "JavaScript",
+    "pushed": "2021-02-04",
+    "archived": false,
+    "license": null,
+    "branch": "main",
+    "desc": "沈阳工大强智教务在线导入",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "LukeJean/XiaoAiCurriculumSchedule",
+    "stars": 4,
+    "lang": "JavaScript",
+    "pushed": "2020-09-28",
+    "archived": false,
+    "license": null,
+    "branch": "master",
+    "desc": "小爱课程表强智教务导入",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "Konata09/getICS",
+    "stars": 1,
+    "lang": "JavaScript",
+    "pushed": "2020-08-30",
+    "archived": false,
+    "license": null,
+    "branch": "master",
+    "desc": "强智教务导出 ics",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "DOROMOLLL/WITClassScheduleToCalendar",
+    "stars": 1,
+    "lang": "Python",
+    "pushed": "2020-02-24",
+    "archived": false,
+    "license": "MIT",
+    "branch": "master",
+    "desc": "武汉工程大学(强智)课表转 ics",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "canliture/CrawlerCourseTable",
+    "stars": 19,
+    "lang": "Java",
+    "pushed": "2020-01-09",
+    "archived": false,
+    "license": null,
+    "branch": "master",
+    "desc": "Java 爬虫基于强智教务系统",
+    "families": [
+      "(强智参照)"
+    ]
+  },
+  {
+    "full_name": "KerryChia/ruc-schedule-extension",
+    "license": "MIT",
+    "pushed": "2026-09-07",
+    "description": "RUC undergraduate/graduate timetable to ICS browser extension",
+    "families": [
+      "Njw2017?"
+    ],
+    "role": "INDIRECT: school-family possibility only; no same DOM evidence"
+  }
+]

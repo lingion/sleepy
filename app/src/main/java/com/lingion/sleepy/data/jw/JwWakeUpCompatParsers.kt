@@ -75,43 +75,61 @@ private object WakeUpCompat {
         val defaultEndByRow = intArrayOf(2, 5, 7, 9, 12, 15)
         return buildList {
             for ((rowIdx, row) in rows.withIndex()) {
-                if (rowIdx >= 6) break // 固定 6 行, 超出忽略
-                val tds = row.select("td")
+                val tds = row.children().filter { it.tagName() == "td" }
                 if (tds.size < 8) continue // 0=节次标签, 1..7=周一..周日
+                val rowLabel = tds[0].text().trim()
+                val rowSections = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?节$""")
+                    .matchEntire(rowLabel)?.let { match ->
+                        val first = match.groupValues[1].toIntOrNull()
+                        val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
+                        if (first != null && last != null && first in 1..30 && last in first..30) first to last else null
+                    } ?: if (rowLabel.isBlank() && rows.size == 6 && rowIdx < defaultStartByRow.size)
+                        defaultStartByRow[rowIdx] to defaultEndByRow[rowIdx] else null
                 for (col in 1..7) {
-                    val td = tds[col] ?: continue
+                    val td = tds[col]
                     // INV-POSITION-WRAPPER: 用 `div > div > div` 选出 position: relative 课程包装器
-                    val courseWrappers = td.select("div > div > div")
+                    val courseWrappers = td.select("div[style]").filter {
+                        Regex("""(?:^|;)\s*position\s*:\s*relative\s*(?:;|$)""", RegexOption.IGNORE_CASE)
+                            .containsMatchIn(it.attr("style"))
+                    }
                     if (courseWrappers.isEmpty()) continue
                     for (wrapperEl in courseWrappers) {
-                        val info = wrapperEl.select("> div")
+                        val info = wrapperEl.children().filter { it.tagName() == "div" }
                         // 8 字段包装器 (实测), 不足 8 视为非课程包装器 (e.g. 空 div)
                         if (info.size < 8) continue
                         val nameRaw = info.get(3).text().trim()
                         if (nameRaw.isBlank()) continue
                         // INV-NAME-STRIP-ASTERISK: QZParser.java#getClassName char[0]=='*' → skip 前 2 字符
-                        val name = if (nameRaw.length >= 2 && nameRaw[0] == '*') nameRaw.substring(2).trim() else nameRaw
+                        val name = nameRaw.removePrefix("*").trim()
+                        if (name.isBlank()) continue
                         val teacher = info.get(4).text().trim()
-                        val className = info.get(5).text().trim() // 班级字段, 暂不入 JwCourse
                         val weeksText = info.get(6).text().trim()
                         val room = info.get(7).text().trim()
                         // INV-SECTIONS-FALLBACK: 无"节"字时按行号用 defaultStartByRow/defaultEndByRow
                         val startNode: Int
                         val endNode: Int
                         if (weeksText.contains("节")) {
-                            // "03-04节(1-16周)" → 解析节次范围
-                            val beforeBracket = weeksText.substringBefore('(').substringBefore('节')
-                            val nums = Regex("\\d+").findAll(beforeBracket).map { it.value.toInt() }.toList()
-                            startNode = nums.getOrNull(0) ?: defaultStartByRow[rowIdx]
-                            endNode = nums.getOrNull(1) ?: (defaultEndByRow[rowIdx])
+                            val section = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?节$""")
+                                .matchEntire(weeksText.substringBefore('(').substringBefore('（').trim()) ?: continue
+                            startNode = section.groupValues[1].toIntOrNull() ?: continue
+                            endNode = section.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: startNode
+                            if (startNode !in 1..30 || endNode !in startNode..30) continue
                         } else {
-                            startNode = defaultStartByRow[rowIdx]
-                            endNode = defaultEndByRow[rowIdx]
+                            val fallback = rowSections ?: continue
+                            startNode = fallback.first
+                            endNode = fallback.second
                         }
                         // INV-WEEKS-EXTRACT-PAREN: QZParser.java#getWeeksList 取括号内周次 (含"周"字)
                         //    格式 "周" + "1-16" 或 "1-16,18-20" 或 "1-8单" 等
                         val weeksRaw = Regex("[\\(（]([^\\)）]+)[\\)）]").find(weeksText)?.groupValues?.get(1).orEmpty()
-                        val weeks = parseWeekTokens(weeksRaw)
+                        val weekPattern = Regex("""^(\d{1,2})(?:\s*[-~至]\s*(\d{1,2}))?\s*周?\s*(单|双)?\s*周?$""")
+                        val weeks = weeksRaw.split(',', '，', ';', '；').mapNotNull { token ->
+                            val match = weekPattern.matchEntire(token.trim()) ?: return@mapNotNull null
+                            val from = match.groupValues[1].toIntOrNull() ?: return@mapNotNull null
+                            val to = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: from
+                            if (from !in 1..60 || to !in from..60) return@mapNotNull null
+                            Triple(from, to, when (match.groupValues[3]) { "单" -> 1; "双" -> 2; else -> 0 })
+                        }
                         if (weeks.isEmpty()) continue
                         weeks.forEach { (from, to, type) ->
                             add(JwCourse(name, room, teacher, col, startNode, endNode, from, to, type))

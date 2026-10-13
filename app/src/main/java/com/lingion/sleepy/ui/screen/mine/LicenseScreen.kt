@@ -481,7 +481,7 @@ private val perSchoolEntries: List<PerSchoolEntry> = listOf(
     ),
     PerSchoolEntry(
         "school-scau", "华南农业大学 SCAU",
-        "ScheduleXParser_SCAU (greyovo)"
+        "ScheduleXParser_SCAU (greyovo); ruc-schedule-extension (KerryChia)"
     ),
     PerSchoolEntry(
         "school-qlu", "齐鲁工业大学 QLU",

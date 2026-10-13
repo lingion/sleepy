@@ -1,0 +1,121 @@
+[
+  {
+    "repo": "HF-CYGG/Dawn-Course",
+    "author": "HF-CYGG",
+    "project": "Dawn-Course",
+    "license": "GPL-3.0",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "XingHeYuZhuan/shiguang_warehouse",
+    "author": "XingHeYuZhuan",
+    "project": "shiguang_warehouse",
+    "license": "MIT",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "jiangyiqi99/CourseHelper",
+    "author": "jiangyiqi99",
+    "project": "CourseHelper",
+    "license": "GPL-3.0",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "xiaxiaoyu8/xiaoaiSchedule",
+    "author": "xiaxiaoyu8",
+    "project": "xiaoaiSchedule",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "Kou-JunHao/mi-schedule",
+    "author": "Kou-JunHao",
+    "project": "mi-schedule",
+    "license": "MIT",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "ltxhhz/AISchedule-xjsf",
+    "author": "ltxhhz",
+    "project": "AISchedule-xjsf",
+    "license": "MIT",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "greyovo/AIScheduleSCAU",
+    "author": "greyovo",
+    "project": "AIScheduleSCAU",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "ceresOPA/MI_AI_Course_Schedule",
+    "author": "ceresOPA",
+    "project": "MI_AI_Course_Schedule",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "MyLikeGirl/AISchedule-QiangZhi",
+    "author": "MyLikeGirl",
+    "project": "AISchedule-QiangZhi",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "greyovo/ScheduleXParser_SCAU",
+    "author": "greyovo",
+    "project": "ScheduleXParser_SCAU",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "sungithub270/classpush",
+    "author": "sungithub270",
+    "project": "classpush",
+    "license": "GPL-3.0",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "trueWangSyutung/XiaoAiScheduleOfSUOT",
+    "author": "trueWangSyutung",
+    "project": "XiaoAiScheduleOfSUOT",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "LukeJean/XiaoAiCurriculumSchedule",
+    "author": "LukeJean",
+    "project": "XiaoAiCurriculumSchedule",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "Konata09/getICS",
+    "author": "Konata09",
+    "project": "getICS",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "DOROMOLLL/WITClassScheduleToCalendar",
+    "author": "DOROMOLLL",
+    "project": "WITClassScheduleToCalendar",
+    "license": "MIT",
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "canliture/CrawlerCourseTable",
+    "author": "canliture",
+    "project": "CrawlerCourseTable",
+    "license": null,
+    "credit": "already present in shared WakeUp-family attribution"
+  },
+  {
+    "repo": "KerryChia/ruc-schedule-extension",
+    "author": "KerryChia",
+    "project": "ruc-schedule-extension",
+    "license": "MIT",
+    "credit": "added in six locales and SCAU card"
+  }
+]
