@@ -800,7 +800,7 @@
     <string name="about_source">开源地址</string>
     <string name="about_source_url">github.com/lingion/sleepy</string>
     <string name="about_license_title">开源声明</string>
-    <string name="about_license_body">本应用部分教务导入适配参考了以下开源项目的公开实现。按跨校普适项目 / 单校项目两类组织，单校卡展开后可查看该校所参考的所有学生维护项目。
+    <string name="about_license_body">SCAU protocol references: greyovo/ScheduleXParser_SCAU, greyovo/AIScheduleSCAU, N0B0d7-rzddn/SCAU-course-tool, CberYellowstone/Course-Hunter-SCAU, Weather174/SCAU-Course-Assistant, ToMo517/Scau_Course_bot-main, visionyimian/scau_class_table.\n\n本应用部分教务导入适配参考了以下开源项目的公开实现。按跨校普适项目 / 单校项目两类组织，单校卡展开后可查看该校所参考的所有学生维护项目。
 
 跨校普适：WakeUp 课程表 (YZune, Apache-2.0) 与 WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) 强智/强智变体/老版正方/URP/青果/湖南科大等十二个教务解析器;WakeupSchedule_Kotlin (Apache-2.0) 经典金智 EAMS;时光课程表 cqu.js 重庆大学门户 REST;shiguang_warehouse (XingHeYuZhuan, MIT) 武汉理工与经典 EAMS、新正方网格视图;zfn_api (openschoolcn, MPL-2.0) 与 FlowCourse (jiaweiyaya, GPL-3.0) 新正方 kbList 形态交叉验证;iwut (TokenTeam, AGPL-3.0, 仅参考协议形态) 武汉理工节次映射;「上课」shangkeschedule (qiqqqqq517, Apache-2.0) 与 WakeUp 课程表学校登记数据名单复核。
 

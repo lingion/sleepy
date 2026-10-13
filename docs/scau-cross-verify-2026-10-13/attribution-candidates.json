@@ -1,0 +1,9 @@
+[
+  {"repository":"greyovo/ScheduleXParser_SCAU","role":"direct SCAU Element UI timetable source","license_status":"not audited from pinned LICENSE"},
+  {"repository":"greyovo/AIScheduleSCAU","role":"direct SCAU timetable corroboration","license_status":"not audited from pinned LICENSE"},
+  {"repository":"N0B0d7-rzddn/SCAU-course-tool","role":"indirect ecosystem reference"},
+  {"repository":"CberYellowstone/Course-Hunter-SCAU","role":"indirect ecosystem reference"},
+  {"repository":"Weather174/SCAU-Course-Assistant","role":"indirect ecosystem reference"},
+  {"repository":"ToMo517/Scau_Course_bot-main","role":"historical boundary reference"},
+  {"repository":"visionyimian/scau_class_table","role":"historical boundary reference"}
+]

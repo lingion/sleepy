@@ -1,0 +1,7 @@
+# Findings and limitations
+
+The original PR sample was synthetic and made the border-grid branch look sufficient. The pinned greyovo sample instead contains an Element UI table with `border=0`, so production needs a separate route. `greyovo/AIScheduleSCAU` and `greyovo/ScheduleXParser_SCAU` are direct SCAU timetable protocol references; the additional five repositories credited in the PR are ecosystem or historical context, not proof of the same DOM shape. Existing jiefing attribution is a postgraduate evaluation tool, not a course parser.
+
+The current model represents courses with start/end weeks and parity. Sparse sets are split into multiple records. A missing week line cannot safely be expanded to an assumed semester; it yields no record. The pinned sample identifies the 2017 `Njw2017` page shape. Behavior on a later, independently different SCAU portal requires a captured page for verification.
+
+2026-10-13 review: Element UI timing must extract week text from parentheses before any number parsing, so section numbers cannot be mistaken for weeks. Explicit malformed or out-of-range sections are rejected instead of using row defaults. Row defaults apply only when the timing has no section. Mixed `1-8单周,10-16双周` applies parity per segment; a plain segment does not inherit a neighboring marker. The pinned upstream's `QZParser.java` flattens weeks into a list; Sleepy's tuple model preserves that list as distinct contiguous/parity runs.

@@ -1,0 +1,54 @@
+{
+  "scope": "The seven sources identified in this PR; no claim of exhaustive GitHub discovery.",
+  "candidates": [
+    {
+      "repository": "greyovo/ScheduleXParser_SCAU",
+      "url": "https://github.com/greyovo/ScheduleXParser_SCAU",
+      "commit": "365c249ac65659396775e84a056c284b6a256adb",
+      "reviewed_on": "2026-10-13",
+      "license": "unconfirmed"
+    },
+    {
+      "repository": "greyovo/AIScheduleSCAU",
+      "url": "https://github.com/greyovo/AIScheduleSCAU",
+      "commit": "82dce2f01cd5b26c2085ba8e1665fc4f34dfb885",
+      "reviewed_on": "2026-10-13",
+      "license": "unconfirmed"
+    },
+    {
+      "repository": "N0B0d7-rzddn/SCAU-course-tool",
+      "url": "https://github.com/N0B0d7-rzddn/SCAU-course-tool",
+      "commit": "a280805e3d06fe49913fad541e02d44937c824e4",
+      "reviewed_on": "2026-10-13",
+      "license": "unconfirmed"
+    },
+    {
+      "repository": "CberYellowstone/Course-Hunter-SCAU",
+      "url": "https://github.com/CberYellowstone/Course-Hunter-SCAU",
+      "commit": "b9cf93dd363ef8c6019cc5daea37d519fc9d0adf",
+      "reviewed_on": "2026-10-13",
+      "license": "AGPL-3.0"
+    },
+    {
+      "repository": "Weather174/SCAU-Course-Assistant",
+      "url": "https://github.com/Weather174/SCAU-Course-Assistant",
+      "commit": "400a9240cfb8a3085277af847139c9e5577a86ff",
+      "reviewed_on": "2026-10-13",
+      "license": "unconfirmed"
+    },
+    {
+      "repository": "ToMo517/Scau_Course_bot-main",
+      "url": "https://github.com/ToMo517/Scau_Course_bot-main",
+      "commit": "e704cfbf42564c514c221b0f5449ddb06be2c8cb",
+      "reviewed_on": "2026-10-13",
+      "license": "unconfirmed"
+    },
+    {
+      "repository": "visionyimian/scau_class_table",
+      "url": "https://github.com/visionyimian/scau_class_table",
+      "commit": "80b9fbcef7163eda408a4d739d1872fa36963c6f",
+      "reviewed_on": "2026-10-13",
+      "license": "unconfirmed"
+    }
+  ]
+}

@@ -66,6 +66,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_UCAS to 142,
         JwProtocol.TYPE_QZ_OLD to 145,
         JwProtocol.TYPE_KINGO_ZX to 205,
+        JwProtocol.TYPE_SCAU to 200,
     )
 
     private val FACTORIES: Map<String, (String) -> JwParser> = linkedMapOf(
@@ -119,6 +120,7 @@ object JwParserRegistry {
         JwProtocol.TYPE_BNUZ to ::JwBnuzParser,
         JwProtocol.TYPE_HNUST to { html: String -> JwHnustParser(html) },
         JwProtocol.TYPE_HNIU to { html: String -> JwHniuparser(html) },
+        JwProtocol.TYPE_SCAU to ::JwScauParser,
     )
 
     fun allCandidates(html: String): List<Pair<String?, JwParser>> =

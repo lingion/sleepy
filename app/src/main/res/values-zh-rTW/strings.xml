@@ -603,7 +603,7 @@
     <string name="update_download_failed">下載失敗：%1$s</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">本应用部分教务导入适配參考了以下開源项目的公开实现。按跨校普適項目 / 單校項目兩類組織，單校卡片展開後可查看該校所參考的所有學生維護項目。
+    <string name="about_license_body">SCAU protocol references: greyovo/ScheduleXParser_SCAU, greyovo/AIScheduleSCAU, N0B0d7-rzddn/SCAU-course-tool, CberYellowstone/Course-Hunter-SCAU, Weather174/SCAU-Course-Assistant, ToMo517/Scau_Course_bot-main, visionyimian/scau_class_table.\n\n本应用部分教务导入适配參考了以下開源项目的公开实现。按跨校普適項目 / 單校項目兩類組織，單校卡片展開後可查看該校所參考的所有學生維護項目。
 
 跨校普適：WakeUp 課程表 (YZune, Apache-2.0) 與 WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) 強智/強智變體/舊版正方/URP/青果/湖南科大等十二個教務解析器;WakeupSchedule_Kotlin (Apache-2.0) 經典金智 EAMS;時光課程表 cqu.js 重慶大學門戶 REST;shiguang_warehouse (XingHeYuZhuan, MIT) 武漢理工與經典 EAMS、新正方網格視圖;zfn_api (openschoolcn, MPL-2.0) 與 FlowCourse (jiaweiyaya, GPL-3.0) 新正方 kbList 形態交叉驗證;iwut (TokenTeam, AGPL-3.0, 僅參考協議形態) 武漢理工節次映射;「上課」shangkeschedule (qiqqqqq517, Apache-2.0) 與 WakeUp 課程表學校登記數據名單覆核。
 

@@ -83,6 +83,9 @@ object JwProtocol {
     /** WakeUp 西交/新疆大学 POST 课表变体。 */
     const val TYPE_XJU_POST = "xju_post"
 
+    /** 华南农业大学课表 HTML。 */
+    const val TYPE_SCAU = "scau"
+
     /** WakeUp 西北工业大学研究生 POST/HTML 表格变体。 */
     const val TYPE_NWPU_POST = "nwpu_post"
 
@@ -304,7 +307,7 @@ object JwProtocol {
     val WAKEUP_COMPAT_TYPES: List<String> = listOf(
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
-        TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER,
+        TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER, TYPE_SCAU,
     )
 
     fun displayName(type: String?): String = when (type) {
@@ -334,6 +337,7 @@ object JwProtocol {
         TYPE_ECUPL_SUPER -> "华东政法大学 (ECUPL 调度器)"
         TYPE_THU -> "清华大学 (THU 教务)"
         TYPE_NWPU_POST -> "西北工业大学研究生教务"
+        TYPE_SCAU -> "华南农业大学 (SCAU)"
         TYPE_NEW_URP_SUPER -> "新 URP 教务 (数组变体)"
         TYPE_WISEDU -> "金智教务（直连）"
         TYPE_CQU -> "重庆大学门户"
@@ -368,7 +372,7 @@ object JwProtocol {
         TYPE_URP, TYPE_URP_NEW -> "urp"
         TYPE_KINGO_NEW, TYPE_KINGO_ZX, TYPE_JZ, TYPE_SOUTH_SOFT, TYPE_CHAOXING_LEGACY,
         TYPE_SHUWEI, TYPE_SUDA_POST, TYPE_CUMTB, TYPE_XJU_POST, TYPE_THU, TYPE_NWPU_POST, TYPE_NEW_URP_SUPER,
-        TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER -> "other"
+        TYPE_ECUPL, TYPE_ECUPL_SCRIPT, TYPE_ECUPL_SUPER, TYPE_SCAU -> "other"
         TYPE_WISEDU -> "wisedu"
         TYPE_CQU -> "cqu"
         TYPE_CHAOXING -> "chaoxing"

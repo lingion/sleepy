@@ -605,7 +605,7 @@
     <string name="update_download_failed">ダウンロード失敗: %1$s</string>
     <string name="about_author">作者</string>
     <string name="about_author_name">Lingion</string>
-    <string name="about_license_body">本アプリの一部の履修取り込みアダプタは、以下のオープンソースプロジェクトの公開実装を参考にしています。跨校(複数大学共通の基盤的)プロジェクトと単校(各校固有)プロジェクトの二層構造に整理し、単校カードはタップで展開して当該校が参考にした全ての学生プロジェクトを確認できます。
+    <string name="about_license_body">SCAU protocol references: greyovo/ScheduleXParser_SCAU, greyovo/AIScheduleSCAU, N0B0d7-rzddn/SCAU-course-tool, CberYellowstone/Course-Hunter-SCAU, Weather174/SCAU-Course-Assistant, ToMo517/Scau_Course_bot-main, visionyimian/scau_class_table.\n\n本アプリの一部の履修取り込みアダプタは、以下のオープンソースプロジェクトの公開実装を参考にしています。跨校(複数大学共通の基盤的)プロジェクトと単校(各校固有)プロジェクトの二層構造に整理し、単校カードはタップで展開して当該校が参考にした全ての学生プロジェクトを確認できます。
 
 跨校基盤的プロジェクト:WakeUp Schedule (YZune, Apache-2.0) および WakeupSchedule_BUPT (dIT8Zv, Apache-2.0) — 12 種類の教育システムパーサー(強智系・旧正方・URP・青果・湖南科技大学等)と中間データ構造のリファレンス実装;WakeupSchedule_Kotlin (Apache-2.0) クラシック金智 EAMS;cqu.js(時光課程表重慶大学アダプタ)重慶大学ポータル REST;shiguang_warehouse (XingHeYuZhuan, MIT) 武漢理工大学 kcbcxby・クラシック EAMS・新正方グリッドビュー;zfn_api (openschoolcn, MPL-2.0) と FlowCourse (jiaweiyaya, GPL-3.0) 新正方 kbList 形式のクロスバリデーション;iwut (TokenTeam, AGPL-3.0、プロトコル形式のみ参考) 武漢理工大学のコマ割りマッピング;「上课」shangkeschedule (qiqqqqq517, Apache-2.0) と WakeUp Schedule 学校登録データは、リスト照合に活用。
 
