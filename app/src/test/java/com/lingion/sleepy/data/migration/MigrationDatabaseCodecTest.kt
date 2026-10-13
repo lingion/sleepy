@@ -61,6 +61,12 @@ internal class FakeCourseDao : CourseDao {
 }
 
 internal class FakeTimeTableDao : TimeTableDao {
+    override suspend fun setReminderEnabled(id: Long, enabled: Boolean): Int {
+        val current = rows[id] ?: return 0
+        rows[id] = current.copy(reminderEnabled = enabled)
+        return 1
+    }
+
     val rows = LinkedHashMap<Long, TimeTableEntity>()
     private var nextId = 1L
     var defaultId: Long? = null

@@ -122,6 +122,17 @@ class ScheduleRepository(private val db: AppDatabase) {
         return id
     }
 
+    /** Reminder settings own this field; never overwrite timetable metadata. */
+    suspend fun setTableReminderEnabled(id: Long, enabled: Boolean) {
+        val changed = db.withTransaction {
+            val current = tableDao.getById(id) ?: return@withTransaction false
+            if (current.reminderEnabled == enabled) return@withTransaction false
+            captureForUndo()
+            tableDao.setReminderEnabled(id, enabled) > 0
+        }
+        if (changed) onDataChanged()
+    }
+
     suspend fun updateTable(table: TimeTableEntity) {
         captureForUndo()
         tableDao.update(table)
