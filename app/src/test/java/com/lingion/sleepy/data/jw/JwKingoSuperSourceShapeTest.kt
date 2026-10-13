@@ -54,6 +54,31 @@ class JwKingoSuperSourceShapeTest {
         assertEquals(2, c.endNode)
     }
 
+    @Test fun malformedSectionRangeDoesNotBecomeInventedCourse() {
+        val html = """<table id="mytable"><tr><td><div>坏课程<br>教师<br>1-8周[1,3,5节]<br>A101</div>
+            <div>有效课程<br>教师<br>1-8周[2节]<br>A102</div></td></tr></table>"""
+        val c = JwKingoParser(html).generateCourseList().single()
+        assertEquals("有效课程", c.name)
+        assertEquals(2, c.startNode)
+        assertEquals(2, c.endNode)
+    }
+
+    @Test fun mytableRetainsOddWeekQualifier() {
+        val html = """<table id="mytable"><tr><td><div>单周课程<br>教师<br>1-15周(单)[5-6节]<br>A101</div></td></tr></table>"""
+        val c = JwKingoParser(html).generateCourseList().single()
+        assertEquals(1, c.type)
+        assertEquals(15, c.endWeek)
+    }
+
+    @Test fun genericRegistryPrefersNewLayoutButExplicitZxStillWorks() {
+        val html = """<table id="mytable"><tr><td><div>新课<br>教师<br>1-8周[1-2节]<br>A101</div></td></tr></table>"""
+        val (courses, attempts) = JwParserRegistry.selectBest(html)
+        assertEquals("新课", courses.single().name)
+        assertTrue(attempts.any { it.type == JwProtocol.TYPE_KINGO_NEW && it.courseCount == 1 })
+        val explicit = JwParserRegistry.parserFor(JwProtocol.TYPE_KINGO_ZX, """<table id="mytable"><tr><td class="td"><div>老课<br>教师<br>1-8[1-2节]<br>A101</div></td></tr></table>""")
+        assertEquals("老课", explicit.generateCourseList().single().name)
+    }
+
     @Test fun noLayoutGivesAggregateError() {
         val ex = try { JwKingoParser("<html><body></body></html>").generateCourseList(); null }
             catch (e: IllegalStateException) { e }

@@ -161,10 +161,10 @@ private object WakeUpCompat {
         // Jsoup handles a head-less fragment and tables concatenated from same-origin frames.
         val documents = listOf(Jsoup.parse(source))
         fun nodes(text: String): Pair<Int, Int>? {
-            val n = Regex("\\d+").findAll(text).map { it.value.toIntOrNull() }.toList()
-            val first = n.firstOrNull() ?: return null
-            val last = if (n.size > 1) n[1] else first
-            return if (last != null && first in 1..30 && last in first..30) first to last else null
+            val match = Regex("^\\s*(\\d{1,2})(?:\\s*[-~至]\\s*(\\d{1,2}))?\\s*(?:节)?\\s*$").matchEntire(text) ?: return null
+            val first = match.groupValues[1].toIntOrNull() ?: return null
+            val last = match.groupValues[2].takeIf(String::isNotBlank)?.toIntOrNull() ?: first
+            return if (first in 1..30 && last in first..30) first to last else null
         }
         fun emit(name: String, teacher: String, room: String, day: Int, nodeText: String, weeksText: String): List<JwCourse> {
             val (start, end) = nodes(nodeText) ?: return emptyList()
@@ -191,7 +191,7 @@ private object WakeUpCompat {
                         val teacher = if (compact) detail.substringBefore(' ').trim() else lines.getOrNull(1).orEmpty()
                         val room = lines.getOrNull(if (compact) 2 else 3).orEmpty()
                         val timing = if (compact) detail.substringAfter(' ', "") else detail
-                        val weekText = timing.substringBefore('[').substringBefore('周').trim()
+                        val weekText = timing.substringBefore('[').trim()
                         val nodeText = timing.substringAfter('[', "").substringBefore(']').trim()
                         if (weekText.isNotEmpty() && nodeText.isNotEmpty()) addAll(emit(name, teacher, room, day, nodeText, weekText))
                     }
