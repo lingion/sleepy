@@ -264,7 +264,7 @@
 | 南京信息工程大学 | nanjingxinxigongchengdaxue / njxxgcdx | http://jwxt.nuist.edu.cn/jwapp/sys/wdkb/*default/index.do?EMAP_LANG=zh#/xskcb | `wisedu` |
 | 南京邮电大学通达学院 | nanjingyoudiandaxuetongdaxueyuan / njddxtdxy | http://jwxt.nytdc.edu.cn/jwglxt | `zf_new` |
 | 南开大学 | nankaidaxue / nkdx | https://eamis.nankai.edu.cn/ | `classic_eams` |
-| 南宁师范大学 | nanningshifandaxue / nnsdx | http://jw.nnnu.edu.cn/ | `qz` |
+| 南宁师范大学 | nanningshifandaxue / nnsdx | http://jw.nnnu.edu.cn/jsxsd/ | `qz` |
 | 南宁学院 | nanningxueyuan / nnxy | https://jw.unn.edu.cn/xtgl/login_slogin.html | `zf_new` |
 | 南宁职业技术学院 | nanningzhiyejishuxueyuan / nnyjsxy | http://jwxt.ncvt.net:8088/jwglxt/ | `zf_new` |
 | 南通大学 | nantongdaxue / ntdx | http://tdjw.ntu.edu.cn/ | `zf_new` |
