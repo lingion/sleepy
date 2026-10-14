@@ -64,12 +64,17 @@ class JwQzTimetableParser(source: String) : JwParser(source) {
             block.select("[title='分组']").text().trim()
         val weekText = time.substring(0, sectionMatch.range.first)
             .replace('（', '(').replace('）', ')').replace('，', ',')
+        val segments = weekText.split(',')
+        // A trailing shared suffix applies to bare ranges, but local annotations
+        // must not leak into a later unmarked range: 1-4(单),6(周).
+        val hasLocalParity = segments.dropLast(1).any { it.contains('单') || it.contains('双') }
         val globalParity = when {
+            hasLocalParity -> 0
             weekText.contains('单') && !weekText.contains('双') -> 1
             weekText.contains('双') && !weekText.contains('单') -> 2
             else -> 0
         }
-        for (segment in weekText.split(',')) {
+        for (segment in segments) {
             val type = when { segment.contains('单') -> 1; segment.contains('双') -> 2; else -> globalParity }
             val normalized = segment.replace(Regex("[()周单双\\s]"), "")
             val range = Regex("(\\d+)(?:-(\\d+))?").matchEntire(normalized) ?: continue

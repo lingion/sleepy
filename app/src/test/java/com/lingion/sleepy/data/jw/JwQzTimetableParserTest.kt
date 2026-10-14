@@ -69,4 +69,11 @@ class JwQzTimetableParserTest {
             "<td></td>".repeat(6) + "</tr>"
         assertTrue(JwQzParser(table(row)).generateCourseList().isEmpty())
     }
+    @Test fun `local odd weeks do not leak into later every week segment`() {
+        val row = "<tr><th>大节</th><td>${block(time = "1-4(单),6(周)[01-02节]")}</td>" + "<td></td>".repeat(6) + "</tr>"
+        val courses = JwQzParser(table(row)).generateCourseList()
+        assertEquals(listOf(1, 6), courses.map { it.startWeek })
+        assertEquals(listOf(1, 0), courses.map { it.type })
+    }
+
 }
