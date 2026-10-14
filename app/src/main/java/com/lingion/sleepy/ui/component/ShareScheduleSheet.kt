@@ -92,7 +92,10 @@ fun ShareScheduleSheet(
                     scope.launch {
                         shareText(
                             ctx = ctx,
-                            content = ScheduleExporter.exportWakeUpShareText(table, courses),
+                            content = SleepyNativeExporter.exportShareText(
+                                table.name, table.startDate, table.maxWeek, table.nodesPerDay,
+                                table.timeJson, courses
+                            ),
                             subject = table.name,
                             onResult = { }
                         )
