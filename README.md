@@ -57,7 +57,7 @@
 
 **学校教务系统在维护?** WakeUp / 课程格子要登录云端?**想看下一节课却要点开 App?**
 
-Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。当前学校目录收录 349 个条目、33 种协议标识，收录不等于每个学校当前登录流程都已实机验证。另支持 iCalendar (ICS)、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
+Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务导入会访问学校站点，节假日数据和版本更新检查也需要联网；项目未集成 Firebase / Crashlytics / Sentry / Bugsnag 等第三方分析 SDK。[学校目录](docs/schools-list.md)按已有导入配置、待验证可尝试和待适配区分，收录不等于支持导入；[来源说明](docs/catalog/README.md)与生成清单记录当前范围。另支持 iCalendar (ICS)、WakeUp 课程包、CSV、HTML 和原生文本导入；导出的 ICS 文件可导入 Apple Calendar、Google Calendar、Outlook 等日历应用。
 
 桌面 5 种小组件、13 个固定尺寸变体(Today / TwoDay / WeekList / WeekView / WeekGrid × 常规 / 小 / 宽),跨厂商兼容,放在首屏不用点开 App。GPL-3.0 开源,谁都能审计谁都能 fork。
 
@@ -184,7 +184,7 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 | `boya_pp` | 研究生博雅平台（燕山大学等） |
 | `xju_post` | 新疆大学研究生 Gwork 平台 |
 | `yethan` | 西南交通大学 YETHAN 移动教务 |
-| `ucas` / `pku` 等 | 国科大 SEP、单校自建门户（完整 33 种协议标识见[已收录学校名单](docs/schools-list.md)） |
+| `ucas` / `pku` 等 | 国科大 SEP、单校自建门户（当前已配置协议标识见[学校目录](docs/schools-list.md)） |
 
 ### 学校目录与自定义 URL
 
@@ -194,9 +194,9 @@ Sleepy 将课表保存在本地，日常查看和编辑可离线使用。教务�
 
 > 学校选择（演示设备此页使用英语）
 
-学校目录会随版本更新。已收录学校可以直接选择；如果学校暂时不在目录中，也可以在搜索框输入教务系统 URL，Sleepy 会尝试根据 URL 识别协议，再打开该地址进行登录和导入。能否成功取到课表取决于学校页面、登录方式和对应解析器。
+学校目录会随版本更新。学校条目区分已有导入配置、待验证可尝试和待适配；待验证项需确认，待适配项不能直接导入。如果学校暂时不在目录中，也可以在搜索框输入教务系统 URL，Sleepy 会尝试根据 URL 识别协议，再打开该地址进行登录和导入。能否成功取到课表取决于学校页面、登录方式和对应解析器。
 
-全部已收录学校（349 个条目）的名字、教务登录地址和协议类型见 **[已收录学校名单](docs/schools-list.md)**，支持 Ctrl+F 按全名 / 简称 / 拼音缩写检索，也用于核实教务地址和学校改名。
+学校名称、状态、可用教务入口与来源记录见 **[学校目录与状态](docs/schools-list.md)**，支持 Ctrl+F 按全名 / 简称 / 拼音缩写检索，也用于核实教务地址和学校改名。
 
 如果 URL 识别或解析仍不成功，再提交适配申请。优先提供教务 URL 和失败现象；需要进一步定位时，再按 **[适配采集教程](docs/adapt-kit/README.md)** 提供页面或网络数据。不要在 issue 中提交账号、密码、验证码或其他个人信息。也可以直接 [开一个适配申请](https://github.com/lingion/sleepy/issues/new?template=school_adaptation.yml)。
 

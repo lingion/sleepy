@@ -30,6 +30,21 @@ jobs:
           git fetch origin "$BASE_REF" --depth=200
           npx commitlint --from "origin/$BASE_REF" --to HEAD --verbose
 
+  school-catalog-check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Verify source coverage and reproducible school catalog
+        run: |
+          python3 scripts/test_catalog_url_safety.py
+          python3 scripts/generate_school_catalog.py --check
+          python3 scripts/enrich_school_cities.py
+          python3 scripts/generate_schools_list.py
+          git diff --exit-code -- app/src/main/assets/school_cities.json docs/schools-list.md
+
   collector-test:
     runs-on: ubuntu-latest
     defaults:

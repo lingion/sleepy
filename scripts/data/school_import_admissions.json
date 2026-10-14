@@ -1,0 +1,5634 @@
+[
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 53,
+    "name": "安徽财贸职业学院",
+    "sourceName": "安徽财贸职业学院",
+    "sortKey": "A",
+    "sourceUrl": "https://jw.afc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.afc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.afc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20307,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 115,
+    "name": "亳州职业技术学院",
+    "sourceName": "亳州职业技术学院",
+    "sortKey": "B",
+    "sourceUrl": "https://www.bzy.edu.cn/qt/jwxt",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "https://www.bzy.edu.cn/qt/jwxt",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "https://www.bzy.edu.cn/qt/jwxt",
+      "bytes": 3689,
+      "title": "教务系统_亳州职业技术学院",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 118,
+    "name": "保山学院",
+    "sourceName": "保山学院",
+    "sortKey": "B",
+    "sourceUrl": "http://jwgl.bsnc.cn/jsxsd/?",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://jwgl.bsnc.cn/jsxsd/?",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.bsnc.cn/jsxsd/",
+      "bytes": 14112,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 217,
+    "name": "滨州职业学院",
+    "sourceName": "滨州职业学院",
+    "sortKey": "B",
+    "sourceUrl": "https://jwxt.bzpt.edu.cn/jwglxt/xtgl/index_initMenu.html?jsdm=&_t=1718785419071",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.bzpt.edu.cn/jwglxt/xtgl/index_initMenu.html?jsdm=&_t=1718785419071",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.bzpt.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19820,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 218,
+    "name": "滨州科技职业学院",
+    "sourceName": "滨州科技职业学院",
+    "sortKey": "B",
+    "sourceUrl": "http://112.6.32.188:8088/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://112.6.32.188:8088/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://112.6.32.188:8088/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19608,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 312,
+    "name": "重庆公共运输职业学院",
+    "sourceName": "重庆公共运输职业学院",
+    "sortKey": "C",
+    "sourceUrl": "https://jwxt.cqgyzy.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.cqgyzy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.cqgyzy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20322,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 324,
+    "name": "重庆工商大学派斯学院",
+    "sourceName": "重庆工商大学派斯学院",
+    "sortKey": "C",
+    "sourceUrl": "https://www.paisi.edu.cn:8181/jsxsd/?tdsourcetag=s_pcqq_aiomsg",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://www.paisi.edu.cn:8181/jsxsd/?tdsourcetag=s_pcqq_aiomsg",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://www.paisi.edu.cn:8181/jsxsd/?tdsourcetag=s_pcqq_aiomsg",
+      "bytes": 7700,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 339,
+    "name": "重庆航天职业技术学院",
+    "sourceName": "重庆航天职业技术学院",
+    "sortKey": "C",
+    "sourceUrl": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20311,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 403,
+    "name": "长沙幼儿师范高等专科学校",
+    "sourceName": "长沙幼儿师范高等专科学校",
+    "sortKey": "C",
+    "sourceUrl": "http://61.186.94.104:8090/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://61.186.94.104:8090/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://61.186.94.104:8090/jsxsd/",
+      "bytes": 13142,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 406,
+    "name": "重庆艺术工程职业学院",
+    "sourceName": "重庆艺术工程职业学院",
+    "sortKey": "C",
+    "sourceUrl": "https://ysjw.cqysxy.com:83/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://ysjw.cqysxy.com:83/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://ysjw.cqysxy.com:83/jsxsd/",
+      "bytes": 18154,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 407,
+    "name": "常德职业技术学院",
+    "sourceName": "常德职业技术学院",
+    "sortKey": "C",
+    "sourceUrl": "https://jw.cdzy.cn:8001/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jw.cdzy.cn:8001/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.cdzy.cn:8001/jsxsd/",
+      "bytes": 16613,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 422,
+    "name": "长沙文创艺术职业学院",
+    "sourceName": "长沙文创艺术职业学院",
+    "sortKey": "C",
+    "sourceUrl": "http://jwxt.cswcxyedu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.cswcxyedu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.cswcxyedu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21055,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 423,
+    "name": "长春医学高等专科学校",
+    "sourceName": "长春医学高等专科学校",
+    "sortKey": "C",
+    "sourceUrl": "https://jwxt.ccmc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.ccmc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.ccmc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20246,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 458,
+    "name": "常德学院（原湖南文理学院芙蓉学院）",
+    "sourceName": "常德学院（原湖南文理学院芙蓉学院）",
+    "sortKey": "C",
+    "sourceUrl": "https://dyjw.huas.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://dyjw.huas.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://dyjw.huas.edu.cn/jsxsd/",
+      "bytes": 6099,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 530,
+    "name": "大连医科大学",
+    "sourceName": "大连医科大学",
+    "sortKey": "D",
+    "sourceUrl": "http://210.47.245.4/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://210.47.245.4/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://210.47.245.4/(jwabd4ys4v5sma450xotz445)/Default2.aspx",
+      "bytes": 5672,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 547,
+    "name": "德州职业技术学院",
+    "sourceName": "德州职业技术学院",
+    "sortKey": "D",
+    "sourceUrl": "https://zf.dzvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zf.dzvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zf.dzvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20650,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 613,
+    "name": "福建技术师范学院",
+    "sourceName": "福建技术师范学院",
+    "sortKey": "F",
+    "sourceUrl": "https://xjxt-ls.fpnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://xjxt-ls.fpnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://xjxt-ls.fpnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20617,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 616,
+    "name": "福建生物工程职业技术学院",
+    "sourceName": "福建生物工程职业技术学院",
+    "sortKey": "F",
+    "sourceUrl": "https://jw.fjvcb.cn/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jw.fjvcb.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.fjvcb.cn/jsxsd/",
+      "bytes": 6627,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 627,
+    "name": "佛山职业技术学院",
+    "sourceName": "佛山职业技术学院",
+    "sortKey": "F",
+    "sourceUrl": "https://jwgl.fspt.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwgl.fspt.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.fspt.edu.cn/jsxsd/",
+      "bytes": 5353,
+      "title": "佛山职业技术学院综合教务管理系统-强智科技",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 643,
+    "name": "阜阳幼儿师范高等专科学校",
+    "sourceName": "阜阳幼儿师范高等专科学校",
+    "sortKey": "F",
+    "sourceUrl": "http://42.247.32.226:8000/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://42.247.32.226:8000/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://42.247.32.226:8000/jwglxt/xtgl/login_slogin.html",
+      "bytes": 17139,
+      "title": "教学综合信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 663,
+    "name": "广州松田职业学院",
+    "sourceName": "广州松田职业学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jw.educationgroup.cn/gzstzyxy_jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jw.educationgroup.cn/gzstzyxy_jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.educationgroup.cn/gzstzyxy_jsxsd/",
+      "bytes": 6444,
+      "title": "登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 691,
+    "name": "广州商学院",
+    "sourceName": "广州商学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwxt.gcc.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.gcc.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.gcc.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20511,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 700,
+    "name": "广州涉外经济职业技术学院",
+    "sourceName": "广州涉外经济职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwsoft.gziec.edu.cn/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwsoft.gziec.edu.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwsoft.gziec.edu.cn/xtgl/login_slogin.html",
+      "bytes": 19843,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 711,
+    "name": "广西外国语学院",
+    "sourceName": "广西外国语学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwxt.gxufl.com/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.gxufl.com/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.gxufl.com/xtgl/login_slogin.html",
+      "bytes": 20678,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 726,
+    "name": "广西职业师范学院",
+    "sourceName": "广西职业师范学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jw.gxvnu.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1604580599870",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.gxvnu.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1604580599870",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.gxvnu.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1604580599870",
+      "bytes": 20719,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 731,
+    "name": "桂林旅游学院",
+    "sourceName": "桂林旅游学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwcweb1.gltu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwcweb1.gltu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwcweb1.gltu.cn/xtgl/login_slogin.html",
+      "bytes": 21096,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 740,
+    "name": "甘肃交通职业技术学院",
+    "sourceName": "甘肃交通职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jiaowu.gsjtxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jiaowu.gsjtxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jiaowu.gsjtxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20327,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 744,
+    "name": "硅湖职业技术学院",
+    "sourceName": "硅湖职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwc.usl.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwc.usl.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwc.usl.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN",
+      "bytes": 20284,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 745,
+    "name": "贵州中医药大学",
+    "sourceName": "贵州中医药大学",
+    "sortKey": "G",
+    "sourceUrl": "http://jwgl.gzy.edu.cn/jsxsd/",
+    "sourceType": "qz_with_node",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz_with_node",
+    "probe": {
+      "url": "http://jwgl.gzy.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.gzy.edu.cn/jsxsd/",
+      "bytes": 9469,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 755,
+    "name": "贵州警察学院",
+    "sourceName": "贵州警察学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwxt.gzpc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.gzpc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.gzpc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20566,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 783,
+    "name": "广东碧桂园职业学院",
+    "sourceName": "广东碧桂园职业学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwxt.bgypt.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.bgypt.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.bgypt.edu.cn/xtgl/login_slogin.html",
+      "bytes": 21213,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 786,
+    "name": "广西经贸职业技术学院",
+    "sourceName": "广西经贸职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20585,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 788,
+    "name": "广西城市职业大学",
+    "sourceName": "广西城市职业大学",
+    "sortKey": "G",
+    "sourceUrl": "https://jw.gxcvuedu.com/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.gxcvuedu.com/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.gxcvuedu.com/xtgl/login_slogin.html",
+      "bytes": 20349,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 797,
+    "name": "广东司法警官职业学院",
+    "sourceName": "广东司法警官职业学院",
+    "sortKey": "G",
+    "sourceUrl": "http://210.21.33.69:8027/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://210.21.33.69:8027/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://210.21.33.69:8027/",
+      "bytes": 4813,
+      "title": "登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 815,
+    "name": "广东茂名健康职业学院",
+    "sourceName": "广东茂名健康职业学院",
+    "sortKey": "G",
+    "sourceUrl": "http://14.215.239.114:6380/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://14.215.239.114:6380/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://14.215.239.114:6380/jsxsd/",
+      "bytes": 19107,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 820,
+    "name": "广州体育学院",
+    "sourceName": "广州体育学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwxt.gzsport.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwxt.gzsport.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.gzsport.edu.cn/jsxsd/",
+      "bytes": 17930,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 823,
+    "name": "广州康大职业技术学院",
+    "sourceName": "广州康大职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwweb.kdvtc.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwweb.kdvtc.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwweb.gzkdp.edu.cn/jsxsd/",
+      "bytes": 17498,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 851,
+    "name": "甘肃林业职业技术学院",
+    "sourceName": "甘肃林业职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 9355,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 968,
+    "name": "广东工程职业技术学院",
+    "sourceName": "广东工程职业技术学院",
+    "sortKey": "G",
+    "sourceUrl": "https://zf.gdep.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zf.gdep.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zf.gdep.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20464,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 989,
+    "name": "广西教职工大学分院 - 研究生",
+    "sourceName": "广西教职工大学分院 - 研究生",
+    "sortKey": "G",
+    "sourceUrl": "https://jwxt2018.gxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "pc",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt2018.gxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt2018.gxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21084,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1001,
+    "name": "湖北工程学院",
+    "sourceName": "湖北工程学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwgl.hbeu.edu.cn/jwglxt",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.hbeu.edu.cn/jwglxt",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.hbeu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20424,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1004,
+    "name": "湖北师范大学文理学院",
+    "sourceName": "湖北师范大学文理学院",
+    "sortKey": "H",
+    "sourceUrl": "http://221.233.125.126:8094/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://221.233.125.126:8094/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://221.233.125.126:8094/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19958,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1006,
+    "name": "湖北理工学院",
+    "sourceName": "湖北理工学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwglnew.hbpu.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwglnew.hbpu.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwglnew.hbpu.edu.cn/xtgl/login_slogin.html",
+      "bytes": 19828,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1012,
+    "name": "湖北经济学院法商学院",
+    "sourceName": "湖北经济学院法商学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwxt1.hbfs.edu.cn/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt1.hbfs.edu.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt1.hbfs.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20814,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1023,
+    "name": "湖南医药学院",
+    "sourceName": "湖南医药学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwgl.hnmu.edu.cn/jwglxt/xtgl/index_initMenu.html?jsdm=xs&_t=1750649722312",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.hnmu.edu.cn/jwglxt/xtgl/index_initMenu.html?jsdm=xs&_t=1750649722312",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.hnmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20490,
+      "title": "湖南医药学院教学综合信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1045,
+    "name": "湖南有色金属职业技术学院",
+    "sourceName": "湖南有色金属职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwxt.hnyszy.com.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwxt.hnyszy.com.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.hnyszy.com.cn/jsxsd/",
+      "bytes": 10459,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1047,
+    "name": "湖南涉外经济学院",
+    "sourceName": "湖南涉外经济学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jw.hieu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.hieu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.hieu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20430,
+      "title": "教学综合信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1048,
+    "name": "湖南现代物流职业技术学院",
+    "sourceName": "湖南现代物流职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwglxt.hmlc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwglxt.hmlc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwglxt.hmlc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 15817,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1056,
+    "name": "湖南警察学院",
+    "sourceName": "湖南警察学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jw.hnpolice.com:6280/jsxsd/hnjcxy/toLogin.do",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://jw.hnpolice.com:6280/jsxsd/hnjcxy/toLogin.do",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.hnpolice.com:6280/jsxsd/hnjcxy/toLogin.do",
+      "bytes": 31464,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1059,
+    "name": "湖南铁路科技职业技术学院",
+    "sourceName": "湖南铁路科技职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jiaowu.hntky.com/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jiaowu.hntky.com/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jiaowu.hntky.com/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20682,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1060,
+    "name": "湖南食品药品职业学院",
+    "sourceName": "湖南食品药品职业学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jw.hnyzy.cn/jsxsd",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jw.hnyzy.cn/jsxsd",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.hnyzy.cn/jsxsd/",
+      "bytes": 7967,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1079,
+    "name": "黑龙江东方学院",
+    "sourceName": "黑龙江东方学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jw.hljeu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.hljeu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.hljeu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19947,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1087,
+    "name": "黑龙江工程学院",
+    "sourceName": "黑龙江工程学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jw.hljit.edu.cn/default2.aspx",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://jw.hljit.edu.cn/default2.aspx",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.hljit.edu.cn/default2.aspx",
+      "bytes": 11057,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1118,
+    "name": "湖南水利水电职业技术学院",
+    "sourceName": "湖南水利水电职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://zfjw.hnslsdxy.com/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zfjw.hnslsdxy.com/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zfjw.hnslsdxy.com/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20730,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1121,
+    "name": "杭州万向职业技术学院",
+    "sourceName": "杭州万向职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwgl.wxpoly.cn/xtgl/login_slogin.html?language=zh_CN&_t=1580729083904",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.wxpoly.cn/xtgl/login_slogin.html?language=zh_CN&_t=1580729083904",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.wxpoly.cn/xtgl/login_slogin.html?language=zh_CN&_t=1580729083904",
+      "bytes": 20966,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1126,
+    "name": "河北师范大学汇华学院",
+    "sourceName": "河北师范大学汇华学院",
+    "sortKey": "H",
+    "sourceUrl": "https://hhjx.hebtu.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://hhjx.hebtu.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://hhjx.hebtu.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20359,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1127,
+    "name": "湖北轻工职业技术学院",
+    "sourceName": "湖北轻工职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jw.hbliti.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.hbliti.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.hbliti.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20256,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1128,
+    "name": "黑龙江旅游职业技术学院",
+    "sourceName": "黑龙江旅游职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwglxt.ljlyzy.org.cn:8000/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwglxt.ljlyzy.org.cn:8000/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwglxt.ljlyzy.org.cn:8000/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19687,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1136,
+    "name": "河南应用技术职业学院",
+    "sourceName": "河南应用技术职业学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwgl.hati.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.hati.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.hati.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20158,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1179,
+    "name": "海南卫生健康职业学院",
+    "sourceName": "海南卫生健康职业学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwxt.hnhvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.hnhvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.hnhvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21091,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1185,
+    "name": "哈尔滨剑桥学院",
+    "sourceName": "哈尔滨剑桥学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwxt.hcc.edu.cn:8080/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://jwxt.hcc.edu.cn:8080/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.hcc.edu.cn:8080/jsxsd/",
+      "bytes": 5113,
+      "title": "哈尔滨剑桥学院综合教务管理系统-强智科技",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1186,
+    "name": "惠州卫生职业技术学院",
+    "sourceName": "惠州卫生职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://qz.hzhsp.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://qz.hzhsp.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://qz.hzhsp.edu.cn/jsxsd/",
+      "bytes": 19026,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1190,
+    "name": "湖南邮电职业技术学院",
+    "sourceName": "湖南邮电职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jx.189jxt.com:10081/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://jx.189jxt.com:10081/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://jx.189jxt.com:10081/jsxsd/",
+      "bytes": 17076,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1197,
+    "name": "湖北孝感美珈职业学院",
+    "sourceName": "湖北孝感美珈职业学院",
+    "sortKey": "H",
+    "sourceUrl": "http://42.247.9.91:8083/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://42.247.9.91:8083/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://42.247.9.91:8083/jsxsd/",
+      "bytes": 16546,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1202,
+    "name": "河北工程大学科信学院",
+    "sourceName": "河北工程大学科信学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20367,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1230,
+    "name": "河北轨道运输职业技术学院",
+    "sourceName": "河北轨道运输职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwgl.hbgdys.cn:8045/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.hbgdys.cn:8045/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.hbgdys.cn:8045/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19965,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1240,
+    "name": "湖北三峡职业技术学院",
+    "sourceName": "湖北三峡职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://tms.tgc.edu.cn/jwglxt/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://tms.tgc.edu.cn/jwglxt/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://tms.tgc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20317,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1251,
+    "name": "海南经贸职业技术学院",
+    "sourceName": "海南经贸职业技术学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jw2.hceb.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw2.hceb.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw2.hceb.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20461,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1252,
+    "name": "海南热带海洋学院",
+    "sourceName": "海南热带海洋学院",
+    "sortKey": "H",
+    "sourceUrl": "http://210.37.144.124/default2.aspx",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://210.37.144.124/default2.aspx",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://210.37.144.124/default2.aspx",
+      "bytes": 5526,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1288,
+    "name": "河北水利电力学院",
+    "sourceName": "河北水利电力学院",
+    "sortKey": "H",
+    "sourceUrl": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20077,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1304,
+    "name": "河北北方学院",
+    "sourceName": "河北北方学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jw.hebeinu.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.hebeinu.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.hebeinu.edu.cn/xtgl/login_slogin.html",
+      "bytes": 21087,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1308,
+    "name": "河北传媒学院",
+    "sourceName": "河北传媒学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwxt.hebic.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.hebic.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.hebic.cn/xtgl/login_slogin.html",
+      "bytes": 21484,
+      "title": "河北传媒学院教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1315,
+    "name": "杭州医学院",
+    "sourceName": "杭州医学院",
+    "sortKey": "H",
+    "sourceUrl": "http://jwglxt.hmc.edu.cn",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwglxt.hmc.edu.cn",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwglxt.hmc.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20517,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1330,
+    "name": "哈尔滨华德学院",
+    "sourceName": "哈尔滨华德学院",
+    "sortKey": "H",
+    "sourceUrl": "http://112.102.214.203:8108/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://112.102.214.203:8108/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://112.102.214.203:8108/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19956,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1520,
+    "name": "嘉兴职业技术学院",
+    "sourceName": "嘉兴职业技术学院",
+    "sortKey": "J",
+    "sourceUrl": "http://jwgl.jxvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.jxvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.jxvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20641,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1583,
+    "name": "焦作大学",
+    "sourceName": "焦作大学",
+    "sortKey": "J",
+    "sourceUrl": "https://jwxt.jzu.edu.cn/eams/login.action;jsessionid=REDACTED",
+    "sourceType": "shuwei_json",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "classic_eams",
+    "probe": {
+      "url": "https://jwxt.jzu.edu.cn/eams/login.action;jsessionid=REDACTED",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "classic_eams"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.jzu.edu.cn/eams/login.action",
+      "bytes": 4824,
+      "title": "",
+      "urlHints": [
+        "classic_eams"
+      ],
+      "urlRedactions": {
+        "url": {
+          "originalSha256": "1aadc21b5ac54373fe6ad6e14dfcc0d5e7332a0fdb7b973ddad1e07edda3e258",
+          "redactedParameters": [
+            "jsessionid"
+          ],
+          "displayCopyOnly": true
+        }
+      }
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "urlRedactions": {
+      "sourceUrl": {
+        "originalSha256": "1aadc21b5ac54373fe6ad6e14dfcc0d5e7332a0fdb7b973ddad1e07edda3e258",
+        "redactedParameters": [
+          "jsessionid"
+        ],
+        "displayCopyOnly": true
+      }
+    }
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1601,
+    "name": "江西应用技术职业学院",
+    "sourceName": "江西应用技术职业学院",
+    "sortKey": "J",
+    "sourceUrl": "https://jw.jxyy.edu.cn:9002/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.jxyy.edu.cn:9002/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.jxyy.edu.cn:9002/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20411,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1603,
+    "name": "九江学院",
+    "sourceName": "九江学院",
+    "sortKey": "J",
+    "sourceUrl": "https://zhjw1.jju.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zhjw1.jju.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zhjw1.jju.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21088,
+      "title": "九江学院-教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1692,
+    "name": "江苏警官学院",
+    "sourceName": "江苏警官学院",
+    "sortKey": "J",
+    "sourceUrl": "http://jwxt.jspi.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.jspi.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.jspi.cn/xtgl/login_slogin.html",
+      "bytes": 8589,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1702,
+    "name": "江西生物科技职业学院",
+    "sourceName": "江西生物科技职业学院",
+    "sortKey": "J",
+    "sourceUrl": "https://jwcpc.jxswkj.com:9080/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwcpc.jxswkj.com:9080/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwcpc.jxswkj.com:9080/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19924,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1740,
+    "name": "昆明理工大学津桥学院",
+    "sourceName": "昆明理工大学津桥学院",
+    "sortKey": "K",
+    "sourceUrl": "https://jwc.oxbridge.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwc.oxbridge.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwc.oxbridge.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20876,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1744,
+    "name": "凯里学院",
+    "sourceName": "凯里学院",
+    "sortKey": "K",
+    "sourceUrl": "https://sys.kluniv.edu.cn:8004/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://sys.kluniv.edu.cn:8004/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://sys.kluniv.edu.cn:8004/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20569,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1748,
+    "name": "昆山登云科技职业学院",
+    "sourceName": "昆山登云科技职业学院",
+    "sortKey": "K",
+    "sourceUrl": "https://jiaowu.dyc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jiaowu.dyc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jiaowu.dyc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21105,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1757,
+    "name": "临沂职业学院",
+    "sourceName": "临沂职业学院",
+    "sortKey": "L",
+    "sourceUrl": "https://jwgl.lyvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.lyvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.lyvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20656,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1761,
+    "name": "乐山职业技术学院",
+    "sourceName": "乐山职业技术学院",
+    "sortKey": "L",
+    "sourceUrl": "https://jx.lszyxy.edu.cn",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jx.lszyxy.edu.cn",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jx.lszyxy.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20354,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1763,
+    "name": "兰州信息科技学院",
+    "sourceName": "兰州信息科技学院",
+    "sortKey": "L",
+    "sourceUrl": "http://jwgls.lzxk.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgls.lzxk.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgls.lzxk.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20322,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1779,
+    "name": "洛阳科技职业学院",
+    "sourceName": "洛阳科技职业学院",
+    "sortKey": "L",
+    "sourceUrl": "https://jw.lku.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.lku.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.lku.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20353,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1811,
+    "name": "辽宁现代服务职业技术学院",
+    "sourceName": "辽宁现代服务职业技术学院",
+    "sortKey": "L",
+    "sourceUrl": "https://jwxt.lnxdfwxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.lnxdfwxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.lnxdfwxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 15759,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1817,
+    "name": "辽宁传媒学院",
+    "sourceName": "辽宁传媒学院",
+    "sortKey": "L",
+    "sourceUrl": "http://36.138.41.251/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://36.138.41.251/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "http://36.138.41.251/jsxsd/",
+      "bytes": 14955,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1820,
+    "name": "辽宁对外经贸学院",
+    "sourceName": "辽宁对外经贸学院",
+    "sortKey": "L",
+    "sourceUrl": "https://jwpt.luibe.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwpt.luibe.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwpt.luibe.edu.cn/jsxsd/",
+      "bytes": 18881,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1883,
+    "name": "辽宁特殊教育师范高等专科学校",
+    "sourceName": "辽宁特殊教育师范高等专科学校",
+    "sortKey": "L",
+    "sourceUrl": "http://61.189.17.146/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://61.189.17.146/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://61.189.17.146/jwglxt/xtgl/login_slogin.html",
+      "bytes": 15889,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1884,
+    "name": "辽宁地质工程职业学院",
+    "sourceName": "辽宁地质工程职业学院",
+    "sortKey": "L",
+    "sourceUrl": "https://jw.lngc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.lngc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.lngc.edu.cn/xtgl/login_slogin.html",
+      "bytes": 15997,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1900,
+    "name": "眉山药科职业学院",
+    "sourceName": "眉山药科职业学院",
+    "sortKey": "M",
+    "sourceUrl": "https://zfjw.msykxy.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zfjw.msykxy.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zfjw.msykxy.edu.cn/xtgl/login_slogin.html",
+      "bytes": 19522,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1957,
+    "name": "南充职业技术学院",
+    "sourceName": "南充职业技术学院",
+    "sortKey": "N",
+    "sourceUrl": "https://njwc.nczy.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://njwc.nczy.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://njwc.nczy.edu.cn/jsxsd/",
+      "bytes": 21920,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1972,
+    "name": "南昌应用技术师范学院",
+    "sourceName": "南昌应用技术师范学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jwc.nncat.edu.cn:8080/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwc.nncat.edu.cn:8080/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwc.nncat.edu.cn:8080/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20902,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1977,
+    "name": "宁夏建设职业技术学院",
+    "sourceName": "宁夏建设职业技术学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jwx.nxjy.edu.cn/(S(REDACTED))/default2.aspx",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://jwx.nxjy.edu.cn/(S(REDACTED))/default2.aspx",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwx.nxjy.edu.cn/default2.aspx",
+      "bytes": 13844,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ],
+      "urlRedactions": {
+        "url": {
+          "originalSha256": "22a27b42367b59f4978bd483ab68aa75ca17c549a792a98c998debf08aaf58e1",
+          "redactedParameters": [
+            "path-session"
+          ],
+          "displayCopyOnly": true
+        },
+        "finalUrl": {
+          "originalSha256": "22a27b42367b59f4978bd483ab68aa75ca17c549a792a98c998debf08aaf58e1",
+          "redactedParameters": [
+            "path-session"
+          ],
+          "displayCopyOnly": true
+        }
+      }
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "urlRedactions": {
+      "sourceUrl": {
+        "originalSha256": "22a27b42367b59f4978bd483ab68aa75ca17c549a792a98c998debf08aaf58e1",
+        "redactedParameters": [
+          "path-session"
+        ],
+        "displayCopyOnly": true
+      }
+    },
+    "operationalUrlNote": "Removed cookieless ASP.NET source session path; no inherited session is replayed. Existing public login-page protocol evidence remains unverified."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1981,
+    "name": "宁夏工商职业技术学院",
+    "sourceName": "宁夏工商职业技术学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jw.nxgs.edu.cn:9001/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.nxgs.edu.cn:9001/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.nxgs.edu.cn:9001/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21678,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2032,
+    "name": "南京传媒学院",
+    "sourceName": "南京传媒学院",
+    "sortKey": "N",
+    "sourceUrl": "https://jw.cucn.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.cucn.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.cucn.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20463,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2045,
+    "name": "南京工业大学浦江学院",
+    "sourceName": "南京工业大学浦江学院",
+    "sortKey": "N",
+    "sourceUrl": "https://jwxt.njpji.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.njpji.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.njpji.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21067,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2049,
+    "name": "南京旅游职业学院",
+    "sourceName": "南京旅游职业学院",
+    "sortKey": "N",
+    "sourceUrl": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21018,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2055,
+    "name": "南京理工大学泰州科技学院",
+    "sourceName": "南京理工大学泰州科技学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jwgl.nustti.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "http://jwgl.nustti.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.nustti.edu.cn/jsxsd/",
+      "bytes": 7630,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2058,
+    "name": "南京财经大学红山学院",
+    "sourceName": "南京财经大学红山学院",
+    "sortKey": "N",
+    "sourceUrl": "http://hsjwxt.nufe.edu.cn/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://hsjwxt.nufe.edu.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "https://hsjwxt.nufe.edu.cn/",
+      "bytes": 5598,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2059,
+    "name": "南京邮电大学",
+    "sourceName": "南京邮电大学",
+    "sortKey": "N",
+    "sourceUrl": "http://jwxt.njupt.edu.cn/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://jwxt.njupt.edu.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.njupt.edu.cn/",
+      "bytes": 5620,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2074,
+    "name": "南昌工学院",
+    "sourceName": "南昌工学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jwxt.ncpu.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.ncpu.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.ncpu.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20807,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2083,
+    "name": "内蒙古警察学院",
+    "sourceName": "内蒙古警察学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jwc.imppc.cn:9000/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwc.imppc.cn:9000/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwc.imppc.cn:9000/xtgl/login_slogin.html",
+      "bytes": 20234,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2096,
+    "name": "宁波工程学院",
+    "sourceName": "宁波工程学院",
+    "sortKey": "N",
+    "sourceUrl": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21521,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2126,
+    "name": "濮阳职业技术学院",
+    "sourceName": "濮阳职业技术学院",
+    "sortKey": "P",
+    "sourceUrl": "http://jwgl.pyvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.pyvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.pyvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19950,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2171,
+    "name": "青岛工学院",
+    "sourceName": "青岛工学院",
+    "sortKey": "Q",
+    "sourceUrl": "http://jw.qit.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.qit.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.qit.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20275,
+      "title": "青岛工学院教务网络管理系统",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2184,
+    "name": "黔东南民族职业技术学院",
+    "sourceName": "黔东南民族职业技术学院",
+    "sortKey": "Q",
+    "sourceUrl": "https://jw.qdnpt.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.qdnpt.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.qdnpt.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19958,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2206,
+    "name": "泉州轻工职业学院",
+    "sourceName": "泉州轻工职业学院",
+    "sortKey": "Q",
+    "sourceUrl": "https://jw.qzqgxy.com:8001/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jw.qzqgxy.com:8001/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.qzqgxy.com:8001/jsxsd/",
+      "bytes": 21057,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2233,
+    "name": "四川大学锦江学院",
+    "sourceName": "四川大学锦江学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jwa.scujj.edu.cn:82/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwa.scujj.edu.cn:82/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwa.scujj.edu.cn:82/xtgl/login_slogin.html",
+      "bytes": 19840,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2237,
+    "name": "四川工商职业技术学院",
+    "sourceName": "四川工商职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20566,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2259,
+    "name": "宿州职业技术学院",
+    "sourceName": "宿州职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "http://jwxt.szzy.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.szzy.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.szzy.edu.cn/xtgl/login_slogin.html",
+      "bytes": 15309,
+      "title": "宿州职业技术学院教务处门户网站",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2470,
+    "name": "私立华联学院",
+    "sourceName": "私立华联学院",
+    "sortKey": "S",
+    "sourceUrl": "http://jwxt.hlu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.hlu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.hlu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20708,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2517,
+    "name": "山东协和学院",
+    "sourceName": "山东协和学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
+      "bytes": 7683,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2536,
+    "name": "山东电子职业技术学院",
+    "sourceName": "山东电子职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jwgl.sdcet.edu.cn:6066/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwgl.sdcet.edu.cn:6066/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.sdcet.edu.cn:6066/jsxsd/",
+      "bytes": 6041,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2552,
+    "name": "山东财经大学燕山学院",
+    "sourceName": "山东财经大学燕山学院",
+    "sortKey": "S",
+    "sourceUrl": "https://ysjw.sdufe.edu.cn:8081/jsxsd/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://ysjw.sdufe.edu.cn:8081/jsxsd/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://ysjw.sdufe.edu.cn:8081/jsxsd/",
+      "bytes": 9399,
+      "title": "登录",
+      "urlHints": [
+        "qz"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2563,
+    "name": "山西能源学院",
+    "sourceName": "山西能源学院",
+    "sortKey": "S",
+    "sourceUrl": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20417,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2570,
+    "name": "沈阳城市学院",
+    "sourceName": "沈阳城市学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jw.shenyangcu.edu.cn:14304/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.shenyangcu.edu.cn:14304/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.shenyangcu.edu.cn:14304/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20107,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2600,
+    "name": "三峡旅游职业技术学院",
+    "sourceName": "三峡旅游职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "http://jwxt.sxlyzy.com.cn:88/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.sxlyzy.com.cn:88/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.sxlyzy.com.cn:88/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20264,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2601,
+    "name": "三明学院",
+    "sourceName": "三明学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20608,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2614,
+    "name": "上海师范大学天华学院",
+    "sourceName": "上海师范大学天华学院",
+    "sortKey": "S",
+    "sourceUrl": "https://thjwgl.sthu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://thjwgl.sthu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://thjwgl.sthu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20734,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2644,
+    "name": "四川华新现代职业学院",
+    "sourceName": "四川华新现代职业学院",
+    "sortKey": "S",
+    "sourceUrl": "https://www.schxmvc.com.cn/eams/loginExt.action",
+    "sourceType": "shuwei_json",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "classic_eams",
+    "probe": {
+      "url": "https://www.schxmvc.com.cn/eams/loginExt.action",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "classic_eams"
+      ],
+      "http": 200,
+      "finalUrl": "https://www.schxmvc.com.cn/eams/loginExt.action",
+      "bytes": 5276,
+      "title": "四川华新现代职业学院教务管理系统",
+      "urlHints": [
+        "classic_eams"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2649,
+    "name": "首都经济贸易大学",
+    "sourceName": "首都经济贸易大学",
+    "sortKey": "S",
+    "sourceUrl": "https://jwc.cueb.edu.cn/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://jwc.cueb.edu.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwc.cueb.edu.cn/",
+      "bytes": 28262,
+      "title": "首都经济贸易大学教务处",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2656,
+    "name": "陕西财经职业技术学院",
+    "sourceName": "陕西财经职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "https://jwgl.scy.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.scy.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.scy.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20757,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2674,
+    "name": "苏州工艺美术职业技术学院",
+    "sourceName": "苏州工艺美术职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "https://zfjw.sgmart.edu.cn/default2.aspx",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "https://zfjw.sgmart.edu.cn/default2.aspx",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "https://zfjw.sgmart.edu.cn/default2.aspx",
+      "bytes": 13802,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2675,
+    "name": "苏州工业园区职业技术学院",
+    "sourceName": "苏州工业园区职业技术学院",
+    "sortKey": "S",
+    "sourceUrl": "https://t.ivt.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://t.ivt.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://t.ivt.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20860,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2698,
+    "name": "天津石油职业技术学院",
+    "sourceName": "天津石油职业技术学院",
+    "sortKey": "T",
+    "sourceUrl": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19626,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2717,
+    "name": "天津城市建设管理职业技术学院",
+    "sourceName": "天津城市建设管理职业技术学院",
+    "sortKey": "T",
+    "sourceUrl": "https://jw.tjchengjian.com/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.tjchengjian.com/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.tjchengjian.com/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20036,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2719,
+    "name": "天津仁爱学院",
+    "sourceName": "天津仁爱学院",
+    "sortKey": "T",
+    "sourceUrl": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
+      "bytes": 19999,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2726,
+    "name": "天津医科大学临床医学院",
+    "sourceName": "天津医科大学临床医学院",
+    "sortKey": "T",
+    "sourceUrl": "http://180.213.3.14:18880/eams/loginExt.action",
+    "sourceType": "shuwei_json",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "classic_eams",
+    "probe": {
+      "url": "http://180.213.3.14:18880/eams/loginExt.action",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "classic_eams"
+      ],
+      "http": 200,
+      "finalUrl": "http://180.213.3.14:18880/eams/loginExt.action",
+      "bytes": 5216,
+      "title": "天津医科大学临床医院教学管理系统",
+      "urlHints": [
+        "classic_eams"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2746,
+    "name": "天津机电职业技术学院",
+    "sourceName": "天津机电职业技术学院",
+    "sortKey": "T",
+    "sourceUrl": "https://jwsys.suoyuan.com.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwsys.suoyuan.com.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwsys.suoyuan.com.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20292,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2758,
+    "name": "天津医学高等专科学校",
+    "sourceName": "天津医学高等专科学校",
+    "sortKey": "T",
+    "sourceUrl": "https://dean.tjyzh.cn/",
+    "sourceType": "qz",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "qz",
+    "probe": {
+      "url": "https://dean.tjyzh.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "qz"
+      ],
+      "http": 200,
+      "finalUrl": "https://dean.tjyzh.cn/",
+      "bytes": 8783,
+      "title": "天津医学高等专科学校综合教务管理系统-强智科技",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2761,
+    "name": "天津交通职业学院",
+    "sourceName": "天津交通职业学院",
+    "sortKey": "T",
+    "sourceUrl": "https://jw.tttc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.tttc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.tttc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20095,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2775,
+    "name": "天津传媒学院",
+    "sourceName": "天津传媒学院",
+    "sortKey": "T",
+    "sourceUrl": "https://jw.tjcma.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jw.tjcma.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jw.tjcma.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19549,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2855,
+    "name": "无锡学院",
+    "sourceName": "无锡学院",
+    "sortKey": "W",
+    "sourceUrl": "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21015,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2856,
+    "name": "无锡科技职业学院",
+    "sourceName": "无锡科技职业学院",
+    "sortKey": "W",
+    "sourceUrl": "http://jwc.wxstc.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1585643279104",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwc.wxstc.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1585643279104",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwc.wxstc.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1585643279104",
+      "bytes": 20353,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2858,
+    "name": "梧州学院",
+    "sourceName": "梧州学院",
+    "sortKey": "W",
+    "sourceUrl": "https://jwxt.gxuwz.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.gxuwz.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.gxuwz.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20826,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2878,
+    "name": "武汉文理学院",
+    "sourceName": "武汉文理学院",
+    "sortKey": "W",
+    "sourceUrl": "https://jwxt.whwl.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.whwl.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.whwl.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20904,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2896,
+    "name": "无锡南洋职业技术学院",
+    "sourceName": "无锡南洋职业技术学院",
+    "sortKey": "W",
+    "sourceUrl": "http://jw.wsoc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.wsoc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.wsoc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20152,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2897,
+    "name": "温州理工学院",
+    "sourceName": "温州理工学院",
+    "sortKey": "W",
+    "sourceUrl": "https://jwxt.wzut.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.wzut.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.wzut.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20110,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2898,
+    "name": "潍坊护理职业学院",
+    "sourceName": "潍坊护理职业学院",
+    "sortKey": "W",
+    "sourceUrl": "http://jwgl.sdwfvc.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.sdwfvc.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.sdwfvc.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19927,
+      "title": "潍坊职业学院教学综合信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2915,
+    "name": "温州科技职业学院",
+    "sourceName": "温州科技职业学院",
+    "sortKey": "W",
+    "sourceUrl": "https://jwxt.wzvcst.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.wzvcst.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.wzvcst.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20336,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2919,
+    "name": "温州医科大学仁济学院",
+    "sourceName": "温州医科大学仁济学院",
+    "sortKey": "W",
+    "sourceUrl": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
+      "bytes": 21531,
+      "title": "温州医科大学教务综合信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2932,
+    "name": "信阳师范学院",
+    "sourceName": "信阳师范学院",
+    "sortKey": "X",
+    "sourceUrl": "http://jwc.xynu.edu.cn/jxzhxxfwpt.htm",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwc.xynu.edu.cn/jxzhxxfwpt.htm",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwc.xynu.edu.cn/jxzhxxfwpt.htm",
+      "bytes": 2146,
+      "title": "教学综合信息服务平台-信阳师范大学教务处",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2934,
+    "name": "兴义民族师范学院",
+    "sourceName": "兴义民族师范学院",
+    "sortKey": "X",
+    "sourceUrl": "https://jwgl.xynun.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwgl.xynun.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwgl.xynun.edu.cn/xtgl/login_slogin.html",
+      "bytes": 21132,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3041,
+    "name": "新疆农业大学",
+    "sourceName": "新疆农业大学",
+    "sortKey": "X",
+    "sourceUrl": "https://jwxt.xjau.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.xjau.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.xjau.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20912,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3050,
+    "name": "西北大学现代学院",
+    "sourceName": "西北大学现代学院",
+    "sortKey": "X",
+    "sourceUrl": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20566,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3071,
+    "name": "西安交通大学城市学院",
+    "sourceName": "西安交通大学城市学院",
+    "sortKey": "X",
+    "sourceUrl": "http://jxgl.xjtucc.cn/(j4tjvg45dpbvsr45jxkyuonl)/default2.aspx",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://jxgl.xjtucc.cn/(j4tjvg45dpbvsr45jxkyuonl)/default2.aspx",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://jxgl.xjtucc.cn/(j4tjvg45dpbvsr45jxkyuonl)/default2.aspx",
+      "bytes": 5598,
+      "title": "欢迎使用正方教务管理系统！请登录",
+      "urlHints": [
+        "zf"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3082,
+    "name": "西安理工大学高科学院",
+    "sourceName": "西安理工大学高科学院",
+    "sortKey": "X",
+    "sourceUrl": "http://113.201.151.38:9999/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf",
+    "probe": {
+      "url": "http://113.201.151.38:9999/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf"
+      ],
+      "http": 200,
+      "finalUrl": "http://113.201.151.38:9999/",
+      "bytes": 4646,
+      "title": "登录",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3159,
+    "name": "杨凌职业技术学院",
+    "sourceName": "杨凌职业技术学院",
+    "sortKey": "Y",
+    "sourceUrl": "https://jwxt.ylvtc.com/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.ylvtc.com/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.ylvtc.com/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20422,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3199,
+    "name": "云南林业职业技术学院",
+    "sourceName": "云南林业职业技术学院",
+    "sortKey": "Y",
+    "sourceUrl": "https://zf.ynftc.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zf.ynftc.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zf.ynftc.cn/xtgl/login_slogin.html",
+      "bytes": 19923,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3206,
+    "name": "云南大学旅游文化学院",
+    "sourceName": "云南大学旅游文化学院",
+    "sortKey": "Y",
+    "sourceUrl": "http://jw.lywhxy.com:8800/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jw.lywhxy.com:8800/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jw.lywhxy.com:8800/xtgl/login_slogin.html",
+      "bytes": 20504,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3215,
+    "name": "烟台理工学院",
+    "sourceName": "烟台理工学院",
+    "sortKey": "Y",
+    "sourceUrl": "https://jwxt.yitsd.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.yitsd.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.yitsd.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19621,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3232,
+    "name": "云南轻纺职业学院",
+    "sourceName": "云南轻纺职业学院",
+    "sortKey": "Y",
+    "sourceUrl": "https://jwxt.ynqfzyxy.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.ynqfzyxy.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.ynqfzyxy.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20935,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3307,
+    "name": "浙江外国语学院",
+    "sourceName": "浙江外国语学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://portaljw.zisu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://portaljw.zisu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://portaljw.zisu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21447,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3318,
+    "name": "浙江工商大学杭州商学院",
+    "sourceName": "浙江工商大学杭州商学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwxt.zjhzcc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.zjhzcc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.zjhzcc.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20644,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3353,
+    "name": "郑州城市职业学院",
+    "sourceName": "郑州城市职业学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://zf.zcu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://zf.zcu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://zf.zcu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20165,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3368,
+    "name": "郑州财税金融职业学院",
+    "sourceName": "郑州财税金融职业学院",
+    "sortKey": "Z",
+    "sourceUrl": "http://jwxt.zzcsjr.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://jwxt.zzcsjr.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://jwxt.zzcsjr.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20524,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3389,
+    "name": "肇庆医学高等专科学校",
+    "sourceName": "肇庆医学高等专科学校",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20780,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3392,
+    "name": "正德职业技术学院",
+    "sourceName": "正德职业技术学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwxt.zdxy.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.zdxy.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.zdxy.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 19695,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3436,
+    "name": "扎兰屯职业学院",
+    "sourceName": "扎兰屯职业学院",
+    "sortKey": "Z",
+    "sourceUrl": "http://36.111.145.118:8800/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://36.111.145.118:8800/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://36.111.145.118:8800/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20048,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3443,
+    "name": "浙江中医药大学滨江学院",
+    "sourceName": "浙江中医药大学滨江学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 7347,
+      "title": "浙江中医药大学学教一体化教学服务",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3450,
+    "name": "昭通学院",
+    "sourceName": "昭通学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwxt.ztu.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.ztu.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.ztu.edu.cn/xtgl/login_slogin.html",
+      "bytes": 20427,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3451,
+    "name": "昭通卫生职业学院",
+    "sourceName": "昭通卫生职业学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwxt.ztwzy.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.ztwzy.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.ztwzy.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21482,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3454,
+    "name": "中山职业技术学院",
+    "sourceName": "中山职业技术学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://ijw.zspt.edu.cn/",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://ijw.zspt.edu.cn/",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://ijw.zspt.edu.cn/",
+      "bytes": 20167,
+      "title": "教学管理信息服务平台",
+      "urlHints": []
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3455,
+    "name": "中山火炬职业技术学院",
+    "sourceName": "中山火炬职业技术学院",
+    "sortKey": "Z",
+    "sourceUrl": "http://119.145.248.32:84/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "http://119.145.248.32:84/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "http://119.145.248.32:84/jwglxt/xtgl/login_slogin.html",
+      "bytes": 20407,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3462,
+    "name": "中央财经大学",
+    "sourceName": "中央财经大学",
+    "sortKey": "Z",
+    "sourceUrl": "https://xuanke.cufe.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://xuanke.cufe.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://xuanke.cufe.edu.cn/jwglxt/xtgl/login_slogin.html",
+      "bytes": 21661,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3465,
+    "name": "中国计量大学现代科技学院",
+    "sourceName": "中国计量大学现代科技学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://jwxt.cjlu.edu.cn/xtgl/login_slogin.html?kickout=1",
+    "sourceType": "zf",
+    "sourceImportType": "wakeup",
+    "sourceCustomConf": {
+      "androidZiyanType": ""
+    },
+    "sourceMode": "",
+    "sourceMinVersion": 0,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://jwxt.cjlu.edu.cn/xtgl/login_slogin.html?kickout=1",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://jwxt.cjlu.edu.cn/xtgl/login_slogin.html?kickout=1",
+      "bytes": 20806,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1476,
+    "name": "湛江科技学院",
+    "sourceName": "湛江科技学院",
+    "sortKey": "Z",
+    "sourceUrl": "https://newjwxt.zjkju.edu.cn/xtgl/login_slogin.html",
+    "sourceType": "zf",
+    "sourceImportType": null,
+    "sourceCustomConf": null,
+    "sourceMode": null,
+    "sourceMinVersion": null,
+    "mappedType": "zf_new",
+    "probe": {
+      "url": "https://newjwxt.zjkju.edu.cn/xtgl/login_slogin.html",
+      "checkedAt": "2026-10-14",
+      "status": "pending",
+      "fingerprints": [
+        "zf_new"
+      ],
+      "http": 200,
+      "finalUrl": "https://newjwxt.zjkju.edu.cn/xtgl/login_slogin.html",
+      "bytes": 19995,
+      "title": "教学管理信息服务平台",
+      "urlHints": [
+        "zf_new"
+      ]
+    },
+    "status": "unverified",
+    "verification": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  }
+]

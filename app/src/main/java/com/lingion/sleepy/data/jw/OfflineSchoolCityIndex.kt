@@ -54,17 +54,32 @@ class OfflineSchoolCityIndex private constructor(private val areas: List<Area>) 
 
     private data class Area(val name: String, val polygons: List<Polygon>)
 
-    internal val cityNames: Set<String> get() = areas.map { it.name }.toSet()
+    internal val cityNames: Set<String> get() = areas.map { it.name }.filterNot { it in nonCityAreas }.toSet()
 
     fun cityAt(latitude: Double, longitude: Double): String? {
         if (!latitude.isFinite() || !longitude.isFinite() || latitude !in -90.0..90.0 ||
             longitude !in -180.0..180.0) return null
         return areas.firstOrNull { area ->
-            area.polygons.any { it.contains(longitude * 10000, latitude * 10000) }
+            area.name !in nonCityAreas &&
+                area.polygons.any { it.contains(longitude * 10000, latitude * 10000) }
         }?.name
     }
 
     companion object {
+        // The source has only a Taiwan-wide outline, not county/city polygons.
+        private val nonCityAreas = setOf("台湾省")
+
+        /** Exact metadata locations without a bundled city polygon; never guess their city.
+         * This explicit snapshot limitation is not generated from unrecognized names.
+         * Factual cities remain available for school search and city matching.
+         */
+        internal val unsupportedCityReasons: Map<String, String> =
+            listOf("南投縣", "嘉義市", "嘉義縣", "基隆市", "宜蘭縣", "屏東縣", "彰化縣",
+                "新北市", "新竹市", "新竹縣", "桃園市", "澎湖縣", "臺中市", "臺北市",
+                "臺南市", "臺東縣", "花蓮縣", "苗栗縣", "金門縣", "雲林縣", "高雄市")
+                .associateWith { "Bundled source contains only the Taiwan-wide outline, not county/city boundaries." } +
+                mapOf("新星市" to "The bundled boundary snapshot has no Xinxing city polygon.")
+
         /** SCB1 is streamed straight into scaled integer rings, with no JSON tree or point objects.
          * Caller owns the stream. Cancellation is checked at every ring and every 256 points.
          */

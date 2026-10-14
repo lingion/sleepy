@@ -45,7 +45,7 @@ class SchoolCityIndexTest {
         assertEquals(mapOf("学校" to listOf("合肥市")), result)
     }
 
-    @Test fun `every directory entry has a nonempty city mapping and no stale entries exist`() {
+    @Test fun `supported entries retain cities and optional new mappings are valid without stale entries`() {
         val root = System.getProperty("sleepy.test.root")?.let(::File) ?: File("..")
         val assets = File(root, "app/src/main/assets")
         val entries = JSONArray(File(assets, "schools.json").readText())
@@ -58,9 +58,11 @@ class SchoolCityIndexTest {
         val names = namesList.toSet()
         val raw = JSONObject(File(assets, "school_cities.json").readText()).getJSONObject("schools")
         val cities = SchoolCityIndex.parse(JSONObject().put("schools", raw).toString())
-        assertTrue("漏填城市的学校: ${names - cities.keys}", (names - cities.keys).isEmpty())
+        val supportedNames = JwImportViewModel.parseSchoolsJson(File(assets, "schools.json").readText())
+            .filter { it.isSupported }.map { it.name }.toSet()
+        assertTrue("Existing supported cities missing: ${supportedNames - cities.keys}", (supportedNames - cities.keys).isEmpty())
         assertTrue("城市表中不存在于目录的学校: ${cities.keys - names}", (cities.keys - names).isEmpty())
-        for (name in names) {
+        for (name in cities.keys) {
             val values = raw.getJSONArray(name).let { array ->
                 (0 until array.length()).map { array.getString(it) }
             }
@@ -79,9 +81,11 @@ class SchoolCityIndexTest {
         // Load through the app's directory parser: future entries join without a hard-coded school count.
         val cities = bundledCities()
         val schools = JwImportViewModel.parseSchoolsJson(File(assets(), "schools.json").readText())
-            .map { it.copy(cities = cities.getValue(it.name)) }
+            .map { it.copy(cities = cities[it.name].orEmpty()) }
         for (city in cities.values.flatten().distinct()) {
-            val expected = cities.filterValues { city in it }.keys
+            val expected = cities.filterValues { locations ->
+                locations.any { SchoolCityIndex.normalizeCity(it) == SchoolCityIndex.normalizeCity(city) }
+            }.keys
             val actual = SchoolCityIndex.schoolsInCity(schools, city).map { it.name }
             assertEquals("城市 $city 的推荐遗漏或多出学校", expected, actual.toSet())
             assertEquals("城市 $city 重复推荐学校", actual.distinct().size, actual.size)
@@ -111,7 +115,7 @@ class SchoolCityIndexTest {
         val entries = JSONArray(File(assets(), "schools.json").readText())
         val schools = (0 until entries.length()).map { index ->
             val name = entries.getJSONObject(index).getString("name")
-            school(name, "").copy(cities = cities.getValue(name))
+            school(name, "").copy(cities = cities[name].orEmpty())
         }
         fun names(city: String) = SchoolCityIndex.schoolsInCity(schools, city).map { it.name }
         assertTrue("河海大学" in names("常州市"))

@@ -64,14 +64,38 @@ class OfflineSchoolCityIndexTest {
         assertEquals(listOf(school), SchoolCityIndex.schoolsInCity(listOf(school, other), city))
     }
 
-    @Test fun `all configured school cities exist in the bundled boundary names`() {
+    @Test fun `all configured cities resolve or have an explicit audited boundary limitation`() {
         val root = System.getProperty("sleepy.test.root")?.let(::File) ?: File("..")
         val assets = File(root, "app/src/main/assets")
-        val names = index.cityNames
+        val names = index.cityNames.map(SchoolCityIndex::normalizeCity).toSet()
+        val unsupported = OfflineSchoolCityIndex.unsupportedCityReasons
         val cities = SchoolCityIndex.parse(File(assets, "school_cities.json").readText())
         for ((school, locations) in cities) {
-            for (city in locations) assertTrue("Missing boundary for $school: $city", city in names)
+            for (city in locations) assertTrue("Unaccounted boundary for $school: $city",
+                SchoolCityIndex.normalizeCity(city) in names || city in unsupported)
         }
+        assertEquals(unsupported.keys, cities.values.flatten().filter {
+            SchoolCityIndex.normalizeCity(it) !in names
+        }.toSet())
+        assertTrue(unsupported.values.all { it.isNotBlank() })
+    }
+
+    @Test fun `province outline never masquerades as a city while Hong Kong and Macau resolve`() {
+        assertFalse("台湾省" in index.cityNames)
+        assertNull(index.cityAt(25.0330, 121.5654))
+        assertNull(index.cityAt(24.1477, 120.6736))
+        assertEquals("香港", index.cityAt(22.3193, 114.1694))
+        assertEquals("澳门", index.cityAt(22.1987, 113.5439))
+    }
+
+    @Test fun `official city aliases use actual prefecture boundaries`() {
+        val schools = listOf(
+            JwSchoolInfo("K", "昆山杜克大学", cities = listOf("昆山市")),
+            JwSchoolInfo("L", "临夏现代职业学院", cities = listOf("临夏州")))
+        assertEquals("苏州市", index.cityAt(31.385, 120.953))
+        assertEquals(listOf(schools[0]), SchoolCityIndex.schoolsInCity(schools, "苏州市"))
+        assertEquals(listOf(schools[1]), SchoolCityIndex.schoolsInCity(schools, "临夏回族自治州"))
+        assertTrue(SchoolCityIndex.schoolsInCity(schools, "临夏").isEmpty())
     }
 
     @Test fun `prefecture location resolves a moved school independently of its name`() {

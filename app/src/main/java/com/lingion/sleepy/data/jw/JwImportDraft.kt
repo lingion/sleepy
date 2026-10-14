@@ -18,7 +18,11 @@ data class JwImportDraftSnapshot(
     /** Serialized SmartPeriodConfig; kept opaque to avoid coupling this contract to UI/entity classes. */
     val smartConfigJson: String = "",
     val phase: JwImportDraftPhase = JwImportDraftPhase.CONFIGURE_CONFIRM,
-)
+) {
+    /** Reopening a login draft never skips the school admission confirmation. */
+    val requiresSchoolConfirmation: Boolean get() = phase == JwImportDraftPhase.WEBVIEW_LOGIN &&
+        (!school.canImport || school.isUnverified)
+}
 
 data class JwImportDraftPeriod(
     val node: Int,
@@ -94,6 +98,7 @@ object JwImportDraftCodec {
         put("aliases", JSONArray().apply { school.aliases.forEach(::put) })
         put("sortKeyFull", school.sortKeyFull)
         put("enableFetch", school.enableFetch)
+        put("catalogId", school.catalogId)
     }
 
     private fun schoolFromJson(json: JSONObject): JwSchoolInfo? {
@@ -116,11 +121,12 @@ object JwImportDraftCodec {
             sortKey = sortKey,
             name = name,
             url = json.optString("url", ""),
-            type = json.optString("type", "").ifBlank { null },
-            status = json.optString("status", JwSchoolInfo.STATUS_SUPPORTED),
+            type = if (json.isNull("type")) null else json.optString("type", "").ifBlank { null },
+            status = JwSchoolInfo.normalizeStatus(json.optString("status", "")),
             aliases = aliases,
             sortKeyFull = json.optString("sortKeyFull", ""),
             enableFetch = json.optBoolean("enableFetch", false),
+            catalogId = json.optString("catalogId", ""),
         )
     }
 

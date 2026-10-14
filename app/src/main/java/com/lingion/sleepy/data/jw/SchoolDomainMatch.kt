@@ -16,6 +16,38 @@ package com.lingion.sleepy.data.jw
  * (避免两个独立实现飘移)。
  */
 object SchoolDomainMatch {
+    private fun parsed(value: String): java.net.URI? = runCatching {
+        java.net.URI(value.trim()).takeIf {
+            it.scheme?.lowercase() in setOf("http", "https") &&
+                !it.host.isNullOrBlank() && it.rawUserInfo == null
+        }
+    }.getOrNull()
+
+    private fun sameEntry(a: java.net.URI, b: java.net.URI): Boolean {
+        fun port(uri: java.net.URI) = if (uri.port >= 0) uri.port else
+            if (uri.scheme.equals("https", ignoreCase = true)) 443 else 80
+        return a.scheme.equals(b.scheme, ignoreCase = true) &&
+            a.host.equals(b.host, ignoreCase = true) && port(a) == port(b) &&
+            a.rawPath.orEmpty().ifEmpty { "/" } == b.rawPath.orEmpty().ifEmpty { "/" } &&
+            a.rawQuery == b.rawQuery && a.rawFragment == b.rawFragment
+    }
+
+    /**
+     * UI selection boundary: an exact known URL keeps its status, including pending.
+     * Shared URLs return every candidate for the user to choose; never silently select one.
+     * Only unknown URLs may become a custom entry or use the supported-only domain fallback.
+     */
+    fun selectionsForUrl(url: String, catalog: List<JwSchoolInfo>, protocolType: String?, customName: String): List<JwSchoolInfo> {
+        val target = parsed(url)
+        val exact = if (target == null) emptyList() else catalog.filter { school ->
+            parsed(school.url)?.let { sameEntry(it, target) } == true
+        }
+        if (exact.isNotEmpty()) return exact
+        return listOf(matchSchool(url, catalog) ?: JwSchoolInfo(
+            sortKey = "", name = customName, url = url, type = protocolType,
+            status = JwSchoolInfo.STATUS_SUPPORTED,
+        ))
+    }
 
     /**
      * 注册域启发式 — 与 SslBypassRegistry.registrableDomain 一致。
@@ -61,15 +93,26 @@ object SchoolDomainMatch {
      * WebVPN / 未知域 / 空白 host → null。
      */
     fun matchSchool(url: String, catalog: List<JwSchoolInfo>): JwSchoolInfo? {
-        val host = hostOf(url)
-        if (host.isBlank()) return null
+        val target = parsed(url) ?: return null
+        val host = target.host.lowercase().trimEnd('.')
         if (isVpnRewrite(host)) return null
-        val targetReg = registrableDomain(host)
-        if (targetReg.isBlank()) return null
-        // 唯一性: 同注册域多条候选 → 返回排序第一 (schools.json 已按拼音排序, 可接受)
-        return catalog.firstOrNull { s ->
-            s.isSupported && s.hasUrl &&
-                registrableDomain(hostOf(s.url)) == targetReg
+        // Pending and unverified entries must never redirect a typed URL automatically.
+        val candidates = catalog.mapNotNull { school ->
+            parsed(school.url)?.let { school to it }
         }
+        fun supportedSingle(matches: List<Pair<JwSchoolInfo, java.net.URI>>): JwSchoolInfo? =
+            matches.singleOrNull()?.first?.takeIf { it.isSupported && it.canImport }
+        val exact = candidates.filter { (_, entry) ->
+            sameEntry(entry, target)
+        }
+        if (exact.isNotEmpty()) return supportedSingle(exact)
+        val sameHost = candidates.filter { (_, entry) ->
+            entry.host.equals(host, ignoreCase = true) && entry.port == target.port
+        }
+        if (sameHost.isNotEmpty()) return supportedSingle(sameHost)
+        val domain = registrableDomain(host)
+        return supportedSingle(candidates.filter { (_, entry) ->
+            registrableDomain(entry.host) == domain
+        })
     }
 }

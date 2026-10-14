@@ -129,6 +129,9 @@ object JwParserRegistry {
     fun parserFor(type: String, html: String): JwParser =
         FACTORIES[type]?.invoke(html) ?: throw IllegalArgumentException("协议 $type 暂不支持")
 
+    /** Check registration without constructing a parser or interpreting a page. */
+    fun supports(type: String?): Boolean = type != null && FACTORIES.containsKey(type)
+
     private data class Row(val type: String?, val attempt: ParserAttempt, val result: List<JwCourse>)
 
     fun selectBest(html: String, declaredType: String? = null): Pair<List<JwCourse>, List<ParserAttempt>> {

@@ -1,0 +1,2537 @@
+[
+  {
+    "catalogId": "moe:4134013845",
+    "name": "安徽财贸职业学院",
+    "url": "https://jw.afc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 53,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4134013343",
+    "name": "亳州职业技术学院",
+    "url": "https://www.bzy.edu.cn/qt/jwxt",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 115,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教务系统_亳州职业技术学院",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4153010686",
+    "name": "保山学院",
+    "url": "http://jwgl.bsnc.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 118,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:4a1d3e7713eebc82f142",
+    "name": "滨州职业学院",
+    "url": "https://jwxt.bzpt.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 217,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137014749",
+    "name": "滨州科技职业学院",
+    "url": "http://112.6.32.188:8088/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 218,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4150014366",
+    "name": "重庆公共运输职业学院",
+    "url": "https://jwxt.cqgyzy.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 312,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4150013591",
+    "name": "重庆工商大学派斯学院",
+    "url": "https://www.paisi.edu.cn:8181/jsxsd/?tdsourcetag=s_pcqq_aiomsg",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 324,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4150010870",
+    "name": "重庆航天职业技术学院",
+    "url": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 339,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143014692",
+    "name": "长沙幼儿师范高等专科学校",
+    "url": "http://61.186.94.104:8090/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 403,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4150014367",
+    "name": "重庆艺术工程职业学院",
+    "url": "https://ysjw.cqysxy.com:83/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 406,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143013039",
+    "name": "常德职业技术学院",
+    "url": "https://jw.cdzy.cn:8001/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 407,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143014817",
+    "name": "长沙文创艺术职业学院",
+    "url": "https://jwxt.cswcxyedu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 422,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4122011823",
+    "name": "长春医学高等专科学校",
+    "url": "https://jwxt.ccmc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 423,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:036307832c28fc4973c3",
+    "name": "常德学院（原湖南文理学院芙蓉学院）",
+    "url": "https://dyjw.huas.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 458,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121010161",
+    "name": "大连医科大学",
+    "url": "http://210.47.245.4/(jwabd4ys4v5sma450xotz445)/Default2.aspx",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 530,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137013389",
+    "name": "德州职业技术学院",
+    "url": "https://zf.dzvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 547,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4135014683",
+    "name": "福建技术师范学院",
+    "url": "https://xjxt-ls.fpnu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 613,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4135013969",
+    "name": "福建生物工程职业技术学院",
+    "url": "https://jw.fjvcb.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 616,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144012327",
+    "name": "佛山职业技术学院",
+    "url": "https://jwgl.fspt.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 627,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "佛山职业技术学院综合教务管理系统-强智科技",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4134014536",
+    "name": "阜阳幼儿师范高等专科学校",
+    "url": "http://42.247.32.226:8000/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 643,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学综合信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144014125",
+    "name": "广州松田职业学院",
+    "url": "https://jw.educationgroup.cn/gzstzyxy_jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 663,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144013667",
+    "name": "广州商学院",
+    "url": "https://jwxt.gcc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 691,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144013715",
+    "name": "广州涉外经济职业技术学院",
+    "url": "https://jwsoft.gziec.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 700,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4145013830",
+    "name": "广西外国语学院",
+    "url": "https://jwxt.gxufl.com/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 711,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4145014684",
+    "name": "广西职业师范学院",
+    "url": "https://jw.gxvnu.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1604580599870",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 726,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4145011837",
+    "name": "桂林旅游学院",
+    "url": "https://jwcweb1.gltu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 731,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4162013519",
+    "name": "甘肃交通职业技术学院",
+    "url": "https://jiaowu.gsjtxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 740,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132012078",
+    "name": "硅湖职业技术学院",
+    "url": "https://jwc.usl.edu.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 744,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4152010662",
+    "name": "贵州中医药大学",
+    "url": "https://jwgl.gzy.edu.cn/jsxsd/",
+    "type": "qz_with_node",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 745,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4152012107",
+    "name": "贵州警察学院",
+    "url": "https://jwxt.gzpc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 755,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144014511",
+    "name": "广东碧桂园职业学院",
+    "url": "https://jwxt.bgypt.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 783,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4145013827",
+    "name": "广西经贸职业技术学院",
+    "url": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 786,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4145013920",
+    "name": "广西城市职业大学",
+    "url": "https://jw.gxcvuedu.com/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 788,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144012960",
+    "name": "广东司法警官职业学院",
+    "url": "http://210.21.33.69:8027/",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 797,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144014556",
+    "name": "广东茂名健康职业学院",
+    "url": "http://14.215.239.114:6380/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 815,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144010585",
+    "name": "广州体育学院",
+    "url": "https://jwxt.gzsport.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 820,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144012575",
+    "name": "广州康大职业技术学院",
+    "url": "https://jwweb.gzkdp.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 823,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:b10759cdfd20ee7f8405",
+    "name": "甘肃林业职业技术学院",
+    "url": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 851,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144013930",
+    "name": "广东工程职业技术学院",
+    "url": "https://zf.gdep.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 968,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:03739d5cba621bf713f5",
+    "name": "广西教职工大学分院 - 研究生",
+    "url": "https://jwxt2018.gxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 989,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142010528",
+    "name": "湖北工程学院",
+    "url": "http://jwgl.hbeu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1001,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142013256",
+    "name": "湖北师范大学文理学院",
+    "url": "http://221.233.125.126:8094/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1004,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142010920",
+    "name": "湖北理工学院",
+    "url": "https://jwglnew.hbpu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1006,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142013251",
+    "name": "湖北经济学院法商学院",
+    "url": "http://jwxt1.hbfs.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1012,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143012214",
+    "name": "湖南医药学院",
+    "url": "https://jwgl.hnmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1023,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "湖南医药学院教学综合信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143014360",
+    "name": "湖南有色金属职业技术学院",
+    "url": "https://jwxt.hnyszy.com.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1045,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143012303",
+    "name": "湖南涉外经济学院",
+    "url": "http://jw.hieu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1047,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学综合信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143013940",
+    "name": "湖南现代物流职业技术学院",
+    "url": "https://jwglxt.hmlc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1048,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143011534",
+    "name": "湖南警察学院",
+    "url": "http://jw.hnpolice.com:6280/jsxsd/hnjcxy/toLogin.do",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1056,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143013942",
+    "name": "湖南铁路科技职业技术学院",
+    "url": "https://jiaowu.hntky.com/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1059,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143014359",
+    "name": "湖南食品药品职业学院",
+    "url": "https://jw.hnyzy.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1060,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4123011446",
+    "name": "黑龙江东方学院",
+    "url": "https://jw.hljeu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1079,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4123011802",
+    "name": "黑龙江工程学院",
+    "url": "http://jw.hljit.edu.cn/default2.aspx",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1087,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143013939",
+    "name": "湖南水利水电职业技术学院",
+    "url": "https://zfjw.hnslsdxy.com/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1118,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013030",
+    "name": "杭州万向职业技术学院",
+    "url": "https://jwgl.wxpoly.cn/xtgl/login_slogin.html?language=zh_CN&_t=1580729083904",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1121,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4113013411",
+    "name": "河北师范大学汇华学院",
+    "url": "https://hhjx.hebtu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1126,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142012744",
+    "name": "湖北轻工职业技术学院",
+    "url": "http://jw.hbliti.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1127,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4123013729",
+    "name": "黑龙江旅游职业技术学院",
+    "url": "http://jwglxt.ljlyzy.org.cn:8000/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1128,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4141014307",
+    "name": "河南应用技术职业学院",
+    "url": "https://jwgl.hati.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1136,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4146014724",
+    "name": "海南卫生健康职业学院",
+    "url": "https://jwxt.hnhvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1179,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4123013303",
+    "name": "哈尔滨剑桥学院",
+    "url": "http://jwxt.hcc.edu.cn:8080/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1185,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "哈尔滨剑桥学院综合教务管理系统-强智科技",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144014408",
+    "name": "惠州卫生职业技术学院",
+    "url": "https://qz.hzhsp.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1186,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4143012845",
+    "name": "湖南邮电职业技术学院",
+    "url": "http://jx.189jxt.com:10081/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1190,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142014755",
+    "name": "湖北孝感美珈职业学院",
+    "url": "http://42.247.9.91:8083/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1197,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4113013578",
+    "name": "河北工程大学科信学院",
+    "url": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1202,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4113014396",
+    "name": "河北轨道运输职业技术学院",
+    "url": "http://jwgl.hbgdys.cn:8045/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1230,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:114a95b89e6d992d39c6",
+    "name": "湖北三峡职业技术学院",
+    "url": "https://tms.tgc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1240,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:49df93d2f1155acd5ed7",
+    "name": "海南经贸职业技术学院",
+    "url": "https://jw2.hceb.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1251,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4146011100",
+    "name": "海南热带海洋学院",
+    "url": "http://210.37.144.124/default2.aspx",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1252,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4113010085",
+    "name": "河北水利电力学院",
+    "url": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1288,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4113010092",
+    "name": "河北北方学院",
+    "url": "https://jw.hebeinu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1304,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4113012784",
+    "name": "河北传媒学院",
+    "url": "https://jwxt.hebic.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1308,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "河北传媒学院教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013023",
+    "name": "杭州医学院",
+    "url": "http://jwglxt.hmc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1315,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4123013307",
+    "name": "哈尔滨华德学院",
+    "url": "http://112.102.214.203:8108/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1330,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133012874",
+    "name": "嘉兴职业技术学院",
+    "url": "http://jwgl.jxvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1520,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4141011522",
+    "name": "焦作大学",
+    "url": "https://jwxt.jzu.edu.cn/eams/login.action",
+    "type": "classic_eams",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1583,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "",
+    "fingerprints": [
+      "classic_eams"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4136012942",
+    "name": "江西应用技术职业学院",
+    "url": "https://jw.jxyy.edu.cn:9002/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1601,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4136011843",
+    "name": "九江学院",
+    "url": "https://zhjw1.jju.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1603,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "九江学院-教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132010329",
+    "name": "江苏警官学院",
+    "url": "http://jwxt.jspi.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1692,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4136013426",
+    "name": "江西生物科技职业学院",
+    "url": "https://jwcpc.jxswkj.com:9080/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1702,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4153013329",
+    "name": "昆明理工大学津桥学院",
+    "url": "https://jwc.oxbridge.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1740,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4152010669",
+    "name": "凯里学院",
+    "url": "https://sys.kluniv.edu.cn:8004/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1744,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132013963",
+    "name": "昆山登云科技职业学院",
+    "url": "https://jiaowu.dyc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1748,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137014195",
+    "name": "临沂职业学院",
+    "url": "https://jwgl.lyvc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1757,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4151013048",
+    "name": "乐山职业技术学院",
+    "url": "https://jx.lszyxy.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1761,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4162013515",
+    "name": "兰州信息科技学院",
+    "url": "https://jwgls.lzxk.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1763,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4141014480",
+    "name": "洛阳科技职业学院",
+    "url": "https://jw.lku.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1779,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121014240",
+    "name": "辽宁现代服务职业技术学院",
+    "url": "https://jwxt.lnxdfwxy.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1811,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121013957",
+    "name": "辽宁传媒学院",
+    "url": "http://36.138.41.251/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1817,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121010841",
+    "name": "辽宁对外经贸学院",
+    "url": "https://jwpt.luibe.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1820,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121014526",
+    "name": "辽宁特殊教育师范高等专科学校",
+    "url": "http://61.189.17.146/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1883,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121014106",
+    "name": "辽宁地质工程职业学院",
+    "url": "https://jw.lngc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1884,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4151014640",
+    "name": "眉山药科职业学院",
+    "url": "https://zfjw.msykxy.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1900,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4151012639",
+    "name": "南充职业技术学院",
+    "url": "https://njwc.nczy.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1957,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4136013440",
+    "name": "南昌应用技术师范学院",
+    "url": "http://jwc.nncat.edu.cn:8080/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1972,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4164013151",
+    "name": "宁夏建设职业技术学院",
+    "url": "http://jwx.nxjy.edu.cn/default2.aspx",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1977,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:c6ce4b035c46713a4e28",
+    "name": "宁夏工商职业技术学院",
+    "url": "http://jw.nxgs.edu.cn:9001/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 1981,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132013687",
+    "name": "南京传媒学院",
+    "url": "https://jw.cucn.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2032,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132013905",
+    "name": "南京工业大学浦江学院",
+    "url": "https://jwxt.njpji.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2045,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132014180",
+    "name": "南京旅游职业学院",
+    "url": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2049,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132013842",
+    "name": "南京理工大学泰州科技学院",
+    "url": "https://jwgl.nustti.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2055,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132013990",
+    "name": "南京财经大学红山学院",
+    "url": "https://hsjwxt.nufe.edu.cn/",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2058,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132010293",
+    "name": "南京邮电大学",
+    "url": "http://jwxt.njupt.edu.cn/",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2059,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4136013421",
+    "name": "南昌工学院",
+    "url": "http://jwxt.ncpu.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2074,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4115012797",
+    "name": "内蒙古警察学院",
+    "url": "http://jwc.imppc.cn:9000/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2083,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133011058",
+    "name": "宁波工程学院",
+    "url": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2096,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4141011787",
+    "name": "濮阳职业技术学院",
+    "url": "http://jwgl.pyvtc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2126,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137013995",
+    "name": "青岛工学院",
+    "url": "http://jw.qit.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2171,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "青岛工学院教务网络管理系统",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4152012822",
+    "name": "黔东南民族职业技术学院",
+    "url": "https://jw.qdnpt.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2184,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4135014232",
+    "name": "泉州轻工职业学院",
+    "url": "https://jw.qzqgxy.com:8001/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2206,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4151014039",
+    "name": "四川大学锦江学院",
+    "url": "https://jwa.scujj.edu.cn:82/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2233,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4151012762",
+    "name": "四川工商职业技术学院",
+    "url": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2237,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4134012812",
+    "name": "宿州职业技术学院",
+    "url": "http://jwxt.szzy.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2259,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "宿州职业技术学院教务处门户网站",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144011121",
+    "name": "私立华联学院",
+    "url": "http://jwxt.hlu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2470,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137013324",
+    "name": "山东协和学院",
+    "url": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2517,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137013856",
+    "name": "山东电子职业技术学院",
+    "url": "https://jwgl.sdcet.edu.cn:6066/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2536,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137013383",
+    "name": "山东财经大学燕山学院",
+    "url": "https://ysjw.sdufe.edu.cn:8081/jsxsd/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2552,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4214051189",
+    "name": "山西能源学院",
+    "url": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2563,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4121013220",
+    "name": "沈阳城市学院",
+    "url": "https://jw.shenyangcu.edu.cn:14304/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2570,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142014258",
+    "name": "三峡旅游职业技术学院",
+    "url": "http://jwxt.sxlyzy.com.cn:88/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2600,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4135011311",
+    "name": "三明学院",
+    "url": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2601,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4131013893",
+    "name": "上海师范大学天华学院",
+    "url": "https://thjwgl.sthu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2614,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4151014005",
+    "name": "四川华新现代职业学院",
+    "url": "https://www.schxmvc.com.cn/eams/loginExt.action",
+    "type": "classic_eams",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2644,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "四川华新现代职业学院教务管理系统",
+    "fingerprints": [
+      "classic_eams"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4111010038",
+    "name": "首都经济贸易大学",
+    "url": "https://jwc.cueb.edu.cn/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2649,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "首都经济贸易大学教务处",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4161012829",
+    "name": "陕西财经职业技术学院",
+    "url": "https://jwgl.scy.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2656,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132010960",
+    "name": "苏州工艺美术职业技术学院",
+    "url": "https://zfjw.sgmart.edu.cn/default2.aspx",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2674,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132012809",
+    "name": "苏州工业园区职业技术学院",
+    "url": "https://t.ivt.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2675,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112013701",
+    "name": "天津石油职业技术学院",
+    "url": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2698,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112014020",
+    "name": "天津城市建设管理职业技术学院",
+    "url": "https://jw.tjchengjian.com/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2717,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112014038",
+    "name": "天津仁爱学院",
+    "url": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2719,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112013661",
+    "name": "天津医科大学临床医学院",
+    "url": "http://180.213.3.14:18880/eams/loginExt.action",
+    "type": "classic_eams",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2726,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "天津医科大学临床医院教学管理系统",
+    "fingerprints": [
+      "classic_eams"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112012721",
+    "name": "天津机电职业技术学院",
+    "url": "https://jwsys.suoyuan.com.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2746,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112012880",
+    "name": "天津医学高等专科学校",
+    "url": "https://dean.tjyzh.cn/",
+    "type": "qz",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2758,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "天津医学高等专科学校综合教务管理系统-强智科技",
+    "fingerprints": [
+      "qz"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112012883",
+    "name": "天津交通职业学院",
+    "url": "https://jw.tttc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2761,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4112013659",
+    "name": "天津传媒学院",
+    "url": "https://jw.tjcma.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2775,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132013982",
+    "name": "无锡学院",
+    "url": "https://jwgl.cwxu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2855,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132012681",
+    "name": "无锡科技职业学院",
+    "url": "http://jwc.wxstc.cn/jwglxt/xtgl/login_slogin.html?language=zh_CN&_t=1585643279104",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2856,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4145011354",
+    "name": "梧州学院",
+    "url": "https://jwxt.gxuwz.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2858,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4142013237",
+    "name": "武汉文理学院",
+    "url": "https://jwxt.whwl.edu.cn:8088/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2878,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132012923",
+    "name": "无锡南洋职业技术学院",
+    "url": "http://jw.wsoc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2896,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013289",
+    "name": "温州理工学院",
+    "url": "https://jwxt.wzut.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2897,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137014347",
+    "name": "潍坊护理职业学院",
+    "url": "http://jwgl.sdwfvc.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2898,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "潍坊职业学院教学综合信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133014088",
+    "name": "温州科技职业学院",
+    "url": "https://jwxt.wzvcst.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2915,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013284",
+    "name": "温州医科大学仁济学院",
+    "url": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2919,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "温州医科大学教务综合信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4152010666",
+    "name": "兴义民族师范学院",
+    "url": "https://jwgl.xynun.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 2934,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4165010758",
+    "name": "新疆农业大学",
+    "url": "https://jwxt.xjau.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3041,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4161013678",
+    "name": "西北大学现代学院",
+    "url": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3050,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4161013677",
+    "name": "西安交通大学城市学院",
+    "url": "http://jxgl.xjtucc.cn/(j4tjvg45dpbvsr45jxkyuonl)/default2.aspx",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3071,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "欢迎使用正方教务管理系统！请登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4161014041",
+    "name": "西安理工大学高科学院",
+    "url": "http://113.201.151.38:9999/",
+    "type": "zf",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3082,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "登录",
+    "fingerprints": [
+      "zf"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:06aa768f38c367d88c30",
+    "name": "杨凌职业技术学院",
+    "url": "https://jwxt.ylvtc.com/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3159,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4153013758",
+    "name": "云南林业职业技术学院",
+    "url": "https://zf.ynftc.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3199,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:f549c13f5c43977595af",
+    "name": "云南大学旅游文化学院",
+    "url": "http://jw.lywhxy.com:8800/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3206,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4137013359",
+    "name": "烟台理工学院",
+    "url": "https://jwxt.yitsd.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3215,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4153014618",
+    "name": "云南轻纺职业学院",
+    "url": "https://jwxt.ynqfzyxy.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3232,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133014275",
+    "name": "浙江外国语学院",
+    "url": "https://portaljw.zisu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3307,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013290",
+    "name": "浙江工商大学杭州商学院",
+    "url": "https://jwxt.zjhzcc.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3318,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4141014235",
+    "name": "郑州城市职业学院",
+    "url": "https://zf.zcu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3353,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4141014478",
+    "name": "郑州财税金融职业学院",
+    "url": "http://jwxt.zzcsjr.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3368,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "wakeup:5a59919166d65ec851dc",
+    "name": "肇庆医学高等专科学校",
+    "url": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3389,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4132012921",
+    "name": "正德职业技术学院",
+    "url": "https://jwxt.zdxy.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3392,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4115014539",
+    "name": "扎兰屯职业学院",
+    "url": "http://36.111.145.118:8800/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3436,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013285",
+    "name": "浙江中医药大学滨江学院",
+    "url": "https://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3443,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "浙江中医药大学学教一体化教学服务",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4153010683",
+    "name": "昭通学院",
+    "url": "https://jwxt.ztu.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3450,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4153014582",
+    "name": "昭通卫生职业学院",
+    "url": "https://jwxt.ztwzy.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3451,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144014066",
+    "name": "中山职业技术学院",
+    "url": "https://ijw.zspt.edu.cn/",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3454,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144013710",
+    "name": "中山火炬职业技术学院",
+    "url": "http://119.145.248.32:84/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3455,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4111010034",
+    "name": "中央财经大学",
+    "url": "https://xuanke.cufe.edu.cn/jwglxt/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3462,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4133013292",
+    "name": "中国计量大学现代科技学院",
+    "url": "https://jwxt.cjlu.edu.cn/xtgl/login_slogin.html?kickout=1",
+    "type": "zf_new",
+    "sourceId": "wakeup-6.1.06-asset",
+    "sourceRow": 3465,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  },
+  {
+    "catalogId": "moe:4144012622",
+    "name": "湛江科技学院",
+    "url": "https://newjwxt.zjkju.edu.cn/xtgl/login_slogin.html",
+    "type": "zf_new",
+    "sourceId": "wakeup-52.36-user-attachment",
+    "sourceRow": 1476,
+    "checkedAt": "2026-10-14",
+    "http": 200,
+    "title": "教学管理信息服务平台",
+    "fingerprints": [
+      "zf_new"
+    ],
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+  }
+]

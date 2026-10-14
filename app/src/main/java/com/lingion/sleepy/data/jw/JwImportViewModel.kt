@@ -167,7 +167,7 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
          * T12: 解析 schools.json 文本为学校列表。
          * companion static 使纯 JVM 单测无需构造 Android ViewModel。
          * 跳过任何键以 "_" 开头的审计块（元数据不是学校条目）；
-         * status 字段缺失/未知回落 supported — 现有 146 条零行为变化。
+         * Missing status preserves historical entries; unknown status fails closed.
          */
         fun parseSchoolsJson(text: String): List<JwSchoolInfo> {
             val arr = JSONArray(text)
@@ -184,19 +184,12 @@ class JwImportViewModel(application: Application) : AndroidViewModel(application
                     sortKey = obj.optString("sortKey", ""),
                     name = obj.optString("name", ""),
                     url = obj.optString("url", ""),
-                    type = obj.optString("type", "").ifBlank { null },
-                    status = obj.optString("status", "").ifBlank { JwSchoolInfo.STATUS_SUPPORTED }
-                        .let { raw ->
-                            when (raw) {
-                                JwSchoolInfo.STATUS_PENDING -> JwSchoolInfo.STATUS_PENDING
-                                JwSchoolInfo.STATUS_LEGACY -> JwSchoolInfo.STATUS_LEGACY
-                                JwSchoolInfo.STATUS_GRAD_SUPPORTED -> JwSchoolInfo.STATUS_GRAD_SUPPORTED
-                                JwSchoolInfo.STATUS_GRAD_PENDING -> JwSchoolInfo.STATUS_GRAD_PENDING
-                                else -> JwSchoolInfo.STATUS_SUPPORTED
-                            }
-                        },
+                    type = if (obj.isNull("type")) null else obj.optString("type", "").ifBlank { null },
+                    status = JwSchoolInfo.normalizeStatus(obj.optString("status", "")),
                     aliases = aliases,
-                    sortKeyFull = obj.optString("sortKeyFull", "")
+                    sortKeyFull = obj.optString("sortKeyFull", ""),
+                    enableFetch = obj.optBoolean("enableFetch", false),
+                    catalogId = obj.optString("catalogId", ""),
                 )
             }
             return list

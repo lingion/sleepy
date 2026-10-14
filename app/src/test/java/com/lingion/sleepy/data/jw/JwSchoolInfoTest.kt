@@ -67,11 +67,11 @@ class JwSchoolInfoTest {
     fun `status constants match lifecycle vocabulary`() {
         // 前瞻闸: 5 个生命周期常量与 strings.xml/T9 词表一致
         assertEquals(
-            setOf("supported", "pending", "grad_supported", "grad_pending", "legacy"),
+            setOf("supported", "pending", "grad_supported", "grad_pending", "legacy", "unverified", "grad_unverified"),
             setOf(
                 JwSchoolInfo.STATUS_SUPPORTED, JwSchoolInfo.STATUS_PENDING,
                 JwSchoolInfo.STATUS_GRAD_SUPPORTED, JwSchoolInfo.STATUS_GRAD_PENDING,
-                JwSchoolInfo.STATUS_LEGACY
+                JwSchoolInfo.STATUS_LEGACY, JwSchoolInfo.STATUS_UNVERIFIED, JwSchoolInfo.STATUS_GRAD_UNVERIFIED
             )
         )
     }
@@ -82,5 +82,26 @@ class JwSchoolInfoTest {
         assertFalse("enableFetch 默认 false", s.enableFetch)
         val enabled = s.copy(enableFetch = true)
         assertTrue(enabled.enableFetch)
+    }
+
+    @Test fun `unverified admission requires a web URL and declared protocol`() {
+        val candidate = school(JwSchoolInfo.STATUS_UNVERIFIED)
+        assertTrue(candidate.canImport)
+        assertFalse(candidate.isSupported)
+        assertFalse(candidate.copy(type = null).canImport)
+        assertFalse(candidate.copy(type = "unknown_future_protocol").canImport)
+        for (url in listOf("", "javascript:alert(1)", "file:///tmp/page", "https:///missing-host", "https://user@school.edu/")) {
+            assertFalse(url, candidate.copy(url = url).canImport)
+        }
+        assertFalse(school(JwSchoolInfo.STATUS_PENDING).canImport)
+        assertFalse(school("future_status").canImport)
+        assertTrue(candidate.copy(status = JwSchoolInfo.STATUS_GRAD_UNVERIFIED).isGrad)
+    }
+
+    @Test fun `stable keys preserve legacy identity and survive metadata edits`() {
+        val original = school(JwSchoolInfo.STATUS_SUPPORTED)
+        assertEquals("T_测试大学", original.stableKey)
+        val identified = original.copy(catalogId = "moe:123")
+        assertEquals(identified.stableKey, identified.copy(name = "新校名", url = "https://new.edu/").stableKey)
     }
 }

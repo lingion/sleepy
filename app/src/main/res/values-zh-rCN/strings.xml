@@ -1058,4 +1058,9 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_before_class_compact">%1$s 开始 · %2$s</string>
     <string name="notif_date_title">%1$s · %2$d 次课</string>
     <string name="notif_date_no_course">%1$s 没有课</string>
+    <string name="jw_catalog_unverified">待验证</string>
+    <string name="jw_catalog_unverified_message">此入口和协议尚未在该校验证。你可以先尝试登录，结果可能不完整或无法导入。</string>
+    <string name="jw_catalog_pending_message">此学校尚无可尝试的已核实入口。可稍后再试或申请适配。</string>
+    <string name="jw_catalog_try">仍要尝试</string>
+    <string name="jw_catalog_counts">目录 %1$d · 已支持 %2$d · 待验证 %3$d</string>
 </resources>

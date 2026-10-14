@@ -1,0 +1,98 @@
+{
+  "安徽科技学院": {
+    "newName": "安徽科技工程大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "重庆三峡学院": {
+    "newName": "重庆三峡科技大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "重庆邮电大学移通学院": {
+    "newName": "重庆移通学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "大连理工大学城市学院": {
+    "newName": "大连工程学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "福建工程学院": {
+    "newName": "福建理工大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "赣南医学院": {
+    "newName": "赣南医科大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "广州番禺职业技术学院": {
+    "newName": "广州职业技术大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "黑龙江农业工程职业学院": {
+    "newName": "黑龙江农业工程职业技术大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "湖南理工学院": {
+    "newName": "湖南理工大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "嘉兴学院": {
+    "newName": "嘉兴大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "柳州职业技术学院": {
+    "newName": "柳州职业技术大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "南宁职业技术学院": {
+    "newName": "南宁职业技术大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "青岛理工大学琴岛学院": {
+    "newName": "青岛城市学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "山东政法大学": {
+    "newName": "山东政法学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "绍兴文理学院元培学院": {
+    "newName": "绍兴理工学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "四川大学锦城学院": {
+    "newName": "成都锦城学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "襄阳职业技术学院": {
+    "newName": "襄阳职业技术大学",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "郑州大学西亚斯国际学院": {
+    "newName": "郑州西亚斯学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "遵义医学院医学与科技学院": {
+    "newName": "遵义医科大学医学与科技学院",
+    "evidence": "app/src/main/assets/school_cities.json::_nameMappings (existing explicit institutional rename; graduate/campus/entry aliases excluded)"
+  },
+  "滨州医学院": {
+    "newName": "山东医药大学",
+    "evidence": "https://www.moe.gov.cn/srcsite/A03/s181/202603/t20260319_1431436.html",
+    "evidenceDate": "2026-02-05",
+    "schoolCode": "4137010440"
+  },
+  "潍坊医学院": {
+    "newName": "山东第二医科大学",
+    "evidence": "https://www.moe.gov.cn/srcsite/A03/s181/202312/t20231205_1093233.html",
+    "evidenceDate": "2023-12-05",
+    "schoolCode": "4137010438"
+  },
+  "嘉兴学院南湖学院": {
+    "newName": "嘉兴南湖学院",
+    "evidence": "app/src/test/java/com/lingion/sleepy/data/jw/Schools179CrossValidationTest.kt explicit rename contract + official 2026 roster"
+  },
+  "信阳师范学院": {
+    "newName": "信阳师范大学",
+    "evidence": "app/src/test/java/com/lingion/sleepy/data/jw/Schools179CrossValidationTest.kt explicit rename contract + official 2026 roster"
+  }
+}

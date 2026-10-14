@@ -110,6 +110,90 @@ class SchoolDomainMatchTest {
         assertNull(match("not a url at all", loadCatalog()))
     }
 
+    @Test fun `sibling undergraduate and graduate entries never use first-match fallback`() {
+        val undergraduate = JwSchoolInfo("T", "本科", "https://jw.example.edu.cn/ug", "qz")
+        val graduate = undergraduate.copy(name = "研究生", url = "https://grad.example.edu.cn/")
+        val catalog = listOf(undergraduate, graduate)
+        assertEquals(graduate, match(graduate.url, catalog))
+        assertEquals(undergraduate, match("https://jw.example.edu.cn/other", catalog))
+        assertNull(match("https://portal.example.edu.cn/", catalog))
+        val sameHost = graduate.copy(url = "https://jw.example.edu.cn/grad")
+        assertEquals(sameHost, match(sameHost.url, listOf(undergraduate, sameHost)))
+        assertNull(match("https://jw.example.edu.cn/other", listOf(undergraduate, sameHost)))
+    }
+
+    @Test fun `unverified sibling cannot redirect to supported undergraduate entry`() {
+        val undergraduate = JwSchoolInfo("T", "本科", "https://jw.example.edu.cn/", "qz")
+        val graduate = undergraduate.copy(name = "研究生", url = "https://grad.example.edu.cn/",
+            status = JwSchoolInfo.STATUS_GRAD_UNVERIFIED)
+        assertNull(match(graduate.url, listOf(undergraduate, graduate)))
+        assertNull(match("https://portal.example.edu.cn/", listOf(undergraduate, graduate)))
+        assertEquals(undergraduate, match(undergraduate.url, listOf(undergraduate, graduate)))
+        assertNull(match(graduate.url, listOf(graduate)))
+    }
+
+    @Test fun `non-web and credential-bearing urls never map`() {
+        assertNull(match("file://jw.hfut.edu.cn/timetable"))
+        assertNull(match("https://person@one.hfut.edu.cn/"))
+    }
+
+    private fun select(url: String, catalog: List<JwSchoolInfo>) =
+        SchoolDomainMatch.selectionsForUrl(url, catalog, "zf_new", "Custom")
+
+    @Test fun `typed exact unverified URL retains admission status and identity`() {
+        val school = JwSchoolInfo("T", "测试大学", "https://jw.example.edu/login", "qz",
+            status = JwSchoolInfo.STATUS_UNVERIFIED, catalogId = "test:one")
+        val selected = select(school.url, listOf(school)).single()
+        assertEquals(school, selected)
+        assertEquals("qz", selected.type)
+        org.junit.Assert.assertTrue(selected.isUnverified)
+        org.junit.Assert.assertFalse(selected.isSupported)
+        assertEquals(school, select("https://JW.EXAMPLE.EDU:443/login", listOf(school)).single())
+        val pending = school.copy(status = JwSchoolInfo.STATUS_PENDING)
+        org.junit.Assert.assertFalse(select(pending.url, listOf(pending)).single().canImport)
+    }
+
+    @Test fun `shared exact URL offers distinct identities without selecting a winner`() {
+        val first = JwSchoolInfo("T", "本科", "https://jw.example.edu/", "qz", catalogId = "one")
+        val second = first.copy(name = "研究生", catalogId = "two",
+            status = JwSchoolInfo.STATUS_GRAD_UNVERIFIED)
+        assertEquals(listOf(first, second), select(first.url, listOf(first, second)))
+        assertEquals(listOf(second, first), select(first.url, listOf(second, first)))
+    }
+
+    @Test fun `unverified identity matching never expands to host path query or fragment`() {
+        val school = JwSchoolInfo("T", "测试大学", "https://jw.example.edu/login?app=one#student", "qz",
+            status = JwSchoolInfo.STATUS_UNVERIFIED, catalogId = "one")
+        for (url in listOf("https://jw.example.edu/other", "https://portal.example.edu/",
+            "https://jw.example.edu/login?app=two#student", "https://jw.example.edu/login?app=one#teacher")) {
+            val selected = select(url, listOf(school)).single()
+            assertEquals("Custom", selected.name)
+            assertEquals(url, selected.url)
+            org.junit.Assert.assertTrue(selected.canImport)
+        }
+    }
+
+    @Test fun `typed custom unknown URL and supported portal fallback remain available`() {
+        val custom = select("https://unknown.example.edu/", emptyList()).single()
+        assertEquals("Custom", custom.name)
+        org.junit.Assert.assertTrue(custom.canImport)
+        val known = JwSchoolInfo("T", "大学", "https://jw.example.edu.cn/", "qz")
+        assertEquals(known, select("https://portal.example.edu.cn/", listOf(known)).single())
+    }
+
+    @Test fun `URL row uses the same tested selection helper for display and click`() {
+        val file = sequenceOf(
+            File("src/main/java/com/lingion/sleepy/ui/screen/imports/SchoolSelectScreen.kt"),
+            File("app/src/main/java/com/lingion/sleepy/ui/screen/imports/SchoolSelectScreen.kt"),
+        ).first { it.isFile }
+        val block = file.readText().substringAfter("if (isUrl) {").substringBefore("if (filtered.isEmpty()")
+        org.junit.Assert.assertTrue("SchoolDomainMatch.selectionsForUrl(" in block)
+        org.junit.Assert.assertTrue("val school = urlSelections.single()" in block)
+        org.junit.Assert.assertTrue("items(urlSelections, key = { it.stableKey })" in block)
+        org.junit.Assert.assertTrue("onSchoolSelected(school)" in block)
+        org.junit.Assert.assertFalse("JwSchoolInfo(" in block)
+    }
+
     // -------- registrableDomain 启发式 (与 WebView SSL 豁免同一实现) --------
 
     @Test

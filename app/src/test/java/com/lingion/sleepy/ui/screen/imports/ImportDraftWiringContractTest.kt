@@ -181,8 +181,14 @@ class ImportDraftWiringContractTest {
             "if (draftId == null)" in src && "draftRepository.save(" in src,
         )
         assertTrue(
-            "WebView 草稿必须恢复到 WebView 登录阶段",
-            "JwImportDraftPhase.WEBVIEW_LOGIN -> Stage.WebViewLogin" in src,
+            "WebView 草稿恢复必须使用已测试的学校准入规则；确认前留在选择页，已支持入口直接恢复",
+            Regex("""JwImportDraftPhase\.WEBVIEW_LOGIN\s*->\s*if\s*\(snapshot\.requiresSchoolConfirmation\)\s*\{\s*catalogNotice\s*=\s*snapshot\.school\s*Stage\.SelectSchool\s*}\s*else\s*Stage\.WebViewLogin""")
+                .containsMatchIn(src),
+        )
+        assertTrue(
+            "待验证入口只能从用户明确确认按钮进入 WebView",
+            Regex("""val mayTry = school\.isUnverified && school\.canImport.*?confirmButton\s*=.*?TextButton\(onClick\s*=\s*\{.*?if \(mayTry\).*?selectedSchool = school.*?stage = Stage\.WebViewLogin""", RegexOption.DOT_MATCHES_ALL)
+                .containsMatchIn(src),
         )
     }
 
