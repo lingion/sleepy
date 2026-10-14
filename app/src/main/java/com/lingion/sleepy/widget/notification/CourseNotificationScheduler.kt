@@ -635,34 +635,9 @@ private suspend fun sendScheduleSummary(
     cleanupLegacyDailySummaryNotifications(app)
     val dayOfMonth = targetDate.dayOfMonth
 
-    // 每表独立提醒: 聚合所有开启提醒的课表; 若全部被节假日策略豁免则整体静默
-    val repo = SleepyApp.get().repository
-    val tables = repo.getAllTables().map { t ->
-        t.hydratedWith(t.periodTableId?.let { id -> runCatching { repo.getPeriodTable(id) }.getOrNull() })
-    }
-    val enabledTables = tables.filter { it.reminderEnabled }
-    val activeTables = enabledTables.filter {
-        com.lingion.sleepy.util.HolidayReminderPolicyAdapter
-            .decide(app, targetDate, it.id)
-            .allowReminder
-    }
-    if (enabledTables.isNotEmpty() && activeTables.isEmpty()) return
-
-    val summaries = activeTables.map { table ->
-        // 取课走反向查: 补班日=sourceDate 的课, 放假日=null(无课)
-        val sourceDate = com.lingion.sleepy.widget.HolidayTransferHelper.courseDateForDate(app, table.id, targetDate)
-        val week = DateUtils.currentWeek(table.startDate, sourceDate ?: targetDate)
-        val inSemester = DateUtils.semesterStatus(table.startDate, table.maxWeek, sourceDate ?: targetDate) ==
-            DateUtils.SemesterStatus.IN_RANGE
-        val courses = if (!inSemester || sourceDate == null) {
-            emptyList()
-        } else {
-            repo.getCoursesByDayOnce(table.id, sourceDate.dayOfWeek.value)
-                .filter { it.inWeek(week) }
-        }
-        DailyTableCourses(table, courses)
-    }
-    val summary = buildDailyScheduleSummary(summaries)
+    val loaded = loadDailyAgenda(context, targetDate)
+    if (loaded.suppressed) return
+    val agenda = loaded.agenda
 
     val permissionGranted = ContextCompat.checkSelfPermission(
         context, Manifest.permission.POST_NOTIFICATIONS
@@ -672,18 +647,18 @@ private suspend fun sendScheduleSummary(
         if (permissionGranted) NotificationManagerCompat.from(context).notify(id, notif)
     }
 
-    fun build(title: String, text: String): android.app.Notification =
+    fun build(title: String, text: String, expanded: String = text): android.app.Notification =
         NotificationCompat.Builder(context, CourseNotificationScheduler.CHANNEL_DAILY)
             .setSmallIcon(R.drawable.ic_notification_time)
             .setContentTitle(title)
             .setContentText(text)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(text))
+            .setStyle(NotificationCompat.BigTextStyle().bigText(expanded))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setContentIntent(openAppIntent(context))
+            .setContentIntent(com.lingion.sleepy.ui.screen.today.DailyAgendaActivity.pendingIntent(context, targetDate))
             .setAutoCancel(true)
             .build()
 
-    if (summary.entries.isEmpty()) {
+    if (agenda.items.isEmpty()) {
         val title = context.getString(
             if (isTomorrowPreview) R.string.notif_tomorrow_title_no_course else R.string.notif_daily_title_no_course,
             dayOfMonth
@@ -703,37 +678,23 @@ private suspend fun sendScheduleSummary(
         return
     }
 
-    // 单表: 保持原有格式; 多表: 合并为一条紧凑列表通知
-    if (!summary.isMultiTable) {
-        val title = context.getString(
-            if (isTomorrowPreview) R.string.notif_tomorrow_title else R.string.notif_daily_title,
-            dayOfMonth,
-            summary.entries.size
-        )
-        val entry = summary.entries.first()
-        val first = entry.course
-        val firstTime = entry.startTimeText
-        val firstRoom = first.room.ifBlank { context.getString(R.string.notif_room_unknown) }
-        val text = context.getString(R.string.notif_daily_text_first, first.courseName, firstTime, firstRoom)
-        notify(
-            if (isTomorrowPreview) CourseNotificationScheduler.NOTIFY_TOMORROW_DAILY
-            else CourseNotificationScheduler.NOTIFY_DAILY,
-            build(title, text)
-        )
-        return
-    }
-
-    // 多表合并: 标题显示总课程数, 正文为紧凑列表
     val title = context.getString(
         if (isTomorrowPreview) R.string.notif_tomorrow_title else R.string.notif_daily_title,
         dayOfMonth,
-        summary.entries.size
+        agenda.items.size
     )
-    val text = summary.compactText(context.getString(R.string.notif_room_unknown))
+    val unknownTime = context.getString(R.string.agenda_time_unknown)
+    val unknownRoom = context.getString(R.string.notif_room_unknown)
+    val text = context.getString(R.string.agenda_first, agenda.items.first().line(unknownTime, unknownRoom))
+    val (visible, remaining) = agenda.preview()
+    val expanded = buildList {
+        addAll(visible.map { it.line(unknownTime, unknownRoom) })
+        if (remaining > 0) add(context.getString(R.string.agenda_more, remaining))
+    }.joinToString("\n")
     notify(
         if (isTomorrowPreview) CourseNotificationScheduler.NOTIFY_TOMORROW_DAILY
         else CourseNotificationScheduler.NOTIFY_DAILY,
-        build(title, text)
+        build(title, text, expanded)
     )
 }
 

@@ -1114,4 +1114,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_nav_hint_thu">导航到选课系统「整体课表」页，选好学期后点「导入此页」</string>
     <string name="jw_err_thu_course_page">尚未检测到清华大学「整体课表」的课程脚本。请登录选课系统、打开「整体课表」、选好学期后再点「导入此页」</string>
     <string name="jw_thu_skipped_courses">有 %1$d 条清华课程安排因信息不完整或周次、时段格式不受支持而跳过。请核对教务课表并手动补录。</string>
+    <string name="agenda_title">每日议程</string>
+    <string name="agenda_first">首课：%1$s</string>
+    <string name="agenda_more">另有 %1$d 次课程，点击查看全部</string>
+    <string name="agenda_time_unknown">时间待定</string>
+    <string name="agenda_count">%1$d 次课程 · %2$d 张课表</string>
+    <string name="agenda_empty">当天没有需要提醒的课程</string>
+    <string name="agenda_load_error">暂时无法加载议程，请重试</string>
 </resources>

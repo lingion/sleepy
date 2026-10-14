@@ -1085,4 +1085,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_nav_hint_thu">履修システムの「全体時間割」を開き、学期を選んでから「このページを取り込む」をタップ</string>
     <string name="jw_err_thu_course_page">清華大学の「全体時間割」の授業スクリプトが見つかりません。ログインし、全体時間割を開いて学期を選び、再度取り込んでください。</string>
     <string name="jw_thu_skipped_courses">THUの授業予定%1$d件は情報不足、または週・時間帯の形式に対応できず除外されました。教務システムの時間割を確認し、手動で追加してください。</string>
+    <string name="agenda_title">一日の予定</string>
+    <string name="agenda_first">最初の授業：%1$s</string>
+    <string name="agenda_more">ほか %1$d 件の授業。タップしてすべて表示。</string>
+    <string name="agenda_time_unknown">時刻未定</string>
+    <string name="agenda_count">授業 %1$d 件 · 時間割 %2$d 件</string>
+    <string name="agenda_empty">この日に通知対象の授業はありません</string>
+    <string name="agenda_load_error">予定を読み込めませんでした。再試行してください。</string>
 </resources>

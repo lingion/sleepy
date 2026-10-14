@@ -1088,4 +1088,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_nav_hint_thu">Open the course system’s Overall Timetable, select the semester, then tap Import This Page</string>
     <string name="jw_err_thu_course_page">No THU Overall Timetable course script was found. Sign in, open Overall Timetable, select the semester, then tap Import This Page.</string>
     <string name="jw_thu_skipped_courses">%1$d THU course entries were skipped because details were incomplete or the weeks or times are unsupported. Check the official timetable and add them manually.</string>
+    <string name="agenda_title">Daily agenda</string>
+    <string name="agenda_first">First: %1$s</string>
+    <string name="agenda_more">%1$d more classes. Tap to view all.</string>
+    <string name="agenda_time_unknown">Time unknown</string>
+    <string name="agenda_count">%1$d classes · %2$d timetables</string>
+    <string name="agenda_empty">No classes requiring reminders on this date</string>
+    <string name="agenda_load_error">Unable to load the agenda. Please try again.</string>
 </resources>

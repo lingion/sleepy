@@ -1052,4 +1052,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_nav_hint_thu">導航到選課系統「整體課表」頁，選好學期後點「匯入此頁」</string>
     <string name="jw_err_thu_course_page">尚未偵測到清華大學「整體課表」的課程腳本。請登入選課系統、開啟「整體課表」、選好學期後再點「匯入此頁」</string>
     <string name="jw_thu_skipped_courses">有 %1$d 條清華課程安排因資訊不完整或週次、時段格式不支援而略過。請核對教務課表並手動補錄。</string>
+    <string name="agenda_title">每日議程</string>
+    <string name="agenda_first">首課：%1$s</string>
+    <string name="agenda_more">另有 %1$d 次課程，點擊查看全部</string>
+    <string name="agenda_time_unknown">時間待定</string>
+    <string name="agenda_count">%1$d 次課程 · %2$d 張課表</string>
+    <string name="agenda_empty">當天沒有需要提醒的課程</string>
+    <string name="agenda_load_error">暫時無法載入議程，請重試</string>
 </resources>

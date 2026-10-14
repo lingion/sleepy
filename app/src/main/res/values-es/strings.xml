@@ -1086,4 +1086,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_nav_hint_thu">Abra el horario general en el sistema de cursos, elija el semestre y toque Importar esta página</string>
     <string name="jw_err_thu_course_page">No se encontró el script de cursos del horario general de THU. Inicie sesión, abra el horario general, elija el semestre y toque Importar esta página.</string>
     <string name="jw_thu_skipped_courses">Se omitieron %1$d entradas de cursos de THU por datos incompletos o semanas u horarios no compatibles. Compruebe el horario oficial y añádalas manualmente.</string>
+    <string name="agenda_title">Agenda diaria</string>
+    <string name="agenda_first">Primera: %1$s</string>
+    <string name="agenda_more">%1$d clases más. Toca para ver todas.</string>
+    <string name="agenda_time_unknown">Hora desconocida</string>
+    <string name="agenda_count">%1$d clases · %2$d horarios</string>
+    <string name="agenda_empty">No hay clases con recordatorios en esta fecha</string>
+    <string name="agenda_load_error">No se pudo cargar la agenda. Inténtalo de nuevo.</string>
 </resources>

@@ -355,6 +355,11 @@
             android:name=".widget.notification.ClassDndReceiver"
             android:exported="false" />
 
+        <activity
+            android:name=".ui.screen.today.DailyAgendaActivity"
+            android:exported="false"
+            android:theme="@style/Theme.Sleepy" />
+
         <!-- 教务直连导入 Activity (v1.0.8 新增) -->
         <activity
             android:name=".ui.screen.imports.JwImportActivity"
