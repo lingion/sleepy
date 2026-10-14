@@ -750,11 +750,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_daily_text_first">First class: %1$s at %2$s in %3$s</string>
     <string name="notif_daily_text_no_course">Take a break and enjoy the day!</string>
     <!-- 无序数句式: 英语序数后缀仅 1st/21st/31st 匹配 st, 硬编码 %1$dst 在其余日期全错 -->
-    <string name="notif_daily_title">Today is day %1$d of the month, you have %2$d classes</string>
-    <string name="notif_tomorrow_title">Tomorrow is day %1$d of the month, you have %2$d classes</string>
-    <string name="notif_daily_title_no_course">Today is day %1$d of the month, no classes today</string>
-    <string name="notif_tomorrow_title_no_course">Tomorrow is day %1$d of the month, no classes tomorrow</string>
-    <string name="notif_tomorrow_text_no_course">No classes tomorrow. Take a break!</string>
+    <string name="notif_daily_title">Today · Classes: %1$d</string>
+    <string name="notif_tomorrow_title">Tomorrow · Classes: %1$d</string>
+    <string name="notif_daily_title_no_course">No classes today</string>
+    <string name="notif_tomorrow_title_no_course">No classes tomorrow</string>
+    <string name="notif_tomorrow_text_no_course">Enjoy your free time!</string>
     <string name="notif_room_unknown">Unknown room</string>
     <string name="reminder_banner_sub">Show a before-class banner in the notification bar</string>
     <string name="reminder_banner_title">Banner Reminder</string>
@@ -1089,11 +1089,15 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_err_thu_course_page">No THU Overall Timetable course script was found. Sign in, open Overall Timetable, select the semester, then tap Import This Page.</string>
     <string name="jw_thu_skipped_courses">%1$d THU course entries were skipped because details were incomplete or the weeks or times are unsupported. Check the official timetable and add them manually.</string>
     <string name="agenda_title">Daily agenda</string>
-    <string name="agenda_first">First: %1$s</string>
-    <string name="agenda_more">%1$d more classes. Tap to view all.</string>
+    <string name="agenda_first">First class: %1$s</string>
+    <string name="agenda_more">More classes: %1$d</string>
     <string name="agenda_time_unknown">Time unknown</string>
     <string name="agenda_count">%1$d classes · %2$d timetables</string>
     <string name="agenda_empty">No classes requiring reminders on this date</string>
     <string name="agenda_load_error">Unable to load the agenda. Please try again.</string>
     <string name="agenda_table_unknown">Unnamed timetable</string>
+    <string name="agenda_source_count">Timetables: %1$d</string>
+    <string name="notif_before_class_compact">Starts %1$s · %2$s</string>
+    <string name="notif_date_title">%1$s · Classes: %2$d</string>
+    <string name="notif_date_no_course">%1$s · No classes</string>
 </resources>

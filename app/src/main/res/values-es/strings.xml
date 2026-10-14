@@ -740,11 +740,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_channel_fluid_desc">Muestra una tarjeta expandible de curso en tiempo real antes de clase</string>
     <string name="notif_daily_text_first">Primera clase: %1$s a las %2$s en %3$s</string>
     <string name="notif_daily_text_no_course">¡Descansa y disfruta el día!</string>
-    <string name="notif_daily_title">Hoy es %1$d, tienes %2$d clases</string>
-    <string name="notif_tomorrow_title">Mañana es %1$d, tienes %2$d clases</string>
-    <string name="notif_daily_title_no_course">Hoy es %1$d, no tienes clases hoy</string>
-    <string name="notif_tomorrow_title_no_course">Mañana es %1$d, no tienes clases mañana</string>
-    <string name="notif_tomorrow_text_no_course">Mañana no hay clases. ¡Descansa!</string>
+    <string name="notif_daily_title">Hoy · Clases: %1$d</string>
+    <string name="notif_tomorrow_title">Mañana · Clases: %1$d</string>
+    <string name="notif_daily_title_no_course">Hoy no hay clases</string>
+    <string name="notif_tomorrow_title_no_course">Mañana no hay clases</string>
+    <string name="notif_tomorrow_text_no_course">¡Disfruta del tiempo libre!</string>
     <string name="notif_room_unknown">Aula desconocida</string>
     <string name="reminder_banner_sub">Mostrar un banner antes de clase en la barra de notificaciones</string>
     <string name="reminder_banner_title">Recordatorio en banner</string>
@@ -1087,11 +1087,15 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_err_thu_course_page">No se encontró el script de cursos del horario general de THU. Inicie sesión, abra el horario general, elija el semestre y toque Importar esta página.</string>
     <string name="jw_thu_skipped_courses">Se omitieron %1$d entradas de cursos de THU por datos incompletos o semanas u horarios no compatibles. Compruebe el horario oficial y añádalas manualmente.</string>
     <string name="agenda_title">Agenda diaria</string>
-    <string name="agenda_first">Primera: %1$s</string>
-    <string name="agenda_more">%1$d clases más. Toca para ver todas.</string>
+    <string name="agenda_first">Primera clase: %1$s</string>
+    <string name="agenda_more">Clases adicionales: %1$d</string>
     <string name="agenda_time_unknown">Hora desconocida</string>
     <string name="agenda_count">%1$d clases · %2$d horarios</string>
     <string name="agenda_empty">No hay clases con recordatorios en esta fecha</string>
     <string name="agenda_load_error">No se pudo cargar la agenda. Inténtalo de nuevo.</string>
     <string name="agenda_table_unknown">Horario sin nombre</string>
+    <string name="agenda_source_count">Horarios: %1$d</string>
+    <string name="notif_before_class_compact">Empieza a las %1$s · %2$s</string>
+    <string name="notif_date_title">%1$s · Clases: %2$d</string>
+    <string name="notif_date_no_course">%1$s · Sin clases</string>
 </resources>

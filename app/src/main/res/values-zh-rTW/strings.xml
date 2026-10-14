@@ -738,11 +738,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_channel_fluid_desc">課前顯示可展開的課程即時卡片</string>
     <string name="notif_daily_text_first">第一節課 %1$s 於 %2$s 在 %3$s 上課</string>
     <string name="notif_daily_text_no_course">好好休息，享受一天！</string>
-    <string name="notif_daily_title">今日 %1$d 號，您有 %2$d 節課</string>
-    <string name="notif_tomorrow_title">明日 %1$d 號，您有 %2$d 節課</string>
-    <string name="notif_daily_title_no_course">今日 %1$d 號，今天沒有課程</string>
-    <string name="notif_tomorrow_title_no_course">明日 %1$d 號，沒有課程</string>
-    <string name="notif_tomorrow_text_no_course">明日無課,好好休息!</string>
+    <string name="notif_daily_title">今天有 %1$d 次課</string>
+    <string name="notif_tomorrow_title">明天有 %1$d 次課</string>
+    <string name="notif_daily_title_no_course">今天沒有課</string>
+    <string name="notif_tomorrow_title_no_course">明天沒有課</string>
+    <string name="notif_tomorrow_text_no_course">好好休息，享受一天！</string>
     <string name="notif_room_unknown">未知教室</string>
     <string name="reminder_banner_sub">在系統通知欄顯示課前橫幅</string>
     <string name="reminder_banner_title">橫幅提醒</string>
@@ -1053,11 +1053,15 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_err_thu_course_page">尚未偵測到清華大學「整體課表」的課程腳本。請登入選課系統、開啟「整體課表」、選好學期後再點「匯入此頁」</string>
     <string name="jw_thu_skipped_courses">有 %1$d 條清華課程安排因資訊不完整或週次、時段格式不支援而略過。請核對教務課表並手動補錄。</string>
     <string name="agenda_title">每日議程</string>
-    <string name="agenda_first">首課：%1$s</string>
-    <string name="agenda_more">另有 %1$d 次課程，點擊查看全部</string>
+    <string name="agenda_first">首課 %1$s</string>
+    <string name="agenda_more">另有 %1$d 次課</string>
     <string name="agenda_time_unknown">時間待定</string>
     <string name="agenda_count">%1$d 次課程 · %2$d 張課表</string>
     <string name="agenda_empty">當天沒有需要提醒的課程</string>
     <string name="agenda_load_error">暫時無法載入議程，請重試</string>
     <string name="agenda_table_unknown">未命名課表</string>
+    <string name="agenda_source_count">%1$d 張課表</string>
+    <string name="notif_before_class_compact">%1$s 開始 · %2$s</string>
+    <string name="notif_date_title">%1$s · %2$d 次課</string>
+    <string name="notif_date_no_course">%1$s 沒有課</string>
 </resources>

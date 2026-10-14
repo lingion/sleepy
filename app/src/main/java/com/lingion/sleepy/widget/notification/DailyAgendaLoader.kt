@@ -37,6 +37,6 @@ internal suspend fun loadDailyAgenda(context: Context, targetDate: LocalDate): L
         }
         DailyTableCourses(table, courses)
     }
-    return LoadedDailyAgenda(buildDailyAgenda(targetDate, buildDailyScheduleSummary(summaries)), suppressed)
+    return LoadedDailyAgenda(buildDailyAgenda(targetDate, buildDailyScheduleSummary(summaries), enabledTables), suppressed)
 
 }

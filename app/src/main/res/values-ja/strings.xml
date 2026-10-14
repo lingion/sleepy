@@ -740,11 +740,11 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="notif_channel_fluid_desc">授業前に展開可能なリアルタイム授業カードを表示</string>
     <string name="notif_daily_text_first">最初の授業：%1$s %2$s @ %3$s</string>
     <string name="notif_daily_text_no_course">ゆっくり休んで、一日を楽しんでください！</string>
-    <string name="notif_daily_title">今日は %1$d 日、授業は %2$d コマです</string>
-    <string name="notif_tomorrow_title">明日は %1$d 日、授業は %2$d コマです</string>
-    <string name="notif_daily_title_no_course">今日は %1$d 日、授業はありません</string>
-    <string name="notif_tomorrow_title_no_course">明日は %1$d 日、授業はありません</string>
-    <string name="notif_tomorrow_text_no_course">明日は授業がありません。ゆっくり休んでください!</string>
+    <string name="notif_daily_title">今日の授業 · %1$d 件</string>
+    <string name="notif_tomorrow_title">明日の授業 · %1$d 件</string>
+    <string name="notif_daily_title_no_course">今日は授業なし</string>
+    <string name="notif_tomorrow_title_no_course">明日は授業なし</string>
+    <string name="notif_tomorrow_text_no_course">ゆっくり休みましょう。</string>
     <string name="notif_room_unknown">教室不明</string>
     <string name="reminder_banner_sub">通知バーに授業前のバナーを表示</string>
     <string name="reminder_banner_title">バナーリマインダー</string>
@@ -1087,10 +1087,14 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="jw_thu_skipped_courses">THUの授業予定%1$d件は情報不足、または週・時間帯の形式に対応できず除外されました。教務システムの時間割を確認し、手動で追加してください。</string>
     <string name="agenda_title">一日の予定</string>
     <string name="agenda_first">最初の授業：%1$s</string>
-    <string name="agenda_more">ほか %1$d 件の授業。タップしてすべて表示。</string>
+    <string name="agenda_more">ほか %1$d 件</string>
     <string name="agenda_time_unknown">時刻未定</string>
     <string name="agenda_count">授業 %1$d 件 · 時間割 %2$d 件</string>
     <string name="agenda_empty">この日に通知対象の授業はありません</string>
     <string name="agenda_load_error">予定を読み込めませんでした。再試行してください。</string>
     <string name="agenda_table_unknown">名前のない時間割</string>
+    <string name="agenda_source_count">%1$d 件の時間割</string>
+    <string name="notif_before_class_compact">%1$s 開始 · %2$s</string>
+    <string name="notif_date_title">%1$s · 授業 %2$d 件</string>
+    <string name="notif_date_no_course">%1$s · 授業なし</string>
 </resources>

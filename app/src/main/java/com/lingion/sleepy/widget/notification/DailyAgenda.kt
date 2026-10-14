@@ -1,8 +1,11 @@
 package com.lingion.sleepy.widget.notification
 
 import com.lingion.sleepy.util.TimeTableUtils
+import com.lingion.sleepy.data.entity.TimeTableEntity
 import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZonedDateTime
+import java.time.Duration
 
 internal data class DailyAgendaItem(val sources: List<DailyScheduleEntry>, val endTime: LocalTime?) {
     val first get() = sources.first()
@@ -10,11 +13,15 @@ internal data class DailyAgendaItem(val sources: List<DailyScheduleEntry>, val e
     fun timeText(unknownTime: String): String = first.startTime?.let { start ->
         "$start${endTime?.let { "–$it" }.orEmpty()}"
     } ?: unknownTime
-    fun line(unknownTime: String, unknownRoom: String, unknownTable: String): String =
-        "${timeText(unknownTime)} ${first.course.courseName} · ${first.course.room.ifBlank { unknownRoom }} [${sourceNames(unknownTable)}]"
+    fun notificationLine(unknownTime: String, unknownRoom: String, sourceLabels: Map<Long, String>): String {
+        val source = sources.mapNotNull { sourceLabels[it.table.id] }.joinToString("／")
+        return "${first.startTime ?: unknownTime} · ${first.course.courseName} · ${first.course.room.ifBlank { unknownRoom }}" +
+            if (source.isEmpty()) "" else "〔$source〕"
+    }
 }
 
-internal data class DailyAgenda(val date: LocalDate, val items: List<DailyAgendaItem>) {
+internal data class DailyAgenda(val date: LocalDate, val items: List<DailyAgendaItem>, val sourceTables: List<TimeTableEntity> = emptyList()) {
+    fun notificationSources(unknownTable: String): Map<Long, String> = notificationSourceLabels(sourceTables, unknownTable)
     val tableCount get() = items.flatMap { it.sources }.map { it.table.id }.distinct().size
     fun preview(limit: Int = 6): Pair<List<DailyAgendaItem>, Int> {
         require(limit > 0)
@@ -23,7 +30,11 @@ internal data class DailyAgenda(val date: LocalDate, val items: List<DailyAgenda
 }
 
 /** Merge only matching occurrences in different tables; incomplete times never identify a duplicate. */
-internal fun buildDailyAgenda(date: LocalDate, summary: DailyScheduleSummary): DailyAgenda {
+internal fun buildDailyAgenda(
+    date: LocalDate,
+    summary: DailyScheduleSummary,
+    sourceTables: List<TimeTableEntity> = summary.entries.map { it.table }.distinctBy { it.id }
+): DailyAgenda {
     data class Identity(val date: LocalDate, val start: LocalTime, val end: LocalTime,
         val name: String, val room: String, val teacher: String)
     val groups = mutableListOf<DailyAgendaItem>()
@@ -50,5 +61,26 @@ internal fun buildDailyAgenda(date: LocalDate, summary: DailyScheduleSummary): D
             groups[index] = groups[index].copy(sources = groups[index].sources + entry)
         }
     }
-    return DailyAgenda(date, groups)
+    return DailyAgenda(date, groups, sourceTables)
 }
+
+/** Display-only middle ellipsis preserves both ends; every final label must remain distinguishable. */
+internal fun notificationSourceLabels(tables: List<TimeTableEntity>, unknownTable: String): Map<Long, String> {
+    val distinct = tables.distinctBy { it.id }
+    if (distinct.size <= 1) return emptyMap()
+    var labels = distinct.associate { table ->
+        val name = table.name.trim().ifBlank { unknownTable }
+        val points = name.codePoints().toArray()
+        table.id to if (points.size <= 16) name else
+            String(points, 0, 8) + "…" + String(points, points.size - 7, 7)
+    }
+    while (labels.values.toSet().size != labels.size) {
+        val counts = labels.values.groupingBy { it }.eachCount()
+        labels = labels.mapValues { (id, name) -> if (counts.getValue(name) > 1) "$name #$id" else name }
+    }
+    return labels
+}
+
+/** Relative today/tomorrow wording expires at the next local midnight, including DST days. */
+internal fun dailyNotificationLifetime(now: ZonedDateTime): Long =
+    Duration.between(now, now.toLocalDate().plusDays(1).atStartOfDay(now.zone)).toMillis().coerceAtLeast(1)

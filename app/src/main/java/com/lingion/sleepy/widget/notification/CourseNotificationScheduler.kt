@@ -633,11 +633,12 @@ private suspend fun sendScheduleSummary(
 ) {
     val app = context.applicationContext
     cleanupLegacyDailySummaryNotifications(app)
-    val dayOfMonth = targetDate.dayOfMonth
 
     val loaded = loadDailyAgenda(context, targetDate)
     if (loaded.suppressed) return
     val agenda = loaded.agenda
+    val notificationNow = java.time.ZonedDateTime.now()
+    val relativeDay = java.time.temporal.ChronoUnit.DAYS.between(notificationNow.toLocalDate(), targetDate)
 
     val permissionGranted = ContextCompat.checkSelfPermission(
         context, Manifest.permission.POST_NOTIFICATIONS
@@ -654,15 +655,17 @@ private suspend fun sendScheduleSummary(
             .setContentText(text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(expanded))
             .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+            .setTimeoutAfter(dailyNotificationLifetime(notificationNow))
             .setContentIntent(com.lingion.sleepy.ui.screen.today.DailyAgendaActivity.pendingIntent(context, targetDate))
             .setAutoCancel(true)
             .build()
 
     if (agenda.items.isEmpty()) {
-        val title = context.getString(
-            if (isTomorrowPreview) R.string.notif_tomorrow_title_no_course else R.string.notif_daily_title_no_course,
-            dayOfMonth
-        )
+        val title = when (relativeDay) {
+            0L -> context.getString(R.string.notif_daily_title_no_course)
+            1L -> context.getString(R.string.notif_tomorrow_title_no_course)
+            else -> context.getString(R.string.notif_date_no_course, targetDate.toString())
+        }
         val text = context.getString(
             if (isTomorrowPreview) R.string.notif_tomorrow_text_no_course
             else R.string.notif_daily_text_no_course
@@ -678,18 +681,20 @@ private suspend fun sendScheduleSummary(
         return
     }
 
-    val title = context.getString(
-        if (isTomorrowPreview) R.string.notif_tomorrow_title else R.string.notif_daily_title,
-        dayOfMonth,
-        agenda.items.size
-    )
+    val title = when (relativeDay) {
+        0L -> context.getString(R.string.notif_daily_title, agenda.items.size)
+        1L -> context.getString(R.string.notif_tomorrow_title, agenda.items.size)
+        else -> context.getString(R.string.notif_date_title, targetDate.toString(), agenda.items.size)
+    }
     val unknownTable = context.getString(R.string.agenda_table_unknown)
     val unknownTime = context.getString(R.string.agenda_time_unknown)
     val unknownRoom = context.getString(R.string.notif_room_unknown)
-    val text = context.getString(R.string.agenda_first, agenda.items.first().line(unknownTime, unknownRoom, unknownTable))
+    val sources = agenda.notificationSources(unknownTable)
+    val text = context.getString(R.string.agenda_first, agenda.items.first().notificationLine(unknownTime, unknownRoom, sources))
     val (visible, remaining) = agenda.preview()
     val expanded = buildList {
-        addAll(visible.map { it.line(unknownTime, unknownRoom, unknownTable) })
+        if (sources.isNotEmpty()) add(context.getString(R.string.agenda_source_count, agenda.tableCount))
+        addAll(visible.map { it.notificationLine(unknownTime, unknownRoom, sources) })
         if (remaining > 0) add(context.getString(R.string.agenda_more, remaining))
     }.joinToString("\n")
     notify(
@@ -719,7 +724,7 @@ class BeforeClassScheduleReceiver : BroadcastReceiver() {
 
 /**
  * Individual before-class notification — fires N minutes before a class.
- * Content: "下节课{courseName}于{HH}:{MM}在{room}上课"
+ * Standard banner: course name, followed by start time, room and optional table source.
  */
 class BeforeClassNotifyReceiver : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent) {
@@ -735,21 +740,22 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
                 val resolvedTableId = tableId
                     ?: com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id
                     ?: return@launch
-                val owner = SleepyApp.get().repository.getAllTables()
-                    .firstOrNull { it.id == resolvedTableId } ?: return@launch
+                val tables = SleepyApp.get().repository.getAllTables()
+                val owner = tables.firstOrNull { it.id == resolvedTableId } ?: return@launch
                 if (!owner.reminderEnabled) return@launch
                 if (!com.lingion.sleepy.util.HolidayReminderPolicyAdapter
                         .decide(context.applicationContext, date, resolvedTableId)
                         .allowReminder
                 ) return@launch
-                handle(context, intent)
+                val sources = notificationSourceLabels(tables.filter { it.reminderEnabled }, context.getString(R.string.agenda_table_unknown))
+                handle(context, intent, sources[resolvedTableId])
             } finally {
                 pending.finish()
             }
         }
     }
 
-    private fun handle(context: Context, intent: Intent) {
+    private fun handle(context: Context, intent: Intent, source: String?) {
         if (!hasNotifPermission(context)) {
             android.util.Log.w("BeforeClassNotify", "POST_NOTIFICATIONS denied")
             return
@@ -777,11 +783,10 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
         // primaryText / roomTeacherText / timeTeacherText 三个死变量已删
         // (计算后从未被使用——SDK>=26 路径直接交给 FluidCloudService, fallback 用上面的 fluidText/text)
 
-        val text = if (teacher.isBlank()) {
-            context.getString(R.string.notif_before_class_text, courseName, startTime, roomStr)
-        } else {
-            context.getString(R.string.notif_before_class_text_with_teacher, courseName, startTime, roomStr, teacher)
-        }
+        // Keep the course title readable even for long names; table attribution follows the room.
+        val text = context.getString(R.string.notif_before_class_compact,
+            startTime.ifBlank { context.getString(R.string.agenda_time_unknown) }, roomStr) +
+            source?.let { "〔$it〕" }.orEmpty()
 
         // == 流体云 / Live Update ==
         // 所有 SDK>=26 统一走 FluidCloudService：service 的 Handler 每 15s 循环
@@ -808,7 +813,7 @@ class BeforeClassNotifyReceiver : BroadcastReceiver() {
         // == Fallback: standard notification ==
         val notif = NotificationCompat.Builder(context, if (fluid) CourseNotificationScheduler.CHANNEL_FLUID else CourseNotificationScheduler.CHANNEL_BEFORE_CLASS)
             .setSmallIcon(R.drawable.ic_notification_time)
-            .setContentTitle(if (fluid) courseName else context.getString(R.string.notif_before_class_title))
+            .setContentTitle(courseName)
             .setContentText(if (fluid) fluidText else text)
             .setStyle(NotificationCompat.BigTextStyle().bigText(if (fluid) fluidText else text))
             .setTicker(if (fluid) fluidText else text)

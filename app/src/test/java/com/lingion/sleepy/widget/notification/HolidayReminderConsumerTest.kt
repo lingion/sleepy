@@ -83,7 +83,7 @@ class HolidayReminderConsumerTest {
         val unresolvedGuard = normalizedReceiver.indexOf(
             "com.lingion.sleepy.widget.WidgetTableResolver.resolveCurrentTable()?.id ?: return@launch"
         )
-        val handleCall = normalizedReceiver.indexOf("handle(context, intent)")
+        val handleCall = normalizedReceiver.indexOf("handle(context, intent, sources[resolvedTableId])")
 
         assertTrue(unresolvedGuard >= 0)
         assertTrue(handleCall > unresolvedGuard)
