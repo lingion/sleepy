@@ -1090,7 +1090,8 @@ fun FullWeekView(
     currentWeek: Int = 1,
     onCourseClick: (CourseEntity) -> Unit,
     modifier: Modifier = Modifier,
-    greyDays: Set<Int> = emptySet()
+    greyDays: Set<Int> = emptySet(),
+    showDate: Boolean = false
 ) {
     val context = androidx.compose.ui.platform.LocalContext.current
     // 设置页改 weekScale/cornerRatio/twoColumn/hideEmptyDays/别名后强制 recompose
@@ -1112,6 +1113,19 @@ fun FullWeekView(
     val byDay = courses.groupBy { it.day }
     val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
 
+    /** 每天的 M/d 日期字符串 — showDate 开且 startDate 合法时显示 (用户要求: 周一·10-13) */
+    val dayDate: Map<Int, String?> = remember(showDate, startDate, currentWeek, visibleDays) {
+        if (!showDate || startDate.isBlank()) return@remember emptyMap()
+        val map = mutableMapOf<Int, String?>()
+        for (day in visibleDays.filter { it in 1..7 }) {
+            map[day] = runCatching {
+                val d = DateUtils.dateOfWeek(startDate, currentWeek, day)
+                if (d != null) DateUtils.shortDateSlash(d) else null
+            }.getOrNull()
+        }
+        map
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
@@ -1129,6 +1143,7 @@ fun FullWeekView(
             useAlias = useAlias,
             scale = scale,
             cornerRatio = cornerRatio,
+            dayDate = dayDate,
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 6.dp)
         )
         DetailPanel(
@@ -1146,7 +1161,8 @@ fun FullWeekView(
             cornerRatio = cornerRatio,
             twoColumn = twoColumn,
             twoColumnMode = twoColumnMode,
-            hideEmptyDays = hideEmptyDays
+            hideEmptyDays = hideEmptyDays,
+            dayDate = dayDate
         )
         // Dock 悬浮底栏: 滚动尾部多留 Dock 总高(同网格视图)
         if (navExtra > 0.dp) Spacer(modifier = Modifier.height(navExtra))
@@ -1165,6 +1181,7 @@ private fun WeekStrip(
     useAlias: Boolean = false,
     scale: Float = 1f,
     cornerRatio: Float = 1f,
+    dayDate: Map<Int, String?> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     val sd = { v: Float -> (v * scale).dp }
@@ -1185,6 +1202,7 @@ private fun WeekStrip(
                 useAlias = useAlias,
                 scale = scale,
                 cornerRatio = cornerRatio,
+                dateStr = dayDate[day],
                 modifier = Modifier.weight(1f)
             )
         }
@@ -1198,6 +1216,7 @@ private fun DaySummaryCell(
     isToday: Boolean,
     isGrey: Boolean = false,
     useAlias: Boolean = false,
+    dateStr: String? = null,
     modifier: Modifier = Modifier,
     scale: Float = 1f,
     cornerRatio: Float = 1f
@@ -1220,7 +1239,7 @@ private fun DaySummaryCell(
     ) {
         // 日期
         Text(
-            text = DateUtils.localizedDay(day, context),
+            text = DateUtils.localizedDay(day, context) + (dateStr?.let { "·$it" } ?: ""),
             style = SleepyTextStyle.dayLabel().copy(fontSize = (13 * scale).sp, lineHeight = (18 * scale).sp),
             color = fg,
             modifier = Modifier.align(Alignment.CenterHorizontally)
@@ -1297,7 +1316,8 @@ private fun DetailPanel(
     cornerRatio: Float = 1f,
     twoColumn: Boolean = false,
     twoColumnMode: String = "days",
-    hideEmptyDays: Boolean = false
+    hideEmptyDays: Boolean = false,
+    dayDate: Map<Int, String?> = emptyMap()
 ) {
     val colors = MaterialTheme.colorScheme
     val sd = { v: Float -> (v * scale).dp }
@@ -1337,6 +1357,7 @@ private fun DetailPanel(
                 currentWeek = currentWeek, displayMode = displayMode, timeJson = timeJson,
                 onCourseClick = onCourseClick, greyDays = greyDays,
                 scale = scale, cornerRatio = cornerRatio,
+                dayDate = dayDate,
                 modifier = Modifier.weight(1f)
             )
             if (split.second.isNotEmpty()) {
@@ -1346,6 +1367,7 @@ private fun DetailPanel(
                     currentWeek = currentWeek, displayMode = displayMode, timeJson = timeJson,
                     onCourseClick = onCourseClick, greyDays = greyDays,
                     scale = scale, cornerRatio = cornerRatio,
+                    dayDate = dayDate,
                     modifier = Modifier.weight(1f)
                 )
             }
@@ -1373,7 +1395,8 @@ private fun DetailPanel(
                     onCourseClick = onCourseClick,
                     isGrey = day in greyDays,
                     scale = scale,
-                    cornerRatio = cornerRatio
+                    cornerRatio = cornerRatio,
+                    dateStr = dayDate[day]
                 )
             }
         }
@@ -1395,6 +1418,7 @@ private fun DayColumn(
     greyDays: Set<Int>,
     scale: Float,
     cornerRatio: Float,
+    dayDate: Map<Int, String?> = emptyMap(),
     modifier: Modifier = Modifier
 ) {
     val colors = MaterialTheme.colorScheme
@@ -1420,7 +1444,8 @@ private fun DayColumn(
                 onCourseClick = onCourseClick,
                 isGrey = day in greyDays,
                 scale = scale,
-                cornerRatio = cornerRatio
+                cornerRatio = cornerRatio,
+                dateStr = dayDate[day]
             )
         }
     }
@@ -1436,7 +1461,8 @@ private fun DetailDayCard(
     timeJson: String = "",
     onCourseClick: (CourseEntity) -> Unit,
     scale: Float = 1f,
-    cornerRatio: Float = 1f
+    cornerRatio: Float = 1f,
+    dateStr: String? = null
 ) {
     val colors = MaterialTheme.colorScheme
     val context = androidx.compose.ui.platform.LocalContext.current
@@ -1456,7 +1482,7 @@ private fun DetailDayCard(
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text(
-                text = DateUtils.localizedDay(day, context) + if (isToday) stringResource(R.string.today_suffix) else "",
+                text = DateUtils.localizedDay(day, context) + if (isToday) stringResource(R.string.today_suffix) else "" + (dateStr?.let { "·$it" } ?: ""),
                 style = MaterialTheme.typography.titleSmall.copy(fontWeight = FontWeight.SemiBold),
                 color = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else colors.onSurface
             )
@@ -1464,7 +1490,7 @@ private fun DetailDayCard(
 
         if (courses.isEmpty()) {
             Text(
-                text = DateUtils.localizedDay(day, context) + stringResource(R.string.no_course_today),
+                text = DateUtils.localizedDay(day, context) + stringResource(R.string.no_course_today) + (dateStr?.let { "·$it" } ?: ""),
                 style = SleepyTextStyle.smallMeta().copy(fontSize = (12 * scale).sp, lineHeight = (16 * scale).sp),
                 color = if (isGrey) colors.onSurfaceVariant.copy(alpha = SleepyTheme.Alpha.inactive) else colors.onSurfaceVariant
             )
