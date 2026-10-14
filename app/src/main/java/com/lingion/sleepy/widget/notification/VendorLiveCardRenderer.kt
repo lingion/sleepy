@@ -294,11 +294,24 @@ object VendorLiveCardRenderer {
                 putInt("island.superx.rightTemplate", 2)
                 putBoolean("island.superx.forceShow", true)
                 putBoolean("island.superx.showBarWhenCard", false)
-                // The notification-center template is NOT the island expanded template.
-                // Omitting this field means no expanded card (official doc 896).
-                putInt("island.superx.template", 2)
+                // Use the independent basic expanded card (official doc 896), as vivo's
+                // own focus-mode notification does. Keep the notification-center progress
+                // template separate: island expansion does not need its progress-node data.
+                putInt("island.superx.template", 4)
                 putInt("island.superx.islandClick", 0)
                 putParcelable("island.superx.clickResp", contentIntent)
+                putBundle("island.superx.baseInfos", Bundle().apply {
+                    // The nested keys retain the notification prefix in the island bundle.
+                    putParcelable("notification.superx.baseInfos.icon",
+                        Icon.createWithResource(context, R.drawable.ic_notification_time))
+                    putCharSequence("notification.superx.baseInfos.title", state.courseName)
+                    putCharSequence("notification.superx.baseInfos.content", state.detailText)
+                    // subInfo is required for template 4; 5 selects the basic progress ring.
+                    putInt("notification.superx.baseInfos.subInfo", 5)
+                    putInt("notification.superx.baseInfos.subProgress", state.progress)
+                    putInt("notification.superx.baseInfos.progressState", if (state.isActive) 0 else 1)
+                    putInt("notification.superx.baseInfos.subProgressColor", themeColor)
+                })
                 putBundle("island.superx.leftInfo", Bundle().apply {
                     putParcelable("island.superx.leftInfo.icon",
                         Icon.createWithResource(context, R.drawable.ic_notification_time))

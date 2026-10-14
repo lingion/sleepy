@@ -29,20 +29,46 @@ class VivoIslandExtrasTest {
         for (vendor in listOf(LiveCardVendor.VIVO, LiveCardVendor.IQOO)) {
             val extras = build(vendor).extras
             val island = extras.getBundle("notification.superx.island")!!
-            assertEquals(2, island.get("island.superx.template"))
+            assertEquals(4, island.get("island.superx.template"))
             assertEquals(0, island.get("island.superx.islandClick"))
             assertFalse(island.containsKey("island.superx.click"))
             assertTrue(island.get("island.superx.clickResp") is PendingIntent)
             assertEquals(1, island.get("island.superx.leftTemplate"))
             assertEquals(2, island.get("island.superx.rightTemplate"))
-            // Official fallback: no island-specific data means reuse notification data.
-            assertFalse(island.containsKey("island.superx.baseInfos"))
+            // Expanded island uses its own basic template, independent of progress nodes.
+            val islandBase = island.getBundle("island.superx.baseInfos")!!
+            assertEquals("Math", islandBase.getCharSequence("notification.superx.baseInfos.title"))
+            assertEquals("09:00  ·  A101  ·  Teacher", islandBase.getCharSequence("notification.superx.baseInfos.content"))
+            assertTrue(islandBase.get("notification.superx.baseInfos.icon") is Icon)
+            assertEquals(5, islandBase.get("notification.superx.baseInfos.subInfo"))
+            assertEquals(10, islandBase.get("notification.superx.baseInfos.subProgress"))
+            assertEquals(0, islandBase.get("notification.superx.baseInfos.progressState"))
+            assertTrue(islandBase.get("notification.superx.baseInfos.subProgressColor") is Int)
+            assertFalse(island.containsKey("island.superx.infos"))
+            assertFalse(islandBase.containsKey("notification.superx.infos.nodeIcon"))
+            // Notification center retains the existing progress visualization.
+            assertEquals(2, extras.get("notification.superx.template"))
             val base = extras.getBundle("notification.superx.baseInfos")!!
             assertEquals("Math", base.getCharSequence("notification.superx.baseInfos.title"))
             val infos = extras.getBundle("notification.superx.infos")!!
             assertTrue(infos.get("notification.superx.infos.progress") is Int)
             val icons = infos.getParcelableArrayList<Icon>("notification.superx.infos.nodeIcon")!!
             assertEquals(2, icons.size)
+            val right = island.getBundle("island.superx.rightInfo")!!
+            assertEquals(10, right.get("island.superx.rightInfo.progressValue"))
+            assertEquals(0, right.get("island.superx.rightInfo.progressState"))
+        }
+    }
+
+    @Test fun expandedBasicCardProgressUpdatesAndEnds() {
+        for ((now, progress, progressState) in listOf(
+            Triple(100L, 10, 0), Triple(500L, 50, 0), Triple(1000L, 100, 1)
+        )) {
+            val base = build(sequence = 2, now = now).extras
+                .getBundle("notification.superx.island")!!
+                .getBundle("island.superx.baseInfos")!!
+            assertEquals(progress, base.get("notification.superx.baseInfos.subProgress"))
+            assertEquals(progressState, base.get("notification.superx.baseInfos.progressState"))
         }
     }
 
