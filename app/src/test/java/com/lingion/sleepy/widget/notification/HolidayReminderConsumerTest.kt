@@ -22,11 +22,11 @@ class HolidayReminderConsumerTest {
     @Test
     fun daily_summary_returns_before_building_empty_notification() {
         val text = source()
-        val policy = text.indexOf("HolidayReminderPolicyAdapter")
-        val returnIndex = text.indexOf(") return", policy)
-        assertTrue(policy >= 0)
-        assertTrue(returnIndex > policy)
-        assertTrue(text.contains("sendScheduleSummary"))
+        val summary = text.substringAfter("private suspend fun sendScheduleSummary(")
+        val guard = summary.indexOf("if (loaded.suppressed) return")
+        assertTrue(summary.contains("loadDailyAgenda(context, targetDate)"))
+        assertTrue(guard >= 0)
+        assertTrue(summary.indexOf("if (agenda.items.isEmpty())") > guard)
     }
 
     @Test
@@ -39,7 +39,12 @@ class HolidayReminderConsumerTest {
         assertTrue(course.contains("HolidayReminderPolicyAdapter"))
         assertTrue(course.contains("dataSource.allowsReminder(table.id, date)"))
         // 2026-10 每表独立提醒: 摘要改为多表循环, 策略按每张开启提醒的表逐一判定
-        assertTrue(course.contains("decide(app, targetDate, it.id)"))
+        val loader = File(
+            System.getProperty("sleepy.test.root") ?: ".",
+            "app/src/main/java/com/lingion/sleepy/widget/notification/DailyAgendaLoader.kt"
+        ).readText()
+        assertTrue(loader.contains("decide(app, targetDate, it.id)"))
+        assertTrue(course.contains("loadDailyAgenda(context, targetDate)"))
         assertTrue(course.contains("resolvedTableId"))
         assertTrue(dnd.contains("HolidayReminderPolicyAdapter"))
         assertTrue(!course.contains("isPublicHolidayCached(context.applicationContext, targetDate"))
