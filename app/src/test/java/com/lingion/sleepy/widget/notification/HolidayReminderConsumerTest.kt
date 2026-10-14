@@ -98,7 +98,7 @@ class HolidayReminderConsumerTest {
             .substringBefore("// ==================== Helpers")
 
         assertTrue(reconcile.contains("if (!ensureActiveFluidCloud())"))
-        assertTrue(reconcile.contains("FluidCloudService.requestStop(app)"))
+        assertTrue(reconcile.contains("FluidCloudService.requestStop(app, reconciliation = true)"))
         // 2026-10 每表独立提醒: 流体云改为扫描全部开启提醒的课表, 取窗口内最早的一节
         assertTrue(ensure.contains("val (hit, table) = best ?: return false"))
         assertTrue(normalized(ensure).contains(".allowReminder ) return@forEach"))

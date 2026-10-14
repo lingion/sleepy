@@ -21,9 +21,12 @@ object FluidCastState {
     @Volatile
     var casting: Boolean = false
         private set
+    @Volatile
+    var testCasting: Boolean = false
+        private set
 
-    fun markStarted() { casting = true }
-    fun markStopped() { casting = false }
+    fun markStarted(test: Boolean = false) { casting = true; testCasting = test }
+    fun markStopped() { casting = false; testCasting = false }
 }
 
 /**
@@ -52,10 +55,14 @@ class FluidCloudService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         CourseNotificationScheduler.ensureNotificationChannels(this)
+        val preserveTest = intent?.getBooleanExtra(EXTRA_RECONCILE, false) == true &&
+            FluidCastState.testCasting && classEpoch > System.currentTimeMillis()
         if (intent?.action == ACTION_STOP) {
-            stopCloudNotification()
+            if (!preserveTest) stopCloudNotification()
             return START_NOT_STICKY
         }
+        // Recheck on the service thread: the database lookup may predate a new test.
+        if (preserveTest) return START_NOT_STICKY
         val nextIdentity = FluidNotificationIdentity(
             intent?.getLongExtra("notifyEpoch", 0L) ?: 0L,
             intent?.getLongExtra("classEpoch", 0L) ?: 0L,
@@ -107,7 +114,7 @@ class FluidCloudService : Service() {
         // on the existing tick to preserve vivo's rate limit and expanded card state.
         if (reuseSession) return START_NOT_STICKY
         activeIdentity = nextIdentity
-        FluidCastState.markStarted()
+        FluidCastState.markStarted(intent?.action == ACTION_TEST)
         session.start(
             classEpoch,
             intent?.action == ACTION_TEST && needsFluidFirstPostReinforcement(vendor),
@@ -197,6 +204,7 @@ class FluidCloudService : Service() {
         private const val TEST_WINDOW_MS = 2 * 60_000L
         const val ACTION_TEST = "com.lingion.sleepy.action.FLUID_TEST"
         const val ACTION_STOP = "com.lingion.sleepy.action.FLUID_STOP"
+        internal const val EXTRA_RECONCILE = "fluidReconcile"
 
         // Official vivo doc 896: direct cancellation uses the system-created tag.
         // Keep normal cancellation as well: the foreground notification is untagged.
@@ -208,11 +216,14 @@ class FluidCloudService : Service() {
             }
         }
 
-        fun requestStop(context: android.content.Context) {
+        fun requestStop(context: android.content.Context, reconciliation: Boolean = false) {
+            if (reconciliation && FluidCastState.testCasting) return
             val intent = Intent(context, FluidCloudService::class.java).setAction(ACTION_STOP)
+                .putExtra(EXTRA_RECONCILE, reconciliation)
             try {
                 androidx.core.content.ContextCompat.startForegroundService(context, intent)
             } catch (_: Throwable) {
+                if (reconciliation && FluidCastState.testCasting) return
                 cancelVivoCard(context)
                 androidx.core.app.NotificationManagerCompat.from(context)
                     .cancel(CourseNotificationScheduler.NOTIFY_BEFORE_CLASS_BASE)

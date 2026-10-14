@@ -355,10 +355,11 @@ class CourseNotificationScheduler private constructor(
      */
     suspend fun reconcileActiveFluidCloud() {
         val app = context.applicationContext
-        if (!ensureActiveFluidCloud()) FluidCloudService.requestStop(app)
+        if (!ensureActiveFluidCloud()) FluidCloudService.requestStop(app, reconciliation = true)
     }
 
     suspend fun ensureActiveFluidCloud(): Boolean {
+        if (FluidCastState.testCasting) return true
         val app = context.applicationContext
         if (!AppPrefs.isReminderEnabled(app) || !AppPrefs.isBeforeClassEnabled(app)) return false
         if (!AppPrefs.isBeforeClassFluidEnabled(app)) return false
@@ -407,6 +408,7 @@ class CourseNotificationScheduler private constructor(
             else nodes.find { it.node == hit.startNode + hit.step - 1 }
                 ?.let { String.format("%02d:%02d", it.end.hour, it.end.minute) }.orEmpty()
         val svc = Intent(app, FluidCloudService::class.java).apply {
+            putExtra(FluidCloudService.EXTRA_RECONCILE, true)
             putExtra("courseName", hit.courseName)
             putExtra("room", hit.room.ifBlank { app.getString(R.string.default_room) })
             putExtra("teacher", hit.teacher)

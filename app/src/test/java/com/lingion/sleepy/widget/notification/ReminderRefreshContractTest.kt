@@ -14,7 +14,7 @@ class ReminderRefreshContractTest {
         assertTrue(app.contains("classDndScheduler.reconcileReminderRules()"))
         assertTrue(app.contains("notificationScheduler.reconcileActiveFluidCloud()"))
         val scheduler = source("app/src/main/java/com/lingion/sleepy/widget/notification/CourseNotificationScheduler.kt")
-        assertTrue(scheduler.contains("FluidCloudService.requestStop(app)"))
+        assertTrue(scheduler.contains("FluidCloudService.requestStop(app, reconciliation = true)"))
     }
 
     @Test
