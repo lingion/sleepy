@@ -41,6 +41,9 @@ import java.time.format.FormatStyle
 
 /** Notification destination for every reminder-enabled table on the requested calendar date. */
 class DailyAgendaActivity : ComponentActivity() {
+    override fun attachBaseContext(newBase: Context) {
+        super.attachBaseContext(com.lingion.sleepy.util.LocaleHelper.wrapDefault(newBase))
+    }
     companion object {
         fun pendingIntent(context: Context, date: LocalDate): PendingIntent = PendingIntent.getActivity(
             context, 0, Intent(context, DailyAgendaActivity::class.java).apply {
@@ -57,7 +60,7 @@ class DailyAgendaActivity : ComponentActivity() {
         enableEdgeToEdge()
         var agenda by mutableStateOf<DailyAgenda?>(null)
         var failed by mutableStateOf(false)
-        fun refresh() = lifecycleScope.launch {
+        suspend fun refresh() {
             failed = false
             try {
                 agenda = withContext(Dispatchers.IO) { loadDailyAgenda(this@DailyAgendaActivity, date).agenda }
@@ -68,13 +71,11 @@ class DailyAgendaActivity : ComponentActivity() {
                 android.util.Log.e("DailyAgenda", "Unable to load agenda", error)
             }
         }
-        lifecycleScope.launch {
-            repeatOnLifecycle(Lifecycle.State.STARTED) { refresh().join() }
-        }
+        lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { refresh() } }
         setContent {
             val dark = AppPrefs.isDarkMode(this, isSystemInDarkTheme())
             SleepyThemeProvider(darkTheme = dark, themeKey = AppPrefs.getThemeKey(this)) {
-                DailyAgendaScreen(date, agenda, failed, { refresh() }, { finish() })
+                DailyAgendaScreen(date, agenda, failed, { lifecycleScope.launch { refresh() } }, { finish() })
             }
         }
     }
@@ -106,7 +107,7 @@ private fun DailyAgendaScreen(date: LocalDate, agenda: DailyAgenda?, failed: Boo
                                 Text(item.timeText(stringResource(R.string.agenda_time_unknown)), style = MaterialTheme.typography.labelLarge)
                                 Text(item.first.course.courseName, style = MaterialTheme.typography.titleMedium)
                                 Text(item.first.course.room.ifBlank { stringResource(R.string.notif_room_unknown) })
-                                Text(item.sourceNames(), style = MaterialTheme.typography.bodySmall)
+                                Text(item.sourceNames(stringResource(R.string.agenda_table_unknown)), style = MaterialTheme.typography.bodySmall)
                             }
                         }
                     }

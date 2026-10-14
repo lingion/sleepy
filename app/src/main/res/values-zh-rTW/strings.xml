@@ -1059,4 +1059,5 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="agenda_count">%1$d 次課程 · %2$d 張課表</string>
     <string name="agenda_empty">當天沒有需要提醒的課程</string>
     <string name="agenda_load_error">暫時無法載入議程，請重試</string>
+    <string name="agenda_table_unknown">未命名課表</string>
 </resources>

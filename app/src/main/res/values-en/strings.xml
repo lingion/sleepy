@@ -1095,4 +1095,5 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="agenda_count">%1$d classes · %2$d timetables</string>
     <string name="agenda_empty">No classes requiring reminders on this date</string>
     <string name="agenda_load_error">Unable to load the agenda. Please try again.</string>
+    <string name="agenda_table_unknown">Unnamed timetable</string>
 </resources>

@@ -6,12 +6,12 @@ import java.time.LocalTime
 
 internal data class DailyAgendaItem(val sources: List<DailyScheduleEntry>, val endTime: LocalTime?) {
     val first get() = sources.first()
-    fun sourceNames(): String = sources.map { it.table.name }.joinToString(" · ")
+    fun sourceNames(unknownTable: String): String = sources.map { it.table.name.ifBlank { unknownTable } }.joinToString(" · ")
     fun timeText(unknownTime: String): String = first.startTime?.let { start ->
         "$start${endTime?.let { "–$it" }.orEmpty()}"
     } ?: unknownTime
-    fun line(unknownTime: String, unknownRoom: String): String =
-        "${timeText(unknownTime)} ${first.course.courseName} · ${first.course.room.ifBlank { unknownRoom }} [${sourceNames()}]"
+    fun line(unknownTime: String, unknownRoom: String, unknownTable: String): String =
+        "${timeText(unknownTime)} ${first.course.courseName} · ${first.course.room.ifBlank { unknownRoom }} [${sourceNames(unknownTable)}]"
 }
 
 internal data class DailyAgenda(val date: LocalDate, val items: List<DailyAgendaItem>) {

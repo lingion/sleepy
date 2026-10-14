@@ -1121,4 +1121,5 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="agenda_count">%1$d 次课程 · %2$d 张课表</string>
     <string name="agenda_empty">当天没有需要提醒的课程</string>
     <string name="agenda_load_error">暂时无法加载议程，请重试</string>
+    <string name="agenda_table_unknown">未命名课表</string>
 </resources>

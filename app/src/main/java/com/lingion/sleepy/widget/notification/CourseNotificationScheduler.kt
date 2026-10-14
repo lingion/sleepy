@@ -683,12 +683,13 @@ private suspend fun sendScheduleSummary(
         dayOfMonth,
         agenda.items.size
     )
+    val unknownTable = context.getString(R.string.agenda_table_unknown)
     val unknownTime = context.getString(R.string.agenda_time_unknown)
     val unknownRoom = context.getString(R.string.notif_room_unknown)
-    val text = context.getString(R.string.agenda_first, agenda.items.first().line(unknownTime, unknownRoom))
+    val text = context.getString(R.string.agenda_first, agenda.items.first().line(unknownTime, unknownRoom, unknownTable))
     val (visible, remaining) = agenda.preview()
     val expanded = buildList {
-        addAll(visible.map { it.line(unknownTime, unknownRoom) })
+        addAll(visible.map { it.line(unknownTime, unknownRoom, unknownTable) })
         if (remaining > 0) add(context.getString(R.string.agenda_more, remaining))
     }.joinToString("\n")
     notify(

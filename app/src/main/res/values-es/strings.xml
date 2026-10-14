@@ -1093,4 +1093,5 @@ New URP flat-array: 39 related academic-system/timetable repositories (37 indire
     <string name="agenda_count">%1$d clases · %2$d horarios</string>
     <string name="agenda_empty">No hay clases con recordatorios en esta fecha</string>
     <string name="agenda_load_error">No se pudo cargar la agenda. Inténtalo de nuevo.</string>
+    <string name="agenda_table_unknown">Horario sin nombre</string>
 </resources>
