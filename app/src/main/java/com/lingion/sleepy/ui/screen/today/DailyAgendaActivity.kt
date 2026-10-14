@@ -42,18 +42,17 @@ import java.time.format.FormatStyle
 /** Notification destination for every reminder-enabled table on the requested calendar date. */
 class DailyAgendaActivity : ComponentActivity() {
     companion object {
-        private const val EXTRA_DATE = "agenda_date"
         fun pendingIntent(context: Context, date: LocalDate): PendingIntent = PendingIntent.getActivity(
             context, 0, Intent(context, DailyAgendaActivity::class.java).apply {
-                data = Uri.parse("sleepy://daily-agenda/$date")
-                putExtra(EXTRA_DATE, date.toString())
+                data = Uri.parse(DailyAgendaRoute.identity(date))
+                putExtra(DailyAgendaRoute.EXTRA_DATE, date.toString())
             }, PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val date = runCatching { LocalDate.parse(intent.getStringExtra(EXTRA_DATE)) }.getOrNull()
+        val date = DailyAgendaRoute.parse(intent.getStringExtra(DailyAgendaRoute.EXTRA_DATE))
         if (date == null) { finish(); return }
         enableEdgeToEdge()
         var agenda by mutableStateOf<DailyAgenda?>(null)
