@@ -34,6 +34,9 @@ import com.lingion.sleepy.widget.notification.loadDailyAgenda
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.withContext
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -60,6 +63,7 @@ class DailyAgendaActivity : ComponentActivity() {
         enableEdgeToEdge()
         var agenda by mutableStateOf<DailyAgenda?>(null)
         var failed by mutableStateOf(false)
+        val reload = MutableStateFlow(0)
         suspend fun refresh() {
             failed = false
             try {
@@ -71,11 +75,15 @@ class DailyAgendaActivity : ComponentActivity() {
                 android.util.Log.e("DailyAgenda", "Unable to load agenda", error)
             }
         }
-        lifecycleScope.launch { repeatOnLifecycle(Lifecycle.State.STARTED) { refresh() } }
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                reload.collectLatest { refresh() }
+            }
+        }
         setContent {
             val dark = AppPrefs.isDarkMode(this, isSystemInDarkTheme())
             SleepyThemeProvider(darkTheme = dark, themeKey = AppPrefs.getThemeKey(this)) {
-                DailyAgendaScreen(date, agenda, failed, { lifecycleScope.launch { refresh() } }, { finish() })
+                DailyAgendaScreen(date, agenda, failed, { reload.update { it + 1 } }, { finish() })
             }
         }
     }
