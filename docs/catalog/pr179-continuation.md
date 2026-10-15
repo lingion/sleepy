@@ -5,8 +5,8 @@ The recovered request requires sourced school-to-academic-system ownership and a
 ## Current scope
 
 - Catalog: 4,140 entries, including graduate, campus, historical and import variants; not 4,140 independent institutions.
-- City mappings: 3,763; 377 unresolved. This adds 599 reviewed exact-entity address records to the prior 3,164 mappings.
-- Unresolved: 166 campus/import variants, 44 graduate entries, 7 historical/alias entries, 47 legacy names and 113 adult institutions with no accepted current city evidence.
+- City mappings: 3,797; 343 unresolved. This includes 633 reviewed exact-entity address records plus the prior 3,164 mappings.
+- Unresolved: 149 campus/import variants, 38 graduate entries, 7 historical/alias entries, 37 legacy names and 112 adult institutions with no accepted current city evidence.
 - A mapped graduate office or teaching unit does not prove all campuses or student locations. Six 2015 recruitment-office addresses remain research evidence only.
 - Offline boundaries: 22 Taiwan counties/cities added; offshore islands and small enclaves tested. Xinxing remains explicitly unsupported pending a verifiable compatible-coordinate boundary source.
 - Initial configured academic endpoints: 348 publicly verified, 170 unknown, one wrong-school configuration identified. Strict endpoint review withdrew 97 earlier overbroad verdicts; 27 now have exact official links or directed HTTP evidence, while 70 remain unresolved. Unknown does not mean proven wrong.

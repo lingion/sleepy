@@ -2,20 +2,20 @@
   "schemaVersion": 1,
   "generatedAt": "2026-10-15",
   "catalogCount": 4140,
-  "cityMappedCount": 3763,
-  "unresolvedCount": 377,
+  "cityMappedCount": 3797,
+  "unresolvedCount": 343,
   "coverageCounts": {
     "explicit-official-campus-or-rename-address": 11,
     "recorded-city-mapping": 3164,
-    "unresolved": 377,
+    "unresolved": 343,
     "verified-campus-address": 2,
     "verified-current-admissions-directory-address": 4,
-    "verified-current-campus-or-successor-address": 155,
+    "verified-current-campus-or-successor-address": 180,
     "verified-current-recruitment-office-address": 2,
     "verified-graduate-office-address": 88,
     "verified-graduate-office-or-teaching-unit": 2,
-    "verified-graduate-office-or-teaching-unit-address": 167,
-    "verified-institution-address": 131,
+    "verified-graduate-office-or-teaching-unit-address": 173,
+    "verified-institution-address": 134,
     "verified-institution-contact-address": 1,
     "verified-named-unit-address": 4,
     "verified-named-unit-or-historical-school-address": 26,
@@ -31,7 +31,7 @@
     },
     {
       "path": "app/src/main/assets/school_cities.json",
-      "sha256": "543d6a80071029bbdd4b71575863d61b2aa97915669aa621df40933c166654ed"
+      "sha256": "fd8efc8e15f5f830b3a522bed0588ace69c459578cbb7040352a630bbbe79a65"
     },
     {
       "path": "scripts/data/official_schools.json",
@@ -39,20 +39,20 @@
     },
     {
       "path": "scripts/data/school_location_verified.json",
-      "sha256": "37f6b64a16eed39fa0e253b0209a88ac931eebc3eb6757c59ccdb520971aaf65"
+      "sha256": "3f479d44b4c838436041ca6090e3471787a024f68541b09f5d5e49941455d008"
     },
     {
       "path": "scripts/data/school_location_research.json",
-      "sha256": "d49de5245c8fe51adcbdcdea8e94092fd95c35f00057cc4890117e24ed62a1f7"
+      "sha256": "6818a51c4605fb4e4748084e190f7bd3f836468cac8aeec367b610e9b2aa6f28"
     }
   ],
   "statusCounts": {
-    "campus_or_import_unverified": 166,
-    "graduate_relation_unverified": 44,
+    "campus_or_import_unverified": 149,
+    "graduate_relation_unverified": 38,
     "historical_or_alias_unverified": 7,
-    "legacy_unresolved": 47,
-    "mapped": 3763,
-    "official_no_city": 113
+    "legacy_unresolved": 37,
+    "mapped": 3797,
+    "official_no_city": 112
   },
   "records": [
     {
@@ -5866,19 +5866,36 @@
     },
     {
       "name": "中山大学新华学院东莞校区",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "东莞市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-aa45c2739feb5f1c",
+      "sourceUrl": "https://zsb.xhsysu.edu.cn/info/1047/4607.htm",
+      "sourceUrls": [
+        "https://zsb.xhsysu.edu.cn/info/1047/4607.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "中山大学新华学院东莞校区",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "中山大学新华学院东莞校区",
+      "observedText": "东莞校区：广东省东莞市麻涌镇沿江西路248号 … 广州新华学院（院校代码：13902）的前身是中山大学新华学院，是举办高校中山大学依据教育部教发〔2003〕8号文的精神，按新机制新模式申办的院校。2021年2月，经教育部批准，学校转设为独立设置的本科层次普通高等学校，并更名为广州新华学院。",
+      "relationEvidence": "官方2025招生简章明确前身中山大学新华学院/2021更名广州新华学院及东莞校区完整地址；仅映射目录指定东莞校区，不扩展广州校区。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "3ec84c5e4f9a4668166addd952f4587c1384a47757a32282d03efa2f781da316",
+      "evidenceTextSha256": "122cc48305cd5911962a40e5f47e669d50ee076f055cd9919a5a8fef895bd634",
+      "relationSources": [
+        {
+          "sourceUrl": "https://onlm.xhsysu.edu.cn/info/1048/2655.htm",
+          "observedText": "中山大学新华学院东莞校区视频监控项目招标公告",
+          "evidenceTextSha256": "140c3efd8513da06960d586abae621757da8eabb8ca0d1d14b8f0e14d95167c2",
+          "evidenceArchive": "campus4-probes.jsonl",
+          "bodySha256": "d0c151d328baee1e7e267e8fbc5e1c97053a60c3f986d6c2d671cc47e64f8d73",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "中山市火炬职业技术学院",
@@ -6390,19 +6407,26 @@
     },
     {
       "name": "丽江师范高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "丽江市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-2330a5f6aaff8fa7",
+      "sourceUrl": "https://www.ljnu.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.ljnu.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "丽江师范高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "丽江师范高等专科学校",
+      "observedText": "2006年丽江教育学院改制为丽江师范高等专科学校；2024年5月31日教育部同意以丽江师范高等专科学校为基础设置丽江师范学院。 … 学校地址：云南省丽江市古城区新团片区存信路499号",
+      "relationEvidence": "2026年5月现官方简介明确旧名丽江师范高等专科学校及2024年升本，现校址丽江市古城区存信路499号。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "9575a5a8b19aa9334e183852041c1642211f6efee07eab82339a4e2620cb2c6a",
+      "evidenceTextSha256": "1b209756d8e97388a62e382438655bf48f5114c06ba2ea4eab69e87b9c24cac1",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "丽江文化旅游学院",
@@ -9694,19 +9718,45 @@
     },
     {
       "name": "兰州财经大学陇桥学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "兰州市",
+        "临夏回族自治州"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-1dbf70ede630dd8b",
+      "sourceUrl": "http://www.lanzhoutbc.cn/gywm/xxjj.htm",
+      "sourceUrls": [
+        "http://www.lanzhoutbc.cn/gywm/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "兰州财经大学陇桥学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "兰州财经大学陇桥学院",
+      "observedText": "兰州工商学院创办于2000年3月，前身为兰州商学院陇桥学院，是甘青宁新四省区唯一的省属民办财经类本科高校。2004年被教育部确认为第一批全日制普通本科层次的独立学院。2012年，获批学士学位授予权单位，2016年更名为兰州财经大学陇桥学院，2021年2月，经教育部批准转设为省管民办普通本科高校。 … 学校现有兰州市和平、永靖县刘家峡两个校区 … 地址：兰州市和平开发区薇乐大道68号",
+      "relationEvidence": "现官方简介明确2016年旧名兰州财经大学陇桥学院及2021年转设，现兰州和平、永靖刘家峡两个校区；校方2026年6月临夏州调研文章明确刘家峡校区扎根临夏办学，故保留兰州和临夏州双城市，不能仅映射兰州。 城市规范化：现校方永靖县刘家峡校区→甘肃省地震局2026年9月正文明确甘肃省临夏回族自治州永靖县；临夏州规范为临夏回族自治州，非临夏市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "f5e7e34e4e0af0d31fae191cf5d1281b33f4ceac9cec72911d50978ecc972c4b",
+      "evidenceTextSha256": "62c3c04df71e4d8e829af99867a75c6135f0021a9f094fc45abaec47ee5f7725",
+      "relationSources": [
+        {
+          "sourceUrl": "http://lanzhoutbc.cn/info/1341/23131.htm",
+          "observedText": "6月8日上午，临夏州委书记李海默莅临兰州工商学院刘家峡校区调研指导 … 李海默对学校扎根临夏办学、主动服务地方发展给予充分肯定",
+          "evidenceTextSha256": "a821910894060e419fbf815ad281911a362427545216c197cf0b600eb917bb55",
+          "evidenceArchive": "campus19-probes.jsonl",
+          "bodySha256": "2cda3bbfd13081afb1f98a932260cfdcb74bd4405335bea9f41a3cd91deb5138",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "sourceUrl": "https://www.gsdzj.gov.cn/info/1026/30045.htm",
+          "observedText": "9月15日至17日，“院士专家永靖行”暨乡村全面振兴视角下的防灾减灾与生态文明建设学术研讨会在甘肃省临夏回族自治州永靖县拉开帷幕。",
+          "evidenceTextSha256": "0ba3884eaeca24f9aa4dc700f39c5b8e4edacaf5d9506d8be13e8349243d09b6",
+          "evidenceArchive": "campus20-admin-profile-probes.jsonl",
+          "bodySha256": "d29e8771ba729ecd2eb29ea542ddc41626f1446256968838229eb42e440b19a6",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "兰州资源环境职业技术大学",
@@ -11110,19 +11160,38 @@
     },
     {
       "name": "北京交通大学海滨学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "沧州市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-89846da0aecf619c",
+      "sourceUrl": "https://www.czjtu.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.czjtu.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "北京交通大学海滨学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "北京交通大学海滨学院",
+      "observedText": "沧州交通学院（Cangzhou Jiaotong College）是经教育部批准设立的全日制普通本科院校。学校始建于2008年，前身是教育部直属全国重点大学北京交通大学举办的独立学院——北京交通大学海滨学院，2020年经教育部批准成功转设。 … 地址：河北省黄骅市学院路2009号",
+      "relationEvidence": "现官方简介明确前身北京交通大学海滨学院及2020转设，现址黄骅学院路2009号。天地图官方行政树黄骅市pGb=156130900与沧州市gb相等，规范至沧州市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；县级单位经官方父子行政关系规范到地级市；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "fe2bdff75a016983bad24b7eb282ce6bd8b7e88796f41655b6df1e74460ebd2c",
+      "evidenceTextSha256": "98e9348d973b71e489f34b491e6a898f9e8ccbf7fe744287a7c154def9d9db3d",
+      "relationSources": [
+        {
+          "sourceUrl": "https://cloudcenter.tianditu.gov.cn/api/portal/region/menu",
+          "observedText": "\"name\":\"黄骅市\",\"pGb\":\"156130900\",\"gb\":\"156130983\" … \"name\":\"沧州市\",\"pGb\":\"156130000\",\"gb\":\"156130900\"",
+          "evidenceTextSha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "evidenceArchive": "../boundary-resume/official-region-menu.json",
+          "bodySha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "retrievedDate": "2026-10-15",
+          "sourceFormat": "json",
+          "extractionMethod": "Exact name/gb/pGb fields from official JSON; child pGb equals parent gb"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "北京交通职业技术学院",
@@ -11264,19 +11333,33 @@
     },
     {
       "name": "北京信息科技大学 - 研究生",
-      "status": "graduate_relation_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "北京市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-ea5847705aa04342",
+      "sourceUrl": "https://www.bistu.edu.cn/zsjy/yjszs/index.html",
+      "sourceUrls": [
+        "https://www.bistu.edu.cn/zsjy/yjszs/index.html"
+      ],
       "sourceDate": null,
-      "reason": "graduate entry requires explicit parent identity and current teaching location",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "北京信息科技大学 - 研究生",
-        "searchCount": 2,
-        "probeCount": 1
-      }
+      "canonicalName": "北京信息科技大学 - 研究生",
+      "observedText": "北京信息科技大学研究生院（招生办公室） 地址：北京市昌平区太行路55号 邮编：102206 电话：010- 80187203",
+      "relationEvidence": "学校官网研究生招生页面在正文明确列出北京信息科技大学研究生院（招生办公室）及北京市昌平区地址，非母校共用页脚。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅研究生院招生办公室地址，不表示穷尽所有培养校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "ebb1dc27c8f14c8657d609743d5128cfa21678d77becf7da28cc7290d80f78ad",
+      "evidenceTextSha256": "9115697d6fc6ca4521faa42506458dce90c5d160c1274b4cefb936aa3f1e683e",
+      "cityEvidence": [
+        {
+          "city": "北京市",
+          "observedText": "北京信息科技大学研究生院（招生办公室） 地址：北京市昌平区太行路55号 邮编：102206 电话：010- 80187203",
+          "sourceUrl": "https://www.bistu.edu.cn/zsjy/yjszs/index.html"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "北京信息职业技术学院",
@@ -11418,19 +11501,26 @@
     },
     {
       "name": "北京化工大学昌平校区",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "北京市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-016efdd37c6515d4",
+      "sourceUrl": "https://bq.buct.edu.cn/",
+      "sourceUrls": [
+        "https://bq.buct.edu.cn/"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "北京化工大学昌平校区",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "北京化工大学昌平校区",
+      "observedText": "北区办 地址：北京市昌平区南口镇南涧路29号北京化工大学 办公地点：后勤F楼2楼昌平校区办公室",
+      "relationEvidence": "北京化工大学北校区工作办公室官网2026现页明确昌平校区办公室和北京市昌平区南口镇南涧路29号校址，采用校区办公室直接地址而非母校朝阳footer。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "59129e316d590fa5308ad827168e29d9d6a45c278b1abf23033ec083d5bb84e4",
+      "evidenceTextSha256": "ce1e05f30997a1c7ba9f7ea561d5dec2584786ab2bac7610ed663aa566a3542b",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "北京北大方正软件职业技术学院",
@@ -20193,19 +20283,26 @@
     },
     {
       "name": "呼和浩特职业学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "呼和浩特市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-010c28b21dc294ff",
+      "sourceUrl": "https://www.hhvc.edu.cn/bnfc1/xxjj.htm",
+      "sourceUrls": [
+        "https://www.hhvc.edu.cn/bnfc1/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "呼和浩特职业学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "呼和浩特职业学院",
+      "observedText": "2002年，由呼和浩特教育学院、呼和浩特管理干部学院、呼和浩特职工大学、呼和浩特广播电视大学四所院校合并组建呼和浩特职业学院 … 2025年6月，经教育部、内蒙古自治区人民政府研究决定，同意设置呼和浩特职业技术大学，是呼和浩特市人民政府举办的全日制职业本科学校。 … 地址：呼和浩特市赛罕区巴彦高职园区",
+      "relationEvidence": "2026年6月现官网简介明确呼和浩特职业学院合并沿革、2025年设置呼和浩特职业技术大学及现完整呼和浩特市校址。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；县级单位经官方父子行政关系规范到地级市；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "c48e8ace5a2e74b2f429943ac1bab290e19b93d089a89c9911f39126a9bb5d3a",
+      "evidenceTextSha256": "5a3b937b153be6a647f98a4f82e89d9bb7b65092e1d4eea16c354a18bb5784b7",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "呼和浩特职业技术大学",
@@ -26397,19 +26494,46 @@
     },
     {
       "name": "大连职工大学",
-      "status": "official_no_city",
-      "cities": null,
-      "precision": "none",
-      "sourceId": "moe-2026-adult",
-      "sourceUrl": "http://www.moe.gov.cn/jyb_xxgk/s5743/s5744/202606/W020260618307096079727.xls",
+      "status": "mapped",
+      "cities": [
+        "大连市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-e5a60bc6fcc5620c",
+      "sourceUrl": "https://www.daliancs.com:9905/basic/unauth/style/getEnterprisePortalStyle/bc7b332b1fc84330a7f5f3c4cff76bd1/1",
+      "sourceUrls": [
+        "https://www.daliancs.com:9905/basic/unauth/style/getEnterprisePortalStyle/bc7b332b1fc84330a7f5f3c4cff76bd1/1"
+      ],
       "sourceDate": "2026-06-18",
-      "reason": "MOE 2026 adult directory has no city field",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "大连职工大学",
-        "searchCount": 3,
-        "probeCount": 1
-      }
+      "canonicalName": "大连职工大学",
+      "observedText": "地址:大连市甘井子区华北路1号",
+      "relationEvidence": "官网首页HTML加载app与runtime，主页chunk绑定机构ID bc7b332b1fc84330a7f5f3c4cff76bd1，并向公开只读API getEnterprisePortalStyle 请求网页布局；返回JSON含该地址及「版权所有：大连职工大学版权所有」；非技术服务商地址。",
+      "coverage": "verified-institution-address",
+      "coverageNote": "官方当前主页公开展示联系地址，未给页面更新日期；不推断所有校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "05eff33257565e93a989e646f325c432d34d0899998d742d3758b5f61775aa5a",
+      "evidenceTextSha256": null,
+      "supportingEvidence": [
+        {
+          "sourceUrl": "https://www.dlftc.com/",
+          "observedText": "js/chunk-0c85bec0.12e7b0b5.js",
+          "bodySha256": "f85704d9589a5a093e7681e65cd5dd5413d0b60183dd341109fb96656f1069ac",
+          "evidenceArchive": "adult11-dlftc-home.html",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "sourceUrl": "https://www.dlftc.com/js/chunk-0c85bec0.12e7b0b5.js",
+          "observedText": "bc7b332b1fc84330a7f5f3c4cff76bd1",
+          "bodySha256": "027bd1d89b412fda54e4b1ffd5972462615296e0a764656393ec47546e25c84c",
+          "evidenceArchive": "adult11-dlftc-home-chunk.js",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "requestMethod": "GET",
+      "parentSourceUrl": "https://www.dlftc.com/",
+      "extractionMethod": "public-homepage JSON API layout staticField",
+      "sourceFormat": "json",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "大连航运职业技术学院",
@@ -28168,19 +28292,52 @@
     },
     {
       "name": "天津职业技术师范大学 - 研究生",
-      "status": "graduate_relation_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
-      "sourceDate": null,
-      "reason": "graduate entry requires explicit parent identity and current teaching location",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "天津职业技术师范大学 - 研究生",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "status": "mapped",
+      "cities": [
+        "天津市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-1a481e145a2e1a68",
+      "sourceUrl": "https://gjjlc.tute.edu.cn/info/1012/2215.htm",
+      "sourceUrls": [
+        "https://gjjlc.tute.edu.cn/info/1012/2215.htm"
+      ],
+      "sourceDate": "2025-03-04",
+      "canonicalName": "天津职业技术师范大学 - 研究生",
+      "observedText": "Tianjin University of Technology and Education 2025 Chinese Government Scholarship High-level graduate student Program … International College, Tianjin University of Technology and Education Address: No. 1310 Dagu South Road, Hexi District, Tianjin, P. R. China",
+      "relationEvidence": "天津职业技术师范大学官方高水平研究生奖学金招生简章Contact information正文列明International College及Tianjin地址；Tianjin明确译为天津市。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅国际研究生招生单位地址，不表示穷尽全校培养校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "f2e0745f3dbcf445ac807a7ba3d215169499eb282677f9e184da8567707ca4c5",
+      "evidenceTextSha256": "100a3f53eb528f7917a1c295be955ddff2cdba30fb94c6fb4ad64c87521b6d16",
+      "relationSources": [
+        {
+          "sourceUrl": "https://gjjlc.tute.edu.cn/info/1012/2215.htm",
+          "observedText": "Tianjin University of Technology and Education 2025 Chinese Government Scholarship High-level graduate student Program",
+          "bodySha256": "f2e0745f3dbcf445ac807a7ba3d215169499eb282677f9e184da8567707ca4c5",
+          "evidenceTextSha256": "100a3f53eb528f7917a1c295be955ddff2cdba30fb94c6fb4ad64c87521b6d16",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review5.json",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review5.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": "2025-03-04"
+        }
+      ],
+      "cityEvidence": [
+        {
+          "city": "天津市",
+          "observedText": "International College, Tianjin University of Technology and Education Address: No. 1310 Dagu South Road, Hexi District, Tianjin, P. R. China",
+          "sourceUrl": "https://gjjlc.tute.edu.cn/info/1012/2215.htm",
+          "bodySha256": "f2e0745f3dbcf445ac807a7ba3d215169499eb282677f9e184da8567707ca4c5",
+          "evidenceTextSha256": "100a3f53eb528f7917a1c295be955ddff2cdba30fb94c6fb4ad64c87521b6d16",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review5.json",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "normalization": {
+        "天津市": "招生正文英文城市Tianjin→天津市；同一页面国际交流处地址亦明确天津市。"
+      },
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "天津艺术职业学院",
@@ -29533,19 +29690,36 @@
     },
     {
       "name": "宁波大红鹰学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "宁波市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-6378c387d204fb5f",
+      "sourceUrl": "https://www.nbufe.edu.cn/nbufe/show.htm?id=40270",
+      "sourceUrls": [
+        "https://www.nbufe.edu.cn/nbufe/show.htm?id=40270"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "宁波大红鹰学院",
-        "searchCount": 2,
-        "probeCount": 3
-      }
+      "canonicalName": "宁波大红鹰学院",
+      "observedText": "2018年由原校名“宁波大红鹰学院”更名为“宁波财经学院”。 … 学校现有海曙校区、杭州湾校区、象山校区等3个校区",
+      "relationEvidence": "现2026官网明确宁波大红鹰学院更名宁波财经学院和海曙/杭州湾/象山三校区；2025官方招生章程逐一完整地址均在宁波市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；县级单位经官方父子行政关系规范到地级市；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "2ee3c1740cf755b508ff745e76809cd490db7c2f52bf2fc5984a2e6f78ab56cb",
+      "evidenceTextSha256": "a116297dff101fa20706bd7acd02e15899dd5781355b90cbf0a0b0af7586ab40",
+      "relationSources": [
+        {
+          "sourceUrl": "https://www.nbufe.edu.cn/ad/show.html?typeid=1045&typeid2=1103&id=30282",
+          "observedText": "地点：海曙校区（宁波市海曙区学院路 899号），杭州湾校区（宁波市（慈溪）杭州湾新区博华路77号），象山校区（宁波市象山县大目湾新城丽湾路599号）。",
+          "evidenceTextSha256": "7bef616f32a6cde5c286801e5663a934d2714ea91cd4a955d102a3a6d6c1fbe8",
+          "evidenceArchive": "campus22-profile-probes.jsonl",
+          "bodySha256": "6b57b0417cd977a43925c7234e0744e8bf9120680a2817a4d6543ce670f2d390",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "宁波工程学院",
@@ -30732,19 +30906,26 @@
     },
     {
       "name": "安徽师范大学（可切换学期）",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "芜湖市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-0057fe9f7ba22675",
+      "sourceUrl": "https://www.ahnu.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.ahnu.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "安徽师范大学（可切换学期）",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "安徽师范大学（可切换学期）",
+      "observedText": "安徽师范大学是安徽建校最早的高等学府，坐落在具有“徽风皖韵、千湖之城”美誉的国家级开放城市——芜湖 … 赭山校区 地址：安徽省芜湖市北京中路2号 邮编：241000 花津校区 地址：安徽省芜湖市九华南路189号 邮编：241002 电话：(0553)5910027 天门山校区 地址：安徽省芜湖市九华北路171号",
+      "relationEvidence": "目录括号仅导入学期切换提示；对应安徽师范大学。当前官方简介明确芜湖且三个校区完整地址全部芜湖。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "69bdcbb294c85e7238e16bf6d4de09f70ed7c21d87f74e0e80c41641bac6d38d",
+      "evidenceTextSha256": "ab0998b30380aea83774b04c0efe5bf8046c2350f56ae393d6e0e63d6a3b27c9",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "安徽广播影视职业技术学院",
@@ -34060,19 +34241,49 @@
     },
     {
       "name": "山东第一医科大学 - 研究生",
-      "status": "graduate_relation_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "泰安市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-87aebfe3af98c626",
+      "sourceUrl": "https://sah.sdfmu.edu.cn/jyjx.htm",
+      "sourceUrls": [
+        "https://sah.sdfmu.edu.cn/jyjx.htm"
+      ],
       "sourceDate": null,
-      "reason": "graduate entry requires explicit parent identity and current teaching location",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "山东第一医科大学 - 研究生",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "山东第一医科大学 - 研究生",
+      "observedText": "山一大二附院（第二临床学院）研究生科研启航培训（第二季）暨“润心”文献分享会启幕 … 医学教育与研究生培养再结硕果｜神经内科4名硕士研究生获批博士入学资格 … 医院地址：中国.山东.泰安.山东第一医科大学第二附属医院（第二临床学院）",
+      "relationEvidence": "第二附属医院（第二临床学院）官方教育教学栏目明确发布其研究生科研培训和硕士研究生培养成果；同页地址明确署名此实际教学单位。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅第二临床学院实际研究生教学单位城市，非全校研究生培养校区覆盖。证据直接来源为官方教育教学栏目标题与具名单位地址；对应微信文章触发验证码，未声称读取其全文。泰安→泰安市为城市标准后缀归一化。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "71ea644aa280d7af482fd9d8bbe5c698e5d87a916168d68f144c107403e68e1c",
+      "evidenceTextSha256": "0190d6ed8919abc372edfcac49aaff7e4ce89f1eb707e1029fc0ac66718a32e5",
+      "relationSources": [
+        {
+          "sourceUrl": "https://sah.sdfmu.edu.cn/yygk/yyjj.htm",
+          "observedText": "上职称人员700余人，双聘泰山学者特聘专家6人，泰山学者青年专家3人，齐鲁卫生与健康领军人才1人，博士后合作导师35人，硕博士研究生导师130余人，医疗人员博硕士占比91.6%。柔性汇聚国家杰青、国家优青、长江学者等省级以上人才24人。自主培育“外专双百计划专 … 医院地址：中国.山东.泰安.山东第一医科大学第二附属医院（第二临床学院）",
+          "bodySha256": "5ae2386f3614ae3896472107b10320f9ab5809c1c462d4e416a44a77d10f71d0",
+          "evidenceTextSha256": "426927c2505b76a739cb45a4176d826947216655439eba3d899323f48b76d123",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review3.json",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review3.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": null,
+          "linkedUrls": []
+        }
+      ],
+      "cityEvidence": [
+        {
+          "city": "泰安市",
+          "observedText": "医院地址：中国.山东.泰安.山东第一医科大学第二附属医院（第二临床学院）",
+          "sourceUrl": "https://sah.sdfmu.edu.cn/jyjx.htm"
+        }
+      ],
+      "normalization": {
+        "泰安": "泰安市，官方教学单位医院地址明确山东泰安"
+      },
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "山东第二医科大学",
@@ -38379,19 +38590,27 @@
     },
     {
       "name": "广东舞蹈戏剧职业学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "广州市",
+        "佛山市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-8a633f4af5e2770a",
+      "sourceUrl": "http://www.gdddc.edu.cn/xxgk1/xxjj.htm",
+      "sourceUrls": [
+        "http://www.gdddc.edu.cn/xxgk1/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "广东舞蹈戏剧职业学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "广东舞蹈戏剧职业学院",
+      "observedText": "2012年2月，经广东省人民政府批准，广东舞蹈学校和广东粤剧学校合并建立广东舞蹈戏剧职业学院，隶属原广东省文化厅（广东省文化和旅游厅），2019年2月，学校成建制划转广东省教育厅管理，由省教育厅与省文化和旅游厅共建。2024年5月，经广东省人民政府批准，学校更名为广东艺术职业学院。 … 东校区地址: 广东省广州市天河区水荫横路11号 邮政编码:510075 西校区地址: 广东省佛山市南海区狮山镇高尔夫路 邮政编码:528231",
+      "relationEvidence": "2026年3月现官方简介明确广东舞蹈戏剧职业学院2024年更名广东艺术职业学院；现东校区广州市天河区水荫横路11号、西校区佛山市南海区狮山镇高尔夫路。保留广州和佛山两城市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "1d9cfe4c75e61d304c6241ee71c4c354dfe64f81cdfc408986a926d462b19225",
+      "evidenceTextSha256": "d9bc111c789433e5cb02d3965fc0b72f7f1771c8a497f1c6f51d53a4725fa5f8",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "广东艺术职业学院",
@@ -40637,19 +40856,26 @@
     },
     {
       "name": "广西师范大学漓江学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "桂林市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-637b756162c6a7f9",
+      "sourceUrl": "http://www.glc.edu.cn/xxgl/xxjj.htm",
+      "sourceUrls": [
+        "http://www.glc.edu.cn/xxgl/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "广西师范大学漓江学院",
-        "searchCount": 2,
-        "probeCount": 1
-      }
+      "canonicalName": "广西师范大学漓江学院",
+      "observedText": "学校办学前身系2001年5月创办的广西师范大学漓江学院，2004年2月成为教育部首批确认的独立学院，2012年1月获批成为学士学位授予单位，2021年5月经教育部批复独立设置并更名为桂林学院 … 地址：中国广西桂林市雁山区雁中路3号",
+      "relationEvidence": "2026年9月桂林学院现官方简介明确前身广西师范大学漓江学院、2021年更名；现完整地址桂林市雁山区雁中路3号。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；保留全部已证城市，不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "afb004c2d43259f5d498ce312d23e6572f917358d71af96da0e1afe9bd167d35",
+      "evidenceTextSha256": "708f0d43902f3599fe7ca11a33d30d93728c87bc61416d6ae7b656442c1e4299",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "广西师范学院",
@@ -42420,19 +42646,26 @@
     },
     {
       "name": "德宏师范高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "德宏傣族景颇族自治州"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-9a12b0784a1c14d9",
+      "sourceUrl": "http://www.dhecw.cn/xxgk1/xxjj1.htm",
+      "sourceUrls": [
+        "http://www.dhecw.cn/xxgk1/xxjj1.htm"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "德宏师范高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "德宏师范高等专科学校",
+      "observedText": "2025年2月，教育部发函同意以德宏师范高等专科学校为基础设立德宏师范学院。 … 地址：云南省德宏傣族景颇族自治州芒市德师路320号",
+      "relationEvidence": "现学校简介明确旧名升本关系并列地级州完整地址。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "6ff22ec4a46d65c834cbc96cfe8136471ca8a719a40b83fe4c5418a21fef9702",
+      "evidenceTextSha256": "b39d28c8101b75ed9fb0bbda2b2c221aaed926accdd86fb192883f41e1df5930",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "德宏职业学院",
@@ -45784,19 +46017,74 @@
     },
     {
       "name": "新疆财经大学 - 研究生",
-      "status": "graduate_relation_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
-      "sourceDate": null,
-      "reason": "graduate entry requires explicit parent identity and current teaching location",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "新疆财经大学 - 研究生",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "status": "mapped",
+      "cities": [
+        "乌鲁木齐市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-8c10d0d6497b659a",
+      "sourceUrl": "https://www.xjufe.edu.cn/gsglxy/jycy/xszs/e1d24c335287432ba9d350212fc67882.htm",
+      "sourceUrls": [
+        "https://www.xjufe.edu.cn/gsglxy/jycy/xszs/e1d24c335287432ba9d350212fc67882.htm"
+      ],
+      "sourceDate": "2026-09-19",
+      "canonicalName": "新疆财经大学 - 研究生",
+      "observedText": "新疆财经大学工商管理学院（MBA学院）2027年接收推荐免试攻读硕士学位研究生工作方案 … 学院成立研究生招生工作领导小组统筹管理本学院推免生接收工作 … 版权所有：新疆财经大学工商管理学院 地址：新疆乌鲁木齐市北京中路449号至善楼",
+      "relationEvidence": "2026年9月发布的学院2027年硕士推免招生工作方案正文明确本学院实际研究生招生工作；同一页面具名学院地址为新疆乌鲁木齐市。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅证实工商管理学院研究生招生单位所在城市，不外推所有研究生校区；采用2026年招生正文和同单位地址，2017年联系页仅留作历史导航佐证，不声称其楼层仍现行。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "b82102e526e24091fbf87a8e3917c6cd4aadd86c07224f1b6b56fd6e73644ff9",
+      "evidenceTextSha256": "9509aa97696c1f17c7decffc8da61d257c530a4cb15496a2bcb48e796c01e4d9",
+      "relationSources": [
+        {
+          "sourceUrl": "https://www.xjufe.edu.cn/gsglxy/jycy/xszs/index.htm",
+          "observedText": "学硕招生 2026-09-19 新疆财经大学工商管理学院（MBA学院）2027年接收推荐免试攻读硕士学位研究生工作方案",
+          "bodySha256": "d68997b8d7595589324565b31c9a25fe3e60b9cc5a8e1c3be9fecdafddbaab86",
+          "evidenceTextSha256": "34333ea53029a69056ee7f8bde2cdbfb23b953179be3021ee51d2abe7dc6673c",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review5.json",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review5.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": null,
+          "linkedUrls": [
+            "https://www.xjufe.edu.cn/gsglxy/jycy/xszs/e1d24c335287432ba9d350212fc67882.htm"
+          ]
+        },
+        {
+          "sourceUrl": "https://www.xjufe.edu.cn/gsglxy/",
+          "observedText": "学院简介 … 版权所有：新疆财经大学工商管理学院 地址：新疆乌鲁木齐市北京中路449号至善楼",
+          "bodySha256": "c90c64febd5dd54cfb3768889be231393bcc81d97fbca427d285b4dcbd52a104",
+          "evidenceTextSha256": "eb377f1f1191dec31a421d64378bef9648706a721cbe4cb07ad9db5e8d679222",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review4.json",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review4.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": null,
+          "linkedUrls": [
+            "https://www.xjufe.edu.cn/gsglxy/xygk/xyjj/index.htm"
+          ]
+        },
+        {
+          "sourceUrl": "https://www.xjufe.edu.cn/gsglxy/xygk/xyjj/index.htm",
+          "observedText": "2017-06-07 联系我们",
+          "bodySha256": "9827ca5efea5cfd004ebf3c52a32b3c2d9edc2c67d5b4d341d72a780a478c8ff",
+          "evidenceTextSha256": "404f3594781889f621df6c8a64cb7f32b513f9af2abb4d664f279e258af91b85",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review5.json",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-round2-review5.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": null,
+          "linkedUrls": [
+            "https://www.xjufe.edu.cn/gsglxy/xygk/xyjj/90gsglxy17889.htm"
+          ]
+        }
+      ],
+      "cityEvidence": [
+        {
+          "city": "乌鲁木齐市",
+          "observedText": "版权所有：新疆财经大学工商管理学院 地址：新疆乌鲁木齐市北京中路449号至善楼",
+          "sourceUrl": "https://www.xjufe.edu.cn/gsglxy/jycy/xszs/e1d24c335287432ba9d350212fc67882.htm"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "新疆轻工职业技术学院",
@@ -46308,19 +46596,41 @@
     },
     {
       "name": "昆明冶金高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "昆明市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-e8c5ddaf16645672",
+      "sourceUrl": "https://www.kmyz.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.kmyz.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "昆明冶金高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "昆明冶金高等专科学校",
+      "observedText": "2026年2月，教育部批准以昆明冶金高等专科学校为基础设立昆明冶金职业大学。 … 莲华校区：昆明市学府路388号 邮编：650033 安宁校区：安宁市宁泊路63号 邮编：650300",
+      "relationEvidence": "现校明确旧校升本关系及莲华、安宁两校区地址；政府行政区划JSON明确安宁市父级为昆明市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "2fda0cf4d2555a292afbdc1ddd9cfdf70a62b9606c4d7c0c8bc321aaf0feebba",
+      "evidenceTextSha256": "8f427186f755940ba4d9421a7f9ac0eddfb9c9a3cd196d5505998c3c53a6a7c1",
+      "relationSources": [
+        {
+          "sourceUrl": "https://cloudcenter.tianditu.gov.cn/api/portal/region/menu",
+          "retrievedDate": "2026-10-15",
+          "observedText": "[{\"name\":\"中华人民共和国\",\"gb\":\"156000000\",\"pGb\":\"000000000\"},{\"name\":\"云南省\",\"gb\":\"156530000\",\"pGb\":\"156000000\"},{\"name\":\"昆明市\",\"gb\":\"156530100\",\"pGb\":\"156530000\"},{\"name\":\"安宁市\",\"gb\":\"156530181\",\"pGb\":\"156530100\"}]",
+          "bodySha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "evidenceTextSha256": "9e4404d9474e772420e27ae3b17b9c62b2a4beba71be22d476587661b04d790e",
+          "extractionMethod": "Exact name/gb/pGb fields from ancestor path in official JSON data[].children[]; no inferred city",
+          "sourceFormat": "json",
+          "archive": "boundary-resume/official-region-menu.json"
+        }
+      ],
+      "normalization": {
+        "安宁市": "昆明市，官方行政树明确父子关系"
+      },
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "昆明医科大学",
@@ -47508,19 +47818,35 @@
     },
     {
       "name": "曲靖医学高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "曲靖市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-ac99adbdc43e21f2",
+      "sourceUrl": "https://www.qjmc.edu.cn/",
+      "sourceUrls": [
+        "https://www.qjmc.edu.cn/"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "曲靖医学高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "曲靖医学高等专科学校",
+      "observedText": "地址：云南省曲靖市马龙区龙东路1号",
+      "relationEvidence": "教育部设立函明确旧专科学校与现学校关系；现学校官网列出完整城市地址。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "3eef278f0006b55b5d43d9306e165f7a2a6644ce6df41700188619f920fad308",
+      "evidenceTextSha256": "61647ab77377fa7075683ba346b22dddd1385c451671b6fea5202b592d102cd6",
+      "relationSources": [
+        {
+          "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202506/t20250619_1194815.html",
+          "observedText": "同意以曲靖医学高等专科学校为基础设立曲靖健康医学院，学校标识码为4153014012；同时撤销曲靖医学高等专科学校的建制。",
+          "bodySha256": "8bd0134b9b98fa44bb02b554eaea61a42405baac41f7a95df4aea0b408124e75",
+          "evidenceTextSha256": "6875f5d3e339b9627dca562968fa79da48b44a2b8c752e3bd170c9dd909af65a",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "曲靖师范学院",
@@ -52557,19 +52883,35 @@
     },
     {
       "name": "江西中医药高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "抚州市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-c05655a75b5bdd6c",
+      "sourceUrl": "https://www.fzmu.edu.cn/",
+      "sourceUrls": [
+        "https://www.fzmu.edu.cn/"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "江西中医药高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "江西中医药高等专科学校",
+      "observedText": "北校区：江西省抚州市东临路 9号 南校区：江西省抚州市文昌大道2766号",
+      "relationEvidence": "教育部设立函明确旧专科学校与现学校关系；现学校官网列出完整城市地址。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "7f53497cadece7b6403486393884417b28ac62e3254d008f51c70971e8b7bba1",
+      "evidenceTextSha256": "1a7133ebf2c87f17024e5449be567c61c8e47302032a837d818e8430b5573f3f",
+      "relationSources": [
+        {
+          "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202506/t20250619_1194821.html",
+          "observedText": "同意以江西中医药高等专科学校为基础设立抚州医药学院，学校标识码为4136013775；同时撤销江西中医药高等专科学校的建制。",
+          "bodySha256": "0d8321bab421148d022db490a38f45ddab46d1624416a421ee639500045e9864",
+          "evidenceTextSha256": "31703ff43f84f4b194d3d49bdd7fce8601486d6c4554676f42ea1136e50a2752",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "江西交通职业技术学院",
@@ -53688,35 +54030,71 @@
     },
     {
       "name": "江西经济管理干部学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "南昌市",
+        "吉安市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-b4c256282b4ab1ec",
+      "sourceUrl": "https://www.jxfu.edu.cn/xygk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.jxfu.edu.cn/xygk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "江西经济管理干部学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "江西经济管理干部学院",
+      "observedText": "江西飞行学院是2023年经教育部批准新设置，由江西省人民政府举办的本科层次普通高等学校。 … 拥有南昌和吉安两个校区，总占地面积1275亩，总建筑面积18.6万㎡。南昌校区交通便利，环境优美、设施完善。吉安校区建有1个A级通航机场 … 校址：南昌市红谷滩区红角洲卧龙路269号",
+      "relationEvidence": "江西省教育厅2024年公告明确整合江西经济管理干部学院和江西省吉安航空运动学校资源设立江西飞行学院；现2026年6月学校简介持续明确南昌与吉安两个校区。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；保留全部已证城市，不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "22d4068622c1eed32f52bc6d176f0a4feaa9bba663e92a3a081a6c31a70d5590",
+      "evidenceTextSha256": "eaff55826cf21b3018008850e62c393ae04b281d759c189feb89e2a55aa68ab5",
+      "relationSources": [
+        {
+          "sourceUrl": "http://jyt.jiangxi.gov.cn/jxjyw/jxgdyx/content/content_1853837520011980800.html",
+          "observedText": "江西飞行学院是整合江西经济管理干部学院和江西省吉安航空运动学校资源，于2023年12月经教育部批准设置，由江西省领导和管理的公办本科层次普通高等学校。 学校拥有南昌和吉安两个校区",
+          "evidenceTextSha256": "8ce8ade4d1d010424675fbe3984a4040c2f363ac17ec29708a84ff924dabfb97",
+          "evidenceArchive": "campus16-more-probes.jsonl",
+          "bodySha256": "40d606538649ecb858946f519efbbf9881dbebdd3fbb62f93857a33290f69f8e",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "江西经济管理干部学院即江西飞行学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "南昌市",
+        "吉安市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-19f1a9b340d17b05",
+      "sourceUrl": "https://www.jxfu.edu.cn/xygk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.jxfu.edu.cn/xygk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "江西经济管理干部学院即江西飞行学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "江西经济管理干部学院即江西飞行学院",
+      "observedText": "江西飞行学院是2023年经教育部批准新设置，由江西省人民政府举办的本科层次普通高等学校。 … 拥有南昌和吉安两个校区，总占地面积1275亩，总建筑面积18.6万㎡。南昌校区交通便利，环境优美、设施完善。吉安校区建有1个A级通航机场 … 校址：南昌市红谷滩区红角洲卧龙路269号",
+      "relationEvidence": "江西省教育厅2024年公告明确整合江西经济管理干部学院和江西省吉安航空运动学校资源设立江西飞行学院；现2026年6月学校简介持续明确南昌与吉安两个校区。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；保留全部已证城市，不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "22d4068622c1eed32f52bc6d176f0a4feaa9bba663e92a3a081a6c31a70d5590",
+      "evidenceTextSha256": "eaff55826cf21b3018008850e62c393ae04b281d759c189feb89e2a55aa68ab5",
+      "relationSources": [
+        {
+          "sourceUrl": "http://jyt.jiangxi.gov.cn/jxjyw/jxgdyx/content/content_1853837520011980800.html",
+          "observedText": "江西飞行学院是整合江西经济管理干部学院和江西省吉安航空运动学校资源，于2023年12月经教育部批准设置，由江西省领导和管理的公办本科层次普通高等学校。 学校拥有南昌和吉安两个校区",
+          "evidenceTextSha256": "8ce8ade4d1d010424675fbe3984a4040c2f363ac17ec29708a84ff924dabfb97",
+          "evidenceArchive": "campus16-more-probes.jsonl",
+          "bodySha256": "40d606538649ecb858946f519efbbf9881dbebdd3fbb62f93857a33290f69f8e",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "江西经济管理职业学院",
@@ -54212,19 +54590,52 @@
     },
     {
       "name": "沈阳化工大学 - 研究生",
-      "status": "graduate_relation_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "沈阳市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-d9cac24f2d176ea0",
+      "sourceUrl": "https://www.syuct.edu.cn/gjjy/zszy/yjskc.htm",
+      "sourceUrls": [
+        "https://www.syuct.edu.cn/gjjy/zszy/yjskc.htm"
+      ],
       "sourceDate": null,
-      "reason": "graduate entry requires explicit parent identity and current teaching location",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "沈阳化工大学 - 研究生",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "沈阳化工大学 - 研究生",
+      "observedText": "全日制硕士研究生招生专业目录及学宿费标准 … 地址: 沈阳经济技术开发区11号街9号 … 版权所有(C)沈阳化工大学",
+      "relationEvidence": "沈阳化工大学国际教育学院官方研究生课程页面实际列明全日制硕士招生专业，并在单位联系我们区域列明沈阳经济技术开发区地址；同院国际学生招生办公室公告正文进一步完整写明辽宁省沈阳市地址。非仅母校页脚。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅国际研究生招生单位地址，不表示所有国内研究生院办公地点或全体培养校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "4cdf1f233e8d84f95b4c8afed56c0e0b7f6e4a7f7ed4d8e4de508458ed12f368",
+      "evidenceTextSha256": "17d53efd04a66f7ff38654cbf24f15fbec23c4dd7011965fb641350d525395df",
+      "relationSources": [
+        {
+          "sourceUrl": "https://www.syuct.edu.cn/gjjy/info/1040/1387.htm",
+          "observedText": "沈阳化工大学国际学生招生办公室 地址：辽宁省沈阳市经济技术开发区十一号街 9号沈阳化工大学国际教育学院",
+          "bodySha256": "e2d0fc677a8600b82029c5b597a5ea32d605892c189d448be5677a9f516116f2",
+          "evidenceTextSha256": "4f3f2aa2c80934740545870c2da4321855fceabeeb63bc08098e2b4b6d919700",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review3.json",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review3.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": "2025-03-11"
+        }
+      ],
+      "cityEvidence": [
+        {
+          "city": "沈阳市",
+          "observedText": "地址: 沈阳经济技术开发区11号街9号",
+          "sourceUrl": "https://www.syuct.edu.cn/gjjy/zszy/yjskc.htm",
+          "bodySha256": "4cdf1f233e8d84f95b4c8afed56c0e0b7f6e4a7f7ed4d8e4de508458ed12f368",
+          "evidenceTextSha256": "17d53efd04a66f7ff38654cbf24f15fbec23c4dd7011965fb641350d525395df",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review4.json",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "normalization": {
+        "沈阳市": "官网单位地址明确“沈阳经济技术开发区”；同单位正文“辽宁省沈阳市”交叉验证。"
+      },
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "沈阳北软信息职业技术学院",
@@ -60162,19 +60573,39 @@
     },
     {
       "name": "浙江机电职业技术学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "杭州市",
+        "嘉兴市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-facb652a6db00a16",
+      "sourceUrl": "https://www.zime.edu.cn/xqzl/xxjj.htm",
+      "sourceUrls": [
+        "https://www.zime.edu.cn/xqzl/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "浙江机电职业技术学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "浙江机电职业技术学院",
+      "observedText": "浙江机电职业技术大学于2024年经教育部同意以浙江机电职业技术学院为基础设立。 … 学校建有杭州滨江和嘉兴海宁两个校区 … 滨江校区：浙江省杭州市滨江高教园滨文路528号 海宁校区：浙江海宁市长安镇青年路999号",
+      "relationEvidence": "2026现官方简介明确以浙江机电职业技术学院设立大学，明确杭州滨江、嘉兴海宁双校区。海宁市经天地图父子关系规范至嘉兴市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；县级单位经官方父子行政关系规范到地级市；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "10d4ae375857f9b882efb8f68f22fe929dfeef15ef3d345f80c8c3875f00ad81",
+      "evidenceTextSha256": "bc52ab4477b9660ad524c16dc939671a573f10dfc26eded3c95847d2b82401b7",
+      "relationSources": [
+        {
+          "sourceUrl": "https://cloudcenter.tianditu.gov.cn/api/portal/region/menu",
+          "observedText": "\"name\":\"海宁市\",\"pGb\":\"156330400\",\"gb\":\"156330481\" … \"name\":\"嘉兴市\",\"pGb\":\"156330000\",\"gb\":\"156330400\"",
+          "evidenceTextSha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "evidenceArchive": "../boundary-resume/official-region-menu.json",
+          "bodySha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "retrievedDate": "2026-10-15",
+          "sourceFormat": "json",
+          "extractionMethod": "Exact name/gb/pGb fields from official JSON; child pGb equals parent gb"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "浙江树人大学",
@@ -61513,19 +61944,37 @@
     },
     {
       "name": "海南经贸职业技术学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "海口市",
+        "儋州市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-b8310de5fabf6961",
+      "sourceUrl": "https://www.hceb.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.hceb.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "海南经贸职业技术学院",
-        "searchCount": 2,
-        "probeCount": 2
-      }
+      "canonicalName": "海南经贸职业技术学院",
+      "observedText": "学校现有海口江东新区和儋州两个校区 … 地址：海南省海口市桂林洋高校区",
+      "relationEvidence": "现2026年6月官网简介明确现有海口江东新区和儋州两个校区；校史沿革明确以海南经贸职业技术学院为基础设立海南经贸职业大学。儋州扩建项目不作为已入驻证据，现有校区以学校现行简介为据。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；县级单位经官方父子行政关系规范到地级市；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "ebf7bcb6553d9b8c353ce07c1486a668781fb4ae418c51e25557ac26fd7c0d9a",
+      "evidenceTextSha256": "b4d9a404462cff223b8e00a714b45b866c444c23c863291b9c0b297c554aace1",
+      "relationSources": [
+        {
+          "sourceUrl": "https://www.hceb.edu.cn/xxgk/xsyg.htm",
+          "observedText": "同意以海南经贸职业技术学院为基础设立海南经贸职业大学，同时撤销海南经贸职业技术学院的建制。",
+          "evidenceTextSha256": "f3a0a59c2217a7748d18e0a1f12a3da8705ab106792bab4395f79b00aa62a0c1",
+          "evidenceArchive": "campus22-profile-probes.jsonl",
+          "bodySha256": "4a8420342d3e020b73d5071d86b0e7e8836144e88f6daff6fbd024d2aacb1e14",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "海南职业技术学院",
@@ -68643,19 +69092,49 @@
     },
     {
       "name": "燕山大学 - 研究生",
-      "status": "graduate_relation_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
-      "sourceDate": null,
-      "reason": "graduate entry requires explicit parent identity and current teaching location",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "燕山大学 - 研究生",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "status": "mapped",
+      "cities": [
+        "秦皇岛市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-b9c5f23d1981e8bb",
+      "sourceUrl": "https://mse.ysu.edu.cn/info/1080/7773.htm",
+      "sourceUrls": [
+        "https://mse.ysu.edu.cn/info/1080/7773.htm"
+      ],
+      "sourceDate": "2026-06-02",
+      "canonicalName": "燕山大学 - 研究生",
+      "observedText": "材料科学与工程学院2026年博士研究生报考公告（6月2日） … 根据前一阶段的博士报名录取情况，学校仍有部分剩余博士计划，学院将再次组织 全部类型 和 计划批次 的博士研究生选拔工作，现将有关事项通知如下： … 地址：中国河北省秦皇岛市河北大街西段438号 … Copyright © 2024 燕山大学材料科学与工程学院",
+      "relationEvidence": "燕山大学材料科学与工程学院官网2026博士研究生报考公告明确由本学院组织博士选拔；同一学院的单位联系地址明确秦皇岛市，署名亦为该学院，非借用母校通用页脚。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅实际博士培养单位材料科学与工程学院地址，不表示全校所有研究生培养地点。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "a4449e01ecfe809f07739217d6709b389f39e99b5105c3df5ab09097c04adec5",
+      "evidenceTextSha256": "358a1bb6cbad0c05d4c1d35e3a238b5cd105d29f9078ad49c2e1ac393365a8b9",
+      "relationSources": [
+        {
+          "sourceUrl": "https://mse.ysu.edu.cn/info/1080/7773.htm",
+          "observedText": "材料科学与工程学院2026年博士研究生报考公告（6月2日） … 学院将再次组织 全部类型 和 计划批次 的博士研究生选拔工作 … Copyright © 2024 燕山大学材料科学与工程学院",
+          "bodySha256": "a4449e01ecfe809f07739217d6709b389f39e99b5105c3df5ab09097c04adec5",
+          "evidenceTextSha256": "358a1bb6cbad0c05d4c1d35e3a238b5cd105d29f9078ad49c2e1ac393365a8b9",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review5.json",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review5.json",
+          "retrievedDate": "2026-10-15",
+          "sourceDate": "2026-06-02"
+        }
+      ],
+      "cityEvidence": [
+        {
+          "city": "秦皇岛市",
+          "observedText": "地址：中国河北省秦皇岛市河北大街西段438号",
+          "sourceUrl": "https://mse.ysu.edu.cn/info/1080/7773.htm",
+          "bodySha256": "a4449e01ecfe809f07739217d6709b389f39e99b5105c3df5ab09097c04adec5",
+          "evidenceTextSha256": "358a1bb6cbad0c05d4c1d35e3a238b5cd105d29f9078ad49c2e1ac393365a8b9",
+          "evidenceArchive": "/Users/lingion_k/research/school-expansion-20261014/locations/graduate-owner-next-review5.json",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "燕山大学里仁学院",
@@ -69466,19 +69945,46 @@
     },
     {
       "name": "甘肃林业职业技术学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "天水市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-548d91c31f2a1c13",
+      "sourceUrl": "https://www.gsfc.edu.cn/xxgk1/xxjj.htm",
+      "sourceUrls": [
+        "https://www.gsfc.edu.cn/xxgk1/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "甘肃林业职业技术学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "甘肃林业职业技术学院",
+      "observedText": "学校现有两个校区，占地面积共1386.19亩，建筑面积33.13万平方米；建有10个实习实训场馆，217个校内实验实训室（基地），在麦积山建有3700亩的实习林场，在清水校区建有1700亩的实习农场 … 学校地址：甘肃省天水市麦积区麦积大道200号",
+      "relationEvidence": "教育部明确旧学院为基础设立现大学；现学校两校区含清水，主校天水市麦积区。天地图官方行政树清水县pGb=156620500对应天水市gb，规范至天水市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；县级单位经官方父子行政关系规范到地级市；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "5ff63721d545f7a4269e9fa6823c4737f669810be79b2ec0fc06748606234673",
+      "evidenceTextSha256": "b95953855908bc9b1cae38274df95e6181116a787753e0f0562208e6cf9f6453",
+      "relationSources": [
+        {
+          "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202406/t20240626_1137969.html",
+          "observedText": "经教育部党组会议研究决定，同意以甘肃林业职业技术学院为基础设立甘肃林业职业技术大学，学校标识码为4162012835；同时撤销甘肃林业职业技术学院的建制。",
+          "evidenceTextSha256": "c1673d54d6795b06e291efacf1b3f86248463adf71ef347a720dae346799e4af",
+          "evidenceArchive": "campus15-probes.jsonl",
+          "bodySha256": "e41a9be09bbb0a2ccda8fdce4e5155b81971d481b82cbaa87b843b3e080980fd",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "sourceUrl": "https://cloudcenter.tianditu.gov.cn/api/portal/region/menu",
+          "observedText": "\"name\":\"清水县\",\"pGb\":\"156620500\",\"gb\":\"156620521\" … \"name\":\"天水市\",\"pGb\":\"156620000\",\"gb\":\"156620500\"",
+          "evidenceTextSha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "evidenceArchive": "../boundary-resume/official-region-menu.json",
+          "bodySha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "retrievedDate": "2026-10-15",
+          "sourceFormat": "json",
+          "extractionMethod": "Exact name/gb/pGb fields from official JSON; child pGb equals parent gb"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "甘肃核工业职工大学",
@@ -69921,19 +70427,26 @@
     },
     {
       "name": "皖南医学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "芜湖市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-00595216ee0bd5e1",
+      "sourceUrl": "https://www.wnmc.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.wnmc.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "皖南医学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "皖南医学院",
+      "observedText": "1974年被命名为皖南医学院；1981年获得学士和硕士学位授予权；2024年入选安徽省重点支持立项建设博士学位授予单位；2026年2月，经教育部批准更名为皖南医科大学。 地处安徽省域副中心城市——芜湖市，有四个校区 … 地址： 中国安徽省芜湖市高教园区文昌西路22号",
+      "relationEvidence": "2026年6月现皖南医科大学官网简介明确1974年皖南医学院、2026年2月更名，地处芜湖市有四个校区，现校址芜湖市文昌西路22号。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "41d0f815c4cddb987f5b137e223affbeb162efe981fba3d340b2ee984c58bda5",
+      "evidenceTextSha256": "d18485977056154946ccc9f62bcc1f3d49423a7a188717e3884ccf1e2da36914",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "皖南医科大学",
@@ -71243,19 +71756,36 @@
     },
     {
       "name": "福州职业技术学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "福州市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-c86c245896359ad6",
+      "sourceUrl": "https://www.fvti.cn/2016/1130/c204a125699/page.htm",
+      "sourceUrls": [
+        "https://www.fvti.cn/2016/1130/c204a125699/page.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "福州职业技术学院",
-        "searchCount": 2,
-        "probeCount": 1
-      }
+      "canonicalName": "福州职业技术学院",
+      "observedText": "地址：福建省福州大学城联榕路8号 … 版权所有 福州职业技术学院 | 闽ICP备15019752号-1",
+      "relationEvidence": "现官网联系页明确福州大学城联榕路8号；2026教育部批复明确以福州职业技术学院为基础设立福州职业技术大学。校区范围与现官方联系页一致，福州地名规范福州市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "255a3ccf7cf3ab61facda19134ecdf405a2d50835208af8aeba0f3ec4f73d0c6",
+      "evidenceTextSha256": "8ccf3f890d2236a544c9b806e14494748868e2f0b480bbfff0a5da9934222362",
+      "relationSources": [
+        {
+          "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202606/t20260616_1440865.html",
+          "observedText": "经教育部党组会议研究决定，同意以福州职业技术学院为基础设立福州职业技术大学，学校标识码为4135011502；同时撤销福州职业技术学院的建制。",
+          "evidenceTextSha256": "b95ff3d89b55a116682a6a8c615ae3c7716f8b7d2feddd0561559a3ae2e96f54",
+          "evidenceArchive": "campus24-probes.jsonl",
+          "bodySha256": "f9d10d5bf07856e112ba09432529a56579ea855d541df2a697733b2b3dd742b5",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "福州英华职业学院",
@@ -76260,19 +76790,26 @@
     },
     {
       "name": "西安市卫生学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "西安市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-2b7313aa54e7b9d2",
+      "sourceUrl": "https://www.xaswx.com/index.php",
+      "sourceUrls": [
+        "https://www.xaswx.com/index.php"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "西安市卫生学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "西安市卫生学校",
+      "observedText": "地址：西安市友谊东路463号 服务电话： 029-87880675 备案号: 陕ICP备05011634号-1 陕公网安备 61010302001025号 学校官方微信 联系我们 微博 客服 ",
+      "relationEvidence": "本校官方网站明确学校全名和本校西安市地址。",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "e5251b9da6df6dadf043252049cd7a329148a5ce82a4ca79c689522bc37e3db4",
+      "evidenceTextSha256": "4c82f3d5207f45b74fe90702874930bef95b61cf5647ed2eda812b389a28b986",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "西安市职工大学",
@@ -78036,19 +78573,36 @@
     },
     {
       "name": "贵州工商职业学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "贵阳市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-4a2a8d9732288ddd",
+      "sourceUrl": "https://www.gzgsc.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.gzgsc.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "贵州工商职业学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "贵州工商职业学院",
+      "observedText": "贵州工商职业大学是2026年经教育部批准设立的本科层次职业大学。学校坐落于贵州省贵阳市 … 地址：贵州贵阳职教城（清镇市双桥路105号）",
+      "relationEvidence": "教育部2026年批复明确以贵州工商职业学院为基础设置贵州工商职业大学；现学校官网简介明确坐落贵阳市，完整地址清镇市双桥路105号。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "29cf06efd47e9a1feb13d28058e552488de087bb8d19332436b9bc6280bf1f2d",
+      "evidenceTextSha256": "d96a960a5a2aa0a8d99771244ac10bb891ffe502099fa3d5582c4e7c9f10e987",
+      "relationSources": [
+        {
+          "sourceUrl": "https://hudong.moe.gov.cn/srcsite/A03/s181/202603/t20260319_1431483.html",
+          "observedText": "经教育部党组会议研究决定，同意以贵州工商职业学院为基础设立贵州工商职业大学，学校标识码为4152014412；同时撤销贵州工商职业学院的建制。",
+          "evidenceTextSha256": "682c983562092374ed4bc5df72fa7c1467f16e2cbb3221636e02aaf8db575b53",
+          "evidenceArchive": "campus17-probes.jsonl",
+          "bodySha256": "8b954c8882cfa51b6377d3be98f880d13a38ad81d88160962a4a44f17150f1a7",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "贵州工程应用技术学院",
@@ -82555,19 +83109,52 @@
     },
     {
       "name": "郑州澍青医学高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "郑州市",
+        "焦作市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-3160592857cbb6e7",
+      "sourceUrl": "https://www.zzsqmc.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.zzsqmc.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "郑州澍青医学高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "郑州澍青医学高等专科学校",
+      "observedText": "学校地址：郑州市二七区公明路6号",
+      "relationEvidence": "官方设立公告明确旧名关系，现校官网郑州地址；实际教学检查明确修武校区在用，官方行政树修武县隶属焦作市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "保留郑州校址及实际修武教学地点所属焦作市，不将附属医院所在各市自动列为校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "3f9f4fd1db996e2cb5f6182c70fdf16eb619053d431e7de38d95f41af7645195",
+      "evidenceTextSha256": "696234d7d3024d25fe34a033651eca7e22814b086c1029fbd9fbc1f3be6a5092",
+      "relationSources": [
+        {
+          "sourceUrl": "https://www.zzsqmc.edu.cn/info/1822/33665.htm",
+          "observedText": "近日，教育部下发《关于同意设置郑州健康学院的函》，同意以郑州澍青医学高等专科学校为基础设立郑州健康学院。",
+          "bodySha256": "86b1b4b3ef189dc16a520cc516100faf72f347a736ceb37bc5e34f634682cb42",
+          "evidenceTextSha256": "3f6448fb7e4f22d690179938df1796be8bbebca29902ca39dfe5f5522f728522",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "sourceUrl": "https://www.zzsqmc.edu.cn/jkyxy/info/1604/5945.htm",
+          "observedText": "我院修武实训基地2024级各专业班级教学秩序井然，各项教学工作运行良好。",
+          "bodySha256": "4d69ffd1fcfb5b1bc214c53083a3a5c62e0a73631a319a9048bdbe0a7af94dab",
+          "evidenceTextSha256": "7d03af02c3367495ec7d6be3737c61c4dfa84ecf3544ec06f56a41111633fb00",
+          "retrievedDate": "2026-10-15"
+        },
+        {
+          "sourceUrl": "https://cloudcenter.tianditu.gov.cn/api/portal/region/menu",
+          "observedText": "[{\"name\":\"中华人民共和国\",\"gb\":\"156000000\",\"pGb\":\"000000000\"},{\"name\":\"河南省\",\"gb\":\"156410000\",\"pGb\":\"156000000\"},{\"name\":\"焦作市\",\"gb\":\"156410800\",\"pGb\":\"156410000\"},{\"name\":\"修武县\",\"gb\":\"156410821\",\"pGb\":\"156410800\"}]",
+          "bodySha256": "7329b65fc9d0a08ecd32df47f3feb1aa188d7e085bd652b0a4824713c5290eac",
+          "evidenceTextSha256": "bdde640ea5e92571f041846c65c05a6c8c77ca695bd64f4b33711fbbcf6f91ee",
+          "retrievedDate": "2026-10-15",
+          "sourceFormat": "json",
+          "extractionMethod": "Exact administrative ancestor fields; child pGb equals parent gb"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "郑州理工职业学院",
@@ -88862,19 +89449,26 @@
     },
     {
       "name": "陇南师范高等专科学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "陇南市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-9a1cc5b9f4cb8c95",
+      "sourceUrl": "https://www.lntc.edu.cn/xxgk.htm",
+      "sourceUrls": [
+        "https://www.lntc.edu.cn/xxgk.htm"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "陇南师范高等专科学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "陇南师范高等专科学校",
+      "observedText": "陇南师范学院位于美丽的陇上江南成县，始建于1937年，2024年5月经教育部批准在陇南师范高等专科学校基础上设立的一所公办普通本科学校。 … 地址：甘肃省陇南市成县陇南路34号",
+      "relationEvidence": "2026年5月现官方简介明确以陇南师范高等专科学校为基础设置陇南师范学院，现地址甘肃省陇南市成县陇南路34号。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "81f7489936175a84b926ade1733f62b20ad04a3cb87d8983bbf7138359d1b8ce",
+      "evidenceTextSha256": "5a9a6a63fd482686165ea1ded644a3a31991474f3d6fd7b0eea6c78d3570e5f5",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "陕西中医药大学",
@@ -89377,19 +89971,26 @@
     },
     {
       "name": "陕西省建筑材料工业学校",
-      "status": "legacy_unresolved",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "西安市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-c673607c91020117",
+      "sourceUrl": "https://www.sxsjcxx.cn/xxgkxxjj/index.jhtml",
+      "sourceUrls": [
+        "https://www.sxsjcxx.cn/xxgkxxjj/index.jhtml"
+      ],
       "sourceDate": null,
-      "reason": "no exact-name location source in the frozen research snapshot",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "陕西省建筑材料工业学校",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "陕西省建筑材料工业学校",
+      "observedText": "学校地址： 西安市长安南路950号（新城南客运站南200米） 联系电话： 029-85221294 029-85221287 学校网址： www.sxsjcxx.cn 来校乘车路线： 乘18、46、",
+      "relationEvidence": "本校官方网站明确学校全名和本校西安市地址。",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "a34e392c4d2181e7bcfa8b3b9ee9ed9e054f82cbad7e8934604d4dd3c88db7c0",
+      "evidenceTextSha256": "e89ad08f6b788edc631b31ab263d1f813657a876d237310804e501f5dc071d89",
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "陕西科技大学",
@@ -92380,19 +92981,36 @@
     },
     {
       "name": "黄河水利职业技术学院",
-      "status": "campus_or_import_unverified",
-      "cities": null,
-      "precision": "none",
-      "sourceId": null,
-      "sourceUrl": null,
+      "status": "mapped",
+      "cities": [
+        "开封市"
+      ],
+      "precision": "city",
+      "sourceId": "verified-location-39610e32a49eff1a",
+      "sourceUrl": "https://www.yrctu.edu.cn/xxgk/xxjj.htm",
+      "sourceUrls": [
+        "https://www.yrctu.edu.cn/xxgk/xxjj.htm"
+      ],
       "sourceDate": null,
-      "reason": "campus/import entry requires an official address for this exact entity",
-      "researchEvidence": {
-        "path": "scripts/data/school_location_research.json",
-        "name": "黄河水利职业技术学院",
-        "searchCount": 2,
-        "probeCount": 0
-      }
+      "canonicalName": "黄河水利职业技术学院",
+      "observedText": "黄河水利职业技术大学是一所公办本科层次职业院校，坐落于历史文化名城、中国优秀旅游城市开封 … 校址：中国·开封·东京大道1号",
+      "relationEvidence": "2025教育部批复明确以黄河水利职业技术学院为基础设立大学；2026现官网简介坐落开封及现东京大道1号校址，城市名规范开封市。",
+      "coverage": "verified-current-campus-or-successor-address",
+      "coverageNote": "现行官方校区城市证据；不作为具体坐标。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "bb1b01c51acc62114c40386eba5af1bc41a5714f7433157d0bc5af52c57797a1",
+      "evidenceTextSha256": "1a5876030430b6da91cb20487f1025249716f64460b32a651ce01dddf4dd09c0",
+      "relationSources": [
+        {
+          "sourceUrl": "http://www.moe.gov.cn/srcsite/A03/s181/202503/t20250314_1182888.html",
+          "observedText": "经教育部党组会议研究决定，同意以黄河水利职业技术学院为基础设立黄河水利职业技术大学，学校标识码为4141012058；同时撤销黄河水利职业技术学院的建制。",
+          "evidenceTextSha256": "dff25026abc39314619f362f63e210b5166e35fe69e0a4ab128a65852bc41b82",
+          "evidenceArchive": "campus24-probes.jsonl",
+          "bodySha256": "fd9160819304ae9c34c05d12df1a5cf4553457004b60eeb418a4882f3979c508",
+          "retrievedDate": "2026-10-15"
+        }
+      ],
+      "reason": "existing city mapping; explicit source/override metadata retained"
     },
     {
       "name": "黄河科技学院",
