@@ -10824,6 +10824,36 @@
     ],
     "闽江学院": [
       "福州市"
+    ],
+    "上海交通大学医学院 - 研究生": [
+      "上海市"
+    ],
+    "甘肃农业大学 - 研究生": [
+      "兰州市"
+    ],
+    "贵州师范大学 - 研究生": [
+      "贵阳市"
+    ],
+    "吉林开放大学": [
+      "长春市"
+    ],
+    "宁波开放大学": [
+      "宁波市"
+    ],
+    "山西开放大学": [
+      "太原市"
+    ],
+    "广西开放大学": [
+      "南宁市"
+    ],
+    "河北开放大学": [
+      "石家庄市"
+    ],
+    "浙江开放大学": [
+      "杭州市"
+    ],
+    "贵州开放大学": [
+      "贵阳市"
     ]
   },
   "_cityEvidence": {
@@ -31496,6 +31526,46 @@
     "闽江学院": {
       "sourceId": "verified-location-d812ca7c5d4c89cf",
       "method": "reviewed-exact-entity-address"
+    },
+    "上海交通大学医学院 - 研究生": {
+      "sourceId": "verified-location-ce82ec49d4c5d228",
+      "method": "reviewed-exact-entity-address"
+    },
+    "甘肃农业大学 - 研究生": {
+      "sourceId": "verified-location-bf0dabdfd5f41d21",
+      "method": "reviewed-exact-entity-address"
+    },
+    "贵州师范大学 - 研究生": {
+      "sourceId": "verified-location-ee404e5574517c42",
+      "method": "reviewed-exact-entity-address"
+    },
+    "吉林开放大学": {
+      "sourceId": "verified-location-550b54b4b890579b",
+      "method": "reviewed-exact-entity-address"
+    },
+    "宁波开放大学": {
+      "sourceId": "verified-location-188d3d2f5d5a7f64",
+      "method": "reviewed-exact-entity-address"
+    },
+    "山西开放大学": {
+      "sourceId": "verified-location-41100562d3fe9c2c",
+      "method": "reviewed-exact-entity-address"
+    },
+    "广西开放大学": {
+      "sourceId": "verified-location-115d3c4f169f3662",
+      "method": "reviewed-exact-entity-address"
+    },
+    "河北开放大学": {
+      "sourceId": "verified-location-5a1b69e9b8f0518c",
+      "method": "reviewed-exact-entity-address"
+    },
+    "浙江开放大学": {
+      "sourceId": "verified-location-2aab2d25b1472caf",
+      "method": "reviewed-exact-entity-address"
+    },
+    "贵州开放大学": {
+      "sourceId": "verified-location-bee1c9b5df09adb0",
+      "method": "reviewed-exact-entity-address"
     }
   },
   "_citySources": {
@@ -34195,6 +34265,116 @@
       "retrievedDate": "2026-10-15",
       "bodySha256": null,
       "evidenceTextSha256": "1189ea2b11b5c165f706937efe07b119376cb5b18563ab07c2d4acb16e336c81"
+    },
+    "verified-location-ce82ec49d4c5d228": {
+      "url": "https://yzb.sjtu.edu.cn/contact",
+      "sourceDate": null,
+      "observedText": "上海交通大学医学院研招办 网址： https://www.shsmu.edu.cn/yjsy/zsgz1.htm 邮箱： yzb@shsmu.edu.cn 地址：上海市重庆南路227号，上海交通大学研究生院医学院分院 邮编：200025 电话：021-53068810 传真：021-53068810 微信公众号：上海交大医学院研究生招生信息 (shsmuyzb) ",
+      "relationEvidence": "学校研招官网明确医学院研招办、研究生院医学院分院的重庆南路227号地址。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅覆盖该来源公开的研究生办公或培养单位地址；未核实全部异地校区及学生所在校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "1e85fbbaed4de7c25b354f3eed299c2a00c20e2b586cfe6c7b7c734275a7883e",
+      "evidenceTextSha256": null
+    },
+    "verified-location-bf0dabdfd5f41d21": {
+      "url": "https://xxkx.gsau.edu.cn/info/1004/5339.htm",
+      "sourceDate": "2020-05-14",
+      "observedText": "地址：甘肃省兰州市安宁区营门村 1 号甘肃农业大学格物楼 1609 室 ",
+      "relationEvidence": "学校研究生培养单位官方复试通知明确兰州地址；仅核实该培养单位，未声称覆盖全校研究生培养地点。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅覆盖该来源公开的研究生办公或培养单位地址；未核实全部异地校区及学生所在校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "508ef995d437466947c16068a94301a5a4c758d729012ab8881867f3ca157c93",
+      "evidenceTextSha256": null
+    },
+    "verified-location-ee404e5574517c42": {
+      "url": "https://yjsc.gznu.edu.cn/xwtt.htm",
+      "sourceDate": null,
+      "observedText": "版权所有@贵州师范大学研究生院 地址：贵州省贵阳市贵安新区大学城栋青路贵州师范大学 ",
+      "relationEvidence": "研究生院官方网站明确贵阳市大学城栋青路地址。",
+      "coverage": "verified-graduate-office-or-teaching-unit-address",
+      "coverageNote": "仅覆盖该来源公开的研究生办公或培养单位地址；未核实全部异地校区及学生所在校区。",
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "7b92dd1e8f08c96132b3903e21b0cf6d501cc89e06cfaddbab31b5134d6b4c3b",
+      "evidenceTextSha256": null
+    },
+    "verified-location-550b54b4b890579b": {
+      "url": "https://www.jlrtvu.cn/info/1071/32465.htm",
+      "sourceDate": "2021-04-30",
+      "observedText": "通讯地址：长春市人民大街6815号 吉林开放大学教务处 邮政编码：130022 吉林开放大学 （吉林广播电视大学代章） 2021年4月30日 附件【 附件：1.吉林开放大学办理各类证明联系人统计表.docx 】已下载 次 附件【 附件：2.吉林开放大学毕业证明书审批表.docx 】已下载 次 附件【 附件：3.国家开放大学毕业证明书审批表.docx 】已下载 次 版权所有 吉林广播电视大学",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "5bbfe0cc9a792912f8696e7c0a31885563d375e8b25b0ead032bbcff0ebaa06d",
+      "evidenceTextSha256": null
+    },
+    "verified-location-188d3d2f5d5a7f64": {
+      "url": "http://www.nbtvu.net.cn/",
+      "sourceDate": null,
+      "observedText": "地址：宁波市文教路1号（315016） 浙ICP备05015663号 访问量： 46029602026年10月15日 Copyright © 宁波开放大学 版权所有 浙公网安备 33020502000970号",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "85a86f6eab68bbcada519c8ff90c492e4ad470d4d6a4141b996aa43ee218f804",
+      "evidenceTextSha256": null
+    },
+    "verified-location-41100562d3fe9c2c": {
+      "url": "https://www.sxou.cn/",
+      "sourceDate": null,
+      "observedText": "地址：太原市千峰北路109号 邮编：030027 招生热线：4001121113 在线报名通道 版权所有@山西开放大学 技术支持:山西开放大学资源与信息化建设中心 晋ICP备2021011107号-1 晋公网安备 14010902000499号",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "2be08ef8aa971d5cb2655ddf0a95f0f19cd77489e0407a7759fab9445e82c769",
+      "evidenceTextSha256": null
+    },
+    "verified-location-115d3c4f169f3662": {
+      "url": "http://www.gxou.com.cn/",
+      "sourceDate": null,
+      "observedText": "联系我们 东宝校区 地址：广西南宁市青秀区东宝路1-1号 邮编：530022 电话：0771-5851916（校长办公室） 五象校区 地址：广西南宁市邕宁区步云路31号 邮编：530299 电话：0771-2205966（校长办公室） 0771-2205522（招生就业处） 师德失范问题投诉举报：电话：0771-5508120，2226058； 邮箱：rsc@gxou.com.cn，xxzyrsc001@163.com。 官方微信 官方媒体 备案号： 桂ICP备11001632号-1 南宁网监ICP备案 4501200061号",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "6ff422a90d2d83368cf4a6413bf6d8fd4046eb20e0cef0a66b03b13469b3dd10",
+      "evidenceTextSha256": null
+    },
+    "verified-location-5a1b69e9b8f0518c": {
+      "url": "http://www.hebnetu.edu.cn/",
+      "sourceDate": null,
+      "observedText": "地址： 石家庄市合作路460号(南校区) 石家庄市和平西路481号(北校区) 邮编： 050080 邮编： 050071 电话： 0311-87041337 Copyright © 河北开放大学版权所有 冀ICP备09049078号-5 冀公网安备13010502001258号 快捷入口 > 学校校历 信息公开 书记信箱 校长信箱 师德师风信箱 微 信 公 众 号 AI智能助手",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "8aea6421935d6eccb5c893ef9348c774c91c30275d56c02ba31e24203a94ac92",
+      "evidenceTextSha256": null
+    },
+    "verified-location-2aab2d25b1472caf": {
+      "url": "http://www.zjtvu.edu.cn/",
+      "sourceDate": null,
+      "observedText": "地址：杭州市西湖区教工路42号（教工路校区）、杭州市西湖区振华路6号（振华路校区） 电话：0571-89913053（办公室）、0571-88060314（招生咨询）、 0571-88054835（信访） 传真：0571-89913088 邮编：310012 校园全景 办学体系 国家开放大学 浙江省教育厅 教育部 微信公众号 微信视频号 微浙开 B站号 抖音号 浙开乐学港 小红书 Copyright©2021 浙江开放大学 浙ICP备05018780号",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "cc888576aa20a45abdfcc4edd8ddb428e3d9aec2b73617214531c607c9a3e829",
+      "evidenceTextSha256": null
+    },
+    "verified-location-bee1c9b5df09adb0": {
+      "url": "https://www.gztvu.com/xysy.htm",
+      "sourceDate": null,
+      "observedText": "地址：贵阳市观山湖区云潭南路3号 联系方式：0851-84827371 邮编：550023 ； 邮箱：webmaster@gztvu.com ICP备案号： 黔ICP备17010487号-3号 版权所有：贵州开放大学（贵州职业技术学院） 贵公网安备:52010302003561",
+      "relationEvidence": "Official institution page explicitly publishes its own campus address.",
+      "coverage": "verified-institution-address",
+      "coverageNote": null,
+      "retrievedDate": "2026-10-15",
+      "bodySha256": "69d484eeded209d8019d92e9f34d09f4ee5e3b71b26fcc3f5950da9fd44490cf",
+      "evidenceTextSha256": null
     }
   }
 }

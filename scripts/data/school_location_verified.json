@@ -12,6 +12,20 @@
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
   },
   {
+    "name": "上海交通大学医学院 - 研究生",
+    "cities": [
+      "上海市"
+    ],
+    "sourceUrl": "https://yzb.sjtu.edu.cn/contact",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "bodySha256": "1e85fbbaed4de7c25b354f3eed299c2a00c20e2b586cfe6c7b7c734275a7883e",
+    "observedText": "上海交通大学医学院研招办 网址： https://www.shsmu.edu.cn/yjsy/zsgz1.htm 邮箱： yzb@shsmu.edu.cn 地址：上海市重庆南路227号，上海交通大学研究生院医学院分院 邮编：200025 电话：021-53068810 传真：021-53068810 微信公众号：上海交大医学院研究生招生信息 (shsmuyzb) ",
+    "relationEvidence": "学校研招官网明确医学院研招办、研究生院医学院分院的重庆南路227号地址。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅覆盖该来源公开的研究生办公或培养单位地址；未核实全部异地校区及学生所在校区。"
+  },
+  {
     "name": "上海体育学院",
     "cities": [
       "上海市"
@@ -1117,6 +1131,19 @@
     "relationEvidence": "Official school or government webpage identifies this exact institution and publishes an address on the same page."
   },
   {
+    "name": "吉林开放大学",
+    "cities": [
+      "长春市"
+    ],
+    "sourceUrl": "https://www.jlrtvu.cn/info/1071/32465.htm",
+    "sourceDate": "2021-04-30",
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.jlrtvu.cn/info/1071/32465.htm",
+    "bodySha256": "5bbfe0cc9a792912f8696e7c0a31885563d375e8b25b0ead032bbcff0ebaa06d",
+    "observedText": "通讯地址：长春市人民大街6815号 吉林开放大学教务处 邮政编码：130022 吉林开放大学 （吉林广播电视大学代章） 2021年4月30日 附件【 附件：1.吉林开放大学办理各类证明联系人统计表.docx 】已下载 次 附件【 附件：2.吉林开放大学毕业证明书审批表.docx 】已下载 次 附件【 附件：3.国家开放大学毕业证明书审批表.docx 】已下载 次 版权所有 吉林广播电视大学",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
+  },
+  {
     "name": "吉林省教育学院",
     "cities": [
       "长春市"
@@ -1511,6 +1538,19 @@
     "relationEvidence": "Official institution site or government notice names this exact institution and publishes its address. Address excerpt excludes unrelated host-footer addresses."
   },
   {
+    "name": "宁波开放大学",
+    "cities": [
+      "宁波市"
+    ],
+    "sourceUrl": "http://www.nbtvu.net.cn/",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.nbou.cn/",
+    "bodySha256": "85a86f6eab68bbcada519c8ff90c492e4ad470d4d6a4141b996aa43ee218f804",
+    "observedText": "地址：宁波市文教路1号（315016） 浙ICP备05015663号 访问量： 46029602026年10月15日 Copyright © 宁波开放大学 版权所有 浙公网安备 33020502000970号",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
+  },
+  {
     "name": "安徽医科大学 - 研究生",
     "cities": [
       "合肥市"
@@ -1644,6 +1684,19 @@
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
   },
   {
+    "name": "山西开放大学",
+    "cities": [
+      "太原市"
+    ],
+    "sourceUrl": "https://www.sxou.cn/",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.sxou.cn/",
+    "bodySha256": "2be08ef8aa971d5cb2655ddf0a95f0f19cd77489e0407a7759fab9445e82c769",
+    "observedText": "地址：太原市千峰北路109号 邮编：030027 招生热线：4001121113 在线报名通道 版权所有@山西开放大学 技术支持:山西开放大学资源与信息化建设中心 晋ICP备2021011107号-1 晋公网安备 14010902000499号",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
+  },
+  {
     "name": "川北医学院 - 研究生",
     "cities": [
       "南充市"
@@ -1766,6 +1819,19 @@
     "relationEvidence": "Official graduate/research page: 招生 - 广西大学研究生院",
     "coverage": "verified-graduate-office-address",
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
+  },
+  {
+    "name": "广西开放大学",
+    "cities": [
+      "南宁市"
+    ],
+    "sourceUrl": "http://www.gxou.com.cn/",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "http://www.gxou.com.cn/",
+    "bodySha256": "6ff422a90d2d83368cf4a6413bf6d8fd4046eb20e0cef0a66b03b13469b3dd10",
+    "observedText": "联系我们 东宝校区 地址：广西南宁市青秀区东宝路1-1号 邮编：530022 电话：0771-5851916（校长办公室） 五象校区 地址：广西南宁市邕宁区步云路31号 邮编：530299 电话：0771-2205966（校长办公室） 0771-2205522（招生就业处） 师德失范问题投诉举报：电话：0771-5508120，2226058； 邮箱：rsc@gxou.com.cn，xxzyrsc001@163.com。 官方微信 官方媒体 备案号： 桂ICP备11001632号-1 南宁网监ICP备案 4501200061号",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
   },
   {
     "name": "广西民族大学 - 研究生",
@@ -2181,6 +2247,19 @@
     "evidenceTextSha256": "8aea49af740c8956fc50977d2bf1e7ec50876f08bcae07071b7cec83d16b20f7"
   },
   {
+    "name": "河北开放大学",
+    "cities": [
+      "石家庄市"
+    ],
+    "sourceUrl": "http://www.hebnetu.edu.cn/",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.hebnetu.edu.cn/index.htm",
+    "bodySha256": "8aea6421935d6eccb5c893ef9348c774c91c30275d56c02ba31e24203a94ac92",
+    "observedText": "地址： 石家庄市合作路460号(南校区) 石家庄市和平西路481号(北校区) 邮编： 050080 邮编： 050071 电话： 0311-87041337 Copyright © 河北开放大学版权所有 冀ICP备09049078号-5 冀公网安备13010502001258号 快捷入口 > 学校校历 信息公开 书记信箱 校长信箱 师德师风信箱 微 信 公 众 号 AI智能助手",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
+  },
+  {
     "name": "河北科技大学 - 研究生",
     "cities": [
       "石家庄市"
@@ -2348,6 +2427,19 @@
     "evidencePageTitle": "浙江师范大学研究生学院、研工部",
     "evidenceHttpStatus": 200,
     "evidenceTextSha256": "63e27526db7229aa8f5ffd92bb40a4f8620d8a8cbf8385189b278cd1a1372efb"
+  },
+  {
+    "name": "浙江开放大学",
+    "cities": [
+      "杭州市"
+    ],
+    "sourceUrl": "http://www.zjtvu.edu.cn/",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "http://www.zjtvu.edu.cn/",
+    "bodySha256": "cc888576aa20a45abdfcc4edd8ddb428e3d9aec2b73617214531c607c9a3e829",
+    "observedText": "地址：杭州市西湖区教工路42号（教工路校区）、杭州市西湖区振华路6号（振华路校区） 电话：0571-89913053（办公室）、0571-88060314（招生咨询）、 0571-88054835（信访） 传真：0571-89913088 邮编：310012 校园全景 办学体系 国家开放大学 浙江省教育厅 教育部 微信公众号 微信视频号 微浙开 B站号 抖音号 浙开乐学港 小红书 Copyright©2021 浙江开放大学 浙ICP备05018780号",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
   },
   {
     "name": "海军职工大学",
@@ -2530,6 +2622,20 @@
     "bodySha256": "98d2f67bf670b9c498ccae58dcfcff7c56964b8c6455c1b2205cc1f9375e35f5",
     "observedText": "地址：焦作市解放区学苑路1号焦作职工医学院 院办电话：0391-3530440 招生办电话：0391-3530027、2919003 成教办公室电话：0391-3577580、3213011 官方微信公众号：焦作职工医学院、焦作职工医学院继续教育学院 E-mail:phnjzpxq@sina.com 网址： http://www.jzzgyxy.com.cn 上一条： 校园风景 下一条： 没有了 Copyright ",
     "relationEvidence": "Official school contact page or government procurement record identifies the institution and its own address; excludes supplier/agency addresses."
+  },
+  {
+    "name": "甘肃农业大学 - 研究生",
+    "cities": [
+      "兰州市"
+    ],
+    "sourceUrl": "https://xxkx.gsau.edu.cn/info/1004/5339.htm",
+    "sourceDate": "2020-05-14",
+    "retrievedDate": "2026-10-15",
+    "bodySha256": "508ef995d437466947c16068a94301a5a4c758d729012ab8881867f3ca157c93",
+    "observedText": "地址：甘肃省兰州市安宁区营门村 1 号甘肃农业大学格物楼 1609 室 ",
+    "relationEvidence": "学校研究生培养单位官方复试通知明确兰州地址；仅核实该培养单位，未声称覆盖全校研究生培养地点。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅覆盖该来源公开的研究生办公或培养单位地址；未核实全部异地校区及学生所在校区。"
   },
   {
     "name": "甘肃开放大学",
@@ -2844,6 +2950,33 @@
     "relationEvidence": "Official graduate/research page: 贵州大学研究生院",
     "coverage": "verified-graduate-office-address",
     "coverageNote": "已核实该校研究生院、研究生招生或培养机构的公开地址；未穷尽跨市培养校区，不表示全部校区覆盖。"
+  },
+  {
+    "name": "贵州师范大学 - 研究生",
+    "cities": [
+      "贵阳市"
+    ],
+    "sourceUrl": "https://yjsc.gznu.edu.cn/xwtt.htm",
+    "sourceDate": null,
+    "retrievedDate": "2026-10-15",
+    "bodySha256": "7b92dd1e8f08c96132b3903e21b0cf6d501cc89e06cfaddbab31b5134d6b4c3b",
+    "observedText": "版权所有@贵州师范大学研究生院 地址：贵州省贵阳市贵安新区大学城栋青路贵州师范大学 ",
+    "relationEvidence": "研究生院官方网站明确贵阳市大学城栋青路地址。",
+    "coverage": "verified-graduate-office-or-teaching-unit-address",
+    "coverageNote": "仅覆盖该来源公开的研究生办公或培养单位地址；未核实全部异地校区及学生所在校区。"
+  },
+  {
+    "name": "贵州开放大学",
+    "cities": [
+      "贵阳市"
+    ],
+    "sourceUrl": "https://www.gztvu.com/xysy.htm",
+    "sourceDate": null,
+    "checkedAt": "2026-10-15",
+    "finalUrl": "https://www.gztvu.com/xysy.htm",
+    "bodySha256": "69d484eeded209d8019d92e9f34d09f4ee5e3b71b26fcc3f5950da9fd44490cf",
+    "observedText": "地址：贵阳市观山湖区云潭南路3号 联系方式：0851-84827371 邮编：550023 ； 邮箱：webmaster@gztvu.com ICP备案号： 黔ICP备17010487号-3号 版权所有：贵州开放大学（贵州职业技术学院） 贵公网安备:52010302003561",
+    "relationEvidence": "Official institution page explicitly publishes its own campus address."
   },
   {
     "name": "辽宁公安司法管理干部学院",

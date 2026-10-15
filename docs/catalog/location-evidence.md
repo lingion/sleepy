@@ -7,12 +7,14 @@ Every one of the 4,140 catalogue names has one record. `mapped` entries are the 
 | Status | Count | Meaning |
 |---|---:|---|
 | `campus_or_import_unverified` | 309 | Campus or import variant needs exact address |
-| `graduate_relation_unverified` | 171 | Graduate relation/location needs explicit evidence |
+| `graduate_relation_unverified` | 168 | Graduate relation/location needs explicit evidence |
 | `historical_or_alias_unverified` | 18 | Historical/renamed entry needs dated evidence |
 | `legacy_unresolved` | 76 | No exact source found in frozen snapshot |
-| `mapped` | 3407 | Existing evidence-backed city mapping |
-| `official_no_city` | 159 | MOE adult record has no city field |
+| `mapped` | 3417 | Existing evidence-backed city mapping |
+| `official_no_city` | 152 | MOE adult record has no city field |
 
 The report intentionally distinguishes catalogue participation from city coverage: adult institutions with a null Ministry city and unresolved WakeUp variants participate in the audit but are not assigned a guessed city.
 
 A mapped institution has at least one recorded city. This does not imply every campus is covered or that campus coordinates are known. Graduate-office records identify the published office or training-unit city only. Per-record coverage notes and input hashes are retained in the JSON inventory.
+
+Actual search queries, result URLs, probe outcomes and source snapshot hashes are recorded in school_location_research.json for unresolved entries. Search results and HTTP success are research traces, not verified address evidence.

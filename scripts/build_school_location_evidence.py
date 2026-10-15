@@ -14,12 +14,17 @@ import json
 import hashlib
 from collections import Counter
 from pathlib import Path
+from catalog_url_safety import audit
 
 ROOT = Path(__file__).resolve().parents[1]
 
 
 def load(path: Path):
-    return json.loads(path.read_text(encoding="utf-8"))
+    value = json.loads(path.read_text(encoding="utf-8"))
+    findings = audit(value, path.name)
+    if findings:
+        raise ValueError("Unsanitized source URL parameters: " + str(findings))
+    return value
 
 
 def classify(name: str, official: dict) -> tuple[str, str]:
@@ -46,6 +51,9 @@ def main() -> None:
     city_map = cities_doc["schools"]
     city_evidence = cities_doc.get("_cityEvidence", {})
     city_sources = cities_doc.get("_citySources", {})
+    research_path = ROOT / "scripts/data/school_location_research.json"
+    research = load(research_path)
+    research_by_name = {row["name"]: row for row in research["entries"]}
     records = []
     names = [row["name"] for row in catalog]
     if len(names) != len(set(names)):
@@ -84,13 +92,19 @@ def main() -> None:
                             "sourceUrl": (official.get(name) or {}).get("source_url"),
                             "sourceDate": (official.get(name) or {}).get("source_date"),
                             "reason": reason,
-                            "attempts": ["exact name lookup in frozen national research snapshot",
-                                         "official institution/address search required before mapping"]})
+                            "researchEvidence": {"path": "scripts/data/school_location_research.json",
+                                                 "name": name,
+                                                 "searchCount": len(research_by_name.get(name, {}).get("searches", [])),
+                                                 "probeCount": len(research_by_name.get(name, {}).get("probes", []))}})
+    missing_research = [r["name"] for r in records if r["status"] != "mapped" and r["name"] not in research_by_name]
+    if missing_research:
+        raise ValueError("Missing unresolved research records: " + str(missing_research))
     records.sort(key=lambda x: x["name"])
     counts = Counter(x["status"] for x in records)
     coverage_counts = Counter(r.get("coverage", "unresolved") for r in records)
     input_paths = ["app/src/main/assets/schools.json", "app/src/main/assets/school_cities.json",
-                   "scripts/data/official_schools.json", "scripts/data/school_location_verified.json"]
+                   "scripts/data/official_schools.json", "scripts/data/school_location_verified.json",
+                   "scripts/data/school_location_research.json"]
     inputs = [{"path": p, "sha256": hashlib.sha256((ROOT / p).read_bytes()).hexdigest()} for p in input_paths]
     payload = {"schemaVersion": 1, "generatedAt": "2026-10-15", "catalogCount": len(records),
                "cityMappedCount": counts["mapped"], "unresolvedCount": len(records) - counts["mapped"],
@@ -104,6 +118,7 @@ def main() -> None:
     for status, count in sorted(counts.items()): lines.append(f"| `{status}` | {count} | {meanings[status]} |")
     lines += ["", "The report intentionally distinguishes catalogue participation from city coverage: adult institutions with a null Ministry city and unresolved WakeUp variants participate in the audit but are not assigned a guessed city.", ""]
     lines += ["A mapped institution has at least one recorded city. This does not imply every campus is covered or that campus coordinates are known. Graduate-office records identify the published office or training-unit city only. Per-record coverage notes and input hashes are retained in the JSON inventory.", ""]
+    lines += ["Actual search queries, result URLs, probe outcomes and source snapshot hashes are recorded in school_location_research.json for unresolved entries. Search results and HTTP success are research traces, not verified address evidence.", ""]
     args.doc.write_text("\n".join(lines), encoding="utf-8")
     print(json.dumps({"catalogCount": len(records), "statusCounts": dict(sorted(counts.items()))}, ensure_ascii=False, indent=2))
 
