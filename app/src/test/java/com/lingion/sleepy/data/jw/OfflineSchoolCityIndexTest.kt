@@ -82,10 +82,26 @@ class OfflineSchoolCityIndexTest {
 
     @Test fun `province outline never masquerades as a city while Hong Kong and Macau resolve`() {
         assertFalse("台湾省" in index.cityNames)
-        assertNull(index.cityAt(25.0330, 121.5654))
-        assertNull(index.cityAt(24.1477, 120.6736))
+        assertEquals("臺北市", index.cityAt(25.0330, 121.5654))
+        assertEquals("臺中市", index.cityAt(24.1477, 120.6736))
         assertEquals("香港", index.cityAt(22.3193, 114.1694))
         assertEquals("澳门", index.cityAt(22.1987, 113.5439))
+    }
+
+    @Test fun `old province-only asset is rejected as city coverage`() {
+        val old = SchoolBoundaryFixture.parse("""{"areas":[{"name":"台湾省","polygons":[
+            [[[120,20],[125,20],[125,26],[120,26],[120,20]]]
+        ]}]}""")
+        assertNull(old.cityAt(25.0330, 121.5654))
+        assertTrue(old.cityNames.isEmpty())
+    }
+
+    @Test fun `Taiwan municipalities counties and offshore islands resolve separately`() {
+        assertEquals("新北市", index.cityAt(25.012, 121.465))
+        assertEquals("高雄市", index.cityAt(22.6273, 120.3014))
+        assertEquals("澎湖縣", index.cityAt(23.565, 119.565))
+        assertEquals("金門縣", index.cityAt(24.432, 118.318))
+        assertEquals("連江縣", index.cityAt(26.151, 119.930))
     }
 
     @Test fun `official city aliases use actual prefecture boundaries`() {
