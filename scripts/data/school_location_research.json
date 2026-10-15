@@ -125,9 +125,13 @@
     },
     {
       "artifactId": "ra-04d1bdf4c17cbdbe",
-      "file": "repo:scripts/data/school_location_research.json",
+      "file": "git:ed8a06c72b29a8f537f0ae04b6dcaf156d1f4811:scripts/data/school_location_research.json",
       "sha256": "6818a51c4605fb4e4748084e190f7bd3f836468cac8aeec367b610e9b2aa6f28",
-      "kind": "exact-name-research-cache"
+      "kind": "exact-name-research-cache",
+      "gitCommit": "ed8a06c72b29a8f537f0ae04b6dcaf156d1f4811",
+      "gitBlob": "e763a825afe0d957da0a6b02ee478658d866490a",
+      "repoPath": "scripts/data/school_location_research.json",
+      "storage": "git-blob"
     },
     {
       "artifactId": "ra-85b29accf633d528",
@@ -1222,12 +1226,6 @@
       "kind": "exact-name-research-cache"
     },
     {
-      "artifactId": "ra-284f2c234635dda4",
-      "file": "locations/graduate-main-eighth-probes.json",
-      "sha256": "419187c52426c6d452d8e2b463e0e810e7640c28622734859a9762ee53b28387",
-      "kind": "exact-name-research-cache"
-    },
-    {
       "artifactId": "ra-0f14bac8aa35c5aa",
       "file": "locations/graduate-main-fifth-probes.json",
       "sha256": "5ec3a95a5b53503de5eb28c7e08b1ee91747aa571182a754ef0e22baa1a223c7",
@@ -1237,12 +1235,6 @@
       "artifactId": "ra-43168b5744a3a93c",
       "file": "locations/graduate-main-fourth-probes.json",
       "sha256": "77f956564dc7179ab514b7b1ddb3c1b269ee67e2b10eab63ad4d714d7ac11768",
-      "kind": "exact-name-research-cache"
-    },
-    {
-      "artifactId": "ra-f28af05b355db21a",
-      "file": "locations/graduate-main-ninth-probes.json",
-      "sha256": "9f3c99be4f68c72487765024fbe4ac4e2a15e2e3ff81400af748ca8bc0db4bde",
       "kind": "exact-name-research-cache"
     },
     {
@@ -11368,7 +11360,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[0]"
+            "recordPath": "$.holds[0]"
           }
         }
       ]
@@ -14236,7 +14228,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[1]"
+            "recordPath": "$.holds[1]"
           }
         }
       ]
@@ -24860,7 +24852,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[2]"
+            "recordPath": "$.holds[2]"
           }
         }
       ]
@@ -57517,7 +57509,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[6]"
+            "recordPath": "$.holds[6]"
           }
         }
       ]
@@ -94991,7 +94983,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[5]"
+            "recordPath": "$.holds[5]"
           }
         }
       ]
@@ -103037,7 +103029,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[3]"
+            "recordPath": "$.holds[3]"
           }
         }
       ]
@@ -109183,7 +109175,7 @@
           "retrievedDate": null,
           "provenance": {
             "artifactId": "ra-77e4f37a0e7be9a2",
-            "recordPath": "$.records[4]"
+            "recordPath": "$.holds[4]"
           }
         }
       ]
@@ -199673,11 +199665,12 @@
     },
     "provenanceFormat": {
       "version": 2,
-      "artifactRegistry": "sources[].artifactId resolves to file + sha256",
+      "artifactRegistry": "sources[].artifactId resolves file and sha256; storage=git-blob resolves git show <gitCommit>:<repoPath> and verifies gitBlob plus sha256",
       "artifactRoot": "/Users/lingion_k/research/school-expansion-20261014",
       "repoPrefixRoot": "/Users/lingion_k/sleepy-worktrees/national-school-catalog",
       "recordPath": "Original JSON path inside the source artifact; line is 1-based for JSONL.",
-      "dateProvenanceIndex": "Index into the same record provenance array; original date source retained without copying reference."
+      "dateProvenanceIndex": "Index into the same record provenance array; original date source retained without copying reference.",
+      "gitArtifact": "git:<full commit>:<repo path>; immutable repository history, not current working tree"
     },
     "compactFollowup": {
       "archives": [
@@ -199745,6 +199738,27 @@
       },
       "priorSnapshotMarkedHistorical": 112,
       "interpretation": "All remaining adult entries have actual page requests. Remaining means exact identity/current address evidence gap, not search-only and not verified. Individual page review decisions remain historical review outcomes, not canonical location status."
+    },
+    "provenanceRepair": {
+      "checkedAt": "2026-10-15",
+      "correctedHoldPaths": 7,
+      "historicalLedgerGitCommit": "ed8a06c72b29a8f537f0ae04b6dcaf156d1f4811",
+      "historicalLedgerGitBlob": "e763a825afe0d957da0a6b02ee478658d866490a",
+      "removedOrphanSourceVersions": [
+        {
+          "artifactId": "ra-284f2c234635dda4",
+          "file": "locations/graduate-main-eighth-probes.json",
+          "sha256": "419187c52426c6d452d8e2b463e0e810e7640c28622734859a9762ee53b28387",
+          "kind": "exact-name-research-cache"
+        },
+        {
+          "artifactId": "ra-f28af05b355db21a",
+          "file": "locations/graduate-main-ninth-probes.json",
+          "sha256": "9f3c99be4f68c72487765024fbe4ac4e2a15e2e3ff81400af748ca8bc0db4bde",
+          "kind": "exact-name-research-cache"
+        }
+      ],
+      "migrationNote": "Removed two unreferenced registry versions whose old SHA no longer matches current cache bytes; old matching bytes unavailable. No cache content changed; current referenced versions retained. Not claimed verified."
     }
   },
   "finalCampusReviewArtifacts": [
