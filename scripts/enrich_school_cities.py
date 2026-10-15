@@ -4,14 +4,16 @@
 Usage:
   python3 scripts/enrich_school_cities.py
 
-Existing city entries and overrides are preserved byte-for-value. Only records
-with a source-provided city are added; this intentionally excludes adult
-colleges whose Ministry attachment does not provide a city.
+Existing city entries and overrides are preserved byte-for-value. The companion
+location evidence inventory covers every catalog name; this file adds only
+entries with explicit city evidence, never a city inferred from a name.
 """
 from __future__ import annotations
 
 import argparse
 import json
+import hashlib
+from urllib.parse import urlparse
 from collections import Counter
 from pathlib import Path
 from typing import Any
@@ -25,6 +27,65 @@ def load_json(path: Path) -> Any:
         return json.load(stream)
 
 
+def apply_verified_locations(result: dict, rows: list, directory_names: set[str]) -> int:
+    """Apply exact reviewed entries; never derive locations from a name/parent."""
+    if not isinstance(rows, list):
+        raise ValueError("verified locations must be a list")
+    pending = {}
+    for row in rows:
+        name = row.get("name") if isinstance(row, dict) else None
+        if name not in directory_names:
+            raise ValueError(f"verified location is not in directory: {name}")
+        if name in pending:
+            raise ValueError(f"duplicate verified location: {name}")
+        cities = row.get("cities")
+        if (not isinstance(cities, list) or not cities or
+                any(not isinstance(city, str) or not city.strip() or city != city.strip()
+                    or city.endswith(("省", "自治区")) for city in cities) or
+                len(cities) != len(set(cities))):
+            raise ValueError(f"invalid city-level locations for {name}")
+        url = row.get("sourceUrl")
+        parsed = urlparse(url) if isinstance(url, str) else None
+        if not parsed or parsed.scheme not in {"https", "http"} or not parsed.hostname:
+            raise ValueError(f"missing official address source for {name}")
+        if not isinstance(row.get("observedText"), str) or not row["observedText"].strip():
+            raise ValueError(f"missing address evidence text for {name}")
+        existing = result["schools"].get(name)
+        managed = result.get("_cityEvidence", {}).get(name, {}).get("method") == "reviewed-exact-entity-address"
+        if existing is not None and existing != cities and not managed:
+            raise ValueError(f"verified location conflicts with existing cities for {name}")
+        if existing is not None and not managed:
+            raise ValueError(f"verified location cannot take ownership of baseline mapping for {name}")
+        pending[name] = row
+    # Reviewed inputs are authoritative for mappings this importer owns. Removing
+    # a rejected candidate must also withdraw its previously generated mapping.
+    stale = [name for name, item in result.get("_cityEvidence", {}).items()
+             if item.get("method") == "reviewed-exact-entity-address" and name not in pending]
+    for name in stale:
+        source_id = result["_cityEvidence"].pop(name).get("sourceId")
+        result["schools"].pop(name, None)
+        result.get("_citySources", {}).pop(source_id, None)
+    added = 0
+    for name, row in sorted(pending.items()):
+        source_id = "verified-location-" + hashlib.sha256(name.encode()).hexdigest()[:16]
+        result.setdefault("_citySources", {})[source_id] = {
+            "url": row["sourceUrl"], "sourceDate": row.get("sourceDate"),
+            "observedText": row["observedText"],
+            "relationEvidence": row.get("relationEvidence"),
+            "coverage": row.get("coverage", "verified-institution-address"),
+            "coverageNote": row.get("coverageNote"),
+            "retrievedDate": row.get("retrievedDate") or row.get("checkedAt"),
+            "bodySha256": row.get("bodySha256"),
+            "evidenceTextSha256": row.get("evidenceTextSha256"),
+        }
+        result.setdefault("_cityEvidence", {})[name] = {
+            "sourceId": source_id, "method": "reviewed-exact-entity-address",
+        }
+        added += name not in result["schools"]
+        result["schools"][name] = row["cities"]
+    return added
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--official-json", type=Path, default=ROOT / "scripts/data/official_schools.json",
@@ -33,6 +94,10 @@ def main() -> None:
                         help="Limit new cities to names actually present in the school directory")
     parser.add_argument("--output", type=Path, default=DEFAULT_OUTPUT,
                         help=f"Output city metadata (default: {DEFAULT_OUTPUT})")
+    parser.add_argument("--evidence", type=Path, default=ROOT / "scripts/data/school_location_evidence.json",
+                        help="Complete per-catalogue location evidence inventory")
+    parser.add_argument("--verified-json", type=Path,
+                        default=ROOT / "scripts/data/school_location_verified.json")
     args = parser.parse_args()
 
     directory = load_json(args.schools_json)
@@ -48,6 +113,7 @@ def main() -> None:
 
     old_schools = result["schools"]
     original = json.loads(json.dumps(old_schools, ensure_ascii=False))
+    original_result = json.loads(json.dumps(result, ensure_ascii=False))
     evidence = result.setdefault("_cityEvidence", {})
     if not isinstance(evidence, dict):
         raise SystemExit("_cityEvidence must be a JSON object")
@@ -108,19 +174,28 @@ def main() -> None:
         old_schools[name] = item["cities"]
         evidence[name] = {key: value for key, value in item.items() if key != "cities"}
 
-    if result["schools"] == original and not candidates:
+    verified_added = apply_verified_locations(result, load_json(args.verified_json), directory_names) if args.verified_json.exists() else 0
+
+    if args.evidence.exists():
+        inventory = load_json(args.evidence)
+        inventory_names = {row.get("name") for row in inventory.get("records", [])}
+        if len(inventory.get("records", [])) != len(directory_names) or inventory_names != directory_names:
+            raise SystemExit("location evidence inventory must contain every directory name exactly once")
+
+    if result == original_result:
         print("No new city-backed entries; existing map unchanged.")
         return
     args.output.write_text(json.dumps(result, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(json.dumps({
         "output": str(args.output),
         "existing_entries_preserved": len(original),
-        "new_entries": len(candidates),
+        "new_entries": len(candidates) + verified_added,
         "new_by_region": dict(Counter(item["region"] for item in candidates.values())),
         "skipped_without_city": dict(skipped_no_city),
         "skipped_not_in_directory": skipped_not_in_directory,
         "skipped_existing": dict(skipped_duplicate),
         "total_city_entries": len(result["schools"]),
+        "evidence_inventory": str(args.evidence),
     }, ensure_ascii=False, indent=2))
 
 
