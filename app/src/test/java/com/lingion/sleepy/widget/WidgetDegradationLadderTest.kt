@@ -97,25 +97,31 @@ class WidgetDegradationLadderTest {
     }
 
     @Test
-    fun `weekgrid meal break stretches its row proportionally without changing body bounds`() {
-        // 用户 2026-10-05 定稿: 长课间留白 = 空隙分钟折进行权重, 时间轴按分钟比例拉长;
-        // 小组件不可滚动 → 权重同折进 slotH 分母, body 边界恒不变。
-        val (bodyA, slotA) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12)
-        val weights = com.lingion.sleepy.util.TimetableViewportPolicy.expandWeightsForLongBreaks(
-            List(12) { 1f }, setOf(3), mapOf(3 to 45), periodMinutes = 45, enabled = true)
-        val (bodyB, slotB) = WeekGridWidgetProvider.weekGridBodyGeomPx(
-            1200, 2f, 12, totalWeight = weights.sum())
-        assertEquals("body 边界不受开关影响", bodyA, bodyB)
-        assertTrue("每权重单位高度随空隙稀释", slotB < slotA)
+    fun `weekgrid meal break keeps rigid equal-height rows and adds a fixed band`() {
+        // 用户 2026-10 令: 长课间留白不掏掉行高 — 所有课程行等高 (slotH 恒定),
+        // 留白 = 行边界之间的固定薄带 (24dp×density×fontScale), body 边界恒不变。
+        val (normalBody, normalSlot) = WeekGridWidgetProvider.weekGridBodyGeomPx(1200, 2f, 12)
+        val (breakBody, breakSlot) = WeekGridWidgetProvider.weekGridBodyGeomPx(
+            1200, 2f, 12, mealBreakCount = 1, fontScale = 1f)
+        assertEquals("body 边界不受开关影响", normalBody, breakBody)
+        // widget 位图不可滚动 — 带厚只能由全体行均摊 (每行 ~2% 细缩), 但**每行仍等高**:
+        // 用户禁的是"拉长其中一节课的网格"(旧行权重模型只有餐段邻行被拉长), 不是禁均摊。
+        assertTrue("带厚由全体行均摊", breakSlot < normalSlot)
+        assertTrue("均摊幅度有限 (≠旧行拉伸)", normalSlot - breakSlot < 0.05f * normalSlot)
+        // 带厚口径: density=2, fontScale=1 → 24×2×1 = 48px
+        assertEquals(48f, WeekGridWidgetProvider.mealBreakBandPx(2f, 1f), 0.001f)
+        // 带按越过的带数累计 — 行 0..3 无带, 行 4+ (锚行 3 之后) +bandPx
         val gap = (1.5f * 2f).toInt().toFloat()
+        val band = WeekGridWidgetProvider.mealBreakBandPx(2f, 1f)
         val bodyTop = 100f
-        fun top(i: Int) = WeekGridWidgetProvider.weekGridRowTopPx(bodyTop, gap, slotB, weights, i)
-        // 行内容高 = top(i+1)−top(i)−gap; 餐段行 (row3) = 2×普通行 (45min 空隙 + 45min 课)。
+        fun top(i: Int) = WeekGridWidgetProvider.weekGridRowTopPx(
+            bodyTop, gap, breakSlot.toFloat(), i, breakAfterRows = setOf(3), bandPx = band)
+        // 行内容高 = top(i+1)−top(i)−gap−(i..i+1 之间的带厚); 每行恒 slotH = 内容刚
         val h0 = top(1) - top(0) - gap
-        val h3 = top(4) - top(3) - gap
-        assertEquals(2f * h0, h3, 0.001f)
-        // 末行底 = body 底 — 权重折进分母后总高恒等, 无溢出无空白
-        assertEquals(bodyTop + bodyB, top(12), 0.001f)
+        val h3 = top(4) - top(3) - gap - band
+        assertEquals("所有行等高 (含跨带行)", h0.toFloat(), h3, 0.001f)
+        assertEquals("带厚只落在行间空隙", breakSlot + band + gap, top(4) - top(3), 0.001f)
+        assertEquals("无带行距逐字节旧语义", bodyTop + gap + 2f * (breakSlot + gap), top(2), 0.001f)
     }
 
     // ---- 四族 FIXED 窗口: 三档尺寸全尺寸同构 (无崩溃 + 锚行保底 + 页脚 best-effort) ----

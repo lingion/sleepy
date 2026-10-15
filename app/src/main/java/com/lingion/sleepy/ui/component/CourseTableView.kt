@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.text.style.LineHeightStyle
@@ -267,42 +268,23 @@ fun CardsGridView(
     }
     val gapH = d(4f)
     val gapW = d(5f)
-    // 长课间留白 (用户 2026-10-05 定稿): 空隙分钟按 分钟/左邻行真实课时 折进"餐段前一行"
-    // 的**边界权重**, 时间轴按分钟比例拉长背景 —— 取代旧固定 mealGapExtra 间隙(定值间隙会
-    // 压扁课程卡行, 时间轴失真)。两张表各司其职:
-    //   naturalWeights  = 内容高 (课程卡/表头卡/文字适配) —— 空隙不拉伸卡片;
-    //   boundaryWeights = 行边界坐标 (yOfRows/分隔线/gridH/fit) —— 空隙折在行下方。
-    // 卡片跨度 = 边界跨度 − 尾随空隙 → 空白落在课程卡之后, 与时间轴分钟成比例。
-    data class MealBreakFold(val minutes: Int, val unitMinutes: Int)
-    val mealBreakByRenderRow: Map<Int, MealBreakFold> =
+    // 长课间使用固定薄带 (24dp×gridScale×fontScale), 悬浮在等高课程行之间 —
+    // 不改行高, 不折权重 (用户 2026-10 令: 旧 6dp 带宽 + 行等比压缩视觉累积成
+    // 整行空隙; 现在带宽固定且行高刚性)。
+    val mealGapExtra = if (longBreakSpacing) d(24f) * LocalConfiguration.current.fontScale else 0.dp
+    /** 餐段锚行集 = 显示行索引 (band 插在该行与下一行之间)。 */
+    val mealBreakAfterRows: Set<Int> =
         remember(timeJson, courses, renderSlots, longBreakSpacing) {
-            if (!longBreakSpacing || timeJson == null) emptyMap() else {
+            if (!longBreakSpacing || timeJson == null) emptySet() else {
                 val baseRows = TimeTableUtils.parseTimeSlotRows(timeJson)
                 MealBreakDetector.detect(timeJson, courses).mapNotNull { detected ->
-                    val baseRow = baseRows.getOrNull(detected.afterRowIndex) ?: return@mapNotNull null
-                    val leftNode = baseRow.node
-                    // 锚 = 最后的 nodeEnd==leftNode 行 (有占位行时落在占位行 — 占位权重已含
-                    // 该空隙前段分钟, 折入分钟要扣掉占位段防双计; 无占位 = 普通行)。
-                    val anchor = renderSlots.indexOfLast { it.nodeEnd == leftNode }
-                        .takeIf { it >= 0 } ?: return@mapNotNull null
-                    val phMinutes = renderSlots.getOrNull(anchor)
-                        ?.takeIf { it.isPlaceholder }
-                        ?.let { java.time.Duration.between(it.start, it.end).toMinutes().toInt() } ?: 0
-                    val foldMin = detected.minutes.toInt() - phMinutes
-                    if (foldMin <= 0) return@mapNotNull null
-                    // 分母 = 餐段左邻**标准节次**真实分钟 (占位行自身分钟会把分母缩成 ph,
-                    // 折权爆炸 — 禁用行自身分钟做分母)。
-                    val unit = runCatching {
-                        java.time.LocalTime.parse(baseRow.start).let { s ->
-                            java.time.Duration.between(s, java.time.LocalTime.parse(baseRow.end))
-                                .toMinutes().toInt()
-                        }
-                    }.getOrDefault(0).takeIf { it > 0 } ?: 45
-                    anchor to MealBreakFold(foldMin, unit)
-                }.toMap()
+                    val leftNode = baseRows.getOrNull(detected.afterRowIndex)?.node
+                        ?: return@mapNotNull null
+                    renderSlots.indexOfLast { it.nodeEnd == leftNode }
+                        .takeIf { it >= 0 }
+                }.toSet()
             }
         }
-    val mealBreakAfterRows = mealBreakByRenderRow.keys
 
     val gridBgShape = SleepyTheme.shapes.large
 
@@ -315,21 +297,14 @@ fun CardsGridView(
         BoxWithConstraints(modifier = Modifier.fillMaxSize()) {
             // 自动适配只改变纵向行高；横向宽度、字号和卡片内容仍由原 gridScale 控制。
             val navExtra = com.lingion.sleepy.ui.component.LocalNavExtraBottomPadding.current
-            val availableGridHeight = (maxHeight - headH - gapH - navExtra)
+            // 餐段带在网格外额外占高，拟合行高只按课程行权重计算 (刚性, 带宽不摊进 rowH)。
+            val mealBandCount = mealBreakAfterRows.count { it in renderSlots.indices && it + 1 < renderSlots.size }
+            val mealBandTotal = mealGapExtra * mealBandCount
+            val availableGridHeight = (maxHeight - headH - gapH - navExtra - mealBandTotal)
                 .value
                 .coerceAtLeast(0f)
-            // 拟合口径的权重表先算(含长课间边界膨胀), 让自适应行高把空隙计入"一屏装下";
-            // 无餐段时直通原 slotWeights 保持逐像素旧语义。slotWeights==null (无占位行)
-            // 时按均匀权重表膨胀 — 否则折权结果被 yOfRows 的兜底表整体丢弃 (blocker #1)。
             val naturalWeightsBase: List<Float> = renderPlan.slotWeights ?: List(renderSlots.size) { 1f }
-            val fitWeights: List<Float> = if (mealBreakAfterRows.isEmpty()) naturalWeightsBase
-            else TimetableViewportPolicy.expandWeightsForLongBreaks(
-                naturalWeightsBase,
-                mealBreakAfterRows,
-                breakMinutes = mealBreakByRenderRow.mapValues { it.value.minutes },
-                breakUnitMinutes = mealBreakByRenderRow.mapValues { it.value.unitMinutes },
-                periodMinutes = 45, enabled = longBreakSpacing,
-            )
+            val fitWeights = naturalWeightsBase
             // 行高基座 (2026-09-16 用户令): 实验室开自适应=拟合高度; 默认关=原固定 52dp×scale。
             // 双指手势相对基座缩放, 上限 96dp 下限 36dp (×scale); 顶栏 tick 确认后长期生效, 撤回回退上次确认值。
             val baseRowHeight = TimetableViewportPolicy.baseRowHeightDp(
@@ -369,14 +344,7 @@ fun CardsGridView(
                     )
                 } else w
             }
-            val boundaryWeights: List<Float> =
-                TimetableViewportPolicy.expandWeightsForLongBreaks(
-                    naturalWeights,
-                    mealBreakAfterRows,
-                    breakMinutes = mealBreakByRenderRow.mapValues { it.value.minutes },
-                    breakUnitMinutes = mealBreakByRenderRow.mapValues { it.value.unitMinutes },
-                    periodMinutes = 45, enabled = longBreakSpacing,
-                )
+            val boundaryWeights: List<Float> = naturalWeights
             /** natural 累计坐标 (r = 行分数, 同 yOfRows 口径, 无折权)。 */
             fun naturalSpan(r: Float): Dp {
                 val ws = naturalWeights
@@ -398,14 +366,13 @@ fun CardsGridView(
                 var acc = 0f
                 val full = r.toInt().coerceAtMost(ws.size)
                 for (i in 0 until full) acc += ws[i]
-                // 行内小数坐标按**自然权重**推进 — 折入空隙贴在行尾 (r→1 时到达自然
-                // 内容底, r 整数跳到空隙之后), 禁把空隙摊进行内。
                 if (full < ws.size && r > full)
                     acc += (naturalWeights.getOrNull(full) ?: ws[full]) * (r - full)
-                return rowH * acc
+                val crossedBreaks = mealBreakAfterRows.count { it + 1 <= full }
+                return rowH * acc + mealGapExtra * crossedBreaks
             }
             fun rowHeightAt(i: Int): Dp = rowH * (naturalWeights.getOrNull(i) ?: 1f)
-            fun gapAfterRow(i: Int): Dp = gapH
+            fun gapAfterRow(i: Int): Dp = gapH + if (i in mealBreakAfterRows) mealGapExtra else 0.dp
 
             // 三行表头卡内容高 = 非占位 rowHeightAt − 行间 gap − 卡片内边距×2 (PERIOD_HEADER_CARD_PAD_DP, 与渲染侧一致)。
             // 用户令 2026-10-03: 整列字号的卡高输入必须用真实行高 (双指缩行/自适应行高联动),

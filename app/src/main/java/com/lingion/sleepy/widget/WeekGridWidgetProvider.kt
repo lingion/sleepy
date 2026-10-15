@@ -29,7 +29,6 @@ import com.lingion.sleepy.util.DateUtils
 import com.lingion.sleepy.util.HolidayManager
 import com.lingion.sleepy.util.PeriodHeaderFormatter
 import com.lingion.sleepy.util.TimeTableUtils
-import com.lingion.sleepy.util.TimetableViewportPolicy
 import com.lingion.sleepy.ui.component.PERIOD_HEADER_CARD_PAD_DP
 import com.lingion.sleepy.ui.component.PeriodHeaderAdaptiveFont
 import com.lingion.sleepy.ui.component.PeriodHeaderMetrics
@@ -161,24 +160,30 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
          * 与旧内联算式逐字节同式: outerPad 6dp×2 + headH 56dp, bodyH 地板 20dp,
          * 节间隙 1.5dp×(n+1), slotH 地板 3dp (整除口径保持 Int / Int)。
          *
-         * 长课间留白 redesign (用户 2026-10-05): 空隙分钟折进行权重后, slotH 的语义 =
-         * "每权重单位像素高", 分母取权重总和 (无餐段时 = maxNode, 逐字节回退旧语义)。
-         * widget 不可滚动 → 空隙稀释进 slotH, body 边界恒不变。
+         * 餐段薄带: 带厚从可用 body 高中先扣 (widget 位图不可滚动, 带必须占位),
+         * 余高均分为等高行 — 每行仍等高, 不再出现旧行权重模型"只有餐段邻行被拉长"。
          */
-        internal fun weekGridBodyGeomPx(hPx: Int, density: Float, maxNode: Int, totalWeight: Float = 0f): Pair<Int, Float> {
+        internal fun weekGridBodyGeomPx(
+            hPx: Int, density: Float, maxNode: Int, mealBreakCount: Int = 0, fontScale: Float = 1f
+        ): Pair<Int, Float> {
             fun dp(v: Float) = (v * density).roundToInt()
             val bodyH = (hPx - dp(6f) * 2 - dp(56f)).coerceAtLeast(dp(20f))
             val totalGapH = dp(1.5f) * (maxNode + 1)
-            val weight = maxOf(maxNode.toFloat(), totalWeight)
-            val slotH = ((bodyH - totalGapH) / weight).coerceAtLeast(dp(3f).toFloat())
+            val bands = mealBreakBandPx(density, fontScale) * mealBreakCount
+            val slotH = ((bodyH - totalGapH - bands) / maxNode.coerceAtLeast(1)).coerceAtLeast(dp(3f).toFloat())
             return bodyH to slotH
         }
 
-        /** 加权行顶 (px): 行内容高 = slotH × 行权重 — 长课间行按分钟比例拉长 (与 rowTop 单一事实来源)。 */
-        internal fun weekGridRowTopPx(bodyTop: Float, gapH: Float, slotHPx: Float, weights: List<Float>, rowIndex: Int): Float {
-            var acc = 0f
-            for (i in 0 until rowIndex.coerceAtMost(weights.size)) acc += weights[i]
-            return bodyTop + gapH + slotHPx * acc + gapH * rowIndex
+        internal fun mealBreakBandPx(density: Float, fontScale: Float): Float =
+            24f * density * fontScale
+
+        /** 等高行顶 (px): 行高刚性恒 slotH, 餐段薄带按已越过的带数额外累计 (与 rowTop 单一事实来源)。 */
+        internal fun weekGridRowTopPx(
+            bodyTop: Float, gapH: Float, slotHPx: Float, rowIndex: Int,
+            breakAfterRows: Set<Int> = emptySet(), bandPx: Float = 0f
+        ): Float {
+            val crossed = breakAfterRows.count { it + 1 <= rowIndex }
+            return bodyTop + gapH + rowIndex * (slotHPx + gapH) + crossed * bandPx
         }
 
         /** §4.4 降级阶梯末档: 单节 slotH < 9dp → 文字行排不下, 切色带模式 (无文字非空白) */
@@ -204,6 +209,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
 
         fun renderBitmap(context: Context, data: WeekData, wPx: Int, hPx: Int): Bitmap {
             val density = context.resources.displayMetrics.density
+            val fontScale = context.resources.configuration.fontScale
             val isDark = data.isDark
 
             // ── 颜色 (跟随主题: resolveSchemePublic 支持 system=动态取色) ──
@@ -252,14 +258,7 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                     else displayIndex to detected.minutes.toInt()
                 }.toMap()
             } else emptyMap()
-            val breakUnit = slots.mapIndexedNotNull { i, slot ->
-                val minutes = java.time.Duration.between(slot.start, slot.end).toMinutes().toInt()
-                if (minutes > 0) i to minutes else null
-            }.toMap()
-            val rowWeights = TimetableViewportPolicy.expandWeightsForLongBreaks(
-                List(maxNode) { 1f }, mealBreakMinutes.keys, mealBreakMinutes,
-                breakUnitMinutes = breakUnit, periodMinutes = 45, enabled = longBreakSpacing
-            )
+            // 用户 2026-10 令: 行高刚性 — 餐段不再折进行权重, 等高行之间悬浮固定薄带。
             val mealBreakAfterRows = mealBreakMinutes.keys
             val sortedDays = data.visibleDays.sorted()
             val dayCount = sortedDays.size.coerceIn(1, 7)
@@ -282,7 +281,8 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
                 hPx,
                 density,
                 maxNode,
-                totalWeight = rowWeights.sum(),
+                mealBreakCount = mealBreakAfterRows.count { it in 0 until maxNode - 1 },
+                fontScale = fontScale,
             )
             val totalGapW = gapW * (dayCount + 1)
             val dayW = ((bodyW - timeW - totalGapW) / dayCount)
@@ -386,10 +386,11 @@ open class WeekGridWidgetProvider : AppWidgetProvider() {
             // ── Body ──
             y = (outerPad + headH).toFloat()
             val bodyTop = y
+            val mealBandPx = mealBreakBandPx(density, fontScale)
+            // 行高刚性 (用户 2026-10 令): 每行恒 slotH, 餐段薄带悬浮在等高行之间。
             fun rowTop(rowIndex: Int): Float = weekGridRowTopPx(
-                bodyTop, gapH.toFloat(), slotH, rowWeights, rowIndex)
-            /** 单行内容高 (px) — 交叉验证 blocker #1 两表模型: 长课间折权只拉长边界
-             *  (rowTop/分隔线), 内容高恒 slotH — 卡片/表头卡不吃空隙, 空白落在卡后。 */
+                bodyTop, gapH.toFloat(), slotH, rowIndex, mealBreakAfterRows, mealBandPx)
+            /** 单行内容高 (px) — 行高刚性, 餐段带不摊进卡片。 */
             fun rowContentHeightPx(): Float = slotH
             /** 跨行卡高 (px) = step×slotH + 节间 gap×(step-1) — 不含折入空隙。 */
             fun spanHeightPx(startIdx: Int, step: Int): Float {
