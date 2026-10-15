@@ -10,20 +10,20 @@
     "searchQueries": 287
   },
   "summary": {
-    "verified": 311,
-    "unknown": 207,
+    "verified": 341,
+    "unknown": 177,
     "contradicted": 1,
-    "highConfidence": 144,
+    "highConfidence": 174,
     "mediumConfidence": 168,
-    "lowConfidence": 207,
-    "interpretation": "verified means page or official school source names/links the school; unknown is explicit lack of ownership proof; contradicted means official evidence identifies a different school.",
-    "unknownWithResearchTrace": 207,
+    "lowConfidence": 177,
+    "interpretation": "Verified means recorded school identity proves the exact configured endpoint, directly or through an archived directed HTTP chain; unknown lacks sufficient ownership proof; contradicted identifies a different school.",
+    "unknownWithResearchTrace": 177,
     "researchTraceReasonCounts": {
       "non_public_or_inaccessible_host": 4,
-      "strict_endpoint_equivalence_not_proven": 97,
-      "generic_or_unrelated_entry_identity": 59,
+      "strict_endpoint_equivalence_not_proven": 70,
+      "generic_or_unrelated_entry_identity": 57,
       "official_school_to_exact_tenant_link_not_found": 10,
-      "public_probe_failed_or_filtered": 30,
+      "public_probe_failed_or_filtered": 29,
       "shared_vendor_tenant_not_independently_linked": 4,
       "campus_or_graduate_scope_not_proven": 2,
       "tenant_path_equivalence_not_proven": 1
@@ -813,11 +813,11 @@
       "name": "北京化工大学",
       "url": "http://jwglxt.buct.edu.cn/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://experimental-auth-endpoint.buct.edu.cn",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwglxt.buct.edu.cn/jwglxt",
@@ -841,11 +841,21 @@
           "linkedUrls": [
             "https://jwglxt.buct.edu.cn/jwglxt/pwdmgr/retake/index.zf"
           ]
+        },
+        {
+          "kind": "official-school-link",
+          "url": "https://jiaowuchu.buct.edu.cn/mainm.htm",
+          "checkedAt": "2026-10-15",
+          "title": "北京化工大学教务处",
+          "observedText": "\r\n\r\n\r\n\r\n\t\r\n\t\r\n\t\r\n\t\r\n\t\r\n\t\r\n\t北京化工大学教务处\r\n\t\r\n\t\t\r\n\t\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\t\r\n\t\r\n\r\n\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\r\n\r\n\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\tEnglish \r\n\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t\t\t\t\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\t\r\n\t\t\r\n\t\t\t\r\n\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t导航\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t\t\t\t\t\t首页\r\n\t\t\t\t\t\t\t\r\n\t\t\t\t\t\t\r\n\t",
+          "bodySha256": "a6496f39dc85a279aa03de4395ebad86825ae5ceedcc59119c46470ef13bfe1f",
+          "linkedUrls": [
+            "http://jwglxt.buct.edu.cn"
+          ],
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "统一身份认证系统",
       "probeError": null,
@@ -857,16 +867,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -1213,11 +1244,11 @@
       "name": "长春大学",
       "url": "http://jwxt.ccu.edu.cn/jsxsd/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jwxt.ccu.edu.cn/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwc.ccu.edu.cn/",
@@ -1254,11 +1285,37 @@
             "http://jwxt.ccu.edu.cn/jsxsd",
             "http://jwxt.ccu.edu.cn/"
           ]
+        },
+        {
+          "url": "https://jwc.ccu.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "长春大学教学信息网",
+          "observedText": "﻿ 长春大学教学信息网 教学信息网 教务处 大学生创新创业教育学院 教师教学发展中心 首页 通知公告 教学动态 教学要闻 教务动态 院部简报 教育工作讨论会 组织机构 教务",
+          "bodySha256": "ca912c1f1d8642e747df8eedf4a0497e98640e057c69a146fad828e8f9ff669b",
+          "linkedUrls": [
+            "http://jwxt.ccu.edu.cn/jsxsd",
+            "http://jwxt.ccu.edu.cn/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwxt.ccu.edu.cn/jsxsd",
+              "bodySha256": "3dedba2770cb155bc88bdd0123a1c0adae6da216f536adb68f4e623135d752ed",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jwxt.ccu.edu.cn/jsxsd",
+                  "to": "http://jwxt.ccu.edu.cn/jsxsd/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -1270,16 +1327,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -1739,11 +1817,11 @@
       "name": "川北医学院",
       "url": "https://jiaowu3.nsmc.edu.cn/jsxsd/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jiaowu3.nsmc.edu.cn/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.nsmc.edu.cn/ggfw/jwglxt.htm",
@@ -1755,11 +1833,35 @@
           "linkedUrls": [
             "https://jiaowu3.nsmc.edu.cn/jsxsd"
           ]
+        },
+        {
+          "url": "https://www.nsmc.edu.cn/ggfw/jwglxt.htm",
+          "kind": "official-school-link",
+          "checkedAt": "2026-10-15",
+          "title": "教务管理系统-川北医学院",
+          "observedText": "﻿ 教务管理系统-川北医学院 网上办事大厅 学术搜索 迎新系统 学校概况 学校简介 历史沿革 校园文化 信息公开 全景校园 学校章程 数字校史馆 领导在线 现任领导 书记信箱 院长信箱 机构设置 党政部门 教学院系 教辅部门 直属单位 公司 科研院所 人才培养 研究生教育 留学生教育 本、专科教育 继续教育 科学研究 科技处 医学影像四川省重点实验室 科技创新中心 科研所 学报编辑部 学术活动 体视学学术论坛 四川省基层卫生事业发展研究中心 招生就业 本专科招生 研究生招生 继续教育招生 就业服",
+          "bodySha256": "e8dc14d458a114cc85441935ebbf3642ccc2f10a356882d25f591a53702bed05",
+          "linkedUrls": [
+            "https://jiaowu3.nsmc.edu.cn/jsxsd"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://jiaowu3.nsmc.edu.cn/jsxsd",
+              "bodySha256": "86718f4353b3336cbc1549c9641218c9ecff4786fd7df0000544eb0ad4b2ddf6",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "https://jiaowu3.nsmc.edu.cn/jsxsd",
+                  "to": "https://jiaowu3.nsmc.edu.cn/jsxsd/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -1771,16 +1873,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -2270,11 +2393,11 @@
       "name": "东北林业大学",
       "url": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 0,
       "finalUrl": "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.nefu.edu.cn/",
@@ -2298,11 +2421,21 @@
           "linkedUrls": [
             "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/sso.jsp"
           ]
+        },
+        {
+          "kind": "official-school-link",
+          "url": "https://bksy.nefu.edu.cn/index/jwxt.htm",
+          "checkedAt": "2026-10-15",
+          "title": "教务系统-东北林业大学本科生院",
+          "observedText": " \r\n    \r\n    \r\n    \r\n    教务系统-东北林业大学本科生院\r\n\r\n\r\n\r\n    \r\n    \r\n    \r\n    \r\n    \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n  \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n  \r\n    \r\n      \r\n\r\n        \r\n\r\n学校首页\r\n            \r\n                设为首页\r\n            \r\n\r\n            \r\n               加入收藏\r\n            \r\n\r\n        \r\n    \r\n    \r\n        \r\n        \r\n        \r\n     \r\n  \r\n  \r\n \r",
+          "bodySha256": "af11f3ff9505e7b6b302543ec932c53ad1585d42faca4df445fd27b95956767f",
+          "linkedUrls": [
+            "http://jwcnew.nefu.edu.cn/dblydx_jsxsd/"
+          ],
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": "curl-28",
@@ -2314,16 +2447,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -2435,11 +2589,11 @@
       "name": "东南大学",
       "url": "https://ehall.seu.edu.cn/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://vpn.seu.edu.cn:443/portal/shortcut.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://seugs.seu.edu.cn/2021/0918/c26671a384574/page.psp",
@@ -2452,11 +2606,36 @@
           "linkedUrls": [
             "http://ehall.seu.edu.cn/"
           ]
+        },
+        {
+          "url": "https://seugs.seu.edu.cn/2021/0918/c26671a384574/page.psp",
+          "kind": "official-school-link",
+          "evidence": "Official same-domain page names school and links to target academic host.",
+          "checkedAt": "2026-10-14",
+          "title": "关于全面启用新研究生综合管理系统暨停止使用旧研究生综合管理系统的通知",
+          "observedText": " 中国大学MOOC 校内链接 东南大学 校园信息门户 网上办事大厅 校园地图 档案馆 院长信箱：gsyz@pub.seu.edu.cn 四牌楼校区：南京四牌楼2号研究生院逸夫建筑馆一、二楼 邮编：2",
+          "bodySha256": "fb6343ef501e58823af27340c1a8fa2c90f2ea5c5293d8b47143d7d1e6aacebc",
+          "linkedUrls": [
+            "http://ehall.seu.edu.cn/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://ehall.seu.edu.cn/",
+              "bodySha256": "6067b091e2de146879204ce1c793ecfcbcfe6b3afc03ae9ba981eab96b9ff370",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://ehall.seu.edu.cn/",
+                  "to": "https://ehall.seu.edu.cn:443/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "Loading...",
       "probeError": null,
@@ -2468,16 +2647,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -4636,11 +4836,11 @@
       "name": "菏泽学院",
       "url": "https://222.206.176.102/jsxsd/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 0,
       "finalUrl": "https://222.206.176.102/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.hezeu.edu.cn/",
@@ -4652,11 +4852,21 @@
           "linkedUrls": [
             "http://222.206.176.102/jsxsd/"
           ]
+        },
+        {
+          "kind": "official-school-link",
+          "url": "https://www.hezeu.edu.cn/index/jzg.htm",
+          "checkedAt": "2026-10-15",
+          "title": "教职工-菏泽学院",
+          "observedText": "﻿\r\n\r\n\r\n  \r\n  \r\n  \r\n  \r\n  教职工-菏泽学院\r\n\r\n\r\n\r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n  \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n   \r\n\r\n\r\n    \r\n    \r\n      \r\n        \r\n \r\n        \r\n\r\n          \r\n            \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n               EN   |\r\n   信息公开   |\r\n   校长信箱   |\r\n   教职工   |\r\n   校友   |\r\n   访客\r\n\r\n          \r\n          \r\n          \r\n     ",
+          "bodySha256": "679cd2dd18402a0caff97d59c50786bcb1009693112de49365e7be6991db02fc",
+          "linkedUrls": [
+            "https://222.206.176.102/jsxsd/"
+          ],
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": "curl-60",
@@ -4668,16 +4878,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -5970,11 +6201,11 @@
       "name": "湖南师范大学",
       "url": "https://jwglnew.hunnu.edu.cn/eams/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwglnew.hunnu.edu.cn/eams/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwc.hunnu.edu.cn/",
@@ -5998,11 +6229,36 @@
           "linkedUrls": [
             "https://jwglnew.hunnu.edu.cn/eams"
           ]
+        },
+        {
+          "url": "https://jwc.hunnu.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "湖南师范大学教务处",
+          "observedText": "﻿ 湖南师范大学教务处 湖南师范大学教务处 学校首页 联系我们 Metel 湖南师范大学教务处 首页 机构设置 教务处概况 教务处领导 科室人员及职能 荣休教师 规章制度 学生",
+          "bodySha256": "ef6d0b7f5cfe4278b067b22f273e498801470abf02a0ae40b2cd12413e3ac1d7",
+          "linkedUrls": [
+            "https://jwglnew.hunnu.edu.cn/eams"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://jwglnew.hunnu.edu.cn/eams",
+              "bodySha256": "e6c0d08938ee243eaade8f9dd51a87a673a8402351503a16099d02d758697f16",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "https://jwglnew.hunnu.edu.cn/eams",
+                  "to": "https://jwglnew.hunnu.edu.cn/eams/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": null,
@@ -6014,16 +6270,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -7307,11 +7584,11 @@
       "name": "闽南师范大学",
       "url": "https://jwxt.mnnu.edu.cn/jwglxt",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": null,
       "finalUrl": null,
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.mnnu.edu.cn/",
@@ -7335,11 +7612,21 @@
           "linkedUrls": [
             "http://jwxt.mnnu.edu.cn/jwglxt"
           ]
+        },
+        {
+          "kind": "official-school-link",
+          "url": "https://jwc.mnnu.edu.cn/",
+          "checkedAt": "2026-10-15",
+          "title": "教务处",
+          "observedText": "        \r\n    \r\n\r\n\r\n\r\n        闽南师范大学思政教学研究中心\r\n        闽南师范大学——汉语言文字网\r\n        美丽校园——图书馆\r\n        美丽校园——静谧的小池\r\n        校园美景——夜景\r\n\r\n\r\n        \r\n             ● \r\n        \r\n        \r\n             ● \r\n        \r\n        \r\n             ● \r\n        \r\n        \r\n             ● \r\n        \r\n        \r\n             ● \r\n        \r\n\r\n           ",
+          "bodySha256": "b7ac12c53611ea1ce6ff632cf90cf41db7f814f08c77262ef502b3336a00de0c",
+          "linkedUrls": [
+            "https://jwxt.mnnu.edu.cn/jwglxt"
+          ],
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": null,
       "probeError": "ValueError: non-public-dns",
@@ -7351,16 +7638,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -8057,11 +8365,11 @@
       "name": "南宁师范大学",
       "url": "http://jw.nnnu.edu.cn/jsxsd/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jw.nnnu.edu.cn/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.nnnu.edu.cn/",
@@ -8087,11 +8395,36 @@
             "http://jw.nnnu.edu.cn/sso.jsp",
             "http://jw.nnnu.edu.cn/jsxsd/sso.jsp"
           ]
+        },
+        {
+          "kind": "official-school-link",
+          "url": "https://jwc.nnnu.edu.cn/info/1096/1637.htm",
+          "checkedAt": "2026-10-15",
+          "title": "",
+          "observedText": "﻿\r\n\r\n\r\n\r\n教务管理系统入口-南宁师范大学教务处\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\t\r\n\r\n\t\r\n\t\t\r\n\r\n\r\n\r\n\r\n\t    \r\n\t\t\t\r\n    联系我们\r\n     |\r\n    返回主站\r\n     \r\n\r\n\r\n\r\n\r\n\t\t    \r\n\r\n\r\n\r\n \r\n \r\n                 \r\n\r\n\r\n\r\n\t\t\t\r\n\t\t\r\n\t\r\n\r\n\r\n\r\n    \r\n    \r\n            \r\n            网站首页\r\n        \r\n        \r\n            机构设置\r\n            \r\n            \r\n         ",
+          "linkedUrls": [
+            "http://jw.nnnu.edu.cn/jsxsd"
+          ],
+          "bodySha256": "43d96c949189c563c33079bf4c5dea57c522aa6ce8b2abdd34469f8d191e1496",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json",
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jw.nnnu.edu.cn/jsxsd",
+              "bodySha256": "09db80b0b8a03c35989e8fbf1996d8fd80bc165e93a9ea83812d36fe7b0c7763",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jw.nnnu.edu.cn/jsxsd",
+                  "to": "http://jw.nnnu.edu.cn/jsxsd/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -8103,16 +8436,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -8189,11 +8543,11 @@
       "name": "南通大学",
       "url": "http://tdjw.ntu.edu.cn/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://tdjw.ntu.edu.cn/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwc.ntu.edu.cn/2026/0907/c2701a298252/page.htm",
@@ -8202,11 +8556,17 @@
           "title": "关于2026-2027-1学期重新学习（重修）有关工作的通知",
           "observedText": "期未开设课程采取组班修读形式； （ 三 ） 重新学习课程教学要求与正常开设课程一致，同一门课程各校区同步考核。 三、课程报名及缴费确认方法 （ 一 ） 学生登 录 “教务系统”（ http s ://tdjw.ntu.edu.cn/ ），选择“信息查询”菜单，点击“班级课表打印”查询本学期课程开设情况，选择与拟重新学习课程教学要求一致且时间不冲突的课程班级跟班试修读， 试修期为课程开设的第一周到重新学习报名缴费确认时 。 （ 二 ） 第 四 周周一（ 9 月 21 日）至周三（ 9 月 23 日）按规定分批次登 录 上述教务系统，由学生本人选择所需课程进行报名和缴费操作，具体报名时间 … 9-07 浏览次数： 10 各学院、有关教学单位： 根据 《南通大学全日制普通本科生学籍管理规定》、 《南通大学全日制普通本科生课程考核工作管理办法》和 《南通大学全日",
           "bodySha256": "65e02effce0c87fe3816d1f2a166bc458cf8a1604a2e828b48d23040810c7fcc"
+        },
+        {
+          "kind": "official-school-published-address",
+          "url": "https://jwc.ntu.edu.cn/2025/1020/c2701a274960/page.htm",
+          "checkedAt": "2026-10-15",
+          "observedText": "高等学校学生转专业工作管理的指导意见》《南通大学全日制普通本科学生学籍管理规定（修订）》《南通大学全日制普通本科学生转专业实施办法（修订）》等有关文件精神，学校决定开展2025级全日制普通本科学生转专业工作，现将有关事项 。4. 11月13日-11月18日(第11周周四-第12周周二)，受理转专业学生申请。每位学生可以选择两个志愿，登录南通大学教学综合信息服务平台（http://tdjw.ntu.edu.cn/）进行报名，截止时间为11月18日下午16:30，逾期不予受理。5．11月19日-11月20日（第12周周三-第12周周四）转入学院受理学生转专业申请并进行初审。6．11月21日（第12周周五） 教务处对报名学生进行资格审查。7．11月22日-11月25日（第12周周六-第13周周二）学院进一步审核学生报名条件，确认学生转入年级，并将转入年级及不符合转入条件的名单报",
+          "bodySha256": "5c0d06a6ec8775fa9de87e8d61589b084f62a69484c2e3d25f0b61541682cfe8",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": null,
@@ -8218,16 +8578,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -11427,11 +11808,11 @@
       "name": "武汉大学",
       "url": "https://jwgl.whu.edu.cn/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://cas.whu.edu.cn/authserver/login",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.sgg.whu.edu.cn/info/1380/39351.htm",
@@ -11443,11 +11824,17 @@
           "linkedUrls": [
             "https://jwgl.whu.edu.cn/xtgl/login_slogin.html"
           ]
+        },
+        {
+          "kind": "official-school-published-address",
+          "url": "https://www.sgg.whu.edu.cn/info/1380/39351.htm",
+          "checkedAt": "2026-10-15",
+          "observedText": "届本科生毕业论文(设计)选题工作的通知-武汉大学测绘学院\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n  \r\n  \r\n  \r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n         数15人；参与本次毕业论文(设计)共287人。毕业论文（设计）管理工作纳入本科教务管理系统/毕业论文(设计)管理（以下简称“系统”），访问地址：https://jwgl.whu.edu.cn/。系统操作手册详见附件1。毕业论文（设计）各阶段工作详见《测绘学院2025届本科毕业论文（设计）工作安排表》（附件2）。二、毕业论文（设计）选题要求毕业论文（设计）选题应政治方向正确，兼顾专业性、实践性、创新性和可行性；应符合专业培养目标要求，符合本科生知识、能力和工作条件等实际；应注重更新，难度适中，工作量饱满；应一人一题，独立完成。其中实验研究、应用研究、工程设",
+          "bodySha256": "779145ea1f63a147e8e276793cf1dbbd3940eb8646583b42d9d1077002f7e18d",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "统一身份认证平台",
       "probeError": null,
@@ -11459,16 +11846,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
       }
     },
     {
@@ -13542,11 +13950,11 @@
       "name": "浙江大学",
       "url": "https://zdbk.zju.edu.cn/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://zdbk.zju.edu.cn/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://iczu.zju.edu.cn/cjwt_76387/list.htm",
@@ -13559,11 +13967,36 @@
           "linkedUrls": [
             "http://zdbk.zju.edu.cn/"
           ]
+        },
+        {
+          "url": "https://iczu.zju.edu.cn/cjwt_76387/list.htm",
+          "kind": "official-school-link",
+          "evidence": "Official same-domain page names school and links to target academic host.",
+          "checkedAt": "2026-10-14",
+          "title": "常见问题",
+          "observedText": "站或信息平台有哪些？ （ 1）浙江大学官网： http://www.zju.edu.cn/ （ 2）浙江大学研究生教育管理信息系统： https://grs.zju.edu.cn/cas/login",
+          "bodySha256": "48c34ba2e350ae495ceb2118f1719324ee00f68a699da9fcb755a84e88fa0095",
+          "linkedUrls": [
+            "http://zdbk.zju.edu.cn/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://zdbk.zju.edu.cn/",
+              "bodySha256": "e62965697d87ae300e9db1d30436f44c47a9b7f76873d2c82fb864c23883832b",
+              "redirects": [
+                {
+                  "http": 301,
+                  "from": "http://zdbk.zju.edu.cn/",
+                  "to": "https://zdbk.zju.edu.cn/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "",
       "probeError": null,
@@ -13575,16 +14008,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -14080,11 +14534,11 @@
       "name": "中国科学院大学",
       "url": "https://sep.ucas.ac.cn/",
       "source": "baseline",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://sep.ucas.ac.cn/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://ic-en.ucas.ac.cn/post/alias/2021-12-15-194143-notice-on-the-opening-of-the-postgraduate-electronic-transcript-processing-system",
@@ -14097,11 +14551,36 @@
           "linkedUrls": [
             "http://sep.ucas.ac.cn"
           ]
+        },
+        {
+          "url": "https://ic-en.ucas.ac.cn/post/alias/2021-12-15-194143-notice-on-the-opening-of-the-postgraduate-electronic-transcript-processing-system",
+          "kind": "official-school-link",
+          "evidence": "Official same-domain page names school and links to target academic host.",
+          "checkedAt": "2026-10-14",
+          "title": "Notice on the opening of the postgraduate electronic transcript processing system | IC-UCAS",
+          "observedText": "count of the \" 中国科学院大学 University of Chinese Academy of Sciences\" and log in to the \" 选课系统 Course Sele",
+          "bodySha256": "f7f17d14e7aec363a5caf91ed839940523dcccda3cb9ef7e18546b61befedba5",
+          "linkedUrls": [
+            "http://sep.ucas.ac.cn"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://sep.ucas.ac.cn",
+              "bodySha256": "cdb28fe83e9397c8d9f4a2d753a6a7450970bf64a99ac2cec194cbb44841e04c",
+              "redirects": [
+                {
+                  "http": 303,
+                  "from": "http://sep.ucas.ac.cn",
+                  "to": "https://sep.ucas.ac.cn"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "SEP 教育业务接入平台",
       "probeError": null,
@@ -14113,16 +14592,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -14794,15 +15294,26 @@
       "name": "亳州职业技术学院",
       "url": "https://www.bzy.edu.cn/qt/jwxt",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 503,
       "finalUrl": "https://www.bzy.edu.cn/qt/jwxt",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "No usable public response at audit time; ownership not proven."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-link",
+          "url": "https://www.bzy.edu.cn/",
+          "checkedAt": "2026-10-15",
+          "title": "亳州职业技术学院",
+          "observedText": "\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n\r\n      \r\n    亳州职业技术学院\r\n\r\n    \r\n    \r\n    \r\n    \r\n    \r\n    \r\n\r\n\r\n\r\n    \r\n    \r\n\r\n\r\n\r\n    \r\n    \r\n    \r\n    \r\n    \r\n    \r\n    \r\n    \r\n    \r\n    \r\n\r\n\r\n    \r\n\r\n\r\n\r\n\r\n\r\n    \r\n\r\n\r\n\r\n\r\n\r\n\r\n \t \r\n        \r\n\r\n 高级搜索\r\n            \r\n\r\n\r\n\r\n\r\n    \r\n        \r\n        \r\n            \r\n        \r\n    \r\n    \r\n        \r\n        \r\n  ",
+          "bodySha256": "f000c3442f3fd36d4a3c5817a0b922109fcd0c480242ecbe0a70a6dd3e0f008a",
+          "linkedUrls": [
+            "https://www.bzy.edu.cn/qt/jwxt"
+          ],
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "Service Unavailable",
       "probeError": null,
@@ -14811,17 +15322,40 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "public_probe_failed_or_filtered",
-        "currentHttp": 0,
-        "currentFinalUrl": "https://www.bzy.edu.cn/qt/jwxt",
-        "currentTitle": "Service Unavailable",
-        "probeError": "curl-28"
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "No usable public response at audit time; ownership not proven."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "public_probe_failed_or_filtered",
+            "currentHttp": 0,
+            "currentFinalUrl": "https://www.bzy.edu.cn/qt/jwxt",
+            "currentTitle": "Service Unavailable",
+            "probeError": "curl-28"
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4153010686",
@@ -15024,11 +15558,11 @@
       "name": "重庆航天职业技术学院",
       "url": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.cqepc.cn/",
@@ -15052,11 +15586,41 @@
           "linkedUrls": [
             "http://jw.cqepc.cn/"
           ]
+        },
+        {
+          "url": "https://www.cqepc.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "重庆航天职业技术学院",
+          "observedText": "重庆航天职业技术学院 你好：欢迎光临重庆航天职业技术学院官方网站！ 加入收藏 设为首页 回到主站 切换导航 重庆航天职业技术学院 学院概况 学院简介 现任领导 机构设置 校史回顾 ",
+          "bodySha256": "aa5468c2ed45f6f1a2539ff878cafea54e397302279ea4570e7e2845b116cfe0",
+          "linkedUrls": [
+            "http://jw.cqepc.cn/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jw.cqepc.cn/",
+              "bodySha256": "45f1fb3210af1741595cf2e774bea3c73b14e1b9dbd885e424cd3c2dc350eeb1",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jw.cqepc.cn/",
+                  "to": "http://jw.cqepc.cn/jwglxt/"
+                },
+                {
+                  "http": 302,
+                  "from": "http://jw.cqepc.cn/jwglxt/",
+                  "to": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -15068,16 +15632,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -15400,11 +15985,11 @@
       "name": "福建生物工程职业技术学院",
       "url": "https://jw.fjvcb.cn/jsxsd/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jw.fjvcb.cn/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.fjvcb.cn/",
@@ -15428,11 +16013,46 @@
           "linkedUrls": [
             "https://jw.fjvcb.cn"
           ]
+        },
+        {
+          "url": "https://www.fjvcb.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "福建生物工程职业技术学院",
+          "observedText": "﻿ 福建生物工程职业技术学院 学生 教职工 校友 福建生物工程职业技术学院 首页 学校概况 学校简介 管理机构 院系设置 贺勉题词 校园风采 书记邮箱 校长邮箱 管理机构 院系设置 就业 ",
+          "bodySha256": "627dff5d1fb1b663dc7ddceb41a3dcc8120548bb92011ce8043e6330fd348467",
+          "linkedUrls": [
+            "https://jw.fjvcb.cn"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://jw.fjvcb.cn",
+              "bodySha256": "1c79a504e47718a6b5771eb26cf0a6fa076827c43dedf07bab3021604232930b",
+              "redirects": [
+                {
+                  "http": 301,
+                  "from": "https://jw.fjvcb.cn",
+                  "to": "https://jw.fjvcb.cn/jsxsd"
+                },
+                {
+                  "http": 302,
+                  "from": "https://jw.fjvcb.cn/jsxsd",
+                  "to": "http://jw.fjvcb.cn/jsxsd/"
+                },
+                {
+                  "http": 301,
+                  "from": "http://jw.fjvcb.cn/jsxsd/",
+                  "to": "https://jw.fjvcb.cn/jsxsd/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -15444,16 +16064,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -15917,11 +16558,11 @@
       "name": "广西经贸职业技术学院",
       "url": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.gxjmxy.com/",
@@ -15945,11 +16586,36 @@
           "linkedUrls": [
             "https://jw.gxjmxy.com/jwglxt/"
           ]
+        },
+        {
+          "url": "https://www.gxjmxy.com/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "广西经贸职业技术学院",
+          "observedText": "﻿ 广西经贸职业技术学院 办事大厅 统一身份认证 智慧经贸办公 校园缴费 诊改平台 VPN接入 财务系统 网络教学 智慧学工 教务系统 采购公告 软件正版化服务 资产管理信息系统 信息",
+          "bodySha256": "b52c30efaae6c36218cb37a50f9d1eb3605aebbf61a35b8ad6ec9c4c9d1d540a",
+          "linkedUrls": [
+            "https://jw.gxjmxy.com/jwglxt/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://jw.gxjmxy.com/jwglxt/",
+              "bodySha256": "be875e4593e1978d7e79ff104b8735d69b472ddf5ae68e43c6750f58ac316977",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "https://jw.gxjmxy.com/jwglxt/",
+                  "to": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -15961,16 +16627,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -16161,11 +16848,11 @@
       "name": "甘肃林业职业技术学院",
       "url": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwc.gsfc.edu.cn/",
@@ -16178,11 +16865,41 @@
           "linkedUrls": [
             "http://jwgl.gsfc.edu.cn/jwglxt/"
           ]
+        },
+        {
+          "url": "https://jwc.gsfc.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "甘肃林业职业技术大学教务处（教师发展中心）",
+          "observedText": "公告栏 2024-04-30 甘肃林业职业技术学院 关于推荐“十四五”首批职... 公告栏 2024-04-30 甘肃林业职业技术学院 关于推荐“十四五”职业教... 公告栏 2024-04-18 甘肃林业职业",
+          "bodySha256": "ca3fb08eb3139c1168c45023075d5ff4d2cf666741d18bf72c897aa8513e7e60",
+          "linkedUrls": [
+            "http://jwgl.gsfc.edu.cn/jwglxt/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwgl.gsfc.edu.cn/jwglxt/",
+              "bodySha256": "21cd47ce3975e0601eeef7c4faa0d8095a0d2d5d8978ee87ac55eda28794fbc9",
+              "redirects": [
+                {
+                  "http": 301,
+                  "from": "http://jwgl.gsfc.edu.cn/jwglxt/",
+                  "to": "https://jwgl.gsfc.edu.cn/jwglxt/"
+                },
+                {
+                  "http": 302,
+                  "from": "https://jwgl.gsfc.edu.cn/jwglxt/",
+                  "to": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -16194,16 +16911,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -17095,11 +17833,11 @@
       "name": "河北工程大学科信学院",
       "url": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.hebeu.edu.cn/",
@@ -17112,11 +17850,36 @@
           "linkedUrls": [
             "https://jwglxxfwpt.hebeu.edu.cn/"
           ]
+        },
+        {
+          "url": "https://www.hebeu.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "河北工程大学",
+          "observedText": "暨入学礼仪式 9月24日上午，河北工程大学科信学院2026级新生开学典礼暨入学礼仪式在学院体育场举行。 2026-10-14 我校廉洁文化原创歌曲《清白人间》发布 2026-10-14 我校举办2026年教职工",
+          "bodySha256": "b25129a44bf2005bf9558a822505f5c8e7dc0ebca20ef2e1a6337ab4b3ecd5fc",
+          "linkedUrls": [
+            "https://jwglxxfwpt.hebeu.edu.cn/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://jwglxxfwpt.hebeu.edu.cn/",
+              "bodySha256": "efa9474be8854dfa004a678b86085747302e0448f1347e9e380322da6df24904",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "https://jwglxxfwpt.hebeu.edu.cn/",
+                  "to": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -17128,16 +17891,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -17174,11 +17958,11 @@
       "name": "湖北三峡职业技术学院",
       "url": "https://tms.tgc.edu.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://tms.tgc.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwc.tgc.edu.cn/",
@@ -17191,11 +17975,36 @@
           "linkedUrls": [
             "https://tms.tgc.edu.cn/jwglxt/"
           ]
+        },
+        {
+          "url": "https://jwc.tgc.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "湖北三峡职业技术大学教务处",
+          "observedText": "教育国家教学成果奖成果的公示 湖北三峡职业技术学院（420057）考点 2026年下半年全国计算机等级... 湖北三峡职业技术学院2026年上半年全国大学英语四、六级考试报名通知 关于2026年春季学期教材选用",
+          "bodySha256": "43d95fb25b26f0e949854943428bddc6e554f61f71df5003d829190f2a9f18c5",
+          "linkedUrls": [
+            "https://tms.tgc.edu.cn/jwglxt/"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://tms.tgc.edu.cn/jwglxt/",
+              "bodySha256": "ff34a0b1d3872887b3061d988d9471f51295e841dfb4e4612210bab6ac419d2b",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "https://tms.tgc.edu.cn/jwglxt/",
+                  "to": "https://tms.tgc.edu.cn/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -17207,16 +18016,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -18324,11 +19154,11 @@
       "name": "南京旅游职业学院",
       "url": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.nith.edu.cn/",
@@ -18352,11 +19182,36 @@
           "linkedUrls": [
             "http://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html"
           ]
+        },
+        {
+          "url": "https://www.nith.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "南京旅游职业学院",
+          "observedText": "﻿ 南京旅游职业学院 学校概况 学校简介 历史沿革 现任领导 校徽校训 校园景色 机构设置 职能部门 教学单位 直属单位 招生就业 招生信息 就业信息 教育教学 师资队伍 教学管理",
+          "bodySha256": "248e156b8c6d28159a8dbd1beb474b32a44cb6801f1b7d296897a3e518e890e6",
+          "linkedUrls": [
+            "http://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
+              "bodySha256": "909e904659f3687330c28356bf3d8e777bdd94a578ffd0cfe13ce2af111b9837",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
+                  "to": "https://jw.nith.edu.cn:443/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -18368,16 +19223,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -18577,11 +19453,11 @@
       "name": "宁波工程学院",
       "url": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://jwc.nbut.edu.cn/",
@@ -18594,11 +19470,41 @@
           "linkedUrls": [
             "http://jwxt.nbut.edu.cn"
           ]
+        },
+        {
+          "url": "https://jwc.nbut.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "教务处",
+          "observedText": "闻 NEWS 更多 more 宁波工程学院当选地方应用型本科高校 高素质人才培养联盟首批理事长单位 100%获奖！一等奖×3，二等奖×4，三等奖×1，优秀组织奖×1！我校在省教学创新大赛中获历史最佳成绩",
+          "bodySha256": "55d31175dbc793d8c771b4e972338dc8fb9d24e8e548aa91fa452836352e8e70",
+          "linkedUrls": [
+            "http://jwxt.nbut.edu.cn"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwxt.nbut.edu.cn",
+              "bodySha256": "4e5b136854044b743150f84031ea9d3e2bac1c45a724182e2cf777f6cbd51246",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jwxt.nbut.edu.cn",
+                  "to": "http://jwxt.nbut.edu.cn/jwglxt/"
+                },
+                {
+                  "http": 302,
+                  "from": "http://jwxt.nbut.edu.cn/jwglxt/",
+                  "to": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -18610,16 +19516,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -18720,15 +19647,22 @@
       "name": "泉州轻工职业学院",
       "url": "https://jw.qzqgxy.com:8001/jsxsd/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jw.qzqgxy.com:8001/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-published-address",
+          "url": "http://jwc.qzqgxy.com/info/1035/2428.htm",
+          "checkedAt": "2026-10-15",
+          "observedText": "泉州轻工职业学院 具体操作如下：\r\n1.选课时间为12月24日12:00-12月27日12:00。\r\n2.登录学院教务系统https://jw.qzqgxy.com:8001/jsxsd/，25级新生账号为学号，初始密码为身份证号后六位（新密码设置要求：英文字母（大小写）+数字+特殊符号）。温馨提示：学院教务系统为单点登录；修改完密码需按原网址（https://jw.qzqgxy.com:8001/j",
+          "bodySha256": "e0055ef2b1d683e6d120f5c42a14bd97c8b46798773f5ee3b3f7807d953ea1f2",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -18737,17 +19671,40 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "https://jw.qzqgxy.com:8001/jsxsd/",
-        "currentTitle": "登录",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "https://jw.qzqgxy.com:8001/jsxsd/",
+            "currentTitle": "登录",
+            "probeError": null
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4151014039",
@@ -18906,11 +19863,11 @@
       "name": "山东协和学院",
       "url": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://sdxiehe.edu.cn/jwc/view.php?id=139564",
@@ -18919,11 +19876,32 @@
           "title": "山东协和学院 --- 教务处",
           "observedText": " 2025年6月16日00：00至6月23日23:59。 二、评学对象 全校普通本专科在校学生。 三、参评人员 本学期承担教学任务的全体任课教师。 四、操作步骤 1.登录强智系统。网址：http://jwgl.sdxiehe.edu.cn/jsxsd/。 2.登录教师端，左上角选择教学考评。 3.下拉菜单选择教学评价-教师教学评价。 4.点击对应班级课程，选择评价对授课班级进行教师评学,并写出对授课班级学生的意见和建议。 五、工作要求 1.各二级学院（部）要高度重视教师评学工作，认真组织本院部教师积极参加教师评学活动，以严肃认真的态度，客观真实地对教授课程的教学班级进行评价。 2.教师评学是",
           "bodySha256": "5a7c67662c60f2b67deee990c33e81437a69a1186c3dc311353e5b182abd1af4"
+        },
+        {
+          "url": "https://sdxiehe.edu.cn/jwc/view.php?id=139564",
+          "kind": "official-school-published-address",
+          "checkedAt": "2026-10-14",
+          "title": "山东协和学院 --- 教务处",
+          "observedText": " 2025年6月16日00：00至6月23日23:59。 二、评学对象 全校普通本专科在校学生。 三、参评人员 本学期承担教学任务的全体任课教师。 四、操作步骤 1.登录强智系统。网址：http://jwgl.sdxiehe.edu.cn/jsxsd/。 2.登录教师端，左上角选择教学考评。 3.下拉菜单选择教学评价-教师教学评价。 4.点击对应班级课程，选择评价对授课班级进行教师评学,并写出对授课班级学生的意见和建议。 五、工作要求 1.各二级学院（部）要高度重视教师评学工作，认真组织本院部教师积极参加教师评学活动，以严肃认真的态度，客观真实地对教授课程的教学班级进行评价。 2.教师评学是",
+          "bodySha256": "5a7c67662c60f2b67deee990c33e81437a69a1186c3dc311353e5b182abd1af4",
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwgl.sdxiehe.edu.cn/jsxsd/",
+              "bodySha256": "5db290cad262a699852aab164f199e0a81f5626f4928c913f2ba177f3379272c",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jwgl.sdxiehe.edu.cn/jsxsd/",
+                  "to": "https://jwgl.sdxiehe.edu.cn/jsxsd/"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "登录",
       "probeError": null,
@@ -18935,16 +19913,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -19028,11 +20027,11 @@
       "name": "山西能源学院",
       "url": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.sxie.edu.cn/",
@@ -19056,11 +20055,41 @@
           "linkedUrls": [
             "http://jwst.sxie.edu.cn:8083/jwglxt"
           ]
+        },
+        {
+          "url": "https://www.sxie.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "山西能源学院",
+          "observedText": "﻿ 山西能源学院 首页 学院概况 返回上一级 学院简介 历史沿革 现任领导 机构设置 学院风光 山能文化 党政管理机构 返回上一级 党委办公室（院长办公室） 纪检监察机构 组织",
+          "bodySha256": "0184c6d6df027a1ee1058c88239709484c08bf10e869dfb4a37601994cd284b6",
+          "linkedUrls": [
+            "http://jwst.sxie.edu.cn:8083/jwglxt"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwst.sxie.edu.cn:8083/jwglxt",
+              "bodySha256": "9a9b89cc0d481e3ae276c5adb595db2f488e140116cda15788beb98954b83a71",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jwst.sxie.edu.cn:8083/jwglxt",
+                  "to": "http://jwst.sxie.edu.cn:8083/jwglxt/"
+                },
+                {
+                  "http": 302,
+                  "from": "http://jwst.sxie.edu.cn:8083/jwglxt/",
+                  "to": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -19072,16 +20101,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -19568,11 +20618,11 @@
       "name": "天津石油职业技术学院",
       "url": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "http://www.tjsyxy.com/main/",
@@ -19596,11 +20646,41 @@
           "linkedUrls": [
             "http://service.tjsyxy.com:8888/jwglxt"
           ]
+        },
+        {
+          "url": "http://www.tjsyxy.com/main/",
+          "kind": "official-school-link",
+          "evidence": "Official same-domain page names school and links to target academic host.",
+          "checkedAt": "2026-10-14",
+          "title": "天津石油职业技术学院",
+          "observedText": "天津石油职业技术学院 天津石油职业技术学院 vpn 搜索图标 网站首页 学校概况 学校简介 历史沿革 机构设置 学院成果 新闻中心 学院新闻 通知公告 科技引航看高校 教育家精神万",
+          "bodySha256": "b486a4c66e112d4f7a6e5bbe1ad7546d11cd14165e9f796bef5bc828046626e9",
+          "linkedUrls": [
+            "http://service.tjsyxy.com:8888/jwglxt"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://service.tjsyxy.com:8888/jwglxt",
+              "bodySha256": "45743f6e08f83b98f582348da93934534064575228457573afa503836c38e090",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://service.tjsyxy.com:8888/jwglxt",
+                  "to": "http://service.tjsyxy.com:8888/jwglxt/"
+                },
+                {
+                  "http": 302,
+                  "from": "http://service.tjsyxy.com:8888/jwglxt/",
+                  "to": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -19612,16 +20692,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -19658,11 +20759,11 @@
       "name": "天津仁爱学院",
       "url": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.tjrac.edu.cn/jwc/info/1642/3719.htm",
@@ -19672,11 +20773,33 @@
           "title": "1. 成绩查询-天津仁爱学院教务处",
           "observedText": "的要求，对自己的已修、在修、未修、未过以及是否满足毕业要求等学业情况进行自我管理。 一、登录教务管理系统 http://jwgl.tjrac.edu.cn 二、进入学业情况查询界面 信息查询--->学生学业情况查询 进入 学生学业情况查询 界面后，学生可以看到对照培养方案的",
           "bodySha256": "8a7c8b99f0d962a8fb59f630a635955a85fde662c87df1856d7c8ee398f7ad55"
+        },
+        {
+          "url": "https://www.tjrac.edu.cn/jwc/info/1642/3719.htm",
+          "kind": "official-school-published-address",
+          "evidence": "Official page names school and publishes target hostname in visible text.",
+          "checkedAt": "2026-10-14",
+          "title": "1. 成绩查询-天津仁爱学院教务处",
+          "observedText": "的要求，对自己的已修、在修、未修、未过以及是否满足毕业要求等学业情况进行自我管理。 一、登录教务管理系统 http://jwgl.tjrac.edu.cn 二、进入学业情况查询界面 信息查询--->学生学业情况查询 进入 学生学业情况查询 界面后，学生可以看到对照培养方案的",
+          "bodySha256": "8a7c8b99f0d962a8fb59f630a635955a85fde662c87df1856d7c8ee398f7ad55",
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwgl.tjrac.edu.cn",
+              "bodySha256": "6d607dae8732f7adab9da8fa5f66f1e4bfe07689071cff44fe14e438127fb429",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jwgl.tjrac.edu.cn",
+                  "to": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -19688,16 +20811,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -20318,11 +21462,11 @@
       "name": "温州医科大学仁济学院",
       "url": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://rjxy.wmu.edu.cn/jgsz1/xzxt/jwb.htm",
@@ -20346,11 +21490,41 @@
           "linkedUrls": [
             "http://jwxt.wmu.edu.cn"
           ]
+        },
+        {
+          "url": "https://rjxy.wmu.edu.cn/jgsz1/xzxt/jwb.htm",
+          "kind": "official-school-link",
+          "evidence": "Official same-domain page names school and links to target academic host.",
+          "checkedAt": "2026-10-14",
+          "title": "教务部-温州医科大学仁济学院",
+          "observedText": "﻿ 教务部-温州医科大学仁济学院 学院首页 首页 部门总览 部门简介 科室职责 学业管理 课程修读 考试考核 学籍管理 实验实践 招生工作 教学常用平台 规章制度 学习相关 教学相关 下载专区",
+          "bodySha256": "436e324ce647134a08b8837631adfbd822693dcd9c505356bd75ca563a9c1f7c",
+          "linkedUrls": [
+            "http://jwxt.wmu.edu.cn"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "http://jwxt.wmu.edu.cn",
+              "bodySha256": "ad2cbf0ab195669d723ab9a008818f5f586dc496be3a5c5cfdb9b494105cf245",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "http://jwxt.wmu.edu.cn",
+                  "to": "https://jwxt.wmu.edu.cn/"
+                },
+                {
+                  "http": 302,
+                  "from": "https://jwxt.wmu.edu.cn/",
+                  "to": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "温州医科大学教务综合信息服务平台",
       "probeError": null,
@@ -20362,16 +21536,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -20441,15 +21636,22 @@
       "name": "西北大学现代学院",
       "url": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
-      "sources": [],
-      "defects": [
-        "Public page does not name catalog school; parser title alone is insufficient."
+      "status": "verified",
+      "confidence": "high",
+      "sources": [
+        {
+          "kind": "official-school-published-address",
+          "url": "https://www.xdxd.cn/jxtd/jxxw/2026/72322.html",
+          "checkedAt": "2026-10-15",
+          "observedText": "西北大学现代学院 教学质量评价活动2026年5月7日开始，5月22日学生评价活动全面结束。教评活动使用教学信息管理平台(点击http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html)进行网上评价，由教务处教学科组织。教评之前，教学科对本次教学评价的意义和目的、注意事项、教评流程、特别是对特殊分组上课教师评价方式的变化等重要相关问题进行了详细说明，并对2024级、2025级(含专升本)的班级信",
+          "bodySha256": "cf89de3206e6e31db072e4a6c4bac377c7c11b38ca8d5dfc90e801a55562a622",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+        }
       ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -20458,17 +21660,40 @@
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
-          "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
-          "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+          "Review cached official source pages",
+          "Capture original exact href or published text",
+          "Validate exact endpoint or continuous HTTP redirect"
         ],
-        "result": "no sufficient public ownership proof after this pass",
-        "reasonCode": "generic_or_unrelated_entry_identity",
-        "currentHttp": 200,
-        "currentFinalUrl": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
-        "currentTitle": "教学管理信息服务平台",
-        "probeError": null
-      }
+        "reasonCode": "exact_official_endpoint_proven",
+        "result": "Exact public configured endpoint ownership proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+      },
+      "ownershipReviewHistory": [
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Public page does not name catalog school; parser title alone is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Direct current public URL refetch; response and redirect chain retained in continuation-1015-direct.jsonl",
+              "One targeted 2026 school-name + academic-system search; candidate URLs retained in continuation-1015-search.jsonl",
+              "Reviewed 284 fetched official/search-discovered candidate pages for school identity and exact configured authority/path; captures in continuation-1015-probes.jsonl"
+            ],
+            "result": "no sufficient public ownership proof after this pass",
+            "reasonCode": "generic_or_unrelated_entry_identity",
+            "currentHttp": 200,
+            "currentFinalUrl": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
+            "currentTitle": "教学管理信息服务平台",
+            "probeError": null
+          },
+          "reason": "Literal exact official href/published address or newly captured directed HTTP chain proves configured endpoint.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json"
+        }
+      ]
     },
     {
       "catalogId": "moe:4161013677",
@@ -20847,11 +22072,11 @@
       "name": "肇庆医学高等专科学校",
       "url": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
       "source": "import",
-      "checkedAt": "2026-10-14",
+      "checkedAt": "2026-10-15",
       "http": 200,
       "finalUrl": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
-      "status": "unknown",
-      "confidence": "low",
+      "status": "verified",
+      "confidence": "high",
       "sources": [
         {
           "url": "https://www.zqmc.edu.cn/",
@@ -20864,11 +22089,36 @@
           "linkedUrls": [
             "https://jwxt2.zqmc.edu.cn"
           ]
+        },
+        {
+          "url": "https://www.zqmc.edu.cn/",
+          "kind": "official-school-link",
+          "evidence": "Official school page names school and links to requested host.",
+          "checkedAt": "2026-10-14",
+          "title": "肇庆医学院",
+          "observedText": "学院肇庆分院，2004年升格为肇庆医学高等专科学校；2024年5月，教育部正式批准以肇庆医学高等专科学校为基础设立肇庆医学院…… 详 细>> 1958年，广东省高要卫生学校 1959年，广东省江门专区卫生学校 ",
+          "bodySha256": "ca90bc866e167a9efea65a5cf0934b104deee6c899cd4a0198e86a6ae4774297",
+          "linkedUrls": [
+            "https://jwxt2.zqmc.edu.cn"
+          ],
+          "endpointRedirects": [
+            {
+              "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+              "checkedAt": "2026-10-15",
+              "requestedUrl": "https://jwxt2.zqmc.edu.cn",
+              "bodySha256": "4863ef7ea121d46714c4614617d4868a72213054d2c1c2f8810cf1e60dad9b3c",
+              "redirects": [
+                {
+                  "http": 302,
+                  "from": "https://jwxt2.zqmc.edu.cn",
+                  "to": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html"
+                }
+              ]
+            }
+          ]
         }
       ],
-      "defects": [
-        "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
-      ],
+      "defects": [],
       "proposedCorrection": null,
       "title": "教学管理信息服务平台",
       "probeError": null,
@@ -20880,16 +22130,37 @@
           "previousStatus": "verified",
           "previousConfidence": "high",
           "reason": "Strict endpoint review: source does not prove exact scheme, authority, path, query and fragment, and no archived directed HTTP redirect reaches configured endpoint."
+        },
+        {
+          "checkedAt": "2026-10-15",
+          "previousStatus": "unknown",
+          "previousConfidence": "low",
+          "previousDefects": [
+            "Strict endpoint equality failed; same host, root path, generic SSO/login, application prefix or query omission is insufficient."
+          ],
+          "previousResearchTrace": {
+            "checkedAt": "2026-10-15",
+            "attemptedPaths": [
+              "Read archived public entry, source links and HTTP redirect captures"
+            ],
+            "result": "No precise configured-endpoint proof",
+            "reasonCode": "strict_endpoint_equivalence_not_proven",
+            "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+          },
+          "reason": "Captured literal directed HTTP Location chain from existing school-identified official link reaches the exact configured endpoint; no root/SSO/tenant equivalence inference.",
+          "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
         }
       ],
       "researchTrace": {
         "checkedAt": "2026-10-15",
         "attemptedPaths": [
-          "Read archived public entry, source links and HTTP redirect captures"
+          "Reuse existing official-school source identity and literal linked URL",
+          "Capture bounded continuous HTTP redirects to exact configured endpoint",
+          "Validate sanitized snapshots, hashes and each raw Location"
         ],
-        "result": "No precise configured-endpoint proof",
-        "reasonCode": "strict_endpoint_equivalence_not_proven",
-        "strictEndpointReview": "2026-10-15: no directed captured redirect from cited official URL to exact configured endpoint"
+        "result": "Exact configured endpoint publicly linked by official source through captured directed HTTP chain",
+        "reasonCode": "exact_endpoint_directed_http_chain_proven",
+        "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json"
       }
     },
     {
@@ -21235,12 +22506,12 @@
   ],
   "methodology": [
     "Exact school name on public entry page supports medium-confidence ownership.",
-    "Official school page identifying school and linking/publishing entry hostname supports high-confidence ownership.",
+    "Official school page identifying school and linking/publishing the exact endpoint or a captured directed chain to that endpoint supports high-confidence ownership.",
     "A generic vendor brand, 200 response, guessed domain, or search snippet alone never verifies ownership.",
     "Institutional renames use the explicitly recorded project mapping and are identified in evidence; they do not establish importer behavior.",
     "All initial active URLs were inspected; unknown is retained when proof is insufficient.",
     "Public responses require no login; TLS errors were not bypassed; private-IP responses were not contacted.",
-    "Transient redirect query material is omitted from persisted final URLs."
+    "Historic discovery captures omitted transient redirect query material and cannot establish exact query equivalence. New directed evidence preserves exact URLs and rejects ephemeral credential parameters."
   ],
   "strictEndpointReview": {
     "checkedAt": "2026-10-15",
@@ -21349,6 +22620,53 @@
       "moe:4133013284",
       "wakeup:5a59919166d65ec851dc"
     ],
-    "policy": "Exact scheme/host/effective port/path/query/fragment. No inferred root, prefix, tenant or generic authentication equivalence. Explicit directed archived HTTP redirect exception only."
+    "policy": "Exact scheme/host/effective port/path/query/fragment. No inferred root, prefix, tenant or generic authentication equivalence. Explicit directed archived HTTP redirect exception only.",
+    "restoredByBoundedDirectedHttpReview": {
+      "checkedAt": "2026-10-15",
+      "catalogIds": [
+        "D_东南大学",
+        "Z_浙江大学",
+        "Z_中国科学院大学",
+        "moe:4132014180",
+        "moe:4137013324",
+        "C_长春大学",
+        "C_川北医学院",
+        "H_湖南师范大学",
+        "moe:4150010870",
+        "moe:4135013969",
+        "moe:4113013578",
+        "moe:4133011058",
+        "moe:4112014038",
+        "moe:4133013284",
+        "wakeup:5a59919166d65ec851dc",
+        "moe:4145013827",
+        "wakeup:b10759cdfd20ee7f8405",
+        "wakeup:114a95b89e6d992d39c6",
+        "moe:4214051189",
+        "moe:4112013701"
+      ],
+      "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-next-delta.json",
+      "remainingOriginalDowngrades": 77,
+      "captures": 176,
+      "attemptedOfficialLinks": 110
+    },
+    "restoredByRemainingOfficialReview": {
+      "checkedAt": "2026-10-15",
+      "catalogIds": [
+        "moe:4134013343",
+        "moe:4135014232",
+        "moe:4161013678",
+        "B_北京化工大学",
+        "D_东北林业大学",
+        "H_菏泽学院",
+        "M_闽南师范大学",
+        "N_南宁师范大学",
+        "N_南通大学",
+        "W_武汉大学"
+      ],
+      "archive": "/Users/lingion_k/research/school-expansion-20261014/url-verification/ownership-remaining-delta.json",
+      "candidateScope": 187,
+      "restored": 10
+    }
   }
 }

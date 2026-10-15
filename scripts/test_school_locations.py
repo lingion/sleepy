@@ -27,6 +27,18 @@ class VerifiedLocationsTest(unittest.TestCase):
         self.assertEqual("2026-10-15", metadata["retrievedDate"])
         self.assertEqual("abc", metadata["evidenceTextSha256"])
 
+    def test_identity_relation_sources_survive_generated_metadata(self):
+        supporting = [{"sourceUrl": "https://education.example/rename",
+                       "observedText": "Former school became Campus", "bodySha256": "abc"}]
+        relation = [{"sourceUrl": "https://school.example/about",
+                     "observedText": "Campus current identity", "evidenceTextSha256": "def"}]
+        row = self.row | {"supportingEvidence": supporting, "relationSources": relation}
+        apply_verified_locations(self.result, [row], self.names)
+        source = self.result["_cityEvidence"]["Campus"]["sourceId"]
+        metadata = self.result["_citySources"][source]
+        self.assertEqual(supporting, metadata["supportingEvidence"])
+        self.assertEqual(relation, metadata["relationSources"])
+
     def test_bad_records_fail_without_partial_mutation(self):
         for bad in ({"cities": ["广东省"]}, {"cities": ["广西壮族自治区"]},
                     {"cities": []}, {"cities": ["珠海市", "珠海市"]},

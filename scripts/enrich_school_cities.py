@@ -78,6 +78,9 @@ def apply_verified_locations(result: dict, rows: list, directory_names: set[str]
             "bodySha256": row.get("bodySha256"),
             "evidenceTextSha256": row.get("evidenceTextSha256"),
         }
+        for field in ("supportingEvidence", "relationSources"):
+            if row.get(field):
+                result["_citySources"][source_id][field] = row[field]
         result.setdefault("_cityEvidence", {})[name] = {
             "sourceId": source_id, "method": "reviewed-exact-entity-address",
         }
