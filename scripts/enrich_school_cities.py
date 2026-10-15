@@ -4,7 +4,8 @@
 Usage:
   python3 scripts/enrich_school_cities.py
 
-Existing city entries and overrides are preserved byte-for-value. The companion
+Existing city entries and overrides are preserved byte-for-value unless a
+reviewed additive extension supplies an exact baseline snapshot. The companion
 location evidence inventory covers every catalog name; this file adds only
 entries with explicit city evidence, never a city inferred from a name.
 """
@@ -13,6 +14,7 @@ from __future__ import annotations
 import argparse
 import json
 import hashlib
+from copy import deepcopy
 from urllib.parse import urlparse
 from collections import Counter
 from pathlib import Path
@@ -27,10 +29,67 @@ def load_json(path: Path) -> Any:
         return json.load(stream)
 
 
+REVIEWED_METHOD = "reviewed-exact-entity-address"
+EXTENSION_METHOD = "reviewed-baseline-city-extension"
+
+
+def _valid_cities(cities: Any) -> bool:
+    return (isinstance(cities, list) and bool(cities) and
+            all(isinstance(city, str) and city.strip() and city == city.strip()
+                and not city.endswith(("省", "自治区")) for city in cities) and
+            len(cities) == len(set(cities)))
+
+
+def _validate_baseline_extension(result: dict, name: str, snapshot: Any,
+                                 cities: Any) -> None:
+    """Validate baselineExtension={cities, evidence, source, campusOverride}.
+
+    Nullable metadata fields represent absent per-school records. The original
+    source stays in _citySources, including when an extension is withdrawn.
+    """
+    fields = {"cities", "evidence", "source", "campusOverride"}
+    if not isinstance(snapshot, dict) or set(snapshot) != fields:
+        raise ValueError(f"invalid baselineExtension snapshot for {name}")
+    baseline = snapshot["cities"]
+    if (not _valid_cities(baseline) or not _valid_cities(cities) or
+            len(cities) <= len(baseline) or cities[:len(baseline)] != baseline):
+        raise ValueError(f"baselineExtension must be strictly additive for {name}")
+    for field in ("evidence", "source", "campusOverride"):
+        if snapshot[field] is not None and not isinstance(snapshot[field], dict):
+            raise ValueError(f"invalid baselineExtension {field} for {name}")
+    evidence = snapshot["evidence"]
+    if evidence and evidence.get("method") in {REVIEWED_METHOD, EXTENSION_METHOD}:
+        raise ValueError(f"baselineExtension requires an unmanaged baseline for {name}")
+    source_id = (evidence or {}).get("sourceId")
+    if source_id is not None and not isinstance(source_id, str):
+        raise ValueError(f"invalid baselineExtension sourceId for {name}")
+    if ((source_id is None and snapshot["source"] is not None) or
+            (source_id is not None and snapshot["source"] is None)):
+        raise ValueError(f"baselineExtension source metadata is incomplete for {name}")
+    if snapshot["source"] != result.get("_citySources", {}).get(source_id):
+        raise ValueError(f"baselineExtension source metadata changed for {name}")
+    if snapshot["campusOverride"] != result.get("_campusOverrides", {}).get(name):
+        raise ValueError(f"baselineExtension campus metadata changed for {name}")
+
+
 def apply_verified_locations(result: dict, rows: list, directory_names: set[str]) -> int:
     """Apply exact reviewed entries; never derive locations from a name/parent."""
     if not isinstance(rows, list):
         raise ValueError("verified locations must be a list")
+    # Validate saved extensions even when withdrawn: never delete or overwrite a
+    # manually changed mapping while restoring a stale importer's baseline.
+    for name, item in result.get("_cityEvidence", {}).items():
+        if item.get("method") != EXTENSION_METHOD:
+            continue
+        expected_id = "verified-location-" + hashlib.sha256(name.encode()).hexdigest()[:16]
+        generated_source = result.get("_citySources", {}).get(expected_id, {})
+        if (item.get("sourceId") != expected_id or
+                result["schools"].get(name) != item.get("appliedCities") or
+                generated_source.get("baselineExtension") != item.get("baselineExtension") or
+                generated_source.get("appliedCities") != item.get("appliedCities")):
+            raise ValueError(f"baselineExtension applied mapping changed for {name}")
+        _validate_baseline_extension(result, name, item.get("baselineExtension"),
+                                     item.get("appliedCities"))
     pending = {}
     for row in rows:
         name = row.get("name") if isinstance(row, dict) else None
@@ -39,10 +98,7 @@ def apply_verified_locations(result: dict, rows: list, directory_names: set[str]
         if name in pending:
             raise ValueError(f"duplicate verified location: {name}")
         cities = row.get("cities")
-        if (not isinstance(cities, list) or not cities or
-                any(not isinstance(city, str) or not city.strip() or city != city.strip()
-                    or city.endswith(("省", "自治区")) for city in cities) or
-                len(cities) != len(set(cities))):
+        if not _valid_cities(cities):
             raise ValueError(f"invalid city-level locations for {name}")
         url = row.get("sourceUrl")
         parsed = urlparse(url) if isinstance(url, str) else None
@@ -51,19 +107,43 @@ def apply_verified_locations(result: dict, rows: list, directory_names: set[str]
         if not isinstance(row.get("observedText"), str) or not row["observedText"].strip():
             raise ValueError(f"missing address evidence text for {name}")
         existing = result["schools"].get(name)
-        managed = result.get("_cityEvidence", {}).get(name, {}).get("method") == "reviewed-exact-entity-address"
-        if existing is not None and existing != cities and not managed:
-            raise ValueError(f"verified location conflicts with existing cities for {name}")
-        if existing is not None and not managed:
-            raise ValueError(f"verified location cannot take ownership of baseline mapping for {name}")
+        metadata = result.get("_cityEvidence", {}).get(name, {})
+        method = metadata.get("method")
+        managed = method == REVIEWED_METHOD
+        if "baselineExtension" in row:
+            snapshot = row["baselineExtension"]
+            _validate_baseline_extension(result, name, snapshot, cities)
+            if method == EXTENSION_METHOD:
+                if snapshot != metadata["baselineExtension"]:
+                    raise ValueError(f"baselineExtension snapshot changed for {name}")
+            elif (managed or existing != snapshot["cities"] or
+                  result.get("_cityEvidence", {}).get(name) != snapshot["evidence"]):
+                raise ValueError(f"baselineExtension original mapping or metadata changed for {name}")
+            source_id = "verified-location-" + hashlib.sha256(name.encode()).hexdigest()[:16]
+            if method != EXTENSION_METHOD and source_id in result.get("_citySources", {}):
+                raise ValueError(f"baselineExtension source ID collision for {name}")
+        else:
+            if method == EXTENSION_METHOD:
+                raise ValueError(f"baselineExtension snapshot is required for {name}")
+            if existing is not None and existing != cities and not managed:
+                raise ValueError(f"verified location conflicts with existing cities for {name}")
+            if existing is not None and not managed:
+                raise ValueError(f"verified location cannot take ownership of baseline mapping for {name}")
         pending[name] = row
     # Reviewed inputs are authoritative for mappings this importer owns. Removing
     # a rejected candidate must also withdraw its previously generated mapping.
     stale = [name for name, item in result.get("_cityEvidence", {}).items()
-             if item.get("method") == "reviewed-exact-entity-address" and name not in pending]
+             if item.get("method") in {REVIEWED_METHOD, EXTENSION_METHOD} and name not in pending]
     for name in stale:
-        source_id = result["_cityEvidence"].pop(name).get("sourceId")
-        result["schools"].pop(name, None)
+        item = result["_cityEvidence"].pop(name)
+        source_id = item.get("sourceId")
+        if item.get("method") == EXTENSION_METHOD:
+            snapshot = item["baselineExtension"]
+            result["schools"][name] = deepcopy(snapshot["cities"])
+            if snapshot["evidence"] is not None:
+                result["_cityEvidence"][name] = deepcopy(snapshot["evidence"])
+        else:
+            result["schools"].pop(name, None)
         result.get("_citySources", {}).pop(source_id, None)
     added = 0
     for name, row in sorted(pending.items()):
@@ -84,10 +164,20 @@ def apply_verified_locations(result: dict, rows: list, directory_names: set[str]
             if row.get(field):
                 result["_citySources"][source_id][field] = row[field]
         result.setdefault("_cityEvidence", {})[name] = {
-            "sourceId": source_id, "method": "reviewed-exact-entity-address",
+            "sourceId": source_id, "method": REVIEWED_METHOD,
         }
+        if "baselineExtension" in row:
+            result["_citySources"][source_id].update({
+                "baselineExtension": deepcopy(row["baselineExtension"]),
+                "appliedCities": deepcopy(row["cities"]),
+            })
+            result["_cityEvidence"][name].update({
+                "method": EXTENSION_METHOD,
+                "baselineExtension": deepcopy(row["baselineExtension"]),
+                "appliedCities": deepcopy(row["cities"]),
+            })
         added += name not in result["schools"]
-        result["schools"][name] = row["cities"]
+        result["schools"][name] = deepcopy(row["cities"])
     return added
 
 
