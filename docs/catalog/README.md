@@ -1,6 +1,6 @@
 # 学校目录来源与准入
 
-目录收录与教务导入是两个独立口径。旧 350 个导入配置逐字段保留；新增条目只有当前公开页面具备教务入口证据、且解析器候选合理时才列为“待验证，可尝试”。未进行账户登录或真实课表导入，新增条目均不标为已支持。计数以 manifest.json 为准。
+目录收录与教务导入是两个独立口径。旧 350 个导入配置保留其既有实测证据；若发现确证错配，所有配置均须纠正或停用；新增条目只有当前公开页面具备教务入口证据、且解析器候选合理时才列为“待验证，可尝试”。未进行账户登录或真实课表导入，新增条目均不标为已支持。计数以 manifest.json 为准。
 
 ## 来源范围
 
@@ -43,3 +43,13 @@ WakeUp 数据来自本机原版 APK 和先前用户附件，未定位到该专�
 来源 URL 递归检查百分号编码层及嵌套 service/redirect URL。账户、口令、token、ticket、认证 code、state 和会话字段（含 ASP.NET 路径会话及 jsessionid）只保留 REDACTED；每个受影响字段的 urlRedactions 记录原始 URL 的 SHA-256、参数名及 displayCopyOnly 标记。client_id、response_type、学校/应用代码等公开路由参数保留。脱敏来源仅为展示证据，禁止作为带会话的操作链接；可导入 URL 不携带 REDACTED 占位或旧会话。
 
 原始来源保留在研究目录外部，不提交仓库。scripts/catalog_url_safety.py 在生成器读取固定输入时执行 fail-closed 检查；遇到未脱敏敏感 URL 会中止，错误仅列字段路径与参数名，不回显值。合成边界用例由 python3 scripts/test_catalog_url_safety.py 运行。
+
+## 学校与入口归属校验
+
+`school_url_evidence.json` 对扩展前的 519 个非空入口逐条记录独立的学校归属核验。生成器严格检查证据 ID、学校名和被审 URL 一致，防止修改 URL 后沿用旧证据；缺证据、重复记录、未知判定值均拒绝生成。HTTP 可达性、协议指纹、公开归属、登录后导入是独立结论。
+
+新候选若归属未知，撤回到 pending，清空操作 URL/type；有确证错配时旧配置同样停用。替换入口需学校官方发布地址和对应页面身份、相同协议候选共同支持，替换后仍为 unverified。潍坊护理职业学院的错校入口已替换为经官方公告、HTML刷新及连续HTTP跳转证明的实名入口；替换后仍为unverified且enableFetch=false。保存快照已去除Cookie、脚本和输入值，保留原始及脱敏快照哈希；错误来源 URL 留在审计证据中以便追溯。原有实测配置不会仅因本轮无法公开访问而自动失效；未解决的公开归属证据缺口在 manifest 的 ownershipAudit 中明确列出，不声称全部已验证。
+
+运行 `python3 scripts/test_catalog_ownership.py` 检查未知/错配入口阻断、证据时效绑定和研究生状态保留。位置证据详见 `location-evidence.md`，城市匹配精度不等于校区坐标精度。
+
+入口等价仅接受相同 scheme、host、port、path、query、fragment（默认端口与根斜杠规范化），或归档的连续定向跳转。不凭同一主机、父路径、通用 SSO 页面推断租户归属。

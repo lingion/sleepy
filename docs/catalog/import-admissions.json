@@ -12,22 +12,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4134013343",
-    "name": "亳州职业技术学院",
-    "url": "https://www.bzy.edu.cn/qt/jwxt",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 115,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教务系统_亳州职业技术学院",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4153010686",
@@ -42,7 +28,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "wakeup:4a1d3e7713eebc82f142",
@@ -57,7 +44,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137014749",
@@ -72,7 +60,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4150014366",
@@ -87,52 +76,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4150013591",
-    "name": "重庆工商大学派斯学院",
-    "url": "https://www.paisi.edu.cn:8181/jsxsd/?tdsourcetag=s_pcqq_aiomsg",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 324,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4150010870",
-    "name": "重庆航天职业技术学院",
-    "url": "http://jw.cqepc.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 339,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4143014692",
-    "name": "长沙幼儿师范高等专科学校",
-    "url": "http://61.186.94.104:8090/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 403,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4150014367",
@@ -147,22 +92,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4143013039",
-    "name": "常德职业技术学院",
-    "url": "https://jw.cdzy.cn:8001/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 407,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4143014817",
@@ -177,7 +108,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4122011823",
@@ -192,37 +124,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:036307832c28fc4973c3",
-    "name": "常德学院（原湖南文理学院芙蓉学院）",
-    "url": "https://dyjw.huas.edu.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 458,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4121010161",
-    "name": "大连医科大学",
-    "url": "http://210.47.245.4/(jwabd4ys4v5sma450xotz445)/Default2.aspx",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 530,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "欢迎使用正方教务管理系统！请登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137013389",
@@ -237,7 +140,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4135014683",
@@ -252,22 +156,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4135013969",
-    "name": "福建生物工程职业技术学院",
-    "url": "https://jw.fjvcb.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 616,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144012327",
@@ -282,22 +172,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4134014536",
-    "name": "阜阳幼儿师范高等专科学校",
-    "url": "http://42.247.32.226:8000/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 643,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学综合信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144014125",
@@ -312,7 +188,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144013667",
@@ -327,7 +204,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144013715",
@@ -342,7 +220,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4145013830",
@@ -357,7 +236,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4145014684",
@@ -372,22 +252,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4145011837",
-    "name": "桂林旅游学院",
-    "url": "https://jwcweb1.gltu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 731,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4162013519",
@@ -402,7 +268,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132012078",
@@ -417,22 +284,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4152010662",
-    "name": "贵州中医药大学",
-    "url": "https://jwgl.gzy.edu.cn/jsxsd/",
-    "type": "qz_with_node",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 745,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4152012107",
@@ -447,7 +300,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144014511",
@@ -462,22 +316,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4145013827",
-    "name": "广西经贸职业技术学院",
-    "url": "https://jw.gxjmxy.com/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 786,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4145013920",
@@ -492,22 +332,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4144012960",
-    "name": "广东司法警官职业学院",
-    "url": "http://210.21.33.69:8027/",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 797,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144014556",
@@ -522,7 +348,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144010585",
@@ -537,37 +364,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4144012575",
-    "name": "广州康大职业技术学院",
-    "url": "https://jwweb.gzkdp.edu.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 823,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:b10759cdfd20ee7f8405",
-    "name": "甘肃林业职业技术学院",
-    "url": "https://jwgl.gsfc.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 851,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144013930",
@@ -582,22 +380,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:03739d5cba621bf713f5",
-    "name": "广西教职工大学分院 - 研究生",
-    "url": "https://jwxt2018.gxu.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 989,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4142010528",
@@ -612,7 +396,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4142013256",
@@ -627,7 +412,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4142010920",
@@ -642,7 +428,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4142013251",
@@ -657,7 +444,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4143012214",
@@ -672,37 +460,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4143014360",
-    "name": "湖南有色金属职业技术学院",
-    "url": "https://jwxt.hnyszy.com.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1045,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4143012303",
-    "name": "湖南涉外经济学院",
-    "url": "http://jw.hieu.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1047,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学综合信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4143013940",
@@ -717,7 +476,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4143011534",
@@ -732,22 +492,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4143013942",
-    "name": "湖南铁路科技职业技术学院",
-    "url": "https://jiaowu.hntky.com/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1059,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4143014359",
@@ -762,7 +508,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4123011446",
@@ -777,22 +524,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4123011802",
-    "name": "黑龙江工程学院",
-    "url": "http://jw.hljit.edu.cn/default2.aspx",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1087,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "欢迎使用正方教务管理系统！请登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4143013939",
@@ -807,7 +540,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4133013030",
@@ -822,7 +556,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4113013411",
@@ -837,7 +572,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4142012744",
@@ -852,7 +588,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4123013729",
@@ -867,7 +604,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4141014307",
@@ -882,7 +620,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4146014724",
@@ -897,7 +636,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4123013303",
@@ -912,67 +652,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4144014408",
-    "name": "惠州卫生职业技术学院",
-    "url": "https://qz.hzhsp.edu.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1186,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4143012845",
-    "name": "湖南邮电职业技术学院",
-    "url": "http://jx.189jxt.com:10081/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1190,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4142014755",
-    "name": "湖北孝感美珈职业学院",
-    "url": "http://42.247.9.91:8083/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1197,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4113013578",
-    "name": "河北工程大学科信学院",
-    "url": "https://jwglxxfwpt.hebeu.edu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1202,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4113014396",
@@ -987,22 +668,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:114a95b89e6d992d39c6",
-    "name": "湖北三峡职业技术学院",
-    "url": "https://tms.tgc.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1240,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "wakeup:49df93d2f1155acd5ed7",
@@ -1017,37 +684,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4146011100",
-    "name": "海南热带海洋学院",
-    "url": "http://210.37.144.124/default2.aspx",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1252,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "欢迎使用正方教务管理系统！请登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4113010085",
-    "name": "河北水利电力学院",
-    "url": "https://jwxt.hbwe.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1288,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4113010092",
@@ -1062,7 +700,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4113012784",
@@ -1077,7 +716,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4133013023",
@@ -1092,7 +732,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4123013307",
@@ -1107,7 +748,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4133012874",
@@ -1122,7 +764,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4141011522",
@@ -1137,7 +780,8 @@
     "fingerprints": [
       "classic_eams"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4136012942",
@@ -1152,7 +796,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4136011843",
@@ -1167,7 +812,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132010329",
@@ -1182,22 +828,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4136013426",
-    "name": "江西生物科技职业学院",
-    "url": "https://jwcpc.jxswkj.com:9080/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1702,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4153013329",
@@ -1212,7 +844,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4152010669",
@@ -1227,7 +860,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132013963",
@@ -1242,7 +876,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137014195",
@@ -1257,7 +892,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4151013048",
@@ -1272,7 +908,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4162013515",
@@ -1287,7 +924,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4141014480",
@@ -1302,7 +940,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4121014240",
@@ -1317,7 +956,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4121013957",
@@ -1332,22 +972,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4121010841",
-    "name": "辽宁对外经贸学院",
-    "url": "https://jwpt.luibe.edu.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1820,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4121014526",
@@ -1362,7 +988,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4121014106",
@@ -1377,7 +1004,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4151014640",
@@ -1392,7 +1020,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4151012639",
@@ -1407,7 +1036,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4136013440",
@@ -1422,52 +1052,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4164013151",
-    "name": "宁夏建设职业技术学院",
-    "url": "http://jwx.nxjy.edu.cn/default2.aspx",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1977,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "欢迎使用正方教务管理系统！请登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:c6ce4b035c46713a4e28",
-    "name": "宁夏工商职业技术学院",
-    "url": "http://jw.nxgs.edu.cn:9001/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 1981,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4132013687",
-    "name": "南京传媒学院",
-    "url": "https://jw.cucn.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2032,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132013905",
@@ -1482,37 +1068,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4132014180",
-    "name": "南京旅游职业学院",
-    "url": "https://jw.nith.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2049,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4132013842",
-    "name": "南京理工大学泰州科技学院",
-    "url": "https://jwgl.nustti.edu.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2055,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132013990",
@@ -1527,7 +1084,8 @@
     "fingerprints": [
       "zf"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132010293",
@@ -1542,7 +1100,8 @@
     "fingerprints": [
       "zf"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4136013421",
@@ -1557,7 +1116,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4115012797",
@@ -1572,22 +1132,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4133011058",
-    "name": "宁波工程学院",
-    "url": "http://jwxt.nbut.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2096,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4141011787",
@@ -1602,7 +1148,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137013995",
@@ -1617,7 +1164,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4152012822",
@@ -1632,22 +1180,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4135014232",
-    "name": "泉州轻工职业学院",
-    "url": "https://jw.qzqgxy.com:8001/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2206,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4151014039",
@@ -1662,22 +1196,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4151012762",
-    "name": "四川工商职业技术学院",
-    "url": "https://jw.sctbc.edu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2237,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4134012812",
@@ -1692,7 +1212,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144011121",
@@ -1707,37 +1228,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4137013324",
-    "name": "山东协和学院",
-    "url": "https://jwgl.sdxiehe.edu.cn/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2517,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4137013856",
-    "name": "山东电子职业技术学院",
-    "url": "https://jwgl.sdcet.edu.cn:6066/jsxsd/",
-    "type": "qz",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2536,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "qz"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137013383",
@@ -1752,22 +1244,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4214051189",
-    "name": "山西能源学院",
-    "url": "http://jwst.sxie.edu.cn:8083/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2563,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4121013220",
@@ -1782,37 +1260,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4142014258",
-    "name": "三峡旅游职业技术学院",
-    "url": "http://jwxt.sxlyzy.com.cn:88/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2600,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4135011311",
-    "name": "三明学院",
-    "url": "https://jwxxt.fjsmu.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2601,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4131013893",
@@ -1827,7 +1276,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4151014005",
@@ -1842,7 +1292,8 @@
     "fingerprints": [
       "classic_eams"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4111010038",
@@ -1857,7 +1308,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4161012829",
@@ -1872,52 +1324,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4132010960",
-    "name": "苏州工艺美术职业技术学院",
-    "url": "https://zfjw.sgmart.edu.cn/default2.aspx",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2674,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "欢迎使用正方教务管理系统！请登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4132012809",
-    "name": "苏州工业园区职业技术学院",
-    "url": "https://t.ivt.edu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2675,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4112013701",
-    "name": "天津石油职业技术学院",
-    "url": "http://service.tjsyxy.com:8888/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2698,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4112014020",
@@ -1932,37 +1340,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4112014038",
-    "name": "天津仁爱学院",
-    "url": "http://jwgl.tjrac.edu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2719,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4112013661",
-    "name": "天津医科大学临床医学院",
-    "url": "http://180.213.3.14:18880/eams/loginExt.action",
-    "type": "classic_eams",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2726,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "天津医科大学临床医院教学管理系统",
-    "fingerprints": [
-      "classic_eams"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4112012721",
@@ -1977,7 +1356,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4112012880",
@@ -1992,7 +1372,8 @@
     "fingerprints": [
       "qz"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4112012883",
@@ -2007,7 +1388,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4112013659",
@@ -2022,7 +1404,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132013982",
@@ -2037,7 +1420,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132012681",
@@ -2052,7 +1436,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4145011354",
@@ -2067,7 +1452,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4142013237",
@@ -2082,7 +1468,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4132012923",
@@ -2097,27 +1484,13 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4133013289",
-    "name": "温州理工学院",
-    "url": "https://jwxt.wzut.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2897,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137014347",
     "name": "潍坊护理职业学院",
-    "url": "http://jwgl.sdwfvc.cn/jwglxt/xtgl/login_slogin.html",
+    "url": "http://120.224.233.70:8189/jwglxt/xtgl/login_slogin.html",
     "type": "zf_new",
     "sourceId": "wakeup-6.1.06-asset",
     "sourceRow": 2898,
@@ -2127,7 +1500,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "corrected-official-entry"
   },
   {
     "catalogId": "moe:4133014088",
@@ -2142,22 +1516,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4133013284",
-    "name": "温州医科大学仁济学院",
-    "url": "https://jwxt.wmu.edu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 2919,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "温州医科大学教务综合信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4152010666",
@@ -2172,7 +1532,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4165010758",
@@ -2187,22 +1548,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4161013678",
-    "name": "西北大学现代学院",
-    "url": "http://jwgl.xdxd.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3050,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4161013677",
@@ -2217,37 +1564,8 @@
     "fingerprints": [
       "zf"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4161014041",
-    "name": "西安理工大学高科学院",
-    "url": "http://113.201.151.38:9999/",
-    "type": "zf",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3082,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "登录",
-    "fingerprints": [
-      "zf"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:06aa768f38c367d88c30",
-    "name": "杨凌职业技术学院",
-    "url": "https://jwxt.ylvtc.com/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3159,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4153013758",
@@ -2262,7 +1580,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "wakeup:f549c13f5c43977595af",
@@ -2277,7 +1596,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4137013359",
@@ -2292,7 +1612,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4153014618",
@@ -2307,7 +1628,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4133014275",
@@ -2322,7 +1644,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4133013290",
@@ -2337,7 +1660,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4141014235",
@@ -2352,7 +1676,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4141014478",
@@ -2367,37 +1692,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "wakeup:5a59919166d65ec851dc",
-    "name": "肇庆医学高等专科学校",
-    "url": "https://jwxt2.zqmc.edu.cn/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3389,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4132012921",
-    "name": "正德职业技术学院",
-    "url": "https://jwxt.zdxy.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3392,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4115014539",
@@ -2412,22 +1708,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4133013285",
-    "name": "浙江中医药大学滨江学院",
-    "url": "https://jwmk.zcmu.edu.cn/jwglxt/xtgl/login_slogin.html",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3443,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "浙江中医药大学学教一体化教学服务",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4153010683",
@@ -2442,7 +1724,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4153014582",
@@ -2457,7 +1740,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144014066",
@@ -2472,7 +1756,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144013710",
@@ -2487,7 +1772,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4111010034",
@@ -2502,22 +1788,8 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
-  },
-  {
-    "catalogId": "moe:4133013292",
-    "name": "中国计量大学现代科技学院",
-    "url": "https://jwxt.cjlu.edu.cn/xtgl/login_slogin.html?kickout=1",
-    "type": "zf_new",
-    "sourceId": "wakeup-6.1.06-asset",
-    "sourceRow": 3465,
-    "checkedAt": "2026-10-14",
-    "http": 200,
-    "title": "教学管理信息服务平台",
-    "fingerprints": [
-      "zf_new"
-    ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   },
   {
     "catalogId": "moe:4144012622",
@@ -2532,6 +1804,7 @@
     "fingerprints": [
       "zf_new"
     ],
-    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed."
+    "limitation": "Current public page establishes entry and parser-family evidence only; no authenticated timetable import performed.",
+    "ownershipAction": "ownership-confirmed"
   }
 ]

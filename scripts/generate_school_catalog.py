@@ -4,6 +4,7 @@ import argparse,copy,hashlib,json,re
 from collections import Counter,defaultdict
 from pathlib import Path
 from catalog_url_safety import audit
+from catalog_ownership import apply_ownership
 ROOT=Path(__file__).resolve().parents[1]
 DATA=ROOT/'scripts/data'
 def read(name):
@@ -41,7 +42,10 @@ def generate():
   if row is None or name in baseline_names:continue
   row.update(url=decision['probe']['finalUrl'],type=decision['mappedType'],status='grad_unverified' if is_grad(name) else 'unverified',enableFetch=False)
   accepted.append({'catalogId':key(row),'name':name,'url':row['url'],'type':row['type'],'sourceId':decision['sourceId'],'sourceRow':decision['sourceRow'],'checkedAt':decision['probe']['checkedAt'],'http':decision['probe']['http'],'title':decision['probe'].get('title'),'fingerprints':decision['probe'].get('fingerprints',[]),'limitation':decision['verification']})
- assert rows[:len(baseline)]==baseline,'Existing school fields changed'
+ assert rows[:len(baseline)]==baseline,'Existing school fields changed before ownership review'
+ ownership=apply_ownership(rows,read('school_url_evidence.json'),baseline_names,renames)
+ decisions={x['catalogId']:x for x in ownership}
+ accepted=[dict(x, url=decisions[x['catalogId']]['operationalUrl'],ownershipAction=decisions[x['catalogId']]['action']) for x in accepted if decisions[x['catalogId']]['operationalUrl']]
  rows=rows[:len(baseline)]+sorted(rows[len(baseline):],key=lambda x:(x['sortKey'],x['sortKeyFull'],x['name']))
  ids=[key(x) for x in rows];assert len(ids)==len(set(ids))
  assert len(rows)==len(by_name)
@@ -50,10 +54,11 @@ def generate():
  assert all(not x['url'] and x['type'] is None for x in rows if x.get('status') in ('pending','grad_pending'))
  assert all(x.get('status') not in ('supported','grad_supported') for x in rows[len(baseline):])
  sources=[]
- for source_file in ('school_catalog_baseline.json','official_schools.json','wakeup_school_sources.json','school_catalog_pinyin.json','school_import_admissions.json','school_catalog_renames.json'):
+ for source_file in ('school_catalog_baseline.json','official_schools.json','wakeup_school_sources.json','school_catalog_pinyin.json','school_import_admissions.json','school_catalog_renames.json','school_url_evidence.json'):
   path=DATA/source_file
   sources.append({'path':str(path.relative_to(ROOT)),'sha256':hashlib.sha256(path.read_bytes()).hexdigest()})
  manifest={'generatedAsOf':'2026-10-14','baselineCount':len(baseline),'catalogCount':len(rows),'statusCounts':dict(Counter(x.get('status','supported') for x in rows)),'sourceCounts':{'official':len(official),'wakeupSchoolSourceRows':len(wakeup['records']),'wakeupExcludedTemplateRows':len(wakeup['excludedTemplates'])},'coverage':{'officialMissing':[],'wakeupMissing':[]},'sources':sources,'matchingPolicy':'Exact trimmed full names plus reviewed school_catalog_renames.json; no fuzzy aliases or graduate/campus suffix removal. Historical source rows remain independently traceable.','sourceLinks':{k:official_links[k]+source_links[k] for k in ids if official_links[k] or source_links[k]}}
+ manifest['ownershipAudit']={'evidenceCounts':dict(Counter(x['ownershipStatus'] for x in ownership)), 'actions':dict(Counter(x['action'] for x in ownership)), 'decisions':ownership}
  links=manifest.pop('sourceLinks');return rows,manifest,accepted,links
 
 def main():
